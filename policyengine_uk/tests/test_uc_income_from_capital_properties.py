@@ -255,8 +255,9 @@ def test_interest_dividends_and_rent_leave_the_award_unchanged(units, scale, yea
     unchanged = np.isclose(
         scaled["personal_allowances"], base["personal_allowances"], atol=0.01
     )
-    # The cap's earnings exception can change with the income (#1986), so
-    # the capped award is compared only where the exemption is the same.
+    # Compare the capped award only where the exemption is the same:
+    # capital income can change another exemption route, such as Working
+    # Tax Credit or the pension-age Housing Benefit rules.
     same_cap = unchanged & (
         scaled["is_benefit_cap_exempt"] == base["is_benefit_cap_exempt"]
     )

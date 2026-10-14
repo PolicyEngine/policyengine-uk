@@ -361,17 +361,15 @@ def test_a_bare_year_is_that_year_in_a_dict_and_onwards_in_reform_from_dict():
     ]
 
 
-def test_a_single_day_dict_key_keeps_its_legacy_meaning_and_warns(caplog):
-    # Logged as well as warned: loading some variable modules switches
-    # warnings off for the process.
-    with caplog.at_level("WARNING", logger="policyengine_uk.utils.dated_reforms"):
+def test_a_single_day_dict_key_keeps_its_legacy_meaning_and_warns():
+    # The warning is raised after the simulation loads the variable modules,
+    # so this also checks that loading them leaves the filters alone (#2377).
+    with pytest.warns(ReformPeriodWarning, match="2027-04-06.2100-12-31"):
         april = via_reform_dict({BASIC_RATE: {"2027-04-06": 0.21}})
-    assert "2027-04-06.2100-12-31" in caplog.text
     assert [annual(april, BASIC_RATE, y) for y in YEARS] == [0.20] * len(YEARS)
-    caplog.clear()
-    with caplog.at_level("WARNING", logger="policyengine_uk.utils.dated_reforms"):
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", ReformPeriodWarning)
         january = via_reform_dict({BASIC_RATE: {"2027-01-01": 0.21}})
-    assert caplog.text == ""
     assert [annual(january, BASIC_RATE, y) for y in (2026, 2027, 2028)] == [
         0.20,
         0.21,
@@ -910,12 +908,11 @@ def test_two_changes_that_need_projection_see_each_other():
         )
 
 
-def test_mixed_single_day_and_dated_keys_warn_and_apply_single_days_last(caplog):
-    with caplog.at_level("WARNING", logger="policyengine_uk.utils.dated_reforms"):
+def test_mixed_single_day_and_dated_keys_warn_and_apply_single_days_last():
+    with pytest.warns(ReformPeriodWarning, match="mixes single-day keys"):
         simulation = via_reform_dict(
             {BASIC_RATE: {"2027-01-01": 0.21, "2026-01-01.2100-12-31": 0.22}}
         )
-    assert "mixes single-day keys" in caplog.text
     assert annual(simulation, BASIC_RATE, 2027) == 0.21
     assert annual(simulation, BASIC_RATE, 2028) == 0.22
 
@@ -1024,3 +1021,210 @@ def test_preserve_calendar_dates_changes_keep_their_dates(start, length, value):
     while day < datetime.date(2035, 1, 1):
         assert parameter(day.isoformat()) == timeline_value(expected, day), day
         day += datetime.timedelta(days=37)
+
+
+# Review round 3 (GPT-6.1 Sol): failed override batches roll back, and
+# nodes a structural reform adds survive rebuilds and reprocessing.
+
+
+class _add_bonus(Reform):
+    def apply(self):
+        from policyengine_core.parameters import ParameterNode
+
+        self.parameters.add_child(
+            "test_budget",
+            ParameterNode("test_budget", data={"bonus": {"values": {"2000-01-01": 1}}}),
+        )
+
+
+def test_a_failed_override_batch_applies_none_of_its_overrides():
+    simulation = Simulation(situation=SITUATION)
+    system = simulation.tax_benefit_system
+    parameters = system.parameters
+    with pytest.raises(ValueError):
+        Scenario.from_reform(
+            {BASIC_RATE: {"2027": 0.3}, "gov.not_a_real_parameter": {"2027": 1}}
+        ).apply(simulation)
+    assert annual(simulation, BASIC_RATE, 2027) == 0.20
+    assert system.legacy_overrides == []
+    # An unknown path is refused before anything changes, and the tree is
+    # the one the system had.
+    assert system.parameters is parameters
+    Scenario.from_reform({BASIC_RATE: {"2027": 0.3}}).apply(simulation)
+    assert system.parameters is parameters
+    assert annual(simulation, BASIC_RATE, 2027) == 0.3
+    simulation.apply_parameter_changes({UC_SINGLE_OLD: {"2027": 500}})
+    assert annual(simulation, BASIC_RATE, 2027) == 0.3
+    assert annual(simulation, UC_SINGLE_OLD, 2027) == 500
+
+
+def test_a_batch_failing_after_an_update_restores_values_and_flags(monkeypatch):
+    simulation = Simulation(situation=SITUATION)
+    system = simulation.tax_benefit_system
+    rate = system.parameters.get_child(BASIC_RATE)
+    values_list = rate.values_list
+    # Processing marks parameters modified, so clear the flags on the path
+    # to the rate to see whether a failed batch leaves them set.
+    path, node = [], rate
+    while node is not None:
+        node.modified = False
+        path.append(node)
+        node = getattr(node, "parent", None)
+    # Reform.from_dict keys reach the overrides unparsed, so the second
+    # override fails after the first has updated the rate.
+    reform = Reform.from_dict(
+        {BASIC_RATE: {"2027-01-01": 0.3}, UC_SINGLE_OLD: {"not-a-date": 1}},
+        country_id="uk",
+    )
+    # Guard against the test going empty: the batch must fail inside the
+    # overrides, after the rate was updated, so the rollback runs.
+    original = tbs_module.apply_legacy_overrides
+    seen = {}
+
+    def spy(parameters, overrides):
+        try:
+            return original(parameters, overrides)
+        except Exception:
+            seen["rate_updated"] = rate.values_list is not values_list
+            raise
+
+    monkeypatch.setattr(tbs_module, "apply_legacy_overrides", spy)
+    with pytest.raises(ValueError):
+        Scenario.from_reform(reform).apply(simulation)
+    assert seen == {"rate_updated": True}
+    assert rate.values_list is values_list
+    assert annual(simulation, BASIC_RATE, 2027) == 0.20
+    assert system.legacy_overrides == []
+    assert not any(node.modified for node in path)
+
+
+def test_a_rebuild_keeps_a_structural_reforms_parameter():
+    simulation = Simulation(
+        situation=SITUATION, reform=(_add_bonus, {"test_budget.bonus": 7})
+    )
+    simulation.apply_parameter_changes({BASIC_RATE: {"2027": 0.21}})
+    parameters = simulation.tax_benefit_system.parameters
+    assert parameters.test_budget.bonus("2027-01-01") == 7
+    assert annual(simulation, BASIC_RATE, 2027) == 0.21
+    # Repeated rebuilds keep it too.
+    simulation.apply_parameter_changes({UC_SINGLE_OLD: {"2027": 500}})
+    assert simulation.tax_benefit_system.parameters.test_budget.bonus("2027-01-01") == 7
+
+
+def test_reprocessing_keeps_a_structural_reforms_parameter():
+    from policyengine_uk.scenarios.no_economic_assumptions import (
+        no_economic_assumptions,
+    )
+
+    simulation = Simulation(
+        situation=SITUATION, reform=(_add_bonus, {"test_budget.bonus": 7})
+    )
+    no_economic_assumptions.apply(simulation)
+    parameters = simulation.tax_benefit_system.parameters
+    assert parameters.test_budget.bonus("2027-01-01") == 7
+    assert annual(simulation, PERSONAL_ALLOWANCE, 2035) == 12_570
+    assert simulation.tax_benefit_system._parameters_before_reset is None
+
+
+def test_failed_reprocessing_leaves_the_system_as_it_was(monkeypatch):
+    simulation = Simulation(situation=SITUATION)
+    Scenario.from_reform({BASIC_RATE: {"2027": 0.3}}).apply(simulation)
+    system = simulation.tax_benefit_system
+    system.reset_parameters()
+    reloaded = (system.parameters, system._projected_timelines, system._raw_parameters)
+
+    # Fail after the rebuild has replaced the parameters, while replaying
+    # the legacy override.
+    def fail(*args, **kwargs):
+        raise RuntimeError("replay failed")
+
+    monkeypatch.setattr(tbs_module, "apply_legacy_overrides", fail)
+    with pytest.raises(RuntimeError, match="replay failed"):
+        system.process_parameters()
+    assert system.parameters is reloaded[0]
+    assert system._projected_timelines is reloaded[1]
+    assert system._raw_parameters is reloaded[2]
+    # The tree is as reloaded, not processed: no baseline child, and the
+    # basic rate keeps its legal dates rather than fiscal-year values.
+    assert "baseline" not in system.parameters.children
+    # Processing again then works.
+    monkeypatch.undo()
+    system.process_parameters()
+    assert "baseline" in system.parameters.children
+    assert annual(simulation, BASIC_RATE, 2027) == 0.3
+
+
+class _add_top_band(Reform):
+    def apply(self):
+        scale = self.parameters.gov.hmrc.income_tax.rates.uk
+        band = scale.brackets[-1].clone()
+        band.parent = scale
+        scale.brackets.append(band)
+        band.threshold.update(period="year:2000:200", value=200_000)
+        band.rate.update(period="year:2000:200", value=0.5)
+
+
+def test_a_rebuild_keeps_a_band_a_structural_reform_appended():
+    simulation = Simulation(situation=SITUATION, reform=_add_top_band)
+    # The scale has four bands, uk[0] to uk[3]; the reform adds uk[4].
+    top = "gov.hmrc.income_tax.rates.uk[4].rate"
+    assert annual(simulation, top, 2027) == 0.5
+    simulation.apply_parameter_changes({BASIC_RATE: {"2027": 0.21}})
+    assert annual(simulation, top, 2027) == 0.5
+    assert annual(simulation, BASIC_RATE, 2027) == 0.21
+
+
+def test_a_second_reset_keeps_the_processed_tree_for_grafting():
+    simulation = Simulation(
+        situation=SITUATION, reform=(_add_bonus, {"test_budget.bonus": 7})
+    )
+    system = simulation.tax_benefit_system
+    system.reset_parameters()
+    system.reset_parameters()
+    system.process_parameters()
+    assert system.parameters.test_budget.bonus("2027-01-01") == 7
+
+
+def test_grafting_adds_only_missing_nodes():
+    from policyengine_core.parameters import ParameterNode
+
+    from policyengine_uk.utils.dated_reforms import graft_missing_nodes
+
+    source = ParameterNode(
+        "",
+        data={
+            "a": {
+                "x": {"values": {"2000-01-01": 1}},
+                "y": {"values": {"2000-01-01": 2}},
+            },
+            "baseline": {"z": {"values": {"2000-01-01": 3}}},
+        },
+    )
+    target = ParameterNode("", data={"a": {"x": {"values": {"2000-01-01": 10}}}})
+    added = graft_missing_nodes(source, target)
+    assert added == ["a.y"]
+    assert target.a.x("2001-01-01") == 10
+    assert target.a.y("2001-01-01") == 2
+    assert "baseline" not in target.children
+
+
+def test_grafting_appends_missing_scale_brackets():
+    from policyengine_core.parameters import ParameterNode
+
+    from policyengine_uk.utils.dated_reforms import graft_missing_nodes
+
+    def band(threshold, rate):
+        return {
+            "threshold": {"values": {"2000-01-01": threshold}},
+            "rate": {"values": {"2000-01-01": rate}},
+        }
+
+    source = ParameterNode(
+        "", data={"s": {"brackets": [band(0, 0.1), band(10, 0.2), band(20, 0.3)]}}
+    )
+    target = ParameterNode("", data={"s": {"brackets": [band(0, 0.15), band(10, 0.2)]}})
+    assert graft_missing_nodes(source, target) == ["s[2]"]
+    assert len(target.s.brackets) == 3
+    assert target.s.brackets[0].rate("2001-01-01") == 0.15
+    assert target.s.brackets[2].rate("2001-01-01") == 0.3
+    assert target.s.brackets[2].parent is target.s
