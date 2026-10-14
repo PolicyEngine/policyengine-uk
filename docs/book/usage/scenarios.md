@@ -390,11 +390,15 @@ Each way of passing a reform reads period keys as it always has:
 | Key | `reform=` dict | `parameter_changes` | `Reform.from_dict` |
 |---|---|---|---|
 | `"2027-04-06.2028-04-05"` | those dates | those dates | those dates |
-| `"2027"` or `2027` | fiscal year 2027 only | fiscal year 2027 only | from 1 January 2027 onwards |
+| `"2027"` or `2027` | fiscal year 2027 only (calendar year 2027 on a calendar-year series) | fiscal year 2027 only (calendar year 2027 on a calendar-year series) | from 1 January 2027 onwards |
 | `"2027-04-06"` | that one day of the annualised value | that one day | from that day onwards |
 | a value with no period | from 1 January 2023 onwards | 2000 to 2099 | 2000 to 2099 |
 
 A single-date key in a `reform=` dict overrides the annualised value on that day only. Formulas read annual values on 1 January, so `"2027-01-01"` sets fiscal year 2027 and `"2027-04-06"` changes nothing. The model logs a warning when a key can change nothing. Use `"start.stop"` keys for dated measures.
+
+Some parameters hold one value per calendar year, dated 1 January, and are read there: the growth rates under `gov.economic_assumptions.yoy_growth`, the indices built from them under `gov.economic_assumptions.indices`, and the `household` parameters, which are not annualised. On these a bare year, or its 1 January, names the calendar year. So `{"gov.economic_assumptions.yoy_growth.obr.average_earnings": {"2027": 0.05}}` sets earnings growth in 2027: the 2027 earnings index, the May to July 2027 earnings input and the April 2028 triple lock all follow it.
+
+Processing also builds some parameters from others: the triple lock rate (`gov.economic_assumptions.yoy_growth.triple_lock`), the lagged and private pension series, the September CPI uprating rate and the indices. A change to one is written as soon as it is built, so everything built from it follows. `{"gov.economic_assumptions.yoy_growth.triple_lock": {"2028": 0.05}}` uprates the State Pension by 5% in April 2028, exactly as `gov.dwp.state_pension.triple_lock.outturn` set for that April does. A change to an index uprates the parameters indexed by it. The deprecated `gov.simulation.labor_supply_responses` paths change the `labour_supply_responses` parameters they copy.
 
 Changes applied after the data is loaded (the default) leave the data as built, so a changed economic assumption does not re-uprate incomes. Dated changes (`parameter_changes` and `"start.stop"` or bare-year keys) still come before the steps that read parameters while the simulation is built: the Universal Credit rebalancing awards and the structural reforms that parameters switch on. Single-day keys and a scenario's own simulation modifier run after those steps, as they always have. Set `applied_before_data_load=True` on a scenario to project the data with changed economic assumptions too.
 
