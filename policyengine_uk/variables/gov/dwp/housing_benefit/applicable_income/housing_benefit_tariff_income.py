@@ -21,8 +21,14 @@ class housing_benefit_tariff_income(Variable):
         pension_age_regulations = benunit(
             "housing_benefit_pension_age_regulations_apply", period
         )
-        guarantee_credit = pension_age_regulations & (
-            benunit("guarantee_credit", period) > 0
+        # Guarantee Credit passport: SI 2006/214 reg 26 (NI: SR 2006/406
+        # reg 24) disregards the whole of the capital and income of a
+        # claimant in receipt, or whose partner is in receipt, of a
+        # guarantee credit. By reg 2(5), receipt includes awards withheld
+        # solely under SPC Regs 2002 reg 13 (small amounts), which the
+        # model does not withhold. Entitlement without a claim is not receipt.
+        passported = pension_age_regulations & benunit(
+            "in_receipt_of_guarantee_credit", period
         )
         p = parameters(period).gov.dwp.housing_benefit.means_test.capital
         threshold = where(
@@ -53,4 +59,4 @@ class housing_benefit_tariff_income(Variable):
             "in_receipt_of_savings_credit_only", period
         )
         tariff_income = where(savings_credit_only, 0, tariff_income)
-        return where(guarantee_credit, 0, tariff_income)
+        return where(passported, 0, tariff_income)

@@ -35,7 +35,6 @@
         savings: 0
   output:
     council_tax_reduction_pensioner: false
-    council_tax_reduction_household_has_pensioner: false
     council_tax_reduction_scheme_supported: false
     simulated_council_tax_reduction_benunit: 0
     council_tax_benefit: 700
@@ -64,7 +63,6 @@
   output:
     is_uc_entitled: false
     council_tax_reduction_pensioner: true
-    council_tax_reduction_household_has_pensioner: true
     council_tax_reduction_scheme_supported: true
     # No income, so the full liability.
     council_tax_benefit: 2_000
@@ -96,7 +94,6 @@
   output:
     jsa_income: 4_000
     council_tax_reduction_pensioner: false
-    council_tax_reduction_household_has_pensioner: false
     council_tax_benefit: 700
 
 - name: An English couple over State Pension age is a pensioner couple
@@ -120,7 +117,6 @@
         savings: 0
   output:
     council_tax_reduction_pensioner: true
-    council_tax_reduction_household_has_pensioner: true
     council_tax_reduction_scheme_supported: true
 
 - name: A Newham mixed-age couple on Universal Credit gets Newham's working-age scheme
@@ -144,7 +140,7 @@
         council_tax: 2_000
         savings: 0
   output:
-    council_tax_reduction_household_has_pensioner: false
+    council_tax_reduction_pensioner: false
     council_tax_reduction_scheme_supported: true
     # Newham's scheme on the Universal Credit route. The pensioner scheme
     # would give the full 2,000 (income 10,000 is below the pension-age
@@ -182,7 +178,6 @@
   output:
     benunit_contains_household_head: [true, false]
     council_tax_reduction_pensioner: [false, false]
-    council_tax_reduction_household_has_pensioner: false
     newham_council_tax_reduction_non_dep_deductions: [392.08, 0]
     council_tax_benefit: [508.83, 0]
 
@@ -213,7 +208,6 @@
   output:
     is_uc_entitled: true
     council_tax_reduction_pensioner: true
-    council_tax_reduction_household_has_pensioner: true
     council_tax_reduction_scheme_supported: true
 
 - name: A pensioner aged 70 with an 18-year-old in education and no is_parent keeps pensioner CTR
@@ -249,7 +243,6 @@
     is_benefit_cap_exempt: true
     benefit_cap_reduction: 0
     council_tax_reduction_pensioner: true
-    council_tax_reduction_household_has_pensioner: true
     council_tax_reduction_scheme_supported: true
     # The pensioner scheme meets the 2,000 in full.
     council_tax_benefit: 2_000
@@ -276,7 +269,6 @@
         savings: 0
   output:
     council_tax_reduction_pensioner: false
-    council_tax_reduction_household_has_pensioner: false
     council_tax_reduction_scheme_supported: true
 
 - name: A Scottish mixed-age couple on Universal Credit is not a pensioner couple
@@ -300,7 +292,6 @@
         savings: 0
   output:
     council_tax_reduction_pensioner: false
-    council_tax_reduction_household_has_pensioner: false
     council_tax_reduction_scheme_supported: true
 
 - name: A capped Welsh mixed-age UC award does not use pensioner CTR allowances

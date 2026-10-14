@@ -10,7 +10,7 @@ class housing_benefit_applicable_income(Variable):
         "nil for a family on Universal Credit, Income Support, income-based "
         "Jobseeker's Allowance or income-related Employment and Support "
         "Allowance (housing_benefit_on_passporting_benefit), whose whole "
-        "income is disregarded, and for a pension-age family with a positive "
+        "income is disregarded, and for a pension-age family receiving a "
         "guarantee credit (the guarantee credit passport). Where the Pension "
         "Credit award is savings credit only, it is the Secretary of State's "
         "assessment of income plus the savings credit payable, less childcare "
@@ -42,11 +42,16 @@ class housing_benefit_applicable_income(Variable):
         pension_age_regulations = benunit(
             "housing_benefit_pension_age_regulations_apply", period
         )
+        # Only the claimant's and partner's income-related awards: their income is
+        # the claimant's (SSCBA s.136(1); HB Regs 2006 reg 25(1)). A member outside
+        # the family who has an award of their own claims in their own right.
+        # Income Support already needs the claimant's or partner's own award
+        # (income_support_eligible).
         BENUNIT_MEANS_TESTED_BENEFITS = [
             "child_benefit",
             "income_support",
-            "jsa_income",
-            "esa_income",
+            "claimant_or_partner_jsa_income",
+            "claimant_or_partner_esa_income",
         ]
         PERSONAL_BENEFITS = [
             "carers_allowance",
@@ -118,28 +123,33 @@ class housing_benefit_applicable_income(Variable):
             benunit("housing_benefit_savings_credit_only_income", period),
             income_under_general_rules,
         )
-        # Pension HB reg 26 disregards "the whole of his capital and income"
-        # for guarantee-credit recipients within that regulation set.
-        guarantee_credit = pension_age_regulations & (
-            benunit("guarantee_credit", period) > 0
+        # Guarantee Credit passport: SI 2006/214 reg 26 (NI: SR 2006/406
+        # reg 24) disregards the whole of the capital and income of a
+        # claimant in receipt, or whose partner is in receipt, of a
+        # guarantee credit. By reg 2(5), receipt includes awards withheld
+        # solely under SPC Regs 2002 reg 13 (small amounts), which the
+        # model does not withhold. Entitlement without a claim is not receipt.
+        passported = pension_age_regulations & benunit(
+            "in_receipt_of_guarantee_credit", period
         )
         # SI 2006/213 Sch 5 para 4 (NI: SR 2006/405 Sch 6 para 4) disregards
         # "the whole of his income" where a claimant is on universal credit,
         # income support, an income-based jobseeker's allowance or an
         # income-related employment and support allowance. Para 5 does the
         # same where the claimant's partner in a joint-claim couple is on
-        # income-based JSA. The model holds these awards for the benefit unit
-        # and cannot tell which member claims Housing Benefit (a couple
-        # choose, reg 82(1)), so it applies the disregard whichever member is
-        # on the benefit. There is no age condition: SI 2006/213 reg 5(1)(b)
-        # (NI: SR 2006/405 reg 5(1)(b)) applies these regulations to a
-        # claimant over the qualifying age for State Pension Credit whose
-        # partner is on one of these benefits, so a mixed-age couple whose
-        # younger member is on income-related ESA or Universal Credit is
-        # covered. Universal Credit is read before the benefit cap
-        # (housing_benefit_on_passporting_benefit), which avoids a circular
-        # dependency through the cap.
+        # income-based JSA. The model cannot tell which of the claimant and
+        # partner claims Housing Benefit (a couple choose, reg 82(1)), so it
+        # applies the disregard whichever of them is on the benefit. Another
+        # member's own award does not count: they claim in their own right
+        # (in_receipt_of_income_support_jsa_ib_or_esa_ir). There is no age
+        # condition: SI 2006/213 reg 5(1)(b) (NI: SR 2006/405 reg 5(1)(b))
+        # applies these regulations to a claimant over the qualifying age for
+        # State Pension Credit whose partner is on one of these benefits, so a
+        # mixed-age couple whose younger member is on income-related ESA or
+        # Universal Credit is covered. Universal Credit is read before the
+        # benefit cap (housing_benefit_on_passporting_benefit), which avoids a
+        # circular dependency through the cap.
         on_passporting_benefit = benunit(
             "housing_benefit_on_passporting_benefit", period
         )
-        return where(guarantee_credit | on_passporting_benefit, 0, applicable_income)
+        return where(passported | on_passporting_benefit, 0, applicable_income)

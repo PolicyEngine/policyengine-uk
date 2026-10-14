@@ -4,7 +4,17 @@ from policyengine_uk.model_api import *
 class is_benefit_cap_exempt_other(Variable):
     value_type = bool
     entity = BenUnit
-    label = "Whether exempt from the benefits cap for non-health/disability reasons"
+    label = "Exempt from the benefit cap because of age"
+    documentation = (
+        "Whether the family's Housing Benefit falls under the pension-age "
+        "regulations (HB Regs 2006 reg 5), which have no benefit cap. "
+        "Universal Credit has no age exception apart from SI 2014/1230 reg "
+        "60C, for a claim where every claimant has reached the qualifying age "
+        "for State Pension Credit. "
+        "The armed forces compensation and support-component ESA exceptions "
+        "are in is_benefit_cap_exempt_health_disability, which limits them "
+        "to the claimant and partner."
+    )
     definition_period = YEAR
     reference = (
         "https://www.gov.uk/benefit-cap/when-youre-not-affected",
@@ -25,14 +35,4 @@ class is_benefit_cap_exempt_other(Variable):
         # the working-age regulations (HB Regs 2006 Part 8A). Housing Benefit
         # under the pension-age regulations, which never apply to a family on
         # Universal Credit, has no cap.
-        pension_age_housing_benefit = benunit(
-            "housing_benefit_pension_age_regulations_apply", period
-        )
-
-        # Check for Armed Forces Compensation Scheme payments
-        afcs = benunit("afcs", period) > 0
-
-        # ESA contribution-based with support component
-        esa_support_component = benunit("esa_contrib", period) > 0
-
-        return pension_age_housing_benefit | afcs | esa_support_component
+        return benunit("housing_benefit_pension_age_regulations_apply", period)

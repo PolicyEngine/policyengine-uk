@@ -1,4 +1,5 @@
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -59,6 +60,7 @@ def test_dataset_source_routes_huggingface_urls_to_url_loader(monkeypatch):
 def test_dataset_source_routes_gcs_urls_to_materialized_file(monkeypatch):
     captured = {}
     simulation = Simulation.__new__(Simulation)
+    simulation.tax_benefit_system = SimpleNamespace(capital_gains_projection=None)
     url = "gs://policyengine-uk-data-private/enhanced_frs_2023_24.h5@1.55.10"
 
     def fake_materialize_gcs_dataset_url(dataset_url):
@@ -89,6 +91,7 @@ def test_dataset_source_reuses_cached_gcs_dataset_before_materializing(monkeypat
     captured = {}
     cached_dataset = object()
     simulation = Simulation.__new__(Simulation)
+    simulation.tax_benefit_system = SimpleNamespace(capital_gains_projection=None)
     url = "gs://policyengine-uk-data-private/enhanced_frs_2023_24.h5@1.55.10"
 
     def fake_materialize_gcs_dataset_url(dataset_url):
@@ -158,7 +161,7 @@ def test_build_from_file_loads_local_multi_year_dataset(monkeypatch, tmp_path):
     )
 
     simulation = Simulation.__new__(Simulation)
-    simulation.tax_benefit_system = object()
+    simulation.tax_benefit_system = SimpleNamespace(capital_gains_projection=None)
     monkeypatch.setattr(
         simulation,
         "build_from_multi_year_dataset",
