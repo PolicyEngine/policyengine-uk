@@ -319,12 +319,19 @@ def test_a_growth_reform_moves_the_data_in_its_year_only(mock_path, rate, year):
 
 
 def current_law_parameters():
-    """A fresh system's parameters: processed, with the CGT projection index."""
-    return CountryTaxBenefitSystem().parameters
+    """A copy of current law's processed parameters, CGT projection index
+    included. Copied from the module's system: building a system while the
+    tests are collected would leave its variable modules frozen
+    (``test_variable_module_release``)."""
+    from policyengine_uk.tax_benefit_system import system
+
+    return system.parameters.clone()
 
 
 def read_leaves():
-    parameters = current_law_parameters()
+    from policyengine_uk.tax_benefit_system import system
+
+    parameters = system.parameters
     leaves = []
     for path in uprating_input_paths():
         node = parameters.get_child(path)
@@ -397,3 +404,20 @@ def test_the_read_set_names_inputs_outside_the_growth_rates():
     assert "gov.dft.rail.ridership_index" in paths
     assert economic_assumptions.CGT_INDEX_PATH in paths
     assert AVERAGE_EARNINGS in paths
+
+
+def test_the_probe_leaves_the_system_as_it_was():
+    from policyengine_uk.utils.scenario import Scenario as S
+
+    simulation = Simulation.__new__(Simulation)
+    simulation.tax_benefit_system = CountryTaxBenefitSystem()
+    system = simulation.tax_benefit_system
+    before = uprating_input_fingerprint(system.parameters)
+    parameters = system.parameters
+    change = S(parameter_changes={AVERAGE_EARNINGS: {"year:2027-01-01:1": 0.2}})
+    assert simulation._scenario_changes_uprating_inputs(change)
+    assert system.parameters is parameters
+    assert system.dated_assignments == []
+    assert uprating_input_fingerprint(system.parameters) == before
+    ordinary = S(parameter_changes={PERSONAL_ALLOWANCE: 20_000})
+    assert not simulation._scenario_changes_uprating_inputs(ordinary)

@@ -60,11 +60,9 @@ def test_dataset_source_routes_huggingface_urls_to_url_loader(monkeypatch):
 def _current_law_system():
     """A stand-in system with current law's parameters: the URL cache is used
     only by simulations whose dataset uprating inputs are current law's."""
-    from policyengine_uk.tax_benefit_system import CountryTaxBenefitSystem
+    from policyengine_uk.tax_benefit_system import system
 
-    return SimpleNamespace(
-        capital_gains_projection=None, parameters=CountryTaxBenefitSystem().parameters
-    )
+    return SimpleNamespace(capital_gains_projection=None, parameters=system.parameters)
 
 
 def test_dataset_source_routes_gcs_urls_to_materialized_file(monkeypatch):

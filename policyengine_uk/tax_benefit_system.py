@@ -312,6 +312,18 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         finally:
             self.reset_parameter_caches()
 
+    def parameters_with(self, assignments: List[ParameterAssignment]) -> ParameterNode:
+        """The parameters this system would have with more dated changes.
+
+        Rebuilds them on a shallow copy, which shares the variables and
+        entities, so this system is left as it is. A rebuild only reassigns
+        the copy's attributes, and the memo then serves the same rebuild to
+        this system if it is given the changes.
+        """
+        probe = copy.copy(self)
+        probe.apply_parameter_assignments(assignments)
+        return probe.parameters
+
     def add_legacy_overrides(self, overrides: List[LegacyOverride]) -> None:
         """Apply changes to the annualised parameters and keep them.
 

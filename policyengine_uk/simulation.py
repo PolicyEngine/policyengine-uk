@@ -712,22 +712,16 @@ class Simulation(CoreSimulation):
         """Whether a scenario's parameter changes change the dataset uprating.
 
         Compares the uprating fingerprint of the parameters with the changes
-        (on a separate system, whose rebuild the memo then serves to this
-        one) with the fingerprint of the parameters without them.
+        (rebuilt on a copy of the system, a rebuild the memo then serves to
+        this one) with that of the parameters without them.
         """
         assignments = _scenario_assignments(scenario)
         if not assignments:
             return False
-        projection = self.tax_benefit_system.capital_gains_projection
-        probe = (
-            CountryTaxBenefitSystem()
-            if projection is None
-            else CountryTaxBenefitSystem(capital_gains_projection=projection)
-        )
-        probe.apply_parameter_assignments(assignments)
+        system = self.tax_benefit_system
         return uprating_input_fingerprint(
-            probe.parameters
-        ) != uprating_input_fingerprint(self.tax_benefit_system.parameters)
+            system.parameters_with(assignments)
+        ) != uprating_input_fingerprint(system.parameters)
 
     def apply_parameter_assignments(self, assignments: list) -> None:
         """Rebuild the parameters with changes on the statutory timeline."""
