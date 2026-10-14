@@ -196,6 +196,10 @@ reformed = Simulation(
 print(reformed.calculate("employment_income_behavioral_response", 2025))
 ```
 
+Unlike these labour supply elasticities, which are zero unless a reform sets
+them, capital gains respond to reforms by default: see the
+[capital gains realisation response](../assumptions/capital-gains-responses.md).
+
 ## Technical implementation details
 
 The dynamics calculation proceeds through several steps:
