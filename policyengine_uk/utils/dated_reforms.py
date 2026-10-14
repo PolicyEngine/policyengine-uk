@@ -534,7 +534,9 @@ def write_assignment(
     value and the change, or after a bounded change, would lose their
     projection. Then, as ``Parameter.update`` does, entries within the
     change are replaced by its value and the value in force at ``stop`` is
-    restored on the next day unless an entry already starts then.
+    restored on the next day unless an entry already starts then. A change
+    that ends before the first stated value resumes with that value, as
+    processing would backdate it.
     """
     name = parameter.name
     start_str = str(assignment.start)
@@ -563,7 +565,14 @@ def write_assignment(
     earlier = [entry for entry in old if entry.instant_str < start_str]
     resumed: Timeline = []
     if not later or later[-1].instant_str != next_str:
-        resumed.append(_entry(name, next_str, _value_in_force(old, stop_str)))
+        in_force = [entry for entry in old if entry.instant_str <= stop_str]
+        # Before its first stated value a parameter takes that value, as
+        # processing backdates it; resuming with nothing would leave the
+        # years up to that value empty. A stated null stays null.
+        resumed_value = (
+            in_force[0].value if in_force else later[-1].value if later else None
+        )
+        resumed.append(_entry(name, next_str, resumed_value))
     values = later + resumed + [_entry(name, start_str, assignment.value)] + earlier
     values.sort(key=lambda entry: entry.instant_str, reverse=True)
     parameter.values_list = values

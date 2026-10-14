@@ -28,20 +28,20 @@ def canonicalize_parameter_changes(changes: dict) -> dict:
     """Changes keyed by canonical parameter paths.
 
     A deprecated alias path names the parameter it copies, the one formulas
-    read. Two keys naming the same parameter (a path and its alias) would
-    leave one change unapplied, so they are an error.
+    read. Where a path and its alias both appear (two scenarios spelling it
+    differently, say), their changes are merged in order, as two changes to
+    one path are: dated keys from both are kept, a later key for the same
+    period wins, and a value with no period replaces what came before.
     """
     canonical = {}
-    given = {}
     for path, value in changes.items():
         name = canonicalize_lsr_parameter_path(path)
-        if name in canonical:
-            raise ValueError(
-                f"The reform sets {name} twice, as {given[name]} and as {path}. "
-                f"Set it once, as {name}."
-            )
-        canonical[name] = value
-        given[name] = path
+        if name not in canonical:
+            canonical[name] = value
+        elif isinstance(canonical[name], dict) and isinstance(value, dict):
+            canonical[name] = {**canonical[name], **value}
+        else:
+            canonical[name] = value
     return canonical
 
 

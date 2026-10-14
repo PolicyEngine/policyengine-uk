@@ -458,9 +458,45 @@ def test_scenario_apply_on_a_built_simulation_keeps_its_legacy_reading(baseline)
 
 
 @pytest.mark.parametrize("route", [via_reform_dict, via_parameter_changes])
-def test_a_path_and_its_alias_in_one_reform_are_an_error(route):
-    with pytest.raises(ValueError, match="twice"):
-        route({LSR: {f"2030-01-01.{FAR}": 0.2}, LSR_LEGACY: {f"2025-01-01.{FAR}": 0.1}})
+def test_a_path_and_its_alias_in_one_reform_are_merged_in_order(route):
+    reformed = route(
+        {LSR: {f"2030-01-01.{FAR}": 0.2}, LSR_LEGACY: {"2026-01-01.2027-12-31": 0.1}}
+    )
+    for year, expected in ((2025, 0), (2026, 0.1), (2028, 0), (2030, 0.2)):
+        assert value(reformed, LSR, f"{year}-01-01") == pytest.approx(expected)
+
+
+def test_scenarios_spelling_a_path_differently_combine():
+    combined = Scenario(parameter_changes={LSR: {f"2030-01-01.{FAR}": 0.2}}) + Scenario(
+        parameter_changes={LSR_LEGACY: {"2026-01-01.2027-12-31": 0.1}}
+    )
+    reformed = Simulation(situation=PENSIONER, scenario=combined)
+    assert value(reformed, LSR, "2026-01-01") == pytest.approx(0.1)
+    assert value(reformed, LSR, "2030-01-01") == pytest.approx(0.2)
+
+
+@pytest.mark.parametrize("year", [2005, 2006, 2007, 2008])
+@pytest.mark.parametrize("path", [f"{GROWTH}.obr.rpi", TRIPLE_LOCK])
+def test_a_change_before_a_series_starts_resumes_with_its_first_value(
+    path, year, baseline
+):
+    # Before 2015 nothing is backdated, so a change ending before a series'
+    # first stated value resumes with that value rather than with nothing.
+    reformed = via_reform_dict({path: {str(year): 0.1}})
+    assert value(reformed, path, f"{year}-01-01") == pytest.approx(0.1)
+    for later in range(2016, 2030):
+        assert value(reformed, path, f"{later}-01-01") == value(
+            baseline, path, f"{later}-01-01"
+        )
+
+
+def test_a_stated_null_resumes_as_null(baseline):
+    # The triple lock override is null outside the years it overrides.
+    reformed = via_reform_dict({OUTTURN: {"2028-04-06.2029-04-05": 0.05}})
+    assert value(reformed, OUTTURN, "2029-04-30") is None
+    assert value(reformed, TRIPLE_LOCK, "2029-01-01") == value(
+        baseline, TRIPLE_LOCK, "2029-01-01"
+    )
 
 
 @pytest.mark.parametrize(

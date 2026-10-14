@@ -72,8 +72,9 @@ that resets and reprocesses them (as ``no_economic_assumptions`` does), so the
 values are rebuilt with the change: a changed CPI forecast moves all seven,
 and a change to the personal allowance or basic rate limit after 2030-31 also
 moves the aligned NICs thresholds (see ``policyengine_uk.utils.dated_reforms``).
-``Scenario.apply`` on an already-built simulation is the exception: it edits
-the processed parameters, so it does not move the others.
+The exceptions edit the processed parameters, so they do not move the others:
+``Scenario.apply`` on an already-built simulation, and a reform-dict key naming
+a single day or month.
 """
 
 from decimal import ROUND_CEILING, ROUND_HALF_UP, Decimal
