@@ -586,6 +586,10 @@ def test_a_reform_applied_later_keeps_what_it_sets_through_a_reset(route):
         *PRE_MINIMUM.values(),
         *CLAIMANT_OR_PARTNER_AWARDS.values(),
         *NOT_MOVED,
+        "carers_allowance",
+        "carer_support_payment",
+        "winter_fuel_allowance",
+        "pawhp",
     ]
     for variable in set_by_the_reform:
         assert variable in simulation.input_variables, variable

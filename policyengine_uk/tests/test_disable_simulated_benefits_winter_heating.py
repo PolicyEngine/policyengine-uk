@@ -61,6 +61,7 @@ FIRST_PAWHP_YEAR = 2024
 # set from BENEFITS, and why.
 NOT_IN_BENEFITS = {
     "winter_fuel_allowance": "set with pawhp from the one reported winter heating payment",
+    "carers_allowance": "set with carer_support_payment from the one reported Carer's Allowance",
     "maternity_allowance": "already the reported amount (adds maternity_allowance_reported)",
     "employee_pension_contributions": "not a benefit",
     "tax": "not a benefit",

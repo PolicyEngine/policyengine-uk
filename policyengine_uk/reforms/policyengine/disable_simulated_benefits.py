@@ -6,12 +6,11 @@ from policyengine_core.model_api import *
 # Allowance, DLA and PIP are not listed: the data records their receipt as a
 # rate category (aa_category, dla_m_category, dla_sc_category, pip_dl_category,
 # pip_m_category), and the model pays that category's rate. The model has no
-# reported amount for them to copy. The winter heating payments are set
-# separately (see below).
+# reported amount for them to copy. Carer's Allowance and the winter heating
+# payments are set separately (see below).
 BENEFITS = [
     "afcs",
     "bsp",
-    "carers_allowance",
     "child_benefit",
     "child_tax_credit",
     "council_tax_benefit",
@@ -75,6 +74,11 @@ CLAIMANT_OR_PARTNER_ONLY = ["income_support"]
 # has the scheme open (gov.dwp.JSA.income.active: to 2025).
 NOT_MOVED = ["legacy_benefits_closed"]
 
+# The first year in which the model pays a carer in Scotland Carer Support
+# Payment in place of Carer's Allowance: carers_allowance_pre_overlap and
+# carer_support_payment_pre_overlap both switch on period.start.year >= 2025.
+CARER_SUPPORT_PAYMENT_FROM = 2025
+
 YEARS_IN_FUTURE = 10
 
 
@@ -87,6 +91,10 @@ def disable_simulated_benefits(parameters, period):
             Each listed benefit is set, in the dataset year and the nine years
             after it, to its amount reported in the dataset year. The amount
             is not uprated, while most of the *_reported variables are.
+            Carer's Allowance and the winter heating payment are each reported
+            once and set the same way, under the scheme that pays them: in
+            Scotland, Carer Support Payment and the Pension Age Winter Heating
+            Payment in the years the model pays those instead.
 
             The claimant-or-partner awards are set the same way, from the
             dataset-year reports of whoever is the claimant or partner in
@@ -157,6 +165,44 @@ def disable_simulated_benefits(parameters, period):
                     for target, value in values.items():
                         simulation.set_input(target, year, value)
 
+                in_scotland = (
+                    np.asarray(simulation.calculate("country", time_period))
+                    == "SCOTLAND"
+                )
+
+                # The survey reports Carer's Allowance for every respondent,
+                # Scotland included (carers_allowance_reported). From
+                # CARER_SUPPORT_PAYMENT_FROM the model pays a carer in
+                # Scotland Carer Support Payment in its place, so in each year
+                # a Scottish carer's report becomes their carer_support_payment
+                # from then, and their carers_allowance before. Both variables
+                # are household income, so each report is counted once, under
+                # the scheme that pays it, and neither benefit is simulated
+                # beside it. The entitlements before the overlapping-benefit
+                # reduction (carers_allowance_pre_overlap,
+                # carer_support_payment_pre_overlap) stay the model's, for
+                # both schemes alike.
+                reported_care = np.asarray(
+                    simulation.calculate("carers_allowance_reported", time_period)
+                )
+                carer_in_scotland = simulation.populations["household"].project(
+                    in_scotland
+                )
+                for year in years:
+                    paid_as_csp = carer_in_scotland & (
+                        year >= CARER_SUPPORT_PAYMENT_FROM
+                    )
+                    simulation.set_input(
+                        "carers_allowance",
+                        year,
+                        np.where(paid_as_csp, 0, reported_care),
+                    )
+                    simulation.set_input(
+                        "carer_support_payment",
+                        year,
+                        np.where(paid_as_csp, reported_care, 0),
+                    )
+
                 # The survey reports one winter heating payment: FRS benefit
                 # code 62, which policyengine-uk-data loads into
                 # winter_fuel_allowance_reported for every respondent,
@@ -172,10 +218,6 @@ def disable_simulated_benefits(parameters, period):
                         time_period,
                         map_to="household",
                     )
-                )
-                in_scotland = (
-                    np.asarray(simulation.calculate("country", time_period))
-                    == "SCOTLAND"
                 )
                 # Read from the system of the simulation applying the reform:
                 # when the parameter switches the reform on, that is the tree
