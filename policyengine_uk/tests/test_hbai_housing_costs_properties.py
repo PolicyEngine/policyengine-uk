@@ -56,24 +56,23 @@ ZERO_BHC_HOUSEHOLD = {
     "housing_service_charges": 1_200,
     "household_equivalisation_ahc": 0.58,
 }
-populations = st.lists(households, min_size=1, max_size=4).map(
+populations = st.lists(households, min_size=4, max_size=4).map(
     lambda generated: [ZERO_BHC_HOUSEHOLD, *generated]
 )
 
 
-def situation(population, year, extra_service_charges=0):
+@pytest.fixture(scope="module")
+def simulation(cloned_uk_tax_benefit_system):
+    """Reuse one fixed vector population across examples in each worker."""
     people, benunits, homes = {}, {}, {}
-    for index, household in enumerate(population):
+    for index in range(5):
         person = f"person_{index}"
-        people[person] = {"age": {year: 40}}
+        people[person] = {"age": {year: 40 for year in (2024, 2025, 2026)}}
         benunits[f"benunit_{index}"] = {"members": [person]}
-        inputs = dict(household)
-        inputs["housing_service_charges"] += extra_service_charges
-        homes[f"household_{index}"] = {
-            "members": [person],
-            **{name: {year: amount} for name, amount in inputs.items()},
-        }
-    return {"people": people, "benunits": benunits, "households": homes}
+        homes[f"household_{index}"] = {"members": [person]}
+    return Simulation(
+        situation={"people": people, "benunits": benunits, "households": homes}
+    )
 
 
 def supplied_amounts(population, name, extra=0):
@@ -84,11 +83,22 @@ def supplied_amounts(population, name, extra=0):
     ).astype(np.float64)
 
 
+def set_inputs(simulation, population, year, extra_service_charges=0):
+    for name in (
+        "hbai_household_net_income",
+        *HOUSING_COSTS,
+        "household_equivalisation_ahc",
+    ):
+        extra = extra_service_charges if name == "housing_service_charges" else 0
+        simulation.set_input(name, year, supplied_amounts(population, name, extra))
+    simulation.reset_calculations()
+
+
 @pytest.mark.parametrize("year", [2024, 2025, 2026])
 @PROPERTY_SETTINGS
 @given(population=populations)
-def test_ahc_never_exceeds_bhc_less_housing_costs(population, year):
-    simulation = Simulation(situation=situation(population, year))
+def test_ahc_never_exceeds_bhc_less_housing_costs(simulation, population, year):
+    set_inputs(simulation, population, year)
     bhc = supplied_amounts(population, "hbai_household_net_income")
     housing_costs = sum(supplied_amounts(population, name) for name in HOUSING_COSTS)
     expected = bhc - housing_costs
@@ -113,11 +123,15 @@ def test_ahc_never_exceeds_bhc_less_housing_costs(population, year):
 @pytest.mark.parametrize("year", [2024, 2025, 2026])
 @PROPERTY_SETTINGS
 @given(population=populations, extra=money(10_000))
-def test_extra_service_charges_reduce_ahc_by_the_same_amount(population, extra, year):
-    before = Simulation(situation=situation(population, year))
-    after = Simulation(situation=situation(population, year, extra))
-    before_ahc = np.asarray(before.calculate("hbai_household_net_income_ahc", year))
-    after_ahc = np.asarray(after.calculate("hbai_household_net_income_ahc", year))
+def test_extra_service_charges_reduce_ahc_by_the_same_amount(
+    simulation, population, extra, year
+):
+    set_inputs(simulation, population, year)
+    before_ahc = np.asarray(
+        simulation.calculate("hbai_household_net_income_ahc", year)
+    ).copy()
+    set_inputs(simulation, population, year, extra)
+    after_ahc = np.asarray(simulation.calculate("hbai_household_net_income_ahc", year))
     extra_input = supplied_amounts(population, "housing_service_charges", extra)
     extra_input -= supplied_amounts(population, "housing_service_charges")
 
