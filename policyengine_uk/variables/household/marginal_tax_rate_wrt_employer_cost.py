@@ -1,5 +1,9 @@
 from policyengine_uk.model_api import *
 from policyengine_core.variables import Variable
+from policyengine_uk.utils.capital_gains import (
+    held_realisation_responses,
+    hold_realisation_responses,
+)
 from policyengine_uk.utils.marginal_rates import marginal_rate_step
 
 
@@ -29,6 +33,9 @@ class marginal_tax_rate_wrt_employer_cost(Variable):
         adult_count = p.marginal_tax_rate_adults
         baseline_employer_cost = person("employer_cost", period)
         baseline_net = person.household("household_net_income", period)
+        # Realised gains stay as this simulation calculated them: the pay rise
+        # is not a reform for the capital gains response to answer.
+        held_responses = held_realisation_responses(person, period)
         for adult_index in range(1, 1 + adult_count):
             alt_simulation = simulation.get_branch(
                 f"adult_{adult_index}_employer_cost_mtr"
@@ -46,6 +53,7 @@ class marginal_tax_rate_wrt_employer_cost(Variable):
                 period,
                 employment_income + mask * step,
             )
+            hold_realisation_responses(alt_simulation, period, held_responses)
             alt_person = alt_simulation.person
             new_net = alt_person.household("household_net_income", period)
             new_employer_cost = alt_person("employer_cost", period)
