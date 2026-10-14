@@ -7,14 +7,16 @@ one-hour, read-only token from the policyengine-auto account's CI/CD identity
 (Hugging Face Trusted Publishers). These tests hold the workflows and the
 helper to the invariants that keep it that way:
 
-1. No workflow reads a Hugging Face secret, in dotted or bracket form, or sets
-   a token variable itself.
+1. No workflow reads a Hugging Face secret (dotted or bracket form, any case),
+   passes every secret on, or sets a token variable itself.
 2. The two pytest steps are the only ones that exchange, each for the
    read-only identity (a repo resource would be a write token), optionally (a
    run without OIDC goes on without credentials), and each runs exactly one
-   pytest, through the helper. No other pytest runs in the suite.
-3. The helper comes from a separate checkout of this workflow's commit, so a
-   release test of an older version commit still has it.
+   pinned command, its one pytest through the helper. No other pytest runs in
+   the suite.
+3. The helper comes from a separate, unconditional checkout of this
+   workflow's commit, right after the main one, so a release test of an older
+   version commit still has it.
 4. No exchange's output is redirected: the line that masks the token must
    reach the runner, not a file such as the uploaded test list.
 5. Every job in the suite can request an OIDC token; every caller grants it
@@ -63,7 +65,12 @@ COLLECT = (
     f'{HELPER_IN_CI} bash -c \'pytest "$TESTS" --rootdir "$ROOTDIR" '
     "-c pyproject.toml --collect-only -q -p no:cacheprovider > collected.txt'"
 )
-SHARD_PREFIX = f'PYTHONPATH="$GITHUB_WORKSPACE/.github" {HELPER_IN_CI} pytest "$TESTS" '
+SHARD = (
+    f'PYTHONPATH="$GITHUB_WORKSPACE/.github" {HELPER_IN_CI} pytest "$TESTS" '
+    '--rootdir "$ROOTDIR" -c pyproject.toml -p no:cacheprovider '
+    '-p pytest_outcome_log --outcome-log="$OUTCOMES" -o xfail_strict=true '
+    '--maxfail=0 -v -n 4 --dist worksteal --shard "$SHARD" "${coverage[@]}"'
+)
 
 if not HELPER.exists():
     pytest.skip(
@@ -118,8 +125,14 @@ def test_no_workflow_reads_a_hugging_face_secret():
         r"secrets\s*(\.\s*\w*(HF|HUGGING)\w*|\[\s*['\"][^'\"]*(HF|HUGGING)[^'\"]*['\"]\s*\])",
         re.IGNORECASE,
     )
+    # Passing every secret on also reaches the org-wide token.
+    passes_all = re.compile(
+        r"secrets:\s*inherit|toJSON\(\s*secrets\s*\)", re.IGNORECASE
+    )
     for path in sorted([*WORKFLOWS.glob("*.yaml"), *WORKFLOWS.glob("*.yml")]):
-        assert not pattern.search(path.read_text()), path.name
+        text = path.read_text()
+        assert not pattern.search(text), path.name
+        assert not passes_all.search(text), path.name
 
 
 def test_no_workflow_sets_a_token_variable_itself():
@@ -150,7 +163,8 @@ def test_each_pytest_step_runs_exactly_its_wrapped_command():
     shard = [
         c for c in _commands(_step("Python", "Run the tests")["run"]) if "pytest" in c
     ]
-    assert len(shard) == 1 and shard[0].startswith(SHARD_PREFIX), shard
+    # The whole command, so nothing can be chained onto it with && or ;.
+    assert shard == [SHARD]
 
 
 def test_no_other_step_in_the_suite_runs_pytest():
@@ -174,9 +188,13 @@ def test_the_helper_comes_from_this_workflows_commit():
         assert checkout["with"]["ref"] == "${{ github.sha }}"
         assert checkout["with"]["path"] == ".ci-tools"
         assert checkout["with"]["sparse-checkout"] == ".github/with-hf-token.sh"
-        assert names.index("Check out the token helper") < min(
-            i for i, s in enumerate(steps) if "with-hf-token.sh" in s.get("run", "")
+        # Right after the main checkout, which would delete .ci-tools if it
+        # ran later, and unconditional, so every exchanging step has it.
+        assert (
+            names.index("Check out the token helper")
+            == names.index("Checkout repo") + 1
         )
+        assert "if" not in checkout
 
 
 def test_no_exchange_output_is_redirected():
@@ -243,6 +261,11 @@ def test_result_reports_the_dataset_exactly_when_the_run_has_oidc(
         if "check_test_shards.py" in s.get("run", "")
     ]
     assert "${{" not in check["run"]
+    assert check["env"]["REQUIRE_DATA"] == "${{ inputs.require-data }}"
+    assert (
+        check["env"]["MODE"]
+        == "${{ inputs.dist-artifact == '' && 'source' || 'wheel' }}"
+    )
     stub = tmp_path / ".github" / "check_test_shards.py"
     stub.parent.mkdir()
     stub.write_text(

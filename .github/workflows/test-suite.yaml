@@ -16,9 +16,10 @@
 # workflow's commit), which exchanges the job's GitHub OIDC token for a
 # one-hour, read-only token from the policyengine-auto account's CI/CD
 # identity. An identity matches this repository and the calling workflow, not
-# this one: code_changes.yaml on main, and pr_code_changes.yaml and
-# versioning.yaml on any ref, since both also run on pull requests (the
-# latter as a release dry run). A run without OIDC has no dataset
+# this one, and all three callers need one with no branch set:
+# pr_code_changes.yaml runs on pull requests and merge groups, versioning.yaml
+# runs a release dry run on pull requests, and both versioning.yaml and
+# code_changes.yaml can be dispatched off main. A run without OIDC has no dataset
 # credentials; ordinary fork pull requests already stop earlier, at the
 # Google Cloud authentication step, which needs OIDC too.
 
