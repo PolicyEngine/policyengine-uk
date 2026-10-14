@@ -1,1 +1,0 @@
-- Fixed Universal Credit trading-loss netting to include company trade results.
