@@ -189,6 +189,14 @@ unless a caller set an elasticity.
 
 A reform that changes the rules measures two marginal rates on gains per
 simulation and year: one for the reform and one for its baseline. Each
-recalculates household net income in branches of the simulation. Simulations
-without a reform, baselines, reforms to the behavioural settings alone, and
-populations without gains skip the measurement.
+recalculates capital gains tax, and what it depends on, in branches of the
+simulation; on the enhanced FRS that adds about two seconds per reformed
+simulation and year. Simulations without a reform, baselines, reforms to the
+behavioural settings alone, and populations without gains skip the
+measurement.
+
+The marginal rate on gains is the rise in capital gains tax per pound of
+marginal gains. Realised gains reach household net income only as market
+income and through that tax, so it is also the share of marginal gains net
+income does not keep; a test checks that no other variable reads realised
+gains.

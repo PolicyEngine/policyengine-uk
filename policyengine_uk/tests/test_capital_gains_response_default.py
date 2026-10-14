@@ -410,6 +410,56 @@ def test_an_unreformed_simulation_matches_a_static_one():
         )
 
 
+# The marginal rate on gains.
+
+
+def _readers(node, name: str, found: set) -> None:
+    for child in node.children:
+        if child.name == name:
+            found.add(node.name)
+        _readers(child, name, found)
+
+
+def test_realised_gains_reach_net_income_only_as_income_and_through_the_tax():
+    """marginal_tax_rate_on_capital_gains counts only the rise in capital
+    gains tax. That is the share of marginal gains household net income does
+    not keep only while gains reach net income as market income and through
+    capital_gains_tax. This traces a net income calculation for a gainer with
+    relief gains; if another variable starts reading capital_gains, the rate
+    has to count it."""
+    sim = Simulation(
+        situation=single(200_000, 500_000, capital_gains_badr=250_000), trace=True
+    )
+    sim.calculate("household_net_income", YEAR)
+    readers = set()
+    for tree in sim.tracer.trees:
+        _readers(tree, "capital_gains", readers)
+
+    assert readers == {"household_market_income", "capital_gains_tax"}
+
+
+@pytest.mark.parametrize(
+    "earnings, gains",
+    [(40_000, 12_770), (80_000, 50_000), (200_000, 500_000), (15_000, 20_000)],
+    ids=["band-edge", "higher", "additional", "low-earner"],
+)
+def test_the_rate_on_gains_is_the_share_net_income_does_not_keep(earnings, gains):
+    """Measured from capital gains tax, the rate equals one minus the rise in
+    household net income per pound of marginal gains."""
+    rate = values(
+        Simulation(situation=single(earnings, gains)),
+        "marginal_tax_rate_on_capital_gains",
+    )[0]
+    net = values(Simulation(situation=single(earnings, gains)), "household_net_income")[
+        0
+    ]
+    higher = values(
+        Simulation(situation=single(earnings, gains + 1_000)), "household_net_income"
+    )[0]
+
+    assert rate == pytest.approx(1 - (higher - net) / 1_000, abs=1e-4)
+
+
 # Marginal tax rates hold realisations fixed.
 
 
