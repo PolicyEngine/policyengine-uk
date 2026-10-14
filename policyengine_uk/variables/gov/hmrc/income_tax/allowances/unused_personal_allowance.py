@@ -11,7 +11,6 @@ class unused_personal_allowance(Variable):
 
     def formula(person, period, parameters):
         return max_(
-            person("personal_allowance", period)
-            - person("adjusted_net_income", period),
+            person("personal_allowance", period) - person("net_income", period),
             0,
         )

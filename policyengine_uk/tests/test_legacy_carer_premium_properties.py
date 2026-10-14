@@ -8,7 +8,10 @@ pays it "in respect of each person who satisfied the condition". Two people
 caring for the same severely disabled person cannot both be entitled (SSCBA
 s.70(7ZA); SSI 2023/302 reg 5(3)). The Income Support carer route (Sch 1B
 para 4, reg 4ZA, SSCBA s.124(1)(e)) likewise needs the claimant to be the
-carer, and a couple choose which of them claims.
+carer. No new claim for Income Support can be made (UC (Transitional
+Provisions) Regs 2014 reg 6A(1)) and a partner who takes over an award does
+so by claiming (Claims and Payments Regs 1987 reg 4(4)), so the claimant is
+whichever of the claimant and partner holds the existing award.
 
 Invariants, for any family of a claimant, an optional partner and up to three
 dependent children or qualifying young persons:
@@ -26,7 +29,8 @@ dependent children or qualifying young persons:
   the model's other kind of award);
 - supplying "same person" never raises the premium and caps it at one amount;
 - caring by the claimant or partner never removes Income Support eligibility
-  or lowers the premium, and below pension age it always opens the IS route.
+  or lowers the premium, and below pension age it always opens the IS route
+  when the one who cares holds the Income Support award.
 
 Adults are 18 to 85, so pension-age families are covered. No adult under 20
 is 16 or more years younger than the other adult, whom the model would then
@@ -100,6 +104,9 @@ def families(draw):
             {
                 "age": draw(st.integers(max(18, head_age - 15), oldest_partner)),
                 "is_parent": has_parent_flag,
+                # Sometimes both report the award, so the partner can be the
+                # claimant.
+                "income_support_reported": draw(st.sampled_from([0, 1_000])),
                 "incapacity_benefit_reported": draw(OVERLAPPING),
                 **draw(carer_inputs()),
             }
@@ -211,10 +218,14 @@ def test_dependants_caring_never_changes_premium_or_is_eligibility(drawn):
 def test_claimant_or_partner_caring_never_removes_is_eligibility(drawn, data):
     units = [family for family, _ in drawn]
     adults = [n for _, n in drawn]
-    # Make one of the claimant and partner a carer with a reported award.
+    # Make one of the claimant and partner a carer with a reported Carer's
+    # Allowance award.
     with_caring = []
+    holds_award = []
     for family, n in zip(units, adults):
         who = data.draw(st.integers(0, n - 1))
+        # Caring opens the IS route only for the one who holds the award.
+        holds_award.append(family[who].get("income_support_reported", 0) > 0)
         with_caring.append(
             [
                 {**member, **CARING} if j == who else member
@@ -229,7 +240,7 @@ def test_claimant_or_partner_caring_never_removes_is_eligibility(drawn, data):
     k = len(units)
     for i in range(k):
         assert eligible[k + i] >= eligible[i], units[i]
-        if not sp_age[offsets[k + i] : offsets[k + i + 1]].any():
+        if holds_award[i] and not sp_age[offsets[k + i] : offsets[k + i + 1]].any():
             assert eligible[k + i], units[i]
         assert premium[k + i] >= premium[i] - 0.01, units[i]
 

@@ -182,7 +182,7 @@ def assert_consumers_follow_the_qualifying_age(births, male, year):
     assert np.array_equal(sim.calculate("is_pension_credit_eligible", year), attained)
     assert np.array_equal(sim.calculate("is_uc_eligible", year), ~attained)
     assert np.array_equal(
-        sim.calculate("council_tax_reduction_household_has_pensioner", year), attained
+        sim.calculate("council_tax_reduction_pensioner", year), attained
     )
     assert np.array_equal(sim.calculate("is_benefit_cap_exempt_other", year), attained)
     aged = sim.tax_benefit_system.parameters(
