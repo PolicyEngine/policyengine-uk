@@ -153,6 +153,8 @@ for name, scenario in [
     print(f"{name}: £{net_income / 12:.2f} per month")
 ```
 
+A sum keeps the timing of each part's modifier. A simulation runs the modifiers of the parts set with `applied_before_data_load=True` before it builds its data, and the rest once the data is built, each in the order added. A sum with a part applied before data load applies all of its parameter changes first, before the data is built, with the precedence `+` gives them: changing the parameters rebuilds them, which would discard the edits of a modifier that has already run. The data's projected years then follow every parameter change of the sum. So `no_economic_assumptions + reform` freezes the data and the parameters and applies the reform, and a modifier that edits the data still runs once the data exists. Such a simulation builds its own copy of a `hf://` or `gs://` dataset rather than sharing the cached one, so its baseline and later simulations keep current law's projection. A sum reads `applied_before_data_load=True` only when every part that changes something is applied before data load. `Scenario.parts_by_data_load()` returns what is applied before data load and what is applied after. If you change a sum's `applied_before_data_load` or `simulation_modifier` to another value after making it, the whole sum is applied as one scenario, at the time its own `applied_before_data_load` says.
+
 ## Defining structural scenarios
 
 Beyond simple parameter changes, you sometimes need scenarios that make structural modifications to how the tax-benefit system works. Let's walk through how to create these, using examples similar to those in PolicyEngine UK's scenarios module.
@@ -314,6 +316,19 @@ print(float(baseline.calculate("employment_income", 2026)[0]))
 print(float(static.calculate("employment_income", 2026)[0]))
 ```
 
+Add it to a reform to measure the reform without growth. The sum still applies the freeze before the data is built, so with a dataset (`Simulation(dataset=...)`) the projected years keep the first year's amounts too, and it applies the reform as usual:
+
+```python
+from policyengine_uk.model_api import Scenario
+
+reform = Scenario.from_reform(
+    {"gov.hmrc.income_tax.allowances.personal_allowance.amount": {"2025.2099": 20_000}}
+)
+static_reform = Simulation(
+    situation=situation, scenario=no_economic_assumptions + reform
+)
+```
+
 ## Advanced scenario techniques
 
 ### Time-varying parameters
@@ -400,7 +415,7 @@ Some parameters hold one value per calendar year, dated 1 January, and are read 
 
 Processing also builds some parameters from others: the triple lock rate (`gov.economic_assumptions.yoy_growth.triple_lock`), the lagged and private pension series, the September CPI uprating rate and the indices. A change to one is written as soon as it is built, so everything built from it follows. `{"gov.economic_assumptions.yoy_growth.triple_lock": {"2028": 0.05}}` uprates the State Pension by 5% in April 2028, exactly as `gov.dwp.state_pension.triple_lock.outturn` set for that April does. A change to an index uprates whatever is uprated by it. The deprecated `gov.simulation.labor_supply_responses` paths change the `labour_supply_responses` parameters they copy.
 
-Changes applied after the data is loaded (the default) leave the data as built, so a changed economic assumption does not re-uprate incomes. Dated changes (`parameter_changes` and `"start.stop"` or bare-year keys) still come before the steps that read parameters while the simulation is built: the Universal Credit rebalancing awards and the structural reforms that parameters switch on. Single-day keys (other than a 1 January key on a calendar-year series, which is a dated change) and a scenario's own simulation modifier run after those steps, as they always have. Set `applied_before_data_load=True` on a scenario to project the data with changed economic assumptions too.
+Changes applied after the data is loaded (the default) leave the data as built, so a changed economic assumption does not re-uprate incomes. Dated changes (`parameter_changes` and `"start.stop"` or bare-year keys) still come before the steps that read parameters while the simulation is built: the Universal Credit rebalancing awards and the structural reforms that parameters switch on. Single-day keys (other than a 1 January key on a calendar-year series, which is a dated change) and a scenario's own simulation modifier run after those steps, as they always have. Set `applied_before_data_load=True` on a scenario to project the data with changed economic assumptions too. A sum with a part applied before data load applies all its parameter changes before the data is built (see "Combining scenarios" above).
 
 All of this applies when the scenario or reform is passed to `Simulation(...)`. `Scenario.apply(simulation)` on a simulation that is already built edits its annualised values instead, as it always has: a `"2027-04-06.2028-04-05"` key there overrides those dates of the fiscal-year values, so it does not set fiscal year 2027, and the model logs a warning saying so. Pass the scenario when constructing the simulation for dated measures.
 
