@@ -119,15 +119,13 @@ def record_parameter_reads():
             reads.add(self.name)
         return get_at_instant(self, instant)
 
-    ParameterNodeAtInstant.__getattribute__ = recording_getattribute
-    ParameterNodeAtInstant.__getitem__ = recording_getitem
-    AtInstantLike.get_at_instant = recording_get_at_instant
-    try:
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(
+            ParameterNodeAtInstant, "__getattribute__", recording_getattribute
+        )
+        patch.setattr(ParameterNodeAtInstant, "__getitem__", recording_getitem)
+        patch.setattr(AtInstantLike, "get_at_instant", recording_get_at_instant)
         yield reads
-    finally:
-        ParameterNodeAtInstant.__getattribute__ = getattribute
-        ParameterNodeAtInstant.__getitem__ = getitem
-        AtInstantLike.get_at_instant = get_at_instant
 
 
 def _couple_with_child() -> dict:
@@ -210,6 +208,8 @@ def test_recorder_does_not_count_a_parameter_nothing_reads(labour_supply_run):
 
 
 def test_recorder_counts_each_kind_of_read():
+    getitem = ParameterNodeAtInstant.__getitem__
+    get_at_instant = AtInstantLike.get_at_instant
     leaf = {"values": {"2000-01-01": 1}}
     root = ParameterNode(
         "root",
@@ -236,3 +236,7 @@ def test_recorder_counts_each_kind_of_read():
         "root.vector.a",
         "root.vector.b",
     }
+    # The recorder leaves the classes as it found them.
+    assert "__getattribute__" not in ParameterNodeAtInstant.__dict__
+    assert ParameterNodeAtInstant.__getitem__ is getitem
+    assert AtInstantLike.get_at_instant is get_at_instant

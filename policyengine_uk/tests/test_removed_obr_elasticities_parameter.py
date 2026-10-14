@@ -19,9 +19,12 @@ from policyengine_uk.system import system
 from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases import (
     canonicalize_lsr_parameter_path,
 )
+from policyengine_uk.utils import parameters as parameter_utils
 from policyengine_uk.utils.parameters import (
     REMOVED_PARAMETERS,
+    RemovedParameter,
     RemovedParameterNode,
+    add_removed_parameter_aliases,
     check_parameter_not_removed,
 )
 from policyengine_uk.utils.scenario import Scenario
@@ -219,3 +222,16 @@ def test_registry_rejects_exactly_the_removed_paths():
         if is_stub:
             stubs.add(canonicalize_lsr_parameter_path(path))
     assert stubs == set(REMOVED_PARAMETERS)
+
+
+def test_registering_a_parameter_that_still_exists_fails_clearly(monkeypatch):
+    # Listing a parameter as removed without deleting its YAML must say so,
+    # not fail at import with an AttributeError.
+    monkeypatch.setattr(
+        parameter_utils,
+        "REMOVED_PARAMETERS",
+        {"gov.switch": RemovedParameter("removed switch", "Use another one.")},
+    )
+    tree = ParameterNode("", data={"gov": {"switch": {"values": {"2000-01-01": 1}}}})
+    with pytest.raises(ValueError, match="Delete its YAML file"):
+        add_removed_parameter_aliases(tree)

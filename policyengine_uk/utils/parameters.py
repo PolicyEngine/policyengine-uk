@@ -139,8 +139,9 @@ _STATE_PENSION_AGE_REPLACEMENT = (
 
 _OBR_ELASTICITIES_REPLACEMENT = (
     "Nothing read it, so setting it never changed any output. The OBR's labour "
-    "supply elasticities are applied by Simulation.apply_dynamics when "
-    "gov.dynamic.obr_labour_supply_assumptions is true, which it is by default."
+    "supply elasticities are applied by Simulation.apply_dynamics, called on a "
+    "simulation with a baseline, when gov.dynamic.obr_labour_supply_assumptions "
+    "is true, which it is by default."
 )
 
 
@@ -184,6 +185,8 @@ class RemovedParameterNode(ParameterNode):
     Male State Pension age still has valid children, so the compatibility
     node must support normal tree traversal and cloning. API reform code
     reads values_list before updating; both operations give migration help.
+    Read at an instant, the node is an empty node rather than an error, so
+    that its parent can still be read at an instant.
     """
 
     @property
@@ -217,6 +220,11 @@ def add_removed_parameter_aliases(parameters: ParameterNode) -> ParameterNode:
         previous = parent.children.get(name)
         if isinstance(previous, RemovedParameterNode):
             continue
+        if previous is not None and not isinstance(previous, ParameterNode):
+            raise ValueError(
+                f"{path} is listed in REMOVED_PARAMETERS but the parameter still "
+                "exists. Delete its YAML file, or remove it from REMOVED_PARAMETERS."
+            )
         alias = RemovedParameterNode(path, data={})
         if previous is not None:
             alias.metadata.update(previous.metadata)
