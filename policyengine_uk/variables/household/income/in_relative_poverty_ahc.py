@@ -10,8 +10,8 @@ class in_relative_poverty_ahc(Variable):
         "so each household counts once per member. Income after housing "
         "costs is derived from the before-housing-costs income reset to zero "
         "and can be negative, as in HBAI; negative incomes stay in the median "
-        "and count as below the line. The absolute-line twin is "
-        "in_poverty_ahc."
+        "and count as below the line while the median is positive. The "
+        "absolute-line twin is in_poverty_ahc."
     )
     entity = Household
     definition_period = YEAR

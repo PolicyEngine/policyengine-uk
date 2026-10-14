@@ -9,7 +9,9 @@ class in_relative_poverty_bhc(Variable):
         "over individuals, as in DWP's Households Below Average Income series, "
         "so each household counts once per member. As in HBAI, a negative "
         "income is reset to zero; it stays in the median and counts as below "
-        "the line. The absolute-line twin is in_poverty_bhc."
+        "the line while the median is positive (if more than half of people "
+        "were at or below zero, the median and the line would be zero). The "
+        "absolute-line twin is in_poverty_bhc."
     )
     entity = Household
     definition_period = YEAR
