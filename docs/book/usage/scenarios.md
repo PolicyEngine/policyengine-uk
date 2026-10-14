@@ -153,7 +153,7 @@ for name, scenario in [
     print(f"{name}: £{net_income / 12:.2f} per month")
 ```
 
-A sum keeps each part's timing. A simulation applies the parts set with `applied_before_data_load=True` before it builds its data and the rest after, each in the order added. So `no_economic_assumptions + reform` freezes the data and the parameters and applies the reform, and a modifier that edits the data still runs once the data exists. A sum reads `applied_before_data_load=True` only when every part is applied before data load. `Scenario.parts_by_data_load()` returns the two parts. Where both change the same parameter, the part applied after data load sets it last. If you set `applied_before_data_load=True` on a sum yourself, or change its fields after making it, the whole sum is applied as one scenario at that time.
+A sum keeps each part's timing. A simulation applies the parts set with `applied_before_data_load=True` before it builds its data and the rest after, each in the order added. So `no_economic_assumptions + reform` freezes the data and the parameters and applies the reform, and a modifier that edits the data still runs once the data exists. A sum reads `applied_before_data_load=True` only when every part is applied before data load. `Scenario.parts_by_data_load()` returns the two parts. Where both change the same parameter, the part applied after data load sets it last. If you set `applied_before_data_load=True` on a sum yourself, or change its fields after making it, the whole sum is applied as one scenario, at the time its own `applied_before_data_load` says.
 
 ## Defining structural scenarios
 
