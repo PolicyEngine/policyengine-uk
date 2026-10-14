@@ -181,9 +181,14 @@ def test_the_default_tenure_is_not_evidence_of_renting_in_any_order(first):
     ]
 
 
-def test_an_entered_tenure_carries_forward_as_evidence():
+@pytest.mark.parametrize("supplied_year", [2024, 2022])
+def test_an_entered_tenure_carries_forward_as_evidence(supplied_year):
+    # A tenure supplied for any earlier year carries forward, not only last
+    # year's.
     situation = deepcopy(PARENTAL_HOUSEHOLD)
-    situation["households"]["household"]["tenure_type"] = {2024: "RENT_PRIVATELY"}
+    situation["households"]["household"]["tenure_type"] = {
+        supplied_year: "RENT_PRIVATELY"
+    }
     sim = Simulation(situation=situation)
     assert list(sim.calculate("maintenance_loan_living_arrangement", 2025)) == [
         "AWAY_OUTSIDE_LONDON",
