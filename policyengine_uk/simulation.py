@@ -200,6 +200,10 @@ class Simulation(CoreSimulation):
     # true for a region or constituency filtered from the data. The builders
     # set it, so rebuilding a simulation in place keeps it right.
     built_from_dataset: bool = False
+    # True when part of the scenario is applied before data load, so the
+    # parameters the data is built with may not be current law's. Such a
+    # simulation neither reads nor writes the URL dataset cache.
+    _scenario_before_data_load: bool = False
 
     def __init__(
         self,
@@ -263,24 +267,33 @@ class Simulation(CoreSimulation):
 
         self.branches: Dict[str, Simulation] = {}
 
+        # What the scenario applies before the data is built and after it. A
+        # scenario is one or the other; a sum of scenarios applied at
+        # different times runs each part's modifier at the part's own time.
+        before_data_load, after_data_load = (
+            scenario.parts_by_data_load() if scenario is not None else (None, None)
+        )
+        self._scenario_before_data_load = before_data_load is not None
+
         # A scenario's parameter changes rebuild the parameters from the
         # statutory tree, so they come before its modifier, whose edits a
-        # rebuild would discard. They come before the data is built when the
-        # scenario is applied before data load, and also when they change
-        # what the dataset's uprating reads (a growth rate, say), so the
-        # data's projected years follow them; otherwise just after.
-        parameters_before_data = scenario is not None and (
-            scenario.applied_before_data_load
-            or (
-                _projects_data(situation, dataset)
-                and self._scenario_changes_uprating_inputs(scenario)
-            )
+        # rebuild would discard. A sum's parameter changes all come with its
+        # before-load part. Without one, they come before the data is built
+        # when they change what the dataset's uprating reads (a growth rate,
+        # say), so the data's projected years follow them; otherwise just
+        # after.
+        after_parameters_before_data = (
+            before_data_load is None
+            and after_data_load is not None
+            and _projects_data(situation, dataset)
+            and self._scenario_changes_uprating_inputs(after_data_load)
         )
-        if parameters_before_data:
-            self.apply_scenario_parameters(scenario)
-        if scenario is not None and scenario.applied_before_data_load:
-            if scenario.simulation_modifier is not None:
-                scenario.simulation_modifier(self)
+        if before_data_load is not None:
+            self.apply_scenario_parameters(before_data_load)
+            if before_data_load.simulation_modifier is not None:
+                before_data_load.simulation_modifier(self)
+        elif after_parameters_before_data:
+            self.apply_scenario_parameters(after_data_load)
         self._refresh_capital_gains_projection()
         # Build simulation from appropriate source
         if situation is not None:
@@ -305,8 +318,8 @@ class Simulation(CoreSimulation):
         # Credit rebalancing inputs and the structural reforms switched on by
         # parameters. Changes a scenario's modifier makes after data load
         # (including single-day reform-dict keys) leave the data as built.
-        if scenario is not None and not parameters_before_data:
-            self.apply_scenario_parameters(scenario)
+        if after_data_load is not None and not after_parameters_before_data:
+            self.apply_scenario_parameters(after_data_load)
 
         # Universal Credit reform (July 2025). Needs closer integration in the baseline,
         # but adding here for ease of toggling on/off via the 'active' parameter.
@@ -359,9 +372,9 @@ class Simulation(CoreSimulation):
 
         self.calculated_periods = []
 
-        if scenario is not None and not scenario.applied_before_data_load:
-            if scenario.simulation_modifier is not None:
-                scenario.simulation_modifier(self)
+        if after_data_load is not None:
+            if after_data_load.simulation_modifier is not None:
+                after_data_load.simulation_modifier(self)
         self._refresh_capital_gains_projection()
         self._capture_cgt_supplied_inputs()
         self._cgt_warning_enabled = True
@@ -656,12 +669,16 @@ class Simulation(CoreSimulation):
     def _dataset_cache_key(self, source: str):
         """The URL dataset cache key for a source, or None not to cache.
 
-        A cached dataset is already extended and uprated, so it is shared
-        only between simulations whose parameters uprate it identically:
-        those whose uprating inputs are current law's. A simulation with
+        A cached dataset is already projected to later years, so it is shared
+        only between simulations that project it identically: none with a
+        scenario applied before data load (whose modifier can change how the
+        data is read, as a structural reform re-ordering an enum does), and
+        only those whose uprating inputs are current law's. A simulation with
         changed inputs (a macro scenario, ``no_economic_assumptions``, or a
         reform that changes them) neither reads nor writes the cache.
         """
+        if self._scenario_before_data_load:
+            return None
         system = self.tax_benefit_system
         if uprating_input_fingerprint(
             system.parameters

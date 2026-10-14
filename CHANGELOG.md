@@ -1,3 +1,14 @@
+## [2.132.0] - 2026-10-14
+
+### Fixed
+
+- - A sum of scenarios keeps the timing of each part's modifier. A part applied before data load, such as `no_economic_assumptions`, is still applied before it when added to a reform, so `no_economic_assumptions + reform` freezes the data as well as the parameters. Likewise a macro scenario applied before data load, plus a reform, projects the data with the macro growth. Modifiers of parts applied after data load, including ones that edit the data, still run after it. A sum with a part applied before data load applies all of its parameter changes first, as `+` merges them, so the data follows them all and a modifier's edits survive. A simulation with a scenario applied before data load no longer reads or writes the `hf://` and `gs://` dataset cache, so its projection no longer reaches its baseline or later simulations. The sum of scenarios that are all applied before data load is now applied before it. A sum now calls the modifiers its operands had when it was made. Its fields still hold the whole sum, and `Scenario.parts_by_data_load()` returns what is applied before and after data load.
+
+### Removed
+
+- - Removed `gov.simulation.labour_supply_responses.obr_elasticities` and its legacy alias `gov.simulation.labor_supply_responses.obr_elasticities`. Nothing read this switch, so setting it changed no output. A reform or saved policy that still names it now fails with directions to `gov.dynamic.obr_labour_supply_assumptions`, the switch under which `Simulation.apply_dynamics` applies the OBR labour supply elasticities.
+
+
 ## [2.131.2] - 2026-10-14
 
 ### Fixed
