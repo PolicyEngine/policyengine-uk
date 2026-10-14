@@ -1,4 +1,4 @@
-description: Elasticity of realisations of gains qualifying for Business Asset Disposal Relief or Investors' Relief with respect to the capital gains retention rate. It applies to those gains only while separate_badr_elasticity is true; otherwise they take the main elasticity, as the person's other gains always do. The OBR's costing of the October 2024 rate rises used 1.4 for these gains and 3.6 for main-rate gains.
+description: Elasticity of realisations of gains qualifying for Business Asset Disposal Relief or Investors' Relief with respect to the capital gains retention rate. It applies to those gains only while separate_badr_elasticity is true; otherwise they take the main elasticity (1.0 by default), as the person's other gains always do. The OBR's costing of the October 2024 rate rises used 1.4 for these gains and 3.6 for main-rate gains. Setting the main elasticity to 3.6 with separate_badr_elasticity true compares PolicyEngine's response with the OBR's elasticities, not with the OBR's full costing, which includes further effects.
 values:
   2000-01-01: 1.4
 metadata:

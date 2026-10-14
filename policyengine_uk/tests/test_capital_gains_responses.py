@@ -90,25 +90,34 @@ def test_revenue_falls_short_of_the_static_estimate():
 
 
 def test_zero_elasticity_leaves_gains_unchanged():
-    """The default elasticity of zero keeps costings static."""
+    """An elasticity of zero keeps costings static."""
     sim = simulate(elasticity=0)
     response = sim.calculate("capital_gains_behavioural_response", YEAR).sum()
 
     assert response == 0
 
 
-def test_default_elasticities_leave_gains_unchanged():
-    """Both elasticity conventions default to zero, keeping costings static."""
-    sim = simulate()
-    response = sim.calculate("capital_gains_behavioural_response", YEAR).sum()
+def test_the_default_is_a_retention_rate_elasticity_of_one():
+    """With no elasticity set, gains respond as at a retention-rate elasticity
+    of 1 (issue #2396): a marginal rate rising from 24% to 45% scales them by
+    (1 - 0.45) / (1 - 0.24)."""
+    default = simulate()
+    explicit = simulate(elasticity=1.0)
 
-    assert response == 0
+    gains = default.calculate("capital_gains_before_response", YEAR).values[0]
+    response = default.calculate("capital_gains_behavioural_response", YEAR).values
+    explicit_response = explicit.calculate(
+        "capital_gains_behavioural_response", YEAR
+    ).values
+
+    assert 1 + response[0] / gains == pytest.approx(0.55 / 0.76, abs=1e-5)
+    assert list(response) == list(explicit_response)
 
 
 def test_mtr_response_matches_hand_calculated_factor():
     """The MTR elasticity applies the exact marginal-rate log change."""
     mtr_elasticity = -0.5
-    sim = simulate(mtr_elasticity=mtr_elasticity)
+    sim = simulate(elasticity=0, mtr_elasticity=mtr_elasticity)
 
     gains = sim.calculate("capital_gains_before_response", YEAR).values[0]
     response = sim.calculate("capital_gains_behavioural_response", YEAR).values[0]
@@ -121,7 +130,7 @@ def test_mtr_response_matches_hand_calculated_factor():
 def test_mtr_change_clamps_zero_marginal_rate():
     """A zero MTR uses the 0.001 floor instead of taking log(0)."""
     zero_rates = {parameter: {str(YEAR): 0.0} for parameter in EQUALISED_RATES}
-    sim = simulate(mtr_elasticity=-0.5, rate_changes=zero_rates)
+    sim = simulate(elasticity=0, mtr_elasticity=-0.5, rate_changes=zero_rates)
 
     mtr_change = sim.calculate("relative_capital_gains_mtr_change", YEAR).values[0]
     expected_change = math.log(0.001) - math.log(0.24)
@@ -131,8 +140,10 @@ def test_mtr_change_clamps_zero_marginal_rate():
 
 
 def test_both_elasticities_raise():
-    """The retention-rate and MTR conventions cannot both be activated."""
-    sim = simulate(elasticity=1.0, mtr_elasticity=-0.5)
+    """The retention-rate and MTR conventions cannot both be activated: a
+    retention-rate elasticity changed from its default raises alongside an
+    MTR elasticity."""
+    sim = simulate(elasticity=0.5, mtr_elasticity=-0.5)
 
     with pytest.raises(
         ValueError,
@@ -175,7 +186,7 @@ def test_measurement_leaves_the_response_variable_active():
 
 def test_mtr_response_is_deterministic_across_recalculation():
     """Repeated MTR measurement is idempotent and leaves the response live."""
-    sim = simulate(mtr_elasticity=-0.5)
+    sim = simulate(elasticity=0, mtr_elasticity=-0.5)
     live_variable = sim.tax_benefit_system.variables[
         "capital_gains_behavioural_response"
     ]
@@ -433,9 +444,9 @@ def test_badr_elasticity_applies_to_qualifying_gains():
 
 
 def test_badr_elasticity_alone_moves_only_qualifying_gains():
-    """A BADR elasticity with the main elasticity left at zero still responds,
+    """A BADR elasticity with the main elasticity set to zero still responds,
     on the qualifying gains alone."""
-    sim = simulate_badr(separate_badr_elasticity=True)
+    sim = simulate_badr(elasticity=0, separate_badr_elasticity=True)
 
     mixed = 0.5 * factor(1.4, 0.21) + 0.5
     assert realisation_factors(sim) == pytest.approx(
