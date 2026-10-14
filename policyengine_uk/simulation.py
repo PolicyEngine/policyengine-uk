@@ -64,7 +64,11 @@ from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases i
     canonicalize_lsr_parameter_path,
 )
 
-from .tax_benefit_system import CountryTaxBenefitSystem, DEFAULT_DATASET_ENV_VAR
+from .tax_benefit_system import (
+    CountryTaxBenefitSystem,
+    DEFAULT_DATASET_ENV_VAR,
+    parameter_reads_calendar_years,
+)
 
 
 def _canonical_parameter_paths(changes: dict) -> dict:
@@ -620,7 +624,10 @@ class Simulation(CoreSimulation):
         read) and the parameters are processed as current law is.
         """
         self.apply_parameter_assignments(
-            read_parameter_changes(_canonical_parameter_paths(changes))
+            read_parameter_changes(
+                _canonical_parameter_paths(changes),
+                calendar_years=parameter_reads_calendar_years(),
+            )
         )
 
     def apply_scenario_parameters(self, scenario: Scenario) -> None:
@@ -635,7 +642,8 @@ class Simulation(CoreSimulation):
         assignments = []
         if scenario.parameter_changes:
             assignments += read_parameter_changes(
-                _canonical_parameter_paths(scenario.parameter_changes)
+                _canonical_parameter_paths(scenario.parameter_changes),
+                calendar_years=parameter_reads_calendar_years(),
             )
         assignments += scenario.dated_assignments(order_start=len(assignments))
         self.apply_parameter_assignments(assignments)

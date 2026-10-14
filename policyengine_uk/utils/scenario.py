@@ -33,10 +33,37 @@ class DatedReform(BaseModel):
     reading: Literal["reform_dict", "reform_from_dict"]
     changes: Dict[str, Any]
 
-    def read(self, defines, order_start: int = 0, warn: bool = False):
+    def read(
+        self,
+        defines,
+        order_start: int = 0,
+        warn: bool = False,
+        calendar_years=None,
+    ):
         if self.reading == REFORM_DICT:
-            return read_reform_dict(self.changes, defines, order_start, warn=warn)
+            return read_reform_dict(
+                self.changes,
+                defines,
+                order_start,
+                warn=warn,
+                calendar_years=calendar_years,
+            )
         return read_reform_from_dict(self.changes, defines, order_start)
+
+
+def _canonical_paths(changes: Dict[str, Any]) -> Dict[str, Any]:
+    """Changes keyed by canonical parameter paths.
+
+    A deprecated labour supply alias path names the parameter it copies,
+    which is the one formulas read.
+    """
+    from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases import (
+        canonicalize_lsr_parameter_path,
+    )
+
+    return {
+        canonicalize_lsr_parameter_path(path): value for path, value in changes.items()
+    }
 
 
 def _is_reform_from_dict(reform: Type[Reform]) -> bool:
@@ -56,15 +83,20 @@ def _legacy_override_modifier(dated: DatedReform) -> Callable[[Simulation], None
     """
 
     def modifier(simulation: Simulation) -> None:
-        from policyengine_uk.tax_benefit_system import statutory_parameter_defines
+        from policyengine_uk.tax_benefit_system import (
+            parameter_reads_calendar_years,
+            reform_parameter_defines,
+        )
 
         # Scenario.apply edits an already-built simulation's annualised
         # parameters, so there every change of the reform is an override.
         every_change = getattr(simulation, APPLYING_TO_BUILT_SIMULATION, False)
-        defines = (
-            (lambda path: False) if every_change else statutory_parameter_defines()
+        defines = (lambda path: False) if every_change else reform_parameter_defines()
+        _, legacy = dated.read(
+            defines,
+            warn=not every_change,
+            calendar_years=parameter_reads_calendar_years(),
         )
-        _, legacy = dated.read(defines, warn=not every_change)
         if not legacy:
             return
         _add_overrides(simulation, legacy)
@@ -190,12 +222,20 @@ class Scenario(BaseModel):
 
     def dated_assignments(self, order_start: int = 0) -> List[ParameterAssignment]:
         """The statutory-timeline changes of ``dated_reforms``, in order."""
-        from policyengine_uk.tax_benefit_system import statutory_parameter_defines
+        from policyengine_uk.tax_benefit_system import (
+            parameter_reads_calendar_years,
+            reform_parameter_defines,
+        )
 
-        defines = statutory_parameter_defines()
+        defines = reform_parameter_defines()
+        calendar_years = parameter_reads_calendar_years()
         assignments: List[ParameterAssignment] = []
         for dated in self.dated_reforms or []:
-            read, _ = dated.read(defines, order_start + len(assignments))
+            read, _ = dated.read(
+                defines,
+                order_start + len(assignments),
+                calendar_years=calendar_years,
+            )
             assignments += read
         return assignments
 
@@ -243,7 +283,8 @@ class Scenario(BaseModel):
         if isinstance(reform, type) and issubclass(reform, Reform):
             if _is_reform_from_dict(reform):
                 dated = DatedReform(
-                    reading=REFORM_FROM_DICT, changes=reform.parameter_values
+                    reading=REFORM_FROM_DICT,
+                    changes=_canonical_paths(reform.parameter_values),
                 )
                 return cls(
                     dated_reforms=[dated],
@@ -262,7 +303,7 @@ class Scenario(BaseModel):
         elif isinstance(reform, dict):
             for parameter in reform:
                 check_parameter_not_removed(parameter)
-            dated = DatedReform(reading=REFORM_DICT, changes=dict(reform))
+            dated = DatedReform(reading=REFORM_DICT, changes=_canonical_paths(reform))
             return cls(
                 dated_reforms=[dated],
                 simulation_modifier=_legacy_override_modifier(dated),
