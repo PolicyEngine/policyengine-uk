@@ -57,10 +57,20 @@ def test_dataset_source_routes_huggingface_urls_to_url_loader(monkeypatch):
     assert captured == {"url": url}
 
 
+def _current_law_system():
+    """A stand-in system with current law's parameters: the URL cache is used
+    only by simulations whose dataset uprating inputs are current law's."""
+    from policyengine_uk.tax_benefit_system import CountryTaxBenefitSystem
+
+    return SimpleNamespace(
+        capital_gains_projection=None, parameters=CountryTaxBenefitSystem().parameters
+    )
+
+
 def test_dataset_source_routes_gcs_urls_to_materialized_file(monkeypatch):
     captured = {}
     simulation = Simulation.__new__(Simulation)
-    simulation.tax_benefit_system = SimpleNamespace(capital_gains_projection=None)
+    simulation.tax_benefit_system = _current_law_system()
     url = "gs://policyengine-uk-data-private/enhanced_frs_2023_24.h5@1.55.10"
 
     def fake_materialize_gcs_dataset_url(dataset_url):
@@ -91,7 +101,7 @@ def test_dataset_source_reuses_cached_gcs_dataset_before_materializing(monkeypat
     captured = {}
     cached_dataset = object()
     simulation = Simulation.__new__(Simulation)
-    simulation.tax_benefit_system = SimpleNamespace(capital_gains_projection=None)
+    simulation.tax_benefit_system = _current_law_system()
     url = "gs://policyengine-uk-data-private/enhanced_frs_2023_24.h5@1.55.10"
 
     def fake_materialize_gcs_dataset_url(dataset_url):
@@ -161,7 +171,7 @@ def test_build_from_file_loads_local_multi_year_dataset(monkeypatch, tmp_path):
     )
 
     simulation = Simulation.__new__(Simulation)
-    simulation.tax_benefit_system = SimpleNamespace(capital_gains_projection=None)
+    simulation.tax_benefit_system = _current_law_system()
     monkeypatch.setattr(
         simulation,
         "build_from_multi_year_dataset",
