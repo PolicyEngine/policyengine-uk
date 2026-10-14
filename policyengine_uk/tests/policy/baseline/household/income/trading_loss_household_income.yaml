@@ -1,0 +1,42 @@
+# HBAI counts self-employment losses as negative income; household market
+# income does the same. 2026-27: £40,000 of pay with a £10,000 trading loss
+# pays the Income Tax due on £30,000 (£3,486, against £5,486 without the
+# loss), while NI on the pay is unchanged.
+
+- name: A trading loss is negative market income
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    employment_income: 40_000
+    trading_loss: 10_000
+  output:
+    market_income: 30_000
+    household_market_income: 30_000
+
+- name: HBAI income falls by the loss less the Income Tax it saves
+  period: 2026
+  absolute_error_margin: 1
+  input:
+    people:
+      with_loss:
+        age: 40
+        employment_income: 40_000
+        trading_loss: 10_000
+      without_loss:
+        age: 40
+        employment_income: 40_000
+    benunits:
+      benunit_1:
+        members: [with_loss]
+      benunit_2:
+        members: [without_loss]
+    households:
+      household_1:
+        members: [with_loss]
+      household_2:
+        members: [without_loss]
+  output:
+    income_tax: [3_486, 5_486]
+    # -10,000 of loss + 2,000 of Income Tax saved.
+    hbai_household_net_income: [24_320, 32_320]
+    household_net_income: [24_140, 32_140]
