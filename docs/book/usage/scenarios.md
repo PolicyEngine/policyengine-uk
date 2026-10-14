@@ -324,7 +324,9 @@ from policyengine_uk.model_api import Scenario
 reform = Scenario.from_reform(
     {"gov.hmrc.income_tax.allowances.personal_allowance.amount": {"2025.2099": 20_000}}
 )
-static_reform = Simulation(situation=situation, scenario=no_economic_assumptions + reform)
+static_reform = Simulation(
+    situation=situation, scenario=no_economic_assumptions + reform
+)
 ```
 
 ## Advanced scenario techniques
