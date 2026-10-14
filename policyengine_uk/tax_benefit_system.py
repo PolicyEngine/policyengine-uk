@@ -85,9 +85,9 @@ _processed_parameters_cache = None
 # parameter's statutory values at their legal dates. Reforms are written
 # onto a copy of this tree.
 _statutory_parameters_cache = None
-# Each gov parameter's timeline in the cached processed tree after
-# projection (uprating, indexation and the other generated series) and
-# before fiscal-year annualisation, by name.
+# Each parameter's timeline in the cached processed tree after projection
+# (uprating, indexation and the other generated series) and, for gov
+# parameters, before fiscal-year annualisation, by name.
 _projected_timelines_cache = None
 
 
@@ -151,8 +151,9 @@ def process_parameter_tree(
     - parameter uprating and backdating
     - conversion to fiscal year parameters
 
-    Returns the tree and each gov parameter's timeline just before the
-    conversion to fiscal years.
+    Returns the tree and each parameter's timeline after projection (for gov
+    parameters, just before the conversion to fiscal years), leaving out the
+    ``baseline`` copy.
 
     ``parameters.baseline`` is the copy of the parameters without reforms
     that ``baseline_vat`` and the budget adjustments compare against, taken
@@ -179,7 +180,14 @@ def process_parameter_tree(
     parameters = propagate_parameter_metadata(parameters)
     parameters = uprate_parameters(parameters)
     parameters = backdate_parameters(parameters, BACKDATED_FROM)
+    # Prior law's projected path for every parameter a reform can change: the
+    # gov tree, before annualisation, and the trees outside it (household),
+    # which are not annualised. ``baseline`` is a copy, whose parameters
+    # keep the names of the ones it copies.
     projected = snapshot_timelines(parameters.gov)
+    for key, child in parameters.children.items():
+        if key not in ("gov", "baseline") and isinstance(child, ParameterNode):
+            projected.update(snapshot_timelines(child))
     if not annualise:
         return parameters, projected
     parameters.gov = convert_to_fiscal_year_parameters(parameters.gov)
@@ -235,7 +243,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         """Process and transform parameters with UK-specific adjustments.
 
         See ``process_parameter_tree``, which this runs on the system's
-        parameters. ``projected_timelines`` keeps each gov parameter's
+        parameters. ``projected_timelines`` keeps each parameter's
         timeline from before the conversion to fiscal years.
 
         The system's dated reform changes (``dated_assignments``) are written
@@ -384,7 +392,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
 
     @property
     def projected_timelines(self) -> Dict[str, Timeline]:
-        """Each gov parameter's timeline before fiscal-year annualisation.
+        """Each parameter's projected timeline (gov: before annualisation).
 
         A copy: the timelines of an unreformed system, and of a rebuild
         taken from the memo, are shared with later systems.
@@ -598,7 +606,7 @@ def parameter_reads_calendar_years() -> Callable[[str], bool]:
 
 
 def projected_timelines() -> Dict[str, Timeline]:
-    """Current law's projected timeline for each gov parameter, by name.
+    """Current law's projected timeline for each parameter, by name.
 
     Shared: do not change them. ``CountryTaxBenefitSystem.projected_timelines``
     returns a copy.

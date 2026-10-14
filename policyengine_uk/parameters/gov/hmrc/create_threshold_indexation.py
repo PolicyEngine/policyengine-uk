@@ -65,13 +65,15 @@ including a scenario's overrides, keep their own dates, so that copy read at
 parameters carry no ``uprating`` metadata, so core uprating does not extend
 them.
 
-The values are computed when the parameters are processed. A reform passed as
-a dict edits the processed parameters, so changing one of these parameters
-does not move the others. A scenario whose ``parameter_changes`` edit the raw
-parameters, or a simulation modifier that resets and reprocesses them (as
-``no_economic_assumptions`` does), rebuilds the values. So a changed CPI
-forecast moves all seven, and a raw edit to the personal allowance or basic
-rate limit after 2030-31 also moves the aligned NICs thresholds.
+The values are computed when the parameters are processed. Every reform route
+(a reform dict, ``parameter_changes``, ``Reform.from_dict``) writes its changes
+onto the parameters before they are processed, as does a simulation modifier
+that resets and reprocesses them (as ``no_economic_assumptions`` does), so the
+values are rebuilt with the change: a changed CPI forecast moves all seven,
+and a change to the personal allowance or basic rate limit after 2030-31 also
+moves the aligned NICs thresholds (see ``policyengine_uk.utils.dated_reforms``).
+``Scenario.apply`` on an already-built simulation is the exception: it edits
+the processed parameters, so it does not move the others.
 """
 
 from decimal import ROUND_CEILING, ROUND_HALF_UP, Decimal

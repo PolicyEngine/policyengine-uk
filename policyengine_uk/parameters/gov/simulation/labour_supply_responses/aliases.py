@@ -24,6 +24,27 @@ def canonicalize_lsr_parameter_path(path: str) -> str:
     return path
 
 
+def canonicalize_parameter_changes(changes: dict) -> dict:
+    """Changes keyed by canonical parameter paths.
+
+    A deprecated alias path names the parameter it copies, the one formulas
+    read. Two keys naming the same parameter (a path and its alias) would
+    leave one change unapplied, so they are an error.
+    """
+    canonical = {}
+    given = {}
+    for path, value in changes.items():
+        name = canonicalize_lsr_parameter_path(path)
+        if name in canonical:
+            raise ValueError(
+                f"The reform sets {name} twice, as {given[name]} and as {path}. "
+                f"Set it once, as {name}."
+            )
+        canonical[name] = value
+        given[name] = path
+    return canonical
+
+
 def add_lsr_deprecation_aliases(parameters: ParameterNode) -> ParameterNode:
     simulation = parameters.gov.simulation
     canonical = simulation.labour_supply_responses

@@ -39,7 +39,7 @@ from policyengine_core.reforms import Reform
 from policyengine_uk import Simulation
 from policyengine_uk import tax_benefit_system as tbs_module
 from policyengine_uk.utils.dated_reforms import (
-    calendar_year_bounds,
+    ReformPeriodWarning,
     read_parameter_changes,
     read_reform_dict,
 )
@@ -356,11 +356,11 @@ def test_a_triple_lock_rate_set_by_reform_uprates_the_state_pension(
     )
 
 
-def test_reform_from_dict_sets_a_generated_series():
+def test_reform_from_dict_sets_a_generated_series(baseline):
     change = {TRIPLE_LOCK: {"2028-01-01.2028-12-31": 0.05}}
     reformed = Simulation(situation=PENSIONER, reform=Reform.from_dict(change))
-    assert weekly(reformed, NEW_STATE_PENSION, 2028) == weekly(
-        via_reform_dict(change), NEW_STATE_PENSION, 2028
+    assert weekly(reformed, NEW_STATE_PENSION, 2028) == pytest.approx(
+        weekly(baseline, NEW_STATE_PENSION, 2027) * 1.05, abs=0.006
     )
 
 
@@ -394,13 +394,11 @@ def test_generated_parameters_are_the_series_processing_builds():
             assert not generates(path), path
             continue
         built = path.startswith((f"{INDICES}.", f"{GROWTH}.")) and not statutory(path)
-        # The CGT projection index is added after processing, outside it.
-        if path == f"{INDICES}.capital_gains":
-            assert not generates(path)
-            continue
         assert generates(path) is built, path
     assert generates(TRIPLE_LOCK)
     assert not generates(MINIMUM_RATE)
+    # The CGT projection index is added after processing, outside it.
+    assert not generates(f"{INDICES}.capital_gains")
 
 
 @pytest.mark.parametrize(
@@ -420,6 +418,65 @@ def test_a_labour_supply_alias_path_changes_the_parameter_it_copies(route):
 def test_an_unknown_path_is_still_rejected(route):
     with pytest.raises(ValueError, match="Could not find the parameter"):
         route({"gov.not.a.parameter": {"2027": 1}})
+
+
+@pytest.mark.parametrize("route", [via_reform_dict, via_parameter_changes])
+@pytest.mark.parametrize("key", ["2030", "2030-01-01", "2030-01-01.2030-12-31"])
+def test_a_year_of_an_uprated_household_parameter_leaves_the_others_on_prior_law(
+    route, key, baseline
+):
+    # The poverty line's stated values end before 2030; uprating projects it.
+    reformed = route({POVERTY_LINE: {key: 500}})
+    for year in range(2025, 2036):
+        expected = (
+            500 if year == 2030 else value(baseline, POVERTY_LINE, f"{year}-01-01")
+        )
+        assert value(reformed, POVERTY_LINE, f"{year}-01-01") == pytest.approx(expected)
+
+
+def test_a_reprocessing_modifier_keeps_a_generated_series_change(baseline):
+    from policyengine_uk.scenarios import no_economic_assumptions
+
+    scenario = (
+        Scenario.from_reform({TRIPLE_LOCK: {"2028": 0.05}}) + no_economic_assumptions
+    )
+    reformed = Simulation(situation=PENSIONER, scenario=scenario)
+    assert value(reformed, TRIPLE_LOCK, "2028-01-01") == pytest.approx(0.05)
+    assert weekly(reformed, NEW_STATE_PENSION, 2028) == pytest.approx(
+        weekly(reformed, NEW_STATE_PENSION, 2027) * 1.05, abs=0.006
+    )
+
+
+def test_scenario_apply_on_a_built_simulation_keeps_its_legacy_reading(baseline):
+    # Scenario.apply edits the annualised parameters and never rebuilds them.
+    simulation = Simulation(situation=PENSIONER)
+    Scenario.from_reform({TRIPLE_LOCK: {"2028": 0.05}}).apply(simulation)
+    assert value(simulation, TRIPLE_LOCK, "2028-01-01") == pytest.approx(0.05)
+    assert weekly(simulation, NEW_STATE_PENSION, 2028) == weekly(
+        baseline, NEW_STATE_PENSION, 2028
+    )
+
+
+@pytest.mark.parametrize("route", [via_reform_dict, via_parameter_changes])
+def test_a_path_and_its_alias_in_one_reform_are_an_error(route):
+    with pytest.raises(ValueError, match="twice"):
+        route({LSR: {f"2030-01-01.{FAR}": 0.2}, LSR_LEGACY: {f"2025-01-01.{FAR}": 0.1}})
+
+
+@pytest.mark.parametrize(
+    "path, kind",
+    [(AVERAGE_EARNINGS, "calendar"), (PERSONAL_ALLOWANCE, "fiscal")],
+)
+def test_a_single_day_key_warning_names_the_years_a_bare_year_covers(path, kind):
+    with pytest.warns(
+        ReformPeriodWarning, match=f"for one {kind} year use the bare year"
+    ):
+        read_reform_dict(
+            {path: {"2027-04-06": 1}},
+            tbs_module.reform_parameter_defines(),
+            warn=True,
+            calendar_years=tbs_module.parameter_reads_calendar_years(),
+        )
 
 
 # 4. Ordinary reforms are unaffected.
@@ -469,11 +526,6 @@ def test_an_ordinary_bare_year_is_still_the_fiscal_year(baseline):
     assert value(reformed, NEW_STATE_PENSION, "2028-04-30") == value(
         baseline, NEW_STATE_PENSION, "2028-04-30"
     )
-
-
-def test_calendar_year_bounds():
-    start, stop = calendar_year_bounds(2027)
-    assert (str(start), str(stop)) == ("2027-01-01", "2027-12-31")
 
 
 # 6. Baselines stay current law.

@@ -61,7 +61,7 @@ from policyengine_uk.utils.supplied_inputs import (
 )
 from policyengine_uk.reforms import create_structural_reforms_from_parameters
 from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases import (
-    canonicalize_lsr_parameter_path,
+    canonicalize_parameter_changes,
 )
 
 from .tax_benefit_system import (
@@ -73,9 +73,7 @@ from .tax_benefit_system import (
 
 def _canonical_parameter_paths(changes: dict) -> dict:
     """Changes keyed by canonical parameter paths (labour supply aliases)."""
-    return {
-        canonicalize_lsr_parameter_path(path): value for path, value in changes.items()
-    }
+    return canonicalize_parameter_changes(changes)
 
 
 from microdf import MicroDataFrame

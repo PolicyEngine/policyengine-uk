@@ -52,18 +52,12 @@ class DatedReform(BaseModel):
 
 
 def _canonical_paths(changes: Dict[str, Any]) -> Dict[str, Any]:
-    """Changes keyed by canonical parameter paths.
-
-    A deprecated labour supply alias path names the parameter it copies,
-    which is the one formulas read.
-    """
+    """Changes keyed by canonical parameter paths (labour supply aliases)."""
     from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases import (
-        canonicalize_lsr_parameter_path,
+        canonicalize_parameter_changes,
     )
 
-    return {
-        canonicalize_lsr_parameter_path(path): value for path, value in changes.items()
-    }
+    return canonicalize_parameter_changes(changes)
 
 
 def _is_reform_from_dict(reform: Type[Reform]) -> bool:

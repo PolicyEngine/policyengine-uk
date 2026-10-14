@@ -43,7 +43,8 @@ from "the previous tax year", is a separate contract choice; see
 How each route reads its period keys
 ------------------------------------
 
-The routes keep the readings they documented before:
+The routes keep the readings they documented before, except on the
+calendar-year series (starred, and below):
 
 =====================  ========================  =========================  ==========================
 Key                    reform dict               ``parameter_changes``      ``Reform.from_dict``
@@ -90,7 +91,7 @@ private pension series, the September CPI uprating rate and every index
 under ``gov.economic_assumptions.indices``. A change to one is written onto
 its timeline just after the step that generates it, so the steps after it,
 and uprating, use it: a triple lock rate set for April 2028 uprates the
-State Pension, and a changed index uprates the parameters indexed by it.
+State Pension, and a changed index uprates whatever is uprated by it.
 Each route reads its keys as for the statutory parameters. The deprecated
 labour supply aliases (``gov.simulation.labor_supply_responses.*``) are
 copies of ``gov.simulation.labour_supply_responses.*``; a change to one is
@@ -321,7 +322,11 @@ def read_reform_dict(
                 start, stop = year
             elif is_sub_year(text):
                 if warn:
-                    _warn_sub_year_key(path, text)
+                    _warn_sub_year_key(
+                        path,
+                        text,
+                        calendar_years is not None and calendar_years(path),
+                    )
                 legacy.append(LegacyOverride(path, text, value))
                 continue
             else:
@@ -349,15 +354,16 @@ def _warn(message: str) -> None:
     warnings.warn(message, ReformPeriodWarning, stacklevel=4)
 
 
-def _warn_sub_year_key(path: str, key: str) -> None:
+def _warn_sub_year_key(path: str, key: str, calendar: bool = False) -> None:
     parsed = period(key)
     if parsed.unit == "day" and str(parsed.start)[5:] == "01-01":
         return
+    kind = "calendar" if calendar else "fiscal"
     _warn(
         f"Reform key '{key}' for {path} overrides the annualised parameter on "
         f"that {parsed.unit} only, and formulas read annual parameters at "
         f"1 January, so it may change nothing. For a change from that date "
-        f"use '{parsed.start}.{FLAT_STOP}'; for one fiscal year use the bare "
+        f"use '{parsed.start}.{FLAT_STOP}'; for one {kind} year use the bare "
         "year."
     )
 
