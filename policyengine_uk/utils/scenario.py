@@ -172,14 +172,16 @@ class Scenario(BaseModel):
         Returns:
             A new Scenario with merged parameter changes and combined modifiers
         """
-        # Merge parameter changes (other's changes take precedence in conflicts)
+        # Merge parameter changes (other's changes take precedence in conflicts),
+        # keyed by canonical paths, so a parameter spelled two ways merges as
+        # one.
         merged_params = {}
 
         if self.parameter_changes:
-            merged_params.update(self.parameter_changes)
+            merged_params.update(_canonical_paths(self.parameter_changes))
 
         if other.parameter_changes:
-            for key, value in other.parameter_changes.items():
+            for key, value in _canonical_paths(other.parameter_changes).items():
                 if (
                     key in merged_params
                     and isinstance(merged_params[key], dict)

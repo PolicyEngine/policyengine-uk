@@ -475,6 +475,40 @@ def test_scenarios_spelling_a_path_differently_combine():
     assert value(reformed, LSR, "2030-01-01") == pytest.approx(0.2)
 
 
+WIDE = f"2025-01-01.{FAR}"
+NARROW = "2026-01-01.2027-12-31"
+
+
+@pytest.mark.parametrize(
+    "stages",
+    [
+        [{WIDE: 0.1}, 0.2, {NARROW: 0.3}],
+        [{WIDE: 0.1}, {WIDE: 0.2}, {WIDE: 0.3}],
+        [0.1, {NARROW: 0.2}, 0.3],
+        [{NARROW: 0.1}, {WIDE: 0.2}, {NARROW: 0.3}],
+    ],
+    ids=["dict-scalar-dict", "same-period", "scalar-dict-scalar", "narrow-wide-narrow"],
+)
+@pytest.mark.parametrize(
+    "spellings", [(LSR, LSR_LEGACY, LSR), (LSR_LEGACY, LSR, LSR_LEGACY)]
+)
+def test_sums_of_scenarios_spelling_a_path_differently_match_one_spelling(
+    stages, spellings
+):
+    def summed(paths):
+        scenarios = [
+            Scenario(parameter_changes={path: stage})
+            for path, stage in zip(paths, stages)
+        ]
+        return Simulation(
+            situation=PENSIONER, scenario=scenarios[0] + scenarios[1] + scenarios[2]
+        )
+
+    mixed, single = summed(spellings), summed((LSR, LSR, LSR))
+    for year in (2024, 2025, 2026, 2028, 2031):
+        assert value(mixed, LSR, f"{year}-01-01") == value(single, LSR, f"{year}-01-01")
+
+
 @pytest.mark.parametrize("year", [2005, 2006, 2007, 2008])
 @pytest.mark.parametrize("path", [f"{GROWTH}.obr.rpi", TRIPLE_LOCK])
 def test_a_change_before_a_series_starts_resumes_with_its_first_value(
