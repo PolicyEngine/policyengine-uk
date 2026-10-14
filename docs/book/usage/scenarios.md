@@ -153,6 +153,8 @@ for name, scenario in [
     print(f"{name}: £{net_income / 12:.2f} per month")
 ```
 
+A sum keeps each part's timing. A simulation applies the parts set with `applied_before_data_load=True` before it builds its data and the rest after, each in the order added. So `no_economic_assumptions + reform` freezes the data and the parameters and applies the reform, and a modifier that edits the data still runs once the data exists. A sum reads `applied_before_data_load=True` only when every part is applied before data load. `Scenario.parts_by_data_load()` returns the two parts. Where both change the same parameter, the part applied after data load sets it last. If you set `applied_before_data_load=True` on a sum yourself, or change its fields after making it, the whole sum is applied as one scenario at that time.
+
 ## Defining structural scenarios
 
 Beyond simple parameter changes, you sometimes need scenarios that make structural modifications to how the tax-benefit system works. Let's walk through how to create these, using examples similar to those in PolicyEngine UK's scenarios module.
@@ -312,6 +314,17 @@ static = Simulation(situation=situation, scenario=no_economic_assumptions)
 
 print(float(baseline.calculate("employment_income", 2026)[0]))
 print(float(static.calculate("employment_income", 2026)[0]))
+```
+
+Add it to a reform to measure the reform without growth. The sum keeps the freeze before the data load and applies the reform as usual:
+
+```python
+from policyengine_uk.model_api import Scenario
+
+reform = Scenario.from_reform(
+    {"gov.hmrc.income_tax.allowances.personal_allowance.amount": {"2025.2099": 20_000}}
+)
+static_reform = Simulation(situation=situation, scenario=no_economic_assumptions + reform)
 ```
 
 ## Advanced scenario techniques
