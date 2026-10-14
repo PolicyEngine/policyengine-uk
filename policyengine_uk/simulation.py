@@ -210,13 +210,20 @@ class Simulation(CoreSimulation):
 
         self.branches: Dict[str, Simulation] = {}
 
+        # The parts of the scenario applied before the data is built and
+        # after it. A scenario is one or the other; a sum of scenarios
+        # applied at different times keeps each part's timing.
+        before_data_load, after_data_load = (
+            scenario.parts_by_data_load() if scenario is not None else (None, None)
+        )
+
         # A scenario's parameter changes rebuild the parameters from the
         # statutory tree, so they come before its modifier, whose edits a
         # rebuild would discard.
-        if scenario is not None and scenario.applied_before_data_load:
-            self.apply_scenario_parameters(scenario)
-            if scenario.simulation_modifier is not None:
-                scenario.simulation_modifier(self)
+        if before_data_load is not None:
+            self.apply_scenario_parameters(before_data_load)
+            if before_data_load.simulation_modifier is not None:
+                before_data_load.simulation_modifier(self)
         self._refresh_capital_gains_projection()
         # Build simulation from appropriate source
         if situation is not None:
@@ -240,9 +247,10 @@ class Simulation(CoreSimulation):
         # (a changed economic assumption does not re-uprate it), but come
         # before the steps below that read the parameters: the Universal
         # Credit rebalancing inputs and the structural reforms switched on by
-        # parameters.
-        if scenario is not None and not scenario.applied_before_data_load:
-            self.apply_scenario_parameters(scenario)
+        # parameters. They rebuild the parameters from those the part applied
+        # before data load left, so they keep that part's changes.
+        if after_data_load is not None:
+            self.apply_scenario_parameters(after_data_load)
 
         # Universal Credit reform (July 2025). Needs closer integration in the baseline,
         # but adding here for ease of toggling on/off via the 'active' parameter.
@@ -295,9 +303,9 @@ class Simulation(CoreSimulation):
 
         self.calculated_periods = []
 
-        if scenario is not None and not scenario.applied_before_data_load:
-            if scenario.simulation_modifier is not None:
-                scenario.simulation_modifier(self)
+        if after_data_load is not None:
+            if after_data_load.simulation_modifier is not None:
+                after_data_load.simulation_modifier(self)
         self._refresh_capital_gains_projection()
         self._capture_cgt_supplied_inputs()
         self._cgt_warning_enabled = True

@@ -1,7 +1,10 @@
+import copy
+import functools
 import logging
+import operator
 
-from pydantic import BaseModel, ConfigDict
-from typing import Any, Literal, List, Optional, Callable, Dict, Type, Union
+from pydantic import BaseModel, ConfigDict, PrivateAttr
+from typing import Any, Literal, List, Optional, Callable, Dict, Tuple, Type, Union
 from policyengine_core.simulations import Simulation
 from policyengine_core.reforms import Reform
 from policyengine_uk.utils.dated_reforms import (
@@ -106,15 +109,26 @@ def _apply_reform_class(reform: Type[Reform], simulation: Simulation) -> None:
     simulation.tax_benefit_system.reset_parameter_caches()
 
 
+def _equal(value: Any, kept: Any) -> bool:
+    """Whether a field still equals the copy kept of it."""
+    try:
+        return bool(value == kept)
+    except Exception:
+        # A value whose == gives no single truth value, such as an array.
+        return repr(value) == repr(kept)
+
+
 class Scenario(BaseModel):
     """Represents a scenario configuration for policy simulations.
 
     A scenario can include parameter changes and/or simulation modifications
     that are applied before running a simulation. Scenarios can be combined
-    using the + operator.
+    using the + operator, and a sum keeps each part's timing (see
+    ``parts_by_data_load``).
     """
 
     applied_before_data_load: bool = False
+    """Whether ``Simulation`` applies the scenario before it builds its data, so the data's projected years follow its changes. A sum is applied before data load when every part is; a sum of parts applied at different times reads False here and applies each part at its own time."""
 
     parameter_changes: Optional[
         Dict[
@@ -137,8 +151,24 @@ class Scenario(BaseModel):
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
+    # A sum of parts applied at different times keeps the parts, each applied
+    # at one time, in the order added, for ``parts_by_data_load``; and its own
+    # fields as they were when it was made, so a sum whose fields are changed
+    # afterwards is applied as one scenario, as those fields say.
+    _parts: Optional[Tuple["Scenario", ...]] = PrivateAttr(default=None)
+    _fields_when_made: Optional[tuple] = PrivateAttr(default=None)
+
     def __add__(self, other: "Scenario") -> "Scenario":
         """Combine two scenarios by merging parameter changes and chaining modifiers.
+
+        The fields of the sum hold both scenarios, as they always have:
+        ``Scenario.apply`` and code that reads the fields see the whole sum.
+        ``Simulation`` applies each part at its own time, before or after it
+        builds its data (see ``parts_by_data_load``), so adding a scenario
+        applied before data load, such as ``no_economic_assumptions``, to
+        another keeps it before data load. A scenario that changes nothing
+        has no timing of its own: ``Scenario() + scenario`` is applied when
+        ``scenario`` is.
 
         Args:
             other: Another Scenario to combine with this one
@@ -165,27 +195,110 @@ class Scenario(BaseModel):
                     # Simple override
                     merged_params[key] = value
 
-        # Chain simulation modifiers
+        # Chain simulation modifiers, as they are when the scenarios are
+        # added, as the parts below keep them.
         combined_modifier = None
+        first, second = self.simulation_modifier, other.simulation_modifier
 
-        if self.simulation_modifier and other.simulation_modifier:
+        if first and second:
             # Both have modifiers - chain them
             def combined_modifier(simulation: Simulation) -> None:
-                self.simulation_modifier(simulation)
-                other.simulation_modifier(simulation)
+                first(simulation)
+                second(simulation)
 
-        elif self.simulation_modifier:
-            combined_modifier = self.simulation_modifier
-        elif other.simulation_modifier:
-            combined_modifier = other.simulation_modifier
+        elif first:
+            combined_modifier = first
+        elif second:
+            combined_modifier = second
 
         dated_reforms = (self.dated_reforms or []) + (other.dated_reforms or [])
 
+        parts = self._timed_parts() + other._timed_parts()
+        timings = {part.applied_before_data_load for part in parts}
+
         # Return new scenario with merged configuration
-        return Scenario(
+        combined = Scenario(
+            applied_before_data_load=timings == {True},
             parameter_changes=merged_params if merged_params else None,
             dated_reforms=dated_reforms or None,
             simulation_modifier=combined_modifier,
+        )
+        if len(timings) > 1:
+            combined._parts = parts
+            combined._fields_when_made = (
+                combined.applied_before_data_load,
+                copy.deepcopy(combined.parameter_changes),
+                copy.deepcopy(combined.dated_reforms),
+                combined.simulation_modifier,
+            )
+        return combined
+
+    def _current_parts(self) -> Optional[Tuple["Scenario", ...]]:
+        """A sum's parts, unless its fields have changed since it was made."""
+        if self._parts is None:
+            return None
+        flag, parameter_changes, dated_reforms, modifier = self._fields_when_made
+        if (
+            self.applied_before_data_load == flag
+            and self.simulation_modifier is modifier
+            and _equal(self.parameter_changes, parameter_changes)
+            and _equal(self.dated_reforms, dated_reforms)
+        ):
+            return self._parts
+        return None
+
+    def _timed_parts(self) -> Tuple["Scenario", ...]:
+        """The scenario as parts each applied at one time, in order: a sum's
+        parts, or a copy of the scenario (so later edits to it do not reach
+        a sum it is in), or none if it changes nothing."""
+        parts = self._current_parts()
+        if parts is not None:
+            return parts
+        if not (
+            self.parameter_changes or self.dated_reforms or self.simulation_modifier
+        ):
+            return ()
+        part = self.model_copy()
+        part._parts = None
+        part._fields_when_made = None
+        return (part,)
+
+    def parts_by_data_load(
+        self,
+    ) -> Tuple[Optional["Scenario"], Optional["Scenario"]]:
+        """The parts of the scenario applied before and after data load.
+
+        ``Simulation`` applies the first part's parameter changes and then
+        its modifier before it builds its data, and the second part's
+        parameter changes just after the data is built and its modifier at
+        the end, as for a scenario on its own. A scenario is one or the
+        other, as ``applied_before_data_load`` says. A sum of parts applied
+        at different times is split into the sum of the parts applied
+        before data load and the sum of the rest, each in the order added.
+        A sum whose fields have been changed since it was made is applied
+        as one scenario, as its fields say.
+
+        Where parts applied at different times change the same parameter,
+        the later change holds: the data is built with the value of the part
+        applied before data load, and the part applied after it then sets
+        the parameter. A part applied after data load rebuilds the
+        parameters from those the parts before it left, so it keeps their
+        parameter changes, and the edits of a modifier that reloads and
+        reprocesses the parameters (as ``no_economic_assumptions`` does),
+        but not a modifier's direct edits to the processed parameters.
+
+        Returns:
+            The part applied before data load and the part applied after it,
+            each a Scenario, or None where there is no such part.
+        """
+        parts = self._current_parts()
+        if parts is None:
+            return (self, None) if self.applied_before_data_load else (None, self)
+        before = [part for part in parts if part.applied_before_data_load]
+        after = [part for part in parts if not part.applied_before_data_load]
+        return (
+            functools.reduce(operator.add, before),
+            functools.reduce(operator.add, after),
         )
 
     def dated_assignments(self, order_start: int = 0) -> List[ParameterAssignment]:
@@ -377,4 +490,12 @@ class Scenario(BaseModel):
             parts.append(f"dated_reforms={len(self.dated_reforms)} items")
         if self.simulation_modifier:
             parts.append("simulation_modifier=<function>")
+        timed = self._current_parts()
+        if timed is not None:
+            before = sum(part.applied_before_data_load for part in timed)
+            parts.append(
+                f"parts={before} before data load, {len(timed) - before} after"
+            )
+        elif self.applied_before_data_load:
+            parts.append("applied_before_data_load=True")
         return f"Scenario({', '.join(parts)})"
