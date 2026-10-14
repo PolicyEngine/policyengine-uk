@@ -147,6 +147,10 @@ class Simulation(CoreSimulation):
     # true for a region or constituency filtered from the data. The builders
     # set it, so rebuilding a simulation in place keeps it right.
     built_from_dataset: bool = False
+    # True when part of the scenario is applied before data load, so the
+    # parameters the data is built with may not be current law's. Such a
+    # simulation neither reads nor writes the URL dataset cache.
+    _scenario_before_data_load: bool = False
 
     def __init__(
         self,
@@ -210,12 +214,13 @@ class Simulation(CoreSimulation):
 
         self.branches: Dict[str, Simulation] = {}
 
-        # The parts of the scenario applied before the data is built and
-        # after it. A scenario is one or the other; a sum of scenarios
-        # applied at different times keeps each part's timing.
+        # What the scenario applies before the data is built and after it. A
+        # scenario is one or the other; a sum of scenarios applied at
+        # different times runs each part's modifier at the part's own time.
         before_data_load, after_data_load = (
             scenario.parts_by_data_load() if scenario is not None else (None, None)
         )
+        self._scenario_before_data_load = before_data_load is not None
 
         # A scenario's parameter changes rebuild the parameters from the
         # statutory tree, so they come before its modifier, whose edits a
@@ -247,8 +252,7 @@ class Simulation(CoreSimulation):
         # (a changed economic assumption does not re-uprate it), but come
         # before the steps below that read the parameters: the Universal
         # Credit rebalancing inputs and the structural reforms switched on by
-        # parameters. They rebuild the parameters from those the part applied
-        # before data load left, so they keep that part's changes.
+        # parameters.
         if after_data_load is not None:
             self.apply_scenario_parameters(after_data_load)
 
@@ -598,6 +602,15 @@ class Simulation(CoreSimulation):
         }
 
     def _dataset_cache_key(self, source: str):
+        """The URL dataset cache key for a source, or None not to cache.
+
+        A cached dataset is already projected to later years, with current
+        law's economic assumptions unless a scenario applied before data load
+        changed them, so a simulation with such a scenario neither reads nor
+        writes the cache.
+        """
+        if self._scenario_before_data_load:
+            return None
         if self.tax_benefit_system.capital_gains_projection is None:
             return source
         metadata = self.capital_gains_projection_metadata
@@ -690,7 +703,7 @@ class Simulation(CoreSimulation):
             return
         if dataset_source.startswith("gs://"):
             cache_key = self._dataset_cache_key(dataset_source)
-            if cache_key in _url_dataset_cache:
+            if cache_key is not None and cache_key in _url_dataset_cache:
                 multi_year_dataset = _url_dataset_cache[cache_key]
                 self.build_from_multi_year_dataset(multi_year_dataset)
                 self._restore_cgt_extension_provenance(multi_year_dataset)
@@ -729,8 +742,9 @@ class Simulation(CoreSimulation):
         # Pre-encode string enum columns to int16 once before caching so
         # subsequent loads skip the expensive astype(str) + searchsorted path.
         _pre_encode_enum_columns(multi_year_dataset, self.tax_benefit_system)
-        if cache_key is not None:
-            _url_dataset_cache[self._dataset_cache_key(cache_key)] = multi_year_dataset
+        key = self._dataset_cache_key(cache_key) if cache_key is not None else None
+        if key is not None:
+            _url_dataset_cache[key] = multi_year_dataset
 
         self.build_from_multi_year_dataset(multi_year_dataset)
         self._restore_cgt_extension_provenance(multi_year_dataset)
@@ -751,7 +765,7 @@ class Simulation(CoreSimulation):
         # Return early from in-memory cache if available: skips HDF5 reading,
         # uprating and enum encoding (~2.2s on the first load).
         cache_key = self._dataset_cache_key(url)
-        if cache_key in _url_dataset_cache:
+        if cache_key is not None and cache_key in _url_dataset_cache:
             multi_year_dataset = _url_dataset_cache[cache_key]
             self.build_from_multi_year_dataset(multi_year_dataset)
             self._restore_cgt_extension_provenance(multi_year_dataset)

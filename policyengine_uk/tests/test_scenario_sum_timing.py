@@ -1,34 +1,42 @@
-"""A sum of scenarios applies each part at its own time.
+"""A sum of scenarios runs each part's modifier at the part's own time.
 
 ``Simulation`` applies a scenario before it builds its data
 (``applied_before_data_load``) or after. A sum of scenarios applied at
-different times, such as ``no_economic_assumptions + reform``, keeps its parts
-(``Scenario.parts_by_data_load``), and the simulation applies the parts
-applied before data load before it builds the data and the rest after.
+different times, such as ``no_economic_assumptions + reform``, keeps which
+modifiers belong to which time (``Scenario.parts_by_data_load``). The
+simulation applies all of the sum's parameter changes, then the modifiers of
+the parts applied before data load, then builds the data, and runs the other
+modifiers at the end. Parameter changes rebuild the parameters, which would
+discard a modifier's edits, so they come before every modifier.
 
 Invariants:
 
-1. Partition and order: every part's parameter changes and modifier are
-   applied exactly once, at the part's own time. A modifier applied before
-   data load sees no populations; one applied after sees them. Within each
-   time, parts are applied in the order added.
-2. Associativity and identity: how a sum is bracketed does not change its
-   split, and ``Scenario()`` (which changes nothing) adds no part.
+1. Partition and order: every modifier runs exactly once, at its part's
+   time. One applied before data load sees no populations; one applied after
+   sees them. Within each time, modifiers run in the order added, however
+   the sum is bracketed.
+2. Parameter changes: a sum's parameter changes are applied once, as ``+``
+   merged them (the precedence ``Scenario.apply`` gives them), before any
+   modifier, so the timing of the parts changes when parameters are set but
+   not their values, and a modifier applied before data load keeps its edits.
 3. Backward compatibility: a sum's fields (parameter changes, dated reforms
    and the chained modifier) equal those the previous ``Scenario.__add__``
-   made, so ``Scenario.apply`` and code reading the fields see the whole sum.
-   A sum reads ``applied_before_data_load=True`` exactly when every part that
-   changes something is applied before data load.
+   made. A sum reads ``applied_before_data_load=True`` exactly when every part
+   that changes something is applied before data load, and ``Scenario()``
+   (which changes nothing) adds no part.
 4. Freeze: ``no_economic_assumptions + reform``, in either order, gives the
    data and the economic assumption parameters of ``no_economic_assumptions``
-   alone, and the reform's own changes.
-5. A sum is fixed when made: later edits to its operands do not reach it,
-   and a sum whose own fields are changed is applied as one scenario, as
-   those fields say.
+   alone, and the reform's own changes, also for a URL dataset, whose cache
+   it neither reads nor writes, so the baseline and later simulations keep
+   current law's projection.
+5. A sum is fixed when made: later edits to its operands do not reach it; a
+   sum whose flag or modifier is changed is applied as one scenario, as its
+   fields say; and its parts are copies.
 
 All datasets here are MOCK data: synthetic households, not survey records.
 """
 
+import copy
 import functools
 import operator
 
@@ -38,7 +46,10 @@ import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 from policyengine_core.parameters import Parameter
+from policyengine_core.periods import period as period_
+from policyengine_core.reforms import set_parameter
 
+import policyengine_uk.simulation as simulation_module
 from policyengine_uk import Simulation
 from policyengine_uk.data.dataset_schema import (
     UKMultiYearDataset,
@@ -216,7 +227,8 @@ def test_no_economic_assumptions_plus_reform_freezes_the_parameters(
 ):
     simulation = frozen_with_reform
     assert parameter(simulation, AVERAGE_EARNINGS, "2027-01-01") == 0
-    # The reform rebuilt the parameters after the freeze and kept it.
+    # The freeze reloads the parameters after the reform changes them, and
+    # reprocesses them with the reform's changes.
     assert economic_assumptions(simulation) == economic_assumptions(frozen)
 
 
@@ -340,23 +352,161 @@ def test_flagging_the_whole_sum_would_run_the_data_edit_without_data():
         Simulation(dataset=mock_dataset(), scenario=scenario)
 
 
+# --- a sum with a URL dataset ---------------------------------------------
+
+HF_URL = "hf://policyengine/mock-repo/MOCK_frs_2025_26.h5"
+GCS_URL = "gs://mock-bucket/MOCK_frs_2025_26.h5"
+
+
+@pytest.fixture
+def url_dataset(monkeypatch, tmp_path):
+    """Serve both URL schemes from a MOCK file, with an empty cache."""
+    path = str(tmp_path / "MOCK_frs_2025_26.h5")
+    mock_dataset().save(path)
+    monkeypatch.setattr(simulation_module, "_url_dataset_cache", {})
+    monkeypatch.setattr(
+        simulation_module, "download_huggingface_dataset", lambda **_: path
+    )
+    monkeypatch.setattr(
+        simulation_module, "materialize_gcs_dataset_url", lambda url, **_: path
+    )
+
+
+@pytest.mark.parametrize("url", [HF_URL, GCS_URL])
+@pytest.mark.parametrize("scenario_first", [True, False])
+def test_a_sum_with_a_before_load_part_keeps_out_of_the_url_dataset_cache(
+    url_dataset, url, scenario_first
+):
+    if not scenario_first:
+        assert growth(Simulation(dataset=url)) == pytest.approx(CURRENT_LAW_GROWTH_2027)
+    frozen = Simulation(
+        dataset=url, scenario=no_economic_assumptions + Scenario.from_reform(REFORM)
+    )
+    assert growth(frozen) == 0
+    assert parameter(frozen, PERSONAL_ALLOWANCE, "2027") == 20_000
+    # On main the frozen data was cached under the URL: the baseline and
+    # every later simulation got it.
+    for simulation in (frozen.baseline, Simulation(dataset=url)):
+        assert growth(simulation) == pytest.approx(CURRENT_LAW_GROWTH_2027)
+
+
+def test_a_macro_sum_with_a_url_dataset_projects_its_own_data(url_dataset):
+    Simulation(dataset=GCS_URL)
+    macro = Simulation(dataset=GCS_URL, scenario=MACRO + Scenario.from_reform(REFORM))
+    assert growth(macro) == pytest.approx(MACRO_GROWTH_2027)
+    assert growth(Simulation(dataset=GCS_URL)) == pytest.approx(CURRENT_LAW_GROWTH_2027)
+
+
+# --- parameter changes come before every modifier -------------------------
+
+
+def zero_allowance_directly(simulation):
+    """A modifier that edits the processed parameters directly, which a
+    rebuild of the parameters would discard."""
+    simulation.tax_benefit_system.parameters.get_child(PERSONAL_ALLOWANCE).update(
+        period=period_("year:2026:1"), value=0
+    )
+    simulation.tax_benefit_system.reset_parameter_caches()
+
+
+def zero_allowance(before):
+    """MOCK reform parts that set the allowance to 0 in 2026 by editing the
+    processed parameters: a modifier, and a structural Reform class."""
+    return {
+        "modifier": Scenario(
+            simulation_modifier=zero_allowance_directly,
+            applied_before_data_load=before,
+        ),
+        "reform class": Scenario.from_reform(
+            set_parameter(PERSONAL_ALLOWANCE, 0, period="year:2026:1")
+        ).model_copy(update={"applied_before_data_load": before}),
+    }
+
+
+@pytest.mark.parametrize("kind", ["modifier", "reform class"])
+@pytest.mark.parametrize("before_first", [True, False])
+def test_a_before_load_parts_edits_survive_an_after_load_reform(kind, before_first):
+    rate = Scenario.from_reform({BASIC_RATE: {"2025.2099": 0.25}})
+    part = zero_allowance(before=True)[kind]
+    scenario = part + rate if before_first else rate + part
+    simulation = Simulation(situation=SITUATION, scenario=scenario)
+    assert parameter(simulation, PERSONAL_ALLOWANCE, "2026-06-01") == 0
+    assert parameter(simulation, BASIC_RATE, "2026-06-01") == 0.25
+    # The same parts all applied after data load, as main applied any sum.
+    after = zero_allowance(before=False)[kind]
+    reference = Simulation(
+        situation=SITUATION, scenario=after + rate if before_first else rate + after
+    )
+    assert simulation.calculate("income_tax", 2026)[0] == pytest.approx(
+        reference.calculate("income_tax", 2026)[0]
+    )
+
+
+@pytest.mark.parametrize(
+    "parts, expected",
+    [
+        ((True, {"2025": 15_000}), (False, {"2025": 20_000})),
+        ((False, {"2025": 20_000}), (True, {"2025": 15_000})),
+    ],
+)
+def test_a_sums_parameter_changes_keep_the_precedence_of_plus(parts, expected):
+    """Timing changes when a sum's parameter changes are applied, not which
+    of them holds: the later operand's, as ``+`` merges them."""
+    (first_before, first), (second_before, second) = parts, expected
+    timed = Scenario(
+        parameter_changes={PERSONAL_ALLOWANCE: first},
+        applied_before_data_load=first_before,
+    ) + Scenario(
+        parameter_changes={PERSONAL_ALLOWANCE: second},
+        applied_before_data_load=second_before,
+    )
+    untimed = Scenario(parameter_changes={PERSONAL_ALLOWANCE: first}) + Scenario(
+        parameter_changes={PERSONAL_ALLOWANCE: second}
+    )
+    for scenario in (timed, untimed):
+        simulation = Simulation(situation=SITUATION, scenario=scenario)
+        assert parameter(simulation, PERSONAL_ALLOWANCE, "2025") == second["2025"]
+
+
+def test_a_mixed_sums_parameter_changes_all_reach_the_data():
+    """Intended: with a part applied before data load, every parameter change
+    of the sum comes before the data is built, an after-load part's growth
+    change included."""
+    record = Scenario(simulation_modifier=lambda s: None, applied_before_data_load=True)
+    growth_change = Scenario(
+        parameter_changes={AVERAGE_EARNINGS: {"year:2027-01-01:1": MACRO_GROWTH_2027}}
+    )
+    simulation = Simulation(dataset=mock_dataset(), scenario=record + growth_change)
+    assert growth(simulation) == pytest.approx(MACRO_GROWTH_2027)
+
+
 # --- the split, in a real simulation --------------------------------------
 
 
 @st.composite
 def timed_modifier_parts(draw):
     """Parts that each record, when their modifier runs, whether the data had
-    been built."""
+    been built and the allowance a parameter change of every part set."""
     timings = draw(st.lists(st.booleans(), min_size=1, max_size=5))
     events = []
     parts = []
     for index, before in enumerate(timings):
 
         def record(simulation, index=index):
-            events.append((index, getattr(simulation, "populations", None) is not None))
+            events.append(
+                (
+                    index,
+                    getattr(simulation, "populations", None) is not None,
+                    parameter(simulation, PERSONAL_ALLOWANCE, "2025"),
+                )
+            )
 
         parts.append(
-            Scenario(simulation_modifier=record, applied_before_data_load=before)
+            Scenario(
+                parameter_changes={PERSONAL_ALLOWANCE: {"2025": 10_000 + index}},
+                simulation_modifier=record,
+                applied_before_data_load=before,
+            )
         )
     return timings, parts, events
 
@@ -368,18 +518,12 @@ def test_a_simulation_runs_each_part_once_at_its_own_time(drawn):
     Simulation(situation=SITUATION, scenario=functools.reduce(operator.add, parts))
     before = [i for i, b in enumerate(timings) if b]
     after = [i for i, b in enumerate(timings) if not b]
-    assert events == [(i, False) for i in before] + [(i, True) for i in after]
-
-
-def test_parts_applied_later_set_a_parameter_both_change():
-    before = Scenario(
-        parameter_changes={PERSONAL_ALLOWANCE: {"2025": 15_000}},
-        applied_before_data_load=True,
-    )
-    after = Scenario.from_reform({PERSONAL_ALLOWANCE: {"2025.2099": 20_000}})
-    for scenario in (before + after, after + before):
-        simulation = Simulation(situation=SITUATION, scenario=scenario)
-        assert parameter(simulation, PERSONAL_ALLOWANCE, "2025") == 20_000
+    # Every modifier sees every part's parameter change, the last one added
+    # holding.
+    allowance = 10_000 + len(timings) - 1
+    assert events == [(i, False, allowance) for i in before] + [
+        (i, True, allowance) for i in after
+    ]
 
 
 def test_scenario_apply_runs_every_part_of_a_sum_on_a_built_simulation():
@@ -432,22 +576,52 @@ def test_a_sum_flagged_before_data_load_is_applied_before_it_whole():
     assert copied.parts_by_data_load() == (copied, None)
 
 
-def test_a_sum_whose_fields_change_in_place_is_applied_as_they_say():
+def test_a_sum_applies_its_current_parameter_changes():
     scenario = no_economic_assumptions + Scenario(
         parameter_changes={PERSONAL_ALLOWANCE: 20_000}
     )
-    before, after = scenario.parts_by_data_load()
-    assert before is not None and after is not None
     scenario.parameter_changes[BASIC_RATE] = 0.21
+    before, after = scenario.parts_by_data_load()
+    assert before.parameter_changes == {PERSONAL_ALLOWANCE: 20_000, BASIC_RATE: 0.21}
+    assert before.simulation_modifier is not None
+    assert after is None  # No part applied after data load has a modifier.
+    # A sum whose modifier is replaced is applied as one scenario.
+    scenario.simulation_modifier = recorder([], "replaced")
     assert scenario.parts_by_data_load() == (None, scenario)
 
 
+def test_parts_by_data_load_returns_copies():
+    scenario = no_economic_assumptions + Scenario.from_reform(
+        {PERSONAL_ALLOWANCE: {"2026": 1}}
+    )
+    before, _ = scenario.parts_by_data_load()
+    before.dated_reforms[0].changes[PERSONAL_ALLOWANCE]["2026"] = 999
+    assert scenario.dated_reforms[0].changes[PERSONAL_ALLOWANCE]["2026"] == 1
+    before, _ = scenario.parts_by_data_load()
+    assert before.dated_reforms[0].changes[PERSONAL_ALLOWANCE]["2026"] == 1
+
+
 def test_a_mixed_sum_survives_copying():
-    scenario = no_economic_assumptions + Scenario.from_reform(REFORM)
-    for copied in (scenario.model_copy(), scenario.model_copy(deep=True)):
-        before, after = copied.parts_by_data_load()
-        assert before.applied_before_data_load
-        assert not after.applied_before_data_load
+    log = []
+    callable_object = functools.partial(lambda name, simulation: log.append(name), "x")
+    sums = [
+        no_economic_assumptions + Scenario.from_reform(REFORM),
+        # The sum's own modifier is then a callable object, which a deep copy
+        # copies.
+        MACRO + Scenario(simulation_modifier=callable_object),
+        Scenario(simulation_modifier=callable_object, applied_before_data_load=True)
+        + Scenario(parameter_changes={PERSONAL_ALLOWANCE: 20_000}),
+    ]
+    for scenario in sums:
+        expected = [part is not None for part in scenario.parts_by_data_load()]
+        for copied in (
+            scenario.model_copy(),
+            scenario.model_copy(deep=True),
+            copy.deepcopy(scenario),
+        ):
+            before, after = copied.parts_by_data_load()
+            assert before is not None and before.applied_before_data_load
+            assert [part is not None for part in (before, after)] == expected
 
 
 # --- properties of the split, without a simulation ------------------------
@@ -548,12 +722,10 @@ def draw_tree(draw, low, high):
 
 
 def evaluate(tree, leaf, add):
-    """Add up a bracketing, skipping leaves that ``leaf`` gives as None."""
+    """Add up a bracketing."""
     if isinstance(tree, int):
         return leaf(tree)
     first, second = (evaluate(branch, leaf, add) for branch in tree)
-    if first is None or second is None:
-        return second if first is None else first
     return add(first, second)
 
 
@@ -572,20 +744,9 @@ def fields(scenario):
     return scenario.parameter_changes or None, scenario.dated_reforms or None
 
 
-def merges_associatively(scenarios):
-    """Whether no parameter is changed by a value in one scenario and by
-    a dict of periods in another: the merge of parameter changes is then
-    associative."""
-    kinds = {}
-    for scenario in scenarios:
-        for path, value in (scenario.parameter_changes or {}).items():
-            kinds.setdefault(path, set()).add(isinstance(value, dict))
-    return all(len(kind) == 1 for kind in kinds.values())
-
-
 @PROPERTY_SETTINGS
 @given(leaves(), st.data())
-def test_a_sum_splits_into_its_parts_by_timing(drawn, data):
+def test_a_sum_splits_its_modifiers_by_timing(drawn, data):
     scenarios, log = drawn
     count = len(scenarios)
     trees = [
@@ -596,67 +757,63 @@ def test_a_sum_splits_into_its_parts_by_timing(drawn, data):
         draw_tree(data.draw, 0, count),
     ]
     active = [changes_something(s) for s in scenarios]
+    before_labels = [
+        i
+        for i, s in enumerate(scenarios)
+        if active[i] and s.applied_before_data_load and s.simulation_modifier
+    ]
+    after_labels = [
+        i
+        for i, s in enumerate(scenarios)
+        if active[i] and not s.applied_before_data_load and s.simulation_modifier
+    ]
     has_before = any(
         a and s.applied_before_data_load for a, s in zip(active, scenarios)
     )
     has_after = any(
         a and not s.applied_before_data_load for a, s in zip(active, scenarios)
     )
-    if count == 1:
-        # Not a sum: its own flag says when it is applied.
-        has_before = scenarios[0].applied_before_data_load
-        has_after = not has_before
+    mixed = count > 1 and has_before and has_after
 
-    def phase(tree, before):
-        """The previous ``+`` over one phase's parts, bracketed as the sum."""
-        return evaluate(
-            tree,
-            lambda i: (
-                scenarios[i]
-                if active[i] and scenarios[i].applied_before_data_load == before
-                else None
-            ),
-            reference_add,
-        )
-
-    splits = []
     for tree in trees:
         total = evaluate(tree, lambda i: scenarios[i], operator.add)
         before, after = total.parts_by_data_load()
-        splits.append((before, after))
-        # 1. Partition and order: each phase holds exactly its parts'
-        # changes, bracketed as the sum, and runs their modifiers in the
-        # order added.
-        assert fields(before) == fields(phase(tree, True))
-        assert fields(after) == fields(phase(tree, False))
-        assert run(log, before) == run(log, phase(tree, True))
-        assert run(log, after) == run(log, phase(tree, False))
-        assert (before is None) == (not has_before)
-        assert (after is None) == (has_before and not has_after)
-        assert before is None or before.applied_before_data_load
-        assert after is None or not after.applied_before_data_load
         # 3. Backward compatibility: the fields hold the whole sum, as the
-        # previous ``+`` made them.
+        # previous ``+`` made them, bracketed the same way.
         reference = evaluate(tree, lambda i: scenarios[i], reference_add)
         assert fields(total) == fields(reference)
         assert run(log, total) == run(log, reference)
-        assert total.applied_before_data_load == (has_before and not has_after)
-        # 2. Identity: Scenario() adds no part.
+        assert total.applied_before_data_load == (
+            count > 1
+            and has_before
+            and not has_after
+            or count == 1
+            and scenarios[0].applied_before_data_load
+        )
+        if not mixed:
+            # One timing: the scenario is applied whole, at that time.
+            expected = (
+                (total, None) if total.applied_before_data_load else (None, total)
+            )
+            assert (before, after) == expected
+            continue
+        # 1. Partition and order: each time runs exactly its parts'
+        # modifiers, in the order added, however the sum is bracketed.
+        assert run(log, before) == before_labels
+        assert run(log, after) == after_labels
+        assert before.applied_before_data_load
+        assert after is None or not after.applied_before_data_load
+        assert (after is None) == (not after_labels)
+        # 2. Parameter changes: all of them, as ``+`` merged them, come with
+        # the part applied before data load.
+        assert fields(before) == fields(total)
+        assert fields(after) == (None, None)
+        # 3. Identity: Scenario() adds no part.
         for padded in (Scenario() + total, total + Scenario()):
             pad_before, pad_after = padded.parts_by_data_load()
             assert fields(pad_before) == fields(before)
-            assert fields(pad_after) == fields(after)
-            assert run(log, pad_before) == run(log, before)
-            assert run(log, pad_after) == run(log, after)
-    # 2. Associativity: modifiers run in the order added however the sum is
-    # bracketed, and the parts agree wherever the merge itself is
-    # associative.
-    for before, after in splits[1:]:
-        assert run(log, before) == run(log, splits[0][0])
-        assert run(log, after) == run(log, splits[0][1])
-        if merges_associatively(scenarios):
-            assert fields(before) == fields(splits[0][0])
-            assert fields(after) == fields(splits[0][1])
+            assert run(log, pad_before) == before_labels
+            assert run(log, pad_after) == after_labels
 
 
 @PROPERTY_SETTINGS
