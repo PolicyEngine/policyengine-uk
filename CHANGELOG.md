@@ -1,3 +1,10 @@
+## [2.130.1] - 2026-10-14
+
+### Fixed
+
+- - Fixed the benefit-cap earnings exemption to count statutory pay and use Universal Credit's actual net earnings before the minimum income floor, with a pinned regression for the release failure.
+
+
 ## [2.130.0] - 2026-10-13
 
 ### Added
