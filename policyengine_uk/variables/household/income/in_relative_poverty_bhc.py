@@ -7,9 +7,9 @@ class in_relative_poverty_bhc(Variable):
         "Whether the household's equivalised HBAI net income, before housing "
         "costs, is below 60% of the contemporary median. The median is taken "
         "over individuals, as in DWP's Households Below Average Income series, "
-        "so each household counts once per member. Negative incomes stay in "
-        "the median and count as below the line. The absolute-line twin is "
-        "in_poverty_bhc."
+        "so each household counts once per member. As in HBAI, a negative "
+        "income is reset to zero; it stays in the median and counts as below "
+        "the line. The absolute-line twin is in_poverty_bhc."
     )
     entity = Household
     definition_period = YEAR

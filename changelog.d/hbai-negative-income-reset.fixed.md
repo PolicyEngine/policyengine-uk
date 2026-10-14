@@ -1,0 +1,1 @@
+- HBAI household net income before housing costs now resets a negative figure to zero, as HBAI does; income after housing costs, deciles, poverty flags and poverty gaps follow from the reset figure. The figure before the reset is the new `hbai_household_net_income_before_reset_to_zero`, which the labour supply responses now use.
