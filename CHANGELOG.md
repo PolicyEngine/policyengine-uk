@@ -1,3 +1,10 @@
+## [2.131.2] - 2026-10-14
+
+### Fixed
+
+- - Fixed HBAI household income after housing costs to deduct ground rent and housing service charges, so equivalised AHC income and poverty measures include these costs.
+
+
 ## [2.131.1] - 2026-10-14
 
 ### Fixed
