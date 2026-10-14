@@ -62,10 +62,14 @@ from policyengine_uk.utils.supplied_inputs import (
 )
 from policyengine_uk.reforms import create_structural_reforms_from_parameters
 from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases import (
-    canonicalize_lsr_parameter_path,
+    canonicalize_parameter_changes,
 )
 
-from .tax_benefit_system import CountryTaxBenefitSystem, DEFAULT_DATASET_ENV_VAR
+from .tax_benefit_system import (
+    CountryTaxBenefitSystem,
+    DEFAULT_DATASET_ENV_VAR,
+    parameter_reads_calendar_years,
+)
 
 
 def _projects_data(situation, dataset) -> bool:
@@ -87,7 +91,8 @@ def _scenario_assignments(scenario) -> list:
     assignments = []
     if scenario.parameter_changes:
         assignments += read_parameter_changes(
-            _canonical_parameter_paths(scenario.parameter_changes)
+            _canonical_parameter_paths(scenario.parameter_changes),
+            calendar_years=parameter_reads_calendar_years(),
         )
     assignments += scenario.dated_assignments(order_start=len(assignments))
     return assignments
@@ -95,9 +100,7 @@ def _scenario_assignments(scenario) -> list:
 
 def _canonical_parameter_paths(changes: dict) -> dict:
     """Changes keyed by canonical parameter paths (labour supply aliases)."""
-    return {
-        canonicalize_lsr_parameter_path(path): value for path, value in changes.items()
-    }
+    return canonicalize_parameter_changes(changes)
 
 
 from microdf import MicroDataFrame
@@ -694,7 +697,10 @@ class Simulation(CoreSimulation):
         read) and the parameters are processed as current law is.
         """
         self.apply_parameter_assignments(
-            read_parameter_changes(_canonical_parameter_paths(changes))
+            read_parameter_changes(
+                _canonical_parameter_paths(changes),
+                calendar_years=parameter_reads_calendar_years(),
+            )
         )
 
     def apply_scenario_parameters(self, scenario: Scenario) -> None:

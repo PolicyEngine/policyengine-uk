@@ -11,7 +11,7 @@ These are:
 - `equiv_hbai_household_net_income`: Equivalised household net income, before housing costs (BHC)
 - `equiv_hbai_household_net_income_ahc`: Equivalised household net income, after housing costs (AHC)
 
-These variables are used in the HBAI income distribution and poverty [statistics](https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2024/households-below-average-income-an-analysis-of-the-uk-income-distribution-fye-1995-to-fye-2024), which are published by the Department for Work and Pensions (DWP) in the UK. The HBAI income concepts are defined [here](https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2023/households-below-average-income-series-quality-and-methodology-information-report-fye-2023#income-definition).
+These variables are used in the HBAI income distribution and poverty [statistics](https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2025), which are published by the Department for Work and Pensions (DWP) in the UK. The HBAI income concepts are defined in the [FYE 2025 background information and methodology report](https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2025/households-below-average-income-background-information-and-methodology-report-fye-2025#housing-costs).
 
 ```{important}
 The table below shows how the HBAI income components map to PolicyEngine variables. The HBAI income definition is based on the income of all members of a household, and includes various sources of income, subtractions, and housing costs (for the AHC variant).
@@ -43,6 +43,10 @@ The table below shows how the HBAI income components map to PolicyEngine variabl
 | Mortgage interest payments | `mortgage_interest_repayment`|
 | Structural insurance premiums (for owner occupiers) | `structural_insurance_payments` |
 | Ground rent and service charges |`housing_service_charges`|
+
+`hbai_household_net_income_ahc` deducts all five housing-cost rows above from `hbai_household_net_income`. Housing costs can exceed income, leaving negative AHC income. The equivalised AHC income and AHC poverty measures use that result; household income deciles use BHC income.
+
+In FRS-based datasets, `housing_service_charges` contains the annualised property charges recorded in `CHRGAMT1`–`CHRGAMT9`: ground rent, chief rent, service charges, regular maintenance, caravan site rent, factoring charges, other regular charges and combined charges. `CHRGAMT2`, historically feu duty, is unused in the FRS 2024–25 dictionary. The combined-charge question is an alternative to recording individual amounts. Water and sewerage and rent are separate inputs; calculator users should supply each cost once, with service charges additional to the other housing-cost inputs. See the [FRS 2024–25 question instructions](https://doc.ukdataservice.ac.uk/doc/9563/mrdoc/pdf/9563_frs_2024-25_question_instructions_final.pdf), property charges section (pages 98–99), and its [variable dictionaries](https://doc.ukdataservice.ac.uk/doc/9563/mrdoc/ukda_data_dictionaries.zip).
 
 ## Nowcasting/forecasting
 

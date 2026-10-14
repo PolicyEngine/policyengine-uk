@@ -1,3 +1,17 @@
+## [2.131.2] - 2026-10-14
+
+### Fixed
+
+- - Fixed HBAI household income after housing costs to deduct ground rent and housing service charges, so equivalised AHC income and poverty measures include these costs.
+
+
+## [2.131.1] - 2026-10-14
+
+### Fixed
+
+- A bare-year reform key, or a key dated 1 January, on the economic growth rates, the indices built from them and the household parameters now names that calendar year. A bare year used to name the fiscal year from 6 April, which moved the next year: a 2027 earnings growth rate showed as 2027's but moved the 2028 index and the April 2029 triple lock. A 1 January key used to override that one day after processing, which nothing built from the parameter read. A change to an uprated household parameter past its last stated value now leaves the years around it on their projected path instead of freezing them. Reforms to series built during processing (the triple lock rate, the indices, the lagged series) now uprate what is built from them. Deprecated `labor_supply_responses` paths in reform dicts reach the parameters formulas read, and changes to a parameter given by both its path and its alias are merged in order instead of one being silently dropped.
+
+
 ## [2.131.0] - 2026-10-14
 
 ### Added
