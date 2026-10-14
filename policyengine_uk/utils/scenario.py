@@ -363,7 +363,9 @@ class Scenario(BaseModel):
         overrides: List[LegacyOverride] = []
         if self.parameter_changes:
             parameters = simulation.tax_benefit_system.parameters
-            for path, value in self.parameter_changes.items():
+            # Keyed by canonical paths, as a sum of scenarios already is, so a
+            # deprecated alias path changes the parameter formulas read.
+            for path, value in _canonical_paths(self.parameter_changes).items():
                 if isinstance(value, dict):
                     # Handle nested parameter changes
                     if not value:

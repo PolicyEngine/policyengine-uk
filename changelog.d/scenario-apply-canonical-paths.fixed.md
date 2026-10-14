@@ -1,0 +1,1 @@
+`Scenario.apply` on a built simulation now changes the parameter a deprecated `labor_supply_responses` path copies, as constructing the simulation with the scenario does; it used to edit only the alias copy, which formulas do not read, unless the scenario had been summed.
