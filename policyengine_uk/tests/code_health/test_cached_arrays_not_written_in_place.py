@@ -562,8 +562,12 @@ def test_branching_runs_with_read_only_cache(read_only_cache, case):
     )
     for year in YEARS:
         sim.calculate("household_net_income", year)
+    # The measurement branches are not kept; the responses show they ran.
     if case == "labour_supply_responses":
-        assert "lsr_measurement" in sim.branches
+        # The higher personal allowance raises both earners' net income and
+        # leaves their marginal rates alone, so with a negative income
+        # elasticity both work less.
+        response = sim.calculate("employment_income_behavioral_response", 2026)
+        assert (response[:2] < 0).all()
     else:
-        # The measurement branches are deleted; the response shows they ran.
         assert sim.calculate("capital_gains_behavioural_response", 2026)[0] < 0
