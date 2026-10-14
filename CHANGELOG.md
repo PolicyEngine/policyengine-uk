@@ -1,3 +1,27 @@
+## [2.131.0] - 2026-10-14
+
+### Added
+
+- - Added Income Tax trade loss relief against general income under ITA 2007 s.64, subject to available net income and the s.24A relief cap.
+
+### Changed
+
+- - Uprated trading losses separately from profits, applied programme-specific UC and tax-credit income rules, and included losses as negative market and HBAI income. Income Tax carry-forward now uses only explicitly supplied unrelieved losses; Class 4 retains its separate automatic loss history.
+  - Coordinated the taxpayer's trading allowance election with current-year Income Tax and Class 4 loss relief, retaining whichever gives the greater current-year income deduction.
+
+### Fixed
+
+- - Base the trading allowance election on losses supplied for that tax year, preserving earlier Class 4 loss balances when later loss inputs are unset.
+- - Fixed Universal Credit trading-loss netting to include company trade results.
+
+
+## [2.130.1] - 2026-10-14
+
+### Fixed
+
+- - Fixed the benefit-cap earnings exemption to count statutory pay and use Universal Credit's actual net earnings before the minimum income floor, with a pinned regression for the release failure.
+
+
 ## [2.130.0] - 2026-10-13
 
 ### Added
