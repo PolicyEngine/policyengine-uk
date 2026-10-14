@@ -1,0 +1,2 @@
+- Uprated trading losses separately from profits, applied programme-specific UC and tax-credit income rules, and included losses as negative market and HBAI income. Income Tax carry-forward now uses only explicitly supplied unrelieved losses; Class 4 retains its separate automatic loss history.
+- Coordinated the taxpayer's trading allowance election with current-year Income Tax and Class 4 loss relief, retaining whichever gives the greater current-year income deduction.
