@@ -230,6 +230,8 @@ class Scenario(BaseModel):
     def __deepcopy__(self, memo: Optional[dict] = None) -> "Scenario":
         # One memo for the fields and the private attributes, so a copy of a
         # sum keeps the modifiers it keeps by timing those its fields chain.
+        # A callable object among them is copied; a function, such as the
+        # chained modifier, is not, so it still calls the original.
         return super().__deepcopy__({} if memo is None else memo)
 
     def _changes_something(self) -> bool:

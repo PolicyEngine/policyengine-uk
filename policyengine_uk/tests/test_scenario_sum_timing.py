@@ -47,7 +47,7 @@ from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 from policyengine_core.parameters import Parameter
 from policyengine_core.periods import period as period_
-from policyengine_core.reforms import set_parameter
+from policyengine_core.reforms import Reform, set_parameter
 
 import policyengine_uk.simulation as simulation_module
 from policyengine_uk import Simulation
@@ -55,6 +55,7 @@ from policyengine_uk.data.dataset_schema import (
     UKMultiYearDataset,
     UKSingleYearDataset,
 )
+from policyengine_uk.model_api import YEAR, Enum, Household, Variable
 from policyengine_uk.scenarios import no_economic_assumptions
 from policyengine_uk.utils.scenario import Scenario
 
@@ -220,6 +221,10 @@ def test_no_economic_assumptions_plus_reform_freezes_the_data(
                     err_msg=f"{table}.{column} {year}",
                 )
     assert_same_data(simulation, frozen)
+    # What the model calculates from the data, not only the stored dataset.
+    for year in YEARS:
+        income = simulation.calculate("employment_income_before_lsr", year)
+        np.testing.assert_array_equal(income, [30_000, 0], err_msg=str(year))
 
 
 def test_no_economic_assumptions_plus_reform_freezes_the_parameters(
@@ -395,6 +400,47 @@ def test_a_macro_sum_with_a_url_dataset_projects_its_own_data(url_dataset):
     macro = Simulation(dataset=GCS_URL, scenario=MACRO + Scenario.from_reform(REFORM))
     assert growth(macro) == pytest.approx(MACRO_GROWTH_2027)
     assert growth(Simulation(dataset=GCS_URL)) == pytest.approx(CURRENT_LAW_GROWTH_2027)
+
+
+class ReorderedTenure(Enum):
+    """MOCK: tenure_type's members in another order."""
+
+    OWNED_OUTRIGHT = "Owned outright"
+    OWNED_WITH_MORTGAGE = "Owned with a mortgage"
+    RENT_FROM_COUNCIL = "Rented from Council"
+    RENT_FROM_HA = "Rented from a Housing Association"
+    RENT_PRIVATELY = "Rented privately"
+
+
+class tenure_type(Variable):
+    value_type = Enum
+    possible_values = ReorderedTenure
+    default_value = ReorderedTenure.RENT_PRIVATELY
+    entity = Household
+    label = "Tenure type of the household"
+    definition_period = YEAR
+
+
+class reorder_tenure(Reform):
+    """A MOCK structural reform that changes no parameter."""
+
+    def apply(self):
+        self.update_variable(tenure_type)
+
+
+def test_a_before_load_structural_reform_keeps_out_of_the_url_dataset_cache(
+    url_dataset,
+):
+    """The cached dataset's enum columns are encoded with the system that
+    built it, so a part applied before data load keeps out of the cache even
+    when it changes no parameter the projection reads."""
+    part = Scenario.from_reform(reorder_tenure).model_copy(
+        update={"applied_before_data_load": True}
+    )
+    reformed = Simulation(dataset=GCS_URL, scenario=part)
+    assert reformed.calculate("tenure_type", 2025)[0] == "RENT_PRIVATELY"
+    later = Simulation(dataset=GCS_URL)
+    assert later.calculate("tenure_type", 2025)[0] == "RENT_PRIVATELY"
 
 
 # --- parameter changes come before every modifier -------------------------
