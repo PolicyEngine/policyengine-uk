@@ -163,5 +163,3 @@ jobs:
       # microsimulation tests, never accept them as skipped for want of
       # the dataset credentials.
       require-data: ${{ github.event_name == 'merge_group' }}
-    secrets:
-      HUGGING_FACE_TOKEN: ${{ secrets.HUGGING_FACE_TOKEN }}
