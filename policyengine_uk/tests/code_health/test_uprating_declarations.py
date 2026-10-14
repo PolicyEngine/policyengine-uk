@@ -1,14 +1,15 @@
 """Every variable declaring `uprating` should appear in uprating_indices.yaml.
 
-The class-level `uprating = "..."` attribute on a Variable is dead metadata:
-nothing in policyengine-uk reads it, and policyengine-core only inspects it to
-refuse combining it with its own `@uprated` decorator. `uprating_indices.yaml`
-is the only mechanism that applies uprating, via `apply_single_year_uprating`
-and `reset_growthfactor_uprating` in `data/economic_assumptions.py`.
+Through 2030, `uprating_indices.yaml` is the only mechanism that applies
+uprating, via `apply_single_year_uprating` and `reset_growthfactor_uprating`
+in `data/economic_assumptions.py`. The class-level `uprating = "..."`
+attribute on a Variable is read only by the fallback in
+`_unmapped_uprating_indices`, which grows unlisted columns after
+LEGACY_PROJECTION_END_YEAR (2030).
 
-A variable can therefore declare an index and silently never be uprated. That
-is what #1859 found for electricity and gas consumption, and #1862 for three
-more columns. This guard makes the gap fail loudly at the point it is
+A variable can therefore declare an index and silently stay flat from the
+dataset year to 2030. That is what #1859 found for electricity and gas
+consumption, and #1862 for three more columns. This guard makes the gap fail loudly at the point it is
 introduced rather than surfacing in a downstream study.
 """
 
@@ -66,8 +67,9 @@ def test_declared_uprating_variables_are_in_the_yaml():
     )
     assert not missing, (
         "these variables declare `uprating` but are absent from "
-        f"uprating_indices.yaml, so they are never uprated: {missing}. Add "
-        "them to the matching index block, or to KNOWN_UNUPRATED with a reason."
+        f"uprating_indices.yaml, so they are not uprated through 2030: "
+        f"{missing}. Add them to the matching index block, or to "
+        "KNOWN_UNUPRATED with a reason."
     )
 
 
