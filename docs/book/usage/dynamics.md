@@ -185,7 +185,9 @@ reformed = Simulation(
     situation=situation,
     reform={
         "gov.hmrc.income_tax.rates.uk[0].rate": {"2025": 0.30},
-        "gov.simulation.labour_supply_responses.substitution_elasticity": {"2025": 0.25},
+        "gov.simulation.labour_supply_responses.substitution_elasticity": {
+            "2025": 0.25
+        },
         "gov.simulation.labour_supply_responses.income_elasticity": {"2025": -0.05},
     },
 )
