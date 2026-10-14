@@ -6,7 +6,8 @@ PolicyEngine UK includes variables that match to the Households Below Average In
 
 These are:
 
-- `hbai_household_net_income`: Household net income, before housing costs
+- `hbai_household_net_income`: Household net income, before housing costs, with a negative figure reset to zero
+- `hbai_household_net_income_before_reset_to_zero`: The same income before a negative figure is reset to zero
 - `hbai_household_net_income_ahc`: Household net income, after housing costs
 - `equiv_hbai_household_net_income`: Equivalised household net income, before housing costs (BHC)
 - `equiv_hbai_household_net_income_ahc`: Equivalised household net income, after housing costs (AHC)
@@ -43,6 +44,12 @@ The table below shows how the HBAI income components map to PolicyEngine variabl
 | Mortgage interest payments | `mortgage_interest_repayment`|
 | Structural insurance premiums (for owner occupiers) | `structural_insurance_payments` |
 | Ground rent and service charges |`housing_service_charges`|
+
+## Negative incomes
+
+HBAI resets a negative income before housing costs to zero: "Negative incomes BHC are reset to zero, but negative AHC incomes calculated from the adjusted BHC incomes are possible. Where incomes have been adjusted to zero BHC, income AHC is derived from the adjusted BHC income." ([HBAI Background Information and Methodology report FYE 2025](https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2025/households-below-average-income-background-information-and-methodology-report-fye-2025#negative-incomes)).
+
+PolicyEngine does the same. `hbai_household_net_income` is `hbai_household_net_income_before_reset_to_zero` reset to zero when negative, and `hbai_household_net_income_ahc` subtracts housing costs from the reset figure, so it can be negative. The equivalised incomes, `household_income_decile`, the poverty flags and the poverty gaps all use the reset figure: a household whose income was negative is in the bottom decile and counts as in poverty, and its before-housing-costs poverty gap is the whole poverty line. The labour supply responses use the figure before the reset, which is the household's actual budget constraint.
 
 ## Nowcasting/forecasting
 
