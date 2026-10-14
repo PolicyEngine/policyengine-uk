@@ -19,13 +19,17 @@ rent, water and sewerage charges, mortgage interest and structural insurance):
    equals the flag computed from the income before the reset. Zero is below
    any absolute line, and the reset moves no one across the median as long as
    fewer than half of people have an income of zero or less before the reset.
+   Otherwise the BHC median is itself reset to zero, and no one is in relative
+   poverty before housing costs.
 5. Gaps: each gap is measured from the reset income, so the BHC gaps never
    exceed their line, and every gap is at most the gap before the reset, with
    equality when b >= 0.
 6. Means: the weighted total of the reset income exceeds that of b by exactly
    the weighted sum of the negative parts of b.
 7. Deciles: every household has a decile from 1 to 10 (none is left out), and
-   deciles never fall as equivalised income rises.
+   deciles never fall as equivalised income rises. Households at zero share
+   one decile, the lowest; it is decile 1 when they hold less than a tenth of
+   people (equal incomes take the rank at the top of their group).
 8. Labour supply responses measure b, the actual budget constraint: a pay rise
    for a household below zero raises b, while the reset income stays at zero.
 
@@ -169,6 +173,31 @@ PINNED = {
 }
 
 
+# One household whose maintenance payments exceed its income among ten single
+# earners: the household at zero holds 1 of 11 people, under a tenth, so it is
+# in decile 1.
+PINNED_FEW_AT_ZERO = {
+    "year": 2025,
+    "households": [
+        {
+            "adults": [adult(40, 0, maintenance=15_000)],
+            "children": 0,
+            "would_claim_uc": False,
+            "household": home(1_200, rent=6_000),
+        }
+    ]
+    + [
+        {
+            "adults": [adult(30, earnings)],
+            "children": 0,
+            "would_claim_uc": True,
+            "household": home(1_200, rent=6_000),
+        }
+        for earnings in range(10_000, 60_000, 5_000)
+    ],
+}
+
+
 def situation(population):
     year = population["year"]
     people, benunits, groups = {}, {}, {}
@@ -256,6 +285,7 @@ def person_median(income, v):
 
 @PROPERTY_SETTINGS
 @example(PINNED)
+@example(PINNED_FEW_AT_ZERO)
 @given(populations())
 def test_reset_income_and_its_measures(population):
     v, _ = run(population)
@@ -301,6 +331,7 @@ def test_reset_income_and_its_measures(population):
 
 @PROPERTY_SETTINGS
 @example(PINNED)
+@example(PINNED_FEW_AT_ZERO)
 @given(populations())
 def test_poverty_headcounts_are_unchanged_and_gaps_measured_from_the_reset(
     population,
@@ -331,6 +362,10 @@ def test_poverty_headcounts_are_unchanged_and_gaps_measured_from_the_reset(
         assert np.array_equal(
             v["in_relative_poverty_bhc"], equiv_bhc < 0.6 * median_bhc
         )
+    else:
+        # The median is reset to zero with everyone else, so the line is zero
+        # and no reset income is below it.
+        assert not np.any(v["in_relative_poverty_bhc"])
     median_ahc = person_median(equiv_ahc, v)
     if median_ahc > 0:
         assert np.array_equal(
@@ -360,6 +395,7 @@ def test_poverty_headcounts_are_unchanged_and_gaps_measured_from_the_reset(
 
 @PROPERTY_SETTINGS
 @example(PINNED)
+@example(PINNED_FEW_AT_ZERO)
 @given(populations())
 def test_every_household_has_a_decile_that_rises_with_income(population):
     v, _ = run(population)
@@ -371,6 +407,15 @@ def test_every_household_has_a_decile_that_rises_with_income(population):
     assert np.all((decile >= 1) & (decile <= 10))
     lower = income[:, None] < income[None, :]
     assert not np.any(lower & (decile[:, None] > decile[None, :]))
+
+    # Households at zero (every reset household among them) share the lowest
+    # decile, which is decile 1 when they hold less than a tenth of people.
+    zero = income == 0
+    if zero.any():
+        assert np.all(decile[zero] == decile.min())
+        people = v["household_weight"] * v["household_count_people"]
+        if people[zero].sum() / people.sum() < 0.1 - 1e-6:
+            assert np.all(decile[zero] == 1)
 
 
 def test_labour_supply_responses_default_to_the_income_before_the_reset():

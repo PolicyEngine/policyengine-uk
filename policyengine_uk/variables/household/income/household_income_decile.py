@@ -8,8 +8,10 @@ class household_income_decile(Variable):
     documentation = (
         "Decile of equivalised HBAI household net income before housing costs "
         "(person-weighted). As in HBAI, a negative income is reset to zero "
-        "before ranking, so a household whose income was negative before the "
-        "reset falls in the bottom decile."
+        "before ranking. Households with equal incomes share one rank, the "
+        "rank at the top of their group, so households at zero fall in the "
+        "bottom decile as long as they hold at most a tenth of people (on the "
+        "enhanced FRS they hold under 1%)."
     )
     entity = Household
     definition_period = YEAR

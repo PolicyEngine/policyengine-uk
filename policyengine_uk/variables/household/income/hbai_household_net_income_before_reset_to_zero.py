@@ -11,9 +11,10 @@ class hbai_household_net_income_before_reset_to_zero(Variable):
     label = "Household net income (HBAI definition) before a negative income is reset to zero"
     documentation = (
         "HBAI household net income before housing costs, before HBAI resets a "
-        "negative figure to zero. It can be negative when deductions such as "
-        "Council Tax, Income Tax, pension contributions and maintenance paid "
-        "exceed income. hbai_household_net_income is this figure reset to zero "
+        "negative figure to zero. It can be negative: self-employment losses "
+        "count as negative income, and deductions such as Council Tax, Income "
+        "Tax, pension contributions and maintenance paid can exceed income. "
+        "hbai_household_net_income is this figure reset to zero "
         "when negative. Use this variable for a household's actual budget "
         "constraint (marginal rates, labour supply responses) and to diagnose "
         "negative incomes."

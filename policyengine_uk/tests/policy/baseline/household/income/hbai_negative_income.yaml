@@ -160,3 +160,28 @@
     # of 8% x (20,000 - 12,570) = 594.40 and Council Tax of 1,500.
     hbai_household_net_income_before_reset_to_zero: 16_419.60
     hbai_household_net_income: 16_419.60
+
+- name: With Council Tax abolished, the reset applies to income without it
+  period: 2024
+  absolute_error_margin: 0.1
+  input:
+    gov.contrib.abolish_council_tax: true
+    people:
+      adult:
+        age: 40
+        maintenance_expenses: 3_000
+    benunits:
+      benunit:
+        members: [adult]
+        would_claim_uc: false
+    households:
+      household:
+        members: [adult]
+        council_tax: 1_500
+        rent: 2_000
+        tenure_type: RENT_PRIVATELY
+  output:
+    # Maintenance paid only: the reform drops Council Tax from the deductions.
+    hbai_household_net_income_before_reset_to_zero: -3_000
+    hbai_household_net_income: 0
+    hbai_household_net_income_ahc: -2_000
