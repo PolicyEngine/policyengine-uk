@@ -69,7 +69,22 @@ def simulation(cloned_uk_tax_benefit_system):
         person = f"person_{index}"
         people[person] = {"age": {year: 40 for year in (2024, 2025, 2026)}}
         benunits[f"benunit_{index}"] = {"members": [person]}
-        homes[f"household_{index}"] = {"members": [person]}
+        # reset_calculations preserves variables registered as inputs when
+        # the situation is built, including BHC, rent and equivalisation.
+        homes[f"household_{index}"] = {
+            "members": [person],
+            **{
+                name: {
+                    year: 1 if name == "household_equivalisation_ahc" else 0
+                    for year in (2024, 2025, 2026)
+                }
+                for name in (
+                    "hbai_household_net_income",
+                    *HOUSING_COSTS,
+                    "household_equivalisation_ahc",
+                )
+            },
+        }
     return Simulation(
         situation={"people": people, "benunits": benunits, "households": homes}
     )
