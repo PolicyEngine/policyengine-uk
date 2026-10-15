@@ -151,7 +151,8 @@ def _problem(total, head, kind, where, text, weights, perturbed):
     ``where`` and ``text`` are kept for the direct-effect step and dropped
     before the result is reported.
     """
-    count = int(where.sum())
+    # Only households with weight count towards a published count.
+    count = int(np.count_nonzero(where & (weights > 0)))
     base = float(np.sum(weights * perturbed))
     share = float(np.sum(weights * where)) / base if base else 0.0
     return {
@@ -449,7 +450,9 @@ def counted_once(
         mask = np.ones_like(nonzero) if zero_baseline else nonzero
         added = mask.astype(np.float64)
         expected = _household(sim, added, entity)
-        record["units"] = int(mask.sum())
+        # Perturbed units in households with weight: a zero-weight record
+        # adds nothing to any published figure.
+        record["units"] = int(round(float(np.sum(expected[hw > 0]))))
         if not float(np.sum(hw * expected)) > 0:
             record.update(
                 status="skipped",
@@ -595,7 +598,7 @@ def counted_once(
                             "total": p["total"],
                             "head": head,
                             "kind": p["kind"],
-                            "households": int(cleared.sum()),
+                            "households": int(np.count_nonzero(cleared & (hw > 0))),
                             "via": via,
                         }
                     )

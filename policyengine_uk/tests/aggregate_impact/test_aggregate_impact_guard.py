@@ -488,3 +488,17 @@ def test_mediated_records_name_the_heads_that_moved_not_a_proven_route():
     row = by_variable(result)["ib"]
     assert row["status"] == "pass"
     assert row["mediated"][0]["via"] == ["ca", "unrelated"]
+
+
+def test_units_and_households_count_only_records_with_weight():
+    """Sol re-review 3 of #2335, finding 4: a zero-weight record adds nothing."""
+    formulas = model(contains=False)
+    one = np.array([1.0, 1.0, 0.0])
+    formulas["tax_a"] = lambda f: 0.1 * f("x") + one * f("tax_b")
+    _, result = run(formulas, partition(["tax_a", "tax_b"]), weights=(1.5, 0.0, 0.5))
+    row = by_variable(result)["tax_b"]
+    # tax_b is non-zero in all three households, one of which has no weight.
+    assert row["units"] == 2
+    # tax_a contains tax_b in households 1 and 2; only household 1 has weight.
+    moves = [p for p in row["problems"] if p["head"] == "tax_a"]
+    assert moves and all(p["households"] == 1 for p in moves)

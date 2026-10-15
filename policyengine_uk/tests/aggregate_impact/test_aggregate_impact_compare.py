@@ -1,6 +1,7 @@
 """Comparison and rendering of two measurements, on synthetic results."""
 
 import copy
+import json
 import math
 
 import numpy as np
@@ -17,7 +18,16 @@ from policyengine_uk.utils.aggregate_impact.compare import (
     compare,
     decile_impacts,
 )
-from policyengine_uk.utils.aggregate_impact.measure import weighted_gini
+from policyengine_uk.tests.aggregate_impact.test_aggregate_impact_measure import (
+    _protection_partition,
+    _recorded,
+)
+from policyengine_uk.utils.aggregate_impact.measure import (
+    hidden_detail,
+    protect_totals,
+    weighted_gini,
+)
+from policyengine_uk.utils.aggregate_impact.privacy import HIDDEN_KEY
 from policyengine_uk.utils.aggregate_impact.render import fmt_change, fmt_level, render
 from policyengine_uk.utils.aggregate_impact.spec import Threshold, load_spec
 
@@ -163,6 +173,150 @@ def test_a_move_is_flagged_exactly_when_it_exceeds_the_larger_bound(
     assert threshold.exceeded(base, head) == (
         abs(head - base) > max(absolute, relative * abs(base))
     )
+
+
+# The data axis: one model, two datasets (uk-data pull requests).
+
+
+def _on(data_sha, **provenance):
+    measured = result({("receipts", "a"): [1.0] * len(YEARS)}, sha=data_sha)
+    measured["provenance"].update({"metrics_version": "m", **provenance})
+    measured["runtime"].update(
+        policyengine_uk="2.122.2", policyengine_uk_fingerprint="f" * 64
+    )
+    return measured
+
+
+def test_the_data_axis_allows_two_datasets_but_the_model_axis_does_not():
+    base, head = _on("1" * 64), _on("2" * 64)
+    assert compare(base, head, SPEC)["status"] == "fail"
+    summary = compare(base, head, SPEC, axis="data")
+    assert summary["status"] == "pass", summary["failures"]
+    assert summary["axis"] == "data"
+
+
+@pytest.mark.parametrize(
+    "change, message",
+    [
+        (
+            lambda r: r["runtime"].update(policyengine_uk_fingerprint="e" * 64),
+            "one policyengine-uk fingerprint",
+        ),
+        (
+            lambda r: r["runtime"].update(policyengine_uk="9.9.9"),
+            "one policyengine-uk version",
+        ),
+        (lambda r: r["runtime"].update(distributions=["numpy==9.0"]), "one runtime"),
+        (lambda r: r["partition"].update(sha256="other"), "fiscal partition"),
+        (
+            lambda r: r["provenance"].update(metrics_version="other"),
+            "metric definitions",
+        ),
+        (
+            lambda r: r["provenance"]["dataset"].pop("verified_sha256"),
+            "record the bytes",
+        ),
+    ],
+)
+def test_a_data_comparison_fails_unless_only_the_data_differs(change, message):
+    base, head = _on("1" * 64), _on("2" * 64)
+    change(head)
+    summary = compare(base, head, SPEC, axis="data")
+    assert summary["status"] == "fail"
+    assert any(message in f for f in summary["failures"]), summary["failures"]
+
+
+def test_the_data_axis_does_not_match_households_across_datasets():
+    base, head = _on("1" * 64), _on("2" * 64)
+    households = {"2025": {"household_id": np.arange(3)}}
+    summary = compare(
+        base,
+        head,
+        SPEC,
+        base_households=households,
+        head_households=households,
+        axis="data",
+    )
+    assert summary["deciles"] == {}
+    assert "not matched" in summary["decile_notes"][0]
+    text = render(summary, SPEC)
+    assert "## Aggregate impact of the data change: pass" in text
+    assert "Base dataset" in text and "not matched" in text
+
+
+@settings(max_examples=50, deadline=None)
+@given(values=metric_values)
+def test_a_data_comparison_with_itself_moves_nothing(values):
+    side = result(values)
+    side["provenance"]["metrics_version"] = "m"
+    side["runtime"].update(
+        policyengine_uk="2.122.2", policyengine_uk_fingerprint="f" * 64
+    )
+    summary = compare(side, side, SPEC, axis="data")
+    assert summary["status"] == "pass"
+    assert not any(row["changed"] for row in summary["rows"])
+    assert summary["flags"] == []
+    assert "Both sides measured the same dataset bytes." in summary["warnings"]
+
+
+def test_an_unknown_axis_is_refused():
+    with pytest.raises(ValueError, match="axis"):
+        compare(_on("1" * 64), _on("1" * 64), SPEC, axis="sideways")
+
+
+def test_measure_records_an_unpinned_dataset_by_its_bytes(tmp_path, monkeypatch):
+    """With --dataset-file and no --pin, the measured bytes are the identity."""
+    import json
+
+    import policyengine_uk
+    from policyengine_uk.utils.aggregate_impact import __main__ as cli
+    from policyengine_uk.utils.aggregate_impact import measure as measure_module
+    from policyengine_uk.utils.aggregate_impact.dataset import sha256_file
+
+    built = tmp_path / "enhanced_frs_2024_25.h5"
+    built.write_bytes(b"not really an h5 file")
+
+    class StubSimulation:
+        def __init__(self, dataset=None, reform=None):
+            self.dataset = dataset
+
+    def stub_measure(
+        sim, factory, partition, spec, label, reforms, run_guard, provenance
+    ):
+        return {
+            "schema": "x",
+            "status": "ok",
+            "provenance": provenance,
+            "metrics": [],
+            "timings": {"total": 0},
+        }, None
+
+    monkeypatch.setattr(policyengine_uk, "Microsimulation", StubSimulation)
+    monkeypatch.setattr(measure_module, "measure", stub_measure)
+    out = tmp_path / "out"
+    code = cli.main(
+        [
+            "measure",
+            "--label",
+            "head",
+            "--dataset-file",
+            str(built),
+            "--dataset-label",
+            "uk-data #595 head build",
+            "--no-reforms",
+            "--no-guard",
+            "--out",
+            str(out),
+        ]
+    )
+    assert code == 0
+    dataset = json.loads((out / "result.json").read_text())["provenance"]["dataset"]
+    assert dataset == {
+        "path": "enhanced_frs_2024_25.h5",
+        "data_package": "unpinned build",
+        "data_version": "uk-data #595 head build",
+        "verified_sha256": sha256_file(built),
+    }
 
 
 def test_flags_follow_the_spec_thresholds():
@@ -334,10 +488,16 @@ def test_decile_impacts_match_a_direct_grouped_calculation(seed, n):
         group = frame[frame.d == row["decile"]]
         if group.empty:
             continue
+        changed = int(((group.change.abs() > 0.005) & (group.w > 0)).sum())
+        if 0 < changed < 10:
+            assert row["suppressed"] and row["mean_change"] is None
+            continue
         mean_change = (group.w * group.change).sum() / group.w.sum()
         relative = (group.w * group.change).sum() / (group.w * group.base).sum()
-        assert row["mean_change"] == pytest.approx(mean_change)
-        assert row["relative_change"] == pytest.approx(relative)
+        # Published to what the comment shows: £1 and 0.01%.
+        assert row["mean_change"] == round(mean_change)
+        assert row["relative_change"] == round(relative, 4)
+        assert "households" not in row and "base_mean" not in row
 
 
 @settings(max_examples=30, deadline=None)
@@ -354,7 +514,7 @@ def test_a_uniform_change_shows_in_every_decile(seed, shift):
     impacts, notes = decile_impacts(base, head, YEARS)
     assert not any("differ" in n for n in notes)
     for row in impacts[str(YEARS[0])]:
-        assert row["mean_change"] == pytest.approx(shift, abs=1e-6)
+        assert row["mean_change"] == pytest.approx(shift, abs=0.5 + 1e-6)
         assert row["share_gaining"] == (1.0 if shift > 1 else 0.0)
         assert row["share_losing"] == (1.0 if shift < -1 else 0.0)
 
@@ -457,150 +617,6 @@ def test_the_guard_section_lists_failures_and_mediated_responses():
     )
 
 
-# The data axis: one model, two datasets (uk-data pull requests).
-
-
-def _on(data_sha, **provenance):
-    measured = result({("receipts", "a"): [1.0] * len(YEARS)}, sha=data_sha)
-    measured["provenance"].update({"metrics_version": "m", **provenance})
-    measured["runtime"].update(
-        policyengine_uk="2.122.2", policyengine_uk_fingerprint="f" * 64
-    )
-    return measured
-
-
-def test_the_data_axis_allows_two_datasets_but_the_model_axis_does_not():
-    base, head = _on("1" * 64), _on("2" * 64)
-    assert compare(base, head, SPEC)["status"] == "fail"
-    summary = compare(base, head, SPEC, axis="data")
-    assert summary["status"] == "pass", summary["failures"]
-    assert summary["axis"] == "data"
-
-
-@pytest.mark.parametrize(
-    "change, message",
-    [
-        (
-            lambda r: r["runtime"].update(policyengine_uk_fingerprint="e" * 64),
-            "one policyengine-uk fingerprint",
-        ),
-        (
-            lambda r: r["runtime"].update(policyengine_uk="9.9.9"),
-            "one policyengine-uk version",
-        ),
-        (lambda r: r["runtime"].update(distributions=["numpy==9.0"]), "one runtime"),
-        (lambda r: r["partition"].update(sha256="other"), "fiscal partition"),
-        (
-            lambda r: r["provenance"].update(metrics_version="other"),
-            "metric definitions",
-        ),
-        (
-            lambda r: r["provenance"]["dataset"].pop("verified_sha256"),
-            "record the bytes",
-        ),
-    ],
-)
-def test_a_data_comparison_fails_unless_only_the_data_differs(change, message):
-    base, head = _on("1" * 64), _on("2" * 64)
-    change(head)
-    summary = compare(base, head, SPEC, axis="data")
-    assert summary["status"] == "fail"
-    assert any(message in f for f in summary["failures"]), summary["failures"]
-
-
-def test_the_data_axis_does_not_match_households_across_datasets():
-    base, head = _on("1" * 64), _on("2" * 64)
-    households = {"2025": {"household_id": np.arange(3)}}
-    summary = compare(
-        base,
-        head,
-        SPEC,
-        base_households=households,
-        head_households=households,
-        axis="data",
-    )
-    assert summary["deciles"] == {}
-    assert "not matched" in summary["decile_notes"][0]
-    text = render(summary, SPEC)
-    assert "## Aggregate impact of the data change: pass" in text
-    assert "Base dataset" in text and "not matched" in text
-
-
-@settings(max_examples=50, deadline=None)
-@given(values=metric_values)
-def test_a_data_comparison_with_itself_moves_nothing(values):
-    side = result(values)
-    side["provenance"]["metrics_version"] = "m"
-    side["runtime"].update(
-        policyengine_uk="2.122.2", policyengine_uk_fingerprint="f" * 64
-    )
-    summary = compare(side, side, SPEC, axis="data")
-    assert summary["status"] == "pass"
-    assert not any(row["changed"] for row in summary["rows"])
-    assert summary["flags"] == []
-    assert "Both sides measured the same dataset bytes." in summary["warnings"]
-
-
-def test_an_unknown_axis_is_refused():
-    with pytest.raises(ValueError, match="axis"):
-        compare(_on("1" * 64), _on("1" * 64), SPEC, axis="sideways")
-
-
-def test_measure_records_an_unpinned_dataset_by_its_bytes(tmp_path, monkeypatch):
-    """With --dataset-file and no --pin, the measured bytes are the identity."""
-    import json
-
-    import policyengine_uk
-    from policyengine_uk.utils.aggregate_impact import __main__ as cli
-    from policyengine_uk.utils.aggregate_impact import measure as measure_module
-    from policyengine_uk.utils.aggregate_impact.dataset import sha256_file
-
-    built = tmp_path / "enhanced_frs_2024_25.h5"
-    built.write_bytes(b"not really an h5 file")
-
-    class StubSimulation:
-        def __init__(self, dataset=None, reform=None):
-            self.dataset = dataset
-
-    def stub_measure(
-        sim, factory, partition, spec, label, reforms, run_guard, provenance
-    ):
-        return {
-            "schema": "x",
-            "status": "ok",
-            "provenance": provenance,
-            "metrics": [],
-            "timings": {"total": 0},
-        }, None
-
-    monkeypatch.setattr(policyengine_uk, "Microsimulation", StubSimulation)
-    monkeypatch.setattr(measure_module, "measure", stub_measure)
-    out = tmp_path / "out"
-    code = cli.main(
-        [
-            "measure",
-            "--label",
-            "head",
-            "--dataset-file",
-            str(built),
-            "--dataset-label",
-            "uk-data #595 head build",
-            "--no-reforms",
-            "--no-guard",
-            "--out",
-            str(out),
-        ]
-    )
-    assert code == 0
-    dataset = json.loads((out / "result.json").read_text())["provenance"]["dataset"]
-    assert dataset == {
-        "path": "enhanced_frs_2024_25.h5",
-        "data_package": "unpinned build",
-        "data_version": "uk-data #595 head build",
-        "verified_sha256": sha256_file(built),
-    }
-
-
 def test_a_figure_from_too_few_records_is_suppressed_end_to_end():
     """Sol re-review 2, finding 1: a total and caseload from one recipient
     reveal the award and the weight, so neither is published."""
@@ -666,20 +682,202 @@ def test_published_guard_output_keeps_no_small_counts_or_shares():
             }
         ],
     }
+    guard["components"][0]["responses"] = {"gov_spending": {"uc": -0.55}}
+    guard["components"][0]["coefficients"] = {"gov_spending": 1.0}
     out = publishable_guard(guard)
     row = out["components"][0]
     assert row["units"] is None
     assert (
         row["problems"][0]["households"] is None and "share" not in row["problems"][0]
     )
-    assert row["problems"][1] == {
-        "households": 40,
-        "share": 0.5,
-        "message": "in 40 households",
-    }
+    # Sol re-review 3, finding 6: with only 3 perturbed units, no share and no
+    # response survives, even for a problem in 40 households.
+    assert row["problems"][1] == {"households": 40, "message": "in 40 households"}
+    assert row["responses"] == {} and row["coefficients"] == {}
     assert row["mediated"][0]["households"] is None
     # The input is not changed.
     assert guard["components"][0]["units"] == 3
+    # With enough perturbed units, a large problem keeps its share.
+    guard["components"][0]["units"] = 300
+    kept = publishable_guard(guard)["components"][0]
+    assert kept["problems"][1]["share"] == 0.5
+    assert kept["responses"] == {"gov_spending": {"uc": -0.55}}
+
+
+# Sol re-review 3 of #2335: decile rows and protected totals' changes.
+
+
+@pytest.mark.parametrize("changed", [1, 9, 10])
+def test_a_decile_row_from_fewer_than_10_changed_households_publishes_no_change(
+    changed,
+):
+    rng = np.random.default_rng(0)
+    base = households(100, rng, decile=np.repeat(np.arange(1, 11), 10))
+    head = copy.deepcopy(base)
+    for columns in head.values():
+        columns["income"] = columns["income"].copy()
+        columns["income"][:changed] += 250.0  # all in decile 1
+    impacts, _ = decile_impacts(base, head, YEARS)
+    rows = {row["decile"]: row for row in impacts[str(YEARS[0])]}
+    assert rows[1]["suppressed"] == (changed < 10)
+    assert rows["all"]["suppressed"] == (changed < 10)
+    if changed < 10:
+        assert all(rows[1][k] is None for k in ("mean_change", "share_gaining"))
+    # Deciles where nothing changed publish a zero change.
+    assert rows[2]["mean_change"] == 0 and not rows[2]["suppressed"]
+
+
+def test_a_zero_weight_household_does_not_count_as_changed():
+    rng = np.random.default_rng(1)
+    weight = rng.uniform(1, 1000, 100)
+    weight[:10] = 0.0  # decile 1 carries no weight
+    base = households(100, rng, decile=np.repeat(np.arange(1, 11), 10), weight=weight)
+    head = copy.deepcopy(base)
+    for columns in head.values():
+        columns["income"] = columns["income"].copy()
+        columns["income"][:12] += 250.0  # 10 zero-weight in decile 1, 2 weighted in 2
+    impacts, _ = decile_impacts(base, head, YEARS)
+    rows = {row["decile"]: row for row in impacts[str(YEARS[0])]}
+    # Twelve households change, but only two carry weight: a small cell.
+    assert rows[2]["suppressed"] and rows["all"]["suppressed"]
+    assert not rows[1]["suppressed"]
+
+
+@settings(max_examples=50, deadline=None)
+@given(seed=st.integers(0, 2**32 - 1))
+def test_published_decile_rows_cannot_rebuild_the_income_total(seed):
+    """The "all" row's mean change over its relative change, times the
+    household count, gave the exact base income total back."""
+    rng = np.random.default_rng(seed)
+    base = households(300, rng)
+    head = copy.deepcopy(base)
+    for columns in head.values():
+        columns["income"] = columns["income"] + rng.normal(0, 500, 300)
+    impacts, _ = decile_impacts(base, head, YEARS)
+    for row in impacts[str(YEARS[0])]:
+        assert "households" not in row and "base_mean" not in row
+        if not row["suppressed"]:
+            assert row["mean_change"] == round(row["mean_change"])
+            assert row["relative_change"] == round(row["relative_change"], 4)
+            assert row["share_gaining"] == round(row["share_gaining"], 3)
+
+
+def _sides(rare_base, rare_head, common_head=7.4e10):
+    out = []
+    for common, rare in ((7.3e10, rare_base), (common_head, rare_head)):
+        rec = _recorded(common=common, rare=rare)
+        protect_totals(rec, _protection_partition(), set(), 2026)
+        out.append(
+            ({m["id"]: m for m in rec.metrics.values()}, hidden_detail(rec, 2026))
+        )
+    return out
+
+
+def _cell(rows, metric_id):
+    return next(r for r in rows if r["id"] == metric_id)["values"]["2026"]
+
+
+def test_a_rounded_total_shows_its_exact_change_when_no_suppressed_head_moved():
+    from policyengine_uk.utils.aggregate_impact.compare import compare_metrics
+
+    (base, base_hidden), (head, head_hidden) = _sides(246.9, 246.9)
+    rows, flags = compare_metrics(
+        base, head, SPEC, [2026], base_hidden=base_hidden, head_hidden=head_hidden
+    )
+    total = _cell(rows, "model.gov_spending")
+    # Levels stay rounded; the change is the common benefit's exact £1bn.
+    assert total["base"] == 7.3e10 and total["head"] == 7.4e10
+    assert total["delta"] == pytest.approx(1e9) and not total["rounded"]
+    assert any(f["id"] == "model.gov_spending" for f in flags)
+    # The suppressed head itself never shows a change.
+    assert _cell(rows, "spending.rare")["delta"] is None
+
+
+def test_a_rounded_total_withholds_its_change_when_a_suppressed_head_moved():
+    from policyengine_uk.utils.aggregate_impact.compare import compare_metrics
+
+    (base, base_hidden), (head, head_hidden) = _sides(246.9, 300.0, common_head=7.3e10)
+    rows, flags = compare_metrics(
+        base, head, SPEC, [2026], base_hidden=base_hidden, head_hidden=head_hidden
+    )
+    total = _cell(rows, "model.gov_spending")
+    assert total["delta"] is None and total["rounded"]
+    assert not any(f["id"] == "model.gov_spending" for f in flags)
+    # The exact gov_tax change is unaffected: it holds no suppressed head.
+    assert _cell(rows, "model.gov_tax")["delta"] == 0
+
+
+def test_without_private_detail_a_rounded_total_withholds_its_change():
+    from policyengine_uk.utils.aggregate_impact.compare import compare_metrics
+
+    (base, _), (head, _) = _sides(246.9, 246.9)
+    rows, flags = compare_metrics(base, head, SPEC, [2026])
+    total = _cell(rows, "model.gov_spending")
+    assert total["delta"] is None and total["rounded"]
+    assert not any(f["id"] == "model.gov_spending" for f in flags)
+
+
+@settings(max_examples=100, deadline=None)
+@given(
+    rare=st.floats(1.0, 4.9e8),
+    moved=st.floats(-1e8, 1e8),
+    common_change=st.floats(-1e10, 1e10),
+)
+def test_a_published_change_never_reveals_a_suppressed_heads_change(
+    rare, moved, common_change
+):
+    """For all inputs: the published changes of every total, less the
+    published changes of the heads, never give the suppressed head's change."""
+    from policyengine_uk.utils.aggregate_impact.compare import compare_metrics
+
+    (base, bh), (head, hh) = _sides(
+        rare, rare + moved, common_head=7.3e10 + common_change
+    )
+    rows, _ = compare_metrics(base, head, SPEC, [2026], base_hidden=bh, head_hidden=hh)
+    published = {r["id"]: r["values"]["2026"]["delta"] for r in rows}
+    assert published["spending.rare"] is None
+    if rare + moved != rare:  # the suppressed head really changed
+        for total in (
+            "model.gov_spending",
+            "model.household_benefits",
+            "balance.spending",
+        ):
+            assert published[total] is None
+
+
+def test_hidden_detail_is_written_only_to_private_and_read_back(tmp_path):
+    from policyengine_uk.utils.aggregate_impact.measure import read_result, write_result
+
+    (base, hidden), _ = _sides(246.9, 246.9)
+    households = {"2026": {"household_id": np.arange(3)}, HIDDEN_KEY: hidden}
+    write_result(tmp_path, {"schema": "x", "metrics": list(base.values())}, households)
+    published = (tmp_path / "result.json").read_text()
+    assert "246.9" not in published and "hidden" not in published
+    assert (tmp_path / "private" / "hidden.json").exists()
+    _, loaded = read_result(tmp_path)
+    assert loaded[HIDDEN_KEY] == json.loads(json.dumps(hidden))
+
+
+def test_a_withheld_change_and_a_small_decile_row_render_as_such():
+    from policyengine_uk.utils.aggregate_impact.compare import compare_metrics
+    from policyengine_uk.utils.aggregate_impact.render import _change_cell, _deciles
+
+    (base, bh), (head, hh) = _sides(246.9, 300.0, common_head=7.3e10)
+    rows, _ = compare_metrics(base, head, SPEC, [2026], base_hidden=bh, head_hidden=hh)
+    total = next(r for r in rows if r["id"] == "model.gov_spending")
+    assert _change_cell(total, 2026) == "withheld (rounded total)"
+    rare = next(r for r in rows if r["id"] == "spending.rare")
+    assert _change_cell(rare, 2026) == "suppressed"
+    row = {
+        "decile": 1,
+        "suppressed": True,
+        "mean_change": None,
+        "relative_change": None,
+        "share_gaining": None,
+        "share_losing": None,
+    }
+    text = _deciles({"deciles": {"2026": [row, dict(row, decile="all")]}}, [2026])
+    assert "fewer than 10 households change" in text and "n/a" not in text
 
 
 def test_the_data_axis_ignores_the_data_package_itself():
