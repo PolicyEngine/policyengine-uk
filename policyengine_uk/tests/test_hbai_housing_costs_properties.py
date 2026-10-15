@@ -1,8 +1,10 @@
 """HBAI AHC deducts every housing cost once, including service charges.
 
-BHC is supplied directly to isolate the housing-cost contract from the
-calculation and zero floor of income before housing costs. Each vector
-population contains a household with zero BHC and positive service charges.
+The generated properties supply BHC directly to isolate the housing-cost
+contract from the calculation and zero floor of income before housing costs.
+Each vector population contains a household with zero BHC and positive service
+charges. A separate differential case computes BHC to ensure service charges
+are deducted only after housing costs.
 """
 
 import numpy as np
@@ -154,3 +156,57 @@ def test_extra_service_charges_reduce_ahc_by_the_same_amount(
     np.testing.assert_allclose(
         before_ahc - after_ahc, extra_input, rtol=1e-6, atol=0.03
     )
+
+
+@pytest.mark.parametrize("year", [2024, 2025, 2026])
+def test_service_charges_do_not_change_computed_bhc(year):
+    # Positive computed BHC exposes a misplaced BHC deduction that the zero
+    # floor could hide. Neither BHC variable is supplied as an input.
+    simulation = Simulation(
+        situation={
+            "people": {
+                "person": {
+                    "age": {year: 40},
+                    "employment_income": {year: 60_000},
+                }
+            },
+            "benunits": {
+                "benunit": {
+                    "members": ["person"],
+                    "would_claim_uc": {year: False},
+                }
+            },
+            "households": {
+                "household": {
+                    "members": ["person"],
+                    "tenure_type": {year: "OWNED_OUTRIGHT"},
+                    **{
+                        name: {year: 1_200 if name == "housing_service_charges" else 0}
+                        for name in HOUSING_COSTS
+                    },
+                }
+            },
+        }
+    )
+    bhc_variables = (
+        "hbai_household_net_income_before_reset_to_zero",
+        "hbai_household_net_income",
+    )
+    before_bhc = {
+        name: np.asarray(simulation.calculate(name, year)).copy()
+        for name in bhc_variables
+    }
+    before_ahc = np.asarray(
+        simulation.calculate("hbai_household_net_income_ahc", year)
+    ).copy()
+    assert all(np.all(income > 2_400) for income in before_bhc.values())
+
+    simulation.set_input("housing_service_charges", year, [2_400])
+    simulation.reset_calculations()
+
+    for name in bhc_variables:
+        np.testing.assert_array_equal(
+            simulation.calculate(name, year), before_bhc[name]
+        )
+    after_ahc = np.asarray(simulation.calculate("hbai_household_net_income_ahc", year))
+    np.testing.assert_allclose(before_ahc - after_ahc, 1_200, rtol=0, atol=0.01)

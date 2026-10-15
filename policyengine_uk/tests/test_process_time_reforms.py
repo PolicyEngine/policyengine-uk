@@ -625,3 +625,13 @@ def test_baselines_stay_current_law(change, baseline):
     assert weekly(after, NEW_STATE_PENSION, 2028) == weekly(
         baseline, NEW_STATE_PENSION, 2028
     )
+
+
+@pytest.mark.parametrize("summed", [False, True])
+def test_scenario_apply_changes_the_parameter_an_alias_path_copies(summed):
+    scenario = Scenario(parameter_changes={LSR_LEGACY: 0.3})
+    if summed:
+        scenario = Scenario() + scenario
+    simulation = Simulation(situation=PENSIONER)
+    scenario.apply(simulation)
+    assert value(simulation, LSR, "2028-01-01") == pytest.approx(0.3)

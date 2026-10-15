@@ -30,6 +30,9 @@ from policyengine_uk.parameters.gov.contrib.create_private_pension_uprating impo
 from policyengine_uk.parameters.gov.dwp.state_pension.triple_lock.create_triple_lock import (
     add_triple_lock,
 )
+from policyengine_uk.parameters.gov.dwp.universal_credit.rebalancing.create_health_element_uprating import (
+    add_uc_health_element_uprating,
+)
 from policyengine_uk.parameters.gov.economic_assumptions.create_september_cpi_uprating import (
     add_september_cpi_uprating,
 )
@@ -102,6 +105,7 @@ GENERATION_STEPS = (
     add_september_cpi_uprating,
     create_economic_assumption_indices,
     add_threshold_indexation,
+    add_uc_health_element_uprating,
     add_lsr_deprecation_aliases,
 )
 
@@ -148,6 +152,7 @@ def process_parameter_tree(
     - September CPI uprating
     - economic assumption indices
     - income tax and NICs threshold indexation after the freeze
+    - Universal Credit LCWRA element uprating (UC Act 2025 s. 3 freeze)
     - parameter uprating and backdating
     - conversion to fiscal year parameters
 
@@ -353,6 +358,23 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
             raise
         finally:
             self.reset_parameter_caches()
+
+    def parameters_with(self, assignments: List[ParameterAssignment]) -> ParameterNode:
+        """The parameters this system would have with more dated changes.
+
+        Rebuilds them on a shallow copy, which shares the variables and
+        entities but holds its own copy of the parameters, so this system is
+        left as it is, its parameter caches included, even when the rebuild
+        fails. A rebuild only reassigns the copy's attributes. When this
+        system was processed from the YAML and the changes' values can be
+        memoised (plain numbers, booleans and strings), the memo then serves
+        the same rebuild to this system if it is given the changes. The tree
+        returned is never this system's own.
+        """
+        probe = copy.copy(self)
+        probe.parameters = self.parameters.clone()
+        probe.apply_parameter_assignments(assignments)
+        return probe.parameters
 
     def add_legacy_overrides(self, overrides: List[LegacyOverride]) -> None:
         """Apply changes to the annualised parameters and keep them.
