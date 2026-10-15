@@ -1,7 +1,11 @@
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 
+import numpy as np
 import pytest
+from hypothesis import example, given, settings
+from hypothesis import strategies as st
 
 import policyengine_uk.simulation as simulation_module
 from policyengine_uk import Simulation
@@ -144,48 +148,80 @@ def test_dataset_source_rejects_unsupported_remote_urls():
         )
 
 
-def test_build_from_file_loads_local_multi_year_dataset(monkeypatch, tmp_path):
-    cache_key = "hf://policyengine/policyengine-uk-data/enhanced_frs_2022_23.h5"
-    dataset_path = tmp_path / "dataset.h5"
-    built = {}
+@pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
+def test_build_from_file_loads_local_multi_year_dataset(tmp_path):
+    """Files written by either UK schema dispatch without validator stubs."""
+    from policyengine_uk.data import UKMultiYearDataset, UKSingleYearDataset
+    from policyengine_uk.data.economic_assumptions import extend_single_year_dataset
 
-    class FakeMultiYearDataset:
-        @staticmethod
-        def validate_file_path(file_path, raise_exception=False):
-            built["validated_file_path"] = file_path
-            built["raise_exception"] = raise_exception
-            return True
+    single = _single_person_dataset()
+    multi = extend_single_year_dataset(
+        single, _current_law_system().parameters, end_year=2028
+    )
+    multi_path = str(tmp_path / "multi.h5")
+    multi.save(multi_path)
 
-        def __init__(self, file_path):
-            self.file_path = file_path
+    assert UKMultiYearDataset.validate_file_path(multi_path, True)
+    assert not UKSingleYearDataset.validate_file_path(multi_path, False)
+    with pytest.raises(ValueError, match="Dataset 'time_period' not found in the file"):
+        UKSingleYearDataset.validate_file_path(multi_path)
+    simulation = Simulation(dataset=Path(multi_path))
+    assert simulation.dataset.years == multi.years
+    for year in multi.years:
+        np.testing.assert_allclose(
+            simulation.calculate("employment_income_before_lsr", year),
+            multi[year].person.employment_income,
+            rtol=1e-6,
+        )
 
-    def fake_build_from_multi_year_dataset(dataset):
-        built["dataset"] = dataset
-
-    simulation_module._url_dataset_cache.pop(cache_key, None)
-    monkeypatch.setattr(simulation_module, "UKMultiYearDataset", FakeMultiYearDataset)
-    monkeypatch.setattr(
-        simulation_module, "_pre_encode_enum_columns", lambda dataset, tbs: None
+    # Keep the existing single-year save/load route covered alongside the fix.
+    single_path = str(tmp_path / "single.h5")
+    single.save(single_path)
+    assert UKSingleYearDataset.validate_file_path(single_path)
+    assert not UKMultiYearDataset.validate_file_path(single_path)
+    with pytest.raises(ValueError, match="No yearly data found for 'person'"):
+        UKMultiYearDataset.validate_file_path(single_path, True)
+    single_simulation = Simulation(dataset=single_path)
+    np.testing.assert_array_equal(
+        single_simulation.calculate("employment_income_before_lsr", 2025),
+        single.person.employment_income,
     )
 
-    simulation = Simulation.__new__(Simulation)
-    simulation.tax_benefit_system = _current_law_system()
-    monkeypatch.setattr(
-        simulation,
-        "build_from_multi_year_dataset",
-        fake_build_from_multi_year_dataset,
-    )
 
-    try:
-        Simulation.build_from_file(simulation, Path(dataset_path), cache_key=cache_key)
+@pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
+@settings(max_examples=8, deadline=None)
+@example(years={2025})
+@given(years=st.sets(st.integers(2020, 2035), min_size=1, max_size=4))
+def test_saved_datasets_have_exactly_one_schema_and_load(years):
+    """Both layouts, including a multi-year layout with just one year."""
+    from policyengine_uk.data import UKMultiYearDataset, UKSingleYearDataset
 
-        assert built["validated_file_path"] == str(dataset_path)
-        assert built["raise_exception"] is False
-        assert built["dataset"].file_path == str(dataset_path)
-        assert simulation.dataset is built["dataset"]
-        assert simulation_module._url_dataset_cache[cache_key] is built["dataset"]
-    finally:
-        simulation_module._url_dataset_cache.pop(cache_key, None)
+    singles = []
+    for year in sorted(years):
+        single = _single_person_dataset()
+        single.time_period = str(year)
+        single.person["employment_income"] = float(year * 10)
+        singles.append(single)
+
+    with TemporaryDirectory() as directory:
+        for index, dataset in enumerate(
+            [*singles, UKMultiYearDataset(datasets=singles)]
+        ):
+            path = str(Path(directory) / f"dataset-{index}.h5")
+            dataset.save(path)
+            single_valid = UKSingleYearDataset.validate_file_path(path, False)
+            multi_valid = UKMultiYearDataset.validate_file_path(path, False)
+            assert single_valid != multi_valid
+            assert multi_valid == isinstance(dataset, UKMultiYearDataset)
+            simulation = Simulation(dataset=path)
+            expected = (
+                dataset.datasets if multi_valid else {int(dataset.time_period): dataset}
+            )
+            for year, original in expected.items():
+                np.testing.assert_array_equal(
+                    simulation.calculate("employment_income_before_lsr", year),
+                    original.person.employment_income,
+                )
 
 
 def _single_person_dataset():
@@ -204,7 +240,16 @@ def _single_person_dataset():
         }
     )
     benunit = pd.DataFrame({"benunit_id": [1]})
-    household = pd.DataFrame({"household_id": [1]})
+    household = pd.DataFrame(
+        {
+            "household_id": [1],
+            "household_weight": [1_000.0],
+            "region": ["LONDON"],
+            "tenure_type": ["RENT_PRIVATELY"],
+            "rent": [12_000.0],
+            "council_tax": [1_500.0],
+        }
+    )
     return UKSingleYearDataset(
         person=person, benunit=benunit, household=household, fiscal_year=2025
     )
