@@ -13,9 +13,11 @@ class capital_gains_behavioural_response(Variable):
     documentation = (
         "Change in realised gains under a reform to the taxation of gains, "
         "given an elasticity of realisations with respect to either the "
-        "retention rate or the marginal tax rate. Gains qualifying for "
-        "Business Asset Disposal Relief respond at their own elasticity "
-        "(capital_gains_badr_behavioural_response); the rest at the main one."
+        "retention rate (1 by default) or the marginal tax rate. Gains "
+        "qualifying for Business Asset Disposal Relief respond at their own "
+        "elasticity (capital_gains_badr_behavioural_response); the rest at the "
+        "main one. Zero where the simulation has no baseline, applies its "
+        "baseline's rules, or has no one with gains."
     )
     unit = GBP
     definition_period = YEAR

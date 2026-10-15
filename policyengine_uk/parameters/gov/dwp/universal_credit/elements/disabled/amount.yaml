@@ -1,4 +1,4 @@
-description: Limited capability for work-related activity element amount under the Universal Credit. In years when the rebalancing modifier runs, the rebalancing protected_health_element and new_claimant_health_element parameters set the amount paid, so a health element reform for those years changes those parameters.
+description: Limited capability for work and work-related activity (LCWRA) element amount under Universal Credit. From April 2026 this is the amount for claimants other than pre-2026, severe conditions criteria or terminally ill claimants, which Universal Credit Act 2025 s. 3 freezes for 2026-27 to 2029-30. In years when the rebalancing modifier runs, the rebalancing protected_health_element and new_claimant_health_element parameters set the amount paid, so a health element reform for those years changes those parameters.
 values:
   2016-04-10: 315.6
   2017-04-10: 318.76
@@ -14,10 +14,16 @@ values:
 metadata:
   period: month
   label: Universal Credit disability element amount
-  uprating: gov.benefit_uprating_cpi
+  # Benefit uprating CPI, held for 2026-27 to 2029-30 (Universal Credit Act
+  # 2025 s. 3); built by rebalancing/create_health_element_uprating.py.
+  uprating: gov.economic_assumptions.indices.uc_health_element
   unit: currency-GBP
   reference:
     - title: The Universal Credit Regulations 2013 reg. 27 (LCWRA element), amounts in reg. 36
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/36
+    - title: Universal Credit Act 2025 s. 2 (2026-27 amount)
+      href: https://www.legislation.gov.uk/ukpga/2025/22/section/2
+    - title: Universal Credit Act 2025 s. 3 (freeze for 2026-27 to 2029-30)
+      href: https://www.legislation.gov.uk/ukpga/2025/22/section/3
     - title: Benefit and pension rates 2026 to 2027
       href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027
