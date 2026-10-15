@@ -153,7 +153,7 @@ def test_warning_can_be_escalated_to_an_error():
 
 
 def test_warning_follows_the_years_used_by_the_rebalancing_loop(monkeypatch):
-    monkeypatch.setattr(uc_reform, "UC_REBALANCING_YEARS", (2025,), raising=False)
+    monkeypatch.setattr(uc_reform, "REBALANCING_YEARS", (2025,), raising=False)
     with pytest.warns(_warning_type(), match="2025"):
         Simulation(
             situation=SITUATION,
@@ -166,7 +166,7 @@ def test_warning_also_covers_an_extended_projection_horizon(monkeypatch):
         situation=SITUATION,
         reform={AMOUNT: {"2030-01-01.2030-12-31": 600}},
     )
-    monkeypatch.setattr(uc_reform, "UC_REBALANCING_YEARS", (2030,), raising=False)
+    monkeypatch.setattr(uc_reform, "REBALANCING_YEARS", (2030,), raising=False)
     with pytest.warns(_warning_type(), match="2030"):
         warn = getattr(
             uc_reform,

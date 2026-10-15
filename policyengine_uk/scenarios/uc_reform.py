@@ -100,7 +100,7 @@ def _protected_existing_health_element_monthly(
 
 
 NEW_CLAIMANT_STATUS = "uc_receives_new_claimant_health_element"
-UC_REBALANCING_YEARS = range(2026, 2030)
+REBALANCING_YEARS = range(2026, 2030)
 LCWRA_AMOUNT = "gov.dwp.universal_credit.elements.disabled.amount"
 
 
@@ -137,7 +137,7 @@ def warn_shadowed_lcwra_reform(sim) -> None:
         return
     rebalancing = system.parameters.gov.dwp.universal_credit.rebalancing
     years = []
-    for year in UC_REBALANCING_YEARS:
+    for year in REBALANCING_YEARS:
         if not rebalancing.active(year):
             continue
         statutory_sample = instant(f"{year}-{FISCAL_YEAR_SAMPLE_DATE}")
@@ -198,7 +198,7 @@ def add_universal_credit_reform(sim: Microsimulation):
     }  # WPI Economics for Trussell Trust based on admin PIP data, 2025
     new_claimant_health_element = rebalancing.new_claimant_health_element
     is_data = built_from_data(sim)
-    for year in UC_REBALANCING_YEARS:
+    for year in REBALANCING_YEARS:
         if not rebalancing.active(year):
             continue
         is_post_2025_claimant = _new_claimant_health_element_status(
