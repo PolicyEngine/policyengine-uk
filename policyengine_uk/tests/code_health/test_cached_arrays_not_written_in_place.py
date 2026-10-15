@@ -532,11 +532,23 @@ BRANCHING_SCENARIOS = {
         "gov.hmrc.cgt.basic_rate": 0.20,
         "gov.hmrc.cgt.higher_rate": 0.40,
     },
+    # The default response, read through the marginal tax rates' pay-rise
+    # branches as well as measured.
+    "capital_gains_default_response": {
+        "gov.hmrc.cgt.basic_rate": 0.20,
+        "gov.hmrc.cgt.higher_rate": 0.40,
+    },
 }
 
 
 @pytest.mark.parametrize(
-    "case", ["marginal_rates", "labour_supply_responses", "capital_gains_responses"]
+    "case",
+    [
+        "marginal_rates",
+        "labour_supply_responses",
+        "capital_gains_responses",
+        "capital_gains_default_response",
+    ],
 )
 def test_branching_runs_with_read_only_cache(read_only_cache, case):
     from policyengine_uk import Simulation
@@ -562,6 +574,8 @@ def test_branching_runs_with_read_only_cache(read_only_cache, case):
     )
     for year in YEARS:
         sim.calculate("household_net_income", year)
+        if case == "capital_gains_default_response":
+            sim.calculate("marginal_tax_rate", year)
     # The measurement branches are not kept; the responses show they ran.
     if case == "labour_supply_responses":
         # The higher personal allowance raises both earners' net income and

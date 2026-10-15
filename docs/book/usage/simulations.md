@@ -363,7 +363,7 @@ print(f"Additional government revenue: £{revenue_change:.1f}bn")
 ```
 
 ```{note}
-Revenue calculations use the accounting identity: when household net income decreases, government revenue increases by the same amount (assuming no behavioural responses).
+Revenue calculations use the accounting identity: when household net income decreases, government revenue increases by the same amount. The identity holds while no behavioural response moves household income. Realised capital gains are part of household income and respond by default to reforms that change the tax on them, including reforms to income tax bands and allowances ([capital gains realisation response](../assumptions/capital-gains-responses.md)), so for those reforms use `gov_balance` instead. Household and distributional results for those reforms count gains no longer realised as income lost, although the gains are deferred rather than lost.
 ```
 
 ```python

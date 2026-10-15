@@ -30,7 +30,8 @@ class marginal_tax_rate(Variable):
         step = marginal_rate_step(employment_income, p.marginal_tax_rate_delta)
         adult_count = p.marginal_tax_rate_adults
         # The pay rise is not a reform: each branch holds the behavioural
-        # responses at this simulation's values.
+        # responses (labour supply and realised gains) at this simulation's
+        # values.
         held_responses = held_behavioural_responses(person, period)
         for adult_index in range(1, 1 + adult_count):
             alt_simulation = simulation.get_branch(f"adult_{adult_index}_pay_rise")

@@ -34,7 +34,8 @@ class marginal_tax_rate_wrt_employer_cost(Variable):
         baseline_employer_cost = person("employer_cost", period)
         baseline_net = person.household("household_net_income", period)
         # The pay rise is not a reform: each branch holds the behavioural
-        # responses at this simulation's values.
+        # responses (labour supply and realised gains) at this simulation's
+        # values.
         held_responses = held_behavioural_responses(person, period)
         for adult_index in range(1, 1 + adult_count):
             alt_simulation = simulation.get_branch(
