@@ -1,3 +1,92 @@
+## [2.134.0] - 2026-10-15
+
+### Added
+
+- - Added `capital_gains_response_assumption` (`policyengine_uk.utils.capital_gains`), which reports the capital gains realisation response a simulation applies in a year (the convention, each elasticity and where it came from), and `CapitalGainsResponseWarning`, issued when an `mtr_elasticity` applies in place of the retention-rate default.
+
+### Changed
+
+- - Made a retention-rate elasticity of 1.0 the default capital gains realisation response (`gov.simulation.capital_gains_responses.elasticity`, previously 0), the central value Advani, Lonsdale and Summers (2024, pp. 36-37) use for the medium-term effect of a package that also broadens the base, with 0.5 and 2.0 as sensitivities. For a rate change alone their reasoning points to a higher value, and responses in the first year can be larger, so the default can overstate what a rate rise raises; for a large rise it can even give the opposite sign to official costings. CGT reforms are no longer costed statically unless the elasticity is set to 0, and gains qualifying for Business Asset Disposal Relief take the same 1.0. Reforms to income tax bands and allowances also move realised gains, by changing the rate gains are taxed at, so costings that include CGT move too. Household net income counts gains no longer realised as income lost, so household and distributional results for these reforms change as well as revenue. An `mtr_elasticity` set while the retention-rate settings keep their defaults now applies alone in its periods, with a `CapitalGainsResponseWarning`; retention-rate settings changed to nonzero values still raise alongside it. Simulations that apply their baseline's rules (any simulation without a reform, and a reform's own baseline) and populations without gains no longer measure marginal rates on gains, and marginal tax rates on earnings hold realised gains fixed instead of measuring the response again at the higher pay. `marginal_tax_rate_on_capital_gains` now measures the rise in capital gains tax rather than the fall in household net income, which gives the same rate at about a sixth of the cost.
+
+
+## [2.133.0] - 2026-10-15
+
+### Added
+
+- - Added `policyengine_uk.utils.measurement_branches`: `measurement_branch`, which measures a simulation's results at set inputs in a branch with every behavioural response switched off, and `held_behavioural_responses` and `hold_behavioural_responses`, which hold the responses fixed in a branch that steps an input to measure a marginal rate.
+
+### Fixed
+
+- - Measured the elasticity-based labour supply responses against the reform's baseline simulation rather than a copy of the reform, so a reform that changes marginal rates or net income now gets a response when `gov.simulation.labour_supply_responses` elasticities are set. The labour supply and capital gains measurements now start from what their simulation was given, not what it had already calculated, and hold every behavioural response at zero, so neither response depends on what was calculated first or includes the other. Marginal tax rates (on earnings, on employer cost and on capital gains) hold every behavioural response at the simulation's values in the branches where they step an input, instead of measuring the responses again there. A branch that shares its simulation's rules, such as the Pension Credit branch of the UC non-dependant exemption, takes the simulation's labour supply response instead of measuring it again, and a labour supply term whose elasticity is zero is zero without a measurement.
+
+
+## [2.132.6] - 2026-10-15
+
+### Fixed
+
+- `Scenario.apply` on a built simulation now changes the parameter a deprecated `labor_supply_responses` path copies, as constructing the simulation with the scenario does; it used to edit only the alias copy, which formulas do not read, unless the scenario had been summed.
+
+
+## [2.132.5] - 2026-10-15
+
+### Fixed
+
+- - Fixed loading local multi-year H5 datasets saved by `UKMultiYearDataset.save` by distinguishing yearly groups from single-year pandas tables.
+
+
+## [2.132.4] - 2026-10-15
+
+### Fixed
+
+- - HBAI household net income before housing costs now resets a negative figure to zero, as HBAI does; income after housing costs, deciles, poverty flags and poverty gaps follow from the reset figure. Poverty headcounts do not change while both person-weighted BHC and AHC median incomes are positive (as on the enhanced FRS); poverty gaps fall and income totals rise by the sum of the negative incomes. Households whose income is reset now count in the bottom income decile instead of being left out with decile -1, as long as households at zero hold at most a tenth of people, so bottom-decile figures move. The figure before the reset is the new `hbai_household_net_income_before_reset_to_zero`, which the labour supply responses use, so they are unchanged.
+
+
+## [2.132.3] - 2026-10-15
+
+### Fixed
+
+- Dataset caching no longer couples a macro scenario to other simulations: a scenario built first left its projected incomes for its own baseline and every later simulation from the same `hf://` or `gs://` dataset, and one built after a baseline got current law's data. Dated parameter changes that change what the dataset projection reads, such as a reform dict setting an OBR growth rate for a year, are now written before the data is built, so incomes, rents and council tax follow them.
+
+
+## [2.132.2] - 2026-10-15
+
+### Changed
+
+- - Added Winter Fuel Payment and Pension Age Winter Heating Payment tests for couples on Income Support, income-based jobseeker's allowance and income-related employment and support allowance: couples of pensionable age, who get one payment, and couples whose claimant is under pensionable age, in the 2024 and 2025 qualifying weeks.
+
+
+## [2.132.1] - 2026-10-14
+
+### Fixed
+
+- - Removed the projection-horizon job's working notes (`REPORT.md` and `PROGRESS.md`), committed to the repository root by mistake with #2376, and made Lint fail when agent working notes are committed there.
+
+
+## [2.132.0] - 2026-10-14
+
+### Fixed
+
+- - A sum of scenarios keeps the timing of each part's modifier. A part applied before data load, such as `no_economic_assumptions`, is still applied before it when added to a reform, so `no_economic_assumptions + reform` freezes the data as well as the parameters. Likewise a macro scenario applied before data load, plus a reform, projects the data with the macro growth. Modifiers of parts applied after data load, including ones that edit the data, still run after it. A sum with a part applied before data load applies all of its parameter changes first, as `+` merges them, so the data follows them all and a modifier's edits survive. A simulation with a scenario applied before data load no longer reads or writes the `hf://` and `gs://` dataset cache, so its projection no longer reaches its baseline or later simulations. The sum of scenarios that are all applied before data load is now applied before it. A sum now calls the modifiers its operands had when it was made. Its fields still hold the whole sum, and `Scenario.parts_by_data_load()` returns what is applied before and after data load.
+
+### Removed
+
+- - Removed `gov.simulation.labour_supply_responses.obr_elasticities` and its legacy alias `gov.simulation.labor_supply_responses.obr_elasticities`. Nothing read this switch, so setting it changed no output. A reform or saved policy that still names it now fails with directions to `gov.dynamic.obr_labour_supply_assumptions`, the switch under which `Simulation.apply_dynamics` applies the OBR labour supply elasticities.
+
+
+## [2.131.2] - 2026-10-14
+
+### Fixed
+
+- - Fixed HBAI household income after housing costs to deduct ground rent and housing service charges, so equivalised AHC income and poverty measures include these costs.
+
+
+## [2.131.1] - 2026-10-14
+
+### Fixed
+
+- A bare-year reform key, or a key dated 1 January, on the economic growth rates, the indices built from them and the household parameters now names that calendar year. A bare year used to name the fiscal year from 6 April, which moved the next year: a 2027 earnings growth rate showed as 2027's but moved the 2028 index and the April 2029 triple lock. A 1 January key used to override that one day after processing, which nothing built from the parameter read. A change to an uprated household parameter past its last stated value now leaves the years around it on their projected path instead of freezing them. Reforms to series built during processing (the triple lock rate, the indices, the lagged series) now uprate what is built from them. Deprecated `labor_supply_responses` paths in reform dicts reach the parameters formulas read, and changes to a parameter given by both its path and its alias are merged in order instead of one being silently dropped.
+
+
 ## [2.131.0] - 2026-10-14
 
 ### Added

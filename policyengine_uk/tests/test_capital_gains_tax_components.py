@@ -224,6 +224,9 @@ class TestResponsePlumbing:
         changes = {
             "gov.hmrc.cgt.residential_property.higher_rate": {str(year): 0.30},
             "gov.hmrc.cgt.residential_property.additional_rate": {str(year): 0.30},
+            # The marginal tax rate convention, with the retention-rate
+            # default switched off.
+            "gov.simulation.capital_gains_responses.elasticity": {str(year): 0},
             "gov.simulation.capital_gains_responses.mtr_elasticity": {str(year): -0.5},
         }
         sim = Microsimulation(
@@ -304,12 +307,19 @@ class TestEqualisationReforms:
         "gov.hmrc.cgt.badr.lifetime_limit": {"2025": 0},
     }
     SCHEDULES = (None, *SCHEDULE_INPUTS)
+    # Which schedules a reform reaches shows in the tax on gains held fixed,
+    # so the reforms here switch the realisation response off.
+    STATIC = {"gov.simulation.capital_gains_responses.elasticity": {"2025": 0}}
 
     def tax(self, schedule, changes=None):
         variables = {"employment_income": 100_000, "capital_gains": 100_000}
         if schedule is not None:
             variables[schedule] = 100_000
-        kwargs = {"scenario": Scenario(parameter_changes=changes)} if changes else {}
+        kwargs = (
+            {"scenario": Scenario(parameter_changes={**changes, **self.STATIC})}
+            if changes
+            else {}
+        )
         sim = Microsimulation(situation=single_person(self.YEAR, **variables), **kwargs)
         return float(sim.calculate("capital_gains_tax", self.YEAR).values[0])
 

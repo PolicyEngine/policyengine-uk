@@ -34,8 +34,9 @@ Invariants, for any people and incomes:
    child's) come off their applicable income, never below zero, and the award
    never falls.
 6. Household income: market income falls by exactly the household's losses,
-   and HBAI net income moves only through the loss itself, taxes and
-   means-tested or passported benefits; every other component is unchanged.
+   and HBAI net income (before HBAI resets a negative figure to zero) moves
+   only through the loss itself, taxes and means-tested or passported
+   benefits; every other component is unchanged.
 7. Class 4 (SSCBA 1992 Sch 2 para 3): Class 4 profits are self-employment
    profits after capital allowances and the trading allowance, less the
    separate Class 4 loss balance and the year's loss, never below zero.
@@ -727,7 +728,10 @@ def test_household_income_moves_only_through_its_channels(units):
     components = sorted(
         set(HBAI_HOUSEHOLD_NET_INCOME_ADDS + HBAI_HOUSEHOLD_NET_INCOME_SUBTRACTS)
     )
-    variables = components + ["household_market_income", "hbai_household_net_income"]
+    # HBAI income before the reset to zero: the channel identity holds for the
+    # sum of components, which the reset breaks once income crosses zero.
+    hbai = "hbai_household_net_income_before_reset_to_zero"
+    variables = components + ["household_market_income", hbai]
     a_sim = Simulation(situation=family_situation(units))
     b_sim = Simulation(situation=family_situation(without))
 
@@ -753,7 +757,7 @@ def test_household_income_moves_only_through_its_channels(units):
         if v in HBAI_CHANNELS
     )
     assert np.allclose(
-        a["hbai_household_net_income"] - b["hbai_household_net_income"],
+        a[hbai] - b[hbai],
         channels,
         atol=1,
     )
