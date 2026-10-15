@@ -173,12 +173,13 @@ def labour_supply_run():
         _add_unread_control(simulation)
 
     with record_parameter_reads() as reads:
-        formula_sim.calculate("employment_income_behavioral_response", YEAR)
+        response = formula_sim.calculate("employment_income_behavioral_response", YEAR)
         dynamics = dynamics_sim.apply_dynamics(YEAR)
 
-    # Both paths ran in full: the formula built its measurement branch, which
-    # it does only after its early returns, and the dynamics returned results.
-    assert "lsr_measurement" in formula_sim.branches
+    # Both paths ran in full: the formula measured a response, which it does
+    # only after its early returns (its measurement branches are not kept),
+    # and the dynamics returned results.
+    assert (np.asarray(response) != 0).any()
     assert dynamics is not None
     return simulations, {canonicalize_lsr_parameter_path(read) for read in reads}
 
