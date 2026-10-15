@@ -1,3 +1,14 @@
+## [2.133.0] - 2026-10-15
+
+### Added
+
+- - Added `policyengine_uk.utils.measurement_branches`: `measurement_branch`, which measures a simulation's results at set inputs in a branch with every behavioural response switched off, and `held_behavioural_responses` and `hold_behavioural_responses`, which hold the responses fixed in a branch that steps an input to measure a marginal rate.
+
+### Fixed
+
+- - Measured the elasticity-based labour supply responses against the reform's baseline simulation rather than a copy of the reform, so a reform that changes marginal rates or net income now gets a response when `gov.simulation.labour_supply_responses` elasticities are set. The labour supply and capital gains measurements now start from what their simulation was given, not what it had already calculated, and hold every behavioural response at zero, so neither response depends on what was calculated first or includes the other. Marginal tax rates (on earnings, on employer cost and on capital gains) hold every behavioural response at the simulation's values in the branches where they step an input, instead of measuring the responses again there. A branch that shares its simulation's rules, such as the Pension Credit branch of the UC non-dependant exemption, takes the simulation's labour supply response instead of measuring it again, and a labour supply term whose elasticity is zero is zero without a measurement.
+
+
 ## [2.132.6] - 2026-10-15
 
 ### Fixed
