@@ -1,0 +1,1 @@
+- Stop Hypothesis drawing literal constants from policyengine_uk's own modules in tests, so pull request checks (source tree) and Release test (installed wheel) generate the same property-test examples (#2397).

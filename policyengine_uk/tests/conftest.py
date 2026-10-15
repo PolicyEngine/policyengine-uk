@@ -152,8 +152,34 @@ _heap_frozen = False
 _threshold_before = None
 
 
+def _ignore_hypothesis_local_constants():
+    """Stop Hypothesis drawing literal constants from policyengine_uk's code.
+
+    Hypothesis biases its draws with literals from modules it counts as local,
+    and it does not count anything under site-packages. Run from the source
+    tree, policyengine_uk's modules are local; run from the installed wheel
+    (Release test), they are not. The same derandomized seed then generates
+    different examples in pull request checks and in Release test, so a
+    failure can appear only at release (issue #2397). With no local constants,
+    both draw the same examples. test_hypothesis_environment.py checks this
+    still takes effect.
+    """
+    from hypothesis.internal.conjecture import providers
+
+    if not hasattr(providers, "_get_local_constants"):
+        raise RuntimeError(
+            "hypothesis.internal.conjecture.providers._get_local_constants no "
+            "longer exists; update _ignore_hypothesis_local_constants for this "
+            "Hypothesis version."
+        )
+    no_local_constants = providers.Constants()
+    providers._get_local_constants = lambda: no_local_constants
+    providers.CONSTANTS_CACHE.cache.clear()
+
+
 def pytest_configure(config):
     global _threshold_before
+    _ignore_hypothesis_local_constants()
     _owners_at_start.update(_variable_module_owners())
     _threshold_before = gc.get_threshold()
     gc.set_threshold(GC_FIRST_GENERATION_THRESHOLD, *_threshold_before[1:])
