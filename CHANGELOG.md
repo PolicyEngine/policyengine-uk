@@ -1,3 +1,10 @@
+## [2.132.2] - 2026-10-15
+
+### Changed
+
+- - Added Winter Fuel Payment and Pension Age Winter Heating Payment tests for couples on Income Support, income-based jobseeker's allowance and income-related employment and support allowance: couples of pensionable age, who get one payment, and couples whose claimant is under pensionable age, in the 2024 and 2025 qualifying weeks.
+
+
 ## [2.132.1] - 2026-10-14
 
 ### Fixed
