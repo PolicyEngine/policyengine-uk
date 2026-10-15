@@ -34,6 +34,7 @@ from policyengine_uk.utils.scenario import Scenario
 from policyengine_uk.data.economic_assumptions import (
     extend_single_year_dataset,
     reset_growthfactor_uprating,
+    uprating_input_fingerprint,
 )
 from policyengine_uk.data.dataset_sources import materialize_gcs_dataset_url
 from policyengine_uk.data.input_dataframe import (
@@ -71,6 +72,32 @@ from .tax_benefit_system import (
 )
 
 
+def _projects_data(situation, dataset) -> bool:
+    """Whether building from this source projects a dataset's later years.
+
+    ``extend_single_year_dataset`` projects a single-year dataset from the
+    parameters: one read from a file or URL (including the default dataset),
+    a ``UKSingleYearDataset`` or a policyengine-core ``Dataset``. A situation,
+    a DataFrame and a multi-year dataset are taken as given.
+    """
+    if situation is not None:
+        return False
+    return not isinstance(dataset, (pd.DataFrame, UKMultiYearDataset))
+
+
+def _scenario_assignments(scenario) -> list:
+    """A scenario's statutory-timeline changes: ``parameter_changes``, then
+    each of its ``dated_reforms``, in order."""
+    assignments = []
+    if scenario.parameter_changes:
+        assignments += read_parameter_changes(
+            _canonical_parameter_paths(scenario.parameter_changes),
+            calendar_years=parameter_reads_calendar_years(),
+        )
+    assignments += scenario.dated_assignments(order_start=len(assignments))
+    return assignments
+
+
 def _canonical_parameter_paths(changes: dict) -> dict:
     """Changes keyed by canonical parameter paths (labour supply aliases)."""
     return canonicalize_parameter_changes(changes)
@@ -83,6 +110,30 @@ from microdf import MicroDataFrame
 # Avoids repeating HDF5 reading (0.84s), uprating (0.69s) and enum
 # encoding (0.67s) on every Simulation() call after the first.
 _url_dataset_cache: dict = {}
+# The uprating fingerprint of current law, for each CGT projection selection
+# (None: no projection), computed once. Only datasets uprated under current
+# law are cached: a simulation whose uprating inputs differ builds its own.
+_current_law_uprating_fingerprints: dict = {}
+
+
+def _current_law_uprating_fingerprint(capital_gains_projection) -> str:
+    key = (
+        None
+        if capital_gains_projection is None
+        else capital_gains_projection.fingerprint
+    )
+    if key not in _current_law_uprating_fingerprints:
+        system = (
+            CountryTaxBenefitSystem()
+            if capital_gains_projection is None
+            else CountryTaxBenefitSystem(
+                capital_gains_projection=capital_gains_projection
+            )
+        )
+        _current_law_uprating_fingerprints[key] = uprating_input_fingerprint(
+            system.parameters
+        )
+    return _current_law_uprating_fingerprints[key]
 
 
 def get_default_dataset_url() -> str:
@@ -226,11 +277,23 @@ class Simulation(CoreSimulation):
 
         # A scenario's parameter changes rebuild the parameters from the
         # statutory tree, so they come before its modifier, whose edits a
-        # rebuild would discard.
+        # rebuild would discard. A sum's parameter changes all come with its
+        # before-load part. Without one, they come before the data is built
+        # when they change what the dataset's uprating reads (a growth rate,
+        # say), so the data's projected years follow them; otherwise just
+        # after.
+        after_parameters_before_data = (
+            before_data_load is None
+            and after_data_load is not None
+            and _projects_data(situation, dataset)
+            and self._scenario_changes_uprating_inputs(after_data_load)
+        )
         if before_data_load is not None:
             self.apply_scenario_parameters(before_data_load)
             if before_data_load.simulation_modifier is not None:
                 before_data_load.simulation_modifier(self)
+        elif after_parameters_before_data:
+            self.apply_scenario_parameters(after_data_load)
         self._refresh_capital_gains_projection()
         # Build simulation from appropriate source
         if situation is not None:
@@ -250,12 +313,12 @@ class Simulation(CoreSimulation):
         else:
             raise ValueError(f"Unsupported dataset type: {dataset.__class__}")
 
-        # Parameter changes applied after data load leave the data as built
-        # (a changed economic assumption does not re-uprate it), but come
+        # Parameter changes that leave the data's uprating alone come here,
         # before the steps below that read the parameters: the Universal
         # Credit rebalancing inputs and the structural reforms switched on by
-        # parameters.
-        if after_data_load is not None:
+        # parameters. Changes a scenario's modifier makes after data load
+        # (including single-day reform-dict keys) leave the data as built.
+        if after_data_load is not None and not after_parameters_before_data:
             self.apply_scenario_parameters(after_data_load)
 
         # Universal Credit reform (July 2025). Needs closer integration in the baseline,
@@ -606,14 +669,22 @@ class Simulation(CoreSimulation):
     def _dataset_cache_key(self, source: str):
         """The URL dataset cache key for a source, or None not to cache.
 
-        A cached dataset is already projected to later years, with current
-        law's economic assumptions unless a scenario applied before data load
-        changed them, so a simulation with such a scenario neither reads nor
-        writes the cache.
+        A cached dataset is already projected to later years, so it is shared
+        only between simulations that project it identically: none with a
+        scenario applied before data load (whose modifier can change how the
+        data is read, as a structural reform re-ordering an enum does), and
+        only those whose uprating inputs are current law's. A simulation with
+        changed inputs (a macro scenario, ``no_economic_assumptions``, or a
+        reform that changes them) neither reads nor writes the cache.
         """
         if self._scenario_before_data_load:
             return None
-        if self.tax_benefit_system.capital_gains_projection is None:
+        system = self.tax_benefit_system
+        if uprating_input_fingerprint(
+            system.parameters
+        ) != _current_law_uprating_fingerprint(system.capital_gains_projection):
+            return None
+        if system.capital_gains_projection is None:
             return source
         metadata = self.capital_gains_projection_metadata
         return (
@@ -658,14 +729,22 @@ class Simulation(CoreSimulation):
         statutory tree does not define) are applied by the scenario's
         modifier instead.
         """
-        assignments = []
-        if scenario.parameter_changes:
-            assignments += read_parameter_changes(
-                _canonical_parameter_paths(scenario.parameter_changes),
-                calendar_years=parameter_reads_calendar_years(),
-            )
-        assignments += scenario.dated_assignments(order_start=len(assignments))
-        self.apply_parameter_assignments(assignments)
+        self.apply_parameter_assignments(_scenario_assignments(scenario))
+
+    def _scenario_changes_uprating_inputs(self, scenario: Scenario) -> bool:
+        """Whether a scenario's parameter changes change the dataset uprating.
+
+        Compares the uprating fingerprint of the parameters with the changes
+        (rebuilt on a copy of the system, a rebuild the memo then serves to
+        this one) with that of the parameters without them.
+        """
+        assignments = _scenario_assignments(scenario)
+        if not assignments:
+            return False
+        system = self.tax_benefit_system
+        return uprating_input_fingerprint(
+            system.parameters_with(assignments)
+        ) != uprating_input_fingerprint(system.parameters)
 
     def apply_parameter_assignments(self, assignments: list) -> None:
         """Rebuild the parameters with changes on the statutory timeline."""
