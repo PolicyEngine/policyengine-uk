@@ -1,3 +1,39 @@
+## [2.134.2] - 2026-10-15
+
+### Fixed
+
+- - Hold the Universal Credit LCWRA element at £217.26 a month for 2026-27 to 2029-30, as Universal Credit Act 2025 s. 3 freezes it, and uprate it from that amount by the benefit uprating index from 2030-31. It was CPI-uprated from 2027-28. The freeze is `gov.dwp.universal_credit.rebalancing.health_element_freeze` and applies while the rebalancing reforms are active. The amount the rebalancing scenario pays new claimants (`rebalancing.new_claimant_health_element`) follows the same path, so lifting the freeze reaches them.
+
+
+## [2.134.1] - 2026-10-15
+
+### Fixed
+
+- Stop charging a household's whole stock of other residential and non-residential property as a purchase whenever it buys its main residence. `property_purchased` now sets only the main-residence purchase; `additional_residential_property_purchased` (the price of one additional dwelling, charged at the higher rates for additional dwellings) and `non_residential_property_purchased` are inputs, nil unless set directly or imputed by a dataset, and are uprated like the property stocks when a dataset supplies them.
+
+
+## [2.134.0] - 2026-10-15
+
+### Added
+
+- - Added `capital_gains_response_assumption` (`policyengine_uk.utils.capital_gains`), which reports the capital gains realisation response a simulation applies in a year (the convention, each elasticity and where it came from), and `CapitalGainsResponseWarning`, issued when an `mtr_elasticity` applies in place of the retention-rate default.
+
+### Changed
+
+- - Made a retention-rate elasticity of 1.0 the default capital gains realisation response (`gov.simulation.capital_gains_responses.elasticity`, previously 0), the central value Advani, Lonsdale and Summers (2024, pp. 36-37) use for the medium-term effect of a package that also broadens the base, with 0.5 and 2.0 as sensitivities. For a rate change alone their reasoning points to a higher value, and responses in the first year can be larger, so the default can overstate what a rate rise raises; for a large rise it can even give the opposite sign to official costings. CGT reforms are no longer costed statically unless the elasticity is set to 0, and gains qualifying for Business Asset Disposal Relief take the same 1.0. Reforms to income tax bands and allowances also move realised gains, by changing the rate gains are taxed at, so costings that include CGT move too. Household net income counts gains no longer realised as income lost, so household and distributional results for these reforms change as well as revenue. An `mtr_elasticity` set while the retention-rate settings keep their defaults now applies alone in its periods, with a `CapitalGainsResponseWarning`; retention-rate settings changed to nonzero values still raise alongside it. Simulations that apply their baseline's rules (any simulation without a reform, and a reform's own baseline) and populations without gains no longer measure marginal rates on gains, and marginal tax rates on earnings hold realised gains fixed instead of measuring the response again at the higher pay. `marginal_tax_rate_on_capital_gains` now measures the rise in capital gains tax rather than the fall in household net income, which gives the same rate at about a sixth of the cost.
+
+
+## [2.133.0] - 2026-10-15
+
+### Added
+
+- - Added `policyengine_uk.utils.measurement_branches`: `measurement_branch`, which measures a simulation's results at set inputs in a branch with every behavioural response switched off, and `held_behavioural_responses` and `hold_behavioural_responses`, which hold the responses fixed in a branch that steps an input to measure a marginal rate.
+
+### Fixed
+
+- - Measured the elasticity-based labour supply responses against the reform's baseline simulation rather than a copy of the reform, so a reform that changes marginal rates or net income now gets a response when `gov.simulation.labour_supply_responses` elasticities are set. The labour supply and capital gains measurements now start from what their simulation was given, not what it had already calculated, and hold every behavioural response at zero, so neither response depends on what was calculated first or includes the other. Marginal tax rates (on earnings, on employer cost and on capital gains) hold every behavioural response at the simulation's values in the branches where they step an input, instead of measuring the responses again there. A branch that shares its simulation's rules, such as the Pension Credit branch of the UC non-dependant exemption, takes the simulation's labour supply response instead of measuring it again, and a labour supply term whose elasticity is zero is zero without a measurement.
+
+
 ## [2.132.6] - 2026-10-15
 
 ### Fixed
