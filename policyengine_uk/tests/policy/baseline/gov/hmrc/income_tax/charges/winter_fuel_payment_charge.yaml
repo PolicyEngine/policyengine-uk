@@ -535,14 +535,14 @@
     household_benefits: 203.40
     hbai_benefits: 203.40
 
-- name: 2025 a landlord's property allowance election is made before the charge (model, not law)
+- name: 2025 a landlord's total income is taken before the property allowance (model, not law)
   # Private pension £32,000; property receipts £3,500, expenses £200 (profit
   # £3,300), finance costs £1,500. With expenses: (35,300 - 12,570) x 20% =
   # £4,546, less the finance-cost reduction 20% x £1,500 = £300, so £4,246.
   # With partial relief (£1,000 allowance for £200 of expenses, no
-  # reduction): (34,500 - 12,570) x 20% = £4,386. Expenses are kept. The
-  # model's total_income is before the property allowance, £35,300 on either
-  # route, so the £200 charge is added on either: £4,446.
+  # reduction): (34,500 - 12,570) x 20% = £4,386. The model's total_income
+  # is before the property allowance, £35,300 on either route, so the £200
+  # charge is added on either and expenses are kept: £4,446 against £4,586.
   # KNOWN GAP, pinned on purpose: under the law, partial relief puts total
   # income at £34,500, under the threshold, so a landlord would elect it and
   # pay £4,386 with no charge. The model does not deduct the property or
