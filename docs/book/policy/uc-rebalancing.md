@@ -24,10 +24,10 @@ Universal Credit Act 2025 s. 3 freezes the element for 2026-27 to 2029-30: it di
 
 Two parameters hold this amount, and both are uprated by `gov.economic_assumptions.indices.uc_health_element`, so they follow the same path:
 
-- `gov.dwp.universal_credit.elements.disabled.amount` is the LCWRA element the `uc_LCWRA_element` formula pays. A simulation uses it whenever the rebalancing reforms are inactive, and for years after the data's projection ends (2032-33 on), when the rebalancing scenario no longer sets the element.
-- `gov.dwp.universal_credit.rebalancing.new_claimant_health_element` is the amount the rebalancing scenario pays new claimants for 2026-27 to 2029-30.
+- `gov.dwp.universal_credit.elements.disabled.amount` is the LCWRA element the `uc_LCWRA_element` formula pays. A simulation uses it whenever the rebalancing reforms are inactive, and from 2033-34, after the data's projection ends, when the rebalancing scenario no longer sets the element.
+- `gov.dwp.universal_credit.rebalancing.new_claimant_health_element` is the amount the rebalancing scenario pays new claimants in the years it sets the element, `uc_reform.REBALANCING_YEARS` (2026-27 to 2032-33).
 
-A change to the freeze or to the benefit uprating index moves both. A reform to either amount itself does not change the other.
+A change to the freeze or to the benefit uprating index moves both, and so does a reform that sets the index, `gov.economic_assumptions.indices.uc_health_element`, directly (it replaces the freeze and the no-fall floor for the years it names). A reform to either amount itself does not change the other.
 
 `rebalancing/create_health_element_uprating.py` builds the index when parameters are processed: the benefit uprating index, held flat in each year in which `rebalancing.health_element_freeze` and `rebalancing.active` are both true.
 

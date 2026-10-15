@@ -291,6 +291,24 @@ def test_lifting_the_freeze_reaches_a_simulated_new_claimant(monkeypatch):
             ) == pytest.approx(12 * ACT_AMOUNT * growth, rel=1e-6), route
 
 
+INDEX = "gov.economic_assumptions.indices.uc_health_element"
+
+
+@pytest.mark.parametrize("key", ["2028", "2028-01-01"])
+def test_a_reform_to_the_index_replaces_the_generated_path_for_its_year(key):
+    """The index is a calendar-year series generated before uprating, so a
+    reform that sets it reaches both amounts for the year it names, freeze
+    included, and prior law resumes after."""
+    parameters = scenario_parameters({INDEX: {key: 2.0}})
+    index = parameters.get_child(INDEX)
+    assert index(at(2028)) == pytest.approx(2.0)
+    path = amount_path(parameters, range(2026, 2031))
+    assert path[2027] == pytest.approx(ACT_AMOUNT)
+    assert path[2028] == pytest.approx(ACT_AMOUNT * 2.0 / index(at(2027)), rel=1e-12)
+    assert path[2029] == pytest.approx(ACT_AMOUNT)
+    assert_one_path(parameters, range(2026, 2031))
+
+
 def test_a_changed_amount_is_held_through_the_freeze():
     """A one-year change applies to its tax year; the stated amount resumes
     after it and is held, then uprated."""

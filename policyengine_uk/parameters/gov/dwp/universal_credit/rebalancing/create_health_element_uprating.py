@@ -52,8 +52,16 @@ re-runs that processing (``policyengine_uk.utils.dated_reforms``): a
 by a year or a ``start.stop`` range. So a change to the freeze, to
 ``rebalancing.active``, to the benefit index or the forecasts behind it, or to
 an amount itself reaches the element, which is then held or uprated from the
-changed value. A ``reform=`` dict key naming a single day still edits the
-annualised parameter on that day only and does not re-run uprating.
+changed value. That is the default, generated path.
+
+A reform can also name the index itself. Processing writes such a change just
+after this step and before uprating, so it replaces the generated value, the
+freeze and the no-fall floor included, for the years it names. The index is a
+calendar-year series (it inherits ``calendar_year_series`` from
+``gov.economic_assumptions.indices``), so on it a bare year or a 1 January
+key names that calendar year and re-runs processing. On other parameters a
+``reform=`` dict key naming a single day still edits the annualised parameter
+on that day only and does not re-run uprating.
 """
 
 from typing import Dict
@@ -187,9 +195,10 @@ def add_uc_health_element_uprating(parameters: ParameterNode) -> ParameterNode:
                     "the benefit uprating index, held flat in the tax years "
                     "for which the Universal Credit Act 2025 freezes the "
                     "element and never falling. It is built when parameters "
-                    "are processed; to change it, change "
-                    "gov.dwp.universal_credit.rebalancing."
-                    "health_element_freeze or the benefit uprating index."
+                    "are processed from gov.dwp.universal_credit.rebalancing."
+                    "health_element_freeze and the benefit uprating index; a "
+                    "reform that sets it directly replaces that path, freeze "
+                    "and floor included, for the years it names."
                 ),
                 "values": health_element_index_values(parameters),
                 "metadata": {
