@@ -248,6 +248,10 @@ def model_fingerprint() -> Optional[str]:
     editable checkout, or a modified copy carrying the same version. Tests,
     compiled caches and this tool's directory are left out, so neither a
     test edit nor a newer copy of the tool changes the model's identity.
+
+    It fails closed: a wheel and an editable checkout of the same commit
+    ship different file sets, and an untracked file in the package (a
+    ``.DS_Store``) changes it, so such pairs are refused rather than matched.
     """
     import importlib.util
 
@@ -267,11 +271,56 @@ def model_fingerprint() -> Optional[str]:
             or tool in path.resolve().parents
         ):
             continue
-        digest.update(str(relative).encode())
+        digest.update(relative.as_posix().encode())
         digest.update(b"\0")
         digest.update(path.read_bytes())
         digest.update(b"\0")
     return digest.hexdigest()
+
+
+def _local_installs() -> list:
+    """Distributions installed from a local directory or file (PEP 610).
+
+    Such an install, editable or not, can differ from the released version
+    it reports, so a data comparison can't take its version as its identity.
+    """
+    out = set()
+    for d in metadata.distributions():
+        try:
+            text = d.read_text("direct_url.json")
+        except Exception:  # noqa: BLE001 - unreadable metadata is not local
+            text = None
+        if not text or not d.metadata["Name"]:
+            continue
+        try:
+            info = json.loads(text)
+        except ValueError:
+            continue
+        if "dir_info" in info or str(info.get("url", "")).startswith("file:"):
+            out.add(d.metadata["Name"].lower().replace("_", "-"))
+    return sorted(out)
+
+
+def stable_runtime(rec: "Recorder", fingerprint_at_start: Optional[str]) -> dict:
+    """The runtime identity, with no model fingerprint if the files changed.
+
+    Records ``model:unchanged``; a model whose files differ between the start
+    and the end of a measurement gets no fingerprint, so a data comparison
+    refuses it.
+    """
+    runtime = runtime_identity()
+    unchanged = runtime["policyengine_uk_fingerprint"] == fingerprint_at_start
+    rec.check(
+        "model:unchanged",
+        "The policyengine_uk files did not change during the measurement",
+        unchanged,
+        "the model's files changed while it was measured",
+        section="data",
+        scope="",
+    )
+    if not unchanged:
+        runtime["policyengine_uk_fingerprint"] = None
+    return runtime
 
 
 def runtime_identity() -> dict:
@@ -297,6 +346,7 @@ def runtime_identity() -> dict:
         "machine": platform.machine(),
         "policyengine_uk": version("policyengine-uk"),
         "policyengine_uk_fingerprint": model_fingerprint(),
+        "local_installs": _local_installs(),
         "policyengine_core": version("policyengine-core"),
         "numpy": version("numpy"),
         "distributions": [f"{n}=={v}" for n, v in distributions],
@@ -1053,6 +1103,10 @@ def measure(
     started = time.time()
     timings = {}
     rec = Recorder()
+    # Taken again when the result is assembled: a model whose files change
+    # during the measurement (a branch switched in a shared checkout) has no
+    # single identity (Sol review of #2425).
+    fingerprint_at_start = model_fingerprint()
     model_lists, list_problems = read_model_lists(partition)
     problems = list_problems + closure_problems(
         partition, model_lists, sim.tax_benefit_system.variables
@@ -1180,6 +1234,7 @@ def measure(
         )
     # After the reform costings, so that they are covered too.
     _finite_metrics_check(rec)
+    runtime = stable_runtime(rec, fingerprint_at_start)
     timings["total"] = round(time.time() - started, 2)
 
     provenance = dict(provenance or {})
@@ -1195,7 +1250,7 @@ def measure(
         "label": label,
         "years": spec.years,
         "provenance": provenance,
-        "runtime": runtime_identity(),
+        "runtime": runtime,
         "partition": partition.as_dict(),
         "metrics": list(rec.metrics.values()),
         "checks": list(rec.checks.values()),

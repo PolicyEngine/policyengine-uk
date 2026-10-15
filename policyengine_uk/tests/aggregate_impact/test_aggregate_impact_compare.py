@@ -182,7 +182,9 @@ def _on(data_sha, **provenance):
     measured = result({("receipts", "a"): [1.0] * len(YEARS)}, sha=data_sha)
     measured["provenance"].update({"metrics_version": "m", **provenance})
     measured["runtime"].update(
-        policyengine_uk="2.122.2", policyengine_uk_fingerprint="f" * 64
+        policyengine_uk="2.122.2",
+        policyengine_uk_fingerprint="f" * 64,
+        local_installs=["policyengine-uk-data"],
     )
     return measured
 
@@ -250,7 +252,9 @@ def test_a_data_comparison_with_itself_moves_nothing(values):
     side = result(values)
     side["provenance"]["metrics_version"] = "m"
     side["runtime"].update(
-        policyengine_uk="2.122.2", policyengine_uk_fingerprint="f" * 64
+        policyengine_uk="2.122.2",
+        policyengine_uk_fingerprint="f" * 64,
+        local_installs=[],
     )
     summary = compare(side, side, SPEC, axis="data")
     assert summary["status"] == "pass"
@@ -1006,3 +1010,64 @@ def test_decile_changes_that_round_to_zero_are_not_called_no_change():
     unchanged, _ = decile_impacts(base, copy.deepcopy(base), YEARS)
     text = _deciles({"deciles": {str(YEARS[0]): unchanged[str(YEARS[0])]}}, [YEARS[0]])
     assert "No household's net income changes" in text
+
+
+def test_the_data_axis_refuses_a_locally_installed_dependency():
+    """Sol review of #2425 at 7ca4ff2b, P2: an editable policyengine-core
+    reports a released version whatever its files hold."""
+    base, head = _on("1" * 64), _on("2" * 64)
+    assert compare(base, head, SPEC, axis="data")["status"] == "pass"
+    head["runtime"]["local_installs"] = ["policyengine-core", "policyengine-uk-data"]
+    summary = compare(base, head, SPEC, axis="data")
+    assert summary["status"] == "fail"
+    assert any("policyengine-core" in f for f in summary["failures"])
+    # The model and the data package are identified otherwise.
+    head["runtime"]["local_installs"] = ["policyengine-uk", "policyengine-uk-data"]
+    assert compare(base, head, SPEC, axis="data")["status"] == "pass"
+    del head["runtime"]["local_installs"]
+    assert compare(base, head, SPEC, axis="data")["status"] == "fail"
+
+
+def test_local_installs_are_read_from_pep_610_metadata(monkeypatch):
+    import json as json_
+
+    from policyengine_uk.utils.aggregate_impact import measure
+
+    class Dist:
+        def __init__(self, name, direct_url):
+            self.metadata = {"Name": name}
+            self._direct = direct_url
+
+        def read_text(self, filename):
+            return None if self._direct is None else json_.dumps(self._direct)
+
+    dists = [
+        Dist("numpy", None),
+        Dist(
+            "policyengine_core",
+            {"url": "file:///src/core", "dir_info": {"editable": True}},
+        ),
+        Dist("pandas", {"url": "file:///wheels/pandas.whl", "archive_info": {}}),
+        Dist(
+            "requests",
+            {"url": "https://files.example/requests.whl", "archive_info": {}},
+        ),
+    ]
+    monkeypatch.setattr(measure.metadata, "distributions", lambda: dists)
+    assert measure._local_installs() == ["pandas", "policyengine-core"]
+
+
+def test_a_model_that_changes_during_a_measurement_has_no_fingerprint(monkeypatch):
+    """Sol review of #2425 at 7ca4ff2b, P2: a branch switched in a shared
+    checkout mid-run would stamp the base with the head's files."""
+    from policyengine_uk.utils.aggregate_impact import measure
+
+    monkeypatch.setattr(measure, "model_fingerprint", lambda: "after")
+    rec = measure.Recorder()
+    runtime = measure.stable_runtime(rec, "before")
+    assert runtime["policyengine_uk_fingerprint"] is None
+    assert rec.checks["model:unchanged"]["status"] == "fail"
+    rec = measure.Recorder()
+    runtime = measure.stable_runtime(rec, "after")
+    assert runtime["policyengine_uk_fingerprint"] == "after"
+    assert rec.checks["model:unchanged"]["status"] == "pass"

@@ -441,8 +441,9 @@ def compare(
     ``axis`` says what may differ between the sides. On the ``model`` axis
     (a change to this model) both must run on the same verified dataset. On
     the ``data`` axis (a change to the data) both must run the same model:
-    the same policyengine-uk commit and version, the same runtime, partition
-    and metric definitions, so every move is the data's. Households are not
+    the same policyengine-uk version and file fingerprint, the same runtime
+    with no locally installed dependency, the same partition and metric
+    definitions, so every move is the data's. Households are not
     matched across datasets on the data axis; each side's own deciles are
     compared instead.
     """
@@ -717,6 +718,24 @@ def _same_model_problems(base: Mapping, head: Mapping, runtime_differences) -> l
             "A data comparison needs one runtime, but base and head differ in: "
             + "; ".join(runtime_differences[:10])
         )
+    # A dependency installed from a local directory can differ from the
+    # version it reports; the model and the data package are identified
+    # otherwise (Sol review of #2425).
+    exempt = {"policyengine-uk", "policyengine-uk-data"}
+    for side, result in (("base", base), ("head", head)):
+        local = field(result, "runtime", "local_installs")
+        if local is None:
+            problems.append(
+                f"A data comparison needs the local installs of both sides, and "
+                f"the {side} does not record them."
+            )
+        elif set(local) - exempt:
+            problems.append(
+                f"A data comparison needs released dependencies, but the {side} "
+                "has local or editable installs of "
+                + ", ".join(sorted(set(local) - exempt))
+                + ", whose version doesn't identify their files."
+            )
     return problems
 
 

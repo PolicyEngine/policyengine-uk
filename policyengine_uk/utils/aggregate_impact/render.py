@@ -322,7 +322,7 @@ def _provenance(summary) -> str:
             [
                 side,
                 f"{provenance.get('git_ref', '')} `{str(provenance.get('git_sha', ''))[:10]}`",
-                f"uk {runtime.get('policyengine_uk')}, core {runtime.get('policyengine_core')}, py {runtime.get('python')} {runtime.get('machine', '')}",
+                f"uk {runtime.get('policyengine_uk')} (files `{str(runtime.get('policyengine_uk_fingerprint') or '?')[:12]}`), core {runtime.get('policyengine_core')}, py {runtime.get('python')} {runtime.get('machine', '')}",
                 f"`{str(runtime.get('distributions_sha256', ''))[:12]}`",
                 f"`{str((info.get('partition') or {}).get('sha256', ''))[:12]}`",
                 f"{(info.get('timings') or {}).get('total', '')}s",
@@ -394,10 +394,18 @@ def render(summary: Mapping, spec: Spec, context: Optional[Mapping] = None) -> s
             )
 
         title = f"## Aggregate impact of the data change: {verdict}"
+        base_uk = ((summary.get("base") or {}).get("runtime") or {}).get(
+            "policyengine_uk", "?"
+        )
+        head_uk = runtime.get("policyengine_uk", "?")
+        measured = (
+            f"both measured with policyengine-uk {head_uk}"
+            if base_uk == head_uk
+            else f"measured with policyengine-uk {base_uk} (base) and {head_uk} (head)"
+        )
         intro = (
             f"Base dataset {described(base_prov)} against head dataset "
-            f"{described(head_prov)}, both measured with policyengine-uk "
-            f"{runtime.get('policyengine_uk', '?')}, " + span
+            f"{described(head_prov)}, {measured}, " + span
         )
     else:
         title = f"## Aggregate impact on certified data: {verdict}"
