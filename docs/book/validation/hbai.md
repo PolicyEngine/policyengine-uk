@@ -6,7 +6,8 @@ PolicyEngine UK includes variables that match to the Households Below Average In
 
 These are:
 
-- `hbai_household_net_income`: Household net income, before housing costs
+- `hbai_household_net_income`: Household net income, before housing costs, with a negative figure reset to zero
+- `hbai_household_net_income_before_reset_to_zero`: The same income before a negative figure is reset to zero
 - `hbai_household_net_income_ahc`: Household net income, after housing costs
 - `equiv_hbai_household_net_income`: Equivalised household net income, before housing costs (BHC)
 - `equiv_hbai_household_net_income_ahc`: Equivalised household net income, after housing costs (AHC)
@@ -44,7 +45,12 @@ The table below shows how the HBAI income components map to PolicyEngine variabl
 | Structural insurance premiums (for owner occupiers) | `structural_insurance_payments` |
 | Ground rent and service charges |`housing_service_charges`|
 
-`hbai_household_net_income_ahc` deducts all five housing-cost rows above from `hbai_household_net_income`. Housing costs can exceed income, leaving negative AHC income. The equivalised AHC income and AHC poverty measures use that result; household income deciles use BHC income.
+## Negative incomes
+
+HBAI resets a negative income before housing costs to zero: "Negative incomes BHC are reset to zero, but negative AHC incomes calculated from the adjusted BHC incomes are possible. Where incomes have been adjusted to zero BHC, income AHC is derived from the adjusted BHC income." ([HBAI Background Information and Methodology report FYE 2025](https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2025/households-below-average-income-background-information-and-methodology-report-fye-2025#negative-incomes)).
+
+PolicyEngine does the same. `hbai_household_net_income` is `hbai_household_net_income_before_reset_to_zero` reset to zero when negative, and `hbai_household_net_income_ahc` subtracts all five housing costs listed above from the reset figure, so it can be negative. The equivalised incomes, `household_income_decile`, the poverty flags and the poverty gaps all use the reset figure. A household whose income was negative is below every absolute poverty line, and its before-housing-costs poverty gap is the whole line. It is below the relative line while the median person's income is positive; if half or more of people had BHC income at or below zero, the reset would make the BHC median, and so the BHC relative line, zero. Households with equal incomes share the rank at the top of their group, so households at zero are in the bottom decile while they hold at most a tenth of people. On the enhanced FRS under 1% of people have an income at or below zero before the reset, so both conditions hold. The labour supply responses use the figure before the reset, which is the household's actual budget constraint.
+`hbai_household_net_income_ahc` deducts all five housing-cost rows above from the reset `hbai_household_net_income`. Ground rent and service charges (`housing_service_charges`) are the fifth cost. Housing costs can exceed income, leaving negative AHC income. The equivalised AHC income and AHC poverty measures use that result; household income deciles use BHC income.
 
 In FRS-based datasets, `housing_service_charges` contains the annualised property charges recorded in `CHRGAMT1`–`CHRGAMT9`: ground rent, chief rent, service charges, regular maintenance, caravan site rent, factoring charges, other regular charges and combined charges. `CHRGAMT2`, historically feu duty, is unused in the FRS 2024–25 dictionary. The combined-charge question is an alternative to recording individual amounts. Water and sewerage and rent are separate inputs; calculator users should supply each cost once, with service charges additional to the other housing-cost inputs. See the [FRS 2024–25 question instructions](https://doc.ukdataservice.ac.uk/doc/9563/mrdoc/pdf/9563_frs_2024-25_question_instructions_final.pdf), property charges section (pages 98–99), and its [variable dictionaries](https://doc.ukdataservice.ac.uk/doc/9563/mrdoc/ukda_data_dictionaries.zip).
 
