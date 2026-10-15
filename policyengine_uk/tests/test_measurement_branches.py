@@ -11,7 +11,12 @@ import pytest
 
 from policyengine_uk import Simulation
 from policyengine_uk.model_api import Scenario
-from policyengine_uk.utils.measurement_branches import measurement_branch
+from policyengine_uk.utils.measurement_branches import (
+    BEHAVIOURAL_RESPONSES,
+    held_behavioural_responses,
+    hold_behavioural_responses,
+    measurement_branch,
+)
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
@@ -154,6 +159,10 @@ def test_a_term_with_a_zero_elasticity_measures_nothing(
         "income_elasticity_lsr": "relative_income_change",
         "substitution_elasticity_lsr": "relative_wage_change",
     }
+    # The terms require the response first (policyengine-core 3.32 enforces
+    # it). With no elasticities the response returns early, but the terms are
+    # still asked for afterwards.
+    simulation.calculate("employment_income_behavioral_response", YEAR)
     for term in terms:
         simulation.calculate(term, YEAR)
     calculated = {
@@ -165,3 +174,58 @@ def test_a_term_with_a_zero_elasticity_measures_nothing(
     assert sorted(calculated) == terms_measured
     if not terms_measured:
         assert opened == []
+
+
+def test_holding_the_responses_keeps_a_branch_from_measuring_them_again(monkeypatch):
+    """The marginal rate variables hold every response in the branches where
+    they step an input. A branch that shares the simulation's rules would take
+    the labour supply response through response_source anyway, so this uses a
+    branch with its own copy of the rules, which isolates the hold: emptied as
+    the marginal rate variables empty theirs, it measures the response again
+    unless the responses are held."""
+    from policyengine_uk.utils import labour_supply_responses
+
+    measured_from = []
+    measure = labour_supply_responses.measurement_branch
+
+    def recording(simulation, name, period, inputs):
+        if name == "lsr_measurement":
+            measured_from.append(simulation.branch_name)
+        return measure(simulation, name, period, inputs)
+
+    monkeypatch.setattr(labour_supply_responses, "measurement_branch", recording)
+    responding = Simulation(
+        situation=SITUATION,
+        scenario=Scenario(
+            parameter_changes={
+                **BASIC_RATE_RISE,
+                **STATIC_CAPITAL_GAINS,
+                **ELASTICITIES,
+            }
+        ),
+    )
+    response = value(responding, "employment_income_behavioral_response")
+    held = held_behavioural_responses(responding.person, YEAR)
+    assert set(held) == set(BEHAVIOURAL_RESPONSES)
+
+    def emptied_branch(name):
+        branch = responding.get_branch(name, clone_system=True)
+        variables = responding.tax_benefit_system.variables
+        for variable, data in variables.items():
+            if (
+                variable not in responding.input_variables
+                and not data.is_input_variable()
+            ):
+                branch.delete_arrays(variable)
+        return branch
+
+    measured_from.clear()
+    unheld = emptied_branch("unheld")
+    assert value(unheld, "employment_income_behavioral_response") == response
+    assert measured_from == ["unheld"]
+
+    measured_from.clear()
+    branch = emptied_branch("held")
+    hold_behavioural_responses(branch, YEAR, held)
+    assert value(branch, "employment_income_behavioral_response") == response
+    assert measured_from == []

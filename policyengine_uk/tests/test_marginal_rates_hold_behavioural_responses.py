@@ -10,6 +10,13 @@ branches, which recalculate the stepped variable from its formula. The rate is
 the change in net income at fixed behaviour, so it must equal the rate of a
 simulation without the response whose inputs sit where the response put them.
 
+For the labour supply response, two things now keep these branches from
+measuring it again: the hold, and response_source, which gives a branch that
+shares its parent's rules the parent's response. So the labour supply cases
+fail only with both removed, and the capital gains cases isolate the hold in
+these variables. test_measurement_branches.py isolates the hold for every
+response with a branch that has its own copy of the rules.
+
 Every simulation here sets the capital gains response explicitly, so the
 tests hold whatever its default is.
 """
