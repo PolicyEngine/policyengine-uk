@@ -1,80 +1,39 @@
-- name: No trading losses
+# loss_relief holds trade losses brought forward from earlier years (ITA 2007
+# s.83). A loss made in the year itself is trading_loss, relieved against
+# general income instead (see trade_loss_relief_against_general_income.yaml).
+
+- name: Losses brought forward come off the trade's profits
   period: 2024
+  absolute_error_margin: 0
   input:
+    self_employment_income: 10_000
+    loss_relief: 4_000
+    trading_allowance_deduction: 0
+  output:
+    taxable_self_employment_income: 6_000
+
+- name: Losses brought forward never reduce other income
+  period: 2024
+  absolute_error_margin: 0
+  input:
+    self_employment_income: 1_000
+    employment_income: 20_000
+    loss_relief: 5_000
+    trading_allowance_deduction: 0
+  output:
+    taxable_self_employment_income: 0
+    taxable_employment_income: 20_000
+    adjusted_net_income: 20_000
+
+- name: Last year's trading loss is not brought forward automatically
+  period: 2024
+  absolute_error_margin: 0
+  input:
+    self_employment_income: 10_000
+    trading_allowance_deduction: 0
     trading_loss:
-      2023: 0
+      2023: 5_000
       2024: 0
   output:
     loss_relief: 0
-
-- name: Current year trading loss only
-  period: 2024
-  input:
-    trading_loss:
-      2023: 0
-      2024: 5000
-  output:
-    loss_relief: 5000
-
-- name: Previous year trading loss only
-  period: 2024
-  input:
-    trading_loss:
-      2023: 3000
-      2024: 0
-  output:
-    loss_relief: 3000
-
-- name: Trading losses in both years
-  period: 2024
-  input:
-    trading_loss:
-      2023: 2500
-      2024: 3500
-  output:
-    loss_relief: 6000
-
-- name: High trading losses
-  period: 2024
-  input:
-    trading_loss:
-      2023: 50000
-      2024: 75000
-  output:
-    loss_relief: 125000
-
-- name: Very low positive trading losses
-  period: 2024
-  input:
-    trading_loss:
-      2023: 1
-      2024: 1
-  output:
-    loss_relief: 2
-
-- name: Uneven trading losses
-  period: 2024
-  input:
-    trading_loss:
-      2023: 1234.56
-      2024: 5678.90
-  output:
-    loss_relief: 6913.46
-
-- name: Large previous year loss, small current year loss
-  period: 2024
-  input:
-    trading_loss:
-      2023: 100000
-      2024: 1000
-  output:
-    loss_relief: 101000
-
-- name: Small previous year loss, large current year loss
-  period: 2024
-  input:
-    trading_loss:
-      2023: 1000
-      2024: 100000
-  output:
-    loss_relief: 101000
+    taxable_self_employment_income: 10_000

@@ -7,7 +7,8 @@ class net_income(Variable):
     entity = Person
     label = "Income before personal allowances and Gift Aid adjustments"
     documentation = (
-        "The model's taxable income components before the Gift Aid adjustment "
+        "The model's taxable income components after trade loss relief "
+        "against general income and before the Gift Aid adjustment "
         "to adjusted net income. Gift Aid extends rate limits and reduces "
         "adjusted net income, but does not reduce the income charged to tax."
     )
@@ -26,12 +27,10 @@ class net_income(Variable):
         supplied_ani = supplied_input(person, "adjusted_net_income", period)
         if supplied_ani is not None:
             return supplied_ani + person("gift_aid_grossed_up", period)
-        components = parameters(
-            period
-        ).gov.hmrc.income_tax.adjusted_net_income_components
-        income = add(person, period, components)
-        if parameters(
-            period
-        ).gov.contrib.ubi_center.basic_income.interactions.include_in_taxable_income:
-            income += person("basic_income", period)
-        return max_(0, income)
+        # ITA 2007 ss.23 and 64 deduct trade loss relief at Step 2, before
+        # personal allowances, Gift Aid's ANI adjustment and tax rate limits.
+        return max_(
+            0,
+            person("net_income_before_trade_loss_relief", period)
+            - person("trade_loss_relief_against_general_income", period),
+        )

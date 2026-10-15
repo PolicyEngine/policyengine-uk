@@ -1,3 +1,75 @@
+## [2.132.1] - 2026-10-14
+
+### Fixed
+
+- - Removed the projection-horizon job's working notes (`REPORT.md` and `PROGRESS.md`), committed to the repository root by mistake with #2376, and made Lint fail when agent working notes are committed there.
+
+
+## [2.132.0] - 2026-10-14
+
+### Fixed
+
+- - A sum of scenarios keeps the timing of each part's modifier. A part applied before data load, such as `no_economic_assumptions`, is still applied before it when added to a reform, so `no_economic_assumptions + reform` freezes the data as well as the parameters. Likewise a macro scenario applied before data load, plus a reform, projects the data with the macro growth. Modifiers of parts applied after data load, including ones that edit the data, still run after it. A sum with a part applied before data load applies all of its parameter changes first, as `+` merges them, so the data follows them all and a modifier's edits survive. A simulation with a scenario applied before data load no longer reads or writes the `hf://` and `gs://` dataset cache, so its projection no longer reaches its baseline or later simulations. The sum of scenarios that are all applied before data load is now applied before it. A sum now calls the modifiers its operands had when it was made. Its fields still hold the whole sum, and `Scenario.parts_by_data_load()` returns what is applied before and after data load.
+
+### Removed
+
+- - Removed `gov.simulation.labour_supply_responses.obr_elasticities` and its legacy alias `gov.simulation.labor_supply_responses.obr_elasticities`. Nothing read this switch, so setting it changed no output. A reform or saved policy that still names it now fails with directions to `gov.dynamic.obr_labour_supply_assumptions`, the switch under which `Simulation.apply_dynamics` applies the OBR labour supply elasticities.
+
+
+## [2.131.2] - 2026-10-14
+
+### Fixed
+
+- - Fixed HBAI household income after housing costs to deduct ground rent and housing service charges, so equivalised AHC income and poverty measures include these costs.
+
+
+## [2.131.1] - 2026-10-14
+
+### Fixed
+
+- A bare-year reform key, or a key dated 1 January, on the economic growth rates, the indices built from them and the household parameters now names that calendar year. A bare year used to name the fiscal year from 6 April, which moved the next year: a 2027 earnings growth rate showed as 2027's but moved the 2028 index and the April 2029 triple lock. A 1 January key used to override that one day after processing, which nothing built from the parameter read. A change to an uprated household parameter past its last stated value now leaves the years around it on their projected path instead of freezing them. Reforms to series built during processing (the triple lock rate, the indices, the lagged series) now uprate what is built from them. Deprecated `labor_supply_responses` paths in reform dicts reach the parameters formulas read, and changes to a parameter given by both its path and its alias are merged in order instead of one being silently dropped.
+
+
+## [2.131.0] - 2026-10-14
+
+### Added
+
+- - Added Income Tax trade loss relief against general income under ITA 2007 s.64, subject to available net income and the s.24A relief cap.
+
+### Changed
+
+- - Uprated trading losses separately from profits, applied programme-specific UC and tax-credit income rules, and included losses as negative market and HBAI income. Income Tax carry-forward now uses only explicitly supplied unrelieved losses; Class 4 retains its separate automatic loss history.
+  - Coordinated the taxpayer's trading allowance election with current-year Income Tax and Class 4 loss relief, retaining whichever gives the greater current-year income deduction.
+
+### Fixed
+
+- - Base the trading allowance election on losses supplied for that tax year, preserving earlier Class 4 loss balances when later loss inputs are unset.
+- - Fixed Universal Credit trading-loss netting to include company trade results.
+
+
+## [2.130.1] - 2026-10-14
+
+### Fixed
+
+- - Fixed the benefit-cap earnings exemption to count statutory pay and use Universal Credit's actual net earnings before the minimum income floor, with a pinned regression for the release failure.
+
+
+## [2.130.0] - 2026-10-13
+
+### Added
+
+- - Universal Credit now applies regulation 77 to a person who stands as sole owner or partner of a company carrying on a trade or property business.
+    - A trading company's income counts as their self-employed earnings on top of any pay from it. A company loss is set against the profit of any trade they carry on themselves, the tax and National Insurance on their trades come off that total, and a negative result counts as nil, so neither a loss nor the tax on a trade it cancels comes off their pay.
+    - Only a claimant's or partner's company earnings reduce the award.
+    - The minimum income floor applies when the trade is their main employment.
+    - The company's capital replaces the value of their shares. Trade assets are disregarded while they work in the trade. In households with several benefit units, the shares leave the household's capital before it is shared out, including a dependant's, which count for nobody.
+    - The intermediaries (IR35) exclusion follows reg. 77(5) as in force: Chapters 8 and 9 of ITEPA Part 2 until 27 November 2018, and Chapters 8 to 10 from main-employment activities from 28 November 2018. Annual simulations take the rule in force at the start of the year, so 2018 uses the earlier rule throughout.
+    - New `owned_company_*` inputs describe the company. Every input defaults to no such company, so existing datasets are unchanged.
+- - Added explicit, versioned capital-gains projection scenarios shared by dataset and household simulations, with population adjustments, bounded years, errors for direct reforms to generated paths and an experimental OBR EOT sensitivity.
+  - Added per-variable and period application provenance distinguishing supplied inputs, applied projections and defaults, an explicit supplied-input flag, and a warning when supplied future gains bypass an explicitly selected projection, including annual inputs read by monthly calculations. Population rebuilds reset this provenance.
+  - Added an experimental marker to projection metadata and cache fingerprints, set for the bundled OBR EOT sensitivity without changing its growth assumptions.
+
+
 ## [2.129.1] - 2026-10-13
 
 ### Fixed
