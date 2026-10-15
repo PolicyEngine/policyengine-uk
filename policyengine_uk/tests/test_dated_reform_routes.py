@@ -400,6 +400,32 @@ def test_the_gap_between_two_allowance_changes_is_indexed_from_the_first():
     )
 
 
+def test_a_change_covering_no_30_april_leaves_every_tax_year_alone():
+    # 15 January to 31 March 2032 covers no tax year's 30 April sample, so
+    # every annual value stays current law's; the indexed 2032-33 value
+    # starts the day after the change instead of being shadowed by it.
+    simulation = via_reform_dict(
+        {PERSONAL_ALLOWANCE: {"2032-01-15.2032-03-31": 20_000}}
+    )
+    for year in YEARS:
+        assert annual(simulation, PERSONAL_ALLOWANCE, year) == current_law_annual(
+            PERSONAL_ALLOWANCE, year
+        ), year
+
+
+def test_a_change_to_an_aligned_nics_threshold_alone_realigns_after_it():
+    # The model keeps the NICs thresholds aligned with their income tax
+    # equivalents (create_threshold_indexation); after a change to one of
+    # them alone ends, it is aligned again (cos d1344's convention for them).
+    simulation = via_reform_dict({PRIMARY_THRESHOLD: {"2031-04-06.2034-04-05": 241.73}})
+    for year in (2031, 2032, 2033):
+        assert annual(simulation, PRIMARY_THRESHOLD, year) == pytest.approx(241.73)
+    for year in (2034, 2035):
+        assert annual(simulation, PRIMARY_THRESHOLD, year) == pytest.approx(
+            round(current_law_annual(PERSONAL_ALLOWANCE, year) / 52, 2)
+        ), year
+
+
 def test_bare_year_dict_keys_match_the_fiscal_year_interval():
     by_year = via_reform_dict(
         {PERSONAL_ALLOWANCE: {"2031": 12_570, "2032": 12_570, "2033": 12_570}}

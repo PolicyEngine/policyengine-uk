@@ -27,9 +27,13 @@ year the files state is indexed from the year before, so a freeze that ends
 resumes indexation from the frozen amount, as s57 Step 1 and s21 Step 1 do
 ("the allowance ... for the previous tax year", "the basic rate limit for
 the previous tax year"); the years between two changes are indexed from the
-first. That is how every freeze to date has been legislated: Finance Act
-2021 s5 fixes the amount and disapplies the indexation for named tax years,
-and leaves s57 and s21 to apply to the frozen amount after them.
+first. Freezes are legislated that way: Finance Act 2021 s5 (and before it
+Finance Act 2019 s5) fixes the amount and disapplies the indexation for
+named tax years, and leaves s57 and s21 to apply to the frozen amount after
+them. The aligned NICs thresholds are aligned again after a change to one
+of them alone. An indexed value starts on 1 January unless a reform's change
+runs past that date without covering the year's 30 April sample, in which
+case it starts the day after the change.
 
 National Insurance
 ------------------
@@ -90,6 +94,7 @@ a single day or month (other than 1 January on a calendar-year series, such as
 a CPI growth rate, which is a dated change and so does move them).
 """
 
+import datetime
 from decimal import ROUND_CEILING, ROUND_HALF_UP, Decimal
 from typing import Callable, Dict
 
@@ -243,6 +248,26 @@ def tax_year_path(
     return values
 
 
+def unstated_value_date(parameter: Parameter, year: int) -> str:
+    """Where a tax year's indexed value starts.
+
+    1 January, as core uprating keys its values, unless a dated reform's
+    change runs from before that tax year's 30 April sample to after
+    1 January without covering it: the value then starts the day after the
+    change, so the change cannot reach a tax year it does not cover.
+    """
+    start = f"{year}-{INDEXED_VALUE_MONTH_DAY}"
+    sample = f"{year}-{FISCAL_YEAR_SAMPLE_MONTH_DAY}"
+    for value in parameter.values_list:
+        until = (value.metadata or {}).get(DATED_CHANGE_UNTIL)
+        if until is None or value.instant_str > sample or until >= sample:
+            continue
+        if until >= start:
+            next_day = datetime.date.fromisoformat(until) + datetime.timedelta(days=1)
+            start = max(start, next_day.isoformat())
+    return start
+
+
 def write_unstated_tax_years(parameter: Parameter, values: Dict[int, Decimal]) -> None:
     """Add a value for each tax year neither the files nor a reform state."""
     stated = stated_tax_year(parameter)
@@ -251,7 +276,7 @@ def write_unstated_tax_years(parameter: Parameter, values: Dict[int, Decimal]) -
             parameter.values_list.append(
                 ParameterAtInstant(
                     parameter.name,
-                    f"{year}-{INDEXED_VALUE_MONTH_DAY}",
+                    unstated_value_date(parameter, year),
                     data=float(value),
                 )
             )

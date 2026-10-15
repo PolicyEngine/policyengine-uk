@@ -400,10 +400,10 @@ one_year = Simulation(
 
 Outside a change's dates, prior law stays in force. Where the timeline states later values, they apply on their dates. Where it states none, prior law depends on how the parameter's future is made:
 
-- an amount uprated from an index, such as a benefit rate, returns to its uprated path: a one-year change to the UC standard allowance gives the uprated amount the next year, as a temporary change made "for the period" leaves the underlying amount that the uprating orders keep raising;
-- the personal allowance, the basic rate limit and the National Insurance thresholds aligned with them are indexed from the previous tax year's amount (Income Tax Act 2007 ss21 and 57), so after a change ends indexation resumes from the changed amount. Freezing the allowance at £12,570 to 2033-34 gives £12,570 plus 2034-35's September CPI rise, rounded up to £10, for 2034-35, as the Finance Act 2021 freeze does for 2031-32.
+- the personal allowance and the basic rate limit are indexed from the previous tax year's amount (Income Tax Act 2007 ss21 and 57), so after a change ends indexation resumes from the changed amount. Freezing the allowance at £12,570 to 2033-34 gives £12,570 plus 2034-35's September CPI rise, rounded up to £10, for 2034-35, as the Finance Act 2021 freeze does for 2031-32. The National Insurance thresholds the model aligns with them follow: they align with the resumed path, and after a change to one of them alone they are aligned again;
+- an amount uprated from an index, such as a benefit rate, returns to its uprated path: a one-year change to the UC standard allowance gives the uprated amount the next year. Whether a freeze of such an amount should instead resume from the frozen amount, as the 2016-2020 benefit freeze did, is an open question (policyengine-uk#2430).
 
-A change "from a date onwards" is held flat to the end of 2100 and is not uprated or indexed.
+A change "from a date onwards" is held flat to the end of 2100 and is not uprated or indexed. That is the key's literal reading, not something statute requires; to let indexation resume after a change, give its last tax year.
 
 Each way of passing a reform reads period keys as it always has:
 

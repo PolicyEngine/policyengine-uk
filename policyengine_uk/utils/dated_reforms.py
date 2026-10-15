@@ -26,34 +26,50 @@ Outside ``[start, stop]`` a change leaves prior law in force:
 - where the timeline states values, they apply on their dates, and the
   value in force at ``stop`` resumes the day after it;
 - where it states none, what prior law is depends on how the parameter's
-  future is made (cos d1344, decided 2026-10-15 by the Budget CI workstream
-  with independent review):
+  future is made:
 
-  - a parameter uprated from an index (``uprating`` metadata: benefit and
-    pension rates and the like) takes prior law's projected path: the values
-    it takes with every other change in the reform but without its own.
-    Temporary changes to such amounts are legislated as modifications for a
-    period that leave the underlying amount, which the uprating orders keep
-    raising; the 2020 Universal Credit uplift (SI 2020/371 reg 3) had
-    regulation 36 "read as if" higher amounts were substituted "only for the
-    remainder of the tax year beginning with 6th April 2020". That covers
-    both the years between the last stated value and a change that starts
-    after it, and the years after a bounded change;
-  - a threshold indexed from its own previous year (``INDEXED_THRESHOLDS``:
-    the personal allowance, the basic rate limit and the NICs thresholds
-    aligned with them) resumes indexation from the changed amount, and the
-    years between two changes are indexed from the first. Income Tax Act 2007
+  - a threshold indexed from its own previous year by statute (the
+    personal allowance under Income Tax Act 2007 s57 and the basic rate
+    limit under s21; the NICs secondary threshold, which the model raises by
+    CPI from its own previous amount) resumes indexation from the changed
+    amount, and the years between two changes are indexed from the first.
     s57(3) Step 1 multiplies "the allowance ... for the previous tax year"
     and s21(3) Step 1 increases "the basic rate limit for the previous tax
     year", and freezes are legislated by fixing the amount and disapplying
-    the indexation for named years (Finance Act 2021 s5), so after a freeze
-    the frozen amount is indexed. Each entry a change writes carries
-    ``DATED_CHANGE_UNTIL``, so the threshold indexation counts the years it
-    covers as stated and indexes the rest
-    (``policyengine_uk.parameters.gov.hmrc.create_threshold_indexation``).
-    The other reading, returning to the path the threshold would have taken
-    without the change, has no statutory basis: nothing in ss21 or 57
-    restores lost indexation.
+    the indexation for named years (Finance Act 2021 s5; earlier, Finance
+    Act 2019 s5), so after a freeze the frozen amount is indexed. Returning
+    to the path the threshold would have taken without the change has no
+    statutory basis. This is the call the Budget CI workstream took under
+    cos d1344 (2026-10-15), with independent review;
+  - the NICs thresholds the model aligns with those (primary threshold and
+    upper earnings limit, lower and upper profits limits) follow them: after
+    a change to the income tax thresholds they align with the resumed path,
+    and after a change to one of them alone they are aligned again. No
+    statute indexes them; the model keeps them aligned, as government policy
+    says they will remain. Uprating such a threshold by CPI from its changed
+    amount instead (the Explanatory Memorandum to SI 2026/231 para 5.1 says
+    they "will be uprated by the September Consumer Prices Index" after
+    2030-31) is the other defensible reading, left with #2430;
+  - an amount uprated from an index (``uprating`` metadata: benefit and
+    pension rates and the like) takes prior law's projected path: the values
+    it takes with every other change in the reform but without its own. That
+    covers both the years between the last stated value and a change that
+    starts after it, and the years after a bounded change. Whether this
+    should instead resume from the changed amount is open (#2430): freezes of
+    uprated amounts were legislated like threshold freezes and uprating then
+    resumed from the frozen amount (Welfare Reform and Work Act 2016 s11),
+    while a period-limited modification reverts to the underlying amount
+    (the 2020 Universal Credit uplift, SI 2020/371 reg 3).
+
+  Each entry a change to an indexed threshold writes carries
+  ``DATED_CHANGE_UNTIL``, so the threshold indexation counts the tax years it
+  covers as stated and indexes or aligns the rest
+  (``policyengine_uk.parameters.gov.hmrc.create_threshold_indexation``).
+
+A change open to the end of 2100 states its value for every year to then,
+so an indexed threshold is held flat under it rather than indexed: that is a
+convention (the key's literal reading), not something ss21 or 57 require. To
+let indexation resume, give the change's last tax year.
 
 ``Parameter.update`` instead restores the last stated value as a new stated
 value, so a one-year change to an uprated parameter froze the next year at
