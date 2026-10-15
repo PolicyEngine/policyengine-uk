@@ -59,9 +59,10 @@ after this step and before uprating, so it replaces the generated value, the
 freeze and the no-fall floor included, for the years it names. The index is a
 calendar-year series (it inherits ``calendar_year_series`` from
 ``gov.economic_assumptions.indices``), so on it a bare year or a 1 January
-key names that calendar year and re-runs processing. On other parameters a
-``reform=`` dict key naming a single day still edits the annualised parameter
-on that day only and does not re-run uprating.
+key names that calendar year and re-runs processing. On parameters that are
+not calendar-year series, a ``reform=`` dict key naming a single day still
+edits the annualised parameter on that day only and does not re-run
+uprating.
 """
 
 from typing import Dict
