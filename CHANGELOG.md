@@ -1,3 +1,10 @@
+## [2.134.1] - 2026-10-15
+
+### Fixed
+
+- Stop charging a household's whole stock of other residential and non-residential property as a purchase whenever it buys its main residence. `property_purchased` now sets only the main-residence purchase; `additional_residential_property_purchased` (the price of one additional dwelling, charged at the higher rates for additional dwellings) and `non_residential_property_purchased` are inputs, nil unless set directly or imputed by a dataset, and are uprated like the property stocks when a dataset supplies them.
+
+
 ## [2.134.0] - 2026-10-15
 
 ### Added
