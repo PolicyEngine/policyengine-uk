@@ -10,8 +10,11 @@ from hypothesis import strategies as st
 from policyengine_uk import CountryTaxBenefitSystem
 from policyengine_uk.utils.aggregate_impact.reforms import (
     CALENDAR_DATED_METADATA,
+    DEFAULT_REFORMS_PATH,
     ReformSpecError,
     Responds,
+    calibrate,
+    calibrated_minimum,
     load_reforms,
     parameter_node,
     parse_reforms,
@@ -186,3 +189,99 @@ def test_a_scaled_reform_sets_exactly_the_horizon_years_in_the_model():
         assert after(f"{YEARS[0] - 1}-06-01") == pytest.approx(
             before(f"{YEARS[0] - 1}-06-01")
         )
+
+
+def test_the_shipped_minimums_are_a_fifth_of_each_smallest_effect():
+    """The d1344 rule, as parse_reforms enforces it on the shipped file."""
+    raw = yaml.safe_load(DEFAULT_REFORMS_PATH.read_text())
+    assert raw["calibration"]["fraction"] == 0.2
+    for reform in STANDARD:
+        r = reform.responds
+        assert r.smallest_effect is not None, reform.id
+        assert r.minimum == calibrated_minimum(r.smallest_effect, 0.2), reform.id
+        assert 0.18 * r.smallest_effect < r.minimum <= 0.2 * r.smallest_effect
+
+
+@settings(max_examples=300, deadline=None)
+@given(effect=st.floats(1e3, 1e13), fraction=st.floats(0.01, 0.99))
+def test_a_calibrated_minimum_is_the_fraction_rounded_down_to_two_figures(
+    effect, fraction
+):
+    minimum = calibrated_minimum(effect, fraction)
+    amount = effect * fraction
+    assert 0.9 * amount < minimum <= amount
+    digits = f"{minimum:.15e}".split("e")[0].replace(".", "").rstrip("0")
+    assert len(digits) <= 2
+    # Monotone: a larger effect never gets a smaller minimum.
+    assert calibrated_minimum(effect * 1.5, fraction) >= minimum
+
+
+def _calibrated(minimum, smallest=1_000_000_000):
+    return {
+        "calibration": {"fraction": 0.2},
+        "reforms": [
+            {
+                "name": "x",
+                "parameters": {"a": 1},
+                "responds": {
+                    "variable": "v",
+                    "direction": "up",
+                    "minimum": minimum,
+                    "smallest_effect": smallest,
+                },
+            }
+        ],
+    }
+
+
+def test_a_calibrated_file_refuses_a_minimum_edited_by_hand():
+    assert parse_reforms(_calibrated(200_000_000))[0].responds.minimum == 2e8
+    with pytest.raises(ReformSpecError, match="two significant figures"):
+        parse_reforms(_calibrated(250_000_000))
+    with pytest.raises(ReformSpecError, match="smallest_effect"):
+        raw = _calibrated(200_000_000)
+        del raw["reforms"][0]["responds"]["smallest_effect"]
+        parse_reforms(raw)
+    with pytest.raises(ReformSpecError, match="fraction"):
+        raw = _calibrated(200_000_000)
+        raw["calibration"]["fraction"] = 1.5
+        parse_reforms(raw)
+
+
+def _result(changes):
+    return {
+        "metrics": [
+            {"id": f"reform_targets.{rid}", "values": {str(y): v for y, v in c.items()}}
+            for rid, c in changes.items()
+        ]
+    }
+
+
+def test_calibrate_takes_the_smallest_effect_across_years_and_measurements():
+    reforms = parse_reforms(
+        {
+            "reforms": [
+                {
+                    "id": "up",
+                    "name": "u",
+                    "parameters": {"a": 1},
+                    "responds": {"variable": "v", "direction": "up", "minimum": 1},
+                },
+                {
+                    "id": "down",
+                    "name": "d",
+                    "parameters": {"a": 1},
+                    "responds": {"variable": "v", "direction": "down", "minimum": 1},
+                },
+            ]
+        }
+    )
+    results = [
+        _result({"up": {2025: 5e9, 2026: 4e9}, "down": {2025: -3e9, 2026: -2.5e9}}),
+        _result({"up": {2025: 4.5e9, 2026: 3.9e9}, "down": {2025: -3e9, 2026: -2e9}}),
+    ]
+    out = calibrate(reforms, results, 0.2)
+    assert out["up"] == {"smallest_effect": 3.9e9, "year": 2026, "minimum": 7.8e8}
+    assert out["down"] == {"smallest_effect": 2e9, "year": 2026, "minimum": 4e8}
+    with pytest.raises(ReformSpecError, match="wrong way"):
+        calibrate(reforms, [_result({"up": {2025: -1.0}, "down": {2025: -1.0}})], 0.2)

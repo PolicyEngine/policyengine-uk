@@ -7,6 +7,12 @@
 
 ``measure`` exits 1 if the measurement crashed, after writing a result that
 records the crash; ``compare`` exits 1 when the change fails the report.
+
+    python -m policyengine_uk.utils.aggregate_impact calibrate \
+        out/2.130.1/result.json out/head/result.json
+
+prints each standard reform's smallest yearly effect across the given
+measurements and the minimum standard_reforms.yaml's calibration rule sets.
 """
 
 from __future__ import annotations
@@ -143,6 +149,24 @@ def cmd_compare(args) -> int:
     return 1 if summary["status"] == "fail" else 0
 
 
+def cmd_calibrate(args) -> int:
+    import yaml
+
+    from .reforms import DEFAULT_REFORMS_PATH, calibrate, parse_reforms
+
+    path = Path(args.reforms or DEFAULT_REFORMS_PATH)
+    raw = yaml.safe_load(path.read_text())
+    fraction = float((raw.get("calibration") or {}).get("fraction") or args.fraction)
+    results = [json.loads(Path(p).read_text()) for p in args.results]
+    reforms = parse_reforms({"reforms": raw.get("reforms")})
+    for reform_id, row in calibrate(reforms, results, fraction).items():
+        print(
+            f"{reform_id}: smallest_effect {row['smallest_effect']:.0f} "
+            f"({row['year']}), minimum {row['minimum']:.0f}"
+        )
+    return 0
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(
         prog="python -m policyengine_uk.utils.aggregate_impact"
@@ -184,6 +208,19 @@ def main(argv=None) -> int:
         "--strict", action="store_true", help="fail on checks failing on both sides"
     )
     c.set_defaults(func=cmd_compare)
+
+    k = sub.add_parser(
+        "calibrate", help="recalibrate the reform responsiveness minimums"
+    )
+    k.add_argument("results", nargs="+", help="measurement result.json files")
+    k.add_argument("--reforms", help="reform YAML (default standard_reforms.yaml)")
+    k.add_argument(
+        "--fraction",
+        type=float,
+        default=0.2,
+        help="used when the reform YAML declares no calibration.fraction",
+    )
+    k.set_defaults(func=cmd_calibrate)
 
     args = parser.parse_args(argv)
     return args.func(args)

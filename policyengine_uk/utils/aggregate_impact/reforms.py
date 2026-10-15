@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -26,6 +27,9 @@ class Responds:
     variable: str
     direction: str  # "up" or "down"
     minimum: float
+    # The reform's smallest yearly effect, in the declared direction, on the
+    # pair the minimum was calibrated on (see ``calibrated_minimum``).
+    smallest_effect: Optional[float] = None
 
 
 @dataclass(frozen=True)
@@ -41,13 +45,32 @@ def _slug(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", "_", text.lower()).strip("_")
 
 
+def calibrated_minimum(smallest_effect: float, fraction: float) -> float:
+    """``fraction`` of the smallest yearly effect, rounded down to 2 significant figures."""
+    amount = fraction * smallest_effect
+    if not amount > 0:
+        raise ReformSpecError(
+            "a calibrated minimum needs a positive effect and fraction"
+        )
+    step = 10 ** (math.floor(math.log10(amount)) - 1)
+    return float(math.floor(amount / step) * step)
+
+
 def parse_reforms(raw: Mapping) -> list:
     """Parse a reform file.
 
     Accepts the standard schema and the reform-cost fixture schema (a
     ``reforms`` list of ``name`` and ``parameters``, with no ``responds``).
+
+    When the file declares ``calibration.fraction``, every ``responds`` must
+    give the ``smallest_effect`` it was calibrated on, and its ``minimum``
+    must be ``calibrated_minimum(smallest_effect, fraction)``: a minimum
+    edited by hand, or an effect updated without its minimum, is refused.
     """
     reforms, seen = [], set()
+    fraction = ((raw or {}).get("calibration") or {}).get("fraction")
+    if fraction is not None and not 0 < float(fraction) < 1:
+        raise ReformSpecError("calibration.fraction must lie between 0 and 1")
     for index, entry in enumerate((raw or {}).get("reforms") or []):
         where = f"reforms[{index}]"
         if not isinstance(entry, Mapping) or not entry.get("name"):
@@ -71,7 +94,22 @@ def parse_reforms(raw: Mapping) -> list:
                 raise ReformSpecError(
                     f"{where}: responds needs a variable and a positive minimum"
                 )
-            responds = Responds(str(r["variable"]), r["direction"], minimum)
+            smallest = r.get("smallest_effect")
+            smallest = None if smallest is None else float(smallest)
+            if fraction is not None:
+                if smallest is None:
+                    raise ReformSpecError(
+                        f"{where}: the file is calibrated, so responds needs "
+                        "the smallest_effect its minimum was set from"
+                    )
+                expected = calibrated_minimum(smallest, float(fraction))
+                if minimum != expected:
+                    raise ReformSpecError(
+                        f"{where}: minimum {minimum:,.0f} is not {fraction} of "
+                        f"the smallest effect {smallest:,.0f} rounded down to "
+                        f"two significant figures ({expected:,.0f})"
+                    )
+            responds = Responds(str(r["variable"]), r["direction"], minimum, smallest)
         reform_id = str(entry.get("id") or _slug(str(entry["name"])))
         if reform_id in seen:
             raise ReformSpecError(f"{where}: reform id {reform_id!r} is used twice")
@@ -85,6 +123,48 @@ def parse_reforms(raw: Mapping) -> list:
 def load_reforms(path=None) -> list:
     with open(path or DEFAULT_REFORMS_PATH) as f:
         return parse_reforms(yaml.safe_load(f))
+
+
+def calibrate(
+    reforms: Sequence[StandardReform], results: Sequence[Mapping], fraction: float
+) -> dict:
+    """Each reform's smallest yearly effect across ``results``, and its minimum.
+
+    ``results`` are measurement result.json mappings, typically one per model
+    version of the pair being calibrated on. An effect counts in the
+    reform's declared direction, so a reform that moves the wrong way in any
+    year or measurement cannot be calibrated.
+    """
+    out = {}
+    for reform in reforms:
+        if reform.responds is None:
+            continue
+        sign = 1.0 if reform.responds.direction == "up" else -1.0
+        effects = []
+        for result in results:
+            metric = next(
+                (
+                    m
+                    for m in result.get("metrics", [])
+                    if m["id"] == f"reform_targets.{reform.id}"
+                ),
+                None,
+            )
+            if metric is None:
+                raise ReformSpecError(f"{reform.id}: a result has no target change")
+            effects += [(sign * v, int(y)) for y, v in metric["values"].items()]
+        smallest, year = min(effects)
+        if not smallest > 0:
+            raise ReformSpecError(
+                f"{reform.id}: moves {reform.responds.variable} the wrong way or "
+                f"not at all in {fiscal_year_label(year)}"
+            )
+        out[reform.id] = {
+            "smallest_effect": smallest,
+            "year": year,
+            "minimum": calibrated_minimum(smallest, fraction),
+        }
+    return out
 
 
 def parameter_node(root, path: str):

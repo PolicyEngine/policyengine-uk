@@ -343,7 +343,7 @@ def render(summary: Mapping, spec: Spec, context: Optional[Mapping] = None) -> s
         (
             f"**Checks:** {len(regressions)} broken by this change, {len(pre_existing)} failing on "
             f"both sides, {len(fixed)} fixed. **Moves flagged for review:** {flag_count} "
-            "(thresholds proposed in `report_spec.yaml`, pending cos d1344; a flag does not fail the job)."
+            "(thresholds in `report_spec.yaml`; a flag does not fail the job)."
         ),
     ]
     if context.get("run_url"):

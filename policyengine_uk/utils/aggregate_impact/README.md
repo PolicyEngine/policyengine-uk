@@ -79,17 +79,27 @@ The checks are:
   - `gov_balance` equals `gov_tax` minus `gov_spending`;
   - household net income equals market income plus benefits, less taxes and
     pension contributions;
-- **counted once:** each component is raised by £1 per unit. Each tax total it
-  is in must rise by exactly £1 per unit, and each spending total by at most
-  £1, because means tests can claw the rise back but nothing should add to
-  it. A declared double count must still be contained in its head;
+- **counted once:** each component is raised by £1 per unit, and every head
+  of its totals is read household by household. Its own head must rise by
+  exactly £1, no other tax head may move, no other benefit may rise (means
+  tests may claw the rise back), and the model's own total must move by what
+  its heads moved. A head that breaks one of these is measured again with
+  every other head held at baseline, and fails only where it still breaks
+  it; a response carried by another head (Incapacity Benefit lowers Carer's
+  Allowance, which Universal Credit counts as income) is reported as
+  mediated. A declared double count must still be contained in its head;
 - **signs, bounds and finiteness**, and **determinism:** a rebuilt
   simulation reproduces the baseline exactly;
 - **inert heads:** a head that is zero for every unit is a warning, unless the
   partition marks it `zero_at_baseline: expected`;
 - **reform responsiveness:** each standard reform must move the variable it
   targets in the stated direction, by at least its stated minimum, in every
-  year.
+  year. Each minimum is a fifth of the reform's smallest yearly effect on the
+  certified pair, rounded down to two significant figures (the basis is in
+  `standard_reforms.yaml`). After a change that legitimately moves a reform's
+  effect, measure the new pair and run
+  `python -m policyengine_uk.utils.aggregate_impact calibrate <result.json>...`
+  to get the new `smallest_effect` and `minimum`.
 
 ## The standard reforms
 
