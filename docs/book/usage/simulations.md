@@ -294,6 +294,10 @@ sim = Simulation(dataset=dataset)
 print(sim.calculate("household_net_income", 2026))
 ```
 
+With `scenario=no_economic_assumptions`, `sim.dataset[year]` holds the reset
+monetary inputs used by the simulation. Helpers such as `filter_dataset` read
+those frozen amounts while retaining each year's demographic inputs.
+
 `Simulation` and `Microsimulation` can also load H5 files from local paths,
 Hugging Face URLs, or Google Cloud Storage URLs:
 

@@ -792,7 +792,6 @@ class Simulation(CoreSimulation):
                 multi_year_dataset = _url_dataset_cache[cache_key]
                 self.build_from_multi_year_dataset(multi_year_dataset)
                 self._restore_cgt_extension_provenance(multi_year_dataset)
-                self.dataset = multi_year_dataset
                 return
             dataset_file = materialize_gcs_dataset_url(dataset_source)
             self.build_from_file(dataset_file, cache_key=dataset_source)
@@ -833,7 +832,6 @@ class Simulation(CoreSimulation):
 
         self.build_from_multi_year_dataset(multi_year_dataset)
         self._restore_cgt_extension_provenance(multi_year_dataset)
-        self.dataset = multi_year_dataset
 
     def build_from_url(self, url: str) -> None:
         """Build simulation from a HuggingFace dataset URL.
@@ -854,7 +852,6 @@ class Simulation(CoreSimulation):
             multi_year_dataset = _url_dataset_cache[cache_key]
             self.build_from_multi_year_dataset(multi_year_dataset)
             self._restore_cgt_extension_provenance(multi_year_dataset)
-            self.dataset = multi_year_dataset
             return
 
         # Parse HuggingFace URL components
@@ -977,7 +974,6 @@ class Simulation(CoreSimulation):
 
         self.build_from_multi_year_dataset(multi_year_dataset)
         self._restore_cgt_extension_provenance(multi_year_dataset)
-        self.dataset = multi_year_dataset
 
     def build_from_single_year_dataset(self, dataset: UKSingleYearDataset) -> None:
         """Build simulation from a single-year UK dataset.
@@ -990,7 +986,6 @@ class Simulation(CoreSimulation):
         _pre_encode_enum_columns(dataset, self.tax_benefit_system)
         self.build_from_multi_year_dataset(dataset)
         self._restore_cgt_extension_provenance(dataset)
-        self.dataset = dataset
 
     def build_from_multi_year_dataset(self, dataset: UKMultiYearDataset) -> None:
         """Build simulation from a multi-year UK dataset.
