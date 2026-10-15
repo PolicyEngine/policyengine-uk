@@ -61,17 +61,19 @@ from policyengine_uk.utils.supplied_inputs import (
 )
 from policyengine_uk.reforms import create_structural_reforms_from_parameters
 from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases import (
-    canonicalize_lsr_parameter_path,
+    canonicalize_parameter_changes,
 )
 
-from .tax_benefit_system import CountryTaxBenefitSystem, DEFAULT_DATASET_ENV_VAR
+from .tax_benefit_system import (
+    CountryTaxBenefitSystem,
+    DEFAULT_DATASET_ENV_VAR,
+    parameter_reads_calendar_years,
+)
 
 
 def _canonical_parameter_paths(changes: dict) -> dict:
     """Changes keyed by canonical parameter paths (labour supply aliases)."""
-    return {
-        canonicalize_lsr_parameter_path(path): value for path, value in changes.items()
-    }
+    return canonicalize_parameter_changes(changes)
 
 
 from microdf import MicroDataFrame
@@ -147,6 +149,10 @@ class Simulation(CoreSimulation):
     # true for a region or constituency filtered from the data. The builders
     # set it, so rebuilding a simulation in place keeps it right.
     built_from_dataset: bool = False
+    # True when part of the scenario is applied before data load, so the
+    # parameters the data is built with may not be current law's. Such a
+    # simulation neither reads nor writes the URL dataset cache.
+    _scenario_before_data_load: bool = False
 
     def __init__(
         self,
@@ -210,13 +216,21 @@ class Simulation(CoreSimulation):
 
         self.branches: Dict[str, Simulation] = {}
 
+        # What the scenario applies before the data is built and after it. A
+        # scenario is one or the other; a sum of scenarios applied at
+        # different times runs each part's modifier at the part's own time.
+        before_data_load, after_data_load = (
+            scenario.parts_by_data_load() if scenario is not None else (None, None)
+        )
+        self._scenario_before_data_load = before_data_load is not None
+
         # A scenario's parameter changes rebuild the parameters from the
         # statutory tree, so they come before its modifier, whose edits a
         # rebuild would discard.
-        if scenario is not None and scenario.applied_before_data_load:
-            self.apply_scenario_parameters(scenario)
-            if scenario.simulation_modifier is not None:
-                scenario.simulation_modifier(self)
+        if before_data_load is not None:
+            self.apply_scenario_parameters(before_data_load)
+            if before_data_load.simulation_modifier is not None:
+                before_data_load.simulation_modifier(self)
         self._refresh_capital_gains_projection()
         # Build simulation from appropriate source
         if situation is not None:
@@ -241,8 +255,8 @@ class Simulation(CoreSimulation):
         # before the steps below that read the parameters: the Universal
         # Credit rebalancing inputs and the structural reforms switched on by
         # parameters.
-        if scenario is not None and not scenario.applied_before_data_load:
-            self.apply_scenario_parameters(scenario)
+        if after_data_load is not None:
+            self.apply_scenario_parameters(after_data_load)
 
         # Universal Credit reform (July 2025). Needs closer integration in the baseline,
         # but adding here for ease of toggling on/off via the 'active' parameter.
@@ -295,9 +309,9 @@ class Simulation(CoreSimulation):
 
         self.calculated_periods = []
 
-        if scenario is not None and not scenario.applied_before_data_load:
-            if scenario.simulation_modifier is not None:
-                scenario.simulation_modifier(self)
+        if after_data_load is not None:
+            if after_data_load.simulation_modifier is not None:
+                after_data_load.simulation_modifier(self)
         self._refresh_capital_gains_projection()
         self._capture_cgt_supplied_inputs()
         self._cgt_warning_enabled = True
@@ -590,6 +604,15 @@ class Simulation(CoreSimulation):
         }
 
     def _dataset_cache_key(self, source: str):
+        """The URL dataset cache key for a source, or None not to cache.
+
+        A cached dataset is already projected to later years, with current
+        law's economic assumptions unless a scenario applied before data load
+        changed them, so a simulation with such a scenario neither reads nor
+        writes the cache.
+        """
+        if self._scenario_before_data_load:
+            return None
         if self.tax_benefit_system.capital_gains_projection is None:
             return source
         metadata = self.capital_gains_projection_metadata
@@ -620,7 +643,10 @@ class Simulation(CoreSimulation):
         read) and the parameters are processed as current law is.
         """
         self.apply_parameter_assignments(
-            read_parameter_changes(_canonical_parameter_paths(changes))
+            read_parameter_changes(
+                _canonical_parameter_paths(changes),
+                calendar_years=parameter_reads_calendar_years(),
+            )
         )
 
     def apply_scenario_parameters(self, scenario: Scenario) -> None:
@@ -635,7 +661,8 @@ class Simulation(CoreSimulation):
         assignments = []
         if scenario.parameter_changes:
             assignments += read_parameter_changes(
-                _canonical_parameter_paths(scenario.parameter_changes)
+                _canonical_parameter_paths(scenario.parameter_changes),
+                calendar_years=parameter_reads_calendar_years(),
             )
         assignments += scenario.dated_assignments(order_start=len(assignments))
         self.apply_parameter_assignments(assignments)
@@ -682,7 +709,7 @@ class Simulation(CoreSimulation):
             return
         if dataset_source.startswith("gs://"):
             cache_key = self._dataset_cache_key(dataset_source)
-            if cache_key in _url_dataset_cache:
+            if cache_key is not None and cache_key in _url_dataset_cache:
                 multi_year_dataset = _url_dataset_cache[cache_key]
                 self.build_from_multi_year_dataset(multi_year_dataset)
                 self._restore_cgt_extension_provenance(multi_year_dataset)
@@ -721,8 +748,9 @@ class Simulation(CoreSimulation):
         # Pre-encode string enum columns to int16 once before caching so
         # subsequent loads skip the expensive astype(str) + searchsorted path.
         _pre_encode_enum_columns(multi_year_dataset, self.tax_benefit_system)
-        if cache_key is not None:
-            _url_dataset_cache[self._dataset_cache_key(cache_key)] = multi_year_dataset
+        key = self._dataset_cache_key(cache_key) if cache_key is not None else None
+        if key is not None:
+            _url_dataset_cache[key] = multi_year_dataset
 
         self.build_from_multi_year_dataset(multi_year_dataset)
         self._restore_cgt_extension_provenance(multi_year_dataset)
@@ -743,7 +771,7 @@ class Simulation(CoreSimulation):
         # Return early from in-memory cache if available: skips HDF5 reading,
         # uprating and enum encoding (~2.2s on the first load).
         cache_key = self._dataset_cache_key(url)
-        if cache_key in _url_dataset_cache:
+        if cache_key is not None and cache_key in _url_dataset_cache:
             multi_year_dataset = _url_dataset_cache[cache_key]
             self.build_from_multi_year_dataset(multi_year_dataset)
             self._restore_cgt_extension_provenance(multi_year_dataset)
