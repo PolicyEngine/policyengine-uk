@@ -49,15 +49,17 @@ class is_housing_benefit_benefit_cap_exempt_specified_benefit(Variable):
         "attendance allowance, a war pension or armed forces compensation, "
         "disability living allowance, personal independence payment, armed "
         "forces independence payment, or entitlement to carer's allowance or "
-        "carer support payment. "
+        "carer support payment; or a Housing Benefit claimant is receiving "
+        "Universal Credit (reg. 75F(1)(g)), whose own cap applies instead. "
         "Housing Benefit has no claim by a member of a couple as a single "
         "person, so the partner's benefits always count. Another member of "
         "the benefit unit, such as a non-dependent adult, does not lift the "
         "cap with their own benefit. The Universal Credit LCWRA and carer "
-        "elements are not Housing Benefit exceptions. "
-        "Regulation 75F(1)(g) (a claimant receiving Universal Credit) never "
-        "applies: the model pays a family Universal Credit or Housing "
-        "Benefit, not both."
+        "elements are not Housing Benefit exceptions. Regulation 75F(1)(g) "
+        "reads a family with Housing Benefit before the cap and an award of "
+        "Universal Credit before the cap (universal_credit_pre_benefit_cap), "
+        "so a Universal Credit award the cap reduces to nil still lifts the "
+        "Housing Benefit cap."
     )
     definition_period = YEAR
     reference = (
@@ -114,8 +116,22 @@ class is_housing_benefit_benefit_cap_exempt_specified_benefit(Variable):
             & person("esa_includes_support_component", period)
         )
 
+        # Reg 75F(1)(g): "the claimant is receiving universal credit". The
+        # claimant is a Housing Benefit claimant, a family with Housing
+        # Benefit before the cap; it is then capped through Universal Credit,
+        # which counts its Housing Benefit as nil (UC Regs 2013 reg 80(2A)).
+        # A family on Universal Credit alone keeps the exceptions above, so
+        # the two schemes' exceptions can be compared for it. Housing Benefit
+        # eligibility (housing_benefit_eligible) rules out a family that
+        # claims Universal Credit, so this applies only where both awards are
+        # supplied.
+        receiving_universal_credit = (
+            benunit("universal_credit_pre_benefit_cap", period) > 0
+        ) & (benunit("housing_benefit_pre_benefit_cap", period) > 0)
+
         return (
-            esa_support_component
+            receiving_universal_credit
+            | esa_support_component
             | received_by(CLAIMANT_OR_PARTNER_BENEFITS, claimant_or_partner)
             | received_by(
                 CHILD_OR_YOUNG_PERSON_BENEFITS,

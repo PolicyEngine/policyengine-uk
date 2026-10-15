@@ -42,11 +42,14 @@ Invariants, each over generated families and the explicit examples:
    who is not a qualifying young person for Universal Credit. This change
    leaves both counts as main has them.
 4. Reductions. 0 <= each scheme's reduction <= the excess of the welfare
-   benefits over that scheme's cap; the UC reduction is the excess less
-   the childcare costs element (reg. 81); Housing Benefit after the cap
-   keeps at least min(its amount before the cap, 50 pence a week) (reg.
-   75D(2)); ``benefit_cap_reduction`` is the sum of the two; no family has
-   both awards before the cap.
+   benefits over that scheme's cap; the UC reduction is the excess, with
+   Housing Benefit counted as nil (reg. 80(2A)), less the childcare costs
+   element (reg. 81); Housing Benefit after the cap keeps at least min(its
+   amount before the cap, 50 pence a week) (reg. 75D(2)), and a family
+   receiving Universal Credit has no Housing Benefit reduction (HB reg.
+   75F(1)(g)); ``benefit_cap_reduction`` is the sum of the two. The model
+   gives no family both awards before the cap; the YAML tests and
+   ``test_benefit_cap_uc_and_hb_properties.py`` supply both.
 5. Awards. Where a scheme's cap equals the old cap and neither reg. 81's
    childcare offset nor reg. 75D(2)'s minimum applies, its award equals the
    award under the old shared cap.
@@ -748,14 +751,15 @@ def test_lha_category_is_the_claimed_schemes_old_category(population):
 def test_each_scheme_reduces_by_its_own_excess(population):
     v = calculate(population)
     welfare = v["benefit_cap_welfare_benefits"]
-    uc_excess = np.maximum(welfare - v["uc_benefit_cap"], 0)
+    on_uc = v["universal_credit_pre_benefit_cap"] > 0
+    hb_pre = v["housing_benefit_pre_benefit_cap"]
+    # UC Regs 2013 reg. 80(2A): Housing Benefit counts as nil for UC.
+    uc_excess = np.maximum(welfare - hb_pre - v["uc_benefit_cap"], 0)
     hb_excess = np.maximum(welfare - v["housing_benefit_benefit_cap"], 0)
     uc_red, hb_red = (
         v["uc_benefit_cap_reduction"],
         v["housing_benefit_benefit_cap_reduction"],
     )
-    on_uc = v["universal_credit_pre_benefit_cap"] > 0
-    hb_pre = v["housing_benefit_pre_benefit_cap"]
     # UC Regs 2013 reg. 81: the excess less the childcare costs element, on
     # an award only.
     np.testing.assert_allclose(
@@ -774,7 +778,9 @@ def test_each_scheme_reduces_by_its_own_excess(population):
     np.testing.assert_allclose(
         v["benefit_cap_reduction"], uc_red + hb_red, atol=0.01, err_msg=str(population)
     )
-    assert not np.any(on_uc & (hb_pre > 0)), population
+    # HB Regs 2006 reg. 75F(1)(g): no Housing Benefit cap for a claimant
+    # receiving Universal Credit.
+    assert np.all(hb_red[on_uc] == 0), population
 
 
 @PROPERTY_SETTINGS
