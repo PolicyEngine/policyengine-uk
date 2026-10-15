@@ -1,3 +1,239 @@
+## [2.132.6] - 2026-10-15
+
+### Fixed
+
+- `Scenario.apply` on a built simulation now changes the parameter a deprecated `labor_supply_responses` path copies, as constructing the simulation with the scenario does; it used to edit only the alias copy, which formulas do not read, unless the scenario had been summed.
+
+
+## [2.132.5] - 2026-10-15
+
+### Fixed
+
+- - Fixed loading local multi-year H5 datasets saved by `UKMultiYearDataset.save` by distinguishing yearly groups from single-year pandas tables.
+
+
+## [2.132.4] - 2026-10-15
+
+### Fixed
+
+- - HBAI household net income before housing costs now resets a negative figure to zero, as HBAI does; income after housing costs, deciles, poverty flags and poverty gaps follow from the reset figure. Poverty headcounts do not change while both person-weighted BHC and AHC median incomes are positive (as on the enhanced FRS); poverty gaps fall and income totals rise by the sum of the negative incomes. Households whose income is reset now count in the bottom income decile instead of being left out with decile -1, as long as households at zero hold at most a tenth of people, so bottom-decile figures move. The figure before the reset is the new `hbai_household_net_income_before_reset_to_zero`, which the labour supply responses use, so they are unchanged.
+
+
+## [2.132.3] - 2026-10-15
+
+### Fixed
+
+- Dataset caching no longer couples a macro scenario to other simulations: a scenario built first left its projected incomes for its own baseline and every later simulation from the same `hf://` or `gs://` dataset, and one built after a baseline got current law's data. Dated parameter changes that change what the dataset projection reads, such as a reform dict setting an OBR growth rate for a year, are now written before the data is built, so incomes, rents and council tax follow them.
+
+
+## [2.132.2] - 2026-10-15
+
+### Changed
+
+- - Added Winter Fuel Payment and Pension Age Winter Heating Payment tests for couples on Income Support, income-based jobseeker's allowance and income-related employment and support allowance: couples of pensionable age, who get one payment, and couples whose claimant is under pensionable age, in the 2024 and 2025 qualifying weeks.
+
+
+## [2.132.1] - 2026-10-14
+
+### Fixed
+
+- - Removed the projection-horizon job's working notes (`REPORT.md` and `PROGRESS.md`), committed to the repository root by mistake with #2376, and made Lint fail when agent working notes are committed there.
+
+
+## [2.132.0] - 2026-10-14
+
+### Fixed
+
+- - A sum of scenarios keeps the timing of each part's modifier. A part applied before data load, such as `no_economic_assumptions`, is still applied before it when added to a reform, so `no_economic_assumptions + reform` freezes the data as well as the parameters. Likewise a macro scenario applied before data load, plus a reform, projects the data with the macro growth. Modifiers of parts applied after data load, including ones that edit the data, still run after it. A sum with a part applied before data load applies all of its parameter changes first, as `+` merges them, so the data follows them all and a modifier's edits survive. A simulation with a scenario applied before data load no longer reads or writes the `hf://` and `gs://` dataset cache, so its projection no longer reaches its baseline or later simulations. The sum of scenarios that are all applied before data load is now applied before it. A sum now calls the modifiers its operands had when it was made. Its fields still hold the whole sum, and `Scenario.parts_by_data_load()` returns what is applied before and after data load.
+
+### Removed
+
+- - Removed `gov.simulation.labour_supply_responses.obr_elasticities` and its legacy alias `gov.simulation.labor_supply_responses.obr_elasticities`. Nothing read this switch, so setting it changed no output. A reform or saved policy that still names it now fails with directions to `gov.dynamic.obr_labour_supply_assumptions`, the switch under which `Simulation.apply_dynamics` applies the OBR labour supply elasticities.
+
+
+## [2.131.2] - 2026-10-14
+
+### Fixed
+
+- - Fixed HBAI household income after housing costs to deduct ground rent and housing service charges, so equivalised AHC income and poverty measures include these costs.
+
+
+## [2.131.1] - 2026-10-14
+
+### Fixed
+
+- A bare-year reform key, or a key dated 1 January, on the economic growth rates, the indices built from them and the household parameters now names that calendar year. A bare year used to name the fiscal year from 6 April, which moved the next year: a 2027 earnings growth rate showed as 2027's but moved the 2028 index and the April 2029 triple lock. A 1 January key used to override that one day after processing, which nothing built from the parameter read. A change to an uprated household parameter past its last stated value now leaves the years around it on their projected path instead of freezing them. Reforms to series built during processing (the triple lock rate, the indices, the lagged series) now uprate what is built from them. Deprecated `labor_supply_responses` paths in reform dicts reach the parameters formulas read, and changes to a parameter given by both its path and its alias are merged in order instead of one being silently dropped.
+
+
+## [2.131.0] - 2026-10-14
+
+### Added
+
+- - Added Income Tax trade loss relief against general income under ITA 2007 s.64, subject to available net income and the s.24A relief cap.
+
+### Changed
+
+- - Uprated trading losses separately from profits, applied programme-specific UC and tax-credit income rules, and included losses as negative market and HBAI income. Income Tax carry-forward now uses only explicitly supplied unrelieved losses; Class 4 retains its separate automatic loss history.
+  - Coordinated the taxpayer's trading allowance election with current-year Income Tax and Class 4 loss relief, retaining whichever gives the greater current-year income deduction.
+
+### Fixed
+
+- - Base the trading allowance election on losses supplied for that tax year, preserving earlier Class 4 loss balances when later loss inputs are unset.
+- - Fixed Universal Credit trading-loss netting to include company trade results.
+
+
+## [2.130.1] - 2026-10-14
+
+### Fixed
+
+- - Fixed the benefit-cap earnings exemption to count statutory pay and use Universal Credit's actual net earnings before the minimum income floor, with a pinned regression for the release failure.
+
+
+## [2.130.0] - 2026-10-13
+
+### Added
+
+- - Universal Credit now applies regulation 77 to a person who stands as sole owner or partner of a company carrying on a trade or property business.
+    - A trading company's income counts as their self-employed earnings on top of any pay from it. A company loss is set against the profit of any trade they carry on themselves, the tax and National Insurance on their trades come off that total, and a negative result counts as nil, so neither a loss nor the tax on a trade it cancels comes off their pay.
+    - Only a claimant's or partner's company earnings reduce the award.
+    - The minimum income floor applies when the trade is their main employment.
+    - The company's capital replaces the value of their shares. Trade assets are disregarded while they work in the trade. In households with several benefit units, the shares leave the household's capital before it is shared out, including a dependant's, which count for nobody.
+    - The intermediaries (IR35) exclusion follows reg. 77(5) as in force: Chapters 8 and 9 of ITEPA Part 2 until 27 November 2018, and Chapters 8 to 10 from main-employment activities from 28 November 2018. Annual simulations take the rule in force at the start of the year, so 2018 uses the earlier rule throughout.
+    - New `owned_company_*` inputs describe the company. Every input defaults to no such company, so existing datasets are unchanged.
+- - Added explicit, versioned capital-gains projection scenarios shared by dataset and household simulations, with population adjustments, bounded years, errors for direct reforms to generated paths and an experimental OBR EOT sensitivity.
+  - Added per-variable and period application provenance distinguishing supplied inputs, applied projections and defaults, an explicit supplied-input flag, and a warning when supplied future gains bypass an explicitly selected projection, including annual inputs read by monthly calculations. Population rebuilds reset this provenance.
+  - Added an experimental marker to projection metadata and cache fingerprints, set for the bundled OBR EOT sensitivity without changing its growth assumptions.
+
+
+## [2.129.1] - 2026-10-13
+
+### Fixed
+
+- - End a reported income-related ESA award when the claimant is engaged in remunerative work or the partner is (Welfare Reform Act 2007 Sch 1 para 6(1)(e), (f)). For the claimant that is any paid work other than exempt work (ESA Regs 2008 reg 41(1)): work with earnings of no more than £20 a week, or of under 16 hours a week with earnings within 16 times the National Minimum Wage rounded up to the next 50p (£195.50 in 2025-26, £203.50 in 2026-27; reg 45(2), (4), (9A)). Earnings (new `esa_exempt_work_earnings`) are pay less PAYE and primary Class 1 on the pay alone and half the pension contributions (reg 96(3)), with statutory sick, maternity and paternity pay, which are not earnings (reg 95(2)(b)), adding neither to the pay nor to the tax and Class 1 taken off it, plus a self-employed profit less reg 99's notional basic-rate tax above the personal and blind person's allowances, main-rate Class 4 on the profit itself (reg 99(4)'s chargeable income, before capital allowances, the trading allowance and loss relief; reg 98(5)), Class 2 until 5 April 2024 (reg 99(3)(a); new `gov.dwp.ESA.income.self_employment_class_2.{deducted, above_lower_profits_threshold}`) and half the personal pension contributions (reg 98(3)), with no loss set against pay (reg 98(11)). The claimant's test is the new `esa_income_claimant_remunerative_work`. For the partner it is 24 hours a week or more (reg 42(1)), except for a carer (reg 43(2)(c)); hours come from the new `esa_income_remunerative_work_hours`.
+  - End a reported income-based JSA award when the claimant works 16 hours a week or more (Jobseekers Act 1995 s.1(2)(e); JSA Regs 1996 reg 51(1)(a)) or the partner works 24 or more (s.3(1)(e); reg 51(1)(b)). A member of a joint-claim couple whose partner works 16 to under 24 hours can claim alone (reg 3E(2)(g)), so 24 hours is the limit for the other member of any couple. The JSA regulations have no exception for carers doing unrelated paid work. Hours come from the new `jsa_remunerative_work_hours`.
+  - The claimant is a member who reports the award; when the claimant or partner reports one, only they are tested, so a non-dependant's award never changes theirs, other than through the legacy closure (`legacy_benefits_closed`), which reads every member's reports. The Income Support gate reads the screened awards. A member outside the couple, such as a non-dependent adult, claims in their own right, so `is_on_income_related_esa` and `is_on_income_based_jsa` test their own claim on their own work (the ESA claimant's exempt work limits, or JSA's 16 hours) as well as their report, tariff income and the capital limit: a working one's own report no longer exempts them from a council tax reduction non-dependant deduction, and a non-working one stays on their award when the claimant's own claim fails, though not once the family's legacy benefits have closed (`legacy_benefits_closed`), which the model applies to every member's award (a simplification: SI 2014/1230 reg 46(1) ends only the claimant's and partner's). New parameters `gov.dwp.ESA.exempt_work.{lower_earnings_limit, hours_limit, higher_earnings_limit}`, `gov.dwp.ESA.income.remunerative_work.partner_hours` and `gov.dwp.JSA.remunerative_work.{claimant_hours, partner_hours}`; the descriptions of `gov.dwp.JSA.hours.single` and `couple` now say what reg 51 sets.
+
+
+## [2.129.0] - 2026-10-13
+
+### Added
+
+- - Add `esa_includes_support_component`: whether a person's employment and support allowance includes the support component. Datasets and users can supply it; otherwise it is assumed for anyone with an ESA award of their own. Household calculations with ESA outside the support group should set it to false.
+  - Add `has_own_esa_award`: whether a person claims ESA themselves (a reported award, or a directly entered income-related award attributed to the claimant who heads the benefit unit).
+  - Add `uc_limited_capability_for_work`: limited capability for work, for the Universal Credit work allowance, reduced minimum age, work preparation group and the partner's exception to the childcare work condition.
+
+### Fixed
+
+- - Lift the benefit cap for employment and support allowance only where the claimant's or partner's allowance includes the support component (HB Regs 2006 reg 75F(1)(a); UC Regs 2013 reg 83(1)(a)), for contributory and income-related ESA alike. Any income-related ESA, and any member's contributory ESA, used to lift it. Without other information the support component is assumed for a person with their own allowance, as for about nine in ten ESA recipients in the Family Resources Survey.
+  - Lift the benefit cap for a disability or carer benefit only when the person the regulations name receives it: the claimant or partner for attendance allowance, industrial injuries benefit and armed forces compensation; also a child or young person they are responsible for, for disability living allowance; also a young person, for personal independence payment, Carer's Allowance and Carer Support Payment, and a Housing Benefit young person for armed forces independence payment. A 16-year-old who receives benefits in their own right or is looked after is not a young person here. The Universal Credit LCWRA and carer exceptions now need the element in the award: an element entered directly, or given by a reform's formula, lifts the cap when positive whatever the members' circumstances, and the element the model calculates lifts it unless only members who are not claimants have limited capability or caring responsibilities. This holds in 2026-2029 too: the Universal Credit rebalancing's rescaled LCWRA element is the model's own, not an entered one (`utils/supplied_inputs.set_model_value`). A partner who cannot be a joint claimant (UC Regs 2013 reg 3(3)) lifts no cap with their own benefits. For a family on Universal Credit the claimant and partner are the award's claimants (`is_uc_assessed_claimant`), otherwise Housing Benefit's claimant and partner; the two are the same unless `is_uc_claimant` is entered. A non-dependent adult's disability and carer benefits, ESA, disability flag and caring no longer lift the family's cap.
+  - Count armed forces independence payment towards the benefit cap exception.
+  - Take a person whose own ESA lacks the support component not to have limited capability for work-related activity (`uc_limited_capability_for_WRA`), whatever their disability flag, since that determination is what gives ESA the support component and Universal Credit takes it (UC Regs 2013 reg 40(1)(a)(ii)). Datasets flag every ESA recipient as disabled and the support component is assumed, so this changes nothing in the data until a dataset reports the ESA group.
+  - Give the Universal Credit work allowance and reduced minimum age their own limited capability for work test (`uc_limited_capability_for_work`, UC Regs 2013 regs 8(1)(a), 22, 39): limited capability for work-related activity or the disability flag, so an ESA recipient outside the support group keeps both. The work preparation group (Welfare Reform Act 2012 s.21(1)(a)) and the partner's exception to the childcare work condition (UC Regs 2013 reg 32(1)(b)(i)) read it too, so a claimant flagged as disabled without limited capability for work-related activity is in the work preparation group, outside the minimum income floor, and as a partner still lets a working claimant meet the childcare work condition.
+  - Count in the benefit cap only the welfare benefits the claimant or couple is entitled to (UC Regs 2013 reg 80(1); HB Regs 2006 reg 75A): the claimant's and partner's contributory ESA, JSA, incapacity benefit and SDA, their income-related ESA and income-based JSA (`claimant_or_partner_esa_income`, `claimant_or_partner_jsa_income`), and the family's Child Benefit, CTC, Income Support, Universal Credit and Housing Benefit. For a family on Universal Credit the couple is the award's claimants, including the other member of a couple where one member claims as a single person (UC Regs 2013 reg 78(2)); otherwise it is the claimant and partner. Another member's own award no longer reduces the family's Universal Credit or Housing Benefit; it still counts in household income.
+  - Give the benefit cap's single or couple limit by the award's claimants where the claimants of a family on Universal Credit are entered (`is_uc_claimant`) and are not Housing Benefit's claimant and partner (UC Regs 2013 reg 80A); otherwise `is_couple` decides, as before.
+- - Count only the parent's and partner's own income-related ESA in the extended childcare parent and partner conditions (SI 2022/1134 regs 11A(1)(e), 14(4) and 15(4)): another member of the benefit unit with an award of their own no longer lets a non-working parent or partner meet them.
+  - Add tests that the choice between the working-age and pension-age Housing Benefit regulations (HB Regs 2006 reg 5(1)(b)) reads only the claimant's and partner's Income Support, income-based JSA and income-related ESA, as it already does.
+  - Add tests that the mixed-age couple Pension Credit saving (SI 2019/37) reads only the couple's own Income Support, JSA and ESA reports, as it already does.
+
+### Removed
+
+- - Remove the unused benefit sums from `is_benefit_cap_exempt_earnings` and `is_benefit_cap_exempt_other`; the earnings and age exceptions keep their results and the armed forces and ESA exceptions move, limited to the claimant and partner, into `is_benefit_cap_exempt_health_disability`.
+  - Remove the input `uc_has_limited_capability_for_work`. The work preparation group reads `uc_limited_capability_for_work`, which datasets and users can set instead.
+
+
+## [2.128.3] - 2026-10-13
+
+### Fixed
+
+- - Count the Pension Age Winter Heating Payment (`pawhp`) in `household_benefits`, `hbai_household_net_income` and `hbai_benefits`, as the Winter Fuel Payment is. It was in `gov_spending` only, so Scottish pensioners' winter heating payment was missing from household net income and HBAI income from the 2024 qualifying week.
+  - Make `gov.contrib.policyengine.disable_simulated_benefits` run. `Simulation` now sets `tax_benefit_system.simulation`, through which structural reforms reach the simulation, and the reform no longer names reported amounts that do not exist (Attendance Allowance, DLA and PIP follow the reported award through their categories).
+  - Under `disable_simulated_benefits`, count the reported winter heating payment once: as `pawhp` for a household in Scotland in the years PAWHP is paid, and as `winter_fuel_allowance` otherwise.
+
+
+## [2.128.2] - 2026-10-13
+
+### Fixed
+
+- - Lift the tax credit income test for a claimant or couple entitled to State Pension Credit, guarantee credit or savings credit (TCA 2002 s.7(2); SI 2002/2008 reg 4(1)(d)). Working tax credit is Pension Credit income (SPCA 2002 s.15(1)(b)), so the passport applies where Pension Credit is payable with the passported award counted as income. The new parameter `gov.dwp.tax_credits.means_test.pension_credit_passport` dates the rule from 26 November 2003.
+  - Add `tax_credits_current_year_income`, the tax credit income before the passport (TCA 2002 s.7(4); SI 2002/2006 reg 3). `tax_credits_applicable_income` is that income, or nil while the test is lifted. The targeted childcare tax credit criteria now test the gross income against the £16,190 limit (SI 2014/2147 reg 1(2)), not the nil income of a passported award.
+
+
+## [2.128.1] - 2026-10-12
+
+### Fixed
+
+- - UC deduction draws now apply to every simulation built from data, including a constituency or local authority filtered from the national data, instead of only those carrying over a million benefit units of weight. Simulations rebuilt in place, and policyengine-core simulations built over the UK system from data, count as data too. Household situations never get imputed UC deductions or private school attendance, whatever their weight. `filter_dataset` carries each person's private school attendance into the household it extracts. Private school attendance is still imputed only for data carrying at least a million people of weight, until the data carries a national income rank.
+- - Keep the universal and targeted childcare hours when a family becomes eligible for the extended (working parent) entitlement, and value the extended entitlement as each child's working parent hours above them (Childcare Act 2016 s.1(6)). A family whose hours cap is under 15 a week no longer loses funded hours by becoming eligible, and `is_child_receiving_extended_childcare` now counts each child on its own working parent hours.
+  - Allocate participating children's first funded hours to the legally applicable universal or targeted programme even when standalone take-up is false, preserving total support and counting only the remaining hours as extended childcare.
+
+
+## [2.128.0] - 2026-10-12
+
+### Added
+
+- - Move families onto Universal Credit when DWP closes a legacy benefit they receive: tax credits from 2025-26, Income Support and income-based JSA from 2026-27. Families on Pension Credit, and families on Child Tax Credit only that meet the Pension Credit age conditions, go to Pension Credit instead (SI 2019/167 art. 3A). Pension-age families on Working Tax Credit can claim Universal Credit with the upper age condition waived (SI 2014/1230 reg 60A), and protected mixed-age couples on it can claim jointly (UC Regulations 2013 reg 3(2)(a)); either leaves the pension-age route only by claiming and having positive Universal Credit entitlement before the benefit cap and deductions. A new dataset input, `would_claim_uc_at_legacy_closure` (default true), says whether the family claims. `claims_universal_credit` replaces `would_claim_uc` wherever the model asks whether a family claims Universal Credit, including whose claim counts a household's non-dependants. The family's other legacy awards end at the closure whether or not it claims (SI 2014/1230 regs 8 and 46).
+
+### Changed
+
+- - Publish to PyPI with trusted publishing instead of the organisation-wide PyPI token.
+- - Cut the CPU the Python tests spend in garbage collection: each test process raises the first-generation GC threshold and freezes the objects that exist once the tests are collected (#2316).
+
+### Fixed
+
+- - Projected single-year datasets to 2032 (fiscal year 2032-33) rather than 2030, so 2031-32, the last year of a forecast made in 2026-27, is a dataset year. Before, 2031 and later were served from 2030: earnings, other incomes and weights grew by their `uprating` indices, but rent, council tax and Northern Ireland domestic rates were held flat, recorded Pension Credit capital fell to -1 (the household capital proxy), and tax-free savings income and other stored inputs with formulas were recalculated.
+  - Preserved variable-index growth after 2030 for inputs omitted from the dataset projection map, including salary-sacrifice pension contributions and housing charges. Energy inputs retain their documented FY26/27 price basis, and already projected inputs are reset under `no_economic_assumptions`.
+- - Fixed Universal Credit closure claims with ineligible partners, preserved protected mixed-age couples' pension-age route when Universal Credit entitlement is nil, and applied the nation-specific Council Tax Reduction rules for pension-age tax credit migrants.
+- - Fixed Gift Aid income tax relief by extending rate limits instead of deducting donations from taxable income, and deducting grossed-up gifts from adjusted net income.
+- - Stop the Python tests' memory growing with every Simulation under sys.monitoring coverage: each test process compiles each variable file once and every tax-benefit system runs that code (#2330).
+  - Release dead tax-benefit systems' variable modules in the Python tests once eight more systems own modules than were alive at the last release, checked as each new system starts adding its variables as well as after each test.
+  - Hand freed memory back to the system after each test file (glibc malloc_trim), and stop keeping the unpinned latest dataset cached after its smoke test.
+- - Counted statutory sick, maternity and paternity pay as Universal Credit earned income (UC Regs 2013 reg. 55(4)). Universal Credit already deducted the National Insurance on all three, and the income tax on sick and maternity pay, so it rose as the payments rose. Statutory paternity pay is now also counted in household benefits, HBAI income and government spending, as sick and maternity pay already were.
+- - Counted the Scottish Child Payment, Healthy Start vouchers and the Two Child Limit Payment in government spending, so `gov_balance` no longer leaves out benefits that households receive.
+- - A failed batch of legacy parameter overrides is now rolled back whole, nodes a structural reform adds to the parameters survive later rebuilds and reprocessing, and the scenario docs say that `Scenario.apply` on a built simulation edits the annualised values.
+- - Added tests that building the model and running a simulation leave the process's warning filters and numpy's error state unchanged, and that importing the package adds no filter that ignores a built-in warning category everywhere. A `ReformPeriodWarning` is no longer also written to the log, since warnings now reach the caller.
+
+
+## [2.127.0] - 2026-10-12
+
+### Added
+
+- - Added a Fix evidence pull request check using a trusted base-branch checker to require bug fixes to name a collectable Python or executable YAML test from the PR's git objects, with an exemption only when model files and dependencies are unchanged.
+
+### Changed
+
+- - Publish only the policyengine-uk release files whose checks passed. The release workflow makes the version commit on the latest main, retrying instead of failing when main moves. It builds the wheel and sdist once from that commit and runs the full test suite on the installed wheel in the locked environment. It uploads the same files only after the tests pass, and tags that exact commit, failing on tag errors. CI tests now fail on any skip, expected failure or XPASS that is not on a reviewed allowlist.
+
+### Fixed
+
+- - `in_receipt_of_savings_credit_only` now requires a Pension Credit payment, so a reform that stops Pension Credit being paid no longer leaves savings-credit-only families assessed on the Pension Credit route for Council Tax Reduction and pension-age Housing Benefit, with or without the Pension Credit freeze. Under `disable_simulated_benefits`, which sets Pension Credit to the reported amount, receipt now also needs reported Pension Credit.
+
+
+## [2.126.12] - 2026-10-12
+
+### Fixed
+
+- - Every reform route now writes dated changes onto the statutory parameter timeline and reprocesses it as current law is processed. A dict reform dated 6 April now sets that fiscal year, and uprating, threshold indexation and the aligned NICs thresholds follow reformed values. A bounded change on an uprated or indexed parameter now resumes prior law's projected path, not a stale stated value. Reforms applied after the data load now reach the Universal Credit rebalancing inputs and the parameter-gated structural reforms. `parameters.baseline` stays current law under `Scenario(parameter_changes=...)`.
+
+
+## [2.126.11] - 2026-10-12
+
+### Changed
+
+- Documentation pages in docs/book/assumptions, validation, policy and programs/gov/<agency> are now picked up by folder, so a new page no longer needs a myst.yml entry. This also publishes eight existing pages that were missing from the contents.
+- - Removed the stale non-strict expected failure for the 2023-24 Class 4 lower profits limit (#1968, fixed by #2058), so the alignment test now asserts that year.
+
+### Fixed
+
+- Warned when `UKSingleYearDataset` is given a `fiscal_year` alongside a file path, where it cannot take effect, and when it is built from DataFrames without one. Removed the process-wide `warnings.filterwarnings("ignore")` that importing the package installed, which hid these and every other warning from callers.
+- - Split the CI `Test` job into a YAML job and three parallel shards of the Python tests, with a check that every collected test ran in exactly one shard, and measured coverage with `sys.monitoring` (#2099).
+- Put the petrol and diesel pump prices that convert spending into litres on the DESNZ annual ULSP and ULSD series (the basis Microcosm UK prices fuel spending on), replacing the January 2024 RAC prices, and re-derived the petrol and diesel spending litre proxies so weighted litres still follow the HMRC/OBR road-fuel volume path (part A of #2169).
+- - Stop paying Carer's Allowance to a carer whose net earnings exceed the earnings limit (£204 a week from April 2026).
+- - Round the High Income Child Benefit Charge as ITEPA 2003 s. 681C(3) requires: the percentage down to a whole number, and the Child Benefit and the charge down to whole pounds.
+- - Stop relieving a miscellaneous loss against other income in Income Tax, adjusted net income, total income and Universal Credit earnings: ITA 2007 s. 152(4) allows it only against miscellaneous income.
+- Set the Personal Savings Allowance on the rest-of-UK bands for Scottish taxpayers, as ITA 2007 s. 12B(8) requires; give the higher amount at exactly the basic rate limit and the lower amount at exactly the higher rate limit (ITA 2007 s. 10); and use the right bands for periods 2016 and 2017.
+- Band savings and dividend income above property income, which is non-savings income (ITA 2007 ss. 16, 16A), including in the income the annual allowance charge's marginal rate is read from.
+
+
 ## [2.126.10] - 2026-10-11
 
 ### Fixed

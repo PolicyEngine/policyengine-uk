@@ -5,16 +5,16 @@
 # regression fixtures in microsimulation/reforms_config.yaml, which record the
 # same dataset.
 data_package: policyengine-uk-data
-data_version: 1.58.0
+data_version: 1.58.1
 repo_id: policyengine/policyengine-uk-data-private
 path: enhanced_frs_2024_25.h5
-# Commit the 1.58.0 tag pointed to on 2026-10-11.
-revision: 47bbb58d3f6467aa4a7059bc6110d2bdcf699b29
-hf_tag: 1.58.0
-sha256: 5ba399ea5ab9a6c7d4e9aaf6c623080beb34d9ad5f330f6244dbad72b8d960b6
-size_bytes: 128369110
+# Commit the 1.58.1 tag pointed to on 2026-10-15.
+revision: 2526edbbb687a3b54dbb11272e5389e4b62d2ac2
+hf_tag: 1.58.1
+sha256: 056e80fd8e9151d78f432a25cde863340baee81304c6216a37fb575ce8563784
+size_bytes: 128409762
 certification:
-  certified_by: policyengine.py bundle uk-6.2.6 (PolicyEngine/policyengine.py#555)
-  certified_for_model_version: 2.125.1
+  certified_by: policyengine.py bundle uk-6.4.3
+  certified_for_model_version: 2.130.1
   built_with_model_version: 2.122.2
-  release_manifest_revision: fdeba38517bd86067f34c0a5d8ed8923efb3b10a
+  release_manifest_revision: 89be6b73fc1e6eeba6dae2f9400676d8510bcd51

@@ -118,10 +118,6 @@ counted-once check fails as stale.
 
 ## Years
 
-Model year 2026 is fiscal year 2026-27. The dataset is extended explicitly to
-2030 (`extend_single_year_dataset`). Values for 2031-32 come from
-policyengine-core instead:
-- inputs with an `uprating` index are uprated from their 2030 values;
-- other inputs are carried over unchanged.
-
-So treat 2031-32 figures as provisional.
+Model year 2026 is fiscal year 2026-27. Single-year datasets are projected
+through 2032 (`extend_single_year_dataset`, since #2376), so every year of the
+report's horizon, 2025-26 to 2031-32, is projected the same way.

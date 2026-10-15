@@ -74,3 +74,46 @@ make test-microsimulation
 ```
 
 When a command is not run, record why.
+
+## How CI Runs The Tests
+
+Pull requests and merge queue groups (`.github/workflows/pr_code_changes.yaml`),
+pushes to `main` (`code_changes.yaml`, never cancelled, and skipped for a
+commit the merge queue already tested) and releases (`versioning.yaml`) all run
+the same suite,
+`.github/workflows/test-suite.yaml`, in the locked environment
+(`uv sync --frozen --extra dev`). Pull requests and `main` test the source
+tree; a release tests the wheel it is about to publish, installed on its own.
+
+The suite runs the YAML policy tests in one job and splits the Python tests
+over four runners. Each runner runs one shard:
+
+```bash
+pytest policyengine_uk/tests -n 4 --dist worksteal --shard K/4 -o xfail_strict=true
+```
+
+`--shard K/N` is defined in `policyengine_uk/tests/conftest.py`. It keeps the
+tests whose node id hashes to shard K of N, so every test is in exactly one
+shard, including a test added later. Each shard records every test's outcome
+with `.github/pytest_outcome_log.py`. The final job, `Test / Result`, runs
+`.github/check_test_shards.py`. It fails unless every collected test ran in
+exactly one shard and passed. The exceptions are outcomes accepted in
+`.github/test_outcome_allowlist.toml`:
+
+- A skip, an expected failure (`xfail`), an XPASS or a skipped module fails
+  the job unless an allowlist entry covers it. A test that quietly stops
+  running turns CI red. For example, when the dataset credentials are missing,
+  the microsimulation tests are allowed to skip only in runs that have no
+  credentials.
+- `xfail` markers are strict. When the bug a marker pins is fixed, the test
+  fails until you remove the marker and its allowlist entry.
+- A new known bug pinned by a strict `xfail` needs an allowlist entry that
+  names its issue. Keep entries narrow, and remove them when they are no
+  longer needed; the check warns about entries that matched nothing.
+
+To reproduce CI's check locally on the whole suite, run `make test-ci`.
+
+- To rerun what one CI shard ran, pass the same `--shard K/N` locally.
+- To make CI faster, add a shard to the `shard` matrix in `test-suite.yaml`.
+- Do not split tests by file or directory in a workflow: a test outside the
+  listed paths would silently not run.

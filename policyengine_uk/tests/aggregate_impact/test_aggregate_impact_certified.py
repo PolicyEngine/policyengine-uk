@@ -20,11 +20,10 @@ from policyengine_uk.utils.aggregate_impact.spec import load_spec
 pytestmark = pytest.mark.microsimulation
 
 YEAR = 2026
-# Universal Credit deducts income tax and National Insurance on Statutory Sick
-# Pay (taxable_employment_income adds employment_benefits) but does not count
-# the pay itself as earnings (uc_individual_earned_income_before_mif), so UC
-# rises when SSP does. When that is fixed this test fails: remove the entry.
-KNOWN_RISING_WITH_INCOME = {"statutory_sick_pay"}
+# Components whose rise raises another benefit: a known model defect each.
+# When one is fixed this test fails until its entry is removed. Empty since
+# #2365 counted statutory sick, maternity and paternity pay as UC earnings.
+KNOWN_RISING_WITH_INCOME: set = set()
 SPENDING_SAMPLE = {
     "state_pension",
     "universal_credit",

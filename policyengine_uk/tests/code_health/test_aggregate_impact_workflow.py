@@ -10,6 +10,7 @@ import json
 from pathlib import Path
 
 import numpy as np
+import pytest
 import yaml
 
 from policyengine_uk.utils.aggregate_impact.measure import (
@@ -21,6 +22,12 @@ from policyengine_uk.utils.aggregate_impact.measure import (
 
 REPO = Path(__file__).resolve().parents[3]
 WORKFLOW = REPO / ".github" / "workflows" / "aggregate-impact.yaml"
+
+if not WORKFLOW.exists():
+    pytest.skip(
+        "the .github folder is not part of an installed package",
+        allow_module_level=True,
+    )
 ALLOWED_UPLOAD_PATHS = {"report"}
 
 

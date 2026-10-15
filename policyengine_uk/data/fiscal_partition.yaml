@@ -102,9 +102,8 @@ totals:
   household_benefits:
     label: Benefits received by the household
     description: >-
-      The benefit side of household net income. It omits pawhp and the
-      contributed budget-change line, and adds Scottish Child Payment, Healthy
-      Start and the Two Child Limit Payment, which gov_spending leaves out.
+      The benefit side of household net income. It is gov_spending without the
+      contributed budget-change line, which is not paid to households.
     dropped_when:
       gov.contrib.abolish_council_tax:
         - council_tax_benefit
@@ -586,11 +585,8 @@ spending_heads:
     variable: pawhp
     entity: household
     report_group: pensioner_benefits
-    totals: [gov_spending]
+    totals: [gov_spending, household_benefits]
     sign: nonnegative
-    model_note: >-
-      Counted in gov_spending but not in household_benefits or household net
-      income (PR 2047).
   # Working-age means-tested benefits
   - id: universal_credit
     label: Universal Credit
@@ -746,28 +742,23 @@ spending_heads:
     variable: scottish_child_payment
     entity: person
     report_group: child_and_family_benefits
-    totals: [household_benefits]
+    totals: [gov_spending, household_benefits]
     sign: nonnegative
-    model_note: >-
-      Counted in household_benefits but missing from gov_spending, so
-      gov_balance leaves out its cost (about £0.5bn a year on uk-data 1.58.0).
   - id: two_child_limit_payment
     label: Two Child Limit Payment (Scotland, counterfactual)
     variable: two_child_limit_payment
     entity: benunit
     report_group: child_and_family_benefits
-    totals: [household_benefits]
+    totals: [gov_spending, household_benefits]
     sign: nonnegative
     zero_at_baseline: expected
-    model_note: Counted in household_benefits but not in gov_spending.
   - id: healthy_start_vouchers
     label: Healthy Start vouchers
     variable: healthy_start_vouchers
     entity: person
     report_group: child_and_family_benefits
-    totals: [household_benefits]
+    totals: [gov_spending, household_benefits]
     sign: nonnegative
-    model_note: Counted in household_benefits but missing from gov_spending.
   - id: maternity_allowance
     label: Maternity Allowance
     variable: maternity_allowance
@@ -778,6 +769,13 @@ spending_heads:
   - id: statutory_maternity_pay
     label: Statutory Maternity Pay
     variable: statutory_maternity_pay
+    entity: person
+    report_group: child_and_family_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: statutory_paternity_pay
+    label: Statutory Paternity Pay
+    variable: statutory_paternity_pay
     entity: person
     report_group: child_and_family_benefits
     totals: [gov_spending, household_benefits]
