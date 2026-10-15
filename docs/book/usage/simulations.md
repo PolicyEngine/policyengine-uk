@@ -297,6 +297,10 @@ print(sim.calculate("household_net_income", 2026))
 `Simulation` and `Microsimulation` can also load H5 files from local paths,
 Hugging Face URLs, or Google Cloud Storage URLs:
 
+Files written by either `UKSingleYearDataset.save(path)` or
+`UKMultiYearDataset.save(path)` can be loaded with `Simulation(dataset=path)`.
+The loader detects single-year tables and multi-year groups from the H5 layout.
+
 ```python
 sim = Microsimulation(
     dataset="gs://policyengine-uk-data-private/enhanced_frs_2023_24.h5@1.55.10"
