@@ -56,3 +56,54 @@ def test_a_measurement_branch_drops_what_its_simulation_calculated():
     # The branch is not kept, and the simulation's own results are untouched.
     assert "probe" not in responding.branches
     assert value(responding, "household_net_income") == with_response
+
+
+def test_a_branch_with_its_parents_rules_takes_the_parents_response(monkeypatch):
+    """The Pension Credit branch of the UC non-dependant exemption fixes the
+    UC housing element at zero. It changes inputs, not policy, so it takes the
+    simulation's labour supply response instead of measuring the whole
+    population again with that element held on the reform's side only."""
+    from policyengine_uk.utils import labour_supply_responses
+
+    measured_from = []
+    measure = labour_supply_responses.measurement_branch
+
+    def recording(simulation, name, period, inputs):
+        if name == "lsr_measurement":
+            measured_from.append(simulation.branch_name)
+        return measure(simulation, name, period, inputs)
+
+    monkeypatch.setattr(labour_supply_responses, "measurement_branch", recording)
+    members = ["earner", "partner", "older_child", "younger_child"]
+    renting_family = {
+        "people": {
+            "earner": {"age": {YEAR: 35}, "employment_income": {YEAR: 22_000}},
+            "partner": {"age": {YEAR: 33}},
+            "older_child": {"age": {YEAR: 6}},
+            "younger_child": {"age": {YEAR: 3}},
+        },
+        "benunits": {"benunit": {"members": members}},
+        "households": {
+            "household": {
+                "members": members,
+                "rent": {YEAR: 10_800},
+                "tenure_type": {YEAR: "RENT_PRIVATELY"},
+            }
+        },
+    }
+    responding = Simulation(
+        situation=renting_family,
+        scenario=Scenario(
+            parameter_changes={
+                **BASIC_RATE_RISE,
+                **STATIC_CAPITAL_GAINS,
+                **ELASTICITIES,
+            }
+        ),
+    )
+
+    assert value(responding, "universal_credit") > 0
+    responding.calculate("household_net_income", YEAR)
+
+    assert value(responding, "employment_income_behavioral_response") < 0
+    assert measured_from == ["default"]

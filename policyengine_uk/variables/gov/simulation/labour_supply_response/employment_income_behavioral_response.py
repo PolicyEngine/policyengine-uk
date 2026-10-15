@@ -1,5 +1,8 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.labour_supply_responses import measurement_branches
+from policyengine_uk.utils.labour_supply_responses import (
+    measurement_branches,
+    response_source,
+)
 
 
 class employment_income_behavioral_response(Variable):
@@ -16,6 +19,10 @@ class employment_income_behavioral_response(Variable):
             return 0  # No reform, no impact
         if lsr.income_elasticity == 0 and lsr.substitution_elasticity == 0:
             return 0
+        # A branch with its parent's rules takes the parent's response.
+        source = response_source(simulation)
+        if source is not simulation:
+            return source.person("employment_income_behavioral_response", period)
 
         # (system with LSRs) <- (system without LSRs used to calculate LSRs)
         #                      |

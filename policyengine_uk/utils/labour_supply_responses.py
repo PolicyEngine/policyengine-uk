@@ -14,6 +14,26 @@ HELD_INPUTS = ("employment_income_before_lsr", "capital_gains_before_response")
 _open_measurements = {}
 
 
+def response_source(simulation):
+    """The simulation whose labour supply response ``simulation`` takes.
+
+    A branch that shares its parent's tax-benefit system changes inputs, not
+    policy: a helper branch that fixes one input to break a cycle (the Pension
+    Credit branch of the UC non-dependant exemption, say), or a marginal
+    rate's step. The response answers the policy, so labour supply there is
+    where the parent puts it. Measured again, the response would compare the
+    branch's inputs with a baseline that does not have them, and repeat a
+    measurement of the whole population.
+    """
+    parent = getattr(simulation, "parent_branch", None)
+    while (
+        parent is not None
+        and parent.tax_benefit_system is simulation.tax_benefit_system
+    ):
+        simulation, parent = parent, getattr(parent, "parent_branch", None)
+    return simulation
+
+
 @contextmanager
 def measurement_branches(person, period):
     """Yield the branches that measure the reform and the baseline with labour
