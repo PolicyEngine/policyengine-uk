@@ -231,6 +231,23 @@ def test_malformed_keys_report_every_path_without_partial_changes(baseline, oper
     assert [parameter(simulation, path, "2026-01-01") for path in changes] == before
 
 
+@pytest.mark.parametrize("operation", ["simulation_modifier", "apply"])
+def test_malformed_core_keys_roll_back_and_report_every_path(baseline, operation):
+    simulation = baseline.clone()
+    malformed = {BASIC_RATE: {"not-a-period": 0.31}, VAT_RATE: {"bad": 0.27}}
+    changes = {PERSONAL_ALLOWANCE: {"2026": 13_000}, **malformed}
+    before = [parameter(simulation, path, "2026-01-01") for path in changes]
+    overrides = list(simulation.tax_benefit_system.legacy_overrides)
+    scenario = Scenario.from_reform(Reform.from_dict(changes))
+    with pytest.raises(ValueError) as error:
+        getattr(scenario, operation)(simulation)
+    for path, values in malformed.items():
+        assert path in str(error.value)
+        assert next(iter(values)) in str(error.value)
+    assert [parameter(simulation, path, "2026-01-01") for path in changes] == before
+    assert simulation.tax_benefit_system.legacy_overrides == overrides
+
+
 def test_modifier_only_overrides_changes_missing_from_the_system():
     written = {BASIC_RATE: {"2026-04-06.2027-04-05": 0.31}}
     simulation = Simulation(

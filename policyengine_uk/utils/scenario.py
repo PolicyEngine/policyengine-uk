@@ -109,8 +109,17 @@ def _legacy_override_modifier(dated: DatedReform) -> Callable[[Simulation], None
                 simulation.tax_benefit_system.parameters,
                 legacy,
                 require_annual_value=overriding,
+                defer_invalid_keys=True,
             )
-            _add_overrides(simulation, legacy)
+            try:
+                _add_overrides(simulation, legacy)
+            except (ValueError, TypeError, KeyError):
+                validate_annualised_overrides(
+                    simulation.tax_benefit_system.parameters,
+                    legacy,
+                    require_annual_value=overriding,
+                )
+                raise
         from policyengine_uk.scenarios.uc_reform import warn_shadowed_lcwra_reform
 
         warn_shadowed_lcwra_reform(simulation)

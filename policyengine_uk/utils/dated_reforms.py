@@ -525,14 +525,22 @@ def legacy_override_bounds(override: LegacyOverride, parameters):
 
 
 def validate_annualised_overrides(
-    parameters, overrides, require_annual_value=True
+    parameters, overrides, require_annual_value=True, defer_invalid_keys=False
 ) -> None:
-    """Reject every invalid or annually unreadable override before editing."""
+    """Validate overrides, optionally deferring Core key errors to rollback."""
     errors = []
     for override in overrides:
         try:
             target = parameters.get_child(override.path)
-            start, stop = legacy_override_bounds(override, parameters)
+            try:
+                start, stop = legacy_override_bounds(override, parameters)
+            except (ValueError, TypeError, KeyError):
+                # Core leaves from_dict keys unparsed until the atomic
+                # override batch. Keep that rollback path, then report all
+                # bad keys after the batch restores the system.
+                if defer_invalid_keys and override.reading == REFORM_FROM_DICT:
+                    continue
+                raise
             first_year = start.year + ((start.month, start.day) > (1, 1))
             if require_annual_value and instant(f"{first_year:04d}-01-01") > stop:
                 raise ValueError("the key contains no 1 January annual value")
