@@ -107,3 +107,61 @@ def test_a_branch_with_its_parents_rules_takes_the_parents_response(monkeypatch)
 
     assert value(responding, "employment_income_behavioral_response") < 0
     assert measured_from == ["default"]
+
+
+@pytest.mark.parametrize(
+    "elasticities, terms_measured",
+    [
+        ({}, []),
+        # Only the income term is nonzero, so only it reads the measurement.
+        (
+            {
+                "gov.simulation.labour_supply_responses.income_elasticity": {
+                    str(YEAR): -0.05
+                }
+            },
+            ["relative_income_change"],
+        ),
+    ],
+)
+def test_a_term_with_a_zero_elasticity_measures_nothing(
+    monkeypatch, elasticities, terms_measured
+):
+    """policyengine.py asks for both terms on every UK simulation. A term
+    whose elasticity is zero is zero, so it measures nothing."""
+    from policyengine_uk.utils import labour_supply_responses
+
+    opened = []
+    measure = labour_supply_responses.measurement_branch
+
+    def recording(simulation, name, period, inputs):
+        opened.append(name)
+        return measure(simulation, name, period, inputs)
+
+    monkeypatch.setattr(labour_supply_responses, "measurement_branch", recording)
+    simulation = Simulation(
+        situation=SITUATION,
+        scenario=Scenario(
+            parameter_changes={
+                **BASIC_RATE_RISE,
+                **STATIC_CAPITAL_GAINS,
+                **elasticities,
+            }
+        ),
+    )
+
+    terms = {
+        "income_elasticity_lsr": "relative_income_change",
+        "substitution_elasticity_lsr": "relative_wage_change",
+    }
+    for term in terms:
+        simulation.calculate(term, YEAR)
+    calculated = {
+        change
+        for term, change in terms.items()
+        if simulation.get_holder(change).get_known_periods()
+    }
+
+    assert sorted(calculated) == terms_measured
+    if not terms_measured:
+        assert opened == []
