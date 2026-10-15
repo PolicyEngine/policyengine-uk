@@ -1,21 +1,39 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.benefit_unit import award_of_members
+from policyengine_uk.variables.gov.dwp._legacy_award_payee import (
+    is_payee_of_couple_award,
+)
+from policyengine_uk.variables.gov.dwp.esa_income import income_related_esa_award
 
-# Benefits whose receipt (or entitlement) by the claimant or partner, or for
-# some a child or young person, lifts the cap: industrial injuries benefit
-# (HB Regs 2006 reg. 75F(1)(b)), attendance allowance (c), disability living
-# allowance (e), personal independence payment and armed forces independence
-# payment (ea), and entitlement to carer's allowance (h) or carer support
-# payment (ha).
-SPECIFIED_PERSONAL_BENEFITS = [
+# HB Regs 2006 reg 75F(1) names, for each benefit, whose receipt (or
+# entitlement) lifts the cap.
+
+# "the claimant or the claimant's partner is receiving" (reg 75F(1)(b)-(d)):
+# industrial injuries benefit, attendance allowance, and a war pension, which
+# includes the Armed Forces Compensation Scheme's guaranteed income payments
+# (reg 75F(2)(a)).
+CLAIMANT_OR_PARTNER_BENEFITS = [
     "attendance_allowance",
-    "armed_forces_independence_payment",
-    # Entitlement, not payment: reg. 75F(1)(h)-(ha) read "is entitled to", so
-    # an overlapping benefit that reduces the payment to nil still counts.
-    "is_entitled_to_carer_benefit",
-    "dla",
-    "pip_dl",
-    "pip_m",
     "iidb",
+    "afcs",
+]
+
+# "the claimant, the claimant's partner or a child or young person for whom
+# the claimant or the claimant's partner is responsible" (reg 75F(1)(e)).
+CHILD_OR_YOUNG_PERSON_BENEFITS = [
+    "dla",
+]
+
+# "the claimant, the claimant's partner or a young person for whom the
+# claimant or the claimant's partner is responsible" (reg 75F(1)(ea), (h),
+# (ha)): personal independence payment, armed forces independence payment,
+# and entitlement to carer's allowance or carer support payment. These count
+# by entitlement, not payment: (h)-(ha) name a person "entitled to" them, even
+# if an overlapping benefit reduces the payment to nil.
+YOUNG_PERSON_BENEFITS = [
+    "pip",
+    "armed_forces_independence_payment",
+    "is_entitled_to_carer_benefit",
 ]
 
 
@@ -25,15 +43,18 @@ class is_housing_benefit_benefit_cap_exempt_specified_benefit(Variable):
     label = "Exempt from the Housing Benefit benefit cap through a specified benefit"
     documentation = (
         "Whether the claimant, partner or (for some benefits) a child or "
-        "young person receives or is entitled to a benefit listed in HB Regs "
-        "2006 reg. 75F(1): employment and support allowance with the support "
-        "component, industrial injuries benefit, attendance allowance, a war "
-        "pension or armed forces compensation, disability living allowance, "
-        "personal independence payment, armed forces independence payment, "
-        "or entitlement to carer's allowance or carer support payment. "
+        "young person they are responsible for receives or is entitled to a "
+        "benefit listed in HB Regs 2006 reg. 75F(1): employment and support "
+        "allowance with the support component, industrial injuries benefit, "
+        "attendance allowance, a war pension or armed forces compensation, "
+        "disability living allowance, personal independence payment, armed "
+        "forces independence payment, or entitlement to carer's allowance or "
+        "carer support payment. "
         "Housing Benefit has no claim by a member of a couple as a single "
-        "person, so the partner's benefits always count. The Universal "
-        "Credit LCWRA and carer elements are not Housing Benefit exceptions. "
+        "person, so the partner's benefits always count. Another member of "
+        "the benefit unit, such as a non-dependent adult, does not lift the "
+        "cap with their own benefit. The Universal Credit LCWRA and carer "
+        "elements are not Housing Benefit exceptions. "
         "Regulation 75F(1)(g) (a claimant receiving Universal Credit) never "
         "applies: the model pays a family Universal Credit or Housing "
         "Benefit, not both."
@@ -41,18 +62,64 @@ class is_housing_benefit_benefit_cap_exempt_specified_benefit(Variable):
     definition_period = YEAR
     reference = (
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/75F",
+        "https://www.legislation.gov.uk/uksi/2006/213/regulation/2",
+        "https://www.legislation.gov.uk/uksi/2006/213/regulation/19",
         "https://www.gov.uk/benefit-cap/when-youre-not-affected",
     )
 
     def formula(benunit, period, parameters):
-        # Reg. 75F(1)(a): an employment and support allowance which includes
-        # a support component (contributory or income-related allowances
-        # stand in for it).
-        esa_support_component = (benunit("esa_income", period) > 0) | (
-            add(benunit, period, ["esa_contrib"]) > 0
+        person = benunit.members
+        # The claimant and partner (HB Regs 2006 reg 2(1)).
+        claimant_or_partner = person("is_claimant_or_partner", period)
+
+        # A child under 16 or a Child Benefit qualifying young person the
+        # claimant or partner is responsible for (HB Regs 2006 regs 2(1), 19).
+        child_or_young_person = person(
+            "is_child_or_young_person_for_legacy_benefits", period
         )
-        specified_benefits = add(benunit, period, SPECIFIED_PERSONAL_BENEFITS) > 0
-        # Reg. 75F(1)(d) and (2)(a): a war pension, including a guaranteed
-        # income payment under the Armed Forces Compensation Scheme.
-        afcs = add(benunit, period, ["afcs"]) > 0
-        return esa_support_component | specified_benefits | afcs
+        young_person = child_or_young_person & person(
+            "is_qualifying_young_person_for_child_benefit", period
+        )
+
+        def received_by(benefits, members):
+            return add_for_members(benunit, period, benefits, members) > 0
+
+        # Reg 75F(1)(a): "the claimant or the claimant's partner is receiving
+        # an employment and support allowance ... which includes a support
+        # component". Contributory and income-related allowances both carry
+        # it; another member's allowance does not count. The couple's
+        # income-related award is the part of the family's award on the
+        # couple's reports, as in claimant_or_partner_esa_income, and it is
+        # received by its payee (reg 2(3A); is_on_income_related_esa reads
+        # the same).
+        couple_esa_award = award_of_members(
+            benunit,
+            period,
+            "esa_income",
+            "esa_income_reported",
+            income_related_esa_award,
+            claimant_or_partner,
+        )
+        receiving_income_related_esa = benunit.project(
+            couple_esa_award > 0
+        ) & is_payee_of_couple_award(
+            person, period, "esa_income_reported", couple=claimant_or_partner
+        )
+        receiving_esa = (person("esa_contrib", period) > 0) | (
+            receiving_income_related_esa
+        )
+        esa_support_component = benunit.any(
+            claimant_or_partner
+            & receiving_esa
+            & person("esa_includes_support_component", period)
+        )
+
+        return (
+            esa_support_component
+            | received_by(CLAIMANT_OR_PARTNER_BENEFITS, claimant_or_partner)
+            | received_by(
+                CHILD_OR_YOUNG_PERSON_BENEFITS,
+                claimant_or_partner | child_or_young_person,
+            )
+            | received_by(YOUNG_PERSON_BENEFITS, claimant_or_partner | young_person)
+        )

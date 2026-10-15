@@ -35,9 +35,10 @@ claimant alone with the children ("solo"). Invariants:
    member's disability benefits, LCWRA, caring, AFCS and contributory ESA
    lift no Universal Credit cap (reg. 83(1)), so the Universal Credit
    exceptions equal the joint claimants' with those removed, and a
-   claimant's own AFCS or contributory ESA lifts it. The model takes any
-   contributory ESA as including the support component (reg. 83(1)(a) needs
-   the support component); that proxy is the model's, not this change's.
+   claimant's own AFCS or contributory ESA lifts it. The model takes
+   contributory ESA of a person's own as including the support component
+   unless told otherwise (esa_includes_support_component; reg. 83(1)(a)
+   needs the support component).
    Housing Benefit has no single claim by a member of a couple, so its cap
    rate, exceptions and shared accommodation test (HB Regs 2006 regs. 2(1),
    13D(2), 75CA, 75E, 75F) and its LHA category are the joint claimants'
@@ -375,11 +376,12 @@ def off_pension_age_route(*calculations):
 def assert_own_afcs_or_esa_lifts_the_uc_cap(families, values, members):
     """A claimant's AFCS or contributory ESA lifts the Universal Credit cap.
 
-    Reg. 83(1)(a) and (e); the model takes any contributory ESA as including
-    the support component. ``members`` are the people whose own benefits
-    count: the claimant alone on a single claim, in a stripped calculation
-    (the other member's benefits removed) or with no partner, and both
-    members of a couple neither of whom is excluded.
+    Reg. 83(1)(a) and (e); the model takes contributory ESA of a person's own
+    as including the support component unless told otherwise. ``members``
+    are the people whose own benefits count: the claimant alone on a single
+    claim, in a stripped calculation (the other member's benefits removed)
+    or with no partner, and both members of a couple neither of whom is
+    excluded.
     """
     own = np.array(
         [
