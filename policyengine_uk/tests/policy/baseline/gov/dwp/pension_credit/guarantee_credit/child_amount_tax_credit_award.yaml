@@ -25,6 +25,9 @@
 #   the same).
 # - Savings credit 2024-25: threshold £301.22 a week for a couple, so the
 #   maximum is 0.6 x (332.95 - 301.22) x 52 = £989.98 (SPCA 2002 s.3(7)).
+#   The model works in annual amounts and does not round the weekly
+#   maximum; DWP publishes it rounded, £19.04 a week (£990.08 over 52
+#   weeks).
 # - Capital: Pension Credit and pension-age Housing Benefit count £1 a week
 #   for each £500 over £10,000 (SPC Regs 2002 reg 15(6); SI 2006/214
 #   reg 29(2)); pension-age Housing Benefit's capital limit is £16,000 (SI
@@ -279,7 +282,9 @@
   # credit (SI 2002/2008 reg 4(1)(d)).
   # Housing Benefit: with no Guarantee Credit there is no passport (SI
   # 2006/214 reg 26), and capital of £18,000 is over the £16,000 limit, so
-  # none.
+  # none. The case enters the Housing Benefit claim: the model infers
+  # take-up from reported benefits, so a reported tax credit alone would
+  # leave Housing Benefit unclaimed and nil whatever the passport.
   period: 2024
   absolute_error_margin: 0.01
   input:
@@ -300,6 +305,7 @@
       benunit:
         members: [grandparent_1, grandparent_2, grandchild]
         would_claim_uc: false
+        would_claim_housing_benefit: true
     households:
       household:
         members: [grandparent_1, grandparent_2, grandchild]
@@ -324,7 +330,8 @@
   # = £2,474.48. Savings credit: income is below the minimum guarantee, so B
   # is nil and the credit is the maximum, £989.98. Pension Credit £3,464.46.
   # Housing Benefit: the Guarantee Credit passport disregards all capital and
-  # income (SI 2006/214 reg 26), so the full eligible rent, £12,000.
+  # income (SI 2006/214 reg 26), so the full eligible rent, £12,000. The
+  # Housing Benefit claim is entered as in the previous case.
   period: 2024
   absolute_error_margin: 0.01
   input:
@@ -344,6 +351,7 @@
       benunit:
         members: [grandparent_1, grandparent_2, grandchild]
         would_claim_uc: false
+        would_claim_housing_benefit: true
     households:
       household:
         members: [grandparent_1, grandparent_2, grandchild]

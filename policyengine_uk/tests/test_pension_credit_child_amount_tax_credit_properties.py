@@ -160,7 +160,9 @@ FAMILIES = st.lists(families(), min_size=1, max_size=6)
 # The YAML households (child_amount_tax_credit_award.yaml), run on every
 # invocation. Pension Credit earnings are net of SPC Regs Sch VI para 5, and
 # the CTC family element is entered at its statutory £545. The last two pay
-# rent, so the order and differential checks reach Housing Benefit.
+# rent, so the order and differential checks reach Housing Benefit; they
+# enter the Housing Benefit claim, which the model otherwise infers from
+# reported benefits across the whole simulation.
 _GRANDPARENT = {
     "age": 70,
     "employment_income": 2_600,
@@ -224,14 +226,14 @@ YAML_FAMILIES = [
             {"age": 80, "state_pension": 9_000},
         ],
         [{"age": 10}],
-        {"would_claim_uc": False},
+        {"would_claim_uc": False, "would_claim_housing_benefit": True},
         _RENTED,
     ),
     # The same household with no tax credit claim keeps the passport.
     (
         [{"age": 80, "state_pension": 9_000}, {"age": 80, "state_pension": 9_000}],
         [{"age": 10}],
-        {"would_claim_uc": False},
+        {"would_claim_uc": False, "would_claim_housing_benefit": True},
         _RENTED,
     ),
 ]
