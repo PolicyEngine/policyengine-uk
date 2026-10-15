@@ -566,3 +566,104 @@
     income_tax_before_winter_fuel_payment_charge: [4_246]
     winter_fuel_payment_charge: [200]
     income_tax: [4_446]
+
+- name: 2025 statutory sick pay counts towards total income
+  # Statutory sick pay is income charged to tax, so it is part of total
+  # income (ITA 2007 s.23 Step 1): £30,000 + £6,000 = £36,000, over £35,000.
+  # Tax before the charge: (36,000 - 12,570) x 20% = £4,686; with the £200
+  # charge, £4,886.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        private_pension_income: 30_000
+        statutory_sick_pay: 6_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    winter_fuel_payment: [200]
+    winter_fuel_payment_charge: [200]
+    income_tax_before_winter_fuel_payment_charge: [4_686]
+    income_tax: [4_886]
+
+- name: 2025 trade loss relief does not lower total income
+  # Trade loss relief is deducted at Step 2 (ITA 2007 ss.23 and 64), after
+  # total income is found at Step 1. Total income is £30,000 + £10,000 =
+  # £40,000, so the £200 charge applies. Tax before the charge: net income
+  # 40,000 - 8,000 = £32,000, (32,000 - 12,570) x 20% = £3,886; with the
+  # charge, £4,086.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        employment_income: 30_000
+        private_pension_income: 10_000
+        trading_loss: 8_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    trade_loss_relief_against_general_income: [8_000]
+    winter_fuel_payment_charge: [200]
+    income_tax_before_winter_fuel_payment_charge: [3_886]
+    income_tax: [4_086]
+
+- name: 2025 a landlord's property allowance election counts the charge
+  # Private pension £32,520; property receipts £3,500, expenses £200 (profit
+  # £3,300), finance costs £1,500; five children. With expenses: (35,820 -
+  # 12,570) x 20% = £4,650, less the finance-cost reduction 20% x £1,500 =
+  # £300, so £4,350. With partial relief (£1,000 allowance, no reduction):
+  # (35,020 - 12,570) x 20% = £4,490. Pension Credit income is £29,970 with
+  # expenses and £29,830 with the allowance, against the model's minimum
+  # guarantee of £29,893.76 (with the amounts for the children), so only the
+  # allowance route gets Pension Credit, which exempts the pensioner from the
+  # charge (s.681I(4)). Total tax: £4,350 + £200 = £4,550 with expenses,
+  # £4,490 with the allowance, so the pensioner elects for partial relief.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        private_pension_income: 32_520
+        property_rental_income: 3_500
+        property_income: 3_300
+        property_finance_costs: 1_500
+      child_1:
+        age: 10
+      child_2:
+        age: 10
+      child_3:
+        age: 10
+      child_4:
+        age: 10
+      child_5:
+        age: 10
+    benunits:
+      unit:
+        members: [pensioner, child_1, child_2, child_3, child_4, child_5]
+        would_claim_pc: true
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child_1, child_2, child_3, child_4, child_5]
+        country: ENGLAND
+  output:
+    uses_property_allowance: [true, false, false, false, false, false]
+    pension_credit_income: 29_830
+    winter_fuel_payment: [200, 0, 0, 0, 0, 0]
+    winter_fuel_payment_charge: [0, 0, 0, 0, 0, 0]
+    income_tax_before_winter_fuel_payment_charge: [4_490, 0, 0, 0, 0, 0]
+    income_tax: [4_490, 0, 0, 0, 0, 0]

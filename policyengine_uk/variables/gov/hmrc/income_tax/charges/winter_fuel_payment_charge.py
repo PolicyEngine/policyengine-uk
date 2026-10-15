@@ -17,7 +17,9 @@ class winter_fuel_payment_charge(Variable):
         "The charge to income tax that recovers a person's winter fuel "
         "payment: the whole payment, when the person's own total income for "
         "the tax year exceeds the threshold and they are not entitled to a "
-        "relevant benefit in the qualifying week. It is additional tax at "
+        "relevant benefit in the qualifying week. Total income includes the "
+        "statutory sick and maternity pay the model taxes as employment "
+        "income. It is additional tax at "
         "Step 7 of the income tax calculation, so tax reductions do not "
         "offset it. The payment itself, and who counts as another entitled "
         "person for the shared amounts, are unaffected by the charge."
@@ -33,6 +35,13 @@ class winter_fuel_payment_charge(Variable):
     def formula(person, period, parameters):
         p = parameters(period).gov.hmrc.income_tax.charges.winter_fuel_payment
         payment = add(person, period, WINTER_FUEL_PAYMENTS)
-        over_threshold = person("total_income", period) > p.income_threshold
+        # Total income is the income charged to tax (ITA 2007 s.23 Step 1).
+        # The model taxes statutory sick and maternity pay as employment
+        # income (employment_benefits, in taxable_employment_income), but
+        # total_income leaves them out, so they are added here.
+        total_income = person("total_income", period) + person(
+            "employment_benefits", period
+        )
+        over_threshold = total_income > p.income_threshold
         on_relevant_benefit = add(person, period, p.relevant_benefits) > 0
         return p.in_effect * payment * over_threshold * ~on_relevant_benefit

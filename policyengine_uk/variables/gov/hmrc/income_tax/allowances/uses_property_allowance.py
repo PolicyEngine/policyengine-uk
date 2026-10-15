@@ -22,21 +22,19 @@ MAX_ROUNDS = 3
 def income_tax_with_route(simulation, name, period, uses_allowance):
     """Each person's income tax with the given choices of property allowance.
 
-    The tax is before the winter fuel payment charge. The charge turns on
-    total_income, which is before the property allowance and so the same on
-    either route, and on receipt of means-tested benefits, which reading it
-    here would compute again in each route's branch. The branch shares the
-    simulation's cached arrays until it writes, and is dropped afterwards so
-    a later period starts from a fresh branch.
+    The tax includes the winter fuel payment charge. The model's total_income
+    is before the property allowance, so it is the same on either route, but
+    a route can change the person's Pension Credit and so whether the charge
+    applies (s.681I(4)). The branch shares the simulation's cached arrays
+    until it writes, and is dropped afterwards so a later period starts from
+    a fresh branch.
     """
     while name in simulation.branches or name == simulation.branch_name:
         name += "_"
     branch = simulation.get_branch(name)
     try:
         branch.set_input("uses_property_allowance", period, uses_allowance)
-        return branch.populations["person"](
-            "income_tax_before_winter_fuel_payment_charge", period
-        )
+        return branch.populations["person"]("income_tax", period)
     finally:
         del simulation.branches[name]
 
@@ -52,8 +50,8 @@ class uses_property_allowance(Variable):
         "two cannot be combined. Full relief applies to receipts within the "
         "allowance unless the person elects out of it, and partial relief "
         "only if they elect for it; each election is made only if it lowers "
-        "the person's own income tax (before the winter fuel payment charge), "
-        "with everyone else's route held fixed. "
+        "the person's own income tax, including the winter fuel payment "
+        "charge, with everyone else's route held fixed. "
         "Ties keep the default, so a person with receipts within the "
         "allowance keeps full relief even where electing out would carry "
         "finance costs forward. Without finance costs to relieve, the "

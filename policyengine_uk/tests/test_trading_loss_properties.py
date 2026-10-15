@@ -67,6 +67,9 @@ from policyengine_uk.variables.household.income.hbai_household_net_income import
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
 YEAR = 2026
+# Income tax before the winter fuel payment charge: what the means tests
+# deduct. The charge depends on their awards, so they cannot deduct it.
+PRE_CHARGE_TAX = "income_tax_before_winter_fuel_payment_charge"
 PROPERTY_SETTINGS = settings(
     max_examples=3,
     deadline=None,
@@ -357,17 +360,21 @@ PINNED_PORTFOLIOS = [
 )
 def test_relief_taxes_like_income_cut_in_section_25_order(people, regions):
     twins = [reduced(p)[0] for p in people]
-    variables = ["income_tax", "trade_loss_relief_against_general_income"]
+    # The winter fuel payment charge tests total income, before Step 2
+    # reliefs (ITEPA 2003 s.681I(1)(b), ITA 2007 s.23), so a relief and an
+    # income cut can differ in it for people of pension age.
+    tax = PRE_CHARGE_TAX
+    variables = [tax, "trade_loss_relief_against_general_income"]
     a = calculate(single_people(people, regions), variables)
-    b = calculate(single_people(twins, regions), ["income_tax"])
+    b = calculate(single_people(twins, regions), [tax])
     for i, person in enumerate(people):
         _, relief = reduced(person)
         assert abs(a["trade_loss_relief_against_general_income"][i] - relief) <= (
             tolerance(relief)
         ), person
-        assert abs(a["income_tax"][i] - b["income_tax"][i]) <= 0.5 + tolerance(
-            a["income_tax"][i], person["employment_income"]
-        ), (person, a["income_tax"][i], b["income_tax"][i])
+        assert abs(a[tax][i] - b[tax][i]) <= 0.5 + tolerance(
+            a[tax][i], person["employment_income"]
+        ), (person, a[tax][i], b[tax][i])
 
 
 @PROPERTY_SETTINGS
@@ -584,12 +591,14 @@ def test_zero_profit_trade_loss_cannot_raise_tax_or_reduce_programme_award(
 
     baseline = simulation(zero_profit, person_inputs)
     actual_loss = simulation(loss_making, person_inputs)
-    actual_tax = values(actual_loss, "income_tax")
-    baseline_tax = values(baseline, "income_tax")
+    # Before the winter fuel payment charge: a loss can end Pension Credit,
+    # and with it the exemption from the charge (s.681I(4)).
+    actual_tax = values(actual_loss, PRE_CHARGE_TAX)
+    baseline_tax = values(baseline, PRE_CHARGE_TAX)
     assert np.all(actual_tax <= baseline_tax + 0.5), (actual_tax, baseline_tax, units)
 
     deductions = [
-        "income_tax",
+        PRE_CHARGE_TAX,
         "national_insurance",
         "uc_income_tax_on_earnings",
         "uc_national_insurance_on_earnings",
@@ -624,7 +633,7 @@ def test_means_tests_see_the_loss_only_through_tax(units):
     names = with_loss.populations["person"].ids
     benunits = with_loss.populations["benunit"].ids
     deductions = [
-        "income_tax",
+        PRE_CHARGE_TAX,
         "national_insurance",
         "uc_income_tax_on_earnings",
         "uc_national_insurance_on_earnings",
