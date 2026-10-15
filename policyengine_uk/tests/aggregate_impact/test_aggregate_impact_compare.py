@@ -350,9 +350,9 @@ def test_decile_impacts_match_a_direct_grouped_calculation(seed, n):
             continue
         mean_change = (group.w * group.change).sum() / group.w.sum()
         relative = (group.w * group.change).sum() / (group.w * group.base).sum()
-        # Published to what the comment shows: £1 and 0.01%.
+        # Published to what the comment shows: £1 and 0.1%.
         assert row["mean_change"] == round(mean_change)
-        assert row["relative_change"] == round(relative, 4)
+        assert row["relative_change"] == round(relative, 3)
         assert "households" not in row and "base_mean" not in row
 
 
@@ -614,7 +614,7 @@ def test_published_decile_rows_cannot_rebuild_the_income_total(seed):
         assert "households" not in row and "base_mean" not in row
         if not row["suppressed"]:
             assert row["mean_change"] == round(row["mean_change"])
-            assert row["relative_change"] == round(row["relative_change"], 4)
+            assert row["relative_change"] == round(row["relative_change"], 3)
             assert row["share_gaining"] == round(row["share_gaining"], 3)
 
 
@@ -734,3 +734,58 @@ def test_a_withheld_change_and_a_small_decile_row_render_as_such():
     }
     text = _deciles({"deciles": {"2026": [row, dict(row, decile="all")]}}, [2026])
     assert "fewer than 10 households change" in text and "n/a" not in text
+
+
+def test_a_suppression_transition_withholds_the_totals_exact_change():
+    """Sol re-review 4, finding 1: 10 recipients on the base and 9 on the head,
+    same total; an exact total change would show the 9 still add to £246.90."""
+    from policyengine_uk.utils.aggregate_impact.compare import compare_metrics
+    from policyengine_uk.utils.aggregate_impact.measure import Recorder
+
+    sides = []
+    for records, common in ((10, 7.3e10), (9, 7.4e10)):
+        rec = Recorder()
+        rec.metric("receipts.tax", "Tax", "receipts", "gbp", 2026, 5e11, records=5000)
+        rec.metric("spending.common", "C", "spending", "gbp", 2026, common, records=500)
+        rec.metric(
+            "spending.rare", "R", "spending", "gbp", 2026, 246.9, records=records
+        )
+        for total in (
+            "model.gov_spending",
+            "model.household_benefits",
+            "balance.spending",
+        ):
+            rec.metric(total, total, "model_totals", "gbp", 2026, common + 246.9)
+        rec.metric("model.gov_tax", "gov_tax", "model_totals", "gbp", 2026, 5e11)
+        rec.metric(
+            "balance.balance", "b", "balance", "gbp", 2026, 5e11 - common - 246.9
+        )
+        protect_totals(rec, _protection_partition(), set(), 2026)
+        sides.append(
+            ({m["id"]: m for m in rec.metrics.values()}, hidden_detail(rec, 2026))
+        )
+    (base, bh), (head, hh) = sides
+    rows, _ = compare_metrics(base, head, SPEC, [2026], base_hidden=bh, head_hidden=hh)
+    assert _cell(rows, "model.gov_spending")["delta"] is None
+    assert _cell(rows, "spending.rare")["delta"] is None
+    assert _cell(rows, "spending.common")["delta"] == pytest.approx(1e9)
+
+
+def test_decile_changes_that_round_to_zero_are_not_called_no_change():
+    """Sol re-review 4, finding 6."""
+    from policyengine_uk.utils.aggregate_impact.render import _deciles
+
+    rng = np.random.default_rng(3)
+    base = households(100, rng, decile=np.repeat(np.arange(1, 11), 10))
+    head = copy.deepcopy(base)
+    for columns in head.values():
+        columns["income"] = columns["income"] + 0.25
+    impacts, _ = decile_impacts(base, head, YEARS)
+    assert all(
+        r["mean_change"] == 0 and r["any_change"] for r in impacts[str(YEARS[0])]
+    )
+    text = _deciles({"deciles": {str(YEARS[0]): impacts[str(YEARS[0])]}}, [YEARS[0]])
+    assert "rounds to £0" in text and "No household" not in text
+    unchanged, _ = decile_impacts(base, copy.deepcopy(base), YEARS)
+    text = _deciles({"deciles": {str(YEARS[0]): unchanged[str(YEARS[0])]}}, [YEARS[0]])
+    assert "No household's net income changes" in text

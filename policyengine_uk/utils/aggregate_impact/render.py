@@ -155,6 +155,8 @@ def _deciles(summary, years) -> str:
         for y in present
         for row in deciles[str(y)]
     ):
+        if any(row.get("any_change") for y in present for row in deciles[str(y)]):
+            return "Every decile's mean change rounds to £0 in every year."
         return "No household's net income changes in any year."
     labels = [row["decile"] for row in deciles[str(present[0])]]
     body = []
@@ -168,7 +170,7 @@ def _deciles(summary, years) -> str:
                 cells.append("0" if row["mean_change"] == 0 else "n/a")
             else:
                 cells.append(
-                    f"{fmt_change(row['mean_change'], 'gbp')} ({100 * row['relative_change']:+.2f}%)"
+                    f"{fmt_change(row['mean_change'], 'gbp')} ({100 * row['relative_change']:+.1f}%)"
                 )
         body.append([decile if decile == "all" else f"Decile {decile}"] + cells)
     text = (

@@ -312,7 +312,9 @@ def _identity_check(rec, check_id, label, components_hh, total_hh, year, spec, w
     if not ok:
         gap = float(np.nansum(weights * np.where(bad, difference, 0.0)))
         detail = f"{fiscal_year_label(year)}: " + cell_detail(
-            int(bad.sum()), "households differ", f"by a weighted £{gap:,.0f} in total"
+            _weighted_records(bad, weights),
+            "households differ",
+            f"by a weighted £{gap:,.0f} in total",
         )
     rec.check(check_id, label, ok, detail, section="identities")
 
@@ -439,7 +441,7 @@ def measure_year(
             not bool(overlapping.any()),
             f"{fiscal_year_label(year)}: "
             + cell_detail(
-                int(overlapping.sum()),
+                _weighted_records(overlapping, hw),
                 "households have more than one",
                 f"a weighted {float(np.sum(hw * overlapping)):,.0f}",
             ),

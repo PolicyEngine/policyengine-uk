@@ -90,6 +90,11 @@ def classify_check(
     return "pre_existing"
 
 
+def _is_suppressed(metrics: Mapping, metric_id: str, key: str) -> bool:
+    metric = metrics.get(metric_id)
+    return metric is not None and key in metric.get("suppressed", ())
+
+
 def _published(metrics: Mapping, metric_id: str, key: str):
     metric = metrics.get(metric_id)
     return None if metric is None else metric["values"].get(key)
@@ -133,6 +138,13 @@ def private_delta(
     inside = set(base_hidden["contains"].get(cell, ())) | set(
         head_hidden["contains"].get(cell, ())
     )
+    # A head suppressed on one side only: an exact change would show what the
+    # few records on the suppressed side add up to (Sol re-review 4).
+    for metric_id_ in inside | {metric_id}:
+        if _is_suppressed(base, metric_id_, key) != _is_suppressed(
+            head, metric_id_, key
+        ):
+            return None
     for head_id in inside:
         hk = f"{head_id}|{key}"
         b_raw = base_hidden["values"].get(hk, _published(base, head_id, key))
@@ -281,10 +293,12 @@ def decile_impacts(base_households: Mapping, head_households: Mapping, years) ->
       all publishes no change: its mean change times the decile's weight
       would give those households' change back.
     - No row publishes its households' weight or base income, and changes
-      are rounded to what the comment shows (£1, 0.01% and 0.1%). Otherwise
-      the "all" row's base income, from its mean change over its relative
+      are rounded to what the comment shows (£1 and 0.1%). Otherwise the
+      "all" row's base income, from its mean change over its relative
       change, times the published household count, would rebuild the
-      household income total that ``measure.protect_totals`` rounds.
+      household income total that ``measure.protect_totals`` rounds. With
+      0.1%, a 20% change pins the base to about ±0.25%, some £3.5bn of a
+      £1.4tn total (Sol re-review 4: 0.01% left ±£420m).
     """
     impacts, notes = {}, []
     for year in years:
@@ -334,10 +348,13 @@ def decile_impacts(base_households: Mapping, head_households: Mapping, years) ->
                 {
                     "decile": d,
                     "suppressed": False,
+                    # Whether any household with weight changed: published
+                    # only for rows of 10 or more changed households, or none.
+                    "any_change": changed > 0,
                     "mean_change": round(change_total / total_weight)
                     if total_weight
                     else float("nan"),
-                    "relative_change": round(change_total / base_total, 4)
+                    "relative_change": round(change_total / base_total, 3)
                     if base_total
                     else float("nan"),
                     "share_gaining": round(

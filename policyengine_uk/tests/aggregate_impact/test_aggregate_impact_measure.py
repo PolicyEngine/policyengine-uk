@@ -362,3 +362,22 @@ def test_a_failing_determinism_check_publishes_no_amount():
     measure_reforms(lambda reform=None: drifting, None, baseline, {}, [], YEARS, rec)
     detail = rec.checks["determinism:rebuilt_baseline"]["failing"]["2026"]
     assert "£" not in detail and "123" not in detail and "differs" in detail
+
+
+def test_identity_diagnostics_count_only_households_with_weight():
+    """Sol re-review 4, finding 4: one weighted household and nine with no
+    weight differing is a small cell, and its £100 is not published."""
+    from policyengine_uk.utils.aggregate_impact.measure import _identity_check
+    from policyengine_uk.utils.aggregate_impact.spec import load_spec
+
+    rec = Recorder()
+    components = np.zeros(20)
+    components[:10] = 100.0
+    weights = np.zeros(20)
+    weights[0] = 1.0
+    weights[10:] = 1.0
+    _identity_check(
+        rec, "identity:x", "x", components, np.zeros(20), 2026, load_spec(), weights
+    )
+    (detail,) = rec.checks["identity:x"]["failing"].values()
+    assert "fewer than 10" in detail and "£" not in detail
