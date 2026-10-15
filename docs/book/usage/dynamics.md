@@ -157,6 +157,63 @@ print(f"Difference: {(dynamics.fte_impacts.ftes - 94_000):+,.0f}")
 
 Small differences from OBR estimates can arise from data vintage, population projections, or minor methodological variations.
 
+## Elasticity-based responses
+
+Separately from `apply_dynamics`, a reform can set
+`gov.simulation.labour_supply_responses.substitution_elasticity` and
+`gov.simulation.labour_supply_responses.income_elasticity`. Each person's
+`employment_income_behavioral_response` is then their employment income before
+responses times the substitution elasticity times `relative_wage_change`, plus
+the income elasticity times `relative_income_change`. Both changes compare the
+reform with its baseline (`simulation.baseline`), each measured with every
+behavioural response switched off and at the reform's earnings and capital
+gains before responses: `relative_wage_change` is the relative change in one minus
+the marginal tax rate, and `relative_income_change` the relative change in
+household net income. The changes are capped at
+`gov.simulation.labour_supply_responses.bounds`. The response is part of
+`employment_income`, so it feeds into every result that depends on it.
+
+Two things follow from measuring against `simulation.baseline`:
+
+- **The baseline is current law.** `simulation.baseline` is built without the
+  reform, whatever policy a comparison treats as its baseline. When two
+  simulations are compared and the elasticities are set on the reform side
+  only, the reform's response also answers the comparison's baseline policy.
+  For a single earner on £30,000 in 2026, the response to a 22% basic rate is
+  about -£187, and to that rate plus a £13,000 personal allowance about -£193.
+  Compared with the 22% rate costed without responses, the second reform shows
+  the whole -£193, not the -£6 or so the allowance adds. Setting the
+  elasticities on both sides of the comparison isolates the reform's own
+  response.
+- **Only earnings and gains are held.** Both measurements take the reform's
+  earnings and capital gains before responses. Any other input the reform's
+  scenario changes (a data modifier, say, or removing economic assumptions)
+  keeps each simulation's own value, so the difference counts as policy in
+  `relative_income_change`.
+
+```python
+from policyengine_uk import Simulation
+
+situation = {
+    "people": {"person": {"age": {2025: 30}, "employment_income": {2025: 40_000}}},
+    "benunits": {"benunit": {"members": ["person"]}},
+    "households": {"household": {"members": ["person"]}},
+}
+reformed = Simulation(
+    situation=situation,
+    reform={
+        "gov.hmrc.income_tax.rates.uk[0].rate": {"2025": 0.30},
+        "gov.simulation.labour_supply_responses.substitution_elasticity": {
+            "2025": 0.25
+        },
+        "gov.simulation.labour_supply_responses.income_elasticity": {"2025": -0.05},
+    },
+)
+# The marginal rate rises from 28% to 38%, so the wage after tax falls by 5/36,
+# and net income falls by £2,743 of £32,145: a response of about -£1,218.
+print(reformed.calculate("employment_income_behavioral_response", 2025))
+```
+
 ## Technical implementation details
 
 The dynamics calculation proceeds through several steps:

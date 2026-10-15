@@ -209,6 +209,104 @@ def test_pre_created_measurement_branch_cannot_poison_the_system():
     assert after is before
 
 
+# Gains near the top of the basic rate band, where the marginal rate depends on
+# the level of gains. Inputs are for the year before, so YEAR is uprated.
+BAND_EDGE_SITUATION = {
+    "people": {
+        "person": {
+            "age": {YEAR - 1: 45, YEAR: 46},
+            "employment_income": {YEAR - 1: 30_000},
+            "capital_gains": {YEAR - 1: 22_000},
+        }
+    },
+    "benunits": {"benunit": {"members": ["person"]}},
+    "households": {"household": {"members": ["person"]}},
+}
+RESPONSE_PARTS = (
+    "capital_gains_behavioural_response",
+    "capital_gains_badr_behavioural_response",
+    "relative_capital_gains_retention_rate_change",
+    "relative_capital_gains_mtr_change",
+)
+
+
+def response_parts(sim) -> dict:
+    return {
+        variable: sim.calculate(variable, YEAR).values.copy()
+        for variable in RESPONSE_PARTS
+    }
+
+
+def test_response_is_the_same_on_recalculation_near_a_band_edge():
+    """The reform's measurement branch started from the gains the reform had
+    already calculated, after the response, so recalculating measured the rate
+    at lower gains: -4,766.83 became +1,191.71 (found with issue #2268). The
+    branch now measures from inputs alone."""
+    sim = Microsimulation(
+        situation=BAND_EDGE_SITUATION,
+        scenario=Scenario(
+            parameter_changes={
+                **EQUALISED_RATES,
+                "gov.simulation.capital_gains_responses.elasticity": {str(YEAR): 1.0},
+            }
+        ),
+    )
+    sim.calculate("household_net_income", YEAR)
+    first = response_parts(sim)
+    for variable in RESPONSE_PARTS:
+        sim.delete_arrays(variable, YEAR)
+    second = response_parts(sim)
+
+    assert first["capital_gains_behavioural_response"][0] < 0
+    for variable in RESPONSE_PARTS:
+        assert second[variable] == pytest.approx(first[variable]), variable
+
+
+def test_response_does_not_depend_on_calculating_the_baseline_first():
+    """Without economic assumptions the reform's gains stay at their 2025
+    level while the baseline's grow. The baseline's measurement branch started
+    from the gains the baseline had calculated, so calculating the baseline
+    first measured its rate at its own gains: the response went from 709.68 to
+    1,157.90 (found with issue #2268)."""
+    from policyengine_uk.scenarios.no_economic_assumptions import (
+        remove_economic_assumptions,
+    )
+
+    def modify(simulation):
+        remove_economic_assumptions(simulation)
+        parameters = simulation.tax_benefit_system.parameters
+        for name, value in {
+            **{name: rates[str(YEAR)] for name, rates in EQUALISED_RATES.items()},
+            "gov.simulation.capital_gains_responses.elasticity": 1.0,
+        }.items():
+            parameters.get_child(name).update(period="year:2000:100", value=value)
+        simulation.tax_benefit_system.reset_parameter_caches()
+
+    def build():
+        return Microsimulation(
+            situation=BAND_EDGE_SITUATION,
+            scenario=Scenario(
+                simulation_modifier=modify, applied_before_data_load=True
+            ),
+        )
+
+    alone = build()
+    reform_gains = alone.calculate("capital_gains_before_response", YEAR).values
+    # The baseline is a Simulation, which returns arrays.
+    baseline_gains = alone.baseline.calculate("capital_gains_before_response", YEAR)
+    assert reform_gains[0] < baseline_gains[0]
+    expected = response_parts(alone)
+
+    baseline_first = build()
+    baseline_first.baseline.calculate("household_net_income", YEAR)
+    baseline_first.baseline.calculate("marginal_tax_rate_on_capital_gains", YEAR)
+    parts = response_parts(baseline_first)
+
+    assert expected["capital_gains_behavioural_response"][0] != 0
+    for variable in RESPONSE_PARTS:
+        assert parts[variable] == pytest.approx(expected[variable]), variable
+
+
 def test_two_gainers_in_one_household_respond_symmetrically():
     """Equal gainers get equal responses; the second adult is not dropped."""
     situation = {
