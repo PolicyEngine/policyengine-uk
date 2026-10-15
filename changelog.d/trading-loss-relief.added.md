@@ -1,1 +1,0 @@
-- Added Income Tax trade loss relief against general income under ITA 2007 s.64, subject to available net income and the s.24A relief cap.

@@ -1,1 +1,0 @@
-- Base the trading allowance election on losses supplied for that tax year, preserving earlier Class 4 loss balances when later loss inputs are unset.
