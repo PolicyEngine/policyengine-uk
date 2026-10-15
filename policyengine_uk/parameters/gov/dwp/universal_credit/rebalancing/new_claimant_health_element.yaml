@@ -6,7 +6,7 @@ metadata:
   label: Universal Credit new claimant health element amount
   # The same index as elements/disabled/amount.yaml, so the two amounts move
   # together when the freeze or the CPI forecast changes.
-  uprating: gov.dwp.universal_credit.elements.disabled.uprating
+  uprating: gov.economic_assumptions.indices.uc_health_element
   reference:
     - title: Universal Credit Act 2025 s. 2 (amount from 6 April 2026)
       href: https://www.legislation.gov.uk/ukpga/2025/22/section/2

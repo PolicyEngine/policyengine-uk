@@ -22,7 +22,7 @@ can rise again from April 2030.
 
 ``elements/disabled/amount.yaml`` holds the 2026-27 amount set by s. 2
 (£217.26 a month) and is uprated by the index built here,
-``gov.dwp.universal_credit.elements.disabled.uprating``. The index moves
+``gov.economic_assumptions.indices.uc_health_element``. The index moves
 with ``gov.benefit_uprating_cpi``, the model's benefit uprating index, as
 uprating will extend it (including any reform to it), except in a tax year
 in which ``rebalancing.health_element_freeze`` and ``rebalancing.active`` are
@@ -64,7 +64,7 @@ from policyengine_uk.parameters.gov.hmrc.create_threshold_indexation import (
     first_tax_year,
 )
 
-INDEX_NAME = "gov.dwp.universal_credit.elements.disabled.uprating"
+INDEX_NAME = "gov.economic_assumptions.indices.uc_health_element"
 BENEFIT_INDEX_NAME = "gov.benefit_uprating_cpi"
 # Fiscal-year conversion reads each tax year's value at 30 April.
 FISCAL_YEAR_SAMPLE_MONTH_DAY = "04-30"
@@ -172,13 +172,13 @@ def health_element_index_values(parameters: ParameterNode) -> Dict[str, float]:
 
 
 def add_uc_health_element_uprating(parameters: ParameterNode) -> ParameterNode:
-    """Add ``gov.dwp.universal_credit.elements.disabled.uprating``.
+    """Add ``gov.economic_assumptions.indices.uc_health_element``.
 
     Runs after ``create_economic_assumption_indices``, which builds the index
     that extends ``gov.benefit_uprating_cpi``.
     """
-    parameters.gov.dwp.universal_credit.elements.disabled.add_child(
-        "uprating",
+    parameters.gov.economic_assumptions.indices.add_child(
+        "uc_health_element",
         Parameter(
             INDEX_NAME,
             data={

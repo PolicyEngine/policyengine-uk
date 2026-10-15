@@ -398,7 +398,7 @@ def uprated_tree(
                         "new_claimant_health_element": {
                             "values": {"2026-01-01": ACT_AMOUNT},
                             "metadata": {
-                                "uprating": "gov.dwp.universal_credit.elements.disabled.uprating"
+                                "uprating": "gov.economic_assumptions.indices.uc_health_element"
                             },
                         },
                     },
@@ -408,7 +408,7 @@ def uprated_tree(
                                 "values": amount_values
                                 or {"2025-04-01": 423.27, "2026-04-01": ACT_AMOUNT},
                                 "metadata": {
-                                    "uprating": "gov.dwp.universal_credit.elements.disabled.uprating"
+                                    "uprating": "gov.economic_assumptions.indices.uc_health_element"
                                 },
                             }
                         }

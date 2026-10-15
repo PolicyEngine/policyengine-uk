@@ -22,7 +22,7 @@ From April 2026, new Universal Credit claimants who qualify for the Limited Capa
 
 Universal Credit Act 2025 s. 3 freezes the element for 2026-27 to 2029-30: it disapplies the annual up-rating in Social Security Administration Act 1992 s. 150(1) and (2) in the tax years ending 5 April 2026 to 5 April 2029, and an up-rating order takes effect from the tax year after the one in which it is made. The new-claimant amount therefore stays at £217.26 a month to 2029-30. From 2030-31 it is uprated from £217.26 by the benefit uprating index, one year's growth at a time. It never falls, because s. 150(2) provides only for increases; other Universal Credit amounts follow the benefit uprating index directly, which gives the same result whenever the index rises.
 
-Two parameters hold this amount, and both are uprated by `gov.dwp.universal_credit.elements.disabled.uprating`, so they follow the same path:
+Two parameters hold this amount, and both are uprated by `gov.economic_assumptions.indices.uc_health_element`, so they follow the same path:
 
 - `gov.dwp.universal_credit.elements.disabled.amount` is the LCWRA element the `uc_LCWRA_element` formula pays. A simulation uses it whenever the rebalancing reforms are inactive, and for years after the data's projection ends (2032-33 on), when the rebalancing scenario no longer sets the element.
 - `gov.dwp.universal_credit.rebalancing.new_claimant_health_element` is the amount the rebalancing scenario pays new claimants for 2026-27 to 2029-30.
