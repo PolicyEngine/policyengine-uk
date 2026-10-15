@@ -1,7 +1,18 @@
 from policyengine_uk.model_api import Scenario
 from policyengine_uk import Microsimulation
+from policyengine_uk.data.economic_assumptions import PROJECTION_END_YEAR
 from policyengine_uk.utils.supplied_inputs import set_model_value
 import numpy as np
+
+
+# Universal Credit Act 2025: the first tax year of the rebalancing (2026-27,
+# ss. 2 to 4) and the last the s. 4 duty covers (2029-30).
+FIRST_REBALANCING_YEAR = 2026
+SECTION_4_LAST_YEAR = 2029
+# The scenario sets the element to the end of the data's projection. Later
+# years fall to the uc_LCWRA_element formula, which pays every claimant the
+# new-claimant amount.
+LAST_SET_YEAR = PROJECTION_END_YEAR
 
 
 # The standard allowance amounts the protected LCWRA amount is paired with in
@@ -71,9 +82,19 @@ def _protected_existing_health_element_monthly(
 
     UC Regs 2013 reg. 36 gives one amount to every pre-2026, severe conditions
     criteria or terminally ill claimant, whatever their age or couple status
-    (£429.80 for 2026-27, SI 2026/113 reg. 3(3)(b)). A tax year whose amount is
-    null (not yet legislated) takes the s. 4 floor from the year before; any
-    other amount, legislated or set by a reform, is used as given.
+    (£429.80 for 2026-27, SI 2026/113 reg. 3(3)(b)). Any non-null amount,
+    legislated or set by a reform, is used as given. A tax year whose amount
+    is null (not yet legislated):
+
+    - to 2029-30 takes the s. 4 floor from the year before;
+    - from 2030-31 takes the year before's amount uprated by the element's
+      uprating index. The row stays in reg. 36 (s. 2 only relabels it), s. 4
+      covers only 2026-27 to 2029-30, and s. 3 disapplies the SSAA 1992
+      s. 150 up-rating only in the tax years ending 5 April 2026 to 5 April
+      2029, so the review in 2029-30 governs the April 2030 rate again. The
+      index is the one the new-claimant amount follows
+      (``rebalancing/create_health_element_uprating.py``): the benefit
+      uprating index, held in any year the freeze is in force, never falling.
     """
     parameter = _protected_amount_parameter(sim)
     amount = parameter(f"{year}-{FISCAL_YEAR_SAMPLE_DATE}")
@@ -88,8 +109,15 @@ def _protected_existing_health_element_monthly(
         raise ValueError(
             f"No protected LCWRA amount is set for {year} or any earlier year."
         )
+    previous = _protected_existing_health_element_monthly(sim, year - 1)
+    if year > SECTION_4_LAST_YEAR:
+        index = sim.tax_benefit_system.parameters.gov.dwp.universal_credit.elements.disabled.uprating
+        return previous * (
+            index(f"{year}-{FISCAL_YEAR_SAMPLE_DATE}")
+            / index(f"{year - 1}-{FISCAL_YEAR_SAMPLE_DATE}")
+        )
     return protected_lcwra_floor(
-        _protected_existing_health_element_monthly(sim, year - 1),
+        previous,
         _standard_allowances_monthly(sim, year - 1),
         _standard_allowances_monthly(sim, year),
         _relevant_cpi_factor(sim, year),
@@ -129,20 +157,16 @@ def add_universal_credit_reform(sim: Microsimulation):
     generator = np.random.default_rng(43)
 
     uc_seed = generator.random(len(sim.calculate("benunit_id")))
-    post_2025_claimant_share = {
-        2025: 0,
-        2026: 0.11,
-        2027: 0.13,
-        2028: 0.16,
-        2029: 0.22,
-    }  # WPI Economics for Trussell Trust based on admin PIP data, 2025
+    # rebalancing.new_claimant_share: WPI Economics' estimates for 2026-27 to
+    # 2029-30, held after that (an assumption; see the parameter).
+    new_claimant_share = rebalancing.new_claimant_share
     new_claimant_health_element = rebalancing.new_claimant_health_element
     built_from_data = getattr(sim, "built_from_dataset", False)
-    for year in range(2026, 2030):
+    for year in range(FIRST_REBALANCING_YEAR, LAST_SET_YEAR + 1):
         if not rebalancing.active(year):
             continue
         is_post_2025_claimant = _new_claimant_health_element_status(
-            sim, year, uc_seed < post_2025_claimant_share[year], built_from_data
+            sim, year, uc_seed < new_claimant_share(year), built_from_data
         )
         # Copy: calculate returns the simulation's cached array, and the writes
         # below must reach the cache only through set_input.
@@ -152,8 +176,8 @@ def add_universal_credit_reform(sim: Microsimulation):
         current_health_element[has_health_element & ~is_post_2025_claimant] = (
             _protected_existing_health_element_monthly(sim, year) * 12
         )
-        # Set post-April 2026 claimants to £217.26/month.
-        # https://bills.parliament.uk/publications/62123/documents/6889#page=16
+        # New claimants: £217.26 a month from April 2026 (UC Act 2025 s. 2),
+        # frozen to 2029-30 (s. 3) and uprated after.
         current_health_element[has_health_element & is_post_2025_claimant] = (
             new_claimant_health_element(year) * 12
         )  # Monthly amount * 12
