@@ -48,4 +48,9 @@ class tax_credits_current_year_income(Variable):
         if bi.interactions.include_in_means_tests:
             STEP_2_COMPONENTS.append("basic_income")
         income += add_for_members(benunit, period, STEP_2_COMPONENTS, members)
-        return income
+        # SI 2002/2006 reg 3(1) Step Four: only the claimants' losses
+        # reduce their joint income; a child's loss is not theirs.
+        claimants = person("is_claimant_or_partner", period)
+        return max_(
+            0, income - add_for_members(benunit, period, ["trading_loss"], claimants)
+        )

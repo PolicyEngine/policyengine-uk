@@ -33,10 +33,12 @@ unchanged: above 100,000 of adjusted net income the allowance tapers (ITA 2007
 s. 35), which raises the tax a person pays on their earnings and so changes
 the deduction from them (see test_uc_earnings_deductions_properties.py).
 The award after the benefit cap is compared only where the cap exemption is
-also unchanged: the model's earnings exception to the cap still nets tax on
-all of a person's income off their earnings
-(PolicyEngine/policyengine-uk#1986), so capital income can switch the cap on.
-A strict xfail pins that case.
+also unchanged. The cap's earnings exception now reads each claimant's
+Universal Credit earned income (uc_individual_earned_income_before_mif), which
+deducts only the tax on their earnings (uc_income_tax_on_earnings), so
+interest, dividends and rent leave it alone too, apart from the allowance
+effects above. test_tax_on_dividends_does_not_remove_the_benefit_cap_earnings_exception
+pins the dividend case.
 """
 
 import numpy as np
@@ -253,8 +255,9 @@ def test_interest_dividends_and_rent_leave_the_award_unchanged(units, scale, yea
     unchanged = np.isclose(
         scaled["personal_allowances"], base["personal_allowances"], atol=0.01
     )
-    # The cap's earnings exception can change with the income (#1986), so
-    # the capped award is compared only where the exemption is the same.
+    # Compare the capped award only where the exemption is the same:
+    # capital income can change another exemption route, such as Working
+    # Tax Credit or the pension-age Housing Benefit rules.
     same_cap = unchanged & (
         scaled["is_uc_benefit_cap_exempt"] == base["is_uc_benefit_cap_exempt"]
     )
@@ -323,13 +326,6 @@ def test_tax_on_dividends_does_not_raise_a_working_familys_award():
     assert values["uc_earned_income"][0] == pytest.approx(10_000, abs=0.01)
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "PolicyEngine/policyengine-uk#1986: the benefit cap earnings exception "
-        "nets tax on all of a person's income off their earnings"
-    ),
-)
 def test_tax_on_dividends_does_not_remove_the_benefit_cap_earnings_exception():
     # 2026: single claimant aged 30 in London, council rent 20,000, earning
     # 11,000 with no tax or NI on it. Without dividends the model applies no
