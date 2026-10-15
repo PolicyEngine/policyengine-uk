@@ -1,3 +1,10 @@
+## [2.132.5] - 2026-10-15
+
+### Fixed
+
+- - Fixed loading local multi-year H5 datasets saved by `UKMultiYearDataset.save` by distinguishing yearly groups from single-year pandas tables.
+
+
 ## [2.132.4] - 2026-10-15
 
 ### Fixed
