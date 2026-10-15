@@ -413,6 +413,14 @@ def compare(
         )
 
     rows, flags = compare_metrics(_metric_map(base), _metric_map(head), spec, years)
+    if any(
+        m.get("rounded")
+        for m in (head or {}).get("metrics", []) + (base or {}).get("metrics", [])
+    ):
+        warnings.append(
+            "Totals that contain a figure from fewer than 10 records are rounded to the "
+            "nearest £1bn in the years it is suppressed, so it cannot be recovered from them."
+        )
     non_finite = []
     for row in rows:
         if row["only_in"] == "base" and head_ok:
