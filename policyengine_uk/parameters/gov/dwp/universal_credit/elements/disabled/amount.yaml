@@ -16,7 +16,7 @@ metadata:
   label: Universal Credit disability element amount
   # Benefit uprating CPI, held for 2026-27 to 2029-30 (Universal Credit Act
   # 2025 s. 3); built by rebalancing/create_health_element_uprating.py.
-  uprating: gov.dwp.universal_credit.elements.disabled.uprating
+  uprating: gov.economic_assumptions.indices.uc_health_element
   unit: currency-GBP
   reference:
     - title: The Universal Credit Regulations 2013 reg. 27 (LCWRA element), amounts in reg. 36
