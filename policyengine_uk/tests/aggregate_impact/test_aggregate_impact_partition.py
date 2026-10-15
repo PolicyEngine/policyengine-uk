@@ -124,6 +124,14 @@ def _remove_head(raw, head_id):
         for d in out.get("model_double_counts") or []
         if d["contained_in"] != removed["variable"]
     ]
+    for guard in out.get("overlap_guards") or []:
+        if isinstance(guard, dict) and guard.get("heads"):
+            guard["heads"] = [h for h in guard["heads"] if h != head_id]
+            if (
+                guard.get("kind") == "geographic_exclusivity"
+                and len(guard["heads"]) < 2
+            ):
+                guard["kind"] = "removed_with_head"
     for spec in (out.get("totals") or {}).values():
         for parameter, variables in ((spec or {}).get("dropped_when") or {}).items():
             spec["dropped_when"][parameter] = [
@@ -201,3 +209,13 @@ def test_removing_any_head_breaks_closure_of_each_total_it_was_in(
 
 def test_structural_checks_pass_on_the_shipped_file(shipped):
     assert structural_problems(shipped) == []
+
+
+def test_a_geographic_guard_must_name_two_known_heads(raw):
+    for heads in ([], ["council_tax"], ["council_tax", "no_such_head"]):
+        mutated = copy.deepcopy(raw)
+        mutated["overlap_guards"] = [
+            {"id": "g", "kind": "geographic_exclusivity", "heads": heads}
+        ]
+        with pytest.raises(PartitionError):
+            parse_partition(mutated)

@@ -416,3 +416,42 @@ def test_a_skipped_head_passes_with_a_note():
     assert summary["status"] == "skipped" and summary["failures"] == []
     text = render(summary, SPEC)
     assert text.startswith(COMMENT_MARKER) and "no data access" in text
+
+
+def test_the_guard_section_lists_failures_and_mediated_responses():
+    from policyengine_uk.utils.aggregate_impact.render import _guard
+
+    guard = {
+        "status": "ran",
+        "year": 2026,
+        "components": [
+            {
+                "variable": "incapacity_benefit",
+                "status": "fail",
+                "problems": [
+                    {
+                        "message": "household_benefits: pension_credit rises in 2 households"
+                    }
+                ],
+                "mediated": [
+                    {
+                        "total": "household_benefits",
+                        "head": "universal_credit",
+                        "kind": "contains",
+                        "households": 72,
+                        "via": ["carers_allowance"],
+                    }
+                ],
+            },
+            {"variable": "vat", "status": "pass", "mediated": []},
+        ],
+        "double_counts": [],
+    }
+    text = _guard({"head": {"guard": guard}})
+    assert "held at its baseline value" in text
+    assert "1 failed; 0 were skipped" in text
+    assert "pension_credit rises in 2 households" in text
+    assert (
+        "`universal_credit` responds only through `carers_allowance` in 72 households"
+        in text
+    )

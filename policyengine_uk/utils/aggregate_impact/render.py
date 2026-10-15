@@ -231,34 +231,34 @@ def _guard(summary) -> str:
     guard = (summary.get("head") or {}).get("guard") or {}
     if guard.get("status") != "ran":
         return f"Counted-once check not run: {guard.get('reason', 'unknown reason')}."
-    tolerance = guard.get("tolerance", 1e-3)
-    tax_totals = {"gov_tax", "household_tax", "pre_budget_change_household_tax"}
     components = guard.get("components", [])
     tested = [c for c in components if c["status"] != "skipped"]
     failed = [c for c in tested if c["status"] == "fail"]
+    skipped = [c for c in components if c["status"] == "skipped"]
     lines = [
         f"Each of {len(tested)} components was raised by £1 per unit in "
-        f"{fiscal_year_label(guard['year'])}: tax totals must rise by exactly £1 "
-        "per unit and spending totals by at most £1. "
-        f"{len(failed)} failed; {len(components) - len(tested)} were skipped "
-        "(zero for every unit, or not money)."
+        f"{fiscal_year_label(guard['year'])}, and every head of its totals was "
+        "read household by household: its own head must rise by exactly £1, no "
+        "other tax head may move, no other benefit may rise, and the model's own "
+        "total must move by what its heads moved. A head that breaks a rule is "
+        "measured again with every other head held at its baseline value, and "
+        "fails only where it still breaks it. "
+        f"{len(failed)} failed; {len(skipped)} were skipped."
     ]
     for c in failed:
-        moves = ", ".join(f"`{t}` {k:.4f}" for t, k in c["coefficients"].items())
-        lines.append(f"- `{c['variable']}`: {moves}")
-
-    def violates(total, k):
-        return abs(k - 1) > tolerance if total in tax_totals else k > 1 + tolerance
-
-    model = [
-        (c["variable"], total, k)
-        for c in tested
-        for total, k in c.get("model_coefficients", {}).items()
-        if violates(total, k)
-    ]
-    if model:
-        lines += ["", "In the model's own totals:"]
-        lines += [f"- `{v}` moves `{t}` by {k:.4f} per unit" for v, t, k in model]
+        problems = c.get("problems") or [{"message": c.get("detail", "")}]
+        lines.append(
+            f"- `{c['variable']}`: " + "; ".join(p["message"] for p in problems)
+        )
+    for c in skipped:
+        lines.append(f"- `{c['variable']}` skipped: {c.get('detail', '')}")
+    for c in tested:
+        for m in c.get("mediated") or []:
+            via = ", ".join(f"`{v}`" for v in m["via"]) or "no other head"
+            lines.append(
+                f"- `{c['variable']}`: `{m['head']}` responds only through {via} "
+                f"in {m['households']} households ({m['total']}; not a failure)"
+            )
     for dc in guard.get("double_counts", []):
         state = "still contained" if dc["status"] == "pass" else "NO LONGER contained"
         lines.append(

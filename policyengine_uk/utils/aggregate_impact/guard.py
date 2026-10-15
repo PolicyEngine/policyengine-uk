@@ -1,28 +1,48 @@
-"""The counted-once check: every component enters each total exactly once.
+"""The counted-once check: no head silently contains another head's component.
 
 For each component of a partition total, the check adds 1 to every unit
-where the component is non-zero, recomputes every head of the totals it
-belongs to, and reads each head's response household by household. For a
-total T and a component c:
+where the component is non-zero (to every unit, if it is zero everywhere),
+recomputes every head of the totals it belongs to, and reads each head's
+change household by household (see ``judge_total``):
 
-- c's own head (c itself, or the head a declared double count is contained
-  in) must rise by exactly 1 per unit added;
-- on a tax total, no other head may move at all: a head that moves contains
-  c, or reads it;
-- on a spending total, no other head may rise in any household. Means tests
-  may lower other benefits when one rises (Pension Credit falls as State
-  Pension rises), but a benefit that rises with another either contains it
-  or pays more to people with more income. Rises and falls are not netted,
-  so a fall elsewhere cannot hide a double count;
-- the model's own total must move by exactly what its heads moved, plus one
-  more per unit if c is a declared double count of T. This catches a total
-  whose formula adds a component twice even when that component is zero.
+- the component's own head (itself, or the head a declared double count is
+  contained in) must rise by exactly what was added;
+- no other tax head may move, and no other benefit may rise. Means tests may
+  lower other benefits when one rises (Pension Credit falls as State Pension
+  rises), but a benefit that rises with another either contains it or pays
+  more to people with more income. Households are judged one by one, so a
+  fall elsewhere cannot offset a rise;
+- a head that declares a read of the component's head (``reads`` in the
+  partition), and any benefit when the component was zero for everyone (so
+  that perturbing it makes new recipients, whom passporting can reach), may
+  respond, but not with a slope of exactly 1. The check adds 2 as well and
+  fails any household where such a head rose between the two points by
+  exactly what was added; a step such as a passport moves it by the same
+  amount at both, so its slope is 0;
+- the model's own total must move, household by household, by what its
+  heads moved, plus the addition again for a declared double count. This
+  catches a total whose formula adds a component twice even while that
+  component is zero;
+- a head that breaks one of the rules above, and a head that may respond
+  whose slope is neither 0 nor 1, is measured again with every other head
+  held at its baseline value, and fails only in households where it then
+  moves, rises or has a slope of 1. A head can respond to the component
+  through another head without containing it: Incapacity Benefit reduces
+  Carer's Allowance (overlapping benefits), and Universal Credit, which in
+  the model counts Carer's Allowance as income but not Incapacity Benefit
+  (issue #2424), rises by what Carer's Allowance lost. Holding the other
+  heads removes that route and keeps the head's own response. A head that
+  contains another head is still found when that other head is the one
+  perturbed. Responses through other heads are reported as ``mediated``.
 
-A head that declares a read of c's head (``reads`` in the partition) may
-respond, unless it responds one for one, which is containment. A spending
-component that is zero for every unit is perturbed everywhere, which makes
-recipients of non-recipients; other heads may then rise through passporting,
-so only a one-for-one response fails.
+What it cannot see: a head that adds a component back while tapering it away
+pound for pound (``max(0, a - c) + c``) does not move at the margin, so it is
+indistinguishable from a flat benefit that ignores the component. Such a
+head counts the component twice wherever the taper binds; only reading its
+formula, or a test that sets the component's level, can find it. Likewise a
+benefit that contains the component while, in every household perturbed, a
+fall carried by another head cancels its rise exactly shows no change and is
+not measured again; in any household without that route its rise shows.
 
 The check reuses one simulation. It takes its snapshot of supplied inputs
 only after discarding formula results, so a value some formula computed
@@ -107,6 +127,38 @@ def _head_arrays(sim, year, variables) -> dict:
     }
 
 
+# A household's change counts as "no change", or as "exactly what was added",
+# within this many pounds plus this share of the head's own value: the model
+# stores values as float32.
+ABSOLUTE_SLACK_GBP = 0.02
+RELATIVE_SLACK = 2e-6
+
+
+def _slack(scale: np.ndarray) -> np.ndarray:
+    return ABSOLUTE_SLACK_GBP + RELATIVE_SLACK * np.abs(scale)
+
+
+def _problem(total, head, kind, where, text, weights, perturbed):
+    """One failing (total, head, kind), with the households it fails in.
+
+    ``where`` and ``text`` are kept for the direct-effect step and dropped
+    before the result is reported.
+    """
+    count = int(where.sum())
+    base = float(np.sum(weights * perturbed))
+    share = float(np.sum(weights * where)) / base if base else 0.0
+    return {
+        "total": total,
+        "head": head,
+        "kind": kind,
+        "households": count,
+        "share": share,
+        "message": f"{total}: {text} in {count} households",
+        "where": where,
+        "text": text,
+    }
+
+
 def judge_total(
     *,
     total: str,
@@ -118,54 +170,121 @@ def judge_total(
     weights: np.ndarray,
     expected: np.ndarray,
     head_changes: Mapping[str, np.ndarray],
+    head_scales: Mapping[str, np.ndarray],
     model_change: Optional[np.ndarray],
+    model_scale: Optional[np.ndarray],
     allowed_readers: Iterable[str],
-    tolerance: float,
+    second_changes: Optional[Mapping[str, np.ndarray]] = None,
 ) -> dict:
-    """Apply the counted-once rules to one total's responses.
+    """Apply the counted-once rules, household by household, to one total.
 
     ``head_changes`` maps each head variable of the total to its change by
-    household; ``expected`` is what was added to the component by household.
-    Returns the responses per unit added, the problem with the component's
-    own head (if it did not rise one for one) and the other problems.
+    household when 1 per unit was added to ``component`` (``expected`` by
+    household); ``second_changes`` gives the changes when 2 per unit were
+    added, where they were measured.
+
+    - The component's own head must change by exactly ``expected`` in every
+      household.
+    - A tax head may not move in any household; a spending head may not rise
+      in any household.
+    - A head that declares a read of the component's head, and any spending
+      head when the component is zero for everyone, may respond, except one
+      for one: a household where the head's slope between the two points is
+      exactly what was added contains the component.
+    - The model's own total must change, in every household, by what its
+      heads changed plus ``expected`` again for a declared double count.
+
+    Returns per-unit responses (for reports) and a list of problems, each a
+    mapping with ``total``, ``head``, ``kind``, ``households`` (count),
+    ``share`` (of the weight perturbed), ``message`` and the households'
+    mask ``where``.
     """
     added = float(np.sum(weights * expected))
     allowed = set(allowed_readers)
-    responses, problems, own_problem = {}, [], None
+    perturbed = expected > 0
+    responses, problems, screens, own_problem = {}, [], [], None
+
+    def problem(head, kind, where, text):
+        return _problem(total, head, kind, where, text, weights, perturbed)
+
+    def containment(head):
+        return f"{head} rises one for one with {component}, so it contains it,"
+
     for variable, change in head_changes.items():
-        net = float(np.sum(weights * change)) / added
-        rise = float(np.sum(weights * np.maximum(change, 0.0))) / added
-        moved = float(np.sum(weights * np.abs(change))) / added
-        responses[variable] = net
+        responses[variable] = float(np.sum(weights * change)) / added if added else 0.0
+        slack = _slack(head_scales[variable])
         if variable == own_variable:
-            off = float(np.sum(weights * np.abs(change - expected))) / added
-            if off > tolerance:
-                own_problem = f"{total}: {variable} moves by {net:.4f} per unit of {component}, not 1"
+            off = np.abs(change - expected) > slack
+            if off.any():
+                own_problem = problem(
+                    variable,
+                    "own_head",
+                    off,
+                    f"{variable} does not move by exactly what was added to {component}",
+                )
             continue
-        one_for_one = abs(net - 1) <= tolerance and abs(rise - 1) <= tolerance
-        if variable in allowed or (zero_baseline and not is_tax):
-            if one_for_one:
+        reader = variable in allowed or (zero_baseline and not is_tax)
+        if reader:
+            if second_changes is not None:
+                # The slope between the two points: 1 for a head that contains
+                # the component, 0 for a step such as a passport, whatever
+                # else moved the head at the first point.
+                slope = second_changes[variable] - change
+                containing = perturbed & (np.abs(slope - expected) <= 2 * slack)
+                # Another head's response can add to a containing head's
+                # slope, so any other linear response is measured again with
+                # the other heads held.
+                linear = perturbed & (np.abs(slope) > 2 * slack) & ~containing
+                if linear.any():
+                    screens.append(
+                        problem(variable, "contains", linear, containment(variable))
+                    )
+            else:
+                containing = perturbed & (np.abs(change - expected) <= slack)
+            if containing.any():
                 problems.append(
-                    f"{total}: {variable} rises one for one with {component}, so it contains it"
+                    problem(variable, "contains", containing, containment(variable))
                 )
         elif is_tax:
-            if moved > tolerance:
+            moved = np.abs(change) > slack
+            if moved.any():
                 problems.append(
-                    f"{total}: {variable} moves by {net:+.4f} per unit of {component}"
+                    problem(
+                        variable,
+                        "moves",
+                        moved,
+                        f"{variable} moves when {component} does",
+                    )
                 )
-        elif rise > tolerance:
-            problems.append(
-                f"{total}: {variable} rises by {rise:.4f} per unit of {component}"
-            )
+        else:
+            rises = change > slack
+            if rises.any():
+                problems.append(
+                    problem(
+                        variable,
+                        "rises",
+                        rises,
+                        f"{variable} rises when {component} does",
+                    )
+                )
     partition_coefficient = float(sum(responses.values()))
     model_coefficient = None
     if model_change is not None:
-        model_coefficient = float(np.sum(weights * model_change)) / added
-        expected_model = partition_coefficient + (1.0 if declared_double_count else 0.0)
-        if abs(model_coefficient - expected_model) > tolerance:
+        model_coefficient = (
+            float(np.sum(weights * model_change)) / added if added else 0.0
+        )
+        heads_change = sum(head_changes.values())
+        if declared_double_count:
+            heads_change = heads_change + expected
+        mismatch = np.abs(model_change - heads_change) > _slack(model_scale)
+        if mismatch.any():
             problems.append(
-                f"the model's {total} moves by {model_coefficient:.4f} per unit of "
-                f"{component}, but its heads account for {expected_model:.4f}"
+                problem(
+                    total,
+                    "model_total",
+                    mismatch,
+                    f"the model's {total} moves by other than its heads when {component} does",
+                )
             )
     return {
         "responses": responses,
@@ -173,7 +292,45 @@ def judge_total(
         "model_coefficient": model_coefficient,
         "own_problem": own_problem,
         "problems": problems,
+        "screens": screens,
     }
+
+
+def _perturb(sim, variable, year, baseline, added, monthly, hold=()):
+    """Add ``added`` to ``variable``, holding each of ``hold`` at its baseline."""
+    discard_formula_results(sim)
+    if monthly:
+        for month, values in baseline[variable]:
+            sim.set_input(variable, month, values + added / 12)
+    else:
+        sim.set_input(variable, year, baseline[variable] + added)
+    for held in hold:
+        if isinstance(baseline[held], list):
+            for month, values in baseline[held]:
+                sim.set_input(held, month, values)
+        else:
+            sim.set_input(held, year, baseline[held])
+
+
+def still_breaks(kind, where, expected, slack, first, second=None):
+    """Households of ``where`` whose head breaks ``kind`` with other heads held.
+
+    ``first`` (and ``second``, for a containment judged on a slope) are the
+    head's changes when the component was raised by ``expected`` (and twice
+    that) with every other head at its baseline value.
+    """
+    if kind == "contains":
+        if second is not None:
+            return where & (np.abs(second - first - expected) <= 2 * slack)
+        return where & (np.abs(first - expected) <= slack)
+    if kind == "rises":
+        return where & (first > slack)
+    if kind == "moves":
+        return where & (np.abs(first) > slack)
+    return where
+
+
+DIRECT_KINDS = ("contains", "rises", "moves")
 
 
 def counted_once(
@@ -185,7 +342,11 @@ def counted_once(
     active: Iterable[str] = (),
     variables_to_check: Optional[Iterable[str]] = None,
 ) -> dict:
-    """Perturb each component (or those in ``variables_to_check``) once."""
+    """Perturb each component (or those in ``variables_to_check``).
+
+    ``tolerance`` is kept for reports of per-unit responses; the verdicts
+    themselves are household by household (see ``judge_total``).
+    """
     if not discard_formula_results(sim):
         return {
             "status": "skipped",
@@ -228,6 +389,8 @@ def counted_once(
             "coefficients": {},
             "model_coefficients": {},
             "responses": {},
+            "problems": [],
+            "mediated": [],
             "units": 0,
             "status": "pass",
             "detail": "",
@@ -248,22 +411,47 @@ def counted_once(
         added = mask.astype(np.float64)
         expected = _household(sim, added, entity)
         record["units"] = int(mask.sum())
+        if not float(np.sum(hw * expected)) > 0:
+            record.update(
+                status="skipped",
+                detail="non-zero only in households with no weight",
+            )
+            results.append(record)
+            continue
         own = declared[variable].contained_in if variable in declared else variable
         own_head = head_by_variable[own]
-
-        discard_formula_results(sim)
-        if monthly:
-            for month, values in baseline[variable]:
-                sim.set_input(variable, month, values + added / 12)
-        else:
-            sim.set_input(variable, year, baseline[variable] + added)
         needed = list(dict.fromkeys(v for t in in_totals for v in heads_of[t]))
-        heads1 = _head_arrays(sim, year, needed)
-        problems = []
-        for total in in_totals:
-            readers = [
+        readers_of = {
+            total: [
                 v for v in heads_of[total] if own_head.id in head_by_variable[v].reads
             ]
+            for total in in_totals
+        }
+
+        _perturb(sim, variable, year, baseline, added, monthly)
+        heads1 = _head_arrays(sim, year, needed)
+        model1 = {
+            t: _raw(sim, t, year).astype(np.float64) for t in in_totals if t in model0
+        }
+        # A head that may respond (a declared reader, or any benefit when the
+        # component was zero for everyone) is checked for containment at a
+        # second point, which tells a slope of 1 from a step.
+        may_respond = {
+            v
+            for total in in_totals
+            for v in heads_of[total]
+            if v != own
+            and (
+                v in readers_of[total]
+                or (zero_baseline and not partition.is_tax_total(total))
+            )
+        }
+        heads2 = None
+        if may_respond:
+            _perturb(sim, variable, year, baseline, 2 * added, monthly)
+            heads2 = _head_arrays(sim, year, sorted(may_respond))
+        problems, screens = [], []
+        for total in in_totals:
             verdict = judge_total(
                 total=total,
                 is_tax=partition.is_tax_total(total),
@@ -275,13 +463,15 @@ def counted_once(
                 weights=hw,
                 expected=expected,
                 head_changes={v: heads1[v] - heads0[v] for v in heads_of[total]},
+                head_scales={v: heads0[v] for v in heads_of[total]},
                 model_change=(
-                    _raw(sim, total, year).astype(np.float64) - model0[total]
-                    if total in model0
-                    else None
+                    model1[total] - model0[total] if total in model1 else None
                 ),
-                allowed_readers=readers,
-                tolerance=tolerance,
+                model_scale=model0.get(total),
+                allowed_readers=readers_of[total],
+                second_changes=None
+                if heads2 is None
+                else {v: heads2[v] - heads0[v] for v in heads2},
             )
             record["coefficients"][total] = verdict["coefficient"]
             if verdict["model_coefficient"] is not None:
@@ -290,18 +480,120 @@ def counted_once(
                 v: r for v, r in verdict["responses"].items() if abs(r) > tolerance
             }
             problems += verdict["problems"]
+            screens += verdict["screens"]
             # A declared double count whose container no longer moves is
             # reported once, as a stale declaration, below.
             if verdict["own_problem"] and variable not in declared:
                 problems.append(verdict["own_problem"])
+        # Measure each head that broke a rule again with every other head
+        # held at its baseline value: a response carried by another head
+        # (the head reading that head's change) is not containment.
+        mediated = []
+        perturbed_units = expected > 0
+        for head in dict.fromkeys(
+            [p["head"] for p in problems if p["kind"] in DIRECT_KINDS]
+            + [screen["head"] for screen in screens]
+        ):
+            held = [v for v in all_heads if v not in (variable, own, head)]
+            _perturb(sim, variable, year, baseline, added, monthly, hold=held)
+            first = _head_arrays(sim, year, [head])[head] - heads0[head]
+            second = None
+            if any(
+                p["head"] == head and p["kind"] == "contains"
+                for p in problems + screens
+            ):
+                _perturb(sim, variable, year, baseline, 2 * added, monthly, hold=held)
+                second = _head_arrays(sim, year, [head])[head] - heads0[head]
+            for v in held:
+                _restore(sim, v, snapshot)
+            slack = _slack(heads0[head])
+            kept = []
+            for p in problems:
+                if p["head"] != head or p["kind"] not in DIRECT_KINDS:
+                    kept.append(p)
+                    continue
+                direct = still_breaks(
+                    p["kind"], p["where"], expected, slack, first, second
+                )
+                cleared = p["where"] & ~direct
+                if cleared.any():
+                    via = [
+                        v
+                        for v in needed
+                        if v not in (variable, own, head)
+                        and bool(
+                            (
+                                np.abs(heads1[v] - heads0[v])[cleared]
+                                > _slack(heads0[v])[cleared]
+                            ).any()
+                        )
+                    ]
+                    mediated.append(
+                        {
+                            "total": p["total"],
+                            "head": head,
+                            "kind": p["kind"],
+                            "households": int(cleared.sum()),
+                            "via": via,
+                        }
+                    )
+                if direct.any():
+                    kept.append(
+                        _problem(
+                            p["total"],
+                            head,
+                            p["kind"],
+                            direct,
+                            p["text"],
+                            hw,
+                            perturbed_units,
+                        )
+                    )
+            # A linear response that was not one for one may hide a
+            # containment that another head's response added to.
+            for screen in screens:
+                if screen["head"] != head:
+                    continue
+                direct = still_breaks(
+                    "contains", screen["where"], expected, slack, first, second
+                )
+                if not direct.any():
+                    continue
+                same = next(
+                    (
+                        k
+                        for k in kept
+                        if (k["total"], k["head"], k["kind"])
+                        == (screen["total"], head, "contains")
+                    ),
+                    None,
+                )
+                if same is not None:
+                    kept.remove(same)
+                    direct = direct | same["where"]
+                kept.append(
+                    _problem(
+                        screen["total"],
+                        head,
+                        "contains",
+                        direct,
+                        screen["text"],
+                        hw,
+                        perturbed_units,
+                    )
+                )
+            problems = kept
+        problems = [
+            {k: v for k, v in p.items() if k not in ("where", "text")} for p in problems
+        ]
+        record["mediated"] = mediated
         if variable in declared:
             dc = declared[variable]
             container_change = heads1[own] - heads0[own]
-            off = float(np.sum(hw * np.abs(container_change - expected))) / float(
-                np.sum(hw * expected)
-            )
             k = float(np.sum(hw * container_change)) / float(np.sum(hw * expected))
-            present = off <= tolerance
+            present = not bool(
+                (np.abs(container_change - expected) > _slack(heads0[own])).any()
+            )
             double_count_results.append(
                 {
                     "variable": variable,
@@ -319,7 +611,11 @@ def counted_once(
                 }
             )
         if problems:
-            record.update(status="fail", detail="; ".join(problems))
+            record.update(
+                status="fail",
+                problems=problems,
+                detail="; ".join(p["message"] for p in problems),
+            )
         results.append(record)
         _restore(sim, variable, snapshot)
 

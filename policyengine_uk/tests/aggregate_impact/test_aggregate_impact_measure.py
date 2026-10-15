@@ -8,7 +8,10 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk.utils.aggregate_impact.api import to_report
+from policyengine_uk.utils.aggregate_impact.compare import classify_check
 from policyengine_uk.utils.aggregate_impact.measure import (
+    MIN_CELL,
+    cell_detail,
     Recorder,
     _finite_metrics_check,
     _digest_tool_files,
@@ -149,3 +152,69 @@ def test_the_long_format_report_carries_each_checks_failing_years():
 def test_the_tool_digest_is_taken_at_load_and_matches_the_files():
     assert tool_digest() == _digest_tool_files()
     assert len(tool_digest()) == 64
+
+
+class TargetSim(YearSim):
+    """gov_balance by year, plus a target variable whose change a reform sets."""
+
+    def __init__(self, balance_by_year, target_by_year):
+        super().__init__(balance_by_year)
+        self.target = target_by_year
+        self.tax_benefit_system.variables["universal_credit"] = SimpleNamespace(
+            entity=SimpleNamespace(key="household")
+        )
+
+    def calculate(self, variable, period, map_to=None, unweighted=True):
+        if variable == "universal_credit":
+            return np.full(2, self.target[int(period)] / 2)
+        return super().calculate(variable, period, map_to, unweighted)
+
+
+def test_responsiveness_is_recorded_per_year():
+    """A reform that goes inert in a second year is a regression, not old news."""
+    reform = parse_reforms(
+        {
+            "reforms": [
+                {
+                    "name": "Raise UC",
+                    "parameters": {"a": 1},
+                    "responds": {
+                        "variable": "universal_credit",
+                        "direction": "up",
+                        "minimum": 5.0,
+                    },
+                }
+            ]
+        }
+    )
+    baseline = {2025: 0.0, 2026: 0.0}
+    targets = {2025: {"universal_credit": 100.0}, 2026: {"universal_credit": 100.0}}
+
+    def run(reformed_uc):
+        rec = Recorder()
+
+        def factory(reform=None):
+            uc = reformed_uc if reform else {2025: 100.0, 2026: 100.0}
+            return TargetSim(baseline, uc)
+
+        measure_reforms(factory, None, baseline, targets, reform, YEARS, rec)
+        return rec.checks["responsive:raise_uc"]
+
+    one_year = run({2025: 110.0, 2026: 100.0})
+    both_years = run({2025: 100.0, 2026: 100.0})
+    assert one_year["status"] == "fail" and set(one_year["failing"]) == {"2026"}
+    assert set(both_years["failing"]) == {"2025", "2026"}
+    verdict = classify_check(
+        "fail", "fail", False, one_year["failing"], both_years["failing"]
+    )
+    assert verdict == "regression"
+
+
+@settings(max_examples=100, deadline=None)
+@given(count=st.integers(0, 10_000), amount=st.floats(-1e9, 1e9, allow_nan=False))
+def test_a_small_cell_never_reveals_an_amount(count, amount):
+    text = cell_detail(count, "households differ", f"by a weighted £{amount:,.0f}")
+    if count < MIN_CELL:
+        assert "£" not in text and str(count) not in text.replace(str(MIN_CELL), "")
+    else:
+        assert f"{count:,}" in text and "£" in text

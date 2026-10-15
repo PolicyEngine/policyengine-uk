@@ -9,6 +9,7 @@ from hypothesis import strategies as st
 
 from policyengine_uk import CountryTaxBenefitSystem
 from policyengine_uk.utils.aggregate_impact.reforms import (
+    CALENDAR_DATED_METADATA,
     ReformSpecError,
     Responds,
     load_reforms,
@@ -140,3 +141,48 @@ def test_one_inert_or_wrong_signed_year_fails(changes, minimum, year):
 def test_no_measured_year_fails():
     ok, detail = responsiveness(Responds("v", "up", 1.0), {})
     assert not ok and "no year" in detail
+
+
+def test_a_calendar_dated_parameter_cannot_be_scaled(system):
+    dated = []
+
+    def walk(node, path):
+        for name, child in getattr(node, "children", {}).items():
+            child_path = f"{path}.{name}" if path else name
+            metadata = getattr(child, "metadata", None) or {}
+            if any(metadata.get(k) for k in CALENDAR_DATED_METADATA) and hasattr(
+                child, "values_list"
+            ):
+                dated.append(child_path)
+            walk(child, child_path)
+
+    walk(system.parameters, "")
+    assert dated, "expected at least one calendar-dated parameter in the model"
+    reform = parse_reforms(
+        {"reforms": [{"name": "Scale it", "scale": {dated[0]: 1.1}}]}
+    )[0]
+    with pytest.raises(ReformSpecError):
+        reform_parameters(reform, system.parameters, YEARS)
+
+
+def test_a_scaled_reform_sets_exactly_the_horizon_years_in_the_model():
+    """Build the reformed system the way a simulation does and read it back."""
+    from policyengine_uk import Simulation
+
+    reform = next(r for r in STANDARD if r.id == "uc_standard_allowance_plus_10pc")
+    situation = {"people": {"a": {"age": 30}}}
+    baseline = Simulation(situation=situation)
+    changes = reform_parameters(reform, baseline.tax_benefit_system.parameters, YEARS)
+    reformed = Simulation(situation=situation, reform=changes)
+    for path, factor in reform.scale.items():
+        before = parameter_node(baseline.tax_benefit_system.parameters, path)
+        after = parameter_node(reformed.tax_benefit_system.parameters, path)
+        for year in YEARS:
+            assert after(f"{year}-06-01") == pytest.approx(
+                before(f"{year}-06-01") * factor
+            )
+        outside = YEARS[-1] + 1
+        assert after(f"{outside}-06-01") == pytest.approx(before(f"{outside}-06-01"))
+        assert after(f"{YEARS[0] - 1}-06-01") == pytest.approx(
+            before(f"{YEARS[0] - 1}-06-01")
+        )

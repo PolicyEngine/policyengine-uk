@@ -99,18 +99,35 @@ def parameter_node(root, path: str):
     return node
 
 
+# Parameter metadata under which a bare year does not mean model year Y on the
+# reform-dict route (it means the fiscal year from 6 April), or under which the
+# value read at 1 January Y is not the value the model uses for Y.
+CALENDAR_DATED_METADATA = ("preserve_calendar_dates", "fiscal_year_blend")
+
+
 def reform_parameters(
     reform: StandardReform, baseline_parameters, years: Sequence[int]
 ) -> dict:
     """The parameter-change dict for ``Microsimulation(reform=...)``.
 
     A scaled parameter gets one bare-year entry per horizon year: the
-    baseline's value for that model year times the factor. On this route a
-    bare year sets that model year alone.
+    baseline's value for that model year times the factor. On the
+    reform-dict route a bare year sets model year Y alone, and the processed
+    baseline's value at 1 January Y is the value the model uses for Y
+    (``convert_to_fiscal_year_parameters`` writes the fiscal year's value
+    over the calendar year). Neither holds for a parameter that keeps its
+    calendar dates or blends fiscal years, so scaling one is refused.
     """
     changes = dict(reform.parameters)
     for path, factor in reform.scale.items():
         node = parameter_node(baseline_parameters, path)
+        metadata = getattr(node, "metadata", None) or {}
+        dated = [key for key in CALENDAR_DATED_METADATA if metadata.get(key)]
+        if dated:
+            raise ReformSpecError(
+                f"{reform.id}: cannot scale {path}, which has {', '.join(dated)}; "
+                "write its values with explicit dates instead"
+            )
         changes[path] = {
             str(year): float(node(f"{year}-01-01")) * factor for year in years
         }

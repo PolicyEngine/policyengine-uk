@@ -24,11 +24,14 @@ YEAR = 2026
 # When one is fixed this test fails until its entry is removed. Empty since
 # #2365 counted statutory sick, maternity and paternity pay as UC earnings.
 KNOWN_RISING_WITH_INCOME: set = set()
+# incapacity_benefit raises Universal Credit only through Carer's Allowance
+# (#2424), which the check must report as mediated, not fail.
 SPENDING_SAMPLE = {
     "state_pension",
     "universal_credit",
     "child_benefit",
     "statutory_sick_pay",
+    "incapacity_benefit",
 }
 
 
@@ -141,8 +144,12 @@ def test_household_detail_is_complete(measured):
     columns = households[str(YEAR)]
     n = len(columns["household_id"])
     assert all(len(v) == n for v in columns.values())
-    assert np.all(np.isfinite(columns["income"]))
-    assert set(np.unique(columns["decile"])) <= set(range(-1, 11))
+    # Scalars only: a failing assertion on an array would print household
+    # values into public CI logs.
+    non_finite = int((~np.isfinite(columns["income"])).sum())
+    assert non_finite == 0, f"{non_finite} households have a non-finite income"
+    outside = int((~np.isin(columns["decile"], np.arange(-1, 11))).sum())
+    assert outside == 0, f"{outside} households have a decile outside -1 to 10"
 
 
 def test_relative_reforms_scale_their_parameters_and_move_their_targets(measured):
@@ -187,11 +194,11 @@ def test_the_published_result_holds_aggregates_only(measured):
     assert "minimum £" not in details and "largest gap" not in details
 
 
-def test_geographic_guards_hold_except_where_a_double_count_is_declared(measured):
-    """Council tax and domestic rates never meet. SDLT, LTT and LBTT overlap
-    only while expected_sdlt carries corporate SDLT (#2159)."""
-    result, _, partition, _ = measured
+def test_geographic_guards_hold_once_declared_double_counts_are_netted(measured):
+    """Council tax and domestic rates never meet; nor do SDLT, LTT and LBTT
+    once corporate SDLT, which expected_sdlt carries while #2159 is open, is
+    netted out of it as a declared double count."""
+    result, _, _, _ = measured
     status = {c["id"]: c["status"] for c in result["checks"]}
     assert status["overlap_guard:local_tax_geography"] == "pass"
-    overlapping = status["overlap_guard:property_transaction_tax_geography"] == "fail"
-    assert overlapping == bool(partition.double_counts)
+    assert status["overlap_guard:property_transaction_tax_geography"] == "pass"

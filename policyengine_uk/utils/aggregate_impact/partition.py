@@ -458,6 +458,18 @@ def structural_problems(partition: Partition) -> list:
     for name, count in Counter(d.variable for d in partition.double_counts).items():
         if count > 1:
             problems.append(f"double count {name!r} is declared {count} times")
+    for guard in partition.overlap_guards:
+        if isinstance(guard, Mapping) and guard.get("kind") == "geographic_exclusivity":
+            named = list(guard.get("heads") or [])
+            if len(named) < 2:
+                problems.append(
+                    f"overlap guard {guard.get('id')!r} needs at least two heads"
+                )
+            for name in named:
+                if name not in head_ids:
+                    problems.append(
+                        f"overlap guard {guard.get('id')!r} names unknown head {name!r}"
+                    )
     for exclusion in partition.exclusions:
         if exclusion.variable in head_variables:
             problems.append(

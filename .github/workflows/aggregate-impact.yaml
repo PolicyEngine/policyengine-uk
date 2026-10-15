@@ -167,13 +167,23 @@ jobs:
             --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
           echo "status=$?" >> "$GITHUB_OUTPUT"
           set -e
+          if [ ! -s report/comment.md ]; then
+            # The comparison crashed: say so in place of any earlier result.
+            {
+              echo '<!-- policyengine-uk-aggregate-impact -->'
+              echo '## Aggregate impact on certified data: FAIL'
+              echo
+              echo "The comparison did not finish, so this change has no report. See the [workflow run]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID)."
+            } > report/comment.md
+          fi
           cat report/comment.md >> "$GITHUB_STEP_SUMMARY"
           # Household-level detail is no longer needed; remove it before any
           # later step could pick it up.
           rm -rf measured
 
       - name: Post or update the pull request comment
-        if: github.event_name == 'pull_request'
+        # Always, so a failed run replaces an earlier passing comment.
+        if: always() && github.event_name == 'pull_request' && hashFiles('report/comment.md') != ''
         env:
           GH_TOKEN: ${{ github.token }}
           PR: ${{ github.event.pull_request.number }}

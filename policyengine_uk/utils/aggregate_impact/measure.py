@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import dataclasses
 import gc
 import hashlib
 import json
@@ -186,8 +187,16 @@ def definitions_digest(spec: Spec, reforms: Sequence) -> str:
     ``tool_digest`` covers the files as shipped; this covers a spec or reform
     set passed in instead, and a horizon overridden at the call.
     """
+    parsed = {
+        field.name: getattr(spec, field.name)
+        for field in dataclasses.fields(spec)
+        if field.name != "raw"
+    }
     payload = {
         "spec": spec.raw,
+        # The parsed fields too: a spec changed with dataclasses.replace
+        # keeps its raw mapping.
+        "parsed": parsed,
         "years": spec.years,
         "guard_year": spec.guard_year,
         "reforms": [
@@ -235,11 +244,29 @@ def runtime_identity() -> dict:
     }
 
 
+# Results may be published, and the dataset is licensed survey microdata. A
+# check's detail names how many records it concerns and their weighted total
+# only when there are at least this many; below it, the detail says "fewer
+# than" and gives no amount, so it never describes one or a few records.
+MIN_CELL = 10
+
+# A geographic exclusivity guard treats a household value this small as zero:
+# before the #2159 fix, expected_sdlt adds 0.045 to every household.
+EXCLUSIVITY_ZERO_GBP = 0.05
+
+
+def cell_detail(count: int, what: str, weighted: str) -> str:
+    """``"N <what>, <weighted>"``, or ``"fewer than 10 <what>"`` for a small cell."""
+    if count < MIN_CELL:
+        return f"fewer than {MIN_CELL} {what}"
+    return f"{count:,} {what}, {weighted}"
+
+
 def _identity_check(rec, check_id, label, components_hh, total_hh, year, spec, weights):
     """Household-level accounting identity: components add up to the total.
 
-    The detail gives counts and weighted totals only: results may be public,
-    so they never quote one household's value.
+    The detail gives counts and weighted totals only, and nothing at all
+    about fewer than ``MIN_CELL`` households (see ``cell_detail``).
     """
     difference = components_hh - total_hh
     scale = np.abs(total_hh) + 1.0
@@ -250,9 +277,8 @@ def _identity_check(rec, check_id, label, components_hh, total_hh, year, spec, w
     detail = ""
     if not ok:
         gap = float(np.nansum(weights * np.where(bad, difference, 0.0)))
-        detail = (
-            f"{fiscal_year_label(year)}: {int(bad.sum())} households differ, "
-            f"by a weighted £{gap:,.0f} in total"
+        detail = f"{fiscal_year_label(year)}: " + cell_detail(
+            int(bad.sum()), "households differ", f"by a weighted £{gap:,.0f} in total"
         )
     rec.check(check_id, label, ok, detail, section="identities")
 
@@ -319,8 +345,12 @@ def measure_year(
                 f"sign:{head.id}",
                 f"{head.label} is never negative",
                 not bool(negative.any()),
-                f"{fiscal_year_label(year)}: {int(negative.sum())} units below zero, "
-                f"a weighted £{float(np.sum(hw * np.where(hh < 0, hh, 0.0))):,.0f} in total",
+                f"{fiscal_year_label(year)}: "
+                + cell_detail(
+                    int(negative.sum()),
+                    "units below zero",
+                    f"a weighted £{float(np.sum(hw * np.where(hh < 0, hh, 0.0))):,.0f} in total",
+                ),
                 section="signs",
             )
         if not head.zero_at_baseline:
@@ -332,25 +362,6 @@ def measure_year(
                 severity="warn",
                 section="coverage",
             )
-
-    variable_of = {head.id: head.variable for head in partition.heads}
-    for guard in partition.overlap_guards:
-        if (
-            not isinstance(guard, Mapping)
-            or guard.get("kind") != "geographic_exclusivity"
-        ):
-            continue
-        members = [variable_of[h] for h in guard.get("heads") or [] if h in variable_of]
-        nonzero = sum((head_hh[v] != 0).astype(int) for v in members)
-        overlapping = nonzero > 1
-        rec.check(
-            f"overlap_guard:{guard.get('id')}",
-            "At most one of " + ", ".join(members) + " is non-zero for any household",
-            not bool(overlapping.any()),
-            f"{fiscal_year_label(year)}: {int(overlapping.sum())} households have more "
-            f"than one, a weighted {float(np.sum(hw * overlapping)):,.0f}",
-            section="partition",
-        )
 
     double_count_hh = {}
     for dc in partition.double_counts:
@@ -367,6 +378,38 @@ def measure_year(
         )
 
     active = active_parameters(sim, partition, year)
+    # Geographic exclusivity, on the data. A declared double count is netted
+    # out of the head that contains it, and tiny values count as zero, so the
+    # guard sees each nation's own tax even before the #2159 fix.
+    variable_of = {head.id: head.variable for head in partition.heads}
+    for guard in partition.overlap_guards:
+        if (
+            not isinstance(guard, Mapping)
+            or guard.get("kind") != "geographic_exclusivity"
+        ):
+            continue
+        members = [variable_of[h] for h in guard.get("heads") or []]
+        nonzero = np.zeros_like(hw, dtype=int)
+        for variable in members:
+            own = head_hh[variable].copy()
+            for dc in partition.double_counts:
+                if dc.contained_in == variable:
+                    own = own - double_count_hh[dc.variable]
+            nonzero = nonzero + (np.abs(own) > EXCLUSIVITY_ZERO_GBP).astype(int)
+        overlapping = nonzero > 1
+        rec.check(
+            f"overlap_guard:{guard.get('id')}",
+            "At most one of " + ", ".join(members) + " is non-zero for any household",
+            not bool(overlapping.any()),
+            f"{fiscal_year_label(year)}: "
+            + cell_detail(
+                int(overlapping.sum()),
+                "households have more than one",
+                f"a weighted {float(np.sum(hw * overlapping)):,.0f}",
+            ),
+            section="partition",
+        )
+
     model_hh = {}
     for total in partition.totals:
         if total not in tbs_variables:
@@ -730,19 +773,36 @@ def measure_reforms(
                 "direction": reform.responds.direction,
                 "minimum": reform.responds.minimum,
             }
-            if outcome["error"] is None:
-                ok, detail = responsiveness(reform.responds, target_changes)
-            else:
-                ok, detail = False, "the reform did not run"
-            rec.check(
-                f"responsive:{reform.id}",
+            label = (
                 f"'{reform.name}' moves {reform.responds.variable} "
                 f"{reform.responds.direction} by at least "
-                f"£{reform.responds.minimum / 1e9:,.2f}bn in every year",
-                ok,
-                detail,
-                section="reforms",
+                f"£{reform.responds.minimum / 1e9:,.2f}bn in every year"
             )
+            if outcome["error"] is not None:
+                for year in years:
+                    rec.check(
+                        f"responsive:{reform.id}",
+                        label,
+                        False,
+                        f"{fiscal_year_label(year)}: the reform did not run",
+                        section="reforms",
+                        scope=str(year),
+                    )
+            else:
+                # One verdict per year, so a newly inert year is a regression
+                # even when another year already failed.
+                for year in years:
+                    ok, detail = responsiveness(
+                        reform.responds, {year: target_changes.get(year, float("nan"))}
+                    )
+                    rec.check(
+                        f"responsive:{reform.id}",
+                        label,
+                        ok,
+                        detail,
+                        section="reforms",
+                        scope=str(year),
+                    )
         gc.collect()
         outcomes.append(outcome)
     return outcomes
@@ -772,13 +832,21 @@ def measure(
     problems = list_problems + closure_problems(
         partition, model_lists, sim.tax_benefit_system.variables
     )
-    rec.check(
-        "closure",
-        "Each model total's components are exactly the partition's heads and declared double counts",
-        not problems,
-        "; ".join(problems),
-        section="partition",
+    closure_label = (
+        "Each model total's components are exactly the partition's heads and "
+        "declared double counts"
     )
+    rec.check("closure", closure_label, True, section="partition", scope="")
+    # One scope per problem: its text names the total and the variable.
+    for problem_text in problems:
+        rec.check(
+            "closure",
+            closure_label,
+            False,
+            problem_text,
+            section="partition",
+            scope=problem_text,
+        )
     snapshot = snapshot_inputs(sim, partition.component_variables())
 
     reforms = as_standard_reforms(reforms)
@@ -816,14 +884,31 @@ def measure(
         )
         timings["counted_once"] = round(time.time() - t, 2)
         for result in guard.get("components", []):
-            rec.check(
-                f"counted_once:{result['variable']}",
+            check_id = f"counted_once:{result['variable']}"
+            label = (
                 f"Raising {result['variable']} by £1 raises its own head by £1, moves no "
-                "other tax head and raises no other benefit",
-                None if result["status"] == "skipped" else result["status"] == "pass",
-                result["detail"],
-                section="counted_once",
+                "other tax head and raises no other benefit"
             )
+            if result["status"] != "fail":
+                rec.check(
+                    check_id,
+                    label,
+                    None if result["status"] == "skipped" else True,
+                    result["detail"],
+                    section="counted_once",
+                    scope="",
+                )
+            # One scope per failing (total, head, kind), so a comparison sees
+            # a head that newly contains the component, not just "still fails".
+            for item in result.get("problems") or []:
+                rec.check(
+                    check_id,
+                    label,
+                    False,
+                    item["message"],
+                    section="counted_once",
+                    scope=f"{item['total']}:{item['head']}:{item['kind']}",
+                )
         for result in guard.get("double_counts", []):
             rec.check(
                 f"double_count_present:{result['variable']}",
