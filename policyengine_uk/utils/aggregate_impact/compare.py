@@ -245,7 +245,15 @@ def decile_impacts(base_households: Mapping, head_households: Mapping, years) ->
     return impacts, notes
 
 
-def _runtime_differences(base: Mapping, head: Mapping) -> list:
+def _runtime_differences(
+    base: Mapping, head: Mapping, ignore=("policyengine-uk",)
+) -> list:
+    """Installed distributions, Python and machine that differ between sides.
+
+    ``ignore`` names the distributions the comparison is about: the model
+    (compared separately), and on the data axis the data package too.
+    """
+
     def listing(result):
         return {
             line.split("==")[0]: line
@@ -255,7 +263,7 @@ def _runtime_differences(base: Mapping, head: Mapping) -> list:
     b, h = listing(base), listing(head)
     differences = []
     for name in sorted(set(b) | set(h)):
-        if name == "policyengine-uk":
+        if name in ignore:
             continue
         if b.get(name) != h.get(name):
             differences.append(
@@ -360,7 +368,13 @@ def compare(
                     + "; ".join(runtime_differences[:10])
                 )
         else:
-            failures += _same_model_problems(base, head, runtime_differences)
+            failures += _same_model_problems(
+                base,
+                head,
+                _runtime_differences(
+                    base, head, ignore=("policyengine-uk", "policyengine-uk-data")
+                ),
+            )
             if not b_sha or not h_sha:
                 failures.append(
                     "Each side must record the bytes of the dataset it measured."

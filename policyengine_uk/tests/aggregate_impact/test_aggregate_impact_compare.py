@@ -667,3 +667,13 @@ def test_published_guard_output_keeps_no_small_counts_or_shares():
     assert row["mediated"][0]["households"] is None
     # The input is not changed.
     assert guard["components"][0]["units"] == 3
+
+
+def test_the_data_axis_ignores_the_data_package_itself():
+    """The data package is what a data comparison compares."""
+    base, head = _on("1" * 64), _on("2" * 64)
+    base["runtime"]["distributions"] = ["numpy==2.0", "policyengine-uk-data==1.58.1"]
+    head["runtime"]["distributions"] = ["numpy==2.0", "policyengine-uk-data==1.59.0"]
+    assert compare(base, head, SPEC, axis="data")["status"] == "pass"
+    head["runtime"]["distributions"] = ["numpy==2.1", "policyengine-uk-data==1.59.0"]
+    assert compare(base, head, SPEC, axis="data")["status"] == "fail"
