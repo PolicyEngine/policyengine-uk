@@ -57,11 +57,14 @@ deciles:
 #
 # Adopted under cos d1344 (15 October 2026) as a judgement. Flags only decide
 # which moves lead the comment: every changed figure is listed in its section
-# whether or not it is flagged. Repeated runs of the same pair give identical
+# whether or not it is flagged (in the report artifact, when the comment is
+# too long for GitHub and leaves sections out). Repeated runs of the same pair give identical
 # figures (the determinism check; W4's two runs of all 1,470 metric rows), so
 # no threshold above zero flags noise. £ totals use the larger of £100m and
 # 0.1% of the base, so a move must matter for the head it is in and for the
-# public finances. Alternatives considered: any non-zero move (flags every
+# public finances. Reform costings and reform targets use the larger of
+# £100m and 1% of the base costing (reform_gbp), also a judgement: a costing
+# leads the comment only when it moves by a material share of itself. Alternatives considered: any non-zero move (flags every
 # formula change, so flags stop carrying information) and the replay
 # release-diff rule of max(£1m, 1%) (flags £1m moves in small heads but
 # nothing under £3bn in income tax). Revisit with the flag counts from the

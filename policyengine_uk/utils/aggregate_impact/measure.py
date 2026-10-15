@@ -16,6 +16,7 @@ from typing import Callable, Mapping, Optional, Sequence
 
 import numpy as np
 
+from .privacy import MIN_CELL, small
 from . import TOOL_SCHEMA
 from .guard import counted_once, snapshot_inputs
 from .partition import Partition, closure_problems, group_label, read_model_lists
@@ -43,8 +44,22 @@ class Recorder:
         self.scope: str = ""
 
     def metric(
-        self, metric_id, label, section, kind, year, value, group=None, unit=None
+        self,
+        metric_id,
+        label,
+        section,
+        kind,
+        year,
+        value,
+        group=None,
+        unit=None,
+        records=None,
     ):
+        """Record a figure; ``records`` is how many records it is built from.
+
+        A figure from fewer than ``MIN_CELL`` records (but more than none) is
+        published as ``None`` and its year listed in ``suppressed``.
+        """
         record = self.metrics.setdefault(
             metric_id,
             {
@@ -57,7 +72,11 @@ class Recorder:
                 "values": {},
             },
         )
-        record["values"][str(year)] = float(value)
+        if records is not None and small(records):
+            record["values"][str(year)] = None
+            record.setdefault("suppressed", []).append(str(year))
+        else:
+            record["values"][str(year)] = float(value)
 
     def check(
         self, check_id, label, ok, detail="", severity="fail", section="", scope=None
@@ -248,7 +267,6 @@ def runtime_identity() -> dict:
 # check's detail names how many records it concerns and their weighted total
 # only when there are at least this many; below it, the detail says "fewer
 # than" and gives no amount, so it never describes one or a few records.
-MIN_CELL = 10
 
 # A geographic exclusivity guard treats a household value this small as zero:
 # before the #2159 fix, expected_sdlt adds 0.045 to every household.
@@ -327,6 +345,7 @@ def measure_year(
             year,
             float(np.sum(hw * hh)),
             group=group_label(head.report_group),
+            records=int(np.count_nonzero(values)),
         )
         if head.kind == "spending" and head.caseload:
             rec.metric(
@@ -338,6 +357,7 @@ def measure_year(
                 float(np.sum(weights[entity] * (values > 0))),
                 group=group_label(head.report_group),
                 unit=entity,
+                records=int(np.count_nonzero(values > 0)),
             )
         if head.sign == "nonnegative":
             negative = values < -0.005
@@ -653,12 +673,40 @@ def measure_year(
     }
 
 
+def publishable_guard(guard: dict) -> dict:
+    """The counted-once result with small cells removed (privacy.py).
+
+    A component perturbed in fewer than ``MIN_CELL`` units, or a problem or
+    mediated response in fewer than ``MIN_CELL`` households, keeps no count
+    and no weighted share; its message already says "fewer than 10".
+    """
+    out = dict(guard)
+    components = []
+    for row in guard.get("components") or []:
+        row = dict(row)
+        if small(row.get("units") or 0):
+            row["units"] = None
+        for key in ("problems", "mediated"):
+            cleaned = []
+            for item in row.get(key) or []:
+                item = dict(item)
+                if small(item.get("households") or 0):
+                    item["households"] = None
+                    item.pop("share", None)
+                cleaned.append(item)
+            row[key] = cleaned
+        components.append(row)
+    if "components" in guard:
+        out["components"] = components
+    return out
+
+
 def _finite_metrics_check(rec: Recorder):
     bad = [
         f"{m['id']} {fiscal_year_label(int(year))}"
         for m in rec.metrics.values()
         for year, value in m["values"].items()
-        if not np.isfinite(value)
+        if year not in m.get("suppressed", ()) and not np.isfinite(value)
     ]
     rec.check(
         "finite:metrics",
@@ -974,7 +1022,7 @@ def measure(
         "partition": partition.as_dict(),
         "metrics": list(rec.metrics.values()),
         "checks": list(rec.checks.values()),
-        "guard": guard,
+        "guard": publishable_guard(guard),
         "reforms": reform_outcomes,
         "timings": timings,
     }

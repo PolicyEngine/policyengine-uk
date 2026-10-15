@@ -452,8 +452,8 @@ def test_the_guard_section_lists_failures_and_mediated_responses():
     assert "1 failed; 0 were skipped" in text
     assert "pension_credit rises in 2 households" in text
     assert (
-        "`universal_credit` responds only through `carers_allowance` in 72 households"
-        in text
+        "`universal_credit` responds only through other heads in 72 households "
+        "(other heads that moved there: `carers_allowance`" in text
     )
 
 
@@ -586,3 +586,84 @@ def test_measure_records_an_unpinned_dataset_by_its_bytes(tmp_path, monkeypatch)
         "data_version": "uk-data #595 head build",
         "verified_sha256": sha256_file(built),
     }
+
+
+def test_a_figure_from_too_few_records_is_suppressed_end_to_end():
+    """Sol re-review 2, finding 1: a total and caseload from one recipient
+    reveal the award and the weight, so neither is published."""
+    from policyengine_uk.utils.aggregate_impact.api import to_report
+    from policyengine_uk.utils.aggregate_impact.measure import (
+        Recorder,
+        _finite_metrics_check,
+    )
+    from policyengine_uk.utils.aggregate_impact.render import _levels_table
+
+    rec = Recorder()
+    rec.metric("spending.ben", "Ben", "spending", "gbp", 2025, 246.9, records=1)
+    rec.metric("spending.ben", "Ben", "spending", "gbp", 2026, 9e9, records=500)
+    rec.metric("spending.none", "None", "spending", "gbp", 2025, 0.0, records=0)
+    ben = rec.metrics["spending.ben"]
+    assert ben["values"] == {"2025": None, "2026": 9e9}
+    assert ben["suppressed"] == ["2025"]
+    # Zero records reveal nothing: an inert head stays at zero.
+    assert rec.metrics["spending.none"]["values"] == {"2025": 0.0}
+    _finite_metrics_check(rec)
+    assert rec.checks["finite:metrics"]["status"] == "pass"
+
+    base = result({("receipts", "ben"): [1.0] * len(YEARS)})
+    head = result({("receipts", "ben"): [1.0] * len(YEARS)})
+    metric = next(m for m in head["metrics"] if m["id"] == "receipts.ben")
+    metric["values"][str(YEARS[0])] = None
+    metric["suppressed"] = [str(YEARS[0])]
+    summary = compare(base, head, SPEC)
+    assert summary["status"] == "pass", summary["failures"]
+    row = next(r for r in summary["rows"] if r["id"] == "receipts.ben")
+    assert row["changed"] and row["values"][str(YEARS[0])]["head_suppressed"]
+    assert summary["flags"] == []
+    assert "suppressed" in _levels_table([row], YEARS)
+    assert "suppressed" in render(summary, SPEC)
+    report = to_report({**head, "partition": {"sha256": "p"}})
+    first = next(
+        m
+        for m in report["metrics"]
+        if m["metric_id"] == "receipts.ben" and m["year"] == YEARS[0]
+    )
+    assert first["value"] is None and first["suppressed"] is True
+
+
+def test_published_guard_output_keeps_no_small_counts_or_shares():
+    """Sol re-review 2, finding 3."""
+    from policyengine_uk.utils.aggregate_impact.measure import publishable_guard
+
+    guard = {
+        "status": "ran",
+        "components": [
+            {
+                "variable": "x",
+                "units": 3,
+                "problems": [
+                    {
+                        "households": 1,
+                        "share": 0.125,
+                        "message": "in fewer than 10 households",
+                    },
+                    {"households": 40, "share": 0.5, "message": "in 40 households"},
+                ],
+                "mediated": [{"households": 2, "head": "uc", "via": []}],
+            }
+        ],
+    }
+    out = publishable_guard(guard)
+    row = out["components"][0]
+    assert row["units"] is None
+    assert (
+        row["problems"][0]["households"] is None and "share" not in row["problems"][0]
+    )
+    assert row["problems"][1] == {
+        "households": 40,
+        "share": 0.5,
+        "message": "in 40 households",
+    }
+    assert row["mediated"][0]["households"] is None
+    # The input is not changed.
+    assert guard["components"][0]["units"] == 3

@@ -182,13 +182,24 @@ jobs:
           rm -rf measured
 
       - name: Post or update the pull request comment
-        # Always, so a failed run replaces an earlier passing comment.
-        if: always() && github.event_name == 'pull_request' && hashFiles('report/comment.md') != ''
+        # Always, so a failed run replaces an earlier passing comment, even
+        # when it failed before the comparison could write one.
+        if: always() && github.event_name == 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
           PR: ${{ github.event.pull_request.number }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           marker='<!-- policyengine-uk-aggregate-impact -->'
+          if [ ! -s report/comment.md ]; then
+            mkdir -p report
+            {
+              echo "$marker"
+              echo '## Aggregate impact on certified data: FAIL'
+              echo
+              echo "The report did not run, so this change has no report. See the [workflow run]($RUN_URL)."
+            } > report/comment.md
+          fi
           existing=$(gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$PR/comments" \
             --jq ".[] | select(.user.login == \"github-actions[bot]\") | select(.body | startswith(\"$marker\")) | .id" \
             | tail -n 1)

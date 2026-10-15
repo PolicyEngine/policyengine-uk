@@ -103,20 +103,30 @@ def _changes_table(rows, years) -> str:
             ]
             body.append([f"{row['label']} (removed: base levels)"] + cells)
         else:
-            body.append(
-                [row["label"]]
-                + [
-                    fmt_change(row["values"][str(y)]["delta"], row["kind"])
-                    for y in years
-                ]
-            )
+            body.append([row["label"]] + [_change_cell(row, y) for y in years])
     return _table(["Measure"] + _year_header(years), body)
+
+
+def _change_cell(row, year) -> str:
+    cell = row["values"][str(year)]
+    if cell.get("base_suppressed") or cell.get("head_suppressed"):
+        return _SUPPRESSED_CELL
+    return fmt_change(cell["delta"], row["kind"])
+
+
+# A figure from fewer than 10 records is not published (privacy.py).
+_SUPPRESSED_CELL = "suppressed"
 
 
 def _levels_table(rows, years) -> str:
     body = [
         [row["label"]]
-        + [fmt_level(row["values"][str(y)]["head"], row["kind"]) for y in years]
+        + [
+            _SUPPRESSED_CELL
+            if row["values"][str(y)].get("head_suppressed")
+            else fmt_level(row["values"][str(y)]["head"], row["kind"])
+            for y in years
+        ]
         for row in rows
     ]
     return _table(["Measure (head)"] + _year_header(years), body)
@@ -256,10 +266,16 @@ def _guard(summary) -> str:
         lines.append(f"- `{c['variable']}` skipped: {c.get('detail', '')}")
     for c in tested:
         for m in c.get("mediated") or []:
-            via = ", ".join(f"`{v}`" for v in m["via"]) or "no other head"
+            moved = ", ".join(f"`{v}`" for v in m["via"]) or "none"
+            where = (
+                f"{m['households']:,} households"
+                if m.get("households") is not None
+                else "fewer than 10 households"
+            )
             lines.append(
-                f"- `{c['variable']}`: `{m['head']}` responds only through {via} "
-                f"in {m['households']} households ({m['total']}; not a failure)"
+                f"- `{c['variable']}`: `{m['head']}` responds only through other "
+                f"heads in {where} (other heads that moved there: {moved}; "
+                f"{m['total']}; not a failure)"
             )
     for dc in guard.get("double_counts", []):
         state = "still contained" if dc["status"] == "pass" else "NO LONGER contained"

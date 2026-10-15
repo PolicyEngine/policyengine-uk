@@ -126,7 +126,13 @@ def test_head_totals_agree_with_the_model_weighted_sums(measured):
     metrics = {m["id"]: m for m in result["metrics"]}
     for head in partition.heads:
         section = "receipts" if head.kind == "tax" else "spending"
-        ours = metrics[f"{section}.{head.id}"]["values"][str(YEAR)]
+        metric = metrics[f"{section}.{head.id}"]
+        if str(YEAR) in metric.get("suppressed", ()):
+            # Too few records to publish (privacy.py): only the count is checked.
+            records = int(np.count_nonzero(sim.calculate(head.variable, YEAR).values))
+            assert 0 < records < 10, head.id
+            continue
+        ours = metric["values"][str(YEAR)]
         theirs = float(sim.calculate(head.variable, YEAR).sum())
         assert ours == pytest.approx(theirs, rel=1e-6, abs=1e3), head.id
     receipts = metrics["balance.receipts"]["values"][str(YEAR)]

@@ -79,7 +79,9 @@ def to_report(result: dict) -> dict:
                 {
                     "metric_id": metric["id"],
                     "year": int(year),
+                    # None when the figure comes from fewer than 10 records.
                     "value": value,
+                    "suppressed": year in metric.get("suppressed", ()),
                     "unit": metric["kind"],
                     "kind": KIND_BY_SECTION.get(section, section),
                     "partition": head_id,
