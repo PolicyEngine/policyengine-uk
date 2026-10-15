@@ -113,7 +113,7 @@ def _protected_existing_health_element_monthly(
         )
     previous = _protected_existing_health_element_monthly(sim, year - 1)
     if year > SECTION_4_LAST_YEAR:
-        index = sim.tax_benefit_system.parameters.gov.dwp.universal_credit.elements.disabled.uprating
+        index = sim.tax_benefit_system.parameters.gov.economic_assumptions.indices.uc_health_element
         return previous * (
             index(f"{year}-{FISCAL_YEAR_SAMPLE_DATE}")
             / index(f"{year - 1}-{FISCAL_YEAR_SAMPLE_DATE}")

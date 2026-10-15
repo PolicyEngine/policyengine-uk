@@ -79,7 +79,7 @@ def monthly(sim: Simulation, variable: str, year: int) -> float:
 
 
 def index_growth(sim: Simulation, year: int) -> float:
-    index = sim.tax_benefit_system.parameters.gov.dwp.universal_credit.elements.disabled.uprating
+    index = sim.tax_benefit_system.parameters.gov.economic_assumptions.indices.uc_health_element
     return index(at(year)) / index(at(year - 1))
 
 
