@@ -1,4 +1,4 @@
-description: Limited capability for work-related activity element amount under the Universal Credit.
+description: Limited capability for work-related activity element amount under the Universal Credit. In years when the rebalancing modifier runs, the rebalancing protected_health_element and new_claimant_health_element parameters set the amount paid, so a health element reform for those years changes those parameters.
 values:
   2016-04-10: 315.6
   2017-04-10: 318.76

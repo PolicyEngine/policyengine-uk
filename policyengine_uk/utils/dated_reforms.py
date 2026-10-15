@@ -483,6 +483,131 @@ def apply_legacy_overrides(
             )
 
 
+def legacy_override_update_kwargs(override: LegacyOverride, parameters) -> dict:
+    """The existing annualised-override reading, without changing the tree."""
+    from policyengine_core.reforms.reform import _period_key_update_kwargs
+
+    from policyengine_uk.utils.parameters import uk_fiscal_year_period
+
+    if override.reading == ALL_PERIODS:
+        return {"period": None, "value": override.value}
+    if override.reading == REFORM_FROM_DICT:
+        if override.key is None:
+            return {"period": CORE_SCALAR_PERIOD, "value": override.value}
+        return _period_key_update_kwargs(override.key, override.value)
+    if override.key is None:
+        return {"start": REFORM_DICT_SCALAR_START, "value": override.value}
+    if "." in override.key:
+        start, stop = interval_bounds(override.key)
+        return {"start": start, "stop": stop, "value": override.value}
+    target = parameters.get_child(override.path)
+    return {
+        "period": (
+            uk_fiscal_year_period(override.key)
+            if target.metadata.get("preserve_calendar_dates")
+            else period(override.key)
+        ),
+        "value": override.value,
+    }
+
+
+def legacy_override_bounds(override: LegacyOverride, parameters):
+    """Inclusive dates the annualised override edits (not statutory dates)."""
+    kwargs = legacy_override_update_kwargs(override, parameters)
+    if "period" in kwargs:
+        if kwargs["period"] is None:
+            return EARLIEST, FLAT_STOP
+        parsed = period(kwargs["period"])
+        return parsed.start, parsed.stop
+    return instant(kwargs.get("start") or EARLIEST), instant(
+        kwargs.get("stop") or FLAT_STOP
+    )
+
+
+def validate_annualised_overrides(
+    parameters, overrides, require_annual_value=True
+) -> None:
+    """Reject every invalid or annually unreadable override before editing."""
+    errors = []
+    for override in overrides:
+        try:
+            target = parameters.get_child(override.path)
+            start, stop = legacy_override_bounds(override, parameters)
+            first_year = start.year + ((start.month, start.day) > (1, 1))
+            if require_annual_value and instant(f"{first_year:04d}-01-01") > stop:
+                raise ValueError("the key contains no 1 January annual value")
+            probe = target.clone()
+            probe.parent = ParameterNode("override_validation", data={})
+            probe.update(**legacy_override_update_kwargs(override, parameters))
+        except Exception as error:
+            errors.append(f"{override.path} (key {override.key!r}): {error}")
+    if errors:
+        raise ValueError("Cannot apply annualised overrides: " + "; ".join(errors))
+
+
+def read_override_reform(changes, reading, defines, calendar_years=None, warn=False):
+    """Read a modifier's reform, naming every path with an invalid key."""
+
+    def read(spec):
+        if reading == REFORM_DICT:
+            return read_reform_dict(
+                spec, defines, warn=warn, calendar_years=calendar_years
+            )
+        return read_reform_from_dict(spec, defines)
+
+    try:
+        return read(changes)
+    except (ValueError, TypeError, KeyError) as original:
+        errors = []
+        for path, spec in changes.items():
+            entries = spec.items() if isinstance(spec, Mapping) else [(None, spec)]
+            for key, value in entries:
+                try:
+                    read({path: {key: value} if isinstance(spec, Mapping) else value})
+                except (ValueError, TypeError, KeyError) as error:
+                    errors.append(f"{path} (key {key!r}): {error}")
+        raise ValueError(
+            "Cannot read reform overrides: " + "; ".join(errors)
+        ) from original
+
+
+def unwritten_reform_overrides(changes, reading, defines, written, calendar_years):
+    """Keep legacy changes and changes absent from the statutory write log.
+
+    Compare assignment contents, ignoring order: scenario splitting copies
+    dated reforms, repeated tuple entries have different orders, and cloned
+    systems retain their assignments. Generated parameter paths use the same
+    ``defines`` predicate as the construction route.
+    """
+
+    def read(spec, predicate, warn=False):
+        return read_override_reform(spec, reading, predicate, calendar_years, warn)
+
+    assignments, legacy = read(changes, defines, warn=True)
+
+    def was_written(assignment):
+        return any(
+            (assignment.path, assignment.start, assignment.stop, assignment.value)
+            == (entry.path, entry.start, entry.stop, entry.value)
+            for entry in written
+        )
+
+    if all(was_written(assignment) for assignment in assignments):
+        return legacy, False
+    # Select each original key rather than converting assignments back to
+    # keys: annualised overrides retain the route's own bare-year reading.
+    overrides = []
+    for path, spec in changes.items():
+        entries = spec.items() if isinstance(spec, Mapping) else [(None, spec)]
+        for key, value in entries:
+            change = {path: {key: value} if isinstance(spec, Mapping) else value}
+            selected, _ = read(change, defines)
+            if not selected or not all(was_written(item) for item in selected):
+                _, pending = read(change, lambda path: False)
+                overrides.extend(pending)
+    return overrides, True
+
+
 Timeline = List[ParameterAtInstant]
 
 

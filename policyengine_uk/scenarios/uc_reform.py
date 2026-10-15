@@ -1,7 +1,10 @@
 from policyengine_uk.model_api import Scenario
 from policyengine_uk import Microsimulation
+from policyengine_uk.utils.data_source import built_from_data
 from policyengine_uk.utils.supplied_inputs import set_model_value
 import numpy as np
+import warnings
+from policyengine_core.periods import instant
 
 
 # The standard allowance amounts the protected LCWRA amount is paired with in
@@ -97,6 +100,63 @@ def _protected_existing_health_element_monthly(
 
 
 NEW_CLAIMANT_STATUS = "uc_receives_new_claimant_health_element"
+UC_REBALANCING_YEARS = range(2026, 2030)
+LCWRA_AMOUNT = "gov.dwp.universal_credit.elements.disabled.amount"
+
+
+class UCHealthElementOverrideWarning(UserWarning):
+    """An LCWRA amount reform is superseded by the rebalancing inputs."""
+
+
+def warn_shadowed_lcwra_reform(sim) -> None:
+    """Warn once when a reformed amount is read in an active rebalancing year.
+
+    Statutory changes are sampled when annualising the LCWRA parameter;
+    overrides of the built parameters are read at 1 January. Construction
+    and Scenario.apply defer this check until all their changes have run,
+    so a reform that also switches rebalancing off does not warn.
+    """
+    from policyengine_uk.utils.dated_reforms import legacy_override_bounds
+
+    if getattr(sim, "_defer_uc_health_warning", False) or getattr(
+        sim, "_uc_health_amount_warning_emitted", False
+    ):
+        return
+    system = sim.tax_benefit_system
+    assignments = [
+        change
+        for change in getattr(system, "dated_assignments", ())
+        if change.path == LCWRA_AMOUNT
+    ]
+    override_windows = [
+        legacy_override_bounds(change, system.parameters)
+        for change in getattr(system, "legacy_overrides", ())
+        if change.path == LCWRA_AMOUNT
+    ]
+    if not assignments and not override_windows:
+        return
+    rebalancing = system.parameters.gov.dwp.universal_credit.rebalancing
+    years = []
+    for year in UC_REBALANCING_YEARS:
+        if not rebalancing.active(year):
+            continue
+        statutory_sample = instant(f"{year}-{FISCAL_YEAR_SAMPLE_DATE}")
+        annual_sample = instant(f"{year}-01-01")
+        if any(
+            change.start <= statutory_sample <= change.stop for change in assignments
+        ) or any(start <= annual_sample <= stop for start, stop in override_windows):
+            years.append(year)
+    if years:
+        warnings.warn(
+            f"A reform to {LCWRA_AMOUNT} is superseded in "
+            f"{', '.join(map(str, years))} by Universal Credit rebalancing inputs. "
+            "For a health element reform in these years change "
+            "gov.dwp.universal_credit.rebalancing.protected_health_element and "
+            "gov.dwp.universal_credit.rebalancing.new_claimant_health_element.",
+            UCHealthElementOverrideWarning,
+            stacklevel=2,
+        )
+        sim._uc_health_amount_warning_emitted = True
 
 
 def _new_claimant_health_element_status(
@@ -137,12 +197,12 @@ def add_universal_credit_reform(sim: Microsimulation):
         2029: 0.22,
     }  # WPI Economics for Trussell Trust based on admin PIP data, 2025
     new_claimant_health_element = rebalancing.new_claimant_health_element
-    built_from_data = getattr(sim, "built_from_dataset", False)
-    for year in range(2026, 2030):
+    is_data = built_from_data(sim)
+    for year in UC_REBALANCING_YEARS:
         if not rebalancing.active(year):
             continue
         is_post_2025_claimant = _new_claimant_health_element_status(
-            sim, year, uc_seed < post_2025_claimant_share[year], built_from_data
+            sim, year, uc_seed < post_2025_claimant_share[year], is_data
         )
         # Copy: calculate returns the simulation's cached array, and the writes
         # below must reach the cache only through set_input.
@@ -164,6 +224,7 @@ def add_universal_credit_reform(sim: Microsimulation):
 
     # Standard allowance uplift is handled in the formula itself so user
     # reforms to the base amount are applied before the uplift.
+    warn_shadowed_lcwra_reform(sim)
 
 
 universal_credit_july_2025_reform = Scenario(
