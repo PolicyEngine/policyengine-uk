@@ -462,7 +462,10 @@ def test_the_guard_section_lists_failures_and_mediated_responses():
 
 def _on(data_sha, **provenance):
     measured = result({("receipts", "a"): [1.0] * len(YEARS)}, sha=data_sha)
-    measured["provenance"].update(provenance)
+    measured["provenance"].update({"metrics_version": "m", **provenance})
+    measured["runtime"].update(
+        policyengine_uk="2.122.2", policyengine_uk_fingerprint="f" * 64
+    )
     return measured
 
 
@@ -477,8 +480,14 @@ def test_the_data_axis_allows_two_datasets_but_the_model_axis_does_not():
 @pytest.mark.parametrize(
     "change, message",
     [
-        (lambda r: r["provenance"].update(git_sha="def"), "commits"),
-        (lambda r: r["runtime"].update(policyengine_uk="9.9.9"), "ran policyengine-uk"),
+        (
+            lambda r: r["runtime"].update(policyengine_uk_fingerprint="e" * 64),
+            "one policyengine-uk fingerprint",
+        ),
+        (
+            lambda r: r["runtime"].update(policyengine_uk="9.9.9"),
+            "one policyengine-uk version",
+        ),
         (lambda r: r["runtime"].update(distributions=["numpy==9.0"]), "one runtime"),
         (lambda r: r["partition"].update(sha256="other"), "fiscal partition"),
         (
@@ -521,6 +530,10 @@ def test_the_data_axis_does_not_match_households_across_datasets():
 @given(values=metric_values)
 def test_a_data_comparison_with_itself_moves_nothing(values):
     side = result(values)
+    side["provenance"]["metrics_version"] = "m"
+    side["runtime"].update(
+        policyengine_uk="2.122.2", policyengine_uk_fingerprint="f" * 64
+    )
     summary = compare(side, side, SPEC, axis="data")
     assert summary["status"] == "pass"
     assert not any(row["changed"] for row in summary["rows"])
@@ -677,3 +690,66 @@ def test_the_data_axis_ignores_the_data_package_itself():
     assert compare(base, head, SPEC, axis="data")["status"] == "pass"
     head["runtime"]["distributions"] = ["numpy==2.1", "policyengine-uk-data==1.59.0"]
     assert compare(base, head, SPEC, axis="data")["status"] == "fail"
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        ("runtime", "policyengine_uk"),
+        ("runtime", "policyengine_uk_fingerprint"),
+        ("runtime", "distributions"),
+        ("partition", "sha256"),
+        ("provenance", "metrics_version"),
+    ],
+)
+def test_a_data_comparison_fails_when_an_identity_field_is_missing(path):
+    """Sol review of #2425, P1: blank or missing identities used to pass."""
+    base, head = _on("1" * 64), _on("2" * 64)
+    for side in (base, head):
+        side[path[0]].pop(path[1])
+    summary = compare(base, head, SPEC, axis="data")
+    assert summary["status"] == "fail"
+    assert any("does not record it" in f for f in summary["failures"])
+
+
+def test_the_caller_commit_is_not_part_of_the_model_identity():
+    """The same installed model measured from two checkouts is one model."""
+    summary = compare(
+        _on("1" * 64, git_sha="aaa"), _on("2" * 64, git_sha="bbb"), SPEC, axis="data"
+    )
+    assert summary["status"] == "pass", summary["failures"]
+
+
+def test_data_axis_provenance_names_both_datasets():
+    summary = compare(_on("1" * 64), _on("2" * 64), SPEC, axis="data")
+    text = render(summary, SPEC)
+    assert "Base dataset" in text and "Head dataset" in text
+    assert "verified on both sides" not in text
+
+
+def test_the_model_fingerprint_covers_the_model_and_nothing_else(tmp_path, monkeypatch):
+    import importlib.util
+    from types import SimpleNamespace
+
+    from policyengine_uk.utils.aggregate_impact import measure
+
+    package = tmp_path / "policyengine_uk"
+    (package / "variables").mkdir(parents=True)
+    (package / "tests").mkdir()
+    (package / "__pycache__").mkdir()
+    (package / "__init__.py").write_text("")
+    (package / "variables" / "x.py").write_text("a = 1")
+    (package / "tests" / "t.yaml").write_text("x")
+    (package / "__pycache__" / "c.pyc").write_bytes(b"x")
+    monkeypatch.setattr(
+        importlib.util,
+        "find_spec",
+        lambda name: SimpleNamespace(origin=str(package / "__init__.py")),
+    )
+    first = measure.model_fingerprint()
+    assert first == measure.model_fingerprint()
+    (package / "tests" / "t.yaml").write_text("changed")
+    (package / "__pycache__" / "c.pyc").write_bytes(b"changed")
+    assert measure.model_fingerprint() == first
+    (package / "variables" / "x.py").write_text("a = 2")
+    assert measure.model_fingerprint() != first

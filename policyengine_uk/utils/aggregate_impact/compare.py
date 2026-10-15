@@ -519,33 +519,49 @@ def compare(
 
 
 def _same_model_problems(base: Mapping, head: Mapping, runtime_differences) -> list:
-    """What stops a data comparison from attributing every move to the data."""
+    """What stops a data comparison from attributing its moves to the data.
+
+    Each side must record the model it imported (version and a fingerprint
+    of its files), its runtime, partition and metric definitions, and they
+    must agree. A missing field is a failure: one model cannot be shown.
+    The caller's own commit (``git_sha``) identifies the measuring checkout,
+    not the model, so it is not part of the identity.
+    """
     problems = []
-    b_prov, h_prov = base.get("provenance") or {}, head.get("provenance") or {}
-    b_run, h_run = base.get("runtime") or {}, head.get("runtime") or {}
-    if b_run.get("policyengine_uk") != h_run.get("policyengine_uk"):
-        problems.append(
-            "A data comparison needs one model, but base and head ran policyengine-uk "
-            f"{b_run.get('policyengine_uk')} and {h_run.get('policyengine_uk')}."
-        )
-    if b_prov.get("git_sha") != h_prov.get("git_sha"):
-        problems.append(
-            "A data comparison needs one model, but base and head ran policyengine-uk "
-            f"commits {b_prov.get('git_sha') or 'unknown'} and {h_prov.get('git_sha') or 'unknown'}."
-        )
+
+    def field(result, *path):
+        value = result
+        for key in path:
+            value = (value or {}).get(key)
+        return value
+
+    identity = {
+        "policyengine-uk version": ("runtime", "policyengine_uk"),
+        "policyengine-uk fingerprint": ("runtime", "policyengine_uk_fingerprint"),
+        "runtime listing": ("runtime", "distributions"),
+        "fiscal partition": ("partition", "sha256"),
+        "metric definitions": ("provenance", "metrics_version"),
+    }
+    for name, path in identity.items():
+        b, h = field(base, *path), field(head, *path)
+        if not b or not h:
+            problems.append(
+                f"A data comparison needs the {name} of both sides, and "
+                f"{'the base' if not b else 'the head'} does not record it."
+            )
+        elif name != "runtime listing" and b != h:
+            shown = (
+                f"{str(b)[:12]} and {str(h)[:12]}"
+                if name.endswith(("fingerprint", "partition"))
+                else f"{b} and {h}"
+            )
+            problems.append(
+                f"A data comparison needs one {name}, but the sides have {shown}."
+            )
     if runtime_differences:
         problems.append(
             "A data comparison needs one runtime, but base and head differ in: "
             + "; ".join(runtime_differences[:10])
-        )
-    if (base.get("partition") or {}).get("sha256") != (head.get("partition") or {}).get(
-        "sha256"
-    ):
-        problems.append("A data comparison needs one fiscal partition on both sides.")
-    if b_prov.get("metrics_version") != h_prov.get("metrics_version"):
-        problems.append(
-            "A data comparison needs one set of metric definitions, but base and head "
-            f"measured {b_prov.get('metrics_version')} and {h_prov.get('metrics_version')}."
         )
     return problems
 

@@ -310,10 +310,21 @@ def _provenance(summary) -> str:
         ["Side", "Commit", "Runtime", "Environment hash", "Partition hash", "Time"],
         rows,
     )
-    if dataset:
+    if summary.get("axis") == "data":
+        for side in ("base", "head"):
+            d = (((summary.get(side) or {}).get("provenance")) or {}).get(
+                "dataset"
+            ) or {}
+            if d:
+                text += (
+                    f"\n\n{side.capitalize()} dataset: `{d.get('uri') or d.get('path')}`, sha256 "
+                    f"`{d.get('verified_sha256')}`, {d.get('data_package')} {d.get('data_version')}."
+                )
+    elif dataset:
         text += (
-            f"\n\nDataset: `{dataset.get('uri')}`, sha256 `{dataset.get('verified_sha256')}` "
-            f"(verified on both sides), {dataset.get('data_package')} {dataset.get('data_version')}."
+            f"\n\nDataset: `{dataset.get('uri') or dataset.get('path')}`, sha256 "
+            f"`{dataset.get('verified_sha256')}` (verified on both sides), "
+            f"{dataset.get('data_package')} {dataset.get('data_version')}."
         )
     if summary.get("runtime_differences"):
         text += "\n\nRuntime differences:\n" + "\n".join(

@@ -237,6 +237,39 @@ def definitions_digest(spec: Spec, reforms: Sequence) -> str:
     return hashlib.sha256(text.encode()).hexdigest()
 
 
+def model_fingerprint() -> Optional[str]:
+    """SHA-256 over the imported policyengine_uk package's own files.
+
+    Identifies the model that ran, whatever installed it: a wheel, an
+    editable checkout, or a modified copy carrying the same version. Tests,
+    compiled caches and this tool's directory are left out, so neither a
+    test edit nor a newer copy of the tool changes the model's identity.
+    """
+    import importlib.util
+
+    spec = importlib.util.find_spec("policyengine_uk")
+    if spec is None or not spec.origin:
+        return None
+    root = Path(spec.origin).parent
+    tool = Path(__file__).resolve().parent
+    digest = hashlib.sha256()
+    for path in sorted(root.rglob("*")):
+        relative = path.relative_to(root)
+        if (
+            not path.is_file()
+            or "__pycache__" in relative.parts
+            or relative.parts[:1] == ("tests",)
+            or path.suffix == ".pyc"
+            or tool in path.resolve().parents
+        ):
+            continue
+        digest.update(str(relative).encode())
+        digest.update(b"\0")
+        digest.update(path.read_bytes())
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
 def runtime_identity() -> dict:
     """The installed distributions and interpreter that ran the measurement."""
     distributions = sorted(
@@ -259,6 +292,7 @@ def runtime_identity() -> dict:
         "platform": platform.platform(),
         "machine": platform.machine(),
         "policyengine_uk": version("policyengine-uk"),
+        "policyengine_uk_fingerprint": model_fingerprint(),
         "policyengine_core": version("policyengine-core"),
         "numpy": version("numpy"),
         "distributions": [f"{n}=={v}" for n, v in distributions],
