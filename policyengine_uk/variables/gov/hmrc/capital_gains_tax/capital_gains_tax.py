@@ -68,7 +68,13 @@ class capital_gains_tax(Variable):
         basic_rate_limit = it.rates.uk.thresholds[1] + basic_rate_band_extension
         remaining_basic_rate_band = max_(basic_rate_limit - taxable_income, 0)
         higher_rate_limit = it.rates.uk.thresholds[2] + basic_rate_band_extension
-        higher_rate_band = higher_rate_limit - basic_rate_limit
+        # Gains are the top slice of income (TCGA 1992 s. 1H), so the gains
+        # above the basic rate band start at the basic rate limit or at
+        # taxable income, whichever is higher. Only the rest of the band up to
+        # the higher rate limit is left for them.
+        remaining_higher_rate_band = max_(
+            higher_rate_limit - max_(taxable_income, basic_rate_limit), 0
+        )
 
         # The schedule inputs describe gains before any realisation response.
         # Relief gains move by their own response, which has its own
@@ -161,15 +167,16 @@ class capital_gains_tax(Variable):
                 after_aea[name], band_left
             )
 
-        # Gains above the basic rate band are split at the higher rate limit
-        # so reforms can charge an additional rate; in law the two rates are
-        # equal. Relief gains are the lowest part of the gains here too.
+        # Gains above the basic rate band are split at the higher rate limit,
+        # stacked on top of taxable income, so reforms can charge an
+        # additional rate; in law the two rates are equal. Relief gains are
+        # the lowest part of the gains here too.
         higher_order = ["badr"] + sorted(
             rates,
             key=lambda name: -(rates[name].additional_rate - rates[name].higher_rate),
         )
         inside_higher, above_higher = {}, {}
-        band_left = higher_rate_band
+        band_left = remaining_higher_rate_band
         for name in higher_order:
             inside_higher[name], above_higher[name], band_left = _take(
                 above_basic[name], band_left

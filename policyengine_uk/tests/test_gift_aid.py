@@ -341,7 +341,17 @@ def test_zero_gift_preserves_main_outputs_bit_for_bit():
             3307.25,
             31407.05078125,
         ],
-        "capital_gains_tax": [7663.7998046875, 8880, 8880, 8880, 8263.7998046875, 8880]
+        # The last row's 37,000 of gains is split between the higher band
+        # left on top of its 88,930 taxable income and the band above it, at
+        # equal rates; float32 rounds the two parts' sum a thousandth low.
+        "capital_gains_tax": [
+            7663.7998046875,
+            8880,
+            8880,
+            8880,
+            8263.7998046875,
+            8879.9990234375,
+        ]
         * 2,
     }
     for variable, values in expected.items():
