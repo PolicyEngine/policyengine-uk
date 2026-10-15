@@ -1,6 +1,10 @@
 from policyengine_uk.model_api import *
 from policyengine_core.variables import Variable
 from policyengine_uk.utils.marginal_rates import marginal_rate_step
+from policyengine_uk.utils.measurement_branches import (
+    held_behavioural_responses,
+    hold_behavioural_responses,
+)
 
 
 class marginal_tax_rate(Variable):
@@ -25,6 +29,9 @@ class marginal_tax_rate(Variable):
         employment_income = person("employment_income", period)
         step = marginal_rate_step(employment_income, p.marginal_tax_rate_delta)
         adult_count = p.marginal_tax_rate_adults
+        # The pay rise is not a reform: each branch holds the behavioural
+        # responses at this simulation's values.
+        held_responses = held_behavioural_responses(person, period)
         for adult_index in range(1, 1 + adult_count):
             alt_simulation = simulation.get_branch(f"adult_{adult_index}_pay_rise")
             mask = adult_index_values == adult_index
@@ -35,6 +42,7 @@ class marginal_tax_rate(Variable):
                     and not variable_data.is_input_variable()
                 ):
                     alt_simulation.delete_arrays(variable)
+            hold_behavioural_responses(alt_simulation, period, held_responses)
             alt_simulation.set_input(
                 "employment_income",
                 period,
