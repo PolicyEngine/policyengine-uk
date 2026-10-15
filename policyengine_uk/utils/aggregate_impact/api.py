@@ -82,6 +82,9 @@ def to_report(result: dict) -> dict:
                     # None when the figure comes from fewer than 10 records.
                     "value": value,
                     "suppressed": year in metric.get("suppressed", ()),
+                    # Rounded to the nearest £1bn because it contains a
+                    # suppressed figure (measure.protect_totals).
+                    "rounded": year in metric.get("rounded", ()),
                     "unit": metric["kind"],
                     "kind": KIND_BY_SECTION.get(section, section),
                     "partition": head_id,

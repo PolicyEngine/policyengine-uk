@@ -42,6 +42,7 @@ class Recorder:
         # The year being measured; a check records which scopes it failed
         # in, so a comparison can tell a newly failing year from an old one.
         self.scope: str = ""
+        self.hidden: dict = {}
 
     def metric(
         self,
@@ -75,6 +76,8 @@ class Recorder:
         if records is not None and small(records):
             record["values"][str(year)] = None
             record.setdefault("suppressed", []).append(str(year))
+            # Kept for complementary protection of totals; never published.
+            self.hidden[(metric_id, str(year))] = float(value)
         else:
             record["values"][str(year)] = float(value)
 
@@ -664,6 +667,7 @@ def measure_year(
             else float("nan"),
             group="Own-decile levels",
         )
+    protect_totals(rec, partition, active, year)
     households[str(year)] = {
         "household_id": array(sim, "household_id", year).astype(np.int64),
         "household_weight": hw.astype(np.float64),
@@ -671,6 +675,66 @@ def measure_year(
         "decile": decile,
         "income": income,
     }
+
+
+# A total that contains a suppressed head is rounded to this, so the head
+# cannot be recovered by subtracting the published heads from it; a head
+# worth half this or more makes the total suppressed instead.
+TOTAL_ROUNDING_GBP = 1e9
+
+
+def total_components(partition: Partition, active) -> dict:
+    """The heads each published total is built from."""
+
+    def heads(*totals):
+        return {h.id for t in totals for h in partition.heads_in(t, active)}
+
+    out = {f"model.{t}": heads(t) for t in partition.totals}
+    out["balance.receipts"] = heads("gov_tax")
+    out["balance.spending"] = heads("gov_spending")
+    out["balance.balance"] = heads("gov_tax", "gov_spending")
+    out["balance.household_only_benefits"] = {
+        h.id
+        for h in partition.spending_heads
+        if "household_benefits" in h.totals and "gov_spending" not in h.totals
+    }
+    out["model.gov_balance"] = heads("gov_tax", "gov_spending")
+    every = {h.id for h in partition.heads}
+    for variable in HOUSEHOLD_TOTALS:
+        out[f"household.{variable}"] = every
+    return out
+
+
+def protect_totals(rec: "Recorder", partition: Partition, active, year: int) -> None:
+    """Complementary protection: totals cannot reveal a suppressed head.
+
+    A head from fewer than ``MIN_CELL`` records is published as None, but a
+    total containing it, less the published heads, would give it back. Each
+    such total is rounded to ``TOTAL_ROUNDING_GBP`` for that year, or
+    suppressed if a contained head is worth half that or more.
+    """
+    key = str(year)
+    hidden = {
+        metric_id.split(".", 1)[1]: abs(value)
+        for (metric_id, y), value in rec.hidden.items()
+        if y == key and metric_id.split(".", 1)[0] in ("receipts", "spending")
+    }
+    if not hidden:
+        return
+    for metric_id, heads in total_components(partition, active).items():
+        record = rec.metrics.get(metric_id)
+        contained = [hidden[h] for h in heads if h in hidden]
+        if record is None or not contained or record["values"].get(key) is None:
+            continue
+        if max(contained) >= TOTAL_ROUNDING_GBP / 2:
+            record["values"][key] = None
+            record.setdefault("suppressed", []).append(key)
+        else:
+            value = record["values"][key]
+            record["values"][key] = float(
+                round(value / TOTAL_ROUNDING_GBP) * TOTAL_ROUNDING_GBP
+            )
+            record.setdefault("rounded", []).append(key)
 
 
 def publishable_guard(guard: dict) -> dict:

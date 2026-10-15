@@ -218,3 +218,91 @@ def test_a_small_cell_never_reveals_an_amount(count, amount):
         assert "£" not in text and str(count) not in text.replace(str(MIN_CELL), "")
     else:
         assert f"{count:,}" in text and "£" in text
+
+
+def _protection_partition():
+    from policyengine_uk.utils.aggregate_impact.partition import parse_partition
+
+    def head(i, totals, kind="spending"):
+        return {
+            "id": i,
+            "label": i,
+            "variable": i,
+            "totals": totals,
+            "entity": "household",
+        }
+
+    return parse_partition(
+        {
+            "schema_version": 1,
+            "totals": {"gov_tax": {}, "gov_spending": {}, "household_benefits": {}},
+            "tax_heads": [head("tax", ["gov_tax"])],
+            "spending_heads": [
+                head("common", ["gov_spending", "household_benefits"]),
+                head("rare", ["gov_spending", "household_benefits"]),
+            ],
+        }
+    )
+
+
+def _recorded(common, rare, tax=5e11):
+    from policyengine_uk.utils.aggregate_impact.measure import Recorder
+
+    rec = Recorder()
+    rec.metric("receipts.tax", "Tax", "receipts", "gbp", 2026, tax, records=5000)
+    rec.metric("spending.common", "C", "spending", "gbp", 2026, common, records=500)
+    rec.metric("spending.rare", "R", "spending", "gbp", 2026, rare, records=1)
+    for total in ("model.gov_spending", "model.household_benefits", "balance.spending"):
+        rec.metric(total, total, "model_totals", "gbp", 2026, common + rare)
+    rec.metric("model.gov_tax", "gov_tax", "model_totals", "gbp", 2026, tax)
+    rec.metric("balance.balance", "b", "balance", "gbp", 2026, tax - common - rare)
+    return rec
+
+
+def test_a_suppressed_head_cannot_be_recovered_from_a_total():
+    """Sol review of #2425, P1: spending total less the common benefit gave the
+    rare one back. Totals that contain it are rounded to £1bn."""
+    from policyengine_uk.utils.aggregate_impact.measure import protect_totals
+
+    rec = _recorded(common=7.3e10, rare=246.9)
+    protect_totals(rec, _protection_partition(), set(), 2026)
+    published = {m: r["values"]["2026"] for m, r in rec.metrics.items()}
+    assert published["spending.rare"] is None
+    for total in ("model.gov_spending", "model.household_benefits", "balance.spending"):
+        assert published[total] == 7.3e10  # 73.0000002469bn rounded
+        assert rec.metrics[total]["rounded"] == ["2026"]
+    assert published["balance.balance"] == round((5e11 - 7.3e10) / 1e9) * 1e9
+    # A total with no suppressed head is exact.
+    assert (
+        published["model.gov_tax"] == 5e11
+        and "rounded" not in rec.metrics["model.gov_tax"]
+    )
+    # The raw value is kept off the record.
+    assert all(246.9 not in r["values"].values() for r in rec.metrics.values())
+
+
+@settings(max_examples=200, deadline=None)
+@given(common=st.floats(1e8, 5e11), rare=st.floats(1.0, 4.99e8))
+def test_protected_totals_carry_nothing_below_a_billion(common, rare):
+    from policyengine_uk.utils.aggregate_impact.measure import protect_totals
+
+    rec = _recorded(common, rare)
+    protect_totals(rec, _protection_partition(), set(), 2026)
+    for total in ("model.gov_spending", "model.household_benefits", "balance.spending"):
+        value = rec.metrics[total]["values"]["2026"]
+        assert value % 1e9 == 0
+        # Two datasets whose rare head differs inside the same billion publish
+        # the same total.
+        other = _recorded(common, rare / 2)
+        protect_totals(other, _protection_partition(), set(), 2026)
+        if round((common + rare) / 1e9) == round((common + rare / 2) / 1e9):
+            assert other.metrics[total]["values"]["2026"] == value
+
+
+def test_a_large_suppressed_head_suppresses_its_totals():
+    from policyengine_uk.utils.aggregate_impact.measure import protect_totals
+
+    rec = _recorded(common=7.3e10, rare=6e8)
+    protect_totals(rec, _protection_partition(), set(), 2026)
+    assert rec.metrics["model.gov_spending"]["values"]["2026"] is None
+    assert rec.metrics["model.gov_spending"]["suppressed"] == ["2026"]
