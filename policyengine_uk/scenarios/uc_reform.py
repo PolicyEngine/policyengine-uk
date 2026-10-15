@@ -7,6 +7,9 @@ import warnings
 from policyengine_core.periods import instant
 
 
+REBALANCING_YEARS = range(2026, 2030)
+
+
 # The standard allowance amounts the protected LCWRA amount is paired with in
 # the Universal Credit Act 2025 s. 4(2) duty: every amount of the allowance.
 STANDARD_ALLOWANCE_TYPES = (
@@ -100,7 +103,6 @@ def _protected_existing_health_element_monthly(
 
 
 NEW_CLAIMANT_STATUS = "uc_receives_new_claimant_health_element"
-REBALANCING_YEARS = range(2026, 2030)
 LCWRA_AMOUNT = "gov.dwp.universal_credit.elements.disabled.amount"
 
 
