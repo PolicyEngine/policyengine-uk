@@ -26,12 +26,6 @@ reason = "#1947"
 why = "Known bug #1947 (Marriage Allowance booked on the recipient), pinned by a strict xfail until it is fixed."
 
 [[allow]]
-nodeid = "policyengine_uk/tests/test_uc_income_from_capital_properties.py::test_tax_on_dividends_does_not_remove_the_benefit_cap_earnings_exception"
-outcome = "xfailed"
-reason = "#1986"
-why = "Known bug #1986 (the benefit cap earnings exception nets tax on all income), pinned by a strict xfail until it is fixed."
-
-[[allow]]
 nodeid = "policyengine_uk/tests/test_build_metadata.py::test_runtime_metadata_uses_bundle_contract_when_available"
 outcome = "skipped"
 reason = "policyengine_bundles"
@@ -43,6 +37,13 @@ outcome = "skipped"
 reason = "not running from a git checkout"
 modes = ["wheel"]
 why = "An installed wheel is not a git checkout, so there is no HEAD to compare with."
+
+[[allow]]
+nodeid = "policyengine_uk/tests/test_variable_code_sharing.py::test_a_simulation_leaves_coverage_no_new_code_objects"
+outcome = "skipped"
+reason = "coverage is not measuring with sys.monitoring"
+modes = ["wheel"]
+why = "The release workflow tests the installed wheel without coverage, so this check of coverage's code objects has nothing to measure there. It runs and passes against the source tree on every PR, where coverage measures with sys.monitoring."
 
 [[allow]]
 nodeid = "policyengine_uk/tests/code_health/*"

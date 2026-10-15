@@ -1,0 +1,465 @@
+# ITA 2007 s.414(2)(a)-(b): the net gift is not a taxable-income
+# deduction; the grossed-up gift extends rate limits.
+# https://www.legislation.gov.uk/ukpga/2007/3/section/414
+# s.415: a net £800 gift is £1,000 gross at the 20% UK basic rate.
+# https://www.legislation.gov.uk/ukpga/2007/3/section/415
+# s.58 Step 2: deduct the gross gift from adjusted net income (ANI).
+# https://www.legislation.gov.uk/ukpga/2007/3/section/58
+
+- name: Gift Aid gives no income tax relief to a UK basic-rate earner
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: [40, 40]
+    region: [NORTH_WEST, NORTH_WEST]
+    employment_income: [30_000, 30_000]
+    gift_aid: [0, 800]
+  output:
+    gift_aid_grossed_up: [0, 1_000]
+    adjusted_net_income: [30_000, 29_000]
+    earned_taxable_income: [17_430, 17_430]
+    # £17,430 at 20%, with no taxpayer relief on the Gift Aid gift.
+    income_tax: [3_486, 3_486]
+    uc_income_tax_on_earnings: [3_486, 3_486]
+    # UC deducts the tax actually due on earnings, plus £1,394.40 NI.
+    uc_individual_earned_income_before_mif: [25_119.60, 25_119.60]
+
+- name: Gift Aid gives £200 relief to a UK higher-rate earner
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: [40, 40]
+    region: [NORTH_WEST, NORTH_WEST]
+    employment_income: [60_000, 60_000]
+    gift_aid: [0, 800]
+  output:
+    earned_taxable_income: [47_430, 47_430]
+    # £1,000 moves from 40% to 20% under s.414(2)(b).
+    income_tax: [11_432, 11_232]
+    uc_income_tax_on_earnings: [11_432, 11_232]
+    uc_individual_earned_income_before_mif: [45_357.40, 45_557.40]
+
+- name: Gift Aid gives £250 relief to a UK additional-rate earner
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: [40, 40]
+    region: [NORTH_WEST, NORTH_WEST]
+    employment_income: [150_000, 150_000]
+    gift_aid: [0, 800]
+  output:
+    earned_taxable_income: [150_000, 150_000]
+    # £1,000 moves from 40% to 20% and £1,000 from 45% to 40%.
+    income_tax: [53_703, 53_453]
+    uc_income_tax_on_earnings: [53_703, 53_453]
+    uc_individual_earned_income_before_mif: [91_286.40, 91_536.40]
+
+- name: Gift Aid extends Scottish basic and higher limits
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    age: [40, 40]
+    region: [SCOTLAND, SCOTLAND]
+    employment_income: [60_000, 60_000]
+    gift_aid: [0, 800]
+  output:
+    # £1,000 moves from 21% to 20% and £1,000 from 42% to 21%.
+    # The Scottish starter/basic boundary is not extended by s.414.
+    income_tax: [13_182.05, 12_962.05]
+
+- name: Gift Aid restores £500 of personal allowance at £101000 income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: [40, 40]
+    region: [NORTH_WEST, NORTH_WEST]
+    employment_income: [101_000, 101_000]
+    gift_aid: [0, 800]
+  output:
+    adjusted_net_income: [101_000, 100_000]
+    # ITA 2007 s.58 Step 2 reduces the taper base exactly once.
+    personal_allowance: [12_070, 12_570]
+    earned_taxable_income: [88_930, 88_430]
+    income_tax: [28_032, 27_632]
+
+- name: Gift Aid extends UK limits for dividends above the basic-rate limit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: [40, 40]
+    region: [NORTH_WEST, NORTH_WEST]
+    employment_income: [50_000, 50_000]
+    dividend_income: [10_000, 10_000]
+    gift_aid: [0, 800]
+  output:
+    earned_taxable_income: [37_430, 37_430]
+    # The £500 dividend allowance still occupies the band. The extension
+    # moves £770 of taxed dividends from 35.75% to 10.75%: £192.50 relief.
+    dividend_income_tax: [3_396.25, 3_203.75]
+    income_tax: [10_882.25, 10_689.75]
+
+- name: Gift Aid extends UK limits across savings and dividend slices
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: [40, 40]
+    region: [NORTH_WEST, NORTH_WEST]
+    employment_income: [49_070, 49_070]
+    savings_interest_income: [2_000, 2_000]
+    dividend_income: [5_000, 5_000]
+    gift_aid: [0, 1_600]
+  output:
+    # £2,000 gross extension moves £800 taxed savings down 20 percentage
+    # points and £700 taxed dividends down 25 percentage points.
+    savings_allowance: [500, 500]
+    savings_income_tax: [460, 300]
+    dividend_income_tax: [1_608.75, 1_433.75]
+    income_tax: [9_368.75, 9_033.75]
+
+- name: Gift Aid extends UK savings and dividend limits for Scottish taxpayers
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    age: [40, 40]
+    region: [SCOTLAND, SCOTLAND]
+    employment_income: [50_000, 50_000]
+    savings_interest_income: [2_000, 2_000]
+    dividend_income: [5_000, 5_000]
+    gift_aid: [0, 800]
+  output:
+    earned_income_tax: [8_982.05, 8_762.05]
+    savings_income_tax: [600, 446]
+    dividend_income_tax: [1_608.75, 1_608.75]
+    income_tax: [11_190.80, 10_816.80]
+
+- name: Gift Aid extends the basic-rate limit where property occupies the band
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: [40, 40]
+    region: [NORTH_WEST, NORTH_WEST]
+    employment_income: [40_000, 40_000]
+    property_income: [12_000, 12_000]
+    property_allowance_deduction: [0, 0]
+    gift_aid: [0, 800]
+  output:
+    earned_taxable_income: [27_430, 27_430]
+    property_income_tax: [2_746, 2_546]
+    income_tax: [8_232, 8_032]
+
+- name: Gift Aid extends Scottish limits where property occupies the higher band
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    age: [40, 40]
+    region: [SCOTLAND, SCOTLAND]
+    employment_income: [40_000, 40_000]
+    property_income: [20_000, 20_000]
+    property_allowance_deduction: [0, 0]
+    gift_aid: [0, 800]
+  output:
+    # Scottish basic-limit relief falls on employment; higher-limit relief
+    # falls on property. Their total equals the Scottish earned-only case.
+    earned_income_tax: [5_551.07, 5_541.07]
+    property_income_tax: [7_630.98, 7_420.98]
+    income_tax: [13_182.05, 12_962.05]
+
+- name: Gift Aid extends the UK higher-rate limit for dividends
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    age: [40, 40]
+    region: [NORTH_WEST, NORTH_WEST]
+    employment_income: [120_000, 120_000]
+    dividend_income: [40_000, 40_000]
+    gift_aid: [0, 800]
+  output:
+    # The basic-limit extension gives £200 earned relief. The higher-limit
+    # extension moves £1,000 dividends from 39.35% to 35.75%: £36 relief.
+    earned_income_tax: [40_460, 40_260]
+    dividend_income_tax: [15_376.21, 15_340.21]
+    income_tax: [55_836.21, 55_600.21]
+
+- name: Gift Aid leaves the Scottish starter-rate limit unchanged
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: [40, 40]
+    region: [SCOTLAND, SCOTLAND]
+    employment_income: [18_000, 18_000]
+    gift_aid: [0, 800]
+  output:
+    # £3,967 at 19% and £1,463 at 20%, with the same starter limit.
+    income_tax: [1_046.33, 1_046.33]
+
+- name: Gift Aid extends every Scottish limit above the Scottish basic rate
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    age: [40, 40]
+    region: [SCOTLAND, SCOTLAND]
+    employment_income: [150_000, 150_000]
+    gift_aid: [0, 800]
+  output:
+    # Rate steps 1%, 21%, 3% and 3% on £1,000 gross give £280 relief.
+    income_tax: [60_011.45, 59_731.45]
+
+- name: A large Gift Aid gift can cross several Scottish bands
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    age: 40
+    region: SCOTLAND
+    employment_income: 150_000
+    gift_aid: 80_000
+  output:
+    adjusted_net_income: 50_000
+    personal_allowance: 12_570
+    # Taxable £137,430 is split at £3,967, £116,956 and £131,092.
+    income_tax: 28_982.05
+
+- name: Gift Aid can change the band used for the personal savings allowance
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: [40, 40]
+    region: [NORTH_WEST, NORTH_WEST]
+    employment_income: [50_300, 50_300]
+    savings_interest_income: [100, 100]
+    gift_aid: [0, 800]
+  output:
+    # Tax band remains based on all taxable income as in the existing model,
+    # with s.414(2)(b)'s extended UK basic-rate limit (ITA 2007 s.12B).
+    tax_band: [HIGHER, BASIC]
+    savings_allowance: [500, 1_000]
+    savings_income_tax: [0, 0]
+
+- name: Gift Aid reduces adjusted net income for the Child Benefit tax charge
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: [40, 40]
+    region: [NORTH_WEST, NORTH_WEST]
+    employment_income: [62_000, 62_000]
+    gift_aid: [0, 800]
+    child_benefit: [1_000, 1_000]
+    is_higher_earner: [true, true]
+  output:
+    # ITA 2007 s.58 Step 2 applies beyond the personal allowance taper.
+    adjusted_net_income: [62_000, 61_000]
+    CB_HITC: [100, 50]
+
+- name: Grossed-up Gift Aid can make adjusted net income negative
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    region: NORTH_WEST
+    employment_income: 10_000
+    gift_aid: 20_000
+    # Capital Gains Tax can cover the tax attributed to a qualifying gift
+    # even where the gift exceeds this year's income (ITA 2007 s.423).
+    # https://www.legislation.gov.uk/ukpga/2007/3/section/423
+    capital_gains: 50_000
+  output:
+    # ITA 2007 s.58 Step 2 subtracts the gross gift without a floor at nil.
+    net_income: 10_000
+    gift_aid_grossed_up: 25_000
+    adjusted_net_income: -15_000
+    personal_allowance: 12_570
+    income_tax: 0
+
+- name: Zero Gift Aid preserves the marriage-neutral income tax reform
+  period: 2026
+  absolute_error_margin: 0.01
+  reforms:
+    - policyengine_uk.reforms.cps.marriage_tax_reforms.marriage_neutral_it_reform
+  input:
+    people:
+      earner:
+        age: 40
+        employment_income: 100_000
+        gift_aid: 0
+        personal_allowance: 12_570
+        marriage_allowance: 0
+      spouse:
+        age: 40
+        employment_income: 0
+        gift_aid: 0
+        personal_allowance: 12_570
+        marriage_allowance: 0
+    benunits:
+      benunit:
+        members: [earner, spouse]
+        is_married: true
+    households:
+      household:
+        members: [earner, spouse]
+        region: NORTH_WEST
+  output:
+    # The reform pools £100,000 and splits the pre-Gift-Aid income equally.
+    net_income: [50_000, 50_000]
+    adjusted_net_income: [50_000, 50_000]
+    earned_taxable_income: [37_430, 37_430]
+    income_tax: [7_486, 7_486]
+
+# Before 2018-19 the Scottish scale had three rates (basic, higher, additional),
+# so s.414(2)(b) raises its first limit, not the second.
+- name: Gift Aid raises the three-rate Scottish basic rate limit in 2017-18
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    people:
+      donor:
+        age: 40
+        employment_income: 60_000
+        gift_aid: 800
+      control:
+        age: 40
+        employment_income: 60_000
+    benunits:
+      donor_unit:
+        members: [donor]
+      control_unit:
+        members: [control]
+    households:
+      donor_household:
+        members: [donor]
+        region: SCOTLAND
+      control_household:
+        members: [control]
+        region: SCOTLAND
+  output:
+    # Taxable £48,500 with a £31,500 basic rate limit; the gift raises it to
+    # £32,500, moving £1,000 from 40% to 20%.
+    income_tax: [12_900, 13_100]
+
+- name: Gift Aid raises the three-rate Scottish higher rate limit in 2017-18
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    people:
+      donor:
+        age: 40
+        employment_income: 160_000
+        gift_aid: 800
+      control:
+        age: 40
+        employment_income: 160_000
+    benunits:
+      donor_unit:
+        members: [donor]
+      control_unit:
+        members: [control]
+    households:
+      donor_household:
+        members: [donor]
+        region: SCOTLAND
+      control_household:
+        members: [control]
+        region: SCOTLAND
+  output:
+    # No personal allowance either way. £1,000 moves from 40% to 20% (£200)
+    # and £1,000 from 45% to 40% (£50).
+    income_tax: [57_950, 58_200]
+
+- name: Gift Aid leaves capital gains tax as it was, with its band extension
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      donor:
+        age: 40
+        employment_income: 45_000
+        capital_gains: 20_000
+        gift_aid: 800
+      control:
+        age: 40
+        employment_income: 45_000
+        capital_gains: 20_000
+    benunits:
+      donor_unit:
+        members: [donor]
+      control_unit:
+        members: [control]
+    households:
+      donor_household:
+        members: [donor]
+        region: NORTH_WEST
+      control_household:
+        members: [control]
+        region: NORTH_WEST
+  output:
+    # Frozen from main a3752304e, which gave the same CGT: £17,000 taxable
+    # gains above the £3,000 exempt amount. With the gift, £6,270 of basic
+    # band remains (£5,270 without), at 18%, and the rest at 24%.
+    capital_gains_tax: [3_703.80, 3_763.80]
+    income_tax: [6_486, 6_486]
+
+# With #2352, savings and dividends sit above property income (ITA 2007 s. 16),
+# and the raised limits must apply on that order.
+- name: Gift Aid raises the basic rate limit for dividends above property income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      donor:
+        age: 40
+        property_income: 40_000
+        dividend_income: 20_000
+        gift_aid: 800
+      control:
+        age: 40
+        property_income: 40_000
+        dividend_income: 20_000
+    benunits:
+      donor_unit:
+        members: [donor]
+      control_unit:
+        members: [control]
+    households:
+      donor_household:
+        members: [donor]
+        region: NORTH_WEST
+      control_household:
+        members: [control]
+        region: NORTH_WEST
+  output:
+    # Non-savings taxable income £27,430. Without the gift, £500 allowance and
+    # £9,770 at 10.75% fill the band and £9,730 is at 35.75% (#2352's worked
+    # example). The gift moves £1,000 from 35.75% to 10.75%: £250.
+    dividend_income_tax: [4_278.75, 4_528.75]
+    property_income_tax: [5_486, 5_486]
+
+- name: Gift Aid raises the basic rate limit for savings above property income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      donor:
+        age: 40
+        property_income: 40_000
+        savings_interest_income: 20_000
+        gift_aid: 800
+      control:
+        age: 40
+        property_income: 40_000
+        savings_interest_income: 20_000
+    benunits:
+      donor_unit:
+        members: [donor]
+      control_unit:
+        members: [control]
+    households:
+      donor_household:
+        members: [donor]
+        region: NORTH_WEST
+      control_household:
+        members: [control]
+        region: NORTH_WEST
+  output:
+    # Both still have higher-rate income, so a £500 savings allowance. Without
+    # the gift, £9,770 at 20% and £9,730 at 40%; the gift moves £1,000 from
+    # 40% to 20%: £200.
+    savings_allowance: [500, 500]
+    savings_income_tax: [5_646, 5_846]
