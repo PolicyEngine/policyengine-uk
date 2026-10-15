@@ -36,14 +36,27 @@ share of a marginal pound of gains kept after tax.
 `gov.simulation.capital_gains_responses.elasticity` is 1.0, and gains
 qualifying for the relief take the same 1.0. This is PolicyEngine's central
 assumption: the value Advani, Lonsdale and Summers (2024, pp. 36–37) use for
-the medium term, with the range they consider, 0.5 to 2.0, as sensitivities.
+the medium-term (five-year) effect of their reform package, with the range
+they consider, 0.5 to 2.0, as sensitivities.
 
 The assumption has limits:
 
-- **It isn't an estimate for every reform.** Their 1.0 is for a package that
-  also reforms the base, removing the uplift at death, and includes an
-  adjustment for shifting income between tax bases. Adopting it does not
-  reproduce their revenue estimates.
+- **For rate changes alone it is low.** Their starting point is about 1.5,
+  Agersnap and Zidar's five-year estimate. They bring it down to 1.0 for
+  their package's base changes, removing the uplift at death and charging
+  gains on emigration, and because taxing gains and income alike moves
+  income back from gains into income tax, which they count as revenue kept.
+  They expect a reform without those base changes to have a higher
+  elasticity, and so lower revenue (p. 37). PolicyEngine adds no income tax
+  back, so for a reform to rates alone their reasoning points to a higher
+  value, such as their unadjusted 1.5. The default then overstates what a
+  rate rise raises. Adopting 1.0 does not reproduce their revenue estimates.
+- **It is a medium-term value.** The studies behind it find larger responses
+  soon after a reform: about 1.6 at three to five years (Agersnap and Zidar)
+  and 1.8 in the first year for large gainers in Canada (Lavecchia and
+  Tazhitdinova), much of it retiming (pp. 34–35). Forestalling before a
+  reform isn't modelled either. A score for the first year after a reform is
+  likely to understate the response.
 - **No income tax is added back.** Shifting between gains and income is
   separate work
   ([#1982](https://github.com/PolicyEngine/policyengine-uk/issues/1982),
@@ -81,6 +94,45 @@ reformed = Simulation(situation=situation, reform=rates)
 print(reformed.calculate("capital_gains", 2026))
 ```
 
+### Large rate rises
+
+With this response, the revenue from a single rate on gains peaks where the
+rate is $1 / (1 + e)$: 50% at the default, 40% at 1.5, 33% at 2.0 and about
+22% at the 3.6 of the OBR comparison below. So for a large rate rise the
+elasticity can decide whether revenue rises or falls. In the example above,
+the person's capital gains tax rises by £16,502 at the default and by £6,777
+at 1.5, and falls by £20,536 at 3.6. Official costings can have the other
+sign. As of 2024, HMRC's ready reckoner had a 10 percentage point rise in the
+top rates raising over £5bn before behaviour, and losing £2bn a year by the
+third year once behaviour is counted (Advani, Lonsdale and Summers 2024,
+p. 33).
+
+## What the response moves
+
+- **Household incomes.** Realised gains are part of household market income.
+  So the response moves household net income as well as the tax.
+  - For a capital gains tax rise, net income falls by the tax plus the gains
+    no longer realised. Those gains are deferred, not lost: the assets are
+    still held.
+  - In the example above, the person's net income falls by £71,765 with the
+    response and £41,370 without it. Revenue rises by £16,502, not £41,370.
+  - Per-household impacts, income deciles, and winners and losers all count
+    the gains not realised as income lost.
+
+  This was already true for anyone who set an elasticity; the default makes
+  it the published figure. For revenue, use `gov_balance` or the tax
+  variables, not the change in household net income. Whether distributional
+  measures should use gains before the response is an open methodology
+  question.
+- **Reforms to other taxes.** Income tax bands and allowances decide which
+  capital gains tax rate gains fall in. So a reform to them changes the rate
+  on some people's gains, and their realisations respond.
+  - With earnings of £30,000 and gains of £20,000, cutting the basic rate
+    band to £20,000, or the personal allowance to £5,000, lowers realised
+    gains by £1,463 (7.3%).
+  - Costings that include capital gains tax, such as `gov_balance`, move with
+    that response.
+
 ## When there is no response
 
 - **No baseline.** A simulation built directly in policyengine-core (as the
@@ -91,6 +143,11 @@ print(reformed.calculate("capital_gains", 2026))
   behavioural response settings all apply their baseline's rules. Their rates
   would be equal, so nothing is measured.
 - **No gains.** Where no one has gains or losses, nothing is measured.
+- **No change at the margin.** The response answers the rate on a person's
+  last pound of gains. A reform to one band's rate does nothing for someone
+  whose last pound falls in another band. Raising only the higher rate to 45%
+  raises the example person's tax from £47,280 to £65,642 with no response,
+  as their last pound of gains is taxed at the unchanged additional rate.
 
 The response answers changes in the rules. A simulation whose inputs change
 while its rules don't has no response. Marginal tax rates on earnings hold
@@ -130,6 +187,11 @@ obr = {
 }
 static_costing = Simulation(situation=situation, reform={**rates, **static})
 ```
+
+The response scales the gains already in the data, so it can't change their
+level. A comparison in pounds with the OBR's costing therefore mixes the gap
+between the elasticities with any gap in the level of gains and capital gains
+tax.
 
 ### The marginal tax rate convention
 
@@ -184,6 +246,9 @@ unless a caller set an elasticity.
 - **Revenue.** Realised gains are part of household income. With a response,
   the change in household net income no longer equals the change in revenue,
   so use `gov_balance` for reforms that move the tax on gains.
+- **Household and distributional results.** They now count gains no longer
+  realised as income lost, and reforms to income tax bands and allowances move
+  realised gains too (see [What the response moves](#what-the-response-moves)).
 
 ## Runtime
 
