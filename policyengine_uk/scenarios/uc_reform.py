@@ -9,10 +9,12 @@ import numpy as np
 # ss. 2 to 4) and the last the s. 4 duty covers (2029-30).
 FIRST_REBALANCING_YEAR = 2026
 SECTION_4_LAST_YEAR = 2029
-# The scenario sets the element to the end of the data's projection. Later
-# years fall to the uc_LCWRA_element formula, which pays every claimant the
-# new-claimant amount.
-LAST_SET_YEAR = PROJECTION_END_YEAR
+# The tax years in which the scenario sets the element: from the first year of
+# the rebalancing to the end of the data's projection. Other code reads this
+# (for example to warn that a reform to elements.disabled.amount does not reach
+# these years' awards). Later years fall to the uc_LCWRA_element formula, which
+# pays every claimant the new-claimant amount.
+REBALANCING_YEARS = range(FIRST_REBALANCING_YEAR, PROJECTION_END_YEAR + 1)
 
 
 # The standard allowance amounts the protected LCWRA amount is paired with in
@@ -162,7 +164,7 @@ def add_universal_credit_reform(sim: Microsimulation):
     new_claimant_share = rebalancing.new_claimant_share
     new_claimant_health_element = rebalancing.new_claimant_health_element
     built_from_data = getattr(sim, "built_from_dataset", False)
-    for year in range(FIRST_REBALANCING_YEAR, LAST_SET_YEAR + 1):
+    for year in REBALANCING_YEARS:
         if not rebalancing.active(year):
             continue
         is_post_2025_claimant = _new_claimant_health_element_status(

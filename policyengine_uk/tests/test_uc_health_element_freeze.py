@@ -172,10 +172,23 @@ def test_a_benefit_index_change_after_30_april_reaches_the_next_tax_year():
     assert_one_path(parameters, range(2026, HORIZON + 1))
 
 
+# The same claimant, stated to be a new claimant (#2250).
+NEW_CLAIMANT_SITUATION = {
+    **SITUATION,
+    "benunits": {
+        "benunit": {
+            "members": ["person"],
+            "uc_receives_new_claimant_health_element": {2030: True},
+        }
+    },
+}
+
+
 def test_household_element_after_the_freeze():
-    """From 2030-31 no scenario modifier sets the element, so a household
-    with LCWRA gets twelve times the uprated monthly amount."""
-    simulation = Simulation(situation=SITUATION)
+    """In 2030-31 a new claimant with LCWRA gets twelve times the uprated
+    monthly amount: the rebalancing scenario pays the new-claimant amount,
+    which follows the same index (#2282)."""
+    simulation = Simulation(situation=NEW_CLAIMANT_SITUATION)
     monthly = system.parameters.get_child(AMOUNT)(at(2030))
     # The formula returns float32.
     assert float(simulation.calculate("uc_LCWRA_element", 2030)[0]) == pytest.approx(
@@ -292,8 +305,14 @@ def test_a_changed_amount_is_held_through_the_freeze():
 
 
 def test_a_reform_dict_changes_the_year_it_names():
-    simulation = Simulation(situation=SITUATION, reform={AMOUNT: {"2030": 300}})
-    assert simulation.calculate("uc_LCWRA_element", 2030)[0] == pytest.approx(3_600)
+    """The scenario pays a new claimant ``new_claimant_health_element`` in the
+    years it sets, so a reform dict on that amount reaches the award."""
+    simulation = Simulation(
+        situation=NEW_CLAIMANT_SITUATION, reform={NEW_CLAIMANT_AMOUNT: {"2030": 300}}
+    )
+    assert float(simulation.calculate("uc_LCWRA_element", 2030)[0]) == pytest.approx(
+        3_600, rel=1e-6
+    )
 
 
 CPI_GROWTH = st.floats(min_value=-0.05, max_value=0.15, allow_nan=False)

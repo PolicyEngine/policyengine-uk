@@ -16,7 +16,8 @@ Invariants:
 1. No drop: from 2026-27 to the end of the data's projection, neither a
    protected nor a new claimant's element falls from one year to the next,
    for any CPI path; with non-negative CPI their Universal Credit does not
-   fall either (the standard allowance follows CPI down when it falls).
+   fall either (the standard allowance follows CPI down when it falls), and
+   the protected amount is never below the new-claimant amount.
 2. From 2030-31 the protected amount is the year before's times the growth
    of the element's uprating index, the index the new-claimant amount
    follows.
@@ -37,7 +38,7 @@ from hypothesis import strategies as st
 import policyengine_uk.scenarios.uc_reform as uc_reform
 from policyengine_uk import Scenario, Simulation
 
-YEARS = range(uc_reform.FIRST_REBALANCING_YEAR, uc_reform.LAST_SET_YEAR + 1)
+YEARS = uc_reform.REBALANCING_YEARS
 FIRST_UPRATED_YEAR = uc_reform.SECTION_4_LAST_YEAR + 1
 REBALANCING = "gov.dwp.universal_credit.rebalancing"
 PROTECTED = f"{REBALANCING}.protected_health_element"
@@ -191,9 +192,17 @@ def test_the_protected_amount_never_falls_for_any_cpi_path(growth):
 @CPI_SETTINGS
 @given(st.lists(st.floats(0, 0.15, allow_nan=False), min_size=9, max_size=9))
 def test_no_claimant_loses_from_one_year_to_the_next_with_non_negative_cpi(growth):
-    """Invariant 1 for the element and Universal Credit."""
+    """Invariant 1 for the element and Universal Credit, and the protected
+    amount against the new-claimant amount."""
+    elements = {}
     for new_claimant in (False, True):
-        assert_never_falls(cpi_path_simulation(new_claimant, growth))
+        sim = cpi_path_simulation(new_claimant, growth)
+        assert_never_falls(sim)
+        elements[new_claimant] = [
+            monthly(sim, "uc_LCWRA_element", year) for year in YEARS
+        ]
+    for year, protected, new in zip(YEARS, elements[False], elements[True]):
+        assert protected >= new - 1e-6, year
 
 
 class _FixedDraw:
