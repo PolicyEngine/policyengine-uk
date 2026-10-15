@@ -110,6 +110,7 @@ def test_dataset_source_reuses_cached_gcs_dataset_before_materializing(monkeypat
 
     def fake_build_from_multi_year_dataset(dataset):
         captured["dataset"] = dataset
+        simulation.dataset = dataset
 
     simulation_module._url_dataset_cache.pop(url, None)
     simulation_module._url_dataset_cache[url] = cached_dataset
@@ -161,6 +162,7 @@ def test_build_from_file_loads_local_multi_year_dataset(monkeypatch, tmp_path):
 
     def fake_build_from_multi_year_dataset(dataset):
         built["dataset"] = dataset
+        simulation.dataset = dataset
 
     simulation_module._url_dataset_cache.pop(cache_key, None)
     monkeypatch.setattr(simulation_module, "UKMultiYearDataset", FakeMultiYearDataset)
