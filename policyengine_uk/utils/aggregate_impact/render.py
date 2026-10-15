@@ -129,6 +129,8 @@ def _details(summary_text, body) -> str:
 def _deciles(summary, years) -> str:
     deciles = summary.get("deciles") or {}
     if not deciles:
+        if summary.get("axis") == "data" and summary.get("decile_notes"):
+            return summary["decile_notes"][0]
         return "Not available: both sides need household detail."
     present = [y for y in years if str(y) in deciles]
     if all(row["mean_change"] == 0 for y in present for row in deciles[str(y)]):
@@ -327,18 +329,39 @@ def render(summary: Mapping, spec: Spec, context: Optional[Mapping] = None) -> s
     head_prov = (summary.get("head") or {}).get("provenance") or {}
     base_prov = (summary.get("base") or {}).get("provenance") or {}
     dataset = head_prov.get("dataset") or {}
-    parts = [
-        COMMENT_MARKER,
-        f"## Aggregate impact on certified data: {verdict}",
-        "",
-        (
+    span = (
+        f"fiscal years {fiscal_year_label(years[0])} to {fiscal_year_label(years[-1])}. "
+        "Each year is a full microsimulation run on each side."
+    )
+    if summary.get("axis") == "data":
+        runtime = (summary.get("head") or {}).get("runtime") or {}
+
+        def described(prov):
+            d = prov.get("dataset") or {}
+            return (
+                f"`{d.get('path', '?')}` ({d.get('data_package', '')} "
+                f"{d.get('data_version', '')}, sha256 `{str(d.get('verified_sha256', '?'))[:12]}`)"
+            )
+
+        title = f"## Aggregate impact of the data change: {verdict}"
+        intro = (
+            f"Base dataset {described(base_prov)} against head dataset "
+            f"{described(head_prov)}, both measured with policyengine-uk "
+            f"{runtime.get('policyengine_uk', '?')}, " + span
+        )
+    else:
+        title = f"## Aggregate impact on certified data: {verdict}"
+        intro = (
             f"Base `{str(base_prov.get('git_sha', '?'))[:10]}` against head "
             f"`{str(head_prov.get('git_sha', '?'))[:10]}`, both on `{dataset.get('path', '?')}` "
             f"({dataset.get('data_package', '')} {dataset.get('data_version', '')}, sha256 "
-            f"`{str(dataset.get('verified_sha256', '?'))[:12]}`), fiscal years "
-            f"{fiscal_year_label(years[0])} to {fiscal_year_label(years[-1])}. Each year is a full "
-            "microsimulation run on each side."
-        ),
+            f"`{str(dataset.get('verified_sha256', '?'))[:12]}`), " + span
+        )
+    parts = [
+        COMMENT_MARKER,
+        title,
+        "",
+        intro,
         "",
         (
             f"**Checks:** {len(regressions)} broken by this change, {len(pre_existing)} failing on "

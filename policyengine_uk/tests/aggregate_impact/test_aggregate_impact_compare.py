@@ -455,3 +455,134 @@ def test_the_guard_section_lists_failures_and_mediated_responses():
         "`universal_credit` responds only through `carers_allowance` in 72 households"
         in text
     )
+
+
+# The data axis: one model, two datasets (uk-data pull requests).
+
+
+def _on(data_sha, **provenance):
+    measured = result({("receipts", "a"): [1.0] * len(YEARS)}, sha=data_sha)
+    measured["provenance"].update(provenance)
+    return measured
+
+
+def test_the_data_axis_allows_two_datasets_but_the_model_axis_does_not():
+    base, head = _on("1" * 64), _on("2" * 64)
+    assert compare(base, head, SPEC)["status"] == "fail"
+    summary = compare(base, head, SPEC, axis="data")
+    assert summary["status"] == "pass", summary["failures"]
+    assert summary["axis"] == "data"
+
+
+@pytest.mark.parametrize(
+    "change, message",
+    [
+        (lambda r: r["provenance"].update(git_sha="def"), "commits"),
+        (lambda r: r["runtime"].update(policyengine_uk="9.9.9"), "ran policyengine-uk"),
+        (lambda r: r["runtime"].update(distributions=["numpy==9.0"]), "one runtime"),
+        (lambda r: r["partition"].update(sha256="other"), "fiscal partition"),
+        (
+            lambda r: r["provenance"].update(metrics_version="other"),
+            "metric definitions",
+        ),
+        (
+            lambda r: r["provenance"]["dataset"].pop("verified_sha256"),
+            "record the bytes",
+        ),
+    ],
+)
+def test_a_data_comparison_fails_unless_only_the_data_differs(change, message):
+    base, head = _on("1" * 64), _on("2" * 64)
+    change(head)
+    summary = compare(base, head, SPEC, axis="data")
+    assert summary["status"] == "fail"
+    assert any(message in f for f in summary["failures"]), summary["failures"]
+
+
+def test_the_data_axis_does_not_match_households_across_datasets():
+    base, head = _on("1" * 64), _on("2" * 64)
+    households = {"2025": {"household_id": np.arange(3)}}
+    summary = compare(
+        base,
+        head,
+        SPEC,
+        base_households=households,
+        head_households=households,
+        axis="data",
+    )
+    assert summary["deciles"] == {}
+    assert "not matched" in summary["decile_notes"][0]
+    text = render(summary, SPEC)
+    assert "## Aggregate impact of the data change: pass" in text
+    assert "Base dataset" in text and "not matched" in text
+
+
+@settings(max_examples=50, deadline=None)
+@given(values=metric_values)
+def test_a_data_comparison_with_itself_moves_nothing(values):
+    side = result(values)
+    summary = compare(side, side, SPEC, axis="data")
+    assert summary["status"] == "pass"
+    assert not any(row["changed"] for row in summary["rows"])
+    assert summary["flags"] == []
+    assert "Both sides measured the same dataset bytes." in summary["warnings"]
+
+
+def test_an_unknown_axis_is_refused():
+    with pytest.raises(ValueError, match="axis"):
+        compare(_on("1" * 64), _on("1" * 64), SPEC, axis="sideways")
+
+
+def test_measure_records_an_unpinned_dataset_by_its_bytes(tmp_path, monkeypatch):
+    """With --dataset-file and no --pin, the measured bytes are the identity."""
+    import json
+
+    import policyengine_uk
+    from policyengine_uk.utils.aggregate_impact import __main__ as cli
+    from policyengine_uk.utils.aggregate_impact import measure as measure_module
+    from policyengine_uk.utils.aggregate_impact.dataset import sha256_file
+
+    built = tmp_path / "enhanced_frs_2024_25.h5"
+    built.write_bytes(b"not really an h5 file")
+
+    class StubSimulation:
+        def __init__(self, dataset=None, reform=None):
+            self.dataset = dataset
+
+    def stub_measure(
+        sim, factory, partition, spec, label, reforms, run_guard, provenance
+    ):
+        return {
+            "schema": "x",
+            "status": "ok",
+            "provenance": provenance,
+            "metrics": [],
+            "timings": {"total": 0},
+        }, None
+
+    monkeypatch.setattr(policyengine_uk, "Microsimulation", StubSimulation)
+    monkeypatch.setattr(measure_module, "measure", stub_measure)
+    out = tmp_path / "out"
+    code = cli.main(
+        [
+            "measure",
+            "--label",
+            "head",
+            "--dataset-file",
+            str(built),
+            "--dataset-label",
+            "uk-data #595 head build",
+            "--no-reforms",
+            "--no-guard",
+            "--out",
+            str(out),
+        ]
+    )
+    assert code == 0
+    dataset = json.loads((out / "result.json").read_text())["provenance"]["dataset"]
+    assert dataset == {
+        "path": "enhanced_frs_2024_25.h5",
+        "data_package": "unpinned build",
+        "data_version": "uk-data #595 head build",
+        "verified_sha256": sha256_file(built),
+    }

@@ -268,12 +268,23 @@ def compare(
     head_households: Optional[Mapping] = None,
     strict: bool = False,
     require_base: bool = True,
+    axis: str = "model",
 ) -> dict:
     """Compare two measurements.
 
     With ``require_base`` (the default) a missing or crashed base fails the
     comparison: without it there is nothing to show the change against.
+
+    ``axis`` says what may differ between the sides. On the ``model`` axis
+    (a change to this model) both must run on the same verified dataset. On
+    the ``data`` axis (a change to the data) both must run the same model:
+    the same policyengine-uk commit and version, the same runtime, partition
+    and metric definitions, so every move is the data's. Households are not
+    matched across datasets on the data axis; each side's own deciles are
+    compared instead.
     """
+    if axis not in ("model", "data"):
+        raise ValueError(f"axis must be model or data, not {axis!r}")
     failures, warnings = [], []
     if head and head.get("status") == "skipped":
         return {
@@ -320,22 +331,31 @@ def compare(
             )
         b_sha = (base.get("provenance") or {}).get("dataset", {}).get("verified_sha256")
         h_sha = (head.get("provenance") or {}).get("dataset", {}).get("verified_sha256")
-        if not b_sha or not h_sha or b_sha != h_sha:
-            failures.append(
-                f"Base and head did not run on the same verified dataset ({b_sha} vs {h_sha})."
-            )
-        if (base.get("partition") or {}).get("sha256") != (
-            head.get("partition") or {}
-        ).get("sha256"):
-            warnings.append(
-                "This change edits the fiscal partition; review the partition diff alongside the moves it explains."
-            )
         runtime_differences = _runtime_differences(base, head)
-        if runtime_differences:
-            warnings.append(
-                "Base and head ran on different runtimes, so some changes may come from dependencies: "
-                + "; ".join(runtime_differences[:10])
-            )
+        if axis == "model":
+            if not b_sha or not h_sha or b_sha != h_sha:
+                failures.append(
+                    f"Base and head did not run on the same verified dataset ({b_sha} vs {h_sha})."
+                )
+            if (base.get("partition") or {}).get("sha256") != (
+                head.get("partition") or {}
+            ).get("sha256"):
+                warnings.append(
+                    "This change edits the fiscal partition; review the partition diff alongside the moves it explains."
+                )
+            if runtime_differences:
+                warnings.append(
+                    "Base and head ran on different runtimes, so some changes may come from dependencies: "
+                    + "; ".join(runtime_differences[:10])
+                )
+        else:
+            failures += _same_model_problems(base, head, runtime_differences)
+            if not b_sha or not h_sha:
+                failures.append(
+                    "Each side must record the bytes of the dataset it measured."
+                )
+            elif b_sha == h_sha:
+                warnings.append("Both sides measured the same dataset bytes.")
     else:
         runtime_differences = []
 
@@ -428,7 +448,12 @@ def compare(
         )
 
     deciles, decile_notes, decile_flags = {}, [], []
-    if head_ok and base_ok and base_households and head_households:
+    if axis == "data":
+        decile_notes.append(
+            "The datasets hold different households, so households are not "
+            "matched; compare the mean income in each side's own deciles."
+        )
+    elif head_ok and base_ok and base_households and head_households:
         deciles, decile_notes = decile_impacts(base_households, head_households, years)
         threshold = spec.threshold("decile_relative")
         for year, decile_rows in deciles.items():
@@ -443,6 +468,7 @@ def compare(
 
     return {
         "schema": TOOL_SCHEMA + "/comparison",
+        "axis": axis,
         "status": "fail" if failures else "pass",
         "failures": failures,
         "warnings": warnings,
@@ -457,6 +483,38 @@ def compare(
         "base": _side_summary(base),
         "head": _side_summary(head),
     }
+
+
+def _same_model_problems(base: Mapping, head: Mapping, runtime_differences) -> list:
+    """What stops a data comparison from attributing every move to the data."""
+    problems = []
+    b_prov, h_prov = base.get("provenance") or {}, head.get("provenance") or {}
+    b_run, h_run = base.get("runtime") or {}, head.get("runtime") or {}
+    if b_run.get("policyengine_uk") != h_run.get("policyengine_uk"):
+        problems.append(
+            "A data comparison needs one model, but base and head ran policyengine-uk "
+            f"{b_run.get('policyengine_uk')} and {h_run.get('policyengine_uk')}."
+        )
+    if b_prov.get("git_sha") != h_prov.get("git_sha"):
+        problems.append(
+            "A data comparison needs one model, but base and head ran policyengine-uk "
+            f"commits {b_prov.get('git_sha') or 'unknown'} and {h_prov.get('git_sha') or 'unknown'}."
+        )
+    if runtime_differences:
+        problems.append(
+            "A data comparison needs one runtime, but base and head differ in: "
+            + "; ".join(runtime_differences[:10])
+        )
+    if (base.get("partition") or {}).get("sha256") != (head.get("partition") or {}).get(
+        "sha256"
+    ):
+        problems.append("A data comparison needs one fiscal partition on both sides.")
+    if b_prov.get("metrics_version") != h_prov.get("metrics_version"):
+        problems.append(
+            "A data comparison needs one set of metric definitions, but base and head "
+            f"measured {b_prov.get('metrics_version')} and {h_prov.get('metrics_version')}."
+        )
+    return problems
 
 
 def _last_line(text) -> str:
