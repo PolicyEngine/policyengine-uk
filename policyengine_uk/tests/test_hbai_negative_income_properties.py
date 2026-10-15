@@ -7,7 +7,8 @@ Background Information and Methodology report FYE 2025, "Negative incomes".)
 
 Properties, for any population of households (b is
 hbai_household_net_income_before_reset_to_zero, HC the HBAI housing costs:
-rent, water and sewerage charges, mortgage interest and structural insurance):
+rent, water and sewerage charges, mortgage interest, structural insurance,
+and ground rent and service charges):
 
 1. Reset: hbai_household_net_income = max(0, b), so it and its equivalised
    and real versions are never negative.
@@ -56,6 +57,7 @@ HOUSING_COSTS = [
     "water_and_sewerage_charges",
     "mortgage_interest_repayment",
     "structural_insurance_payments",
+    "housing_service_charges",
 ]
 YEARS = [2024, 2025, 2026]
 PROPERTY_SETTINGS = settings(
@@ -89,6 +91,7 @@ def households(draw):
         "would_claim_uc": draw(st.booleans()),
         "household": {
             "council_tax": draw(money(0, 1_200, 2_500)),
+            "housing_service_charges": draw(money(300, 600, 1_200)),
             "tenure_type": "RENT_PRIVATELY" if renter else "OWNED_WITH_MORTGAGE",
             "rent": draw(money(4_000, 9_000, 15_000)) if renter else 0,
             "mortgage_interest_repayment": 0 if renter else draw(money(0, 3_000)),
@@ -115,7 +118,7 @@ def adult(age, earnings, maintenance=0, pension=0):
     }
 
 
-def home(council_tax, rent=0, mortgage=0, water=0, insurance=0):
+def home(council_tax, rent=0, mortgage=0, water=0, insurance=0, charges=600):
     return {
         "council_tax": council_tax,
         "tenure_type": "RENT_PRIVATELY" if rent else "OWNED_WITH_MORTGAGE",
@@ -123,6 +126,7 @@ def home(council_tax, rent=0, mortgage=0, water=0, insurance=0):
         "mortgage_interest_repayment": mortgage,
         "water_and_sewerage_charges": water,
         "structural_insurance_payments": insurance,
+        "housing_service_charges": charges,
     }
 
 

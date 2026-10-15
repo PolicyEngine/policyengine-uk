@@ -29,22 +29,23 @@
         members: [adult]
         council_tax: 1_500
         rent: 6_000
+        housing_service_charges: 300
         tenure_type: RENT_PRIVATELY
   output:
     hbai_household_net_income_before_reset_to_zero: -6_500
     hbai_household_net_income: 0
     real_hbai_household_net_income: 0
     equiv_hbai_household_net_income: 0
-    # Income after housing costs is the reset figure less rent: 0 - 6,000.
-    hbai_household_net_income_ahc: -6_000
+    # Income after housing costs is reset BHC less rent and service charges.
+    hbai_household_net_income_ahc: -6_300
     # Divided by the 0.58 AHC equivalence factor for a single adult.
-    equiv_hbai_household_net_income_ahc: -10_344.83
+    equiv_hbai_household_net_income_ahc: -10_862.07
     # The before-housing-costs gap is the whole line, never more.
     poverty_gap_bhc: 15_040.08
     poverty_gap: 15_040.08
     deep_poverty_gap: 7_520.04
     # The after-housing-costs gap is the line plus the negative income.
-    poverty_gap_ahc: 17_276.52
+    poverty_gap_ahc: 17_576.52
     in_poverty_bhc: true
     in_poverty_ahc: true
     in_deep_poverty_bhc: true
@@ -72,10 +73,11 @@
         mortgage_interest_repayment: 2_000
         water_and_sewerage_charges: 400
         structural_insurance_payments: 100
+        housing_service_charges: 600
   output:
     hbai_household_net_income_before_reset_to_zero: -4_000
     hbai_household_net_income: 0
-    hbai_household_net_income_ahc: -2_500
+    hbai_household_net_income_ahc: -3_100
 
 - name: A negative figure given directly is reset; housing costs still come off
   period: 2024
@@ -92,12 +94,13 @@
         members: [adult]
         hbai_household_net_income_before_reset_to_zero: -25_000
         rent: 4_800
+        housing_service_charges: 200
         tenure_type: RENT_PRIVATELY
   output:
     hbai_household_net_income: 0
-    hbai_household_net_income_ahc: -4_800
+    hbai_household_net_income_ahc: -5_000
     poverty_gap_bhc: 15_040.08
-    poverty_gap_ahc: 16_076.52
+    poverty_gap_ahc: 16_276.52
 
 - name: A figure of exactly zero stays zero
   period: 2024
@@ -132,10 +135,11 @@
         members: [adult]
         hbai_household_net_income_before_reset_to_zero: 12_345
         rent: 5_000
+        housing_service_charges: 450
         tenure_type: RENT_PRIVATELY
   output:
     hbai_household_net_income: 12_345
-    hbai_household_net_income_ahc: 7_345
+    hbai_household_net_income_ahc: 6_895
     # 12,345 is below the 15,040.08 line: a gap of 2,695.08.
     poverty_gap_bhc: 2_695.08
 
