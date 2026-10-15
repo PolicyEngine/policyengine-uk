@@ -349,27 +349,3 @@ def realisation_factors(person, period, parameters):
     main = np.exp(person("capital_gains_elasticity", period) * change)
     badr = np.exp(person("capital_gains_badr_elasticity", period) * change)
     return main, badr
-
-
-def held_realisation_responses(person, period) -> dict:
-    """The realisation responses a simulation calculated, to hold fixed in a
-    branch that steps one of its inputs to measure a marginal rate.
-
-    A response measured again in such a branch would compare a rate at the
-    stepped input with the baseline's at the original one, and count the
-    step as a reform. Responses neutralised in the simulation (as in a
-    measurement branch) are not held.
-    """
-    variables = person.simulation.tax_benefit_system.variables
-    return {
-        response: person(response, period)
-        for response in RESPONSE_VARIABLES
-        if not variables[response].is_neutralized
-    }
-
-
-def hold_realisation_responses(branch: Simulation, period, held: dict) -> None:
-    """Set the responses :func:`held_realisation_responses` returned on a
-    branch, so the branch reads them instead of measuring them again."""
-    for response, values in held.items():
-        branch.set_input(response, period, values)

@@ -1,8 +1,8 @@
 from policyengine_uk.model_api import *
 from policyengine_core.simulations import *
-from policyengine_uk.utils.capital_gains import (
-    held_realisation_responses,
-    hold_realisation_responses,
+from policyengine_uk.utils.measurement_branches import (
+    held_behavioural_responses,
+    hold_behavioural_responses,
 )
 from policyengine_uk.utils.marginal_rates import marginal_rate_step
 
@@ -36,9 +36,10 @@ class marginal_tax_rate_on_capital_gains(Variable):
         gains = person("capital_gains", period)
         step = marginal_rate_step(gains, minimum=1_000)
         adult_index_values = person("adult_index_cg", period)
-        # Hold the realisation response at this simulation's values, so the
-        # branch reads its schedule split instead of measuring it again.
-        held_responses = held_realisation_responses(person, period)
+        # Hold every behavioural response at this simulation's values, so each
+        # branch reads its schedule split, and its earnings, instead of
+        # measuring the responses again at the stepped gains.
+        held_responses = held_behavioural_responses(person, period)
         # The branch recalculates only what capital gains tax depends on, a
         # fraction of what household net income does.
         tax = person("capital_gains_tax", period)
@@ -52,7 +53,7 @@ class marginal_tax_rate_on_capital_gains(Variable):
                     and not variable_data.is_input_variable()
                 ):
                     alt_simulation.delete_arrays(variable)
-            hold_realisation_responses(alt_simulation, period, held_responses)
+            hold_behavioural_responses(alt_simulation, period, held_responses)
             alt_simulation.set_input("capital_gains", period, gains + mask * step)
             alt_person = alt_simulation.person
             # Float32 rounds the higher gains, so the rise actually stored can

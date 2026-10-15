@@ -48,6 +48,33 @@ def drop_calculated_values(simulation) -> None:
         simulation.delete_arrays(name)
 
 
+def held_behavioural_responses(person, period) -> dict:
+    """The behavioural responses a simulation calculated, to hold fixed in a
+    branch that steps one of its inputs to measure a marginal rate.
+
+    The branch shares the simulation's tax-benefit system. A response
+    recalculated there would be measured again: at the stepped input, against
+    a baseline without the step, and with the step undone inside the
+    measurement, whose own marginal rate branches recalculate every variable
+    with a formula. A marginal rate is the change at fixed behaviour, so the
+    branch reads the simulation's responses instead. Responses neutralised in
+    the simulation (as in a measurement branch) are not held.
+    """
+    variables = person.simulation.tax_benefit_system.variables
+    return {
+        response: person(response, period)
+        for response in BEHAVIOURAL_RESPONSES
+        if not variables[response].is_neutralized
+    }
+
+
+def hold_behavioural_responses(branch, period, held: dict) -> None:
+    """Set the responses :func:`held_behavioural_responses` returned on a
+    branch, so the branch reads them instead of measuring them again."""
+    for response, values in held.items():
+        branch.set_input(response, period, values)
+
+
 def measurement_branch(
     simulation,
     name: str,
