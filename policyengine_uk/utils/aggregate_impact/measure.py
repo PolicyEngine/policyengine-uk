@@ -16,7 +16,7 @@ from typing import Callable, Mapping, Optional, Sequence
 
 import numpy as np
 
-from .privacy import MIN_CELL, small
+from .privacy import HIDDEN_KEY, MIN_CELL, small
 from . import TOOL_SCHEMA
 from .guard import counted_once, snapshot_inputs
 from .partition import Partition, closure_problems, group_label, read_model_lists
@@ -42,7 +42,11 @@ class Recorder:
         # The year being measured; a check records which scopes it failed
         # in, so a comparison can tell a newly failing year from an old one.
         self.scope: str = ""
+        # Raw values of suppressed or rounded figures, and the suppressed heads
+        # each protected total contains: kept off the record, written only to
+        # private/ for the comparison (``write_result``).
         self.hidden: dict = {}
+        self.contains: dict = {}
 
     def metric(
         self,
@@ -276,6 +280,15 @@ def runtime_identity() -> dict:
 EXCLUSIVITY_ZERO_GBP = 0.05
 
 
+def _weighted_records(mask, weight) -> int:
+    """Units in ``mask`` that carry weight: a zero-weight record adds nothing.
+
+    Sol re-review 3 of #2335: three weighted recipients and seven zero-weight
+    records with values are three records, not ten.
+    """
+    return int(np.count_nonzero(np.asarray(mask) & (np.asarray(weight) > 0)))
+
+
 def cell_detail(count: int, what: str, weighted: str) -> str:
     """``"N <what>, <weighted>"``, or ``"fewer than 10 <what>"`` for a small cell."""
     if count < MIN_CELL:
@@ -348,7 +361,7 @@ def measure_year(
             year,
             float(np.sum(hw * hh)),
             group=group_label(head.report_group),
-            records=int(np.count_nonzero(values)),
+            records=_weighted_records(values != 0, weights[entity]),
         )
         if head.kind == "spending" and head.caseload:
             rec.metric(
@@ -360,7 +373,7 @@ def measure_year(
                 float(np.sum(weights[entity] * (values > 0))),
                 group=group_label(head.report_group),
                 unit=entity,
-                records=int(np.count_nonzero(values > 0)),
+                records=_weighted_records(values > 0, weights[entity]),
             )
         if head.sign == "nonnegative":
             negative = values < -0.005
@@ -370,7 +383,7 @@ def measure_year(
                 not bool(negative.any()),
                 f"{fiscal_year_label(year)}: "
                 + cell_detail(
-                    int(negative.sum()),
+                    _weighted_records(negative, weights[entity]),
                     "units below zero",
                     f"a weighted £{float(np.sum(hw * np.where(hh < 0, hh, 0.0))):,.0f} in total",
                 ),
@@ -668,6 +681,10 @@ def measure_year(
             group="Own-decile levels",
         )
     protect_totals(rec, partition, active, year)
+    hidden = households.setdefault(HIDDEN_KEY, {"values": {}, "contains": {}})
+    detail = hidden_detail(rec, year)
+    hidden["values"].update(detail["values"])
+    hidden["contains"].update(detail["contains"])
     households[str(year)] = {
         "household_id": array(sim, "household_id", year).astype(np.int64),
         "household_weight": hw.astype(np.float64),
@@ -681,6 +698,10 @@ def measure_year(
 # cannot be recovered by subtracting the published heads from it; a head
 # worth half this or more makes the total suppressed instead.
 TOTAL_ROUNDING_GBP = 1e9
+# In a year with a suppressed head, each decile's mean household income is
+# rounded to this: an error of up to £500 a household, about £1.4bn over a
+# decile of 2.8m households, more than the £0.5bn a rounded total can hide.
+DECILE_MEAN_ROUNDING_GBP = 1e3
 
 
 def total_components(partition: Partition, active) -> dict:
@@ -726,37 +747,90 @@ def protect_totals(rec: "Recorder", partition: Partition, active, year: int) -> 
         contained = [hidden[h] for h in heads if h in hidden]
         if record is None or not contained or record["values"].get(key) is None:
             continue
+        value = record["values"][key]
+        rec.hidden[(metric_id, key)] = float(value)
+        rec.contains[(metric_id, key)] = sorted(
+            f"{section}.{h}"
+            for h in heads
+            if h in hidden
+            for section in ("receipts", "spending")
+            if (f"{section}.{h}", key) in rec.hidden
+        )
         if max(contained) >= TOTAL_ROUNDING_GBP / 2:
             record["values"][key] = None
             record.setdefault("suppressed", []).append(key)
         else:
-            value = record["values"][key]
             record["values"][key] = float(
                 round(value / TOTAL_ROUNDING_GBP) * TOTAL_ROUNDING_GBP
             )
             record.setdefault("rounded", []).append(key)
+    # Each decile's mean income, times its share of households, would rebuild
+    # the household income total that was just rounded.
+    for d in range(1, 11):
+        record = rec.metrics.get(f"deciles.mean_income.{d}")
+        if record is None or record["values"].get(key) is None:
+            continue
+        value = record["values"][key]
+        rec.hidden[(record["id"], key)] = float(value)
+        # Household income contains every head.
+        rec.contains[(record["id"], key)] = sorted(
+            m
+            for (m, y) in rec.hidden
+            if y == key and m.split(".", 1)[0] in ("receipts", "spending")
+        )
+        record["values"][key] = float(
+            round(value / DECILE_MEAN_ROUNDING_GBP) * DECILE_MEAN_ROUNDING_GBP
+        )
+        record.setdefault("rounded", []).append(key)
+
+
+def hidden_detail(rec: "Recorder", year: int) -> dict:
+    """One year's raw protected values and containment, for ``private/`` only.
+
+    Keys are ``"<metric id>|<year>"``. ``values`` holds the raw value of every
+    suppressed or rounded figure; ``contains`` lists, for each protected
+    total, the suppressed heads inside it. ``compare.private_delta`` reads
+    them to publish a protected total's exact change when it is safe.
+    """
+    key = str(year)
+    return {
+        "values": {f"{m}|{y}": v for (m, y), v in rec.hidden.items() if y == key},
+        "contains": {
+            f"{m}|{y}": list(heads)
+            for (m, y), heads in rec.contains.items()
+            if y == key
+        },
+    }
 
 
 def publishable_guard(guard: dict) -> dict:
     """The counted-once result with small cells removed (privacy.py).
 
-    A component perturbed in fewer than ``MIN_CELL`` units, or a problem or
-    mediated response in fewer than ``MIN_CELL`` households, keeps no count
-    and no weighted share; its message already says "fewer than 10".
+    A component perturbed in fewer than ``MIN_CELL`` units keeps no count, no
+    responses or coefficients, and no weighted shares in its problems. A
+    problem or mediated response in fewer than ``MIN_CELL`` households keeps
+    no count and no share. Messages already say "fewer than 10".
     """
     out = dict(guard)
     components = []
     for row in guard.get("components") or []:
         row = dict(row)
-        if small(row.get("units") or 0):
+        few_units = small(row.get("units") or 0)
+        if few_units:
+            # How the heads responded to so few units says what those
+            # recipients receive (Sol re-review 3 of #2335).
             row["units"] = None
+            for key in ("responses", "coefficients", "model_coefficients"):
+                if key in row:
+                    row[key] = {}
         for key in ("problems", "mediated"):
             cleaned = []
             for item in row.get(key) or []:
                 item = dict(item)
+                if few_units or small(item.get("households") or 0):
+                    item.pop("share", None)
                 if small(item.get("households") or 0):
                     item["households"] = None
-                    item.pop("share", None)
                 cleaned.append(item)
             row[key] = cleaned
         components.append(row)
@@ -824,7 +898,10 @@ def measure_reforms(
                 "determinism:rebuilt_baseline",
                 "A rebuilt unreformed simulation reproduces the baseline gov_balance exactly",
                 again == baseline_balance[year],
-                f"{fiscal_year_label(year)}: £{again:,.0f} against £{baseline_balance[year]:,.0f}",
+                # No amounts: an exact gov_balance, less the published heads,
+                # would give a suppressed head back (Sol re-review 3 of #2335).
+                f"{fiscal_year_label(year)}: the rebuilt baseline's gov_balance "
+                "differs from the first run's",
                 section="determinism",
                 scope=str(year),
             )
@@ -1095,6 +1172,7 @@ def measure(
 
 PRIVATE_DIRECTORY = "private"
 HOUSEHOLDS_FILE = "households.npz"
+HIDDEN_FILE = "hidden.json"
 
 
 def write_result(out_dir, result: Mapping, households: Optional[Mapping] = None):
@@ -1112,11 +1190,15 @@ def write_result(out_dir, result: Mapping, households: Optional[Mapping] = None)
         arrays = {
             f"{year}__{name}": values
             for year, columns in households.items()
+            if year != HIDDEN_KEY
             for name, values in columns.items()
         }
         private = out_dir / PRIVATE_DIRECTORY
         private.mkdir(exist_ok=True)
         np.savez_compressed(private / HOUSEHOLDS_FILE, **arrays)
+        if HIDDEN_KEY in households:
+            with open(private / HIDDEN_FILE, "w") as f:
+                json.dump(households[HIDDEN_KEY], f)
 
 
 def read_result(out_dir) -> tuple:
@@ -1135,4 +1217,8 @@ def read_result(out_dir) -> tuple:
             for key in data.files:
                 year, _, name = key.partition("__")
                 households.setdefault(year, {})[name] = data[key]
+        hidden = out_dir / PRIVATE_DIRECTORY / HIDDEN_FILE
+        if hidden.exists():
+            with open(hidden) as f:
+                households[HIDDEN_KEY] = json.load(f)
     return result, households

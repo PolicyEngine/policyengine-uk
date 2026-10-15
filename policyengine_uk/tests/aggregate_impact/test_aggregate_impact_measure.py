@@ -306,3 +306,59 @@ def test_a_large_suppressed_head_suppresses_its_totals():
     protect_totals(rec, _protection_partition(), set(), 2026)
     assert rec.metrics["model.gov_spending"]["values"]["2026"] is None
     assert rec.metrics["model.gov_spending"]["suppressed"] == ["2026"]
+
+
+# Sol re-review 3 of #2335.
+
+
+def test_a_zero_weight_record_does_not_count_towards_a_published_figure():
+    from policyengine_uk.utils.aggregate_impact.measure import _weighted_records
+
+    values = np.array([5.0, 5.0, 5.0] + [5.0] * 7 + [0.0] * 5)
+    weight = np.array([100.0] * 3 + [0.0] * 7 + [100.0] * 5)
+    # Ten records have values, but only three carry weight: a small cell.
+    assert _weighted_records(values != 0, weight) == 3
+
+
+def test_decile_mean_incomes_are_rounded_in_a_year_with_a_suppressed_head():
+    from policyengine_uk.utils.aggregate_impact.measure import (
+        hidden_detail,
+        protect_totals,
+    )
+
+    rec = _recorded(common=7.3e10, rare=246.9)
+    for d in range(1, 11):
+        rec.metric(
+            f"deciles.mean_income.{d}", "d", "deciles", "gbp_household", 2026, 23_456.7
+        )
+    protect_totals(rec, _protection_partition(), set(), 2026)
+    record = rec.metrics["deciles.mean_income.3"]
+    assert record["values"]["2026"] == 23_000 and record["rounded"] == ["2026"]
+    detail = hidden_detail(rec, 2026)
+    assert detail["values"]["deciles.mean_income.3|2026"] == 23_456.7
+    assert detail["contains"]["deciles.mean_income.3|2026"] == ["spending.rare"]
+    assert detail["contains"]["model.gov_spending|2026"] == ["spending.rare"]
+    assert detail["values"]["model.gov_spending|2026"] == 7.3e10 + 246.9
+
+
+def test_decile_mean_incomes_stay_exact_without_a_suppressed_head():
+    from policyengine_uk.utils.aggregate_impact.measure import protect_totals
+
+    rec = _recorded(common=7.3e10, rare=246.9)
+    rec.metrics["spending.rare"]["values"]["2026"] = 246.9
+    rec.metrics["spending.rare"].pop("suppressed")
+    rec.hidden.clear()
+    rec.metric("deciles.mean_income.3", "d", "deciles", "gbp_household", 2026, 23_456.7)
+    protect_totals(rec, _protection_partition(), set(), 2026)
+    assert rec.metrics["deciles.mean_income.3"]["values"]["2026"] == 23_456.7
+
+
+def test_a_failing_determinism_check_publishes_no_amount():
+    """Sol re-review 3 of #2335, finding 3: an exact gov_balance, less the
+    published heads, would give a suppressed head back."""
+    rec = Recorder()
+    baseline = {2025: 10.0, 2026: 123_456_789.0}
+    drifting = YearSim({2025: 10.0, 2026: 123_456_790.0})
+    measure_reforms(lambda reform=None: drifting, None, baseline, {}, [], YEARS, rec)
+    detail = rec.checks["determinism:rebuilt_baseline"]["failing"]["2026"]
+    assert "£" not in detail and "123" not in detail and "differs" in detail

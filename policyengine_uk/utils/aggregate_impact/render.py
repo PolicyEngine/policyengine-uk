@@ -93,29 +93,38 @@ def _changes_table(rows, years) -> str:
     body = []
     for row in changed:
         if row["only_in"] == "head":
-            cells = [
-                fmt_level(row["values"][str(y)]["head"], row["kind"]) for y in years
-            ]
+            cells = [_level_cell(row, y, "head") for y in years]
             body.append([f"{row['label']} (new: head levels)"] + cells)
         elif row["only_in"] == "base":
-            cells = [
-                fmt_level(row["values"][str(y)]["base"], row["kind"]) for y in years
-            ]
+            cells = [_level_cell(row, y, "base") for y in years]
             body.append([f"{row['label']} (removed: base levels)"] + cells)
         else:
             body.append([row["label"]] + [_change_cell(row, y) for y in years])
     return _table(["Measure"] + _year_header(years), body)
 
 
+def _level_cell(row, year, side) -> str:
+    cell = row["values"][str(year)]
+    if cell.get(f"{side}_suppressed"):
+        return _SUPPRESSED_CELL
+    return fmt_level(cell[side], row["kind"])
+
+
 def _change_cell(row, year) -> str:
     cell = row["values"][str(year)]
-    if cell.get("base_suppressed") or cell.get("head_suppressed"):
+    if cell.get("rounded"):
+        return _ROUNDED_CELL
+    if cell.get("delta") is None and (
+        cell.get("base_suppressed") or cell.get("head_suppressed")
+    ):
         return _SUPPRESSED_CELL
     return fmt_change(cell["delta"], row["kind"])
 
 
 # A figure from fewer than 10 records is not published (privacy.py).
 _SUPPRESSED_CELL = "suppressed"
+# A rounded total whose exact change could reveal such a figure.
+_ROUNDED_CELL = "withheld (rounded total)"
 
 
 def _levels_table(rows, years) -> str:
@@ -141,7 +150,11 @@ def _deciles(summary, years) -> str:
     if not deciles:
         return "Not available: both sides need household detail."
     present = [y for y in years if str(y) in deciles]
-    if all(row["mean_change"] == 0 for y in present for row in deciles[str(y)]):
+    if all(
+        row["mean_change"] == 0 and not row.get("suppressed")
+        for y in present
+        for row in deciles[str(y)]
+    ):
         return "No household's net income changes in any year."
     labels = [row["decile"] for row in deciles[str(present[0])]]
     body = []
@@ -149,7 +162,9 @@ def _deciles(summary, years) -> str:
         cells = []
         for year in present:
             row = deciles[str(year)][index]
-            if row["mean_change"] == 0 or not _finite(row["mean_change"]):
+            if row.get("suppressed"):
+                cells.append("fewer than 10 households change")
+            elif row["mean_change"] == 0 or not _finite(row["mean_change"]):
                 cells.append("0" if row["mean_change"] == 0 else "n/a")
             else:
                 cells.append(
@@ -164,6 +179,11 @@ def _deciles(summary, years) -> str:
     winners = []
     for year in present:
         overall = deciles[str(year)][-1]
+        if overall.get("suppressed"):
+            winners.append(
+                [fiscal_year_label(year)] + ["fewer than 10 households change"] * 2
+            )
+            continue
         winners.append(
             [
                 fiscal_year_label(year),
@@ -251,8 +271,9 @@ def _guard(summary) -> str:
         "read household by household: its own head must rise by exactly £1, no "
         "other tax head may move, no other benefit may rise, and the model's own "
         "total must move by what its heads moved. A head that breaks a rule is "
-        "measured again with every other head held at its baseline value, and "
-        "fails only where it still breaks it. "
+        "measured again twice: with every other head held at its baseline value, "
+        "and with every other head held at its value after the first £1 while the "
+        "component rises again. It fails where either still shows the response. "
         f"{len(failed)} failed; {len(skipped)} were skipped."
     ]
     for c in failed:
