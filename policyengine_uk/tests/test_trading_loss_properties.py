@@ -71,6 +71,14 @@ YEAR = 2026
 # Income tax before the winter fuel payment charge: what the means tests
 # deduct. The charge depends on their awards, so they cannot deduct it.
 PRE_CHARGE_TAX = "income_tax_before_winter_fuel_payment_charge"
+# The benefits that exempt a person from the charge (s.681I(5)).
+RELEVANT_BENEFITS = [
+    "is_on_income_support",
+    "is_on_income_based_jsa",
+    "is_on_pension_credit",
+    "is_on_income_related_esa",
+    "is_on_universal_credit",
+]
 PROPERTY_SETTINGS = settings(
     max_examples=3,
     deadline=None,
@@ -533,19 +541,42 @@ PINNED_FAMILIES = [
 ]
 
 
+# A pensioner with five children on Pension Credit and so not charged. In
+# 2026 the loss cuts tax by £1,000, which ends Pension Credit and with it the
+# exemption from the winter fuel payment charge (ITEPA 2003 s.681I(4)).
+PINNED_PENSIONER = [
+    (
+        [
+            adult(
+                age=70,
+                employment_income=3_000.0,
+                private_pension_income=32_520.0,
+                trading_loss=5_000.0,
+                hours_worked=16.0,
+            )
+        ]
+        + [{"age": 10, "trading_loss": 0.0} for _ in range(5)],
+        home(9_000.0, "NORTH_EAST"),
+    ),
+]
+
+
 @pytest.mark.parametrize(
     ("programme", "year"),
     [("universal_credit", 2026), ("housing_benefit", 2024), ("tax_credits", 2024)],
 )
 @PROPERTY_SETTINGS
 @example(units=PINNED_FAMILIES)
+@example(units=PINNED_PENSIONER)
 @given(units=st.lists(families(), min_size=4, max_size=10))
 def test_zero_profit_trade_loss_cannot_raise_tax_or_reduce_programme_award(
     units, programme, year
 ):
     """Compare a loss-making trade with an otherwise identical zero-profit trade.
 
-    Tax uses each person's actual liability. Benefit comparisons hold paid
+    Tax uses each person's actual liability before the winter fuel payment
+    charge, and the charge moves only where the loss changes receipt of a
+    relevant benefit in the household. Benefit comparisons hold paid
     deductions at the zero-loss values, including UC's earnings-only tax and
     NI. Housing Benefit is tested for continuing 2024 awards without tax
     credits: a changed credit receipt can legitimately change Housing Benefit.
@@ -597,6 +628,30 @@ def test_zero_profit_trade_loss_cannot_raise_tax_or_reduce_programme_award(
     actual_tax = values(actual_loss, PRE_CHARGE_TAX)
     baseline_tax = values(baseline, PRE_CHARGE_TAX)
     assert np.all(actual_tax <= baseline_tax + 0.5), (actual_tax, baseline_tax, units)
+
+    # The charge itself tests total income, which the loss leaves alone
+    # (relief comes at Step 2), and receipt of a relevant benefit, which also
+    # sets the payments. So it moves only in a household where the loss
+    # changes who is on a relevant benefit.
+    def on_relevant_benefit(sim):
+        return np.any([values(sim, v) > 0 for v in RELEVANT_BENEFITS], axis=0)
+
+    names = baseline.populations["person"].ids
+    household = np.array([int(name.split("_")[0][1:]) for name in names])
+    receipt_moved = np.bincount(
+        household,
+        weights=(
+            on_relevant_benefit(baseline) != on_relevant_benefit(actual_loss)
+        ).astype(float),
+        minlength=len(units),
+    )[household]
+    charge = "winter_fuel_payment_charge"
+    charge_moved = np.abs(values(actual_loss, charge) - values(baseline, charge)) > 0.5
+    assert np.all(~charge_moved | (receipt_moved > 0)), (
+        values(actual_loss, charge),
+        values(baseline, charge),
+        units,
+    )
 
     deductions = [
         PRE_CHARGE_TAX,
