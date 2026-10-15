@@ -87,3 +87,11 @@ def test_household_detail_is_written_only_under_private(tmp_path):
     result, loaded = read_result(tmp_path)
     assert json.loads((tmp_path / "result.json").read_text()) == result
     assert np.array_equal(loaded["2026"]["income"], households["2026"]["income"])
+
+
+def test_a_failed_run_always_replaces_an_earlier_comment():
+    """Even a run that failed before the comparison posts a failing comment."""
+    post = next(s for s in steps() if s.get("name", "").startswith("Post or update"))
+    assert post["if"] == "always() && github.event_name == 'pull_request'"
+    assert "if [ ! -s report/comment.md ]" in post["run"]
+    assert "FAIL" in post["run"]

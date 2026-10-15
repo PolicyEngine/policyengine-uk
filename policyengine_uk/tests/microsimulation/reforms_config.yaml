@@ -125,9 +125,10 @@ reforms:
   tolerance: 1.5
   parameters:
     gov.hmrc.vat.standard_rate: 0.22
-  # The move from 21.3 is the data: on 1.58.0 and 1.58.1 recorded full-rate consumption
-  # is 62% higher than on 1.40.3, and the VAT coverage factor (#1996, #2187)
-  # was set on older data.
+  # The move from 21.3 is the data: with the same model the costing is 62%
+  # higher on 1.58.0 than on 1.40.3, and 60% higher on 1.58.1. VAT is linear
+  # in recorded full-rate consumption, and the VAT coverage factor (#1996,
+  # #2187) was set on older data.
   receipts:
   - impact: 21.3
     data: enhanced_frs_2023_24, unpinned (latest at the time)

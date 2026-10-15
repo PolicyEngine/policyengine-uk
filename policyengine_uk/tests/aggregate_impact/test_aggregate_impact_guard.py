@@ -454,3 +454,37 @@ def test_a_rise_cancelled_everywhere_by_a_mediated_fall_is_beyond_the_check():
     row = by_variable(shown)["ib"]
     assert row["status"] == "fail" and ("uc", "rises") in kinds(row)
     assert next(p for p in row["problems"] if p["head"] == "uc")["households"] == 1
+
+
+def test_a_containment_gated_by_a_passport_on_another_head_fails():
+    """Sol re-review 2, finding 2: c is zero for everyone, b passports on c,
+    and h contains c only where b is paid. Holding b at its baseline (zero)
+    switches h off; holding it at its perturbed value keeps h's slope of 1."""
+    formulas = model(interaction=0.0)
+    formulas["c"] = lambda f: 0 * f("x")
+    formulas["b"] = lambda f: 40.0 * (f("c") > 0)
+    formulas["h"] = lambda f: f("c") * (f("b") > 0)
+    formulas["gov_spending"] = lambda f: (
+        f("c") + f("b") + f("h") + f("ben_c") + f("ben_d")
+    )
+    _, result = run(formulas, partition(["tax_a"], ["ben_c", "ben_d", "c", "b", "h"]))
+    row = by_variable(result)["c"]
+    assert row["status"] == "fail" and ("h", "contains") in kinds(row)
+    assert result["reset_reproduces_baseline"]
+
+
+def test_a_mediated_fall_that_outweighs_a_containment_is_beyond_the_check():
+    """Documented limit: uc contains ib but falls by twice what ca lost."""
+    _, result = run(overlap_model(uc_reads_ca=-2.0, uc_contains_ib=1.0), OVERLAP)
+    assert by_variable(result)["ib"]["status"] == "pass"
+
+
+def test_mediated_records_name_the_heads_that_moved_not_a_proven_route():
+    """Sol re-review 2, finding 4: an unrelated head that moved is listed too."""
+    formulas = overlap_model()
+    formulas["unrelated"] = lambda f: 200 - 0.5 * f("ib")
+    formulas["gov_spending"] = lambda f: f("ib") + f("ca") + f("uc") + f("unrelated")
+    _, result = run(formulas, partition(["tax_a"], ["ib", "ca", "uc", "unrelated"]))
+    row = by_variable(result)["ib"]
+    assert row["status"] == "pass"
+    assert row["mediated"][0]["via"] == ["ca", "unrelated"]

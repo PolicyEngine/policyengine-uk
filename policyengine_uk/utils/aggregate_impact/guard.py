@@ -24,16 +24,22 @@ change household by household (see ``judge_total``):
   catches a total whose formula adds a component twice even while that
   component is zero;
 - a head that breaks one of the rules above, and a head that may respond
-  whose slope is neither 0 nor 1, is measured again with every other head
-  held at its baseline value, and fails only in households where it then
-  moves, rises or has a slope of 1. A head can respond to the component
-  through another head without containing it: Incapacity Benefit reduces
-  Carer's Allowance (overlapping benefits), and Universal Credit, which in
-  the model counts Carer's Allowance as income but not Incapacity Benefit
-  (issue #2424), rises by what Carer's Allowance lost. Holding the other
-  heads removes that route and keeps the head's own response. A head that
-  contains another head is still found when that other head is the one
-  perturbed. Responses through other heads are reported as ``mediated``.
+  whose slope is neither 0 nor 1, is measured again twice: with every other
+  head held at its baseline value, and with every other head held at its
+  value after the first point while the component moves on to the second.
+  It fails in households where either still shows the response (a move, a
+  rise, a slope of 1). A head can respond to the component through another
+  head without containing it: Incapacity Benefit reduces Carer's Allowance
+  (overlapping benefits), and Universal Credit, which in the model counts
+  Carer's Allowance as income but not Incapacity Benefit (issue #2424),
+  rises by what Carer's Allowance lost. Holding the other heads removes
+  that route. The second hold keeps a head's own response where another
+  head gates it: in ``h = c * (b > 0)`` with ``b = 40 * (c > 0)``, holding
+  ``b`` at its baseline switches ``h`` off, but holding it at its perturbed
+  value keeps ``h``'s slope of 1. A head that contains another head is still
+  found when that other head is the one perturbed. Responses through other
+  heads are reported as ``mediated``, with the other heads that moved in
+  those households: candidates for the route, not each shown to carry it.
 
 What it cannot see: a head that adds a component back while tapering it away
 pound for pound (``max(0, a - c) + c``) does not move at the margin, so it is
@@ -41,8 +47,8 @@ indistinguishable from a flat benefit that ignores the component. Such a
 head counts the component twice wherever the taper binds; only reading its
 formula, or a test that sets the component's level, can find it. Likewise a
 benefit that contains the component while, in every household perturbed, a
-fall carried by another head cancels its rise exactly shows no change and is
-not measured again; in any household without that route its rise shows.
+fall carried by another head offsets or outweighs its rise shows no rise and
+is not measured again; in any household without that route its rise shows.
 
 The check reuses one simulation. It takes its snapshot of supplied inputs
 only after discarding formula results, so a value some formula computed
@@ -58,6 +64,7 @@ from typing import Iterable, Mapping, Optional
 import numpy as np
 
 from .partition import Partition
+from .privacy import count_text
 
 
 def _raw(sim, variable, period):
@@ -153,7 +160,7 @@ def _problem(total, head, kind, where, text, weights, perturbed):
         "kind": kind,
         "households": count,
         "share": share,
-        "message": f"{total}: {text} in {count} households",
+        "message": f"{total}: {text} in {count_text(count, 'households')}",
         "where": where,
         "text": text,
     }
@@ -296,20 +303,52 @@ def judge_total(
     }
 
 
-def _perturb(sim, variable, year, baseline, added, monthly, hold=()):
-    """Add ``added`` to ``variable``, holding each of ``hold`` at its baseline."""
+def _perturb(sim, variable, year, baseline, added, monthly, hold=(), held_at=None):
+    """Add ``added`` to ``variable``, holding each of ``hold`` fixed.
+
+    Held variables keep their values in ``held_at`` (by default the
+    baseline), in the same layout: an array for a yearly variable, a list
+    of (month, array) for a monthly one.
+    """
     discard_formula_results(sim)
     if monthly:
         for month, values in baseline[variable]:
             sim.set_input(variable, month, values + added / 12)
     else:
         sim.set_input(variable, year, baseline[variable] + added)
+    held_at = baseline if held_at is None else held_at
     for held in hold:
-        if isinstance(baseline[held], list):
-            for month, values in baseline[held]:
+        if isinstance(held_at[held], list):
+            for month, values in held_at[held]:
                 sim.set_input(held, month, values)
         else:
-            sim.set_input(held, year, baseline[held])
+            sim.set_input(held, year, held_at[held])
+
+
+def _capture(sim, variables, year, layout) -> dict:
+    """Each variable's current values, in ``layout``'s form (see ``_perturb``)."""
+    out = {}
+    for v in variables:
+        if isinstance(layout[v], list):
+            out[v] = [
+                (month, _raw(sim, v, month).astype(np.float64))
+                for month, _ in layout[v]
+            ]
+        else:
+            out[v] = _raw(sim, v, year).astype(np.float64)
+    return out
+
+
+def breaks_on_slope(kind, where, expected, slack, slope):
+    """Households of ``where`` whose head's slope, with the other heads held at
+    their values after the first point, breaks ``kind``."""
+    if kind == "contains":
+        return where & (np.abs(slope - expected) <= 2 * slack)
+    if kind == "rises":
+        return where & (slope > 2 * slack)
+    if kind == "moves":
+        return where & (np.abs(slope) > 2 * slack)
+    return where
 
 
 def still_breaks(kind, where, expected, slack, first, second=None):
@@ -506,6 +545,27 @@ def counted_once(
                 second = _head_arrays(sim, year, [head])[head] - heads0[head]
             for v in held:
                 _restore(sim, v, snapshot)
+            # Second test: hold the other heads at their values after the
+            # first point, and move the component on to the second. A head
+            # gated by another head (h = c * (b > 0), with b a passport on c)
+            # keeps its own slope here, though holding b at its baseline
+            # switched it off above.
+            _perturb(sim, variable, year, baseline, added, monthly)
+            at_first = _capture(sim, held, year, baseline)
+            head_first = _head_arrays(sim, year, [head])[head]
+            _perturb(
+                sim,
+                variable,
+                year,
+                baseline,
+                2 * added,
+                monthly,
+                hold=held,
+                held_at=at_first,
+            )
+            slope_held = _head_arrays(sim, year, [head])[head] - head_first
+            for v in held:
+                _restore(sim, v, snapshot)
             slack = _slack(heads0[head])
             kept = []
             for p in problems:
@@ -514,9 +574,11 @@ def counted_once(
                     continue
                 direct = still_breaks(
                     p["kind"], p["where"], expected, slack, first, second
-                )
+                ) | breaks_on_slope(p["kind"], p["where"], expected, slack, slope_held)
                 cleared = p["where"] & ~direct
                 if cleared.any():
+                    # The other heads that moved there: candidates for the
+                    # route, not each shown to carry it.
                     via = [
                         v
                         for v in needed
@@ -556,6 +618,8 @@ def counted_once(
                     continue
                 direct = still_breaks(
                     "contains", screen["where"], expected, slack, first, second
+                ) | breaks_on_slope(
+                    "contains", screen["where"], expected, slack, slope_held
                 )
                 if not direct.any():
                     continue

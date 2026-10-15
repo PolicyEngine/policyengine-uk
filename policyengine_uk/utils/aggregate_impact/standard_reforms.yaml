@@ -31,13 +31,17 @@
 #   from recorded consumption). A fifth fails a reform only once it has lost
 #   80% of its smallest yearly effect, twice the largest move seen.
 # - Alternatives considered: a tenth (fails only after a 90% loss, too late
-#   for "barely moving"); a half (one more data change of the VAT kind
-#   would fail a correct model); per-year minimums (tighter in years where
-#   an absolute reform is worth more, such as the personal allowance at
-#   £4.45bn in 2030-31 and £1.78bn in 2031-32, but every horizon or data
-#   change would need a full table); an external anchor such as HMRC's
-#   ready reckoner (that tests calibration, not whether the reform is wired
-#   through); and a sign check alone (passes "barely moving").
+#   for "barely moving"); a half (the VAT data change kept 62% of the
+#   effect, so two such changes in a row would fail a correct model);
+#   per-year minimums (tighter in years where an absolute reform is worth
+#   more, but every horizon or data change would need a full table); an
+#   external anchor such as HMRC's ready reckoner (that tests calibration,
+#   not whether the reform is wired through); and a sign check alone
+#   (passes "barely moving").
+# - A single minimum is a wiring check, not a per-year 20% guarantee: the
+#   personal allowance minimum (£0.35bn) is 20% of its 2031-32 effect
+#   (£1.78bn) but 8% of its 2030-31 effect (£4.45bn), so a 90% loss in
+#   2030-31 alone would still pass.
 #
 # An absolute reform shrinks as the baseline is uprated towards it: the
 # 13,000 personal allowance is worth £4.45bn in 2030-31 but £1.78bn in

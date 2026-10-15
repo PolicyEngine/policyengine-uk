@@ -115,9 +115,20 @@ def compare_metrics(base: Mapping, head: Mapping, spec: Spec, years) -> tuple:
             key = str(year)
             b = base_metric["values"].get(key) if base_metric else None
             h = head_metric["values"].get(key) if head_metric else None
+            # A figure from too few records is published as None (privacy.py).
+            b_hidden = key in (base_metric or {}).get("suppressed", ())
+            h_hidden = key in (head_metric or {}).get("suppressed", ())
             delta = h - b if _finite(b) and _finite(h) else None
-            row["values"][key] = {"base": b, "head": h, "delta": delta}
-            if delta is not None and delta != 0:
+            row["values"][key] = {
+                "base": b,
+                "head": h,
+                "delta": delta,
+                "base_suppressed": b_hidden,
+                "head_suppressed": h_hidden,
+            }
+            if (delta is not None and delta != 0) or (
+                base_metric and head_metric and b_hidden != h_hidden
+            ):
                 row["changed"] = True
             if delta is not None and threshold is not None and threshold.exceeded(b, h):
                 flags.append(
@@ -416,7 +427,7 @@ def compare(
             non_finite += [
                 f"{row['id']} {fiscal_year_label(int(year))}"
                 for year, cell in row["values"].items()
-                if not _finite(cell["head"])
+                if not _finite(cell["head"]) and not cell["head_suppressed"]
             ]
     if non_finite and head_ok:
         more = f" and {len(non_finite) - 10} more" if len(non_finite) > 10 else ""
