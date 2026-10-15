@@ -86,12 +86,13 @@ gov.economic_assumptions.yoy_growth.obr.mortgage_interest:
 - mortgage_interest_repayment
 - property_finance_costs
 - property_finance_costs_brought_forward
-gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
+gov.economic_assumptions.yoy_growth.capital_gains:
 - capital_gains
 - capital_gains_before_response
 - capital_gains_badr
 - capital_gains_residential_property
 - capital_gains_carried_interest
+gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 - benunit_reported_capital
 - corporate_wealth
 - dividend_income
@@ -127,6 +128,7 @@ gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 - uc_reported_capital
 gov.economic_assumptions.yoy_growth.obr.per_capita.mixed_income:
 - self_employment_income
+- trading_loss
 gov.economic_assumptions.yoy_growth.obr.private_pension_index:
 - private_pension_income
 gov.economic_assumptions.yoy_growth.ons.population:
