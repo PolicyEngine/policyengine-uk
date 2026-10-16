@@ -15,6 +15,7 @@ from policyengine_uk.utils.dated_reforms import (
     read_reform_dict,
     read_reform_from_dict,
     read_override_reform,
+    reform_modifiers_are_effective,
     unwritten_reform_overrides,
     validate_annualised_overrides,
 )
@@ -72,7 +73,12 @@ def _is_reform_from_dict(reform: Type[Reform]) -> bool:
 
 
 def _legacy_override_modifier(dated: DatedReform) -> Callable[[Simulation], None]:
-    """Override changes the simulation has not written on its timeline."""
+    """Override changes that are no longer effective on the simulation.
+
+    Construction retains its statutory and legacy readings. On copies,
+    already-effective reforms (including legacy single-day keys) are no-ops;
+    external overrides still require a key containing a 1 January value.
+    """
 
     def modifier(simulation: Simulation) -> None:
         from policyengine_uk.tax_benefit_system import (
@@ -88,6 +94,15 @@ def _legacy_override_modifier(dated: DatedReform) -> Callable[[Simulation], None
                 dated.changes, dated.reading, lambda path: False
             )
             overriding = True
+        elif dated in (getattr(simulation, "_building_dated_reforms", None) or ()):
+            _, legacy = dated.read(
+                reform_parameter_defines(),
+                warn=True,
+                calendar_years=parameter_reads_calendar_years(),
+            )
+            overriding = False
+        elif reform_modifiers_are_effective((dated,), simulation.tax_benefit_system):
+            return
         else:
             legacy, overriding = unwritten_reform_overrides(
                 dated.changes,
@@ -95,6 +110,7 @@ def _legacy_override_modifier(dated: DatedReform) -> Callable[[Simulation], None
                 reform_parameter_defines(),
                 getattr(simulation.tax_benefit_system, "dated_assignments", ()),
                 parameter_reads_calendar_years(),
+                simulation.tax_benefit_system,
             )
             overriding = overriding or (
                 bool(legacy)
@@ -124,6 +140,7 @@ def _legacy_override_modifier(dated: DatedReform) -> Callable[[Simulation], None
 
         warn_shadowed_lcwra_reform(simulation)
 
+    modifier._dated_reforms = (dated,)
     return modifier
 
 
@@ -176,11 +193,26 @@ def _chain(
 ) -> Optional[Callable[[Simulation], None]]:
     """A modifier that runs ``first`` and then ``second``, either of them None."""
     if first and second:
+        first_dated = getattr(first, "_dated_reforms", None)
+        second_dated = getattr(second, "_dated_reforms", None)
+        dated = (
+            first_dated + second_dated
+            if first_dated is not None and second_dated is not None
+            else None
+        )
 
         def chained(simulation: Simulation) -> None:
+            if (
+                dated is not None
+                and not getattr(simulation, APPLYING_TO_BUILT_SIMULATION, False)
+                and not getattr(simulation, "_building_dated_reforms", None)
+                and reform_modifiers_are_effective(dated, simulation.tax_benefit_system)
+            ):
+                return
             first(simulation)
             second(simulation)
 
+        chained._dated_reforms = dated
         return chained
     return first or second
 

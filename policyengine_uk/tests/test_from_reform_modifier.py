@@ -19,6 +19,8 @@ from policyengine_uk.utils.dated_reforms import ReformPeriodWarning
 from policyengine_uk.utils.scenario import Scenario
 
 
+pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
+
 BASIC_RATE = "gov.hmrc.income_tax.rates.uk[0].rate"
 PERSONAL_ALLOWANCE = "gov.hmrc.income_tax.allowances.personal_allowance.amount"
 VAT_RATE = "gov.hmrc.vat.standard_rate"
@@ -53,8 +55,17 @@ def parameter(simulation, path, date):
 
 
 @pytest.fixture(scope="module")
-def baseline():
+def baseline(cloned_uk_tax_benefit_system):
     return Simulation(situation=SITUATION)
+
+
+def _sequence_scenario(changes, representation="tuple"):
+    if representation == "tuple":
+        return Scenario.from_reform(tuple(changes))
+    scenario = Scenario()
+    for change in changes:
+        scenario = scenario + Scenario.from_reform(change)
+    return scenario
 
 
 @pytest.mark.parametrize("reform_class", [False, True])
@@ -375,3 +386,241 @@ def test_modifier_on_copy_of_simulation_built_with_reform_does_not_apply_twice(
     assert [parameter(simulation, BASIC_RATE, date) for date in dates] == before
     assert simulation.tax_benefit_system.dated_assignments == assignments
     assert simulation.tax_benefit_system.legacy_overrides == []
+
+
+@pytest.mark.parametrize("representation", ["tuple", "sum"])
+@pytest.mark.parametrize("case", ["reordered", "repeated_after_override"])
+def test_composite_modifier_respects_order_of_historical_changes(case, representation):
+    first = {BASIC_RATE: {"2027-01-01.2027-12-31": 0.31}}
+    second = {BASIC_RATE: {"2027-01-01.2027-12-31": 0.35}}
+    constructed, incoming = (
+        ((first, second), (second, first))
+        if case == "reordered"
+        else ((first,), (first, second, first))
+    )
+    original = Simulation(situation=SITUATION, reform=constructed)
+    direct, applied = original.clone(), original.clone()
+    scenario = _sequence_scenario(incoming, representation)
+
+    scenario.simulation_modifier(direct)
+    scenario.apply(applied)
+
+    for date in ("2026-12-31", "2027-01-01", "2027-07-01", "2027-12-31", "2028-01-01"):
+        assert parameter(direct, BASIC_RATE, date) == parameter(
+            applied, BASIC_RATE, date
+        )
+    assert parameter(direct, BASIC_RATE, "2027-01-01") == 0.31
+
+
+def test_modifier_reapplies_historical_change_after_a_later_legacy_override():
+    first = {BASIC_RATE: {"2027-01-01.2027-12-31": 0.31}}
+    second = {BASIC_RATE: {"2027-01-01.2027-12-31": 0.35}}
+    original = Simulation(situation=SITUATION, reform=first)
+    Scenario.from_reform(second).apply(original)
+    assert parameter(original, BASIC_RATE, "2027-01-01") == 0.35
+    direct, applied = original.clone(), original.clone()
+    scenario = Scenario.from_reform(first)
+
+    scenario.simulation_modifier(direct)
+    scenario.apply(applied)
+
+    for date in ("2026-12-31", "2027-01-01", "2027-12-31", "2028-01-01"):
+        assert parameter(direct, BASIC_RATE, date) == parameter(
+            applied, BASIC_RATE, date
+        )
+    assert parameter(direct, BASIC_RATE, "2027-01-01") == 0.31
+
+
+def test_modifier_reapplies_historical_change_after_a_direct_parameter_update():
+    changes = {BASIC_RATE: {"2027-01-01.2027-12-31": 0.31}}
+    original = Simulation(situation=SITUATION, reform=changes)
+    original.tax_benefit_system.parameters.get_child(BASIC_RATE).update(
+        period="2027", value=0.35
+    )
+    original.tax_benefit_system.reset_parameter_caches()
+    assert parameter(original, BASIC_RATE, "2027-01-01") == 0.35
+    direct, applied = original.clone(), original.clone()
+    scenario = Scenario.from_reform(changes)
+
+    scenario.simulation_modifier(direct)
+    scenario.apply(applied)
+
+    for date in ("2026-12-31", "2027-01-01", "2027-07-01", "2027-12-31", "2028-01-01"):
+        assert parameter(direct, BASIC_RATE, date) == parameter(
+            applied, BASIC_RATE, date
+        )
+    assert parameter(direct, BASIC_RATE, "2027-01-01") == 0.31
+
+
+def test_modifier_replays_later_keys_when_an_earlier_window_needs_reapplication():
+    changes = {
+        BASIC_RATE: {
+            "2026-01-01.2027-12-31": 0.31,
+            "2027-01-01.2027-12-31": 0.35,
+        }
+    }
+    original = Simulation(situation=SITUATION, reform=changes)
+    original.tax_benefit_system.parameters.get_child(BASIC_RATE).update(
+        period="2026", value=0.25
+    )
+    original.tax_benefit_system.reset_parameter_caches()
+    assert parameter(original, BASIC_RATE, "2026-01-01") == 0.25
+    direct, applied = original.clone(), original.clone()
+    scenario = Scenario.from_reform(changes)
+
+    scenario.simulation_modifier(direct)
+    scenario.apply(applied)
+
+    for date in (
+        "2025-12-31",
+        "2026-01-01",
+        "2026-07-01",
+        "2026-12-31",
+        "2027-01-01",
+        "2027-07-01",
+        "2027-12-31",
+        "2028-01-01",
+    ):
+        assert parameter(direct, BASIC_RATE, date) == parameter(
+            applied, BASIC_RATE, date
+        )
+    assert parameter(direct, BASIC_RATE, "2026-01-01") == 0.31
+    assert parameter(direct, BASIC_RATE, "2027-01-01") == 0.35
+
+
+@pytest.mark.parametrize(
+    "later_window",
+    ["2027-01-01.2027-12-31", "2027-07-01.2028-06-30"],
+)
+def test_modifier_reapplies_historical_change_with_a_partially_overridden_window(
+    later_window,
+):
+    first = {BASIC_RATE: {"2026-01-01.2028-12-31": 0.31}}
+    later = {BASIC_RATE: {later_window: 0.35}}
+    original = Simulation(situation=SITUATION, reform=(first, later))
+    direct, applied = original.clone(), original.clone()
+    scenario = Scenario.from_reform(first)
+
+    scenario.simulation_modifier(direct)
+    scenario.apply(applied)
+
+    for year in range(2025, 2030):
+        for month_day in ("01-01", "04-06", "06-30", "07-01", "12-31"):
+            date = f"{year}-{month_day}"
+            assert parameter(direct, BASIC_RATE, date) == parameter(
+                applied, BASIC_RATE, date
+            )
+            if 2026 <= year <= 2028:
+                assert parameter(direct, BASIC_RATE, date) == 0.31
+
+
+@pytest.mark.parametrize("copy_kind", ["clone", "branch"])
+def test_own_legacy_single_day_modifier_on_copy_is_a_noop(copy_kind, caplog):
+    changes = {BASIC_RATE: {"2027-04-06": 0.31}}
+    with pytest.warns(ReformPeriodWarning):
+        original = Simulation(situation=SITUATION, reform=changes)
+    simulation = (
+        original.clone() if copy_kind == "clone" else original.get_branch("copy")
+    )
+    dates = ("2027-01-01", "2027-04-05", "2027-04-06", "2027-04-07", "2028-01-01")
+    before = [parameter(simulation, BASIC_RATE, date) for date in dates]
+    overrides = list(simulation.tax_benefit_system.legacy_overrides)
+
+    with caplog.at_level(logging.WARNING, logger="policyengine_uk.utils.scenario"):
+        Scenario.from_reform(changes).simulation_modifier(simulation)
+
+    assert [parameter(simulation, BASIC_RATE, date) for date in dates] == before
+    assert simulation.tax_benefit_system.legacy_overrides == overrides
+    assert "dated reform keys are not annualised again" not in caplog.text
+
+
+@pytest.mark.parametrize("copy_kind", ["clone", "branch"])
+@pytest.mark.parametrize("representation", ["tuple", "sum"])
+@pytest.mark.parametrize("key", ["2027-01-01.2027-12-31", "2027-04-06.2028-04-05"])
+def test_own_composite_modifier_on_copy_preserves_order_without_reapplying(
+    copy_kind, representation, key, caplog
+):
+    changes = ({BASIC_RATE: {key: 0.31}}, {BASIC_RATE: {key: 0.35}})
+    original = Simulation(
+        situation=SITUATION,
+        scenario=_sequence_scenario(changes, representation),
+    )
+    simulation = (
+        original.clone() if copy_kind == "clone" else original.get_branch("copy")
+    )
+    dates = [
+        f"{year}-{month_day}"
+        for year in range(2026, 2030)
+        for month_day in ("01-01", "04-05", "04-06", "12-31")
+    ]
+    before = [parameter(simulation, BASIC_RATE, date) for date in dates]
+    assignments = list(simulation.tax_benefit_system.dated_assignments)
+    overrides = list(simulation.tax_benefit_system.legacy_overrides)
+
+    with caplog.at_level(logging.WARNING, logger="policyengine_uk.utils.scenario"):
+        _sequence_scenario(changes, representation).simulation_modifier(simulation)
+
+    assert [parameter(simulation, BASIC_RATE, date) for date in dates] == before
+    assert simulation.tax_benefit_system.dated_assignments == assignments
+    assert simulation.tax_benefit_system.legacy_overrides == overrides == []
+    assert "dated reform keys are not annualised again" not in caplog.text
+
+
+@st.composite
+def overlapping_reform_sequences(draw):
+    # A small pool makes shared paths/windows, repeated entries and different
+    # orders common, including writes that were present only earlier in history.
+    entries = draw(
+        st.lists(
+            st.tuples(
+                st.sampled_from([BASIC_RATE, VAT_RATE]),
+                st.sampled_from(
+                    [
+                        "2026-01-01.2026-12-31",
+                        "2027-01-01.2027-12-31",
+                        "2026-01-01.2027-12-31",
+                    ]
+                ),
+                st.sampled_from([0.25, 0.31, 0.35]),
+            ),
+            min_size=2,
+            max_size=4,
+            unique=True,
+        )
+    )
+    index = st.integers(0, len(entries) - 1)
+    constructed = draw(st.lists(index, min_size=1, max_size=5))
+    incoming = draw(st.lists(index, min_size=2, max_size=6))
+
+    def changes(order):
+        return tuple({entries[i][0]: {entries[i][1]: entries[i][2]}} for i in order)
+
+    return changes(constructed), changes(incoming)
+
+
+@pytest.mark.parametrize("prebuilt", [False, True])
+@settings(
+    max_examples=32,
+    deadline=None,
+    derandomize=True,
+    suppress_health_check=[HealthCheck.too_slow],
+)
+@given(sequences=overlapping_reform_sequences())
+def test_sequence_modifier_matches_apply_with_repeated_and_reordered_writes(
+    baseline, prebuilt, sequences
+):
+    constructed, incoming = sequences
+    original = (
+        Simulation(situation=SITUATION, reform=constructed) if prebuilt else baseline
+    )
+    direct, applied = original.clone(), original.clone()
+    scenario = _sequence_scenario(incoming)
+
+    scenario.simulation_modifier(direct)
+    scenario.apply(applied)
+
+    for path in (BASIC_RATE, VAT_RATE):
+        for year in range(2025, 2030):
+            for month_day in ("01-01", "04-05", "04-06", "06-30", "07-01", "12-31"):
+                date = f"{year}-{month_day}"
+                assert parameter(direct, path, date) == parameter(applied, path, date)

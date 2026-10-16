@@ -579,41 +579,196 @@ def read_override_reform(changes, reading, defines, calendar_years=None, warn=Fa
         ) from original
 
 
-def unwritten_reform_overrides(changes, reading, defines, written, calendar_years):
-    """Keep legacy changes and changes absent from the statutory write log.
+def _assignment_boundaries(assignments):
+    """Instants at which the effective value of a write sequence can change."""
+    return {
+        boundary
+        for entry in assignments
+        for boundary in (entry.start, entry.stop.offset(1, "day"))
+    }
 
-    Compare assignment contents, ignoring order: scenario splitting copies
-    dated reforms, repeated tuple entries have different orders, and cloned
-    systems retain their assignments. Generated parameter paths use the same
-    ``defines`` predicate as the construction route.
+
+def _effective_assignments_match(expected, written):
+    """Every span written by expected has the same final write in written."""
+    for path in {entry.path for entry in expected}:
+        wanted = [entry for entry in expected if entry.path == path]
+        history = sorted(
+            (entry for entry in written if entry.path == path),
+            key=lambda entry: entry.order,
+        )
+        for point in _assignment_boundaries(wanted + history):
+            change = next(
+                (
+                    entry
+                    for entry in reversed(wanted)
+                    if entry.start <= point <= entry.stop
+                ),
+                None,
+            )
+            if change is None:
+                continue
+            effective = next(
+                (
+                    entry
+                    for entry in reversed(history)
+                    if entry.start <= point <= entry.stop
+                ),
+                None,
+            )
+            if effective is None or effective.value != change.value:
+                return False
+    return True
+
+
+def _overrides_are_effective(overrides, parameters):
+    """Check final values at every boundary, including intervening writes."""
+    assignments = [
+        ParameterAssignment(
+            change.path, *legacy_override_bounds(change, parameters), change.value
+        )
+        for change in overrides
+    ]
+    for path in {entry.path for entry in assignments}:
+        target = parameters.get_child(path)
+        wanted = [entry for entry in assignments if entry.path == path]
+        points = _assignment_boundaries(wanted) | {
+            instant(entry.instant_str) for entry in target.values_list
+        }
+        for point in points:
+            change = next(
+                (
+                    entry
+                    for entry in reversed(wanted)
+                    if entry.start <= point <= entry.stop
+                ),
+                None,
+            )
+            if change is not None and target(point) != change.value:
+                return False
+    return True
+
+
+def _statutory_values_are_current(assignments, legacy, system):
+    """Detect later edits without rebuilding the simulation or its system.
+
+    Annualise only the affected leaf's stored projected timeline, using the
+    construction rule. This also detects edits made directly by a modifier,
+    which need not have an entry in the system's override log.
+    """
+    from policyengine_uk.utils.parameters import convert_to_fiscal_year_parameters
+
+    timelines = getattr(system, "_projected_timelines", None) or {}
+    for path in {entry.path for entry in assignments}:
+        if path not in timelines:
+            return False
+        target = system.parameters.get_child(path)
+        expected = target.clone()
+        expected.values_list = list(timelines[path])
+        probe = ParameterNode("effective_reform_probe", data={})
+        probe.add_child("value", expected)
+        annualised = path.startswith("gov.") and not expected.metadata.get(
+            "preserve_calendar_dates", False
+        )
+        if annualised:
+            convert_to_fiscal_year_parameters(probe)
+        for change in legacy:
+            if change.path == path:
+                expected.update(
+                    **legacy_override_update_kwargs(change, system.parameters)
+                )
+        wanted = [entry for entry in assignments if entry.path == path]
+        windows = [(entry.start, entry.stop) for entry in wanted]
+        if annualised:
+            for year in range(2015, 2041):
+                sample = instant(f"{year}-04-30")
+                start, stop = uk_fiscal_year_bounds(year)
+                if any(
+                    (entry.start <= stop and start <= entry.stop)
+                    if expected.metadata.get("fiscal_year_blend", False)
+                    else entry.start <= sample <= entry.stop
+                    for entry in wanted
+                ):
+                    windows.append(calendar_year_bounds(year))
+        points = _assignment_boundaries(wanted) | {
+            instant(entry.instant_str)
+            for entry in target.values_list + expected.values_list
+        }
+        if any(
+            target(point) != expected(point)
+            for point in points
+            if any(start <= point <= stop for start, stop in windows)
+        ):
+            return False
+    return True
+
+
+def _reform_writes_are_effective(assignments, legacy, system, written=None):
+    if written is None:
+        written = getattr(system, "dated_assignments", ())
+    if not _effective_assignments_match(assignments, written):
+        return False
+    if any(change not in getattr(system, "legacy_overrides", ()) for change in legacy):
+        return False
+    return _statutory_values_are_current(assignments, legacy, system) and (
+        _overrides_are_effective(legacy, system.parameters)
+    )
+
+
+def reform_modifiers_are_effective(dated_reforms, system):
+    """Whether a whole ordered composite can retain its construction reading.
+
+    Compare final writes on every overlapping span, rather than looking for
+    unordered historical membership. Later annualised overrides must also
+    agree with the requested result. Legacy leftovers may be no-ops on copies
+    only when the log contains them and their current values still agree.
+    """
+    from policyengine_uk.tax_benefit_system import (
+        parameter_reads_calendar_years,
+        reform_parameter_defines,
+    )
+
+    assignments, legacy = [], []
+    try:
+        for dated in dated_reforms:
+            selected, leftovers = read_override_reform(
+                dated.changes,
+                dated.reading,
+                reform_parameter_defines(),
+                parameter_reads_calendar_years(),
+            )
+            assignments.extend(selected)
+            legacy.extend(leftovers)
+        return _reform_writes_are_effective(assignments, legacy, system)
+    except (ValueError, TypeError, KeyError, AttributeError):
+        # Validation on the applying route reports all invalid paths/keys.
+        return False
+
+
+def unwritten_reform_overrides(
+    changes, reading, defines, written, calendar_years, system
+):
+    """Keep legacy changes and statutory writes that are no longer effective.
+
+    Construction handles its own statutory writes before running modifiers.
+    On a built simulation only effective final writes count, including later
+    annualised overrides. Comparing contents survives copied scenario parts.
     """
 
     def read(spec, predicate, warn=False):
         return read_override_reform(spec, reading, predicate, calendar_years, warn)
 
-    assignments, legacy = read(changes, defines, warn=True)
-
-    def was_written(assignment):
-        return any(
-            (assignment.path, assignment.start, assignment.stop, assignment.value)
-            == (entry.path, entry.start, entry.stop, entry.value)
-            for entry in written
-        )
-
-    if all(was_written(assignment) for assignment in assignments):
-        return legacy, False
-    # Select each original key rather than converting assignments back to
-    # keys: annualised overrides retain the route's own bare-year reading.
+    read(changes, defines, warn=True)
     overrides = []
     for path, spec in changes.items():
-        entries = spec.items() if isinstance(spec, Mapping) else [(None, spec)]
-        for key, value in entries:
-            change = {path: {key: value} if isinstance(spec, Mapping) else value}
-            selected, _ = read(change, defines)
-            if not selected or not all(was_written(item) for item in selected):
-                _, pending = read(change, lambda path: False)
-                overrides.extend(pending)
-    return overrides, True
+        change = {path: spec}
+        assignments, legacy = read(change, defines)
+        if _reform_writes_are_effective(assignments, legacy, system, written):
+            continue
+        # Replay this path's keys together in their own order: an earlier
+        # outstanding write may supersede a later key that is effective now.
+        _, pending = read(change, lambda path: False)
+        overrides.extend(pending)
+    return overrides, bool(overrides)
 
 
 Timeline = List[ParameterAtInstant]
