@@ -1,3 +1,10 @@
+## [2.134.7] - 2026-10-16
+
+### Fixed
+
+- - A dated reform starting exactly on a parameter's first stated date no longer has its value backdated to the years before it.
+
+
 ## [2.134.6] - 2026-10-16
 
 ### Fixed
