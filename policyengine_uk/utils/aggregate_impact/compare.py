@@ -21,7 +21,7 @@ from .spec import Spec, fiscal_year_label
 
 # Failing these on the head blocks the change whatever the base did: a
 # non-finite or crashed result cannot be compared at all.
-ALWAYS_BLOCKING_PREFIXES = ("finite:", "weights:")
+ALWAYS_BLOCKING_PREFIXES = ("finite:", "weights:", "model:")
 
 # Every head measurement must have run these.
 REQUIRED_CHECKS = (
@@ -631,6 +631,16 @@ def _same_model_problems(base: Mapping, head: Mapping, runtime_differences) -> l
             value = (value or {}).get(key)
         return value
 
+    for side, result in (("base", base), ("head", head)):
+        check = next(
+            (c for c in result.get("checks") or [] if c.get("id") == "model:unchanged"),
+            None,
+        )
+        if check is not None and check.get("status") == "fail":
+            problems.append(
+                f"The policyengine_uk files changed while the {side} was measured, so "
+                "its model has no single identity."
+            )
     identity = {
         "policyengine-uk version": ("runtime", "policyengine_uk"),
         "policyengine-uk fingerprint": ("runtime", "policyengine_uk_fingerprint"),

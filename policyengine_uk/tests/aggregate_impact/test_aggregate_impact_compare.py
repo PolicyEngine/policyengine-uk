@@ -280,7 +280,15 @@ def test_measure_records_an_unpinned_dataset_by_its_bytes(tmp_path, monkeypatch)
             self.dataset = dataset
 
     def stub_measure(
-        sim, factory, partition, spec, label, reforms, run_guard, provenance
+        sim,
+        factory,
+        partition,
+        spec,
+        label,
+        reforms,
+        run_guard,
+        provenance,
+        fingerprint_at_start=None,
     ):
         return {
             "schema": "x",
@@ -1038,9 +1046,20 @@ def test_local_installs_are_read_from_pep_610_metadata(monkeypatch):
             "requests",
             {"url": "https://files.example/requests.whl", "archive_info": {}},
         ),
+        Dist(
+            "policyengine_uk_data",
+            {"url": "https://github.com/x/y", "vcs_info": {"vcs": "git"}},
+        ),
     ]
     monkeypatch.setattr(measure.metadata, "distributions", lambda: dists)
-    assert measure._local_installs() == ["pandas", "policyengine-core"]
+    # Sol re-review 5 of #2425: any install not from an index counts, archive
+    # URLs and VCS checkouts included; only numpy came from an index.
+    assert measure._local_installs() == [
+        "pandas",
+        "policyengine-core",
+        "policyengine-uk-data",
+        "requests",
+    ]
 
 
 def test_a_model_that_changes_during_a_measurement_has_no_fingerprint(monkeypatch):
@@ -1074,3 +1093,45 @@ def test_an_unpinned_dataset_is_described_by_its_label():
     assert "(the base's build, sha256" in text
     assert "(this pull request's build, sha256" in text
     assert "unpinned build the" not in text
+
+
+def test_a_side_whose_model_changed_mid_run_fails_either_axis():
+    """Sol re-review 5 of #2425, P3 2: model:unchanged blocks on both axes,
+    and the data axis says why."""
+    base, head = _on("1" * 64), _on("2" * 64)
+    base["checks"].append(
+        {
+            "id": "model:unchanged",
+            "label": "x",
+            "section": "data",
+            "severity": "fail",
+            "status": "fail",
+            "failing": {"": "the model's files changed while it was measured"},
+        }
+    )
+    summary = compare(base, head, SPEC, axis="data")
+    assert summary["status"] == "fail"
+    assert any("changed while the base was measured" in f for f in summary["failures"])
+
+
+def test_the_intro_says_when_one_version_has_different_files():
+    from policyengine_uk.utils.aggregate_impact.render import render
+
+    base, head = _on("1" * 64), _on("2" * 64)
+    head["runtime"]["policyengine_uk_fingerprint"] = "e" * 64
+    text = render(compare(base, head, SPEC, axis="data"), SPEC)
+    assert "on both sides, but with different model files" in text
+    assert "both measured with policyengine-uk" not in text
+
+
+def test_the_command_fingerprints_the_model_before_building_the_simulation():
+    """Sol re-review 5 of #2425, P3 1."""
+    import inspect
+
+    from policyengine_uk.utils.aggregate_impact import __main__ as cli
+
+    source = inspect.getsource(cli)
+    assert source.index("fingerprint_at_start = model_fingerprint()") < source.index(
+        "sim = Microsimulation(dataset=str(dataset_path))"
+    )
+    assert "fingerprint_at_start=fingerprint_at_start" in source

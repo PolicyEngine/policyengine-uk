@@ -277,10 +277,12 @@ def model_fingerprint() -> Optional[str]:
 
 
 def _local_installs() -> list:
-    """Distributions installed from a local directory or file (PEP 610).
+    """Distributions not installed from a package index (PEP 610).
 
-    Such an install, editable or not, can differ from the released version
-    it reports, so a data comparison can't take its version as its identity.
+    A distribution with ``direct_url.json`` came from a local directory, a
+    file, a VCS checkout or an archive URL. Its version can differ from the
+    release of that number, so a data comparison can't take its version as
+    its identity (Sol re-review 5 of #2425).
     """
     out = set()
     for d in metadata.distributions():
@@ -294,7 +296,7 @@ def _local_installs() -> list:
             info = json.loads(text)
         except ValueError:
             continue
-        if "dir_info" in info or str(info.get("url", "")).startswith("file:"):
+        if isinstance(info, dict):
             out.add(d.metadata["Name"].lower().replace("_", "-"))
     return sorted(out)
 
@@ -1149,6 +1151,7 @@ def measure(
     run_guard: bool = True,
     provenance: Optional[Mapping] = None,
     guard_variables: Optional[Sequence[str]] = None,
+    fingerprint_at_start: Optional[str] = None,
 ) -> tuple:
     """Measure a simulation over the spec's horizon.
 
@@ -1161,7 +1164,10 @@ def measure(
     # Taken again when the result is assembled: a model whose files change
     # during the measurement (a branch switched in a shared checkout) has no
     # single identity (Sol review of #2425).
-    fingerprint_at_start = model_fingerprint()
+    # Best taken by the caller before the simulation is built, since building
+    # it reads the model's files (Sol re-review 5 of #2425).
+    if fingerprint_at_start is None:
+        fingerprint_at_start = model_fingerprint()
     model_lists, list_problems = read_model_lists(partition)
     problems = list_problems + closure_problems(
         partition, model_lists, sim.tax_benefit_system.variables

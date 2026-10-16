@@ -99,6 +99,10 @@ def cmd_measure(args) -> int:
 
         from policyengine_uk import Microsimulation
 
+        from .measure import model_fingerprint
+
+        # Before the simulation is built, which reads the model's files.
+        fingerprint_at_start = model_fingerprint()
         sim = Microsimulation(dataset=str(dataset_path))
         dataset_object = sim.dataset
 
@@ -114,6 +118,7 @@ def cmd_measure(args) -> int:
             reforms=reforms,
             run_guard=not args.no_guard,
             provenance=provenance,
+            fingerprint_at_start=fingerprint_at_start,
         )
         write_result(args.out, result, households)
         print(

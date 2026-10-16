@@ -402,11 +402,21 @@ def render(summary: Mapping, spec: Spec, context: Optional[Mapping] = None) -> s
             "policyengine_uk", "?"
         )
         head_uk = runtime.get("policyengine_uk", "?")
-        measured = (
-            f"both measured with policyengine-uk {head_uk}"
-            if base_uk == head_uk
-            else f"measured with policyengine-uk {base_uk} (base) and {head_uk} (head)"
+        base_files = ((summary.get("base") or {}).get("runtime") or {}).get(
+            "policyengine_uk_fingerprint"
         )
+        head_files = runtime.get("policyengine_uk_fingerprint")
+        if base_uk != head_uk:
+            measured = (
+                f"measured with policyengine-uk {base_uk} (base) and {head_uk} (head)"
+            )
+        elif base_files != head_files:
+            measured = (
+                f"measured with policyengine-uk {head_uk} on both sides, but with "
+                "different model files"
+            )
+        else:
+            measured = f"both measured with policyengine-uk {head_uk}"
         intro = (
             f"Base dataset {described(base_prov)} against head dataset "
             f"{described(head_prov)}, {measured}, " + span
