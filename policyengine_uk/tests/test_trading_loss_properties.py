@@ -8,10 +8,10 @@ Invariants, for any people and incomes:
    general income equals min(loss, max(£50,000, 25% of adjusted total
    income), net income), if ordinary expenses and losses beat the trading
    allowance. Otherwise the allowance applies and current loss relief is nil.
-   Net income is the adjusted net income under ordinary expense treatment
-   without the loss (a separate simulation); adjusted total income is
-   that less the pension contributions given relief (own contributions up to
-   the greater of £3,600 and pay plus profits, none from age 75).
+   Net income is the model's pre-pension net_income under ordinary expense
+   treatment without the loss (a separate simulation); adjusted total income
+   is that less the pension contributions given relief once (own contributions
+   up to the greater of £3,600 and pay plus profits, none from age 75).
 2. Differential: a person's Income Tax with a loss equals the Income Tax of
    the same person without the loss and with their income cut by the relief,
    taken from non-savings income first, then savings, then dividends: the
@@ -229,12 +229,12 @@ def test_relief_is_the_loss_within_net_income_and_the_cap(people, regions):
     ]
     a = calculate(
         single_people(people, regions),
-        ["trade_loss_relief_against_general_income", "adjusted_net_income"],
+        ["trade_loss_relief_against_general_income", "net_income"],
     )
     b = calculate(
         single_people(without, regions),
         [
-            "adjusted_net_income",
+            "net_income",
             "taxable_employment_income",
             "taxable_self_employment_income",
         ],
@@ -247,7 +247,7 @@ def test_relief_is_the_loss_within_net_income_and_the_cap(people, regions):
         relieved = (person["age"] < 75) * min(
             person["personal_pension_contributions"], max(3_600.0, earnings)
         )
-        ati = max(0.0, b["adjusted_net_income"][i] - relieved)
+        ati = max(0.0, b["net_income"][i] - relieved)
         cap = max(50_000.0, 0.25 * ati)
         # Generated taxpayers have no receipts, capital allowances or prior
         # losses. With unknown receipts, allowance treatment fully exempts a
@@ -256,20 +256,15 @@ def test_relief_is_the_loss_within_net_income_and_the_cap(people, regions):
         allowance = profit if profit <= 1_000 else 0.0
         ordinary = person["trading_loss"] > allowance
         expected = (
-            min(person["trading_loss"], cap, b["adjusted_net_income"][i])
-            if ordinary
-            else 0.0
+            min(person["trading_loss"], cap, b["net_income"][i]) if ordinary else 0.0
         )
         allowance_kept = 0.0 if ordinary else allowance
         relief = a["trade_loss_relief_against_general_income"][i]
         assert abs(relief - expected) <= tolerance(expected, ati), (person, relief)
         # Ordinary net income falls by the chosen relief or allowance.
         assert abs(
-            b["adjusted_net_income"][i]
-            - allowance_kept
-            - relief
-            - a["adjusted_net_income"][i]
-        ) <= tolerance(b["adjusted_net_income"][i]), person
+            b["net_income"][i] - allowance_kept - relief - a["net_income"][i]
+        ) <= tolerance(b["net_income"][i]), person
 
 
 @st.composite
