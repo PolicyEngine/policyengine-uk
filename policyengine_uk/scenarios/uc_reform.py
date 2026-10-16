@@ -151,7 +151,9 @@ def warn_shadowed_lcwra_reform(sim) -> None:
         sim, "_uc_health_amount_warning_emitted", False
     ):
         return
-    system = sim.tax_benefit_system
+    system = getattr(sim, "tax_benefit_system", None)
+    if system is None:
+        return
     assignments = [
         change
         for change in getattr(system, "dated_assignments", ())
