@@ -33,7 +33,11 @@ def _sha256(path) -> str:
 
 def cmd_measure(args) -> int:
     from .dataset import load_pin, materialise, sha256_file, verify_file
-    from .measure import write_result
+    from .measure import model_fingerprint, write_result
+
+    # First of all, before anything imports the model or caches its
+    # parameters (Sol re-reviews 5 and 6 of #2425).
+    fingerprint_at_start = model_fingerprint()
 
     provenance = {
         "git_sha": args.git_sha,
@@ -99,10 +103,6 @@ def cmd_measure(args) -> int:
 
         from policyengine_uk import Microsimulation
 
-        from .measure import model_fingerprint
-
-        # Before the simulation is built, which reads the model's files.
-        fingerprint_at_start = model_fingerprint()
         sim = Microsimulation(dataset=str(dataset_path))
         dataset_object = sim.dataset
 

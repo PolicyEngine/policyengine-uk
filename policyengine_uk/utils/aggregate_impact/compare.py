@@ -523,6 +523,13 @@ def compare(
         )
         if strict and classification == "pre_existing":
             classification = "regression"
+        if check_id.startswith("model:") and b and b["status"] == "fail":
+            # A base whose model changed mid-run has no single identity, so
+            # nothing can be compared against it (Sol re-review 6 of #2425).
+            failures.append(
+                f"The base fails {check_id}: its model's files changed while it was "
+                "measured."
+            )
         if classification == "skipped" and b and b["status"] != "skipped":
             warnings.append(
                 f"The check {check_id} no longer applies on the head: "

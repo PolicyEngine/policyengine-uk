@@ -1176,8 +1176,28 @@ def test_the_command_fingerprints_the_model_before_building_the_simulation():
 
     from policyengine_uk.utils.aggregate_impact import __main__ as cli
 
-    source = inspect.getsource(cli)
-    assert source.index("fingerprint_at_start = model_fingerprint()") < source.index(
-        "sim = Microsimulation(dataset=str(dataset_path))"
-    )
+    source = inspect.getsource(cli.cmd_measure)
+    first = source.index("fingerprint_at_start = model_fingerprint()")
+    # Before the partition is loaded or the model imported.
+    assert first < source.index("default_partition_path()")
+    assert first < source.index("from policyengine_uk import Microsimulation")
     assert "fingerprint_at_start=fingerprint_at_start" in source
+
+
+def test_a_base_whose_model_changed_fails_the_model_axis_too():
+    """Sol re-review 6 of #2425, P3 7: base fail and head pass was 'fixed'."""
+    base, head = _on("1" * 64), _on("1" * 64)
+    for side, status in ((base, "fail"), (head, "pass")):
+        side["checks"].append(
+            {
+                "id": "model:unchanged",
+                "label": "x",
+                "section": "data",
+                "severity": "fail",
+                "status": status,
+                "failing": {"": "changed"} if status == "fail" else {},
+            }
+        )
+    summary = compare(base, head, SPEC)
+    assert summary["status"] == "fail"
+    assert any("base fails model:unchanged" in f for f in summary["failures"])
