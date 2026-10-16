@@ -4,6 +4,7 @@ import dataclasses
 from types import SimpleNamespace
 
 import numpy as np
+import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
@@ -259,56 +260,132 @@ def _recorded(common, rare, tax=5e11):
     return rec
 
 
-def test_a_suppressed_head_cannot_be_recovered_from_a_total():
-    """Sol review of #2425, P1: spending total less the common benefit gave the
-    rare one back. Totals that contain it are rounded to £1bn."""
-    from policyengine_uk.utils.aggregate_impact.measure import protect_totals
+def _excluded(rec, year=2026):
+    from policyengine_uk.utils.aggregate_impact.measure import (
+        exclude_suppressed,
+        exclusion_signs,
+        suppressed_heads,
+    )
 
+    partition = _protection_partition()
+    exclude_suppressed(
+        rec,
+        exclusion_signs(partition, set()),
+        suppressed_heads(rec, partition, year),
+        year,
+    )
+    return {m: r["values"].get(str(year)) for m, r in rec.metrics.items()}
+
+
+def test_a_total_leaves_out_a_suppressed_head():
+    """Sol re-review 5 of #2335, P2: rounding the totals let repeated reports
+    narrow the head down. Each total is now published without it."""
     rec = _recorded(common=7.3e10, rare=246.9)
-    protect_totals(rec, _protection_partition(), set(), 2026)
-    published = {m: r["values"]["2026"] for m, r in rec.metrics.items()}
+    published = _excluded(rec)
     assert published["spending.rare"] is None
     for total in ("model.gov_spending", "model.household_benefits", "balance.spending"):
-        assert published[total] == 7.3e10  # 73.0000002469bn rounded
-        assert rec.metrics[total]["rounded"] == ["2026"]
-    assert published["balance.balance"] == round((5e11 - 7.3e10) / 1e9) * 1e9
-    # A total with no suppressed head is exact.
-    assert (
-        published["model.gov_tax"] == 5e11
-        and "rounded" not in rec.metrics["model.gov_tax"]
-    )
+        assert published[total] == 7.3e10
+        assert rec.metrics[total]["excludes"] == {"2026": {"spending.rare": 1}}
+    # The balance is receipts less spending: a spending head enters it negative.
+    assert published["balance.balance"] == 5e11 - 7.3e10
+    assert rec.metrics["balance.balance"]["excludes"] == {"2026": {"spending.rare": -1}}
+    # A total with no suppressed head is unchanged and marked nothing.
+    assert published["model.gov_tax"] == 5e11
+    assert "excludes" not in rec.metrics["model.gov_tax"]
     # The raw value is kept off the record.
     assert all(246.9 not in r["values"].values() for r in rec.metrics.values())
 
 
 @settings(max_examples=200, deadline=None)
-@given(common=st.floats(1e8, 5e11), rare=st.floats(1.0, 4.99e8))
-def test_protected_totals_carry_nothing_below_a_billion(common, rare):
-    from policyengine_uk.utils.aggregate_impact.measure import protect_totals
-
-    rec = _recorded(common, rare)
-    protect_totals(rec, _protection_partition(), set(), 2026)
-    for total in ("model.gov_spending", "model.household_benefits", "balance.spending"):
-        value = rec.metrics[total]["values"]["2026"]
-        assert value % 1e9 == 0
-        # Two datasets whose rare head differs inside the same billion publish
-        # the same total.
-        other = _recorded(common, rare / 2)
-        protect_totals(other, _protection_partition(), set(), 2026)
-        if round((common + rare) / 1e9) == round((common + rare / 2) / 1e9):
-            assert other.metrics[total]["values"]["2026"] == value
-
-
-def test_a_large_suppressed_head_suppresses_its_totals():
-    from policyengine_uk.utils.aggregate_impact.measure import protect_totals
-
-    rec = _recorded(common=7.3e10, rare=6e8)
-    protect_totals(rec, _protection_partition(), set(), 2026)
-    assert rec.metrics["model.gov_spending"]["values"]["2026"] is None
-    assert rec.metrics["model.gov_spending"]["suppressed"] == ["2026"]
+@given(
+    common=st.floats(1e8, 5e11),
+    rare=st.floats(-1e10, 1e10),
+    other=st.floats(-1e10, 1e10),
+)
+def test_no_published_figure_depends_on_a_suppressed_head(common, rare, other):
+    """For all values: two datasets that differ only in a suppressed head
+    publish the same figures, whatever its size or sign (to within a penny of
+    floating-point rounding)."""
+    first, second = (
+        _excluded(_recorded(common, rare)),
+        _excluded(_recorded(common, other)),
+    )
+    assert first.keys() == second.keys()
+    for metric_id, value in first.items():
+        if value is None:
+            assert second[metric_id] is None
+        else:
+            assert second[metric_id] == pytest.approx(value, rel=0, abs=0.01)
 
 
-# Sol re-review 3 of #2335.
+@settings(max_examples=100, deadline=None)
+@given(
+    commons=st.lists(st.floats(1e8, 5e11), min_size=2, max_size=6),
+    rare=st.floats(0, 4.99e8),
+)
+def test_repeated_reports_say_nothing_about_a_suppressed_head(commons, rare):
+    """Each published total equals the published heads' sum in every report,
+    so no sequence of reports narrows the suppressed head down."""
+    for common in commons:
+        published = _excluded(_recorded(common, rare))
+        assert published["model.gov_spending"] == pytest.approx(
+            published["spending.common"], rel=0, abs=0.01
+        )
+        assert published["balance.balance"] == pytest.approx(
+            published["receipts.tax"] - published["spending.common"], rel=0, abs=0.01
+        )
+
+
+def test_income_for_deciles_leaves_out_suppressed_heads():
+    from policyengine_uk.utils.aggregate_impact.measure import (
+        exclusion_signs,
+        income_without,
+    )
+
+    partition = _protection_partition()
+    signs = exclusion_signs(partition, set())
+    income = np.array([30_000.0, 40_000.0, 50_000.0])
+    head_hh = {
+        "rare": np.array([0.0, 900.0, 0.0]),
+        "common": np.ones(3),
+        "tax": np.ones(3),
+    }
+    hidden = {"rare": ("spending.rare", 900.0)}
+    adjusted, excludes = income_without(
+        income, signs["household.household_net_income"], hidden, partition, head_hh
+    )
+    np.testing.assert_allclose(adjusted, [30_000.0, 39_100.0, 50_000.0])
+    assert excludes == {"spending.rare": 1}
+    # Without suppressed heads, nothing changes.
+    same, none = income_without(
+        income, signs["household.household_net_income"], {}, partition, head_hh
+    )
+    assert same is income and none == {}
+    # A suppressed head with an unknown income composition: no deciles.
+    assert income_without(income, None, hidden, partition, head_hh) == (None, {})
+
+
+def test_household_net_income_signs_follow_its_adds_and_subtracts():
+    from policyengine_uk.utils.aggregate_impact.measure import exclusion_signs
+
+    signs = exclusion_signs(_protection_partition(), set())
+    # Benefits add to household net income; the partition's tax head is in
+    # gov_tax only, not household_tax, so it doesn't enter it.
+    assert signs["household.household_net_income"] == {"common": 1, "rare": 1}
+    assert "household.household_market_income" not in signs
+
+
+def test_no_head_is_part_of_household_market_income():
+    """Market income holds no tax or benefit head, so it needs no exclusion."""
+    from policyengine_uk.utils.aggregate_impact.partition import load_partition
+    from policyengine_uk.variables.household.income.household_market_income import (
+        HOUSEHOLD_MARKET_INCOME_VARIABLES,
+    )
+
+    from policyengine_uk.utils.aggregate_impact.partition import default_partition_path
+
+    heads = {head.variable for head in load_partition(default_partition_path()).heads}
+    assert not heads & set(HOUSEHOLD_MARKET_INCOME_VARIABLES)
 
 
 def test_a_zero_weight_record_does_not_count_towards_a_published_figure():
@@ -318,50 +395,6 @@ def test_a_zero_weight_record_does_not_count_towards_a_published_figure():
     weight = np.array([100.0] * 3 + [0.0] * 7 + [100.0] * 5)
     # Ten records have values, but only three carry weight: a small cell.
     assert _weighted_records(values != 0, weight) == 3
-
-
-def test_decile_mean_incomes_are_rounded_in_a_year_with_a_suppressed_head():
-    from policyengine_uk.utils.aggregate_impact.measure import (
-        hidden_detail,
-        protect_totals,
-    )
-
-    rec = _recorded(common=7.3e10, rare=246.9)
-    for d in range(1, 11):
-        rec.metric(
-            f"deciles.mean_income.{d}", "d", "deciles", "gbp_household", 2026, 23_456.7
-        )
-    protect_totals(rec, _protection_partition(), set(), 2026)
-    record = rec.metrics["deciles.mean_income.3"]
-    assert record["values"]["2026"] == 23_000 and record["rounded"] == ["2026"]
-    detail = hidden_detail(rec, 2026)
-    assert detail["values"]["deciles.mean_income.3|2026"] == 23_456.7
-    assert detail["contains"]["deciles.mean_income.3|2026"] == ["spending.rare"]
-    assert detail["contains"]["model.gov_spending|2026"] == ["spending.rare"]
-    assert detail["values"]["model.gov_spending|2026"] == 7.3e10 + 246.9
-
-
-def test_decile_mean_incomes_stay_exact_without_a_suppressed_head():
-    from policyengine_uk.utils.aggregate_impact.measure import protect_totals
-
-    rec = _recorded(common=7.3e10, rare=246.9)
-    rec.metrics["spending.rare"]["values"]["2026"] = 246.9
-    rec.metrics["spending.rare"].pop("suppressed")
-    rec.hidden.clear()
-    rec.metric("deciles.mean_income.3", "d", "deciles", "gbp_household", 2026, 23_456.7)
-    protect_totals(rec, _protection_partition(), set(), 2026)
-    assert rec.metrics["deciles.mean_income.3"]["values"]["2026"] == 23_456.7
-
-
-def test_a_failing_determinism_check_publishes_no_amount():
-    """Sol re-review 3 of #2335, finding 3: an exact gov_balance, less the
-    published heads, would give a suppressed head back."""
-    rec = Recorder()
-    baseline = {2025: 10.0, 2026: 123_456_789.0}
-    drifting = YearSim({2025: 10.0, 2026: 123_456_790.0})
-    measure_reforms(lambda reform=None: drifting, None, baseline, {}, [], YEARS, rec)
-    detail = rec.checks["determinism:rebuilt_baseline"]["failing"]["2026"]
-    assert "£" not in detail and "123" not in detail and "differs" in detail
 
 
 def test_identity_diagnostics_count_only_households_with_weight():

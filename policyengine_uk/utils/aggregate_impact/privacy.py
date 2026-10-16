@@ -6,16 +6,14 @@ caseload from one recipient give the award and the survey weight. Such
 figures are published as suppressed, and descriptions of fewer than
 ``MIN_CELL`` units give no count or weighted share.
 
-Raw values of suppressed and rounded figures are kept under ``HIDDEN_KEY`` in
-the household detail, which is written only to ``private/`` and never
-uploaded. The comparison reads them there to publish a rounded total's exact
-change when no suppressed head inside it changed, which reveals nothing the
-published heads' changes don't.
+A total that contains a suppressed head is published without it that year
+(``measure.exclude_suppressed``), and household incomes for deciles leave it
+out too, so no published figure, in any number of reports, says anything
+about it.
 """
 
 MIN_CELL = 10
 SUPPRESSED = f"fewer than {MIN_CELL} records"
-HIDDEN_KEY = "hidden"
 
 
 def small(count: int) -> bool:

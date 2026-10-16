@@ -103,40 +103,34 @@ def _changes_table(rows, years) -> str:
     return _table(["Measure"] + _year_header(years), body)
 
 
+def _mark(cell) -> str:
+    # A total that leaves out a suppressed figure that year.
+    return " †" if cell.get("excludes") else ""
+
+
 def _level_cell(row, year, side) -> str:
     cell = row["values"][str(year)]
     if cell.get(f"{side}_suppressed"):
         return _SUPPRESSED_CELL
-    return fmt_level(cell[side], row["kind"])
+    return fmt_level(cell[side], row["kind"]) + _mark(cell)
 
 
 def _change_cell(row, year) -> str:
     cell = row["values"][str(year)]
-    if cell.get("rounded"):
-        return _ROUNDED_CELL
     if cell.get("delta") is None and (
         cell.get("base_suppressed") or cell.get("head_suppressed")
     ):
         return _SUPPRESSED_CELL
-    return fmt_change(cell["delta"], row["kind"])
+    return fmt_change(cell["delta"], row["kind"]) + _mark(cell)
 
 
 # A figure from fewer than 10 records is not published (privacy.py).
 _SUPPRESSED_CELL = "suppressed"
-# A rounded total whose exact change could reveal such a figure.
-_ROUNDED_CELL = "withheld (rounded total)"
 
 
 def _levels_table(rows, years) -> str:
     body = [
-        [row["label"]]
-        + [
-            _SUPPRESSED_CELL
-            if row["values"][str(y)].get("head_suppressed")
-            else fmt_level(row["values"][str(y)]["head"], row["kind"])
-            for y in years
-        ]
-        for row in rows
+        [row["label"]] + [_level_cell(row, y, "head") for y in years] for row in rows
     ]
     return _table(["Measure (head)"] + _year_header(years), body)
 

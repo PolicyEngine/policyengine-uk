@@ -22,12 +22,7 @@ from policyengine_uk.tests.aggregate_impact.test_aggregate_impact_measure import
     _protection_partition,
     _recorded,
 )
-from policyengine_uk.utils.aggregate_impact.measure import (
-    hidden_detail,
-    protect_totals,
-    weighted_gini,
-)
-from policyengine_uk.utils.aggregate_impact.privacy import HIDDEN_KEY
+from policyengine_uk.utils.aggregate_impact.measure import weighted_gini
 from policyengine_uk.utils.aggregate_impact.render import fmt_change, fmt_level, render
 from policyengine_uk.utils.aggregate_impact.spec import Threshold, load_spec
 
@@ -601,7 +596,7 @@ def test_a_zero_weight_household_does_not_count_as_changed():
 
 @settings(max_examples=50, deadline=None)
 @given(seed=st.integers(0, 2**32 - 1))
-def test_published_decile_rows_cannot_rebuild_the_income_total(seed):
+def test_published_decile_rows_carry_no_weights_and_display_precision_only(seed):
     """The "all" row's mean change over its relative change, times the
     household count, gave the exact base income total back."""
     rng = np.random.default_rng(seed)
@@ -618,110 +613,117 @@ def test_published_decile_rows_cannot_rebuild_the_income_total(seed):
             assert row["share_gaining"] == round(row["share_gaining"], 3)
 
 
-def _sides(rare_base, rare_head, common_head=7.4e10):
-    out = []
-    for common, rare in ((7.3e10, rare_base), (common_head, rare_head)):
-        rec = _recorded(common=common, rare=rare)
-        protect_totals(rec, _protection_partition(), set(), 2026)
-        out.append(
-            ({m["id"]: m for m in rec.metrics.values()}, hidden_detail(rec, 2026))
-        )
-    return out
+def _side(common, rare, records):
+    from policyengine_uk.utils.aggregate_impact.measure import (
+        Recorder,
+        exclude_suppressed,
+        exclusion_signs,
+        suppressed_heads,
+    )
+
+    rec = Recorder()
+    rec.metric("receipts.tax", "Tax", "receipts", "gbp", 2026, 5e11, records=5000)
+    rec.metric("spending.common", "C", "spending", "gbp", 2026, common, records=500)
+    rec.metric("spending.rare", "R", "spending", "gbp", 2026, rare, records=records)
+    for total in ("model.gov_spending", "model.household_benefits", "balance.spending"):
+        rec.metric(total, total, "model_totals", "gbp", 2026, common + rare)
+    rec.metric("model.gov_tax", "gov_tax", "model_totals", "gbp", 2026, 5e11)
+    rec.metric("balance.balance", "b", "balance", "gbp", 2026, 5e11 - common - rare)
+    partition = _protection_partition()
+    exclude_suppressed(
+        rec,
+        exclusion_signs(partition, set()),
+        suppressed_heads(rec, partition, 2026),
+        2026,
+    )
+    return {m["id"]: m for m in rec.metrics.values()}
 
 
 def _cell(rows, metric_id):
     return next(r for r in rows if r["id"] == metric_id)["values"]["2026"]
 
 
-def test_a_rounded_total_shows_its_exact_change_when_no_suppressed_head_moved():
+def _changes(base, head):
     from policyengine_uk.utils.aggregate_impact.compare import compare_metrics
 
-    (base, base_hidden), (head, head_hidden) = _sides(246.9, 246.9)
-    rows, flags = compare_metrics(
-        base, head, SPEC, [2026], base_hidden=base_hidden, head_hidden=head_hidden
-    )
+    rows, flags = compare_metrics(base, head, SPEC, [2026])
+    return rows, flags
+
+
+def test_a_total_without_its_suppressed_head_changes_by_the_published_heads():
+    """Sol re-review 5 of #2335: totals leave suppressed heads out, so their
+    exact change is the published heads' change, and is flagged normally."""
+    rows, flags = _changes(_side(7.3e10, 246.9, 1), _side(7.4e10, 300.0, 1))
     total = _cell(rows, "model.gov_spending")
-    # Levels stay rounded; the change is the common benefit's exact £1bn.
     assert total["base"] == 7.3e10 and total["head"] == 7.4e10
-    assert total["delta"] == pytest.approx(1e9) and not total["rounded"]
+    assert total["delta"] == pytest.approx(1e9)
+    assert total["excludes"] == ["spending.rare"]
     assert any(f["id"] == "model.gov_spending" for f in flags)
     # The suppressed head itself never shows a change.
     assert _cell(rows, "spending.rare")["delta"] is None
+    # A total with no suppressed head is unchanged and marked nothing.
+    assert _cell(rows, "model.gov_tax")["excludes"] == []
 
 
-def test_a_rounded_total_withholds_its_change_when_a_suppressed_head_moved():
-    from policyengine_uk.utils.aggregate_impact.compare import compare_metrics
-
-    (base, base_hidden), (head, head_hidden) = _sides(246.9, 300.0, common_head=7.3e10)
-    rows, flags = compare_metrics(
-        base, head, SPEC, [2026], base_hidden=base_hidden, head_hidden=head_hidden
-    )
+def test_a_suppression_transition_aligns_both_sides_from_published_values():
+    """Sol re-review 4, finding 1: 10 recipients on the base and 9 on the head.
+    The base publishes the head, so it is taken out of the base's total too,
+    and the change is the common benefit's change alone."""
+    rows, _ = _changes(_side(7.3e10, 246.9, 10), _side(7.4e10, 246.9, 9))
     total = _cell(rows, "model.gov_spending")
-    assert total["delta"] is None and total["rounded"]
-    assert not any(f["id"] == "model.gov_spending" for f in flags)
-    # The exact gov_tax change is unaffected: it holds no suppressed head.
-    assert _cell(rows, "model.gov_tax")["delta"] == 0
+    assert total["delta"] == pytest.approx(1e9)
+    assert total["excludes"] == ["spending.rare"]
+    balance = _cell(rows, "balance.balance")
+    assert balance["delta"] == pytest.approx(-1e9)
+    assert _cell(rows, "spending.rare")["delta"] is None
 
 
-def test_without_private_detail_a_rounded_total_withholds_its_change():
-    from policyengine_uk.utils.aggregate_impact.compare import compare_metrics
-
-    (base, _), (head, _) = _sides(246.9, 246.9)
-    rows, flags = compare_metrics(base, head, SPEC, [2026])
-    total = _cell(rows, "model.gov_spending")
-    assert total["delta"] is None and total["rounded"]
-    assert not any(f["id"] == "model.gov_spending" for f in flags)
-
-
-@settings(max_examples=100, deadline=None)
+@settings(max_examples=200, deadline=None)
 @given(
     rare=st.floats(1.0, 4.9e8),
     moved=st.floats(-1e8, 1e8),
     common_change=st.floats(-1e10, 1e10),
+    base_records=st.sampled_from([1, 9, 10, 500]),
+    head_records=st.sampled_from([1, 9, 10, 500]),
 )
-def test_a_published_change_never_reveals_a_suppressed_heads_change(
-    rare, moved, common_change
+def test_no_published_change_depends_on_a_suppressed_head(
+    rare, moved, common_change, base_records, head_records
 ):
-    """For all inputs: the published changes of every total, less the
-    published changes of the heads, never give the suppressed head's change."""
-    from policyengine_uk.utils.aggregate_impact.compare import compare_metrics
-
-    (base, bh), (head, hh) = _sides(
-        rare, rare + moved, common_head=7.3e10 + common_change
-    )
-    rows, _ = compare_metrics(base, head, SPEC, [2026], base_hidden=bh, head_hidden=hh)
-    published = {r["id"]: r["values"]["2026"]["delta"] for r in rows}
-    assert published["spending.rare"] is None
-    if rare + moved != rare:  # the suppressed head really changed
+    """For all inputs: whatever a suppressed head does, on either side, every
+    published total and change equals what the published heads give."""
+    base = _side(7.3e10, rare, base_records)
+    head = _side(7.3e10 + common_change, rare + moved, head_records)
+    rows, _ = _changes(base, head)
+    cells = {r["id"]: r["values"]["2026"] for r in rows}
+    rare_hidden = base_records < 10 or head_records < 10
+    if rare_hidden:
+        assert cells["spending.rare"]["delta"] is None
+        # Totals change by the common head's change, nothing more.
         for total in (
             "model.gov_spending",
             "model.household_benefits",
             "balance.spending",
         ):
-            assert published[total] is None
+            assert cells[total]["delta"] == pytest.approx(
+                common_change, rel=0, abs=0.01
+            )
+    # A side that suppresses the head publishes totals that don't depend on it.
+    for side, records, value in (
+        (base, base_records, rare),
+        (head, head_records, rare + moved),
+    ):
+        if records < 10:
+            assert side["model.gov_spending"]["values"]["2026"] == pytest.approx(
+                side["spending.common"]["values"]["2026"], rel=0, abs=0.01
+            )
 
 
-def test_hidden_detail_is_written_only_to_private_and_read_back(tmp_path):
-    from policyengine_uk.utils.aggregate_impact.measure import read_result, write_result
-
-    (base, hidden), _ = _sides(246.9, 246.9)
-    households = {"2026": {"household_id": np.arange(3)}, HIDDEN_KEY: hidden}
-    write_result(tmp_path, {"schema": "x", "metrics": list(base.values())}, households)
-    published = (tmp_path / "result.json").read_text()
-    assert "246.9" not in published and "hidden" not in published
-    assert (tmp_path / "private" / "hidden.json").exists()
-    _, loaded = read_result(tmp_path)
-    assert loaded[HIDDEN_KEY] == json.loads(json.dumps(hidden))
-
-
-def test_a_withheld_change_and_a_small_decile_row_render_as_such():
-    from policyengine_uk.utils.aggregate_impact.compare import compare_metrics
+def test_a_suppressed_figure_and_a_marked_total_render_as_such():
     from policyengine_uk.utils.aggregate_impact.render import _change_cell, _deciles
 
-    (base, bh), (head, hh) = _sides(246.9, 300.0, common_head=7.3e10)
-    rows, _ = compare_metrics(base, head, SPEC, [2026], base_hidden=bh, head_hidden=hh)
+    rows, _ = _changes(_side(7.3e10, 246.9, 1), _side(7.4e10, 300.0, 1))
     total = next(r for r in rows if r["id"] == "model.gov_spending")
-    assert _change_cell(total, 2026) == "withheld (rounded total)"
+    assert _change_cell(total, 2026) == "+£1.00bn †"
     rare = next(r for r in rows if r["id"] == "spending.rare")
     assert _change_cell(rare, 2026) == "suppressed"
     row = {
@@ -736,39 +738,23 @@ def test_a_withheld_change_and_a_small_decile_row_render_as_such():
     assert "fewer than 10 households change" in text and "n/a" not in text
 
 
-def test_a_suppression_transition_withholds_the_totals_exact_change():
-    """Sol re-review 4, finding 1: 10 recipients on the base and 9 on the head,
-    same total; an exact total change would show the 9 still add to £246.90."""
-    from policyengine_uk.utils.aggregate_impact.compare import compare_metrics
-    from policyengine_uk.utils.aggregate_impact.measure import Recorder
+def test_the_w4_format_lists_the_heads_a_total_leaves_out():
+    side = _side(7.3e10, 246.9, 1)
+    result = {
+        "schema": "x",
+        "status": "ok",
+        "years": [2026],
+        "metrics": list(side.values()),
+        "checks": [],
+        "provenance": {},
+        "partition": {},
+    }
+    from policyengine_uk.utils.aggregate_impact.api import to_report
 
-    sides = []
-    for records, common in ((10, 7.3e10), (9, 7.4e10)):
-        rec = Recorder()
-        rec.metric("receipts.tax", "Tax", "receipts", "gbp", 2026, 5e11, records=5000)
-        rec.metric("spending.common", "C", "spending", "gbp", 2026, common, records=500)
-        rec.metric(
-            "spending.rare", "R", "spending", "gbp", 2026, 246.9, records=records
-        )
-        for total in (
-            "model.gov_spending",
-            "model.household_benefits",
-            "balance.spending",
-        ):
-            rec.metric(total, total, "model_totals", "gbp", 2026, common + 246.9)
-        rec.metric("model.gov_tax", "gov_tax", "model_totals", "gbp", 2026, 5e11)
-        rec.metric(
-            "balance.balance", "b", "balance", "gbp", 2026, 5e11 - common - 246.9
-        )
-        protect_totals(rec, _protection_partition(), set(), 2026)
-        sides.append(
-            ({m["id"]: m for m in rec.metrics.values()}, hidden_detail(rec, 2026))
-        )
-    (base, bh), (head, hh) = sides
-    rows, _ = compare_metrics(base, head, SPEC, [2026], base_hidden=bh, head_hidden=hh)
-    assert _cell(rows, "model.gov_spending")["delta"] is None
-    assert _cell(rows, "spending.rare")["delta"] is None
-    assert _cell(rows, "spending.common")["delta"] == pytest.approx(1e9)
+    rows = {(r["metric_id"], r["year"]): r for r in to_report(result)["metrics"]}
+    assert rows[("model.gov_spending", 2026)]["excludes"] == ["spending.rare"]
+    assert rows[("model.gov_tax", 2026)]["excludes"] == []
+    assert rows[("spending.rare", 2026)]["suppressed"]
 
 
 def test_decile_changes_that_round_to_zero_are_not_called_no_change():
