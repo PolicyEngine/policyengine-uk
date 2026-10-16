@@ -91,7 +91,7 @@ MEANS_TESTED = [
 UC_TESTS = [
     "uc_earned_income",
     "universal_credit_pre_benefit_cap",
-    "is_benefit_cap_exempt_earnings",
+    "is_uc_benefit_cap_exempt_earnings",
     "universal_credit",
 ]
 # HBAI components the loss may move: the loss itself, taxes, and benefits
