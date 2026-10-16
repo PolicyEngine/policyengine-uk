@@ -16,7 +16,7 @@ from typing import Iterable, Mapping, Optional
 import numpy as np
 
 from . import TOOL_SCHEMA
-from .privacy import HIDDEN_KEY, MIN_CELL, small
+from .privacy import MIN_CELL, small
 from .spec import Spec, fiscal_year_label
 
 # Failing these on the head blocks the change whatever the base did: a
@@ -90,9 +90,26 @@ def classify_check(
     return "pre_existing"
 
 
-def _is_suppressed(metrics: Mapping, metric_id: str, key: str) -> bool:
-    metric = metrics.get(metric_id)
-    return metric is not None and key in metric.get("suppressed", ())
+def _excludes(metric: Optional[Mapping], key: str) -> dict:
+    """The suppressed heads a total leaves out in ``key``, with their signs."""
+    return dict(((metric or {}).get("excludes") or {}).get(key) or {})
+
+
+def _aligned(value, metric_excludes: Mapping, union: Mapping, metrics: Mapping, key):
+    """``value`` with every head in ``union`` taken out, using published heads.
+
+    A head excluded on the other side only is published on this side, so it
+    can be taken out here from its published value: the two sides then leave
+    out the same heads, and their difference is the published heads' change.
+    """
+    for head_id, sign in union.items():
+        if head_id in metric_excludes:
+            continue
+        published = _published(metrics, head_id, key)
+        if not _finite(published):
+            return None
+        value = value - sign * published
+    return value
 
 
 def _published(metrics: Mapping, metric_id: str, key: str):
@@ -100,68 +117,7 @@ def _published(metrics: Mapping, metric_id: str, key: str):
     return None if metric is None else metric["values"].get(key)
 
 
-def _protected_ids(base_hidden, head_hidden, key: str) -> set:
-    """Totals protected in ``key`` because they contain a suppressed head."""
-    out = set()
-    for hidden in (base_hidden, head_hidden):
-        for cell in (hidden or {}).get("contains", {}):
-            metric_id, _, year = cell.rpartition("|")
-            if year == key:
-                out.add(metric_id)
-    return out
-
-
-def private_delta(
-    metric_id: str,
-    key: str,
-    base: Mapping,
-    head: Mapping,
-    base_hidden: Optional[Mapping],
-    head_hidden: Optional[Mapping],
-):
-    """A protected total's exact change, or None when it could reveal a head.
-
-    A total rounded (or suppressed) because it contains a suppressed head is
-    published only approximately. Its exact change, read from the raw values
-    in each side's private detail, is published when every suppressed head
-    inside it is unchanged between base and head: the change is then the sum
-    of the published heads' changes and reveals nothing more. Otherwise, or
-    without both sides' private detail, it is None.
-    """
-    if not base_hidden or not head_hidden:
-        return None
-    cell = f"{metric_id}|{key}"
-    b = base_hidden["values"].get(cell, _published(base, metric_id, key))
-    h = head_hidden["values"].get(cell, _published(head, metric_id, key))
-    if not (_finite(b) and _finite(h)):
-        return None
-    inside = set(base_hidden["contains"].get(cell, ())) | set(
-        head_hidden["contains"].get(cell, ())
-    )
-    # A head suppressed on one side only: an exact change would show what the
-    # few records on the suppressed side add up to (Sol re-review 4).
-    for metric_id_ in inside | {metric_id}:
-        if _is_suppressed(base, metric_id_, key) != _is_suppressed(
-            head, metric_id_, key
-        ):
-            return None
-    for head_id in inside:
-        hk = f"{head_id}|{key}"
-        b_raw = base_hidden["values"].get(hk, _published(base, head_id, key))
-        h_raw = head_hidden["values"].get(hk, _published(head, head_id, key))
-        if not (_finite(b_raw) and _finite(h_raw)) or b_raw != h_raw:
-            return None
-    return h - b
-
-
-def compare_metrics(
-    base: Mapping,
-    head: Mapping,
-    spec: Spec,
-    years,
-    base_hidden: Optional[Mapping] = None,
-    head_hidden: Optional[Mapping] = None,
-) -> tuple:
+def compare_metrics(base: Mapping, head: Mapping, spec: Spec, years) -> tuple:
     rows, flags = [], []
     ids = list(dict.fromkeys(list(head) + list(base)))
     for metric_id in ids:
@@ -188,47 +144,36 @@ def compare_metrics(
             b = base_metric["values"].get(key) if base_metric else None
             h = head_metric["values"].get(key) if head_metric else None
             # A figure from too few records is published as None, and a total
-            # containing one is rounded (privacy.py, measure.protect_totals).
+            # containing one leaves it out (privacy.py,
+            # measure.exclude_suppressed).
             b_hidden = key in (base_metric or {}).get("suppressed", ())
             h_hidden = key in (head_metric or {}).get("suppressed", ())
-            protected_total = (
-                key in (base_metric or {}).get("rounded", ())
-                or key in (head_metric or {}).get("rounded", ())
-                or (
-                    (b_hidden or h_hidden)
-                    and metric_id in _protected_ids(base_hidden, head_hidden, key)
-                )
-            )
-            if protected_total and base_metric and head_metric:
-                delta = private_delta(
-                    metric_id, key, base, head, base_hidden, head_hidden
-                )
-            elif b_hidden or h_hidden:
+            b_ex, h_ex = _excludes(base_metric, key), _excludes(head_metric, key)
+            union = {**b_ex, **h_ex}
+            if b_hidden or h_hidden:
                 # A head from fewer than 10 records: its change is too.
                 delta = None
+            elif not (_finite(b) and _finite(h)):
+                delta = None
+            elif b_ex == h_ex:
+                delta = h - b
             else:
-                delta = h - b if _finite(b) and _finite(h) else None
+                # The sides leave out different heads: take the union out of
+                # both, from published values only.
+                b_al = _aligned(b, b_ex, union, base, key)
+                h_al = _aligned(h, h_ex, union, head, key)
+                delta = None if b_al is None or h_al is None else h_al - b_al
             row["values"][key] = {
                 "base": b,
                 "head": h,
                 "delta": delta,
                 "base_suppressed": b_hidden,
                 "head_suppressed": h_hidden,
-                # Published levels are approximate and the exact change is
-                # withheld: a suppressed head inside the total changed, or the
-                # private detail was not available.
-                "rounded": bool(protected_total and delta is None),
+                # The suppressed heads this total leaves out, on either side.
+                "excludes": sorted(union),
             }
             if (delta is not None and delta != 0) or (
                 base_metric and head_metric and b_hidden != h_hidden
-            ):
-                row["changed"] = True
-            if (
-                protected_total
-                and delta is None
-                and base_metric
-                and head_metric
-                and b != h
             ):
                 row["changed"] = True
             if (
@@ -292,13 +237,11 @@ def decile_impacts(base_households: Mapping, head_households: Mapping, years) ->
     - A row where fewer than ``MIN_CELL`` households with weight change at
       all publishes no change: its mean change times the decile's weight
       would give those households' change back.
+    - The income each side records leaves out any head suppressed that year
+      (``measure.measure_year``), so no row carries a figure from fewer than
+      ``MIN_CELL`` records.
     - No row publishes its households' weight or base income, and changes
-      are rounded to what the comment shows (£1 and 0.1%). Otherwise the
-      "all" row's base income, from its mean change over its relative
-      change, times the published household count, would rebuild the
-      household income total that ``measure.protect_totals`` rounds. With
-      0.1%, a 20% change pins the base to about ±0.25%, some £3.5bn of a
-      £1.4tn total (Sol re-review 4: 0.01% left ±£420m).
+      are given to the precision the comment shows (£1 and 0.1%).
     """
     impacts, notes = {}, []
     for year in years:
@@ -591,23 +534,21 @@ def compare(
             f"{check['label']} ({check['id']}): " + "; ".join(check["head_details"][:3])
         )
 
-    rows, flags = compare_metrics(
-        _metric_map(base),
-        _metric_map(head),
-        spec,
-        years,
-        base_hidden=(base_households or {}).get(HIDDEN_KEY),
-        head_hidden=(head_households or {}).get(HIDDEN_KEY),
+    rows, flags = compare_metrics(_metric_map(base), _metric_map(head), spec, years)
+    excluded = sorted(
+        {
+            head_id
+            for m in (head or {}).get("metrics", []) + (base or {}).get("metrics", [])
+            for heads in (m.get("excludes") or {}).values()
+            for head_id in heads
+        }
     )
-    if any(
-        m.get("rounded")
-        for m in (head or {}).get("metrics", []) + (base or {}).get("metrics", [])
-    ):
+    if excluded:
         warnings.append(
-            "Totals that contain a figure from fewer than 10 records are rounded to the "
-            "nearest £1bn, and decile mean incomes to £1,000, in the years it is "
-            "suppressed, so it cannot be recovered from them. Their changes are exact "
-            "where no suppressed figure inside them changed, and withheld otherwise."
+            "In the years a figure from fewer than 10 records is suppressed ("
+            + ", ".join(excluded)
+            + "), every total containing it, and the decile incomes, leave it out, "
+            "so no published figure says anything about it. Those totals are marked †."
         )
     non_finite = []
     for row in rows:

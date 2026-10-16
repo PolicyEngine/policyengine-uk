@@ -16,7 +16,7 @@ from typing import Callable, Mapping, Optional, Sequence
 
 import numpy as np
 
-from .privacy import HIDDEN_KEY, MIN_CELL, small
+from .privacy import MIN_CELL, small
 from . import TOOL_SCHEMA
 from .guard import counted_once, snapshot_inputs
 from .partition import Partition, closure_problems, group_label, read_model_lists
@@ -42,11 +42,9 @@ class Recorder:
         # The year being measured; a check records which scopes it failed
         # in, so a comparison can tell a newly failing year from an old one.
         self.scope: str = ""
-        # Raw values of suppressed or rounded figures, and the suppressed heads
-        # each protected total contains: kept off the record, written only to
-        # private/ for the comparison (``write_result``).
+        # Raw values of suppressed heads: kept off the record, used only to
+        # take them out of the totals that contain them.
         self.hidden: dict = {}
-        self.contains: dict = {}
 
     def metric(
         self,
@@ -625,17 +623,28 @@ def measure_year(
             spec,
             hw,
         )
+    hidden = suppressed_heads(rec, partition, year)
     for variable, label in HOUSEHOLD_TOTALS.items():
         if variable in tbs_variables:
             values = array(sim, variable, year).astype(np.float64)
+            excludes = None
+            if variable == "hbai_household_net_income" and hidden:
+                values, excludes = _hbai_without(sim, year, hidden, partition, head_hh)
+            metric_id = f"household.{variable}"
+            if values is None:
+                # The suppressed heads can't be taken out of this total.
+                _publish_suppressed(rec, metric_id, label, "household_totals", year)
+                continue
             rec.metric(
-                f"household.{variable}",
+                metric_id,
                 label,
                 "household_totals",
                 "gbp",
                 year,
                 float(np.sum(hw * values)),
             )
+            if excludes:
+                rec.metrics[metric_id].setdefault("excludes", {})[str(year)] = excludes
     if {
         "household_net_income",
         "household_market_income",
@@ -752,7 +761,15 @@ def measure_year(
 
     decile = array(sim, spec.decile_variable, year).astype(np.int64)
     income = array(sim, spec.income_variable, year).astype(np.float64)
-    for d in range(1, 11):
+    signs = exclusion_signs(partition, active)
+    income, income_excludes = income_without(
+        income,
+        signs.get(f"household.{spec.income_variable}"),
+        hidden,
+        partition,
+        head_hh,
+    )
+    for d in range(1, 11) if income is not None else ():
         in_decile = decile == d
         weight = float(np.sum(hw[in_decile]))
         rec.metric(
@@ -766,127 +783,165 @@ def measure_year(
             else float("nan"),
             group="Own-decile levels",
         )
-    protect_totals(rec, partition, active, year)
-    hidden = households.setdefault(HIDDEN_KEY, {"values": {}, "contains": {}})
-    detail = hidden_detail(rec, year)
-    hidden["values"].update(detail["values"])
-    hidden["contains"].update(detail["contains"])
-    households[str(year)] = {
-        "household_id": array(sim, "household_id", year).astype(np.int64),
-        "household_weight": hw.astype(np.float64),
-        "household_count_people": people.astype(np.float64),
-        "decile": decile,
-        "income": income,
-    }
+        if income_excludes:
+            rec.metrics[f"deciles.mean_income.{d}"].setdefault("excludes", {})[
+                str(year)
+            ] = income_excludes
+    exclude_suppressed(rec, signs, hidden, year)
+    if income is not None:
+        households[str(year)] = {
+            "household_id": array(sim, "household_id", year).astype(np.int64),
+            "household_weight": hw.astype(np.float64),
+            "household_count_people": people.astype(np.float64),
+            "decile": decile,
+            "income": income,
+        }
 
 
-# A total that contains a suppressed head is rounded to this, so the head
-# cannot be recovered by subtracting the published heads from it; a head
-# worth half this or more makes the total suppressed instead.
-TOTAL_ROUNDING_GBP = 1e9
-# In a year with a suppressed head, each decile's mean household income is
-# rounded to this: an error of up to £500 a household, about £1.4bn over a
-# decile of 2.8m households, more than the £0.5bn a rounded total can hide.
-DECILE_MEAN_ROUNDING_GBP = 1e3
+def exclusion_signs(partition: Partition, active) -> dict:
+    """For each published total, the sign each head enters it with.
 
+    In a year with a suppressed head, every total containing it is published
+    without it (``exclude_suppressed``), so no published figure, in any number
+    of reports, says anything about it (Sol re-review 5 of #2335: rounding
+    the totals instead let repeated reports narrow the head down). Household
+    market income holds no head. The HBAI total, which resets negative
+    incomes to zero, is redone household by household (``_hbai_without``).
+    """
 
-def total_components(partition: Partition, active) -> dict:
-    """The heads each published total is built from."""
+    def signed(*parts):
+        out = {}
+        for total, sign in parts:
+            for head in partition.heads_in(total, active):
+                out[head.id] = out.get(head.id, 0) + sign
+        return {h: sign for h, sign in out.items() if sign}
 
-    def heads(*totals):
-        return {h.id for t in totals for h in partition.heads_in(t, active)}
-
-    out = {f"model.{t}": heads(t) for t in partition.totals}
-    out["balance.receipts"] = heads("gov_tax")
-    out["balance.spending"] = heads("gov_spending")
-    out["balance.balance"] = heads("gov_tax", "gov_spending")
+    out = {f"model.{t}": signed((t, 1)) for t in partition.totals}
+    out["balance.receipts"] = signed(("gov_tax", 1))
+    out["balance.spending"] = signed(("gov_spending", 1))
+    out["balance.balance"] = signed(("gov_tax", 1), ("gov_spending", -1))
+    out["model.gov_balance"] = signed(("gov_tax", 1), ("gov_spending", -1))
     out["balance.household_only_benefits"] = {
-        h.id
+        h.id: 1
         for h in partition.spending_heads
         if "household_benefits" in h.totals and "gov_spending" not in h.totals
     }
-    out["model.gov_balance"] = heads("gov_tax", "gov_spending")
-    every = {h.id for h in partition.heads}
-    for variable in HOUSEHOLD_TOTALS:
-        out[f"household.{variable}"] = every
+    # household_net_income adds household_benefits and subtracts household_tax
+    # (its own adds and subtracts).
+    out["household.household_net_income"] = signed(
+        ("household_benefits", 1), ("household_tax", -1)
+    )
     return out
 
 
-def protect_totals(rec: "Recorder", partition: Partition, active, year: int) -> None:
-    """Complementary protection: totals cannot reveal a suppressed head.
+def income_without(income, income_signs, hidden, partition, head_hh) -> tuple:
+    """Each household's income with the suppressed heads taken out.
 
-    A head from fewer than ``MIN_CELL`` records is published as None, but a
-    total containing it, less the published heads, would give it back. Each
-    such total is rounded to ``TOTAL_ROUNDING_GBP`` for that year, or
-    suppressed if a contained head is worth half that or more.
+    Returns ``(income, excludes)``; ``income`` is None when there are
+    suppressed heads but the income's composition isn't known, so they can't
+    be taken out.
     """
+    if not hidden:
+        return income, {}
+    if income_signs is None:
+        return None, {}
+    excludes = {}
+    for head in partition.heads:
+        if head.id in hidden and head.id in income_signs:
+            sign = income_signs[head.id]
+            income = income - sign * head_hh[head.variable]
+            excludes[hidden[head.id][0]] = sign
+    return income, excludes
+
+
+def suppressed_heads(rec: "Recorder", partition: Partition, year: int) -> dict:
+    """``{head id: (metric id, raw value)}`` for each head suppressed in ``year``."""
     key = str(year)
-    hidden = {
-        metric_id.split(".", 1)[1]: abs(value)
-        for (metric_id, y), value in rec.hidden.items()
-        if y == key and metric_id.split(".", 1)[0] in ("receipts", "spending")
-    }
+    out = {}
+    for head in partition.heads:
+        metric_id = f"{'receipts' if head.kind == 'tax' else 'spending'}.{head.id}"
+        if (metric_id, key) in rec.hidden:
+            out[head.id] = (metric_id, rec.hidden[(metric_id, key)])
+    return out
+
+
+def exclude_suppressed(rec: "Recorder", signs: Mapping, hidden: Mapping, year: int):
+    """Publish each total containing a suppressed head without it.
+
+    The total's record lists, under ``excludes``, which heads it leaves out
+    that year and the sign each entered with, so the comparison can line up
+    two sides that exclude different heads.
+    """
     if not hidden:
         return
-    for metric_id, heads in total_components(partition, active).items():
+    key = str(year)
+    for metric_id, heads in signs.items():
         record = rec.metrics.get(metric_id)
-        contained = [hidden[h] for h in heads if h in hidden]
-        if record is None or not contained or record["values"].get(key) is None:
-            continue
-        value = record["values"][key]
-        rec.hidden[(metric_id, key)] = float(value)
-        rec.contains[(metric_id, key)] = sorted(
-            f"{section}.{h}"
-            for h in heads
-            if h in hidden
-            for section in ("receipts", "spending")
-            if (f"{section}.{h}", key) in rec.hidden
-        )
-        if max(contained) >= TOTAL_ROUNDING_GBP / 2:
-            record["values"][key] = None
-            record.setdefault("suppressed", []).append(key)
-        else:
-            record["values"][key] = float(
-                round(value / TOTAL_ROUNDING_GBP) * TOTAL_ROUNDING_GBP
-            )
-            record.setdefault("rounded", []).append(key)
-    # Each decile's mean income, times its share of households, would rebuild
-    # the household income total that was just rounded.
-    for d in range(1, 11):
-        record = rec.metrics.get(f"deciles.mean_income.{d}")
         if record is None or record["values"].get(key) is None:
             continue
-        value = record["values"][key]
-        rec.hidden[(record["id"], key)] = float(value)
-        # Household income contains every head.
-        rec.contains[(record["id"], key)] = sorted(
-            m
-            for (m, y) in rec.hidden
-            if y == key and m.split(".", 1)[0] in ("receipts", "spending")
-        )
+        inside = {h: sign for h, sign in heads.items() if h in hidden}
+        if not inside:
+            continue
         record["values"][key] = float(
-            round(value / DECILE_MEAN_ROUNDING_GBP) * DECILE_MEAN_ROUNDING_GBP
+            record["values"][key]
+            - sum(sign * hidden[h][1] for h, sign in inside.items())
         )
-        record.setdefault("rounded", []).append(key)
+        record.setdefault("excludes", {})[key] = {
+            hidden[h][0]: sign for h, sign in inside.items()
+        }
 
 
-def hidden_detail(rec: "Recorder", year: int) -> dict:
-    """One year's raw protected values and containment, for ``private/`` only.
+def _hbai_without(sim, year, hidden, partition, head_hh):
+    """The HBAI household net income without the suppressed heads, or None.
 
-    Keys are ``"<metric id>|<year>"``. ``values`` holds the raw value of every
-    suppressed or rounded figure; ``contains`` lists, for each protected
-    total, the suppressed heads inside it. ``compare.private_delta`` reads
-    them to publish a protected total's exact change when it is safe.
+    HBAI resets negative incomes to zero, so the heads are taken out of each
+    household's income before the reset. None when the model doesn't expose
+    the income before the reset or the HBAI component lists.
     """
-    key = str(year)
-    return {
-        "values": {f"{m}|{y}": v for (m, y), v in rec.hidden.items() if y == key},
-        "contains": {
-            f"{m}|{y}": list(heads)
-            for (m, y), heads in rec.contains.items()
-            if y == key
+    try:
+        from policyengine_uk.variables.household.income import (
+            hbai_household_net_income as hbai,
+        )
+
+        adds = set(hbai.HBAI_HOUSEHOLD_NET_INCOME_ADDS)
+        subtracts = set(hbai.HBAI_HOUSEHOLD_NET_INCOME_SUBTRACTS)
+    except (ImportError, AttributeError):
+        return None, None
+    inside = {}
+    for head in partition.heads:
+        if head.id in hidden:
+            if head.variable in adds:
+                inside[head] = 1
+            elif head.variable in subtracts:
+                inside[head] = -1
+    values = array(sim, "hbai_household_net_income", year).astype(np.float64)
+    if not inside:
+        return values, None
+    name = "hbai_household_net_income_before_reset_to_zero"
+    if name not in sim.tax_benefit_system.variables:
+        return None, None
+    before = array(sim, name, year).astype(np.float64)
+    for head, sign in inside.items():
+        before = before - sign * head_hh[head.variable]
+    excludes = {hidden[h.id][0]: sign for h, sign in inside.items()}
+    return np.maximum(0.0, before), excludes
+
+
+def _publish_suppressed(rec: "Recorder", metric_id, label, section, year):
+    record = rec.metrics.setdefault(
+        metric_id,
+        {
+            "id": metric_id,
+            "label": label,
+            "section": section,
+            "group": None,
+            "kind": "gbp",
+            "unit": None,
+            "values": {},
         },
-    }
+    )
+    record["values"][str(year)] = None
+    record.setdefault("suppressed", []).append(str(year))
 
 
 def publishable_guard(guard: dict) -> dict:
@@ -1263,7 +1318,6 @@ def measure(
 
 PRIVATE_DIRECTORY = "private"
 HOUSEHOLDS_FILE = "households.npz"
-HIDDEN_FILE = "hidden.json"
 
 
 def write_result(out_dir, result: Mapping, households: Optional[Mapping] = None):
@@ -1281,15 +1335,11 @@ def write_result(out_dir, result: Mapping, households: Optional[Mapping] = None)
         arrays = {
             f"{year}__{name}": values
             for year, columns in households.items()
-            if year != HIDDEN_KEY
             for name, values in columns.items()
         }
         private = out_dir / PRIVATE_DIRECTORY
         private.mkdir(exist_ok=True)
         np.savez_compressed(private / HOUSEHOLDS_FILE, **arrays)
-        if HIDDEN_KEY in households:
-            with open(private / HIDDEN_FILE, "w") as f:
-                json.dump(households[HIDDEN_KEY], f)
 
 
 def read_result(out_dir) -> tuple:
@@ -1308,8 +1358,4 @@ def read_result(out_dir) -> tuple:
             for key in data.files:
                 year, _, name = key.partition("__")
                 households.setdefault(year, {})[name] = data[key]
-        hidden = out_dir / PRIVATE_DIRECTORY / HIDDEN_FILE
-        if hidden.exists():
-            with open(hidden) as f:
-                households[HIDDEN_KEY] = json.load(f)
     return result, households
