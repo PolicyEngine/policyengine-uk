@@ -236,6 +236,10 @@
   absolute_error_margin: 0.01
   input:
     age: 45
+    # Supply the statutory 2016-17 allowance to isolate the RAS condition
+    # from the inherited historical PA parameter (which retains £10,600).
+    # https://www.legislation.gov.uk/ukpga/2015/11/section/5
+    personal_allowance: 11_000
     employment_income: 40_000
     savings_interest_income: 15_000
     personal_pension_contributions: 20_000
