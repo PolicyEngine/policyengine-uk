@@ -18,7 +18,8 @@ class is_housing_benefit_benefit_cap_single_claimant_rate(Variable):
         "regs. 5 and 7). The exceptions "
         "(is_housing_benefit_benefit_cap_exempt_specified_benefit) read the "
         "model's Child Benefit qualifying young person instead, which leaves "
-        "out a 16-year-old outside education (#2287)."
+        "out a 16-year-old in neither non-advanced education nor approved "
+        "training (#2287)."
     )
     definition_period = YEAR
     reference = (

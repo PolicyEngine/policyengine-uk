@@ -60,17 +60,16 @@ class is_housing_benefit_benefit_cap_exempt_specified_benefit(Variable):
         "Universal Credit before the cap (universal_credit_pre_benefit_cap), "
         "so a Universal Credit award the cap reduces to nil still lifts the "
         "Housing Benefit cap. A young person is the model's Child Benefit "
-        "qualifying young person, which leaves out a 16-year-old outside "
-        "education. The Housing Benefit cap rate "
-        "(is_housing_benefit_benefit_cap_single_claimant_rate) counts such a "
-        "16-year-old for the year, so a lone parent with one gets the family "
-        "rate, but the 16-year-old's own disability living allowance or "
-        "personal independence payment does not lift the cap. In law one "
-        "status decides "
-        "both: a school leaver remains a qualifying young person until a "
-        "terminal date or the end of an extension period (Child Benefit "
-        "(General) Regulations 2006 regs. 5 and 7), which the model does not "
-        "place (#2287)."
+        "qualifying young person, which leaves out a 16-year-old in neither "
+        "non-advanced education nor approved training. The Housing Benefit "
+        "cap rate (is_housing_benefit_benefit_cap_single_claimant_rate) "
+        "counts such a 16-year-old for the year, so a lone parent with one "
+        "gets the family rate, but the 16-year-old's own disability living "
+        "allowance or personal independence payment does not lift the cap. "
+        "In law one status decides both: a school leaver remains a "
+        "qualifying young person until a terminal date or the end of an "
+        "extension period (Child Benefit (General) Regulations 2006 regs. 5 "
+        "and 7), which the model does not place (#2287)."
     )
     definition_period = YEAR
     reference = (
@@ -87,10 +86,10 @@ class is_housing_benefit_benefit_cap_exempt_specified_benefit(Variable):
 
         # A child under 16 or a Child Benefit qualifying young person the
         # claimant or partner is responsible for (HB Regs 2006 regs 2(1), 19).
-        # A 16-year-old outside education is not one here, although the cap
-        # rate counts them for the year (has_sixteen_year_old_dependant); the
-        # model's qualifying young person has no school-leaver terminal date
-        # (#2287).
+        # A 16-year-old in neither non-advanced education nor approved
+        # training is not one here, although the cap rate counts them for the
+        # year (has_sixteen_year_old_dependant); the model's qualifying young
+        # person has no school-leaver terminal date (#2287).
         child_or_young_person = person(
             "is_child_or_young_person_for_legacy_benefits", period
         )
