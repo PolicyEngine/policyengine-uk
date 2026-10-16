@@ -339,8 +339,8 @@
   output:
     # FA 2004 s.228ZA: threshold income £300,000 > £200,000 and adjusted
     # income £400,000 > £260,000. £60,000 - (£400,000 - £260,000) / 2
-    # reaches the £10,000 floor. The model's simplified taper gives the
-    # same floor here; this case does not validate both statutory tests.
+    # reaches the £10,000 floor. Boundary tests of both statutory income
+    # gates are in pension_annual_allowance.yaml.
     # https://www.legislation.gov.uk/ukpga/2004/12/section/228ZA/2024-04-06
     pension_contributions_relief: 100_000
     pension_annual_allowance: 10_000

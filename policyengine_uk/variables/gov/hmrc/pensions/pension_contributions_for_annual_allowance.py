@@ -10,7 +10,10 @@ class pension_contributions_for_annual_allowance(Variable):
         "employee, personal, employer, and salary sacrifice contributions. "
         "Per Finance Act 2004 s.233, the pension input amount for money "
         "purchase arrangements includes both individual contributions and "
-        "employer contributions."
+        "employer contributions. Supply the statutory total pension input "
+        "amount, including valued defined-benefit accrual, to override this "
+        "cash-contribution proxy. The same input feeds adjusted income for "
+        "the taper and the annual allowance charge."
     )
     definition_period = YEAR
     reference = [
