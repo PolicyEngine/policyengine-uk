@@ -27,6 +27,16 @@ measures both sides in one job so that this detail stays on the runner, and
 `test_aggregate_impact_workflow.py` fails if the workflow could publish it.
 Check details give counts and weighted totals, never one household's value.
 
+Small cells (`privacy.py`):
+
+- A figure from fewer than 10 records is published as suppressed.
+- A total that holds one is rebuilt from its other components and marked †.
+- Poverty, inequality and deciles are withheld while HBAI income holds one.
+- A reform's figures for a year are withheld when they would come from a
+  small cell.
+
+`privacy.py` also states the threat model.
+
 ## Running it
 
 ```bash

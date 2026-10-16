@@ -91,7 +91,8 @@ def classify_check(
 
 
 def _excludes(metric: Optional[Mapping], key: str) -> dict:
-    """The suppressed heads a total leaves out in ``key``, with their signs."""
+    """The suppressed components a total leaves out in ``key``, with their
+    signs."""
     return dict(((metric or {}).get("excludes") or {}).get(key) or {})
 
 
@@ -153,8 +154,8 @@ def compare_metrics(base: Mapping, head: Mapping, spec: Spec, years) -> tuple:
             b = base_metric["values"].get(key) if base_metric else None
             h = head_metric["values"].get(key) if head_metric else None
             # A figure from too few records is published as None, and a total
-            # containing one leaves it out (privacy.py,
-            # measure.exclude_suppressed).
+            # containing one is rebuilt without it (privacy.py,
+            # measure.rebuild_protected).
             b_hidden = key in (base_metric or {}).get("suppressed", ())
             h_hidden = key in (head_metric or {}).get("suppressed", ())
             b_ex, h_ex = _excludes(base_metric, key), _excludes(head_metric, key)
@@ -171,8 +172,8 @@ def compare_metrics(base: Mapping, head: Mapping, spec: Spec, years) -> tuple:
                 # clipped total.
                 delta = None
             else:
-                # The sides leave out different heads: take the union out of
-                # both, from published values only.
+                # The sides leave out different components: take the union
+                # out of both, from published values only.
                 b_al = _aligned(b, b_ex, union, base, key)
                 h_al = _aligned(h, h_ex, union, head, key)
                 delta = None if b_al is None or h_al is None else h_al - b_al
@@ -182,12 +183,17 @@ def compare_metrics(base: Mapping, head: Mapping, spec: Spec, years) -> tuple:
                 "delta": delta,
                 "base_suppressed": b_hidden,
                 "head_suppressed": h_hidden,
-                # The suppressed heads this total leaves out, on either side.
+                # The suppressed components this total leaves out, on either
+                # side.
                 "excludes": sorted(union),
+                # No change can be shown: a side is suppressed, or the sides
+                # leave out different components and can't be lined up. Not
+                # "no change" (Sol re-review 7 of #2335).
+                "withheld": delta is None
+                and bool(base_metric and head_metric)
+                and (b_hidden or h_hidden or (_finite(b) and _finite(h))),
             }
-            if (delta is not None and delta != 0) or (
-                base_metric and head_metric and b_hidden != h_hidden
-            ):
+            if (delta is not None and delta != 0) or row["values"][key]["withheld"]:
                 row["changed"] = True
             if (
                 delta is not None
@@ -236,7 +242,9 @@ def _match(base_ids: np.ndarray, head_ids: np.ndarray) -> Optional[np.ndarray]:
     return matched
 
 
-def decile_impacts(base_households: Mapping, head_households: Mapping, years) -> tuple:
+def decile_impacts(
+    base_households: Mapping, head_households: Mapping, years, withheld=()
+) -> tuple:
     """Household-matched income changes within the base run's deciles.
 
     For each year and decile d of the base run: the mean change in the income
@@ -250,9 +258,10 @@ def decile_impacts(base_households: Mapping, head_households: Mapping, years) ->
     - A row where fewer than ``MIN_CELL`` households with weight change at
       all publishes no change: its mean change times the decile's weight
       would give those households' change back.
-    - The income each side records leaves out any head suppressed that year
-      (``measure.measure_year``), so no row carries a figure from fewer than
-      ``MIN_CELL`` records.
+    - The income each side records leaves out any component suppressed that
+      year (``measure.rebuild_protected``), so no row carries a figure from
+      fewer than ``MIN_CELL`` records; a year whose sides leave out different
+      ones is withheld, with a note.
     - No row publishes its households' weight or base income, and changes
       are given to the precision the comment shows (£1 and 0.1%).
     """
@@ -260,6 +269,13 @@ def decile_impacts(base_households: Mapping, head_households: Mapping, years) ->
     for year in years:
         key = str(year)
         b, h = base_households.get(key), head_households.get(key)
+        if key in {str(y) for y in withheld}:
+            notes.append(
+                f"{fiscal_year_label(year)}: decile changes are withheld: households "
+                f"are ranked on an income holding a figure from fewer than {MIN_CELL} "
+                "records"
+            )
+            continue
         if b is None or h is None:
             notes.append(f"{fiscal_year_label(year)}: household detail missing")
             continue
@@ -270,9 +286,9 @@ def decile_impacts(base_households: Mapping, head_households: Mapping, years) ->
         b_ex = sorted(str(x) for x in np.asarray(b.get("excludes", [])).ravel())
         h_ex = sorted(str(x) for x in np.asarray(h.get("excludes", [])).ravel())
         if b_ex != h_ex:
-            # Each side's income leaves out its own suppressed heads; with
-            # different sets, a household's change would mix definitions
-            # (Sol re-review 6 of #2335).
+            # Each side's income leaves out its own suppressed components;
+            # with different sets, a household's change would mix
+            # definitions (Sol re-review 6 of #2335).
             notes.append(
                 f"{fiscal_year_label(year)}: a figure from fewer than {MIN_CELL} "
                 "records is suppressed on one side only, so decile changes are "
@@ -537,8 +553,10 @@ def compare(
         warnings.append(
             "In the years a figure from fewer than 10 records is suppressed ("
             + ", ".join(excluded)
-            + "), every total containing it, and the decile incomes, leave it out, "
-            "so no published figure says anything about it. Those totals are marked †."
+            + "), every total containing it, and the decile incomes, are rebuilt "
+            "from their other components, so no published figure depends on it. "
+            "Those totals are marked †. A change is withheld where the two sides "
+            "leave out different figures and can't be lined up."
         )
     non_finite = []
     for row in rows:
@@ -567,7 +585,20 @@ def compare(
 
     deciles, decile_notes, decile_flags = {}, [], []
     if head_ok and base_ok and base_households and head_households:
-        deciles, decile_notes = decile_impacts(base_households, head_households, years)
+        # Years a side ranks households on an income holding a suppressed
+        # figure: it publishes no decile figure (measure.measure_year).
+        withheld = [
+            year
+            for year in years
+            for side in (base, head)
+            if str(year)
+            in (_metric_map(side).get("deciles.mean_income.1") or {}).get(
+                "suppressed", ()
+            )
+        ]
+        deciles, decile_notes = decile_impacts(
+            base_households, head_households, years, withheld
+        )
         threshold = spec.threshold("decile_relative")
         for year, decile_rows in deciles.items():
             for row in decile_rows:
