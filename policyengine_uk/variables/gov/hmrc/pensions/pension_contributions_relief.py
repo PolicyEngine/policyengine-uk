@@ -1,47 +1,66 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.supplied_inputs import supplied_input
 
 
 class pension_contributions_relief(Variable):
     value_type = float
     entity = Person
     label = "Reduction in taxable income from pension contributions"
-    definition_period = YEAR
-    reference = dict(
-        title="Finance Act 2004 s. 188-194",
-        href="https://www.legislation.gov.uk/ukpga/2004/12/section/188",
+    documentation = (
+        "Relief for the contributions an individual pays to registered pension "
+        "schemes (FA 2004 s. 188), up to the annual limit for relief: the "
+        "individual's relevant UK earnings, raised to the basic amount where "
+        "earnings are lower (s. 190). Only relief at source can give the part "
+        "above earnings (s. 191(7)); the model takes personal pension "
+        "contributions as relief at source and employee contributions as a "
+        "net pay arrangement. The annual allowance does not limit relief. "
+        "Contributions above it can be relieved here and separately attract "
+        "the annual allowance charge (personal_pension_contributions_tax) "
+        "under s. 227. The charge need not equal their tax relief."
     )
+    definition_period = YEAR
+    reference = [
+        dict(
+            title="Finance Act 2004 s. 188",
+            href="https://www.legislation.gov.uk/ukpga/2004/12/section/188",
+        ),
+        dict(
+            title="Finance Act 2004 s. 189",
+            href="https://www.legislation.gov.uk/ukpga/2004/12/section/189",
+        ),
+        dict(
+            title="Finance Act 2004 s. 190",
+            href="https://www.legislation.gov.uk/ukpga/2004/12/section/190",
+        ),
+        dict(
+            title="Finance Act 2004 s. 191",
+            href="https://www.legislation.gov.uk/ukpga/2004/12/section/191",
+        ),
+    ]
     unit = GBP
 
     def formula(person, period, parameters):
+        hmrc = parameters(period).gov.hmrc
         contributions = person("pension_contributions", period)
-        age_limit = parameters(
-            period
-        ).gov.hmrc.pensions.pension_contributions_relief_age_limit
-        income = add(person, period, ["employment_income", "self_employment_income"])
-        under_age_limit = person("age", period) < age_limit
-        basic_amount = parameters(
-            period
-        ).gov.hmrc.income_tax.reliefs.pension_contribution.basic_amount
-        tax_relief = min_(income, contributions) * under_age_limit
-        supplied_ani = supplied_input(person, "adjusted_net_income", period)
-        if supplied_ani is not None:
-            # The existing AA cap depends on net_income, which restores this
-            # relief to a supplied ANI. Solve the cap without that cycle:
-            # r = min(eligible, cap(A + r)), where A = ANI + gross Gift Aid.
-            allowance = parameters(
-                period
-            ).gov.hmrc.income_tax.allowances.annual_allowance
-            income_before_relief = supplied_ani + person("gift_aid_grossed_up", period)
-            max_pension_relief = max_(
-                max_(basic_amount, allowance.minimum),
-                allowance.default
-                - allowance.reduction_rate
-                * max_(0, income_before_relief + allowance.default - allowance.taper)
-                / (1 + allowance.reduction_rate),
-            )
-        else:
-            pension_allowance = person("pension_annual_allowance", period)
-            max_pension_relief = max_(basic_amount, pension_allowance)
-
-        return min_(tax_relief, max_pension_relief)
+        # Relevant UK earnings (s. 189(2)) are employment income and trading
+        # income. A trading loss gives no relevant earnings; it does not
+        # reduce employment income.
+        relevant_uk_earnings = person("employment_income", period) + max_(
+            0, person("self_employment_income", period)
+        )
+        # s. 190(1)-(2): relief up to relevant UK earnings, raised to the basic
+        # amount where earnings are lower. s. 191(7): only relief at source
+        # (personal pension contributions here) can give that increase.
+        basic_amount_increase = min_(
+            max_(
+                0,
+                hmrc.income_tax.reliefs.pension_contribution.basic_amount
+                - relevant_uk_earnings,
+            ),
+            person("personal_pension_contributions", period),
+        )
+        annual_limit = relevant_uk_earnings + basic_amount_increase
+        # Contributions paid after age 75 are not relievable (s. 188(3)(a)).
+        under_age_limit = (
+            person("age", period) < hmrc.pensions.pension_contributions_relief_age_limit
+        )
+        return min_(contributions, annual_limit) * under_age_limit

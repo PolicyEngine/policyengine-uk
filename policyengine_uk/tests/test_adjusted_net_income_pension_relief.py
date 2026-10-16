@@ -103,9 +103,9 @@ def test_ras_reduces_income_to_hicbc_threshold(template, year, wages, threshold)
     [
         (70_000, 10_000, 10_000, 60_000),
         (150_000, 60_000, 60_000, 60_000),
-        (300_000, 60_000, 40_000, 40_000),
-        (340_000, 60_000, 20_000, 20_000),
-        (400_000, 60_000, 10_000, 10_000),
+        (300_000, 60_000, 60_000, 40_000),
+        (340_000, 60_000, 60_000, 20_000),
+        (400_000, 60_000, 60_000, 10_000),
         (300_000, 5_000, 5_000, 40_000),
     ],
 )
@@ -119,7 +119,8 @@ def test_supplied_ani_preserves_pension_relief_and_annual_allowance(
 ):
     # The 2024 model's AA is £60,000, tapering at 50% above £260,000
     # of its net-income base, with a £10,000 floor. Direct ANI inputs
-    # must reconstruct that base without changing the relief cap or charge.
+    # must reconstruct that base. Contribution relief follows the independent
+    # earnings limit; input above the AA instead attracts a separate charge.
     expected_ani = wages - expected_relief - gift_aid / 0.8
     ordinary = simulate(template, 2024, [(wages, contributions)], gift_aid=gift_aid)
     supplied = simulate(
