@@ -29,5 +29,5 @@ class pension_contributions_for_annual_allowance(Variable):
         "employee_pension_contributions",
         "personal_pension_contributions",
         "employer_pension_contributions",
-        "pension_contributions_via_salary_sacrifice_adjusted",
+        "pension_contributions_via_salary_sacrifice_from_pay",
     ]
