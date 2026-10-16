@@ -76,8 +76,9 @@ def _legacy_override_modifier(dated: DatedReform) -> Callable[[Simulation], None
     """Override changes that are no longer effective on the simulation.
 
     Construction retains its statutory and legacy readings. On copies,
-    already-effective reforms (including legacy single-day keys) are no-ops;
-    external overrides still require a key containing a 1 January value.
+    exact latest sequences from a single write log may be no-ops, including
+    legacy single-day keys. Mixed statutory/legacy sequences always replay;
+    external overrides require a key containing a 1 January value.
     """
 
     def modifier(simulation: Simulation) -> None:
@@ -230,8 +231,24 @@ def _chain(
                     )
                 )
                 if not already_effective:
-                    first(simulation)
-                    second(simulation)
+                    # An external composite whose complete sequence cannot
+                    # be skipped must replay every child as Scenario.apply
+                    # does, without child-level no-op shortcuts.
+                    applying = getattr(simulation, APPLYING_TO_BUILT_SIMULATION, False)
+                    replay = (
+                        dated is not None
+                        and not applying
+                        and not getattr(simulation, "_building_dated_reforms", None)
+                    )
+                    if replay:
+                        _warn_annualised_overrides()
+                        setattr(simulation, APPLYING_TO_BUILT_SIMULATION, True)
+                    try:
+                        first(simulation)
+                        second(simulation)
+                    finally:
+                        if replay:
+                            delattr(simulation, APPLYING_TO_BUILT_SIMULATION)
             finally:
                 simulation._defer_uc_health_warning = deferred
             if not deferred:

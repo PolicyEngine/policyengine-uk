@@ -419,7 +419,7 @@ A dataset's later years are projected from its first by the economic assumptions
 
 All of this applies when the scenario or reform is passed to `Simulation(...)`. `Scenario.apply(simulation)` on a simulation that is already built edits its annualised values instead, as it always has: a `"2027-04-06.2028-04-05"` key there overrides those dates of the fiscal-year values, so it does not set fiscal year 2027, and the model logs a warning saying so. Pass the scenario when constructing the simulation for dated measures.
 The modifier returned by `Scenario.from_reform` behaves the same way on a built simulation for changes that are no longer effective, and raises if an external override key contains no 1 January annual value.
-An already-effective reform is a no-op on a copy, clone or branch, including legacy single-day keys; composed reforms compare final writes in their own order and account for later overrides.
+A pure statutory or pure legacy reform can be a no-op on a copy, clone or branch only when its complete write sequence matches the latest recorded writes on its paths, the other log has no writes on those paths, and its values remain current. Mixed statutory and legacy composites always replay in their requested order; this can append duplicate override-log entries. An external key that contains no 1 January annual value raises with its path and key.
 
 ### Creating complex scenarios with simulation modifiers
 

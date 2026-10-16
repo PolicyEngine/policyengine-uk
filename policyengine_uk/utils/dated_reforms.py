@@ -588,36 +588,20 @@ def _assignment_boundaries(assignments):
     }
 
 
-def _effective_assignments_match(expected, written):
-    """Every span written by expected has the same final write in written."""
-    for path in {entry.path for entry in expected}:
-        wanted = [entry for entry in expected if entry.path == path]
-        history = sorted(
-            (entry for entry in written if entry.path == path),
-            key=lambda entry: entry.order,
-        )
-        for point in _assignment_boundaries(wanted + history):
-            change = next(
-                (
-                    entry
-                    for entry in reversed(wanted)
-                    if entry.start <= point <= entry.stop
-                ),
-                None,
-            )
-            if change is None:
-                continue
-            effective = next(
-                (
-                    entry
-                    for entry in reversed(history)
-                    if entry.start <= point <= entry.stop
-                ),
-                None,
-            )
-            if effective is None or effective.value != change.value:
-                return False
-    return True
+def _assignment_sequence_matches(expected, written):
+    """The latest writes on the affected paths are this exact sequence."""
+    paths = {entry.path for entry in expected}
+    history = sorted(
+        (entry for entry in written if entry.path in paths),
+        key=lambda entry: entry.order,
+    )
+
+    def contents(entries):
+        return [(entry.path, entry.start, entry.stop, entry.value) for entry in entries]
+
+    return len(history) >= len(expected) and contents(history[-len(expected) :]) == (
+        contents(expected)
+    )
 
 
 def _overrides_are_effective(overrides, parameters):
@@ -648,7 +632,7 @@ def _overrides_are_effective(overrides, parameters):
     return True
 
 
-def _statutory_values_are_current(assignments, legacy, system):
+def _statutory_values_are_current(assignments, system):
     """Detect later edits without rebuilding the simulation or its system.
 
     Annualise only the affected leaf's stored projected timeline, using the
@@ -671,11 +655,6 @@ def _statutory_values_are_current(assignments, legacy, system):
         )
         if annualised:
             convert_to_fiscal_year_parameters(probe)
-        for change in legacy:
-            if change.path == path:
-                expected.update(
-                    **legacy_override_update_kwargs(change, system.parameters)
-                )
         wanted = [entry for entry in assignments if entry.path == path]
         windows = [(entry.start, entry.stop) for entry in wanted]
         if annualised:
@@ -703,24 +682,39 @@ def _statutory_values_are_current(assignments, legacy, system):
 
 
 def _reform_writes_are_effective(assignments, legacy, system, written=None):
+    # The two logs do not retain their joint write order. Never infer a
+    # mixed reform's result by replaying one log after the other.
+    if assignments and legacy:
+        return False
     if written is None:
         written = getattr(system, "dated_assignments", ())
-    if not _effective_assignments_match(assignments, written):
-        return False
-    if any(change not in getattr(system, "legacy_overrides", ()) for change in legacy):
-        return False
-    return _statutory_values_are_current(assignments, legacy, system) and (
-        _overrides_are_effective(legacy, system.parameters)
-    )
+    overrides = getattr(system, "legacy_overrides", ())
+    if assignments:
+        paths = {entry.path for entry in assignments}
+        return (
+            not any(entry.path in paths for entry in overrides)
+            and _assignment_sequence_matches(assignments, written)
+            and _statutory_values_are_current(assignments, system)
+        )
+    if legacy:
+        paths = {entry.path for entry in legacy}
+        history = [entry for entry in overrides if entry.path in paths]
+        return (
+            not any(entry.path in paths for entry in written)
+            and len(history) >= len(legacy)
+            and history[-len(legacy) :] == legacy
+            and _overrides_are_effective(legacy, system.parameters)
+        )
+    return True
 
 
 def reform_modifiers_are_effective(dated_reforms, system):
-    """Whether a whole ordered composite can retain its construction reading.
+    """Skip only an exact latest sequence from one write log, still current.
 
-    Compare final writes on every overlapping span, rather than looking for
-    unordered historical membership. Later annualised overrides must also
-    agree with the requested result. Legacy leftovers may be no-ops on copies
-    only when the log contains them and their current values still agree.
+    Mixed statutory/legacy reforms always replay: separate logs cannot prove
+    their joint order. A pure sequence must be the suffix of its log on the
+    affected paths, have no writes in the other log on those paths, and pass
+    the current-value check (including direct parameter edits).
     """
     from policyengine_uk.tax_benefit_system import (
         parameter_reads_calendar_years,
@@ -757,7 +751,10 @@ def unwritten_reform_overrides(
     def read(spec, predicate, warn=False):
         return read_override_reform(spec, reading, predicate, calendar_years, warn)
 
-    read(changes, defines, warn=True)
+    assignments, legacy = read(changes, defines, warn=True)
+    if assignments and legacy:
+        _, pending = read(changes, lambda path: False)
+        return pending, bool(pending)
     overrides = []
     for path, spec in changes.items():
         change = {path: spec}

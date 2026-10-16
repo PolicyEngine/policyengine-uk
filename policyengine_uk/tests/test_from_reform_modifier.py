@@ -9,7 +9,7 @@ import logging
 
 import numpy as np
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 from policyengine_core.reforms import Reform
 
@@ -412,6 +412,76 @@ def test_composite_modifier_respects_order_of_historical_changes(case, represent
     assert parameter(direct, BASIC_RATE, "2027-01-01") == 0.31
 
 
+@pytest.mark.parametrize("copy_kind", ["clone", "branch"])
+@pytest.mark.parametrize("representation", ["tuple", "sum"])
+def test_mixed_composite_modifier_replays_after_external_legacy_override(
+    copy_kind, representation
+):
+    statutory = {BASIC_RATE: {"2027-01-01.2027-12-31": 0.31}}
+    legacy = {BASIC_RATE: {"2027-01-01": 0.35}}
+    original = Simulation(situation=SITUATION, reform=statutory)
+    Scenario.from_reform(legacy).apply(original)
+    assert parameter(original, BASIC_RATE, "2027-01-01") == 0.35
+    direct, applied = (
+        (original.clone(), original.clone())
+        if copy_kind == "clone"
+        else (
+            original.get_branch("mixed-direct", clone_system=True),
+            original.get_branch("mixed-applied", clone_system=True),
+        )
+    )
+    scenario = _sequence_scenario((legacy, statutory), representation)
+
+    scenario.simulation_modifier(direct)
+    scenario.apply(applied)
+
+    for date in ("2026-12-31", "2027-01-01", "2027-01-02", "2027-12-31", "2028-01-01"):
+        assert parameter(direct, BASIC_RATE, date) == parameter(
+            applied, BASIC_RATE, date
+        )
+    assert parameter(direct, BASIC_RATE, "2027-01-01") == 0.31
+    assert parameter(original, BASIC_RATE, "2027-01-01") == 0.35
+
+
+@pytest.mark.parametrize("copy_kind", ["clone", "branch"])
+@pytest.mark.parametrize("representation", ["tuple", "sum", "dict"])
+def test_mixed_composite_modifier_replays_reversed_statutory_and_legacy_order(
+    copy_kind, representation
+):
+    key = "2027-01-01.2027-12-31"
+    statutory = {BASIC_RATE: {key: 0.31}}
+    legacy = {BASIC_RATE: {"2027-01-01": 0.35}}
+    if representation == "dict":
+        with pytest.warns(ReformPeriodWarning, match="mixes single-day keys"):
+            original = Simulation(
+                situation=SITUATION,
+                reform={BASIC_RATE: {key: 0.31, "2027-01-01": 0.35}},
+            )
+        scenario = Scenario.from_reform({BASIC_RATE: {"2027-01-01": 0.35, key: 0.31}})
+    else:
+        original = Simulation(situation=SITUATION, reform=(statutory, legacy))
+        scenario = _sequence_scenario((legacy, statutory), representation)
+    assert parameter(original, BASIC_RATE, "2027-01-01") == 0.35
+    direct, applied = (
+        (original.clone(), original.clone())
+        if copy_kind == "clone"
+        else (
+            original.get_branch("reordered-direct", clone_system=True),
+            original.get_branch("reordered-applied", clone_system=True),
+        )
+    )
+
+    scenario.simulation_modifier(direct)
+    scenario.apply(applied)
+
+    for date in ("2026-12-31", "2027-01-01", "2027-01-02", "2027-12-31", "2028-01-01"):
+        assert parameter(direct, BASIC_RATE, date) == parameter(
+            applied, BASIC_RATE, date
+        )
+    assert parameter(direct, BASIC_RATE, "2027-01-01") == 0.31
+    assert parameter(original, BASIC_RATE, "2027-01-01") == 0.35
+
+
 def test_modifier_reapplies_historical_change_after_a_later_legacy_override():
     first = {BASIC_RATE: {"2027-01-01.2027-12-31": 0.31}}
     second = {BASIC_RATE: {"2027-01-01.2027-12-31": 0.35}}
@@ -568,14 +638,16 @@ def test_own_composite_modifier_on_copy_preserves_order_without_reapplying(
 
 @st.composite
 def overlapping_reform_sequences(draw):
-    # A small pool makes shared paths/windows, repeated entries and different
-    # orders common, including writes that were present only earlier in history.
+    # A small pool makes shared paths, mixed legacy/statutory keys, repeated
+    # entries and different orders common, including superseded writes.
     entries = draw(
         st.lists(
             st.tuples(
                 st.sampled_from([BASIC_RATE, VAT_RATE]),
                 st.sampled_from(
                     [
+                        "2026-01-01",
+                        "2027-01-01",
                         "2026-01-01.2026-12-31",
                         "2027-01-01.2027-12-31",
                         "2026-01-01.2027-12-31",
@@ -606,6 +678,18 @@ def overlapping_reform_sequences(draw):
     suppress_health_check=[HealthCheck.too_slow],
 )
 @given(sequences=overlapping_reform_sequences())
+@example(
+    sequences=(
+        (
+            {BASIC_RATE: {"2027-01-01.2027-12-31": 0.31}},
+            {BASIC_RATE: {"2027-01-01": 0.35}},
+        ),
+        (
+            {BASIC_RATE: {"2027-01-01": 0.35}},
+            {BASIC_RATE: {"2027-01-01.2027-12-31": 0.31}},
+        ),
+    )
+)
 def test_sequence_modifier_matches_apply_with_repeated_and_reordered_writes(
     baseline, prebuilt, sequences
 ):
