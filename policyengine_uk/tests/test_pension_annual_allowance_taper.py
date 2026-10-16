@@ -178,7 +178,9 @@ def test_post_2020_allowance_reform_keeps_half_rate_and_changes_threshold_gate()
 @given(
     people=st.lists(
         st.tuples(
-            st.integers(50_000, 400_000),
+            # Fully relieved own contributions and high cash pay keep other
+            # reliefs stable across the two NICs cap settings.
+            st.integers(160_000, 400_000),
             st.integers(2_001, 60_000),
             st.integers(0, 150_000),
             st.integers(0, 30_000),
@@ -192,7 +194,9 @@ def test_nics_salary_sacrifice_cap_preserves_taper_and_charge(people, year, vari
     """The NICs cap changes neither FA 2004 income tests nor pension savings.
 
     Hold the separate employer-cost wage response at zero to isolate the
-    statutory NICs change. Build both taper incomes from contribution/pay
+    statutory NICs change. Own contributions are within earnings; high cash
+    pay keeps the personal allowance stable across cap settings. Build both
+    taper incomes from contribution/pay
     inputs, including a person whose threshold would cross the gate if the
     sacrifice above the cap were incorrectly dropped.
     """
