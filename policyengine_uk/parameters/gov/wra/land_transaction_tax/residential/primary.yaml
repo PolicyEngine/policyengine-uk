@@ -7,14 +7,18 @@ brackets:
     2018-04-01: 0.035
     2020-07-27: null
     2021-07-01: 0.035
+    2022-10-10: 0.06
   threshold:
     2018-04-01: 180000
     2020-07-27: null
     2021-07-01: 180000
+    2022-10-10: 225000
 - rate:
     2018-04-01: 0.05
+    2022-10-10: null
   threshold:
     2018-04-01: 250000
+    2022-10-10: null
 - rate:
     2018-04-01: 0.075
   threshold:
@@ -43,4 +47,7 @@ metadata:
   - href: https://www.legislation.gov.uk/wsi/2021/238/regulation/2/made
     title: The Land Transaction Tax (Temporary Variation of Rates and Bands for Residential
       Property Transactions) (Wales) (Amendment) Regulations 2021
+  - href: https://www.legislation.gov.uk/wsi/2022/1027/regulation/7/made
+    title: The Land Transaction Tax (Tax Bands and Tax Rates) (Wales) (Amendment)
+      Regulations 2022, regulation 7, Table 1
   threshold_unit: currency-GBP
