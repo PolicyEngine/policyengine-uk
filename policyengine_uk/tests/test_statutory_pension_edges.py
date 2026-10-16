@@ -8,7 +8,7 @@ inputs fixed; unrestricted charge invariance is not asserted.
 
 import numpy as np
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, Phase, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -188,7 +188,7 @@ def test_nics_cap_preserves_aa_across_scheme_method_and_age(year, scheme, method
 
 
 @st.composite
-def _pension_person(draw):
+def _pension_person(draw, scheme):
     method = draw(st.sampled_from(["net_pay", "RAS"]))
     values = {
         "age": draw(st.sampled_from([45, 74, 75, 80, 90])),
@@ -203,11 +203,21 @@ def _pension_person(draw):
             else "personal_pension_contributions"
         ): draw(st.integers(0, 100_000)),
     }
-    if draw(st.booleans()):
+    if scheme == "DB":
         values["pension_contributions_for_annual_allowance"] = draw(
             st.integers(0, 400_000)
         )
     return values
+
+
+def _assert_pension_input_path(sim, year, scheme):
+    """Partial person inputs would bypass the default DC formula for everyone."""
+    periods = sim.get_holder(
+        "pension_contributions_for_annual_allowance"
+    ).get_input_periods("default")
+    assert [str(period) for period in periods] == (
+        [str(year)] if scheme == "DB" else []
+    )
 
 
 def _charge_with_fixed_ordinary_tax_inputs(results, year):
@@ -251,16 +261,21 @@ def _charge_with_fixed_ordinary_tax_inputs(results, year):
     derandomize=True,
     suppress_health_check=[HealthCheck.too_slow],
 )
-@given(people=st.lists(_pension_person(), min_size=4, max_size=10))
-def test_nics_cap_preserves_aa_inputs_and_charge_with_fixed_ordinary_tax(people, year):
+@given(
+    dc_people=st.lists(_pension_person("DC"), min_size=4, max_size=10),
+    db_people=st.lists(_pension_person("DB"), min_size=4, max_size=10),
+)
+def test_nics_cap_preserves_aa_inputs_and_charge_with_fixed_ordinary_tax(
+    dc_people, db_people, year
+):
     """All ages/earnings preserve AA computations when the NICs cap varies.
 
     The charge comparison fixes ordinary tax inputs. It makes no unrestricted
     claim about the charge, ANI, personal allowances or ordinary income tax.
     """
-    # Always exercise each known statutory failure, alongside generated DB/DC,
-    # contribution methods, low earnings and people aged 75 and over.
-    people = [
+    # Keep every default DC record, including the fixed witnesses, separate
+    # from supplied DB inputs, which otherwise zero the DC input array.
+    dc_people = [
         {
             "age": 80,
             "employment_income_before_lsr": 160_000,
@@ -274,10 +289,73 @@ def test_nics_cap_preserves_aa_inputs_and_charge_with_fixed_ordinary_tax(people,
             "employer_pension_contributions": 100_000,
             "personal_pension_contributions": 3_600,
         },
-    ] + people
+    ] + dc_people
+    for scheme, people in [("DC", dc_people), ("DB", db_people)]:
+        results = []
+        for cap in [2_000, float("inf")]:
+            sim = _population_simulation(people, year, cap)
+            _assert_pension_input_path(sim, year, scheme)
+            results.append(
+                {
+                    variable: np.asarray(sim.calculate(variable, year))
+                    for variable in AA_VARIABLES
+                }
+            )
+            if scheme == "DC":
+                np.testing.assert_array_equal(
+                    results[-1]["pension_contributions_for_annual_allowance"][:2],
+                    [130_000, 304_600],
+                )
+        for variable in AA_VARIABLES:
+            np.testing.assert_allclose(
+                results[0][variable],
+                results[1][variable],
+                rtol=0,
+                atol=0.05,
+                err_msg=f"{scheme}: {variable}",
+            )
+        np.testing.assert_allclose(
+            _charge_with_fixed_ordinary_tax_inputs(results[0], year),
+            _charge_with_fixed_ordinary_tax_inputs(results[1], year),
+            rtol=0,
+            atol=0.05,
+        )
+
+
+@pytest.mark.parametrize("year", [2029, 2030])
+@pytest.mark.parametrize("scheme", ["DC", "DB"])
+@settings(
+    max_examples=3,
+    database=None,
+    deadline=None,
+    phases=[Phase.explicit, Phase.generate],
+)
+@example(loss=10_000)
+@given(loss=st.integers(min_value=0, max_value=50_000))
+def test_trade_losses_do_not_leak_nics_reclassification_into_aa(year, scheme, loss):
+    """Income-dependent Step 2 relief uses actual income for both AA tests."""
+    people = []
+    for age in [45, 74, 75, 80]:
+        for method in ["net_pay", "RAS"]:
+            values = {
+                "age": age,
+                "employment_income_before_lsr": 2_000,
+                "pension_contributions_via_salary_sacrifice": 201_000,
+                "employer_pension_contributions": 100_000,
+                "trading_loss": loss,
+                (
+                    "employee_pension_contributions_reported"
+                    if method == "net_pay"
+                    else "personal_pension_contributions"
+                ): 600,
+            }
+            if scheme == "DB":
+                values["pension_contributions_for_annual_allowance"] = 350_000
+            people.append(values)
     results = []
     for cap in [2_000, float("inf")]:
         sim = _population_simulation(people, year, cap)
+        _assert_pension_input_path(sim, year, scheme)
         results.append(
             {
                 variable: np.asarray(sim.calculate(variable, year))
@@ -285,16 +363,8 @@ def test_nics_cap_preserves_aa_inputs_and_charge_with_fixed_ordinary_tax(people,
             }
         )
     for variable in AA_VARIABLES:
-        np.testing.assert_allclose(
+        np.testing.assert_array_equal(
             results[0][variable],
             results[1][variable],
-            rtol=0,
-            atol=0.05,
-            err_msg=variable,
+            err_msg=f"{year=} {scheme=} {loss=} {variable=}",
         )
-    np.testing.assert_allclose(
-        _charge_with_fixed_ordinary_tax_inputs(results[0], year),
-        _charge_with_fixed_ordinary_tax_inputs(results[1], year),
-        rtol=0,
-        atol=0.05,
-    )
