@@ -185,7 +185,10 @@ from policyengine_uk.parameters.gov.hmrc.create_threshold_indexation import (
     last_stated_tax_year,
 )
 
-from policyengine_uk.utils.parameters import check_parameter_not_removed
+from policyengine_uk.utils.parameters import (
+    BACKDATED_VALUE,
+    check_parameter_not_removed,
+)
 
 # A change "from a date on" holds to the end of this day, as editing the
 # annualised parameters held it indefinitely within the model's horizon.
@@ -582,10 +585,11 @@ def write_assignment(
 ) -> None:
     """Write a change onto a parameter's statutory timeline.
 
-    A change starting on or before the parameter's first stated value first
-    gets that value written at ``BACKDATED_FROM``, as processing would
-    backdate it. Where the change reaches past the parameter's last stated value (see
-    ``requires_projection``), ``projected(name)`` supplies prior law's
+    A change starting on or before the parameter's first stated value
+    records that value (``BACKDATED_VALUE``) for processing to backdate to
+    ``BACKDATED_FROM`` instead of the change's. Where the change reaches past
+    the parameter's last stated value (see ``requires_projection``),
+    ``projected(name)`` supplies prior law's
     projected timeline, whose values after the last stated one are first
     written in as stated values: uprating and indexation extend a timeline
     only from its last stated value, so without them the years between that
@@ -615,13 +619,17 @@ def write_assignment(
     old: Timeline = list(parameter.values_list)
     first = min((entry.instant_str for entry in old), default=None)
     if first is not None and start_str <= first and BACKDATED_FROM < first:
-        # Processing backdates a parameter's first stated value to
-        # BACKDATED_FROM. Written here, it stays prior law for the years
-        # before a change that starts before that first value; otherwise the
-        # change's own value would be backdated, or the years after an early
-        # change left empty.
+        # Processing backdates a parameter's earliest value to
+        # BACKDATED_FROM, after the generation steps. A change starting on or
+        # before the first stated value becomes the earliest, so prior law's
+        # first value is recorded for processing to backdate instead; kept
+        # from the first such change, it stays prior law's when another
+        # starts earlier. Writing it at BACKDATED_FROM here would move the
+        # first year the generation steps read (an index's base year).
         earliest = min(old, key=lambda entry: entry.instant_str)
-        old.append(_entry(name, BACKDATED_FROM, earliest.value))
+        if parameter.metadata is None:
+            parameter.metadata = {}
+        parameter.metadata.setdefault(BACKDATED_VALUE, earliest.value)
     path = projected(name) if projected is not None else None
     if path is not None and requires_projection(parameter, assignment):
         last = _last_stated(old)
@@ -638,10 +646,16 @@ def write_assignment(
         in_force = [entry for entry in old if entry.instant_str <= stop_str]
         # Before its first stated value a parameter takes that value, as
         # processing backdates it; resuming with nothing would leave the
-        # years up to that value empty. A stated null stays null.
-        resumed_value = (
-            in_force[0].value if in_force else later[-1].value if later else None
-        )
+        # years up to that value empty. Where an earlier change starting on
+        # or before it recorded prior law's first value, that is the value
+        # (the first entry is now that change's). A stated null stays null.
+        recorded = parameter.metadata or {}
+        if in_force:
+            resumed_value = in_force[0].value
+        elif BACKDATED_VALUE in recorded:
+            resumed_value = recorded[BACKDATED_VALUE]
+        else:
+            resumed_value = later[-1].value if later else None
         # An indexed threshold resumes with a stated value only where one
         # is stated after the change: a later value in the files, a tax
         # year the files state (their recorded last year, whose value a

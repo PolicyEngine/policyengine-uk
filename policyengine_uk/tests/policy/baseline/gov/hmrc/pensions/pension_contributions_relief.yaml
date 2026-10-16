@@ -6,14 +6,20 @@
     personal_pension_contributions: 40000
   output:
     pension_contributions_relief: 40000
-- name: Pension relief excessive
+- name: Pension relief is not capped at the (tapered) annual allowance
   period: 2020
-  absolute_error_margin: 0
+  absolute_error_margin: 0.01
   input:
     employment_income: 2000000
     personal_pension_contributions: 400000
   output:
-    pension_contributions_relief: 4000
+    # FA 2004 s. 190: relief up to relevant UK earnings, so all 400,000 is
+    # relieved even though the tapered annual allowance is 4,000.
+    pension_contributions_relief: 400000
+    # The annual allowance charge recovers the relief on the excess:
+    # (400,000 - 4,000) at 45% on top of reduced net income of 1,600,000.
+    pension_annual_allowance_chargeable_amount: 396000
+    personal_pension_contributions_tax: 396000 * 0.45
 - name: £30k self-employment income, no private pension contributions
   period: 2023
   absolute_error_margin: 0.01
@@ -49,3 +55,64 @@
   output:
     pension_contributions_relief: 6_000
     income_tax: 11432 - 6000 * 0.4
+
+- name: Relief on the basic amount when relevant earnings are lower (s. 190(2))
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 2_000
+    personal_pension_contributions: 5_000
+  output:
+    pension_contributions_relief: 3_600
+
+- name: A net pay arrangement cannot give the basic-amount increase (s. 191(7))
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 2_000
+    employee_pension_contributions_reported: 3_000
+  output:
+    pension_contributions_relief: 2_000
+
+- name: Only relief at source fills the basic-amount increase (s. 191(7))
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 2_000
+    employee_pension_contributions_reported: 1_500
+    personal_pension_contributions: 1_000
+  output:
+    # 2_000 of earnings relieves all 2_500 up to earnings; the increase to
+    # 3_600 can only come from the 1_000 of relief at source, of which 500 is
+    # left after earnings: 2_000 + 500.
+    pension_contributions_relief: 2_500
+
+- name: Relief up to relevant earnings, not beyond (s. 190(1))
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 40_000
+    self_employment_income: 10_000
+    personal_pension_contributions: 70_000
+  output:
+    pension_contributions_relief: 50_000
+
+- name: A trading loss does not reduce relevant earnings from employment
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 40_000
+    self_employment_income: -10_000
+    personal_pension_contributions: 45_000
+  output:
+    pension_contributions_relief: 40_000
+
+- name: No relief on contributions paid at 75 or over (s. 188(3)(a))
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    age: 75
+    employment_income: 40_000
+    personal_pension_contributions: 10_000
+  output:
+    pension_contributions_relief: 0

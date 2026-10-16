@@ -13,6 +13,15 @@ def str_to_instant(s):
     return periods.Instant(tuple(map(lambda s: int(s), s.split("-"))))
 
 
+# Parameter metadata a dated reform records (``write_assignment``) when its
+# change starts on or before the parameter's first stated value: that value,
+# which backdating then extends instead of the change's. Recording it rather
+# than writing it at the backdating date keeps the generation steps, which run
+# before backdating and read a parameter's first year, seeing the parameter as
+# current law does.
+BACKDATED_VALUE = "backdated_value"
+
+
 def backdate_parameters(root: str = None, first_instant: str = "2021-01-01") -> Reform:
     first_instant = str_to_instant(first_instant)
     node = root
@@ -20,6 +29,8 @@ def backdate_parameters(root: str = None, first_instant: str = "2021-01-01") -> 
         if isinstance(param, Parameter):
             earliest = param.values_list[-1]
             earliest_value = earliest.value
+            if param.metadata and BACKDATED_VALUE in param.metadata:
+                earliest_value = param.metadata.pop(BACKDATED_VALUE)
             earliest_instant = str_to_instant(earliest.instant_str)
             if first_instant < earliest_instant:
                 num_days = (earliest_instant.date - first_instant.date).days
