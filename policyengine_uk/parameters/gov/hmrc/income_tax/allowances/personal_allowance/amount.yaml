@@ -12,8 +12,8 @@ values:
     value: 11_000
     metadata:
       reference:
-        - title: Finance Act 2015 s. 5
-          href: https://www.legislation.gov.uk/ukpga/2015/11/section/5/enacted
+        - title: Finance (No. 2) Act 2015 s. 5 (a)
+          href: https://www.legislation.gov.uk/ukpga/2015/33/section/5/enacted
   2017-04-06: 11_500
   2018-04-06: 11_850
   2019-04-06: 12_500
