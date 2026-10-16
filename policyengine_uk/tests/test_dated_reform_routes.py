@@ -1235,6 +1235,7 @@ def test_grafting_appends_missing_scale_brackets():
 # backdated to the years before it.
 
 NEW_CLAIMANT_HEALTH = "gov.dwp.universal_credit.rebalancing.new_claimant_health_element"
+PER_CAPITA_GDP = "gov.economic_assumptions.yoy_growth.obr.per_capita.gdp"
 
 
 @pytest.mark.parametrize(
@@ -1265,7 +1266,7 @@ def test_a_change_from_a_parameters_first_date_leaves_earlier_years_alone(
     assert parameter("2026-06-01") == 300.0
 
 
-def test_write_assignment_from_the_first_date_writes_prior_law_before_it():
+def test_backdating_extends_prior_laws_first_value_before_a_change_from_it():
     from policyengine_core.parameters import ParameterNode
 
     from policyengine_uk.utils.dated_reforms import (
@@ -1273,69 +1274,161 @@ def test_write_assignment_from_the_first_date_writes_prior_law_before_it():
         ParameterAssignment,
         write_assignment,
     )
+    from policyengine_uk.utils.parameters import (
+        BACKDATED_VALUE,
+        backdate_parameters,
+    )
 
-    def timeline(first):
+    def written(first, start, stop):
         node = ParameterNode("", data={"p": {"values": {first: 217.26}}})
-        return node.p
+        write_assignment(
+            node.p, ParameterAssignment("p", instant_(start), instant_(stop), 300.0, 0)
+        )
+        return node
 
-    later = timeline("2026-01-01")
-    write_assignment(
-        later,
-        ParameterAssignment(
-            "p", instant_("2026-01-01"), instant_("2026-12-31"), 300.0, 0
-        ),
-    )
-    assert later("2025-06-01") == 217.26
-    assert later("2026-06-01") == 300.0
-    assert later("2027-06-01") == 217.26
-    assert BACKDATED_FROM in [entry.instant_str for entry in later.values_list]
+    node = written("2026-01-01", "2026-01-01", "2026-12-31")
+    # Recorded, not written at BACKDATED_FROM: the generation steps between
+    # this and backdating see the change as the first value.
+    assert node.p.metadata[BACKDATED_VALUE] == 217.26
+    assert min(entry.instant_str for entry in node.p.values_list) == "2026-01-01"
+    backdate_parameters(node, BACKDATED_FROM)
+    assert node.p("2015-06-01") == 217.26
+    assert node.p("2025-06-01") == 217.26
+    assert node.p("2026-06-01") == 300.0
+    assert node.p("2027-06-01") == 217.26
+    assert BACKDATED_VALUE not in node.p.metadata
     # A first date that is BACKDATED_FROM itself has nothing earlier to keep.
-    earliest = timeline(BACKDATED_FROM)
-    write_assignment(
-        earliest,
-        ParameterAssignment(
-            "p", instant_(BACKDATED_FROM), instant_("2015-12-31"), 300.0, 0
-        ),
+    earliest = written(BACKDATED_FROM, BACKDATED_FROM, "2015-12-31")
+    assert BACKDATED_VALUE not in earliest.p.metadata
+    backdate_parameters(earliest, BACKDATED_FROM)
+    assert earliest.p("2015-06-01") == 300.0
+    assert earliest.p("2016-06-01") == 217.26
+
+
+def leaf_values(parameters, day):
+    """Every parameter's value at ``day``, by name."""
+    return {
+        parameter.name: parameter(day)
+        for parameter in parameters.get_descendants()
+        if isinstance(parameter, Parameter)
+    }
+
+
+@functools.lru_cache(maxsize=None)
+def current_law_leaf_values(day):
+    # An unreformed simulation's, which has the parameters a simulation adds
+    # to the processed ones (the capital gains growth series).
+    return leaf_values(
+        Simulation(situation=SITUATION).tax_benefit_system.parameters, day
     )
-    assert earliest("2015-06-01") == 300.0
-    assert earliest("2016-06-01") == 217.26
+
+
+def same_value(a, b):
+    if isinstance(a, float) and isinstance(b, float):
+        return a == b or abs(a - b) <= 1e-9 or (np.isnan(a) and np.isnan(b))
+    return a == b
+
+
+def parameters_differing_from_current_law(parameters, day):
+    current = current_law_leaf_values(day)
+    reformed = leaf_values(parameters, day)
+    return sorted(
+        name
+        for name in current.keys() | reformed.keys()
+        if name not in current
+        or name not in reformed
+        or not same_value(current[name], reformed[name])
+    )
+
+
+def stated_timelines():
+    """Each statutory gov parameter's entries, oldest first, by name."""
+    for parameter in tbs_module.statutory_parameters().get_descendants():
+        if not isinstance(parameter, Parameter) or not parameter.values_list:
+            continue
+        # A few list-valued parameters are stated from 0000-01-01, which is
+        # no date.
+        if not parameter.name.startswith("gov.") or any(
+            entry.instant_str < "0001" for entry in parameter.values_list
+        ):
+            continue
+        yield (
+            parameter.name,
+            [
+                (_day(entry.instant_str), entry.value)
+                for entry in sorted(parameter.values_list, key=lambda e: e.instant_str)
+            ],
+        )
+
+
+def statutory_entries(name):
+    parameter = tbs_module.statutory_parameters().get_child(name)
+    return sorted((_day(e.instant_str), e.value) for e in parameter.values_list)
+
+
+def test_current_laws_own_first_value_from_a_growth_series_first_year_changes_nothing():
+    # Writing a growth series' own first value over its first year must leave
+    # every parameter as it is. Writing prior law at BACKDATED_FROM instead of
+    # recording it moved the series' index base year to 2015.
+    (first, value), *_ = statutory_entries(PER_CAPITA_GDP)
+    simulation = via_reform_dict(
+        as_dict(PER_CAPITA_GDP, first, datetime.date(first.year, 12, 31), value)
+    )
+    parameters = simulation.tax_benefit_system.parameters
+    for year in range(2015, 2040):
+        day = f"{year}-01-01"
+        assert parameters_differing_from_current_law(parameters, day) == [], year
+
+
+# A change to a budget total rescales the population's spending on it
+# (adjust_budgets), which a one-person situation has none of.
+BUDGET_TOTALS = ("gov.dfe.education_spending", "gov.dhsc.spending", "gov.dft.spending")
 
 
 @functools.lru_cache(maxsize=None)
 def later_first_dated_parameters():
-    """Numeric parameters whose first stated value is after BACKDATED_FROM.
+    """Numeric parameters first stated after the year before can be checked.
 
-    Processing backdates such a value to 2015, so a change on or near that
-    first date is where a change could leak into earlier years.
+    Processing backdates a value first stated after 2015 to 2015, so a change
+    on or near that first date is where a change could leak into earlier
+    years; a first date within 2015 (or by 5 April 2016, for a fiscal-year
+    parameter) leaves no earlier year to check.
     """
-    from policyengine_uk.utils.dated_reforms import BACKDATED_FROM
-
+    calendar = tbs_module.parameter_reads_calendar_years()
     found = []
-    for parameter in tbs_module.statutory_parameters().get_descendants():
-        if not isinstance(parameter, Parameter) or not parameter.values_list:
+    for name, entries in stated_timelines():
+        if name.startswith(BUDGET_TOTALS):
             continue
-        if not parameter.name.startswith("gov."):
+        (first, value), *_ = entries
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
             continue
-        first = min(entry.instant_str for entry in parameter.values_list)
-        value = parameter.values_list[0].value
-        if first <= BACKDATED_FROM or isinstance(value, bool):
-            continue
-        if not isinstance(value, (int, float)):
-            continue
-        found.append((parameter.name, _day(first), float(value)))
+        earliest_checkable = (
+            datetime.date(2015, 12, 31) if calendar(name) else datetime.date(2016, 4, 5)
+        )
+        if first > earliest_checkable:
+            found.append((name, first, float(value)))
     return tuple(sorted(found))
+
+
+def year_ends(name, year):
+    """The last day of the year a parameter's annual value covers."""
+    if tbs_module.parameter_reads_calendar_years()(name):
+        return datetime.date(year, 12, 31)
+    return datetime.date(year + 1, 4, 5)
 
 
 @st.composite
 def changes_around_a_first_date(draw):
     name, first, value = draw(st.sampled_from(later_first_dated_parameters()))
     # On the first date, or up to about two years either side of it.
-    start = first + datetime.timedelta(days=draw(st.integers(-800, 800)))
+    offset = draw(st.one_of(st.just(0), st.integers(-800, 800)))
+    start = first + datetime.timedelta(days=offset)
     if draw(st.booleans()):
         stop = datetime.date(2100, 12, 31)
     else:
         stop = start + datetime.timedelta(days=draw(st.integers(0, 1_500)))
     route = draw(st.sampled_from(sorted(ROUTES)))
+    # Twice the first stated value, or 1 for a first value of 0.
     return name, start, stop, value * 2 if value else 1.0, route
 
 
@@ -1343,16 +1436,62 @@ def changes_around_a_first_date(draw):
 @given(change=changes_around_a_first_date())
 def test_no_change_reaches_a_year_before_it_starts(change):
     name, start, stop, value, route = change
+    years = [
+        year for year in range(2015, start.year + 1) if year_ends(name, year) < start
+    ]
+    assume(years)
     simulation = ROUTES[route](as_dict(name, start, stop, value))
-    reformed = simulation.tax_benefit_system.parameters.get_child(name)
+    parameters = simulation.tax_benefit_system.parameters
+    reformed = parameters.get_child(name)
     current = tbs_module.processed_parameters().get_child(name)
-    calendar = tbs_module.parameter_reads_calendar_years()(name)
-    for year in range(2015, start.year + 1):
-        # The last day of the year the annual value covers.
-        ends = (
-            datetime.date(year, 12, 31) if calendar else datetime.date(year + 1, 4, 5)
-        )
-        if ends >= start:
-            break
+    for year in years:
         day = f"{year}-01-01"
         assert reformed(day) == pytest.approx(current(day), abs=1e-9), year
+        # No other parameter moves in a year that ends before the change
+        # starts either (generated ones included, such as an index read from
+        # a growth series), by a fiscal year's end, the later of the two.
+        if datetime.date(year + 1, 4, 5) < start:
+            assert parameters_differing_from_current_law(parameters, day) == [], year
+
+
+@functools.lru_cache(maxsize=None)
+def parameters_with_a_closed_span():
+    """Parameters with a stated value that a later stated value ends."""
+    found = []
+    for name, entries in stated_timelines():
+        spans = [
+            (begins, ends, value)
+            for (begins, value), (ends, _) in zip(entries, entries[1:])
+            if begins >= datetime.date(2010, 1, 1)
+        ]
+        if spans:
+            found.append((name, tuple(spans)))
+    return tuple(sorted(found))
+
+
+@st.composite
+def restatements(draw):
+    """A parameter's own stated value, written over part of its span."""
+    name, spans = draw(st.sampled_from(parameters_with_a_closed_span()))
+    begins, ends, value = draw(st.sampled_from(spans))
+    days = (ends - begins).days
+    start = begins + datetime.timedelta(
+        days=draw(st.one_of(st.just(0), st.integers(0, days - 1)))
+    )
+    stop = start + datetime.timedelta(
+        days=draw(st.integers(0, (ends - start).days - 1))
+    )
+    route = draw(st.sampled_from(sorted(ROUTES)))
+    return name, start, stop, value, route
+
+
+@PROPERTY_SETTINGS
+@given(change=restatements())
+def test_restating_a_parameters_own_value_changes_nothing(change):
+    name, start, stop, value, route = change
+    simulation = ROUTES[route](as_dict(name, start, stop, value))
+    parameters = simulation.tax_benefit_system.parameters
+    # Every other year, to keep the test quick: a leak spans years.
+    for year in range(2015, 2040, 2):
+        day = f"{year}-01-01"
+        assert parameters_differing_from_current_law(parameters, day) == [], year
