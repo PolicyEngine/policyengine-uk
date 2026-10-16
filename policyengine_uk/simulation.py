@@ -975,7 +975,9 @@ class Simulation(CoreSimulation):
                     continue
                 values = data[variable][time_period]
                 entity = self.tax_benefit_system.variables[variable].entity.key
-                if entity in group_orders:
+                # Leave scalars for Core to normalize and validate against
+                # the population size; only arrays have a group row order.
+                if entity in group_orders and np.ndim(values) > 0:
                     order = group_orders[entity].get(
                         time_period, group_orders[entity][first_time_period]
                     )

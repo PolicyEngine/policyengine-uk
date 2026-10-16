@@ -214,3 +214,55 @@ def test_frozen_assumptions_align_each_year_before_reset():
         pd.testing.assert_frame_equal(
             getattr(source[2026], name), getattr(before, name)
         )
+
+
+def scalar_core_dataset_file(path, group_count):
+    """A real Core file with a zero-dimensional council-tax observation."""
+    ids = np.arange(group_count, 0, -1)
+    data = {
+        "person_id": ids,
+        "person_benunit_id": ids * 10,
+        "person_household_id": ids * 100,
+        "benunit_id": ids * 10,
+        "household_id": ids * 100,
+        "age": np.full(group_count, 40),
+        "household_weight": np.ones(group_count),
+        "rent": np.zeros(group_count),
+        "council_tax": 1_000.0,
+    }
+    for variable, value in [("region", "WALES"), ("tenure_type", "OWNED_OUTRIGHT")]:
+        data[variable] = np.asarray(
+            system.variables[variable].possible_values.encode(
+                np.full(group_count, value)
+            )
+        )
+    with h5py.File(path, "w") as file:
+        for variable, values in data.items():
+            file.create_dataset(f"{variable}/2025", data=values)
+    return path
+
+
+@pytest.mark.parametrize("source", ["core", "core_h5"])
+def test_scalar_core_input_for_one_household(source, tmp_path):
+    path = scalar_core_dataset_file(tmp_path / "scalar.h5", group_count=1)
+    dataset = Dataset.from_file(path) if source == "core" else path
+
+    sim = Simulation(dataset=dataset)
+
+    np.testing.assert_array_equal(sim.populations["household"].ids, [100])
+    np.testing.assert_array_equal(array(sim, "council_tax", 2025), [1_000])
+    np.testing.assert_array_equal(
+        array(sim, "council_tax", 2025, map_to="person"), [1_000]
+    )
+
+
+@pytest.mark.parametrize("source", ["core", "core_h5"])
+def test_scalar_core_input_does_not_broadcast_to_multiple_households(source, tmp_path):
+    path = scalar_core_dataset_file(tmp_path / "scalar.h5", group_count=2)
+    dataset = Dataset.from_file(path) if source == "core" else path
+
+    # Core normalizes a scalar to length one and rejects a population mismatch.
+    with pytest.raises(
+        ValueError, match=r'variable "council_tax".*length is 1.*2 households'
+    ):
+        Simulation(dataset=dataset)
