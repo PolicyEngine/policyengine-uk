@@ -183,7 +183,7 @@
     # £19,999 of excess at 20% plus £1 at 40%.
     personal_pension_contributions_tax: [8_000, 4_000.20]
 
-- name: Higher-rate savings qualify for RAS extension but dividend upper rates do not
+- name: Separate savings and dividend rates do not qualify for RAS extension
   period: 2024
   absolute_error_margin: 0.01
   input:
@@ -195,10 +195,72 @@
     employer_pension_contributions: [60_000, 60_000]
     region: [LONDON, LONDON]
   output:
-    # RNI £47,430 in both cases. Savings include an ordinary higher-rate
-    # slice even after the £500 PSA; dividend upper rates are separate
-    # rates, outside s.192(4). Only the savings case gets the RAS extension.
-    personal_pension_contributions_tax: [5_946, 8_000]
+    # RNI £47,430 in both cases. Savings higher and dividend upper rates
+    # are separate rates, outside the literal s.192(4) condition.
+    personal_pension_contributions_tax: [8_000, 8_000]
+
+- name: Savings higher rate alone does not satisfy the literal s192 condition
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 40_000
+    savings_interest_income: 15_000
+    personal_pension_contributions: 20_000
+    employer_pension_contributions: 60_000
+    region: LONDON
+  output:
+    # FA 2016 s.6 introduced separate savings higher/additional rates from
+    # 2017-18 without expanding FA 2004 s.192(4). Ordinary non-savings
+    # £27,430 remains below basic; RNI £42,430 plus £20,000 excess is 40%.
+    personal_pension_contributions_tax: 8_000
+
+- name: Separate property higher rate does not satisfy the literal s192 condition
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 20_000
+    property_income: 32_000
+    personal_pension_contributions: 20_000
+    employer_pension_contributions: 60_000
+    region: LONDON
+  output:
+    # FA 2026 s.6 introduces separate property rates from 2027-28 without
+    # expanding s.192(4). Other non-savings income is below basic; the
+    # excess is taxed at the s.227 UK rates on top of RNI £39,430.
+    personal_pension_contributions_tax: 8_000
+
+- name: Savings taxed at the ordinary higher rate qualify before separate savings rates
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 40_000
+    savings_interest_income: 15_000
+    personal_pension_contributions: 20_000
+    employer_pension_contributions: 40_000
+    region: LONDON
+  output:
+    # RNI £44,000 includes ordinary higher-rate savings before 2017-18.
+    # RAS extends the £32,000 basic limit to £52,000: £8,000 at 20%,
+    # then £12,000 at 40% of the £20,000 annual allowance excess.
+    personal_pension_contributions_tax: 6_400
+
+- name: Property taxed at the ordinary higher rate qualifies before separate property rates
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 20_000
+    property_income: 32_000
+    personal_pension_contributions: 20_000
+    employer_pension_contributions: 60_000
+    region: LONDON
+  output:
+    # RNI £39,430 includes ordinary higher-rate property before 2027-28.
+    # The RAS extension puts £18,270 at 20% and £1,730 at 40%.
+    personal_pension_contributions_tax: 4_346
 
 - name: Wholly nil-rate savings do not qualify for RAS band extension
   period: 2024

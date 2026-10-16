@@ -26,7 +26,8 @@ class personal_pension_contributions_tax(Variable):
         "(s. 227(4A)-(4B)), with gross Gift Aid extending rate limits. "
         "Relieved relief-at-source contributions extend limits only where "
         "ordinary income, before that relief, meets s. 192(4)/(4A)'s "
-        "above-basic-rate condition (s. 227(4C)/(5)). A Scottish "
+        "above-basic-rate condition (s. 227(4C)/(5)). Separate savings rates "
+        "from 2017 and UK property rates from 2027 do not satisfy s. 192(4). A Scottish "
         "taxpayer pays the Scottish rates, with the Scottish basic rate on any "
         "slice within the Scottish basic rate limit (s. 227(4AA)). "
         "Personal contribution relief has a separate earnings limit "
@@ -83,32 +84,42 @@ class personal_pension_contributions_tax(Variable):
 
         # s. 192(4): test ordinary liability apart from RAS relief, with
         # Gift Aid's limits still extended. s. 227(5) excludes the pension
-        # excess itself. Dividends have separate rates and cannot satisfy
-        # the higher/additional-rate condition; savings at a nil rate cannot
-        # satisfy it either. Retain the model's fixed allowance allocation.
+        # excess itself. Separate dividend rates, savings rates from 2017
+        # (FA 2016 s. 6) and UK property rates from 2027 (FA 2026 s. 6) do not
+        # satisfy its named higher/additional-rate condition. Retain the
+        # model's fixed allowance allocation, apart from RAS relief.
         savings = person("taxable_savings_interest_income", period)
         dividends = person("taxable_dividend_income", period)
         non_savings = max_(0, reduced_net_income - savings - dividends)
-        savings_top = max_(0, reduced_net_income - dividends)
-        savings_after_allowances = savings_top - non_savings
-        savings_amounts = income_tax.allowances.personal_savings_allowance
-        savings_allowance_without_ras = select(
-            [
-                reduced_net_income > rates.uk.thresholds[2] + gross_gift,
-                reduced_net_income > rates.uk.thresholds[1] + gross_gift,
-            ],
-            [savings_amounts.additional, savings_amounts.higher],
-            default=savings_amounts.basic,
-        )
-        nil_rate_savings = min_(
-            savings_after_allowances,
-            savings_allowance_without_ras
-            + max_(0, rates.savings_starter_rate.allowance - non_savings),
-        )
         uk_basic_limit = rates.uk.thresholds[1] + gross_gift
-        uk_ras_condition = (non_savings > uk_basic_limit) | (
-            savings_top > max_(uk_basic_limit, non_savings + nil_rate_savings)
-        )
+        # Property is stacked above other non-savings income. Its part of
+        # this pre-RAS base must use allowances with RAS restored too.
+        property_at_separate_rates = min_(
+            person("taxable_property_income", period), non_savings
+        ) * (period.start.year >= 2027)
+        uk_ras_condition = non_savings - property_at_separate_rates > uk_basic_limit
+        if period.start.year < 2017:
+            # Before separate savings rates, a non-nil higher/additional
+            # savings slice was charged at the rates named in s. 192(4).
+            savings_top = max_(0, reduced_net_income - dividends)
+            savings_after_allowances = savings_top - non_savings
+            savings_amounts = income_tax.allowances.personal_savings_allowance
+            savings_allowance_without_ras = select(
+                [
+                    reduced_net_income > rates.uk.thresholds[2] + gross_gift,
+                    reduced_net_income > uk_basic_limit,
+                ],
+                [savings_amounts.additional, savings_amounts.higher],
+                default=savings_amounts.basic,
+            )
+            nil_rate_savings = min_(
+                savings_after_allowances,
+                savings_allowance_without_ras
+                + max_(0, rates.savings_starter_rate.allowance - non_savings),
+            )
+            uk_ras_condition = uk_ras_condition | (
+                savings_top > max_(uk_basic_limit, non_savings + nil_rate_savings)
+            )
 
         uk_charge = _top_slice_charge(
             reduced_net_income,

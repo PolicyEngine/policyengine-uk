@@ -104,8 +104,17 @@ higher/additional-rate tax, or a Scottish rate above basic. The charge uses
 only limits increased under s. 192; s. 227(5) excludes the pension excess from
 income, so that excess cannot satisfy the condition. The model tests ordinary
 liability before RAS relief, retaining Gift Aid's extension and the existing
-allowance allocation. Scottish liability uses non-savings income; dividend
-rates alone and savings taxed at nil do not satisfy the UK condition.
+allowance allocation. Scottish liability uses non-savings income, including
+property income. The UK condition names the higher and additional rates:
+separate dividend rates, savings rates from 2017-18 and property rates from
+2027-28 do not satisfy it. [FA 2016 s. 6](https://www.legislation.gov.uk/ukpga/2016/24/section/6/enacted)
+introduced savings rates and expressly added them to some other higher-rate
+tests, without expanding s. 192(4). [FA 2026 s. 6](https://www.legislation.gov.uk/ukpga/2026/11/section/6/enacted)
+and [Schedule 1](https://www.legislation.gov.uk/ukpga/2026/11/schedule/1/enacted)
+introduce property rates without expanding s. 192 either. Before those
+changes, income charged at ordinary higher/additional rates can qualify.
+Scottish property remains subject to Scottish rates under ITA 2007
+s. 11CA(4), so it can still meet s. 192(4A).
 
 [HMRC PTM056120](https://www.gov.uk/hmrc-internal-manuals/pensions-tax-manual/ptm056120)
 describes the RAS extension for the annual allowance charge without stating
