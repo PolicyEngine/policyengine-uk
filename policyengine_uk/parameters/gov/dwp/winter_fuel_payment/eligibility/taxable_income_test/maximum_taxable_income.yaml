@@ -1,7 +1,11 @@
 description: Deprecated; use gov.hmrc.income_tax.charges.winter_fuel_payment.income_threshold for the winter fuel payment charge. The household income test (use_maximum_taxable_income) pays a person not on a relevant benefit if a member of their household who has reached pensionable age has total income at or under this amount. It has effect only when that test is switched on and a relevant benefit is required (require_benefits).
 values:
   2000-01-01: 0
-  2025-01-01: 35_000
+  2025-01-01:
+    value: 35_000
+    reference:
+      - title: Finance Act 2026, Sch. 10 para. 1 (ITEPA 2003 s.681I(1)(b), the charge's threshold, which this test stood in for)
+        href: https://www.legislation.gov.uk/ukpga/2026/11/schedule/10
 metadata:
   unit: currency-GBP
   label: Winter Fuel Payment household income test limit (deprecated)

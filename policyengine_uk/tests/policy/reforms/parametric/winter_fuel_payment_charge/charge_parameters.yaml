@@ -7,7 +7,7 @@
     gov.hmrc.income_tax.charges.winter_fuel_payment.income_threshold: 50_000
     age: 70
     country: ENGLAND
-    total_income: 45_000
+    total_income_charged_to_tax: 45_000
     pension_credit: 0
   output:
     winter_fuel_payment: 200
@@ -19,7 +19,7 @@
     gov.hmrc.income_tax.charges.winter_fuel_payment.income_threshold: 50_000
     age: 70
     country: ENGLAND
-    total_income: 50_001
+    total_income_charged_to_tax: 50_001
     pension_credit: 0
   output:
     winter_fuel_payment: 200
@@ -31,7 +31,7 @@
     gov.hmrc.income_tax.charges.winter_fuel_payment.in_effect: false
     age: 70
     country: ENGLAND
-    total_income: 50_000
+    total_income_charged_to_tax: 50_000
     pension_credit: 0
   output:
     winter_fuel_payment: 200
@@ -44,7 +44,7 @@
     gov.hmrc.income_tax.charges.winter_fuel_payment.in_effect: true
     age: 70
     country: ENGLAND
-    total_income: 50_000
+    total_income_charged_to_tax: 50_000
     pension_credit: 0
   output:
     winter_fuel_payment: 200
@@ -60,7 +60,7 @@
     gov.hmrc.income_tax.charges.winter_fuel_payment.in_effect: true
     age: 70
     country: ENGLAND
-    total_income: 50_000
+    total_income_charged_to_tax: 50_000
     pension_credit: 0
     tax_credits: 1_000
   output:

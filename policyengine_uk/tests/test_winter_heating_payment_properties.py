@@ -202,7 +202,7 @@ def situation(drawn, year):
         for name, (inputs, _, cp) in zip(names, members):
             person = {
                 "age": {year: inputs["age"]},
-                "total_income": {year: inputs["total_income"]},
+                "total_income_charged_to_tax": {year: inputs["total_income"]},
                 "is_claimant_or_partner": {year: cp},
                 "is_benunit_head": {year: bool(inputs.get("head", False))},
             }

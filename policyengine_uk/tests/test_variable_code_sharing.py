@@ -58,7 +58,7 @@ def _skip_if_core_shares(core_shares_code):
         )
 
 
-def _income_tax_formula(simulation):
+def _formula(simulation):
     variable = simulation.tax_benefit_system.variables[FORMULA_VARIABLE]
     return variable.get_formula()
 
@@ -84,8 +84,8 @@ def test_systems_share_code_but_not_modules_classes_or_functions():
     second = Simulation(situation=SITUATION)
     first_class = type(first.tax_benefit_system.variables[FORMULA_VARIABLE])
     second_class = type(second.tax_benefit_system.variables[FORMULA_VARIABLE])
-    first_formula = _income_tax_formula(first)
-    second_formula = _income_tax_formula(second)
+    first_formula = _formula(first)
+    second_formula = _formula(second)
 
     assert first_class is not second_class
     assert (

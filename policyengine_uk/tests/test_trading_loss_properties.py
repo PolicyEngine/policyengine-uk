@@ -17,10 +17,15 @@ Invariants, for any people and incomes:
    taken from non-savings income first, then savings, then dividends: the
    model's fixed allowance order (s.25(2) asks for the order giving the
    greatest reduction; #2106).
-3. Income Tax never rises with the loss and falls by at most the relief (for
-   people without savings income: the personal savings allowance steps up by
-   £500 when someone stops being a higher-rate taxpayer, so with savings
-   income a small relief can save more than itself).
+3. Income Tax before the winter fuel payment charge never rises with the
+   loss and falls by at most the relief (for people without savings income:
+   the personal savings allowance steps up by £500 when someone stops being
+   a higher-rate taxpayer, so with savings income a small relief can save
+   more than itself). The charge moves only where the loss changes the
+   person's receipt of a relevant benefit or their total income: relief
+   comes at Step 2, after total income, but lower tax can end a Pension
+   Credit award and with it the exemption (ITEPA 2003 s.681I(4)), and a loss
+   claim replaces the trading allowance.
 4. Means tests never set the loss against employed earnings or other
    income: with Income Tax and NI held at the values the loss gives, every
    means-tested benefit and means-test income is what it is without the loss,
@@ -45,7 +50,9 @@ Invariants, for any people and incomes:
    pays none whatever their loss.
 8. The s.24A cap starts in 2013-14.
 9. A loss-making trade, compared with the same trade making zero profit and
-   no loss, never increases Income Tax. With paid tax and NI deductions and
+   no loss, never increases Income Tax before the winter fuel payment
+   charge, and the charge moves only where the loss changes who in the
+   household is on a relevant benefit. With paid tax and NI deductions and
    other benefit receipts held consistently, it never reduces UC, Housing
    Benefit or tax credits. This isolates each programme's loss rule: the
    model's annual tax deductions and changes to other benefits can otherwise
@@ -386,8 +393,22 @@ def test_relief_taxes_like_income_cut_in_section_25_order(people, regions):
         ), (person, a[tax][i], b[tax][i])
 
 
+# A pensioner with a tiny Pension Credit award: Pension Credit income
+# deducts tax but leaves out dividends, so with total income over £35,000 the
+# award survives until the loss cuts the tax. In 2026 the relief ends it, and
+# with it the exemption from the winter fuel payment charge, so Income Tax
+# with the charge rises with the loss although total income does not move.
+PINNED_CHARGE_TAXPAYER = taxpayer(
+    age=80,
+    private_pension_income=19_200,
+    dividend_income=30_000,
+    trading_loss=1_100,
+)
+
+
 @PROPERTY_SETTINGS
 @example(PINNED_TAXPAYERS, PINNED_REGIONS, 0.5)
+@example([PINNED_CHARGE_TAXPAYER] * 8, ["LONDON"] * 16, 0.5)
 @given(
     st.lists(taxpayers(), min_size=8, max_size=16),
     st.lists(st.sampled_from(REGIONS), min_size=16, max_size=16),
@@ -396,18 +417,46 @@ def test_relief_taxes_like_income_cut_in_section_25_order(people, regions):
 def test_income_tax_falls_with_the_loss_by_at_most_the_relief(people, regions, share):
     smaller = [{**p, "trading_loss": p["trading_loss"] * share} for p in people]
     without = [{**p, "trading_loss": 0.0} for p in people]
-    variables = ["income_tax", "trade_loss_relief_against_general_income"]
+    charge = "winter_fuel_payment_charge"
+    total_income = "total_income_charged_to_tax"
+    variables = [
+        PRE_CHARGE_TAX,
+        "trade_loss_relief_against_general_income",
+        charge,
+        total_income,
+        *RELEVANT_BENEFITS,
+    ]
     a = calculate(single_people(people, regions), variables)
     s = calculate(single_people(smaller, regions), variables)
     b = calculate(single_people(without, regions), variables)
+
+    def on_relevant_benefit(result, i):
+        return any(result[v][i] > 0 for v in RELEVANT_BENEFITS)
+
     for i, person in enumerate(people):
-        tol = tolerance(b["income_tax"][i], person["employment_income"])
-        assert a["income_tax"][i] <= s["income_tax"][i] + tol, person
-        assert s["income_tax"][i] <= b["income_tax"][i] + tol, person
+        tol = tolerance(b[PRE_CHARGE_TAX][i], person["employment_income"])
+        assert a[PRE_CHARGE_TAX][i] <= s[PRE_CHARGE_TAX][i] + tol, person
+        assert s[PRE_CHARGE_TAX][i] <= b[PRE_CHARGE_TAX][i] + tol, person
         if person["savings_interest_income"] == 0:
-            saved = b["income_tax"][i] - a["income_tax"][i]
+            saved = b[PRE_CHARGE_TAX][i] - a[PRE_CHARGE_TAX][i]
             relief = a["trade_loss_relief_against_general_income"][i]
             assert saved <= relief + tol, (person, saved, relief)
+        # Each person is alone in their household, so their payment, and
+        # with it the charge, follows only their own benefit receipt and
+        # total income.
+        for result in (a, s):
+            if abs(result[charge][i] - b[charge][i]) > 0.5:
+                receipt_moved = on_relevant_benefit(result, i) != (
+                    on_relevant_benefit(b, i)
+                )
+                total_income_moved = abs(
+                    result[total_income][i] - b[total_income][i]
+                ) > tolerance(b[total_income][i])
+                assert receipt_moved or total_income_moved, (
+                    person,
+                    result[charge][i],
+                    b[charge][i],
+                )
 
 
 @st.composite
@@ -543,7 +592,10 @@ PINNED_FAMILIES = [
 
 # A pensioner with five children on Pension Credit and so not charged. In
 # 2026 the loss cuts tax by £1,000, which ends Pension Credit and with it the
-# exemption from the winter fuel payment charge (ITEPA 2003 s.681I(4)).
+# exemption from the winter fuel payment charge (ITEPA 2003 s.681I(4)). The
+# second pensioner is charged with or without the loss: total income of
+# £40,000 is found before trade loss relief, and the loss leaves them off
+# Pension Credit.
 PINNED_PENSIONER = [
     (
         [
@@ -557,6 +609,17 @@ PINNED_PENSIONER = [
         ]
         + [{"age": 10, "trading_loss": 0.0} for _ in range(5)],
         home(9_000.0, "NORTH_EAST"),
+    ),
+    (
+        [
+            adult(
+                age=70,
+                private_pension_income=40_000.0,
+                trading_loss=10_000.0,
+                hours_worked=0.0,
+            )
+        ],
+        home(9_000.0),
     ),
 ]
 

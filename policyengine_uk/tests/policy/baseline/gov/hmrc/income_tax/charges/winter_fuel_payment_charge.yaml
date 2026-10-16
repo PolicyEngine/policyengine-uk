@@ -12,10 +12,12 @@
 #   2007 ss.23 and 30).
 # The payments are worked from SI 2025/969 regs 2 to 4, NISR 2025/142 regs 2
 # and 3, and SSI 2024/351 reg 10 as substituted by SSI 2025/282 (amounts from
-# SSI 2025/100 and SSI 2026/170). One case, marked "model, not law", pins a
-# known gap instead. Entitlement to a payment, and so who counts
-# as "a person entitled to a winter fuel payment" for the shared amounts, does
-# not depend on the charge. Benefit-unit awards are entered directly.
+# SSI 2025/100 and SSI 2026/170). Total income is ITA 2007 s.23 Step 1: the
+# income charged to tax, after the deductions made in working out each kind of
+# income and before the Step 2 reliefs. Entitlement to a payment, and so who
+# counts as "a person entitled to a winter fuel payment" for the shared
+# amounts, does not depend on the charge. Benefit-unit awards are entered
+# directly.
 
 - name: 2025 total income of exactly £35,000 is not charged
   # s.681I(1)(b): total income must exceed £35,000. Reg. 2 and 3(1): £200.
@@ -24,7 +26,7 @@
     people:
       pensioner:
         age: 70
-        total_income: 35_000
+        total_income_charged_to_tax: 35_000
     benunits:
       unit:
         members: [pensioner]
@@ -45,7 +47,7 @@
     people:
       pensioner:
         age: 70
-        total_income: 35_001
+        total_income_charged_to_tax: 35_001
     benunits:
       unit:
         members: [pensioner]
@@ -66,7 +68,7 @@
     people:
       pensioner:
         age: 85
-        total_income: 50_000
+        total_income_charged_to_tax: 50_000
     benunits:
       unit:
         members: [pensioner]
@@ -88,10 +90,10 @@
     people:
       partner_1:
         age: 70
-        total_income: 50_000
+        total_income_charged_to_tax: 50_000
       partner_2:
         age: 72
-        total_income: 10_000
+        total_income_charged_to_tax: 10_000
     benunits:
       couple:
         members: [partner_1, partner_2]
@@ -113,10 +115,10 @@
     people:
       partner_1:
         age: 82
-        total_income: 40_000
+        total_income_charged_to_tax: 40_000
       partner_2:
         age: 85
-        total_income: 40_000
+        total_income_charged_to_tax: 40_000
     benunits:
       couple:
         members: [partner_1, partner_2]
@@ -141,10 +143,10 @@
     people:
       high_income:
         age: 70
-        total_income: 50_000
+        total_income_charged_to_tax: 50_000
       aged_85:
         age: 85
-        total_income: 10_000
+        total_income_charged_to_tax: 10_000
     benunits:
       unit_1:
         members: [high_income]
@@ -172,7 +174,7 @@
         age: 70
       lodger:
         age: 72
-        total_income: 40_000
+        total_income_charged_to_tax: 40_000
     benunits:
       unit_1:
         members: [on_pension_credit]
@@ -197,7 +199,7 @@
     people:
       pensioner:
         age: 70
-        total_income: 50_000
+        total_income_charged_to_tax: 50_000
       son:
         age: 40
     benunits:
@@ -227,7 +229,7 @@
         age: 60
       pensioner:
         age: 70
-        total_income: 40_000
+        total_income_charged_to_tax: 40_000
     benunits:
       couple:
         members: [claimant, pensioner]
@@ -253,7 +255,7 @@
         pension_credit_reported: 1_000
       partner:
         age: 72
-        total_income: 50_000
+        total_income_charged_to_tax: 50_000
     benunits:
       couple:
         members: [claimant, partner]
@@ -281,7 +283,7 @@
         income_support_reported: 1_000
       partner:
         age: 70
-        total_income: 40_000
+        total_income_charged_to_tax: 40_000
     benunits:
       couple:
         members: [claimant, partner]
@@ -306,7 +308,7 @@
     people:
       pensioner:
         age: 70
-        total_income: 20_000
+        total_income_charged_to_tax: 20_000
     benunits:
       unit:
         members: [pensioner]
@@ -327,7 +329,7 @@
     people:
       pensioner:
         age: 70
-        total_income: 50_000
+        total_income_charged_to_tax: 50_000
     benunits:
       unit:
         members: [pensioner]
@@ -349,7 +351,7 @@
     people:
       pensioner:
         age: 70
-        total_income: 50_000
+        total_income_charged_to_tax: 50_000
     benunits:
       unit:
         members: [pensioner]
@@ -373,10 +375,10 @@
     people:
       partner_1:
         age: 82
-        total_income: 40_000
+        total_income_charged_to_tax: 40_000
       partner_2:
         age: 85
-        total_income: 20_000
+        total_income_charged_to_tax: 20_000
     benunits:
       couple:
         members: [partner_1, partner_2]
@@ -399,7 +401,7 @@
     people:
       pensioner:
         age: 82
-        total_income: 40_000
+        total_income_charged_to_tax: 40_000
     benunits:
       unit:
         members: [pensioner]
@@ -421,7 +423,7 @@
     people:
       pensioner:
         age: 70
-        total_income: 50_000
+        total_income_charged_to_tax: 50_000
     benunits:
       unit:
         members: [pensioner]
@@ -441,7 +443,7 @@
     people:
       pensioner:
         age: 70
-        total_income: 20_000
+        total_income_charged_to_tax: 20_000
     benunits:
       unit:
         members: [pensioner]
@@ -471,7 +473,7 @@
         members: [pensioner]
         country: ENGLAND
   output:
-    total_income: [50_000]
+    total_income_charged_to_tax: [50_000]
     income_tax_before_winter_fuel_payment_charge: [7_486]
     winter_fuel_payment_charge: [200]
     income_tax: [7_686]
@@ -535,18 +537,16 @@
     household_benefits: 203.40
     hbai_benefits: 203.40
 
-- name: 2025 a landlord's total income is taken before the property allowance (model, not law)
+- name: 2025 a landlord's property allowance election can keep total income under £35,000
   # Private pension £32,000; property receipts £3,500, expenses £200 (profit
-  # £3,300), finance costs £1,500. With expenses: (35,300 - 12,570) x 20% =
-  # £4,546, less the finance-cost reduction 20% x £1,500 = £300, so £4,246.
-  # With partial relief (£1,000 allowance for £200 of expenses, no
-  # reduction): (34,500 - 12,570) x 20% = £4,386. The model's total_income
-  # is before the property allowance, £35,300 on either route, so the £200
-  # charge is added on either and expenses are kept: £4,446 against £4,586.
-  # KNOWN GAP, pinned on purpose: under the law, partial relief puts total
-  # income at £34,500, under the threshold, so a landlord would elect it and
-  # pay £4,386 with no charge. The model does not deduct the property or
-  # trading allowance from total_income (see the PR's Limits).
+  # £3,300), finance costs £1,500. With expenses: total income £35,300, over
+  # £35,000, so the £200 charge applies; tax (35,300 - 12,570) x 20% =
+  # £4,546, less the finance-cost reduction 20% x £1,500 = £300, so £4,246,
+  # and £4,446 with the charge. With partial relief (the £1,000 allowance in
+  # place of £200 of expenses, ITTOIA 2005 s.783BH, and no finance-cost
+  # reduction): property profits £2,500, total income £34,500, no charge;
+  # tax (34,500 - 12,570) x 20% = £4,386. The pensioner elects partial
+  # relief.
   period: 2025
   input:
     people:
@@ -561,11 +561,140 @@
         members: [pensioner]
         country: ENGLAND
   output:
-    uses_property_allowance: [false]
-    total_income: [35_300]
-    income_tax_before_winter_fuel_payment_charge: [4_246]
+    uses_property_allowance: [true]
+    total_income_charged_to_tax: [34_500]
+    income_tax_before_winter_fuel_payment_charge: [4_386]
+    winter_fuel_payment_charge: [0]
+    income_tax: [4_386]
+
+- name: 2025 employment expenses come off total income
+  # Employment income is net taxable earnings, after deductible expenses
+  # (ITEPA 2003 ss.11 and 336): 35,500 - 1,000 = £34,500, not over £35,000,
+  # so no charge. Tax: (34,500 - 12,570) x 20% = £4,386.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        employment_income: 35_500
+        employment_expenses: 1_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    total_income_charged_to_tax: [34_500]
+    winter_fuel_payment: [200]
+    winter_fuel_payment_charge: [0]
+    income_tax: [4_386]
+
+- name: 2025 capital allowances come off total income
+  # Capital allowances are deducted as trading expenses (CAA 2001 s.247):
+  # trading profits 35,500 - 1,000 = £34,500, so no charge. Tax:
+  # (34,500 - 12,570) x 20% = £4,386.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        self_employment_income: 35_500
+        capital_allowances: 1_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    total_income_charged_to_tax: [34_500]
+    winter_fuel_payment: [200]
+    winter_fuel_payment_charge: [0]
+    income_tax: [4_386]
+
+- name: 2025 trading income within the trading allowance is not total income
+  # A profit of £800 is within the £1,000 trading allowance, so it is not
+  # charged to tax (ITTOIA 2005 s.783AF): total income is the £34,500
+  # pension, not £35,300, so no charge. Tax: (34,500 - 12,570) x 20% =
+  # £4,386.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        private_pension_income: 34_500
+        self_employment_income: 800
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    total_income_charged_to_tax: [34_500]
+    winter_fuel_payment: [200]
+    winter_fuel_payment_charge: [0]
+    income_tax: [4_386]
+
+- name: 2025 ISA interest is not total income
+  # Interest of £2,000, £1,500 of it from an ISA, which is exempt (ITTOIA
+  # 2005 s.694): total income is 34,000 + 500 = £34,500, so no charge. Tax:
+  # (34,000 - 12,570) x 20% = £4,286 on the pension; the £500 of interest is
+  # within the £1,000 personal savings allowance.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        private_pension_income: 34_000
+        savings_interest_income: 2_000
+        tax_free_savings_income: 1_500
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    total_income_charged_to_tax: [34_500]
+    winter_fuel_payment: [200]
+    winter_fuel_payment_charge: [0]
+    income_tax: [4_286]
+
+- name: 2025 losses brought forward do not lower total income
+  # Relief for a trade loss carried forward (ITA 2007 s.83) is deducted at
+  # Step 2, after total income: total income is the £40,000 profit, so the
+  # £200 charge applies. Tax before the charge: (40,000 - 10,000 - 12,570) x
+  # 20% = £3,486; with the charge, £3,686.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        self_employment_income: 40_000
+        loss_relief: 10_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    total_income_charged_to_tax: [40_000]
     winter_fuel_payment_charge: [200]
-    income_tax: [4_446]
+    income_tax_before_winter_fuel_payment_charge: [3_486]
+    income_tax: [3_686]
 
 - name: 2025 statutory sick pay counts towards total income
   # Statutory sick pay is income charged to tax, so it is part of total
@@ -617,6 +746,7 @@
         country: ENGLAND
   output:
     trade_loss_relief_against_general_income: [8_000]
+    total_income_charged_to_tax: [40_000]
     winter_fuel_payment_charge: [200]
     income_tax_before_winter_fuel_payment_charge: [3_886]
     income_tax: [4_086]
@@ -626,7 +756,9 @@
   # £3,300), finance costs £1,500; five children. With expenses: (35,820 -
   # 12,570) x 20% = £4,650, less the finance-cost reduction 20% x £1,500 =
   # £300, so £4,350. With partial relief (£1,000 allowance, no reduction):
-  # (35,020 - 12,570) x 20% = £4,490. Pension Credit income is £29,970 with
+  # (35,020 - 12,570) x 20% = £4,490. Total income is over £35,000 either
+  # way (£35,820 and £35,020), so Pension Credit decides the charge. Pension
+  # Credit income is £29,970 with
   # expenses and £29,830 with the allowance, against the model's minimum
   # guarantee of £29,893.76 (with the amounts for the children), so only the
   # allowance route gets Pension Credit, which exempts the pensioner from the

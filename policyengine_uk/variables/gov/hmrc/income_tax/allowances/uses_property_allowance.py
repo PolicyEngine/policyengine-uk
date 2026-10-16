@@ -22,10 +22,10 @@ MAX_ROUNDS = 3
 def income_tax_with_route(simulation, name, period, uses_allowance):
     """Each person's income tax with the given choices of property allowance.
 
-    The tax includes the winter fuel payment charge. The model's total_income
-    is before the property allowance, so it is the same on either route, but
-    a route can change the person's Pension Credit and so whether the charge
-    applies (s.681I(4)). The branch shares the simulation's cached arrays
+    The tax includes the winter fuel payment charge. A route can change the
+    person's total income, which is after the property allowance, and their
+    Pension Credit, and so whether the charge applies (s.681I(1)(b) and (4)).
+    The branch shares the simulation's cached arrays
     until it writes, and is dropped afterwards so a later period starts from
     a fresh branch.
     """

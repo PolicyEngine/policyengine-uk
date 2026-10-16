@@ -218,7 +218,7 @@
   input:
     age: 67
     country: "ENGLAND"
-    total_income: 50000
+    private_pension_income: 50000
     pension_credit: 0
     income_support: 0
     esa_income: 0
@@ -235,7 +235,7 @@
     gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.maximum_taxable_income: 20000
     age: 67
     country: "ENGLAND"
-    total_income: 50000
+    private_pension_income: 50000
     pension_credit: 0
     income_support: 0
     esa_income: 0
@@ -253,7 +253,7 @@
     gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.maximum_taxable_income: 20000
     age: 67
     country: "ENGLAND"
-    total_income: 50000
+    private_pension_income: 50000
     pension_credit: 0
     income_support: 0
     esa_income: 0
@@ -271,7 +271,7 @@
     gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.maximum_taxable_income: 20000
     age: 67
     country: "ENGLAND"
-    total_income: 15000
+    private_pension_income: 15000
     pension_credit: 0
     income_support: 0
     esa_income: 0

@@ -300,7 +300,7 @@
     people:
       pensioner:
         age: 70
-        total_income: 50_000
+        total_income_charged_to_tax: 50_000
       son:
         age: 40
     benunits:
@@ -328,7 +328,7 @@
     people:
       pensioner:
         age: 70
-        total_income: 15_000
+        total_income_charged_to_tax: 15_000
       son:
         age: 40
     benunits:
