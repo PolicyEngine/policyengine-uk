@@ -90,7 +90,27 @@ Step 3 ([FA 2004 s. 227(4B)](https://www.legislation.gov.uk/ukpga/2004/12/sectio
 It starts from `net_income`, before the s. 58 gross Gift Aid deduction, and
 subtracts `allowances` after removing relieved relief-at-source pension
 contributions. Gift Aid is already excluded from those allowances. The charge
-then stacks the excess pension input amount on this base, extending the rate
-limits by `gift_aid_grossed_up` plus relieved relief-at-source contributions
-(s. 227(4C)). This keeps the Gift Aid adjustment to adjusted net income separate
-from the amount charged to tax.
+then stacks the excess pension input amount on this base. Gross Gift Aid
+extends the rate limits under s. 227(4C), independently of pension relief.
+This keeps the Gift Aid adjustment to adjusted net income separate from the
+amount charged to tax.
+
+The pension extension is conditional. [FA 2004 s. 192(4)/(4A)](https://www.legislation.gov.uk/ukpga/2004/12/section/192)
+requires ordinary income, apart from relief under that section, to attract
+higher/additional-rate tax, or a Scottish rate above basic. The charge uses
+only limits increased under s. 192; s. 227(5) excludes the pension excess from
+income, so that excess cannot satisfy the condition. The model tests ordinary
+liability before RAS relief, retaining Gift Aid's extension and the existing
+allowance allocation. Scottish liability uses non-savings income; dividend
+rates alone and savings taxed at nil do not satisfy the UK condition.
+
+[HMRC PTM056120](https://www.gov.uk/hmrc-internal-manuals/pensions-tax-manual/ptm056120)
+describes the RAS extension for the annual allowance charge without stating
+this condition. Its examples do not resolve low-income contributors whose
+pension excess crosses a band. The model follows the statutory condition;
+the [2018/459 explanatory memorandum, paragraph 7.4](https://www.legislation.gov.uk/uksi/2018/459/pdfs/uksiem_20180459_en.pdf)
+also describes an above-basic Scottish liability requirement. Assessment
+practice under the broader manual description remains a methodology question.
+The charge can exceed relief on the contribution when ordinary income fails
+the condition, so contribution and Gift Aid tax-monotonicity comparisons must
+hold eligibility for the RAS extension fixed.

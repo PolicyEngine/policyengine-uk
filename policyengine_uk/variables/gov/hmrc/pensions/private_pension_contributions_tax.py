@@ -23,16 +23,22 @@ class personal_pension_contributions_tax(Variable):
         "the basic, higher and additional rates on the slices of the chargeable "
         "amount that fall in each band when it is added to the top of the "
         "individual's reduced net income, their income after allowances "
-        "(s. 227(4A)-(4B)), with the rate limits raised by relief-at-source "
-        "contributions and grossed-up Gift Aid (s. 227(4C)). A Scottish "
+        "(s. 227(4A)-(4B)), with gross Gift Aid extending rate limits. "
+        "Relieved relief-at-source contributions extend limits only where "
+        "ordinary income, before that relief, meets s. 192(4)/(4A)'s "
+        "above-basic-rate condition (s. 227(4C)/(5)). A Scottish "
         "taxpayer pays the Scottish rates, with the Scottish basic rate on any "
         "slice within the Scottish basic rate limit (s. 227(4AA)). "
-        "Contributions above the annual allowance still get relief "
-        "(pension_contributions_relief), so the charge recovers that relief "
-        "once rather than taxing the excess twice."
+        "Personal contribution relief has a separate earnings limit "
+        "(pension_contributions_relief); the annual allowance does not "
+        "also deny that relief."
     )
     definition_period = YEAR
     reference = [
+        dict(
+            title="Finance Act 2004 s. 192",
+            href="https://www.legislation.gov.uk/ukpga/2004/12/section/192",
+        ),
         dict(
             title="Finance Act 2004 s. 227",
             href="https://www.legislation.gov.uk/ukpga/2004/12/section/227",
@@ -49,10 +55,12 @@ class personal_pension_contributions_tax(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        rates = parameters(period).gov.hmrc.income_tax.rates
+        income_tax = parameters(period).gov.hmrc.income_tax
+        rates = income_tax.rates
         chargeable_amount = person("pension_annual_allowance_chargeable_amount", period)
         # FA 2004 s. 227(4B)-(4C): relief at source remains in reduced net
-        # income and raises the rate limits (s. 192(4)). The model includes
+        # income. It raises rate limits only if s. 192's condition is met.
+        # The model includes
         # that relief in allowances, so restore it at Step 3. Net pay
         # contributions stay deducted. Gift Aid is already excluded from
         # allowances; only its gross amount extends the limits (ITA 2007
@@ -61,7 +69,7 @@ class personal_pension_contributions_tax(Variable):
             person("personal_pension_contributions", period),
             person("pension_contributions_relief", period),
         )
-        rate_limit_extension = person("gift_aid_grossed_up", period) + relief_at_source
+        gross_gift = person("gift_aid_grossed_up", period)
         allowances_at_step_3 = max_(
             0,
             person("allowances", period) - relief_at_source,
@@ -73,12 +81,41 @@ class personal_pension_contributions_tax(Variable):
         )
         top_of_charge = reduced_net_income + chargeable_amount
 
+        # s. 192(4): test ordinary liability apart from RAS relief, with
+        # Gift Aid's limits still extended. s. 227(5) excludes the pension
+        # excess itself. Dividends have separate rates and cannot satisfy
+        # the higher/additional-rate condition; savings at a nil rate cannot
+        # satisfy it either. Retain the model's fixed allowance allocation.
+        savings = person("taxable_savings_interest_income", period)
+        dividends = person("taxable_dividend_income", period)
+        non_savings = max_(0, reduced_net_income - savings - dividends)
+        savings_top = max_(0, reduced_net_income - dividends)
+        savings_after_allowances = savings_top - non_savings
+        savings_amounts = income_tax.allowances.personal_savings_allowance
+        savings_allowance_without_ras = select(
+            [
+                reduced_net_income > rates.uk.thresholds[2] + gross_gift,
+                reduced_net_income > rates.uk.thresholds[1] + gross_gift,
+            ],
+            [savings_amounts.additional, savings_amounts.higher],
+            default=savings_amounts.basic,
+        )
+        nil_rate_savings = min_(
+            savings_after_allowances,
+            savings_allowance_without_ras
+            + max_(0, rates.savings_starter_rate.allowance - non_savings),
+        )
+        uk_basic_limit = rates.uk.thresholds[1] + gross_gift
+        uk_ras_condition = (non_savings > uk_basic_limit) | (
+            savings_top > max_(uk_basic_limit, non_savings + nil_rate_savings)
+        )
+
         uk_charge = _top_slice_charge(
             reduced_net_income,
             top_of_charge,
             list(rates.uk.thresholds),
             list(rates.uk.rates),
-            rate_limit_extension,
+            gross_gift + relief_at_source * uk_ras_condition,
         )
 
         # s. 227(4AA)(b)(i): no slice is charged at the starter rate. The
@@ -99,12 +136,20 @@ class personal_pension_contributions_tax(Variable):
         )
         if has_starter_band:
             scottish_band_rates[0] = scottish_band_rates[1]
+        # s. 192(4A): only non-savings income is charged at Scottish rates.
+        # The first rate above basic is intermediate from 2018, higher before.
+        scottish_ras_condition = False
+        for threshold, rate in zip(scottish_rates.thresholds, scottish_band_rates):
+            if rate > scottish_band_rates[0]:
+                scottish_ras_condition = scottish_ras_condition | (
+                    non_savings > threshold + gross_gift
+                )
         scottish_charge = _top_slice_charge(
             reduced_net_income,
             top_of_charge,
             list(scottish_rates.thresholds),
             scottish_band_rates,
-            rate_limit_extension,
+            gross_gift + relief_at_source * scottish_ras_condition,
         )
 
         return where(
