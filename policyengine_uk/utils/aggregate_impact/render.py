@@ -303,9 +303,16 @@ def _guard(summary) -> str:
             )
     for dc in guard.get("double_counts", []):
         state = "still contained" if dc["status"] == "pass" else "NO LONGER contained"
+        # The published guard drops the coefficient of a double count from
+        # fewer than 10 units (measure.publishable_guard).
+        coefficient = (
+            f"coefficient {dc['coefficient']:.3f}"
+            if _finite(dc.get("coefficient"))
+            else "coefficient not shown, fewer than 10 units"
+        )
         lines.append(
             f"- declared double count `{dc['variable']}` is {state} in "
-            f"`{dc['contained_in']}` (coefficient {dc['coefficient']:.3f}; {dc['issue']})"
+            f"`{dc['contained_in']}` ({coefficient}; {dc['issue']})"
         )
     return "\n".join(lines)
 

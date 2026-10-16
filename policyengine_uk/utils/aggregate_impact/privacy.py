@@ -20,10 +20,10 @@ Deliberate exceptions:
 - Other heads whose formulas read the suppressed figure (income tax on a
   taxable benefit, a means test) still respond to it, inside totals from 10
   or more records; across two versions it is the d1601 residual below.
-- The counted-once guard's verdict for a component from fewer than 10 units
-  depends on how other heads respond at those units. It is kept, as the only
-  containment test for that component; its counts, responses and
-  coefficients are not published.
+- The counted-once and double-count-present verdicts for a component from
+  fewer than 10 units depend on how other heads respond at those units. They
+  are kept, as the only containment tests for that component; their counts,
+  responses and coefficients are not published.
 - Reform withholding counts households, not amounts: one household changing
   by £10,000 alongside ten changing by a penny is published. That is the same
   counting rule as for levels; no dominance rule is applied.
