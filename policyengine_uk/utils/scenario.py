@@ -213,6 +213,10 @@ def _chain(
         )
 
         def chained(simulation: Simulation) -> None:
+            if simulation is None:
+                first(simulation)
+                second(simulation)
+                return
             deferred = getattr(simulation, "_defer_uc_health_warning", False)
             _reset_uc_health_warning(simulation, dated or ())
             simulation._defer_uc_health_warning = True
