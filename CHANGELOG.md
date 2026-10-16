@@ -1,3 +1,10 @@
+## [2.134.5] - 2026-10-16
+
+### Fixed
+
+- - Limited pension contributions relief by relevant UK earnings (or the £3,600 basic amount through relief at source) instead of the annual allowance. Calculated the annual allowance charge across UK or Scottish tax bands with unused allowance carried forward, applying the statutory named-rate ordinary-income condition to the RAS band extension and preserving Gift Aid's separate gross band extension. Separate savings and UK property rates do not establish RAS eligibility.
+
+
 ## [2.134.4] - 2026-10-16
 
 ### Fixed
