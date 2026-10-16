@@ -86,6 +86,12 @@ def to_report(result: dict) -> dict:
                     # that year (measure.rebuild_protected); compare totals at
                     # equal exclusion.
                     "excludes": sorted((metric.get("excludes") or {}).get(year) or {}),
+                    # The sign each enters the total with (+1 or -1), so two
+                    # additive totals with different exclusions can be lined
+                    # up from published figures (compare._aligned).
+                    "exclude_signs": dict(
+                        sorted(((metric.get("excludes") or {}).get(year) or {}).items())
+                    ),
                     "unit": metric["kind"],
                     "kind": KIND_BY_SECTION.get(section, section),
                     "partition": head_id,

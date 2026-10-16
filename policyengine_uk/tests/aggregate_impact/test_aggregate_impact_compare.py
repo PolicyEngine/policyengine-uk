@@ -967,6 +967,12 @@ def test_the_w4_format_lists_the_heads_a_total_leaves_out():
     rows = {(r["metric_id"], r["year"]): r for r in to_report(result)["metrics"]}
     assert rows[("model.gov_spending", 2026)]["excludes"] == ["spending.rare"]
     assert rows[("model.gov_tax", 2026)]["excludes"] == []
+    # With their signs, for W4: a spending head enters the balances negative.
+    assert rows[("model.gov_spending", 2026)]["exclude_signs"] == {"spending.rare": 1}
+    assert rows[("balance.balance", 2026)]["exclude_signs"] == {"spending.rare": -1}
+    assert rows[("model.gov_tax", 2026)]["exclude_signs"] == {}
+    for row in rows.values():
+        assert sorted(row["exclude_signs"]) == row["excludes"]
     assert rows[("spending.rare", 2026)]["suppressed"]
 
 
