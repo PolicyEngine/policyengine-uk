@@ -19,6 +19,7 @@ from policyengine_uk.utils.aggregate_impact.compare import (
     decile_impacts,
 )
 from policyengine_uk.tests.aggregate_impact.test_aggregate_impact_measure import (
+    _identities,
     _protection_partition,
     _recorded,
 )
@@ -629,6 +630,7 @@ def _side(common, rare, records):
         rec.metric(total, total, "model_totals", "gbp", 2026, common + rare)
     rec.metric("model.gov_tax", "gov_tax", "model_totals", "gbp", 2026, 5e11)
     rec.metric("balance.balance", "b", "balance", "gbp", 2026, 5e11 - common - rare)
+    _identities(rec)
     partition = _protection_partition()
     exclude_suppressed(
         rec,
@@ -775,3 +777,47 @@ def test_decile_changes_that_round_to_zero_are_not_called_no_change():
     unchanged, _ = decile_impacts(base, copy.deepcopy(base), YEARS)
     text = _deciles({"deciles": {str(YEARS[0]): unchanged[str(YEARS[0])]}}, [YEARS[0]])
     assert "No household's net income changes" in text
+
+
+def test_a_mean_or_clipped_total_with_different_exclusions_shows_no_change():
+    """Sol re-review 6 of #2335, P2 5: subtracting a national head from a
+    per-household mean or a total reset at zero gives a wrong change."""
+    from policyengine_uk.utils.aggregate_impact.compare import compare_metrics
+
+    def side(value, excludes):
+        record = {
+            "id": "deciles.mean_income.1",
+            "label": "d1",
+            "section": "deciles",
+            "kind": "gbp_household",
+            "values": {"2026": value},
+        }
+        if excludes:
+            record["excludes"] = {"2026": excludes}
+        rare = {
+            "id": "spending.rare",
+            "label": "R",
+            "section": "spending",
+            "kind": "gbp",
+            "values": {"2026": None if excludes else 1_000.0},
+            **({"suppressed": ["2026"]} if excludes else {}),
+        }
+        return {"deciles.mean_income.1": record, "spending.rare": rare}
+
+    rows, _ = compare_metrics(
+        side(1_100.0, None), side(1_000.0, {"spending.rare": 1}), SPEC, [2026]
+    )
+    assert _cell(rows, "deciles.mean_income.1")["delta"] is None
+
+
+def test_decile_rows_are_withheld_when_the_sides_exclude_different_heads():
+    """Sol re-review 6 of #2335, P2 6."""
+    rng = np.random.default_rng(5)
+    base = households(100, rng, decile=np.repeat(np.arange(1, 11), 10))
+    head = copy.deepcopy(base)
+    for year, columns in base.items():
+        columns["excludes"] = np.array(["spending.rare"], dtype=str)
+        head[year]["excludes"] = np.array([], dtype=str)
+    impacts, notes = decile_impacts(base, head, YEARS)
+    assert impacts == {}
+    assert any("suppressed on one side only" in n for n in notes)

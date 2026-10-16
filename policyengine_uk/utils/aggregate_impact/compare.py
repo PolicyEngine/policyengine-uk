@@ -95,6 +95,15 @@ def _excludes(metric: Optional[Mapping], key: str) -> dict:
     return dict(((metric or {}).get("excludes") or {}).get(key) or {})
 
 
+def _additive(metric_id: str, section: str) -> bool:
+    """Whether a metric is a plain sum of heads in pounds, so heads can be
+    taken out of it by subtraction. Decile means (per household) and the HBAI
+    total (reset at zero) are not (Sol re-review 6 of #2335)."""
+    return section in ("model_totals", "balance") or metric_id == (
+        "household.household_net_income"
+    )
+
+
 def _aligned(value, metric_excludes: Mapping, union: Mapping, metrics: Mapping, key):
     """``value`` with every head in ``union`` taken out, using published heads.
 
@@ -157,6 +166,10 @@ def compare_metrics(base: Mapping, head: Mapping, spec: Spec, years) -> tuple:
                 delta = None
             elif b_ex == h_ex:
                 delta = h - b
+            elif not _additive(metric_id, template["section"]):
+                # Different exclusions can't be lined up in a mean or a
+                # clipped total.
+                delta = None
             else:
                 # The sides leave out different heads: take the union out of
                 # both, from published values only.
@@ -253,6 +266,18 @@ def decile_impacts(base_households: Mapping, head_households: Mapping, years) ->
         matched = _match(np.asarray(b["household_id"]), np.asarray(h["household_id"]))
         if matched is None:
             notes.append(f"{fiscal_year_label(year)}: base and head households differ")
+            continue
+        b_ex = sorted(str(x) for x in np.asarray(b.get("excludes", [])).ravel())
+        h_ex = sorted(str(x) for x in np.asarray(h.get("excludes", [])).ravel())
+        if b_ex != h_ex:
+            # Each side's income leaves out its own suppressed heads; with
+            # different sets, a household's change would mix definitions
+            # (Sol re-review 6 of #2335).
+            notes.append(
+                f"{fiscal_year_label(year)}: a figure from fewer than {MIN_CELL} "
+                "records is suppressed on one side only, so decile changes are "
+                "withheld"
+            )
             continue
         weight = np.asarray(b["household_weight"], dtype=np.float64)
         head_weight = np.asarray(h["household_weight"], dtype=np.float64)[matched]
