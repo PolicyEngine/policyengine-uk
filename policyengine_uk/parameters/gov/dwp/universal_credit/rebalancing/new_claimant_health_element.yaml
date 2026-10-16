@@ -1,4 +1,4 @@
-description: Monthly value of the Universal Credit health element (the LCWRA element) for new claimants from April 2026. The rebalancing scenario pays it to new claimants for 2026-27 to 2029-30. It follows the same path as the LCWRA element amount, frozen for 2026-27 to 2029-30 by Universal Credit Act 2025 s. 3 and uprated afterwards.
+description: Monthly value of the Universal Credit health element (the LCWRA element) for new claimants from April 2026. The rebalancing scenario pays it to new claimants in the years it sets the element (2026-27 to 2032-33, the end of the data's projection). It follows the same path as the LCWRA element amount, frozen for 2026-27 to 2029-30 by Universal Credit Act 2025 s. 3 and uprated afterwards.
 values:
   2026-01-01: 217.26
 metadata:
