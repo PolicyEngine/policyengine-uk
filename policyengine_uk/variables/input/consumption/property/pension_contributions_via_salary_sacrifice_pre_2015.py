@@ -8,7 +8,8 @@ class pension_contributions_via_salary_sacrifice_pre_2015(Variable):
     documentation = (
         "The annual portion of actual pension salary sacrifice attributable "
         "to arrangements made before 9 July 2015. Excluded from the annual "
-        "allowance threshold-income addback, capped at actual sacrifice. "
+        "allowance threshold-income addback, limited to full sacrifice before "
+        "the NICs exemption cap. "
         "Defaults to zero because survey arrangement dates are unobserved."
     )
     definition_period = YEAR

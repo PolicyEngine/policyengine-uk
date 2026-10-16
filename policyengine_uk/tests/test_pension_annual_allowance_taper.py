@@ -64,7 +64,11 @@ def test_historical_taper_parameters(year, expected):
     assert float(parameters.default) == standard
     assert float(parameters.taper - parameters.default) == threshold
     assert float(parameters.minimum) == minimum
-    assert float(parameters.reduction_rate) == 0.5
+    if year < 2020:
+        rate = (parameters.default - parameters.minimum) / parameters.taper_income_range
+    else:
+        rate = parameters.reduction_rate
+    assert float(rate) == 0.5
 
 
 @PROPERTY_SETTINGS
@@ -154,3 +158,74 @@ def test_post_2020_allowance_reform_keeps_half_rate_and_changes_threshold_gate()
     allowance = sim.calculate("pension_annual_allowance", year)
     # Gate = 260,000 - 40,000. Reduction = (280,000 - 260,000) / 2.
     np.testing.assert_array_equal(allowance, [30_000, 40_000])
+
+
+@pytest.mark.parametrize("year", [2029, 2030])
+@pytest.mark.parametrize(
+    "variable",
+    [
+        "pension_annual_allowance_threshold_income",
+        "pension_annual_allowance",
+        "personal_pension_contributions_tax",
+    ],
+)
+@settings(
+    max_examples=5,
+    deadline=None,
+    derandomize=True,
+    suppress_health_check=[HealthCheck.too_slow],
+)
+@given(
+    people=st.lists(
+        st.tuples(
+            st.integers(50_000, 400_000),
+            st.integers(2_001, 60_000),
+            st.integers(0, 150_000),
+            st.integers(0, 30_000),
+            st.integers(0, 60_000),
+        ),
+        min_size=4,
+        max_size=10,
+    )
+)
+def test_nics_salary_sacrifice_cap_preserves_taper_and_charge(people, year, variable):
+    """The NICs cap changes neither FA 2004 income tests nor pension savings.
+
+    Hold the separate employer-cost wage response at zero to isolate the
+    statutory NICs change. Build both taper incomes from contribution/pay
+    inputs, including a person whose threshold would cross the gate if the
+    sacrifice above the cap were incorrectly dropped.
+    """
+    people = [(175_000, 30_000, 100_000, 0, 0)] + people
+    situation = {"people": {}, "benunits": {}, "households": {}}
+    for index, (pay, sacrifice, employer, employee, ras) in enumerate(people):
+        name = f"p{index}"
+        situation["people"][name] = {
+            key: {year: value}
+            for key, value in {
+                "age": 45,
+                "employment_income_before_lsr": pay,
+                "pension_contributions_via_salary_sacrifice": sacrifice,
+                "employer_pension_contributions": employer,
+                "employee_pension_contributions_reported": employee,
+                "personal_pension_contributions": ras,
+            }.items()
+        }
+        situation["benunits"][f"b{index}"] = {"members": [name]}
+        situation["households"][f"h{index}"] = {"members": [name]}
+
+    results = []
+    for cap in [2_000, float("inf")]:
+        sim = Simulation(situation=situation)
+        sim.apply_parameter_changes(
+            {
+                "gov.hmrc.national_insurance.salary_sacrifice_pension_cap": {
+                    str(year): cap
+                },
+                "gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate": {
+                    str(year): 0
+                },
+            }
+        )
+        results.append(np.asarray(sim.calculate(variable, year)))
+    np.testing.assert_allclose(results[0], results[1], rtol=0, atol=0.05)

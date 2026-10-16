@@ -50,8 +50,9 @@ Arrangements made on or after **9 July 2015** are relevant salary sacrifice
 under s. 228ZA(6). The default treats actual salary sacrifice as relevant
 because the survey does not record arrangement dates. Supply
 `pension_contributions_via_salary_sacrifice_pre_2015` for the part attributable
-to earlier arrangements. Its exclusion is capped at actual salary sacrifice,
-including under a reform that caps sacrifice. Flexible remuneration not
+to earlier arrangements. Its exclusion is limited to full salary sacrifice
+before the NICs exemption cap: that cap does not limit the s. 228ZA add-back.
+Flexible remuneration not
 represented by these contribution inputs needs an explicit threshold-income
 override.
 
@@ -63,6 +64,16 @@ valued DB accrual, through this variable. Cash employer funding is not a
 valuation of DB rights. Survey estimates retain the existing cash proxy;
 this correction does not reconstruct DB rights, overseas adjustments, unused
 allowance histories or anti-avoidance arrangements under s. 228ZB.
+
+[The NICs Act 2026](https://www.legislation.gov.uk/ukpga/2026/15/enacted)
+changes NICs treatment without changing s. 228ZA. From 2029, the model moves
+sacrifice above the NICs exemption cap into
+employee contributions and employment income. The pension input amount adds
+only the remaining capped sacrifice to those employee contributions, so the
+full amount is counted once. The threshold-income add-back uses the full
+sacrifice before this reclassification. The separate employer-cost wage
+response can still change income; it is held fixed when testing the cap's
+statutory effect.
 
 The taxable death-benefit and grandfathered-sacrifice inputs default to zero.
 Pension relief retains the model's aggregate earnings cap and allocation

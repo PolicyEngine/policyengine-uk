@@ -28,6 +28,8 @@ class pension_contributions_for_annual_allowance(Variable):
     ]
     unit = GBP
 
+    # Employee contributions already include sacrifice above the NICs cap.
+    # Adding the remaining capped sacrifice counts the full input once.
     adds = [
         "employee_pension_contributions",
         "personal_pension_contributions",

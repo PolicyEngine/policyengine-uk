@@ -9,7 +9,8 @@ class pension_annual_allowance_threshold_income(Variable):
         "FA 2004 s. 228ZA(5) threshold income. Model net_income precedes pension "
         "relief: subtracting pension_contributions_relief combines the net-pay "
         "deduction from statutory net income with the gross RAS deduction. "
-        "Add back actual salary sacrifice except the supplied amount from "
+        "Add back full salary sacrifice before the NICs exemption cap, except "
+        "the supplied amount from "
         "arrangements before 9 July 2015. With no arrangement dates in survey "
         "data, the default treats all sacrifice as on or after that date. "
         "Exclude taxable lump-sum death benefits already included in income."
@@ -20,7 +21,7 @@ class pension_annual_allowance_threshold_income(Variable):
 
     def formula(person, period, parameters):
         actual_sacrifice = person(
-            "pension_contributions_via_salary_sacrifice_adjusted", period
+            "pension_contributions_via_salary_sacrifice_from_pay", period
         )
         grandfathered = max_(
             0, person("pension_contributions_via_salary_sacrifice_pre_2015", period)

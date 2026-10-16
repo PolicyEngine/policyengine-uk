@@ -170,6 +170,30 @@
     pension_annual_allowance_threshold_income: 200_000
     pension_annual_allowance: 60_000
 
+- name: Relief at source contributions below the threshold income gate prevent taper
+  period: 2024
+  input:
+    age: 45
+    employment_income: 270_000
+    personal_pension_contributions: 80_000
+  output:
+    pension_annual_allowance: 60_000
+
+- name: Contributions without relief after age 75 do not lower either taper income
+  period: 2024
+  input:
+    age: 80
+    private_pension_income: 210_000
+    personal_pension_contributions: 50_000
+    employer_pension_contributions: 80_000
+  output:
+    pension_contributions_relief: 0
+    # Unrelieved own contributions cancel from adjusted income, but cannot
+    # reduce threshold income below its gate (210,000 - 50,000 = 160,000).
+    pension_annual_allowance_threshold_income: 210_000
+    pension_annual_allowance_adjusted_income: 290_000
+    pension_annual_allowance: 45_000
+
 - name: Salary sacrifice raises threshold income and adjusted income
   period: 2024
   input:
@@ -182,6 +206,27 @@
     pension_annual_allowance_adjusted_income: 300_000
     pension_annual_allowance_threshold_income: 220_000
     pension_annual_allowance: 40_000
+
+# The NICs cap redirects 28,000 to employee contributions and the broad-base
+# haircut reduces pay by 280. Threshold income still adds back all 30,000:
+# 202,720 - 28,000 + 30,000 = 204,720. Pension input remains 130,000,
+# adjusted income is 202,720 + 130,000 - 28,000 = 304,720, and the charge
+# is (130,000 - 37,640) * 45% = 41,562.
+- name: The 2029 NICs cap does not limit the salary sacrifice threshold income addback
+  period: 2029
+  input:
+    age: 45
+    employment_income_before_lsr: 175_000
+    pension_contributions_via_salary_sacrifice: 30_000
+    employer_pension_contributions: 100_000
+  output:
+    employment_income: 202_720
+    pension_contributions_relief: 28_000
+    pension_contributions_for_annual_allowance: 130_000
+    pension_annual_allowance_threshold_income: 204_720
+    pension_annual_allowance_adjusted_income: 304_720
+    pension_annual_allowance: 37_640
+    personal_pension_contributions_tax: 41_562
 
 - name: Pre July 2015 salary sacrifice is excluded only from threshold income
   period: 2024
@@ -246,6 +291,22 @@
     pension_annual_allowance_threshold_income: 1_000_000
   output:
     pension_annual_allowance: 40_000
+
+- name: Employment income alone cannot trigger a taper before 2016-17
+  period: 2015
+  input:
+    age: 45
+    employment_income: 1_000_000
+  output:
+    pension_annual_allowance: 40_000
+
+- name: Employment income alone uses the 2018-19 taper limits
+  period: 2018
+  input:
+    age: 45
+    employment_income: 170_000
+  output:
+    pension_annual_allowance: 30_000
 
 - name: The 2016-17 taper starts at adjusted income of 150000
   period: 2016
