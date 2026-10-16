@@ -25,20 +25,57 @@ Outside ``[start, stop]`` a change leaves prior law in force:
 
 - where the timeline states values, they apply on their dates, and the
   value in force at ``stop`` resumes the day after it;
-- where it states none (the parameter's future is projected by uprating or
-  indexation), prior law's projected path applies: the values the parameter
-  takes with every other change in the reform but without its own. That
-  covers both the years between the last stated value and a change that
-  starts after it, and the years after a bounded change.
+- where it states none, what prior law is depends on how the parameter's
+  future is made:
+
+  - a threshold indexed from its own previous year by statute (the
+    personal allowance under Income Tax Act 2007 s57 and the basic rate
+    limit under s21; the NICs secondary threshold, which the model raises by
+    CPI from its own previous amount) resumes indexation from the changed
+    amount, and the years between two changes are indexed from the first.
+    s57(3) Step 1 multiplies "the allowance ... for the previous tax year"
+    and s21(3) Step 1 increases "the basic rate limit for the previous tax
+    year", and freezes are legislated by fixing the amount and disapplying
+    the indexation for named years (Finance Act 2021 s5; earlier, Finance
+    Act 2019 s5), so after a freeze the frozen amount is indexed. Returning
+    to the path the threshold would have taken without the change has no
+    statutory basis. This is the call the Budget CI workstream took under
+    cos d1344 (2026-10-15), with independent review;
+  - the NICs thresholds the model aligns with those (primary threshold and
+    upper earnings limit, lower and upper profits limits) follow them: after
+    a change to the income tax thresholds they align with the resumed path,
+    and after a change to one of them alone they are aligned again. No
+    statute indexes them; the model keeps them aligned, as government policy
+    says they will remain. Uprating such a threshold by CPI from its changed
+    amount instead (the Explanatory Memorandum to SI 2026/231 para 5.1 says
+    they "will be uprated by the September Consumer Prices Index" after
+    2030-31) is the other defensible reading, left with #2430;
+  - an amount uprated from an index (``uprating`` metadata: benefit and
+    pension rates and the like) takes prior law's projected path: the values
+    it takes with every other change in the reform but without its own. That
+    covers both the years between the last stated value and a change that
+    starts after it, and the years after a bounded change. Whether this
+    should instead resume from the changed amount is open (#2430): freezes of
+    uprated amounts were legislated like threshold freezes and uprating then
+    resumed from the frozen amount (Welfare Reform and Work Act 2016 s11),
+    while a period-limited modification reverts to the underlying amount
+    (the 2020 Universal Credit uplift, SI 2020/371 reg 3).
+
+  Each entry a change to an indexed threshold writes carries
+  ``DATED_CHANGE_UNTIL``, so the threshold indexation counts the tax years it
+  covers as stated and indexes or aligns the rest
+  (``policyengine_uk.parameters.gov.hmrc.create_threshold_indexation``).
+
+A change open to the end of 2100 states its value for every year to then,
+so an indexed threshold is held flat under it rather than indexed: that is a
+convention (the key's literal reading), not something ss21 or 57 require. To
+let indexation resume, give the change's last tax year.
 
 ``Parameter.update`` instead restores the last stated value as a new stated
 value, so a one-year change to an uprated parameter froze the next year at
 that value (a UC standard allowance change for 2027-28 gave £424.90 in
 2028-29 instead of the uprated amount) and every later year was uprated from
-it. Whether a statutory amount changed for some years should instead let
-indexation resume from the changed amount, as Income Tax Act 2007 s57 does
-from "the previous tax year", is a separate contract choice; see
-``policyengine_uk.reform_contract``.
+it.
 
 How each route reads its period keys
 ------------------------------------
@@ -139,6 +176,14 @@ from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Tuple
 from policyengine_core.parameters import Parameter, ParameterNode, ParameterScale
 from policyengine_core.parameters.parameter_at_instant import ParameterAtInstant
 from policyengine_core.periods import Instant, Period, instant, period
+
+from policyengine_uk.parameters.gov.hmrc.create_threshold_indexation import (
+    DATED_CHANGE_UNTIL,
+    FILES_LAST_TAX_YEAR,
+    INDEXED_THRESHOLDS,
+    first_tax_year,
+    last_stated_tax_year,
+)
 
 from policyengine_uk.utils.parameters import (
     BACKDATED_VALUE,
@@ -489,8 +534,17 @@ def apply_legacy_overrides(
 Timeline = List[ParameterAtInstant]
 
 
-def _entry(name: str, instant_str: str, value: Any) -> ParameterAtInstant:
-    return ParameterAtInstant(name, instant_str, data={"value": value})
+def _entry(
+    name: str, instant_str: str, value: Any, metadata: Optional[dict] = None
+) -> ParameterAtInstant:
+    data = {"value": value}
+    if metadata:
+        data["metadata"] = dict(metadata)
+    return ParameterAtInstant(name, instant_str, data=data)
+
+
+def _dated_change_until(entry: ParameterAtInstant) -> Optional[str]:
+    return (entry.metadata or {}).get(DATED_CHANGE_UNTIL)
 
 
 def _value_in_force(values: Timeline, instant_str: str) -> Any:
@@ -510,8 +564,12 @@ def requires_projection(parameter: Parameter, assignment: ParameterAssignment) -
 
     That is a change starting after the parameter's last stated value, whose
     prior law before it is projected, or a bounded change with no stated
-    value after it, whose prior law after it is projected.
+    value after it, whose prior law after it is projected. Never for an
+    indexed threshold, whose unstated years the threshold indexation fills
+    from the year before.
     """
+    if parameter.name in INDEXED_THRESHOLDS:
+        return False
     last = _last_stated(parameter.values_list)
     if last is None:
         return False
@@ -541,8 +599,20 @@ def write_assignment(
     restored on the next day unless an entry already starts then. A change
     that ends before the first stated value resumes with that value, as
     processing would backdate it.
+
+    For an indexed threshold the change's entry carries
+    ``DATED_CHANGE_UNTIL`` (its stop), and the value in force at ``stop`` is
+    restored only where a later year is stated: by the parameter files, or by
+    an earlier change that runs past ``stop``. Otherwise the threshold
+    indexation indexes the years after it from the changed amount.
     """
     name = parameter.name
+    indexed = name in INDEXED_THRESHOLDS
+    if indexed and parameter.values_list:
+        # Recorded before the change can replace the files' last value.
+        parameter.metadata.setdefault(
+            FILES_LAST_TAX_YEAR, last_stated_tax_year(parameter)
+        )
     start_str = str(assignment.start)
     stop_str = str(assignment.stop)
     next_str = str(assignment.stop.offset(1, "day"))
@@ -586,8 +656,35 @@ def write_assignment(
             resumed_value = recorded[BACKDATED_VALUE]
         else:
             resumed_value = later[-1].value if later else None
-        resumed.append(_entry(name, next_str, resumed_value))
-    values = later + resumed + [_entry(name, start_str, assignment.value)] + earlier
+        # An indexed threshold resumes with a stated value only where one
+        # is stated after the change: a later value in the files, a tax
+        # year the files state (their recorded last year, whose value a
+        # change may have replaced), or an earlier change in force at stop
+        # that runs past it.
+        running_until = _dated_change_until(in_force[0]) if in_force else None
+        files_last = (parameter.metadata or {}).get(FILES_LAST_TAX_YEAR)
+        stated_after = (
+            any(
+                entry.instant_str > stop_str and _dated_change_until(entry) is None
+                for entry in later
+            )
+            or (files_last is not None and first_tax_year(next_str) <= files_last)
+            or (running_until is not None and running_until > stop_str)
+        )
+        if not indexed or stated_after:
+            marker = (
+                {DATED_CHANGE_UNTIL: running_until}
+                if indexed and running_until is not None
+                else None
+            )
+            resumed.append(_entry(name, next_str, resumed_value, marker))
+    change_marker = {DATED_CHANGE_UNTIL: stop_str} if indexed else None
+    values = (
+        later
+        + resumed
+        + [_entry(name, start_str, assignment.value, change_marker)]
+        + earlier
+    )
     values.sort(key=lambda entry: entry.instant_str, reverse=True)
     parameter.values_list = values
     if parameter.parent is not None:
