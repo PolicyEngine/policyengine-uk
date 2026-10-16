@@ -8,8 +8,8 @@ pension contributions as relief at source and employee contributions as a net
 pay arrangement. The annual allowance charge (s. 227) then taxes the pension
 input amount above the allowance, plus any unused allowance brought forward
 (s. 228A), as the top slice of reduced net income at the non-savings rates
-(s. 227(4A)), with the rate limits raised by relief-at-source contributions
-and grossed-up Gift Aid (s. 227(4C)), or at the Scottish rates with the
+(s. 227(4A)), with the rate limits raised by qualifying relief-at-source contributions
+(ss. 192(4)/(4A), 227(4C)) and grossed-up Gift Aid, or at the Scottish rates with the
 starter band at the Scottish basic rate (s. 227(4AA)).
 
 Invariants, for any generated population of single adults with contributions
@@ -21,20 +21,27 @@ split between relief at source and net pay:
 2. The excess is taxed once: raising contributions, up to relevant earnings,
    never raises income tax by more than it raises the charge. So income tax
    before the charge never rises with contributions.
-3. No double taxation: for someone whose income is all non-savings income,
-   contributing more than the allowance, up to relevant earnings, never costs
-   more income tax than contributing up to the allowance.
+3. With non-savings income only and stable eligibility for any RAS band
+   extension, contributions above the allowance up to relevant earnings never
+   cost more income tax than contributing up to the allowance.
 4. Charge bounds: nil exactly when the chargeable amount is nil, and between
    the lowest and highest rate charged times the chargeable amount.
 5. Differential: the charge equals an independent band-by-band sum of the
    chargeable amount stacked on reduced net income.
 6. Carry-forward: unused allowance reduces the chargeable amount one for one
    until it is nil, and never raises the charge.
-7. Gift Aid never raises income tax, including when pension contributions
-   exceed relevant earnings or the available annual allowance. Its s. 58
-   adjusted-net-income deduction is not a deduction from reduced net income.
+7. With stable RAS extension eligibility, Gift Aid never raises income tax,
+   including when contributions exceed relevant earnings or the allowance.
+   Its s. 58 adjusted-net-income deduction does not reduce reduced net income.
 
-Invariant 3 is restricted to non-savings income. With dividends on top, the
+Invariant 3 requires the s.192 condition to hold at both contribution levels
+when there are RAS contributions. The excess can enter higher bands while
+ordinary income remains below higher rate, and s.227(5) excludes that excess
+from the condition. Total tax can then rise without double taxation. Gift Aid
+can also remove ordinary higher-rate liability and thus RAS band extension,
+so invariant 7 compares only cases with the same eligibility at each gift.
+
+Invariant 3 is also restricted to non-savings income. With dividends on top, the
 relief comes off non-savings income and lets dividends fall to lower dividend
 rates, while s. 227(4A) charges the excess at the non-savings rates, so income
 tax can rise (intended: that is what the statute does). It also stops where
@@ -48,6 +55,7 @@ at 19%, while the charge on that slice is at the Scottish basic rate
 """
 
 import numpy as np
+import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
@@ -220,14 +228,43 @@ def test_contributions_above_the_allowance_are_not_taxed_twice(people, year, ste
     employer = np.array([p["employer_pension_contributions"] for p in people])
     at_allowance = np.clip(allowance - employer, 0, earnings)
     above = at_allowance + step * np.maximum(0, upper - at_allowance)
-    tax_at = _calc(_with_contributions(people, at_allowance), year, ["income_tax"])
-    tax_above = _calc(_with_contributions(people, above), year, ["income_tax"])
-    assert np.all(tax_above["income_tax"] <= tax_at["income_tax"] + TOLERANCE)
+    variables = [
+        "income_tax",
+        "net_income",
+        "allowances",
+        "personal_pension_contributions",
+        "pension_contributions_relief",
+        "gift_aid_grossed_up",
+    ]
+    tax_at = _calc(_with_contributions(people, at_allowance), year, variables)
+    tax_above = _calc(_with_contributions(people, above), year, variables)
+    basic_limit = float(
+        zero_sim.tax_benefit_system.parameters(
+            year
+        ).gov.hmrc.income_tax.rates.uk.thresholds[1]
+    )
+
+    def qualifies_for_ras_extension(out):
+        ras = np.minimum(
+            out["personal_pension_contributions"], out["pension_contributions_relief"]
+        )
+        ordinary_income = np.maximum(
+            0, out["net_income"] - np.maximum(0, out["allowances"] - ras)
+        )
+        return ordinary_income > basic_limit + out["gift_aid_grossed_up"]
+
+    net_pay_only = np.array([p["net_pay_share"] == 1 for p in people])
+    applicable = net_pay_only | (
+        qualifies_for_ras_extension(tax_at) & qualifies_for_ras_extension(tax_above)
+    )
+    assert np.all(
+        tax_above["income_tax"][applicable]
+        <= tax_at["income_tax"][applicable] + TOLERANCE
+    )
 
 
 def _reference_charge(chargeable, reduced_net_income, thresholds, rates, extension):
-    """Band-by-band sum of the chargeable amount stacked on income, with every
-    rate limit raised by ``extension``."""
+    """Band-by-band sum with rate limits raised by the eligible extension."""
     bottom = reduced_net_income
     top = reduced_net_income + chargeable
     lowers = [thresholds[0]] + [t + extension for t in thresholds[1:]]
@@ -236,6 +273,54 @@ def _reference_charge(chargeable, reduced_net_income, thresholds, rates, extensi
     for lower, upper_limit, rate in zip(lowers, uppers, rates):
         charge += rate * max(0.0, min(top, upper_limit) - max(bottom, lower))
     return charge
+
+
+def _reference_ras_extension_eligibility(
+    reduced_net_income, savings, dividends, gross_gift, scottish, income_tax
+):
+    """Find an ordinary income slice taxed above basic, apart from s.192.
+
+    Integrate the ordinary non-savings and savings slices separately. Dividend
+    upper rates and nil-rate savings do not meet s.192(4)/(4A); the annual
+    allowance excess never enters these slices (s.227(5)).
+    """
+    non_savings = max(0, reduced_net_income - savings - dividends)
+    savings_top = max(0, reduced_net_income - dividends)
+    if scottish:
+        scale = income_tax.rates.scotland.rates
+        # These generated years all have the starter band before basic.
+        basic_rate = float(scale.rates[1])
+        slices = [(0, non_savings)]
+    else:
+        scale = income_tax.rates.uk
+        basic_rate = float(scale.rates[0])
+        psa = income_tax.allowances.personal_savings_allowance
+        if reduced_net_income > scale.thresholds[2] + gross_gift:
+            savings_allowance = float(psa.additional)
+        elif reduced_net_income > scale.thresholds[1] + gross_gift:
+            savings_allowance = float(psa.higher)
+        else:
+            savings_allowance = float(psa.basic)
+        starting_rate_savings = max(
+            0, income_tax.rates.savings_starter_rate.allowance - non_savings
+        )
+        nil_savings = min(
+            savings_top - non_savings, starting_rate_savings + savings_allowance
+        )
+        slices = [(0, non_savings), (non_savings + nil_savings, savings_top)]
+    for index, (threshold, rate) in enumerate(zip(scale.thresholds, scale.rates)):
+        if rate <= basic_rate:
+            continue
+        lower = threshold + gross_gift
+        upper = (
+            scale.thresholds[index + 1] + gross_gift
+            if index + 1 < len(scale.thresholds)
+            else np.inf
+        )
+        for bottom, top in slices:
+            if min(top, upper) > max(bottom, lower):
+                return True
+    return False
 
 
 @PROPERTY_SETTINGS
@@ -252,11 +337,12 @@ def test_charge_matches_band_by_band_reference(people, year):
     get = lambda v: np.array(sim.calculate(v, year), dtype=float)  # noqa: E731
     # FA 2004 s. 227(4B)-(4C), ITA 2007 ss. 23 and 58: reduced net income
     # starts before the gross Gift Aid adjustment to adjusted net income.
-    # Relief at source stays in this base and extends the rate limits.
+    # RAS stays in this base; s.192 conditions its rate-limit extension
+    # on ordinary higher-rate liability apart from s.192 itself.
     relief_at_source = np.minimum(
         get("personal_pension_contributions"), get("pension_contributions_relief")
     )
-    extension = get("gift_aid_grossed_up") + relief_at_source
+    gross_gift = get("gift_aid_grossed_up")
     reduced_net_income = np.maximum(
         0,
         get("net_income") - np.maximum(0, get("allowances") - relief_at_source),
@@ -273,8 +359,17 @@ def test_charge_matches_band_by_band_reference(people, year):
         thresholds, band_rates = (
             (sco_thresholds, sco_rates) if scottish[i] else (uk_thresholds, uk_rates)
         )
+        qualifies = _reference_ras_extension_eligibility(
+            reduced_net_income[i],
+            get("taxable_savings_interest_income")[i],
+            get("taxable_dividend_income")[i],
+            gross_gift[i],
+            bool(scottish[i]),
+            sim.tax_benefit_system.parameters(year).gov.hmrc.income_tax,
+        )
+        extension = gross_gift[i] + (relief_at_source[i] if qualifies else 0)
         expected = _reference_charge(
-            chargeable[i], reduced_net_income[i], thresholds, band_rates, extension[i]
+            chargeable[i], reduced_net_income[i], thresholds, band_rates, extension
         )
         assert _close(charge[i], expected)
         # Bounds: nil exactly when nothing is chargeable, and between the
@@ -296,17 +391,42 @@ def test_charge_matches_band_by_band_reference(people, year):
 
 @PROPERTY_SETTINGS
 @given(population_strategy, st.sampled_from(YEARS))
-def test_gift_aid_never_increases_income_tax_with_pension_contributions(people, year):
+def test_gift_aid_never_increases_tax_with_stable_ras_eligibility(people, year):
     people = _with_contributions(people, _base_contributions(people))
     # Compare the same pension/input amounts with zero, drawn, and larger
     # gifts, across UK and Scottish rates and mixed income sources.
     zero_gift = [{**p, "gift_aid": 0} for p in people]
     larger_gift = [{**p, "gift_aid": p["gift_aid"] + 4_000} for p in people]
-    tax = _calc(zero_gift + people + larger_gift, year, ["income_tax"])["income_tax"]
-    before, with_gift, with_more = np.split(tax, 3)
+    combined = zero_gift + people + larger_gift
+    sim = Simulation(situation=_situation(combined, year))
+    get = lambda v: np.array(sim.calculate(v, year), dtype=float)  # noqa: E731
+    ras = np.minimum(
+        get("personal_pension_contributions"), get("pension_contributions_relief")
+    )
+    reduced_net_income = np.maximum(
+        0, get("net_income") - np.maximum(0, get("allowances") - ras)
+    )
+    p = sim.tax_benefit_system.parameters(year).gov.hmrc.income_tax
+    qualifies = np.array(
+        [
+            _reference_ras_extension_eligibility(
+                rni, savings, dividends, gift, scottish, p
+            )
+            for rni, savings, dividends, gift, scottish in zip(
+                reduced_net_income,
+                get("taxable_savings_interest_income"),
+                get("taxable_dividend_income"),
+                get("gift_aid_grossed_up"),
+                sim.calculate("pays_scottish_income_tax", year),
+            )
+        ]
+    )
+    no_gift_gate, gift_gate, more_gift_gate = np.split(qualifies, 3)
+    stable_gate = (no_gift_gate == gift_gate) & (gift_gate == more_gift_gate)
+    before, with_gift, with_more = np.split(get("income_tax"), 3)
     slack = TOLERANCE + RELATIVE_TOLERANCE * np.maximum(abs(before), abs(with_gift))
-    assert np.all(with_gift <= before + slack)
-    assert np.all(with_more <= with_gift + slack)
+    assert np.all(with_gift[stable_gate] <= (before + slack)[stable_gate])
+    assert np.all(with_more[stable_gate] <= (with_gift + slack)[stable_gate])
 
 
 @PROPERTY_SETTINGS
@@ -374,3 +494,90 @@ def test_scottish_basic_band_is_not_lifted_when_the_starter_band_is_removed():
     # Reduced net income 0; chargeable amount 10_000, all in the basic band.
     charge = float(sim.calculate("personal_pension_contributions_tax", 2026)[0])
     assert abs(charge - 10_000 * 0.2) < TOLERANCE
+
+
+def _charge_situation(year, region, **inputs):
+    return {
+        "people": {
+            "p": {
+                "age": {year: 45},
+                **{key: {year: value} for key, value in inputs.items()},
+            }
+        },
+        "benunits": {"b": {"members": ["p"]}},
+        "households": {"h": {"members": ["p"], "region": {year: region}}},
+    }
+
+
+def test_mixed_methods_below_higher_rate_have_unextended_charge_lower_bound():
+    """Either relief allocation leaves ordinary income below higher rate.
+
+    With £50,000 earnings, at least £30,000 of £40,000 net pay must receive
+    relief if all £20,000 RAS does. RNI is therefore at most £7,430. A net-pay
+    allocation of £40,000 instead leaves RNI nil. Neither can meet s.192(4).
+    The £70,000 excess therefore costs at least £37,700 × 20% + £32,300 × 40%.
+    This does not presume a statutory ordering of net-pay and RAS relief.
+    """
+    sim = Simulation(
+        situation=_charge_situation(
+            2024,
+            "LONDON",
+            employment_income=50_000,
+            employee_pension_contributions_reported=40_000,
+            personal_pension_contributions=20_000,
+            employer_pension_contributions=70_000,
+        )
+    )
+    assert float(sim.calculate("pension_contributions_relief", 2024)[0]) == 50_000
+    assert (
+        float(sim.calculate("pension_annual_allowance_chargeable_amount", 2024)[0])
+        == 70_000
+    )
+    charge = float(sim.calculate("personal_pension_contributions_tax", 2024)[0])
+    assert charge >= 20_460 - TOLERANCE
+
+
+@pytest.fixture
+def scottish_advanced_rate_charge_simulation():
+    return Simulation(
+        situation=_charge_situation(
+            2026,
+            "SCOTLAND",
+            employment_income=112_000,
+            employer_pension_contributions=70_000,
+        )
+    )
+
+
+def test_scottish_charge_uses_top_limit_parameter(
+    scottish_advanced_rate_charge_simulation,
+):
+    """Keep the charge test correct when #2130 fixes the top-rate parameter."""
+    sim = scottish_advanced_rate_charge_simulation
+    scale = sim.tax_benefit_system.parameters(
+        2026
+    ).gov.hmrc.income_tax.rates.scotland.rates
+    top_limit = float(scale.thresholds[-1])
+    advanced_rate, top_rate = map(float, scale.rates[-2:])
+    # PA £6,570; RNI £105,430; chargeable amount £10,000.
+    advanced_amount = min(10_000, max(0, top_limit - 105_430))
+    expected = advanced_amount * advanced_rate + (10_000 - advanced_amount) * top_rate
+    charge = float(sim.calculate("personal_pension_contributions_tax", 2026)[0])
+    assert charge == pytest.approx(expected, abs=TOLERANCE)
+
+
+@pytest.mark.xfail(
+    strict=True,
+    reason="#2130: Scottish top-rate limit must be £125,140 of taxable income",
+)
+def test_scottish_charge_below_statutory_top_limit_is_all_advanced_rate(
+    scottish_advanced_rate_charge_simulation,
+):
+    """S6M-20844: £105,430 RNI plus £10,000 excess remains below £125,140.
+
+    https://www.parliament.scot/chamber-and-committees/votes-and-motions/S6M-20844
+    """
+    sim = scottish_advanced_rate_charge_simulation
+    assert float(sim.calculate("personal_allowance", 2026)[0]) == 6_570
+    charge = float(sim.calculate("personal_pension_contributions_tax", 2026)[0])
+    assert charge == pytest.approx(4_500, abs=TOLERANCE)

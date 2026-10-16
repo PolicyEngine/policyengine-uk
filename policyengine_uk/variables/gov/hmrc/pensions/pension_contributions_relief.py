@@ -13,9 +13,9 @@ class pension_contributions_relief(Variable):
         "above earnings (s. 191(7)); the model takes personal pension "
         "contributions as relief at source and employee contributions as a "
         "net pay arrangement. The annual allowance does not limit relief. "
-        "Contributions above it are relieved here, and the annual allowance "
-        "charge (personal_pension_contributions_tax) then recovers that relief "
-        "(s. 227)."
+        "Contributions above it can be relieved here and separately attract "
+        "the annual allowance charge (personal_pension_contributions_tax) "
+        "under s. 227. The charge need not equal their tax relief."
     )
     definition_period = YEAR
     reference = [

@@ -121,7 +121,7 @@
     pension_annual_allowance_chargeable_amount: 40_000
     personal_pension_contributions_tax: 37_700 * 0.2 + 2_300 * 0.4
 
-- name: Relief at source raises the rate limits instead (s. 227(4C))
+- name: Relief at source raises rate limits with ordinary higher-rate income (ss. 192(4), 227(4C))
   period: 2024
   absolute_error_margin: 0.01
   input:
@@ -130,9 +130,141 @@
     employer_pension_contributions: 40_000
   output:
     # Relief at source leaves reduced net income at 60_000 - 12_570 = 47_430
-    # and raises the basic rate limit by 60_000 to 97_700, so all 40_000
-    # falls at 20% (HMRC PTM056120).
+    # before s.192 relief, above the basic limit. Section 192(4) therefore
+    # raises the basic rate limit by 60_000 to 97_700, so all 40_000
+    # of the chargeable amount falls at 20%.
     personal_pension_contributions_tax: 40_000 * 0.2
+
+# FA 2004 s.192(4)/(4A) tests ordinary income before s.192 relief. The
+# annual allowance excess is not income for that test (s.227(5)). These
+# reproduce the review's cases where only the excess enters higher bands.
+- name: Basic-rate ordinary income does not qualify for RAS band extension
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 40_000
+    personal_pension_contributions: 20_000
+    employer_pension_contributions: 60_000
+    region: LONDON
+  output:
+    pension_contributions_relief: 20_000
+    pension_annual_allowance_chargeable_amount: 20_000
+    # RNI £27,430; £10,270 of excess at 20%, £9,730 at 40%.
+    personal_pension_contributions_tax: 5_946
+
+- name: Scottish basic-rate ordinary income does not qualify for RAS band extension
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 25_000
+    personal_pension_contributions: 20_000
+    employer_pension_contributions: 60_000
+    region: SCOTLAND
+  output:
+    pension_contributions_relief: 20_000
+    pension_annual_allowance_chargeable_amount: 20_000
+    # RNI £12,430; £4,526 at 20%, £14,136 at 21%, £1,338 at 42%.
+    personal_pension_contributions_tax: 4_435.72
+
+- name: RAS eligibility starts strictly above the ordinary UK basic-rate limit
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    age: [45, 45]
+    employment_income: [50_270, 50_271]
+    personal_pension_contributions: [20_000, 20_000]
+    employer_pension_contributions: [60_000, 60_000]
+    region: [LONDON, LONDON]
+  output:
+    # RNI exactly £37,700 has no ordinary higher-rate income; the £20,000
+    # charge is all at 40%. At RNI £37,701, the £20,000 RAS extension applies:
+    # £19,999 of excess at 20% plus £1 at 40%.
+    personal_pension_contributions_tax: [8_000, 4_000.20]
+
+- name: Higher-rate savings qualify for RAS extension but dividend upper rates do not
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    age: [45, 45]
+    employment_income: [40_000, 40_000]
+    savings_interest_income: [20_000, 0]
+    dividend_income: [0, 20_000]
+    personal_pension_contributions: [20_000, 20_000]
+    employer_pension_contributions: [60_000, 60_000]
+    region: [LONDON, LONDON]
+  output:
+    # RNI £47,430 in both cases. Savings include an ordinary higher-rate
+    # slice even after the £500 PSA; dividend upper rates are separate
+    # rates, outside s.192(4). Only the savings case gets the RAS extension.
+    personal_pension_contributions_tax: [5_946, 8_000]
+
+- name: Wholly nil-rate savings do not qualify for RAS band extension
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 50_200
+    savings_interest_income: 100
+    personal_pension_contributions: 20_000
+    employer_pension_contributions: 60_000
+    region: LONDON
+  output:
+    # Before RAS, non-savings £37,630 is below basic. The £100 savings
+    # takes RNI to £37,730 but is wholly covered by the PSA. No ordinary
+    # higher-rate tax is chargeable, so the £20,000 excess is all at 40%.
+    personal_pension_contributions_tax: 8_000
+
+- name: Gift Aid can remove ordinary higher-rate liability and the RAS extension
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    age: [45, 45]
+    employment_income: [60_000, 60_000]
+    personal_pension_contributions: [20_000, 20_000]
+    employer_pension_contributions: [60_000, 60_000]
+    gift_aid: [0, 8_000]
+    region: [LONDON, LONDON]
+  output:
+    # RNI £47,430. Without a gift, ordinary income is above £37,700 and
+    # RAS raises that limit to £57,700. With £10,000 gross Gift Aid, the
+    # ordinary limit is £47,700: no s.192 claim, and only the gift extends
+    # the charge's limit. The £20,000 excess then has £270 at 20% and
+    # £19,730 at 40%. Tax need not be monotone when RAS eligibility changes.
+    personal_pension_contributions_tax: [5_946, 7_946]
+
+- name: UK higher-rate savings do not meet the Scottish RAS extension condition
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 25_000
+    savings_interest_income: 30_000
+    personal_pension_contributions: 20_000
+    employer_pension_contributions: 60_000
+    region: SCOTLAND
+  output:
+    # Non-savings RNI £12,430 is below Scottish intermediate rate. Higher
+    # UK rates on savings do not meet s.192(4A)'s Scottish-rate condition.
+    # RNI £42,430 plus £20,000 excess remains in the Scottish 42% band.
+    personal_pension_contributions_tax: 8_400
+
+- name: RAS condition uses the Scottish basic limit before the starter band existed
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    age: [45, 45]
+    employment_income: [43_000, 43_001]
+    personal_pension_contributions: [20_000, 20_000]
+    employer_pension_contributions: [40_000, 40_000]
+    region: [SCOTLAND, SCOTLAND]
+  output:
+    # PA £11,500, Scottish basic limit £31,500, AA £40,000. RNI exactly
+    # at the basic limit does not meet s.192(4A); £1 above does, raising
+    # the limit by RAS. The £20,000 excess is 40%, or £19,999 at 20% + £1 at 40%.
+    pension_annual_allowance_chargeable_amount: [20_000, 20_000]
+    personal_pension_contributions_tax: [8_000, 4_000.20]
 
 - name: Gift Aid raises the rate limits by its grossed-up amount (s. 227(4C))
   period: 2025
@@ -173,11 +305,12 @@
     # https://www.legislation.gov.uk/ukpga/2007/3/section/58
     net_income: 40_000
     # s.227(4B): RNI = £40,000 - £12,570 PA = £27,430, with no Gift Aid
-    # deduction. s.227(4C): basic limit = £37,700 + £40,000 relieved RAS
-    # + £1,250 gross Gift Aid = £78,950. Of the £60,000 excess, £51,520
-    # is taxed at 20% and £8,480 at 40%. Gift Aid reduces the no-gift
-    # charge of £13,946 by £250, without a second income deduction.
-    personal_pension_contributions_tax: 51_520 * 0.2 + 8_480 * 0.4
+    # deduction. Ordinary income is below higher rate, so s.192(4) does
+    # not increase the limit for RAS. Section 227(5) excludes the excess
+    # from that income condition. Only £1,250 gross Gift Aid extends the
+    # basic limit to £38,950: £11,520 at 20% and £48,480 at 40%. The gift
+    # reduces the no-gift charge of £21,946 by £250.
+    personal_pension_contributions_tax: 11_520 * 0.2 + 48_480 * 0.4
 
 - name: Relief at source above relevant earnings without Gift Aid
   period: 2024
@@ -189,11 +322,11 @@
     employer_pension_contributions: 50_000
     region: LONDON
   output:
-    # The same £27,430 RNI and £60,000 chargeable amount, with the basic
-    # limit extended only by £40,000 relieved RAS to £77,700.
+    # The same £27,430 RNI and £60,000 chargeable amount. Ordinary income
+    # is below higher rate, so s.192(4) leaves the basic limit at £37,700.
     pension_contributions_relief: 40_000
     pension_annual_allowance_chargeable_amount: 60_000
-    personal_pension_contributions_tax: 50_270 * 0.2 + 9_730 * 0.4
+    personal_pension_contributions_tax: 10_270 * 0.2 + 49_730 * 0.4
 
 - name: Fully tapered annual allowance still allows relief up to relevant earnings
   period: 2024
