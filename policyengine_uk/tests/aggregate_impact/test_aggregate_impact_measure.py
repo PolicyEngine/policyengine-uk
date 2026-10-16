@@ -246,7 +246,7 @@ def _protection_partition():
     )
 
 
-def _recorded(common, rare, tax=5e11):
+def _recorded(common, rare, tax=5e11, identities_ok=True):
     from policyengine_uk.utils.aggregate_impact.measure import Recorder
 
     rec = Recorder()
@@ -257,7 +257,24 @@ def _recorded(common, rare, tax=5e11):
         rec.metric(total, total, "model_totals", "gbp", 2026, common + rare)
     rec.metric("model.gov_tax", "gov_tax", "model_totals", "gbp", 2026, tax)
     rec.metric("balance.balance", "b", "balance", "gbp", 2026, tax - common - rare)
+    _identities(rec, ok=identities_ok)
     return rec
+
+
+IDENTITIES = (
+    "identity:gov_tax",
+    "identity:gov_spending",
+    "identity:household_benefits",
+    "identity:gov_balance",
+    "identity:household_tax",
+    "identity:household_net_income",
+)
+
+
+def _identities(rec, ok=True, year=2026):
+    """The identity checks measure_year records: each total is its heads."""
+    for check_id in IDENTITIES:
+        rec.check(check_id, check_id, ok, "" if ok else "broken", scope=str(year))
 
 
 def _excluded(rec, year=2026):
@@ -414,3 +431,145 @@ def test_identity_diagnostics_count_only_households_with_weight():
     )
     (detail,) = rec.checks["identity:x"]["failing"].values()
     assert "fewer than 10" in detail and "£" not in detail
+
+
+def test_a_total_whose_identity_fails_is_suppressed_not_excluded():
+    """Sol re-review 6 of #2335, P2 1: a formula that scales its components
+    (benefit uprating, say) makes total less head reveal the head."""
+    rec = _recorded(common=7.3e10, rare=246.9, identities_ok=False)
+    published = _excluded(rec)
+    for total in ("model.gov_spending", "model.household_benefits", "balance.spending"):
+        assert published[total] is None
+        assert rec.metrics[total]["suppressed"] == ["2026"]
+    # A total that holds no suppressed head is untouched.
+    assert published["model.gov_tax"] == 5e11
+
+
+class SuppressedHeadSim(TargetSim):
+    """A reform that also moves a suppressed head (a state pension of £1,000)."""
+
+    def __init__(self, balance_by_year, target_by_year, pension_by_year):
+        super().__init__(balance_by_year, target_by_year)
+        self.pension = pension_by_year
+        self.tax_benefit_system.variables["state_pension"] = SimpleNamespace(
+            entity=SimpleNamespace(key="household")
+        )
+
+    def calculate(self, variable, period, map_to=None, unweighted=True):
+        if variable == "state_pension":
+            return np.full(2, self.pension[int(period)] / 2)
+        return super().calculate(variable, period, map_to, unweighted)
+
+
+def test_a_reform_that_moves_a_suppressed_head_publishes_no_figure_that_year():
+    """Sol re-review 6 of #2335, P2 2: a 10% uplift's £100 cost would give
+    back a suppressed £1,000."""
+    reform = parse_reforms(
+        {
+            "reforms": [
+                {
+                    "name": "Raise pensions",
+                    "parameters": {"a": 1},
+                    "responds": {
+                        "variable": "universal_credit",
+                        "direction": "up",
+                        "minimum": 5_000.0,
+                    },
+                }
+            ]
+        }
+    )
+    baseline = {2025: 0.0, 2026: 0.0}
+    targets = {2025: {"universal_credit": 100.0}, 2026: {"universal_credit": 100.0}}
+
+    def factory(reform=None):
+        if reform:
+            return SuppressedHeadSim(
+                {2025: -100.0, 2026: -100.0},
+                {2025: 200.0, 2026: 200.0},
+                {2025: 1000.0, 2026: 1100.0},  # moves the head in 2026 only
+            )
+        return SuppressedHeadSim(
+            baseline, {2025: 100.0, 2026: 100.0}, {2025: 1000.0, 2026: 1000.0}
+        )
+
+    rec = Recorder()
+    measure_reforms(
+        factory,
+        None,
+        baseline,
+        targets,
+        reform,
+        YEARS,
+        rec,
+        baseline_suppressed={2026: {"state_pension": 1000.0}},
+    )
+    costing = rec.metrics["reforms.raise_pensions"]
+    target = rec.metrics["reform_targets.raise_pensions"]
+    assert costing["values"]["2026"] is None and costing["suppressed"] == ["2026"]
+    assert target["values"]["2026"] is None
+    # A year in which the head isn't suppressed is published as usual.
+    assert costing["values"]["2025"] == -100.0
+    detail = rec.checks["responsive:raise_pensions"]["failing"]["2026"]
+    assert "£" not in detail and "fewer than 10 records" in detail
+
+
+def test_hbai_holds_a_head_only_when_it_is_one_of_its_components():
+    from policyengine_uk.utils.aggregate_impact.measure import hbai_holds_any
+    from policyengine_uk.utils.aggregate_impact.partition import (
+        default_partition_path,
+        load_partition,
+    )
+
+    partition = load_partition(default_partition_path())
+    by_variable = {h.variable: h.id for h in partition.heads}
+    assert not hbai_holds_any(
+        partition, {by_variable["disabled_students_allowance"]: ("x", 1.0)}
+    )
+    assert hbai_holds_any(partition, {by_variable["child_benefit"]: ("x", 1.0)})
+
+
+class HbaiSim:
+    """Household-level HBAI pieces: employment income, child benefit and
+    council tax, and the model's HBAI income before its reset."""
+
+    def __init__(self, before):
+        self.values = {
+            "employment_income": np.array([20_000.0, 0.0]),
+            "child_benefit": np.array([1_234.5, 100.0]),
+            "council_tax": np.array([1_200.0, 0.0]),
+            "hbai_household_net_income_before_reset_to_zero": before,
+            "hbai_household_net_income": np.maximum(0.0, before),
+        }
+        self.tax_benefit_system = SimpleNamespace(variables=self.values)
+
+    def calculate(self, variable, period, map_to=None, unweighted=True):
+        return self.values.get(variable, np.zeros(2))
+
+
+def test_hbai_is_recomputed_only_where_its_lists_reproduce_the_model():
+    """Sol re-review 6 of #2335, P2 4: with council tax abolished the model
+    leaves it out of HBAI, so adding it back would be wrong."""
+    from policyengine_uk.utils.aggregate_impact.measure import _hbai_without
+    from policyengine_uk.utils.aggregate_impact.partition import (
+        default_partition_path,
+        load_partition,
+    )
+
+    partition = load_partition(default_partition_path())
+    cb = next(h for h in partition.heads if h.variable == "child_benefit")
+    hidden = {cb.id: ("spending." + cb.id, 1_334.5)}
+    head_hh = {"child_benefit": np.array([1_234.5, 100.0])}
+    consistent = np.array([20_000.0 + 1_234.5 - 1_200.0, 100.0])
+    values, excludes = _hbai_without(
+        HbaiSim(consistent), 2026, hidden, partition, head_hh
+    )
+    np.testing.assert_allclose(values, [18_800.0, 0.0])
+    assert excludes == {"spending." + cb.id: 1}
+    # Council tax abolished: the model's income omits it, so the lists don't
+    # reproduce it, and the total is suppressed rather than rebuilt.
+    abolished = np.array([20_000.0 + 1_234.5, 100.0])
+    assert _hbai_without(HbaiSim(abolished), 2026, hidden, partition, head_hh) == (
+        None,
+        None,
+    )
