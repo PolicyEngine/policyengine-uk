@@ -1,0 +1,13 @@
+description: Since April 2021, pension-age Housing Benefit personal allowances depend on when members of the benefit unit attained State Pension age. The higher allowances apply if any member attained it before this date, written as a YYYYMMDD number; the lower allowances apply if every member attained it on or after this date.
+values:
+  2021-04-01: 20210401
+metadata:
+  unit: date
+  label: Housing Benefit pension-age personal allowance cutoff
+  reference:
+    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) (Amendment) Regulations 2021 (SI 2021/188), regulation 2
+      href: https://www.legislation.gov.uk/uksi/2021/188/regulation/2/made
+    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006 (SI 2006/214), Schedule 3, paragraph 1
+      href: https://www.legislation.gov.uk/uksi/2006/214/schedule/3
+    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations (Northern Ireland) 2006 (SR 2006/406), Schedule 4, paragraph 1
+      href: https://www.legislation.gov.uk/nisr/2006/406/schedule/4

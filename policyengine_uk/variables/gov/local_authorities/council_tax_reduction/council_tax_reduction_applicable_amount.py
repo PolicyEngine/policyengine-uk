@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.household.demographic.country import Country
 
 
 class council_tax_reduction_applicable_amount(Variable):
@@ -36,16 +37,40 @@ class council_tax_reduction_applicable_amount(Variable):
         couple = benunit("is_couple", period)
         lone_parent = benunit("is_council_tax_reduction_lone_parent", period)
         single = ~couple & ~lone_parent
+        # Pension-age personal allowances. England's prescribed requirements
+        # (SI 2012/2885 Sch 2 para 1, amended by SI 2021/29 for schemes for
+        # financial years from 2021-22) split them by when State Pension age
+        # was attained, with the same cutoff and amounts as Housing Benefit.
+        # The Scottish (SSI 2012/319 Sch 1 para 2) and Welsh (SI 2013/3029
+        # Sch 2 para 1) schemes keep one pension-age rate, the higher one.
+        # England's rows (2) and (5) do not cover a couple where one member has
+        # not reached State Pension age and the other did so after the cutoff;
+        # as for Housing Benefit, such a couple gets the lower rate.
+        single_aged, couple_aged, lone_parent_aged = (
+            p.single.aged,
+            p.couple.aged,
+            p.lone_parent.aged,
+        )
+        if p.pension_age_cutoff is not None:
+            in_england = benunit.household("country", period) == Country.ENGLAND
+            lower = in_england & ~benunit(
+                "housing_benefit_attained_pension_age_before_cutoff", period
+            )
+            single_aged = where(lower, p.single.aged_from_cutoff, single_aged)
+            couple_aged = where(lower, p.couple.aged_from_cutoff, couple_aged)
+            lone_parent_aged = where(
+                lower, p.lone_parent.aged_from_cutoff, lone_parent_aged
+            )
         single_personal_allowance = (
-            u_25 * p.single.younger + o_25 * p.single.older + pensioner * p.single.aged
+            u_25 * p.single.younger + o_25 * p.single.older + pensioner * single_aged
         )
         couple_personal_allowance = (
-            u_18 * p.couple.younger + o_18 * p.couple.older + pensioner * p.couple.aged
+            u_18 * p.couple.younger + o_18 * p.couple.older + pensioner * couple_aged
         )
         lone_parent_personal_allowance = (
             u_18 * p.lone_parent.younger
             + o_18 * p.lone_parent.older
-            + pensioner * p.lone_parent.aged
+            + pensioner * lone_parent_aged
         )
         personal_allowance = (
             single * single_personal_allowance
