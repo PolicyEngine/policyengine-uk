@@ -8,7 +8,10 @@ description: >
   Lifetime ISA at its surrender value: regulation 49(1) values capital at its
   current market or surrender value, and ADM H1659 counts a Lifetime ISA at
   75% of its value under 60 and in full from 60. Lifetime ISAs exist from 6
-  April 2017, and the list is empty before then.
+  April 2017, and the list is empty before then. A nonnegative financial
+  observation (benunit_reported_capital) replaces these covered financial
+  sources to avoid counting a Lifetime ISA twice. A complete UC override
+  replaces them together with property and the household financial proxy.
 metadata:
   label: Universal Credit person-level capital sources
   period: year

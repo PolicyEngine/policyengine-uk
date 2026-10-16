@@ -106,8 +106,10 @@ gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 - mortgage_capital_repayment
 - net_financial_wealth
 - non_residential_property_value
+- non_residential_property_secured_debt
 - other_investment_income
 - other_residential_property_value
+- other_residential_property_secured_debt
 # Purchase prices a dataset may impute; uprated like the property stocks.
 - additional_residential_property_purchased
 - non_residential_property_purchased
@@ -123,8 +125,8 @@ gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 - savings
 - savings_interest_income
 - sublet_income
-# A formula of benunit_reported_capital; listed so a dataset that stores it
-# directly is uprated like the input.
+# An explicit complete UC override stored in a dataset is uprated like the
+# financial input; its default no longer derives from that input.
 - uc_reported_capital
 gov.economic_assumptions.yoy_growth.obr.per_capita.mixed_income:
 - self_employment_income

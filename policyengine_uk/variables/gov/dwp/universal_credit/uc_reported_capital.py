@@ -6,17 +6,15 @@ class uc_reported_capital(Variable):
     entity = BenUnit
     label = "reported Universal Credit capital"
     documentation = (
-        "Capital of the claimant and any partner as recorded for this benefit "
-        "unit. Universal Credit assesses a couple's capital together (Welfare "
-        "Reform Act 2012 s. 5; UC Regulations 2013 reg. 18(2)), which a "
-        "benefit-unit capital record covers, so this is the benefit unit's "
-        "recorded capital (benunit_reported_capital) unless set directly. "
-        "When it is 0 or more it replaces the household proxy and the "
-        "person-level sources in uc_assessable_capital, and the model applies "
-        "no Schedule 10 disregard to it, so it must already be the countable "
-        "figure. Any negative value, including -1 when nothing is recorded, "
-        "means the household proxy applies. Set it to 0 to override the "
-        "household proxy with zero assessable capital."
+        "Explicit complete countable-capital override for the claimant and "
+        "partner together. A nonnegative value, including zero, replaces "
+        "financial, property and person-level capital sources; it must already "
+        "reflect programme valuations and Schedule 10 disregards. The existing "
+        "regulation 77 company holding substitution still applies. The default "
+        "-1 means no complete override: benunit_reported_capital then replaces "
+        "only financial proxies, with countable property assessed separately. "
+        "This variable does not derive from the financial-only FRS total. "
+        "An override set directly applies only in the supplied assessment year."
     )
     definition_period = YEAR
     unit = GBP
@@ -28,4 +26,4 @@ class uc_reported_capital(Variable):
     )
 
     def formula(benunit, period, parameters):
-        return benunit("benunit_reported_capital", period)
+        return -1

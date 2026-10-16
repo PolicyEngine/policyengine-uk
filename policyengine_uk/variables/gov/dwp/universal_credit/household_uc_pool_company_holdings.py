@@ -28,7 +28,9 @@ class household_uc_pool_company_holdings(Variable):
 
     def formula(household, period, parameters):
         person = household.members
-        reported = person.benunit("uc_reported_capital", period) >= 0
+        reported = (person.benunit("uc_reported_capital", period) >= 0) | (
+            person.benunit("benunit_reported_capital", period) >= 0
+        )
         claimant_or_partner = person("is_uc_claimant", period)
         off_reported_capital = reported & claimant_or_partner
         holdings = household.sum(

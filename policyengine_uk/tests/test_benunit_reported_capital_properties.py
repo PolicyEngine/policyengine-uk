@@ -1,32 +1,33 @@
 """Properties of `benunit_reported_capital`, the benefit unit's recorded capital.
 
-A dataset records what it observes (the benefit unit's savings and
-investments, -1 when nothing is recorded), and each means test derives its
-own reported capital from it: `uc_reported_capital` and
-`pension_credit_reported_capital` default to it and can still be set directly.
+A dataset records financial capital (the benefit unit's savings and
+investments, -1 when nothing is recorded). Universal Credit replaces only
+financial proxies with that observation; `uc_reported_capital` is a separate
+complete override and defaults to -1. Pension Credit continues to derive
+`pension_credit_reported_capital` from the observation.
 
 Invariants, over generated households of one or two benefit units:
 
-1. Derivation: with only the recorded input set, both programmes' reported
-   capital equals it, -1 included.
-2. Differential: recording R once gives the same assessable capital, eligibility
-   and entitlement for Universal Credit and Pension Credit as setting R on both
-   programme variables directly, which is how they were supplied before the
-   input existed. With nothing recorded this is the old default (-1), so the
-   input changes nothing for data that do not supply it.
+1. Derivation: Pension Credit's reported capital equals the financial input,
+   -1 included. UC's complete override remains -1 without an explicit value.
+2. Differential: without property or person-level capital, a financial
+   observation gives the same assessment as explicitly setting that unit's
+   complete override too. Retaining the financial observations in both cases
+   preserves the financial residual available to other units.
 3. Precedence: a programme variable set directly wins for that programme only.
-4. Override identity and bounds: a unit with recorded R >= 0 has Universal
-   Credit assessable capital R, whatever the household holds, and assessable
-   capital is never negative.
-5. Monotonicity: Universal Credit tariff income never falls, and eligibility and
-   the award never rise, as recorded capital rises.
+4. Financial identity and bounds: without property or person-level capital,
+   a unit with recorded R >= 0 has UC assessable capital R. Assessable capital
+   is never negative.
+5. Monotonicity: assessable capital never falls, and eligibility and the award
+   never rise, as recorded capital rises. Tariff income never falls while the
+   unit remains eligible; it is zero once the capital limit excludes the unit.
 6. Uprating: a dataset that stores the input, or either programme variable
    directly as datasets built before the input did, projects it to later years
    exactly as it projects `savings`.
 7. Periods: the input set for one year is uprated into later years. A
    programme variable set directly applies only to the years it is set, as for
-   any formula variable; later years derive from the input (intended: the
-   input carries the uprating).
+   any formula variable. Later years use the financial input, when present,
+   while the complete UC override returns to -1.
 """
 
 from pathlib import Path
@@ -135,7 +136,7 @@ def outputs(sim):
 
 @SETTINGS
 @given(households())
-def test_recorded_capital_is_equivalent_to_setting_each_programme(case):
+def test_financial_capital_matches_complete_override_without_nonfinancial_assets(case):
     units, household = case
     via_input = simulate(
         units,
@@ -145,15 +146,23 @@ def test_recorded_capital_is_equivalent_to_setting_each_programme(case):
     via_programmes = simulate(
         units,
         household,
-        [{v: u["recorded"] for v in PROGRAMME_VARIABLES} for u in units],
+        [
+            {
+                "benunit_reported_capital": u["recorded"],
+                **{v: u["recorded"] for v in PROGRAMME_VARIABLES},
+            }
+            for u in units
+        ],
     )
     a, b = outputs(via_input), outputs(via_programmes)
     for i, unit in enumerate(units):
-        for v in PROGRAMME_VARIABLES:
-            assert a[v][i] == unit["recorded"]
+        assert a["uc_reported_capital"][i] == -1
+        assert a["pension_credit_reported_capital"][i] == unit["recorded"]
         if unit["recorded"] >= 0:
             assert a["uc_assessable_capital"][i] == unit["recorded"]
     for v in OUTPUTS:
+        if v == "uc_reported_capital":
+            continue
         np.testing.assert_allclose(a[v], b[v], rtol=0, atol=1e-6, err_msg=v)
     for v in ["uc_assessable_capital", "pension_credit_assessable_capital"]:
         assert np.all(a[v] >= 0)
@@ -190,7 +199,9 @@ def test_uc_never_rises_with_recorded_capital(case, x, y):
         return outputs(simulate(units, household, inputs))
 
     lo, hi = run(low), run(high)
-    assert hi["uc_tariff_income"][0] >= lo["uc_tariff_income"][0]
+    assert hi["uc_assessable_capital"][0] >= lo["uc_assessable_capital"][0]
+    if hi["is_uc_eligible"][0]:
+        assert hi["uc_tariff_income"][0] >= lo["uc_tariff_income"][0]
     assert hi["is_uc_eligible"][0] <= lo["is_uc_eligible"][0]
     assert hi["universal_credit"][0] <= lo["universal_credit"][0] + 1e-6
 
@@ -249,7 +260,7 @@ def _dataset(benunit_columns, savings):
     )
 
 
-def test_stored_columns_project_like_savings():
+def test_stored_financial_observations_and_explicit_overrides_project_like_savings():
     recorded = [10_000.0, -1.0, 0.0]
     savings = [10_000.0, 20_000.0, 30_000.0]
     for columns in [
@@ -263,13 +274,33 @@ def test_stored_columns_project_like_savings():
             / sim.calculate("savings", 2025).values
         )
         assert np.all(growth > 1)
-        for name in PROGRAMME_VARIABLES:
+        projected_names = ["pension_credit_reported_capital"]
+        if "uc_reported_capital" in columns:
+            projected_names.append("uc_reported_capital")
+        else:
+            for year in [2025, 2027]:
+                np.testing.assert_array_equal(
+                    sim.calculate("uc_reported_capital", year).values,
+                    [-1, -1, -1],
+                )
+        for name in projected_names:
             first = sim.calculate(name, 2025).values
             later = sim.calculate(name, 2027).values
             np.testing.assert_array_equal(first, recorded)
             np.testing.assert_allclose(later, np.array(recorded) * growth, rtol=1e-6)
             # A stored -1 stays negative, so "nothing recorded" survives.
             assert later[1] < 0
+        expected_assessable = np.array([recorded[0], savings[1], recorded[2]])
+        np.testing.assert_allclose(
+            sim.calculate("uc_assessable_capital", 2025).values,
+            expected_assessable,
+            rtol=1e-6,
+        )
+        np.testing.assert_allclose(
+            sim.calculate("uc_assessable_capital", 2027).values,
+            expected_assessable * growth,
+            rtol=1e-6,
+        )
 
 
 def _single_adult(benunit_inputs):
@@ -288,8 +319,10 @@ def test_input_set_once_is_uprated_into_later_years():
         "gov.economic_assumptions.indices.obr.per_capita.gdp"
     )
     expected = 10_000 * index("2026-01-01") / index("2025-01-01")
-    for name in PROGRAMME_VARIABLES:
-        np.testing.assert_allclose(sim.calculate(name, 2026)[0], expected, rtol=1e-6)
+    assert sim.calculate("uc_reported_capital", 2026)[0] == -1
+    np.testing.assert_allclose(
+        sim.calculate("pension_credit_reported_capital", 2026)[0], expected, rtol=1e-6
+    )
     np.testing.assert_allclose(
         sim.calculate("uc_assessable_capital", 2026)[0], expected, rtol=1e-6
     )
