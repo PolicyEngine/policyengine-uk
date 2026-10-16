@@ -41,7 +41,7 @@ from decimal import ROUND_CEILING, Decimal
 
 import numpy as np
 import pytest
-from hypothesis import HealthCheck, assume, given, settings
+from hypothesis import HealthCheck, assume, example, given, settings
 from hypothesis import strategies as st
 from policyengine_core.parameters import Parameter
 from policyengine_core.reforms import Reform
@@ -552,7 +552,8 @@ def test_a_change_replacing_the_files_last_value_restores_their_years_after_it()
 def test_a_change_ending_around_the_files_last_value_resumes_by_their_rule(
     path, value, stop
 ):
-    # The files' last value for each indexed threshold starts 2030-04-06. A
+    # The files' last value for each indexed threshold is in 2030-31 (from
+    # 2030-04-06, or 2030-04-01 for the basic rate limit). A
     # change from 2029-04-06 that ends before 30 April 2030 covers 2029-30
     # only, so 2030-31 is the files' value; one that runs to 30 April or later
     # covers 2030-31 too, and 2031-32 resumes from it.
@@ -1005,8 +1006,57 @@ def indexed_schedules(draw):
     return path, schedule
 
 
+# The fixed examples cover what the derandomised draws miss: a change that
+# replaces the files' last value and ends before 30 April 2030, bounded
+# changes ending after the files' years, and three changes.
 @PROPERTY_SETTINGS
 @given(change=indexed_schedules(), reverse=st.booleans())
+@example(
+    change=(
+        BASIC_RATE_LIMIT,
+        [(datetime.date(2029, 4, 6), datetime.date(2030, 4, 29), 40_000)],
+    ),
+    reverse=False,
+)
+@example(
+    change=(
+        SECONDARY_THRESHOLD,
+        [(datetime.date(2030, 4, 6), datetime.date(2030, 4, 20), 120.0)],
+    ),
+    reverse=False,
+)
+@example(
+    change=(
+        PERSONAL_ALLOWANCE,
+        [(datetime.date(2031, 4, 6), datetime.date(2033, 4, 5), 15_000)],
+    ),
+    reverse=False,
+)
+@example(
+    change=(
+        SECONDARY_THRESHOLD,
+        [(datetime.date(2031, 4, 6), datetime.date(2034, 4, 5), 175.0)],
+    ),
+    reverse=False,
+)
+@example(
+    change=(
+        PRIMARY_THRESHOLD,
+        [(datetime.date(2031, 4, 6), datetime.date(2032, 4, 5), 300.0)],
+    ),
+    reverse=False,
+)
+@example(
+    change=(
+        PERSONAL_ALLOWANCE,
+        [
+            (datetime.date(2026, 4, 6), datetime.date(2027, 4, 5), 11_000),
+            (datetime.date(2029, 4, 6), datetime.date(2031, 4, 5), 15_000),
+            (datetime.date(2033, 4, 6), datetime.date(2100, 12, 31), 12_570),
+        ],
+    ),
+    reverse=True,
+)
 def test_indexed_threshold_schedules_match_prior_law(change, reverse):
     path, schedule = change
     keys = [(f"{start}.{stop}", value) for start, stop, value in schedule]

@@ -199,7 +199,8 @@ def last_stated_tax_year(parameter: Parameter) -> int:
     recorded = (parameter.metadata or {}).get(FILES_LAST_TAX_YEAR)
     if recorded is not None:
         stated.append(int(recorded))
-    return max(stated or [first_tax_year(parameter.values_list[-1].instant_str)])
+    # values_list is latest first.
+    return max(stated or [first_tax_year(parameter.values_list[0].instant_str)])
 
 
 def dated_change_tax_years(parameter: Parameter) -> set:
