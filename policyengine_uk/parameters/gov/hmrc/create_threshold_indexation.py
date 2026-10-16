@@ -210,7 +210,9 @@ def dated_change_tax_years(parameter: Parameter) -> set:
             continue
         until = value.metadata[DATED_CHANGE_UNTIL]
         year = first_tax_year(value.instant_str)
-        while f"{year}-{FISCAL_YEAR_SAMPLE_MONTH_DAY}" <= until:
+        # Zero-padded, as instant strings are: an ETERNITY change starts in
+        # year 1.
+        while f"{year:04d}-{FISCAL_YEAR_SAMPLE_MONTH_DAY}" <= until:
             years.add(year)
             year += 1
     return years
