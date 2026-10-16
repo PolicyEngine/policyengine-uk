@@ -81,6 +81,7 @@ def _legacy_override_modifier(dated: DatedReform) -> Callable[[Simulation], None
     """
 
     def modifier(simulation: Simulation) -> None:
+        _reset_uc_health_warning(simulation, (dated,))
         from policyengine_uk.tax_benefit_system import (
             parameter_reads_calendar_years,
             reform_parameter_defines,
@@ -102,7 +103,7 @@ def _legacy_override_modifier(dated: DatedReform) -> Callable[[Simulation], None
             )
             overriding = False
         elif reform_modifiers_are_effective((dated,), simulation.tax_benefit_system):
-            return
+            legacy, overriding = [], False
         else:
             legacy, overriding = unwritten_reform_overrides(
                 dated.changes,
@@ -142,6 +143,16 @@ def _legacy_override_modifier(dated: DatedReform) -> Callable[[Simulation], None
 
     modifier._dated_reforms = (dated,)
     return modifier
+
+
+def _reset_uc_health_warning(simulation, dated_reforms, parameter_changes=None):
+    """An amount reform gets one diagnostic for this application."""
+    from policyengine_uk.scenarios.uc_reform import LCWRA_AMOUNT
+
+    if LCWRA_AMOUNT in (parameter_changes or {}) or any(
+        LCWRA_AMOUNT in dated.changes for dated in dated_reforms
+    ):
+        simulation._uc_health_amount_warning_emitted = False
 
 
 def _warn_annualised_overrides() -> None:
@@ -202,15 +213,29 @@ def _chain(
         )
 
         def chained(simulation: Simulation) -> None:
-            if (
-                dated is not None
-                and not getattr(simulation, APPLYING_TO_BUILT_SIMULATION, False)
-                and not getattr(simulation, "_building_dated_reforms", None)
-                and reform_modifiers_are_effective(dated, simulation.tax_benefit_system)
-            ):
-                return
-            first(simulation)
-            second(simulation)
+            deferred = getattr(simulation, "_defer_uc_health_warning", False)
+            _reset_uc_health_warning(simulation, dated or ())
+            simulation._defer_uc_health_warning = True
+            try:
+                already_effective = (
+                    dated is not None
+                    and not getattr(simulation, APPLYING_TO_BUILT_SIMULATION, False)
+                    and not getattr(simulation, "_building_dated_reforms", None)
+                    and reform_modifiers_are_effective(
+                        dated, simulation.tax_benefit_system
+                    )
+                )
+                if not already_effective:
+                    first(simulation)
+                    second(simulation)
+            finally:
+                simulation._defer_uc_health_warning = deferred
+            if not deferred:
+                from policyengine_uk.scenarios.uc_reform import (
+                    warn_shadowed_lcwra_reform,
+                )
+
+                warn_shadowed_lcwra_reform(simulation)
 
         chained._dated_reforms = dated
         return chained
@@ -551,6 +576,9 @@ class Scenario(BaseModel):
         Args:
             simulation: The simulation to modify
         """
+        _reset_uc_health_warning(
+            simulation, self.dated_reforms or (), self.parameter_changes
+        )
         if self.dated_reforms:
             _warn_annualised_overrides()
 

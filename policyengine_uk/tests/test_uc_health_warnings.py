@@ -212,6 +212,60 @@ def test_tuple_and_sum_defer_warning_until_active_override_runs():
         assert not [w for w in caught if issubclass(w.category, _warning_type())]
 
 
+@pytest.mark.parametrize("route", ["tuple", "sum"])
+@pytest.mark.parametrize("escalated", [False, True])
+def test_standalone_composite_defers_warning_until_active_override_runs(
+    route, escalated
+):
+    amount = {AMOUNT: {"2027-01-01.2027-12-31": 600}}
+    disabled = {ACTIVE: {"2027-01-01.2027-12-31": False}}
+    scenario = (
+        Scenario.from_reform((amount, disabled))
+        if route == "tuple"
+        else Scenario.from_reform(amount) + Scenario.from_reform(disabled)
+    )
+    sim = Simulation(situation=SITUATION)
+
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("error" if escalated else "always", _warning_type())
+        scenario.simulation_modifier(sim)
+
+    assert not [w for w in caught if issubclass(w.category, _warning_type())]
+    parameters = sim.tax_benefit_system.parameters
+    assert parameters.get_child(AMOUNT)("2027-01-01") == 600
+    assert not parameters.get_child(ACTIVE)("2027-01-01")
+
+
+@pytest.mark.parametrize("route", ["tuple", "sum"])
+def test_single_child_standalone_composite_warns_once_per_application(route):
+    amount = {AMOUNT: {"2027-01-01.2027-12-31": 600}}
+    scenario = (
+        Scenario.from_reform((amount,))
+        if route == "tuple"
+        else Scenario() + Scenario.from_reform(amount)
+    )
+    sim = Simulation(situation=SITUATION)
+
+    for _ in range(2):
+        with pytest.warns(_warning_type(), match="2027") as caught:
+            scenario.simulation_modifier(sim)
+        assert len([w for w in caught if issubclass(w.category, _warning_type())]) == 1
+
+
+@pytest.mark.parametrize("operation", ["simulation_modifier", "apply"])
+def test_unrelated_application_does_not_repeat_an_earlier_amount_warning(operation):
+    with pytest.warns(_warning_type(), match="2027"):
+        sim = Simulation(
+            situation=SITUATION,
+            reform={AMOUNT: {"2027-01-01.2027-12-31": 600}},
+        )
+    unrelated = Scenario.from_reform(({NEW_CLAIMANT: {"2027-01-01.2027-12-31": 500}},))
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always", _warning_type())
+        getattr(unrelated, operation)(sim)
+    assert not [w for w in caught if issubclass(w.category, _warning_type())]
+
+
 @settings(
     max_examples=25,
     deadline=None,
