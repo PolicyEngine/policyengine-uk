@@ -16,7 +16,7 @@ from typing import Callable, Mapping, Optional, Sequence
 
 import numpy as np
 
-from .privacy import MIN_CELL, small
+from .privacy import MIN_CELL, count_text, small
 from . import TOOL_SCHEMA
 from .guard import counted_once, snapshot_inputs
 from .partition import Partition, closure_problems, group_label, read_model_lists
@@ -465,11 +465,14 @@ def measure_year(
         entity = entity_of(sim, head.variable)
         values = array(sim, head.variable, year).astype(np.float64)
         finite = np.isfinite(values)
+        records = _weighted_records(values != 0, weights[entity])
         rec.check(
             f"finite:{head.id}",
             f"{head.label} is finite for every unit",
             bool(finite.all()),
-            f"{fiscal_year_label(year)}: {int((~finite).sum())} non-finite values",
+            # No count of fewer than 10 units (Sol re-review 8 of #2335).
+            f"{fiscal_year_label(year)}: "
+            + count_text(int((~finite).sum()), "non-finite values"),
             section="finite",
         )
         hh = to_household(sim, values, entity)
@@ -483,7 +486,7 @@ def measure_year(
             year,
             float(np.sum(hw * hh)),
             group=group_label(head.report_group),
-            records=_weighted_records(values != 0, weights[entity]),
+            records=records,
         )
         if head.kind == "spending" and head.caseload:
             rec.metric(
@@ -495,9 +498,24 @@ def measure_year(
                 float(np.sum(weights[entity] * (values > 0))),
                 group=group_label(head.report_group),
                 unit=entity,
-                records=_weighted_records(values > 0, weights[entity]),
+                # Suppressed with its head: a caseload of zero would say that
+                # none of the head's few records is positive.
+                records=1
+                if small(records)
+                else _weighted_records(values > 0, weights[entity]),
             )
-        if head.sign == "nonnegative":
+        if head.sign == "nonnegative" and small(records):
+            # Whether any of so few records is negative is about them alone
+            # (Sol re-review 8 of #2335): not checked this year.
+            rec.check(
+                f"sign:{head.id}",
+                f"{head.label} is never negative",
+                None,
+                f"{fiscal_year_label(year)}: not checked, from fewer than "
+                f"{MIN_CELL} records",
+                section="signs",
+            )
+        elif head.sign == "nonnegative":
             negative = values < -0.005
             rec.check(
                 f"sign:{head.id}",
@@ -568,6 +586,10 @@ def measure_year(
                     own = own - double_count_hh[dc.variable]
             nonzero = nonzero + (np.abs(own) > EXCLUSIVITY_ZERO_GBP).astype(int)
         overlapping = nonzero > 1
+        if holding is not None:
+            # A holder's verdict would depend on the suppressed figure (Sol
+            # re-review 8 of #2335), as for the identities.
+            overlapping &= ~holding
         rec.check(
             f"overlap_guard:{guard.get('id')}",
             "At most one of " + ", ".join(members) + " is non-zero for any household",
@@ -577,6 +599,12 @@ def measure_year(
                 _weighted_records(overlapping, hw),
                 "households have more than one",
                 f"a weighted {float(np.sum(hw * overlapping)):,.0f}",
+            )
+            + (
+                f" (households holding a figure from fewer than {MIN_CELL} "
+                "records aren't checked this year)"
+                if holding is not None
+                else ""
             ),
             section="partition",
         )
@@ -1146,6 +1174,27 @@ def publishable_guard(guard: dict) -> dict:
         components.append(row)
     if "components" in guard:
         out["components"] = components
+    # A declared double count's coefficient is its container's mean response
+    # across its units: for fewer than MIN_CELL units it goes too (Sol
+    # re-review 8 of #2335).
+    units = {
+        row.get("variable"): row.get("units") for row in guard.get("components") or []
+    }
+    double_counts = []
+    for row in guard.get("double_counts") or []:
+        row = dict(row)
+        if small(units.get(row.get("variable")) or 0):
+            row["coefficient"] = None
+            if row.get("status") != "pass":
+                row["detail"] = (
+                    f"{row['contained_in']} no longer moves one for one with "
+                    f"{row['variable']} (fewer than {MIN_CELL} units): the model "
+                    "no longer counts it twice, so remove the declaration and give "
+                    "it its own head"
+                )
+        double_counts.append(row)
+    if "double_counts" in guard:
+        out["double_counts"] = double_counts
     return out
 
 
@@ -1535,7 +1584,8 @@ def measure(
                     section="counted_once",
                     scope=f"{item['total']}:{item['head']}:{item['kind']}",
                 )
-        for result in guard.get("double_counts", []):
+        # Details from the published guard, with small cells removed.
+        for result in publishable_guard(guard).get("double_counts", []):
             rec.check(
                 f"double_count_present:{result['variable']}",
                 f"{result['variable']} is still contained in {result['contained_in']}",

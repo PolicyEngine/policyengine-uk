@@ -1273,6 +1273,37 @@ def test_a_year_ranked_on_a_suppressed_figure_is_withheld_with_a_reason():
     assert any("ranked on an income holding" in n for n in notes)
 
 
+def test_a_comparison_withheld_in_every_year_says_why():
+    """Sol re-review 8 of #2335, P3 1: with every year withheld, measure keeps
+    no household detail, and the comment said it was missing."""
+    from policyengine_uk.utils.aggregate_impact.render import render
+
+    base = result({("receipts", "a"): [1.0] * len(YEARS)})
+    head = copy.deepcopy(base)
+    head["metrics"].append(
+        {
+            "id": "deciles.mean_income.1",
+            "label": "d1",
+            "section": "deciles",
+            "group": None,
+            "kind": "gbp_household",
+            "unit": None,
+            "values": {str(y): None for y in YEARS},
+            "suppressed": [str(y) for y in YEARS],
+        }
+    )
+    summary = compare(base, head, SPEC)
+    assert summary["deciles"] == {}
+    assert len(summary["decile_notes"]) == len(YEARS)
+    assert all("ranked on an income holding" in n for n in summary["decile_notes"])
+    text = render(summary, SPEC)
+    assert "need household detail" not in text and "ranked on an income" in text
+    # Without any withheld year, missing detail is still called missing.
+    summary = compare(base, copy.deepcopy(base), SPEC)
+    assert summary["decile_notes"] == []
+    assert "need household detail" in render(summary, SPEC)
+
+
 def test_withheld_decile_years_are_explained_not_called_missing():
     """Sol re-review 7 of #2335, P3 5: with every year withheld, the comment
     dropped the notes and said household detail was missing."""
