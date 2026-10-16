@@ -576,10 +576,16 @@ def write_assignment(
         in_force = [entry for entry in old if entry.instant_str <= stop_str]
         # Before its first stated value a parameter takes that value, as
         # processing backdates it; resuming with nothing would leave the
-        # years up to that value empty. A stated null stays null.
-        resumed_value = (
-            in_force[0].value if in_force else later[-1].value if later else None
-        )
+        # years up to that value empty. Where an earlier change starting on
+        # or before it recorded prior law's first value, that is the value
+        # (the first entry is now that change's). A stated null stays null.
+        recorded = parameter.metadata or {}
+        if in_force:
+            resumed_value = in_force[0].value
+        elif BACKDATED_VALUE in recorded:
+            resumed_value = recorded[BACKDATED_VALUE]
+        else:
+            resumed_value = later[-1].value if later else None
         resumed.append(_entry(name, next_str, resumed_value))
     values = later + resumed + [_entry(name, start_str, assignment.value)] + earlier
     values.sort(key=lambda entry: entry.instant_str, reverse=True)
