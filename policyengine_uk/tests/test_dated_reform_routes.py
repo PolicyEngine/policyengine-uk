@@ -512,6 +512,53 @@ def test_a_change_replacing_the_files_last_value_restores_their_years_after_it()
         ), keys
 
 
+SECONDARY_THRESHOLD = f"{NICS}.class_1.thresholds.secondary_threshold"
+
+
+def resumed_after(path, value, year):
+    """The threshold in ``year`` after ``value`` held the year before."""
+    increase = current_law_annual(CPI_RISE, year)
+    if path == BASIC_RATE_LIMIT:
+        return s21_step(value, increase)
+    if path == SECONDARY_THRESHOLD:
+        return value * (1 + increase) if increase > 0 else value
+    # The primary threshold is aligned with the allowance again.
+    return round(current_law_annual(PERSONAL_ALLOWANCE, year) / 52, 2)
+
+
+@pytest.mark.parametrize(
+    "path, value",
+    [
+        (BASIC_RATE_LIMIT, 40_000),
+        (SECONDARY_THRESHOLD, 120.0),
+        (PRIMARY_THRESHOLD, 300.0),
+    ],
+)
+@pytest.mark.parametrize(
+    "stop", ["2030-04-05", "2030-04-29", "2030-04-30", "2030-05-01"]
+)
+def test_a_change_ending_around_the_files_last_value_resumes_by_their_rule(
+    path, value, stop
+):
+    # The files' last value for each indexed threshold starts 2030-04-06. A
+    # change from 2029-04-06 that ends before 30 April 2030 covers 2029-30
+    # only, so 2030-31 is the files' value; one that runs to 30 April or later
+    # covers 2030-31 too, and 2031-32 resumes from it.
+    simulation = via_reform_dict({path: {f"2029-04-06.{stop}": value}})
+    covers_2030 = stop >= "2030-04-30"
+    assert annual(simulation, path, 2029) == pytest.approx(value)
+    if covers_2030:
+        assert annual(simulation, path, 2030) == pytest.approx(value)
+        assert annual(simulation, path, 2031) == pytest.approx(
+            resumed_after(path, value, 2031)
+        )
+    else:
+        for year in (2030, 2031):
+            assert annual(simulation, path, year) == pytest.approx(
+                current_law_annual(path, year)
+            ), year
+
+
 def test_bare_year_dict_keys_match_the_fiscal_year_interval():
     by_year = via_reform_dict(
         {PERSONAL_ALLOWANCE: {"2031": 12_570, "2032": 12_570, "2033": 12_570}}
