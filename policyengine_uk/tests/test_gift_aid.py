@@ -8,9 +8,8 @@ https://www.legislation.gov.uk/ukpga/2007/3/section/414
 https://www.legislation.gov.uk/ukpga/2007/3/section/415
 https://www.legislation.gov.uk/ukpga/2007/3/section/58
 
-The differential integrates the model's existing rate schedules independently.
-It preserves their unrelated baseline policy choices, including the Scottish
-top-rate threshold, to isolate the effect of extending limits for Gift Aid.
+The differential integrates the model's rate schedules independently to
+isolate the effect of extending limits for Gift Aid.
 """
 
 import numpy as np
@@ -267,15 +266,17 @@ def test_explicit_zero_gift_matches_omitted_input(sim, omitted_sim, drawn):
         assert before.tobytes() == after.tobytes(), variable
 
 
-def test_zero_gift_preserves_main_outputs_bit_for_bit():
-    """Freeze main's intermediate and final outputs, including mixed income.
+def test_zero_gift_preserves_baseline_outputs_bit_for_bit():
+    """Freeze intermediate and final outputs, including mixed income.
 
     Frozen from main at 3381500f4 (after #2352 put savings and dividends
     above property income, and the Scottish personal savings allowance
-    moved to the UK bands). Re-freeze from main when main moves these.
+    moved to the UK bands). The Scottish £150,000 case uses the corrected
+    £125,140 top-rate limit from S6M-20844 (#2130), giving £59,634.35:
+    https://www.parliament.scot/chamber-and-committees/votes-and-motions/S6M-20844
 
     Gift Aid's zero-input compatibility also applies to inherited baseline
-    choices about property stacking, the Scottish schedule and taxpayer bands.
+    choices about property stacking and taxpayer bands.
     Exact float32 expectations catch changes hidden by a tax-level tolerance.
     """
     rows = [
@@ -319,7 +320,7 @@ def test_zero_gift_preserves_main_outputs_bit_for_bit():
             28_032,
             3451.070068359375,
             13182.0498046875,
-            60011.44921875,
+            59634.3515625,
             3451.070068359375,
             0,
             31407.05078125,
@@ -336,7 +337,7 @@ def test_zero_gift_preserves_main_outputs_bit_for_bit():
             28_032,
             3451.070068359375,
             13182.0498046875,
-            60011.44921875,
+            59634.3515625,
             14043.3203125,
             3307.25,
             31407.05078125,
@@ -408,7 +409,7 @@ HELPER_SCALES = {
         "scottish",
     ),
     "Scotland, six rates": (
-        [0, 3_967, 16_956, 31_092, 62_430, 112_570],
+        [0, 3_967, 16_956, 31_092, 62_430, 125_140],
         [0.19, 0.20, 0.21, 0.42, 0.45, 0.48],
         "scottish",
     ),
