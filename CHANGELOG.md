@@ -1,3 +1,17 @@
+## [2.134.6] - 2026-10-16
+
+### Fixed
+
+- - Applied the Universal Credit Act 2025 standard allowance uplifts for 2027-28 to 2029-30 through a dedicated uprating index under `gov.economic_assumptions.indices`, including when dated reforms rebuild parameters, while preserving the legislated 2026-27 rates.
+
+
+## [2.134.5] - 2026-10-16
+
+### Fixed
+
+- - Limited pension contributions relief by relevant UK earnings (or the £3,600 basic amount through relief at source) instead of the annual allowance. Calculated the annual allowance charge across UK or Scottish tax bands with unused allowance carried forward, applying the statutory named-rate ordinary-income condition to the RAS band extension and preserving Gift Aid's separate gross band extension. Separate savings and UK property rates do not establish RAS eligibility.
+
+
 ## [2.134.4] - 2026-10-16
 
 ### Fixed
