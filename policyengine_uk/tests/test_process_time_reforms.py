@@ -396,6 +396,7 @@ def test_generated_parameters_are_the_series_processing_builds():
         built = path.startswith((f"{INDICES}.", f"{GROWTH}.")) and not statutory(path)
         assert generates(path) is built, path
     assert generates(TRIPLE_LOCK)
+    assert generates(f"{INDICES}.uc_standard_allowance")
     assert not generates(MINIMUM_RATE)
     # The CGT projection index is added after processing, outside it.
     assert not generates(f"{INDICES}.capital_gains")
