@@ -18,7 +18,9 @@ AMOUNT = "gov.dwp.universal_credit.elements.disabled.amount"
 ACTIVE = "gov.dwp.universal_credit.rebalancing.active"
 PROTECTED = "gov.dwp.universal_credit.rebalancing.protected_health_element"
 NEW_CLAIMANT = "gov.dwp.universal_credit.rebalancing.new_claimant_health_element"
-YEARS = range(2025, 2033)
+REBALANCING_YEARS = tuple(uc_reform.REBALANCING_YEARS)
+AFTER_REBALANCING_YEAR = max(REBALANCING_YEARS) + 1
+YEARS = range(2025, max(2032, max(REBALANCING_YEARS)) + 1)
 SITUATION = {
     "people": {
         "adult": {
@@ -96,7 +98,11 @@ def test_amount_reform_warns_once_on_every_route(route):
         None,
         {NEW_CLAIMANT: {"2027-01-01.2027-12-31": 500}},
         {AMOUNT: {"2025-01-01.2025-12-31": 600}},
-        {AMOUNT: {"2030-01-01.2030-12-31": 600}},
+        {
+            AMOUNT: {
+                f"{AFTER_REBALANCING_YEAR}-01-01.{AFTER_REBALANCING_YEAR}-12-31": 600
+            }
+        },
         {AMOUNT: {"2027-01-01.2027-12-31": 600}, ACTIVE: False},
     ],
 )
@@ -118,7 +124,7 @@ def test_active_false_in_the_same_reform_suppresses_the_warning(route):
 
 def test_parameter_changes_apply_warns_on_the_built_simulation():
     sim = Simulation(situation=SITUATION)
-    with pytest.warns(_warning_type(), match="2026, 2027, 2028, 2029"):
+    with pytest.warns(_warning_type(), match=", ".join(map(str, REBALANCING_YEARS))):
         Scenario(parameter_changes={AMOUNT: 600}).apply(sim)
 
 
@@ -133,9 +139,13 @@ def test_the_warning_does_not_change_values():
     with pytest.warns(_warning_type(), match="protected_health_element"):
         reformed = Simulation(
             situation=SITUATION,
-            reform={AMOUNT: {"2026-01-01.2029-12-31": 600}},
+            reform={
+                AMOUNT: {
+                    f"{min(REBALANCING_YEARS)}-01-01.{max(REBALANCING_YEARS)}-12-31": 600
+                }
+            },
         )
-    for year in range(2026, 2030):
+    for year in REBALANCING_YEARS:
         for variable in ("uc_LCWRA_element", "universal_credit"):
             np.testing.assert_array_equal(
                 reformed.calculate(variable, year), baseline.calculate(variable, year)
@@ -162,12 +172,13 @@ def test_warning_follows_the_years_used_by_the_rebalancing_loop(monkeypatch):
 
 
 def test_warning_also_covers_an_extended_projection_horizon(monkeypatch):
+    year = AFTER_REBALANCING_YEAR
     sim = Simulation(
         situation=SITUATION,
-        reform={AMOUNT: {"2030-01-01.2030-12-31": 600}},
+        reform={AMOUNT: {f"{year}-01-01.{year}-12-31": 600}},
     )
-    monkeypatch.setattr(uc_reform, "REBALANCING_YEARS", (2030,), raising=False)
-    with pytest.warns(_warning_type(), match="2030"):
+    monkeypatch.setattr(uc_reform, "REBALANCING_YEARS", (year,), raising=False)
+    with pytest.warns(_warning_type(), match=str(year)):
         warn = getattr(
             uc_reform,
             "warn_shadowed_lcwra_reform",
@@ -272,12 +283,16 @@ def test_unrelated_application_does_not_repeat_an_earlier_amount_warning(operati
     derandomize=True,
     suppress_health_check=[HealthCheck.too_slow],
 )
-@example(start=date(2027, 4, 30), length=0, active=[True] * 4)
-@example(start=date(2027, 4, 29), length=0, active=[True] * 4)
+@example(start=date(2027, 4, 30), length=0, active=[True] * len(REBALANCING_YEARS))
+@example(start=date(2027, 4, 29), length=0, active=[True] * len(REBALANCING_YEARS))
 @given(
-    start=st.dates(min_value=date(2023, 1, 1), max_value=date(2032, 12, 31)),
+    start=st.dates(min_value=date(2023, 1, 1), max_value=date(max(YEARS), 12, 31)),
     length=st.integers(0, 1_100),
-    active=st.lists(st.booleans(), min_size=4, max_size=4),
+    active=st.lists(
+        st.booleans(),
+        min_size=len(REBALANCING_YEARS),
+        max_size=len(REBALANCING_YEARS),
+    ),
 )
 def test_warning_iff_a_reformed_window_reaches_an_active_rebalancing_year(
     start, length, active
@@ -287,12 +302,12 @@ def test_warning_iff_a_reformed_window_reaches_an_active_rebalancing_year(
         AMOUNT: {f"{start}.{stop}": 600},
         ACTIVE: {
             f"{year}-01-01.{year}-12-31": enabled
-            for year, enabled in zip(range(2026, 2030), active)
+            for year, enabled in zip(REBALANCING_YEARS, active)
         },
     }
     expected_years = [
         year
-        for year, enabled in zip(range(2026, 2030), active)
+        for year, enabled in zip(REBALANCING_YEARS, active)
         if enabled and start <= date(year, 4, 30) <= stop
     ]
     with warnings.catch_warnings(record=True) as caught:
@@ -303,4 +318,4 @@ def test_warning_iff_a_reformed_window_reaches_an_active_rebalancing_year(
     if expected_years:
         assert len(health_warnings) == 1
         message = str(health_warnings[0].message)
-        assert all(str(year) in message for year in expected_years)
+        assert f"in {', '.join(map(str, expected_years))} by" in message

@@ -7,12 +7,13 @@ from policyengine_core.simulations import Simulation as CoreSimulation
 
 from policyengine_uk import Microsimulation, Simulation
 import policyengine_uk.simulation as uk_simulation
+import policyengine_uk.scenarios.uc_reform as uc_reform
 from policyengine_uk.scenarios.uc_reform import add_universal_credit_reform
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
-YEARS = range(2026, 2030)
-SHARES = (0.11, 0.13, 0.16, 0.22)
+YEARS = uc_reform.REBALANCING_YEARS
+HISTORICAL_SHARES = {2026: 0.11, 2027: 0.13, 2028: 0.16, 2029: 0.22}
 COUNT = 1_000
 
 
@@ -49,7 +50,12 @@ def test_data_built_simulations_keep_the_seed_43_new_claimant_draw(simulation_cl
     add_universal_credit_reform(sim)
 
     draws = np.random.default_rng(43).random(COUNT)
-    for year, share in zip(YEARS, SHARES):
+    for year in YEARS:
+        share = sim.tax_benefit_system.parameters.get_child(
+            "gov.dwp.universal_credit.rebalancing.new_claimant_share"
+        )(str(year))
+        if year in HISTORICAL_SHARES:
+            assert share == HISTORICAL_SHARES[year]
         status = np.asarray(
             sim.calculate("uc_receives_new_claimant_health_element", year)
         )

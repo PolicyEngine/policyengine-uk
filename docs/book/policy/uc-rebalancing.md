@@ -24,10 +24,10 @@ Universal Credit Act 2025 s. 3 freezes the element for 2026-27 to 2029-30: it di
 
 Two parameters hold this amount, and both are uprated by `gov.economic_assumptions.indices.uc_health_element`, so they follow the same path:
 
-- `gov.dwp.universal_credit.elements.disabled.amount` is the LCWRA element the `uc_LCWRA_element` formula pays. A simulation uses it from 2030-31, and whenever the rebalancing reforms are inactive.
-- `gov.dwp.universal_credit.rebalancing.new_claimant_health_element` is the amount the rebalancing scenario pays new claimants for 2026-27 to 2029-30.
+- `gov.dwp.universal_credit.elements.disabled.amount` is the LCWRA element the `uc_LCWRA_element` formula pays. A simulation uses it whenever the rebalancing reforms are inactive, and from 2033-34, after the data's projection ends, when the rebalancing scenario no longer sets the element.
+- `gov.dwp.universal_credit.rebalancing.new_claimant_health_element` is the amount the rebalancing scenario pays new claimants in the years it sets the element, `uc_reform.REBALANCING_YEARS` (2026-27 to 2032-33).
 
-A change to the freeze or to the benefit uprating index moves both. A reform to either amount itself does not change the other.
+A change to the freeze or to the benefit uprating index moves both, and so does a reform that sets the index, `gov.economic_assumptions.indices.uc_health_element`, directly (it replaces the freeze and the no-fall floor for the years it names). A reform to either amount itself does not change the other.
 
 `rebalancing/create_health_element_uprating.py` builds the index when parameters are processed: the benefit uprating index, held flat in each year in which `rebalancing.health_element_freeze` and `rebalancing.active` are both true.
 
@@ -35,12 +35,16 @@ Existing recipients are treated differently. Universal Credit Regulations 2013 r
 
 For a tax year without a legislated amount, the model uses the lowest amount the Universal Credit Act 2025 s. 4 duty allows. For every standard allowance amount, the protected amount plus that allowance must be at least the previous year's sum, increased by the relevant CPI percentage: the CPI 12-month rate in the September before the tax year, never below 0% (s. 4(4)(a)). The model reads that rate from `gov.economic_assumptions.statutory_uprating_inputs.cpi_september`. Section 3 switches off the element's ordinary uprating, so the amount otherwise stays where it was. Run from the 2025-26 amounts at the 3.8% September 2025 CPI rate, this rule gives the legislated £429.80.
 
-Whether a benefit unit gets the new-claimant rate is the benefit unit's `uc_receives_new_claimant_health_element` for the year. A household situation can set it, for example `{"uc_receives_new_claimant_health_element": {"2026": True}}` on the benefit unit; otherwise it is false, which pays the protected amount. A dataset can supply it too. A simulation built from data that does not supply it assigns it by a seeded draw, using transition probabilities based on WPI Economics analysis for the Trussell Trust, derived from administrative Personal Independence Payment data. The probability of being a new claimant varies by year:
+The s. 4 duty covers 2026-27 to 2029-30 only, and s. 3 disapplies the annual up-rating only in the tax years ending 5 April 2026 to 5 April 2029. The protected row stays in reg. 36: s. 2 only relabels it. So from 2030-31 the protected amount is the year before's amount uprated by the same index as the new-claimant amount, `gov.economic_assumptions.indices.uc_health_element`, and a protected claimant keeps the higher amount.
+
+Whether a benefit unit gets the new-claimant rate is the benefit unit's `uc_receives_new_claimant_health_element` for the year. A household situation can set it, for example `{"uc_receives_new_claimant_health_element": {"2026": True}}` on the benefit unit; otherwise it is false, which pays the protected amount. A dataset can supply it too. A simulation built from data that does not supply it assigns it by a seeded draw against `gov.dwp.universal_credit.rebalancing.new_claimant_share`, from 2026-27 to the end of the data's projection. The shares to 2029-30 are WPI Economics' estimates for the Trussell Trust, derived from administrative Personal Independence Payment data:
 
 - 2026: 11%
 - 2027: 13%
 - 2028: 16%
 - 2029: 22%
+
+Later years hold 22%. That is an assumption, not a source: the share keeps rising as the caseload turns over, so holding it understates new claimants from 2030-31.
 
 ## Standard allowance uplifts
 
