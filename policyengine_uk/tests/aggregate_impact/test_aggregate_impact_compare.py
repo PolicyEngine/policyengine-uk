@@ -1071,3 +1071,20 @@ def test_a_model_that_changes_during_a_measurement_has_no_fingerprint(monkeypatc
     runtime = measure.stable_runtime(rec, "after")
     assert runtime["policyengine_uk_fingerprint"] == "after"
     assert rec.checks["model:unchanged"]["status"] == "pass"
+
+
+def test_an_unpinned_dataset_is_described_by_its_label():
+    from policyengine_uk.utils.aggregate_impact.render import render
+
+    base, head = _on("1" * 64), _on("2" * 64)
+    for side, label in (
+        (base, "the base's build"),
+        (head, "this pull request's build"),
+    ):
+        side["provenance"]["dataset"].update(
+            data_package="unpinned build", data_version=label
+        )
+    text = render(compare(base, head, SPEC, axis="data"), SPEC)
+    assert "(the base's build, sha256" in text
+    assert "(this pull request's build, sha256" in text
+    assert "unpinned build the" not in text

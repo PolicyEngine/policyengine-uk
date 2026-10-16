@@ -339,9 +339,14 @@ def _provenance(summary) -> str:
                 "dataset"
             ) or {}
             if d:
+                what = (
+                    d.get("data_version") or "an unpinned build"
+                    if d.get("data_package") == "unpinned build"
+                    else f"{d.get('data_package')} {d.get('data_version')}"
+                )
                 text += (
                     f"\n\n{side.capitalize()} dataset: `{d.get('uri') or d.get('path')}`, sha256 "
-                    f"`{d.get('verified_sha256')}`, {d.get('data_package')} {d.get('data_version')}."
+                    f"`{d.get('verified_sha256')}`, {what}."
                 )
     elif dataset:
         text += (
@@ -388,9 +393,14 @@ def render(summary: Mapping, spec: Spec, context: Optional[Mapping] = None) -> s
 
         def described(prov):
             d = prov.get("dataset") or {}
+            if d.get("data_package") == "unpinned build":
+                # An unpinned measurement's label names the build.
+                what = d.get("data_version") or "an unpinned build"
+            else:
+                what = f"{d.get('data_package', '')} {d.get('data_version', '')}"
             return (
-                f"`{d.get('path', '?')}` ({d.get('data_package', '')} "
-                f"{d.get('data_version', '')}, sha256 `{str(d.get('verified_sha256', '?'))[:12]}`)"
+                f"`{d.get('path', '?')}` ({what}, "
+                f"sha256 `{str(d.get('verified_sha256', '?'))[:12]}`)"
             )
 
         title = f"## Aggregate impact of the data change: {verdict}"
