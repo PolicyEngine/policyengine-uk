@@ -635,17 +635,17 @@ def test_an_uprated_benefit_total_is_rebuilt_from_its_published_heads():
     ]
 
 
+AWARDS = st.floats(1.0, 1e6) | st.floats(-1e6, -1.0)
+
+
 @settings(max_examples=30, deadline=None)
-@given(
-    award=st.floats(1.0, 1e6),
-    other=st.floats(1.0, 1e6),
-    uplift=st.floats(0.9, 1.1),
-)
+@given(award=AWARDS, other=AWARDS, uplift=st.floats(0.9, 1.1))
 def test_no_figure_measure_year_publishes_depends_on_a_suppressed_award(
     award, other, uplift
 ):
-    """For all awards and uplifts: two datasets that differ only in one
-    suppressed DSA award publish the same figures and decile incomes."""
+    """For all awards, of either sign, and uplifts: two datasets that differ
+    only in one suppressed DSA award publish the same figures, decile
+    incomes, check statuses and check details."""
 
     def run(dsa_award):
         pension = _first(10, 2_000.0)
@@ -675,8 +675,8 @@ def test_no_figure_measure_year_publishes_depends_on_a_suppressed_award(
             value is not None and np.isnan(value) and np.isnan(second[metric_id])
         ), metric_id
     np.testing.assert_array_equal(hh_1["2026"]["income"], hh_2["2026"]["income"])
-    assert [c["details"] for c in rec_1.checks.values()] == [
-        c["details"] for c in rec_2.checks.values()
+    assert [(c["id"], c["status"], c["details"]) for c in rec_1.checks.values()] == [
+        (c["id"], c["status"], c["details"]) for c in rec_2.checks.values()
     ]
 
 
@@ -969,3 +969,70 @@ def test_rebuilt_hbai_never_depends_on_the_suppressed_component(award, other):
         return _hbai_without(sim, 2026, HIDDEN_CB)[0]
 
     np.testing.assert_array_equal(rebuilt(award), rebuilt(other))
+
+
+def test_a_suppressed_heads_sign_and_finite_checks_say_nothing_about_it():
+    """Sol re-review 8 of #2335, P3 2: whether one of so few records is
+    negative is about it alone, and a count of non-finite values under 10 is
+    a small cell."""
+    dsa = np.zeros(N)
+    dsa[10] = -1_000.0
+    rec, _ = _measured_year({"disabled_students_allowance": dsa})
+    sign = rec.checks["sign:disabled_students_allowance"]
+    assert sign["status"] == "skipped"
+    assert "fewer than 10 records" in sign["details"][0]
+    dsa[10] = np.nan
+    rec, _ = _measured_year({"disabled_students_allowance": dsa})
+    (detail,) = rec.checks["finite:disabled_students_allowance"]["details"]
+    assert "fewer than 10 non-finite values" in detail
+
+
+@pytest.mark.parametrize("corporate", [1_234.5, 1_000.0])
+def test_the_overlap_guard_leaves_out_households_holding_a_suppressed_figure(
+    corporate,
+):
+    """Sol re-review 8 of #2335, P3 3: a one-record corporate SDLT in a
+    household also paying LBTT moved the count from 9 to 10 households."""
+    sdlt = _first(10, 1_000.0)
+    lbtt = _first(10, 500.0)
+    holder_corporate = np.zeros(N)
+    holder_corporate[0] = corporate
+    # The holder's SDLT is all corporate when corporate is 1,000, so its own
+    # SDLT nets to zero and it would not overlap.
+    sdlt[0] = max(corporate, 1_000.0)
+    rec, _ = _measured_year(
+        {
+            "expected_sdlt": sdlt,
+            "expected_lbtt": lbtt,
+            "corporate_sdlt": holder_corporate,
+        }
+    )
+    check = rec.checks["overlap_guard:property_transaction_tax_geography"]
+    (detail,) = check["details"]
+    assert "fewer than 10 households have more than one" in detail
+    assert "aren't checked this year" in detail
+
+
+def test_the_published_guard_strips_a_few_unit_double_count_coefficient():
+    """Sol re-review 8 of #2335, P3 4."""
+    from policyengine_uk.utils.aggregate_impact.measure import publishable_guard
+
+    def guard(units):
+        return {
+            "components": [{"variable": "corporate_sdlt", "units": units}],
+            "double_counts": [
+                {
+                    "variable": "corporate_sdlt",
+                    "contained_in": "expected_sdlt",
+                    "coefficient": 0.4321,
+                    "status": "fail",
+                    "detail": "expected_sdlt moves by 0.4321 per unit of corporate_sdlt",
+                }
+            ],
+        }
+
+    (few,) = publishable_guard(guard(3))["double_counts"]
+    assert few["coefficient"] is None and "0.4321" not in few["detail"]
+    assert "fewer than 10 units" in few["detail"]
+    (many,) = publishable_guard(guard(500))["double_counts"]
+    assert many["coefficient"] == 0.4321 and "0.4321" in many["detail"]

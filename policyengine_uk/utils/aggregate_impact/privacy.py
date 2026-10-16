@@ -8,9 +8,25 @@ figures are published as suppressed, and descriptions of fewer than
 
 A total that contains a suppressed head or double count is rebuilt that year
 from its other components (``measure.rebuild_protected``), and so are the
-household incomes for deciles, so no published figure depends on the
-suppressed one's values. A reform's costing and target change are withheld in
-a year they would come from a small cell (``measure.reform_withheld``).
+household incomes for deciles, so no published total includes it. Checks
+whose verdict would depend on its values leave out the households holding it
+(identities, the HBAI reproduction, overlap guards) or aren't run that year
+(the sign check of the suppressed head). A reform's costing and target change
+are withheld in a year they would come from a small cell
+(``measure.reform_withheld``).
+
+Deliberate exceptions:
+
+- Other heads whose formulas read the suppressed figure (income tax on a
+  taxable benefit, a means test) still respond to it, inside totals from 10
+  or more records; across two versions it is the d1601 residual below.
+- The counted-once guard's verdict for a component from fewer than 10 units
+  depends on how other heads respond at those units. It is kept, as the only
+  containment test for that component; its counts, responses and
+  coefficients are not published.
+- Reform withholding counts households, not amounts: one household changing
+  by £10,000 alongside ten changing by a penny is published. That is the same
+  counting rule as for levels; no dominance rule is applied.
 
 Threat model. The report defends against disclosure through any combination
 of the figures it publishes, across any number of reports, from honest

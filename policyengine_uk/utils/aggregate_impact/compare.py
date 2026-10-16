@@ -554,7 +554,7 @@ def compare(
             "In the years a figure from fewer than 10 records is suppressed ("
             + ", ".join(excluded)
             + "), every total containing it, and the decile incomes, are rebuilt "
-            "from their other components, so no published figure depends on it. "
+            "from their other components, so no published total includes it. "
             "Those totals are marked †. A change is withheld where the two sides "
             "leave out different figures and can't be lined up."
         )
@@ -584,20 +584,21 @@ def compare(
         )
 
     deciles, decile_notes, decile_flags = {}, [], []
-    if head_ok and base_ok and base_households and head_households:
-        # Years a side ranks households on an income holding a suppressed
-        # figure: it publishes no decile figure (measure.measure_year).
-        withheld = [
-            year
-            for year in years
-            for side in (base, head)
-            if str(year)
-            in (_metric_map(side).get("deciles.mean_income.1") or {}).get(
-                "suppressed", ()
-            )
-        ]
+    # Years a side ranks households on an income holding a suppressed figure:
+    # it publishes no decile figure and keeps no household detail
+    # (measure.measure_year).
+    withheld = [
+        year
+        for year in years
+        for side in (base, head)
+        if str(year)
+        in (_metric_map(side).get("deciles.mean_income.1") or {}).get("suppressed", ())
+    ]
+    if head_ok and base_ok and ((base_households and head_households) or withheld):
+        # With every year withheld there is no household detail at all, and
+        # the notes say why (Sol re-review 8 of #2335).
         deciles, decile_notes = decile_impacts(
-            base_households, head_households, years, withheld
+            base_households or {}, head_households or {}, years, withheld
         )
         threshold = spec.threshold("decile_relative")
         for year, decile_rows in deciles.items():
