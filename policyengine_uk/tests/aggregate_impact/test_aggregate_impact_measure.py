@@ -1019,7 +1019,9 @@ def test_the_published_guard_strips_a_few_unit_double_count_coefficient():
 
     def guard(units):
         return {
-            "components": [{"variable": "corporate_sdlt", "units": units}],
+            "components": [
+                {"variable": "corporate_sdlt", "units": units, "status": "pass"}
+            ],
             "double_counts": [
                 {
                     "variable": "corporate_sdlt",
@@ -1036,3 +1038,21 @@ def test_the_published_guard_strips_a_few_unit_double_count_coefficient():
     assert "fewer than 10 units" in few["detail"]
     (many,) = publishable_guard(guard(500))["double_counts"]
     assert many["coefficient"] == 0.4321 and "0.4321" in many["detail"]
+    # Sol delta review 9 of #2335, P2: the comment must render it.
+    from policyengine_uk.utils.aggregate_impact.render import _guard
+
+    for units, shown in (
+        (3, "coefficient not shown, fewer than 10 units"),
+        (500, "coefficient 0.432"),
+    ):
+        published = {
+            "status": "ran",
+            "year": 2026,
+            "components": [],
+            **publishable_guard(guard(units)),
+        }
+        published["double_counts"][0]["issue"] = "#2159"
+        text = _guard({"head": {"guard": published}})
+        assert shown in text and "NO LONGER contained" in text
+        if units == 3:
+            assert "0.43" not in text
