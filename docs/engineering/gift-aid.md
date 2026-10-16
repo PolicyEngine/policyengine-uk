@@ -82,3 +82,15 @@ additional relief. Changing tax band can also increase the Personal Savings
 Allowance discretely under s. 12B, so its relief cannot be bounded by a constant
 times a very small gift. Tests of the continuous band-extension bound must
 allow for that allowance change or hold the zero-rate allowance fixed.
+
+## Pension annual allowance charge
+
+The annual allowance charge uses reduced net income after ITA 2007 s. 23
+Step 3 ([FA 2004 s. 227(4B)](https://www.legislation.gov.uk/ukpga/2004/12/section/227)).
+It starts from `net_income`, before the s. 58 gross Gift Aid deduction, and
+subtracts `allowances` after removing relieved relief-at-source pension
+contributions. Gift Aid is already excluded from those allowances. The charge
+then stacks the excess pension input amount on this base, extending the rate
+limits by `gift_aid_grossed_up` plus relieved relief-at-source contributions
+(s. 227(4C)). This keeps the Gift Aid adjustment to adjusted net income separate
+from the amount charged to tax.

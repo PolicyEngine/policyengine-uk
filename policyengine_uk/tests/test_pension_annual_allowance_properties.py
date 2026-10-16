@@ -30,6 +30,9 @@ split between relief at source and net pay:
    chargeable amount stacked on reduced net income.
 6. Carry-forward: unused allowance reduces the chargeable amount one for one
    until it is nil, and never raises the charge.
+7. Gift Aid never raises income tax, including when pension contributions
+   exceed relevant earnings or the available annual allowance. Its s. 58
+   adjusted-net-income deduction is not a deduction from reduced net income.
 
 Invariant 3 is restricted to non-savings income. With dividends on top, the
 relief comes off non-savings income and lets dividends fall to lower dividend
@@ -154,7 +157,11 @@ def test_relief_is_the_section_190_limit(people, year):
         total = relief_at_source + person["employee_pension_contributions_reported"]
         limit = earnings + min(max(0, basic_amount - earnings), relief_at_source)
         expected = min(total, limit) if person["age"] < 75 else 0
-        assert _close(out["pension_contributions_relief"][i], expected)
+        relief = out["pension_contributions_relief"][i]
+        assert _close(relief, expected)
+        assert relief <= max(earnings, basic_amount) + max(
+            TOLERANCE, RELATIVE_TOLERANCE * max(earnings, basic_amount)
+        )
 
 
 @PROPERTY_SETTINGS
@@ -189,7 +196,6 @@ def test_contributions_above_the_allowance_are_not_taxed_twice(people, year, ste
             "age": min(p["age"], 74),
             "savings_interest_income": 0,
             "dividend_income": 0,
-            "gift_aid": 0,
             "unused_pension_annual_allowance": 0,
             "region": "NORTH_EAST" if p["region"] == "SCOTLAND" else p["region"],
         }
@@ -206,7 +212,7 @@ def test_contributions_above_the_allowance_are_not_taxed_twice(people, year, ste
     # comparison stops there as well as at relevant earnings.
     taxable_income = np.maximum(
         0,
-        np.array(zero_sim.calculate("adjusted_net_income", year), dtype=float)
+        np.array(zero_sim.calculate("net_income", year), dtype=float)
         - np.array(zero_sim.calculate("allowances", year), dtype=float),
     )
     earnings = np.array([_relevant_earnings(p) for p in people], dtype=float)
@@ -244,16 +250,16 @@ def test_charge_matches_band_by_band_reference(people, year):
         sim.calculate("personal_pension_contributions_tax", year), dtype=float
     )
     get = lambda v: np.array(sim.calculate(v, year), dtype=float)  # noqa: E731
-    # s. 227(4B)-(4C): reduced net income keeps relief-at-source contributions
-    # and Gift Aid, which raise the rate limits by their gross amounts.
+    # FA 2004 s. 227(4B)-(4C), ITA 2007 ss. 23 and 58: reduced net income
+    # starts before the gross Gift Aid adjustment to adjusted net income.
+    # Relief at source stays in this base and extends the rate limits.
     relief_at_source = np.minimum(
         get("personal_pension_contributions"), get("pension_contributions_relief")
     )
     extension = get("gift_aid_grossed_up") + relief_at_source
     reduced_net_income = np.maximum(
         0,
-        get("adjusted_net_income")
-        - np.maximum(0, get("allowances") - get("gift_aid") - relief_at_source),
+        get("net_income") - np.maximum(0, get("allowances") - relief_at_source),
     )
     scottish = np.array(sim.calculate("pays_scottish_income_tax", year))
     rates = sim.tax_benefit_system.parameters(year).gov.hmrc.income_tax.rates
@@ -277,6 +283,30 @@ def test_charge_matches_band_by_band_reference(people, year):
         slack = max(TOLERANCE, RELATIVE_TOLERANCE * max(band_rates) * chargeable[i])
         assert charge[i] >= min(band_rates) * chargeable[i] - slack
         assert charge[i] <= max(band_rates) * chargeable[i] + slack
+
+    # FA 2004 ss. 227ZA and 228A: no charge within the available allowance,
+    # including unused allowance from the previous three years.
+    available = get("pension_annual_allowance") + np.maximum(
+        0, get("unused_pension_annual_allowance")
+    )
+    within_allowance = get("pension_contributions_for_annual_allowance") <= available
+    assert np.all(charge >= 0)
+    assert np.all(charge[within_allowance] == 0)
+
+
+@PROPERTY_SETTINGS
+@given(population_strategy, st.sampled_from(YEARS))
+def test_gift_aid_never_increases_income_tax_with_pension_contributions(people, year):
+    people = _with_contributions(people, _base_contributions(people))
+    # Compare the same pension/input amounts with zero, drawn, and larger
+    # gifts, across UK and Scottish rates and mixed income sources.
+    zero_gift = [{**p, "gift_aid": 0} for p in people]
+    larger_gift = [{**p, "gift_aid": p["gift_aid"] + 4_000} for p in people]
+    tax = _calc(zero_gift + people + larger_gift, year, ["income_tax"])["income_tax"]
+    before, with_gift, with_more = np.split(tax, 3)
+    slack = TOLERANCE + RELATIVE_TOLERANCE * np.maximum(abs(before), abs(with_gift))
+    assert np.all(with_gift <= before + slack)
+    assert np.all(with_more <= with_gift + slack)
 
 
 @PROPERTY_SETTINGS

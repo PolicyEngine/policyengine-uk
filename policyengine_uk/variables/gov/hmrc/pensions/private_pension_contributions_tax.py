@@ -38,6 +38,10 @@ class personal_pension_contributions_tax(Variable):
             href="https://www.legislation.gov.uk/ukpga/2004/12/section/227",
         ),
         dict(
+            title="Income Tax Act 2007 s. 58",
+            href="https://www.legislation.gov.uk/ukpga/2007/3/section/58",
+        ),
+        dict(
             title="Finance Act 2004 s. 233",
             href="https://www.legislation.gov.uk/ukpga/2004/12/section/233",
         ),
@@ -47,12 +51,12 @@ class personal_pension_contributions_tax(Variable):
     def formula(person, period, parameters):
         rates = parameters(period).gov.hmrc.income_tax.rates
         chargeable_amount = person("pension_annual_allowance_chargeable_amount", period)
-        # The model deducts relief at source (personal pension contributions)
-        # and Gift Aid from income, where the law leaves them in reduced net
-        # income and raises the rate limits instead (s. 227(4C); FA 2004
-        # s. 192(4), ITA 2007 s. 414). Undo the deduction and raise the
-        # limits, as capital_gains_tax does for the basic rate band. Net pay
-        # contributions stay deducted, as in law.
+        # FA 2004 s. 227(4B)-(4C): relief at source remains in reduced net
+        # income and raises the rate limits (s. 192(4)). The model includes
+        # that relief in allowances, so restore it at Step 3. Net pay
+        # contributions stay deducted. Gift Aid is already excluded from
+        # allowances; only its gross amount extends the limits (ITA 2007
+        # s. 414(2)), without another deduction from the taxable base.
         relief_at_source = min_(
             person("personal_pension_contributions", period),
             person("pension_contributions_relief", period),
@@ -60,13 +64,12 @@ class personal_pension_contributions_tax(Variable):
         rate_limit_extension = person("gift_aid_grossed_up", period) + relief_at_source
         allowances_at_step_3 = max_(
             0,
-            person("allowances", period)
-            - person("gift_aid", period)
-            - relief_at_source,
+            person("allowances", period) - relief_at_source,
         )
-        # Reduced net income: income after Step 3 of ITA 2007 s. 23 (s. 227(4B)).
+        # Reduced net income is income after ITA 2007 s. 23 Step 3, not
+        # adjusted net income after the s. 58 gross Gift Aid deduction.
         reduced_net_income = max_(
-            0, person("adjusted_net_income", period) - allowances_at_step_3
+            0, person("net_income", period) - allowances_at_step_3
         )
         top_of_charge = reduced_net_income + chargeable_amount
 
