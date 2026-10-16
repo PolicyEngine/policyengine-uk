@@ -32,7 +32,7 @@ Accordingly:
   This restores net-pay relief once and includes employer contributions and
   salary sacrifice. RAS contributions do not reduce adjusted income.
 - `pension_annual_allowance_threshold_income` subtracts
-  `pension_contributions_relief` from `net_income`, then adds back relevant
+  pension relief from `net_income`, then adds back relevant
   salary sacrifice. The relief deduction combines the net-pay deduction
   already present in statutory Step 2 income and the gross RAS deduction
   under s. 228ZA(5)(c).
@@ -57,8 +57,15 @@ represented by these contribution inputs needs an explicit threshold-income
 override.
 
 `pension_contributions_for_annual_allowance` is the shared pension input amount
-used by both the taper and the charge. It defaults to employee, personal,
-employer and actual salary-sacrifice contributions. For defined-benefit
+used by both the taper and the charge. The default DC input includes member
+contributions made before age 75, employer contributions and full actual
+salary sacrifice. Under [s. 233](https://www.legislation.gov.uk/ukpga/2004/12/section/233)
+and [s. 188(3)(a)](https://www.legislation.gov.uk/ukpga/2004/12/section/188),
+member contributions made at 75 or over are excluded; employer contributions
+still count. Contributions before 75 that exceed the earnings relief limit
+still count. Adjusted income subtracts all actual member contributions under
+s. 228ZA(4)(d)(ii), including those excluded from the post-75 DC input.
+For defined-benefit
 arrangements, supply the statutory total pension input amount, including
 valued DB accrual, through this variable. Cash employer funding is not a
 valuation of DB rights. Survey estimates retain the existing cash proxy;
@@ -68,12 +75,21 @@ allowance histories or anti-avoidance arrangements under s. 228ZB.
 [The NICs Act 2026](https://www.legislation.gov.uk/ukpga/2026/15/enacted)
 changes NICs treatment without changing s. 228ZA. From 2029, the model moves
 sacrifice above the NICs exemption cap into
-employee contributions and employment income. The pension input amount adds
-only the remaining capped sacrifice to those employee contributions, so the
-full amount is counted once. The threshold-income add-back uses the full
+employee contributions and employment income. The AA calculations remove
+that synthetic return from both pay and member contributions. Threshold
+income recomputes relief on actual member contributions and actual relevant
+earnings, preserving the basic RAS amount even when cash earnings are below
+£3,600 and giving no member relief from age 75. The DC input keeps the full
+employer sacrifice at every age. The threshold-income add-back uses the full
 sacrifice before this reclassification. The separate employer-cost wage
 response can still change income; it is held fixed when testing the cap's
 statutory effect.
+
+Cap invariance covers the two taper incomes, pension input and allowance.
+Charge comparisons additionally hold ordinary income-tax inputs fixed: the
+separate ANI and personal-allowance interaction can change the marginal tax
+charged on the same excess. The AA calculations do not repair that ordinary
+income-tax reclassification.
 
 The taxable death-benefit and grandfathered-sacrifice inputs default to zero.
 Pension relief retains the model's aggregate earnings cap and allocation

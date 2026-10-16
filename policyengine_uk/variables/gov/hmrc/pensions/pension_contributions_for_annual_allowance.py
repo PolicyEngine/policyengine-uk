@@ -6,14 +6,14 @@ class pension_contributions_for_annual_allowance(Variable):
     entity = Person
     label = "Total pension contributions counting toward the Annual Allowance"
     documentation = (
-        "The pension input amount for Annual Allowance purposes, including "
-        "employee, personal, employer, and salary sacrifice contributions. "
-        "Per Finance Act 2004 s.233, the pension input amount for money "
-        "purchase arrangements includes both individual contributions and "
-        "employer contributions. Supply the statutory total pension input "
-        "amount, including valued defined-benefit accrual, to override this "
-        "cash-contribution proxy. The same input feeds adjusted income for "
-        "the taper and the annual allowance charge."
+        "The default DC pension input amount under FA 2004 s. 233: member "
+        "contributions made before age 75, employer contributions and full "
+        "salary sacrifice. Member contributions from age 75 are unrelievable "
+        "under s. 188(3)(a) and excluded, while employer contributions still "
+        "count. Contributions before 75 above the earnings relief limit "
+        "still count. Supply the statutory total pension input amount, "
+        "including valued defined-benefit accrual, to override this cash "
+        "proxy. The same input feeds adjusted income and the AA charge."
     )
     definition_period = YEAR
     reference = [
@@ -22,17 +22,31 @@ class pension_contributions_for_annual_allowance(Variable):
             href="https://www.legislation.gov.uk/ukpga/2004/12/section/233",
         ),
         dict(
-            title="HMRC: Annual Allowance",
-            href="https://www.gov.uk/tax-on-your-private-pension/annual-allowance",
+            title="Finance Act 2004 s. 188(3)(a)",
+            href="https://www.legislation.gov.uk/ukpga/2004/12/section/188",
+        ),
+        dict(
+            title="HMRC PTM053200: other money purchase arrangements",
+            href="https://www.gov.uk/hmrc-internal-manuals/pensions-tax-manual/ptm053200",
         ),
     ]
     unit = GBP
 
-    # Employee contributions already include sacrifice above the NICs cap.
-    # Adding the remaining capped sacrifice counts the full input once.
-    adds = [
-        "employee_pension_contributions",
-        "personal_pension_contributions",
-        "employer_pension_contributions",
-        "pension_contributions_via_salary_sacrifice_adjusted",
-    ]
+    def formula(person, period, parameters):
+        # The returned sacrifice is still an employer payment in income-tax
+        # law. Remove it from member contributions before the age exclusion,
+        # then include the full employer sacrifice once at every age.
+        member_contributions = person("pension_contributions", period) - person(
+            "salary_sacrifice_returned_to_income", period
+        )
+        under_age_limit = (
+            person("age", period)
+            < parameters(
+                period
+            ).gov.hmrc.pensions.pension_contributions_relief_age_limit
+        )
+        return (
+            member_contributions * under_age_limit
+            + person("employer_pension_contributions", period)
+            + person("pension_contributions_via_salary_sacrifice_from_pay", period)
+        )

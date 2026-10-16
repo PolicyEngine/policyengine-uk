@@ -179,7 +179,7 @@
   output:
     pension_annual_allowance: 60_000
 
-- name: Contributions without relief after age 75 do not lower either taper income
+- name: Member contributions after age 75 are excluded from the DC input amount
   period: 2024
   input:
     age: 80
@@ -188,11 +188,45 @@
     employer_pension_contributions: 80_000
   output:
     pension_contributions_relief: 0
-    # Unrelieved own contributions cancel from adjusted income, but cannot
-    # reduce threshold income below its gate (210,000 - 50,000 = 160,000).
+    pension_contributions_for_annual_allowance: 80_000
+    # Section 233 excludes unrelievable member contributions from the input
+    # amount. Section 228ZA(4)(d)(ii) still deducts those own contributions.
     pension_annual_allowance_threshold_income: 210_000
+    pension_annual_allowance_adjusted_income: 240_000
+    pension_annual_allowance: 60_000
+    personal_pension_contributions_tax: 9_000
+
+- name: Member contributions stop counting in the DC input at age 75
+  period: 2024
+  input:
+    age: [74, 75]
+    private_pension_income: [210_000, 210_000]
+    personal_pension_contributions: [50_000, 50_000]
+    employer_pension_contributions: [80_000, 80_000]
+  output:
+    pension_contributions_relief: [3_600, 0]
+    pension_contributions_for_annual_allowance: [130_000, 80_000]
+    pension_annual_allowance_threshold_income: [206_400, 210_000]
+    pension_annual_allowance_adjusted_income: [290_000, 240_000]
+    pension_annual_allowance: [45_000, 60_000]
+    personal_pension_contributions_tax: [38_250, 9_000]
+
+- name: Threshold income deducts relieved RAS rather than all member contributions
+  period: 2024
+  input:
+    age: 45
+    private_pension_income: 210_000
+    personal_pension_contributions: 50_000
+    employer_pension_contributions: 80_000
+  output:
+    # With no relevant earnings only the basic RAS amount receives relief.
+    # Deducting all 50,000 instead would incorrectly close the threshold gate.
+    pension_contributions_relief: 3_600
+    pension_contributions_for_annual_allowance: 130_000
+    pension_annual_allowance_threshold_income: 206_400
     pension_annual_allowance_adjusted_income: 290_000
     pension_annual_allowance: 45_000
+    personal_pension_contributions_tax: 38_250
 
 - name: Salary sacrifice raises threshold income and adjusted income
   period: 2024
