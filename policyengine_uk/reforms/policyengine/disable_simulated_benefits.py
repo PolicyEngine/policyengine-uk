@@ -92,9 +92,10 @@ def disable_simulated_benefits(parameters, period):
             after it, to its amount reported in the dataset year. The amount
             is not uprated, while most of the *_reported variables are.
             Carer's Allowance and the winter heating payment are each reported
-            once and set the same way, under the scheme that pays them: in
-            Scotland, Carer Support Payment and the Pension Age Winter Heating
-            Payment in the years the model pays those instead.
+            once and set the same way, under the scheme that pays them in each
+            year: for a household in Scotland that year, Carer Support Payment
+            and the Pension Age Winter Heating Payment in the years the model
+            pays those instead.
 
             The claimant-or-partner awards are set the same way, from the
             dataset-year reports of whoever is the claimant or partner in
@@ -165,31 +166,35 @@ def disable_simulated_benefits(parameters, period):
                     for target, value in values.items():
                         simulation.set_input(target, year, value)
 
-                in_scotland = (
-                    np.asarray(simulation.calculate("country", time_period))
+                # Where a household lives is read in each year, as the model
+                # reads it (country is a YEAR variable). The reported amounts
+                # are held at the dataset year, but a household that moves
+                # into or out of Scotland is paid under that year's scheme.
+                in_scotland = {
+                    year: np.asarray(simulation.calculate("country", year))
                     == "SCOTLAND"
-                )
+                    for year in years
+                }
 
                 # The survey reports Carer's Allowance for every respondent,
                 # Scotland included (carers_allowance_reported). From
                 # CARER_SUPPORT_PAYMENT_FROM the model pays a carer in
                 # Scotland Carer Support Payment in its place, so in each year
-                # a Scottish carer's report becomes their carer_support_payment
-                # from then, and their carers_allowance before. Both variables
-                # are household income, so each report is counted once, under
-                # the scheme that pays it, and neither benefit is simulated
-                # beside it. The entitlements before the overlapping-benefit
-                # reduction (carers_allowance_pre_overlap,
+                # the report of a carer living in Scotland that year becomes
+                # their carer_support_payment from then, and their
+                # carers_allowance before. Both variables are household
+                # income, so each report is counted once, under the scheme
+                # that pays it, and neither benefit is simulated beside it.
+                # The entitlements before the overlapping-benefit reduction
+                # (carers_allowance_pre_overlap,
                 # carer_support_payment_pre_overlap) stay the model's, for
                 # both schemes alike.
                 reported_care = np.asarray(
                     simulation.calculate("carers_allowance_reported", time_period)
                 )
-                carer_in_scotland = simulation.populations["household"].project(
-                    in_scotland
-                )
+                households = simulation.populations["household"]
                 for year in years:
-                    paid_as_csp = carer_in_scotland & (
+                    paid_as_csp = households.project(in_scotland[year]) & (
                         year >= CARER_SUPPORT_PAYMENT_FROM
                     )
                     simulation.set_input(
@@ -208,10 +213,11 @@ def disable_simulated_benefits(parameters, period):
                 # winter_fuel_allowance_reported for every respondent,
                 # Scotland included. Scotland's payment has been the Pension
                 # Age Winter Heating Payment since the 2024 qualifying week,
-                # so in each year a Scottish household's report becomes its
-                # pawhp while PAWHP is paid, and its winter_fuel_allowance
-                # before then. Both variables are household income, so each
-                # report is counted once, under the scheme that pays it.
+                # so in each year the report of a household living in Scotland
+                # that year becomes its pawhp while PAWHP is paid, and its
+                # winter_fuel_allowance before then. Both variables are
+                # household income, so each report is counted once, under the
+                # scheme that pays it.
                 reported_winter_heating = np.asarray(
                     simulation.calculate(
                         "winter_fuel_allowance_reported",
@@ -225,7 +231,7 @@ def disable_simulated_benefits(parameters, period):
                 # built from another.
                 for year in years:
                     scheme = system.parameters(year).gov.social_security_scotland
-                    paid_as_pawhp = in_scotland & scheme.pawhp.active
+                    paid_as_pawhp = in_scotland[year] & scheme.pawhp.active
                     simulation.set_input(
                         "winter_fuel_allowance",
                         year,

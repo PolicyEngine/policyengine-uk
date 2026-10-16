@@ -11,8 +11,10 @@ and each of the reform's years:
 1. Conservation: carers_allowance + carer_support_payment equals the
    person's reported Carer's Allowance, so the report is counted once in
    household income (both variables are in household_benefits once).
-2. Placement: the report is carer_support_payment in Scotland from
-   CARER_SUPPORT_PAYMENT_FROM and carers_allowance otherwise.
+2. Placement: the report is carer_support_payment for a carer living in
+   Scotland that year, from CARER_SUPPORT_PAYMENT_FROM, and
+   carers_allowance otherwise. Where the carer lives is read in each year,
+   so a carer who moves into or out of Scotland changes scheme with the move.
 3. Differential: the reform places the report under the scheme the model
    itself pays with the reform off (the pre-overlap entitlements), and
    household_benefits exceeds that of the same dataset with no report by the
@@ -27,6 +29,7 @@ from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Microsimulation, Simulation
+from policyengine_uk.data import UKMultiYearDataset
 from policyengine_uk.data.dataset_schema import UKSingleYearDataset
 from policyengine_uk.reforms.policyengine.disable_simulated_benefits import (
     BENEFITS,
@@ -91,10 +94,24 @@ def values(simulation, variable, year):
     return np.asarray(simulation.calculate(variable, year), dtype=float)
 
 
+def moving_dataset(first_year, regions_by_year, reported_care, care_hours=None):
+    """The same carers in each of the reform's years, living in each year
+    where regions_by_year says. The reform reads the first year's reports."""
+    return UKMultiYearDataset(
+        datasets=[
+            dataset(year, regions_by_year[year], reported_care, care_hours)
+            for year in range(first_year, first_year + YEARS_IN_FUTURE)
+        ]
+    )
+
+
 def check_care(simulation, regions, reported_care, first_year):
+    """regions: each carer's region, the same in every year, or a dict of
+    them by year."""
     reported = np.asarray(reported_care, dtype=float)
-    in_scotland = np.asarray(regions) == "SCOTLAND"
     for year in range(first_year, first_year + YEARS_IN_FUTURE):
+        regions_in_year = regions[year] if isinstance(regions, dict) else regions
+        in_scotland = np.asarray(regions_in_year) == "SCOTLAND"
         ca = values(simulation, "carers_allowance", year)
         csp = values(simulation, "carer_support_payment", year)
         np.testing.assert_allclose(ca + csp, reported, err_msg=str(year))
@@ -236,3 +253,108 @@ def test_reported_care_is_conserved(first_year, carers):
         scenario=REFORM_ON,
     )
     check_care(simulation, regions, reported_care, first_year)
+
+
+def carer_situation(regions_by_year):
+    """The case reported on #2075 at ab800e8bb: one carer, 40 in 2025, caring
+    40 hours a week in every year, who reports £4,000 of Carer's Allowance in
+    2025 and lives in each year where regions_by_year says. No earnings and
+    no overlapping benefit."""
+    years = list(regions_by_year)
+    return {
+        "people": {
+            "carer": {
+                "age": {year: 40 + year - years[0] for year in years},
+                "care_hours": {year: 40 for year in years},
+                "carers_allowance_reported": {years[0]: 4_000},
+            }
+        },
+        "benunits": {"family": {"members": ["carer"]}},
+        "households": {"home": {"members": ["carer"], "region": regions_by_year}},
+    }
+
+
+INCOME = [
+    "carers_allowance",
+    "carer_support_payment",
+    "scottish_carer_supplement",
+    "household_benefits",
+    "hbai_household_net_income",
+    "household_net_income",
+]
+
+
+@pytest.mark.parametrize(
+    "before, after", [("LONDON", "SCOTLAND"), ("SCOTLAND", "LONDON")]
+)
+@pytest.mark.parametrize("route", ["scenario", "reform"])
+def test_a_carer_who_moves_is_paid_under_each_years_scheme(before, after, route):
+    """Reported on #2075 at ab800e8bb: the split read the country in the
+    dataset year only, so a carer in London in 2025 and Scotland from 2026
+    was paid Carer's Allowance in 2026 and lost the Scottish Carer
+    Supplement. Each year's outputs now equal those of a carer who has lived
+    in that year's country throughout."""
+    first = 2025
+    years = range(first, first + YEARS_IN_FUTURE)
+    moved = {year: before if year == first else after for year in years}
+    stayed = {year: after for year in years}
+    switch = {"gov.contrib.policyengine.disable_simulated_benefits": True}
+
+    def simulate(regions_by_year):
+        if route == "scenario":
+            return Simulation(
+                situation=carer_situation(regions_by_year), scenario=REFORM_ON
+            )
+        return Simulation(situation=carer_situation(regions_by_year), reform=switch)
+
+    simulation, control = simulate(moved), simulate(stayed)
+    check_care(simulation, {year: [moved[year]] for year in years}, [4_000], first)
+    for year in years[1:]:
+        for name in INCOME:
+            np.testing.assert_allclose(
+                values(simulation, name, year),
+                values(control, name, year),
+                err_msg=f"{name} {year}",
+            )
+    supplement = values(simulation, "scottish_carer_supplement", first + 1)
+    if after == "SCOTLAND":
+        # The supplement comes with Carer Support Payment, and reaches
+        # household income.
+        assert supplement[0] > 0
+    else:
+        np.testing.assert_allclose(supplement, 0)
+    for name in ["household_benefits", "hbai_household_net_income"]:
+        np.testing.assert_allclose(
+            values(simulation, name, first + 1), 4_000 + supplement, err_msg=name
+        )
+
+
+@PROPERTY_SETTINGS
+@given(
+    first_year=st.sampled_from([2023, 2024, 2025, 2026]),
+    carers=st.lists(
+        st.tuples(
+            st.lists(
+                st.sampled_from(["SCOTLAND", "LONDON", "WALES"]),
+                min_size=YEARS_IN_FUTURE,
+                max_size=YEARS_IN_FUTURE,
+            ),
+            st.sampled_from([0, 150.5, 4_000]),
+        ),
+        min_size=1,
+        max_size=4,
+    ),
+)
+def test_reported_care_follows_each_years_country(first_year, carers):
+    """Conservation and placement in every year, with each carer's region
+    drawn afresh for each year (a multi-year dataset)."""
+    years = range(first_year, first_year + YEARS_IN_FUTURE)
+    regions_by_year = {
+        year: [path[i] for path, _ in carers] for i, year in enumerate(years)
+    }
+    reported_care = [amount for _, amount in carers]
+    simulation = Simulation(
+        dataset=moving_dataset(first_year, regions_by_year, reported_care),
+        scenario=REFORM_ON,
+    )
+    check_care(simulation, regions_by_year, reported_care, first_year)
