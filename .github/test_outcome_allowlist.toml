@@ -64,9 +64,3 @@ nodeid = "policyengine_uk/tests/test_dwp_published_rates.py::test_projection_con
 outcome = "skipped"
 reason = '^(not uprated|series ends before 2026-27|Universal Credit Act 2025 s\.1 departs from CPI uprating)$'
 why = "The test is parametrised over every DWP rate parameter and skips those it does not apply to: parameters with no uprating, series that end before 2026-27, and the four UC standard allowances, whose minimum the Universal Credit Act 2025 s.1 sets above CPI uprating (#1925). The LCWRA element, frozen by s.3, is checked against its own uprating index (#2284). 64 cases on 12 October 2026."
-
-[[allow]]
-nodeid = "policyengine_uk/tests/test_pension_annual_allowance_properties.py::test_scottish_charge_below_statutory_top_limit_is_all_advanced_rate"
-outcome = "xfailed"
-reason = "#2130"
-why = "Known bug #2130 sets the Scottish top-rate taxable-income limit too low. A separate fix owns the parameter; remove this strict xfail when it lands."

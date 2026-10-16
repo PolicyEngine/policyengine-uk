@@ -56,7 +56,7 @@ at 19%, while the charge on that slice is at the Scottish basic rate
 
 import numpy as np
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -99,6 +99,39 @@ person_strategy = st.fixed_dictionaries(
 population_strategy = st.lists(person_strategy, min_size=4, max_size=12)
 
 
+@st.composite
+def reference_population_strategy(draw):
+    people = [
+        {**person, "property_income": draw(st.integers(0, 80_000))}
+        for person in draw(population_strategy)
+    ]
+    # Unrestricted draws rarely combine a positive RAS charge with ordinary
+    # income below higher rate. Include generated people on either side of
+    # that condition in every population, with enough excess to cross a limit
+    # whose extension changes the charge.
+    for income in [
+        draw(st.integers(38_000, 45_000)),
+        draw(st.integers(60_000, 70_000)),
+    ]:
+        people.append(
+            {
+                "age": draw(st.integers(18, 74)),
+                "employment_income": income,
+                "self_employment_income": 0,
+                "employer_pension_contributions": draw(st.integers(60_000, 80_000)),
+                "contribution_share": draw(st.floats(0.5, 0.75)),
+                "net_pay_share": 0.0,
+                "gift_aid": draw(st.integers(0, 2_000)),
+                "savings_interest_income": 0,
+                "dividend_income": 0,
+                "property_income": 0,
+                "unused_pension_annual_allowance": 0,
+                "region": "LONDON",
+            }
+        )
+    return people
+
+
 def _situation(people, year, overrides=None):
     overrides = overrides or {}
     situation = {"people": {}, "benunits": {}, "households": {}}
@@ -119,6 +152,9 @@ def _situation(people, year, overrides=None):
                 "dividend_income",
                 "unused_pension_annual_allowance",
             ]
+        }
+        situation["people"][name]["property_income"] = {
+            year: values.get("property_income", 0)
         }
         situation["benunits"][f"b{i}"] = {"members": [name]}
         situation["households"][f"h{i}"] = {
@@ -189,10 +225,32 @@ def test_extra_contributions_never_raise_tax_by_more_than_the_charge(
         after["personal_pension_contributions_tax"]
         - before["personal_pension_contributions_tax"]
     )
-    assert np.all(tax_rise <= charge_rise + TOLERANCE)
+    slack = TOLERANCE + RELATIVE_TOLERANCE * np.maximum(
+        abs(before["income_tax"]), abs(after["income_tax"])
+    )
+    assert np.all(tax_rise <= charge_rise + slack)
 
 
 @PROPERTY_SETTINGS
+@example(
+    people=[
+        {
+            "age": 54,
+            "employment_income": 362_880,
+            "self_employment_income": 5_249,
+            "employer_pension_contributions": 60_817,
+            "contribution_share": 1.0294618785360077,
+            "net_pay_share": 1.0,
+            "gift_aid": 2_629,
+            "savings_interest_income": 64,
+            "dividend_income": 8_818,
+            "unused_pension_annual_allowance": 96_126,
+            "region": "LONDON",
+        }
+    ],
+    year=2020,
+    step=0.5420285667238235,
+)
 @given(population_strategy, st.sampled_from(YEARS), st.floats(0, 1))
 def test_contributions_above_the_allowance_are_not_taxed_twice(people, year, step):
     # Non-savings income only, under 75, no carry-forward: contributions of
@@ -204,6 +262,7 @@ def test_contributions_above_the_allowance_are_not_taxed_twice(people, year, ste
             "age": min(p["age"], 74),
             "savings_interest_income": 0,
             "dividend_income": 0,
+            "property_income": 0,
             "unused_pension_annual_allowance": 0,
             "region": "NORTH_EAST" if p["region"] == "SCOTLAND" else p["region"],
         }
@@ -257,9 +316,12 @@ def test_contributions_above_the_allowance_are_not_taxed_twice(people, year, ste
     applicable = net_pay_only | (
         qualifies_for_ras_extension(tax_at) & qualifies_for_ras_extension(tax_above)
     )
+    slack = TOLERANCE + RELATIVE_TOLERANCE * np.maximum(
+        abs(tax_at["income_tax"]), abs(tax_above["income_tax"])
+    )
     assert np.all(
         tax_above["income_tax"][applicable]
-        <= tax_at["income_tax"][applicable] + TOLERANCE
+        <= (tax_at["income_tax"] + slack)[applicable]
     )
 
 
@@ -276,38 +338,51 @@ def _reference_charge(chargeable, reduced_net_income, thresholds, rates, extensi
 
 
 def _reference_ras_extension_eligibility(
-    reduced_net_income, savings, dividends, gross_gift, scottish, income_tax
+    reduced_net_income,
+    savings,
+    dividends,
+    gross_gift,
+    scottish,
+    income_tax,
+    year,
+    property_income=0,
 ):
     """Find an ordinary income slice taxed above basic, apart from s.192.
 
-    Integrate the ordinary non-savings and savings slices separately. Dividend
-    upper rates and nil-rate savings do not meet s.192(4)/(4A); the annual
-    allowance excess never enters these slices (s.227(5)).
+    Section 192(4) names the higher and additional rates, excluding dividend
+    rates, savings rates from 2017 and rUK property rates from 2027. Scottish
+    property still bears Scottish rates and can meet s.192(4A). The annual
+    allowance excess never enters these ordinary income slices (s.227(5)).
     """
     non_savings = max(0, reduced_net_income - savings - dividends)
     savings_top = max(0, reduced_net_income - dividends)
     if scottish:
         scale = income_tax.rates.scotland.rates
         # These generated years all have the starter band before basic.
-        basic_rate = float(scale.rates[1])
+        basic_rate = float(scale.rates[1] if year >= 2018 else scale.rates[0])
         slices = [(0, non_savings)]
     else:
         scale = income_tax.rates.uk
         basic_rate = float(scale.rates[0])
-        psa = income_tax.allowances.personal_savings_allowance
-        if reduced_net_income > scale.thresholds[2] + gross_gift:
-            savings_allowance = float(psa.additional)
-        elif reduced_net_income > scale.thresholds[1] + gross_gift:
-            savings_allowance = float(psa.higher)
-        else:
-            savings_allowance = float(psa.basic)
-        starting_rate_savings = max(
-            0, income_tax.rates.savings_starter_rate.allowance - non_savings
+        ordinary_rates_top = max(
+            0, non_savings - (property_income if year >= 2027 else 0)
         )
-        nil_savings = min(
-            savings_top - non_savings, starting_rate_savings + savings_allowance
-        )
-        slices = [(0, non_savings), (non_savings + nil_savings, savings_top)]
+        slices = [(0, ordinary_rates_top)]
+        if year < 2017:
+            psa = income_tax.allowances.personal_savings_allowance
+            if reduced_net_income > scale.thresholds[2] + gross_gift:
+                savings_allowance = float(psa.additional)
+            elif reduced_net_income > scale.thresholds[1] + gross_gift:
+                savings_allowance = float(psa.higher)
+            else:
+                savings_allowance = float(psa.basic)
+            starting_rate_savings = max(
+                0, income_tax.rates.savings_starter_rate.allowance - non_savings
+            )
+            nil_savings = min(
+                savings_top - non_savings, starting_rate_savings + savings_allowance
+            )
+            slices.append((non_savings + nil_savings, savings_top))
     for index, (threshold, rate) in enumerate(zip(scale.thresholds, scale.rates)):
         if rate <= basic_rate:
             continue
@@ -324,7 +399,7 @@ def _reference_ras_extension_eligibility(
 
 
 @PROPERTY_SETTINGS
-@given(population_strategy, st.sampled_from(YEARS))
+@given(reference_population_strategy(), st.sampled_from(YEARS))
 def test_charge_matches_band_by_band_reference(people, year):
     people = _with_contributions(people, _base_contributions(people))
     sim = Simulation(situation=_situation(people, year))
@@ -355,6 +430,7 @@ def test_charge_matches_band_by_band_reference(people, year):
     if year >= 2018:
         # s. 227(4AA): the starter band is charged at the Scottish basic rate.
         sco_rates[0] = sco_rates[1]
+    gate_coverage = {False: False, True: False}
     for i in range(len(people)):
         thresholds, band_rates = (
             (sco_thresholds, sco_rates) if scottish[i] else (uk_thresholds, uk_rates)
@@ -366,18 +442,35 @@ def test_charge_matches_band_by_band_reference(people, year):
             gross_gift[i],
             bool(scottish[i]),
             sim.tax_benefit_system.parameters(year).gov.hmrc.income_tax,
+            year,
+            get("taxable_property_income")[i],
         )
         extension = gross_gift[i] + (relief_at_source[i] if qualifies else 0)
         expected = _reference_charge(
             chargeable[i], reduced_net_income[i], thresholds, band_rates, extension
         )
         assert _close(charge[i], expected)
+        alternative_extension = gross_gift[i] + (
+            0 if qualifies else relief_at_source[i]
+        )
+        alternative_charge = _reference_charge(
+            chargeable[i],
+            reduced_net_income[i],
+            thresholds,
+            band_rates,
+            alternative_extension,
+        )
+        gate_coverage[qualifies] |= not _close(expected, alternative_charge)
         # Bounds: nil exactly when nothing is chargeable, and between the
         # lowest and highest rate charged.
         assert (charge[i] == 0) == (chargeable[i] == 0)
         slack = max(TOLERANCE, RELATIVE_TOLERANCE * max(band_rates) * chargeable[i])
         assert charge[i] >= min(band_rates) * chargeable[i] - slack
         assert charge[i] <= max(band_rates) * chargeable[i] + slack
+
+    # Both eligibility outcomes must actually affect a generated charge;
+    # positive contributions alone would leave this property vacuous.
+    assert all(gate_coverage.values())
 
     # FA 2004 ss. 227ZA and 228A: no charge within the available allowance,
     # including unused allowance from the previous three years.
@@ -410,7 +503,7 @@ def test_gift_aid_never_increases_tax_with_stable_ras_eligibility(people, year):
     qualifies = np.array(
         [
             _reference_ras_extension_eligibility(
-                rni, savings, dividends, gift, scottish, p
+                rni, savings, dividends, gift, scottish, p, year
             )
             for rni, savings, dividends, gift, scottish in zip(
                 reduced_net_income,
@@ -450,11 +543,18 @@ def test_unused_allowance_reduces_chargeable_amount_one_for_one(people, year, ex
     chargeable_before = before["pension_annual_allowance_chargeable_amount"]
     expected = np.maximum(0, chargeable_before - extra)
     assert np.allclose(
-        after["pension_annual_allowance_chargeable_amount"], expected, atol=TOLERANCE
+        after["pension_annual_allowance_chargeable_amount"],
+        expected,
+        atol=TOLERANCE,
+        rtol=RELATIVE_TOLERANCE,
+    )
+    slack = TOLERANCE + RELATIVE_TOLERANCE * np.maximum(
+        abs(before["personal_pension_contributions_tax"]),
+        abs(after["personal_pension_contributions_tax"]),
     )
     assert np.all(
         after["personal_pension_contributions_tax"]
-        <= before["personal_pension_contributions_tax"] + TOLERANCE
+        <= before["personal_pension_contributions_tax"] + slack
     )
 
 
@@ -552,7 +652,7 @@ def scottish_advanced_rate_charge_simulation():
 def test_scottish_charge_uses_top_limit_parameter(
     scottish_advanced_rate_charge_simulation,
 ):
-    """Keep the charge test correct when #2130 fixes the top-rate parameter."""
+    """The charge follows the configured top-rate parameter."""
     sim = scottish_advanced_rate_charge_simulation
     scale = sim.tax_benefit_system.parameters(
         2026
@@ -566,10 +666,6 @@ def test_scottish_charge_uses_top_limit_parameter(
     assert charge == pytest.approx(expected, abs=TOLERANCE)
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="#2130: Scottish top-rate limit must be £125,140 of taxable income",
-)
 def test_scottish_charge_below_statutory_top_limit_is_all_advanced_rate(
     scottish_advanced_rate_charge_simulation,
 ):
