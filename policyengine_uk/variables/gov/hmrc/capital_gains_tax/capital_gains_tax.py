@@ -56,13 +56,11 @@ class capital_gains_tax(Variable):
         )
         allowances_for_cgt_income = max_(
             0,
-            person("allowances", period)
-            - person("gift_aid", period)
-            - personal_pension_band_extension,
+            person("allowances", period) - personal_pension_band_extension,
         )
         taxable_income = max_(
             0,
-            person("adjusted_net_income", period) - allowances_for_cgt_income,
+            person("net_income", period) - allowances_for_cgt_income,
         )
         capital_gains = person("capital_gains", period)
         gains = max_(0, capital_gains)
