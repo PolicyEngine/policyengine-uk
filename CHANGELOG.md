@@ -1,3 +1,38 @@
+## [2.134.5] - 2026-10-16
+
+### Fixed
+
+- - Limited pension contributions relief by relevant UK earnings (or the £3,600 basic amount through relief at source) instead of the annual allowance. Calculated the annual allowance charge across UK or Scottish tax bands with unused allowance carried forward, applying the statutory named-rate ordinary-income condition to the RAS band extension and preserving Gift Aid's separate gross band extension. Separate savings and UK property rates do not establish RAS eligibility.
+
+
+## [2.134.4] - 2026-10-16
+
+### Fixed
+
+- - From 2030-31, keep paying pre-2026 (protected) Universal Credit LCWRA claimants the protected amount, uprated from its 2029-30 level by the LCWRA element's uprating index, and new claimants the new-claimant amount. The rebalancing scenario used to stop in 2029-30, so every claimant fell to the new-claimant amount (a protected claimant from £457.15 to £235.86 a month). The new-claimant share is now the parameter `gov.dwp.universal_credit.rebalancing.new_claimant_share`, held at 22% after 2029-30.
+
+
+## [2.134.3] - 2026-10-16
+
+### Fixed
+
+- - Corrected the Scottish 48% top-rate threshold to £125,140 of taxable income for 2024–25, 2025–26 and 2026–27, accounting for the fully withdrawn personal allowance.
+
+
+## [2.134.2] - 2026-10-15
+
+### Fixed
+
+- - Hold the Universal Credit LCWRA element at £217.26 a month for 2026-27 to 2029-30, as Universal Credit Act 2025 s. 3 freezes it, and uprate it from that amount by the benefit uprating index from 2030-31. It was CPI-uprated from 2027-28. The freeze is `gov.dwp.universal_credit.rebalancing.health_element_freeze` and applies while the rebalancing reforms are active. The amount the rebalancing scenario pays new claimants (`rebalancing.new_claimant_health_element`) follows the same path, so lifting the freeze reaches them.
+
+
+## [2.134.1] - 2026-10-15
+
+### Fixed
+
+- Stop charging a household's whole stock of other residential and non-residential property as a purchase whenever it buys its main residence. `property_purchased` now sets only the main-residence purchase; `additional_residential_property_purchased` (the price of one additional dwelling, charged at the higher rates for additional dwellings) and `non_residential_property_purchased` are inputs, nil unless set directly or imputed by a dataset, and are uprated like the property stocks when a dataset supplies them.
+
+
 ## [2.134.0] - 2026-10-15
 
 ### Added

@@ -13,6 +13,15 @@ non-savings income, it also increases the Scottish basic-rate upper limit and
 every limit above it; the starter-rate upper limit remains unchanged. Savings
 and dividends use the extended UK limits for Scottish taxpayers too.
 
+The Scottish top-rate limit is £125,140 of taxable income in each of
+[2024-25](https://www.parliament.scot/chamber-and-committees/votes-and-motions/S6M-12252),
+[2025-26](https://www.parliament.scot/chamber-and-committees/votes-and-motions/S6M-16531)
+and [2026-27](https://www.parliament.scot/chamber-and-committees/votes-and-motions/S6M-20844).
+The personal allowance is fully withdrawn at that income, so £12,570 is not
+subtracted from this limit, as the [Scottish Government's explanatory
+note](https://www.gov.scot/publications/scottish-rate-resolution-2026-2027-draft-motion-explanatory-note/pages/3/)
+explains. Gift Aid extends this taxable-income limit by the gross gift.
+
 The model extends limits where band amounts are calculated. For variables that
 use a complete rate scale, `calc_income_tax_with_gift_aid` in
 `policyengine_uk/utils/income_tax.py` applies an equivalent correction to the
@@ -53,14 +62,8 @@ including s. 12B(8) for Scottish taxpayers, with s. 414(2)(b)).
 
 ## Existing limitations
 
-Zero-gift calculations retain their existing behavior. Several inherited
-limitations remain relevant when interpreting mixed-income results:
+Several limitations remain relevant when interpreting mixed-income results:
 
-- The Scottish top-rate threshold parameter is £112,570 of income after
-  allowances for 2024 onwards. The [HMRC rates and allowances
-  table](https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past)
-  gives £125,140 after allowances. The Gift Aid correction extends the model's
-  existing threshold and does not repair it.
 - Adjusted net income still omits other adjustments in s. 58, including the
   deduction for pension contributions relieved at source in Step 3.
 - Gifts are assumed to qualify. The model does not charge the donor for a
@@ -82,3 +85,44 @@ additional relief. Changing tax band can also increase the Personal Savings
 Allowance discretely under s. 12B, so its relief cannot be bounded by a constant
 times a very small gift. Tests of the continuous band-extension bound must
 allow for that allowance change or hold the zero-rate allowance fixed.
+
+## Pension annual allowance charge
+
+The annual allowance charge uses reduced net income after ITA 2007 s. 23
+Step 3 ([FA 2004 s. 227(4B)](https://www.legislation.gov.uk/ukpga/2004/12/section/227)).
+It starts from `net_income`, before the s. 58 gross Gift Aid deduction, and
+subtracts `allowances` after removing relieved relief-at-source pension
+contributions. Gift Aid is already excluded from those allowances. The charge
+then stacks the excess pension input amount on this base. Gross Gift Aid
+extends the rate limits under s. 227(4C), independently of pension relief.
+This keeps the Gift Aid adjustment to adjusted net income separate from the
+amount charged to tax.
+
+The pension extension is conditional. [FA 2004 s. 192(4)/(4A)](https://www.legislation.gov.uk/ukpga/2004/12/section/192)
+requires ordinary income, apart from relief under that section, to attract
+higher/additional-rate tax, or a Scottish rate above basic. The charge uses
+only limits increased under s. 192; s. 227(5) excludes the pension excess from
+income, so that excess cannot satisfy the condition. The model tests ordinary
+liability before RAS relief, retaining Gift Aid's extension and the existing
+allowance allocation. Scottish liability uses non-savings income, including
+property income. The UK condition names the higher and additional rates:
+separate dividend rates, savings rates from 2017-18 and property rates from
+2027-28 do not satisfy it. [FA 2016 s. 6](https://www.legislation.gov.uk/ukpga/2016/24/section/6/enacted)
+introduced savings rates and expressly added them to some other higher-rate
+tests, without expanding s. 192(4). [FA 2026 s. 6](https://www.legislation.gov.uk/ukpga/2026/11/section/6/enacted)
+and [Schedule 1](https://www.legislation.gov.uk/ukpga/2026/11/schedule/1/enacted)
+introduce property rates without expanding s. 192 either. Before those
+changes, income charged at ordinary higher/additional rates can qualify.
+Scottish property remains subject to Scottish rates under ITA 2007
+s. 11CA(4), so it can still meet s. 192(4A).
+
+[HMRC PTM056120](https://www.gov.uk/hmrc-internal-manuals/pensions-tax-manual/ptm056120)
+describes the RAS extension for the annual allowance charge without stating
+this condition. Its examples do not resolve low-income contributors whose
+pension excess crosses a band. The model follows the statutory condition;
+the [2018/459 explanatory memorandum, paragraph 7.4](https://www.legislation.gov.uk/uksi/2018/459/pdfs/uksiem_20180459_en.pdf)
+also describes an above-basic Scottish liability requirement. Assessment
+practice under the broader manual description remains a methodology question.
+The charge can exceed relief on the contribution when ordinary income fails
+the condition, so contribution and Gift Aid tax-monotonicity comparisons must
+hold eligibility for the RAS extension fixed.
