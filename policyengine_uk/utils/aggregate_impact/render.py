@@ -121,11 +121,15 @@ def _change_cell(row, year) -> str:
         cell.get("base_suppressed") or cell.get("head_suppressed")
     ):
         return _SUPPRESSED_CELL
+    if cell.get("withheld"):
+        return _WITHHELD_CELL + _mark(cell)
     return fmt_change(cell["delta"], row["kind"]) + _mark(cell)
 
 
 # A figure from fewer than 10 records is not published (privacy.py).
 _SUPPRESSED_CELL = "suppressed"
+# The sides leave out different suppressed figures, so no change is shown.
+_WITHHELD_CELL = "withheld"
 
 
 def _levels_table(rows, years) -> str:
@@ -144,6 +148,11 @@ def _deciles(summary, years) -> str:
     if not deciles:
         if summary.get("axis") == "data" and summary.get("decile_notes"):
             return summary["decile_notes"][0]
+        if summary.get("decile_notes"):
+            # Every year was withheld or unmatched: say why, not "missing".
+            return "Not shown:\n\n" + "\n".join(
+                f"- {note}" for note in summary["decile_notes"]
+            )
         return "Not available: both sides need household detail."
     present = [y for y in years if str(y) in deciles]
     if all(

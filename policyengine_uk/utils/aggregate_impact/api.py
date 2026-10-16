@@ -82,9 +82,9 @@ def to_report(result: dict) -> dict:
                     # None when the figure comes from fewer than 10 records.
                     "value": value,
                     "suppressed": year in metric.get("suppressed", ()),
-                    # The suppressed heads this total leaves out that year
-                    # (measure.exclude_suppressed); compare totals at equal
-                    # exclusion.
+                    # The suppressed components this total is rebuilt without
+                    # that year (measure.rebuild_protected); compare totals at
+                    # equal exclusion.
                     "excludes": sorted((metric.get("excludes") or {}).get(year) or {}),
                     "unit": metric["kind"],
                     "kind": KIND_BY_SECTION.get(section, section),

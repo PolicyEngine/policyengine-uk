@@ -27,6 +27,16 @@ measures both sides in one job so that this detail stays on the runner, and
 `test_aggregate_impact_workflow.py` fails if the workflow could publish it.
 Check details give counts and weighted totals, never one household's value.
 
+Small cells (`privacy.py`):
+
+- A figure from fewer than 10 records is published as suppressed.
+- A total that holds one is rebuilt from its other components and marked †.
+- Poverty, inequality and deciles are withheld while HBAI income holds one.
+- A reform's figures for a year are withheld when they would come from a
+  small cell.
+
+`privacy.py` also states the threat model.
+
 ## Running it
 
 ```bash
@@ -56,16 +66,22 @@ cd ../base-checkout && PYTHONPATH=/tmp/tool .venv/bin/python -m pe_uk_aggregate_
 ### Comparing two datasets on one model
 
 A uk-data change is compared the other way round: one model, two datasets.
-Measure each built file without a pin, then compare on the data axis:
+Measure each built file without a pin, with a copy of the tool, then compare
+on the data axis:
 
 ```bash
-uv run python -m policyengine_uk.utils.aggregate_impact measure --label base \
+cp -R policyengine_uk/utils/aggregate_impact /tmp/tool/pe_uk_aggregate_impact
+PYTHONPATH=/tmp/tool uv run python -m pe_uk_aggregate_impact measure --label base \
     --dataset-file base/enhanced_frs_2024_25.h5 --dataset-label "main build" --out out/base
-uv run python -m policyengine_uk.utils.aggregate_impact measure --label head \
+PYTHONPATH=/tmp/tool uv run python -m pe_uk_aggregate_impact measure --label head \
     --dataset-file head/enhanced_frs_2024_25.h5 --dataset-label "PR build" --out out/head
-uv run python -m policyengine_uk.utils.aggregate_impact compare --axis data \
+PYTHONPATH=/tmp/tool uv run python -m pe_uk_aggregate_impact compare --axis data \
     --base out/base --head out/head --markdown comment.md
 ```
+
+Run from inside the package (`python -m policyengine_uk.utils.aggregate_impact`),
+`measure` can't fingerprint the model's files before the package builds the
+model, so the data axis refuses its results.
 
 An unpinned file is identified by its SHA-256. The data axis fails unless
 both sides ran the same policyengine-uk commit and version, runtime,

@@ -276,6 +276,20 @@ def model_fingerprint() -> Optional[str]:
     return digest.hexdigest()
 
 
+def model_loaded() -> bool:
+    """Whether policyengine_uk's model is already built in this process.
+
+    Importing the package builds the tax-benefit system and caches its
+    parameters, as ``python -m policyengine_uk.utils.aggregate_impact`` does
+    before the command runs. A fingerprint taken after that may not be the
+    model in memory: a checkout switched between the import and the
+    fingerprint leaves the old parameters with the new files' fingerprint
+    (Sol re-review 7 of #2425). A copy of this tool run as its own package,
+    as CI runs it, imports the model only to build the simulation.
+    """
+    return "policyengine_uk.system" in sys.modules
+
+
 def _local_installs() -> list:
     """Distributions not installed from a package index (PEP 610).
 
@@ -380,17 +394,34 @@ def cell_detail(count: int, what: str, weighted: str) -> str:
     return f"{count:,} {what}, {weighted}"
 
 
-def _identity_check(rec, check_id, label, components_hh, total_hh, year, spec, weights):
+def _identity_check(
+    rec,
+    check_id,
+    label,
+    components_hh,
+    total_hh,
+    year,
+    spec,
+    weights,
+    leave_out=None,
+):
     """Household-level accounting identity: components add up to the total.
 
     The detail gives counts and weighted totals only, and nothing at all
     about fewer than ``MIN_CELL`` households (see ``cell_detail``).
+
+    ``leave_out`` marks the households holding a component suppressed this
+    year, which aren't checked: with a formula that scales its components,
+    whether, and by how much, they differ would depend on the suppressed
+    values (Sol re-review 7 of #2335). The verdict and the detail then come
+    from the other households only.
     """
     difference = components_hh - total_hh
     scale = np.abs(total_hh) + 1.0
     tolerance = 1.0 + spec.identity_relative_tolerance * scale
-    bad = np.abs(difference) > tolerance
-    finite = np.all(np.isfinite(difference))
+    checked = np.ones_like(difference, dtype=bool) if leave_out is None else ~leave_out
+    bad = (np.abs(difference) > tolerance) & checked
+    finite = np.all(np.isfinite(difference[checked]))
     ok = bool(finite and not bad.any())
     detail = ""
     if not ok:
@@ -400,6 +431,11 @@ def _identity_check(rec, check_id, label, components_hh, total_hh, year, spec, w
             "households differ",
             f"by a weighted £{gap:,.0f} in total",
         )
+        if leave_out is not None:
+            detail += (
+                f" (households holding a figure from fewer than {MIN_CELL} "
+                "records aren't checked this year)"
+            )
     rec.check(check_id, label, ok, detail, section="identities")
 
 
@@ -497,7 +533,20 @@ def measure_year(
             "gbp",
             year,
             float(np.sum(hw * hh)),
+            # Like a head: from fewer than 10 records it is suppressed (Sol
+            # re-review 7 of #2335).
+            records=_weighted_records(
+                values != 0, weights[entity_of(sim, dc.variable)]
+            ),
         )
+    hidden = suppressed_components(rec, partition, year)
+    # Households holding a suppressed component: no check verdict or detail
+    # may depend on them this year.
+    holding = None
+    if hidden:
+        holding = np.zeros(len(hw), dtype=bool)
+        for variable in hidden:
+            holding |= {**head_hh, **double_count_hh}[variable] != 0
 
     active = active_parameters(sim, partition, year)
     # Geographic exclusivity, on the data. A declared double count is netted
@@ -557,6 +606,7 @@ def measure_year(
             year,
             spec,
             hw,
+            leave_out=holding,
         )
 
     def partition_sum(total):
@@ -624,17 +674,17 @@ def measure_year(
             year,
             spec,
             hw,
+            leave_out=holding,
         )
-    hidden = suppressed_heads(rec, partition, year)
     for variable, label in HOUSEHOLD_TOTALS.items():
         if variable in tbs_variables:
             values = array(sim, variable, year).astype(np.float64)
             excludes = None
             if variable == "hbai_household_net_income" and hidden:
-                values, excludes = _hbai_without(sim, year, hidden, partition, head_hh)
+                values, excludes = _hbai_without(sim, year, hidden, holding)
             metric_id = f"household.{variable}"
             if values is None:
-                # The suppressed heads can't be taken out of this total.
+                # The suppressed components can't be taken out of this total.
                 _publish_suppressed(rec, metric_id, label, "household_totals", year)
                 continue
             rec.metric(
@@ -674,6 +724,7 @@ def measure_year(
             year,
             spec,
             hw,
+            leave_out=holding,
         )
 
     pw = weights["person"]
@@ -761,22 +812,54 @@ def measure_year(
             weighted_gini(income, hw * people),
         )
 
+    net_income, net_income_excludes = rebuild_protected(
+        rec,
+        partition,
+        active,
+        hidden,
+        {**head_hh, **double_count_hh},
+        hw,
+        year,
+        market_hh=(
+            array(sim, "household_market_income", year).astype(np.float64)
+            if "household_market_income" in tbs_variables
+            else None
+        ),
+        pension_hh=(
+            to_household(
+                sim,
+                array(sim, "pension_contributions", year).astype(np.float64),
+                entity_of(sim, "pension_contributions"),
+            )
+            if "pension_contributions" in tbs_variables
+            else None
+        ),
+    )
     decile = array(sim, spec.decile_variable, year).astype(np.int64)
     income = array(sim, spec.income_variable, year).astype(np.float64)
-    signs = exclusion_signs(partition, active)
-    income_id = f"household.{spec.income_variable}"
-    income_signs = signs.get(income_id)
-    if (
-        hidden
-        and income_signs is not None
-        and not all(
-            _identity_holds(rec, c, year) for c in _identities_behind(income_id)
-        )
-    ):
-        income_signs = None  # its composition can't be trusted this year
-    income, income_excludes = income_without(
-        income, income_signs, hidden, partition, head_hh
-    )
+    income_excludes = {}
+    ranking_holds_hidden = bool(hidden) and hbai_holds_any(hidden)
+    if ranking_holds_hidden:
+        # Households are ranked into deciles on HBAI income, which holds a
+        # suppressed component this year: which decile its holders fall in
+        # depends on it, so no decile figure is published.
+        income = None
+        for d in range(1, 11):
+            rec.metric(
+                f"deciles.mean_income.{d}",
+                f"Decile {d}: mean {spec.income_variable} per household",
+                "deciles",
+                "gbp_household",
+                year,
+                float("nan"),
+                group="Own-decile levels",
+                records=1,  # published as suppressed (privacy.py)
+            )
+    elif net_income_excludes:
+        if spec.income_variable == "household_net_income" and net_income is not None:
+            income, income_excludes = net_income, net_income_excludes
+        else:
+            income = None  # its suppressed parts can't be taken out of it
     for d in range(1, 11) if income is not None else ():
         in_decile = decile == d
         weight = float(np.sum(hw[in_decile]))
@@ -795,11 +878,10 @@ def measure_year(
             rec.metrics[f"deciles.mean_income.{d}"].setdefault("excludes", {})[
                 str(year)
             ] = income_excludes
-    exclude_suppressed(rec, signs, hidden, year)
-    if hidden and hbai_holds_any(partition, hidden):
+    if ranking_holds_hidden:
         # Poverty and inequality are measured on HBAI income, which holds a
-        # suppressed head this year; a Gini or poverty count with the totals
-        # published could give it back (Sol re-review 6 of #2335).
+        # suppressed component this year; a Gini or poverty count with the
+        # totals published could give it back (Sol re-review 6 of #2335).
         for record in rec.metrics.values():
             if record["section"] in ("poverty", "poverty_count", "inequality"):
                 if record["values"].get(str(year)) is not None:
@@ -812,141 +894,127 @@ def measure_year(
             "household_count_people": people.astype(np.float64),
             "decile": decile,
             "income": income,
-            # The suppressed heads the income leaves out: both sides must
-            # leave out the same ones for their decile rows to compare.
+            # The suppressed components the income leaves out: both sides
+            # must leave out the same ones for their decile rows to compare.
             "excludes": np.array(sorted(income_excludes), dtype=str),
         }
 
 
-def exclusion_signs(partition: Partition, active) -> dict:
-    """For each published total, the sign each head enters it with.
-
-    In a year with a suppressed head, every total containing it is published
-    without it (``exclude_suppressed``), so no published figure, in any number
-    of reports, says anything about it (Sol re-review 5 of #2335: rounding
-    the totals instead let repeated reports narrow the head down). Household
-    market income holds no head. The HBAI total, which resets negative
-    incomes to zero, is redone household by household (``_hbai_without``).
-    """
-
-    def signed(*parts):
-        out = {}
-        for total, sign in parts:
-            for head in partition.heads_in(total, active):
-                out[head.id] = out.get(head.id, 0) + sign
-        return {h: sign for h, sign in out.items() if sign}
-
-    out = {f"model.{t}": signed((t, 1)) for t in partition.totals}
-    out["balance.receipts"] = signed(("gov_tax", 1))
-    out["balance.spending"] = signed(("gov_spending", 1))
-    out["balance.balance"] = signed(("gov_tax", 1), ("gov_spending", -1))
-    out["model.gov_balance"] = signed(("gov_tax", 1), ("gov_spending", -1))
-    out["balance.household_only_benefits"] = {
-        h.id: 1
-        for h in partition.spending_heads
-        if "household_benefits" in h.totals and "gov_spending" not in h.totals
-    }
-    # household_net_income adds household_benefits and subtracts household_tax
-    # (its own adds and subtracts).
-    out["household.household_net_income"] = signed(
-        ("household_benefits", 1), ("household_tax", -1)
-    )
-    return out
-
-
-def income_without(income, income_signs, hidden, partition, head_hh) -> tuple:
-    """Each household's income with the suppressed heads taken out.
-
-    Returns ``(income, excludes)``; ``income`` is None when there are
-    suppressed heads but the income's composition isn't known, so they can't
-    be taken out.
-    """
-    if not hidden:
-        return income, {}
-    if income_signs is None:
-        return None, {}
-    excludes = {}
-    for head in partition.heads:
-        if head.id in hidden and head.id in income_signs:
-            sign = income_signs[head.id]
-            income = income - sign * head_hh[head.variable]
-            excludes[hidden[head.id][0]] = sign
-    return income, excludes
-
-
-def suppressed_heads(rec: "Recorder", partition: Partition, year: int) -> dict:
-    """``{head id: (metric id, raw value)}`` for each head suppressed in ``year``."""
+def suppressed_components(rec: "Recorder", partition: Partition, year: int) -> dict:
+    """``{variable: (metric id, raw value)}`` for each head or declared double
+    count suppressed in ``year``."""
     key = str(year)
     out = {}
     for head in partition.heads:
         metric_id = f"{'receipts' if head.kind == 'tax' else 'spending'}.{head.id}"
         if (metric_id, key) in rec.hidden:
-            out[head.id] = (metric_id, rec.hidden[(metric_id, key)])
+            out[head.variable] = (metric_id, rec.hidden[(metric_id, key)])
+    for dc in partition.double_counts:
+        metric_id = f"double_counts.{dc.variable}"
+        if (metric_id, key) in rec.hidden:
+            out[dc.variable] = (metric_id, rec.hidden[(metric_id, key)])
     return out
 
 
-# The identity checks that show each total is the sum of its heads, so that
-# taking a head out of it leaves only the other heads.
-def _identities_behind(metric_id: str) -> tuple:
-    if metric_id in ("balance.balance", "model.gov_balance"):
-        return ("identity:gov_tax", "identity:gov_spending", "identity:gov_balance")
-    if metric_id == "balance.receipts":
-        return ("identity:gov_tax",)
-    if metric_id == "balance.spending":
-        return ("identity:gov_spending",)
-    if metric_id == "balance.household_only_benefits":
-        return ("identity:household_benefits",)
-    if metric_id == "household.household_net_income":
-        return (
-            "identity:household_net_income",
-            "identity:household_benefits",
-            "identity:household_tax",
-        )
-    return (f"identity:{metric_id.split('.', 1)[1]}",)
+def rebuild_protected(
+    rec: "Recorder",
+    partition: Partition,
+    active,
+    hidden: Mapping,
+    component_hh: Mapping,
+    hw: np.ndarray,
+    year: int,
+    market_hh=None,
+    pension_hh=None,
+) -> tuple:
+    """Publish each total that holds a suppressed component rebuilt without it.
 
+    The total is rebuilt household by household from its other components,
+    never as the model's total less the suppressed one, so no published
+    figure depends on a suppressed component's values: not through a formula
+    that scales its components, and not through an identity's tolerance (Sol
+    re-reviews 5 to 7 of #2335). Each rebuilt figure is:
 
-def _identity_holds(rec: "Recorder", check_id: str, year: int) -> bool:
-    check = rec.checks.get(check_id)
-    return (
-        check is not None
-        and check.get("status") != "skipped"
-        and str(year) not in (check.get("failing") or {})
-    )
+    - a model total: its other heads and declared double counts;
+    - a balance aggregate: its other heads;
+    - ``gov_balance``: the rebuilt ``gov_tax`` less the rebuilt
+      ``gov_spending``;
+    - household net income: market income plus the rebuilt
+      ``household_benefits``, less the rebuilt ``household_tax`` and pension
+      contributions (its own adds and subtracts). Suppressed if market
+      income or pension contributions aren't available.
 
-
-def exclude_suppressed(rec: "Recorder", signs: Mapping, hidden: Mapping, year: int):
-    """Publish each total containing a suppressed head without it.
-
-    The total's record lists, under ``excludes``, which heads it leaves out
-    that year and the sign each entered with, so the comparison can line up
-    two sides that exclude different heads. Taking a head out is only safe
-    when the total is exactly the sum of its heads: a total whose identity
-    fails that year (a formula that scales its components, say) is
-    suppressed instead (Sol re-review 6 of #2335).
+    Its record lists the left-out components, with the sign each enters
+    with, under ``excludes``. Returns the rebuilt household net income per
+    household (None if not rebuilt) and what it leaves out, for the deciles.
     """
     if not hidden:
-        return
+        return None, {}
     key = str(year)
-    for metric_id, heads in signs.items():
+
+    def parts(total, sign=1, double_counts=True):
+        out = [(h.variable, sign) for h in partition.heads_in(total, active)]
+        if double_counts:
+            out += [
+                (d.variable, sign) for d in partition.double_counts_in(total, active)
+            ]
+        return out
+
+    def rebuilt(signed_parts):
+        """``(per-household sum of the published parts, excludes)``, or None
+        when no part is suppressed."""
+        if not any(variable in hidden for variable, _ in signed_parts):
+            return None
+        total = np.zeros_like(hw, dtype=np.float64)
+        excludes = {}
+        for variable, sign in signed_parts:
+            if variable in hidden:
+                metric_id = hidden[variable][0]
+                excludes[metric_id] = excludes.get(metric_id, 0) + sign
+            else:
+                total = total + sign * component_hh[variable]
+        return total, {m: sign for m, sign in excludes.items() if sign}
+
+    def publish(metric_id, result):
         record = rec.metrics.get(metric_id)
-        if record is None or record["values"].get(key) is None:
-            continue
-        inside = {h: sign for h, sign in heads.items() if h in hidden}
-        if not inside:
-            continue
-        if not all(
-            _identity_holds(rec, c, year) for c in _identities_behind(metric_id)
-        ):
+        if result is None or record is None or record["values"].get(key) is None:
+            return
+        values, excludes = result
+        record["values"][key] = float(np.sum(hw * values))
+        if excludes:
+            record.setdefault("excludes", {})[key] = excludes
+
+    for total in partition.totals:
+        publish(f"model.{total}", rebuilt(parts(total)))
+    receipts = parts("gov_tax", double_counts=False)
+    spending = parts("gov_spending", -1, double_counts=False)
+    publish("balance.receipts", rebuilt(receipts))
+    publish("balance.spending", rebuilt([(v, 1) for v, _ in spending]))
+    publish("balance.balance", rebuilt(receipts + spending))
+    publish(
+        "balance.household_only_benefits",
+        rebuilt(
+            [
+                (h.variable, 1)
+                for h in partition.spending_heads
+                if "household_benefits" in h.totals and "gov_spending" not in h.totals
+            ]
+        ),
+    )
+    publish("model.gov_balance", rebuilt(parts("gov_tax") + parts("gov_spending", -1)))
+
+    net = rebuilt(parts("household_benefits") + parts("household_tax", -1))
+    if net is None:
+        return None, {}
+    record = rec.metrics.get("household.household_net_income")
+    if market_hh is None or pension_hh is None:
+        if record is not None and record["values"].get(key) is not None:
             record["values"][key] = None
             record.setdefault("suppressed", []).append(key)
-            continue
-        record["values"][key] = float(
-            record["values"][key]
-            - sum(sign * hidden[h][1] for h, sign in inside.items())
-        )
-        record.setdefault("excludes", {})[key] = {
-            hidden[h][0]: sign for h, sign in inside.items()
-        }
+        return None, net[1]
+    income = market_hh + net[0] - pension_hh
+    publish("household.household_net_income", (income, net[1]))
+    return income, net[1]
 
 
 def _hbai_lists():
@@ -964,37 +1032,45 @@ def _hbai_lists():
         return None
 
 
-def hbai_holds_any(partition: Partition, hidden: Mapping) -> bool:
-    """Whether a suppressed head is part of HBAI income (True if unknown)."""
+def hbai_holds_any(hidden: Mapping) -> bool:
+    """Whether a suppressed component is part of HBAI income (True if unknown)."""
     lists = _hbai_lists()
     if lists is None:
         return True
     adds, subtracts = lists
-    return any(
-        head.variable in adds or head.variable in subtracts
-        for head in partition.heads
-        if head.id in hidden
-    )
+    return any(variable in adds or variable in subtracts for variable in hidden)
 
 
-def _hbai_without(sim, year, hidden, partition, head_hh):
-    """The HBAI household net income without the suppressed heads, or None.
+# How far, per household, the HBAI component lists may be from the model's
+# income before the reset: half a penny, the precision of the published
+# figures. The rebuilt total never uses a suppressed component, so this bounds
+# only a wrong figure (a component the model leaves out under the current
+# policy), never a disclosure (Sol re-review 7 of #2335).
+HBAI_REPRODUCTION_GBP = 0.005
 
-    HBAI resets negative incomes to zero, so the heads are taken out of each
-    household's income before the reset. None when the model doesn't expose
-    the income before the reset or the HBAI component lists.
+
+def _hbai_without(sim, year, hidden, holding=None):
+    """The HBAI household net income without the suppressed components, or None.
+
+    Rebuilt household by household from its component lists without the
+    suppressed ones, then reset at zero as HBAI does: it never uses their
+    values. The lists must reproduce the model's income before the reset
+    (``HBAI_REPRODUCTION_GBP``) for every household not in ``holding`` (those
+    holding a suppressed component, whose verdict would depend on it), or
+    the total is suppressed (None): a component the model leaves out under
+    the current policy (council tax when it is abolished, say) would
+    otherwise come back in (Sol re-reviews 6 and 7 of #2335). None also when
+    the model doesn't expose the income before the reset or the lists.
     """
     lists = _hbai_lists()
     if lists is None:
         return None, None
     adds, subtracts = lists
-    inside = {}
-    for head in partition.heads:
-        if head.id in hidden:
-            if head.variable in adds:
-                inside[head] = 1
-            elif head.variable in subtracts:
-                inside[head] = -1
+    inside = {
+        variable: 1 if variable in adds else -1
+        for variable in hidden
+        if variable in adds or variable in subtracts
+    }
     values = array(sim, "hbai_household_net_income", year).astype(np.float64)
     if not inside:
         return values, None
@@ -1003,22 +1079,21 @@ def _hbai_without(sim, year, hidden, partition, head_hh):
     if name not in variables:
         return None, None
     before = array(sim, name, year).astype(np.float64)
-    # The lists must reproduce the model's income household by household: a
-    # component the model leaves out under the current policy (council tax
-    # when it is abolished, say) would otherwise be added back (Sol re-review
-    # 6 of #2335).
     rebuilt = np.zeros_like(before)
-    for variable, sign in [(v, 1) for v in adds] + [(v, -1) for v in subtracts]:
+    without = np.zeros_like(before)
+    for variable, sign in [(v, 1) for v in sorted(adds)] + [
+        (v, -1) for v in sorted(subtracts)
+    ]:
         if variable in variables:
-            rebuilt = rebuilt + sign * array(
-                sim, variable, year, map_to="household"
-            ).astype(np.float64)
-    if not np.allclose(rebuilt, before, rtol=1e-9, atol=1.0):
+            part = array(sim, variable, year, map_to="household").astype(np.float64)
+            rebuilt = rebuilt + sign * part
+            if variable not in inside:
+                without = without + sign * part
+    checked = slice(None) if holding is None else ~np.asarray(holding)
+    if not np.all(np.abs(rebuilt - before)[checked] <= HBAI_REPRODUCTION_GBP):
         return None, None
-    for head, sign in inside.items():
-        before = before - sign * head_hh[head.variable]
-    excludes = {hidden[h.id][0]: sign for h, sign in inside.items()}
-    return np.maximum(0.0, before), excludes
+    excludes = {hidden[v][0]: sign for v, sign in inside.items()}
+    return np.maximum(0.0, without), excludes
 
 
 def _publish_suppressed(rec: "Recorder", metric_id, label, section, year):
@@ -1097,6 +1172,97 @@ def weighted_total(sim, variable: str, year: int) -> float:
     return float(np.sum(hw * to_household(sim, values, entity_of(sim, variable))))
 
 
+# A record's income or tax changes when it moves by more than half a penny,
+# as for decile rows (compare.decile_impacts).
+CHANGE_GBP = 0.005
+
+
+def baseline_records(sim, partition: Partition, rec: "Recorder", year: int, targets):
+    """What the reform checks need from the baseline run in ``year``: each
+    suppressed component's values, each household's gov_balance and each
+    target variable's values. Kept in memory only, never written."""
+    return {
+        "hidden": {
+            variable: array(sim, variable, year).astype(np.float64).copy()
+            for variable in suppressed_components(rec, partition, year)
+        },
+        "household_weight": array(sim, "household_weight", year)
+        .astype(np.float64)
+        .copy(),
+        "balance": to_household(
+            sim,
+            array(sim, "gov_balance", year).astype(np.float64),
+            entity_of(sim, "gov_balance"),
+        ).copy(),
+        "targets": {
+            variable: array(sim, variable, year).astype(np.float64).copy()
+            for variable in targets
+        },
+    }
+
+
+def reform_withheld(
+    reformed, year: int, baseline: Optional[Mapping], components
+) -> bool:
+    """Whether a reform's costing and target change for ``year`` are withheld.
+
+    They would be built from a small cell (Sol re-review 7 of #2335) when the
+    reform:
+
+    - changes any record of a component suppressed in the baseline, by any
+      amount, even if the changes cancel nationally: they still move other
+      figures (the tax on one recipient's pension, say). An unchanged record
+      compares equal, because a rebuilt baseline reproduces the first run
+      exactly (``determinism:rebuilt_baseline``); noise could only withhold
+      more;
+    - leaves any other component with 1 to 9 records (``privacy.small``),
+      whose change would give that new small cell back;
+    - changes gov_balance in 1 to 9 households, or a target variable in 1 to
+      9 records, by more than ``CHANGE_GBP``: the change is theirs alone, as
+      for a decile row.
+
+    Withheld too when there is no baseline record for the year.
+    """
+    if baseline is None:
+        return True
+    for variable, before in baseline["hidden"].items():
+        if not np.array_equal(
+            array(reformed, variable, year).astype(np.float64), before
+        ):
+            return True
+    weights = {}
+
+    def weight(variable):
+        entity = entity_of(reformed, variable)
+        if entity not in weights:
+            weights[entity] = array(reformed, f"{entity}_weight", year).astype(
+                np.float64
+            )
+        return weights[entity]
+
+    for variable in components:
+        if variable in baseline["hidden"]:
+            continue
+        values = array(reformed, variable, year).astype(np.float64)
+        if small(_weighted_records(values != 0, weight(variable))):
+            return True
+    balance = to_household(
+        reformed,
+        array(reformed, "gov_balance", year).astype(np.float64),
+        entity_of(reformed, "gov_balance"),
+    )
+    changed = np.abs(balance - baseline["balance"]) > CHANGE_GBP
+    if small(_weighted_records(changed, baseline["household_weight"])):
+        return True
+    for variable, before in baseline["targets"].items():
+        after = array(reformed, variable, year).astype(np.float64)
+        if small(
+            _weighted_records(np.abs(after - before) > CHANGE_GBP, weight(variable))
+        ):
+            return True
+    return False
+
+
 def as_standard_reforms(reforms) -> list:
     """Accept parsed reforms or raw ``{name, parameters, ...}`` mappings."""
     reforms = list(reforms or [])
@@ -1113,7 +1279,8 @@ def measure_reforms(
     reforms: Sequence[StandardReform],
     years: Sequence[int],
     rec: Recorder,
-    baseline_suppressed: Optional[Mapping[int, Mapping[str, float]]] = None,
+    baseline: Optional[Mapping[int, Mapping]] = None,
+    components: Sequence[str] = (),
 ) -> list:
     """Cost each reform against the baseline run, and check it responds.
 
@@ -1121,11 +1288,13 @@ def measure_reforms(
     reform declares what it must move, the change in that variable's total
     and whether it moved enough in the right direction every year.
 
-    ``baseline_suppressed`` gives, for each year, the baseline total of each
-    head suppressed that year. A reform that moves one of them in a year
-    publishes neither its costing nor its target change for that year, and
-    its responsiveness detail gives no amount: a 10% uplift's cost of £100
-    would give back a suppressed £1,000 (Sol re-review 6 of #2335).
+    ``baseline`` gives, for each year, the baseline's records
+    (``baseline_records``), and ``components`` the partition's component
+    variables. A year whose figures would come from a small cell
+    (``reform_withheld``) publishes neither the costing nor the target
+    change, and its responsiveness detail gives no amount: a 10% uplift's
+    cost of £100 would give back a suppressed £1,000 (Sol re-reviews 6 and 7
+    of #2335). Without ``baseline``, every year is withheld.
 
     First rebuilds an unreformed simulation the same way, which must
     reproduce the baseline exactly: otherwise reform costings would include
@@ -1172,16 +1341,13 @@ def measure_reforms(
             outcome["parameters"] = parameters
             reformed = factory(reform=parameters)
             for year in years:
-                moved = any(
-                    abs(weighted_total(reformed, variable, year) - total) > 0.5
-                    for variable, total in (
-                        (baseline_suppressed or {}).get(year) or {}
-                    ).items()
+                withheld = reform_withheld(
+                    reformed, year, (baseline or {}).get(year), components
                 )
-                if moved:
+                if withheld:
                     hidden_years.add(year)
                 # records=1 publishes the figure as suppressed (privacy.py).
-                records = 1 if moved else None
+                records = 1 if withheld else None
                 rec.metric(
                     f"reforms.{reform.id}",
                     reform.name,
@@ -1242,8 +1408,8 @@ def measure_reforms(
                     if year in hidden_years and not ok:
                         detail = (
                             f"{fiscal_year_label(year)}: {reform.responds.variable} did "
-                            "not move enough (the amount moves a figure from fewer "
-                            f"than {MIN_CELL} records)"
+                            "not move enough (the amount is withheld: it comes from "
+                            f"fewer than {MIN_CELL} records)"
                         )
                     rec.check(
                         f"responsive:{reform.id}",
@@ -1310,7 +1476,7 @@ def measure(
     reforms = as_standard_reforms(reforms)
     target_variables = sorted({r.responds.variable for r in reforms if r.responds})
     households = {}
-    baseline_balance, baseline_targets, baseline_suppressed = {}, {}, {}
+    baseline_balance, baseline_targets, baseline = {}, {}, {}
     reset = getattr(sim, "_invalidate_all_caches", None)
     for year in spec.years:
         t = time.time()
@@ -1322,13 +1488,8 @@ def measure(
             variable: weighted_total(sim, variable, year)
             for variable in target_variables
         }
-        # Suppressed heads this year, so a reform that moves one publishes
-        # neither its costing nor its target change for the year.
-        variable_of = {h.id: h.variable for h in partition.heads}
-        baseline_suppressed[year] = {
-            variable_of[head_id]: weighted_total(sim, variable_of[head_id], year)
-            for head_id in suppressed_heads(rec, partition, year)
-        }
+        # So that reform figures from a small cell are withheld.
+        baseline[year] = baseline_records(sim, partition, rec, year, target_variables)
         timings[f"year_{year}"] = round(time.time() - t, 2)
         if reset is not None:
             # Keep memory flat across the horizon; supplied inputs survive.
@@ -1408,7 +1569,8 @@ def measure(
         reforms,
         spec.years,
         rec,
-        baseline_suppressed=baseline_suppressed,
+        baseline=baseline,
+        components=partition.component_variables(),
     )
     timings["reforms"] = round(time.time() - t, 2)
     for outcome in reform_outcomes:

@@ -4,6 +4,8 @@ import copy
 import json
 import math
 
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -19,9 +21,7 @@ from policyengine_uk.utils.aggregate_impact.compare import (
     decile_impacts,
 )
 from policyengine_uk.tests.aggregate_impact.test_aggregate_impact_measure import (
-    _identities,
-    _protection_partition,
-    _recorded,
+    _rebuilt,
 )
 from policyengine_uk.utils.aggregate_impact.measure import weighted_gini
 from policyengine_uk.utils.aggregate_impact.render import fmt_change, fmt_level, render
@@ -176,7 +176,9 @@ def test_a_move_is_flagged_exactly_when_it_exceeds_the_larger_bound(
 
 def _on(data_sha, **provenance):
     measured = result({("receipts", "a"): [1.0] * len(YEARS)}, sha=data_sha)
-    measured["provenance"].update({"metrics_version": "m", **provenance})
+    measured["provenance"].update(
+        {"metrics_version": "m", "model_loaded_before_fingerprint": False, **provenance}
+    )
     measured["runtime"].update(
         policyengine_uk="2.122.2",
         policyengine_uk_fingerprint="f" * 64,
@@ -246,7 +248,9 @@ def test_the_data_axis_does_not_match_households_across_datasets():
 @given(values=metric_values)
 def test_a_data_comparison_with_itself_moves_nothing(values):
     side = result(values)
-    side["provenance"]["metrics_version"] = "m"
+    side["provenance"].update(
+        metrics_version="m", model_loaded_before_fingerprint=False
+    )
     side["runtime"].update(
         policyengine_uk="2.122.2",
         policyengine_uk_fingerprint="f" * 64,
@@ -771,29 +775,7 @@ def test_published_decile_rows_carry_no_weights_and_display_precision_only(seed)
 
 
 def _side(common, rare, records):
-    from policyengine_uk.utils.aggregate_impact.measure import (
-        Recorder,
-        exclude_suppressed,
-        exclusion_signs,
-        suppressed_heads,
-    )
-
-    rec = Recorder()
-    rec.metric("receipts.tax", "Tax", "receipts", "gbp", 2026, 5e11, records=5000)
-    rec.metric("spending.common", "C", "spending", "gbp", 2026, common, records=500)
-    rec.metric("spending.rare", "R", "spending", "gbp", 2026, rare, records=records)
-    for total in ("model.gov_spending", "model.household_benefits", "balance.spending"):
-        rec.metric(total, total, "model_totals", "gbp", 2026, common + rare)
-    rec.metric("model.gov_tax", "gov_tax", "model_totals", "gbp", 2026, 5e11)
-    rec.metric("balance.balance", "b", "balance", "gbp", 2026, 5e11 - common - rare)
-    _identities(rec)
-    partition = _protection_partition()
-    exclude_suppressed(
-        rec,
-        exclusion_signs(partition, set()),
-        suppressed_heads(rec, partition, 2026),
-        2026,
-    )
+    rec, _, _ = _rebuilt(common, rare, records=records)
     return {m["id"]: m for m in rec.metrics.values()}
 
 
@@ -1008,10 +990,15 @@ def test_decile_changes_that_round_to_zero_are_not_called_no_change():
     assert "No household's net income changes" in text
 
 
-def test_a_mean_or_clipped_total_with_different_exclusions_shows_no_change():
+def test_a_mean_or_clipped_total_with_different_exclusions_is_withheld():
     """Sol re-review 6 of #2335, P2 5: subtracting a national head from a
-    per-household mean or a total reset at zero gives a wrong change."""
+    per-household mean or a total reset at zero gives a wrong change. Sol
+    re-review 7, P3 5: the withheld change was then called "no change"."""
     from policyengine_uk.utils.aggregate_impact.compare import compare_metrics
+    from policyengine_uk.utils.aggregate_impact.render import (
+        _change_cell,
+        _changes_table,
+    )
 
     def side(value, excludes):
         record = {
@@ -1036,7 +1023,31 @@ def test_a_mean_or_clipped_total_with_different_exclusions_shows_no_change():
     rows, _ = compare_metrics(
         side(1_100.0, None), side(1_000.0, {"spending.rare": 1}), SPEC, [2026]
     )
-    assert _cell(rows, "deciles.mean_income.1")["delta"] is None
+    cell = _cell(rows, "deciles.mean_income.1")
+    assert cell["delta"] is None and cell["withheld"]
+    row = next(r for r in rows if r["id"] == "deciles.mean_income.1")
+    assert row["changed"]
+    assert _change_cell(row, 2026) == "withheld †"
+    assert "d1" in _changes_table(rows, [2026])
+    # Equal on both sides, with equal exclusions: a real "no change".
+    rows, _ = compare_metrics(
+        side(1_000.0, {"spending.rare": 1}),
+        side(1_000.0, {"spending.rare": 1}),
+        SPEC,
+        [2026],
+    )
+    cell = _cell(rows, "deciles.mean_income.1")
+    assert cell["delta"] == 0 and not cell["withheld"]
+    assert not next(r for r in rows if r["id"] == "deciles.mean_income.1")["changed"]
+
+
+def test_a_figure_suppressed_on_both_sides_is_not_called_unchanged():
+    rows, _ = _changes(_side(7.3e10, 246.9, 1), _side(7.3e10, 246.9, 1))
+    rare = next(r for r in rows if r["id"] == "spending.rare")
+    assert rare["values"]["2026"]["withheld"] and rare["changed"]
+    # The total holds only the common head, which didn't change.
+    total = next(r for r in rows if r["id"] == "model.gov_spending")
+    assert total["values"]["2026"]["delta"] == 0 and not total["changed"]
 
 
 def test_decile_rows_are_withheld_when_the_sides_exclude_different_heads():
@@ -1182,6 +1193,56 @@ def test_the_command_fingerprints_the_model_before_building_the_simulation():
     assert first < source.index("default_partition_path()")
     assert first < source.index("from policyengine_uk import Microsimulation")
     assert "fingerprint_at_start=fingerprint_at_start" in source
+    # Whether the package had built the model already is known first.
+    assert source.index("loaded_first = model_loaded()") < first
+    assert '"model_loaded_before_fingerprint": loaded_first' in source
+
+
+def test_the_data_axis_refuses_a_side_measured_from_inside_the_package():
+    """Sol re-review 7 of #2425, P3 6: python -m policyengine_uk.utils.
+    aggregate_impact builds the model before the command fingerprints it."""
+    base, head = _on("1" * 64), _on("2" * 64)
+    head["provenance"]["model_loaded_before_fingerprint"] = True
+    summary = compare(base, head, SPEC, axis="data")
+    assert summary["status"] == "fail"
+    assert any("from inside policyengine_uk" in f for f in summary["failures"])
+    del head["provenance"]["model_loaded_before_fingerprint"]
+    summary = compare(base, head, SPEC, axis="data")
+    assert summary["status"] == "fail"
+    assert any("before loading it" in f for f in summary["failures"])
+    # On the model axis it is a warning: each side has its own checkout.
+    base, head = _on("1" * 64), _on("1" * 64)
+    head["provenance"]["model_loaded_before_fingerprint"] = True
+    summary = compare(base, head, SPEC)
+    assert summary["status"] == "pass", summary["failures"]
+    assert any("from inside policyengine_uk" in w for w in summary["warnings"])
+
+
+def test_only_the_package_entry_has_built_the_model_before_the_command(tmp_path):
+    """A copy of the tool, run as its own package as CI runs it, hasn't
+    imported the model when it fingerprints it; this test process, which
+    imported policyengine_uk, has."""
+    import shutil
+    import subprocess
+    import sys
+
+    from policyengine_uk.utils.aggregate_impact import measure
+
+    assert measure.model_loaded()
+    tool = tmp_path / "pe_uk_aggregate_impact"
+    shutil.copytree(Path(measure.__file__).parent, tool)
+    out = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "import pe_uk_aggregate_impact.measure as m; print(m.model_loaded())",
+        ],
+        env={"PYTHONPATH": str(tmp_path), "PATH": "/usr/bin:/bin"},
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert out.stdout.strip() == "False"
 
 
 def test_a_base_whose_model_changed_fails_the_model_axis_too():
@@ -1201,3 +1262,24 @@ def test_a_base_whose_model_changed_fails_the_model_axis_too():
     summary = compare(base, head, SPEC)
     assert summary["status"] == "fail"
     assert any("base fails model:unchanged" in f for f in summary["failures"])
+
+
+def test_a_year_ranked_on_a_suppressed_figure_is_withheld_with_a_reason():
+    rng = np.random.default_rng(7)
+    base = households(100, rng, decile=np.repeat(np.arange(1, 11), 10))
+    head = copy.deepcopy(base)
+    impacts, notes = decile_impacts(base, head, YEARS, withheld=[YEARS[0]])
+    assert str(YEARS[0]) not in impacts and str(YEARS[1]) in impacts
+    assert any("ranked on an income holding" in n for n in notes)
+
+
+def test_withheld_decile_years_are_explained_not_called_missing():
+    """Sol re-review 7 of #2335, P3 5: with every year withheld, the comment
+    dropped the notes and said household detail was missing."""
+    from policyengine_uk.utils.aggregate_impact.render import _deciles
+
+    note = "2026-27: a figure from fewer than 10 records is suppressed"
+    text = _deciles({"deciles": {}, "decile_notes": [note]}, [2026])
+    assert note in text and "need household detail" not in text
+    text = _deciles({"deciles": {}, "decile_notes": []}, [2026])
+    assert "need household detail" in text

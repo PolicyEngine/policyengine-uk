@@ -33,16 +33,20 @@ def _sha256(path) -> str:
 
 def cmd_measure(args) -> int:
     from .dataset import load_pin, materialise, sha256_file, verify_file
-    from .measure import model_fingerprint, write_result
+    from .measure import model_fingerprint, model_loaded, write_result
 
     # First of all, before anything imports the model or caches its
-    # parameters (Sol re-reviews 5 and 6 of #2425).
+    # parameters (Sol re-reviews 5 and 6 of #2425). Entered from inside
+    # policyengine_uk, the package has built the model already: that is
+    # recorded, and the data axis refuses it (Sol re-review 7 of #2425).
+    loaded_first = model_loaded()
     fingerprint_at_start = model_fingerprint()
 
     provenance = {
         "git_sha": args.git_sha,
         "git_ref": args.git_ref,
         "tool": str(Path(__file__).resolve().parent),
+        "model_loaded_before_fingerprint": loaded_first,
     }
     try:
         from .measure import measure
