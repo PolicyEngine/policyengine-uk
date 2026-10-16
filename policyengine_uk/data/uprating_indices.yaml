@@ -86,6 +86,9 @@ gov.economic_assumptions.yoy_growth.obr.diesel_spending_litre_proxy:
 - diesel_spending
 gov.economic_assumptions.yoy_growth.obr.petrol_spending_litre_proxy:
 - petrol_spending
+gov.economic_assumptions.yoy_growth.obr.house_prices:
+- main_residence_value
+- other_residential_property_value
 gov.economic_assumptions.yoy_growth.obr.mortgage_interest:
 - mortgage_interest_repayment
 - property_finance_costs
@@ -104,7 +107,6 @@ gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 - household_lifetime_isa_balance
 - lifetime_isa_balance
 - lump_sum_income
-- main_residence_value
 - maintenance_income
 - miscellaneous_income
 - mortgage_capital_repayment
@@ -112,9 +114,8 @@ gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 - non_residential_property_value
 - non_residential_property_secured_debt
 - other_investment_income
-- other_residential_property_value
 - other_residential_property_secured_debt
-# Purchase prices a dataset may impute; uprated like the property stocks.
+# Purchase-price inputs retain their existing GDP-per-capita uprating.
 - additional_residential_property_purchased
 - non_residential_property_purchased
 - owned_land
