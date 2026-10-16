@@ -135,6 +135,30 @@
     # Change = 14,753 - 22,020 = -7,267 per year.
     benefit_cap: 14_753
 
+- name: A 16-year-old outside education gives the family cap (UC reg 5(1)(a)).
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 30
+        is_benunit_head: true
+        is_parent: true
+      young_person:
+        age: 16
+        is_benunit_head: false
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      family:
+        members: [claimant, young_person]
+        is_benefit_cap_exempt: false
+    households:
+      home:
+        members: [claimant, young_person]
+        region: SOUTH_EAST
+  output:
+    is_responsible_for_child_or_young_person_for_uc_or_housing_benefit: true
+    benefit_cap: 22_020
+
 - name: A looked-after foster child does not give the claimant the family cap.
   period: 2025
   input:

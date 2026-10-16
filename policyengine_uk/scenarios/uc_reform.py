@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import Scenario
 from policyengine_uk import Microsimulation
+from policyengine_uk.utils.supplied_inputs import set_model_value
 import numpy as np
 
 
@@ -156,7 +157,10 @@ def add_universal_credit_reform(sim: Microsimulation):
         current_health_element[has_health_element & is_post_2025_claimant] = (
             new_claimant_health_element(year) * 12
         )  # Monthly amount * 12
-        sim.set_input("uc_LCWRA_element", year, current_health_element)
+        # Stored as an input, so that reforms keep it, but still the model's
+        # own element unless one was entered (the benefit cap's LCWRA
+        # exception reads entries differently).
+        set_model_value(sim, "uc_LCWRA_element", year, current_health_element)
 
     # The standard allowance uplift is applied through the allowance's
     # uprating index (rebalancing/create_standard_allowance_uprating.py), so a

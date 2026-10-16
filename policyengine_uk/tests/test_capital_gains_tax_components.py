@@ -23,8 +23,11 @@ SCHEDULE_INPUTS = (
 def legacy_capital_gains_tax(sim, year):
     """The single-schedule formula as it stood before #1858, on the same arrays.
 
-    Copied operation for operation so that any difference in the result is a
-    difference in the new formula, not in the comparison.
+    Its schedule allocation is copied operation for operation, so a difference
+    there is a difference in the new formula. Its income and allowance inputs
+    follow the current model (#2253 moved Gift Aid out of the allowances), so
+    it checks how gains are allocated to the schedules, not equivalence with
+    any earlier treatment of Gift Aid.
     """
     hmrc = sim.tax_benefit_system.parameters(str(year)).gov.hmrc
     cgt = hmrc.cgt
@@ -40,11 +43,13 @@ def legacy_capital_gains_tax(sim, year):
     basic_rate_band_extension = (
         get("gift_aid_grossed_up") + personal_pension_band_extension
     )
+    # Gift Aid is no longer in allowances; the pre-Gift-Aid income base
+    # reproduces the old income/allowance add-backs without double relief.
     allowances_for_cgt_income = max_(
         0,
-        get("allowances") - get("gift_aid") - personal_pension_band_extension,
+        get("allowances") - personal_pension_band_extension,
     )
-    taxable_income = max_(0, get("adjusted_net_income") - allowances_for_cgt_income)
+    taxable_income = max_(0, get("net_income") - allowances_for_cgt_income)
     gains = max_(0, get("capital_gains"))
     aea = cgt.annual_exempt_amount
     gains_less_aea = max_(0, gains - aea)
@@ -219,6 +224,9 @@ class TestResponsePlumbing:
         changes = {
             "gov.hmrc.cgt.residential_property.higher_rate": {str(year): 0.30},
             "gov.hmrc.cgt.residential_property.additional_rate": {str(year): 0.30},
+            # The marginal tax rate convention, with the retention-rate
+            # default switched off.
+            "gov.simulation.capital_gains_responses.elasticity": {str(year): 0},
             "gov.simulation.capital_gains_responses.mtr_elasticity": {str(year): -0.5},
         }
         sim = Microsimulation(
@@ -299,12 +307,19 @@ class TestEqualisationReforms:
         "gov.hmrc.cgt.badr.lifetime_limit": {"2025": 0},
     }
     SCHEDULES = (None, *SCHEDULE_INPUTS)
+    # Which schedules a reform reaches shows in the tax on gains held fixed,
+    # so the reforms here switch the realisation response off.
+    STATIC = {"gov.simulation.capital_gains_responses.elasticity": {"2025": 0}}
 
     def tax(self, schedule, changes=None):
         variables = {"employment_income": 100_000, "capital_gains": 100_000}
         if schedule is not None:
             variables[schedule] = 100_000
-        kwargs = {"scenario": Scenario(parameter_changes=changes)} if changes else {}
+        kwargs = (
+            {"scenario": Scenario(parameter_changes={**changes, **self.STATIC})}
+            if changes
+            else {}
+        )
         sim = Microsimulation(situation=single_person(self.YEAR, **variables), **kwargs)
         return float(sim.calculate("capital_gains_tax", self.YEAR).values[0])
 
