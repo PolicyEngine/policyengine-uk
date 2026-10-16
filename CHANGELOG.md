@@ -1,3 +1,10 @@
+## [2.134.8] - 2026-10-16
+
+### Fixed
+
+- - Deducted relieved pension contributions from adjusted net income so that the Personal Allowance taper and High Income Child Benefit Charge reflect pension relief, while retaining a single deduction from the income tax base and restoring pension relief consistently for supplied ANI in the marriage-neutral reform.
+
+
 ## [2.134.7] - 2026-10-16
 
 ### Fixed
