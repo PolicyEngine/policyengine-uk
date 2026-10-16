@@ -16,8 +16,9 @@ times (1 + this year's uplift) / (1 + last year's uplift).
 
 The legislated amounts (2026-27 so far) are written into
 ``standard_allowance/amount.yaml`` and used as they are. Later years are
-uprated by the index built here, ``gov.dwp.universal_credit.standard_allowance
-.uprating``: the benefit uprating index ``gov.benefit_uprating_cpi``, with
+uprated by the index built here,
+``gov.economic_assumptions.indices.uc_standard_allowance``: the benefit
+uprating index ``gov.benefit_uprating_cpi``, with
 s. 1(3)'s 0% floor in 2026-27 to 2029-30, times one plus the uplift. For a
 year with legislated amounts the uplift is the one those amounts include, from
 the s. 1(4) table; for later years it is the uplift in force (nil with
@@ -49,7 +50,7 @@ from pathlib import Path
 import yaml
 from policyengine_core.parameters import Parameter, ParameterNode, get_parameter
 
-INDEX_NAME = "gov.dwp.universal_credit.standard_allowance.uprating"
+INDEX_NAME = "gov.economic_assumptions.indices.uc_standard_allowance"
 AMOUNT_FILE = Path(__file__).parents[1] / "standard_allowance" / "amount.yaml"
 # Universal Credit Act 2025 s. 1(1): tax years 2026-27 to 2029-30.
 FIRST_ACT_YEAR = 2026
@@ -120,7 +121,6 @@ def benefit_index_values(parameters: ParameterNode) -> dict:
 def add_uc_standard_allowance_uprating(parameters: ParameterNode) -> ParameterNode:
     universal_credit = parameters.gov.dwp.universal_credit
     rebalancing = universal_credit.rebalancing
-    standard_allowance = universal_credit.standard_allowance
     legislated_through = last_legislated_year()
 
     values = {}
@@ -143,8 +143,8 @@ def add_uc_standard_allowance_uprating(parameters: ParameterNode) -> ParameterNo
             uplift = uplift_in_force(rebalancing, year)
         values[instant] = cpi_path * (1 + uplift)
 
-    standard_allowance.add_child(
-        "uprating",
+    parameters.gov.economic_assumptions.indices.add_child(
+        "uc_standard_allowance",
         Parameter(
             name=INDEX_NAME,
             data={
