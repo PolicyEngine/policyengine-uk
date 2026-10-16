@@ -85,7 +85,7 @@
   output:
     pension_contributions_relief: 60_000
     personal_pension_contributions_tax: 0
-    income_tax: 28_460
+    income_tax: 23_432
 
 - name: Issue 2237 - contributions £20,000 above the annual allowance
   period: 2024
@@ -98,12 +98,11 @@
   output:
     pension_contributions_relief: 80_000
     pension_annual_allowance_chargeable_amount: 20_000
-    # Model reduced net income £150,000, with the basic and higher limits
-    # extended by £80,000. The entire charge is at the higher rate.
-    # The omitted RAS adjustment to the personal-allowance taper does not
-    # change the charge's band in this case.
+    # ANI £70,000 restores PA £12,570. Reduced net income is £137,430,
+    # with the basic and higher limits extended by £80,000. The entire
+    # charge remains at the higher rate.
     personal_pension_contributions_tax: 8_000
-    income_tax: 28_460
+    income_tax: 23_432
 
 - name: Charge spans bands as the top slice of reduced net income (s. 227(4A))
   period: 2024
@@ -415,7 +414,7 @@
     # by £100,000 to £225,140 leave the entire excess at 45%.
     personal_pension_contributions_tax: 90_000 * 0.45
 
-- name: Scottish taxpayer pays Scottish rates (model PA taper limitation)
+- name: Scottish taxpayer pays Scottish rates with restored Personal Allowance
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -424,13 +423,10 @@
     personal_pension_contributions: 80_000
     region: SCOTLAND
   output:
-    # Model reduced net income £150,000 and the limits extended by £80,000
-    # put the entire charge in the 45% advanced band. Known s.58 limitation:
-    # the model omits RAS from ANI, so PA is zero instead of £12,570. With
-    # that PA restored, the statutory charge would be £5,000 at 42% plus
-    # £15,000 at 45% = £8,850. The net-pay case below checks statutory rates
-    # without depending on that existing PA-taper deviation.
-    personal_pension_contributions_tax: 20_000 * 0.45
+    # ANI is £70,000, restoring PA £12,570. Reduced net income £137,430
+    # and the £80,000 RAS extension put £5,000 of the charge at 42% and
+    # £15,000 at 45%, giving £8,850.
+    personal_pension_contributions_tax: 5_000 * 0.42 + 15_000 * 0.45
 
 - name: Scottish starter band is charged at the Scottish basic rate (s. 227(4AA))
   period: 2026
@@ -501,10 +497,8 @@
     pension_annual_allowance: 60_000
     pension_annual_allowance_chargeable_amount: 0
     personal_pension_contributions_tax: 0
-    # Existing model limitation: s.58 omits the RAS adjustment when tapering
-    # PA, leaving PA zero here. This income-tax expectation preserves that
-    # behavior; the zero annual allowance charge is the statutory check.
-    income_tax: 28_460 - 8_000
+    # ANI £70,000 restores the full PA. Ordinary taxable income is £57,430.
+    income_tax: 15_432
 
 - name: Carry-forward covers excess without a personal allowance taper
   period: 2024
