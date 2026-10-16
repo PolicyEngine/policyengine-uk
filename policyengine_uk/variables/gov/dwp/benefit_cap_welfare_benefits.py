@@ -49,7 +49,12 @@ class benefit_cap_welfare_benefits(Variable):
         "otherwise it is the claimant and partner (is_claimant_or_partner). "
         "The two are the same unless is_uc_claimant is entered. Benefits "
         "another member of the benefit unit claims in their own right do not "
-        "count. Maternity allowance and the bereavement benefits, also "
+        "count. The total includes Universal Credit and Housing Benefit "
+        "before the cap (universal_credit_pre_benefit_cap, "
+        "housing_benefit_pre_benefit_cap). Universal Credit counts Housing "
+        "Benefit as nil (UC Regs 2013 reg. 80(2A)), so "
+        "uc_benefit_cap_reduction subtracts it; an entered total should "
+        "include it. Maternity allowance and the bereavement benefits, also "
         "welfare benefits, are not modelled here."
     )
     definition_period = YEAR

@@ -15,7 +15,10 @@ class is_housing_benefit_benefit_cap_single_claimant_rate(Variable):
         "the other rate even where the partner could not be a joint claimant "
         "for Universal Credit. A 16-year-old member counts as a young person "
         "for the year (reg. 19(1); Child Benefit (General) Regulations 2006 "
-        "regs. 5 and 7)."
+        "regs. 5 and 7). The exceptions "
+        "(is_housing_benefit_benefit_cap_exempt_specified_benefit) read the "
+        "model's Child Benefit qualifying young person instead, which leaves "
+        "out a 16-year-old outside education (#2287)."
     )
     definition_period = YEAR
     reference = (

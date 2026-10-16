@@ -255,9 +255,11 @@ def test_interest_dividends_and_rent_leave_the_award_unchanged(units, scale, yea
     unchanged = np.isclose(
         scaled["personal_allowances"], base["personal_allowances"], atol=0.01
     )
-    # Compare the capped award only where the exemption is the same:
-    # capital income can change another exemption route, such as Working
-    # Tax Credit or the pension-age Housing Benefit rules.
+    # Compare the capped award only where the Universal Credit exemption is
+    # the same, so that a change of exemption is not read as a change in the
+    # award. The routes through which capital income moved the shared
+    # exemption, Working Tax Credit and the pension-age Housing Benefit
+    # rules, are now Housing Benefit's alone (is_housing_benefit_benefit_cap_exempt).
     same_cap = unchanged & (
         scaled["is_uc_benefit_cap_exempt"] == base["is_uc_benefit_cap_exempt"]
     )

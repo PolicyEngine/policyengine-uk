@@ -36,8 +36,10 @@ def has_sixteen_year_old_dependant(benunit, period):
     young person (HB Regs 2006 reg. 19(1)), which a school leaver remains
     until a terminal date or the end of an extension period (Child Benefit
     (General) Regulations 2006 regs. 5 and 7). Annual ages cannot place
-    those dates, so the family rules that turn on responsibility for a child
-    or young person count such a member for the year.
+    those dates, so the benefit cap rates, which turn on responsibility for a
+    child or young person, count such a member for the year. The Housing
+    Benefit cap exceptions read the model's Child Benefit qualifying young
+    person instead, which leaves out a 16-year-old outside education (#2287).
     """
     person = benunit.members
     age = person("age", period)
