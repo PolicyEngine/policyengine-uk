@@ -17,10 +17,11 @@ Invariants:
 3. Projections continue from the last published rate: for a series published
    through 2026-27, an uprated parameter in 2027-28 equals the 2026-27 rate
    times the change in its uprating index, so there is no jump when
-   projections begin. The UC standard allowances and LCWRA element are left
-   out: the Universal Credit Act 2025 sets a minimum for the standard
-   allowance above CPI uprating (s.1) and freezes the LCWRA element (s.3) for
-   2026-27 to 2029-30, which the model does not yet follow.
+   projections begin. The UC standard allowances are left out: the
+   Universal Credit Act 2025 sets a minimum for the standard allowance above
+   CPI uprating (s.1), which the model does not yet follow. The LCWRA element
+   is checked against its own uprating index, which holds it for 2026-27 to
+   2029-30 as s.3 freezes it.
 4. Housing Benefit non-dependant deductions: each year's bands and deductions
    are the published ones, and the scale, read with lower edges inclusive as
    reg 74(2) words them ("not less than"), never falls as income rises.
@@ -75,13 +76,12 @@ def test_no_start_instant_overrides_published_rates(name):
 
 # Universal Credit Act 2025 (ukpga/2025/22) s.1 (standard allowance minimum:
 # the previous Step 2 amount, increased by CPI and then by the uplift in its
-# table) and s.3 (LCWRA element frozen for 2026-27 to 2029-30).
+# table).
 UC_ACT_2025_EXCEPTIONS = {
     "gov.dwp.universal_credit.standard_allowance.amount.SINGLE_YOUNG",
     "gov.dwp.universal_credit.standard_allowance.amount.SINGLE_OLD",
     "gov.dwp.universal_credit.standard_allowance.amount.COUPLE_YOUNG",
     "gov.dwp.universal_credit.standard_allowance.amount.COUPLE_OLD",
-    "gov.dwp.universal_credit.elements.disabled.amount",
 }
 
 
@@ -96,7 +96,7 @@ def test_projection_continues_from_last_published_rate(name):
     if last < 2026:
         pytest.skip("series ends before 2026-27")
     if name in UC_ACT_2025_EXCEPTIONS:
-        pytest.skip("Universal Credit Act 2025 ss.1 and 3 depart from CPI uprating")
+        pytest.skip("Universal Credit Act 2025 s.1 departs from CPI uprating")
     index = node(uprating if isinstance(uprating, str) else uprating["parameter"])
     ratio = index(f"{last + 1}-01-01") / index(f"{last}-01-01")
     expected = PARAMETERS[name]["values"][last] * ratio

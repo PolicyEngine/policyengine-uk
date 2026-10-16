@@ -20,16 +20,31 @@ The reforms combine a higher standard allowance, protected awards for existing h
 
 From April 2026, new Universal Credit claimants who qualify for the Limited Capability for Work-Related Activity (LCWRA) element receive a fixed monthly amount of £217.26.
 
+Universal Credit Act 2025 s. 3 freezes the element for 2026-27 to 2029-30: it disapplies the annual up-rating in Social Security Administration Act 1992 s. 150(1) and (2) in the tax years ending 5 April 2026 to 5 April 2029, and an up-rating order takes effect from the tax year after the one in which it is made. The new-claimant amount therefore stays at £217.26 a month to 2029-30. From 2030-31 it is uprated from £217.26 by the benefit uprating index, one year's growth at a time. It never falls, because s. 150(2) provides only for increases; other Universal Credit amounts follow the benefit uprating index directly, which gives the same result whenever the index rises.
+
+Two parameters hold this amount, and both are uprated by `gov.economic_assumptions.indices.uc_health_element`, so they follow the same path:
+
+- `gov.dwp.universal_credit.elements.disabled.amount` is the LCWRA element the `uc_LCWRA_element` formula pays. A simulation uses it whenever the rebalancing reforms are inactive, and from 2033-34, after the data's projection ends, when the rebalancing scenario no longer sets the element.
+- `gov.dwp.universal_credit.rebalancing.new_claimant_health_element` is the amount the rebalancing scenario pays new claimants in the years it sets the element, `uc_reform.REBALANCING_YEARS` (2026-27 to 2032-33).
+
+A change to the freeze or to the benefit uprating index moves both, and so does a reform that sets the index, `gov.economic_assumptions.indices.uc_health_element`, directly (it replaces the freeze and the no-fall floor for the years it names). A reform to either amount itself does not change the other.
+
+`rebalancing/create_health_element_uprating.py` builds the index when parameters are processed: the benefit uprating index, held flat in each year in which `rebalancing.health_element_freeze` and `rebalancing.active` are both true.
+
 Existing recipients are treated differently. Universal Credit Regulations 2013 reg. 36 gives one amount, the protected LCWRA amount, to every pre-2026 claimant, severe conditions criteria claimant or terminally ill claimant, whatever their age or couple status. For 2026-27 it is £429.80 a month ([SI 2026/113](https://www.legislation.gov.uk/uksi/2026/113/made) reg. 3(3)(b)), stored in `gov.dwp.universal_credit.rebalancing.protected_health_element`.
 
 For a tax year without a legislated amount, the model uses the lowest amount the Universal Credit Act 2025 s. 4 duty allows. For every standard allowance amount, the protected amount plus that allowance must be at least the previous year's sum, increased by the relevant CPI percentage: the CPI 12-month rate in the September before the tax year, never below 0% (s. 4(4)(a)). The model reads that rate from `gov.economic_assumptions.statutory_uprating_inputs.cpi_september`. Section 3 switches off the element's ordinary uprating, so the amount otherwise stays where it was. Run from the 2025-26 amounts at the 3.8% September 2025 CPI rate, this rule gives the legislated £429.80.
 
-Whether a benefit unit gets the new-claimant rate is the benefit unit's `uc_receives_new_claimant_health_element` for the year. A household situation can set it, for example `{"uc_receives_new_claimant_health_element": {"2026": True}}` on the benefit unit; otherwise it is false, which pays the protected amount. A dataset can supply it too. A simulation built from data that does not supply it assigns it by a seeded draw, using transition probabilities based on WPI Economics analysis for the Trussell Trust, derived from administrative Personal Independence Payment data. The probability of being a new claimant varies by year:
+The s. 4 duty covers 2026-27 to 2029-30 only, and s. 3 disapplies the annual up-rating only in the tax years ending 5 April 2026 to 5 April 2029. The protected row stays in reg. 36: s. 2 only relabels it. So from 2030-31 the protected amount is the year before's amount uprated by the same index as the new-claimant amount, `gov.economic_assumptions.indices.uc_health_element`, and a protected claimant keeps the higher amount.
+
+Whether a benefit unit gets the new-claimant rate is the benefit unit's `uc_receives_new_claimant_health_element` for the year. A household situation can set it, for example `{"uc_receives_new_claimant_health_element": {"2026": True}}` on the benefit unit; otherwise it is false, which pays the protected amount. A dataset can supply it too. A simulation built from data that does not supply it assigns it by a seeded draw against `gov.dwp.universal_credit.rebalancing.new_claimant_share`, from 2026-27 to the end of the data's projection. The shares to 2029-30 are WPI Economics' estimates for the Trussell Trust, derived from administrative Personal Independence Payment data:
 
 - 2026: 11%
 - 2027: 13%
 - 2028: 16%
 - 2029: 22%
+
+Later years hold 22%. That is an assumption, not a source: the share keeps rising as the caseload turns over, so holding it understates new claimants from 2030-31.
 
 ## Standard allowance uplifts
 
@@ -48,7 +63,7 @@ These uplifts are applied to the CPI-uprated standard allowance for each year. I
 The reforms are implemented through parameters, scenario modifiers, and scenarios that work together to enable policy analysis.
 ```
 
-- **Parameters**: YAML files define the reform's activation status, the health element amounts for new claimants and for protected (pre-2026) claimants, and the standard allowance uplift rates.
+- **Parameters**: YAML files define the reform's activation status, the health element amounts for new claimants and for protected (pre-2026) claimants, the health element freeze, and the standard allowance uplift rates.
 - **Scenario modifier**: The `add_universal_credit_reform` function applies the protected existing-claimant health-element path during microsimulation.
 - **Scenario**: The `universal_credit_july_2025_reform` scenario enables the reforms in policy analysis.
 
@@ -110,10 +125,34 @@ scenario = Scenario(
 sim = Simulation(scenario=scenario)
 ```
 
+### Lifting the health element freeze
+
+```python
+from policyengine_uk import Simulation, Scenario
+
+# Uprate the LCWRA element by CPI from 2028-29 instead of freezing it.
+# A bare year names the fiscal year from 6 April.
+scenario = Scenario(
+    parameter_changes={
+        "gov.dwp.universal_credit.rebalancing.health_element_freeze": {
+            "2028": False,
+            "2029": False,
+        }
+    }
+)
+
+sim = Simulation(scenario=scenario)
+```
+
+New claimants then get the uprated amount in 2028-29 and 2029-30, and every later year starts from that higher amount. The protected amount for existing claimants does not change; it follows the s. 4 floor.
+
+The freeze reaches the element through parameter processing. A `Scenario(parameter_changes=...)` change and a `reform=` dictionary keyed by year (`reform={"gov.dwp.universal_credit.rebalancing.health_element_freeze": {"2028": False, "2029": False}}`) both re-run it, before the rebalancing scenario sets the 2026-27 to 2029-30 health elements. A `reform=` key naming a single day edits the annualised parameter on that day only and does not.
+
 ## Legislative reference
 
 The reforms are based on the Universal Credit Bill and its impact assessment:
 
+- https://www.legislation.gov.uk/ukpga/2025/22/section/3
 - https://bills.parliament.uk/publications/62123/documents/6889
 - https://bills.parliament.uk/publications/62124/documents/6892
 - https://assets.publishing.service.gov.uk/media/689ca49e1c63de6de5bb1298/withdrawn-universal-credit-bill-uc-rebalancing-impact-assessment.pdf

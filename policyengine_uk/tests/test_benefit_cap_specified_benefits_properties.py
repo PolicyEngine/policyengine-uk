@@ -82,6 +82,7 @@ from policyengine_core.periods import period
 from policyengine_core.reforms import Reform
 from policyengine_uk import Simulation
 from policyengine_uk.model_api import BenUnit, Variable
+from policyengine_uk.scenarios.uc_reform import REBALANCING_YEARS
 from policyengine_uk.utils.supplied_inputs import set_model_value, supplied_input
 
 YEAR = 2025
@@ -805,7 +806,7 @@ def rebalanced():
     return simulation, float(simulation.calculate("uc_LCWRA_element", year)[0])
 
 
-REBALANCED_YEARS = [2026, 2027, 2028, 2029]
+REBALANCED_YEARS = list(REBALANCING_YEARS)
 
 
 @pytest.mark.parametrize(
@@ -829,7 +830,7 @@ REBALANCED_YEARS = [2026, 2027, 2028, 2029]
 def test_an_input_makes_the_element_an_entry_only_in_years_it_stores(
     rebalanced, input_period, amount, entered_years
 ):
-    """The rebalancing stores the model's element for 2026-2029. An input
+    """The rebalancing stores the model's element for each rebalancing year. An input
     for another period that leaves a year's stored value in place leaves it
     the model's, so the non-claimant's limited capability still does not
     lift the cap that year; an input stored for the year is an entry, even
