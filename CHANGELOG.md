@@ -1,3 +1,10 @@
+## [2.134.3] - 2026-10-16
+
+### Fixed
+
+- - Corrected the Scottish 48% top-rate threshold to £125,140 of taxable income for 2024–25, 2025–26 and 2026–27, accounting for the fully withdrawn personal allowance.
+
+
 ## [2.134.2] - 2026-10-15
 
 ### Fixed

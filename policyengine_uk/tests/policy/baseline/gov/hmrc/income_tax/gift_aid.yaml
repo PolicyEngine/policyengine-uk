@@ -201,8 +201,11 @@
     employment_income: [150_000, 150_000]
     gift_aid: [0, 800]
   output:
+    # S6M-20844: £47,701.55 in the lower bands, plus £24,860 at 48%.
+    # https://www.parliament.scot/chamber-and-committees/votes-and-motions/S6M-20844
+    # s.414 raises the £125,140 top limit to £126,140 for the donor.
     # Rate steps 1%, 21%, 3% and 3% on £1,000 gross give £280 relief.
-    income_tax: [60_011.45, 59_731.45]
+    income_tax: [59_634.35, 59_354.35]
 
 - name: A large Gift Aid gift can cross several Scottish bands
   period: 2026
