@@ -64,6 +64,13 @@ statutory adjusted-income definition is distinct from s. 58 ANI. Contribution
 relief follows the earnings/basic-amount limit. Pension input above the annual
 allowance attracts the separate annual allowance charge.
 
+Both the baseline and marriage-neutral reform reconstruct `net_income` from
+supplied ANI by restoring gross Gift Aid and relieved pension contributions
+through the same helper. Supplying the ANI derived by the model therefore
+preserves the pre-allowance base, including when an annual allowance is
+explicitly supplied. That allowance determines the separate charge rather
+than contribution relief.
+
 For example, £150,000 employment income and £60,000 gross personal pension
 contributions in London in 2024 give ANI of £90,000 and the full £12,570
 Personal Allowance. The ordinary taxable base is £77,430, giving £23,432

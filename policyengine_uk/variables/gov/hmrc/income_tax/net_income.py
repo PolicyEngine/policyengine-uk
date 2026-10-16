@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.income_tax import net_income_from_adjusted_net_income
 from policyengine_uk.utils.supplied_inputs import supplied_input
 
 
@@ -27,11 +28,7 @@ class net_income(Variable):
         # re-adding relief through a float32 ANI cache.
         supplied_ani = supplied_input(person, "adjusted_net_income", period)
         if supplied_ani is not None:
-            return (
-                supplied_ani
-                + person("gift_aid_grossed_up", period)
-                + person("pension_contributions_relief", period)
-            )
+            return net_income_from_adjusted_net_income(person, period, supplied_ani)
         # ITA 2007 ss.23 and 64 deduct trade loss relief at Step 2, before
         # personal allowances, Gift Aid's ANI adjustment and tax rate limits.
         return max_(

@@ -19,7 +19,16 @@ def template():
     return Simulation(situation={"people": {"template": {"age": {2024: 45}}}})
 
 
-def simulate(template, year, cases, *, with_child=False, gift_aid=0, supplied_ani=None):
+def simulate(
+    template,
+    year,
+    cases,
+    *,
+    with_child=False,
+    gift_aid=0,
+    supplied_ani=None,
+    person_inputs=None,
+):
     """Give each taxpayer a separate London household and optional child."""
     people, benunits, households, adult_indices = {}, {}, {}, []
     for index, (wages, contributions) in enumerate(cases):
@@ -35,6 +44,8 @@ def simulate(template, year, cases, *, with_child=False, gift_aid=0, supplied_an
         }
         if supplied_ani is not None:
             people[adult]["adjusted_net_income"] = {year: supplied_ani}
+        for name, value in (person_inputs or {}).items():
+            people[adult][name] = {year: value}
         members = [adult]
         if with_child:
             child = f"child_{index}"
@@ -65,6 +76,7 @@ def simulate(template, year, cases, *, with_child=False, gift_aid=0, supplied_an
         "earned_taxable_income",
         "income_tax",
         "CB_HITC",
+        "student_loan_repayment",
     )
     return {
         name: np.asarray(simulation.calculate(name, year), dtype=float)[adult_indices]
@@ -142,6 +154,41 @@ def test_supplied_ani_preserves_pension_relief_and_annual_allowance(
         np.testing.assert_allclose(
             supplied[name], ordinary[name], atol=0.01, err_msg=name
         )
+
+
+def test_supplied_ani_preserves_explicit_annual_allowance_and_student_loan(template):
+    person_inputs = {
+        "pension_annual_allowance": 20_000,
+        "student_loan_plan": "PLAN_2",
+        "student_loan_balance": 100_000,
+    }
+    ordinary = simulate(
+        template, 2024, [(150_000, 60_000)], person_inputs=person_inputs
+    )
+    supplied = simulate(
+        template,
+        2024,
+        [(150_000, 60_000)],
+        person_inputs=person_inputs,
+        supplied_ani=ordinary["adjusted_net_income"][0],
+    )
+    for name in ordinary:
+        np.testing.assert_allclose(
+            supplied[name], ordinary[name], atol=0.01, err_msg=name
+        )
+    # Section 190 relief is independent of AA after #2240: the £40,000
+    # excess attracts a separate charge. An explicit AA must not make the
+    # supplied-ANI inverse invent income or increase Plan 2 repayments.
+    for name, expected in {
+        "pension_annual_allowance": 20_000,
+        "pension_contributions_relief": 60_000,
+        "adjusted_net_income": 90_000,
+        "net_income": 150_000,
+        # (150,000 - 27,295) * 9%.
+        "student_loan_repayment": 11_043.45,
+    }.items():
+        assert ordinary[name][0] == pytest.approx(expected, abs=0.01), name
+        assert supplied[name][0] == pytest.approx(expected, abs=0.01), name
 
 
 @settings(max_examples=30, deadline=None, derandomize=True, database=None)
