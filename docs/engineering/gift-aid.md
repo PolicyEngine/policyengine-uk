@@ -13,6 +13,15 @@ non-savings income, it also increases the Scottish basic-rate upper limit and
 every limit above it; the starter-rate upper limit remains unchanged. Savings
 and dividends use the extended UK limits for Scottish taxpayers too.
 
+The Scottish top-rate limit is £125,140 of taxable income in each of
+[2024-25](https://www.parliament.scot/chamber-and-committees/votes-and-motions/S6M-12252),
+[2025-26](https://www.parliament.scot/chamber-and-committees/votes-and-motions/S6M-16531)
+and [2026-27](https://www.parliament.scot/chamber-and-committees/votes-and-motions/S6M-20844).
+The personal allowance is fully withdrawn at that income, so £12,570 is not
+subtracted from this limit, as the [Scottish Government's explanatory
+note](https://www.gov.scot/publications/scottish-rate-resolution-2026-2027-draft-motion-explanatory-note/pages/3/)
+explains. Gift Aid extends this taxable-income limit by the gross gift.
+
 The model extends limits where band amounts are calculated. For variables that
 use a complete rate scale, `calc_income_tax_with_gift_aid` in
 `policyengine_uk/utils/income_tax.py` applies an equivalent correction to the
@@ -53,14 +62,8 @@ including s. 12B(8) for Scottish taxpayers, with s. 414(2)(b)).
 
 ## Existing limitations
 
-Zero-gift calculations retain their existing behavior. Several inherited
-limitations remain relevant when interpreting mixed-income results:
+Several limitations remain relevant when interpreting mixed-income results:
 
-- The Scottish top-rate threshold parameter is £112,570 of income after
-  allowances for 2024 onwards. The [HMRC rates and allowances
-  table](https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past)
-  gives £125,140 after allowances. The Gift Aid correction extends the model's
-  existing threshold and does not repair it.
 - Adjusted net income still omits other adjustments in s. 58, including the
   deduction for pension contributions relieved at source in Step 3.
 - Gifts are assumed to qualify. The model does not charge the donor for a
