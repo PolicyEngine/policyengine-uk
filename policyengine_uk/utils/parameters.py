@@ -160,6 +160,11 @@ REMOVED_PARAMETERS = {
     "gov.dwp.state_pension.age.female": RemovedParameter(
         "removed female State Pension age parameter", _STATE_PENSION_AGE_REPLACEMENT
     ),
+    "gov.dwp.carer_premium.couple": RemovedParameter(
+        "removed couple carer premium parameter",
+        "The carer premium is calculated per qualifying claimant or partner. "
+        "Change gov.dwp.carer_premium.single (the per-person weekly amount) instead.",
+    ),
     "gov.simulation.labour_supply_responses.obr_elasticities": RemovedParameter(
         "removed OBR elasticities switch", _OBR_ELASTICITIES_REPLACEMENT
     ),
