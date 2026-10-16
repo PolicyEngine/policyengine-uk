@@ -12,8 +12,9 @@ HB Regs 2006 reg 75F(1) and UC Regs 2013 reg 83(1) lift the cap where:
   Carer Support Payment (75F(1)(ea), (h), (ha); 83(1)(g), (i), (ia)): an
   award, or the model's Carer's Allowance conditions, 35 hours of care a
   week, whether or not it is paid (is_entitled_to_carer_benefit), or,
-  for a Housing Benefit young person, armed forces independence payment
-  (75F(1)(ea); UC counts it as attendance allowance, UC Regs 2013 reg 2);
+  for a Housing Benefit young person in a family without a Universal
+  Credit award, armed forces independence payment (75F(1)(ea); UC counts it
+  as attendance allowance, a claimant's only, UC Regs 2013 regs 2, 83(1)(c));
 - a Universal Credit claimant has limited capability for work and
   work-related activity or caring responsibilities, so the award includes the
   LCWRA or carer element (83(1)(a), (j); regs 27(1), 29(1)). An element
@@ -244,9 +245,11 @@ def own_esa(m):
     return m["esa_contrib_reported"] > 0 or m["esa_income_reported"] > 0
 
 
-def reference_exempt(members, benunit_inputs):
+def reference_exempt(members, benunit_inputs, on_universal_credit):
     """HB Regs 2006 regs 75E(2), 75F(1) and UC Regs 2013 reg 83(1), read
-    directly, with roles known by construction."""
+    directly, with roles known by construction. ``on_universal_credit`` is
+    whether the family has a Universal Credit award, which decides the
+    scheme whose armed forces independence payment test applies."""
     claimants = [m for m in members if m["_role"] == "claimant"]
     young_persons = [m for m in members if m["_role"] in ("young_person", "sixteen")]
     hb_young_persons = [m for m in members if m["_role"] == "young_person"]
@@ -308,7 +311,10 @@ def reference_exempt(members, benunit_inputs):
         or any_receives(claimants + children + young_persons, CHILD_OR_YOUNG_PERSON)
         or any_receives(claimants + young_persons, ["pip_dl"])
         or any(entitled_to_carer_benefit(m) for m in claimants + young_persons)
-        or any_receives(claimants + hb_young_persons, HOUSING_BENEFIT_YOUNG_PERSON)
+        or any_receives(
+            claimants + ([] if on_universal_credit else hb_young_persons),
+            HOUSING_BENEFIT_YOUNG_PERSON,
+        )
         or element_included("uc_LCWRA_element", lcwra)
         or element_included("uc_carer_element", carer)
         or benunit_inputs["working_tax_credit"] > 0
@@ -384,8 +390,9 @@ def test_exemption_matches_regulations(drawn):
     units = [(members + [other], inputs) for members, other, inputs in drawn]
     sim = Simulation(situation=situation(units))
     exempt = sim.calculate("is_benefit_cap_exempt_health_disability", YEAR)
+    on_uc = sim.calculate("universal_credit_pre_benefit_cap", YEAR) > 0
     for i, (members, inputs) in enumerate(units):
-        expected = reference_exempt(members, inputs)
+        expected = reference_exempt(members, inputs, on_uc[i])
         event(f"reference exempt: {expected}")
         assert exempt[i] == expected, units[i]
 
@@ -441,10 +448,11 @@ def test_each_head_alone_matches_regulations(mode):
         situation=situation([(members, no_entries) for _, members in units])
     )
     exempt = sim.calculate("is_benefit_cap_exempt_health_disability", YEAR)
+    on_uc = sim.calculate("universal_credit_pre_benefit_cap", YEAR) > 0
     mismatches = [
         (key, bool(exempt[i]))
         for i, (key, members) in enumerate(units)
-        if exempt[i] != reference_exempt(members, no_entries)
+        if exempt[i] != reference_exempt(members, no_entries, on_uc[i])
     ]
     assert not mismatches, mismatches
     # Every role meets every circumstance, and both outcomes occur.

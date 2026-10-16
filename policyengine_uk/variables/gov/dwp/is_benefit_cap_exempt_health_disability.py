@@ -54,8 +54,9 @@ YOUNG_PERSON_BENEFITS = [
 # Armed forces independence payment: Housing Benefit lists it with personal
 # independence payment, for a young person too (HB reg 75F(1)(ea)); Universal
 # Credit counts it as attendance allowance, a claimant's only (UC Regs 2013
-# reg 2, reg 83(1)(c)). Either scheme: the claimant, partner or a Housing
-# Benefit young person.
+# reg 2, reg 83(1)(c)). The formula takes the Universal Credit route for a
+# family with a Universal Credit award and the Housing Benefit route
+# otherwise.
 HOUSING_BENEFIT_YOUNG_PERSON_BENEFITS = [
     "armed_forces_independence_payment",
 ]
@@ -95,7 +96,10 @@ class is_benefit_cap_exempt_health_disability(Variable):
         "claimant and partner (benefit_cap_couple). "
         "The model applies one cap to Universal Credit and Housing Benefit, so "
         "an exception in either scheme counts: Universal Credit's LCWRA and "
-        "carer elements, and Housing Benefit's wider young-person tests."
+        "carer elements, and Housing Benefit's wider young-person tests. "
+        "Armed forces independence payment is the exception: it follows the "
+        "scheme of the family's award, so on Universal Credit only a "
+        "claimant's counts."
     )
     definition_period = YEAR
     reference = (
@@ -233,6 +237,19 @@ class is_benefit_cap_exempt_health_disability(Variable):
             person("is_carer_for_benefits", period),
         )
 
+        # Armed forces independence payment counts for different people in
+        # each scheme (HOUSING_BENEFIT_YOUNG_PERSON_BENEFITS). On Universal
+        # Credit only a claimant's counts, so a young person's does not lift
+        # the cap; otherwise Housing Benefit's young person counts too. The
+        # family is on Universal Credit when it has an award, as in
+        # benefit_cap_couple.
+        on_universal_credit = benunit.project(
+            benunit("universal_credit_pre_benefit_cap", period) > 0
+        )
+        afip_recipients = claimant | (
+            ~on_universal_credit & housing_benefit_young_person
+        )
+
         # HB reg 75E(2): the claimant is, or the couple are jointly, entitled
         # to working tax credit.
         working_tax_credit = benunit("working_tax_credit", period) > 0
@@ -244,10 +261,7 @@ class is_benefit_cap_exempt_health_disability(Variable):
                 CHILD_OR_YOUNG_PERSON_BENEFITS, claimant | child_or_young_person
             )
             | received_by(YOUNG_PERSON_BENEFITS, claimant | young_person)
-            | received_by(
-                HOUSING_BENEFIT_YOUNG_PERSON_BENEFITS,
-                claimant | housing_benefit_young_person,
-            )
+            | received_by(HOUSING_BENEFIT_YOUNG_PERSON_BENEFITS, afip_recipients)
             | lcwra_element
             | carer_element
             | working_tax_credit

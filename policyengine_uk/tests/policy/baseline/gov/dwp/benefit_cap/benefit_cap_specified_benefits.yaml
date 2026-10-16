@@ -1038,6 +1038,10 @@
     benunits:
       family:
         members: [parent, young_person]
+        # No Universal Credit award, so the Housing Benefit route applies.
+        # On Universal Credit a young person's AFIP would not count (UC Regs
+        # 2013 regs 2, 83(1)(c)).
+        universal_credit_pre_benefit_cap: 0
     households:
       home:
         members: [parent, young_person]
