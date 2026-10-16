@@ -33,10 +33,14 @@ CPI-only path is exactly the uplift. It is read on 30 April of each year, the
 date fiscal-year conversion samples, as uprating will extend it, so a reform to
 the benefit index reaches the allowance in the fiscal year it covers.
 
-This runs in ``process_parameters`` before uprating, so a parameter change
-made through ``Scenario(parameter_changes=...)``, which re-runs that pipeline,
-reaches the allowance. A ``reform=`` dict applied after processing does not
-re-run uprating; set ``standard_allowance.amount`` directly instead.
+The projection carries forward any margin in a legislated rate above the
+Act's minimum. In 2026-27 the single under-25 rate is GBP 338.58, above the
+Act's GBP 336.60 minimum; its CPI-only base here is 338.58 / 1.023.
+
+This runs once per tree in the shared parameter generation pipeline before
+uprating. Dated changes through ``Scenario(parameter_changes=...)`` or a
+``reform=`` dict rebuild that pipeline, as does resetting and reprocessing
+parameters, so they reach the allowance.
 """
 
 from functools import lru_cache

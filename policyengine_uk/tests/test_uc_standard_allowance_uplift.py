@@ -4,18 +4,20 @@
 The Act sets each year's minimum standard allowance for 2026-27 to 2029-30
 by three steps: take the previous year's CPI-uprated (Step 2) amount, or the
 2025-26 amount for 2026-27; increase it by CPI (never below 0%); then by that
-year's uplift (2.3%, 3.1%, 4.0%, 4.8%). The 2026-27 amounts are legislated
-in amount.yaml; later years are uprated by CPI times the change in uplift.
+year's uplift (2.3%, 3.1%, 4.0%, 4.8%). The model's 2026-27 amounts in
+amount.yaml stay fixed; later years are uprated by CPI times the change in
+uplift. SINGLE_YOUNG starts at £338.58, above the Act's £336.60 minimum;
+projecting that model anchor carries its margin above the minimum forward.
 
 Invariants:
 
 1. Growth: in every year, each amount grows by the benefit CPI index ratio
    times (1 + this year's uplift) / (1 + last year's uplift), and by CPI
    alone after 2029-30.
-2. Differential: the amounts equal an independent step-by-step
-   implementation of s. 1(2), started from the 2026-27 Step 2 amounts (the
-   legislated amounts less the 2.3% uplift).
-3. The uplift in force: the legislated 2026-27 amounts stay as legislated;
+2. Differential: the amounts equal an independent step-by-step application
+   of s. 1(2)'s growth to the model's 2026-27 anchors, less their 2.3%
+   uplift. This does not assert equality to the Act's minimum amounts.
+3. The uplift in force: the model's 2026-27 amounts stay fixed;
    a reform to a later year's uplift, or switching rebalancing off (no
    uplift), scales each later year by (1 + uplift in force) / (1 + statutory
    uplift) and leaves the CPI path alone.
@@ -44,7 +46,7 @@ PROPERTY_SETTINGS = settings(
 )
 
 
-def _amounts(scenario=None):
+def _amounts(scenario=None, reform=None):
     """Monthly standard allowance by claimant type and year, and the benefit
     CPI index, read through processed parameters."""
     sim = Simulation(
@@ -54,6 +56,7 @@ def _amounts(scenario=None):
             "households": {"h": {"members": ["p"]}},
         },
         scenario=scenario,
+        reform=reform,
     )
     parameters = sim.tax_benefit_system.parameters
     amounts = {
@@ -78,7 +81,7 @@ def _uplift(year, schedule=ACT_UPLIFT):
     return schedule[min(year, 2029)] if year >= 2026 else 0.0
 
 
-def test_single_claimant_aged_30_matches_the_act():
+def test_single_claimant_aged_30_follows_the_act_uplift_schedule():
     """The issue's reproducer: annual uc_standard_allowance for a single
     claimant aged 30 now carries the 2027-28 to 2029-30 uplifts."""
     sim, amounts, cpi = _amounts()
@@ -102,10 +105,12 @@ def test_single_claimant_aged_30_matches_the_act():
     )
 
 
-def test_amounts_match_the_act_step_by_step():
+def test_projection_follows_act_growth_from_modelled_2026_anchors():
+    """Apply the Act's growth to the existing anchors, including the margin
+    above the minimum for single claimants under 25."""
     _, amounts, cpi = _amounts()
     for t in CLAIMANT_TYPES:
-        # Step 2 amount for 2026-27: the legislated amount less its uplift.
+        # Modelled Step 2 anchor: the 2026-27 amount less its uplift.
         step_2 = amounts[2026][t] / (1 + ACT_UPLIFT[2026])
         for year in range(2027, 2030):
             step_2 *= max(1.0, cpi[year] / cpi[year - 1])  # Steps 1 and 2
@@ -116,6 +121,46 @@ def test_amounts_match_the_act_step_by_step():
             assert amounts[year][t] == pytest.approx(
                 amounts[year - 1][t] * cpi[year] / cpi[year - 1], rel=1e-9
             )
+
+
+@pytest.mark.parametrize(
+    "reformed_uplift,expected_2029",
+    [(None, 435.2836754643207), (0.10, 456.8817204301076)],
+)
+def test_uplift_survives_dated_reform_rebuild_and_reprocessing(
+    reformed_uplift, expected_2029
+):
+    """Dated reform rebuilding and reset/reprocess retain the allowance
+    generator and an uplift reform applied through the reform= route."""
+    changes = {
+        "gov.benefit_uprating_cpi": {"2026-04-06.2100-12-31": 300.0},
+    }
+    if reformed_uplift is not None:
+        changes[UPLIFT] = {"2029-04-06.2030-04-05": reformed_uplift}
+    sim, amounts, _ = _amounts(reform=changes)
+    # With CPI held flat, £424.90 / 1.023 is the Step 2 anchor. Its 2029
+    # amount is that anchor times 1.048 (or the reformed 1.10), not £424.90.
+    assert amounts[2029]["SINGLE_OLD"] == pytest.approx(expected_2029, rel=1e-9)
+
+    # An unrelated dated reform forces a further rebuild of the same tree.
+    sim.apply_parameter_changes(
+        {"gov.hmrc.income_tax.rates.uk[0].rate": {"2027-04-06.2100-12-31": 0.21}}
+    )
+    system = sim.tax_benefit_system
+
+    def assert_uplift():
+        allowance = system.parameters(
+            "2029-06-01"
+        ).gov.dwp.universal_credit.standard_allowance.amount.SINGLE_OLD
+        assert allowance == pytest.approx(expected_2029, rel=1e-9)
+
+    assert_uplift()
+    # Reprocessing more than once also guards against applying the uplift
+    # twice while replaying the dated assignments.
+    for _ in range(2):
+        system.reset_parameters()
+        system.process_parameters()
+        assert_uplift()
 
 
 uplift_schedule = st.fixed_dictionaries(
