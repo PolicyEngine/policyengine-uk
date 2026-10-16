@@ -9,14 +9,18 @@ class household_uc_pool_company_holdings(Variable):
     )
     documentation = (
         "Disregarded company holdings (uc_company_holding_disregard) taken "
-        "out of the household's capital before it is shared among the "
-        "claimants and partners of benunits that do not report their "
-        "capital. That is every holding except a reporting benunit's "
-        "claimant's or partner's, which comes off that benunit's reported "
-        "capital instead: the holdings of everyone in benunits that do not "
-        "report, and of dependants in benunits that do, whose capital is "
-        "nobody's to count. So no benunit counts any part of a disregarded "
-        "holding. A holding is shares, held within the household's "
+        "out of the household's financial capital before its residual is "
+        "shared among claimants and partners without a financial observation "
+        "or complete override. A claimant or partner's holding is already "
+        "covered when their benunit supplies a nonnegative financial "
+        "observation (benunit_reported_capital), which is subtracted from the "
+        "financial pool. All other holdings leave the pool here, including "
+        "those of complete-override claimants without a financial observation "
+        "and those of dependants. A complete uc_reported_capital override has "
+        "unknown asset composition and is never subtracted from the financial "
+        "pool; its owner's holding is also disregarded in their own assessment. "
+        "So no benunit counts any part of a disregarded holding. A holding "
+        "is shares, held within the household's "
         "corporate_wealth, so no more than that is taken out: a holding "
         "entered without matching corporate_wealth cannot remove savings or "
         "property."
@@ -28,11 +32,9 @@ class household_uc_pool_company_holdings(Variable):
 
     def formula(household, period, parameters):
         person = household.members
-        reported = (person.benunit("uc_reported_capital", period) >= 0) | (
-            person.benunit("benunit_reported_capital", period) >= 0
-        )
+        has_financial_report = person.benunit("benunit_reported_capital", period) >= 0
         claimant_or_partner = person("is_uc_claimant", period)
-        off_reported_capital = reported & claimant_or_partner
+        off_reported_capital = has_financial_report & claimant_or_partner
         holdings = household.sum(
             person("uc_company_holding_disregard", period) * ~off_reported_capital
         )

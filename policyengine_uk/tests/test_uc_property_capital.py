@@ -404,3 +404,43 @@ def test_capital_is_independent_of_person_and_benefit_unit_row_order(
     reordered = dict(zip(permuted["benunits"], _values(Simulation(situation=permuted))))
     for unit in baseline:
         assert reordered[unit] == pytest.approx(baseline[unit])
+
+
+@pytest.mark.parametrize("complete_override", [0, 20_000])
+@pytest.mark.parametrize(
+    "financial_report", [None, -1, 10_000], ids=["omitted", "missing", "observed"]
+)
+def test_complete_override_company_holding_cannot_leak_into_missing_unit_pool(
+    complete_override, financial_report
+):
+    owner_unit = {"override": complete_override}
+    if financial_report is not None:
+        owner_unit["financial"] = financial_report
+    situation = _situation(
+        [owner_unit, {"financial": -1}],
+        {"corporate_wealth": 10_000, "savings": 6_000},
+    )
+    situation["people"]["p0_0"].update(
+        {
+            "stands_as_sole_owner_or_partner_of_company": {YEAR: True},
+            "owned_company_carries_on_property_business": {YEAR: True},
+            "owned_company_holding_value": {YEAR: 10_000},
+            "owned_company_capital": {YEAR: 0},
+        }
+    )
+    simulation = Simulation(situation=situation)
+    assert _values(simulation, "uc_company_owner_treatment_applies")[0]
+    assert _values(simulation, "uc_company_holding_disregard")[0] == 10_000
+    assert _values(simulation, "uc_company_capital")[0] == 0
+    # An observed financial report already removes the owner's holding from
+    # the financial pool. Without one, remove it separately even when the
+    # owner has a complete override; that override's decomposition is unknown.
+    expected_pool_disregard = 0 if financial_report == 10_000 else 10_000
+    assert (
+        _values(simulation, "household_uc_pool_company_holdings")[0]
+        == expected_pool_disregard
+    )
+    np.testing.assert_allclose(
+        _values(simulation),
+        [max(0, complete_override - 10_000), 6_000],
+    )
