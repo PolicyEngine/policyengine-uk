@@ -453,11 +453,11 @@ def test_adult_non_dependant_ends_the_severe_disability_premium():
 # the savings drawn below the £16,000 capital limit the added member's award
 # survives tariff income, so a reader that wrongly counts it changes (£20,000
 # of savings screens income-related ESA and income-based JSA to nil). The
-# invariant is about the readers' own scoping: the shapes pay no rent, so
-# Universal Credit stays far below the benefit cap. The cap still counts every
-# member's award (benefit_cap_reduction reads the benefit-unit totals), so
-# with a binding cap another member's award can reach a reader through
-# Universal Credit.
+# shapes pay no rent, so Universal Credit stays far below the benefit cap.
+# The cap reads only the couple's own awards and the family's
+# (benefit_cap_reduction), not another member's; the first property checks
+# that on JSA_COUPLE_WITH_LODGER, a family that an added member's £3,000 of
+# JSA would take over the cap if it counted.
 PENSION_AGE = 68
 # Whether the pension-age property enters is_mixed_age_couple, so that a
 # reader of the couple's award reports is tested on those reports alone.
