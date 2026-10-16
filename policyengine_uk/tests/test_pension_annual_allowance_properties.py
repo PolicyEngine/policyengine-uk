@@ -235,6 +235,26 @@ def test_extra_contributions_never_raise_tax_by_more_than_the_charge(
 @example(
     people=[
         {
+            "age": 45,
+            "employment_income": 150_000,
+            "self_employment_income": 0,
+            "employer_pension_contributions": 0,
+            "contribution_share": 0.0,
+            "net_pay_share": net_pay_share,
+            "gift_aid": 0,
+            "savings_interest_income": 0,
+            "dividend_income": 0,
+            "unused_pension_annual_allowance": 0,
+            "region": "LONDON",
+        }
+        for net_pay_share in (0.0, 0.0, 1.0, 1.0)
+    ],
+    year=2024,
+    step=1.0,
+)
+@example(
+    people=[
+        {
             "age": 54,
             "employment_income": 362_880,
             "self_employment_income": 5_249,
@@ -274,13 +294,20 @@ def test_contributions_above_the_allowance_are_not_taxed_twice(people, year, ste
     allowance = np.array(
         zero_sim.calculate("pension_annual_allowance", year), dtype=float
     )
-    # Income after allowances with no contributions. Relief beyond it is worth
-    # nothing, but the charge still falls on the input amount, so the
-    # comparison stops there as well as at relevant earnings.
+    income_tax = zero_sim.tax_benefit_system.parameters(year).gov.hmrc.income_tax
+    # Contributions can restore the full personal allowance as ANI falls.
+    # Retain the other allowances from zero contributions, but reserve the
+    # year's full PA so relief remains valuable throughout the comparison.
+    # Beyond that income, the charge still falls on the full input amount.
+    restored_allowances = (
+        np.array(zero_sim.calculate("allowances", year), dtype=float)
+        - np.array(zero_sim.calculate("personal_allowance", year), dtype=float)
+        + float(income_tax.allowances.personal_allowance.amount)
+    )
     taxable_income = np.maximum(
         0,
         np.array(zero_sim.calculate("net_income", year), dtype=float)
-        - np.array(zero_sim.calculate("allowances", year), dtype=float),
+        - restored_allowances,
     )
     earnings = np.array([_relevant_earnings(p) for p in people], dtype=float)
     upper = np.minimum(earnings, taxable_income)
@@ -297,11 +324,7 @@ def test_contributions_above_the_allowance_are_not_taxed_twice(people, year, ste
     ]
     tax_at = _calc(_with_contributions(people, at_allowance), year, variables)
     tax_above = _calc(_with_contributions(people, above), year, variables)
-    basic_limit = float(
-        zero_sim.tax_benefit_system.parameters(
-            year
-        ).gov.hmrc.income_tax.rates.uk.thresholds[1]
-    )
+    basic_limit = float(income_tax.rates.uk.thresholds[1])
 
     def qualifies_for_ras_extension(out):
         ras = np.minimum(
