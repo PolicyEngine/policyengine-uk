@@ -12,11 +12,13 @@ Invariants, for any people and incomes:
    without the loss (a separate simulation); adjusted total income is
    that less the pension contributions given relief (own contributions up to
    the greater of £3,600 and pay plus profits, none from age 75).
-2. Differential: a person's Income Tax with a loss equals the Income Tax of
-   the same person without the loss and with their income cut by the relief,
-   taken from non-savings income first, then savings, then dividends: the
-   model's fixed allowance order (s.25(2) asks for the order giving the
-   greatest reduction; #2106).
+2. Differential: a person's Income Tax before the winter fuel payment
+   charge with a loss equals the same tax of the same person without the
+   loss and with their income cut by the relief, taken from non-savings
+   income first, then savings, then dividends: the model's fixed allowance
+   order (s.25(2) asks for the order giving the greatest reduction; #2106).
+   The charge itself can differ between the two: it tests total income,
+   which the relief, at Step 2, does not lower but the cut does.
 3. Income Tax before the winter fuel payment charge never rises with the
    loss and falls by at most the relief (for people without savings income:
    the personal savings allowance steps up by £500 when someone stops being
@@ -27,14 +29,15 @@ Invariants, for any people and incomes:
    Credit award and with it the exemption (ITEPA 2003 s.681I(4)), and a loss
    claim replaces the trading allowance.
 4. Means tests never set the loss against employed earnings or other
-   income: with Income Tax and NI held at the values the loss gives, every
+   income: with Income Tax before the winter fuel payment charge (what the
+   means tests deduct) and NI held at the values the loss gives, every
    means-tested benefit and means-test income is what it is without the loss,
    except that UC sets it against the person's other trades' profits (UC Regs
    2013 reg 57(2)), so UC, its benefit cap earnings test and the capped
    award equal the same family with those profits cut by the loss. The
    model's means tests use annual tax deductions, so otherwise the loss
    reaches them through those deductions. UC's own deductions for tax and
-   NI on earnings are held alongside Income Tax and NI.
+   NI on earnings are held alongside them.
 5. Tax credits (SI 2002/2006 reg 3(1) Step 4): the claimants' losses (not a
    child's) come off their applicable income, never below zero, and the award
    never falls.

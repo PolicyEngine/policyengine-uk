@@ -799,3 +799,133 @@
     winter_fuel_payment_charge: [0, 0, 0, 0, 0, 0]
     income_tax_before_winter_fuel_payment_charge: [4_490, 0, 0, 0, 0, 0]
     income_tax: [4_490, 0, 0, 0, 0, 0]
+
+- name: 2025 a landlord without finance costs keeps expenses when the allowance would end Pension Credit
+  # Private pension £35,207; property receipts £3,500, expenses £200 (profit
+  # £3,300), no finance costs; six children. With partial relief (the £1,000
+  # allowance in place of £200 of expenses): total income £37,707, tax
+  # (37,707 - 12,570) x 20% = £5,027.40. With expenses: total income £38,507,
+  # tax (38,507 - 12,570) x 20% = £5,187.40. Total income is over £35,000
+  # either way, so Pension Credit decides the charge. Pension Credit income
+  # (pension and property profits, less tax before the charge) is £33,479.60
+  # with the allowance and £33,319.60 with expenses, against the model's
+  # minimum guarantee of £33,399.60 (with the amounts for the children), so
+  # only the expenses route gets Pension Credit (£80), which exempts the
+  # pensioner from the £200 charge (s.681I(4)). Total tax: £5,227.40 with the
+  # allowance, £5,187.40 with expenses, so the pensioner does not elect for
+  # partial relief.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        private_pension_income: 35_207
+        property_rental_income: 3_500
+        property_income: 3_300
+      child_1:
+        age: 10
+      child_2:
+        age: 10
+      child_3:
+        age: 10
+      child_4:
+        age: 10
+      child_5:
+        age: 10
+      child_6:
+        age: 10
+    benunits:
+      unit:
+        members: [pensioner, child_1, child_2, child_3, child_4, child_5, child_6]
+        would_claim_pc: true
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child_1, child_2, child_3, child_4, child_5, child_6]
+        country: ENGLAND
+  output:
+    uses_property_allowance: [false, false, false, false, false, false, false]
+    total_income_charged_to_tax: [38_507, 0, 0, 0, 0, 0, 0]
+    pension_credit_income: 33_319.60
+    pension_credit: 80
+    winter_fuel_payment: [200, 0, 0, 0, 0, 0, 0]
+    winter_fuel_payment_charge: [0, 0, 0, 0, 0, 0, 0]
+    income_tax: [5_187.40, 0, 0, 0, 0, 0, 0]
+
+- name: 2025 landlords in two benefit units of one household each elect with the other's route fixed
+  # One household. Unit A: a claimant aged 70 with private pension
+  # £42,772.55, a partner aged 85 with no income, and five children. Unit B:
+  # an unrelated person aged 85 with private pension £40,000. Each landlord
+  # has property receipts £3,500 and expenses £200 (profit £3,300); finance
+  # costs are £1,200 (A) and £675 (B). Unit A claims Pension Credit; B does
+  # not.
+  # A: with partial relief, total income £45,272.55 and tax before the charge
+  # (45,272.55 - 12,570) x 20% = £6,540.51, less the Marriage Allowance
+  # reduction 20% x £1,260 = £252, so £6,288.51. Unit A then gets Pension
+  # Credit (a savings credit of £16 in the model), which exempts A from the
+  # charge and makes A the person paid for the couple, so A's partner is not
+  # entitled (SI 2025/969 reg 4(2)(a)); A is paid the couple's full £300.
+  # With expenses, A's tax before the charge is £6,700.51 - £252 - 20% x
+  # £1,200 = £6,208.51, unit A gets no Pension Credit, and A's £100 shared
+  # payment is charged: £6,308.51. A elects for partial relief.
+  # B: tax before the charge is (42,500 - 12,570) x 20% = £5,986 with the
+  # allowance and (43,300 - 12,570) x 20% - 20% x £675 = £6,011 with
+  # expenses. B's total income is over £35,000 on both routes, so B is
+  # charged the payment: £200 while B lives with one other entitled person,
+  # A, who is under 80, and £150 when A's partner is entitled too (SI
+  # 2025/969 reg 3(5) and (6)). With A's election held fixed, B is charged
+  # £200 on both routes, so B elects for partial relief: £5,986 + £200 =
+  # £6,186, against £6,011 + £200 = £6,211 with expenses. Switching both
+  # landlords together would set £6,186 against £6,011 + £150 = £6,161 and
+  # wrongly keep B on expenses.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_benunit_head: true
+        private_pension_income: 42_772.55
+        property_rental_income: 3_500
+        property_income: 3_300
+        property_finance_costs: 1_200
+      partner:
+        age: 85
+        is_benunit_head: false
+      lodger:
+        age: 85
+        private_pension_income: 40_000
+        property_rental_income: 3_500
+        property_income: 3_300
+        property_finance_costs: 675
+      child_1:
+        age: 10
+      child_2:
+        age: 10
+      child_3:
+        age: 10
+      child_4:
+        age: 10
+      child_5:
+        age: 10
+    benunits:
+      unit_a:
+        members: [claimant, partner, child_1, child_2, child_3, child_4, child_5]
+        would_claim_pc: true
+        would_claim_uc: false
+      unit_b:
+        members: [lodger]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, partner, lodger, child_1, child_2, child_3, child_4, child_5]
+        country: ENGLAND
+  output:
+    uses_property_allowance: [true, false, true, false, false, false, false, false]
+    income_tax_before_winter_fuel_payment_charge: [6_288.51, 0, 5_986, 0, 0, 0, 0, 0]
+    pension_credit: [16, 0]
+    winter_fuel_payment: [300, 0, 200, 0, 0, 0, 0, 0]
+    winter_fuel_payment_charge: [0, 0, 200, 0, 0, 0, 0, 0]
+    income_tax: [6_288.51, 0, 6_186, 0, 0, 0, 0, 0]

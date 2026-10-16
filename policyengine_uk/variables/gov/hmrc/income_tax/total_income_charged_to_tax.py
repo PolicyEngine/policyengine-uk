@@ -15,7 +15,10 @@ class total_income_charged_to_tax(Variable):
         "interest. Trade losses brought forward (loss_relief) are a Step 2 "
         "relief that the model deducts from trading profits, so they are "
         "added back. Unlike total_income, which sums gross income, this is "
-        "the figure the law tests."
+        "the figure the law tests, as far as the model's components go: "
+        "where a component departs from the law, so does this total. For "
+        "example, the model deducts deficiency relief from dividend income, "
+        "and does not yet tax statutory paternity pay."
     )
     definition_period = YEAR
     unit = GBP
