@@ -32,13 +32,21 @@ def _sha256(path) -> str:
 
 
 def cmd_measure(args) -> int:
-    from .dataset import load_pin, materialise, verify_file
-    from .measure import write_result
+    from .dataset import load_pin, materialise, sha256_file, verify_file
+    from .measure import model_fingerprint, model_loaded, write_result
+
+    # First of all, before anything imports the model or caches its
+    # parameters (Sol re-reviews 5 and 6 of #2425). Entered from inside
+    # policyengine_uk, the package has built the model already: that is
+    # recorded, and the data axis refuses it (Sol re-review 7 of #2425).
+    loaded_first = model_loaded()
+    fingerprint_at_start = model_fingerprint()
 
     provenance = {
         "git_sha": args.git_sha,
         "git_ref": args.git_ref,
         "tool": str(Path(__file__).resolve().parent),
+        "model_loaded_before_fingerprint": loaded_first,
     }
     try:
         from .measure import measure
@@ -49,14 +57,27 @@ def cmd_measure(args) -> int:
         spec = load_spec(spec_path, years=args.years)
         provenance["spec_sha256"] = _sha256(spec_path)
 
-        pin = load_pin(args.pin)
-        if args.dataset_file:
+        if args.pin:
+            pin = load_pin(args.pin)
+            if args.dataset_file:
+                dataset_path = Path(args.dataset_file)
+                verified = verify_file(dataset_path, pin.sha256)
+            else:
+                dataset_path = materialise(pin)
+                verified = pin.sha256
+            provenance["dataset"] = {**pin.as_dict(), "verified_sha256": verified}
+        elif args.dataset_file:
+            # A dataset no pin names, such as a uk-data pull request's build:
+            # record the bytes measured, for a comparison on the data axis.
             dataset_path = Path(args.dataset_file)
-            verified = verify_file(dataset_path, pin.sha256)
+            provenance["dataset"] = {
+                "path": dataset_path.name,
+                "data_package": "unpinned build",
+                "data_version": args.dataset_label or "",
+                "verified_sha256": sha256_file(dataset_path),
+            }
         else:
-            dataset_path = materialise(pin)
-            verified = pin.sha256
-        provenance["dataset"] = {**pin.as_dict(), "verified_sha256": verified}
+            raise ValueError("measure needs --pin, --dataset-file or both")
 
         if args.partition:
             partition_path, partition_source = Path(args.partition), "given"
@@ -101,6 +122,7 @@ def cmd_measure(args) -> int:
             reforms=reforms,
             run_guard=not args.no_guard,
             provenance=provenance,
+            fingerprint_at_start=fingerprint_at_start,
         )
         write_result(args.out, result, households)
         print(
@@ -136,6 +158,7 @@ def cmd_compare(args) -> int:
         base_households=base_households,
         head_households=head_households,
         strict=args.strict,
+        axis=args.axis,
     )
     markdown = render(summary, spec, context={"run_url": args.run_url})
     if args.markdown:
@@ -175,8 +198,15 @@ def main(argv=None) -> int:
 
     m = sub.add_parser("measure", help="measure one model checkout")
     m.add_argument("--label", required=True)
-    m.add_argument("--pin", required=True, help="dataset pin YAML")
-    m.add_argument("--dataset-file", help="local copy of the pinned file (verified)")
+    m.add_argument("--pin", help="dataset pin YAML")
+    m.add_argument(
+        "--dataset-file",
+        help="local copy of the pinned file (verified), or with no --pin a "
+        "dataset to measure as it is",
+    )
+    m.add_argument(
+        "--dataset-label", help="what an unpinned --dataset-file is, for the report"
+    )
     m.add_argument("--partition", help="fiscal partition YAML to use")
     m.add_argument(
         "--fallback-partition",
@@ -206,6 +236,13 @@ def main(argv=None) -> int:
     c.add_argument("--run-url", default="")
     c.add_argument(
         "--strict", action="store_true", help="fail on checks failing on both sides"
+    )
+    c.add_argument(
+        "--axis",
+        choices=("model", "data"),
+        default="model",
+        help="model: same dataset, the model changes (pull requests here); "
+        "data: same model, the dataset changes (uk-data pull requests)",
     )
     c.set_defaults(func=cmd_compare)
 

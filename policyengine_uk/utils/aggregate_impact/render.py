@@ -146,6 +146,8 @@ def _details(summary_text, body) -> str:
 def _deciles(summary, years) -> str:
     deciles = summary.get("deciles") or {}
     if not deciles:
+        if summary.get("axis") == "data" and summary.get("decile_notes"):
+            return summary["decile_notes"][0]
         if summary.get("decile_notes"):
             # Every year was withheld or unmatched: say why, not "missing".
             return "Not shown:\n\n" + "\n".join(
@@ -330,7 +332,7 @@ def _provenance(summary) -> str:
             [
                 side,
                 f"{provenance.get('git_ref', '')} `{str(provenance.get('git_sha', ''))[:10]}`",
-                f"uk {runtime.get('policyengine_uk')}, core {runtime.get('policyengine_core')}, py {runtime.get('python')} {runtime.get('machine', '')}",
+                f"uk {runtime.get('policyengine_uk')} (files `{str(runtime.get('policyengine_uk_fingerprint') or '?')[:12]}`), core {runtime.get('policyengine_core')}, py {runtime.get('python')} {runtime.get('machine', '')}",
                 f"`{str(runtime.get('distributions_sha256', ''))[:12]}`",
                 f"`{str((info.get('partition') or {}).get('sha256', ''))[:12]}`",
                 f"{(info.get('timings') or {}).get('total', '')}s",
@@ -341,10 +343,26 @@ def _provenance(summary) -> str:
         ["Side", "Commit", "Runtime", "Environment hash", "Partition hash", "Time"],
         rows,
     )
-    if dataset:
+    if summary.get("axis") == "data":
+        for side in ("base", "head"):
+            d = (((summary.get(side) or {}).get("provenance")) or {}).get(
+                "dataset"
+            ) or {}
+            if d:
+                what = (
+                    d.get("data_version") or "an unpinned build"
+                    if d.get("data_package") == "unpinned build"
+                    else f"{d.get('data_package')} {d.get('data_version')}"
+                )
+                text += (
+                    f"\n\n{side.capitalize()} dataset: `{d.get('uri') or d.get('path')}`, sha256 "
+                    f"`{d.get('verified_sha256')}`, {what}."
+                )
+    elif dataset:
         text += (
-            f"\n\nDataset: `{dataset.get('uri')}`, sha256 `{dataset.get('verified_sha256')}` "
-            f"(verified on both sides), {dataset.get('data_package')} {dataset.get('data_version')}."
+            f"\n\nDataset: `{dataset.get('uri') or dataset.get('path')}`, sha256 "
+            f"`{dataset.get('verified_sha256')}` (verified on both sides), "
+            f"{dataset.get('data_package')} {dataset.get('data_version')}."
         )
     if summary.get("runtime_differences"):
         text += "\n\nRuntime differences:\n" + "\n".join(
@@ -376,18 +394,62 @@ def render(summary: Mapping, spec: Spec, context: Optional[Mapping] = None) -> s
     head_prov = (summary.get("head") or {}).get("provenance") or {}
     base_prov = (summary.get("base") or {}).get("provenance") or {}
     dataset = head_prov.get("dataset") or {}
-    parts = [
-        COMMENT_MARKER,
-        f"## Aggregate impact on certified data: {verdict}",
-        "",
-        (
+    span = (
+        f"fiscal years {fiscal_year_label(years[0])} to {fiscal_year_label(years[-1])}. "
+        "Each year is a full microsimulation run on each side."
+    )
+    if summary.get("axis") == "data":
+        runtime = (summary.get("head") or {}).get("runtime") or {}
+
+        def described(prov):
+            d = prov.get("dataset") or {}
+            if d.get("data_package") == "unpinned build":
+                # An unpinned measurement's label names the build.
+                what = d.get("data_version") or "an unpinned build"
+            else:
+                what = f"{d.get('data_package', '')} {d.get('data_version', '')}"
+            return (
+                f"`{d.get('path', '?')}` ({what}, "
+                f"sha256 `{str(d.get('verified_sha256', '?'))[:12]}`)"
+            )
+
+        title = f"## Aggregate impact of the data change: {verdict}"
+        base_uk = ((summary.get("base") or {}).get("runtime") or {}).get(
+            "policyengine_uk", "?"
+        )
+        head_uk = runtime.get("policyengine_uk", "?")
+        base_files = ((summary.get("base") or {}).get("runtime") or {}).get(
+            "policyengine_uk_fingerprint"
+        )
+        head_files = runtime.get("policyengine_uk_fingerprint")
+        if base_uk != head_uk:
+            measured = (
+                f"measured with policyengine-uk {base_uk} (base) and {head_uk} (head)"
+            )
+        elif base_files != head_files:
+            measured = (
+                f"measured with policyengine-uk {head_uk} on both sides, but with "
+                "different model files"
+            )
+        else:
+            measured = f"both measured with policyengine-uk {head_uk}"
+        intro = (
+            f"Base dataset {described(base_prov)} against head dataset "
+            f"{described(head_prov)}, {measured}, " + span
+        )
+    else:
+        title = f"## Aggregate impact on certified data: {verdict}"
+        intro = (
             f"Base `{str(base_prov.get('git_sha', '?'))[:10]}` against head "
             f"`{str(head_prov.get('git_sha', '?'))[:10]}`, both on `{dataset.get('path', '?')}` "
             f"({dataset.get('data_package', '')} {dataset.get('data_version', '')}, sha256 "
-            f"`{str(dataset.get('verified_sha256', '?'))[:12]}`), fiscal years "
-            f"{fiscal_year_label(years[0])} to {fiscal_year_label(years[-1])}. Each year is a full "
-            "microsimulation run on each side."
-        ),
+            f"`{str(dataset.get('verified_sha256', '?'))[:12]}`), " + span
+        )
+    parts = [
+        COMMENT_MARKER,
+        title,
+        "",
+        intro,
         "",
         (
             f"**Checks:** {len(regressions)} broken by this change, {len(pre_existing)} failing on "

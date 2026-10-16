@@ -21,7 +21,7 @@ from .spec import Spec, fiscal_year_label
 
 # Failing these on the head blocks the change whatever the base did: a
 # non-finite or crashed result cannot be compared at all.
-ALWAYS_BLOCKING_PREFIXES = ("finite:", "weights:")
+ALWAYS_BLOCKING_PREFIXES = ("finite:", "weights:", "model:")
 
 # Every head measurement must have run these.
 REQUIRED_CHECKS = (
@@ -373,7 +373,15 @@ def decile_impacts(
     return impacts, notes
 
 
-def _runtime_differences(base: Mapping, head: Mapping) -> list:
+def _runtime_differences(
+    base: Mapping, head: Mapping, ignore=("policyengine-uk",)
+) -> list:
+    """Installed distributions, Python and machine that differ between sides.
+
+    ``ignore`` names the distributions the comparison is about: the model
+    (compared separately), and on the data axis the data package too.
+    """
+
     def listing(result):
         return {
             line.split("==")[0]: line
@@ -383,7 +391,7 @@ def _runtime_differences(base: Mapping, head: Mapping) -> list:
     b, h = listing(base), listing(head)
     differences = []
     for name in sorted(set(b) | set(h)):
-        if name == "policyengine-uk":
+        if name in ignore:
             continue
         if b.get(name) != h.get(name):
             differences.append(
@@ -407,12 +415,24 @@ def compare(
     head_households: Optional[Mapping] = None,
     strict: bool = False,
     require_base: bool = True,
+    axis: str = "model",
 ) -> dict:
     """Compare two measurements.
 
     With ``require_base`` (the default) a missing or crashed base fails the
     comparison: without it there is nothing to show the change against.
+
+    ``axis`` says what may differ between the sides. On the ``model`` axis
+    (a change to this model) both must run on the same verified dataset. On
+    the ``data`` axis (a change to the data) both must run the same model:
+    the same policyengine-uk version and file fingerprint, the same runtime
+    with no locally installed dependency, the same partition and metric
+    definitions, so every move is the data's. Households are not
+    matched across datasets on the data axis; each side's own deciles are
+    compared instead.
     """
+    if axis not in ("model", "data"):
+        raise ValueError(f"axis must be model or data, not {axis!r}")
     failures, warnings = [], []
     if head and head.get("status") == "skipped":
         return {
@@ -459,22 +479,46 @@ def compare(
             )
         b_sha = (base.get("provenance") or {}).get("dataset", {}).get("verified_sha256")
         h_sha = (head.get("provenance") or {}).get("dataset", {}).get("verified_sha256")
-        if not b_sha or not h_sha or b_sha != h_sha:
-            failures.append(
-                f"Base and head did not run on the same verified dataset ({b_sha} vs {h_sha})."
-            )
-        if (base.get("partition") or {}).get("sha256") != (
-            head.get("partition") or {}
-        ).get("sha256"):
-            warnings.append(
-                "This change edits the fiscal partition; review the partition diff alongside the moves it explains."
-            )
         runtime_differences = _runtime_differences(base, head)
-        if runtime_differences:
-            warnings.append(
-                "Base and head ran on different runtimes, so some changes may come from dependencies: "
-                + "; ".join(runtime_differences[:10])
+        if axis == "model":
+            if not b_sha or not h_sha or b_sha != h_sha:
+                failures.append(
+                    f"Base and head did not run on the same verified dataset ({b_sha} vs {h_sha})."
+                )
+            if (base.get("partition") or {}).get("sha256") != (
+                head.get("partition") or {}
+            ).get("sha256"):
+                warnings.append(
+                    "This change edits the fiscal partition; review the partition diff alongside the moves it explains."
+                )
+            if runtime_differences:
+                warnings.append(
+                    "Base and head ran on different runtimes, so some changes may come from dependencies: "
+                    + "; ".join(runtime_differences[:10])
+                )
+            for side, result in (("base", base), ("head", head)):
+                if (result.get("provenance") or {}).get(
+                    "model_loaded_before_fingerprint"
+                ):
+                    warnings.append(
+                        f"The {side} was measured from inside policyengine_uk, which "
+                        "builds the model before its files are fingerprinted; a "
+                        "checkout switched in between would go unnoticed."
+                    )
+        else:
+            failures += _same_model_problems(
+                base,
+                head,
+                _runtime_differences(
+                    base, head, ignore=("policyengine-uk", "policyengine-uk-data")
+                ),
             )
+            if not b_sha or not h_sha:
+                failures.append(
+                    "Each side must record the bytes of the dataset it measured."
+                )
+            elif b_sha == h_sha:
+                warnings.append("Both sides measured the same dataset bytes.")
     else:
         runtime_differences = []
 
@@ -504,6 +548,13 @@ def compare(
         )
         if strict and classification == "pre_existing":
             classification = "regression"
+        if check_id.startswith("model:") and b and b["status"] == "fail":
+            # A base whose model changed mid-run has no single identity, so
+            # nothing can be compared against it (Sol re-review 6 of #2425).
+            failures.append(
+                f"The base fails {check_id}: its model's files changed while it was "
+                "measured."
+            )
         if classification == "skipped" and b and b["status"] != "skipped":
             warnings.append(
                 f"The check {check_id} no longer applies on the head: "
@@ -594,7 +645,12 @@ def compare(
         if str(year)
         in (_metric_map(side).get("deciles.mean_income.1") or {}).get("suppressed", ())
     ]
-    if head_ok and base_ok and ((base_households and head_households) or withheld):
+    if axis == "data":
+        decile_notes.append(
+            "The datasets hold different households, so households are not "
+            "matched; compare the mean income in each side's own deciles."
+        )
+    elif head_ok and base_ok and ((base_households and head_households) or withheld):
         # With every year withheld there is no household detail at all, and
         # the notes say why (Sol re-review 8 of #2335).
         deciles, decile_notes = decile_impacts(
@@ -614,6 +670,7 @@ def compare(
 
     return {
         "schema": TOOL_SCHEMA + "/comparison",
+        "axis": axis,
         "status": "fail" if failures else "pass",
         "failures": failures,
         "warnings": warnings,
@@ -628,6 +685,97 @@ def compare(
         "base": _side_summary(base),
         "head": _side_summary(head),
     }
+
+
+def _same_model_problems(base: Mapping, head: Mapping, runtime_differences) -> list:
+    """What stops a data comparison from attributing its moves to the data.
+
+    Each side must record the model it imported (version and a fingerprint
+    of its files), its runtime, partition and metric definitions, and they
+    must agree. A missing field is a failure: one model cannot be shown.
+    The caller's own commit (``git_sha``) identifies the measuring checkout,
+    not the model, so it is not part of the identity.
+    """
+    problems = []
+
+    def field(result, *path):
+        value = result
+        for key in path:
+            value = (value or {}).get(key)
+        return value
+
+    for side, result in (("base", base), ("head", head)):
+        loaded = field(result, "provenance", "model_loaded_before_fingerprint")
+        if loaded is None:
+            problems.append(
+                "A data comparison needs to know that each side fingerprinted the "
+                f"model before loading it, and the {side} does not record it."
+            )
+        elif loaded:
+            # Sol re-review 7 of #2425: python -m policyengine_uk.utils.
+            # aggregate_impact builds the model before the command runs.
+            problems.append(
+                f"The {side} was measured from inside policyengine_uk, which builds "
+                "the model before its files are fingerprinted, so the fingerprint "
+                "may not be the model that ran. Measure with a copy of the tool, "
+                "as CI does."
+            )
+        check = next(
+            (c for c in result.get("checks") or [] if c.get("id") == "model:unchanged"),
+            None,
+        )
+        if check is not None and check.get("status") == "fail":
+            problems.append(
+                f"The policyengine_uk files changed while the {side} was measured, so "
+                "its model has no single identity."
+            )
+    identity = {
+        "policyengine-uk version": ("runtime", "policyengine_uk"),
+        "policyengine-uk fingerprint": ("runtime", "policyengine_uk_fingerprint"),
+        "runtime listing": ("runtime", "distributions"),
+        "fiscal partition": ("partition", "sha256"),
+        "metric definitions": ("provenance", "metrics_version"),
+    }
+    for name, path in identity.items():
+        b, h = field(base, *path), field(head, *path)
+        if not b or not h:
+            problems.append(
+                f"A data comparison needs the {name} of both sides, and "
+                f"{'the base' if not b else 'the head'} does not record it."
+            )
+        elif name != "runtime listing" and b != h:
+            shown = (
+                f"{str(b)[:12]} and {str(h)[:12]}"
+                if name.endswith(("fingerprint", "partition"))
+                else f"{b} and {h}"
+            )
+            problems.append(
+                f"A data comparison needs one {name}, but the sides have {shown}."
+            )
+    if runtime_differences:
+        problems.append(
+            "A data comparison needs one runtime, but base and head differ in: "
+            + "; ".join(runtime_differences[:10])
+        )
+    # A dependency installed from a local directory can differ from the
+    # version it reports; the model and the data package are identified
+    # otherwise (Sol review of #2425).
+    exempt = {"policyengine-uk", "policyengine-uk-data"}
+    for side, result in (("base", base), ("head", head)):
+        local = field(result, "runtime", "local_installs")
+        if local is None:
+            problems.append(
+                f"A data comparison needs the local installs of both sides, and "
+                f"the {side} does not record them."
+            )
+        elif set(local) - exempt:
+            problems.append(
+                f"A data comparison needs released dependencies, but the {side} "
+                "has local or editable installs of "
+                + ", ".join(sorted(set(local) - exempt))
+                + ", whose version doesn't identify their files."
+            )
+    return problems
 
 
 def _last_line(text) -> str:

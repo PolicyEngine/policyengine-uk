@@ -4,6 +4,8 @@ import copy
 import json
 import math
 
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -167,6 +169,166 @@ def test_a_move_is_flagged_exactly_when_it_exceeds_the_larger_bound(
     assert threshold.exceeded(base, head) == (
         abs(head - base) > max(absolute, relative * abs(base))
     )
+
+
+# The data axis: one model, two datasets (uk-data pull requests).
+
+
+def _on(data_sha, **provenance):
+    measured = result({("receipts", "a"): [1.0] * len(YEARS)}, sha=data_sha)
+    measured["provenance"].update(
+        {"metrics_version": "m", "model_loaded_before_fingerprint": False, **provenance}
+    )
+    measured["runtime"].update(
+        policyengine_uk="2.122.2",
+        policyengine_uk_fingerprint="f" * 64,
+        local_installs=["policyengine-uk-data"],
+    )
+    return measured
+
+
+def test_the_data_axis_allows_two_datasets_but_the_model_axis_does_not():
+    base, head = _on("1" * 64), _on("2" * 64)
+    assert compare(base, head, SPEC)["status"] == "fail"
+    summary = compare(base, head, SPEC, axis="data")
+    assert summary["status"] == "pass", summary["failures"]
+    assert summary["axis"] == "data"
+
+
+@pytest.mark.parametrize(
+    "change, message",
+    [
+        (
+            lambda r: r["runtime"].update(policyengine_uk_fingerprint="e" * 64),
+            "one policyengine-uk fingerprint",
+        ),
+        (
+            lambda r: r["runtime"].update(policyengine_uk="9.9.9"),
+            "one policyengine-uk version",
+        ),
+        (lambda r: r["runtime"].update(distributions=["numpy==9.0"]), "one runtime"),
+        (lambda r: r["partition"].update(sha256="other"), "fiscal partition"),
+        (
+            lambda r: r["provenance"].update(metrics_version="other"),
+            "metric definitions",
+        ),
+        (
+            lambda r: r["provenance"]["dataset"].pop("verified_sha256"),
+            "record the bytes",
+        ),
+    ],
+)
+def test_a_data_comparison_fails_unless_only_the_data_differs(change, message):
+    base, head = _on("1" * 64), _on("2" * 64)
+    change(head)
+    summary = compare(base, head, SPEC, axis="data")
+    assert summary["status"] == "fail"
+    assert any(message in f for f in summary["failures"]), summary["failures"]
+
+
+def test_the_data_axis_does_not_match_households_across_datasets():
+    base, head = _on("1" * 64), _on("2" * 64)
+    households = {"2025": {"household_id": np.arange(3)}}
+    summary = compare(
+        base,
+        head,
+        SPEC,
+        base_households=households,
+        head_households=households,
+        axis="data",
+    )
+    assert summary["deciles"] == {}
+    assert "not matched" in summary["decile_notes"][0]
+    text = render(summary, SPEC)
+    assert "## Aggregate impact of the data change: pass" in text
+    assert "Base dataset" in text and "not matched" in text
+
+
+@settings(max_examples=50, deadline=None)
+@given(values=metric_values)
+def test_a_data_comparison_with_itself_moves_nothing(values):
+    side = result(values)
+    side["provenance"].update(
+        metrics_version="m", model_loaded_before_fingerprint=False
+    )
+    side["runtime"].update(
+        policyengine_uk="2.122.2",
+        policyengine_uk_fingerprint="f" * 64,
+        local_installs=[],
+    )
+    summary = compare(side, side, SPEC, axis="data")
+    assert summary["status"] == "pass"
+    assert not any(row["changed"] for row in summary["rows"])
+    assert summary["flags"] == []
+    assert "Both sides measured the same dataset bytes." in summary["warnings"]
+
+
+def test_an_unknown_axis_is_refused():
+    with pytest.raises(ValueError, match="axis"):
+        compare(_on("1" * 64), _on("1" * 64), SPEC, axis="sideways")
+
+
+def test_measure_records_an_unpinned_dataset_by_its_bytes(tmp_path, monkeypatch):
+    """With --dataset-file and no --pin, the measured bytes are the identity."""
+    import json
+
+    import policyengine_uk
+    from policyengine_uk.utils.aggregate_impact import __main__ as cli
+    from policyengine_uk.utils.aggregate_impact import measure as measure_module
+    from policyengine_uk.utils.aggregate_impact.dataset import sha256_file
+
+    built = tmp_path / "enhanced_frs_2024_25.h5"
+    built.write_bytes(b"not really an h5 file")
+
+    class StubSimulation:
+        def __init__(self, dataset=None, reform=None):
+            self.dataset = dataset
+
+    def stub_measure(
+        sim,
+        factory,
+        partition,
+        spec,
+        label,
+        reforms,
+        run_guard,
+        provenance,
+        fingerprint_at_start=None,
+    ):
+        return {
+            "schema": "x",
+            "status": "ok",
+            "provenance": provenance,
+            "metrics": [],
+            "timings": {"total": 0},
+        }, None
+
+    monkeypatch.setattr(policyengine_uk, "Microsimulation", StubSimulation)
+    monkeypatch.setattr(measure_module, "measure", stub_measure)
+    out = tmp_path / "out"
+    code = cli.main(
+        [
+            "measure",
+            "--label",
+            "head",
+            "--dataset-file",
+            str(built),
+            "--dataset-label",
+            "uk-data #595 head build",
+            "--no-reforms",
+            "--no-guard",
+            "--out",
+            str(out),
+        ]
+    )
+    assert code == 0
+    dataset = json.loads((out / "result.json").read_text())["provenance"]["dataset"]
+    assert dataset == {
+        "path": "enhanced_frs_2024_25.h5",
+        "data_package": "unpinned build",
+        "data_version": "uk-data #595 head build",
+        "verified_sha256": sha256_file(built),
+    }
 
 
 def test_flags_follow_the_spec_thresholds():
@@ -716,6 +878,79 @@ def test_a_suppressed_figure_and_a_marked_total_render_as_such():
     assert "fewer than 10 households change" in text and "n/a" not in text
 
 
+def test_the_data_axis_ignores_the_data_package_itself():
+    """The data package is what a data comparison compares."""
+    base, head = _on("1" * 64), _on("2" * 64)
+    base["runtime"]["distributions"] = ["numpy==2.0", "policyengine-uk-data==1.58.1"]
+    head["runtime"]["distributions"] = ["numpy==2.0", "policyengine-uk-data==1.59.0"]
+    assert compare(base, head, SPEC, axis="data")["status"] == "pass"
+    head["runtime"]["distributions"] = ["numpy==2.1", "policyengine-uk-data==1.59.0"]
+    assert compare(base, head, SPEC, axis="data")["status"] == "fail"
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        ("runtime", "policyengine_uk"),
+        ("runtime", "policyengine_uk_fingerprint"),
+        ("runtime", "distributions"),
+        ("partition", "sha256"),
+        ("provenance", "metrics_version"),
+    ],
+)
+def test_a_data_comparison_fails_when_an_identity_field_is_missing(path):
+    """Sol review of #2425, P1: blank or missing identities used to pass."""
+    base, head = _on("1" * 64), _on("2" * 64)
+    for side in (base, head):
+        side[path[0]].pop(path[1])
+    summary = compare(base, head, SPEC, axis="data")
+    assert summary["status"] == "fail"
+    assert any("does not record it" in f for f in summary["failures"])
+
+
+def test_the_caller_commit_is_not_part_of_the_model_identity():
+    """The same installed model measured from two checkouts is one model."""
+    summary = compare(
+        _on("1" * 64, git_sha="aaa"), _on("2" * 64, git_sha="bbb"), SPEC, axis="data"
+    )
+    assert summary["status"] == "pass", summary["failures"]
+
+
+def test_data_axis_provenance_names_both_datasets():
+    summary = compare(_on("1" * 64), _on("2" * 64), SPEC, axis="data")
+    text = render(summary, SPEC)
+    assert "Base dataset" in text and "Head dataset" in text
+    assert "verified on both sides" not in text
+
+
+def test_the_model_fingerprint_covers_the_model_and_nothing_else(tmp_path, monkeypatch):
+    import importlib.util
+    from types import SimpleNamespace
+
+    from policyengine_uk.utils.aggregate_impact import measure
+
+    package = tmp_path / "policyengine_uk"
+    (package / "variables").mkdir(parents=True)
+    (package / "tests").mkdir()
+    (package / "__pycache__").mkdir()
+    (package / "__init__.py").write_text("")
+    (package / "variables" / "x.py").write_text("a = 1")
+    (package / "tests" / "t.yaml").write_text("x")
+    (package / "__pycache__" / "c.pyc").write_bytes(b"x")
+    monkeypatch.setattr(
+        importlib.util,
+        "find_spec",
+        lambda name: SimpleNamespace(origin=str(package / "__init__.py")),
+    )
+    first = measure.model_fingerprint()
+    assert first == measure.model_fingerprint()
+    (package / "tests" / "t.yaml").write_text("changed")
+    (package / "__pycache__" / "c.pyc").write_bytes(b"changed")
+    assert measure.model_fingerprint() == first
+    (package / "variables" / "x.py").write_text("a = 2")
+    assert measure.model_fingerprint() != first
+
+
 def test_the_w4_format_lists_the_heads_a_total_leaves_out():
     side = _side(7.3e10, 246.9, 1)
     result = {
@@ -832,6 +1067,207 @@ def test_decile_rows_are_withheld_when_the_sides_exclude_different_heads():
     impacts, notes = decile_impacts(base, head, YEARS)
     assert impacts == {}
     assert any("suppressed on one side only" in n for n in notes)
+
+
+def test_the_data_axis_refuses_a_locally_installed_dependency():
+    """Sol review of #2425 at 7ca4ff2b, P2: an editable policyengine-core
+    reports a released version whatever its files hold."""
+    base, head = _on("1" * 64), _on("2" * 64)
+    assert compare(base, head, SPEC, axis="data")["status"] == "pass"
+    head["runtime"]["local_installs"] = ["policyengine-core", "policyengine-uk-data"]
+    summary = compare(base, head, SPEC, axis="data")
+    assert summary["status"] == "fail"
+    assert any("policyengine-core" in f for f in summary["failures"])
+    # The model and the data package are identified otherwise.
+    head["runtime"]["local_installs"] = ["policyengine-uk", "policyengine-uk-data"]
+    assert compare(base, head, SPEC, axis="data")["status"] == "pass"
+    del head["runtime"]["local_installs"]
+    assert compare(base, head, SPEC, axis="data")["status"] == "fail"
+
+
+def test_local_installs_are_read_from_pep_610_metadata(monkeypatch):
+    import json as json_
+
+    from policyengine_uk.utils.aggregate_impact import measure
+
+    class Dist:
+        def __init__(self, name, direct_url):
+            self.metadata = {"Name": name}
+            self._direct = direct_url
+
+        def read_text(self, filename):
+            return None if self._direct is None else json_.dumps(self._direct)
+
+    dists = [
+        Dist("numpy", None),
+        Dist(
+            "policyengine_core",
+            {"url": "file:///src/core", "dir_info": {"editable": True}},
+        ),
+        Dist("pandas", {"url": "file:///wheels/pandas.whl", "archive_info": {}}),
+        Dist(
+            "requests",
+            {"url": "https://files.example/requests.whl", "archive_info": {}},
+        ),
+        Dist(
+            "policyengine_uk_data",
+            {"url": "https://github.com/x/y", "vcs_info": {"vcs": "git"}},
+        ),
+    ]
+    monkeypatch.setattr(measure.metadata, "distributions", lambda: dists)
+    # Sol re-review 5 of #2425: any install not from an index counts, archive
+    # URLs and VCS checkouts included; only numpy came from an index.
+    assert measure._local_installs() == [
+        "pandas",
+        "policyengine-core",
+        "policyengine-uk-data",
+        "requests",
+    ]
+
+
+def test_a_model_that_changes_during_a_measurement_has_no_fingerprint(monkeypatch):
+    """Sol review of #2425 at 7ca4ff2b, P2: a branch switched in a shared
+    checkout mid-run would stamp the base with the head's files."""
+    from policyengine_uk.utils.aggregate_impact import measure
+
+    monkeypatch.setattr(measure, "model_fingerprint", lambda: "after")
+    rec = measure.Recorder()
+    runtime = measure.stable_runtime(rec, "before")
+    assert runtime["policyengine_uk_fingerprint"] is None
+    assert rec.checks["model:unchanged"]["status"] == "fail"
+    rec = measure.Recorder()
+    runtime = measure.stable_runtime(rec, "after")
+    assert runtime["policyengine_uk_fingerprint"] == "after"
+    assert rec.checks["model:unchanged"]["status"] == "pass"
+
+
+def test_an_unpinned_dataset_is_described_by_its_label():
+    from policyengine_uk.utils.aggregate_impact.render import render
+
+    base, head = _on("1" * 64), _on("2" * 64)
+    for side, label in (
+        (base, "the base's build"),
+        (head, "this pull request's build"),
+    ):
+        side["provenance"]["dataset"].update(
+            data_package="unpinned build", data_version=label
+        )
+    text = render(compare(base, head, SPEC, axis="data"), SPEC)
+    assert "(the base's build, sha256" in text
+    assert "(this pull request's build, sha256" in text
+    assert "unpinned build the" not in text
+
+
+def test_a_side_whose_model_changed_mid_run_fails_either_axis():
+    """Sol re-review 5 of #2425, P3 2: model:unchanged blocks on both axes,
+    and the data axis says why."""
+    base, head = _on("1" * 64), _on("2" * 64)
+    base["checks"].append(
+        {
+            "id": "model:unchanged",
+            "label": "x",
+            "section": "data",
+            "severity": "fail",
+            "status": "fail",
+            "failing": {"": "the model's files changed while it was measured"},
+        }
+    )
+    summary = compare(base, head, SPEC, axis="data")
+    assert summary["status"] == "fail"
+    assert any("changed while the base was measured" in f for f in summary["failures"])
+
+
+def test_the_intro_says_when_one_version_has_different_files():
+    from policyengine_uk.utils.aggregate_impact.render import render
+
+    base, head = _on("1" * 64), _on("2" * 64)
+    head["runtime"]["policyengine_uk_fingerprint"] = "e" * 64
+    text = render(compare(base, head, SPEC, axis="data"), SPEC)
+    assert "on both sides, but with different model files" in text
+    assert "both measured with policyengine-uk" not in text
+
+
+def test_the_command_fingerprints_the_model_before_building_the_simulation():
+    """Sol re-review 5 of #2425, P3 1."""
+    import inspect
+
+    from policyengine_uk.utils.aggregate_impact import __main__ as cli
+
+    source = inspect.getsource(cli.cmd_measure)
+    first = source.index("fingerprint_at_start = model_fingerprint()")
+    # Before the partition is loaded or the model imported.
+    assert first < source.index("default_partition_path()")
+    assert first < source.index("from policyengine_uk import Microsimulation")
+    assert "fingerprint_at_start=fingerprint_at_start" in source
+    # Whether the package had built the model already is known first.
+    assert source.index("loaded_first = model_loaded()") < first
+    assert '"model_loaded_before_fingerprint": loaded_first' in source
+
+
+def test_the_data_axis_refuses_a_side_measured_from_inside_the_package():
+    """Sol re-review 7 of #2425, P3 6: python -m policyengine_uk.utils.
+    aggregate_impact builds the model before the command fingerprints it."""
+    base, head = _on("1" * 64), _on("2" * 64)
+    head["provenance"]["model_loaded_before_fingerprint"] = True
+    summary = compare(base, head, SPEC, axis="data")
+    assert summary["status"] == "fail"
+    assert any("from inside policyengine_uk" in f for f in summary["failures"])
+    del head["provenance"]["model_loaded_before_fingerprint"]
+    summary = compare(base, head, SPEC, axis="data")
+    assert summary["status"] == "fail"
+    assert any("before loading it" in f for f in summary["failures"])
+    # On the model axis it is a warning: each side has its own checkout.
+    base, head = _on("1" * 64), _on("1" * 64)
+    head["provenance"]["model_loaded_before_fingerprint"] = True
+    summary = compare(base, head, SPEC)
+    assert summary["status"] == "pass", summary["failures"]
+    assert any("from inside policyengine_uk" in w for w in summary["warnings"])
+
+
+def test_only_the_package_entry_has_built_the_model_before_the_command(tmp_path):
+    """A copy of the tool, run as its own package as CI runs it, hasn't
+    imported the model when it fingerprints it; this test process, which
+    imported policyengine_uk, has."""
+    import shutil
+    import subprocess
+    import sys
+
+    from policyengine_uk.utils.aggregate_impact import measure
+
+    assert measure.model_loaded()
+    tool = tmp_path / "pe_uk_aggregate_impact"
+    shutil.copytree(Path(measure.__file__).parent, tool)
+    out = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "import pe_uk_aggregate_impact.measure as m; print(m.model_loaded())",
+        ],
+        env={"PYTHONPATH": str(tmp_path), "PATH": "/usr/bin:/bin"},
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert out.stdout.strip() == "False"
+
+
+def test_a_base_whose_model_changed_fails_the_model_axis_too():
+    """Sol re-review 6 of #2425, P3 7: base fail and head pass was 'fixed'."""
+    base, head = _on("1" * 64), _on("1" * 64)
+    for side, status in ((base, "fail"), (head, "pass")):
+        side["checks"].append(
+            {
+                "id": "model:unchanged",
+                "label": "x",
+                "section": "data",
+                "severity": "fail",
+                "status": status,
+                "failing": {"": "changed"} if status == "fail" else {},
+            }
+        )
+    summary = compare(base, head, SPEC)
+    assert summary["status"] == "fail"
+    assert any("base fails model:unchanged" in f for f in summary["failures"])
 
 
 def test_a_year_ranked_on_a_suppressed_figure_is_withheld_with_a_reason():

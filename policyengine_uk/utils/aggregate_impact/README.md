@@ -63,6 +63,32 @@ cp -R policyengine_uk/utils/aggregate_impact /tmp/tool/pe_uk_aggregate_impact
 cd ../base-checkout && PYTHONPATH=/tmp/tool .venv/bin/python -m pe_uk_aggregate_impact measure ...
 ```
 
+### Comparing two datasets on one model
+
+A uk-data change is compared the other way round: one model, two datasets.
+Measure each built file without a pin, with a copy of the tool, then compare
+on the data axis:
+
+```bash
+cp -R policyengine_uk/utils/aggregate_impact /tmp/tool/pe_uk_aggregate_impact
+PYTHONPATH=/tmp/tool uv run python -m pe_uk_aggregate_impact measure --label base \
+    --dataset-file base/enhanced_frs_2024_25.h5 --dataset-label "main build" --out out/base
+PYTHONPATH=/tmp/tool uv run python -m pe_uk_aggregate_impact measure --label head \
+    --dataset-file head/enhanced_frs_2024_25.h5 --dataset-label "PR build" --out out/head
+PYTHONPATH=/tmp/tool uv run python -m pe_uk_aggregate_impact compare --axis data \
+    --base out/base --head out/head --markdown comment.md
+```
+
+Run from inside the package (`python -m policyengine_uk.utils.aggregate_impact`),
+`measure` can't fingerprint the model's files before the package builds the
+model, so the data axis refuses its results.
+
+An unpinned file is identified by its SHA-256. The data axis fails unless
+both sides ran the same policyengine-uk commit and version, runtime,
+partition and metric definitions, so every move is the data's. It does
+not match households across the two files: each side's own deciles are
+compared instead.
+
 For use from other code (qualification in policyengine.py), see `api.py`:
 `compute_budget_metrics(sim, years=...)` returns a long-format report.
 
