@@ -624,7 +624,7 @@ def measure_year(
                 float(np.sum(hw * values)),
             )
             if excludes:
-                rec.metrics[metric_id].setdefault("excludes", {})[str(year)] = excludes
+                _exclude(rec.metrics[metric_id], str(year), excludes)
     if {
         "household_net_income",
         "household_market_income",
@@ -803,9 +803,9 @@ def measure_year(
             group="Own-decile levels",
         )
         if income_excludes:
-            rec.metrics[f"deciles.mean_income.{d}"].setdefault("excludes", {})[
-                str(year)
-            ] = income_excludes
+            _exclude(
+                rec.metrics[f"deciles.mean_income.{d}"], str(year), income_excludes
+            )
     if ranking_holds_hidden:
         # Poverty and inequality are measured on HBAI income, which holds a
         # suppressed component this year; a Gini or poverty count with the
@@ -826,6 +826,13 @@ def measure_year(
             # must leave out the same ones for their decile rows to compare.
             "excludes": np.array(sorted(income_excludes), dtype=str),
         }
+
+
+def _exclude(record: dict, key: str, excludes: Mapping) -> None:
+    """Record which suppressed components a figure leaves out in ``key``."""
+    # Rebound rather than written through, which the cached-array scan
+    # (test_cached_arrays_not_written_in_place) would read as an array write.
+    record["excludes"] = {**(record.get("excludes") or {}), key: dict(excludes)}
 
 
 def suppressed_components(rec: "Recorder", partition: Partition, year: int) -> dict:
@@ -910,7 +917,7 @@ def rebuild_protected(
         values, excludes = result
         record["values"][key] = float(np.sum(hw * values))
         if excludes:
-            record.setdefault("excludes", {})[key] = excludes
+            _exclude(record, key, excludes)
 
     for total in partition.totals:
         publish(f"model.{total}", rebuilt(parts(total)))

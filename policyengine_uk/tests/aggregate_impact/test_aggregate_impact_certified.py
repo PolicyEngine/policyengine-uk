@@ -147,7 +147,11 @@ def test_head_totals_agree_with_the_model_weighted_sums(measured):
 
 def test_household_detail_is_complete(measured):
     _, households, _, _ = measured
-    columns = households[str(YEAR)]
+    columns = dict(households[str(YEAR)])
+    # The suppressed components the income leaves out: metadata, not a
+    # per-household column.
+    excludes = columns.pop("excludes")
+    assert excludes.ndim == 1 and excludes.dtype.kind == "U"
     n = len(columns["household_id"])
     assert all(len(v) == n for v in columns.values())
     # Scalars only: a failing assertion on an array would print household
