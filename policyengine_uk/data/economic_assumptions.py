@@ -108,6 +108,11 @@ def _unmapped_uprating_indices(uprating):
 COUNCIL_TAX_GROWTH = "gov.economic_assumptions.yoy_growth.obr.council_tax"
 SOCIAL_RENT_GROWTH = "gov.economic_assumptions.yoy_growth.obr.social_rent"
 PRIVATE_RENT_GROWTH = "gov.economic_assumptions.yoy_growth.ons.private_rental_prices"
+RESIDENTIAL_PROPERTY_INDEX = "gov.economic_assumptions.indices.obr.house_prices"
+RESIDENTIAL_PROPERTY_INPUTS = (
+    "main_residence_value",
+    "other_residential_property_value",
+)
 
 
 def _uprating_index_map() -> dict:
@@ -120,7 +125,8 @@ def uprating_input_paths() -> list:
 
     ``apply_single_year_uprating`` and the functions it calls read these, and
     no other parameters: the growth rates in ``uprating_indices.yaml``, the
-    council tax and rent series, the indices of the input variables that
+    council tax and rent series, the cumulative residential property index,
+    the indices of the input variables that
     file leaves out (after ``LEGACY_PROJECTION_END_YEAR``) and the capital
     gains projection's metadata (``CGT_INDEX_PATH``). A path may name a node
     (the regional private rent series), which covers its parameters.
@@ -130,7 +136,12 @@ def uprating_input_paths() -> list:
     return sorted(
         set(uprating)
         | {f"{COUNCIL_TAX_GROWTH}.{name}" for name in series}
-        | {SOCIAL_RENT_GROWTH, PRIVATE_RENT_GROWTH, CGT_INDEX_PATH}
+        | {
+            SOCIAL_RENT_GROWTH,
+            PRIVATE_RENT_GROWTH,
+            CGT_INDEX_PATH,
+            RESIDENTIAL_PROPERTY_INDEX,
+        }
         | set(_unmapped_uprating_indices(uprating).values())
     )
 
@@ -214,13 +225,20 @@ def apply_uprating(
     if copy:
         dataset = dataset.copy()
 
+    first_year = min(dataset.datasets.keys())
     for year in dataset.datasets.keys():
-        if year == min(dataset.datasets.keys()):
+        if year == first_year:
             continue  # Don't uprate the first year
         current_year = dataset.datasets[year]
         prev_year = dataset.datasets[year - 1]
         apply_single_year_uprating(
             current_year, prev_year, tax_benefit_system_parameters
+        )
+        # Core projects from the supplied observation in one multiplication.
+        # Chaining annual stock projections can lose an exact band boundary
+        # through intermediate float32 rounding, even with the same index.
+        uprate_residential_property(
+            current_year, dataset.datasets[first_year], tax_benefit_system_parameters
         )
 
     return dataset
@@ -265,6 +283,8 @@ def apply_single_year_uprating(
 
     # Next, apply custom uprating.
 
+    current_year = uprate_residential_property(current_year, previous_year, parameters)
+
     # Council Tax is uprated by OBR forecasts/outturns by country.
 
     current_year = uprate_council_tax(current_year, previous_year, parameters)
@@ -303,6 +323,43 @@ def apply_single_year_uprating(
 
     current_year.validate()
 
+    return current_year
+
+
+def uprate_residential_property(
+    current_year: UKSingleYearDataset,
+    previous_year: UKSingleYearDataset,
+    parameters: ParameterNode,
+):
+    """Keep residential stocks on Core and HVCTS's cumulative HPI basis.
+
+    Cumulative index levels are rounded when generated. Use one ratio from
+    the supplied observation, at the variable's Core storage precision, so
+    forward projection and inverse band conversion share the same basis.
+    """
+    from policyengine_uk.system import system
+
+    assets = [
+        name
+        for name in RESIDENTIAL_PROPERTY_INPUTS
+        if name in current_year.household.columns
+    ]
+    if not assets:
+        return current_year
+    index = parameters.get_child(RESIDENTIAL_PROPERTY_INDEX)
+    previous_index = _uprating_index_value(index, f"{previous_year.time_period}-01-01")
+    current_index = _uprating_index_value(index, f"{current_year.time_period}-01-01")
+    # Preserve Core's handling of missing, zero and terminated indices.
+    ratio = (
+        current_index / previous_index
+        if previous_index not in (None, 0) and current_index is not None
+        else 1
+    )
+    for asset in assets:
+        observed = previous_year.household[asset].to_numpy(
+            dtype=system.variables[asset].dtype
+        )
+        current_year.household[asset] = observed * ratio
     return current_year
 
 
