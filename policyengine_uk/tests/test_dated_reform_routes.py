@@ -488,6 +488,30 @@ def test_write_assignment_from_the_first_date_writes_prior_law_before_it():
     assert earliest("2016-06-01") == 217.26
 
 
+def test_a_change_replacing_the_files_last_value_restores_their_years_after_it():
+    # The files' last value (2030-04-06) is replaced by a change that covers
+    # no 30 April, so 2030-31 is still the files' £12,570 and 2031-32 is
+    # indexed from it.
+    short = via_reform_dict({PERSONAL_ALLOWANCE: {"2030-04-06.2030-04-29": 20_000}})
+    assert annual(short, PERSONAL_ALLOWANCE, 2030) == 12_570
+    assert annual(short, PERSONAL_ALLOWANCE, 2031) == current_law_annual(
+        PERSONAL_ALLOWANCE, 2031
+    )
+    # 2030 written before 2028: after 2028-29's change, 2029-30 is the files'
+    # frozen £12,570, whichever order the keys come in.
+    for keys in (
+        {"2030": 10_000, "2028": 20_000},
+        {"2028": 20_000, "2030": 10_000},
+    ):
+        simulation = via_reform_dict({PERSONAL_ALLOWANCE: keys})
+        assert annual(simulation, PERSONAL_ALLOWANCE, 2028) == 20_000, keys
+        assert annual(simulation, PERSONAL_ALLOWANCE, 2029) == 12_570, keys
+        assert annual(simulation, PERSONAL_ALLOWANCE, 2030) == 10_000, keys
+        assert annual(simulation, PERSONAL_ALLOWANCE, 2031) == s57_step(
+            10_000, current_law_annual(CPI_RISE, 2031)
+        ), keys
+
+
 def test_bare_year_dict_keys_match_the_fiscal_year_interval():
     by_year = via_reform_dict(
         {PERSONAL_ALLOWANCE: {"2031": 12_570, "2032": 12_570, "2033": 12_570}}
@@ -849,7 +873,9 @@ def two_changes(draw):
     gap = draw(st.integers(1, 900))
     length = draw(st.integers(0, 900))
     second = first + datetime.timedelta(days=gap)
-    first_stop = second - datetime.timedelta(days=1)
+    # Back to back, or with a gap between the changes.
+    space = draw(st.integers(0, 700))
+    first_stop = max(first, second - datetime.timedelta(days=1 + space))
     second_stop = second + datetime.timedelta(days=length)
     return (
         path,

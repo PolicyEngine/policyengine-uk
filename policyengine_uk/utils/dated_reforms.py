@@ -181,6 +181,7 @@ from policyengine_uk.parameters.gov.hmrc.create_threshold_indexation import (
     DATED_CHANGE_UNTIL,
     FILES_LAST_TAX_YEAR,
     INDEXED_THRESHOLDS,
+    first_tax_year,
     last_stated_tax_year,
 )
 
@@ -642,13 +643,20 @@ def write_assignment(
             in_force[0].value if in_force else later[-1].value if later else None
         )
         # An indexed threshold resumes with a stated value only where one
-        # is stated after the change: a later value in the files, or an
-        # earlier change in force at stop that runs past it.
+        # is stated after the change: a later value in the files, a tax
+        # year the files state (their recorded last year, whose value a
+        # change may have replaced), or an earlier change in force at stop
+        # that runs past it.
         running_until = _dated_change_until(in_force[0]) if in_force else None
-        stated_after = any(
-            entry.instant_str > stop_str and _dated_change_until(entry) is None
-            for entry in later
-        ) or (running_until is not None and running_until > stop_str)
+        files_last = (parameter.metadata or {}).get(FILES_LAST_TAX_YEAR)
+        stated_after = (
+            any(
+                entry.instant_str > stop_str and _dated_change_until(entry) is None
+                for entry in later
+            )
+            or (files_last is not None and first_tax_year(next_str) <= files_last)
+            or (running_until is not None and running_until > stop_str)
+        )
         if not indexed or stated_after:
             marker = (
                 {DATED_CHANGE_UNTIL: running_until}
