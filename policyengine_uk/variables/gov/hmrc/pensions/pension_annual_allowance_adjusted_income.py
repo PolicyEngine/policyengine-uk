@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.pensions import annual_allowance_net_income
 
 
 class pension_annual_allowance_adjusted_income(Variable):
@@ -22,7 +23,7 @@ class pension_annual_allowance_adjusted_income(Variable):
 
     def formula(person, period, parameters):
         returned = person("salary_sacrifice_returned_to_income", period)
-        actual_income = person("net_income", period) - returned
+        actual_income = annual_allowance_net_income(person, period, parameters)
         actual_member_contributions = person("pension_contributions", period) - returned
         return (
             actual_income

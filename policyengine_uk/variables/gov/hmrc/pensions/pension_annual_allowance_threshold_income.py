@@ -1,5 +1,8 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.pensions import pension_contributions_relief_amount
+from policyengine_uk.utils.pensions import (
+    annual_allowance_net_income,
+    pension_contributions_relief_amount,
+)
 
 
 class pension_annual_allowance_threshold_income(Variable):
@@ -8,7 +11,7 @@ class pension_annual_allowance_threshold_income(Variable):
     label = "Threshold income for the pension annual allowance"
     documentation = (
         "FA 2004 s. 228ZA(5) threshold income. Remove the NICs-only returned "
-        "salary sacrifice from model income and recompute pension relief on "
+        "salary sacrifice and recompute income-dependent Step 2 relief on "
         "actual member contributions and relevant earnings. This combines "
         "the net-pay deduction from statutory net income with gross RAS "
         "relief, including the basic amount and age limit. Add back full "
@@ -51,8 +54,7 @@ class pension_annual_allowance_threshold_income(Variable):
             person("pension_contributions_relief", period),
         )
         return (
-            person("net_income", period)
-            - returned
+            annual_allowance_net_income(person, period, parameters)
             - relief
             + relevant_sacrifice
             - person("pension_annual_allowance_taxable_lump_sum_death_benefits", period)

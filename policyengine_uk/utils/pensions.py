@@ -22,3 +22,75 @@ def pension_contributions_relief_amount(
     annual_limit = relevant_uk_earnings + basic_amount_increase
     under_age_limit = age < hmrc.pensions.pension_contributions_relief_age_limit
     return np.minimum(contributions, annual_limit) * under_age_limit
+
+
+def annual_allowance_net_income(person, period, parameters):
+    """Model net income rebuilt without NICs-only returned salary sacrifice.
+
+    Like net_income, this is before the separately modelled pension relief.
+    ITA 2007 ss.24A, 25 and 64 require recomputing the loss deduction, not
+    subtracting returned pay after an income-dependent deduction was taken.
+    Ordinary income tax keeps its existing calculation (issue #2454).
+    """
+    from policyengine_core.model_api import add
+
+    returned = person("salary_sacrifice_returned_to_income", period)
+    net_income = person("net_income", period)
+    if not np.any(returned):
+        return net_income
+
+    hmrc = parameters(period).gov.hmrc
+    taxable_pay = person("taxable_employment_income", period)
+    actual_taxable_pay = np.maximum(0, taxable_pay - returned)
+    removed_taxable_pay = taxable_pay - actual_taxable_pay
+    income_before_loss = np.maximum(
+        0,
+        person("net_income_before_trade_loss_relief", period) - removed_taxable_pay,
+    )
+    # Rebuild adjusted_total_income (s.24A(8)) from actual pay and member
+    # contributions, retaining its treatment of brought-forward trade losses
+    # and pension relief. Brought-forward losses only reduce trading profits.
+    other_deductions = [
+        deduction
+        for deduction in hmrc.income_tax.bases.taxable_self_employment_income_deductions
+        if deduction != "loss_relief"
+    ]
+    profits_before_carry_forward = np.maximum(
+        0,
+        person("self_employment_income", period)
+        - add(person, period, other_deductions),
+    )
+    losses_brought_forward_deducted = profits_before_carry_forward - person(
+        "taxable_self_employment_income", period
+    )
+    actual_member_contributions = person("pension_contributions", period) - returned
+    relief_limit = np.maximum(
+        hmrc.income_tax.reliefs.pension_contribution.basic_amount,
+        actual_taxable_pay + profits_before_carry_forward,
+    )
+    relieved_contributions = np.minimum(actual_member_contributions, relief_limit) * (
+        person("age", period) < hmrc.pensions.pension_contributions_relief_age_limit
+    )
+    adjusted_total = np.maximum(
+        0,
+        income_before_loss + losses_brought_forward_deducted - relieved_contributions,
+    )
+    cap = hmrc.income_tax.reliefs.cap
+    loss_cap = np.maximum(cap.amount, cap.rate * adjusted_total)
+    loss = np.where(
+        person("trading_allowance_deduction", period) > 0,
+        0,
+        person("trading_loss", period),
+    )
+    actual_loss_relief = np.minimum(loss, np.minimum(loss_cap, income_before_loss))
+    # Add back the loss computed using synthetic pay before deducting the
+    # actual-pay loss. Preserve supplied net-income/ANI inputs and zero-return
+    # people, including years before the NICs cap starts.
+    reconstructed = np.maximum(
+        0,
+        net_income
+        + person("trade_loss_relief_against_general_income", period)
+        - removed_taxable_pay
+        - actual_loss_relief,
+    )
+    return np.where(returned > 0, reconstructed, net_income)

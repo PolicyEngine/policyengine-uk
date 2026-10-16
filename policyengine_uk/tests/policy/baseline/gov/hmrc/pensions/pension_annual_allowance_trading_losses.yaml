@@ -1,0 +1,42 @@
+# FA 2004 s.228ZA and ITA 2007 ss.24A, 25 and 64: trading losses
+# must be limited using actual income, before the NICs-only reclassification.
+# https://www.legislation.gov.uk/ukpga/2007/3/section/24A
+# https://www.legislation.gov.uk/ukpga/2007/3/section/64
+
+- name: Trading loss limits for AA use actual income in 2029
+  period: 2029
+  absolute_error_margin: 0.05
+  input:
+    # Hold the separate employer-cost wage response fixed.
+    salary_sacrifice_broad_base_haircut: [0, 0, 0, 0, 0, 0, 0]
+    age: [45, 80, 80, 45, 45, 80, 80]
+    employment_income_before_lsr: [2_000, 250_000, 230_000, 2_000, 2_000, 2_000, 2_000]
+    pension_contributions_via_salary_sacrifice: [201_000, 30_000, 30_000, 201_000, 201_000, 201_000, 201_000]
+    employer_pension_contributions: [100_000, 100_000, 100_000, 100_000, 100_000, 100_000, 100_000]
+    trading_loss: [10_000, 200_000, 300_000, 10_000, 10_000, 10_000, 10_000]
+    employee_pension_contributions_reported: [0, 0, 0, 600, 0, 600, 0]
+    personal_pension_contributions: [0, 0, 0, 0, 600, 0, 600]
+  output:
+    pension_annual_allowance_threshold_income: [201_000, 217_500, 202_500, 200_400, 200_400, 201_000, 201_000]
+    pension_annual_allowance_adjusted_income: [301_000, 317_500, 302_500, 301_000, 301_000, 300_400, 300_400]
+    pension_contributions_for_annual_allowance: [301_000, 130_000, 130_000, 301_600, 301_600, 301_000, 301_000]
+    pension_annual_allowance: [39_500, 31_250, 38_750, 39_500, 39_500, 39_800, 39_800]
+
+- name: Trading loss limits for AA use actual income in 2030
+  period: 2030
+  absolute_error_margin: 0.05
+  input:
+    # Hold the separate employer-cost wage response fixed.
+    salary_sacrifice_broad_base_haircut: [0, 0, 0, 0, 0, 0, 0]
+    age: [45, 80, 80, 45, 45, 80, 80]
+    employment_income_before_lsr: [2_000, 250_000, 230_000, 2_000, 2_000, 2_000, 2_000]
+    pension_contributions_via_salary_sacrifice: [201_000, 30_000, 30_000, 201_000, 201_000, 201_000, 201_000]
+    employer_pension_contributions: [100_000, 100_000, 100_000, 100_000, 100_000, 100_000, 100_000]
+    trading_loss: [10_000, 200_000, 300_000, 10_000, 10_000, 10_000, 10_000]
+    employee_pension_contributions_reported: [0, 0, 0, 600, 0, 600, 0]
+    personal_pension_contributions: [0, 0, 0, 0, 600, 0, 600]
+  output:
+    pension_annual_allowance_threshold_income: [201_000, 217_500, 202_500, 200_400, 200_400, 201_000, 201_000]
+    pension_annual_allowance_adjusted_income: [301_000, 317_500, 302_500, 301_000, 301_000, 300_400, 300_400]
+    pension_contributions_for_annual_allowance: [301_000, 130_000, 130_000, 301_600, 301_600, 301_000, 301_000]
+    pension_annual_allowance: [39_500, 31_250, 38_750, 39_500, 39_500, 39_800, 39_800]
