@@ -48,14 +48,20 @@ Later years hold 22%. That is an assumption, not a source: the share keeps risin
 
 ## Standard allowance uplifts
 
-The standard allowance receives additional percentage uplifts beyond the normal inflationary increase:
+Universal Credit Act 2025 s. 1 sets the minimum standard allowance for 2026-27 to 2029-30. Each year's minimum is the previous year's CPI-uprated amount (the 2025-26 amount for 2026-27), increased by September CPI (never below 0%), and then by that year's uplift:
 
-- 2026: 2.3% additional uplift
-- 2027: 3.1% additional uplift (cumulative)
-- 2028: 4.0% additional uplift (cumulative)
-- 2029: 4.8% additional uplift (cumulative)
+- 2026-27: 2.3%
+- 2027-28: 3.1%
+- 2028-29: 4.0%
+- 2029-30: 4.8%
 
-These uplifts are applied to the CPI-uprated standard allowance for each year. In other words, the model first applies the usual CPI uprating and then applies the rebalancing uplift on top.
+The model projects future inflation using `gov.benefit_uprating_cpi`, its benefit uprating index, rather than a separate September CPI series for the standard allowance.
+
+Each uplift is measured against the CPI-only path from 2025-26, not compounded on the previous one, so from one year to the next the allowance grows by CPI times (1 + this year's uplift) / (1 + last year's uplift). After 2029-30 the uplift stays at 4.8% and the allowance grows with CPI alone.
+
+The 2026-27 amounts are the legislated rates in `standard_allowance/amount.yaml`, used as they are. Later years are uprated by `gov.economic_assumptions.indices.uc_standard_allowance`, which `rebalancing/create_standard_allowance_uprating.py` builds when parameters are processed: the benefit uprating CPI index times one plus the uplift. For a legislated year the uplift is the one its rates include (2.3% for 2026-27); for later years it is the uplift in force. So switching `rebalancing.active` off, or changing a later year's uplift, moves every year after 2026-27, which stays at its legislated rates. To change 2026-27 itself, set `gov.dwp.universal_credit.standard_allowance.amount`.
+
+For a single claimant under 25, the legislated 2026-27 amount is £338.58, above the Act's £336.60 minimum (£316.98 increased by 3.8% CPI, then 2.3%, with rounding at each step). The projection carries that margin forward; dividing the legislated rate by 1.023 gives the projection's CPI-only base, rather than the Act's Step 2 minimum for that claimant type.
 
 ## Implementation
 
@@ -63,7 +69,7 @@ These uplifts are applied to the CPI-uprated standard allowance for each year. I
 The reforms are implemented through parameters, scenario modifiers, and scenarios that work together to enable policy analysis.
 ```
 
-- **Parameters**: YAML files define the reform's activation status, the health element amounts for new claimants and for protected (pre-2026) claimants, the health element freeze, and the standard allowance uplift rates.
+- **Parameters**: YAML files define the reform's activation status, the health element amounts for new claimants and for protected (pre-2026) claimants, the health element freeze, and the standard allowance uplift rates. The uplift reaches the standard allowance through its uprating index.
 - **Scenario modifier**: The `add_universal_credit_reform` function applies the protected existing-claimant health-element path during microsimulation.
 - **Scenario**: The `universal_credit_july_2025_reform` scenario enables the reforms in policy analysis.
 
@@ -86,25 +92,29 @@ scenario = Scenario(
 sim = Simulation(scenario=scenario)
 ```
 
+The 2026-27 standard allowance stays at its legislated rates, which include the 2.3% uplift; from 2027-28 it follows CPI alone from the 2026-27 rates less that uplift.
+
 ### Changing the standard allowance uplift parameters
 
 ```python
 from policyengine_uk import Simulation, Scenario
 
-# Set different uplift rates - e.g. 5% in 2026, 7% in 2027
+# Set different uplift rates from 2027-28 (2026-27 is legislated), e.g. 7%.
+# A bare year names the fiscal year from 6 April.
 scenario = Scenario(
     parameter_changes={
         "gov.dwp.universal_credit.rebalancing.standard_allowance_uplift": {
-            "2026-01-01": 0.05,
-            "2027-01-01": 0.07,
-            "2028-01-01": 0.07,
-            "2029-01-01": 0.07,
+            "2027": 0.07,
+            "2028": 0.07,
+            "2029": 0.07,
         }
     }
 )
 
 sim = Simulation(scenario=scenario)
 ```
+
+The uplift reaches the allowance through parameter processing. Both `Scenario(parameter_changes=...)` and a `reform=` dictionary keyed by fiscal year re-run that pipeline, including after parameters are reset and reprocessed. A bounded override of `standard_allowance.amount` uses the override as given during its period and restores the projected allowance afterwards.
 
 ### Changing the health element amount for new claimants
 
@@ -150,8 +160,9 @@ The freeze reaches the element through parameter processing. A `Scenario(paramet
 
 ## Legislative reference
 
-The reforms are based on the Universal Credit Bill and its impact assessment:
+The reforms are based on the Universal Credit Act 2025, the Bill and its impact assessment:
 
+- https://www.legislation.gov.uk/ukpga/2025/22/section/1
 - https://www.legislation.gov.uk/ukpga/2025/22/section/3
 - https://bills.parliament.uk/publications/62123/documents/6889
 - https://bills.parliament.uk/publications/62124/documents/6892

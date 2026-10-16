@@ -1,3 +1,10 @@
+## [2.134.6] - 2026-10-16
+
+### Fixed
+
+- - Applied the Universal Credit Act 2025 standard allowance uplifts for 2027-28 to 2029-30 through a dedicated uprating index under `gov.economic_assumptions.indices`, including when dated reforms rebuild parameters, while preserving the legislated 2026-27 rates.
+
+
 ## [2.134.5] - 2026-10-16
 
 ### Fixed
