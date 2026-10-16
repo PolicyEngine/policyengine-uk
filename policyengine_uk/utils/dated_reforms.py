@@ -581,9 +581,9 @@ def write_assignment(
 ) -> None:
     """Write a change onto a parameter's statutory timeline.
 
-    A change starting before the parameter's first stated value first gets
-    that value written at ``BACKDATED_FROM``, as processing would backdate
-    it. Where the change reaches past the parameter's last stated value (see
+    A change starting on or before the parameter's first stated value first
+    gets that value written at ``BACKDATED_FROM``, as processing would
+    backdate it. Where the change reaches past the parameter's last stated value (see
     ``requires_projection``), ``projected(name)`` supplies prior law's
     projected timeline, whose values after the last stated one are first
     written in as stated values: uprating and indexation extend a timeline
@@ -613,7 +613,7 @@ def write_assignment(
     next_str = str(assignment.stop.offset(1, "day"))
     old: Timeline = list(parameter.values_list)
     first = min((entry.instant_str for entry in old), default=None)
-    if first is not None and start_str < first and BACKDATED_FROM < first:
+    if first is not None and start_str <= first and BACKDATED_FROM < first:
         # Processing backdates a parameter's first stated value to
         # BACKDATED_FROM. Written here, it stays prior law for the years
         # before a change that starts before that first value; otherwise the

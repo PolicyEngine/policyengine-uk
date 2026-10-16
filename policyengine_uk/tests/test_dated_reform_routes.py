@@ -426,6 +426,68 @@ def test_a_change_to_an_aligned_nics_threshold_alone_realigns_after_it():
         ), year
 
 
+NEW_CLAIMANT_HEALTH = "gov.dwp.universal_credit.rebalancing.new_claimant_health_element"
+
+
+@pytest.mark.parametrize(
+    "route, reform",
+    [
+        ("reform_dict", {NEW_CLAIMANT_HEALTH: {"2026-01-01.2026-12-31": 300.0}}),
+        ("reform_dict", {NEW_CLAIMANT_HEALTH: {"2026-01-01.2100-12-31": 300.0}}),
+        # Reform.from_dict reads a bare year as from 1 January on: the first
+        # stated date here.
+        ("reform_from_dict", {NEW_CLAIMANT_HEALTH: {"2026": 300.0}}),
+    ],
+)
+def test_a_change_from_a_parameters_first_date_leaves_earlier_years_alone(
+    route, reform
+):
+    # pe-uk#2435: a change starting exactly on the first stated date (here
+    # 2026-01-01, £217.26) had its value backdated to every earlier year.
+    simulation = ROUTES[route](reform)
+    parameter = simulation.tax_benefit_system.parameters.get_child(NEW_CLAIMANT_HEALTH)
+    current = tbs_module.processed_parameters().get_child(NEW_CLAIMANT_HEALTH)
+    for day in ("2024-06-01", "2025-06-01"):
+        assert parameter(day) == pytest.approx(current(day)), day
+    assert parameter("2026-06-01") == 300.0
+
+
+def test_write_assignment_from_the_first_date_writes_prior_law_before_it():
+    from policyengine_core.parameters import ParameterNode
+
+    from policyengine_uk.utils.dated_reforms import (
+        BACKDATED_FROM,
+        ParameterAssignment,
+        write_assignment,
+    )
+
+    def timeline(first):
+        node = ParameterNode("", data={"p": {"values": {first: 217.26}}})
+        return node.p
+
+    later = timeline("2026-01-01")
+    write_assignment(
+        later,
+        ParameterAssignment(
+            "p", instant_("2026-01-01"), instant_("2026-12-31"), 300.0, 0
+        ),
+    )
+    assert later("2025-06-01") == 217.26
+    assert later("2026-06-01") == 300.0
+    assert later("2027-06-01") == 217.26
+    assert BACKDATED_FROM in [entry.instant_str for entry in later.values_list]
+    # A first date that is BACKDATED_FROM itself has nothing earlier to keep.
+    earliest = timeline(BACKDATED_FROM)
+    write_assignment(
+        earliest,
+        ParameterAssignment(
+            "p", instant_(BACKDATED_FROM), instant_("2015-12-31"), 300.0, 0
+        ),
+    )
+    assert earliest("2015-06-01") == 300.0
+    assert earliest("2016-06-01") == 217.26
+
+
 def test_bare_year_dict_keys_match_the_fiscal_year_interval():
     by_year = via_reform_dict(
         {PERSONAL_ALLOWANCE: {"2031": 12_570, "2032": 12_570, "2033": 12_570}}
