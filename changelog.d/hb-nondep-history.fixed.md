@@ -1,0 +1,1 @@
+- Added the enacted 2015 to 2017 Housing Benefit non-dependant deduction thresholds and amounts instead of backdating the 2018 scale.
