@@ -1,0 +1,65 @@
+- name: A financial zero does not exclude a countable second property
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+        benunit_reported_capital: 0
+    households:
+      household:
+        members: [claimant]
+        other_residential_property_value: 50_000
+  output:
+    uc_assessable_capital: 45_000
+    is_uc_eligible: false
+    universal_credit: 0
+
+- name: Financial observations and valued property enter separate capital pools
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+        benunit_reported_capital: 6_000
+    households:
+      household:
+        members: [claimant]
+        other_residential_property_value: 3_000
+        non_residential_property_value: 7_000
+  output:
+    uc_assessable_capital: 15_000
+    is_uc_eligible: true
+    uc_tariff_income: 1_879.2
+
+- name: An explicit complete capital override retains zero semantics
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+        benunit_reported_capital: 6_000
+        uc_reported_capital: 0
+    households:
+      household:
+        members: [claimant]
+        savings: 50_000
+        other_residential_property_value: 50_000
+  output:
+    uc_assessable_capital: 0
+    is_uc_eligible: true
+    uc_tariff_income: 0
