@@ -1,0 +1,1 @@
+- The release version commit now moves uv.lock's entry for policyengine-uk with pyproject.toml, and its guard refuses any other change to uv.lock.
