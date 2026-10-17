@@ -22,6 +22,6 @@ class salary_sacrifice_pension_ni_employer(Variable):
 
         # Use existing NI Class 1 employer rate parameter
         ni_params = parameters(period).gov.hmrc.national_insurance.class_1
-        employer_rate = ni_params.rates.employer
+        employer_rate = ni_params.employer_scale.components[1].rate
 
         return excess * employer_rate

@@ -1,0 +1,1 @@
+- Store marginal National Insurance schedules as parameter scales while preserving contribution calculations and existing scalar reform paths.

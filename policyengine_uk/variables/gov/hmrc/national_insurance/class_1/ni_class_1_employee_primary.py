@@ -15,10 +15,14 @@ class ni_class_1_employee_primary(Variable):
 
         # Thresholds are weekly, so multiply by weeks in year and divide by months in year
         primary_threshold = (
-            parameters.thresholds.primary_threshold * WEEKS_IN_YEAR / MONTHS_IN_YEAR
+            parameters.employee_scale.components[1].threshold
+            * WEEKS_IN_YEAR
+            / MONTHS_IN_YEAR
         )
         upper_earnings_limit = (
-            parameters.thresholds.upper_earnings_limit * WEEKS_IN_YEAR / MONTHS_IN_YEAR
+            parameters.employee_scale.components[2].threshold
+            * WEEKS_IN_YEAR
+            / MONTHS_IN_YEAR
         )
 
         upper_earnings_limit_income = max_(income - upper_earnings_limit, 0)
@@ -26,4 +30,4 @@ class ni_class_1_employee_primary(Variable):
             max_(income - primary_threshold, 0) - upper_earnings_limit_income
         )
 
-        return parameters.rates.employee.main * primary_threshold_income
+        return parameters.employee_scale.components[1].rate * primary_threshold_income

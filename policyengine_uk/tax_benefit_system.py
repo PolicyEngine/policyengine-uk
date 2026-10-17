@@ -79,6 +79,15 @@ from policyengine_uk.utils.parameters import (
     convert_to_fiscal_year_parameters,
 )
 
+from policyengine_uk.utils.ni_parameter_scales import (
+    LegacyNIParameter,
+    canonical_descendants,
+    canonical_ni_processing,
+    validate_ni_scale_compatibility,
+    canonical_ni_uprating_references,
+    canonicalize_ni_parameter_path,
+)
+
 logger = logging.getLogger(__name__)
 
 # Module constants
@@ -176,6 +185,7 @@ def process_parameter_tree(
     written just after the step that generates it (see
     ``_add_generated_parameters``).
     """
+    validate_ni_scale_compatibility(parameters)
     parameters = _add_generated_parameters(parameters, generated)
 
     # Create baseline parameters for reform comparisons
@@ -188,8 +198,10 @@ def process_parameter_tree(
         parameters.add_child("baseline", baseline)
 
     # Apply general parameter operations
-    parameters = propagate_parameter_metadata(parameters)
-    parameters = uprate_parameters(parameters)
+    with canonical_ni_processing(parameters):
+        propagate_parameter_metadata(parameters)
+        with canonical_ni_uprating_references(parameters):
+            uprate_parameters(parameters)
     parameters = backdate_parameters(parameters, BACKDATED_FROM)
     # Prior law's projected path for every parameter a reform can change: the
     # gov tree, before annualisation, and the trees outside it (household),
@@ -240,8 +252,9 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
 
     def reset_parameter_caches(self):
         """Reset all caches in the tax-benefit system."""
+        validate_ni_scale_compatibility(self.parameters)
         self._parameters_at_instant_cache = {}
-        for parameter in self.parameters.get_descendants():
+        for parameter in canonical_descendants(self.parameters):
             parameter._at_instant_cache = {}
         self.parameters._at_instant_cache = {}
 
@@ -579,6 +592,8 @@ def _leaf_paths(node: ParameterNode, prefix: str = "") -> List[str]:
     paths = []
     for key, child in node.children.items():
         path = f"{prefix}.{key}" if prefix else key
+        if isinstance(child, LegacyNIParameter):
+            continue
         if isinstance(child, Parameter):
             paths.append(path)
         elif isinstance(child, ParameterNode):
@@ -603,7 +618,9 @@ def generated_parameter_defines() -> Callable[[str], bool]:
         _generated_paths_cache = frozenset(
             path
             for path in _leaf_paths(generated)
-            if not statutory(path) and canonicalize_lsr_parameter_path(path) == path
+            if not statutory(path)
+            and canonicalize_ni_parameter_path(canonicalize_lsr_parameter_path(path))
+            == path
         )
     return _generated_paths_cache.__contains__
 

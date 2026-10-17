@@ -124,11 +124,11 @@ FILES_LAST_TAX_YEAR = "files_last_tax_year"
 INDEXED_THRESHOLDS = (
     "gov.hmrc.income_tax.allowances.personal_allowance.amount",
     "gov.hmrc.income_tax.rates.uk[1].threshold",
-    "gov.hmrc.national_insurance.class_1.thresholds.primary_threshold",
-    "gov.hmrc.national_insurance.class_1.thresholds.upper_earnings_limit",
-    "gov.hmrc.national_insurance.class_1.thresholds.secondary_threshold",
-    "gov.hmrc.national_insurance.class_4.thresholds.lower_profits_limit",
-    "gov.hmrc.national_insurance.class_4.thresholds.upper_profits_limit",
+    "gov.hmrc.national_insurance.class_1.employee_scale[1].threshold",
+    "gov.hmrc.national_insurance.class_1.employee_scale[2].threshold",
+    "gov.hmrc.national_insurance.class_1.employer_scale[1].threshold",
+    "gov.hmrc.national_insurance.class_4.contribution_scale[1].threshold",
+    "gov.hmrc.national_insurance.class_4.contribution_scale[2].threshold",
 )
 
 
@@ -307,18 +307,18 @@ def add_threshold_indexation(parameters: ParameterNode) -> ParameterNode:
     """
     increases = september_cpi_increases(parameters)
     income_tax = parameters.gov.hmrc.income_tax
-    class_1 = parameters.gov.hmrc.national_insurance.class_1.thresholds
-    class_4 = parameters.gov.hmrc.national_insurance.class_4.thresholds
+    class_1 = parameters.gov.hmrc.national_insurance.class_1
+    class_4 = parameters.gov.hmrc.national_insurance.class_4
     personal_allowance_parameter = income_tax.allowances.personal_allowance.amount
     basic_rate_limit_parameter = income_tax.rates.uk.brackets[1].threshold
     indexed = [
         personal_allowance_parameter,
         basic_rate_limit_parameter,
-        class_1.primary_threshold,
-        class_1.upper_earnings_limit,
-        class_1.secondary_threshold,
-        class_4.lower_profits_limit,
-        class_4.upper_profits_limit,
+        class_1.employee_scale.brackets[1].threshold,
+        class_1.employee_scale.brackets[2].threshold,
+        class_1.employer_scale.brackets[1].threshold,
+        class_4.contribution_scale.brackets[1].threshold,
+        class_4.contribution_scale.brackets[2].threshold,
     ]
     # From the earliest last value in the files, so the income tax amounts
     # cover every year a NICs threshold takes from them.
@@ -337,25 +337,34 @@ def add_threshold_indexation(parameters: ParameterNode) -> ParameterNode:
         year: personal_allowance[year] + basic_rate_limit[year] for year in years
     }
     secondary_threshold = tax_year_path(
-        class_1.secondary_threshold, years, increases, index_secondary_threshold
+        class_1.employer_scale.brackets[1].threshold,
+        years,
+        increases,
+        index_secondary_threshold,
     )
 
     write_unstated_tax_years(personal_allowance_parameter, personal_allowance)
     write_unstated_tax_years(basic_rate_limit_parameter, basic_rate_limit)
-    write_unstated_tax_years(class_4.lower_profits_limit, personal_allowance)
-    write_unstated_tax_years(class_4.upper_profits_limit, higher_rate_threshold)
     write_unstated_tax_years(
-        class_1.primary_threshold,
+        class_4.contribution_scale.brackets[1].threshold, personal_allowance
+    )
+    write_unstated_tax_years(
+        class_4.contribution_scale.brackets[2].threshold, higher_rate_threshold
+    )
+    write_unstated_tax_years(
+        class_1.employee_scale.brackets[1].threshold,
         {year: weekly_equivalent(value) for year, value in personal_allowance.items()},
     )
     write_unstated_tax_years(
-        class_1.upper_earnings_limit,
+        class_1.employee_scale.brackets[2].threshold,
         {
             year: weekly_equivalent(value)
             for year, value in higher_rate_threshold.items()
         },
     )
-    write_unstated_tax_years(class_1.secondary_threshold, secondary_threshold)
+    write_unstated_tax_years(
+        class_1.employer_scale.brackets[1].threshold, secondary_threshold
+    )
     for parameter in indexed:
         (parameter.metadata or {}).pop(FILES_LAST_TAX_YEAR, None)
     return parameters

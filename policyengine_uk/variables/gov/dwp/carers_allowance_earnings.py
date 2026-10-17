@@ -87,10 +87,10 @@ class carers_allowance_earnings(Variable):
             income_tax.rates.uk.rates[0],
         )
         trading_tax = basic_rate * max_(0, profit - personal_allowance)
-        trading_class_4 = class_4.rates.main * max_(
+        trading_class_4 = class_4.contribution_scale.components[1].rate * max_(
             0,
-            min_(profit, class_4.thresholds.upper_profits_limit)
-            - class_4.thresholds.lower_profits_limit,
+            min_(profit, class_4.contribution_scale.components[2].threshold)
+            - class_4.contribution_scale.components[1].threshold,
         )
         # Reg. 14(2)(a), omitted from 6 April 2024: the Class 2 contributions
         # payable on the chargeable profit (SSCBA 1992 s. 11), on the
