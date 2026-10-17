@@ -396,6 +396,18 @@ class Simulation(CoreSimulation):
         super().apply_reform(reform)
         self._refresh_capital_gains_projection()
 
+    def apply_reform(self, reform) -> None:
+        # policyengine-core's Simulation.apply_reform calls
+        # ``reform.apply(self.tax_benefit_system)``, and core's
+        # Simulation.__init__ binds ``tax_benefit_system.simulation`` before
+        # it applies reforms. This class does not call core's __init__, so
+        # make the binding here. Structural reforms that adjust inputs
+        # (adjust_budgets, disable_simulated_benefits) read it. Binding on
+        # every call also keeps a cloned system pointing at the simulation
+        # that applies the reform rather than the one it was cloned from.
+        self.tax_benefit_system.simulation = self
+        super().apply_reform(reform)
+
     def delete_arrays(self, variable: str, period: Period = None) -> None:
         super().delete_arrays(variable, period)
         # From policyengine-core 3.32.27 (policyengine-core#561) the deletion
