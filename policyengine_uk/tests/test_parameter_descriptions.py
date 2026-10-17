@@ -27,8 +27,6 @@ def _parameter_files_with_descriptions():
     files = []
     errors = []
     for path in _yaml_files():
-        if "tests" in path.parts:
-            continue
         try:
             data = yaml.load(path.read_text(), Loader=_DescriptionLoader)
         except (OSError, UnicodeError, yaml.YAMLError) as error:
@@ -197,3 +195,19 @@ def test_description_check_keeps_global_safe_loader_types(tmp_path, monkeypatch)
     assert before["optional"] is None
     with pytest.raises(ValueError, match="year 0"):
         yaml.safe_load("when: 0000-01-01\n")
+
+
+def test_description_checker_checks_parameters_below_tests_ancestor(
+    tmp_path, monkeypatch
+):
+    root = tmp_path / "tests" / "parameters"
+    root.mkdir(parents=True)
+    parameter = root / "invalid.yaml"
+    parameter.write_text(
+        "description: Missing final punctuation\nvalues: {0000-01-01: 1}\n"
+    )
+    monkeypatch.setitem(globals(), "PARAMETERS_ROOT", root)
+
+    assert _yaml_files() == [parameter]
+    with pytest.raises(AssertionError, match="invalid.yaml"):
+        test_parameter_descriptions_end_with_period()
