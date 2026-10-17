@@ -1,0 +1,957 @@
+# Fiscal partition: how the model's tax and spending totals divide into heads.
+#
+# Each head is one receipt (an OBR current-receipts line, split by who pays
+# where the model splits it) and names the one variable that measures the
+# household's share of it. Heads are mutually exclusive: no head's value
+# contains another head's value, and no variable is summed twice in a total.
+#
+# The heads were specified from the OBR receipts classification and from each
+# variable's formula, not copied from the model's own lists
+# (GOV_TAX_VARIABLES, HOUSEHOLD_TAX_VARIABLES,
+# PRE_BUDGET_CHANGE_HOUSEHOLD_TAX_VARIABLES).
+# policyengine_uk/tests/aggregate_impact/test_aggregate_impact_partition.py
+# checks the two against each other without data, and the aggregate-impact
+# report checks the accounting properties on the certified dataset. The #2159
+# fix adds tests of them on simulated households.
+#
+# Spending heads divide gov_spending and household_benefits the same way:
+# one benefit or service per head, one variable each.
+#
+# This version describes main before the #2159 fix: expected_sdlt still adds
+# corporate_sdlt, so the household SDLT head carries corporate SDLT too and
+# corporate_sdlt is declared under model_double_counts. The fix gives
+# corporate_sdlt its own head (sdlt_corporate) and empties that section.
+#
+# Consumers (tests, the per-PR aggregate impact report) read this file
+# directly. Bump schema_version on any change to field meanings.
+#
+# Fields
+#   tax_heads[]:
+#     id                one per head
+#     label             sentence-case name
+#     variable          the one model variable that measures the head
+#     entity            household or person
+#     obr_line          OBR current-receipts line the head belongs to, or
+#                       not_an_obr_current_receipt
+#     report_group      grouping for reports
+#     payer             who bears it in the model: household (the household
+#                       or its members pay it directly), employer, consumer
+#                       incidence (allocated by consumption), corporate
+#                       incidence (allocated by shareholding), or mixed
+#     totals            the totals that include it
+#     sign              nonnegative (at current-law parameter values, for
+#                       non-negative inputs) or any (a change measure)
+#     zero_at_baseline  expected: current-law parameters make it zero for
+#                       every household (a reform-only head)
+#     reads             other heads this head's formula reaches, with the
+#                       route; reads that change eligibility, not inclusion
+#   exclusions[]: variables that must never be summed alongside the heads.
+#     kind: component (summed or read inside `head`), measure_within (an
+#     analytical decomposition already inside `head` through its inputs),
+#     composite (spans several heads), duplicate (same value as `head`),
+#     baseline_measure.
+#   model_double_counts[]: known violations still in the model: a variable a
+#     total lists although the head variable `contained_in` already adds it.
+#   spending_heads[]: as tax_heads, without obr_line and payer, plus
+#     caseload (default true): whether reports count recipients.
+#   overlap_guards[]: the places double counting could occur, and the
+#     property that should hold for each. The aggregate-impact report checks
+#     the geographic_exclusivity guards on the certified dataset; the #2159
+#     fix's tests check the others.
+schema_version: 1
+
+totals:
+  gov_tax:
+    label: Government tax revenue in respect of the household
+    description: Receipts at their level, including employer-paid taxes and VAT.
+    dropped_when:
+      gov.contrib.abolish_council_tax:
+        - council_tax
+        - high_value_council_tax_surcharge
+  household_tax:
+    label: Taxes borne by the household
+    description: >-
+      Taxes subtracted from household net income. VAT and employer NI enter
+      only as reform-induced changes (vat_change and the employer NI response
+      incidence), because baseline VAT and employer NI are not deducted from
+      the incomes the model starts from.
+    dropped_when:
+      gov.contrib.abolish_council_tax:
+        - council_tax
+        - high_value_council_tax_surcharge
+  pre_budget_change_household_tax:
+    label: Taxes borne by the household, pre-budget-change definition
+    description: >-
+      A fixed earlier definition of household_tax used by
+      pre_budget_change_household_net_income. It omits heads added since
+      (alcohol, tobacco and vehicle excise duties, private school VAT, the
+      high value council tax surcharge, student loan repayments, and the
+      incidence-change heads).
+    dropped_when:
+      gov.contrib.abolish_council_tax:
+        - council_tax
+
+  gov_spending:
+    label: Government spending in respect of the household
+    description: >-
+      Cash benefits, childcare and student support, and public services in
+      kind (NHS, education, transport subsidies).
+    dropped_when:
+      gov.contrib.abolish_council_tax:
+        - council_tax_benefit
+  household_benefits:
+    label: Benefits received by the household
+    description: >-
+      The benefit side of household net income. It is gov_spending without the
+      contributed budget-change line, which is not paid to households.
+    dropped_when:
+      gov.contrib.abolish_council_tax:
+        - council_tax_benefit
+
+tax_heads:
+  # Income and earnings
+  - id: income_tax
+    label: Income tax
+    variable: income_tax
+    entity: person
+    obr_line: Income tax
+    report_group: income_tax
+    payer: household
+    totals: [gov_tax, household_tax, pre_budget_change_household_tax]
+    sign: nonnegative
+  - id: nics_individual
+    label: National Insurance (employee and self-employed)
+    variable: national_insurance
+    entity: person
+    obr_line: National insurance contributions
+    report_group: national_insurance
+    payer: household
+    totals: [gov_tax, household_tax, pre_budget_change_household_tax]
+    sign: nonnegative
+  - id: nics_employer
+    label: National Insurance (employer)
+    variable: ni_employer
+    entity: person
+    obr_line: National insurance contributions
+    report_group: national_insurance
+    payer: employer
+    totals: [gov_tax]
+    sign: nonnegative
+  - id: employer_nics_response_capital
+    label: Employer NI change borne by capital
+    variable: employer_ni_response_capital_incidence
+    entity: person
+    obr_line: National insurance contributions
+    report_group: national_insurance
+    payer: corporate incidence
+    totals: [household_tax]
+    sign: any
+    zero_at_baseline: expected
+  - id: employer_nics_response_consumer
+    label: Employer NI change borne by consumers
+    variable: employer_ni_response_consumer_incidence
+    entity: person
+    obr_line: National insurance contributions
+    report_group: national_insurance
+    payer: consumer incidence
+    totals: [household_tax]
+    sign: any
+    zero_at_baseline: expected
+  - id: capital_gains_tax
+    label: Capital gains tax
+    variable: capital_gains_tax
+    entity: person
+    obr_line: Capital gains tax
+    report_group: capital_taxes
+    payer: household
+    totals: [gov_tax, household_tax, pre_budget_change_household_tax]
+    sign: nonnegative
+  - id: student_loan_repayments
+    label: Student loan repayments
+    variable: student_loan_repayments
+    entity: person
+    obr_line: not_an_obr_current_receipt
+    obr_line_note: >-
+      A financial transaction: repayments reduce the student loan book, not
+      borrowing, so they are outside current receipts. The model counts them
+      in gov_tax and household_tax; reports should show them separately.
+    report_group: financial_transactions
+    payer: household
+    totals: [gov_tax, household_tax]
+    sign: nonnegative
+
+  # Consumption
+  - id: vat
+    label: VAT
+    variable: vat
+    entity: household
+    obr_line: Value added tax
+    report_group: vat
+    payer: consumer incidence
+    totals: [gov_tax]
+    sign: nonnegative
+  - id: vat_change
+    label: Change in VAT from its baseline
+    variable: vat_change
+    entity: household
+    obr_line: Value added tax
+    report_group: vat
+    payer: consumer incidence
+    totals: [household_tax, pre_budget_change_household_tax]
+    sign: any
+    zero_at_baseline: expected
+    reads:
+      - head: vat
+        route: vat_change adds vat and subtracts baseline_vat
+        why: a change measure built from the level; the two are never in the same total
+  - id: private_school_vat
+    label: VAT on private school fees
+    variable: private_school_vat
+    entity: household
+    obr_line: Value added tax
+    report_group: vat
+    payer: household
+    totals: [gov_tax, household_tax]
+    sign: nonnegative
+    zero_at_baseline: expected
+    zero_at_baseline_note: >-
+      gov.contrib.labour.private_school_vat is 0 at current law in this
+      model, so the head is reform-only here.
+    reads:
+      - head: income_tax
+        route: private_school_vat -> attends_private_school -> income_tax
+        why: attendance is imputed from income; it decides who attends, not how much tax is counted
+      - head: nics_individual
+        route: private_school_vat -> attends_private_school -> (net income) -> national_insurance
+        why: as above
+      - head: council_tax
+        route: private_school_vat -> attends_private_school -> household_benefits -> council_tax_benefit -> council_tax
+        why: as above
+  - id: fuel_duty
+    label: Fuel duties
+    variable: fuel_duty
+    entity: household
+    obr_line: Fuel duties
+    report_group: excise_duties
+    payer: household
+    totals: [gov_tax, household_tax, pre_budget_change_household_tax]
+    sign: nonnegative
+  - id: alcohol_duty
+    label: Alcohol duties
+    variable: alcohol_duty
+    entity: household
+    obr_line: Alcohol duties
+    report_group: excise_duties
+    payer: household
+    totals: [gov_tax, household_tax]
+    sign: nonnegative
+    data_note: >-
+      Zero for every household on policyengine-uk-data 1.58.0
+      (enhanced_frs_2024_25) in every year from 2025 to 2030, measured
+      2026-10-11.
+  - id: tobacco_duty
+    label: Tobacco duties
+    variable: tobacco_duty
+    entity: household
+    obr_line: Tobacco duties
+    report_group: excise_duties
+    payer: household
+    totals: [gov_tax, household_tax]
+    sign: nonnegative
+    data_note: >-
+      Zero for every household on policyengine-uk-data 1.58.0
+      (enhanced_frs_2024_25) in every year from 2025 to 2030, measured
+      2026-10-11.
+  - id: vehicle_excise_duty
+    label: Vehicle excise duties
+    variable: vehicle_excise_duty
+    entity: household
+    obr_line: Vehicle excise duties
+    report_group: excise_duties
+    payer: household
+    totals: [gov_tax, household_tax]
+    sign: nonnegative
+    data_note: >-
+      Zero for every household on policyengine-uk-data 1.58.0
+      (enhanced_frs_2024_25) in every year from 2025 to 2030, measured
+      2026-10-11.
+  - id: tv_licence
+    label: TV licence fee
+    variable: tv_licence
+    entity: household
+    obr_line: Licence fee receipts
+    report_group: other_receipts
+    payer: household
+    totals: [gov_tax, household_tax, pre_budget_change_household_tax]
+    sign: nonnegative
+    reads:
+      - head: income_tax
+        route: tv_licence -> tv_licence_discount -> pension_credit -> pension_credit_income -> income_tax
+        why: the over-75 discount depends on Pension Credit receipt, a means test on net income
+      - head: nics_individual
+        route: tv_licence -> tv_licence_discount -> pension_credit -> pension_credit_income -> national_insurance
+        why: as above
+
+  # Property
+  - id: council_tax
+    label: Council tax
+    variable: council_tax
+    entity: household
+    obr_line: Council tax
+    report_group: local_taxes
+    payer: household
+    totals: [gov_tax, household_tax, pre_budget_change_household_tax]
+    sign: nonnegative
+  - id: high_value_council_tax_surcharge
+    label: High value council tax surcharge
+    variable: high_value_council_tax_surcharge
+    entity: household
+    obr_line: Council tax
+    report_group: local_taxes
+    payer: household
+    totals: [gov_tax, household_tax]
+    sign: nonnegative
+  - id: domestic_rates
+    label: Northern Ireland domestic rates
+    variable: domestic_rates
+    entity: household
+    obr_line: Council tax
+    obr_line_note: >-
+      Northern Ireland's domestic rates are its counterpart to council tax;
+      check the line against the OBR table in use before publishing a
+      line-by-line comparison.
+    report_group: local_taxes
+    payer: household
+    totals: [gov_tax, household_tax, pre_budget_change_household_tax]
+    sign: nonnegative
+  - id: business_rates
+    label: Business rates
+    variable: business_rates
+    entity: household
+    obr_line: Business rates
+    report_group: business_rates
+    payer: corporate incidence
+    totals: [gov_tax, household_tax, pre_budget_change_household_tax]
+    sign: nonnegative
+  - id: sdlt_household
+    label: Stamp duty land tax (own purchases, and corporate until the #2159 fix)
+    variable: expected_sdlt
+    entity: household
+    obr_line: Stamp duty land tax
+    report_group: property_transaction_taxes
+    payer: mixed
+    totals: [gov_tax, household_tax, pre_budget_change_household_tax]
+    sign: nonnegative
+    data_note: >-
+      Before the #2159 fix expected_sdlt adds corporate_sdlt and a stray 0.045
+      per household, so this head is both parts of the receipt.
+  - id: land_transaction_tax
+    label: Land transaction tax (Wales)
+    variable: expected_ltt
+    entity: household
+    obr_line: Land transaction tax
+    report_group: property_transaction_taxes
+    payer: household
+    totals: [gov_tax, household_tax, pre_budget_change_household_tax]
+    sign: nonnegative
+    data_note: >-
+      expected_ltt multiplies an already purchase-drawn liability by
+      property_sale_rate, discounting it twice (issue 2246).
+  - id: land_and_buildings_transaction_tax
+    label: Land and buildings transaction tax (Scotland)
+    variable: expected_lbtt
+    entity: household
+    obr_line: Land and buildings transaction tax
+    report_group: property_transaction_taxes
+    payer: household
+    totals: [gov_tax, household_tax, pre_budget_change_household_tax]
+    sign: nonnegative
+    data_note: >-
+      expected_lbtt multiplies an already purchase-drawn liability by
+      property_sale_rate, discounting it twice (issue 2246).
+
+  # Reform-only heads
+  - id: corporate_incident_tax_change
+    label: Unspecified tax change borne by capital
+    variable: corporate_incident_tax_revenue_change
+    entity: household
+    obr_line: not_an_obr_current_receipt
+    obr_line_note: A lump-sum revenue change allocated by shareholding.
+    report_group: incidence_changes
+    payer: corporate incidence
+    totals: [gov_tax, household_tax]
+    sign: any
+    zero_at_baseline: expected
+  - id: consumer_incident_tax_change
+    label: Unspecified tax change borne by consumers
+    variable: consumer_incident_tax_revenue_change
+    entity: household
+    obr_line: not_an_obr_current_receipt
+    obr_line_note: A lump-sum revenue change allocated by consumption.
+    report_group: incidence_changes
+    payer: consumer incidence
+    totals: [gov_tax, household_tax]
+    sign: any
+    zero_at_baseline: expected
+  - id: wealth_tax
+    label: Wealth tax
+    variable: wealth_tax
+    entity: household
+    obr_line: not_an_obr_current_receipt
+    obr_line_note: A hypothetical tax.
+    report_group: hypothetical_taxes
+    payer: household
+    totals: [gov_tax, household_tax, pre_budget_change_household_tax]
+    sign: nonnegative
+    zero_at_baseline: expected
+  - id: non_primary_residence_wealth_tax
+    label: Wealth tax excluding the main residence
+    variable: non_primary_residence_wealth_tax
+    entity: household
+    obr_line: not_an_obr_current_receipt
+    obr_line_note: A hypothetical tax.
+    report_group: hypothetical_taxes
+    payer: household
+    totals: [gov_tax, household_tax, pre_budget_change_household_tax]
+    sign: nonnegative
+    zero_at_baseline: expected
+  - id: land_value_tax
+    label: Land value tax
+    variable: LVT
+    entity: household
+    obr_line: not_an_obr_current_receipt
+    obr_line_note: A hypothetical tax.
+    report_group: hypothetical_taxes
+    payer: mixed
+    totals: [gov_tax, household_tax, pre_budget_change_household_tax]
+    sign: nonnegative
+    zero_at_baseline: expected
+  - id: carbon_tax
+    label: Carbon tax
+    variable: carbon_tax
+    entity: household
+    obr_line: not_an_obr_current_receipt
+    obr_line_note: A hypothetical tax.
+    report_group: hypothetical_taxes
+    payer: mixed
+    totals: [gov_tax, household_tax, pre_budget_change_household_tax]
+    sign: nonnegative
+    zero_at_baseline: expected
+
+exclusions:
+  # Property transaction taxes
+  - {variable: stamp_duty_land_tax, kind: component, head: sdlt_household, note: "Summed inside expected_sdlt, which until the #2159 fix also adds corporate_sdlt and a stray 0.045; not zeroed by gov.hmrc.stamp_duty.abolish. Report the head, not this."}
+  - {variable: sdlt_on_transactions, kind: component, head: sdlt_household}
+  - {variable: sdlt_on_rent, kind: component, head: sdlt_household}
+  - {variable: sdlt_on_residential_property_transactions, kind: component, head: sdlt_household}
+  - {variable: sdlt_on_non_residential_property_transactions, kind: component, head: sdlt_household}
+  - {variable: sdlt_on_residential_property_rent, kind: component, head: sdlt_household}
+  - {variable: sdlt_on_non_residential_property_rent, kind: component, head: sdlt_household}
+  - {variable: land_transaction_tax, kind: component, head: land_transaction_tax, note: "The liability before the property_sale_rate scaling (issue 2246)."}
+  - {variable: ltt_on_transactions, kind: component, head: land_transaction_tax}
+  - {variable: ltt_on_rent, kind: component, head: land_transaction_tax}
+  - {variable: ltt_on_residential_property_transactions, kind: component, head: land_transaction_tax}
+  - {variable: ltt_on_non_residential_property_transactions, kind: component, head: land_transaction_tax}
+  - {variable: ltt_on_residential_property_rent, kind: component, head: land_transaction_tax}
+  - {variable: ltt_on_non_residential_property_rent, kind: component, head: land_transaction_tax}
+  - {variable: land_and_buildings_transaction_tax, kind: component, head: land_and_buildings_transaction_tax, note: "The liability before the property_sale_rate scaling (issue 2246)."}
+  - {variable: lbtt_on_transactions, kind: component, head: land_and_buildings_transaction_tax}
+  - {variable: lbtt_on_rent, kind: component, head: land_and_buildings_transaction_tax}
+  - {variable: lbtt_on_residential_property_transactions, kind: component, head: land_and_buildings_transaction_tax}
+  - {variable: lbtt_on_non_residential_property_transactions, kind: component, head: land_and_buildings_transaction_tax}
+  - {variable: lbtt_on_residential_property_rent, kind: component, head: land_and_buildings_transaction_tax}
+  - {variable: lbtt_on_non_residential_property_rent, kind: component, head: land_and_buildings_transaction_tax}
+  - {variable: corporate_tax_incidence, kind: composite, spans: [sdlt_household, business_rates]}
+  - {variable: hbai_excluded_income, kind: composite, spans: [sdlt_household, business_rates], note: "Minus corporate_tax_incidence."}
+  - {variable: baseline_business_rates, kind: duplicate, head: business_rates, note: "Same formula and current-law parameters as business_rates."}
+  # Income tax and National Insurance
+  - {variable: income_tax_pre_charges, kind: component, head: income_tax}
+  - {variable: earned_income_tax, kind: component, head: income_tax}
+  - {variable: savings_income_tax, kind: component, head: income_tax}
+  - {variable: dividend_income_tax, kind: component, head: income_tax}
+  - {variable: property_income_tax, kind: component, head: income_tax}
+  - {variable: CB_HITC, kind: component, head: income_tax}
+  - {variable: personal_pension_contributions_tax, kind: component, head: income_tax}
+  - {variable: ni_employee, kind: measure_within, head: nics_individual, note: "Class 1 employee; national_insurance adds the classes directly."}
+  - {variable: ni_self_employed, kind: measure_within, head: nics_individual, note: "Classes 2 and 4; national_insurance adds the classes directly."}
+  - {variable: ni_class_1_employee, kind: component, head: nics_individual}
+  - {variable: ni_class_1_employee_primary, kind: component, head: nics_individual}
+  - {variable: ni_class_1_employee_additional, kind: component, head: nics_individual}
+  - {variable: ni_class_2, kind: component, head: nics_individual}
+  - {variable: ni_class_3, kind: component, head: nics_individual}
+  - {variable: ni_class_4, kind: component, head: nics_individual}
+  - {variable: ni_class_1_employer, kind: component, head: nics_employer}
+  - {variable: salary_sacrifice_pension_ni_employee, kind: measure_within, head: nics_individual, note: "The excess sacrifice is added back to employment_income, so Class 1 already charges it."}
+  - {variable: salary_sacrifice_pension_ni_employer, kind: measure_within, head: nics_employer, note: "As above, for employer Class 1."}
+  - {variable: tax, kind: composite, spans: [income_tax, nics_individual]}
+  - {variable: benunit_tax, kind: composite, spans: [income_tax, nics_individual]}
+  - {variable: total_national_insurance, kind: composite, spans: [nics_individual, nics_employer]}
+  - {variable: student_loan_repayment, kind: component, head: student_loan_repayments}
+  # Consumption
+  - {variable: baseline_vat, kind: baseline_measure, head: vat_change, note: "Subtracted inside vat_change."}
+  - {variable: beer_duty, kind: component, head: alcohol_duty}
+  - {variable: cider_duty, kind: component, head: alcohol_duty}
+  - {variable: sparkling_cider_duty, kind: component, head: alcohol_duty}
+  - {variable: wine_duty, kind: component, head: alcohol_duty}
+  - {variable: spirits_duty, kind: component, head: alcohol_duty}
+  - {variable: other_fermented_duty, kind: component, head: alcohol_duty}
+  - {variable: car_vehicle_excise_duty, kind: component, head: vehicle_excise_duty}
+  # Council tax net of a benefit
+  - {variable: council_tax_less_benefit, kind: composite, spans: [council_tax], note: "Council tax minus Council Tax Reduction, a benefit; not a receipt."}
+
+model_double_counts:
+  - variable: corporate_sdlt
+    contained_in: expected_sdlt
+    totals: [gov_tax, household_tax, pre_budget_change_household_tax]
+    issue: https://github.com/PolicyEngine/policyengine-uk/issues/2159
+
+overlap_guards:
+  - id: sdlt_payer_split
+    kind: payer_split
+    heads: [sdlt_household]
+    property: >-
+      Until the #2159 fix, expected_sdlt adds corporate_sdlt, which the totals
+      also list (model_double_counts). The fix splits the head in two, neither
+      reading the other, both zeroed by gov.hmrc.stamp_duty.abolish.
+  - id: property_transaction_tax_geography
+    kind: geographic_exclusivity
+    heads: [sdlt_household, land_transaction_tax, land_and_buildings_transaction_tax]
+    property: >-
+      At most one is non-zero for any household (England and Northern Ireland,
+      Wales, Scotland). Until the #2159 fix this does not hold: expected_sdlt
+      carries a stray 0.045, and corporate SDLT for shareholders, in every
+      nation.
+  - id: local_tax_geography
+    kind: geographic_exclusivity
+    heads: [council_tax, domestic_rates]
+    property: >-
+      No household has both. Both are inputs, so this is a property of the
+      data, checked on the certified dataset.
+  - id: vat_level_and_change
+    kind: level_and_change
+    heads: [vat, vat_change]
+    property: Never in the same total. vat_change reads vat.
+  - id: employer_nics_level_and_incidence
+    kind: level_and_change
+    heads: [nics_employer, employer_nics_response_capital, employer_nics_response_consumer]
+    property: The level is only in gov_tax; the response incidence is only in household_tax.
+  - id: corporate_incidence_allocations
+    kind: shared_allocation_key
+    heads: [business_rates, sdlt_household, corporate_incident_tax_change, carbon_tax, land_value_tax]
+    property: >-
+      Each allocates a different receipt by shareholding; none reads another.
+      corporate_tax_incidence sums two of them and is excluded.
+  - id: private_school_vat_and_vat
+    kind: possible_base_overlap
+    heads: [vat, private_school_vat]
+    property: >-
+      vat applies to imputed consumption; if that consumption includes school
+      fees, turning on private_school_vat would tax them twice. The head is
+      zero at baseline, so baseline totals are unaffected; check the
+      consumption imputation before costing a reform that sets it.
+  - id: eligibility_reads
+    kind: read_not_inclusion
+    heads: [tv_licence, private_school_vat]
+    property: >-
+      These heads reach other heads of the same total only through
+      eligibility or imputation (see each head's reads). Raising the other
+      head by a small amount leaves them unchanged on the test population.
+
+spending_heads:
+  # Pensioners
+  - id: state_pension
+    label: State Pension
+    variable: state_pension
+    entity: person
+    report_group: pensioner_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: pension_credit
+    label: Pension Credit
+    variable: pension_credit
+    entity: benunit
+    report_group: pensioner_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: winter_fuel_payment
+    label: Winter Fuel Payment
+    variable: winter_fuel_allowance
+    entity: household
+    report_group: pensioner_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: pawhp
+    label: Pension Age Winter Heating Payment (Scotland)
+    variable: pawhp
+    entity: household
+    report_group: pensioner_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  # Working-age means-tested benefits
+  - id: universal_credit
+    label: Universal Credit
+    variable: universal_credit
+    entity: benunit
+    report_group: working_age_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: housing_benefit
+    label: Housing Benefit
+    variable: housing_benefit
+    entity: benunit
+    report_group: working_age_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: council_tax_reduction
+    label: Council Tax Reduction
+    variable: council_tax_benefit
+    entity: benunit
+    report_group: working_age_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: esa_income
+    label: Employment and Support Allowance (income-related)
+    variable: esa_income
+    entity: benunit
+    report_group: working_age_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: esa_contrib
+    label: Employment and Support Allowance (contribution-based)
+    variable: esa_contrib
+    entity: person
+    report_group: working_age_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: jsa_income
+    label: Jobseeker's Allowance (income-based)
+    variable: jsa_income
+    entity: benunit
+    report_group: working_age_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: jsa_contrib
+    label: Jobseeker's Allowance (contribution-based)
+    variable: jsa_contrib
+    entity: person
+    report_group: working_age_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: income_support
+    label: Income Support
+    variable: income_support
+    entity: benunit
+    report_group: working_age_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: working_tax_credit
+    label: Working Tax Credit
+    variable: working_tax_credit
+    entity: benunit
+    report_group: working_age_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: child_tax_credit
+    label: Child Tax Credit
+    variable: child_tax_credit
+    entity: benunit
+    report_group: working_age_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: incapacity_benefit
+    label: Incapacity Benefit
+    variable: incapacity_benefit
+    entity: person
+    report_group: working_age_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  # Disability and carers
+  - id: pip
+    label: Personal Independence Payment
+    variable: pip
+    entity: person
+    report_group: disability_and_carers_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: dla
+    label: Disability Living Allowance
+    variable: dla
+    entity: person
+    report_group: disability_and_carers_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: attendance_allowance
+    label: Attendance Allowance
+    variable: attendance_allowance
+    entity: person
+    report_group: disability_and_carers_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: carers_allowance
+    label: Carer's Allowance
+    variable: carers_allowance
+    entity: person
+    report_group: disability_and_carers_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: carer_support_payment
+    label: Carer Support Payment (Scotland)
+    variable: carer_support_payment
+    entity: person
+    report_group: disability_and_carers_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: scottish_carer_supplement
+    label: Carer's Allowance Supplement (Scotland)
+    variable: scottish_carer_supplement
+    entity: person
+    report_group: disability_and_carers_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: sda
+    label: Severe Disablement Allowance
+    variable: sda
+    entity: person
+    report_group: disability_and_carers_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: iidb
+    label: Industrial Injuries Disablement Benefit
+    variable: iidb
+    entity: person
+    report_group: disability_and_carers_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: afcs
+    label: Armed Forces Compensation Scheme
+    variable: afcs
+    entity: person
+    report_group: disability_and_carers_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  # Children and families
+  - id: child_benefit
+    label: Child Benefit
+    variable: child_benefit
+    entity: benunit
+    report_group: child_and_family_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: scottish_child_payment
+    label: Scottish Child Payment
+    variable: scottish_child_payment
+    entity: person
+    report_group: child_and_family_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: two_child_limit_payment
+    label: Two Child Limit Payment (Scotland, counterfactual)
+    variable: two_child_limit_payment
+    entity: benunit
+    report_group: child_and_family_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+    zero_at_baseline: expected
+  - id: healthy_start_vouchers
+    label: Healthy Start vouchers
+    variable: healthy_start_vouchers
+    entity: person
+    report_group: child_and_family_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: maternity_allowance
+    label: Maternity Allowance
+    variable: maternity_allowance
+    entity: person
+    report_group: child_and_family_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: statutory_maternity_pay
+    label: Statutory Maternity Pay
+    variable: statutory_maternity_pay
+    entity: person
+    report_group: child_and_family_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: statutory_paternity_pay
+    label: Statutory Paternity Pay
+    variable: statutory_paternity_pay
+    entity: person
+    report_group: child_and_family_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: statutory_sick_pay
+    label: Statutory Sick Pay
+    variable: statutory_sick_pay
+    entity: person
+    report_group: child_and_family_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: ssmg
+    label: Sure Start Maternity Grant
+    variable: ssmg
+    entity: person
+    report_group: child_and_family_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: bsp
+    label: Bereavement Support Payment
+    variable: bsp
+    entity: person
+    report_group: child_and_family_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  # Childcare and education support
+  - id: tax_free_childcare
+    label: Tax-Free Childcare
+    variable: tax_free_childcare
+    entity: person
+    report_group: childcare_and_education
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: extended_childcare_entitlement
+    label: Extended childcare entitlement
+    variable: extended_childcare_entitlement
+    entity: benunit
+    report_group: childcare_and_education
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: universal_childcare_entitlement
+    label: Universal childcare entitlement
+    variable: universal_childcare_entitlement
+    entity: person
+    report_group: childcare_and_education
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: targeted_childcare_entitlement
+    label: Targeted childcare entitlement
+    variable: targeted_childcare_entitlement
+    entity: person
+    report_group: childcare_and_education
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: care_to_learn
+    label: Care to Learn
+    variable: care_to_learn
+    entity: person
+    report_group: childcare_and_education
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: childcare_grant
+    label: Childcare Grant
+    variable: childcare_grant
+    entity: person
+    report_group: childcare_and_education
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: parents_learning_allowance
+    label: Parents' Learning Allowance
+    variable: parents_learning_allowance
+    entity: person
+    report_group: childcare_and_education
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: adult_dependants_grant
+    label: Adult Dependants' Grant
+    variable: adult_dependants_grant
+    entity: person
+    report_group: childcare_and_education
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: travel_grant
+    label: Travel Grant
+    variable: travel_grant
+    entity: person
+    report_group: childcare_and_education
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: disabled_students_allowance
+    label: Disabled Students' Allowance
+    variable: disabled_students_allowance
+    entity: person
+    report_group: childcare_and_education
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: bursary_fund_16_to_19
+    label: 16 to 19 Bursary Fund
+    variable: bursary_fund_16_to_19
+    entity: person
+    report_group: childcare_and_education
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  # Public services in kind
+  - id: nhs_spending
+    label: NHS spending
+    variable: nhs_spending
+    entity: person
+    report_group: public_services_in_kind
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+    caseload: false
+  - id: dfe_education_spending
+    label: State education spending
+    variable: dfe_education_spending
+    entity: household
+    report_group: public_services_in_kind
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+    caseload: false
+  - id: dft_subsidy_spending
+    label: Transport subsidy spending
+    variable: dft_subsidy_spending
+    entity: household
+    report_group: public_services_in_kind
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+    caseload: false
+  # Cost-of-living and energy support (none in force at current law)
+  - id: cost_of_living_support_payment
+    label: Cost-of-living support payment
+    variable: cost_of_living_support_payment
+    entity: household
+    report_group: cost_of_living_support
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+    zero_at_baseline: expected
+  - id: energy_bills_rebate
+    label: Energy Bills Rebate
+    variable: energy_bills_rebate
+    entity: household
+    report_group: cost_of_living_support
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+    zero_at_baseline: expected
+  - id: epg_subsidy
+    label: Energy Price Guarantee subsidy
+    variable: epg_subsidy
+    entity: household
+    report_group: cost_of_living_support
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+    zero_at_baseline: expected
+  # Reform-only spending
+  - id: basic_income
+    label: Basic income
+    variable: basic_income
+    entity: person
+    report_group: hypothetical_spending
+    totals: [gov_spending, household_benefits]
+    sign: any
+    zero_at_baseline: expected
+  - id: disability_basic_income
+    label: Disability basic income
+    variable: disability_basic_income
+    entity: person
+    report_group: hypothetical_spending
+    totals: [gov_spending, household_benefits]
+    sign: any
+    zero_at_baseline: expected
+  - id: other_public_spending_budget_change
+    label: Other public spending budget change
+    variable: other_public_spending_budget_change
+    entity: household
+    report_group: hypothetical_spending
+    totals: [gov_spending]
+    sign: any
+    zero_at_baseline: expected
+    caseload: false

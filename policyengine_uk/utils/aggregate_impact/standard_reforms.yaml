@@ -1,0 +1,150 @@
+# The standard reforms the aggregate-impact report costs on each side.
+#
+# Each reform is either absolute (`parameters`: values applied from 2023, as
+# the reform-cost fixtures in tests/microsimulation/reforms_config.yaml do) or
+# relative (`scale`: each listed parameter is multiplied by the factor in
+# every year of the horizon, starting from that year's baseline value).
+#
+# `responds` states what the reform must do: the model variable whose
+# weighted total it must move, the direction, and the least it must move it
+# in every year of the horizon. A reform that moves its target by less, by
+# nothing or the wrong way fails the `responsive:<id>` check, so a reform the
+# model silently ignores cannot pass as a small number.
+#
+# Calibration (adopted under cos d1344, 15 October 2026). Each minimum is a
+# fifth of the reform's smallest yearly effect over 2025-26 to 2031-32 on the
+# certified pair, rounded down to two significant figures; parse_reforms
+# refuses a minimum that does not follow from its smallest_effect. Recalibrate
+# with `python -m policyengine_uk.utils.aggregate_impact calibrate` on fresh
+# measurements, and change both numbers together.
+# - Pair: uk-data 1.58.1 (enhanced_frs_2024_25, sha256 056e80fd), measured
+#   with policyengine-uk 2.130.1 on policyengine-core 3.33.0 (the certified
+#   model, policyengine.py bundle uk-6.4.3) and with 2.132.6 on core 3.33.2.
+#   Every target change was identical between the two.
+# - What the check must catch: a PolicyEngine UK backtest (11 October 2026,
+#   cited in the Budget CI plan) found the 10% UC standard allowance rise
+#   returning exactly £0 from 2.45.1 to 2.75.3, and the 10% State Pension
+#   rise barely moving from 2.88.10 to 2.102.6.
+# - What it must not catch: legitimate moves. The fixture receipts show the
+#   2029-30 costings moving by up to 18% between data and model versions,
+#   and 38% for the VAT rise (21.2 on uk-data 1.40.3 against 34.5 on 1.58.0,
+#   from recorded consumption). A fifth fails a reform only once it has lost
+#   80% of its smallest yearly effect, twice the largest move seen.
+# - Alternatives considered: a tenth (fails only after a 90% loss, too late
+#   for "barely moving"); a half (the VAT data change kept 62% of the
+#   effect, so two such changes in a row would fail a correct model);
+#   per-year minimums (tighter in years where an absolute reform is worth
+#   more, but every horizon or data change would need a full table); an
+#   external anchor such as HMRC's ready reckoner (that tests calibration,
+#   not whether the reform is wired through); and a sign check alone
+#   (passes "barely moving").
+# - A single minimum is a wiring check, not a per-year 20% guarantee: the
+#   personal allowance minimum (£0.35bn) is 20% of its 2031-32 effect
+#   (£1.78bn) but 8% of its 2030-31 effect (£4.45bn), so a 90% loss in
+#   2030-31 alone would still pass.
+#
+# An absolute reform shrinks as the baseline is uprated towards it: the
+# 13,000 personal allowance is worth £4.45bn in 2030-31 but £1.78bn in
+# 2031-32, when the baseline allowance rises to 12,830. From 2032-33 the
+# baseline (13,090) exceeds it, so before the horizon reaches that year,
+# make that reform relative.
+schema_version: 1
+
+calibration:
+  fraction: 0.2
+
+reforms:
+  - id: basic_rate_plus_1pp
+    name: Raise basic rate by 1pp
+    parameters:
+      gov.hmrc.income_tax.rates.uk[0].rate: 0.21
+    responds:
+      variable: income_tax
+      direction: up
+      minimum: 1200000000
+      smallest_effect: 6366582049  # 2025-26
+  - id: higher_rate_plus_1pp
+    name: Raise higher rate by 1pp
+    parameters:
+      gov.hmrc.income_tax.rates.uk[1].rate: 0.42
+    responds:
+      variable: income_tax
+      direction: up
+      minimum: 710000000
+      smallest_effect: 3554390536  # 2025-26
+  - id: personal_allowance_13000
+    name: Raise personal allowance by ~800GBP/year
+    parameters:
+      gov.hmrc.income_tax.allowances.personal_allowance.amount: 13000
+    responds:
+      variable: income_tax
+      direction: down
+      minimum: 350000000
+      smallest_effect: 1780300035  # 2031-32
+  - id: child_benefit_additional_25
+    name: Raise child benefit by 25GBP/week per additional child
+    parameters:
+      gov.hmrc.child_benefit.amount.additional: 25
+    responds:
+      variable: child_benefit
+      direction: up
+      minimum: 310000000
+      smallest_effect: 1591189257  # 2031-32
+  - id: uc_taper_20pc
+    name: Reduce Universal Credit taper rate to 20%
+    parameters:
+      gov.dwp.universal_credit.means_test.reduction_rate: 0.2
+    responds:
+      variable: universal_credit
+      direction: up
+      minimum: 4100000000
+      smallest_effect: 20519585448  # 2025-26
+  - id: employee_nics_main_10pc
+    name: Raise Class 1 main employee NICs rate to 10%
+    parameters:
+      gov.hmrc.national_insurance.class_1.rates.employee.main: 0.1
+    responds:
+      variable: national_insurance
+      direction: up
+      minimum: 2200000000
+      smallest_effect: 11329957618  # 2025-26
+  - id: vat_standard_plus_2pp
+    name: Raise VAT standard rate by 2pp
+    parameters:
+      gov.hmrc.vat.standard_rate: 0.22
+    responds:
+      variable: vat
+      direction: up
+      minimum: 6100000000
+      smallest_effect: 30863018576  # 2025-26
+  - id: additional_rate_plus_3pp
+    name: Raise additional rate by 3pp
+    parameters:
+      gov.hmrc.income_tax.rates.uk[2].rate: 0.48
+    responds:
+      variable: income_tax
+      direction: up
+      minimum: 550000000
+      smallest_effect: 2798504994  # 2025-26
+  - id: uc_standard_allowance_plus_10pc
+    name: Raise the Universal Credit standard allowance by 10%
+    scale:
+      gov.dwp.universal_credit.standard_allowance.amount.SINGLE_YOUNG: 1.1
+      gov.dwp.universal_credit.standard_allowance.amount.SINGLE_OLD: 1.1
+      gov.dwp.universal_credit.standard_allowance.amount.COUPLE_YOUNG: 1.1
+      gov.dwp.universal_credit.standard_allowance.amount.COUPLE_OLD: 1.1
+    responds:
+      variable: universal_credit
+      direction: up
+      minimum: 600000000
+      smallest_effect: 3041523709  # 2025-26
+  - id: state_pension_plus_10pc
+    name: Raise the State Pension by 10%
+    scale:
+      gov.dwp.state_pension.new_state_pension.amount: 1.1
+      gov.dwp.state_pension.basic_state_pension.amount: 1.1
+    responds:
+      variable: state_pension
+      direction: up
+      minimum: 2400000000
+      smallest_effect: 12250304093  # 2025-26
