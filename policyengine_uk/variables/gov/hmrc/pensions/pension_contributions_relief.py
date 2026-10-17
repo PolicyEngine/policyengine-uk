@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.pensions import pension_contributions_relief_amount
 
 
 class pension_contributions_relief(Variable):
@@ -47,20 +48,10 @@ class pension_contributions_relief(Variable):
         relevant_uk_earnings = person("employment_income", period) + max_(
             0, person("self_employment_income", period)
         )
-        # s. 190(1)-(2): relief up to relevant UK earnings, raised to the basic
-        # amount where earnings are lower. s. 191(7): only relief at source
-        # (personal pension contributions here) can give that increase.
-        basic_amount_increase = min_(
-            max_(
-                0,
-                hmrc.income_tax.reliefs.pension_contribution.basic_amount
-                - relevant_uk_earnings,
-            ),
+        return pension_contributions_relief_amount(
+            contributions,
+            relevant_uk_earnings,
             person("personal_pension_contributions", period),
+            person("age", period),
+            hmrc,
         )
-        annual_limit = relevant_uk_earnings + basic_amount_increase
-        # Contributions paid after age 75 are not relievable (s. 188(3)(a)).
-        under_age_limit = (
-            person("age", period) < hmrc.pensions.pension_contributions_relief_age_limit
-        )
-        return min_(contributions, annual_limit) * under_age_limit

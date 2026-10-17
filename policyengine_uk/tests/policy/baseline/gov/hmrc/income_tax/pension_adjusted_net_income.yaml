@@ -135,6 +135,8 @@
   output:
     net_income: 340_000
     adjusted_net_income: 330_000
-    pension_annual_allowance: 20_000
-    # £40,000 contributions less £20,000 AA, charged at 45%.
-    personal_pension_contributions_tax: 9_000
+    # Statutory adjusted income is £370,000 including employer contributions;
+    # threshold income is £330,000. The taper reaches the £10,000 floor.
+    pension_annual_allowance: 10_000
+    # £40,000 contributions less £10,000 AA, charged at 45%.
+    personal_pension_contributions_tax: 13_500
