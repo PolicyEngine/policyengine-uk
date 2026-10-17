@@ -15,8 +15,13 @@ uses the Class 1 curves and age flags.
 The legacy `salary_sacrifice_returned_to_income` defaults to zero. Explicit
 ordinary-return inputs retain their previous pay/member-payment semantics.
 Actual reported member payments and the separate broad-base haircut assumption
-are unchanged. Age-75 member accounting and annual-allowance taper work in draft
-#2441 remain separate; landing either change requires retaining that work.
+are unchanged. The merged #2441 age-75 member accounting and annual-allowance
+taper rules are retained: member payments before age 75, employer payments and
+full sacrifice enter the default DC input, while member payments from age 75
+are excluded. A positive supplied ordinary return is actual pay and a member
+payment in these readers too; it is not removed as an unreceived NICs return.
+The AA helper still applies the net-pay/trading-loss ordering, RAS earnings and
+age limits, supplied-ANI restoration and statutory pension-input overrides.
 
 The [NICs Act 2026](https://www.legislation.gov.uk/ukpga/2026/15/enacted)
 provides the contributions-law machinery for 2029–30 onwards. The existing
