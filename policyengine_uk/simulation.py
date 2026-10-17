@@ -30,6 +30,7 @@ from policyengine_uk.data.dataset_schema import (
     UKMultiYearDataset,
     UKSingleYearDataset,
 )
+from policyengine_uk.utils.entity_ids import ENTITY_ID_VARIABLES, check_entity_ids
 from policyengine_uk.utils.scenario import Scenario
 from policyengine_uk.data.economic_assumptions import (
     extend_single_year_dataset,
@@ -1073,12 +1074,32 @@ class Simulation(CoreSimulation):
             person_household_id: Array mapping persons to households
             benunit_id: Array of benefit unit IDs
             household_id: Array of household IDs
+
+        Warns:
+            EntityIdWarning: If an ID is not a whole number, or is outside the
+                range of the variable that stores it, so that the stored ID
+                differs from the one given.
         """
         # Every data source (DataFrame, dataset, file, URL) builds through here.
         self._start_new_population(built_from_dataset=True)
         from policyengine_core.simulations.simulation_builder import (
             SimulationBuilder,
         )  # Import here to avoid circular dependency
+
+        # The callers store these columns as the variables' values after
+        # building the entities, and exports and rebuilds read them from there.
+        # The populations below take the arrays as given.
+        for variable_name, ids in zip(
+            ENTITY_ID_VARIABLES,
+            (
+                person_id,
+                person_benunit_id,
+                person_household_id,
+                benunit_id,
+                household_id,
+            ),
+        ):
+            check_entity_ids(self.tax_benefit_system.variables[variable_name], ids)
 
         builder = SimulationBuilder()
         builder.populations = self.tax_benefit_system.instantiate_entities()
