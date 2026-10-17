@@ -17,7 +17,8 @@
     # relieved even though the tapered annual allowance is 4,000.
     pension_contributions_relief: 400000
     # The annual allowance charge recovers the relief on the excess:
-    # (400,000 - 4,000) at 45% on top of reduced net income of 1,600,000.
+    # (400,000 - 4,000) at 45% on top of reduced net income of 2,000,000:
+    # the charge adds relieved RAS back to income after allowances.
     pension_annual_allowance_chargeable_amount: 396000
     personal_pension_contributions_tax: 396000 * 0.45
 - name: £30k self-employment income, no private pension contributions
@@ -82,9 +83,9 @@
     employee_pension_contributions_reported: 1_500
     personal_pension_contributions: 1_000
   output:
-    # 2_000 of earnings relieves all 2_500 up to earnings; the increase to
-    # 3_600 can only come from the 1_000 of relief at source, of which 500 is
-    # left after earnings: 2_000 + 500.
+    # 2_000 is relieved within earnings, plus 500 through the RAS-only
+    # basic-amount increase. Of the 1_000 of relief at source, 500 remains
+    # after using earnings: 2_000 + 500.
     pension_contributions_relief: 2_500
 
 - name: Relief up to relevant earnings, not beyond (s. 190(1))
