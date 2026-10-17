@@ -50,9 +50,10 @@ class uses_property_allowance(Variable):
         "than with actual expenses and the finance-cost tax reduction. The "
         "two cannot be combined. Full relief applies to receipts within the "
         "allowance unless the person elects out of it, and partial relief "
-        "only if they elect for it; each election is made only if it lowers "
-        "the person's own income tax, including the winter fuel payment "
-        "charge, with everyone else's route held fixed. "
+        "only if they elect for it; with finance costs to relieve, each "
+        "election is made only if it lowers the person's own income tax, "
+        "including the winter fuel payment charge, with everyone else's "
+        "route held fixed. "
         "Ties keep the default, so a person with receipts within the "
         "allowance keeps full relief even where electing out would carry "
         "finance costs forward. Without finance costs to relieve, the "
@@ -122,7 +123,8 @@ class uses_property_allowance(Variable):
         # tax (a partner's through the Marriage Allowance; anyone's, through
         # the shared winter fuel payment, when it changes who is entitled),
         # and comparing their switches at once would count that. Rounds
-        # repeat until nobody changes.
+        # repeat until nobody changes, for at most MAX_ROUNDS: routes still
+        # changing in the last round are kept as they stand.
         order = person.get_rank(
             person.household, np.zeros(person.count), condition=choosing
         )
