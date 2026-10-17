@@ -36,6 +36,7 @@ project:
       - pattern: docs/book/policy/*.md
     - title: Programmes
       children:
+      - file: docs/book/programs/contrib/ubi-center/carbon-tax.ipynb
       - pattern: docs/book/programs/gov/*/*.md
 site:
   options:
