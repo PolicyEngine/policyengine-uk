@@ -7,7 +7,6 @@ class sdlt_liable(Variable):
     entity = Household
     definition_period = YEAR
     value_type = bool
-    unit = GBP
 
     def formula(household, period):
         country = household("country", period)

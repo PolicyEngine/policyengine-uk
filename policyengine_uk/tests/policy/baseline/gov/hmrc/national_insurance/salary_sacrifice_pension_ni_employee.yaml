@@ -106,6 +106,124 @@
     # Full excess is redirected (no targeted haircut)
     salary_sacrifice_returned_to_income: 1_000
 
+# The cases below set only the pay (employment_income_before_lsr), so
+# employment_income is the pay plus the amount returned. The charge is the
+# employee Class 1 liability on those earnings less the liability without the
+# amount returned. 2025 thresholds: primary threshold 241.73 x 52 = 12,569.96,
+# upper earnings limit 966.73 x 52 = 50,269.96.
+- name: Amount returned straddles the upper earnings limit
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    employment_income_before_lsr: 48_000
+    pension_contributions_via_salary_sacrifice: 6_000
+    gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
+    gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
+  output:
+    salary_sacrifice_returned_to_income: 4_000
+    employment_income: 52_000
+    # 8% from 48,000 to the limit, 2% from the limit to 52,000 = 216.20.
+    # (A single rate on the whole amount would give 4,000 x 2% = 80.)
+    salary_sacrifice_pension_ni_employee: (50_269.96 - 48_000) * 0.08 + (52_000 - 50_269.96) * 0.02
+
+- name: Amount returned stays below the primary threshold
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    employment_income_before_lsr: 6_000
+    pension_contributions_via_salary_sacrifice: 5_000
+    gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
+    gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
+  output:
+    employment_income: 9_000
+    # Earnings of 9,000 are below the threshold, so no contributions are due.
+    ni_class_1_employee: 0
+    salary_sacrifice_pension_ni_employee: 0
+
+- name: Amount returned straddles the primary threshold
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    employment_income_before_lsr: 11_000
+    pension_contributions_via_salary_sacrifice: 5_000
+    gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
+    gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
+  output:
+    employment_income: 14_000
+    # Only the part above the threshold is charged: 1,430.04 x 8% = 114.40.
+    ni_class_1_employee: (14_000 - 12_569.96) * 0.08
+    salary_sacrifice_pension_ni_employee: (14_000 - 12_569.96) * 0.08
+
+- name: No employee charge over State Pension age
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    employment_income_before_lsr: 45_000
+    pension_contributions_via_salary_sacrifice: 5_000
+    gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
+    gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
+  output:
+    salary_sacrifice_returned_to_income: 3_000
+    # Primary contributions end at pensionable age (SSCBA 1992 s.6(3)).
+    ni_class_1_employee: 0
+    salary_sacrifice_pension_ni_employee: 0
+
+- name: No employee charge under 16
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 15
+    employment_income_before_lsr: 20_000
+    pension_contributions_via_salary_sacrifice: 5_000
+    gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
+    gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
+  output:
+    salary_sacrifice_returned_to_income: 3_000
+    ni_class_1_employee: 0
+    salary_sacrifice_pension_ni_employee: 0
+
+- name: Statutory pay counts towards the upper earnings limit
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    employment_income_before_lsr: 46_000
+    statutory_sick_pay: 3_000
+    pension_contributions_via_salary_sacrifice: 5_000
+    gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
+    gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
+  output:
+    employment_income: 49_000
+    ni_class_1_income: 52_000
+    # Class 1 earnings are 52,000 with the 3,000 returned and 49,000 without.
+    salary_sacrifice_pension_ni_employee: (50_269.96 - 49_000) * 0.08 + (52_000 - 50_269.96) * 0.02
+
+- name: Worked example in the salary sacrifice cap research post
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    # A 50,000 salary with 5,000 sacrificed leaves pay of 45,000.
+    employment_income_before_lsr: 45_000
+    pension_contributions_via_salary_sacrifice: 5_000
+    gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
+    gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
+  output:
+    employment_income: 48_000
+    # Earnings stay below the upper earnings limit: 3,000 x 8% = 240.
+    salary_sacrifice_pension_ni_employee: 240
+
+- name: Current law in 2029, with the cap and the broad-base haircut
+  period: 2029
+  absolute_error_margin: 0.01
+  input:
+    employment_income_before_lsr: 48_000
+    pension_contributions_via_salary_sacrifice: 6_000
+  output:
+    salary_sacrifice_returned_to_income: 4_000
+    # 48,000 + 4,000 returned - 76.80 haircut (0.16% of 48,000).
+    employment_income: 51_923.20
+    salary_sacrifice_pension_ni_employee: (50_269.96 - 47_923.20) * 0.08 + (51_923.20 - 50_269.96) * 0.02
+
 - name: Broad-base haircut reduces all workers employment income
   period: 2025
   absolute_error_margin: 1
