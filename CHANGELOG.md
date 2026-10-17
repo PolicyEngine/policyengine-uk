@@ -1,3 +1,18 @@
+## [2.135.0] - 2026-10-17
+
+### Added
+
+- Per-scheme benefit cap variables (`uc_benefit_cap`, `is_uc_benefit_cap_single_claimant_rate`, `is_uc_benefit_cap_exempt`, `is_uc_benefit_cap_exempt_earnings`, `is_uc_benefit_cap_exempt_specified_benefit`, `is_uc_benefit_cap_exempt_qualifying_age`, `uc_benefit_cap_reduction`; `housing_benefit_benefit_cap`, `is_housing_benefit_benefit_cap_single_claimant_rate`, `is_housing_benefit_benefit_cap_exempt`, `is_housing_benefit_benefit_cap_exempt_working_tax_credit`, `is_housing_benefit_benefit_cap_exempt_specified_benefit`, `housing_benefit_benefit_cap_reduction`; `benefit_cap_welfare_benefits`), with the parameter `gov.dwp.housing_benefit.minimum_weekly_amount`.
+
+### Fixed
+
+- Universal Credit and Housing Benefit each apply their own benefit cap. The UC cap (UC Regs 2013 regs 79-83) treats a member of a couple claiming as a single person (reg 3(3)) as a single claimant, lifts the cap for earnings and the LCWRA and carer elements but not for working tax credit, lifts it on age only where the single claimant or both joint claimants have reached the qualifying age for State Pension Credit (SI 2014/1230 reg 60C), and takes the childcare costs element off the reduction (reg 81). The HB cap (HB Regs 2006 Part 8A) treats that couple as a couple, lifts the cap for working tax credit and the benefits in reg 75F (the partner's included) but not for earnings or UC elements, does not reach pension-age claims (reg 5), and leaves at least 50 pence a week of HB (reg 75D(2)). A family paid both (Housing Benefit for specified or temporary accommodation alongside UC, which the model gives only when both are supplied) is capped once, through UC: UC counts the Housing Benefit as nil (reg 80(2A)) and the HB cap does not apply to a claimant receiving UC (reg 75F(1)(g)). The UC shared accommodation test (`is_lha_shared_accommodation_rate_specified_renter`, UC Sch 4 paras 27-29) applies reg 3(3) whatever legacy benefits the family reports, and armed forces independence payment now excepts a renter under 35 from it (UC reg 2). Armed forces independence payment lifts the UC cap only when a claimant receives it (UC reg 83(1)(c) with reg 2), no longer when a young person does, and lifts the HB cap when the claimant, the partner or a young person they are responsible for receives it (HB reg 75F(1)(ea)). The shared-rules stopgap for reg 3(3) single claims (`stays_on_legacy_benefits` and the two helpers built on it) is gone.
+
+### Removed
+
+- The shared benefit cap variables `benefit_cap`, `is_benefit_cap_exempt`, `is_benefit_cap_exempt_earnings`, `is_benefit_cap_exempt_health_disability`, `is_benefit_cap_exempt_other` and `is_benefit_cap_single_claimant_rate`, replaced by each scheme's own. `benefit_cap_reduction` remains as the sum of the Universal Credit and Housing Benefit reductions.
+
+
 ## [2.134.9] - 2026-10-16
 
 ### Fixed
