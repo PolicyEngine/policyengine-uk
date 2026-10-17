@@ -1,0 +1,426 @@
+# Ordinary loss-cap ATI (ITA 2007 s.24A(8)), preserving the model's own earnings base.
+# FA 2004 ss.190(3),191(7): only relief at source can give the basic uplift above
+# relevant earnings. Existing inputs treat gross personal contributions as RAS
+# and reported employee contributions as net pay; no new scheme-input model.
+# Primary 2026 control: wages2,000 + dividends250,000 - relievednetpay2,000
+# => ATI250,000; cap62,500; ANI187,500. All rates/thresholds are unchanged
+# model controls, not a new rate audit. Final dividend tax is:
+# (37,700-500)*.1075 + (125,140-37,700)*.3575 + (187,500-125,140)*.3935
+# =59,797.46. No eligibility, tax base, relief or final tax is supplied as input.
+
+- name: Net pay within earnings preserves the final tax control
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      taxpayer:
+        age: 45
+        employment_income_before_lsr: 2000
+        dividend_income: 250000
+        trading_loss: 200000
+        employee_pension_contributions_reported: 2000
+        personal_pension_contributions: 0
+        pension_contributions_via_salary_sacrifice: 0
+        employer_pension_contributions: 0
+    benunits:
+      family:
+        members:
+        - taxpayer
+    households:
+      home:
+        members:
+        - taxpayer
+        region: LONDON
+  output: &id001
+    income_tax: 59797.46
+    employment_income: 2000
+    pension_contributions_relief: 2000
+    adjusted_total_income: 250000
+    income_tax_relief_cap: 62500
+    trade_loss_relief_against_general_income: 62500
+    net_income: 189500
+    adjusted_net_income: 187500
+    personal_allowance: 0
+    personal_pension_contributions_tax: 0
+- name: Pure net pay above earnings cannot use the RAS basic uplift
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      taxpayer:
+        age: 45
+        employment_income_before_lsr: 2000
+        dividend_income: 250000
+        trading_loss: 200000
+        employee_pension_contributions_reported: 3600
+        personal_pension_contributions: 0
+        pension_contributions_via_salary_sacrifice: 0
+        employer_pension_contributions: 0
+    benunits:
+      family:
+        members:
+        - taxpayer
+    households:
+      home:
+        members:
+        - taxpayer
+        region: LONDON
+  output: *id001
+- name: Mixed payments limit the basic uplift to actual gross RAS
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      taxpayer:
+        age: 45
+        employment_income_before_lsr: 2000
+        dividend_income: 250000
+        trading_loss: 200000
+        employee_pension_contributions_reported: 3000
+        personal_pension_contributions: 600
+        pension_contributions_via_salary_sacrifice: 0
+        employer_pension_contributions: 0
+    benunits:
+      family:
+        members:
+        - taxpayer
+    households:
+      home:
+        members:
+        - taxpayer
+        region: LONDON
+  output:
+    adjusted_total_income: 249400
+    income_tax_relief_cap: 62350
+    pension_contributions_relief: 2600
+- name: No member contribution leaves adjusted total income unchanged
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      taxpayer:
+        age: 45
+        employment_income_before_lsr: 2000
+        dividend_income: 250000
+        trading_loss: 200000
+        employee_pension_contributions_reported: 0
+        personal_pension_contributions: 0
+        pension_contributions_via_salary_sacrifice: 0
+        employer_pension_contributions: 0
+    benunits:
+      family:
+        members:
+        - taxpayer
+    households:
+      home:
+        members:
+        - taxpayer
+        region: LONDON
+  output:
+    adjusted_total_income: 252000
+    income_tax_relief_cap: 63000
+- name: Relief cannot exceed the member contributions actually paid
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      taxpayer:
+        age: 45
+        employment_income_before_lsr: 2000
+        dividend_income: 250000
+        trading_loss: 200000
+        employee_pension_contributions_reported: 1000
+        personal_pension_contributions: 0
+        pension_contributions_via_salary_sacrifice: 0
+        employer_pension_contributions: 0
+    benunits:
+      family:
+        members:
+        - taxpayer
+    households:
+      home:
+        members:
+        - taxpayer
+        region: LONDON
+  output:
+    adjusted_total_income: 251000
+    pension_contributions_relief: 1000
+- name: Pure RAS retains relief up to the basic amount
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      taxpayer:
+        age: 45
+        employment_income_before_lsr: 2000
+        dividend_income: 250000
+        trading_loss: 200000
+        employee_pension_contributions_reported: 0
+        personal_pension_contributions: 3600
+        pension_contributions_via_salary_sacrifice: 0
+        employer_pension_contributions: 0
+    benunits:
+      family:
+        members:
+        - taxpayer
+    households:
+      home:
+        members:
+        - taxpayer
+        region: LONDON
+  output:
+    adjusted_total_income: 248400
+    income_tax_relief_cap: 62100
+    pension_contributions_relief: 3600
+- name: Mixed contributions below earnings remain fully relieved
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      taxpayer:
+        age: 45
+        employment_income_before_lsr: 2000
+        dividend_income: 250000
+        trading_loss: 200000
+        employee_pension_contributions_reported: 1000
+        personal_pension_contributions: 600
+        pension_contributions_via_salary_sacrifice: 0
+        employer_pension_contributions: 0
+    benunits:
+      family:
+        members:
+        - taxpayer
+    households:
+      home:
+        members:
+        - taxpayer
+        region: LONDON
+  output:
+    adjusted_total_income: 250400
+    pension_contributions_relief: 1600
+- name: The age 75 boundary excludes member relief
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      taxpayer:
+        age: 75
+        employment_income_before_lsr: 2000
+        dividend_income: 250000
+        trading_loss: 200000
+        employee_pension_contributions_reported: 3600
+        personal_pension_contributions: 0
+        pension_contributions_via_salary_sacrifice: 0
+        employer_pension_contributions: 0
+        state_pension_reported: 0
+    benunits:
+      family:
+        members:
+        - taxpayer
+    households:
+      home:
+        members:
+        - taxpayer
+        region: LONDON
+  output:
+    adjusted_total_income: 252000
+    pension_contributions_relief: 0
+- name: Earnings above the basic amount retain ordinary net pay relief
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      taxpayer:
+        age: 45
+        employment_income_before_lsr: 10000
+        dividend_income: 250000
+        trading_loss: 200000
+        employee_pension_contributions_reported: 5000
+        personal_pension_contributions: 0
+        pension_contributions_via_salary_sacrifice: 0
+        employer_pension_contributions: 0
+    benunits:
+      family:
+        members:
+        - taxpayer
+    households:
+      home:
+        members:
+        - taxpayer
+        region: LONDON
+  output:
+    adjusted_total_income: 255000
+    pension_contributions_relief: 5000
+- name: ATI retains statutory pay in its own relevant earnings base
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      taxpayer:
+        age: 45
+        employment_income_before_lsr: 1000
+        dividend_income: 250000
+        trading_loss: 200000
+        employee_pension_contributions_reported: 0
+        personal_pension_contributions: 4000
+        pension_contributions_via_salary_sacrifice: 0
+        employer_pension_contributions: 0
+        statutory_maternity_pay: 3000
+    benunits:
+      family:
+        members:
+        - taxpayer
+    households:
+      home:
+        members:
+        - taxpayer
+        region: LONDON
+  output:
+    adjusted_total_income: 250000
+    pension_contributions_relief: 3600
+- name: The basic amount remains reformable for actual RAS contributions
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      taxpayer:
+        age: 45
+        employment_income_before_lsr: 2000
+        dividend_income: 250000
+        trading_loss: 200000
+        employee_pension_contributions_reported: 0
+        personal_pension_contributions: 6000
+        pension_contributions_via_salary_sacrifice: 0
+        employer_pension_contributions: 0
+    benunits:
+      family:
+        members:
+        - taxpayer
+    households:
+      home:
+        members:
+        - taxpayer
+        region: LONDON
+    gov.hmrc.income_tax.reliefs.pension_contribution.basic_amount: 5000
+  output:
+    adjusted_total_income: 247000
+    pension_contributions_relief: 5000
+- name: Relieved RAS cannot make adjusted total income negative
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      taxpayer:
+        age: 45
+        employment_income_before_lsr: 0
+        dividend_income: 0
+        trading_loss: 0
+        employee_pension_contributions_reported: 0
+        personal_pension_contributions: 3600
+        pension_contributions_via_salary_sacrifice: 0
+        employer_pension_contributions: 0
+    benunits:
+      family:
+        members:
+        - taxpayer
+    households:
+      home:
+        members:
+        - taxpayer
+        region: LONDON
+  output:
+    adjusted_total_income: 0
+    income_tax: 0
+- name: Each person keeps their own RAS and age limit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      p0:
+        age: 45
+        employment_income_before_lsr: 2000
+        dividend_income: 250000
+        trading_loss: 200000
+        employee_pension_contributions_reported: 3600
+        personal_pension_contributions: 0
+        pension_contributions_via_salary_sacrifice: 0
+        employer_pension_contributions: 0
+      p1:
+        age: 45
+        employment_income_before_lsr: 2000
+        dividend_income: 250000
+        trading_loss: 200000
+        employee_pension_contributions_reported: 3000
+        personal_pension_contributions: 600
+        pension_contributions_via_salary_sacrifice: 0
+        employer_pension_contributions: 0
+      p2:
+        age: 75
+        employment_income_before_lsr: 2000
+        dividend_income: 250000
+        trading_loss: 200000
+        employee_pension_contributions_reported: 3600
+        personal_pension_contributions: 0
+        pension_contributions_via_salary_sacrifice: 0
+        employer_pension_contributions: 0
+        state_pension_reported: 0
+    benunits:
+      b0:
+        members:
+        - p0
+      b1:
+        members:
+        - p1
+      b2:
+        members:
+        - p2
+    households:
+      h0:
+        members:
+        - p0
+        region: LONDON
+      h1:
+        members:
+        - p1
+        region: LONDON
+      h2:
+        members:
+        - p2
+        region: LONDON
+  output:
+    adjusted_total_income:
+    - 250000
+    - 249400
+    - 252000
+    pension_contributions_relief:
+    - 2000
+    - 2600
+    - 0
+- name: ATI first and final tax first give the same corrected cash
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      taxpayer:
+        age: 45
+        employment_income_before_lsr: 2000
+        dividend_income: 250000
+        trading_loss: 200000
+        employee_pension_contributions_reported: 3600
+        personal_pension_contributions: 0
+        pension_contributions_via_salary_sacrifice: 0
+        employer_pension_contributions: 0
+    benunits:
+      family:
+        members:
+        - taxpayer
+    households:
+      home:
+        members:
+        - taxpayer
+        region: LONDON
+  output:
+    adjusted_total_income: 250000
+    income_tax_relief_cap: 62500
+    adjusted_net_income: 187500
+    income_tax: 59797.46
