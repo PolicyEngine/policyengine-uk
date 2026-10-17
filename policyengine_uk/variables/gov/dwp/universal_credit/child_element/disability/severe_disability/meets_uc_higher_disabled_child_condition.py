@@ -21,7 +21,7 @@ class meets_uc_higher_disabled_child_condition(Variable):
     )
     reference = (
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/24",
-        "https://www.legislation.gov.uk/uksi/2016/216/regulation/25",
+        "https://www.legislation.gov.uk/nisr/2016/216/regulation/25",
     )
 
     def formula(person, period, parameters):
