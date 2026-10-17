@@ -138,7 +138,7 @@
         would_claim_uc_at_legacy_closure: true
         uc_maximum_amount: 1_200
         uc_income_reduction: 0
-        benefit_cap_reduction: 1_200
+        uc_benefit_cap_reduction: 1_200
     households:
       household:
         members: [older, younger]

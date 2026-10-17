@@ -76,7 +76,7 @@
     uc_trading_losses_set_against_profits: [5_000, 0, 0, 0, 0]
     # £7,000 of earnings, below the reg 82 threshold, so the cap applies,
     # exactly as for £7,000 of profits and no loss.
-    is_benefit_cap_exempt_earnings: false
+    is_uc_benefit_cap_exempt_earnings: false
     universal_credit: 21_124
 
 # Reg. 77(3)(b) sends the owner's company trade to reg. 57; reg. 57(2)
@@ -105,7 +105,7 @@
     uc_individual_earned_income_before_mif: 7_000
     uc_individual_earned_income: 20_000
     # Actual £7,000 is below £10,152, even though the MIF is £20,000.
-    is_benefit_cap_exempt_earnings: false
+    is_uc_benefit_cap_exempt_earnings: false
 
 - name: Company earnings without the loss exceed the cap threshold with the same deductions
   period: 2026
@@ -126,7 +126,7 @@
     uc_trading_losses_set_against_profits: 0
     uc_individual_earned_income_before_mif: 12_000
     uc_individual_earned_income: 20_000
-    is_benefit_cap_exempt_earnings: true
+    is_uc_benefit_cap_exempt_earnings: true
 
 - name: A company loss and sole trader loss never reduce employed earnings
   period: 2026
@@ -146,7 +146,7 @@
     uc_company_self_employed_earnings: -10_000
     uc_trading_losses_set_against_profits: 0
     uc_individual_earned_income_before_mif: 12_000
-    is_benefit_cap_exempt_earnings: true
+    is_uc_benefit_cap_exempt_earnings: true
 
 - name: Tax and NI on trades cancelled by losses never reduce employed earnings
   period: 2026
@@ -168,4 +168,4 @@
   output:
     uc_trading_losses_set_against_profits: 1_000
     uc_individual_earned_income_before_mif: 11_500
-    is_benefit_cap_exempt_earnings: true
+    is_uc_benefit_cap_exempt_earnings: true

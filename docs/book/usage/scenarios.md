@@ -272,8 +272,8 @@ baseline_sim = Simulation(situation=benefit_cap_family)
 reformed_sim = Simulation(situation=benefit_cap_family, scenario=reindex_benefit_cap)
 
 # Compare the benefit cap levels
-baseline_cap = baseline_sim.calculate("benefit_cap", 2026).mean()
-reformed_cap = reformed_sim.calculate("benefit_cap", 2026).mean()
+baseline_cap = baseline_sim.calculate("uc_benefit_cap", 2026).mean()
+reformed_cap = reformed_sim.calculate("uc_benefit_cap", 2026).mean()
 
 print(
     f"Benefit cap - frozen: £{baseline_cap:.0f}/year, indexed: £{reformed_cap:.0f}/year"
@@ -398,7 +398,12 @@ one_year = Simulation(
 )
 ```
 
-Outside a change's dates, prior law stays in force. Where the timeline states later values, they apply on their dates. Where the parameter's future is projected by uprating or indexation, prior law's projected path resumes after a change that ends: a one-year change to the UC standard allowance returns to the uprated amounts the next year. A change "from a date onwards" is held flat to the end of 2100 and is not uprated.
+Outside a change's dates, prior law stays in force. Where the timeline states later values, they apply on their dates. Where it states none, prior law depends on how the parameter's future is made:
+
+- the personal allowance and the basic rate limit are indexed from the previous tax year's amount (Income Tax Act 2007 ss21 and 57), so after a change ends indexation resumes from the changed amount. Freezing the allowance at £12,570 to 2033-34 gives £12,570 plus 2034-35's September CPI rise, rounded up to £10, for 2034-35, as the Finance Act 2021 freeze does for 2031-32. The National Insurance thresholds the model aligns with them follow: they align with the resumed path, and after a change to one of them alone they are aligned again;
+- an amount uprated from an index, such as a benefit rate, returns to its uprated path: a one-year change to the UC standard allowance gives the uprated amount the next year. Whether a freeze of such an amount should instead resume from the frozen amount, as the 2016-2020 benefit freeze did, is an open question (policyengine-uk#2430).
+
+A change "from a date onwards" is held flat to the end of 2100 and is not uprated or indexed. That is the key's literal reading, not something statute requires; to let indexation resume after a change, give its last tax year.
 
 Each way of passing a reform reads period keys as it always has:
 
