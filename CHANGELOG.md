@@ -1,3 +1,10 @@
+## [2.135.4] - 2026-10-17
+
+### Changed
+
+- - Tests cover more release manifests that pypi-state must refuse (a missing, repeated or unreadable entry), the manifest check-dist writes being the one pypi-state reads, and agreement with a clean dist under every --require state.
+
+
 ## [2.135.3] - 2026-10-17
 
 ### Fixed
