@@ -459,6 +459,9 @@ class Simulation(CoreSimulation):
 
     def clone(self, *args, **kwargs) -> "Simulation":
         clone = super().clone(*args, **kwargs)
+        clone._construction_reform_state = copy.deepcopy(
+            getattr(self, "_construction_reform_state", None)
+        )
         copy_model_values(self, clone)
         clone._cgt_input_provenance = copy.deepcopy(
             getattr(self, "_cgt_input_provenance", {})

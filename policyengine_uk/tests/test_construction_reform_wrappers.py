@@ -346,3 +346,82 @@ def test_indexed_freeze_needs_construction_for_indexation_resume():
     assert parameter(constructed, PA, "2033") == expected
     assert parameter(built, PA, "2033") == 12_570
     assert parameter(built, PA, "2034") == baseline_2034
+
+
+@pytest.mark.parametrize("copy_kind", ["clone", "branch"])
+def test_isolated_construction_copy_preserves_parent_reading_and_tax(copy_kind):
+    situation = copy.deepcopy(SITUATION)
+    situation["people"]["person1"]["employment_income"] = {
+        year: 30_000 for year in YEARS
+    }
+    observations = {}
+
+    def signature(simulation):
+        system = simulation.tax_benefit_system
+        target = system.parameters.get_child(BASIC_RATE)
+        return copy.deepcopy(
+            (
+                [(entry.instant_str, entry.value) for entry in target.values_list],
+                system.dated_assignments,
+                system.legacy_overrides,
+            )
+        )
+
+    def wrapper(parent):
+        before = signature(parent)
+        parent_state = parent._construction_reform_state
+        checkpoint_before = copy.deepcopy(parent_state.__dict__)
+        child = (
+            parent.clone(clone_tax_benefit_system=True)
+            if copy_kind == "clone"
+            else parent.get_branch("construction_copy", clone_system=True)
+        )
+        assert child.tax_benefit_system is not parent.tax_benefit_system
+        child_state = child._construction_reform_state
+        observations["separate_checkpoint_fields"] = (
+            child_state is not parent_state
+            and all(
+                getattr(child_state, field) is not getattr(parent_state, field)
+                for field in ("owned", "paths", "dirty", "expected")
+            )
+            and child_state.expected[BASIC_RATE]
+            is not parent_state.expected[BASIC_RATE]
+        )
+        assert child_state.owned == parent_state.owned
+        child.tax_benefit_system.parameters.get_child(BASIC_RATE).update(
+            period="2027", value=0.40
+        )
+        child.tax_benefit_system.reset_parameter_caches()
+        Scenario.from_reform(FISCAL_A).simulation_modifier(child)
+        assert parameter(child, BASIC_RATE, "2027-01-01") == 0.31
+        assert signature(parent) == before
+        assert parameter(parent, BASIC_RATE, "2027-01-01") == 0.20
+        observations["parent_checkpoint_unchanged"] = (
+            parent_state.__dict__ == checkpoint_before
+        )
+        Scenario.from_reform(FISCAL_A).simulation_modifier(parent)
+        observations["parent_timeline_and_logs_unchanged"] = signature(parent) == before
+
+    own = Scenario.from_reform(FISCAL_A)
+    control = Simulation(situation=situation, scenario=own)
+    simulation = Simulation(
+        situation=situation,
+        scenario=own + Scenario(simulation_modifier=wrapper),
+    )
+    np.testing.assert_array_equal(control.calculate("income_tax", 2027), [3_486.0])
+    np.testing.assert_array_equal(
+        simulation.calculate("employment_income", 2027), [30_000]
+    )
+    np.testing.assert_array_equal(
+        simulation.calculate("personal_allowance", 2027), [12_570]
+    )
+    np.testing.assert_array_equal(
+        simulation.calculate("income_tax", 2027), control.calculate("income_tax", 2027)
+    )
+    assert parameter(simulation, BASIC_RATE, "2026-01-01") == 0.31
+    assert parameter(simulation, BASIC_RATE, "2027-01-01") == 0.20
+    assert observations == {
+        "separate_checkpoint_fields": True,
+        "parent_checkpoint_unchanged": True,
+        "parent_timeline_and_logs_unchanged": True,
+    }
