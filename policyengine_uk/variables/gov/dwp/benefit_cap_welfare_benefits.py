@@ -1,6 +1,6 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.utils.benefit_cap import benefit_cap_couple
-from policyengine_uk.utils.benefit_unit import award_of_members
+from policyengine_uk.utils.benefit_unit import award_of_couple
 from policyengine_uk.variables.gov.dwp.esa_income import income_related_esa_award
 from policyengine_uk.variables.gov.dwp.jsa_income import income_related_jsa_award
 
@@ -72,16 +72,17 @@ class benefit_cap_welfare_benefits(Variable):
         # (benefit_cap_couple).
         couple = benefit_cap_couple(benunit, period)
         # Income-based JSA and income-related ESA are awarded to the benefit
-        # unit; the couple's part is read from their reports, as in
-        # claimant_or_partner_jsa_income and claimant_or_partner_esa_income.
-        income_based = award_of_members(
+        # unit; the couple's part is claimant_or_partner_jsa_income and
+        # claimant_or_partner_esa_income where the couple is the claimant and
+        # partner, and is read from their reports otherwise (award_of_couple).
+        income_based = award_of_couple(
             benunit,
             period,
             "jsa_income",
             "jsa_income_reported",
             income_related_jsa_award,
             couple,
-        ) + award_of_members(
+        ) + award_of_couple(
             benunit,
             period,
             "esa_income",

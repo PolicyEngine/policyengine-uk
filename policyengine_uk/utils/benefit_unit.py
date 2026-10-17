@@ -61,12 +61,17 @@ def award_of_members(benunit, period, award, report, award_on_reports, members):
     ``award`` gives on a reported amount. Which awards ``award`` holds is
     decided by value: when it holds the award its formula gives on all
     reported awards, this is the same award on the reports of ``members``;
-    when it holds the plain total of the reports (the
-    disable_simulated_benefits reform), this is the plain total of their
-    reports; when it holds anything else (an award entered directly, or a
-    reform that replaces it), that value is taken to be theirs. Values are
-    compared to within half a penny after rounding to the precision
-    ``award`` is stored in. A stored zero is zero.
+    when it holds the plain total of the reports (as the
+    disable_simulated_benefits reform sets it in the dataset year), this is
+    the plain total of their reports; when it holds anything else (an award
+    entered directly, or a reform that replaces it), that value is taken to
+    be theirs. Values are compared to within half a penny after rounding to
+    the precision ``award`` is stored in. A stored zero is zero.
+
+    In a later year the reform's held award is neither, so this takes all of
+    it, another member's award included, to be the members'. Readers of the
+    claimant's and partner's award therefore read award_of_couple, which
+    reads the claimant_or_partner_* variables the reform sets.
     """
     person = benunit.members
     stored_award = benunit(award, period)
@@ -117,10 +122,12 @@ def claimant_or_partner_award(benunit, period, award, reported, award_on_reports
     of about £0.000002 left by reports that exactly match the tariff income.
 
     The claimant_or_partner_* variables use this as their formula, and every
-    reader of the claimant's or partner's award, the Income Support gate
-    included, reads those variables. So an award set on them directly (as
+    reader of the claimant's or partner's award reads those variables: the
+    means tests, the passports and the Income Support gate directly, and the
+    benefit cap through award_of_couple. So an award set on them directly (as
     disable_simulated_benefits does for each year) is read the same way
-    everywhere.
+    everywhere. The one exception is a Universal Credit couple that is not
+    the claimant and partner (award_of_couple).
     """
     stored = benunit(award, period)
     scoped = award_of_members(
@@ -132,3 +139,38 @@ def claimant_or_partner_award(benunit, period, award, reported, award_on_reports
         benunit.members("is_claimant_or_partner", period),
     )
     return np.where((stored > HALF_PENNY) & (scoped > HALF_PENNY), scoped, 0)
+
+
+# The variable holding the claimant's and partner's part of each benefit-unit
+# award; claimant_or_partner_award is its formula.
+CLAIMANT_OR_PARTNER_AWARDS = {
+    "esa_income": "claimant_or_partner_esa_income",
+    "jsa_income": "claimant_or_partner_jsa_income",
+}
+
+
+def award_of_couple(benunit, period, award, reported, award_on_reports, couple):
+    """The part of the benefit-unit award ``award`` that ``couple`` claim.
+
+    ``award`` is esa_income or jsa_income, and ``couple`` a person-level
+    boolean array: the single person or couple a rule reads (the benefit
+    cap's couple, for example). Where ``couple`` is the claimant and partner
+    (is_claimant_or_partner) for every member of the benefit unit, this is
+    their award, the claimant_or_partner_* variable for ``award``, so a value
+    set on it (as disable_simulated_benefits does for each year) or entered
+    directly is read here as everywhere else. In formula mode that equals
+    award_of_members for ``couple``, except that an award within half a
+    penny of zero is no award. Otherwise (a Universal Credit couple that is
+    not the claimant and partner, which needs is_uc_claimant entered) it is
+    award_of_members for ``couple``, read from the stored award by value.
+    """
+    person = benunit.members
+    same_couple = ~benunit.any(couple != person("is_claimant_or_partner", period))
+    claimant_or_partner = benunit(CLAIMANT_OR_PARTNER_AWARDS[award], period)
+    if np.all(same_couple):
+        return claimant_or_partner
+    return np.where(
+        same_couple,
+        claimant_or_partner,
+        award_of_members(benunit, period, award, reported, award_on_reports, couple),
+    )

@@ -1,6 +1,8 @@
 import numpy as np
 from policyengine_core.model_api import *
 
+from policyengine_uk.utils.benefit_unit import CLAIMANT_OR_PARTNER_AWARDS
+
 # Benefits whose simulated amount the reform replaces with the amount reported
 # in the dataset year. Each needs a <name>_reported variable. Attendance
 # Allowance, DLA and PIP are not listed: the data records their receipt as a
@@ -37,15 +39,12 @@ PRE_MINIMUM = {
     "working_tax_credit": "working_tax_credit_pre_minimum",
 }
 
-# Benefit-unit awards that cover only the claimant and partner, set from their
-# own reports. The reported amounts of anyone else in the benefit unit (such
-# as a non-dependent adult, who claims in their own right) stay in esa_income
-# and jsa_income, which count in household income. They never enter the
-# claimant's or partner's award.
-CLAIMANT_OR_PARTNER_AWARDS = {
-    "esa_income": "claimant_or_partner_esa_income",
-    "jsa_income": "claimant_or_partner_jsa_income",
-}
+# CLAIMANT_OR_PARTNER_AWARDS (utils/benefit_unit.py) names the benefit-unit
+# awards whose claimant's and partner's part has its own variable. The reform
+# sets that part from their own reports. The reported amounts of anyone else
+# in the benefit unit (such as a non-dependent adult, who claims in their own
+# right) stay in esa_income and jsa_income, which count in household income.
+# They never enter the claimant's or partner's award.
 
 # Income Support is the claimant's family's award, so it is set from the
 # claimant's and partner's reports only. That is all the model ever pays as
@@ -102,18 +101,32 @@ def disable_simulated_benefits(parameters, period):
             each year (is_claimant_or_partner); Income Support is set from
             those reports alone. So every amount is the same in every year,
             except that these three change when who is the claimant or
-            partner changes. Readers of those awards, including the
-            Income Support gate, cannot tell an award set here from one
-            entered directly. In a later year, esa_income and jsa_income match
-            neither the award on that year's uprated reports nor their total.
-            Without the claimant-or-partner awards set here, the readers would
-            take the whole of esa_income or jsa_income, including another
-            member's award, to be the claimant's or partner's.
+            partner changes. Readers of those awards, the Income Support
+            gate and the benefit cap included, cannot tell an award set here
+            from one entered directly. In a later year, esa_income and
+            jsa_income match neither the award on that year's uprated reports
+            nor their total. Without the claimant-or-partner awards set here,
+            the readers would take the whole of esa_income or jsa_income,
+            including another member's award, to be the claimant's or
+            partner's. The benefit cap reads them through award_of_couple;
+            for a Universal Credit couple that is not the claimant and
+            partner (is_uc_claimant entered), it still reads esa_income and
+            jsa_income by value.
 
             No family is moved off its legacy benefits (NOT_MOVED): the
             reform pays them as reported in every year, after the dates
             from which the model closes them included. Only the closure is
             held; the model's other eligibility rules still apply.
+
+            The reform reads what it uses when it is applied: the dataset
+            year's reports, and who is the claimant or partner and where each
+            household lives in each year. When the parameter switches it on,
+            that is in the constructor, after the data is built and before a
+            scenario's modifier applied after data load runs. The amounts it
+            sets do not follow a change made after that (by such a modifier,
+            or set_input): to have it read one, make the change in the
+            situation or dataset, or apply the reform after the change
+            (Simulation.apply_reform).
 
             As the amounts are inputs, a reform that changes a benefit's
             parameters does not change them. A reform that neutralizes a
@@ -170,6 +183,8 @@ def disable_simulated_benefits(parameters, period):
                 # reads it (country is a YEAR variable). The reported amounts
                 # are held at the dataset year, but a household that moves
                 # into or out of Scotland is paid under that year's scheme.
+                # It is read now, when the reform is applied (see the class
+                # docstring).
                 in_scotland = {
                     year: np.asarray(simulation.calculate("country", year))
                     == "SCOTLAND"

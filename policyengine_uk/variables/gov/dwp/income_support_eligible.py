@@ -149,7 +149,8 @@ class income_support_eligible(Variable):
         # income-related allowance. An income-related allowance covers the
         # couple, so it bars Income Support whichever of them has it. The
         # claimant's and partner's award is claimant_or_partner_esa_income,
-        # which every reader of it shares. On the formula's award it is the
+        # which every reader of it shares (the benefit cap through
+        # award_of_couple). On the formula's award it is the
         # award on their own reports after esa_income's screen
         # (esa_income_eligible); on the plain total of the reports it is the
         # plain total of theirs; on any other stored esa_income it is that

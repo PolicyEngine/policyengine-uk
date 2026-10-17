@@ -22,6 +22,8 @@ and each of the reform's years:
    brings.
 """
 
+from types import SimpleNamespace
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -35,6 +37,7 @@ from policyengine_uk.reforms.policyengine.disable_simulated_benefits import (
     BENEFITS,
     CARER_SUPPORT_PAYMENT_FROM,
     YEARS_IN_FUTURE,
+    disable_simulated_benefits,
 )
 from policyengine_uk.utils.scenario import Scenario
 
@@ -327,6 +330,34 @@ def test_a_carer_who_moves_is_paid_under_each_years_scheme(before, after, route)
         np.testing.assert_allclose(
             values(simulation, name, first + 1), 4_000 + supplement, err_msg=name
         )
+
+
+def test_a_reform_applied_after_a_move_is_set_reads_the_move():
+    """The reform reads where each household lives when it is applied
+    (review r11 on #2075). Switched on by the parameter, it is applied in the
+    constructor, before a scenario's modifier applied after data load, so
+    the amounts it sets do not follow a region that modifier or set_input
+    changes later. Applied after the change, it reads the new region: a
+    carer in London in the situation, moved to Scotland from 2026 by
+    set_input, is paid Carer Support Payment from 2026."""
+    first = 2025
+    years = range(first, first + YEARS_IN_FUTURE)
+    simulation = Simulation(
+        situation=carer_situation({year: "LONDON" for year in years})
+    )
+    for year in years[1:]:
+        simulation.set_input("region", year, ["SCOTLAND"])
+    switched_on = SimpleNamespace(
+        gov=SimpleNamespace(
+            contrib=SimpleNamespace(
+                policyengine=SimpleNamespace(disable_simulated_benefits=True)
+            )
+        )
+    )
+    simulation.apply_reform(disable_simulated_benefits(lambda _: switched_on, None))
+    regions = {year: ["LONDON" if year == first else "SCOTLAND"] for year in years}
+    check_care(simulation, regions, [4_000], first)
+    assert values(simulation, "scottish_carer_supplement", first + 1)[0] > 0
 
 
 @PROPERTY_SETTINGS
