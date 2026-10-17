@@ -14,7 +14,7 @@ class squared_poverty_gap_ahc(Variable):
         "Uses the existing HBAI income basis; a nonpositive line is undefined "
         "and returns NaN."
     )
-    reference = "https://worldbank.github.io/PIP-Methodology-2022-05/surveyestimates.html#monetary-poverty-and-inequality"
+    reference = "https://worldbank.github.io/PIP-Methodology-2022-05/surveyestimates.html#monetarypoverty"
 
     def formula(household, period, parameters):
         gap = household("poverty_gap_ahc", period)

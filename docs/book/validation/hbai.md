@@ -64,7 +64,7 @@ $$
 
 For example, income at or above the line gives zero, income halfway to the line gives 0.25, and zero income gives one. Scaling income and its line by the same positive factor leaves the component unchanged. These are normalized components, not GBP-squared poverty gaps or sums.
 
-The statistical definition follows the [World Bank PIP methodology, section 4.1](https://worldbank.github.io/PIP-Methodology-2022-05/surveyestimates.html#monetary-poverty-and-inequality). The variables retain the UK HBAI basis described above: negative BHC income is reset to zero, while AHC income can be negative. The AHC component can therefore exceed one. PIP's own negative-welfare preprocessing is not reproduced here, and these components are not an official DWP severity estimate.
+The statistical definition follows the [World Bank PIP methodology, section 4.1](https://worldbank.github.io/PIP-Methodology-2022-05/surveyestimates.html#monetarypoverty). The variables retain the UK HBAI basis described above: negative BHC income is reset to zero, while AHC income can be negative. The AHC component can therefore exceed one. PIP's own negative-welfare preprocessing is not reproduced here, and these components are not an official DWP severity estimate.
 
 For a person-based population index, map each household's component to every person and take the existing survey-weighted **mean**, not a sum or a household-weighted mean. Given an already configured `Microsimulation` named `sim`:
 
