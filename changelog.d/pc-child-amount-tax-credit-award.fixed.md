@@ -1,0 +1,2 @@
+- Pay no Pension Credit child amount (SPC Regs 2002 Schedule IIA) to a family awarded child tax credit or working tax credit, including an award at a nil rate (reg 6(6)(d) and (11); TCA 2002 s.14(3)). The new variable `has_tax_credit_award` records the award.
+- Pay no Schedule IIA amount before it began on 1 February 2019 (SI 2018/676 reg 2). The new parameter `gov.dwp.pension_credit.guarantee_credit.child.in_effect` dates it.
