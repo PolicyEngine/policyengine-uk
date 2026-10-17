@@ -13,7 +13,7 @@ simulation.
 
 import numpy as np
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -346,12 +346,9 @@ def test_no_one_lowers_their_tax_by_switching_route_alone(couple_sim, drawn):
     set_couple_inputs(couple_sim, drawn)
     routes = couple_sim.calculate("uses_property_allowance", YEAR)
     income_tax = couple_sim.calculate("income_tax", YEAR).astype(float)
-    profit = couple_sim.calculate("property_income", YEAR).astype(float)
-    choosing = (
-        (couple_sim.calculate("property_allowance_deduction_if_used", YEAR) > 0)
-        & (couple_sim.calculate("property_finance_costs_relievable", YEAR) > 0)
-        & (profit > 0)
-    )
+    # While the winter fuel payment charge has effect (YEAR is after
+    # 2025-26), everyone the allowance would help chooses by comparing tax.
+    choosing = couple_sim.calculate("property_allowance_deduction_if_used", YEAR) > 0
     position = np.arange(2 * COUPLES) % 2
     for k in range(2):
         switching = choosing & (position == k)
@@ -361,3 +358,166 @@ def test_no_one_lowers_their_tax_by_switching_route_alone(couple_sim, drawn):
         switched_tax = couple_sim.calculate("income_tax", YEAR).astype(float)
         margin = tolerance(income_tax, switched_tax)
         assert (switched_tax[switching] >= (income_tax - margin)[switching]).all()
+
+
+# Pensioner households, while the winter fuel payment charge has effect: a
+# route can move Pension Credit, and with it the exemption from the charge
+# (ITEPA 2003 s.681I(4)), even without finance costs at stake; and a couple's
+# Pension Credit decides whether the partner is entitled to a payment, which
+# moves the shared payment, and so the charge, of anyone else in the
+# household. Each landlord must still choose the route that gives them the
+# lower income tax including the charge, with every other route held fixed.
+PENSIONER_YEAR = 2025
+PENSIONER_HOUSEHOLDS = 6
+PENSIONER_REGIONS = ["LONDON", "LONDON", "SCOTLAND", "WALES", "LONDON", "SCOTLAND"]
+CHILDREN = 5
+# A "partner" aged 10 is a sixth child, and a lodger aged 40 is not entitled
+# to a payment, so the households also cover a lone pensioner.
+pensioner_landlord = st.tuples(
+    st.one_of(
+        st.floats(min_value=0, max_value=60_000),
+        st.sampled_from([11_500.0, 32_000.0, 34_500.0, 35_207.0, 42_772.55]),
+    ),  # private pension
+    st.sampled_from([0.0, 0.0, 30_000.0]),  # dividends
+    st.one_of(amount, st.sampled_from([3_300.0])),  # profit
+    st.floats(min_value=0, max_value=950),  # expenses
+    st.sampled_from([0.0, 0.0, 675.0, 1_200.0, 1_500.0]),  # finance costs
+)
+pensioner_household = st.tuples(
+    st.sampled_from([66, 70, 80, 85]),  # claimant's age
+    st.sampled_from([10, 66, 70, 85]),  # partner's age
+    st.sampled_from([40, 66, 70, 85]),  # lodger's age
+    pensioner_landlord,  # claimant
+    pensioner_landlord,  # partner
+    pensioner_landlord,  # lodger
+    st.booleans(),  # the lodger claims Pension Credit
+)
+pensioner_households = st.lists(
+    pensioner_household,
+    min_size=PENSIONER_HOUSEHOLDS,
+    max_size=PENSIONER_HOUSEHOLDS,
+)
+NO_INCOME = (0.0, 0.0, 0.0, 0.0, 0.0)
+# Review r7's cases (2026-10-16). A pensioner with six children and no
+# finance costs: the allowance lowers tax before the charge by £160, which
+# ends Pension Credit of £80 and so the exemption from the £200 charge.
+LONE_PENSIONER = (
+    70,
+    10,
+    40,
+    (35_207.0, 0.0, 3_300.0, 200.0, 0.0),
+    NO_INCOME,
+    NO_INCOME,
+    False,
+)
+# A couple's Pension Credit, through the claimant's election, takes the
+# partner out of entitlement and raises the lodger's shared payment and
+# charge from £150 to £200; the lodger's own election must hold that fixed.
+SHARED_PAYMENT = (
+    70,
+    85,
+    85,
+    (42_772.55, 0.0, 3_300.0, 200.0, 1_200.0),
+    NO_INCOME,
+    (40_000.0, 0.0, 3_300.0, 200.0, 675.0),
+    False,
+)
+PENSIONER_SETTINGS = settings(
+    max_examples=6,
+    deadline=None,
+    derandomize=True,
+    suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large],
+)
+ROLES = ["claimant", "partner", "lodger"]
+
+
+@pytest.fixture(scope="module")
+def pensioner_sim():
+    def person(age):
+        return {
+            "age": {PENSIONER_YEAR: age},
+            "private_pension_income": {PENSIONER_YEAR: 0},
+            "dividend_income": {PENSIONER_YEAR: 0},
+            "property_income": {PENSIONER_YEAR: 0},
+            "property_rental_income": {PENSIONER_YEAR: 0},
+            "property_finance_costs": {PENSIONER_YEAR: 0},
+        }
+
+    people, benunits, households = {}, {}, {}
+    for h in range(PENSIONER_HOUSEHOLDS):
+        names = [f"{role}_{h}" for role in ROLES]
+        children = [f"child_{h}_{c}" for c in range(CHILDREN)]
+        for name in names:
+            people[name] = person(70)
+        for name in children:
+            people[name] = person(10)
+        people[names[0]]["is_benunit_head"] = {PENSIONER_YEAR: True}
+        people[names[1]]["is_benunit_head"] = {PENSIONER_YEAR: False}
+        benunits[f"couple_{h}"] = {
+            "members": names[:2] + children,
+            "would_claim_pc": {PENSIONER_YEAR: True},
+            "would_claim_uc": {PENSIONER_YEAR: False},
+        }
+        benunits[f"lodger_{h}"] = {
+            "members": names[2:],
+            "would_claim_pc": {PENSIONER_YEAR: True},
+            "would_claim_uc": {PENSIONER_YEAR: False},
+        }
+        households[f"household_{h}"] = {
+            "members": names + children,
+            "region": {PENSIONER_YEAR: PENSIONER_REGIONS[h]},
+        }
+    return Simulation(
+        situation={"people": people, "benunits": benunits, "households": households}
+    )
+
+
+def set_pensioner_inputs(sim, drawn, uses_allowance=None):
+    ages, incomes, claims_pc = [], [], []
+    for claimant_age, partner_age, lodger_age, *landlords, claims in drawn:
+        household_ages = [claimant_age, partner_age, lodger_age]
+        ages += household_ages + [10] * CHILDREN
+        incomes += [
+            landlord if age >= 18 else NO_INCOME
+            for age, landlord in zip(household_ages, landlords)
+        ] + [NO_INCOME] * CHILDREN
+        claims_pc += [True, claims]
+    pension, dividends, profit, expenses, costs = map(np.array, zip(*incomes))
+    sim.set_input("age", PENSIONER_YEAR, np.array(ages, dtype=float))
+    sim.set_input("private_pension_income", PENSIONER_YEAR, pension)
+    sim.set_input("dividend_income", PENSIONER_YEAR, dividends)
+    sim.set_input("property_income", PENSIONER_YEAR, profit)
+    sim.set_input("property_rental_income", PENSIONER_YEAR, profit + expenses)
+    sim.set_input("property_finance_costs", PENSIONER_YEAR, costs)
+    sim.set_input("would_claim_pc", PENSIONER_YEAR, np.array(claims_pc))
+    sim.reset_calculations()
+    if uses_allowance is not None:
+        sim.set_input("uses_property_allowance", PENSIONER_YEAR, uses_allowance)
+
+
+@PENSIONER_SETTINGS
+@example([LONE_PENSIONER, SHARED_PAYMENT] * (PENSIONER_HOUSEHOLDS // 2))
+@given(pensioner_households)
+def test_no_pensioner_lowers_their_tax_and_charge_by_switching_alone(
+    pensioner_sim, drawn
+):
+    sim = pensioner_sim
+    set_pensioner_inputs(sim, drawn)
+    routes = sim.calculate("uses_property_allowance", PENSIONER_YEAR)
+    income_tax = sim.calculate("income_tax", PENSIONER_YEAR).astype(float)
+    choosing = sim.calculate("property_allowance_deduction_if_used", PENSIONER_YEAR) > 0
+    position = np.arange(len(routes)) % (len(ROLES) + CHILDREN)
+    for k in range(len(ROLES)):
+        # One landlord per household switches; households do not interact.
+        switching = choosing & (position == k)
+        if not switching.any():
+            continue
+        set_pensioner_inputs(sim, drawn, routes ^ switching)
+        switched_tax = sim.calculate("income_tax", PENSIONER_YEAR).astype(float)
+        margin = tolerance(income_tax, switched_tax)
+        assert (switched_tax[switching] >= (income_tax - margin)[switching]).all(), (
+            ROLES[k],
+            np.flatnonzero(switching),
+            income_tax[switching],
+            switched_tax[switching],
+        )

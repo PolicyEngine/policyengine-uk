@@ -82,7 +82,7 @@
         months_since_last_birthday: 4
         is_male: true
         employment_income: 1_000
-        income_tax: 0
+        income_tax_before_winter_fuel_payment_charge: 0
         national_insurance: 0
         pension_contributions: 0
     benunits:
@@ -123,7 +123,7 @@
         months_since_last_birthday: 4
         is_male: true
         employment_income: 1_000
-        income_tax: 0
+        income_tax_before_winter_fuel_payment_charge: 0
         national_insurance: 0
         pension_contributions: 0
     benunits:

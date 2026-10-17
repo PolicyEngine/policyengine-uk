@@ -7,11 +7,12 @@ class adjusted_total_income(Variable):
     label = "Adjusted total income"
     documentation = (
         "The base of the cap on reliefs against general income (ITA 2007 "
-        "s.24A(8)). Step 1 is total income (s.23 Step 1): the taxable income "
-        "components, with losses brought forward (loss_relief, a Step 2 "
-        "relief the model deducts from trading profits) added back. Steps 3 "
-        "and 4 deduct the pension contributions given relief (FA 2004 "
-        "ss.192-194): the person's own contributions up to the greater of "
+        "s.24A(8)). Step 1 is total income (s.23 Step 1, "
+        "total_income_charged_to_tax), which is already after employee "
+        "contributions under a net pay arrangement (FA 2004 s.193(2)). "
+        "Steps 3 and 4 deduct the other pension contributions given relief "
+        "(ss.192-194). Together these are the person's own contributions "
+        "up to the greater of "
         "their relevant UK earnings (s.189(2): taxable employment income, "
         "including benefits and statutory pay, and trading profits) and the "
         "basic amount (s.190), none from "
@@ -43,13 +44,7 @@ class adjusted_total_income(Variable):
         profits_before_carry_forward = max_(
             0, profits - add(person, period, other_deductions)
         )
-        losses_brought_forward_deducted = profits_before_carry_forward - person(
-            "taxable_self_employment_income", period
-        )
-        total_income = (
-            person("net_income_before_trade_loss_relief", period)
-            + losses_brought_forward_deducted
-        )
+        total_income = person("total_income_charged_to_tax", period)
         # Relevant UK earnings (FA 2004 s.189(2)): employment income chargeable
         # to tax, including taxable benefits and statutory payments, and
         # trading profits chargeable to tax.
@@ -66,4 +61,8 @@ class adjusted_total_income(Variable):
             min_(person("pension_contributions", period), relief_limit)
             * under_age_limit
         )
-        return max_(0, total_income - relieved_contributions)
+        # Net pay contributions already came off total income at Step 1.
+        not_yet_deducted = relieved_contributions - person(
+            "net_pay_pension_relief", period
+        )
+        return max_(0, total_income - not_yet_deducted)

@@ -11,7 +11,7 @@ class housing_benefit_net_earnings(Variable):
         "income plus self-employment profit (each floored at zero, as a loss "
         "in one employment is not set against another) plus statutory sick "
         "and maternity pay (regulation 35(1)(i); pension age regulation "
-        "35(1)(h)), less income tax, "
+        "35(1)(h)), less income tax (before the winter fuel payment charge), "
         "Class 1, 2 and 4 National Insurance, and half of pension "
         "contributions, floored at zero. For an employee the regulations "
         "deduct the income tax deducted from the earnings (regulation 36(3); "
@@ -69,7 +69,11 @@ class housing_benefit_net_earnings(Variable):
             out=np.zeros_like(earnings),
             where=income_before_losses > 0,
         )
-        income_tax = person("income_tax", period) * min_(earnings_share, 1)
+        # Tax before the winter fuel payment charge: the charge recovers a
+        # payment and is not deducted from earnings.
+        income_tax = person(
+            "income_tax_before_winter_fuel_payment_charge", period
+        ) * min_(earnings_share, 1)
         national_insurance = add(
             person, period, ["ni_class_1_employee", "ni_class_2", "ni_class_4"]
         )
