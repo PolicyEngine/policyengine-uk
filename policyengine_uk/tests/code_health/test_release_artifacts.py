@@ -608,6 +608,141 @@ def test_pypi_state_takes_a_manifest_or_a_dist_not_both(tmp_path):
     assert release.main(missing) == 2
 
 
+def manifest_record(dist):
+    return release.manifest(release.dist_files(dist, VERSION), VERSION, "0" * 40)
+
+
+def write_json(path, content):
+    path.write_text(
+        content if isinstance(content, str) else json.dumps(content), encoding="utf-8"
+    )
+    return path
+
+
+@pytest.mark.parametrize("keep", [0, 1])
+def test_a_manifest_missing_a_file_is_refused(tmp_path, keep):
+    dist = build(tmp_path / "dist")
+    record = manifest_record(dist)
+    record["files"] = [record["files"][keep]]
+    manifest = write_json(tmp_path / "m.json", record)
+    with pytest.raises(release.InputError, match="must list exactly"):
+        release.pypi_state(
+            state_args(None, "complete", manifest=manifest),
+            # PyPI serving only the one listed file would otherwise read as complete.
+            fetch=lambda *a: {
+                record["files"][0]["filename"]: record["files"][0]["sha256"]
+            },
+        )
+
+
+def test_a_manifest_listing_a_file_twice_is_refused(tmp_path):
+    dist = build(tmp_path / "dist")
+    record = manifest_record(dist)
+    record["files"].append({**record["files"][0], "sha256": "e" * 64})
+    manifest = write_json(tmp_path / "m.json", record)
+    with pytest.raises(release.InputError):
+        release.pypi_state(state_args(None, manifest=manifest), fetch=lambda *a: None)
+
+
+@pytest.mark.parametrize(
+    "content",
+    [
+        "{not json",
+        "[]",
+        '"a string"',
+        '{"package": "policyengine-uk"}',
+        json.dumps({"package": "policyengine-uk", "version": VERSION}),
+        json.dumps({"package": "policyengine-uk", "version": VERSION, "files": {}}),
+        json.dumps({"package": "policyengine-uk", "version": VERSION, "files": [1, 2]}),
+        "",
+    ],
+    ids=[
+        "invalid json",
+        "list",
+        "string",
+        "no version",
+        "no files",
+        "files a dict",
+        "files not objects",
+        "empty file",
+    ],
+)
+def test_an_unreadable_manifest_is_unusable_input_not_a_traceback(tmp_path, content):
+    manifest = write_json(tmp_path / "m.json", content)
+    command = ["pypi-state", "--version", VERSION, "--manifest", str(manifest)]
+    assert release.main(command) == 2
+
+
+@pytest.mark.parametrize(
+    "digest", ["e" * 63, "e" * 65, "E" * 64, "z" * 64, "0x" + "e" * 62]
+)
+def test_a_manifest_digest_that_is_not_64_lowercase_hex_is_refused(tmp_path, digest):
+    dist = build(tmp_path / "dist")
+    record = manifest_record(dist)
+    record["files"][0]["sha256"] = digest
+    manifest = write_json(tmp_path / "m.json", record)
+    with pytest.raises(release.InputError, match="no sha256"):
+        release.pypi_state(state_args(None, manifest=manifest), fetch=lambda *a: None)
+
+
+def test_the_manifest_check_dist_writes_is_the_one_pypi_state_reads(
+    commit, tmp_path, capsys
+):
+    """check-dist --manifest-out, as the workflow runs it, then pypi-state --manifest."""
+    repo, sha = commit
+    dist = build(tmp_path / "dist")
+    manifest = tmp_path / "runner_temp" / "release-manifest.json"
+    manifest.parent.mkdir()
+    assert check_dist(dist, repo, sha, VERSION, "--manifest-out", str(manifest)) == 0
+    served = ours(dist)
+    for name in ATTESTATIONS:
+        (dist / name).write_text("{}")
+    capsys.readouterr()
+    assert (
+        release.pypi_state(
+            state_args(None, "complete", manifest=manifest), fetch=lambda *a: served
+        )
+        == 0
+    )
+    assert capsys.readouterr().out.splitlines()[0] == "complete"
+
+
+@SETTINGS
+@given(
+    served=st.sampled_from(["absent", "partial", "complete", "other", "extra"]),
+    require=st.sampled_from([None, "absent", "partial", "complete"]),
+)
+def test_the_manifest_and_a_clean_dist_agree_under_require(
+    tmp_path_factory, served, require
+):
+    root = tmp_path_factory.mktemp("require")
+    clean = build(root / "clean")
+    manifest = write_json(root / "m.json", manifest_record(clean))
+    cluttered = build(root / "cluttered")
+    for name in ATTESTATIONS:
+        (cluttered / name).write_text("{}")
+    files = ours(clean)
+    remote = {
+        "absent": None,
+        "partial": dict(list(files.items())[:1]),
+        "complete": files,
+        "other": {name: "f" * 64 for name in files},
+        "extra": {**files, f"policyengine_uk-{VERSION}.zip": "0" * 64},
+    }[served]
+
+    def run(args):
+        # The exit code and how long it waited for the index (--wait).
+        clock = FakeClock()
+        code = release.pypi_state(
+            args, fetch=lambda *a: remote, sleep=clock.sleep, clock=clock
+        )
+        return code, clock.now
+
+    with_manifest = run(state_args(cluttered, require, wait=30, manifest=manifest))
+    with_clean_dist = run(state_args(clean, require, wait=30))
+    assert with_manifest == with_clean_dist
+
+
 # Invariant 7: the release workflow.
 
 
