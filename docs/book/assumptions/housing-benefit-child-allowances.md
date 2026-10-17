@@ -86,11 +86,13 @@ the multiple birth. [HMRC's historical exceptions guidance](https://www.gov.uk/g
 sets out the conditions and the 2018 change.
 
 A positive Child Tax Credit payment also cannot identify the ordinary-child
-count. Disability and childcare elements could be included for a child without
-an ordinary individual child element. The required information is which
-children the ordinary-element assessment included, rather than whether any
-Child Tax Credit cash was paid. These historical assessment rules do not imply
-that new Child Tax Credit claims remain available today.
+count. The Child Tax Credit disability element could be included for a child
+without an ordinary individual child element. Childcare support alone likewise
+did not establish that an ordinary individual child element was included. The
+required information is which children the ordinary-element assessment included,
+rather than whether any Child Tax Credit cash was paid. These historical
+assessment rules do not imply that new Child Tax Credit claims remain available
+today.
 
 ## Implementation remains deferred
 
