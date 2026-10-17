@@ -41,7 +41,7 @@ or without children, in which one member receives one of the three payments:
       82(1)(a) threshold, and the payments are earned income (reg. 55(4)). So
       a pound of pay can lift the cap and raise the final award. The award
       after the cap may therefore rise only where the family becomes exempt
-      (is_benefit_cap_exempt); otherwise it obeys the same bound. The
+      (is_uc_benefit_cap_exempt); otherwise it obeys the same bound. The
       earnings exemption uses actual UC net earned income before the
       minimum income floor, which reg. 82(4) excludes.
 
@@ -302,8 +302,8 @@ def test_statutory_sick_pay_preserves_benefit_cap_earnings_exemption():
             atol=TOLERANCE,
             rtol=0,
         )
-        assert results.families("is_benefit_cap_exempt_earnings", version)[0]
-        assert results.families("is_benefit_cap_exempt", version)[0]
+        assert results.families("is_uc_benefit_cap_exempt_earnings", version)[0]
+        assert results.families("is_uc_benefit_cap_exempt", version)[0]
         assert results.families("benefit_cap_reduction", version)[0] == 0
     assert (
         results.families("universal_credit", HIGH)[0]
@@ -323,7 +323,7 @@ def test_award_never_rises_with_a_claimants_statutory_pay(population):
     before_cap = both("universal_credit_pre_benefit_cap")
     award = both("universal_credit")
     childcare = both("uc_childcare_element")
-    exempt = both("is_benefit_cap_exempt")
+    exempt = both("is_uc_benefit_cap_exempt")
     earned = "uc_individual_earned_income_before_mif"
     for i, family in enumerate(population):
         if family["low"] > 0:
@@ -442,7 +442,7 @@ def test_statutory_pay_counts_as_wages_and_earned_income_adds_up(population):
     for variable in [
         "uc_earned_income",
         "universal_credit_pre_benefit_cap",
-        "is_benefit_cap_exempt_earnings",
+        "is_uc_benefit_cap_exempt_earnings",
         "universal_credit",
     ]:
         taxed = [counts_as_wages(family) for family in population]
@@ -567,7 +567,7 @@ def test_award_falls_along_a_path_of_rising_statutory_pay():
     variables = [
         "universal_credit_pre_benefit_cap",
         "universal_credit",
-        "is_benefit_cap_exempt",
+        "is_uc_benefit_cap_exempt",
     ]
     paths = along_paths(list(ARCHETYPES.values()), PAYMENTS, variables)
     for i, name in enumerate(ARCHETYPES):
@@ -580,7 +580,7 @@ def test_award_falls_along_a_path_of_rising_statutory_pay():
             # After the cap, the award rises only at a step that makes the
             # family exempt (reg. 82(1)(a)).
             final = paths["universal_credit"][HIGH][i, j]
-            newly_exempt = np.diff(paths["is_benefit_cap_exempt"][HIGH][i, j]) > 0
+            newly_exempt = np.diff(paths["is_uc_benefit_cap_exempt"][HIGH][i, j]) > 0
             rises = np.diff(final) > TOLERANCE
             assert not (rises & ~newly_exempt).any(), (name, payment, final)
 

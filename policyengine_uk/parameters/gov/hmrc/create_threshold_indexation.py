@@ -19,6 +19,22 @@ The parameter files hold those years. From the first tax year after a
 parameter's last stated value, ``index_personal_allowance`` and
 ``index_basic_rate_limit`` apply the statutory steps.
 
+A dated reform states its value for the tax years it covers, and those
+years count as stated too (each entry it writes carries
+``DATED_CHANGE_UNTIL``, its last day; see
+``policyengine_uk.utils.dated_reforms``). Every other year after the last
+year the files state is indexed from the year before, so a freeze that ends
+resumes indexation from the frozen amount, as s57 Step 1 and s21 Step 1 do
+("the allowance ... for the previous tax year", "the basic rate limit for
+the previous tax year"); the years between two changes are indexed from the
+first. Freezes are legislated that way: Finance Act 2021 s5 (and before it
+Finance Act 2019 s5) fixes the amount and disapplies the indexation for
+named tax years, and leaves s57 and s21 to apply to the frozen amount after
+them. The aligned NICs thresholds are aligned again after a change to one
+of them alone. An indexed value starts on 1 January unless a reform's change
+runs past that date without covering the year's 30 April sample, in which
+case it starts the day after the change.
+
 National Insurance
 ------------------
 No statute indexes the NICs thresholds. SSCBA 1992 s5 needs the Class 1
@@ -78,6 +94,7 @@ a single day or month (other than 1 January on a calendar-year series, such as
 a CPI growth rate, which is a dated change and so does move them).
 """
 
+import datetime
 from decimal import ROUND_CEILING, ROUND_HALF_UP, Decimal
 from typing import Callable, Dict
 
@@ -93,6 +110,26 @@ PENNY = Decimal("0.01")
 FISCAL_YEAR_SAMPLE_MONTH_DAY = "04-30"
 # Indexed values are keyed to 1 January, as core uprating keys its values.
 INDEXED_VALUE_MONTH_DAY = "01-01"
+# Metadata on an entry a dated reform wrote: the last day (YYYY-MM-DD) its
+# value is stated for. The tax years whose 30 April sample falls between the
+# entry's date and that day are stated, not indexed.
+DATED_CHANGE_UNTIL = "dated_change_until"
+# Parameter metadata a dated reform writes before it changes the parameter:
+# the last tax year the parameter files state. A change can replace the
+# files' last value (the 2030-04-06 value that ends a freeze), so the years
+# the files state cannot be read from the changed timeline alone. Removed
+# once the indexation has run.
+FILES_LAST_TAX_YEAR = "files_last_tax_year"
+# The parameters this module writes values for after their stated years.
+INDEXED_THRESHOLDS = (
+    "gov.hmrc.income_tax.allowances.personal_allowance.amount",
+    "gov.hmrc.income_tax.rates.uk[1].threshold",
+    "gov.hmrc.national_insurance.class_1.thresholds.primary_threshold",
+    "gov.hmrc.national_insurance.class_1.thresholds.upper_earnings_limit",
+    "gov.hmrc.national_insurance.class_1.thresholds.secondary_threshold",
+    "gov.hmrc.national_insurance.class_4.thresholds.lower_profits_limit",
+    "gov.hmrc.national_insurance.class_4.thresholds.upper_profits_limit",
+)
 
 
 def to_decimal(value: float) -> Decimal:
@@ -143,9 +180,50 @@ def first_tax_year(instant_str: str) -> int:
     return year if instant_str[5:] <= FISCAL_YEAR_SAMPLE_MONTH_DAY else year + 1
 
 
+def is_dated_change(value: ParameterAtInstant) -> bool:
+    return DATED_CHANGE_UNTIL in (value.metadata or {})
+
+
 def last_stated_tax_year(parameter: Parameter) -> int:
-    """Tax year of the parameter's latest dated value."""
-    return max(first_tax_year(value.instant_str) for value in parameter.values_list)
+    """Tax year of the parameter's latest value in its files.
+
+    Values a dated reform wrote are left out; ``dated_change_tax_years``
+    gives the years they state. Where a reform replaced the files' last value,
+    the year it recorded (``FILES_LAST_TAX_YEAR``) counts.
+    """
+    stated = [
+        first_tax_year(value.instant_str)
+        for value in parameter.values_list
+        if not is_dated_change(value)
+    ]
+    recorded = (parameter.metadata or {}).get(FILES_LAST_TAX_YEAR)
+    if recorded is not None:
+        stated.append(int(recorded))
+    # values_list is latest first.
+    return max(stated or [first_tax_year(parameter.values_list[0].instant_str)])
+
+
+def dated_change_tax_years(parameter: Parameter) -> set:
+    """Tax years whose 30 April falls within a dated reform's change."""
+    years = set()
+    for value in parameter.values_list:
+        if not is_dated_change(value):
+            continue
+        until = value.metadata[DATED_CHANGE_UNTIL]
+        year = first_tax_year(value.instant_str)
+        # Zero-padded, as instant strings are: an ETERNITY change starts in
+        # year 1.
+        while f"{year:04d}-{FISCAL_YEAR_SAMPLE_MONTH_DAY}" <= until:
+            years.add(year)
+            year += 1
+    return years
+
+
+def stated_tax_year(parameter: Parameter) -> Callable[[int], bool]:
+    """Whether a tax year's value is stated (in the files or by a reform)."""
+    last_stated = last_stated_tax_year(parameter)
+    changed = dated_change_tax_years(parameter)
+    return lambda year: year <= last_stated or year in changed
 
 
 def value_in_tax_year(parameter: Parameter, year: int) -> Decimal:
@@ -160,30 +238,48 @@ def tax_year_path(
 ) -> Dict[int, Decimal]:
     """The parameter's value in each tax year in ``years``, stated or indexed.
 
-    Years up to the last stated value read the parameter; each later year
-    applies ``step`` to the year before with that year's increase.
+    Stated years read the parameter; each other year applies ``step`` to the
+    year before with that year's increase. ``years`` starts at a stated year.
     """
-    last_stated = last_stated_tax_year(parameter)
+    stated = stated_tax_year(parameter)
     values = {}
     for year in years:
-        if year <= last_stated:
+        if stated(year):
             values[year] = value_in_tax_year(parameter, year)
         else:
             values[year] = step(values[year - 1], increases[year])
     return values
 
 
-def write_after_last_stated_value(
-    parameter: Parameter, values: Dict[int, Decimal]
-) -> None:
-    """Add a value for each tax year after the last stated one."""
-    last_stated = last_stated_tax_year(parameter)
+def unstated_value_date(parameter: Parameter, year: int) -> str:
+    """Where a tax year's indexed value starts.
+
+    1 January, as core uprating keys its values, unless a dated reform's
+    change runs from before that tax year's 30 April sample to after
+    1 January without covering it: the value then starts the day after the
+    change, so the change cannot reach a tax year it does not cover.
+    """
+    start = f"{year}-{INDEXED_VALUE_MONTH_DAY}"
+    sample = f"{year}-{FISCAL_YEAR_SAMPLE_MONTH_DAY}"
+    for value in parameter.values_list:
+        until = (value.metadata or {}).get(DATED_CHANGE_UNTIL)
+        if until is None or value.instant_str > sample or until >= sample:
+            continue
+        if until >= start:
+            next_day = datetime.date.fromisoformat(until) + datetime.timedelta(days=1)
+            start = max(start, next_day.isoformat())
+    return start
+
+
+def write_unstated_tax_years(parameter: Parameter, values: Dict[int, Decimal]) -> None:
+    """Add a value for each tax year neither the files nor a reform state."""
+    stated = stated_tax_year(parameter)
     for year, value in sorted(values.items()):
-        if year > last_stated:
+        if not stated(year):
             parameter.values_list.append(
                 ParameterAtInstant(
                     parameter.name,
-                    f"{year}-{INDEXED_VALUE_MONTH_DAY}",
+                    unstated_value_date(parameter, year),
                     data=float(value),
                 )
             )
@@ -224,8 +320,8 @@ def add_threshold_indexation(parameters: ParameterNode) -> ParameterNode:
         class_4.lower_profits_limit,
         class_4.upper_profits_limit,
     ]
-    # From the earliest last stated value, so the income tax amounts cover
-    # every year a NICs threshold takes from them.
+    # From the earliest last value in the files, so the income tax amounts
+    # cover every year a NICs threshold takes from them.
     years = range(
         min(last_stated_tax_year(parameter) for parameter in indexed),
         max(increases) + 1,
@@ -244,20 +340,22 @@ def add_threshold_indexation(parameters: ParameterNode) -> ParameterNode:
         class_1.secondary_threshold, years, increases, index_secondary_threshold
     )
 
-    write_after_last_stated_value(personal_allowance_parameter, personal_allowance)
-    write_after_last_stated_value(basic_rate_limit_parameter, basic_rate_limit)
-    write_after_last_stated_value(class_4.lower_profits_limit, personal_allowance)
-    write_after_last_stated_value(class_4.upper_profits_limit, higher_rate_threshold)
-    write_after_last_stated_value(
+    write_unstated_tax_years(personal_allowance_parameter, personal_allowance)
+    write_unstated_tax_years(basic_rate_limit_parameter, basic_rate_limit)
+    write_unstated_tax_years(class_4.lower_profits_limit, personal_allowance)
+    write_unstated_tax_years(class_4.upper_profits_limit, higher_rate_threshold)
+    write_unstated_tax_years(
         class_1.primary_threshold,
         {year: weekly_equivalent(value) for year, value in personal_allowance.items()},
     )
-    write_after_last_stated_value(
+    write_unstated_tax_years(
         class_1.upper_earnings_limit,
         {
             year: weekly_equivalent(value)
             for year, value in higher_rate_threshold.items()
         },
     )
-    write_after_last_stated_value(class_1.secondary_threshold, secondary_threshold)
+    write_unstated_tax_years(class_1.secondary_threshold, secondary_threshold)
+    for parameter in indexed:
+        (parameter.metadata or {}).pop(FILES_LAST_TAX_YEAR, None)
     return parameters

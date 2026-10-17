@@ -32,19 +32,49 @@ corrected tax at its top gives the tax on that slice. This preserves the
 original scale calculation when the gift is zero and handles gifts that cross
 several thresholds.
 
-`net_income` holds the income base previously exposed as `adjusted_net_income`.
-Taxable-income calculations and allowance allocation use this base.
-When adjusted net income is supplied explicitly, its gross Gift Aid adjustment
-is added back to obtain the taxable-income base. This preserves direct income
-inputs when the gift is zero without recovering ordinary taxable income from a
-rounded adjusted-net-income calculation. The marriage-neutral income-tax
-reform splits `net_income` before each person's Gift Aid adjustment.
-`adjusted_net_income` deducts the gross gift once, as [s. 58(1), Step
-2](https://www.legislation.gov.uk/ukpga/2007/3/section/58) requires. The Personal
-Allowance taper and High Income Child Benefit Charge therefore see the lower
-adjusted net income. The Personal Allowance formula does not deduct Gift Aid a
-second time. Capital gains tax uses `net_income`, retains its gross Gift Aid
-band extension, and no longer removes the net gift from `allowances`.
+`net_income` holds the model's income base before pension relief, personal
+allowances and Gift Aid adjustments. Taxable-income calculations and allowance
+allocation use this base. When adjusted net income is supplied explicitly,
+gross Gift Aid and relieved pension contributions are added back to recover
+that base. Ordinary cases calculate it directly to avoid recovering income
+from rounded adjusted net income. The marriage-neutral income-tax reform
+splits `net_income` before each person's adjustments.
+
+`adjusted_net_income` deducts the gross gift and relieved pension contributions
+once, as [ITA 2007 s. 58](https://www.legislation.gov.uk/ukpga/2007/3/section/58)
+requires. Statutory net income already excludes net-pay contributions under
+[FA 2004 s. 193](https://www.legislation.gov.uk/ukpga/2004/12/section/193) and
+relief on claim under [s. 194(1)](https://www.legislation.gov.uk/ukpga/2004/12/section/194);
+s. 58 then deducts gross relief-at-source contributions under
+[s. 192(1)](https://www.legislation.gov.uk/ukpga/2004/12/section/192).
+The model represents employment income gross of employee and personal pension
+contributions and deducts their aggregate relief through `allowances`.
+Consequently, its ANI calculation deducts that relieved aggregate too. Pension
+inputs follow the existing gross contribution convention; do not gross them
+up again. The Personal Allowance taper and High Income Child Benefit Charge
+see the resulting ANI without making a second adjustment.
+
+Pension relief remains in `allowances`, and the rate-band bases continue to
+read `net_income`, so it reduces the ordinary income tax base once. Property,
+savings and dividend income retain that same allocation. Capital gains tax
+removes relieved personal pension contributions from its deducted allowances
+and instead extends its basic-rate band by that amount plus gross Gift Aid.
+The annual allowance taper continues to use its separate income base; its
+statutory adjusted-income definition is distinct from s. 58 ANI. Contribution
+relief follows the earnings/basic-amount limit. Pension input above the annual
+allowance attracts the separate annual allowance charge.
+
+Both the baseline and marriage-neutral reform reconstruct `net_income` from
+supplied ANI by restoring gross Gift Aid and relieved pension contributions
+through the same helper. Supplying the ANI derived by the model therefore
+preserves the pre-allowance base, including when an annual allowance is
+explicitly supplied. That allowance determines the separate charge rather
+than contribution relief.
+
+For example, £150,000 employment income and £60,000 gross personal pension
+contributions in London in 2024 give ANI of £90,000 and the full £12,570
+Personal Allowance. The ordinary taxable base is £77,430, giving £23,432
+income tax (£37,700 at 20% and £39,730 at 40%).
 
 Savings and dividends stack above all non-savings income, property income
 included ([ITA 2007 s. 16](https://www.legislation.gov.uk/ukpga/2007/3/section/16);
@@ -64,8 +94,8 @@ including s. 12B(8) for Scottish taxpayers, with s. 414(2)(b)).
 
 Several limitations remain relevant when interpreting mixed-income results:
 
-- Adjusted net income still omits other adjustments in s. 58, including the
-  deduction for pension contributions relieved at source in Step 3.
+- Adjusted net income does not implement the s. 58 Step 4 add-back of relief
+  for trade union or police organisation payments.
 - Gifts are assumed to qualify. The model does not charge the donor for a
   shortfall in income tax and capital gains tax covering the tax attributed to
   gifts under [ss. 423–424](https://www.legislation.gov.uk/ukpga/2007/3/section/424).
@@ -85,3 +115,44 @@ additional relief. Changing tax band can also increase the Personal Savings
 Allowance discretely under s. 12B, so its relief cannot be bounded by a constant
 times a very small gift. Tests of the continuous band-extension bound must
 allow for that allowance change or hold the zero-rate allowance fixed.
+
+## Pension annual allowance charge
+
+The annual allowance charge uses reduced net income after ITA 2007 s. 23
+Step 3 ([FA 2004 s. 227(4B)](https://www.legislation.gov.uk/ukpga/2004/12/section/227)).
+It starts from `net_income`, before the s. 58 gross Gift Aid deduction, and
+subtracts `allowances` after removing relieved relief-at-source pension
+contributions. Gift Aid is already excluded from those allowances. The charge
+then stacks the excess pension input amount on this base. Gross Gift Aid
+extends the rate limits under s. 227(4C), independently of pension relief.
+This keeps the Gift Aid adjustment to adjusted net income separate from the
+amount charged to tax.
+
+The pension extension is conditional. [FA 2004 s. 192(4)/(4A)](https://www.legislation.gov.uk/ukpga/2004/12/section/192)
+requires ordinary income, apart from relief under that section, to attract
+higher/additional-rate tax, or a Scottish rate above basic. The charge uses
+only limits increased under s. 192; s. 227(5) excludes the pension excess from
+income, so that excess cannot satisfy the condition. The model tests ordinary
+liability before RAS relief, retaining Gift Aid's extension and the existing
+allowance allocation. Scottish liability uses non-savings income, including
+property income. The UK condition names the higher and additional rates:
+separate dividend rates, savings rates from 2017-18 and property rates from
+2027-28 do not satisfy it. [FA 2016 s. 6](https://www.legislation.gov.uk/ukpga/2016/24/section/6/enacted)
+introduced savings rates and expressly added them to some other higher-rate
+tests, without expanding s. 192(4). [FA 2026 s. 6](https://www.legislation.gov.uk/ukpga/2026/11/section/6/enacted)
+and [Schedule 1](https://www.legislation.gov.uk/ukpga/2026/11/schedule/1/enacted)
+introduce property rates without expanding s. 192 either. Before those
+changes, income charged at ordinary higher/additional rates can qualify.
+Scottish property remains subject to Scottish rates under ITA 2007
+s. 11CA(4), so it can still meet s. 192(4A).
+
+[HMRC PTM056120](https://www.gov.uk/hmrc-internal-manuals/pensions-tax-manual/ptm056120)
+describes the RAS extension for the annual allowance charge without stating
+this condition. Its examples do not resolve low-income contributors whose
+pension excess crosses a band. The model follows the statutory condition;
+the [2018/459 explanatory memorandum, paragraph 7.4](https://www.legislation.gov.uk/uksi/2018/459/pdfs/uksiem_20180459_en.pdf)
+also describes an above-basic Scottish liability requirement. Assessment
+practice under the broader manual description remains a methodology question.
+The charge can exceed relief on the contribution when ordinary income fails
+the condition, so contribution and Gift Aid tax-monotonicity comparisons must
+hold eligibility for the RAS extension fixed.
