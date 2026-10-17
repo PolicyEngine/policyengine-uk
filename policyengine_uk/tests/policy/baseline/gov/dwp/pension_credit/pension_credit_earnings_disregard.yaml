@@ -1,0 +1,671 @@
+# Expected values are hand-computed from SPC Regs 2002 Sch VI (paras 1, 3, 4,
+# 4A and 5): weekly amounts times 52 weeks, capped at the earnings.
+
+- name: A single claimant with earnings has 5 pounds a week disregarded (para 5(a)).
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        employment_income: 2000
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    pension_credit_earnings_disregard: 5 * 52
+
+- name: A couple with earnings has 10 pounds a week disregarded (para 5(b)).
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        employment_income: 2000
+      partner:
+        age: 70
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    pension_credit_earnings_disregard: 10 * 52
+
+- name: A claimant on attendance allowance has 20 pounds a week disregarded (para 4(1)(a)(iii)).
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        employment_income: 2000
+        attendance_allowance: 3000
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    pension_credit_earnings_disregard: 20 * 52
+
+- name: A partner's personal independence payment qualifies the couple (para 4(1)(a)(viii)).
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        employment_income: 2000
+      partner:
+        age: 70
+        pip_dl: 3000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    pension_credit_earnings_disregard: 20 * 52
+
+- name: A carer satisfying Sch I para 4 has 20 pounds a week disregarded (para 3).
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        employment_income: 2000
+        is_entitled_to_carer_benefit: true
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    pension_credit_earnings_disregard: 20 * 52
+
+- name: A lone parent has 20 pounds a week disregarded (para 1).
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        employment_income: 2000
+      child:
+        age: 10
+    benunits:
+      benunit:
+        members: [claimant, child]
+    households:
+      household:
+        members: [claimant, child]
+  output:
+    pension_credit_earnings_disregard: 20 * 52
+
+- name: A claimant certified blind has 20 pounds a week disregarded (para 4(1)(b)).
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        employment_income: 2000
+        is_blind: true
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    pension_credit_earnings_disregard: 20 * 52
+
+- name: 20 pounds is the most disregarded when both partners qualify (para 4A).
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        employment_income: 2000
+        attendance_allowance: 3000
+      partner:
+        age: 70
+        employment_income: 2000
+        dla_sc: 3000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    pension_credit_earnings_disregard: 20 * 52
+
+- name: The disregard never exceeds the earnings.
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        employment_income: 100
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    pension_credit_earnings_disregard: 100
+
+- name: Self-employed earnings get the same disregard.
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        self_employment_income: 2000
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    pension_credit_earnings_disregard: 5 * 52
+
+- name: Without earnings there is nothing to disregard.
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        attendance_allowance: 3000
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    pension_credit_earnings_disregard: 0
+
+- name: A dependant child's disability benefit does not qualify a couple for the higher disregard.
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        employment_income: 2000
+      partner:
+        age: 70
+      child:
+        age: 10
+        dla_sc: 3000
+    benunits:
+      benunit:
+        members: [claimant, partner, child]
+    households:
+      household:
+        members: [claimant, partner, child]
+  output:
+    pension_credit_earnings_disregard: 10 * 52
+
+- name: Income-related ESA, a benefit-unit award, qualifies for the higher disregard.
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        employment_income: 2000
+    benunits:
+      benunit:
+        members: [claimant]
+        esa_income: 1000
+    households:
+      household:
+        members: [claimant]
+  output:
+    pension_credit_earnings_disregard: 20 * 52
+
+- name: The disregard comes off Pension Credit income and raises the guarantee credit.
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        employment_income: 2000
+        state_pension: 9000
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    # minimum guarantee 218.15 a week in 2024-25 (SI 2024/242)
+    pension_credit_income: 9_000 + 2_000 - 5 * 52
+    guarantee_credit: 218.15 * 52 - (9_000 + 2_000 - 5 * 52)
+
+- name: A taxpayer's disregard is capped at net earnings, so earnings below the disregard leave Pension Credit income unchanged (reg 17(9), 17(10)).
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        state_pension: 12_000
+        private_pension_income: 3_000
+        attendance_allowance: 3_000
+        employment_income: 1_040
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    # Income tax (16,040 - 12,570) x 20% = 694, against 486 without the
+    # earnings (next case), so tax on the earnings is 208 and net earnings are
+    # 832; the 20 pound (attendance allowance) disregard of 1,040 is capped at
+    # 832.
+    pension_credit_earnings_disregard: 832
+    # 16,040 - 694 - 832, the same as with no earnings (next case).
+    pension_credit_income: 14_514
+
+- name: The same claimant with no earnings has the same Pension Credit income.
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        state_pension: 12_000
+        private_pension_income: 3_000
+        attendance_allowance: 3_000
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    # 15,000 - (15,000 - 12,570) x 20%
+    pension_credit_earnings_disregard: 0
+    pension_credit_income: 14_514
+
+- name: A dependant's caring does not qualify a couple for the higher disregard (Sch I para 4 is the claimant's or partner's).
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        employment_income: 2_000
+      partner:
+        age: 70
+      child:
+        age: 17
+        is_entitled_to_carer_benefit: true
+    benunits:
+      benunit:
+        members: [claimant, partner, child]
+    households:
+      household:
+        members: [claimant, partner, child]
+  output:
+    pension_credit_earnings_disregard: 10 * 52
+
+- name: A Scottish taxpayer's tax on earnings is the income tax the earnings add on the Scottish schedule, so Pension Credit income does not fall with earnings.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        state_pension: 12_000
+        private_pension_income: 16_000
+        attendance_allowance: 5_000
+        employment_income: 1_040
+      partner:
+        age: 70
+        attendance_allowance: 5_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        country: SCOTLAND
+  output:
+    # The 1,040 of earnings add 210.89 of income tax (they cross into the
+    # Scottish intermediate band), so net earnings are 829.11 and the 20 pound
+    # disregard of 1,040 is capped there; income is as with no earnings (next).
+    income_tax: [3_016.62, 0]
+    pension_credit_earnings_disregard: 829.11
+    pension_credit_income: 25_194.27
+
+- name: The same Scottish couple with no earnings has the same Pension Credit income.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        state_pension: 12_000
+        private_pension_income: 16_000
+        attendance_allowance: 5_000
+      partner:
+        age: 70
+        attendance_allowance: 5_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        country: SCOTLAND
+  output:
+    income_tax: [2_805.73, 0]
+    pension_credit_earnings_disregard: 0
+    pension_credit_income: 25_194.27
+
+- name: Caring hours without entitlement to carer's allowance do not qualify for the 20 pound disregard (Sch VI para 3 needs Sch I para 4).
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 70
+        state_pension: 9_000
+        employment_income: 2_000
+        care_hours: 40
+        is_entitled_to_carer_benefit: false
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    pension_credit_earnings_disregard: 5 * 52
+
+- name: Entitlement to carer's allowance qualifies for the 20 pound disregard.
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 70
+        state_pension: 9_000
+        employment_income: 2_000
+        care_hours: 40
+        is_entitled_to_carer_benefit: true
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    pension_credit_earnings_disregard: 20 * 52
+
+- name: Tax on earnings includes the tax they add on savings income, so Pension Credit income does not fall with earnings.
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        state_pension: 12_000
+        savings_interest_income: 12_000
+        attendance_allowance: 3_000
+        employment_income: 1_040
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    # Income tax is 1,294 with the earnings and 1,086 without (next case): the
+    # earnings take 470 of non-savings income over the personal allowance,
+    # and take the personal allowance off 570 of savings interest. Tax on the
+    # earnings is 208, so net earnings are 832 and the 20 pound disregard of
+    # 1,040 is capped there. Pension Credit counts deemed income from capital
+    # rather than the interest, so its income is 12,000 + 1,040 - 1,294 - 832.
+    income_tax: 1_294
+    pension_credit_employment_income_tax: 208
+    pension_credit_earnings_disregard: 832
+    pension_credit_income: 10_914
+
+- name: The same claimant with savings and no earnings has the same Pension Credit income.
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        state_pension: 12_000
+        savings_interest_income: 12_000
+        attendance_allowance: 3_000
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    income_tax: 1_086
+    pension_credit_earnings_disregard: 0
+    # 12,000 - 1,086.
+    pension_credit_income: 10_914
+
+- name: Tax on earnings is net of the pension tax relief the earnings unlock.
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        private_pension_income: 15_000
+        employment_income: 400
+        personal_pension_contributions: 300
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    # The earnings add 400 x 20% = 80 of tax but let the 300 of contributions
+    # be relieved, worth 60: income tax is 506, against 486 without them
+    # (next case), so tax on the earnings is 20. Net earnings are 400 - 20 -
+    # 300 / 2 = 230, under the 5 pound disregard of 260.
+    income_tax: 506
+    pension_credit_employment_income_tax: 20
+    pension_credit_earnings_disregard: 230
+    # 15,400 - 506 - 150 - 230: more than without the earnings, so earning
+    # more never raises Pension Credit.
+    pension_credit_income: 14_514
+
+- name: The same claimant with no earnings.
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        private_pension_income: 15_000
+        personal_pension_contributions: 300
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    income_tax: 486
+    pension_credit_earnings_disregard: 0
+    # 15,000 - 486 - 300 / 2.
+    pension_credit_income: 14_364
+
+- name: A self-employment loss is not set against wages in the disregard (CER 1996 reg 13(12)).
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 70
+        employment_income: 400
+        self_employment_income: -8_000
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    # Net earnings are the 400 of wages; the 5 pound disregard is 260.
+    pension_credit_earnings_disregard: 260
+    pension_credit_income: 400 - 260
+
+- name: Self-employed earnings under the personal allowance carry no notional tax, and the tax they actually cause is not deducted (CER 1996 reg 14; SPC reg 17(11)).
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 70
+        state_pension: 12_000
+        self_employment_income: 3_000
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    # The State Pension uses all but 570 of the personal allowance, so the
+    # profit causes all of the (15,000 - 12,570) x 20% = 486 of income tax.
+    income_tax: 486
+    pension_credit_self_employment_income_tax: 486
+    # Notional tax at the basic rate on the profit less the personal
+    # allowance alone is nil; Class 4 is not payable over State Pension age.
+    pension_credit_self_employment_deductions: 0
+    pension_credit_earnings_disregard: 260
+    # 15,000 - (486 - 486 + 0) - 260.
+    pension_credit_income: 14_740
+
+- name: Profit within the trading allowance is tax-free and fully disregarded up to the 20 pound limit.
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 70
+        state_pension: 12_000
+        private_pension_income: 3_000
+        attendance_allowance: 3_000
+        self_employment_income: 1_000
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    # The 1,000 trading allowance relieves the profit, so income tax is the
+    # (15,000 - 12,570) x 20% = 486 on the pensions.
+    income_tax: 486
+    pension_credit_self_employment_income_tax: 0
+    pension_credit_earnings_disregard: 1_000
+    # 16,000 - 486 - 1,000, the same as with no profit: 15,000 - 486.
+    pension_credit_income: 14_514
+
+- name: A Scottish self-employed earner's notional tax is at the Scottish basic rate, with main-rate Class 4 under State Pension age.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 60
+        self_employment_income: 20_000
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+        country: SCOTLAND
+  output:
+    # (20,000 - 12,570) x 20% = 1,486, not the 1,457.73 of income tax on the
+    # Scottish starter, basic and intermediate bands; Class 4 is
+    # (20,000 - 12,570) x 6% = 445.80.
+    income_tax: 1_457.73
+    pension_credit_self_employment_deductions: 1_486 + 445.80
+
+- name: Before April 2024 the notional contributions include Class 2 (CER 1996 reg 14(2)(a)).
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 60
+        self_employment_income: 20_000
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    # (20,000 - 12,570) x 20% = 1,486; Class 4 (20,000 - 12,570) x 9% =
+    # 668.70; Class 2 3.45 x 52 = 179.40.
+    pension_credit_self_employment_deductions: 1_486 + 668.70 + 179.40
+
+- name: The notional tax deducts the blind person's allowance with the personal allowance (ITA 2007 Part 3 Chapter 2).
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        self_employment_income: 20_000
+        blind_persons_allowance: 3_070
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    # (20,000 - 12,570 - 3,070) x 20%.
+    pension_credit_self_employment_deductions: 872
+
+- name: Working tax credit with its disability element qualifies for the 20 pound disregard (Sch VI para 4(1)(a)(vi)).
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        state_pension: 9_000
+        employment_income: 2_000
+    benunits:
+      benunit:
+        members: [claimant]
+        WTC_disabled_element: 3_000
+        working_tax_credit: 1_000
+    households:
+      household:
+        members: [claimant]
+  output:
+    pension_credit_earnings_disregard: 20 * 52
+
+- name: The disability element counts only with working tax credit in payment.
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        state_pension: 9_000
+        employment_income: 2_000
+    benunits:
+      benunit:
+        members: [claimant]
+        WTC_disabled_element: 3_000
+        working_tax_credit: 0
+    households:
+      household:
+        members: [claimant]
+  output:
+    pension_credit_earnings_disregard: 5 * 52
