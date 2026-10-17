@@ -9,9 +9,9 @@ class housing_benefit_net_earnings(Variable):
         "Net earnings of the claimant and partner, from which the Housing "
         "Benefit earnings disregards are taken. For each person: employment "
         "income plus self-employment profit (each floored at zero, as a loss "
-        "in one employment is not set against another) plus statutory sick "
-        "and maternity pay (regulation 35(1)(i); pension age regulation "
-        "35(1)(h)), less income tax, "
+        "in one employment is not set against another) plus statutory sick, "
+        "maternity and paternity pay (regulation 35(1)(i); pension age "
+        "regulation 35(1)(h) and (i)), less income tax, "
         "Class 1, 2 and 4 National Insurance, and half of pension "
         "contributions, floored at zero. For an employee the regulations "
         "deduct the income tax deducted from the earnings (regulation 36(3); "
@@ -48,9 +48,10 @@ class housing_benefit_net_earnings(Variable):
         person = benunit.members
         employment_income = person("employment_income", period)
         self_employment_income = person("self_employment_income", period)
-        # Statutory sick and maternity pay are earnings (reg 35(1)(i); pension
-        # age reg 35(1)(h)). The model taxes them as employment income
-        # (employment_benefits) but leaves them out of total_income.
+        # Statutory sick, maternity and paternity pay are earnings (reg
+        # 35(1)(i); pension age reg 35(1)(h) and (i)). The model taxes them as
+        # employment income (employment_benefits) but leaves them out of
+        # total_income.
         statutory_pay = person("employment_benefits", period)
         earnings = (
             max_(employment_income, 0) + max_(self_employment_income, 0) + statutory_pay
