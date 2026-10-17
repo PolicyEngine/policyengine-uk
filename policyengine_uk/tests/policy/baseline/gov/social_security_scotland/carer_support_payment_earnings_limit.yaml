@@ -1,0 +1,390 @@
+# CSP earnings condition: SSI2023/302reg14 andSch2para4.
+# Constant-through-year actual pay; no earnings/eligibility/award overrides.
+- name: Scottish carer with forty thousand pounds of pay gets no CSP
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 45
+        employment_income: 40000
+        care_hours: 40
+      caree:
+        age: 50
+        pip_dl_category: STANDARD
+    benunits:
+      family:
+        members:
+        - carer
+        - caree
+    households:
+      home:
+        members:
+        - carer
+        - caree
+        country: SCOTLAND
+  output:
+    carer_support_payment:
+    - 0
+    - 0
+    carer_support_payment_pre_overlap:
+    - 0
+    - 0
+    scottish_carer_supplement:
+    - 0
+    - 0
+    is_carer_for_benefits:
+    - true
+    - false
+- name: Exactly two hundred and four pounds a week passes the earnings condition
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 45
+        employment_income: 10608
+        care_hours: 40
+      caree:
+        age: 50
+        pip_dl_category: STANDARD
+    benunits:
+      family:
+        members:
+        - carer
+        - caree
+    households:
+      home:
+        members:
+        - carer
+        - caree
+        country: SCOTLAND
+  output:
+    carer_support_payment:
+    - 4495.4
+    - 0
+    carers_allowance_earnings:
+    - 10608
+    - 0
+    scottish_carer_supplement:
+    - 608.4
+    - 0
+- name: A half penny weekly residual is disregarded in the carers favour
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 45
+        employment_income: 10608.26
+        care_hours: 40
+      caree:
+        age: 50
+        pip_dl_category: STANDARD
+    benunits:
+      family:
+        members:
+        - carer
+        - caree
+    households:
+      home:
+        members:
+        - carer
+        - caree
+        country: SCOTLAND
+  output:
+    carer_support_payment:
+    - 4495.4
+    - 0
+- name: A whole penny over the weekly limit excludes CSP
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 45
+        employment_income: 10608.52
+        care_hours: 40
+      caree:
+        age: 50
+        pip_dl_category: STANDARD
+    benunits:
+      family:
+        members:
+        - carer
+        - caree
+    households:
+      home:
+        members:
+        - carer
+        - caree
+        country: SCOTLAND
+  output:
+    carer_support_payment:
+    - 0
+    - 0
+- name: Half of the individuals pension contribution brings earnings below the limit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 45
+        employment_income: 11000
+        care_hours: 40
+        employee_pension_contributions: 1000
+      caree:
+        age: 50
+        pip_dl_category: STANDARD
+    benunits:
+      family:
+        members:
+        - carer
+        - caree
+    households:
+      home:
+        members:
+        - carer
+        - caree
+        country: SCOTLAND
+  output:
+    carer_support_payment:
+    - 4495.4
+    - 0
+    carers_allowance_earnings:
+    - 10500
+    - 0
+- name: The same pay without the pension deduction exceeds the limit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 45
+        employment_income: 11000
+        care_hours: 40
+      caree:
+        age: 50
+        pip_dl_category: STANDARD
+    benunits:
+      family:
+        members:
+        - carer
+        - caree
+    households:
+      home:
+        members:
+        - carer
+        - caree
+        country: SCOTLAND
+  output:
+    carer_support_payment:
+    - 0
+    - 0
+- name: Reported Carers Allowance does not bypass the CSP earnings bar
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 45
+        employment_income: 40000
+        care_hours: 0
+        carers_allowance_reported: 4000
+      caree:
+        age: 50
+        pip_dl_category: STANDARD
+    benunits:
+      family:
+        members:
+        - carer
+        - caree
+    households:
+      home:
+        members:
+        - carer
+        - caree
+        country: SCOTLAND
+  output:
+    carer_support_payment:
+    - 0
+    - 0
+    is_carer_for_benefits:
+    - true
+    - false
+- name: A carer who would not claim receives no CSP even below the limit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 45
+        employment_income: 8000
+        care_hours: 40
+        would_claim_carers_allowance: false
+      caree:
+        age: 50
+        pip_dl_category: STANDARD
+    benunits:
+      family:
+        members:
+        - carer
+        - caree
+    households:
+      home:
+        members:
+        - carer
+        - caree
+        country: SCOTLAND
+  output:
+    carer_support_payment:
+    - 0
+    - 0
+- name: The two hundred and four pound limit is not applied to fiscal year twenty twenty five
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 45
+        employment_income: 10192.52
+        care_hours: 40
+      caree:
+        age: 50
+        pip_dl_category: STANDARD
+    benunits:
+      family:
+        members:
+        - carer
+        - caree
+    households:
+      home:
+        members:
+        - carer
+        - caree
+        country: SCOTLAND
+  output:
+    carer_support_payment:
+    - 0
+    - 0
+- name: Exactly the prior years one hundred and ninety six pound limit passes
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 45
+        employment_income: 10192
+        care_hours: 40
+      caree:
+        age: 50
+        pip_dl_category: STANDARD
+    benunits:
+      family:
+        members:
+        - carer
+        - caree
+    households:
+      home:
+        members:
+        - carer
+        - caree
+        country: SCOTLAND
+  output:
+    carer_support_payment:
+    - 4331.6
+    - 0
+- name: England keeps Carers Allowance instead of CSP
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 45
+        employment_income: 5000
+        care_hours: 40
+      caree:
+        age: 50
+        pip_dl_category: STANDARD
+    benunits:
+      family:
+        members:
+        - carer
+        - caree
+    households:
+      home:
+        members:
+        - carer
+        - caree
+        country: ENGLAND
+  output:
+    carer_support_payment:
+    - 0
+    - 0
+    carers_allowance:
+    - 4495.4
+    - 0
+- name: Below limit earnings do not replace the existing care hours condition
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 45
+        employment_income: 5000
+        care_hours: 10
+      caree:
+        age: 50
+        pip_dl_category: STANDARD
+    benunits:
+      family:
+        members:
+        - carer
+        - caree
+    households:
+      home:
+        members:
+        - carer
+        - caree
+        country: SCOTLAND
+  output:
+    carer_support_payment:
+    - 0
+    - 0
+- name: The earnings bar removes underlying CSP before any pension overlap
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 70
+        employment_income: 40000
+        care_hours: 40
+        state_pension: 2000
+      caree:
+        age: 50
+        pip_dl_category: STANDARD
+    benunits:
+      family:
+        members:
+        - carer
+        - caree
+    households:
+      home:
+        members:
+        - carer
+        - caree
+        country: SCOTLAND
+  output:
+    carer_support_payment:
+    - 0
+    - 0
+    carer_support_payment_pre_overlap:
+    - 0
+    - 0
+    scottish_carer_supplement:
+    - 0
+    - 0
+    is_entitled_to_carer_benefit:
+    - false
+    - false
