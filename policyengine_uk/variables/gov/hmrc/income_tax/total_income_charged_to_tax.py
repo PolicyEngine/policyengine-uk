@@ -12,9 +12,14 @@ class total_income_charged_to_tax(Variable):
         "components, which already make the deductions the law makes in "
         "working out each kind of income: employment expenses, capital "
         "allowances, the trading and property allowances, and exempt ISA "
-        "interest. Trade losses brought forward (loss_relief) are a Step 2 "
-        "relief that the model deducts from trading profits, so they are "
-        "added back. Unlike total_income, which sums gross income, this is "
+        "interest. Employee pension contributions under a net pay "
+        "arrangement come off employment income (FA 2004 s.193(2)); the "
+        "model gives that relief through allowances, so the relieved part "
+        "(net_pay_pension_relief) is deducted here. Contributions relieved "
+        "at source (s.192) do not lower total income. Trade losses brought "
+        "forward (loss_relief) are a Step 2 relief that the model deducts "
+        "from trading profits, so they are added back. Unlike total_income, "
+        "which sums gross income, this is "
         "the figure the law tests, as far as the model's components go: "
         "where a component departs from the law, so does this total. For "
         "example, the model deducts deficiency relief from dividend income, "
@@ -22,10 +27,16 @@ class total_income_charged_to_tax(Variable):
     )
     definition_period = YEAR
     unit = GBP
-    reference = dict(
-        title="Income Tax Act 2007 s. 23",
-        href="https://www.legislation.gov.uk/ukpga/2007/3/section/23",
-    )
+    reference = [
+        dict(
+            title="Income Tax Act 2007 s. 23",
+            href="https://www.legislation.gov.uk/ukpga/2007/3/section/23",
+        ),
+        dict(
+            title="Finance Act 2004 s. 193",
+            href="https://www.legislation.gov.uk/ukpga/2004/12/section/193",
+        ),
+    ]
 
     def formula(person, period, parameters):
         p = parameters(period).gov.hmrc.income_tax
@@ -41,7 +52,10 @@ class total_income_charged_to_tax(Variable):
         losses_brought_forward_deducted = profits_before_carry_forward - person(
             "taxable_self_employment_income", period
         )
+        # Employment income is held gross of pension contributions, and the
+        # relief for net pay contributions is given through allowances.
         return (
             person("net_income_before_trade_loss_relief", period)
             + losses_brought_forward_deducted
+            - person("net_pay_pension_relief", period)
         )

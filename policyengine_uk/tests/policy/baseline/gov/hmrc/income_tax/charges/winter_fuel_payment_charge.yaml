@@ -929,3 +929,104 @@
     winter_fuel_payment: [300, 0, 200, 0, 0, 0, 0, 0]
     winter_fuel_payment_charge: [0, 0, 200, 0, 0, 0, 0, 0]
     income_tax: [6_288.51, 0, 6_186, 0, 0, 0, 0, 0]
+
+- name: 2025 net pay pension contributions come off total income
+  # The model takes employee contributions as paid under a net pay
+  # arrangement, which the employer deducts from employment income (FA 2004
+  # s.193(2)), so total income is 36,000 - 2,000 = £34,000, not over £35,000:
+  # no charge. Tax: (34,000 - 12,570) x 20% = £4,286.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        employment_income: 36_000
+        employee_pension_contributions: 2_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    net_pay_pension_relief: [2_000]
+    total_income_charged_to_tax: [34_000]
+    winter_fuel_payment: [200]
+    winter_fuel_payment_charge: [0]
+    income_tax: [4_286]
+
+- name: 2025 pension contributions relieved at source do not lower total income
+  # Personal contributions get relief at source (FA 2004 s.192), which leaves
+  # employment income, and so total income, at £36,000: charged the £200.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        employment_income: 36_000
+        personal_pension_contributions: 2_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    net_pay_pension_relief: [0]
+    total_income_charged_to_tax: [36_000]
+    winter_fuel_payment_charge: [200]
+
+- name: 2025 net pay contributions come off total income only up to the relief
+  # Relief is limited to relevant UK earnings, the £1,000 of employment
+  # income (FA 2004 s.190), and the employer deducts it from that income
+  # (s.193(2)). Total income: 1,000 + 35,500 - 1,000 = £35,500, over
+  # £35,000: charged the £200.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        employment_income: 1_000
+        private_pension_income: 35_500
+        employee_pension_contributions: 2_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    net_pay_pension_relief: [1_000]
+    total_income_charged_to_tax: [35_500]
+    winter_fuel_payment_charge: [200]
+
+- name: 2025 contributions from age 75 do not lower total income
+  # Contributions paid from age 75 get no relief (FA 2004 s.188(3)(a)), so
+  # nothing comes off employment income: total income £36,000. Reg. 3(4):
+  # £300 at 80 or over, living alone, charged in full.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 80
+        employment_income: 36_000
+        employee_pension_contributions: 2_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    net_pay_pension_relief: [0]
+    total_income_charged_to_tax: [36_000]
+    winter_fuel_payment: [300]
+    winter_fuel_payment_charge: [300]
