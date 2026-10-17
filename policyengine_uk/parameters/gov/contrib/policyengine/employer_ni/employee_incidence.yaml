@@ -1,6 +1,10 @@
-description: Fraction of employer NI that is borne by employees.
+description: >-
+  Share of the computed fixed-employer-cost pay change passed to employees in the same model year. The default of 1 applies the full adjustment to eligible earnings computed from components; 0 disables this wage channel. A supplied final employment_income holder overrides that formula, while UK Simulation construction remaps situation earnings to employment_income_before_lsr. The consumer and capital assumptions allocate remaining modeled employer-cost changes. This is a modeling assumption, not an empirically estimated default.
 values:
   2010-01-01: 1
 metadata:
   label: Employer NI employee incidence
   unit: /1
+  reference:
+    - title: PolicyEngine-UK implemented employer NI incidence mechanism
+      href: https://github.com/PolicyEngine/policyengine-uk/blob/b4dbaf57a4ebb1d1f0ba5f7a384795422828db75/policyengine_uk/variables/contrib/policyengine/employer_ni/employer_ni_fixed_employer_cost_change.py
