@@ -1,6 +1,10 @@
-description: Fraction of (remaining after employee incidence) employer NI that is borne by consumers.
+description: >-
+  Share of the remaining modeled employer-cost change allocated to consumers after employee incidence. The default is 0.5. This channel is inactive at employee incidence 1 or consumer incidence 0; otherwise it uses population person weights and household consumption shares, with zero returned when the dataset attribute is absent or total consumption is zero. The amount enters household_tax. Set all three incidence parameters to 0 to disable these three channels. No empirical estimate is claimed for this default.
 values:
   2010-01-01: 0.5
 metadata:
   label: Employer NI consumer incidence
   unit: /1
+  reference:
+    - title: PolicyEngine-UK implemented employer NI incidence mechanism
+      href: https://github.com/PolicyEngine/policyengine-uk/blob/b4dbaf57a4ebb1d1f0ba5f7a384795422828db75/policyengine_uk/variables/contrib/policyengine/employer_ni/employer_ni_response_consumer_incidence.py
