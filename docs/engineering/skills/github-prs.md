@@ -40,11 +40,27 @@ changelog.d/1748.added.md
 changelog.d/1748.fixed.md
 ```
 
-Write the fragment as a short bullet describing the user-visible or maintainer
-visible change:
+towncrier writes a fragment to `CHANGELOG.md` only when its name carries one of
+these types. It never reads, and never deletes, a file without one, such as
+`changelog.d/1748.md`, and it leaves an empty fragment out.
+`.github/bump_version.py` counts only the fragments towncrier consumes, so such
+a file never triggers a release. The **Changelog fragments** check
+(`.github/workflows/pr_changelog.yaml`, which runs
+`.github/check_changelog_fragments.py`) fails a PR that adds or changes a file
+in `changelog.d/` that is not named `<slug>.<type>.md`, is empty, is not UTF-8,
+is a symbolic link, sits in a subdirectory, or shares towncrier's key with
+another fragment (such as `7.fixed.md` and `007.fixed.md`, which stops the
+release). It also fails a PR that changes `pyproject.toml` or `changelog.d/`
+when its merge would leave no typed fragment: those changes start the release
+workflow, which would have nothing to release. It warns when a PR adds no
+fragment or a fragment starts with a list marker.
+
+Write the fragment as a short sentence describing the user-visible or
+maintainer-visible change. towncrier adds the bullet itself, so do not start
+with `- `; that renders as `- - ` in `CHANGELOG.md`:
 
 ```markdown
-- Added model-agnostic AI engineering guidance for UK model work.
+Added model-agnostic AI engineering guidance for UK model work.
 ```
 
 The release workflow (`.github/workflows/versioning.yaml`) runs on pushes to
