@@ -8,8 +8,10 @@ processed as current law is (``policyengine_uk.utils.dated_reforms``).
 Invariants:
 
 1. Statutory timeline: a change over ``[start, stop]`` holds on those dates;
-   outside them the parameter follows prior law, which after ``stop`` is
-   current law's projected path when nothing is stated later.
+   outside them the parameter follows prior law. When nothing is stated
+   later, that is current law's projected path for an uprated parameter, and
+   indexation from the year before for the personal allowance and the
+   thresholds indexed with it (ITA 2007 ss21 and 57; cos d1344).
 2. Annualisation: the annual value formulas read (1 January of fiscal year
    Y) equals an independent oracle applied to that timeline: the 30 April
    value, or the day-weighted average over 6 April to 5 April for
@@ -40,7 +42,7 @@ from decimal import ROUND_CEILING, Decimal
 
 import numpy as np
 import pytest
-from hypothesis import HealthCheck, assume, given, settings
+from hypothesis import HealthCheck, assume, example, given, settings
 from hypothesis import strategies as st
 from policyengine_core.parameters import Parameter, ParameterNode
 from policyengine_core.reforms import Reform
@@ -61,6 +63,7 @@ CPI_SEPTEMBER = "gov.economic_assumptions.statutory_uprating_inputs.cpi_septembe
 OBR_CPI = "gov.economic_assumptions.yoy_growth.obr.consumer_price_index"
 NICS = "gov.hmrc.national_insurance"
 PRIMARY_THRESHOLD = f"{NICS}.class_1.thresholds.primary_threshold"
+SECONDARY_THRESHOLD = f"{NICS}.class_1.thresholds.secondary_threshold"
 UPPER_EARNINGS_LIMIT = f"{NICS}.class_1.thresholds.upper_earnings_limit"
 LOWER_PROFITS_LIMIT = f"{NICS}.class_4.thresholds.lower_profits_limit"
 UPPER_PROFITS_LIMIT = f"{NICS}.class_4.thresholds.upper_profits_limit"
@@ -174,6 +177,87 @@ def overlay(entries, start, stop, value):
     return kept + [(start, value), (after, prior_after)]
 
 
+# The personal allowance is indexed from the previous tax year's allowance
+# (ITA 2007 s57(3)), and Finance Act 2021 s5, as amended by Finance Act 2026
+# s10, fixes it for 2022-23 to 2030-31. Prior law around a change is that
+# statute (cos d1344): years a change covers take its value, years the files
+# state take current law, and every other year is the year before indexed.
+LAST_FROZEN_TAX_YEAR = 2030
+CPI_RISE = "gov.economic_assumptions.yoy_growth.september_cpi_uprating"
+
+
+def s57_step(previous, increase):
+    """ITA 2007 s57(3): add the increase, rounded up to a multiple of £10."""
+    if increase <= 0:
+        return previous
+    previous = Decimal(repr(float(previous)))
+    rise = (previous * Decimal(repr(float(increase))) / 10).to_integral_value(
+        ROUND_CEILING
+    ) * 10
+    return float(previous + rise)
+
+
+def s21_step(previous, increase):
+    """ITA 2007 s21(3): scale, rounded up to a multiple of £100."""
+    if increase <= 0:
+        return previous
+    scaled = Decimal(repr(float(previous))) * (1 + Decimal(repr(float(increase))))
+    return float((scaled / 100).to_integral_value(ROUND_CEILING) * 100)
+
+
+def current_law_annual(path, year):
+    parameter = tbs_module.processed_parameters().get_child(path)
+    return float(parameter(f"{year}-01-01"))
+
+
+def indexed_step(path, previous, year):
+    """A threshold in an unstated ``year``, from its value the year before."""
+    increase = current_law_annual(CPI_RISE, year)
+    if path == PERSONAL_ALLOWANCE:
+        return s57_step(previous, increase)
+    if path == BASIC_RATE_LIMIT:
+        return s21_step(previous, increase)
+    if path == SECONDARY_THRESHOLD:
+        # The model's convention: September CPI, unrounded, never cut.
+        return previous * (1 + increase) if increase > 0 else previous
+    # The primary threshold is aligned with the allowance.
+    return round(current_law_annual(PERSONAL_ALLOWANCE, year) / 52, 2)
+
+
+INDEXED_ORACLE_PATHS = (
+    PERSONAL_ALLOWANCE,
+    BASIC_RATE_LIMIT,
+    SECONDARY_THRESHOLD,
+    PRIMARY_THRESHOLD,
+)
+
+
+def prior_law_threshold(path, schedule, year):
+    """An indexed threshold under ``schedule`` [(start, stop, value)]."""
+    sample = datetime.date(year, 4, 30)
+    for start, stop, value in reversed(schedule):
+        if start <= sample <= stop:
+            return float(value)
+    if year <= LAST_FROZEN_TAX_YEAR:
+        return current_law_annual(path, year)
+    return indexed_step(path, prior_law_threshold(path, schedule, year - 1), year)
+
+
+def statutory_allowance(schedule, year):
+    """The personal allowance under ``schedule``."""
+    return prior_law_threshold(PERSONAL_ALLOWANCE, schedule, year)
+
+
+def expected_annual_values(path, blend, schedule):
+    """Each year's annual value under ``schedule``, by prior law's rule."""
+    if path in INDEXED_ORACLE_PATHS:
+        return {year: prior_law_threshold(path, schedule, year) for year in YEARS}
+    expected = projected_entries(path)
+    for start, stop, value in schedule:
+        expected = overlay(expected, start, stop, value)
+    return {year: oracle_annual(expected, year, blend) for year in YEARS}
+
+
 # Invariants 1-3 on the Budget cases.
 
 
@@ -281,12 +365,173 @@ def test_an_extended_freeze_moves_the_aligned_nics_thresholds(route, baseline):
         assert calculate(simulation, "income_tax", year) - calculate(
             baseline, "income_tax", year
         ) == pytest.approx(0.2 * frozen_out, abs=0.005)
-    # Contract v1: after the freeze, prior law's projected path resumes.
-    # Resuming indexation from the frozen amount instead (ITA 2007 s57 reads
-    # "the previous tax year") is the open choice in cos d1344.
-    for path in (PERSONAL_ALLOWANCE, BASIC_RATE_LIMIT, PRIMARY_THRESHOLD):
-        for year in (2034, 2035):
-            assert annual(simulation, path, year) == annual(baseline, path, year)
+    # After the freeze, indexation resumes from the frozen amounts (ITA 2007
+    # s57(3) and s21(3) index the previous tax year's amount; cos d1344), and
+    # the aligned NICs thresholds follow.
+    allowance = 12_570
+    limit = 37_700
+    for year in (2034, 2035):
+        increase = current_law_annual(CPI_RISE, year)
+        allowance = s57_step(allowance, increase)
+        limit = s21_step(limit, increase)
+        assert annual(simulation, PERSONAL_ALLOWANCE, year) == allowance
+        assert annual(simulation, BASIC_RATE_LIMIT, year) == limit
+        assert annual(simulation, LOWER_PROFITS_LIMIT, year) == allowance
+        assert annual(simulation, UPPER_PROFITS_LIMIT, year) == allowance + limit
+        assert annual(simulation, PRIMARY_THRESHOLD, year) == pytest.approx(
+            round(allowance / 52, 2)
+        )
+        frozen_out = annual(baseline, PERSONAL_ALLOWANCE, year) - allowance
+        assert frozen_out > 0
+        assert calculate(simulation, "income_tax", year) - calculate(
+            baseline, "income_tax", year
+        ) == pytest.approx(0.2 * frozen_out, abs=0.005)
+
+
+def test_a_change_replacing_the_files_last_value_keeps_their_frozen_years():
+    # The files state the allowance to 2030-31 with a value dated 2030-04-06.
+    # A change from 2029-01-01 to 2030-12-31 replaces that value; 2028-29
+    # stays frozen by Finance Act 2021 s5 rather than being indexed.
+    simulation = via_reform_dict(
+        {PERSONAL_ALLOWANCE: {"2029-01-01.2030-12-31": 13_000}}
+    )
+    assert annual(simulation, PERSONAL_ALLOWANCE, 2028) == 12_570
+    assert annual(simulation, PERSONAL_ALLOWANCE, 2029) == 13_000
+    assert annual(simulation, PERSONAL_ALLOWANCE, 2030) == 13_000
+    assert annual(simulation, PERSONAL_ALLOWANCE, 2031) == s57_step(
+        13_000, current_law_annual(CPI_RISE, 2031)
+    )
+    # The recorded year is processing's own; it does not reach the result.
+    metadata = simulation.tax_benefit_system.parameters.get_child(
+        PERSONAL_ALLOWANCE
+    ).metadata
+    assert "files_last_tax_year" not in metadata
+
+
+def test_the_gap_between_two_allowance_changes_is_indexed_from_the_first():
+    simulation = via_reform_dict(
+        {
+            PERSONAL_ALLOWANCE: {
+                "2031-04-06.2032-04-05": 11_000,
+                "2033-04-06.2034-04-05": 15_000,
+            }
+        }
+    )
+    assert annual(simulation, PERSONAL_ALLOWANCE, 2031) == 11_000
+    assert annual(simulation, PERSONAL_ALLOWANCE, 2032) == s57_step(
+        11_000, current_law_annual(CPI_RISE, 2032)
+    )
+    assert annual(simulation, PERSONAL_ALLOWANCE, 2033) == 15_000
+    assert annual(simulation, PERSONAL_ALLOWANCE, 2034) == s57_step(
+        15_000, current_law_annual(CPI_RISE, 2034)
+    )
+
+
+def test_a_change_covering_no_30_april_leaves_every_tax_year_alone():
+    # 15 January to 31 March 2032 covers no tax year's 30 April sample, so
+    # every annual value stays current law's; the indexed 2032-33 value
+    # starts the day after the change instead of being shadowed by it.
+    simulation = via_reform_dict(
+        {PERSONAL_ALLOWANCE: {"2032-01-15.2032-03-31": 20_000}}
+    )
+    for year in YEARS:
+        assert annual(simulation, PERSONAL_ALLOWANCE, year) == current_law_annual(
+            PERSONAL_ALLOWANCE, year
+        ), year
+
+
+def test_a_change_to_an_aligned_nics_threshold_alone_realigns_after_it():
+    # The model keeps the NICs thresholds aligned with their income tax
+    # equivalents (create_threshold_indexation); after a change to one of
+    # them alone ends, it is aligned again (cos d1344's convention for them).
+    simulation = via_reform_dict({PRIMARY_THRESHOLD: {"2031-04-06.2034-04-05": 241.73}})
+    for year in (2031, 2032, 2033):
+        assert annual(simulation, PRIMARY_THRESHOLD, year) == pytest.approx(241.73)
+    for year in (2034, 2035):
+        assert annual(simulation, PRIMARY_THRESHOLD, year) == pytest.approx(
+            round(current_law_annual(PERSONAL_ALLOWANCE, year) / 52, 2)
+        ), year
+
+
+def test_a_change_replacing_the_files_last_value_restores_their_years_after_it():
+    # The files' last value (2030-04-06) is replaced by a change that covers
+    # no 30 April, so 2030-31 is still the files' £12,570 and 2031-32 is
+    # indexed from it.
+    short = via_reform_dict({PERSONAL_ALLOWANCE: {"2030-04-06.2030-04-29": 20_000}})
+    assert annual(short, PERSONAL_ALLOWANCE, 2030) == 12_570
+    assert annual(short, PERSONAL_ALLOWANCE, 2031) == current_law_annual(
+        PERSONAL_ALLOWANCE, 2031
+    )
+    # 2030 written before 2028: after 2028-29's change, 2029-30 is the files'
+    # frozen £12,570, whichever order the keys come in.
+    for keys in (
+        {"2030": 10_000, "2028": 20_000},
+        {"2028": 20_000, "2030": 10_000},
+    ):
+        simulation = via_reform_dict({PERSONAL_ALLOWANCE: keys})
+        assert annual(simulation, PERSONAL_ALLOWANCE, 2028) == 20_000, keys
+        assert annual(simulation, PERSONAL_ALLOWANCE, 2029) == 12_570, keys
+        assert annual(simulation, PERSONAL_ALLOWANCE, 2030) == 10_000, keys
+        assert annual(simulation, PERSONAL_ALLOWANCE, 2031) == s57_step(
+            10_000, current_law_annual(CPI_RISE, 2031)
+        ), keys
+
+
+@pytest.mark.parametrize(
+    "path, value",
+    [
+        (BASIC_RATE_LIMIT, 40_000),
+        (SECONDARY_THRESHOLD, 120.0),
+        (PRIMARY_THRESHOLD, 300.0),
+    ],
+)
+@pytest.mark.parametrize(
+    "stop", ["2030-04-05", "2030-04-29", "2030-04-30", "2030-05-01"]
+)
+def test_a_change_ending_around_the_files_last_value_resumes_by_their_rule(
+    path, value, stop
+):
+    # The files' last value for each indexed threshold is in 2030-31 (from
+    # 2030-04-06, or 2030-04-01 for the basic rate limit). A
+    # change from 2029-04-06 that ends before 30 April 2030 covers 2029-30
+    # only, so 2030-31 is the files' value; one that runs to 30 April or later
+    # covers 2030-31 too, and 2031-32 resumes from it.
+    simulation = via_reform_dict({path: {f"2029-04-06.{stop}": value}})
+    covers_2030 = stop >= "2030-04-30"
+    assert annual(simulation, path, 2029) == pytest.approx(value)
+    if covers_2030:
+        assert annual(simulation, path, 2030) == pytest.approx(value)
+        assert annual(simulation, path, 2031) == pytest.approx(
+            indexed_step(path, value, 2031)
+        )
+    else:
+        for year in (2030, 2031):
+            assert annual(simulation, path, year) == pytest.approx(
+                current_law_annual(path, year)
+            ), year
+
+
+@pytest.mark.parametrize(
+    "path, value",
+    [
+        (PERSONAL_ALLOWANCE, 15_000),
+        (BASIC_RATE_LIMIT, 40_000),
+        (SECONDARY_THRESHOLD, 120.0),
+        (PRIMARY_THRESHOLD, 300.0),
+    ],
+)
+def test_an_eternity_change_holds_an_indexed_threshold_flat(path, value):
+    # Reform.from_dict's ETERNITY key starts the change in year 1; its tax
+    # years were compared unpadded, so indexation resumed after 2030.
+    simulation = via_reform_from_dict({path: {"ETERNITY": value}})
+    for year in YEARS:
+        assert annual(simulation, path, year) == pytest.approx(value), year
+    if path == PERSONAL_ALLOWANCE:
+        # The primary threshold is aligned with it after the files' years.
+        for year in range(LAST_FROZEN_TAX_YEAR + 1, YEARS.stop):
+            assert annual(simulation, PRIMARY_THRESHOLD, year) == round(
+                value / 52, 2
+            ), year
 
 
 def test_bare_year_dict_keys_match_the_fiscal_year_interval():
@@ -444,20 +689,23 @@ def changes(draw):
 def test_reformed_annual_values_match_the_oracle(change):
     path, blend, start, stop, value = change
     simulation = via_reform_dict(as_dict(path, start, stop, value))
+    expected = expected_annual_values(path, blend, [(start, stop, value)])
     expected_timeline = overlay(projected_entries(path), start, stop, value)
     projected = [
         (_day(entry.instant_str), entry.value)
         for entry in simulation.tax_benefit_system.projected_timelines[path]
     ]
     for year in YEARS:
-        # Invariant 1: the statutory timeline.
+        # Invariant 1: the statutory timeline, at the 30 April sample.
         sample = datetime.date(year, 4, 30)
         assert timeline_value(projected, sample) == pytest.approx(
-            timeline_value(expected_timeline, sample)
+            expected[year]
+            if path in INDEXED_ORACLE_PATHS
+            else timeline_value(expected_timeline, sample)
         ), year
         # Invariant 2: the annual value.
         assert annual(simulation, path, year) == pytest.approx(
-            oracle_annual(expected_timeline, year, blend), abs=1e-9
+            expected[year], abs=1e-9
         ), year
 
 
@@ -647,7 +895,9 @@ def two_changes(draw):
     gap = draw(st.integers(1, 900))
     length = draw(st.integers(0, 900))
     second = first + datetime.timedelta(days=gap)
-    first_stop = second - datetime.timedelta(days=1)
+    # Back to back, or with a gap between the changes.
+    space = draw(st.integers(0, 700))
+    first_stop = max(first, second - datetime.timedelta(days=1 + space))
     second_stop = second + datetime.timedelta(days=length)
     return (
         path,
@@ -664,12 +914,97 @@ def test_a_schedule_of_two_changes_matches_the_oracle(change, reverse):
     if reverse:
         keys.reverse()
     simulation = via_reform_dict({path: dict(keys)})
-    expected = projected_entries(path)
-    for start, stop, value in schedule:
-        expected = overlay(expected, start, stop, value)
+    expected = expected_annual_values(path, blend, schedule)
     for year in YEARS:
         assert annual(simulation, path, year) == pytest.approx(
-            oracle_annual(expected, year, blend), abs=1e-9
+            expected[year], abs=1e-9
+        ), year
+
+
+INDEXED_SAMPLED = {
+    PERSONAL_ALLOWANCE: st.sampled_from([11_000, 12_570, 15_000]),
+    BASIC_RATE_LIMIT: st.sampled_from([37_700, 40_000, 50_270]),
+    SECONDARY_THRESHOLD: st.sampled_from([96.0, 120.0, 175.0]),
+    PRIMARY_THRESHOLD: st.sampled_from([241.73, 300.0]),
+}
+
+
+@st.composite
+def indexed_schedules(draw):
+    """One to three changes to an indexed threshold, with or without gaps."""
+    path = draw(st.sampled_from(sorted(INDEXED_SAMPLED)))
+    start = draw(dates)
+    schedule = []
+    for _ in range(draw(st.integers(1, 3))):
+        stop = start + datetime.timedelta(days=draw(st.integers(0, 900)))
+        schedule.append((start, stop, draw(INDEXED_SAMPLED[path])))
+        start = stop + datetime.timedelta(days=1 + draw(st.integers(0, 700)))
+    if draw(st.booleans()):
+        last_start, _, last_value = schedule[-1]
+        schedule[-1] = (last_start, datetime.date(2100, 12, 31), last_value)
+    return path, schedule
+
+
+# The fixed examples cover what the derandomised draws miss: a change that
+# replaces the files' last value and ends before 30 April 2030, bounded
+# changes ending after the files' years, and three changes.
+@PROPERTY_SETTINGS
+@given(change=indexed_schedules(), reverse=st.booleans())
+@example(
+    change=(
+        BASIC_RATE_LIMIT,
+        [(datetime.date(2029, 4, 6), datetime.date(2030, 4, 29), 40_000)],
+    ),
+    reverse=False,
+)
+@example(
+    change=(
+        SECONDARY_THRESHOLD,
+        [(datetime.date(2030, 4, 6), datetime.date(2030, 4, 20), 120.0)],
+    ),
+    reverse=False,
+)
+@example(
+    change=(
+        PERSONAL_ALLOWANCE,
+        [(datetime.date(2031, 4, 6), datetime.date(2033, 4, 5), 15_000)],
+    ),
+    reverse=False,
+)
+@example(
+    change=(
+        SECONDARY_THRESHOLD,
+        [(datetime.date(2031, 4, 6), datetime.date(2034, 4, 5), 175.0)],
+    ),
+    reverse=False,
+)
+@example(
+    change=(
+        PRIMARY_THRESHOLD,
+        [(datetime.date(2031, 4, 6), datetime.date(2032, 4, 5), 300.0)],
+    ),
+    reverse=False,
+)
+@example(
+    change=(
+        PERSONAL_ALLOWANCE,
+        [
+            (datetime.date(2026, 4, 6), datetime.date(2027, 4, 5), 11_000),
+            (datetime.date(2029, 4, 6), datetime.date(2031, 4, 5), 15_000),
+            (datetime.date(2033, 4, 6), datetime.date(2100, 12, 31), 12_570),
+        ],
+    ),
+    reverse=True,
+)
+def test_indexed_threshold_schedules_match_prior_law(change, reverse):
+    path, schedule = change
+    keys = [(f"{start}.{stop}", value) for start, stop, value in schedule]
+    if reverse:
+        keys.reverse()
+    simulation = via_reform_dict({path: dict(keys)})
+    for year in YEARS:
+        assert annual(simulation, path, year) == pytest.approx(
+            prior_law_threshold(path, schedule, year), abs=1e-9
         ), year
 
 
@@ -977,9 +1312,14 @@ def test_calendar_year_changes_match_the_annualised_route(
     stop = FAR if open_ended else f"{first + years - 1}-12-31"
     simulation = via_reform_dict(as_dict(path, start, stop, value))
     for year in YEARS:
-        assert annual(simulation, path, year) == pytest.approx(
-            legacy_annual(path, start, stop, value, year)
-        ), year
+        if path == PERSONAL_ALLOWANCE and year > LAST_FROZEN_TAX_YEAR:
+            # Editing the annualised parameters left the allowance on
+            # current law's path after a change; prior law is statute instead,
+            # indexing from the year before (cos d1344).
+            expected = statutory_allowance([(_day(start), _day(stop), value)], year)
+        else:
+            expected = legacy_annual(path, start, stop, value, year)
+        assert annual(simulation, path, year) == pytest.approx(expected), year
 
 
 # More parameter kinds for the oracle: a boolean, a null-valued
