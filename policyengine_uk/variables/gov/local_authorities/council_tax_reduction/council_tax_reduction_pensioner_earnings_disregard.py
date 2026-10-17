@@ -61,12 +61,19 @@ class council_tax_reduction_pensioner_earnings_disregard(Variable):
                 default=england[amount],
             )
 
-        net_earnings = benunit("housing_benefit_net_earnings", period)
+        # The applicant's and partner's earnings. A household head who applies
+        # alone (council_tax_reduction_head_applies_alone) is a single person
+        # with no partner or children.
+        net_earnings = benunit("council_tax_reduction_net_earnings", period)
+        head_applies_alone = benunit("council_tax_reduction_head_applies_alone", period)
         # SI 2012/2885 Sch 4 paras 2 and 8; WSI 2013/3029 Sch 3 paras 2 and 8;
         # SSI 2012/319 Sch 2 paras 2 and 8. A lone parent has £25 in all,
         # not £25 plus para 8's £5, as for Housing Benefit.
         weekly_amount = select(
-            [benunit("is_lone_parent", period), benunit("is_couple", period)],
+            [
+                ~head_applies_alone & benunit("is_lone_parent", period),
+                ~head_applies_alone & benunit("is_couple", period),
+            ],
             [national("lone_parent"), national("couple")],
             default=national("single"),
         )
@@ -77,11 +84,39 @@ class council_tax_reduction_pensioner_earnings_disregard(Variable):
         covers_additional = np.round(net_earnings.astype(float), 2) >= np.round(
             (standard + additional_amount).astype(float), 2
         )
-        additional = where(
+        # A head who applies alone has no partner or child, so only the
+        # conditions on her own age, hours and disability can apply (HB (SPC)
+        # Regs 2006 Sch 4 para 9(2)(b)(i) and (iv), which these schemes share).
+        hb_disregard = parameters(
+            period
+        ).gov.dwp.housing_benefit.means_test.income_disregard
+        person = benunit.members
+        head = person(
+            "is_council_tax_reduction_applicant_or_partner", period
+        ) & benunit.project(head_applies_alone)
+        hours = person("weekly_hours", period)
+        head_meets_conditions = benunit.any(
+            head
+            & (
+                (
+                    (hours >= hb_disregard.worker_hours)
+                    & (person("age", period) >= hb_disregard.worker_age)
+                )
+                | (
+                    (hours >= hb_disregard.worker_hours_lower)
+                    & person("is_disabled_for_benefits", period)
+                )
+            )
+        )
+        meets_conditions = where(
+            head_applies_alone,
+            head_meets_conditions,
             benunit(
                 "meets_housing_benefit_additional_earnings_disregard_conditions", period
-            )
-            & covers_additional,
+            ),
+        )
+        additional = where(
+            meets_conditions & covers_additional,
             additional_amount,
             0,
         )

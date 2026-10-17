@@ -5,6 +5,15 @@ class council_tax_reduction_applicable_amount(Variable):
     value_type = float
     entity = BenUnit
     label = "applicable Council Tax Reduction amount"
+    documentation = (
+        "The applicant's personal allowance and premiums. Ages, couple status "
+        "and lone-parent status are those of the Council Tax Reduction "
+        "applicant and partner (is_council_tax_reduction_applicant_or_partner). "
+        "Where the household head applies alone "
+        "(council_tax_reduction_head_applies_alone), the head is a single "
+        "person with no partner or children, whatever the benefit unit's "
+        "claimant and partner are. Premiums are council_tax_reduction_premiums."
+    )
     definition_period = YEAR
     unit = GBP
     reference = (
@@ -23,7 +32,13 @@ class council_tax_reduction_applicable_amount(Variable):
         # Wales and Scotland also have separate pensioner allowance tables.
         # The shared definition includes qualifying age and award exclusions.
         pensioner = benunit("council_tax_reduction_pensioner", period)
-        eldest_age = benunit("eldest_claimant_or_partner_age", period)
+        # The applicant's and partner's ages. A household head who applies alone
+        # (council_tax_reduction_head_applies_alone) is a single person with no
+        # partner or children: the benefit unit's are its claimant's.
+        person = benunit.members
+        applicant = person("is_council_tax_reduction_applicant_or_partner", period)
+        head_applies_alone = benunit("council_tax_reduction_head_applies_alone", period)
+        eldest_age = benunit.max(where(applicant, person("age", period), -np.inf))
         older_age_threshold = p.age_threshold.older
         younger_age_threshold = p.age_threshold.younger
         u_18 = eldest_age < younger_age_threshold
@@ -33,8 +48,10 @@ class council_tax_reduction_applicable_amount(Variable):
         # Each scheme's own young person decides who is a lone parent: the
         # Universal Credit definition in Scotland's working-age scheme (SSI
         # 2021/249 regs 4 and 6), the Child Benefit definition elsewhere.
-        couple = benunit("is_couple", period)
-        lone_parent = benunit("is_council_tax_reduction_lone_parent", period)
+        couple = ~head_applies_alone & benunit("is_couple", period)
+        lone_parent = ~head_applies_alone & benunit(
+            "is_council_tax_reduction_lone_parent", period
+        )
         single = ~couple & ~lone_parent
         single_personal_allowance = (
             u_25 * p.single.younger + o_25 * p.single.older + pensioner * p.single.aged
@@ -54,9 +71,5 @@ class council_tax_reduction_applicable_amount(Variable):
         ) * WEEKS_IN_YEAR
         # The pension-age schedules have only the severe disability and carer
         # premiums; the same pensioner test chooses the schedule.
-        premiums = where(
-            pensioner,
-            benunit("pension_age_benefits_premiums", period),
-            benunit("working_age_benefits_premiums", period),
-        )
+        premiums = benunit("council_tax_reduction_premiums", period)
         return personal_allowance + premiums

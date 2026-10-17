@@ -969,6 +969,7 @@
   output:
     is_council_tax_reduction_applicant_or_partner: [true, false, false, false]
     council_tax_reduction_head_applies_alone: [true]
-    council_tax_reduction_relevant_income_based_benefit: [true]
+    # Nor does it passport her: the passport is the applicant's award.
+    council_tax_reduction_relevant_income_based_benefit: [false]
     council_tax_reduction_pensioner: [true]
     simulated_council_tax_reduction_benunit: [1_800]
