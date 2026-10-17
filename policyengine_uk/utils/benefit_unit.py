@@ -69,9 +69,11 @@ def award_of_members(benunit, period, award, report, award_on_reports, members):
     the precision ``award`` is stored in. A stored zero is zero.
 
     In a later year the reform's held award is neither, so this takes all of
-    it, another member's award included, to be the members'. Readers of the
-    claimant's and partner's award therefore read award_of_couple, which
-    reads the claimant_or_partner_* variables the reform sets.
+    it, another member's award included, to be the members'. So readers of
+    the claimant's and partner's award read the claimant_or_partner_*
+    variables, which the reform sets: the means tests, the passports and the
+    Income Support gate directly, and the benefit cap through
+    award_of_couple.
     """
     person = benunit.members
     stored_award = benunit(award, period)
@@ -160,9 +162,13 @@ def award_of_couple(benunit, period, award, reported, award_on_reports, couple):
     set on it (as disable_simulated_benefits does for each year) or entered
     directly is read here as everywhere else. In formula mode that equals
     award_of_members for ``couple``, except that an award within half a
-    penny of zero is no award. Otherwise (a Universal Credit couple that is
-    not the claimant and partner, which needs is_uc_claimant entered) it is
-    award_of_members for ``couple``, read from the stored award by value.
+    penny of zero is no award. Otherwise it is award_of_members for
+    ``couple``, read from the stored award by value. That is a Universal
+    Credit couple that is not the claimant and partner, which takes an
+    entered is_uc_claimant or is_uc_assessed_claimant, or more than two
+    members entered as claimant or partner; under disable_simulated_benefits
+    it still takes another member's held award to be the couple's after the
+    dataset year.
     """
     person = benunit.members
     same_couple = ~benunit.any(couple != person("is_claimant_or_partner", period))

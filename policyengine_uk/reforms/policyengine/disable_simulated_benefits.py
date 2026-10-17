@@ -110,7 +110,7 @@ def disable_simulated_benefits(parameters, period):
             including another member's award, to be the claimant's or
             partner's. The benefit cap reads them through award_of_couple;
             for a Universal Credit couple that is not the claimant and
-            partner (is_uc_claimant entered), it still reads esa_income and
+            partner (see award_of_couple), it still reads esa_income and
             jsa_income by value.
 
             No family is moved off its legacy benefits (NOT_MOVED): the

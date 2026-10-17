@@ -15,10 +15,10 @@ who receives no ESA (review r11 on #2075). They now read award_of_couple.
 
 Invariants:
 
-1. Metamorphic, reform on: in each of the reform's years, the cap's total,
-   both schemes' specified-benefit exemptions and both reductions are the
-   same whether or not a member outside the couple reports ESA or JSA in the
-   dataset year.
+1. Metamorphic, reform on: where the cap's couple is the claimant and
+   partner, in each of the reform's years, the cap's total, both schemes'
+   specified-benefit exemptions and both reductions are the same whether or
+   not a member outside the couple reports ESA or JSA in the dataset year.
 2. Differential, reform off: the cap's total equals the code it replaces
    (policyengine-uk main at b4dbaf57a) to within a penny, and the couple's
    award the exemptions read equals award_of_members for the couple, except

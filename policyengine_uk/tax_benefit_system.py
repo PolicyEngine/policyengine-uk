@@ -58,6 +58,7 @@ from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases i
     add_lsr_deprecation_aliases,
     canonicalize_lsr_parameter_path,
 )
+from policyengine_uk.utils.benefit_unit import CLAIMANT_OR_PARTNER_AWARDS
 from policyengine_uk.utils.dated_reforms import (
     BACKDATED_FROM,
     CALENDAR_YEAR_SERIES,
@@ -223,13 +224,13 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
 
     variables: Dict[str, Variable]
 
-    # Variables that hold part of another variable's value. Neutralizing a
+    # Variables that hold part of another variable's value: each award's
+    # claimant-or-partner part (CLAIMANT_OR_PARTNER_AWARDS). Neutralizing a
     # variable neutralizes its parts, so a value entered or set for a part
     # (as disable_simulated_benefits sets the claimant's and partner's awards
     # for each year) cannot outlive the award it is part of.
     variable_parts: Dict[str, Tuple[str, ...]] = {
-        "esa_income": ("claimant_or_partner_esa_income",),
-        "jsa_income": ("claimant_or_partner_jsa_income",),
+        award: (part,) for award, part in CLAIMANT_OR_PARTNER_AWARDS.items()
     }
 
     def neutralize_variable(self, variable_name: str) -> None:
