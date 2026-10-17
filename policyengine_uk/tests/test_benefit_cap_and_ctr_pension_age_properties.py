@@ -220,8 +220,9 @@ def situation(units):
         benunit = {
             "members": names,
             "would_claim_uc": {PERIOD: unit["would_claim_uc"]},
-            # claims_all_entitled_benefits sums reported benefits across the
-            # whole simulation, so it is set per family.
+            "would_claim_council_tax_reduction": {
+                PERIOD: unit["hb_reported"] == 0 or unit["ctb_reported"] > 0
+            },
             "claims_all_entitled_benefits": {
                 PERIOD: unit["hb_reported"] == 0 and unit["ctb_reported"] == 0
             },

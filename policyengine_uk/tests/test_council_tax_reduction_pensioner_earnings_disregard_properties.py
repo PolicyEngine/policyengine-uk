@@ -126,6 +126,7 @@ def situation(units, year, earnings_bump=0.0, no_income_related_benefits=False):
         benunits[f"b{i}"] = {
             "members": names,
             "claims_all_entitled_benefits": {year: True},
+            "would_claim_council_tax_reduction": {year: True},
         }
         if no_income_related_benefits:
             for benefit in ("income_support", "jsa_income", "esa_income"):

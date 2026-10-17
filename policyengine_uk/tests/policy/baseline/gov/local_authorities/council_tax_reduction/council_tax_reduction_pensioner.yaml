@@ -131,6 +131,7 @@
     benunits:
       benunit:
         members: [older, younger]
+        would_claim_council_tax_reduction: true
         universal_credit_pre_benefit_cap: 10_000
     households:
       household:
@@ -165,9 +166,11 @@
     benunits:
       couple:
         members: [older, younger]
+        would_claim_council_tax_reduction: true
         universal_credit_pre_benefit_cap: 10_000
       son:
         members: [son]
+        would_claim_council_tax_reduction: true
     households:
       household:
         members: [older, younger, son]
@@ -228,6 +231,7 @@
     benunits:
       benunit:
         members: [pensioner, young_person]
+        would_claim_council_tax_reduction: true
     households:
       household:
         members: [pensioner, young_person]
@@ -318,6 +322,7 @@
     benunits:
       benunit:
         members: [older, younger, child]
+        would_claim_council_tax_reduction: true
         universal_credit_pre_benefit_cap: 30_000
         child_benefit: 3_000
         uc_deductions: 0

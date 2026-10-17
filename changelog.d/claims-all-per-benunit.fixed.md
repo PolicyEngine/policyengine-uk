@@ -1,0 +1,1 @@
+- Evaluate `claims_all_entitled_benefits` per benefit unit, while keeping Council Tax Reduction explicitly limited to reporters by default until calibrated take-up inputs land (policyengine-uk-data#448; d1390). Explicit Council Tax Reduction claim inputs continue to override its default.

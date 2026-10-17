@@ -24,17 +24,21 @@
     benunits:
       head_family:
         members: [head]
+        would_claim_council_tax_reduction: true
         council_tax_reduction_applicable_income: 0
       sharer_1_family:
         members: [sharer_1]
+        would_claim_council_tax_reduction: true
         liable_for_share_of_household_rent: true
         council_tax_reduction_applicable_income: 0
       sharer_2_family:
         members: [sharer_2]
+        would_claim_council_tax_reduction: true
         liable_for_share_of_household_rent: true
         council_tax_reduction_applicable_income: 0
       son_family:
         members: [adult_son]
+        would_claim_council_tax_reduction: true
     households:
       home:
         members: [head, sharer_1, sharer_2, adult_son]
@@ -69,9 +73,11 @@
     benunits:
       couple:
         members: [head, partner]
+        would_claim_council_tax_reduction: true
         council_tax_reduction_applicable_income: 0
       sharer_family:
         members: [sharer]
+        would_claim_council_tax_reduction: true
         liable_for_share_of_household_rent: true
         council_tax_reduction_applicable_income: 0
     households:
@@ -105,9 +111,11 @@
     benunits:
       couple:
         members: [head, partner]
+        would_claim_council_tax_reduction: true
         council_tax_reduction_applicable_income: 0
       son_family:
         members: [adult_son]
+        would_claim_council_tax_reduction: true
     households:
       home:
         members: [head, partner, adult_son]
@@ -137,9 +145,11 @@
     benunits:
       householder_family:
         members: [householder]
+        would_claim_council_tax_reduction: true
         council_tax_reduction_applicable_income: 0
       lodger_family:
         members: [lodger]
+        would_claim_council_tax_reduction: true
     households:
       home:
         members: [householder, lodger]
@@ -170,8 +180,10 @@
     benunits:
       head_family:
         members: [head]
+        would_claim_council_tax_reduction: true
       father_family:
         members: [father]
+        would_claim_council_tax_reduction: true
     households:
       home:
         members: [head, father]
@@ -207,13 +219,16 @@
     benunits:
       head_family:
         members: [head]
+        would_claim_council_tax_reduction: true
         council_tax_reduction_applicable_income: 0
       cotenant_family:
         members: [cotenant]
+        would_claim_council_tax_reduction: true
         liable_for_share_of_household_rent: true
         council_tax_reduction_applicable_income: 0
       father_family:
         members: [father]
+        would_claim_council_tax_reduction: true
     households:
       home:
         members: [head, cotenant, father]
@@ -244,9 +259,11 @@
     benunits:
       head_family:
         members: [head]
+        would_claim_council_tax_reduction: true
         council_tax_reduction_applicable_income: 0
       student_family:
         members: [student]
+        would_claim_council_tax_reduction: true
         liable_for_share_of_household_rent: true
     households:
       home:
@@ -277,9 +294,11 @@
     benunits:
       head_family:
         members: [head]
+        would_claim_council_tax_reduction: true
         council_tax_reduction_applicable_income: 0
       sharer_family:
         members: [sharer]
+        would_claim_council_tax_reduction: true
         liable_for_share_of_household_rent: true
         council_tax_reduction_applicable_income: 0
     households:
@@ -320,8 +339,10 @@
     benunits:
       couple:
         members: [head, partner]
+        would_claim_council_tax_reduction: true
       sharer_family:
         members: [sharer]
+        would_claim_council_tax_reduction: true
         liable_for_share_of_household_rent: true
     households:
       home:
@@ -363,8 +384,10 @@
     benunits:
       head_family:
         members: [head]
+        would_claim_council_tax_reduction: true
       couple:
         members: [sharer, sharer_partner]
+        would_claim_council_tax_reduction: true
         liable_for_share_of_household_rent: true
     households:
       home:
@@ -401,13 +424,16 @@
     benunits:
       head_family:
         members: [head]
+        would_claim_council_tax_reduction: true
         council_tax_reduction_applicable_income: 0
       sharer_family:
         members: [sharer]
+        would_claim_council_tax_reduction: true
         liable_for_share_of_household_rent: true
         council_tax_reduction_applicable_income: 0
       non_dependant_family:
         members: [non_dependant]
+        would_claim_council_tax_reduction: true
     households:
       home:
         members: [head, sharer, non_dependant]
@@ -446,13 +472,16 @@
     benunits:
       head_family:
         members: [head]
+        would_claim_council_tax_reduction: true
         council_tax_reduction_applicable_income: 0
       sharer_family:
         members: [sharer]
+        would_claim_council_tax_reduction: true
         liable_for_share_of_household_rent: true
         council_tax_reduction_applicable_income: 0
       non_dependant_family:
         members: [non_dependant]
+        would_claim_council_tax_reduction: true
     households:
       home:
         members: [head, sharer, non_dependant]

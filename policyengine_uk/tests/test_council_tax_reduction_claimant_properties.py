@@ -192,6 +192,7 @@ def build(population, age_override=None):
                 "members": ids,
                 "liable_for_share_of_household_rent": fam["sharer"] and f > 0,
                 "claims_all_entitled_benefits": True,
+                "would_claim_council_tax_reduction": True,
                 "would_claim_uc": True,
             }
             members.extend(ids)

@@ -220,9 +220,8 @@ def situation(units, would_claim_pc=None):
         claims = unit["would_claim_pc"] if would_claim_pc is None else would_claim_pc
         benunits[f"b{i}"] = {
             "members": names,
-            # claims_all_entitled_benefits sums reported benefits across the
-            # whole simulation, so set it for every family.
             "claims_all_entitled_benefits": {YEAR: True},
+            "would_claim_council_tax_reduction": {YEAR: True},
             "would_claim_pc": {YEAR: claims},
             "would_claim_uc": {YEAR: False},
         }
@@ -427,6 +426,7 @@ def single_pensioner(savings=0.0, other_property=0.0):
             "benunit": {
                 "members": ["pensioner"],
                 "claims_all_entitled_benefits": {YEAR: True},
+                "would_claim_council_tax_reduction": {YEAR: True},
             }
         },
         "households": {
