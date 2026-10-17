@@ -1,4 +1,9 @@
 description: Rates for Scottish Income Tax.
+# The Scottish Budget 2026-27 announces higher, advanced and top threshold
+# freezes through 2028-29. These future values model announced policy;
+# Scottish rates and bands are still subject to annual rate resolutions.
+# CPI uprating after 2028-29 is the existing model projection, not a Budget
+# commitment to subsequent indexation.
 brackets:
   - threshold:
       values:
@@ -47,8 +52,10 @@ brackets:
         2023-04-06: 31_092
         2024-04-06: 31_092
         2025-04-06: 31_092
-        # Scottish Budget 2025-26 announced freeze through 2026-27
+        # Scottish Budget 2026-27 announced freeze through 2028-29.
         2026-04-06: 31_092
+        2027-04-06: 31_092
+        2028-04-06: 31_092
       metadata:
         uprating: gov.economic_assumptions.indices.obr.consumer_price_index
     rate:
@@ -61,8 +68,10 @@ brackets:
         2023-04-06: 125_140
         2024-04-06: 62_430
         2025-04-06: 62_430
-        # Scottish Budget 2025-26 announced freeze through 2026-27
+        # Scottish Budget 2026-27 announced freeze through 2028-29.
         2026-04-06: 62_430
+        2027-04-06: 62_430
+        2028-04-06: 62_430
       metadata:
         uprating: gov.economic_assumptions.indices.obr.consumer_price_index
     rate:
@@ -78,6 +87,8 @@ brackets:
         2024-04-06: 125_140
         2025-04-06: 125_140
         2026-04-06: 125_140
+        2027-04-06: 125_140
+        2028-04-06: 125_140
       metadata:
         uprating: gov.economic_assumptions.indices.obr.consumer_price_index
     rate:
@@ -102,7 +113,9 @@ metadata:
       href: https://www.gov.scot/publications/scottish-budget-2025-26/
     - title: Scottish Income Tax 2026 to 2027
       href: https://www.gov.scot/publications/scottish-income-tax-rates-and-bands/pages/2026-to-2027/
-    - title: Scottish Budget 2026-27
+    - title: Scottish Budget 2026-27, Chapter 2 Income Tax Policy - announced threshold freeze through 2028-29
       href: https://www.gov.scot/publications/scottish-budget-2026-2027/pages/4/
+    - title: Scottish Income Tax technical factsheet - 2026-27 policy and threshold freeze
+      href: https://www.gov.scot/publications/scottish-income-tax-technical-factsheet/
     - title: Scottish Fiscal Commission - Scotland's Economic and Fiscal Forecasts January 2026
       href: https://fiscalcommission.scot/wp-content/uploads/2026/01/Scotlands-Economic-and-Fiscal-Forecasts-January-2026-revised-13-01-2026.pdf
