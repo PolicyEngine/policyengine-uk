@@ -1,6 +1,4 @@
-# From 6 April 2029 the salary sacrifice above the £2,000 cap returns to
-# employment income. Only people with pay have a salary sacrifice, so the cap
-# never gives pay to a person who has none.
+# The cap creates NIC earnings only; ordinary pay/member payments stay unchanged.
 
 - name: No pay and a salary sacrifice input gives no employment income, 2029
   period: 2029
@@ -34,7 +32,7 @@
     salary_sacrifice_returned_to_income: 0
     employment_income: 0
 
-- name: Pay above the sacrifice returns the excess over the cap, 2029
+- name: Pay above the sacrifice has NIC-only excess over the cap, 2029
   period: 2029
   absolute_error_margin: 0.01
   input:
@@ -43,11 +41,12 @@
     gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
   output:
     # 5,000 - 2,000 cap
-    salary_sacrifice_returned_to_income: 3_000
+    salary_sacrifice_returned_to_income: 0
+    salary_sacrifice_pension_ni_excess: 3_000
     pension_contributions_via_salary_sacrifice_adjusted: 2_000
-    employment_income: 43_000
+    employment_income: 40_000
 
-- name: A whole-bonus sacrifice above the remaining salary returns its full excess, 2030
+- name: A whole-bonus sacrifice above the remaining salary has its full NIC excess, 2030
   period: 2030
   absolute_error_margin: 0.01
   input:
@@ -56,11 +55,12 @@
     gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
   output:
     # 50,000 - 2,000 cap
-    salary_sacrifice_returned_to_income: 48_000
+    salary_sacrifice_returned_to_income: 0
+    salary_sacrifice_pension_ni_excess: 48_000
     pension_contributions_via_salary_sacrifice_adjusted: 2_000
-    employment_income: 88_000
+    employment_income: 40_000
 
-- name: Low pay with a large sacrifice still returns the excess over the cap, 2029
+- name: Low pay with a large sacrifice still has NIC-only excess over the cap, 2029
   period: 2029
   absolute_error_margin: 0.01
   input:
@@ -68,9 +68,10 @@
     pension_contributions_via_salary_sacrifice: 30_000
     gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
   output:
-    salary_sacrifice_returned_to_income: 28_000
+    salary_sacrifice_returned_to_income: 0
+    salary_sacrifice_pension_ni_excess: 28_000
     pension_contributions_via_salary_sacrifice_adjusted: 2_000
-    employment_income: 29_500
+    employment_income: 1_500
 
 - name: Nothing returns before the cap starts, 2028
   period: 2028
