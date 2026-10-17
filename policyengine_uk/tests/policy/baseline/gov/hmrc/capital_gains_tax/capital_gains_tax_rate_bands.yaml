@@ -1,0 +1,138 @@
+# Gains are the top slice of income (TCGA 1992 s. 1H). The model splits gains
+# above the basic rate band at the income tax higher rate limit so reforms can
+# set an additional CGT rate; the law has none, and the two rates are equal.
+# The split stacks gains on top of taxable income, as income tax does: the
+# higher band left for gains is the higher rate limit less taxable income or
+# the basic rate limit, whichever is higher.
+#
+# 2025-26: basic rate limit 37,700, higher rate limit 125,140, annual exempt
+# amount 3,000, CGT rates 18% and 24%. allowances is set to 0 so taxable income
+# equals net_income.
+
+- name: Additional rate reform, income below the basic rate limit.
+  # Taxable income 20,000 leaves 17,700 of basic rate band. 150,000 - 3,000 =
+  # 147,000: 17,700 x 0.18 = 3,186; the higher band left is 125,140 - 37,700
+  # = 87,440, x 0.24 = 20,985.60; the rest, 41,860 x 0.45 = 18,837.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.cgt.additional_rate: 0.45
+    net_income: 20_000
+    allowances: 0
+    capital_gains: 150_000
+  output:
+    capital_gains_tax: 43_008.60
+
+- name: Additional rate reform, income between the basic and higher rate limits.
+  # Taxable income 100,000 uses the basic rate band. The higher band left is
+  # 125,140 - 100,000 = 25,140, x 0.24 = 6,033.60; the rest of the 97,000,
+  # 71,860 x 0.45 = 32,337.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.cgt.additional_rate: 0.45
+    net_income: 100_000
+    allowances: 0
+    capital_gains: 100_000
+  output:
+    capital_gains_tax: 38_370.60
+
+- name: Additional rate reform, income above the higher rate limit.
+  # Taxable income 200,000 is above 125,140, so all 47,000 of gains after the
+  # annual exempt amount are in the additional band: 47,000 x 0.45.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.cgt.additional_rate: 0.45
+    net_income: 200_000
+    allowances: 0
+    capital_gains: 50_000
+  output:
+    capital_gains_tax: 21_150
+
+- name: Higher rate reform, income above the higher rate limit.
+  # No higher band is left, so a higher CGT rate of 45% does not apply:
+  # 47,000 x 0.24 at the unchanged additional rate.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.cgt.higher_rate: 0.45
+    net_income: 200_000
+    allowances: 0
+    capital_gains: 50_000
+  output:
+    capital_gains_tax: 11_280
+
+- name: Higher rate reform, income between the basic and higher rate limits.
+  # 25,140 x 0.45 = 11,313 in the higher band left; 71,860 x 0.24 = 17,246.40.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.cgt.higher_rate: 0.45
+    net_income: 100_000
+    allowances: 0
+    capital_gains: 100_000
+  output:
+    capital_gains_tax: 28_559.40
+
+- name: Residential property additional rate reform, income between the limits.
+  # The same split applies to each schedule: 25,140 x 0.24 = 6,033.60 and
+  # 71,860 x 0.45 = 32,337.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.cgt.residential_property.additional_rate: 0.45
+    net_income: 100_000
+    allowances: 0
+    capital_gains: 100_000
+    capital_gains_residential_property: 100_000
+  output:
+    capital_gains_tax: 38_370.60
+
+- name: Carried interest additional rate reform, income between the limits.
+  # Carried interest is 32% in both bands from 2025-26: 25,140 x 0.32 =
+  # 8,044.80 in the higher band left and 71,860 x 0.45 = 32,337 above it.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.cgt.carried_interest.additional_rate: 0.45
+    net_income: 100_000
+    allowances: 0
+    capital_gains: 100_000
+    capital_gains_carried_interest: 100_000
+  output:
+    capital_gains_tax: 40_381.80
+
+- name: Current law, income above the higher rate limit.
+  # The higher and additional rates are both 24%: 47,000 x 0.24.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    net_income: 200_000
+    allowances: 0
+    capital_gains: 50_000
+  output:
+    capital_gains_tax: 11_280
+
+- name: Current law, income between the basic and higher rate limits.
+  # 97,000 x 0.24 whatever the split.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    net_income: 100_000
+    allowances: 0
+    capital_gains: 100_000
+  output:
+    capital_gains_tax: 23_280
+
+- name: Additional rate reform, 200,000 of earnings and 50,000 of gains.
+  # The personal allowance is fully withdrawn at this income, so taxable
+  # income is 200,000, above the higher rate limit: 47,000 x 0.45.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.cgt.additional_rate: 0.45
+    employment_income: 200_000
+    capital_gains: 50_000
+  output:
+    capital_gains_tax: 21_150

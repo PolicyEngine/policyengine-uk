@@ -27,7 +27,9 @@ def legacy_capital_gains_tax(sim, year):
     there is a difference in the new formula. Its income and allowance inputs
     follow the current model (#2253 moved Gift Aid out of the allowances), so
     it checks how gains are allocated to the schedules, not equivalence with
-    any earlier treatment of Gift Aid.
+    any earlier treatment of Gift Aid. Its higher band likewise follows the
+    current model, which stacks gains on top of taxable income, rather than
+    giving every gainer the whole band as the formula before #1858 did.
     """
     hmrc = sim.tax_benefit_system.parameters(str(year)).gov.hmrc
     cgt = hmrc.cgt
@@ -61,9 +63,11 @@ def legacy_capital_gains_tax(sim, year):
         gains_less_aea - remaining_basic_rate_band, 0
     )
     higher_rate_limit = it.rates.uk.thresholds[2] + basic_rate_band_extension
+    # Gains stack on top of taxable income (TCGA 1992 s. 1H), so the higher
+    # band left for them starts at taxable income or the basic rate limit.
     higher_rate_applicable_cg = min_(
         higher_and_add_rate_applicable_cg,
-        higher_rate_limit - basic_rate_limit,
+        max_(higher_rate_limit - max_(taxable_income, basic_rate_limit), 0),
     )
     add_rate_applicable_cg = max_(
         higher_and_add_rate_applicable_cg - higher_rate_applicable_cg, 0
@@ -327,9 +331,11 @@ class TestEqualisationReforms:
         baseline = {s: self.tax(s) for s in self.SCHEDULES}
         reformed = {s: self.tax(s, self.MAIN_RATES_ONLY) for s in self.SCHEDULES}
 
-        # 97,000 above the AEA, all above the basic rate band: 87,440 at 40%
-        # and 9,560 at 45%.
-        assert reformed[None] == pytest.approx(39_278)
+        # Taxable income is 100,000 - 12,570 = 87,430, so the 97,000 above the
+        # AEA is all above the basic rate band. The higher band left on top of
+        # that income is 125,140 - 87,430 = 37,710: 37,710 at 40% and 59,290
+        # at 45%.
+        assert reformed[None] == pytest.approx(41_764.5)
         for schedule in SCHEDULE_INPUTS:
             assert reformed[schedule] == baseline[schedule], schedule
 
@@ -337,7 +343,7 @@ class TestEqualisationReforms:
         reformed = {s: self.tax(s, self.EVERY_SCHEDULE) for s in self.SCHEDULES}
 
         for schedule in self.SCHEDULES:
-            assert reformed[schedule] == pytest.approx(39_278), schedule
+            assert reformed[schedule] == pytest.approx(41_764.5), schedule
 
 
 class TestScheduleParameters:
