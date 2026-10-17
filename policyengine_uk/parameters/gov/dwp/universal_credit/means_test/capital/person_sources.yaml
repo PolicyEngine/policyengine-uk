@@ -11,7 +11,8 @@ description: >
   April 2017, and the list is empty before then. A nonnegative financial
   observation (benunit_reported_capital) replaces these covered financial
   sources to avoid counting a Lifetime ISA twice. A complete UC override
-  replaces them together with property and the household financial proxy.
+  replaces them together with property and the household financial proxy,
+  before the existing regulation 77 company substitution.
 metadata:
   label: Universal Credit person-level capital sources
   period: year

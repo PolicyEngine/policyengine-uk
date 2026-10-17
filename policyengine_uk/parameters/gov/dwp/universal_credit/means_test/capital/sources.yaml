@@ -10,8 +10,10 @@ description: >
   about unobserved ownership, not a statutory rule. Countable property is
   valued and shared independently through property_sources across ALL
   claimant/partner adults, with complete-override units consuming their shares.
-  Main-home property and private pension rights remain excluded under
-  Schedule 10 paragraphs 1 and 10. Asset-specific Schedule 10 disregards
+  Main-home property and the named private_pension_wealth input are excluded
+  under Schedule 10 paragraphs 1 and 10. For missing-report households, the
+  legacy corporate_wealth proxy can still contain non-DB pension wealth that
+  is not separately identified and removed. Asset-specific Schedule 10 disregards
   within these broad financial classes are not separately observed.
 metadata:
   label: Universal Credit financial capital proxy sources

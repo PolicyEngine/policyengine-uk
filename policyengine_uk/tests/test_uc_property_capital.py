@@ -2,8 +2,14 @@
 
 Regulations 18, 49 and 72 provide the capital limit, property valuation and
 tariff. Equal shares per claimant/partner adult are a modelling convention
-for household assets whose beneficial ownership is unobserved. These cases
-assume the properties incur sale expenses and have no Schedule 10 disregard.
+for household assets whose beneficial ownership is unobserved. Property
+allocation is independent of other units' financial reports and depends only
+on claimant and partner adult counts. The residual financial pool is shared
+among units without a report, so another unit's report can change that pool
+and their capital. This is an inherited convention. These cases assume the
+properties incur sale expenses and have no Schedule 10 disregard. An explicit
+uc_reported_capital replaces the ordinary sources before regulation 77 company
+substitution.
 """
 
 from copy import deepcopy
@@ -130,6 +136,25 @@ def test_explicit_complete_override_replaces_financial_and_property_capital(over
         )
 
 
+def test_explicit_zero_override_still_includes_regulation_77_company_capital():
+    situation = _situation(
+        [{"financial": 6_000, "override": 0}],
+        {"savings": 12_000, "other_residential_property_value": 40_000},
+    )
+    situation["people"]["p0_0"].update(
+        {
+            "stands_as_sole_owner_or_partner_of_company": {YEAR: True},
+            "owned_company_carries_on_property_business": {YEAR: True},
+            "owned_company_capital": {YEAR: 8_000},
+        }
+    )
+    simulation = Simulation(situation=situation)
+    # The override replaces the ordinary financial/property assessment;
+    # regulation 77 then adds the owner's £8k of company capital.
+    assert _values(simulation, "uc_company_capital")[0] == 8_000
+    assert _values(simulation)[0] == 8_000
+
+
 def test_financial_observation_does_not_double_count_savings_investments_or_lisa():
     situation = _situation(
         [{"financial": 6_000}], {"savings": 50_000, "corporate_wealth": 30_000}
@@ -182,6 +207,42 @@ def test_unrelated_financial_reports_do_not_change_property_ownership(other_fina
     )
     assert _values(simulation)[0] == 9_000
     assert _values(simulation)[1] == pytest.approx(9_000 + max(0, other_financial))
+
+
+@pytest.mark.parametrize(
+    "reports,expected",
+    [([-1, -1], [6_000, 6_000]), ([-1, 0], [12_000, 0])],
+    ids=["both-missing", "second-reports-zero"],
+)
+def test_inherited_residual_financial_sharing_intentionally_depends_on_other_reports(
+    reports, expected
+):
+    simulation = Simulation(
+        situation=_situation(
+            [{"financial": report} for report in reports],
+            {"savings": 12_000},
+        )
+    )
+    # With no reports, two adults share £12k equally. A zero report removes
+    # the second unit from the residual denominator without reducing the
+    # pool, so the first unit receives all £12k. This convention is intended.
+    np.testing.assert_allclose(_values(simulation), expected)
+
+
+def test_inherited_financial_sharing_intentionally_adds_to_property_share_change():
+    household = {"savings": 12_000, "other_residential_property_value": 40_000}
+    alone = Simulation(situation=_situation([{"financial": -1}], household))
+    with_reporting_unit = Simulation(
+        situation=_situation([{"financial": -1}, {"financial": 6_000}], household)
+    )
+    # Alone: £12k financial proxy + £40k * 90% property = £48k.
+    # With the reporting adult: (£12k - £6k) financial proxy + £36k / 2
+    # property = £24k. The reporting unit also has £6k + £18k = £24k.
+    np.testing.assert_allclose(_values(alone), [48_000])
+    np.testing.assert_allclose(_values(with_reporting_unit), [24_000, 24_000])
+    # The intended £24k fall includes £6k from the inherited residual pool
+    # as well as the £18k change in the claimant's property share.
+    assert _values(alone)[0] - _values(with_reporting_unit)[0] == 24_000
 
 
 def test_reporting_a_conventional_financial_share_leaves_other_units_unchanged():
