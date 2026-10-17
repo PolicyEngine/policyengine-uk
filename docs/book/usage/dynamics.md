@@ -10,7 +10,11 @@ PolicyEngine UK implements the Office for Budget Responsibility's labour supply 
 
 **Extensive margin (participation)** - Whether people choose to work at all. Changes in the financial reward from working affect decisions to enter or leave employment.
 
-Both responses depend on elasticities that vary by demographic group, following empirical evidence on how different populations respond to policy changes.
+Both responses depend on elasticities that vary by demographic group. The
+current `apply_dynamics` coordinator runs progression only: it leaves
+participation disabled and returns `participation=None`. The separate
+participation function remains available for controlled development work; the
+coordinator does not combine its response with progression.
 
 ## Basic dynamics calculation
 
@@ -46,7 +50,10 @@ print(
     f"Substitution effect FTEs: {dynamics.fte_impacts.substitution_response_ftes:,.0f}"
 )
 print(f"Income effect FTEs: {dynamics.fte_impacts.income_response_ftes:,.0f}")
-print(f"Participation FTEs: {dynamics.fte_impacts.participation_response_ftes:,.0f}")
+if dynamics.fte_impacts.participation_response_ftes is not None:
+    print(
+        f"Participation FTEs: {dynamics.fte_impacts.participation_response_ftes:,.0f}"
+    )
 print(f"Total FTE change: {dynamics.fte_impacts.ftes:,.0f}")
 ```
 
@@ -64,14 +71,50 @@ print(f"Average hours change: {progression['total_response_ftes'].mean():.3f} FT
 
 # Access participation responses (extensive margin)
 participation = dynamics.participation
-print(f"Employment change: {participation['participation_change'].sum():,.0f}")
+if participation is not None:
+    print(f"Employment change: {participation['participation_change'].sum():,.0f}")
 
 # FTE impacts provide summary statistics
 fte = dynamics.fte_impacts
 print(f"Total labour supply response: {fte.ftes:,.0f} FTEs")
 ```
 
-The progression DataFrame contains individual-level responses including wage changes, elasticities applied, and resulting employment income adjustments. The participation DataFrame shows employment status changes and associated FTE impacts.
+The progression DataFrame contains individual-level responses including wage
+changes, elasticities applied and resulting employment income adjustments.
+Participation results are absent from the current coordinator.
+
+### Separate participation calls
+
+`policyengine_uk.dynamics.participation.apply_participation_responses` accepts
+an explicit calculation year. Its demographics, adult positions, gain-to-work
+counterfactuals and earnings/hours writeback use that year. Direct callers of
+`calculate_participation_elasticities` may omit its optional year to retain
+the simulation's default-period behaviour. These paths expect the weighted
+`Microsimulation` calculation interface; a supplied situation can exercise
+them without a population dataset.
+
+Spillovers retain 20 equal-width bins, now bounded by eligible response
+candidates only. Adding excluded people cannot move those bounds. The bins,
+unweighted within-bin averages, spillover factor and replacement-rate
+transformation are inherited model approximations, not methods specified by the
+OBR note. The existing exclusions, coefficients, age-18 grouping, wage imputation
+and full-time-equivalent quintile placement are unchanged.
+
+A local `numpy.random.RandomState` preserves the legacy MT19937 stream for a
+given seed, without changing NumPy's process-global random state. Draws are
+consumed in ascending worker-row order, followed by ascending non-worker-row
+order, including candidates with zero probabilities or nonpositive imputed
+wages. The two draw loops are vectorized with the same candidate order and
+storage precision. This does not make stochastic assignments invariant to row
+permutations. New entrants' weekly hours are converted to annual hours using the
+framework's `WEEKS_IN_YEAR` constant.
+
+These corrections do not activate participation in the coordinator, validate
+calibration or certify whole-population speed. Repeated wage imputation and
+income recomputations remain, and broader performance/caching work stays open
+in [issue1836](https://github.com/PolicyEngine/policyengine-uk/issues/1836).
+The separate cohabiting-group correction in PR2445 also needs to be retained at
+eventual integration; this branch does not certify that combined landing.
 
 ## Analysing distributional effects
 
@@ -155,7 +198,10 @@ print(f"OBR estimate: 94,000")
 print(f"Difference: {(dynamics.fte_impacts.ftes - 94_000):+,.0f}")
 ```
 
-Small differences from OBR estimates can arise from data vintage, population projections, or minor methodological variations.
+This example runs the current progression-only coordinator. It is not a
+validation of the disabled participation route or a promise of agreement with
+the OBR total. Data, grouping, imputation and calibration choices also affect
+the comparison.
 
 ## Elasticity-based responses
 
@@ -238,4 +284,6 @@ When using dynamics, be aware of these limitations:
 - Self-employed workers are excluded as their labour supply is harder to model
 - The model doesn't capture long-term effects like human capital accumulation
 
-For most tax and benefit reforms, these limitations don't significantly affect the results. The framework provides robust estimates aligned with fiscal policy analysis standards.
+The size of these limitations has not been established for every reform.
+Participation calibration and broader performance work remain outside these
+implementation corrections.
