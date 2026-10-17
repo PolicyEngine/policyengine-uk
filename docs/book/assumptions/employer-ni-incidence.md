@@ -114,8 +114,12 @@ SPAN = "2026-01-01.2026-12-31"
 INCIDENCE = "gov.contrib.policyengine.employer_ni."
 RATE = "gov.hmrc.national_insurance.class_1.rates.employer"
 VARIABLES = [
-    "ni_employer", "income_tax", "ni_employee", "employment_income",
-    "gov_balance", "household_net_income",
+    "ni_employer",
+    "income_tax",
+    "ni_employee",
+    "employment_income",
+    "gov_balance",
+    "household_net_income",
 ]
 
 
@@ -147,10 +151,12 @@ def result(employee, consumer, capital, direct_pay=False):
     before = {v: float(baseline.calculate(v, YEAR).sum()) for v in VARIABLES}
     after = {v: float(reform.calculate(v, YEAR).sum()) for v in VARIABLES}
     return {
-        "baseline": before, "reform": after,
+        "baseline": before,
+        "reform": after,
         "delta": {v: after[v] - before[v] for v in VARIABLES},
         "residual_channels": {
-            v: float(reform.calculate(v, YEAR).sum()) for v in (
+            v: float(reform.calculate(v, YEAR).sum())
+            for v in (
                 "employer_ni_response_consumer_incidence",
                 "employer_ni_response_capital_incidence",
             )
