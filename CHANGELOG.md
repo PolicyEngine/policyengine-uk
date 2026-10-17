@@ -1,3 +1,21 @@
+## [2.135.3] - 2026-10-17
+
+### Fixed
+
+- - Fixed standalone dated-reform modifiers silently dropping parameter changes, warned when UC rebalancing supersedes an LCWRA amount reform, and restored new-claimant draws for data-built core simulations.
+  - Preserved standalone modifier order across repeated and reordered reforms and retained no-op behavior for already-effective reforms on copies.
+  - Deferred LCWRA override warnings until standalone tuple and sum modifiers finish, with one warning per amount-reform application.
+  - Preserved callback-only Scenario.apply compatibility for lightweight simulation objects without a tax-benefit system.
+  - Replayed mixed statutory and legacy modifiers in their requested order, restricting composite no-ops to exact latest write sequences with current values.
+
+
+## [2.135.2] - 2026-10-17
+
+### Fixed
+
+- - The release workflow's PyPI checks compare PyPI with the manifest of the files it built and tested, written before publishing, so the attestation files trusted publishing adds to dist no longer fail the release after upload, and releases are tagged and announced to policyengine.py again.
+
+
 ## [2.135.1] - 2026-10-17
 
 ### Fixed

@@ -234,6 +234,7 @@ class Simulation(CoreSimulation):
             capital_gains_projection: Optional common baseline gains projection,
                 shared with the reform's baseline. Omit to retain GDP per capita.
         """
+        self._defer_uc_health_warning = True
         self._cgt_input_provenance = {}
         self._cgt_defaulted_periods = set()
         self._cgt_calculation_depth = 0
@@ -253,6 +254,10 @@ class Simulation(CoreSimulation):
 
         if reform is not None:
             scenario = Scenario.from_reform(reform)
+        # Only a construction-time reference: preserve the existing reading
+        # of this scenario's single-day leftovers while rejecting unreadable
+        # overrides from a user modifier's separate from_reform call.
+        self._building_dated_reforms = scenario.dated_reforms if scenario else None
 
         self.branch_name = "default"
         self.invalidated_caches = set()
@@ -369,6 +374,8 @@ class Simulation(CoreSimulation):
         else:
             self.baseline = self.clone()
         self.baseline._cgt_warning_enabled = False
+        self.baseline._defer_uc_health_warning = False
+        self.baseline._building_dated_reforms = None
 
         self.calculated_periods = []
 
@@ -378,6 +385,11 @@ class Simulation(CoreSimulation):
         self._refresh_capital_gains_projection()
         self._capture_cgt_supplied_inputs()
         self._cgt_warning_enabled = True
+        from policyengine_uk.scenarios.uc_reform import warn_shadowed_lcwra_reform
+
+        self._defer_uc_health_warning = False
+        self._building_dated_reforms = None
+        warn_shadowed_lcwra_reform(self)
 
     def _refresh_capital_gains_projection(self) -> None:
         projection = self.tax_benefit_system.capital_gains_projection
