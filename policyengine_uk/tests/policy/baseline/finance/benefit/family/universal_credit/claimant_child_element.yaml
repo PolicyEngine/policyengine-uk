@@ -115,7 +115,7 @@
         is_disabled_for_benefits: true
       person5:
         age: 2
-        is_severely_disabled_for_benefits: true
+        dla_sc_category: HIGHER
     benunits:
       benunit:
         members: [person1, person2, person3, person4, person5]
