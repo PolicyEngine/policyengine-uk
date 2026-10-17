@@ -39,6 +39,7 @@ from policyengine_uk.data.economic_assumptions import (
 from policyengine_uk.data.dataset_sources import materialize_gcs_dataset_url
 from policyengine_uk.data.input_dataframe import (
     dataset_from_input_dataframe,
+    hold_identifiers_in,
     with_identifiers_in_each_year,
 )
 from policyengine_uk.data.capital_gains_projection import (
@@ -694,6 +695,14 @@ class Simulation(CoreSimulation):
             metadata["policyengine_core_version"],
         )
 
+    def set_input(self, variable_name: str, period, value) -> None:
+        """Set an input as policyengine-core does, then give the simulation
+        its identifiers for the year the input starts in if it holds them
+        only for later years, since inputs do not carry back. See
+        ``policyengine_uk.data.input_dataframe.hold_identifiers_in``."""
+        super().set_input(variable_name, period, value)
+        hold_identifiers_in(self, variable_name, period)
+
     def reset_calculations(self):
         for variable in self.tax_benefit_system.variables:
             if variable not in self.input_variables:
@@ -914,8 +923,9 @@ class Simulation(CoreSimulation):
 
         policyengine-core exports each input for the periods it was set for.
         The identifiers are also given for every whole year a column names,
-        where a simulation built from the frame holds them, so that the frame
-        loads back to a simulation that exports the same frame. See
+        where a simulation built from the frame holds them, so that the
+        default export loads back to a simulation that exports the same
+        frame. See
         ``policyengine_uk.data.input_dataframe.with_identifiers_in_each_year``.
 
         Args:

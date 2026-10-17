@@ -66,7 +66,10 @@ True)`` exports them, and must be taken before the simulation calculates
 anything, since it also exports every calculated value.
 """
 
+import datetime
+import inspect
 import io
+import re
 import warnings
 from dataclasses import dataclass
 from typing import Dict
@@ -1406,6 +1409,336 @@ def test_a_frame_over_several_years_exports_the_same_frame_again(
         for group in GROUPS:
             exact = population.groups[group].tolist()
             assert exported[f"{group}_id__{year}"].tolist() == exact
+
+
+# A formula that reads an identifier, such as ``person("person_id", period)``.
+READS_AN_IDENTIFIER = re.compile(
+    r"""\(\s*["'](?:%s)["']""" % "|".join(sorted(IDENTIFIER_VARIABLES))
+)
+
+
+@pytest.fixture(scope="module")
+def identifier_readers(tax_benefit_system) -> list:
+    """The variables whose formulas read an identifier."""
+    readers = sorted(
+        name
+        for name, variable in tax_benefit_system.variables.items()
+        if any(
+            READS_AN_IDENTIFIER.search(inspect.getsource(formula))
+            for formula in variable.formulas.values()
+        )
+    )
+    # The scan finds at least the readers known when it was written.
+    assert set(readers) >= {
+        "is_benunit_eldest_child",
+        "months_since_last_birthday",
+        "uc_deduction_random_draw",
+        "uc_deduction_type_random_draw",
+    }
+    return readers
+
+
+def give_values_for(
+    simulation, population: Population, year: int, weight: int = 1
+) -> None:
+    """Set each of ``population``'s values on ``simulation`` for ``year``, with
+    household weights ``weight`` times theirs.
+
+    A weight of a million makes the benefit units of any household of weight
+    one or more add up to the weight of representative data, for which the
+    Universal Credit deduction draws read the benefit unit identifiers.
+    """
+    for variable, entity in VARIABLES.items():
+        by_id = population.by_id(variable)
+        values = np.array([by_id[id_] for id_ in ids(simulation, entity)])
+        if variable == "household_weight":
+            values = values * weight
+        simulation.set_input(variable, year, values)
+
+
+# Years before the data year, the data year and years after it.
+YEARS_AROUND = list(range(YEAR - 3, YEAR + 3))
+# Two children of one age in a benefit unit, in a household of weight one.
+# The tie on age falls to their identifiers (is_benunit_eldest_child), the
+# draw that places each in their year of age reads them
+# (months_since_last_birthday), and at a million times the weight so do the
+# Universal Credit deduction draws. Before simulations held their identifiers
+# in a year before their data, each of the four differed there between a
+# simulation and the one its export loads back to.
+TWINS = Population(
+    person_ids=np.array([1, 2]),
+    groups={"benunit": np.array([1, 1]), "household": np.array([1, 1])},
+    values={
+        "age": np.array([10, 10]),
+        "hours_worked": np.array([0, 0]),
+        "gender": np.array(["MALE", "MALE"]),
+        "is_disabled_for_benefits": np.array([False, False]),
+        "benunit_reported_capital": np.array([0, 0]),
+        "would_claim_uc": np.array([False, False]),
+        "council_tax": np.array([0, 0]),
+        "household_weight": np.array([1, 1]),
+        "region": np.array(["LONDON", "LONDON"]),
+    },
+)
+
+
+@ROUND_TRIP_SETTINGS
+@given(
+    population=populations(),
+    id_columns=id_columns,
+    input_years=st.sets(st.sampled_from(YEARS_AROUND), min_size=1, max_size=2),
+    weight=st.sampled_from([1, 1_000_000]),
+)
+# The smallest example of the identifiers differing: one person's draw for
+# their place in their year of age, in a year before the data.
+@example(population=ONE_PERSON, id_columns="both", input_years={YEAR - 3}, weight=1)
+@example(population=TWINS, id_columns="own", input_years={YEAR - 1}, weight=1_000_000)
+def test_a_reloaded_simulation_reads_the_same_identifiers_in_each_year_given_inputs(
+    identifier_readers, population, id_columns, input_years, weight
+):
+    # 10. Identifiers in each year: a simulation built from a frame and given
+    # values for other years, before the data year or after it, and the
+    # simulation its export loads back to compute the same values from the
+    # identifiers in each of those years. Both hold the people and groups'
+    # own identifiers there.
+    simulation = Simulation(dataset=frame(population, id_columns))
+    for year in sorted(input_years):
+        give_values_for(simulation, population, year, weight)
+    exported = simulation.to_input_dataframe()
+
+    reloaded = Simulation(dataset=exported)
+
+    for year in sorted(input_years):
+        for variable in identifier_readers:
+            np.testing.assert_array_equal(
+                reloaded.calculate(variable, year),
+                simulation.calculate(variable, year),
+                err_msg=f"{variable} for {year}",
+            )
+        for built in (simulation, reloaded):
+            people = built.calculate("person_id", year)
+            assert people.tolist() == population.person_ids.tolist()
+            for group in GROUPS:
+                assert built.calculate(f"{group}_id", year).tolist() == ids(
+                    built, group
+                )
+                membership = built.calculate(f"person_{group}_id", year)
+                exact = population.groups[group].astype(np.float32)
+                assert membership.tolist() == exact.tolist()
+    pd.testing.assert_frame_equal(reloaded.to_input_dataframe(), exported)
+
+
+def identifier_inputs(simulation, branch: str = "default") -> dict:
+    """The periods each identifier is held for as an input, by identifier."""
+    return {
+        identifier: sorted(
+            str(period)
+            for period in simulation.get_holder(identifier).get_input_periods(branch)
+        )
+        for identifier in sorted(IDENTIFIER_VARIABLES)
+    }
+
+
+def test_an_input_before_the_data_gives_the_identifiers_for_its_year():
+    simulation = Simulation(dataset=frame(TWINS))
+    data_years = [str(YEAR)]
+    assert set(map(tuple, identifier_inputs(simulation).values())) == {
+        tuple(data_years)
+    }
+
+    # A month two years before the data: the identifiers are given for its
+    # year, and carry forward from there to the next.
+    simulation.set_input(
+        "ebr_energy_bills_credit_eligible", f"{YEAR - 2}-01", np.array([True])
+    )
+
+    for periods in identifier_inputs(simulation).values():
+        assert periods == [str(YEAR - 2), *data_years]
+    for year in (YEAR - 2, YEAR - 1):
+        assert simulation.calculate("person_id", year).tolist() == [1, 2]
+        assert simulation.calculate("benunit_id", year).tolist() == [1]
+        assert simulation.calculate("person_household_id", year).tolist() == [1, 1]
+    # Before that year the simulation holds no input, nor any identifier.
+    assert simulation.calculate("person_id", YEAR - 3).tolist() == [0, 0]
+    # An input for a later year gives none: they carry forward to it.
+    simulation.set_input("hours_worked", YEAR + 7, np.array([1, 2]))
+    for periods in identifier_inputs(simulation).values():
+        assert periods == [str(YEAR - 2), *data_years]
+    assert simulation.calculate("person_id", YEAR + 7).tolist() == [1, 2]
+    # The month and the identifiers for its year load back as given.
+    exported = simulation.to_input_dataframe()
+    assert exported[f"person_id__{YEAR - 2}"].tolist() == [1, 2]
+    reloaded = Simulation(dataset=exported)
+    for periods in identifier_inputs(reloaded).values():
+        assert periods[0] == str(YEAR - 2)
+    assert reloaded.calculate("person_id", YEAR - 1).tolist() == [1, 2]
+    pd.testing.assert_frame_equal(reloaded.to_input_dataframe(), exported)
+
+
+def test_an_identifier_given_alone_before_the_data_brings_the_others():
+    # One identifier for an earlier year, as a frame can name for a year it
+    # gives no values for: the person's groups are given for it too.
+    simulation = Simulation(dataset=frame(TWINS))
+    simulation.set_input("person_id", YEAR - 1, np.array([1, 2]))
+
+    for periods in identifier_inputs(simulation).values():
+        assert periods[0] == str(YEAR - 1)
+    assert simulation.calculate("household_id", YEAR - 1).tolist() == [1]
+    assert simulation.calculate("person_benunit_id", YEAR - 1).tolist() == [1, 1]
+
+
+def test_a_branch_given_an_input_before_the_data_holds_the_identifiers_itself():
+    simulation = Simulation(dataset=frame(TWINS))
+    branch = simulation.get_branch("earlier")
+    branch.set_input("hours_worked", YEAR - 1, np.array([10, 20]))
+
+    assert branch.calculate("person_id", YEAR - 1).tolist() == [1, 2]
+    assert identifier_inputs(branch, "earlier")["person_id"][0] == str(YEAR - 1)
+    # The branch it was made from holds no input for that year, nor any
+    # identifier.
+    assert identifier_inputs(simulation)["person_id"][0] == str(YEAR)
+    assert simulation.calculate("person_id", YEAR - 1).tolist() == [0, 0]
+
+
+@pytest.fixture
+def ending():
+    """Give a variable of a simulation an end date for one test, then take
+    it away: ``ending(simulation, variable, year)`` ends it on the last day
+    of ``year``."""
+    ended = []
+
+    def end(simulation, name: str, year: int) -> None:
+        variable = simulation.tax_benefit_system.get_variable(name)
+        ended.append((variable, variable.end))
+        variable.end = datetime.date(year, 12, 31)
+
+    yield end
+    for variable, end in ended:
+        variable.end = end
+
+
+def test_an_input_core_stores_nothing_for_gives_no_identifiers(ending):
+    # policyengine-core ignores an input for a period after its variable
+    # ends, so the simulation holds no input in that year.
+    simulation = Simulation(dataset=frame(TWINS))
+    ending(simulation, "hours_worked", YEAR - 3)
+
+    simulation.set_input("hours_worked", YEAR - 2, np.array([1, 2]))
+
+    assert set(map(tuple, identifier_inputs(simulation).values())) == {(str(YEAR),)}
+
+
+def test_an_identifier_core_would_not_store_is_left_out(ending):
+    # Core stores nothing for an identifier that has ended. The attempt to
+    # give it ends there, since an input core ignores gives no identifiers,
+    # and the other identifiers are still given.
+    simulation = Simulation(dataset=frame(TWINS))
+    ending(simulation, "household_id", YEAR - 3)
+
+    simulation.set_input("hours_worked", YEAR - 2, np.array([1, 2]))
+
+    held = identifier_inputs(simulation)
+    assert held.pop("household_id") == [str(YEAR)]
+    for periods in held.values():
+        assert periods == [str(YEAR - 2), str(YEAR)]
+
+
+def test_a_simulation_that_holds_no_identifiers_is_given_none():
+    # A household situation names its people and groups but sets no
+    # identifier as an input, so an input for another year gives none.
+    simulation = Simulation(
+        situation={
+            "people": {"adult": {"age": {YEAR: 40}}},
+            "benunits": {"benunit": {"members": ["adult"]}},
+            "households": {"household": {"members": ["adult"]}},
+        }
+    )
+    simulation.set_input("hours_worked", YEAR - 1, np.array([10]))
+
+    assert identifier_inputs(simulation) == {
+        identifier: [] for identifier in sorted(IDENTIFIER_VARIABLES)
+    }
+
+
+@pytest.mark.parametrize("descending", [False, True])
+def test_a_dataset_gives_the_identifiers_for_its_own_years_only(descending):
+    # As H5 files load: the identifiers are inputs in each year of the
+    # dataset, and loading gives them for no other year, in whichever order
+    # the dataset holds its years.
+    built = Simulation(
+        dataset=multi_year_frame(TWINS, "both", {YEAR}, {YEAR, YEAR + 2})
+    ).dataset
+    years = [YEAR + 2, YEAR] if descending else [YEAR, YEAR + 2]
+    dataset = UKMultiYearDataset(datasets=[built[year] for year in years])
+
+    simulation = Simulation(dataset=dataset)
+
+    assert identifier_inputs(simulation) == {
+        identifier: [str(YEAR), str(YEAR + 2)]
+        for identifier in sorted(IDENTIFIER_VARIABLES)
+    }
+    for year in (YEAR, YEAR + 2):
+        assert simulation.calculate("person_id", year).tolist() == [1, 2]
+
+
+@TABLE_SETTINGS
+@given(
+    population=populations(),
+    id_columns=id_columns,
+    identifier_years=st.sets(st.sampled_from(YEARS), min_size=1, max_size=2),
+    data_years=st.sets(st.sampled_from(YEARS), max_size=3),
+    lone_years=st.sets(st.sampled_from(YEARS), max_size=1),
+    month_years=st.sets(st.sampled_from(YEARS), max_size=1),
+)
+def test_the_export_and_the_loader_find_the_same_years(
+    tax_benefit_system,
+    population,
+    id_columns,
+    identifier_years,
+    data_years,
+    lone_years,
+    month_years,
+):
+    # The export gives each identifier for the years a simulation built from
+    # the frame holds it in: the dataset's years and the years only an
+    # identifier column names. The loader and the export each work these out
+    # from the frame's columns, so the round trip relies on them agreeing.
+    # A person_id column alone names a year for every identifier; months
+    # name no year in either.
+    frame_ = multi_year_frame(population, id_columns, identifier_years, data_years)
+    for year in sorted(lone_years):
+        frame_[f"person_id__{year}"] = population.person_ids
+    for year in sorted(month_years):
+        frame_[f"ebr_energy_bills_credit_eligible__{year}-01"] = True
+
+    dataset, _, identifier_inputs = dataset_from_input_dataframe(
+        frame_, tax_benefit_system, YEAR
+    )
+    exported = with_identifiers_in_each_year(frame_, tax_benefit_system)
+
+    held = {int(year) for year in dataset.years} | {
+        int(period) for _, period, _ in identifier_inputs
+    }
+    assert held == set(identifier_years) | set(data_years) | set(lone_years)
+    named = {split_column(column)[0] for column in frame_}
+    for identifier in IDENTIFIER_VARIABLES:
+        given_for = {
+            int(split_column(column)[1]) for column in columns_of(exported, identifier)
+        }
+        assert given_for == (held if identifier in named else set())
+
+
+@pytest.mark.parametrize("year", [YEAR - 2, YEAR + 2])
+def test_an_export_whose_identifiers_differ_between_years_is_refused(year):
+    # The export copies an identifier into the years it does not give it
+    # for; that never makes columns that differ agree, so the loader still
+    # refuses them.
+    simulation = Simulation(dataset=frame(TWINS))
+    simulation.set_input("person_id", year, np.array([1, 3]))
+    exported = simulation.to_input_dataframe()
+
+    with pytest.raises(ValueError, match="differ"):
+        Simulation(dataset=exported)
 
 
 @TABLE_SETTINGS
