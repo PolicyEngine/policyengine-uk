@@ -105,13 +105,16 @@ gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 - miscellaneous_income
 - mortgage_capital_repayment
 - net_financial_wealth
+- non_residential_property_secured_debt
 - non_residential_property_value
 - other_investment_income
+- other_residential_property_secured_debt
 - other_residential_property_value
 # Purchase prices a dataset may impute; uprated like the property stocks.
 - additional_residential_property_purchased
 - non_residential_property_purchased
 - owned_land
+- owned_land_secured_debt
 # A formula of benunit_reported_capital; listed so a dataset that stores it
 # directly is uprated like the input.
 - pension_credit_reported_capital

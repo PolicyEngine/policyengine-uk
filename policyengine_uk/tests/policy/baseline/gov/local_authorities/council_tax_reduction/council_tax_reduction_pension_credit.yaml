@@ -466,12 +466,16 @@
         savings: 10_000
         other_residential_property_value: 7_000
   output:
-    savings_credit: 267.42
+    # Capital 10,000 + 90% of 7,000 = 16,300 (SPC Regs 2002 reg. 19(a)), so
+    # deemed income is 13 steps x 52 = 676 and Pension Credit income is
+    # 13,314 + 676 = 13,990. Savings credit: 60% of (12,376 - 208.07 x 52)
+    # = 933.82, less 40% of (13,990 - 12,376) = 645.60, leaves 288.22.
+    savings_credit: 288.22
     in_receipt_of_savings_credit_only: true
     # Pension Credit counts the second property as capital; household
     # savings alone (10,000) are under the limit. Before: CTR 1,999.60.
-    pension_credit_assessable_capital: 17_000
-    council_tax_reduction_assessable_capital: 17_000
+    pension_credit_assessable_capital: 16_300
+    council_tax_reduction_assessable_capital: 16_300
     council_tax_reduction: 0
 
 - name: The same pensioner not claiming Pension Credit is tested on household savings only
@@ -655,20 +659,21 @@
         savings: 0
         corporate_wealth: 20_000
   output:
-    # (12,000 + 1,500 - 12,570) x 0.2 = 186. (20,000 - 10,000) / 500 = 20
-    # steps of £1 a week; 20 x 52 = 1,040 of deemed income.
-    pension_credit_assessable_capital: 20_000
-    pension_credit_deemed_income: 1_040
-    # 13,500 - 186 + 1,040 = 14,354, above the minimum guarantee of 12,376.
-    pension_credit_income: 14_354
+    # (12,000 + 1,500 - 12,570) x 0.2 = 186. Shares are valued at 90% for the
+    # expenses of sale (SPC Regs 2002 reg. 19(a)): 18,000. (18,000 - 10,000) /
+    # 500 = 16 steps of £1 a week; 16 x 52 = 832 of deemed income.
+    pension_credit_assessable_capital: 18_000
+    pension_credit_deemed_income: 832
+    # 13,500 - 186 + 832 = 14,146, above the minimum guarantee of 12,376.
+    pension_credit_income: 14_146
     guarantee_credit: 0
-    # 933.816 - 0.4 x (14,354 - 12,376) = 933.816 - 791.20 = 142.616.
-    savings_credit: 142.62
+    # 933.816 - 0.4 x (14,146 - 12,376) = 933.816 - 708 = 225.816.
+    savings_credit: 225.82
     in_receipt_of_savings_credit_only: true
-    # The Pension Credit capital is 20,000, over 16,000, with nil savings in
+    # The Pension Credit capital is 18,000, over 16,000, with nil savings in
     # the household. The same pensioner with 20,000 of private_pension_wealth
     # keeps CTR in the next case.
-    council_tax_reduction_assessable_capital: 20_000
+    council_tax_reduction_assessable_capital: 18_000
     council_tax_reduction: 0
 
 - name: Savings credit only, private_pension_wealth is not Pension Credit capital, so it does not take the pensioner over the CTR capital limit

@@ -259,7 +259,9 @@
         members: person
         other_residential_property_value: 50_000
   output:
-    uc_assessable_capital: 50_000
+    # Market value less 10% for the expenses of sale (UC Regs 2013
+    # reg. 49(1)(a)).
+    uc_assessable_capital: 45_000
     is_uc_eligible: false
 
 - name: Countable non-residential property can push capital over the upper threshold
@@ -277,7 +279,9 @@
         members: person
         non_residential_property_value: 50_000
   output:
-    uc_assessable_capital: 50_000
+    # Market value less 10% for the expenses of sale (UC Regs 2013
+    # reg. 49(1)(a)).
+    uc_assessable_capital: 45_000
     is_uc_eligible: false
 
 - name: Countable corporate wealth can push capital over the upper threshold
@@ -295,7 +299,9 @@
         members: person
         corporate_wealth: 50_000
   output:
-    uc_assessable_capital: 50_000
+    # Market value less 10% for the expenses of sale (UC Regs 2013
+    # reg. 49(1)(a)).
+    uc_assessable_capital: 45_000
     is_uc_eligible: false
 
 - name: Main residence value is excluded from Universal Credit capital
