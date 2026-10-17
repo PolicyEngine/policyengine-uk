@@ -94,12 +94,12 @@ def annual_allowance_net_income(person, period, parameters):
     losses_brought_forward_deducted = profits_before_carry_forward - person(
         "taxable_self_employment_income", period
     )
-    relief_limit = np.maximum(
-        hmrc.income_tax.reliefs.pension_contribution.basic_amount,
+    relieved_contributions = pension_contributions_relief_amount(
+        actual_member_contributions,
         actual_taxable_pay + profits_before_carry_forward,
-    )
-    relieved_contributions = np.minimum(actual_member_contributions, relief_limit) * (
-        person("age", period) < hmrc.pensions.pension_contributions_relief_age_limit
+        person("personal_pension_contributions", period),
+        person("age", period),
+        hmrc,
     )
     adjusted_total = np.maximum(
         0,

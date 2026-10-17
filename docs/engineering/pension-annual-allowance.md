@@ -53,7 +53,12 @@ Current-year trading-loss relief is income-dependent: the helper rebuilds
 adjusted total income and the [ITA 2007 s. 24A relief
 cap](https://www.legislation.gov.uk/ukpga/2007/3/section/24A) from actual earnings
 and member contributions, including the add-back for trading losses brought
-forward. It then limits [s. 64 loss
+forward. Pension relief in this rebuilt cap uses the same RAS-aware helper
+as the income tests: [FA 2004 ss. 190(3) and
+191(7)](https://www.legislation.gov.uk/ukpga/2004/12/section/191) reserve the
+basic-amount uplift above earnings for RAS contributions. Pure net-pay
+payments receive relief only up to earnings, and no member relief applies
+from age 75. It then limits [s. 64 loss
 relief](https://www.legislation.gov.uk/ukpga/2007/3/section/64) to that cap and
 the actual income available after relievable net-pay contributions, within
 the earnings relief limit and before age 75. Section 193(2) takes net-pay

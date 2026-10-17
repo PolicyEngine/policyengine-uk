@@ -144,6 +144,43 @@ def test_nics_cap_preserves_basic_ras_threshold_income_boundary(year):
             assert float(sim.calculate(variable, year)[0]) == amount, (cap, variable)
 
 
+@pytest.mark.parametrize("year", [2026, 2029, 2030])
+@pytest.mark.parametrize("cap", [2_000, float("inf")], ids=["capped", "uncapped"])
+@pytest.mark.parametrize("net_pay", [2_000, 3_600], ids=["earnings", "above_earnings"])
+def test_basic_ras_uplift_does_not_relieve_net_pay_in_aa_loss_cap(year, cap, net_pay):
+    """FA 2004 ss.190(3)/191(7) reserve above-earnings basic relief for RAS."""
+    sim = _population_simulation(
+        [
+            {
+                "age": 45,
+                "employment_income_before_lsr": 2_000,
+                "employee_pension_contributions_reported": net_pay,
+                "personal_pension_contributions": 0,
+                "dividend_income": 250_000,
+                "trading_loss": 200_000,
+                "employer_pension_contributions": 100_000,
+                "pension_contributions_via_salary_sacrifice": 12_500,
+            }
+        ],
+        year,
+        cap,
+    )
+    # Only 2,000 net pay is relievable. ATI is 250,000, so the 25% loss
+    # cap is 62,500 and statutory net income is 187,500. The 12,500
+    # sacrifice brings threshold income exactly to the untapered boundary.
+    expected = {
+        "pension_annual_allowance_threshold_income": 200_000,
+        "pension_annual_allowance_adjusted_income": 302_000,
+        "pension_contributions_for_annual_allowance": 112_500 + net_pay,
+        "pension_annual_allowance": 60_000,
+        "personal_pension_contributions_tax": (52_500 + net_pay) * 0.45,
+    }
+    for variable, amount in expected.items():
+        assert float(sim.calculate(variable, year)[0]) == pytest.approx(
+            amount, abs=0.01
+        )
+
+
 @pytest.mark.parametrize("year", [2029, 2030])
 @pytest.mark.parametrize("scheme", ["DC", "DB"])
 @pytest.mark.parametrize("method", ["net_pay", "RAS"])
