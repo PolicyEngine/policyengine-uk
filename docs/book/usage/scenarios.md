@@ -272,8 +272,8 @@ baseline_sim = Simulation(situation=benefit_cap_family)
 reformed_sim = Simulation(situation=benefit_cap_family, scenario=reindex_benefit_cap)
 
 # Compare the benefit cap levels
-baseline_cap = baseline_sim.calculate("benefit_cap", 2026).mean()
-reformed_cap = reformed_sim.calculate("benefit_cap", 2026).mean()
+baseline_cap = baseline_sim.calculate("uc_benefit_cap", 2026).mean()
+reformed_cap = reformed_sim.calculate("uc_benefit_cap", 2026).mean()
 
 print(
     f"Benefit cap - frozen: £{baseline_cap:.0f}/year, indexed: £{reformed_cap:.0f}/year"
@@ -398,7 +398,12 @@ one_year = Simulation(
 )
 ```
 
-Outside a change's dates, prior law stays in force. Where the timeline states later values, they apply on their dates. Where the parameter's future is projected by uprating or indexation, prior law's projected path resumes after a change that ends: a one-year change to the UC standard allowance returns to the uprated amounts the next year. A change "from a date onwards" is held flat to the end of 2100 and is not uprated.
+Outside a change's dates, prior law stays in force. Where the timeline states later values, they apply on their dates. Where it states none, prior law depends on how the parameter's future is made:
+
+- the personal allowance and the basic rate limit are indexed from the previous tax year's amount (Income Tax Act 2007 ss21 and 57), so after a change ends indexation resumes from the changed amount. Freezing the allowance at £12,570 to 2033-34 gives £12,570 plus 2034-35's September CPI rise, rounded up to £10, for 2034-35, as the Finance Act 2021 freeze does for 2031-32. The National Insurance thresholds the model aligns with them follow: they align with the resumed path, and after a change to one of them alone they are aligned again;
+- an amount uprated from an index, such as a benefit rate, returns to its uprated path: a one-year change to the UC standard allowance gives the uprated amount the next year. Whether a freeze of such an amount should instead resume from the frozen amount, as the 2016-2020 benefit freeze did, is an open question (policyengine-uk#2430).
+
+A change "from a date onwards" is held flat to the end of 2100 and is not uprated or indexed. That is the key's literal reading, not something statute requires; to let indexation resume after a change, give its last tax year.
 
 Each way of passing a reform reads period keys as it always has:
 
@@ -418,6 +423,8 @@ Processing also builds some parameters from others: the triple lock rate (`gov.e
 A dataset's later years are projected from its first by the economic assumptions as the simulation is built. Dated changes that change what that projection reads (a growth rate, say, through `parameter_changes`, `"start.stop"` or bare-year keys, or a 1 January key on a calendar-year series) are written before the data is built, so incomes, rents and council tax follow them, as with `applied_before_data_load=True`. Other dated changes come just after the data is built, before the steps that read parameters while the simulation is built: the Universal Credit rebalancing awards and the structural reforms that parameters switch on. Other single-day keys and a scenario's own simulation modifier run after those steps, as they always have, and leave the data as built. Datasets loaded from `hf://` or `gs://` are cached once projected, under current law only: a simulation whose projection inputs differ builds its own, so a scenario never reaches its baseline or a later simulation. A sum with a part applied before data load applies all its parameter changes before the data is built (see "Combining scenarios" above).
 
 All of this applies when the scenario or reform is passed to `Simulation(...)`. `Scenario.apply(simulation)` on a simulation that is already built edits its annualised values instead, as it always has: a `"2027-04-06.2028-04-05"` key there overrides those dates of the fiscal-year values, so it does not set fiscal year 2027, and the model logs a warning saying so. Pass the scenario when constructing the simulation for dated measures.
+The modifier returned by `Scenario.from_reform` behaves the same way on a built simulation for changes that are no longer effective, and raises if an external override key contains no 1 January annual value.
+A pure statutory or pure legacy reform can be a no-op on a copy, clone or branch only when its complete write sequence matches the latest recorded writes on its paths, the other log has no writes on those paths, and its values remain current. Mixed statutory and legacy composites always replay in their requested order; this can append duplicate override-log entries. An external key that contains no 1 January annual value raises with its path and key.
 
 ### Creating complex scenarios with simulation modifiers
 
