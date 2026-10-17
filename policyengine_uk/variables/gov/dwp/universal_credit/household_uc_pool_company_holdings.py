@@ -13,12 +13,13 @@ class household_uc_pool_company_holdings(Variable):
         "shared among claimants and partners without a financial observation "
         "or complete override. A claimant or partner's holding is already "
         "covered when their benunit supplies a nonnegative financial "
-        "observation (benunit_reported_capital), which is subtracted from the "
-        "financial pool. All other holdings leave the pool here, including "
-        "those of complete-override claimants without a financial observation "
-        "and those of dependants. A complete uc_reported_capital override has "
-        "unknown asset composition and is never subtracted from the financial "
-        "pool; its owner's holding is also disregarded in their own assessment. "
+        "observation (benunit_reported_capital) and no complete override, so "
+        "that observation is subtracted from the financial pool. All other "
+        "holdings leave the pool here, including those of complete-override "
+        "claimants and dependants. A complete uc_reported_capital override "
+        "consumes its amount from the financial pool under the inherited "
+        "convention, but its asset composition is unknown; its owner's holding "
+        "is also disregarded in their own assessment. "
         "When financial reports and holdings are compatible, no benunit counts "
         "any part of a disregarded holding. An inconsistent financial report "
         "that omits a known holding can leave it in the residual pool. A holding "
@@ -35,8 +36,11 @@ class household_uc_pool_company_holdings(Variable):
     def formula(household, period, parameters):
         person = household.members
         has_financial_report = person.benunit("benunit_reported_capital", period) >= 0
+        has_complete_override = person.benunit("uc_reported_capital", period) >= 0
         claimant_or_partner = person("is_uc_claimant", period)
-        off_reported_capital = has_financial_report & claimant_or_partner
+        off_reported_capital = (
+            has_financial_report & ~has_complete_override & claimant_or_partner
+        )
         holdings = household.sum(
             person("uc_company_holding_disregard", period) * ~off_reported_capital
         )

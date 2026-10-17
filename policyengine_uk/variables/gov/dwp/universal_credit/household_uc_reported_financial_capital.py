@@ -4,13 +4,14 @@ from policyengine_uk.model_api import *
 class household_uc_reported_financial_capital(Variable):
     value_type = float
     entity = Household
-    label = "Household financial capital observed for benefit units"
+    label = "Household UC capital reports consumed from the financial pool"
     documentation = (
-        "Sum of nonnegative benunit_reported_capital observations, counted "
-        "once per benefit unit. Only these financial observations reduce the "
-        "household financial proxy. A complete uc_reported_capital override "
-        "has an unknown financial/property decomposition and is never "
-        "subtracted from that financial pool."
+        "Amounts consumed from the household financial proxy, counted once "
+        "per benefit unit: a nonnegative complete uc_reported_capital override "
+        "takes precedence over benunit_reported_capital. Without an override, "
+        "use the nonnegative financial observation. Subtracting a complete "
+        "override retains the inherited residual-pool convention; it does "
+        "not imply that the override's asset composition is observed."
     )
     definition_period = YEAR
     unit = GBP
@@ -19,6 +20,10 @@ class household_uc_reported_financial_capital(Variable):
     def formula(household, period, parameters):
         person = household.members
         financial_capital = person.benunit("benunit_reported_capital", period)
+        complete_override = person.benunit("uc_reported_capital", period)
+        consumed_capital = where(
+            complete_override >= 0, complete_override, financial_capital
+        )
         return household.sum(
-            max_(0, financial_capital) * person("is_benunit_head", period)
+            max_(0, consumed_capital) * person("is_benunit_head", period)
         )

@@ -12,8 +12,8 @@ Invariants, over generated households of one or two benefit units:
    -1 included. UC's complete override remains -1 without an explicit value.
 2. Differential: without property or person-level capital, a financial
    observation gives the same assessment as explicitly setting that unit's
-   complete override too. Retaining the financial observations in both cases
-   preserves the financial residual available to other units.
+   complete override too. Each unit consumes the same amount from the financial
+   pool in both cases, preserving the residual available to other units.
 3. Precedence: a programme variable set directly wins for that programme only.
 4. Financial identity and bounds: without property or person-level capital,
    a unit with recorded R >= 0 has UC assessable capital R. Assessable capital

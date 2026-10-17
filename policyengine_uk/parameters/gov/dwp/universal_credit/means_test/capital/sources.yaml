@@ -2,9 +2,10 @@ description: >
   Household financial proxies for Universal Credit: savings and corporate
   financial wealth. A nonnegative benunit_reported_capital replaces these
   financial proxies and covered person-level sources, including a Lifetime ISA.
-  Only observed financial totals reduce this financial pool; a complete
-  uc_reported_capital override has unknown asset composition and is never
-  subtracted from it. The residual is allocated by claimant/partner counts
+  Each benefit unit's complete uc_reported_capital override, otherwise its
+  observed financial total, reduces this financial pool. Subtracting complete
+  overrides retains the inherited allocation convention despite their unknown
+  asset composition. The residual is allocated by claimant/partner counts
   to benefit units with neither a financial observation nor a complete override,
   including units that do not receive UC. This allocation is an assumption
   about unobserved ownership, not a statutory rule. Countable property is

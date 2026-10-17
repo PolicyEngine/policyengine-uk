@@ -63,3 +63,30 @@
     uc_assessable_capital: 0
     is_uc_eligible: true
     uc_tariff_income: 0
+
+- name: A complete override consumes its amount from the household financial pool
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+      other_claimant:
+        age: 30
+        is_claimant_or_partner: true
+    benunits:
+      missing:
+        members: [claimant]
+        would_claim_uc: true
+      overridden:
+        members: [other_claimant]
+        would_claim_uc: true
+        uc_reported_capital: 6_000
+    households:
+      household:
+        members: [claimant, other_claimant]
+        savings: 12_000
+  output:
+    uc_assessable_capital: [6_000, 6_000]
+    uc_tariff_income: [0, 0]
+    universal_credit: [5_098.80, 5_098.80]

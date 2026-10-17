@@ -11,12 +11,13 @@ class uc_assessable_capital(Variable):
         "before the existing regulation 77 company substitution. Otherwise "
         "a nonnegative benunit_reported_capital replaces financial household "
         "and person-level proxies only; it does not replace countable property. "
-        "Observed financial totals reduce the household financial pool before "
+        "Complete overrides, otherwise observed financial totals, reduce the "
+        "household financial pool before "
         "its residual is allocated by claimant/partner counts to units with "
         "neither report. Under this inherited financial convention, another "
-        "unit's financial report can change a missing-report unit's capital. "
-        "A complete override is never subtracted from that "
-        "financial pool because its asset decomposition is unknown. Property "
+        "unit's financial report or complete override can change a "
+        "missing-report unit's capital. Subtracting a complete override is "
+        "a pool-allocation convention, not an observed asset breakdown. Property "
         "is valued separately in the assessment year and allocated across ALL "
         "claimant/partner adults, including non-UC units and complete-override "
         "units, whose shares are consumed rather than redistributed. Property "
@@ -52,8 +53,8 @@ class uc_assessable_capital(Variable):
         financial_report = benunit("benunit_reported_capital", period)
         complete_override = benunit("uc_reported_capital", period)
         unreported_claimants = household("household_uc_unreported_claimants", period)
-        # Complete overrides may include property, so only observed FINANCIAL
-        # totals can be subtracted from this financial-only pool.
+        # Each unit consumes its complete override, otherwise its financial
+        # report, from the financial pool under the inherited convention.
         residual_financial_capital = max_(
             0,
             household_financial_capital

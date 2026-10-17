@@ -16,7 +16,7 @@ from copy import deepcopy
 
 import numpy as np
 import pytest
-from hypothesis import given, settings
+from hypothesis import example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -191,10 +191,28 @@ def test_mixed_household_keeps_financial_and_property_pools_separate(complete_ov
             {"savings": 12_000, "other_residential_property_value": 40_000},
         )
     )
-    # Complete override consumes its £18k conventional property share. Its
-    # unknown financial/property composition never reduces the financial pool.
-    np.testing.assert_allclose(_values(simulation), [complete_override, 15_000, 15_000])
-    assert _values(simulation)[1:].sum() - 6_000 - 6_000 == pytest.approx(18_000)
+    # Complete override consumes its £18k conventional property share and its
+    # reported amount from the financial pool, under the inherited convention.
+    missing_financial = max(0, 12_000 - 6_000 - complete_override)
+    np.testing.assert_allclose(
+        _values(simulation), [complete_override, 15_000, 9_000 + missing_financial]
+    )
+    assert _values(simulation)[1:].sum() - 6_000 - missing_financial == pytest.approx(
+        18_000
+    )
+
+
+@pytest.mark.parametrize("financial", [None, 0, 11_000])
+def test_complete_override_consumes_its_amount_from_the_household_financial_pool(
+    financial,
+):
+    overriding_unit = {"override": 6_000}
+    if financial is not None:
+        overriding_unit["financial"] = financial
+    simulation = Simulation(
+        situation=_situation([{"financial": -1}, overriding_unit], {"savings": 12_000})
+    )
+    np.testing.assert_allclose(_values(simulation), [6_000, 6_000])
 
 
 @pytest.mark.parametrize("other_financial", [-1, 0, 50_000])
@@ -406,6 +424,50 @@ def test_assessable_capital_never_falls_when_a_countable_asset_increases(
 
 @PROPERTY_SETTINGS
 @given(
+    savings=st.integers(0, 100_000),
+    financial_percent=st.integers(0, 100),
+    complete_override=st.integers(0, 100_000),
+    superseded_financial=st.integers(0, 100_000),
+    adult_counts=st.lists(st.integers(1, 2), min_size=3, max_size=3),
+)
+@example(
+    savings=12_000,
+    financial_percent=0,
+    complete_override=6_000,
+    superseded_financial=0,
+    adult_counts=[1, 1, 1],
+)
+def test_financial_allocation_conserves_pool_with_reports_and_complete_overrides(
+    savings, financial_percent, complete_override, superseded_financial, adult_counts
+):
+    # Financial observations are compatible with the household pool. Property,
+    # person-level assets and regulation 77 company substitution are absent.
+    financial = savings * financial_percent // 100
+    simulation = Simulation(
+        situation=_situation(
+            [
+                {"adults": adult_counts[0], "financial": -1},
+                {
+                    "adults": adult_counts[1],
+                    "financial": superseded_financial,
+                    "override": complete_override,
+                },
+                {"adults": adult_counts[2], "financial": financial},
+            ],
+            {"savings": savings},
+        )
+    )
+    assessed = _values(simulation)
+    assert assessed[1] == complete_override
+    assert assessed[2] == financial
+    assert assessed.sum() <= savings + complete_override + 0.03
+    # Reports replace parts of the pool; they cannot create additional capital
+    # unless their combined amounts already exceed that pool.
+    assert assessed.sum() <= max(savings, financial + complete_override) + 0.03
+
+
+@PROPERTY_SETTINGS
+@given(
     adult_counts=st.lists(st.integers(1, 2), min_size=1, max_size=4),
     residential=st.integers(0, 100_000),
     non_residential=st.integers(0, 100_000),
@@ -493,15 +555,10 @@ def test_complete_override_company_holding_cannot_leak_into_missing_unit_pool(
     assert _values(simulation, "uc_company_owner_treatment_applies")[0]
     assert _values(simulation, "uc_company_holding_disregard")[0] == 10_000
     assert _values(simulation, "uc_company_capital")[0] == 0
-    # An observed financial report already removes the owner's holding from
-    # the financial pool. Without one, remove it separately even when the
-    # owner has a complete override; that override's decomposition is unknown.
-    expected_pool_disregard = 0 if financial_report == 10_000 else 10_000
-    assert (
-        _values(simulation, "household_uc_pool_company_holdings")[0]
-        == expected_pool_disregard
-    )
+    # The complete override supersedes any financial observation. Its asset
+    # composition is unknown, so the holding still leaves the pool separately.
+    assert _values(simulation, "household_uc_pool_company_holdings")[0] == 10_000
     np.testing.assert_allclose(
         _values(simulation),
-        [max(0, complete_override - 10_000), 6_000],
+        [max(0, complete_override - 10_000), max(0, 6_000 - complete_override)],
     )

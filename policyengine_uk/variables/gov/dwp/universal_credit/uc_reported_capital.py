@@ -18,8 +18,10 @@ class uc_reported_capital(Variable):
         "Property allocation depends only on claimant/partner adult counts "
         "and is independent of other units' financial reports. The residual "
         "financial pool is shared among units with neither report; under this "
-        "inherited convention, another unit's financial report can change a "
-        "missing-report unit's capital. "
+        "inherited convention, another unit's financial report or complete "
+        "override can change a missing-report unit's capital. The complete "
+        "override consumes its amount from the financial pool, taking "
+        "precedence over the same unit's financial report. "
         "This variable does not derive from the financial-only FRS total. "
         "An override set directly applies only in the supplied assessment year."
     )
