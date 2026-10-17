@@ -651,6 +651,7 @@ def test_a_manifest_listing_a_file_twice_is_refused(tmp_path):
         "[]",
         '"a string"',
         '{"package": "policyengine-uk"}',
+        json.dumps({"package": "policyengine-uk", "version": VERSION}),
         json.dumps({"package": "policyengine-uk", "version": VERSION, "files": {}}),
         json.dumps({"package": "policyengine-uk", "version": VERSION, "files": [1, 2]}),
         "",
@@ -660,6 +661,7 @@ def test_a_manifest_listing_a_file_twice_is_refused(tmp_path):
         "list",
         "string",
         "no version",
+        "no files",
         "files a dict",
         "files not objects",
         "empty file",
@@ -669,6 +671,18 @@ def test_an_unreadable_manifest_is_unusable_input_not_a_traceback(tmp_path, cont
     manifest = write_json(tmp_path / "m.json", content)
     command = ["pypi-state", "--version", VERSION, "--manifest", str(manifest)]
     assert release.main(command) == 2
+
+
+@pytest.mark.parametrize(
+    "digest", ["e" * 63, "e" * 65, "E" * 64, "z" * 64, "0x" + "e" * 62]
+)
+def test_a_manifest_digest_that_is_not_64_lowercase_hex_is_refused(tmp_path, digest):
+    dist = build(tmp_path / "dist")
+    record = manifest_record(dist)
+    record["files"][0]["sha256"] = digest
+    manifest = write_json(tmp_path / "m.json", record)
+    with pytest.raises(release.InputError, match="no sha256"):
+        release.pypi_state(state_args(None, manifest=manifest), fetch=lambda *a: None)
 
 
 def test_the_manifest_check_dist_writes_is_the_one_pypi_state_reads(
@@ -717,10 +731,12 @@ def test_the_manifest_and_a_clean_dist_agree_under_require(
     }[served]
 
     def run(args):
+        # The exit code and how long it waited for the index (--wait).
         clock = FakeClock()
-        return release.pypi_state(
+        code = release.pypi_state(
             args, fetch=lambda *a: remote, sleep=clock.sleep, clock=clock
         )
+        return code, clock.now
 
     with_manifest = run(state_args(cluttered, require, wait=30, manifest=manifest))
     with_clean_dist = run(state_args(clean, require, wait=30))
