@@ -59,10 +59,43 @@ benunit worked. PolicyEngine computes it via `ctc_entitlement`, gated by
 
 | Element | Parameter |
 |---------|-----------|
-| Family | `family_element.yaml` (extinct from 2017 for new claims) |
+| Family | `family_element.yaml` (one amount, subject to the birth-date condition below) |
 | Per qualifying child | `child_element.yaml` |
 | Disabled child addition | `dis_child_element.yaml` |
 | Severely disabled child addition | `severe_dis_child_element.yaml` |
+
+### Family element birth-date condition
+
+From 6 April 2017, the family element is included only if a claimant or
+joint claimant is responsible for a qualifying child or qualifying young
+person born **strictly before 6 April 2017**. A child born on that date
+does not qualify. One qualifying child is enough for the single family
+amount; an older adult or an excluded child cannot unlock it. The model
+uses its existing CTC child/QYP responsibility mask, including its existing
+looked-after-child and own-right-benefit approximations.
+
+`CTC_family_element` applies this condition separately from the individual
+child element's two-child limit. Its activation and cutoff parameters live
+under `child_tax_credit/eligibility/`; reforming them does not change the
+individual-element cutoff. The existing flat £545 amount is unchanged.
+Before the condition applies, supported model years retain the prior flat
+family amount. The false activation value at 2015-01-01 anchors model
+coverage, rather than statutory commencement. Annual parameters use the
+existing April sampling convention; this is not a part-year award model.
+
+The rule reuses `birth_day`: a supplied valid `date_of_birth` must agree
+with legal age on 6 October. A missing or zero date uses the existing
+annual age and months-since-birthday fallback; `birth_year` is not a
+replacement. Those conventions are not exact birth-date observations.
+Explicit family-element and final-amount inputs retain the ordinary model
+override contract and are not evidence of legal entitlement. Continuing
+claims, income tests, minimum awards, other elements and 2025 closure are
+unchanged; this update does not audit daily statutory award rounding.
+
+Historical coverage remains incomplete: this change addresses the
+supported 2015+ birth-date rule only. The pre-2011 baby addition and
+2003–2014 coverage remain follow-up work under issue #2050; no raw
+historical values or annual-conversion rules were extended.
 
 ### Two-child limit
 
