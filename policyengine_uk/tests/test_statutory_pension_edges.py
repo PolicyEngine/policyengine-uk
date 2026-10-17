@@ -220,6 +220,12 @@ def _assert_pension_input_path(sim, year, scheme):
     )
 
 
+def _assert_ani_input_path(sim, year, supplied_ani):
+    """ANI inputs override the whole person array, including partial inputs."""
+    periods = sim.get_holder("adjusted_net_income").get_input_periods("default")
+    assert [str(period) for period in periods] == ([str(year)] if supplied_ani else [])
+
+
 def _charge_with_fixed_ordinary_tax_inputs(results, year):
     """Test the AA inputs to the charge separately from ordinary income tax.
 
@@ -290,18 +296,71 @@ def test_nics_cap_preserves_aa_inputs_and_charge_with_fixed_ordinary_tax(
             "personal_pension_contributions": 3_600,
         },
     ] + dc_people
-    for scheme, people in [("DC", dc_people), ("DB", db_people)]:
+    # ANI is a partial-input override, so each person in these separate
+    # simulations must supply it. Loss relief is already reflected in ANI;
+    # neither actual nor synthetic pay/loss relief can reconstruct it again.
+    ani_people = [
+        {
+            "age": age,
+            "employment_income_before_lsr": 2_000,
+            "pension_contributions_via_salary_sacrifice": 201_000,
+            "employer_pension_contributions": 100_000,
+            "adjusted_net_income": 150_000,
+            "trading_loss": loss,
+            **contributions,
+        }
+        for age in [45, 80]
+        for loss in [0, 10_000]
+        for contributions in [
+            {},
+            {"gift_aid": 800, "employee_pension_contributions_reported": 4_000},
+            {"gift_aid": 800, "personal_pension_contributions": 4_000},
+        ]
+    ]
+    ani_db_people = [
+        {**person, "pension_contributions_for_annual_allowance": 350_000}
+        for person in ani_people
+    ]
+    for scheme, people, supplied_ani in [
+        ("DC", dc_people, False),
+        ("DB", db_people, False),
+        ("DC", ani_people, True),
+        ("DB", ani_db_people, True),
+    ]:
         results = []
         for cap in [2_000, float("inf")]:
             sim = _population_simulation(people, year, cap)
             _assert_pension_input_path(sim, year, scheme)
+            _assert_ani_input_path(sim, year, supplied_ani)
             results.append(
                 {
                     variable: np.asarray(sim.calculate(variable, year))
                     for variable in AA_VARIABLES
                 }
             )
-            if scheme == "DC":
+            if supplied_ani:
+                # Gross Gift Aid is 1,000. At age 45 actual earnings allow
+                # 2,000 net-pay relief or 3,600 RAS relief; age 80 allows
+                # neither. The loss never changes an already supplied ANI.
+                expected_adjusted = (
+                    [451_000, 454_000, 455_600] * 2 + [451_000, 448_000, 448_000] * 2
+                    if scheme == "DC"
+                    else [500_000, 499_000, 500_600] * 2
+                    + [500_000, 497_000, 497_000] * 2
+                )
+                np.testing.assert_array_equal(
+                    results[-1]["pension_annual_allowance_threshold_income"],
+                    [351_000, 352_000, 352_000] * 4,
+                )
+                np.testing.assert_array_equal(
+                    results[-1]["pension_annual_allowance_adjusted_income"],
+                    expected_adjusted,
+                )
+                np.testing.assert_array_equal(
+                    results[-1]["pension_annual_allowance"],
+                    np.full(len(people), 10_000),
+                )
+            elif scheme == "DC":
                 np.testing.assert_array_equal(
                     results[-1]["pension_contributions_for_annual_allowance"][:2],
                     [130_000, 304_600],

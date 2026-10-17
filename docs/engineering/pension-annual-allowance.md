@@ -33,15 +33,17 @@ salary-sacrifice return. Accordingly:
 
 - `pension_annual_allowance_adjusted_income` adds the total pension input
   amount to that reconstructed income, then subtracts the individual's actual
-  own contributions. This restores net-pay relief once and includes employer
-  contributions and
-  salary sacrifice. Relievable RAS contributions made before age 75 do not
+  own contributions. The helper retains the s. 228ZA(4)(c) net-pay relief
+  add-back after limiting trading losses to income remaining after net pay.
+  Employer contributions and salary sacrifice are included. Relievable RAS
+  contributions made before age 75 do not
   reduce adjusted income.
 - `pension_annual_allowance_threshold_income` starts from the same
   reconstructed income, deducts pension relief recomputed on actual earnings
   and contributions, then adds back relevant salary sacrifice. The relief
-  deduction combines the net-pay deduction already present in statutory
-  Step 2 income and the gross RAS deduction
+  deduction combines the net-pay employment-income deduction under
+  [FA 2004 s. 193(2)](https://www.legislation.gov.uk/ukpga/2004/12/section/193)
+  and the gross RAS deduction
   under s. 228ZA(5)(c).
 - Both measures exclude `pension_annual_allowance_taxable_lump_sum_death_benefits`.
   This input must already be included in income elsewhere, such as private
@@ -53,18 +55,35 @@ cap](https://www.legislation.gov.uk/ukpga/2007/3/section/24A) from actual earnin
 and member contributions, including the add-back for trading losses brought
 forward. It then limits [s. 64 loss
 relief](https://www.legislation.gov.uk/ukpga/2007/3/section/64) to that cap and
-the actual income available. Removing synthetic pay after deducting the
+the actual income available after relievable net-pay contributions, within
+the earnings relief limit and before age 75. Section 193(2) takes net-pay
+contributions out of employment income itself; only the excess under
+s. 193(4) or (6) is a Step 2 deduction.
+[ITA 2007 s. 25(4)](https://www.legislation.gov.uk/ukpga/2007/3/section/25)
+prevents Step 2 relief from exceeding the remaining income. This limit
+applies in every model year, including before the NICs cap begins in 2029.
+It can therefore change pre-2029 allowances for people whose trading-loss
+relief is limited by income and who make relievable net-pay contributions.
+Removing synthetic pay after deducting the
 original relief would retain relief calculated on income the person did not
 receive. Threshold income also recomputes [FA 2004 ss. 188–191 pension
 relief](https://www.legislation.gov.uk/ukpga/2004/12/section/188) on actual
 earnings and contributions.
 
+An explicitly supplied `adjusted_net_income` is authoritative. For this input
+path, the helper restores gross Gift Aid and pension relief recomputed on
+actual contributions and earnings. It does not remove returned pay or
+reconstruct trading-loss relief: the supplied ANI contains neither synthetic
+pay nor relief recalculated by the NICs reclassification. The annual-allowance
+base is therefore independent of the NICs cap on this path too.
+
 Other modeled deductions do not depend on the returned pay: brought-forward
 trade losses, capital allowances and the trading allowance depend on trading
 profits. Property finance-cost relief is a downstream tax reducer. Gift Aid's
-adjusted-net-income deduction and rate-limit extension do not enter either
-annual-allowance income measure, nor does the separate ITA 2007 s. 58 pension
-deduction from adjusted net income. Charitable investment gifts and
+adjusted-net-income deduction and rate-limit extension do not reduce either
+annual-allowance income measure. When ANI is supplied, the helper restores
+those ANI deductions, including the separate ITA 2007 s. 58 pension
+deduction. Charitable investment gifts and
 `other_deductions` remain in `allowances`; their statutory Step 2 treatment is
 an existing gap shared with adjusted net income.
 

@@ -17,10 +17,10 @@
     employee_pension_contributions_reported: [0, 0, 0, 600, 0, 600, 0]
     personal_pension_contributions: [0, 0, 0, 0, 600, 0, 600]
   output:
-    pension_annual_allowance_threshold_income: [201_000, 217_500, 202_500, 200_400, 200_400, 201_000, 201_000]
-    pension_annual_allowance_adjusted_income: [301_000, 317_500, 302_500, 301_000, 301_000, 300_400, 300_400]
+    pension_annual_allowance_threshold_income: [201_000, 217_500, 202_500, 201_000, 200_400, 201_000, 201_000]
+    pension_annual_allowance_adjusted_income: [301_000, 317_500, 302_500, 301_600, 301_000, 300_400, 300_400]
     pension_contributions_for_annual_allowance: [301_000, 130_000, 130_000, 301_600, 301_600, 301_000, 301_000]
-    pension_annual_allowance: [39_500, 31_250, 38_750, 39_500, 39_500, 39_800, 39_800]
+    pension_annual_allowance: [39_500, 31_250, 38_750, 39_200, 39_500, 39_800, 39_800]
 
 - name: Trading loss limits for AA use actual income in 2030
   period: 2030
@@ -36,7 +36,25 @@
     employee_pension_contributions_reported: [0, 0, 0, 600, 0, 600, 0]
     personal_pension_contributions: [0, 0, 0, 0, 600, 0, 600]
   output:
-    pension_annual_allowance_threshold_income: [201_000, 217_500, 202_500, 200_400, 200_400, 201_000, 201_000]
-    pension_annual_allowance_adjusted_income: [301_000, 317_500, 302_500, 301_000, 301_000, 300_400, 300_400]
+    pension_annual_allowance_threshold_income: [201_000, 217_500, 202_500, 201_000, 200_400, 201_000, 201_000]
+    pension_annual_allowance_adjusted_income: [301_000, 317_500, 302_500, 301_600, 301_000, 300_400, 300_400]
     pension_contributions_for_annual_allowance: [301_000, 130_000, 130_000, 301_600, 301_600, 301_000, 301_000]
-    pension_annual_allowance: [39_500, 31_250, 38_750, 39_500, 39_500, 39_800, 39_800]
+    pension_annual_allowance: [39_500, 31_250, 38_750, 39_200, 39_500, 39_800, 39_800]
+
+- name: Net-pay relief limits the loss before the threshold gate in 2026
+  period: 2026
+  absolute_error_margin: 0.05
+  input:
+    age: 45
+    employment_income_before_lsr: 2_000
+    pension_contributions_via_salary_sacrifice: 200_500
+    employer_pension_contributions: 100_000
+    employee_pension_contributions_reported: 1_000
+    trading_loss: 10_000
+  output:
+    # FA 2004 s.193(2) removes net pay before the ITA 2007 s.25(4)
+    # income limit: 2,000 pay - 1,000 net pay - 1,000 loss = 0.
+    pension_annual_allowance_threshold_income: 200_500
+    pension_annual_allowance_adjusted_income: 301_500
+    pension_contributions_for_annual_allowance: 301_500
+    pension_annual_allowance: 39_250
