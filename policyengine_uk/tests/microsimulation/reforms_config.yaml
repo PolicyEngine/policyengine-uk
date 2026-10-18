@@ -39,6 +39,9 @@ reforms:
   - impact: 7.115
     data: 1.58.1 enhanced_frs_2024_25
     model: 2.135.6 (merged 7efaaff16, main 62a0117f9, 2026-10-18)
+  - impact: 7.115
+    data: 1.58.1 enhanced_frs_2024_25
+    model: 2.135.7 (merged 7717438bf, main 7ad002f54, 2026-10-18)
 - name: Raise higher rate by 1pp
   expected_impact: 4.5
   parameters:
@@ -59,6 +62,9 @@ reforms:
   - impact: 4.490
     data: 1.58.1 enhanced_frs_2024_25
     model: 2.135.6 (merged 7efaaff16, main 62a0117f9, 2026-10-18)
+  - impact: 4.490
+    data: 1.58.1 enhanced_frs_2024_25
+    model: 2.135.7 (merged 7717438bf, main 7ad002f54, 2026-10-18)
 - name: Raise personal allowance by ~800GBP/year
   expected_impact: -4.2
   parameters:
@@ -79,6 +85,9 @@ reforms:
   - impact: -4.195
     data: 1.58.1 enhanced_frs_2024_25
     model: 2.135.6 (merged 7efaaff16, main 62a0117f9, 2026-10-18)
+  - impact: -4.195
+    data: 1.58.1 enhanced_frs_2024_25
+    model: 2.135.7 (merged 7717438bf, main 7ad002f54, 2026-10-18)
 - name: Raise child benefit by 25GBP/week per additional child
   expected_impact: -1.4
   parameters:
@@ -99,6 +108,9 @@ reforms:
   - impact: -1.442
     data: 1.58.1 enhanced_frs_2024_25
     model: 2.135.6 (merged 7efaaff16, main 62a0117f9, 2026-10-18)
+  - impact: -1.442
+    data: 1.58.1 enhanced_frs_2024_25
+    model: 2.135.7 (merged 7717438bf, main 7ad002f54, 2026-10-18)
 - name: Reduce Universal Credit taper rate to 20%
   expected_impact: -22.0
   tolerance: 3.0
@@ -120,6 +132,9 @@ reforms:
   - impact: -21.956
     data: 1.58.1 enhanced_frs_2024_25
     model: 2.135.6 (merged 7efaaff16, main 62a0117f9, 2026-10-18)
+  - impact: -21.956
+    data: 1.58.1 enhanced_frs_2024_25
+    model: 2.135.7 (merged 7717438bf, main 7ad002f54, 2026-10-18)
 - name: Raise Class 1 main employee NICs rate to 10%
   expected_impact: 12.5
   parameters:
@@ -140,8 +155,11 @@ reforms:
   - impact: 12.463
     data: 1.58.1 enhanced_frs_2024_25
     model: 2.135.6 (merged 7efaaff16, main 62a0117f9, 2026-10-18)
+  - impact: 12.463
+    data: 1.58.1 enhanced_frs_2024_25
+    model: 2.135.7 (merged 7717438bf, main 7ad002f54, 2026-10-18)
 - name: Raise VAT standard rate by 2pp
-  expected_impact: 34.0
+  expected_impact: 27.6
   tolerance: 1.5
   parameters:
     gov.hmrc.vat.standard_rate: 0.22
@@ -173,6 +191,9 @@ reforms:
   - impact: 34.041
     data: 1.58.1 enhanced_frs_2024_25
     model: 2.135.6 (merged 7efaaff16, main 62a0117f9, 2026-10-18)
+  - impact: 27.581
+    data: 1.58.1 enhanced_frs_2024_25
+    model: 2.135.7 (merged 7717438bf, main 7ad002f54, 2026-10-18)
 - name: Raise additional rate by 3pp
   expected_impact: 3.7
   parameters:
@@ -193,3 +214,6 @@ reforms:
   - impact: 3.656
     data: 1.58.1 enhanced_frs_2024_25
     model: 2.135.6 (merged 7efaaff16, main 62a0117f9, 2026-10-18)
+  - impact: 3.656
+    data: 1.58.1 enhanced_frs_2024_25
+    model: 2.135.7 (merged 7717438bf, main 7ad002f54, 2026-10-18)

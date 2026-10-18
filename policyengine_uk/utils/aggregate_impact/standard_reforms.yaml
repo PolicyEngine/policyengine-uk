@@ -27,6 +27,11 @@
 #   minimum from GBP550m to GBP560m. Their smallest_effect receipts below
 #   are updated together; the other eight minima are unchanged under the
 #   rule and retain their original smallest_effect receipts.
+# - Rechecked on the same certified data with 2.135.7 on core 3.33.2
+#   (merged 7717438bf, main 7ad002f54, 2026-10-18).
+#   vat_standard_plus_2pp: GBP6100000000 to GBP5000000000.
+#   Only changed minima update their smallest_effect receipts; all other
+#   smallest_effect receipts retain their historical values.
 # - What the check must catch: a PolicyEngine UK backtest (11 October 2026,
 #   cited in the Budget CI plan) found the 10% UC standard allowance rise
 #   returning exactly £0 from 2.45.1 to 2.75.3, and the 10% State Pension
@@ -121,8 +126,8 @@ reforms:
     responds:
       variable: vat
       direction: up
-      minimum: 6100000000
-      smallest_effect: 30863018576  # 2025-26
+      minimum: 5000000000
+      smallest_effect: 25006282297  # 2025-26; 2.135.7 recheck above
   - id: additional_rate_plus_3pp
     name: Raise additional rate by 3pp
     parameters:
