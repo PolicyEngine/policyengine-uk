@@ -4,16 +4,19 @@ The winter fuel payment charge tests total income (ITA 2007 s.23 Step 1).
 Employee pension contributions, which the model takes as paid under a net pay
 arrangement, are deducted from employment income (FA 2004 s.193(2)), so total
 income is after them. Contributions relieved at source (s.192) are not.
-Invariants, for any single pensioner in England with pay, employment
-expenses, a private pension and both kinds of contribution, in 2025:
+Invariants, for any single pensioner in England with pay, statutory sick and
+maternity pay, employment expenses, a private pension and both kinds of
+contribution, in 2025:
 
 1. Net pay relief is the employee contributions, up to taxable employment
-   income, and nothing from age 75 (s.188(3)(a)).
+   income (statutory pay included: it is relevant UK earnings, s.189(2)(a)),
+   and nothing from age 75 (s.188(3)(a)).
 2. Total income is taxable employment income plus the pension, less that
    relief. Contributions relieved at source never change it.
 3. Adjusted total income (s.24A(8)), which reads total income for Step 1,
-   still deducts each relieved contribution once: it is the pay and pension
-   less the contributions relieved, up to the greater of £3,600 and the pay.
+   still deducts each relieved contribution once: it is the taxable pay and
+   pension less the contributions relieved, up to the greater of £3,600 and
+   the taxable pay.
 4. The charge is the whole payment when total income exceeds £35,000, and
    nothing otherwise (no relevant benefit is entered).
 
@@ -78,6 +81,8 @@ pensioner = st.fixed_dictionaries(
     {
         "age": st.integers(66, 90),
         "employment_income": money(60_000),
+        "statutory_sick_pay": money(4_000),
+        "statutory_maternity_pay": money(4_000),
         "employment_expenses": money(3_000),
         "private_pension_income": money(50_000),
         "employee_pension_contributions": money(20_000),
@@ -88,6 +93,8 @@ pensioner = st.fixed_dictionaries(
 NET_PAY = {
     "age": 70,
     "employment_income": 36_000.0,
+    "statutory_sick_pay": 0.0,
+    "statutory_maternity_pay": 0.0,
     "employment_expenses": 0.0,
     "private_pension_income": 0.0,
     "employee_pension_contributions": 2_000.0,
@@ -102,6 +109,15 @@ NET_PAY = {
         NET_PAY,
         {**NET_PAY, "age": 80},
         {**NET_PAY, "employment_expenses": 1_500.0},
+        # Statutory sick pay is relevant UK earnings, so the whole £2,000
+        # comes off: total income £34,500, with or without relief at source.
+        {
+            **NET_PAY,
+            "employment_income": 1_000.0,
+            "statutory_sick_pay": 3_000.0,
+            "private_pension_income": 32_500.0,
+            "personal_pension_contributions": 1_000.0,
+        },
     ]
 )
 def test_net_pay_contributions_and_only_they_come_off_total_income(template, people):
@@ -112,7 +128,11 @@ def test_net_pay_contributions_and_only_they_come_off_total_income(template, peo
     )
     for i, person in enumerate(people):
         taxable_pay = max(
-            0.0, person["employment_income"] - person["employment_expenses"]
+            0.0,
+            person["employment_income"]
+            + person["statutory_sick_pay"]
+            + person["statutory_maternity_pay"]
+            - person["employment_expenses"],
         )
         under_75 = person["age"] < 75
         net_pay = under_75 * min(person["employee_pension_contributions"], taxable_pay)

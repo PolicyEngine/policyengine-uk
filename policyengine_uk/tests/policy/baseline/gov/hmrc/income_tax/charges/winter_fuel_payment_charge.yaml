@@ -982,7 +982,8 @@
 
 - name: 2025 net pay contributions come off total income only up to the relief
   # Relief is limited to relevant UK earnings, the £1,000 of employment
-  # income (FA 2004 s.190), and the employer deducts it from that income
+  # income (FA 2004 s.190(1); the rise to the basic amount is only for relief
+  # at source, s.191(7)), and the employer deducts it from that income
   # (s.193(2)). Total income: 1,000 + 35,500 - 1,000 = £35,500, over
   # £35,000: charged the £200.
   period: 2025
@@ -1005,6 +1006,63 @@
     net_pay_pension_relief: [1_000]
     total_income_charged_to_tax: [35_500]
     winter_fuel_payment_charge: [200]
+
+- name: 2025 statutory sick pay is relevant UK earnings for the net pay deduction
+  # Relevant UK earnings are employment income chargeable to tax, including
+  # taxable statutory sick pay (FA 2004 s.189(2)(a); HMRC PTM044100): 1,000 +
+  # 3,000 = £4,000, enough to relieve the whole £2,000 (s.190(1)), which the
+  # employer deducts from that income (s.193(2)). Total income: 4,000 +
+  # 32,500 - 2,000 = £34,500, not over £35,000: no charge.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        employment_income: 1_000
+        statutory_sick_pay: 3_000
+        private_pension_income: 32_500
+        employee_pension_contributions: 2_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    taxable_employment_income: [4_000]
+    net_pay_pension_relief: [2_000]
+    total_income_charged_to_tax: [34_500]
+    winter_fuel_payment: [200]
+    winter_fuel_payment_charge: [0]
+
+- name: 2025 contributions relieved at source leave the net pay deduction alone
+  # The case above with £1,000 of personal contributions as well. They are
+  # relieved at source (FA 2004 s.192), which leaves employment income, so
+  # total income stays £34,500 and there is still no charge.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        employment_income: 1_000
+        statutory_sick_pay: 3_000
+        private_pension_income: 32_500
+        employee_pension_contributions: 2_000
+        personal_pension_contributions: 1_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    net_pay_pension_relief: [2_000]
+    total_income_charged_to_tax: [34_500]
+    winter_fuel_payment_charge: [0]
 
 - name: 2025 contributions from age 75 do not lower total income
   # Contributions paid from age 75 get no relief (FA 2004 s.188(3)(a)), so
