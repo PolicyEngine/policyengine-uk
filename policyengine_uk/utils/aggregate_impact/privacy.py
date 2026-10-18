@@ -19,7 +19,8 @@ Deliberate exceptions:
 
 - Other heads whose formulas read the suppressed figure (income tax on a
   taxable benefit, a means test) still respond to it, inside totals from 10
-  or more records; across two versions it is the d1601 residual below.
+  or more records; exact changes between versions are published under the
+  d1601 A ruling below.
 - The counted-once and double-count-present verdicts for a component from
   fewer than 10 units depend on how other heads respond at those units. They
   are kept, as the only containment tests for that component; their counts,
@@ -37,10 +38,10 @@ the job directly. A pull request from a fork can't: the job runs only for
 branches of this repository (its ``if`` in ``aggregate-impact.yaml``), and
 GitHub gives fork pull requests no secrets.
 
-Still open, for d1601: exact changes between two model versions (or two
-datasets) are published, and a change in fewer than 10 records of a total
-with 10 or more is that change alone. Decile rows and reform figures withhold
-those; national totals don't yet.
+d1601 A (Max, 2026-10-17): publish exact changes between model versions (or
+datasets), as policyengine-api does; level protection stays. A change in
+fewer than 10 records of a national total with 10 or more is published
+exactly. Decile rows and reform figures retain their small-change withholding.
 """
 
 MIN_CELL = 10
