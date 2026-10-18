@@ -105,6 +105,46 @@ def _canonical_parameter_paths(changes: dict) -> dict:
 
 from microdf import MicroDataFrame
 
+
+class _InputKeyLog(set):
+    """A simulation's record of its inputs while Simulation.apply_reform runs.
+
+    policyengine-core records each input in the simulation's
+    ``_user_input_keys`` as (variable, branch, period). ``Holder._set`` adds
+    the key once it has stored the value, again when it replaces one, and on
+    every route: ``Simulation.set_input``, ``Holder.set_input``, a
+    ``set_input`` helper, another thread. A value core does not store adds
+    no key: one ``Simulation.set_input`` gets for a period after the
+    variable's end, one for a neutralized variable, or one for a sub-period
+    that a ``set_input`` helper skips because it already holds an input.
+    This set also adds each key to every set in ``logs``: one for each
+    reform being applied to the simulation, the innermost last.
+
+    A copy or pickle of it is a plain set, so a simulation deep-copied or
+    pickled while a reform runs logs nothing. A shallow copy of the
+    simulation shares its record, as it shares its holders.
+    """
+
+    def __init__(self, keys=(), logs: list = ()):
+        super().__init__(keys)
+        self.logs = logs
+
+    def add(self, key) -> None:
+        super().add(key)
+        for log in self.logs:
+            log.add(key)
+
+    def __reduce__(self):
+        return set, (list(self),)
+
+
+# The logs (see _InputKeyLog) of the reforms Simulation.apply_reform is
+# applying, by the id of the simulation it applies them to, while it does.
+# Kept outside the simulation, because core's clone copies its __dict__:
+# a clone or branch made while a reform runs must not log for it.
+_reform_logs: Dict[int, list] = {}
+
+
 # Cache for fully-loaded, uprated, enum-pre-encoded multi-year datasets keyed
 # by URL and, when selected, the CGT projection fingerprint and runtime.
 # Avoids repeating HDF5 reading (0.84s), uprating (0.69s) and enum
@@ -234,6 +274,7 @@ class Simulation(CoreSimulation):
             capital_gains_projection: Optional common baseline gains projection,
                 shared with the reform's baseline. Omit to retain GDP per capita.
         """
+        self._defer_uc_health_warning = True
         self._cgt_input_provenance = {}
         self._cgt_defaulted_periods = set()
         self._cgt_calculation_depth = 0
@@ -253,6 +294,10 @@ class Simulation(CoreSimulation):
 
         if reform is not None:
             scenario = Scenario.from_reform(reform)
+        # Only a construction-time reference: preserve the existing reading
+        # of this scenario's single-day leftovers while rejecting unreadable
+        # overrides from a user modifier's separate from_reform call.
+        self._building_dated_reforms = scenario.dated_reforms if scenario else None
 
         self.branch_name = "default"
         self.invalidated_caches = set()
@@ -331,14 +376,12 @@ class Simulation(CoreSimulation):
 
         self.tax_benefit_system.reset_parameter_caches()
 
-        # Core applies a reform by calling its apply() with the tax-benefit
-        # system as self, so reforms that change the data (such as
-        # disable_simulated_benefits) reach the simulation through
-        # tax_benefit_system.simulation. Core's Simulation.__init__ sets it;
-        # this __init__ replaces core's, so it sets it too.
+        # Apply structural reforms based on parameters. Core applies a reform
+        # to the tax-benefit system, so reforms that set inputs (such as
+        # disable_simulated_benefits and adjust_budgets) reach the simulation
+        # through it. Core's own constructor sets this link; this one does not
+        # call it, so set it here (apply_reform also sets it for each reform).
         self.tax_benefit_system.simulation = self
-
-        # Apply structural reforms based on parameters
         structural_reform = create_structural_reforms_from_parameters(
             self.tax_benefit_system.parameters,
             period_(self.default_input_period),
@@ -369,6 +412,8 @@ class Simulation(CoreSimulation):
         else:
             self.baseline = self.clone()
         self.baseline._cgt_warning_enabled = False
+        self.baseline._defer_uc_health_warning = False
+        self.baseline._building_dated_reforms = None
 
         self.calculated_periods = []
 
@@ -378,6 +423,11 @@ class Simulation(CoreSimulation):
         self._refresh_capital_gains_projection()
         self._capture_cgt_supplied_inputs()
         self._cgt_warning_enabled = True
+        from policyengine_uk.scenarios.uc_reform import warn_shadowed_lcwra_reform
+
+        self._defer_uc_health_warning = False
+        self._building_dated_reforms = None
+        warn_shadowed_lcwra_reform(self)
 
     def _refresh_capital_gains_projection(self) -> None:
         projection = self.tax_benefit_system.capital_gains_projection
@@ -393,8 +443,85 @@ class Simulation(CoreSimulation):
 
     def apply_reform(self, reform: dict | tuple | Type[Reform]) -> None:
         """Apply a runtime reform while keeping generated CGT assumptions coherent."""
-        super().apply_reform(reform)
-        self._refresh_capital_gains_projection()
+        # Reforms that set inputs (disable_simulated_benefits, adjust_budgets)
+        # reach the simulation through its tax-benefit system's link. A clone
+        # or branch may share its parent's system, so link the system to this
+        # simulation while the reform is applied, then restore the link.
+        system = self.tax_benefit_system
+        linked = getattr(system, "simulation", None)
+        system.simulation = self
+        # Log the inputs the reform stores (see _InputKeyLog and the
+        # _user_input_keys property). Within another reform applied to this
+        # simulation (a tuple's parts, or a reform that applies one), log
+        # them for that one too.
+        logs = _reform_logs.setdefault(id(self), [])
+        stored = set()
+        logs.append(stored)
+        self._user_input_keys = getattr(self, "_user_input_keys", None) or set()
+        try:
+            super().apply_reform(reform)
+            self._refresh_capital_gains_projection()
+        finally:
+            logs.pop()
+            if not logs:
+                del _reform_logs[id(self)]
+            # A plain set again, unless an enclosing reform is still logging.
+            self._user_input_keys = set(self._user_input_keys)
+            if linked is not None:
+                system.simulation = linked
+        # input_variables is taken when the simulation is built.
+        # reset_calculations deletes the values of every variable it does not
+        # name (as core's derivative did before policyengine-core 3.33.0, from
+        # which it keeps every input), and the marginal rate formulas those of
+        # every such variable that has a formula. A reform applied afterwards
+        # (a Reform class passed as reform=, or one applied to a clone or
+        # branch) can store inputs: new ones, or ones that replace an input
+        # set since the build. Name every variable with an input the reform
+        # stored that this simulation still holds, under a branch name it
+        # reads and a reset deletes, or a reset would delete what the reform
+        # stored and recalculate the formula. input_variables names whole
+        # variables, so a reset then keeps every input of the variable, any
+        # set since the build included. A reform that raises names nothing it
+        # stored itself (a reform it applied first has named its own). Assign
+        # a new list: a clone or branch shares its parent's.
+        input_variables = getattr(self, "input_variables", None)
+        if input_variables is not None:
+            branches = set(self._get_visible_branch_names())
+            supplied = {
+                name
+                for name, branch, _ in stored & self._user_input_keys
+                if branch in branches
+            }
+            added = sorted(supplied - set(input_variables))
+            if added:
+                self.input_variables = list(input_variables) + added
+
+    @property
+    def _user_input_keys(self) -> set:
+        # policyengine-core's record of the simulation's inputs, kept in
+        # __dict__ as core keeps it. While apply_reform applies a reform to
+        # this simulation, a set assigned here becomes a log (see
+        # _InputKeyLog), so a record core replaces mid-reform still logs: a
+        # branch's, when a reform applied to its parent rebuilds it, or one
+        # rebuilt when the system is rebound.
+        try:
+            return self.__dict__["_user_input_keys"]
+        except KeyError:
+            raise AttributeError("_user_input_keys") from None
+
+    @_user_input_keys.setter
+    def _user_input_keys(self, keys) -> None:
+        logs = _reform_logs.get(id(self))
+        if logs and keys is not None:
+            keys = _InputKeyLog(keys, logs)
+        self.__dict__["_user_input_keys"] = keys
+
+    @_user_input_keys.deleter
+    def _user_input_keys(self) -> None:
+        try:
+            del self.__dict__["_user_input_keys"]
+        except KeyError:
+            raise AttributeError("_user_input_keys") from None
 
     def delete_arrays(self, variable: str, period: Period = None) -> None:
         super().delete_arrays(variable, period)

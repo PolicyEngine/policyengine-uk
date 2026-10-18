@@ -30,6 +30,12 @@ from policyengine_uk.parameters.gov.contrib.create_private_pension_uprating impo
 from policyengine_uk.parameters.gov.dwp.state_pension.triple_lock.create_triple_lock import (
     add_triple_lock,
 )
+from policyengine_uk.parameters.gov.dwp.universal_credit.rebalancing.create_health_element_uprating import (
+    add_uc_health_element_uprating,
+)
+from policyengine_uk.parameters.gov.dwp.universal_credit.rebalancing.create_standard_allowance_uprating import (
+    add_uc_standard_allowance_uprating,
+)
 from policyengine_uk.parameters.gov.economic_assumptions.create_september_cpi_uprating import (
     add_september_cpi_uprating,
 )
@@ -52,6 +58,7 @@ from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases i
     add_lsr_deprecation_aliases,
     canonicalize_lsr_parameter_path,
 )
+from policyengine_uk.utils.benefit_unit import CLAIMANT_OR_PARTNER_AWARDS
 from policyengine_uk.utils.dated_reforms import (
     BACKDATED_FROM,
     CALENDAR_YEAR_SERIES,
@@ -102,6 +109,8 @@ GENERATION_STEPS = (
     add_september_cpi_uprating,
     create_economic_assumption_indices,
     add_threshold_indexation,
+    add_uc_standard_allowance_uprating,
+    add_uc_health_element_uprating,
     add_lsr_deprecation_aliases,
 )
 
@@ -148,6 +157,8 @@ def process_parameter_tree(
     - September CPI uprating
     - economic assumption indices
     - income tax and NICs threshold indexation after the freeze
+    - Universal Credit standard allowance uprating (UC Act 2025 s. 1)
+    - Universal Credit LCWRA element uprating (UC Act 2025 s. 3 freeze)
     - parameter uprating and backdating
     - conversion to fiscal year parameters
 
@@ -212,6 +223,20 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
     auto_carry_over_input_variables: bool = True
 
     variables: Dict[str, Variable]
+
+    # Variables that hold part of another variable's value: each award's
+    # claimant-or-partner part (CLAIMANT_OR_PARTNER_AWARDS). Neutralizing a
+    # variable neutralizes its parts, so a value entered or set for a part
+    # (as disable_simulated_benefits sets the claimant's and partner's awards
+    # for each year) cannot outlive the award it is part of.
+    variable_parts: Dict[str, Tuple[str, ...]] = {
+        award: (part,) for award, part in CLAIMANT_OR_PARTNER_AWARDS.items()
+    }
+
+    def neutralize_variable(self, variable_name: str) -> None:
+        super().neutralize_variable(variable_name)
+        for part in self.variable_parts.get(variable_name, ()):
+            super().neutralize_variable(part)
 
     def reset_parameter_caches(self):
         """Reset all caches in the tax-benefit system."""
