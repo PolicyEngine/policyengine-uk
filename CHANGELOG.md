@@ -1,3 +1,46 @@
+## [2.135.7] - 2026-10-18
+
+### Changed
+
+- Split the undated VAT grossing factor `gov.simulation.microdata_vat_coverage` (0.38) into two documented factors: `gov.simulation.vat.household_share_of_receipts` (0.7, HMRC's share of VAT liabilities on household consumption) and `gov.simulation.vat.survey_consumption_coverage` (0.67, derived on Microcosm UK 2024-25 against OBR VAT receipts). Total VAT on that dataset now matches 2024-25 receipts instead of overshooting by 24%. `microdata_vat_coverage` is kept as a deprecated parameter equal to their product (0.469); a reform that sets it to another value still takes effect.
+
+### Fixed
+
+- - Add `war_widows_pension_reported` (CPI-uprated) and `war_widows_pension`, counted wherever `bsp` is, so datasets can move FRS benefit code 9 (War Widow's or Widower's Pension) out of `bsp_reported`. Bereavement Support Payment rates have been frozen since April 2017, but `bsp_reported` is about 90% war widow's pension in FRS 2024-25, so it keeps CPI uprating until the datasets split the two (#2381). Results are unchanged for existing datasets.
+
+
+## [2.135.6] - 2026-10-17
+
+### Fixed
+
+- - Corrected the pension annual allowance taper to use separate threshold and adjusted income tests, including employer pension inputs, full salary sacrifice before the NICs exemption cap and gross pension relief. Applied whole-pound rounding and the statutory limits from 2016–17 onwards.
+  - Removed the NICs-only salary-sacrifice reclassification from the taper income tests, including post-75 and basic relief-at-source cases.
+  - Excluded member contributions made at 75 or over from the default DC pension input while retaining all employer contributions and salary sacrifice.
+  - Recomputed income-dependent trading-loss relief from actual income for both annual allowance income tests, including the general-income and relief-cap limits.
+  - Limited trading-loss relief after relievable net-pay contributions in every year and kept supplied adjusted-net-income inputs independent of the NICs cap.
+  - Restricted the basic pension-relief uplift above earnings to relief at source when rebuilding the annual allowance trading-loss cap.
+
+
+## [2.135.5] - 2026-10-17
+
+### Fixed
+
+- - A clone or branch that applies a reform now links the tax-benefit system to itself while it does, so a reform that sets inputs, such as `disable_simulated_benefits`, sets the clone's or branch's inputs and never its parent's. A reform applied after the simulation is built (one passed as `reform=`, or applied to a built simulation, clone or branch) now keeps through `reset_calculations` (and, before policyengine-core 3.33.0, `derivative`) every input it stores and leaves in place, however it stores it, including one that replaces an input set since the build; an input set since the build that the reform did not store is still reset, as before, unless the reform stores an input of the same variable (a reset keeps or clears whole variables).
+  - Under `disable_simulated_benefits`, set the claimant's and partner's income-related ESA and income-based JSA (`claimant_or_partner_esa_income`, `claimant_or_partner_jsa_income`) for each year from the dataset-year reports of whoever is the claimant or partner that year, and set Income Support from their reports alone. The reform holds each benefit at its dataset-year amount while the reported amounts are uprated, so in a later year the stored award matched neither reading of the reports and another member's award was taken to be the claimant's. Another member's own Income Support report is left out of household income, as it is with the reform off, where Income Support is calculated only for the claimant's family.
+  - Under `disable_simulated_benefits`, no family is moved off its legacy benefits: the reform holds `legacy_benefits_closed` false for its ten years, since it pays every reported legacy award and Universal Credit in every year. So, after the closure of income-based JSA and Income Support from April 2026, an adult outside the couple is still on the income-related ESA the reform pays them, and the closure ends no family's Housing Benefit or tax credit eligibility and prompts no Universal Credit claim. Only the closure is held: the model's other rules still apply, though the reform pays the amounts reported. So a family the model has claim Universal Credit anyway is still not eligible for Housing Benefit or tax credits, and an adult outside the couple is on the income-based JSA they report, as their own claim, only in the years the model has the scheme open (to 2025); the claimant and partner are on the award the reform holds for them.
+  - Under `disable_simulated_benefits`, count a Scottish carer's reported Carer's Allowance once. The reform set `carers_allowance` from the report in every country and left `carer_support_payment` simulated, so from 2025, when the model pays a carer in Scotland Carer Support Payment in place of Carer's Allowance, a Scottish carer was paid both. Now, as with the winter heating payments, in each year the report is the `carer_support_payment` of a carer living in Scotland that year, from 2025, and their `carers_allowance` before then, and everyone else's `carers_allowance`; neither benefit is simulated beside it. The entitlements before the overlapping-benefit reduction stay the model's for both. This split and the winter heating one read where the household lives in each year, as the model does, when the reform is applied, so a household that moves into or out of Scotland is paid under that year's scheme: before, both read the dataset year's country, so a carer who moved to Scotland was paid Carer's Allowance and lost the Scottish Carer Supplement.
+  - Neutralizing `esa_income` or `jsa_income` also neutralizes the claimant's and partner's award, so an award entered for them, or set by the reform, no longer outlives the benefit it is part of.
+  - Read the claimant's and partner's income-related ESA and income-based JSA in the benefit cap (its total of welfare benefits, and the ESA support component exemptions from both the Universal Credit and Housing Benefit caps) from `claimant_or_partner_esa_income` and `claimant_or_partner_jsa_income` wherever the cap's couple is the claimant and partner. Under `disable_simulated_benefits` the cap read an award held for another member of the benefit unit (a non-dependent adult claiming in their own right) as the couple's in every year after the dataset year, so it raised the cap's total and could exempt a claimant with a support component who receives no ESA. An award entered for those variables directly now reaches the cap too, and an award within half a penny of zero is no award there, as elsewhere. A Universal Credit couple that is not the claimant and partner (only with `is_uc_claimant` or `is_uc_assessed_claimant` entered, or more than two members entered as claimant or partner) is still read from `esa_income` and `jsa_income` by value.
+  - Read the claimant's and partner's income-related ESA and income-based JSA in `income_support_eligible` from `claimant_or_partner_esa_income` and `claimant_or_partner_jsa_income`, as the means tests and passports do, so an award entered for them directly, or set by the reform, is read the same way everywhere. The two variables share one formula, which now treats an award within half a penny of zero as no award, as `income_support_eligible` did, so the float residual left by reports that exactly match the tariff income is no longer the claimant's or partner's award, and no passport or status that reads their award counts it. A member outside the couple is still on their own award as before: it is read from their own report, without that rule. When `esa_income` or `jsa_income` holds the plain total of the reported awards, Income Support now reads the plain total of the claimant's and partner's reports, as the two variables already did; it used to read their award after the capital test.
+
+
+## [2.135.4] - 2026-10-17
+
+### Changed
+
+- - Tests cover more release manifests that pypi-state must refuse (a missing, repeated or unreadable entry), the manifest check-dist writes being the one pypi-state reads, and agreement with a clean dist under every --require state.
+
+
 ## [2.135.3] - 2026-10-17
 
 ### Fixed
