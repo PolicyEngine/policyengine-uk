@@ -23,7 +23,11 @@ monetary rounding: (£30,000 − £11,908) × 12.73%. The model retains its exis
 floating-point representation; this is not a new payroll rounding rule.
 The director route uses the existing `ni_class_1_income` earnings definition,
 including its statutory-pay components, and the existing final `ni_liable`
-age gate. It does not change employer NI, income tax or other NI classes.
+age gate. Employer NI, income-tax and other NI formulas and rates remain
+unchanged. Their outputs need not all be unchanged: the existing Class 4 annual
+maximum uses primary Class 1 contributions, so it can change for a director
+who also has trading profits. That is propagation through the existing cap,
+not a new Class 4 rule or a certification of all mixed-income cases.
 
 A policy-test input for this restricted case is:
 

@@ -215,3 +215,59 @@ def test_natural_cash_support_is_unchanged_by_director_status():
     # Tolerance reflects float32 household totals, without a payroll rounding rule.
     assert values[1] - values[0] == pytest.approx(362.7884, abs=0.01)
     assert other_taxes[0] == pytest.approx(other_taxes[1], abs=0.01)
+
+
+def test_director_primary_propagates_through_existing_class_4_cap():
+    """Composition of existing rules, not a new standalone Class 4 law oracle."""
+    results = []
+    # Profit is net of £2,000 expenses: gross receipts exceed profit by more
+    # than the trading allowance. No loss, capital allowance or output is supplied.
+    for flag, primary, cap, total_ni in [
+        (False, 2665.9, 2082.6041179856, 4912.3041179856),
+        (True, 2303.1116, 2343.6029669065, 4810.5145669065),
+    ]:
+        data = situation(flags=(flag,))
+        data["people"]["p0"].update(
+            self_employment_income={2022: 60000},
+            self_employment_gross_receipts={2022: 62000},
+        )
+        data["benunits"]["b0"]["would_claim_uc"] = {2022: False}
+        data["households"]["h"].update(
+            region={2022: "LONDON"}, household_owns_tv={2022: False}
+        )
+        sim = Simulation(situation=data)
+        assert sim.calculate("trading_allowance_deduction", 2022)[0] == 0
+        assert sim.calculate("ni_class_4_profits", 2022)[0] == 60000
+        assert sim.calculate("ni_class_1_employee_primary", 2022)[0] == pytest.approx(
+            primary, abs=0.01
+        )
+        assert sim.calculate("ni_class_1_employee_additional", 2022)[0] == 0
+        assert sim.calculate("ni_class_2", 2022)[0] == pytest.approx(163.8, abs=0.01)
+        # Existing 2022 parameters: UPL50270, LPL11908, Class4rates.0973/.0273,
+        # Class2weekly3.15. AboveUPL, case1false. Headroom =38362*.0973
+        # +53*3.15 -52*3.15 -primary. Remaining main band is charged at.0273.
+        assert sim.calculate("ni_class_4_maximum", 2022)[0] == pytest.approx(
+            cap, abs=0.01
+        )
+        assert cap < 3998.2516  # Uncapped Class 4:38362*.0973+9730*.0273.
+        assert sim.calculate("ni_class_4", 2022)[0] == pytest.approx(cap, abs=0.01)
+        assert sim.calculate("national_insurance", 2022)[0] == pytest.approx(
+            total_ni, abs=0.01
+        )
+        results.append(
+            {
+                variable: float(sim.calculate(variable, 2022)[0])
+                for variable in [
+                    "household_net_income",
+                    "household_benefits",
+                    "income_tax",
+                    "ni_class_1_employer",
+                ]
+            }
+        )
+    for variable in ["household_benefits", "income_tax", "ni_class_1_employer"]:
+        assert results[0][variable] == pytest.approx(results[1][variable], abs=0.01)
+    # Class 1 falls362.7884, Class4rises260.9988489; final cash gain is101.7895511.
+    assert results[1]["household_net_income"] - results[0][
+        "household_net_income"
+    ] == pytest.approx(101.7895511, abs=0.01)
