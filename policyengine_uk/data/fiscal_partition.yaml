@@ -729,6 +729,13 @@ spending_heads:
     report_group: disability_and_carers_benefits
     totals: [gov_spending, household_benefits]
     sign: nonnegative
+  - id: war_widows_pension
+    label: War Widow's or Widower's Pension
+    variable: war_widows_pension
+    entity: person
+    report_group: disability_and_carers_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
   # Children and families
   - id: child_benefit
     label: Child Benefit

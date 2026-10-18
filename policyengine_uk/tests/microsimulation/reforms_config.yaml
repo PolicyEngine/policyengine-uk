@@ -11,6 +11,8 @@
 # (enhanced_frs_2023_24), from 2026-10-11 on the certified 1.58.0 pair, and
 # from 2026-10-15 on the certified 1.58.1 pair. The 2026-10-11 receipts on
 # 1.40.3 show how much of each move is the data rather than the model.
+# Main fixtures without recorded model or dataset metadata retain their
+# original expected_impact/tolerance/parameters format in receipts.
 dataset:
   data_version: 1.58.1
   path: enhanced_frs_2024_25.h5
@@ -147,11 +149,18 @@ reforms:
   # is 62% higher on 1.58.0 than on 1.40.3. 1.58.1 on 2.132.6 is 60% above
   # 1.40.3 on 2.126.8, but those are different models, so only the 62% shows
   # the data's share. VAT is linear in recorded full-rate consumption, and
-  # the VAT coverage factor (#1996, #2187) was set on older data.
+  # the historical 0.38 VAT coverage factor was set on older data. The
+  # #1996/#2187 replacement's main fixture is retained below in its format.
   receipts:
   - impact: 21.3
     data: enhanced_frs_2023_24, unpinned (latest at the time)
     model: 2.75.3 (bc59ba950, #1540, 2026-03-29)
+  - name: Raise VAT standard rate by 2pp
+    expected_impact: 17.3
+    tolerance: 1.5
+    parameters:
+      gov.hmrc.vat.standard_rate: 0.22
+    source_commit: 98ab77093b0f48e4cb50677c2c9403a5533631f9
   - impact: 21.222
     data: 1.40.3 enhanced_frs_2023_24
     model: 2.126.8 (6d89338ab, 2026-10-11)
