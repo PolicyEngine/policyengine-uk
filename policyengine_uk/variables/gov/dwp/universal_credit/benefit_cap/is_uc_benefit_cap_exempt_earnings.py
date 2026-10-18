@@ -1,16 +1,22 @@
 from policyengine_uk.model_api import *
 
 
-class is_benefit_cap_exempt_earnings(Variable):
+class is_uc_benefit_cap_exempt_earnings(Variable):
     value_type = bool
     entity = BenUnit
-    label = "Exempt from the benefit cap because of earnings"
+    label = "Exempt from the Universal Credit benefit cap because of earnings"
     documentation = (
-        "The assessed claimant's or couple's actual net earned income for "
-        "Universal Credit reaches the earnings threshold. This includes "
-        "statutory pay and deducts their own relievable pension contributions "
-        "and tax and National Insurance on earnings. Income imputed by the "
-        "minimum income floor and a dependant's earnings do not count."
+        "Whether the claimant's earned income, or a couple's combined earned "
+        "income, reaches the earnings threshold (UC Regs 2013 reg. 82(1)(a)). "
+        "The measure is the assessed claimants' actual net earned income for "
+        "Universal Credit: it includes statutory pay and deducts their own "
+        "relievable pension contributions and tax and National Insurance on "
+        "earnings. Income imputed by the minimum income floor (reg. 82(4)) "
+        "and a dependant's earnings do not count. For a member of a couple "
+        "claiming as a single person the couple's earnings combine. The "
+        "grace period (reg. 82(1)(b)) is not modelled. Housing Benefit has "
+        "no earnings exception: its work exception is entitlement to working "
+        "tax credit (HB Regs 2006 reg. 75E)."
     )
     definition_period = YEAR
     reference = (

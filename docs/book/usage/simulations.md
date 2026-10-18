@@ -297,6 +297,10 @@ print(sim.calculate("household_net_income", 2026))
 `Simulation` and `Microsimulation` can also load H5 files from local paths,
 Hugging Face URLs, or Google Cloud Storage URLs:
 
+Files written by either `UKSingleYearDataset.save(path)` or
+`UKMultiYearDataset.save(path)` can be loaded with `Simulation(dataset=path)`.
+The loader detects single-year tables and multi-year groups from the H5 layout.
+
 ```python
 sim = Microsimulation(
     dataset="gs://policyengine-uk-data-private/enhanced_frs_2023_24.h5@1.55.10"
@@ -359,7 +363,7 @@ print(f"Additional government revenue: £{revenue_change:.1f}bn")
 ```
 
 ```{note}
-Revenue calculations use the accounting identity: when household net income decreases, government revenue increases by the same amount (assuming no behavioural responses).
+Revenue calculations use the accounting identity: when household net income decreases, government revenue increases by the same amount. The identity holds while no behavioural response moves household income. Realised capital gains are part of household income and respond by default to reforms that change the tax on them, including reforms to income tax bands and allowances ([capital gains realisation response](../assumptions/capital-gains-responses.md)), so for those reforms use `gov_balance` instead. Household and distributional results for those reforms count gains no longer realised as income lost, although the gains are deferred rather than lost.
 ```
 
 ```python

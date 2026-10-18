@@ -1,11 +1,25 @@
 import datetime
+from typing import NamedTuple
 
 from policyengine_core.model_api import *
 from policyengine_core import periods
 
+from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases import (
+    canonicalize_lsr_parameter_path,
+)
+
 
 def str_to_instant(s):
     return periods.Instant(tuple(map(lambda s: int(s), s.split("-"))))
+
+
+# Parameter metadata a dated reform records (``write_assignment``) when its
+# change starts on or before the parameter's first stated value: that value,
+# which backdating then extends instead of the change's. Recording it rather
+# than writing it at the backdating date keeps the generation steps, which run
+# before backdating and read a parameter's first year, seeing the parameter as
+# current law does.
+BACKDATED_VALUE = "backdated_value"
 
 
 def backdate_parameters(root: str = None, first_instant: str = "2021-01-01") -> Reform:
@@ -15,6 +29,8 @@ def backdate_parameters(root: str = None, first_instant: str = "2021-01-01") -> 
         if isinstance(param, Parameter):
             earliest = param.values_list[-1]
             earliest_value = earliest.value
+            if param.metadata and BACKDATED_VALUE in param.metadata:
+                earliest_value = param.metadata.pop(BACKDATED_VALUE)
             earliest_instant = str_to_instant(earliest.instant_str)
             if first_instant < earliest_instant:
                 num_days = (earliest_instant.date - first_instant.date).days
@@ -132,20 +148,45 @@ _STATE_PENSION_AGE_REPLACEMENT = (
     "variables."
 )
 
-# Parameters removed from the tree, with what replaces them, so a reform or
-# saved policy that still names one fails with directions instead of a bare
-# lookup error.
+_OBR_ELASTICITIES_REPLACEMENT = (
+    "Nothing read it, so setting it never changed any output. The OBR's labour "
+    "supply elasticities are applied by Simulation.apply_dynamics, called on a "
+    "simulation with a baseline, when gov.dynamic.obr_labour_supply_assumptions "
+    "is true, which it is by default."
+)
+
+
+class RemovedParameter(NamedTuple):
+    label: str
+    replacement: str
+
+
+# Parameters removed from the tree, with the label of the node left at each
+# path and what replaces the parameter, so a reform or saved policy that still
+# names one fails with directions instead of a bare lookup error.
 REMOVED_PARAMETERS = {
-    "gov.dwp.state_pension.age.male": _STATE_PENSION_AGE_REPLACEMENT,
-    "gov.dwp.state_pension.age.female": _STATE_PENSION_AGE_REPLACEMENT,
+    "gov.dwp.state_pension.age.male": RemovedParameter(
+        "removed male State Pension age parameter", _STATE_PENSION_AGE_REPLACEMENT
+    ),
+    "gov.dwp.state_pension.age.female": RemovedParameter(
+        "removed female State Pension age parameter", _STATE_PENSION_AGE_REPLACEMENT
+    ),
+    "gov.simulation.labour_supply_responses.obr_elasticities": RemovedParameter(
+        "removed OBR elasticities switch", _OBR_ELASTICITIES_REPLACEMENT
+    ),
 }
 
 
 def check_parameter_not_removed(path: str) -> None:
-    """Raise a ValueError naming the replacement if path was removed."""
-    if path in REMOVED_PARAMETERS:
+    """Raise a ValueError naming the replacement if path was removed.
+
+    A legacy ``labor_supply_responses`` path is checked as its
+    ``labour_supply_responses`` equivalent.
+    """
+    removed = REMOVED_PARAMETERS.get(canonicalize_lsr_parameter_path(path))
+    if removed is not None:
         raise ValueError(
-            f"The parameter {path} has been removed. {REMOVED_PARAMETERS[path]}"
+            f"The parameter {path} has been removed. {removed.replacement}"
         )
 
 
@@ -155,6 +196,8 @@ class RemovedParameterNode(ParameterNode):
     Male State Pension age still has valid children, so the compatibility
     node must support normal tree traversal and cloning. API reform code
     reads values_list before updating; both operations give migration help.
+    Read at an instant, the node is an empty node rather than an error, so
+    that its parent can still be read at an instant.
     """
 
     @property
@@ -180,25 +223,34 @@ def add_removed_parameter_aliases(parameters: ParameterNode) -> ParameterNode:
         for child in root.children.values():
             child.parent = root
         parameters = root
-    age = parameters.gov.dwp.state_pension.age
-    for path, replacement in REMOVED_PARAMETERS.items():
-        name = path.rsplit(".", 1)[1]
-        previous = age.children.get(name)
+    for path, removed in REMOVED_PARAMETERS.items():
+        parent_path, name = path.rsplit(".", 1)
+        parent = parameters
+        for part in parent_path.split("."):
+            parent = parent.children[part]
+        previous = parent.children.get(name)
         if isinstance(previous, RemovedParameterNode):
             continue
+        if previous is not None and not isinstance(previous, ParameterNode):
+            raise ValueError(
+                f"{path} is listed in REMOVED_PARAMETERS but the parameter still "
+                "exists. Delete its YAML file, or remove it from REMOVED_PARAMETERS."
+            )
         alias = RemovedParameterNode(path, data={})
         if previous is not None:
             alias.metadata.update(previous.metadata)
             for child_name, child in previous.children.items():
                 alias.add_child(child_name, child)
-        alias.description = f"The parameter {path} has been removed. {replacement}"
+        alias.description = (
+            f"The parameter {path} has been removed. {removed.replacement}"
+        )
         alias.metadata.update(
-            label=f"removed {name} State Pension age parameter",
+            label=removed.label,
             removed=True,
             economy=False,
             household=False,
         )
-        age.children[name] = alias
-        setattr(age, name, alias)
-        alias.parent = age
+        parent.children[name] = alias
+        setattr(parent, name, alias)
+        alias.parent = parent
     return parameters

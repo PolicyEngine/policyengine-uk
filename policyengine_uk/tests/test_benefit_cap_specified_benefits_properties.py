@@ -12,9 +12,8 @@ HB Regs 2006 reg 75F(1) and UC Regs 2013 reg 83(1) lift the cap where:
   Carer Support Payment (75F(1)(ea), (h), (ha); 83(1)(g), (i), (ia)): an
   award, or the model's Carer's Allowance conditions, 35 hours of care a
   week, whether or not it is paid (is_entitled_to_carer_benefit), or,
-  for a Housing Benefit young person in a family without a Universal
-  Credit award, armed forces independence payment (75F(1)(ea); UC counts it
-  as attendance allowance, a claimant's only, UC Regs 2013 regs 2, 83(1)(c));
+  for a Housing Benefit young person, armed forces independence payment
+  (75F(1)(ea); UC counts it as attendance allowance, UC Regs 2013 reg 2);
 - a Universal Credit claimant has limited capability for work and
   work-related activity or caring responsibilities, so the award includes the
   LCWRA or carer element (83(1)(a), (j); regs 27(1), 29(1)). An element
@@ -27,33 +26,42 @@ HB Regs 2006 reg 75F(1) and UC Regs 2013 reg 83(1) lift the cap where:
   have limited capability for work-related activity (reg 40(1)(a)(ii));
 - the claimant or couple is entitled to working tax credit (HB reg 75E(2)).
 
-The model applies one cap to both schemes, so either scheme's exception
-counts. A child or young person is a child under 16, a young person in
-non-advanced education, or a 16-year-old (UC reg 5(1)(a)) who does not
-receive benefits in their own right (reg 5(5)) and is not looked after
-(reg 4(6)).
+Each scheme applies its own exceptions. UC reg 83(1)(f) names a "child or
+qualifying young person"; HB reg 75F(1)(e) names a "child or young person".
+UC includes a 16-year-old school leaver (reg 5(1)(a)) who does not receive
+benefits in their own right (reg 5(5)) and is not looked after (reg 4(6)).
+HB young persons follow Child Benefit (reg 19), so only the education-based
+young-person role counts for Housing Benefit below. UC reg 83(1)(c) names
+"a claimant" for attendance allowance, which includes armed forces
+independence payment (reg 2); HB reg 75F(1)(ea) also names "a young person"
+for it. Only UC reg 83(1)(a), (j) names the LCWRA and carer elements; only
+HB reg 75E(2) names entitlement to working tax credit.
 
 Invariants:
 
 1. Adding a member who is neither the claimant, the partner nor a child or
    young person they are responsible for never changes whether the family is
-   exempt, its cap, its cap reduction or its Universal Credit, whatever
-   disability or carer benefits, ESA, JSA, incapacity benefit, SDA,
-   disability flag or caring that member has. The cap counts only the
-   welfare benefits "to which the single person or couple is entitled" (UC
-   Regs 2013 reg 80(1); HB Regs 2006 reg 75A). Nor do their age or earnings:
-   the age exception reads the claimant and partner (Housing Benefit's
-   pension-age regulations, HB Regs 2006 reg 5) and the earnings exception
-   the claimants (UC Regs 2013 reg 82(1)(a)), so the draws give the member
-   State Pension age or earnings at times.
-2. The exemption equals a reference written directly from the regulations,
-   with roles fixed by construction (differential test).
-3. An exempt family has no cap and no reduction; any other family has the
-   single cap if the claimant has no partner and no child or young person,
-   and the couple-and-family cap otherwise (UC reg 80A(2); HB reg 75CA).
+   exempt under either scheme, its caps, its reductions, its Universal Credit
+   or its Housing Benefit, whatever disability or carer benefits, ESA, JSA,
+   incapacity benefit, SDA, disability flag or caring that member has. The
+   cap counts only the welfare benefits "to which the single person or
+   couple is entitled" (UC Regs 2013 reg 80(1); HB Regs 2006 reg 75A). Nor
+   do their age or earnings: Housing Benefit's age exception reads the
+   claimant and partner (its pension-age regulations, HB Regs 2006 reg 5),
+   Universal Credit's the claimants (SI 2014/1230 reg 60C), and the
+   earnings exception the claimants (UC Regs 2013 reg 82(1)(a)), so the
+   draws give the member State Pension age or earnings at times.
+2. Each scheme's exemption equals its own reference written directly from
+   the regulations, with roles fixed by construction (differential test).
+   The union of the two equals the former shared reference.
+3. A family exempt under a scheme has no cap and no reduction to that
+   scheme's award; any other family has that scheme's statutory cap (UC reg
+   80A(2); HB reg 75CA) and loses the excess: UC reg 81 deducts the
+   childcare element from it, and HB reg 75D(2) leaves at least 50p a week.
 4. Each head alone: for every role and every circumstance, a family whose
    only circumstance is that one, held by that member, is exempt exactly when
-   the reference says (an exhaustive table, for each support-component mode).
+   that scheme's reference says (an exhaustive table, for each
+   support-component mode).
 
 The properties draw families at random; invariant 4 enumerates them. Each
 example builds many families in one simulation, in separate households
@@ -74,12 +82,27 @@ from policyengine_core.periods import period
 from policyengine_core.reforms import Reform
 from policyengine_uk import Simulation
 from policyengine_uk.model_api import BenUnit, Variable
+from policyengine_uk.scenarios.uc_reform import REBALANCING_YEARS
 from policyengine_uk.utils.supplied_inputs import set_model_value, supplied_input
 
 YEAR = 2025
 SINGLE_CAP, FAMILY_CAP = 14_753, 22_020  # Outside London, 2025-26.
 # A month's element times 12, 2025-26: LCWRA 423.27, carer 201.46.
 ENTERED_ELEMENTS = {"uc_LCWRA_element": 5_079.24, "uc_carer_element": 2_417.52}
+SCHEMES = {
+    "uc": {
+        "specified": "is_uc_benefit_cap_exempt_specified_benefit",
+        "exempt": "is_uc_benefit_cap_exempt",
+        "cap": "uc_benefit_cap",
+        "reduction": "uc_benefit_cap_reduction",
+    },
+    "hb": {
+        "specified": "is_housing_benefit_benefit_cap_exempt_specified_benefit",
+        "exempt": "is_housing_benefit_benefit_cap_exempt",
+        "cap": "housing_benefit_benefit_cap",
+        "reduction": "housing_benefit_benefit_cap_reduction",
+    },
+}
 
 CLAIMANT_OR_PARTNER = ["attendance_allowance", "iidb_reported", "afcs_reported"]
 CHILD_OR_YOUNG_PERSON = ["dla"]
@@ -244,14 +267,17 @@ def own_esa(m):
     return m["esa_contrib_reported"] > 0 or m["esa_income_reported"] > 0
 
 
-def reference_exempt(members, benunit_inputs, on_universal_credit):
-    """HB Regs 2006 regs 75E(2), 75F(1) and UC Regs 2013 reg 83(1), read
-    directly, with roles known by construction. ``on_universal_credit`` is
-    whether the family has a Universal Credit award, which decides the
-    scheme whose armed forces independence payment test applies."""
+def reference_specified_benefit(members, benunit_inputs, scheme):
+    """UC Regs 2013 reg 83(1) or HB Regs 2006 reg 75F(1), read directly, with
+    roles known by construction."""
     claimants = [m for m in members if m["_role"] == "claimant"]
-    young_persons = [m for m in members if m["_role"] in ("young_person", "sixteen")]
-    hb_young_persons = [m for m in members if m["_role"] == "young_person"]
+    # UC reg 83 names a "qualifying young person" (reg 5), which includes a
+    # 16-year-old school leaver (reg 5(1)(a)); HB reg 75F names a "young
+    # person" (reg 19), a Child Benefit qualifying young person. The
+    # school-leaver role here has no Child Benefit education or terminal-date
+    # circumstance, so it is not one.
+    young_roles = ("young_person", "sixteen") if scheme == "uc" else ("young_person",)
+    young_persons = [m for m in members if m["_role"] in young_roles]
     children = [m for m in members if m["_role"] == "child"]
     # No capital, so the couple's income-related award is their reports.
     couple_award = any(m["esa_income_reported"] > 0 for m in claimants)
@@ -304,24 +330,54 @@ def reference_exempt(members, benunit_inputs, on_universal_credit):
             return benunit_inputs[element] > 0
         return any(circumstance(m) for m in claimants)
 
-    return (
+    common = (
         any(receives_esa_with_support_component(m) for m in claimants)
         or any_receives(claimants, CLAIMANT_OR_PARTNER)
         or any_receives(claimants + children + young_persons, CHILD_OR_YOUNG_PERSON)
         or any_receives(claimants + young_persons, ["pip_dl"])
         or any(entitled_to_carer_benefit(m) for m in claimants + young_persons)
-        or any_receives(
-            claimants + ([] if on_universal_credit else hb_young_persons),
-            HOUSING_BENEFIT_YOUNG_PERSON,
+    )
+    if scheme == "hb":
+        # HB reg 75F(1)(ea): armed forces independence payment of the
+        # claimant, partner or a young person.
+        return common or any_receives(
+            claimants + young_persons, HOUSING_BENEFIT_YOUNG_PERSON
         )
+    # UC reg 83(1)(c): attendance allowance, which includes armed forces
+    # independence payment (reg 2), of "a claimant"; and the LCWRA and carer
+    # elements (reg 83(1)(a), (j)), which only Universal Credit has.
+    return (
+        common
+        or any_receives(claimants, HOUSING_BENEFIT_YOUNG_PERSON)
         or element_included("uc_LCWRA_element", lcwra)
         or element_included("uc_carer_element", carer)
-        or benunit_inputs["working_tax_credit"] > 0
+    )
+
+
+def reference_exempt(members, benunit_inputs, scheme):
+    """The scheme's exemption. HB reg 75E(2): the claimant or couple is
+    entitled to working tax credit; Universal Credit has no such exception.
+    The claimants are under the qualifying age for State Pension Credit and
+    have no earnings, so neither the age exceptions (HB reg 5; SI 2014/1230
+    reg 60C) nor the earnings exception (UC reg 82) applies."""
+    return reference_specified_benefit(members, benunit_inputs, scheme) or (
+        scheme == "hb" and benunit_inputs["working_tax_credit"] > 0
+    )
+
+
+def reference_union(members, benunit_inputs):
+    """The former shared reference: either scheme's exemption."""
+    return reference_exempt(members, benunit_inputs, "uc") or reference_exempt(
+        members, benunit_inputs, "hb"
     )
 
 
 def reference_cap(members):
-    # The family-rate helper counts any 16-year-old (UC reg 5(1)(a)); it does
+    # Each scheme's rate: a single claimant (UC reg 80A(2)(c)) or a claimant
+    # who neither has a partner nor is a lone parent (HB regs 2(1), 75CA(2)),
+    # with no child or young person. The family-rate helper counts any
+    # 16-year-old for the year (UC reg 5(1)(a); for HB, Child Benefit's
+    # school-leaver terminal dates, which annual ages cannot place); it does
     # not yet apply reg 5(5) to one receiving benefits in their own right.
     claimants = sum(m["_role"] == "claimant" for m in members)
     dependants = any(
@@ -332,12 +388,32 @@ def reference_cap(members):
 
 
 CAPPED_FAMILY = {
-    "universal_credit_pre_benefit_cap": 30_000,
-    "housing_benefit_pre_benefit_cap": 0,
     "child_tax_credit": 0,
     "child_benefit": 0,
     "income_support": 0,
+    "uc_childcare_element": 0,
 }
+
+
+def capped_family(scheme):
+    """30,000 of the scheme's award before the cap and none of the other's;
+    the other family-level capped benefits are nil, so the capped total is
+    the award plus whatever the claimant's and partner's own benefits add."""
+    return {
+        **CAPPED_FAMILY,
+        "universal_credit_pre_benefit_cap": 30_000 if scheme == "uc" else 0,
+        "housing_benefit_pre_benefit_cap": 30_000 if scheme == "hb" else 0,
+    }
+
+
+def by_scheme(units):
+    """The units twice, first on Universal Credit and then on Housing
+    Benefit, each in its own benefit units."""
+    return [
+        (members, {**inputs, **capped_family(scheme)})
+        for scheme in SCHEMES
+        for members, inputs in units
+    ]
 
 
 SETTINGS = settings(
@@ -353,34 +429,50 @@ SETTINGS = settings(
 def test_non_dependent_adults_never_change_the_exemption(drawn):
     without = [(members, inputs) for members, _, inputs in drawn]
     with_other = [(members + [other], inputs) for members, other, inputs in drawn]
-    # 30,000 of Universal Credit before the cap; the other family-level
-    # capped benefits are nil, so the capped total is UC plus whatever the
-    # members' own benefits add.
-    sim = Simulation(
-        situation=situation(without + with_other, extra_benunit=CAPPED_FAMILY)
-    )
+    # Each family on Universal Credit and, separately, on Housing Benefit:
+    # [UC without, UC with, HB without, HB with], k families each.
+    units = by_scheme(without + with_other)
+    sim = Simulation(situation=situation(units))
     k = len(drawn)
     claimant_or_partner = sim.calculate("is_claimant_or_partner", YEAR)
     legacy = sim.calculate("is_child_or_young_person_for_legacy_benefits", YEAR)
     uc = sim.calculate("is_child_or_qualifying_young_person_for_universal_credit", YEAR)
-    sizes = [len(members) for members, _ in without + with_other]
+    sizes = [len(members) for members, _ in units]
     starts = np.cumsum([0] + sizes[:-1])
-    for i in range(k):
-        # The added member is the last of its benefit unit: neither claimant,
-        # partner nor anyone's dependant.
-        last = starts[k + i] + sizes[k + i] - 1
-        assert not (claimant_or_partner[last] or legacy[last] or uc[last]), drawn[i]
+    for offset in (0, 2 * k):
+        for i in range(k):
+            # The added member is the last of its benefit unit: neither
+            # claimant, partner nor anyone's dependant.
+            family = offset + k + i
+            last = starts[family] + sizes[family] - 1
+            assert not (claimant_or_partner[last] or legacy[last] or uc[last]), drawn[i]
+    # The model pays one scheme's award, so the family's reduction is that
+    # scheme's.
+    reduction = sim.calculate("benefit_cap_reduction", YEAR)
+    for group, scheme in enumerate(SCHEMES):
+        other_scheme = "hb" if scheme == "uc" else "uc"
+        part = slice(group * 2 * k, (group + 1) * 2 * k)
+        assert not sim.calculate(SCHEMES[other_scheme]["reduction"], YEAR)[part].any()
+        assert np.array_equal(
+            reduction[part], sim.calculate(SCHEMES[scheme]["reduction"], YEAR)[part]
+        )
     for variable in [
-        "is_benefit_cap_exempt_health_disability",
-        "is_benefit_cap_exempt_other",
-        "is_benefit_cap_exempt",
-        "benefit_cap",
+        *(name for names in SCHEMES.values() for name in names.values()),
+        "is_uc_benefit_cap_exempt_earnings",
+        "is_uc_benefit_cap_exempt_qualifying_age",
+        "housing_benefit_pension_age_regulations_apply",
+        "benefit_cap_welfare_benefits",
         "benefit_cap_reduction",
         "universal_credit",
+        "housing_benefit",
     ]:
         values = sim.calculate(variable, YEAR)
-        for i in range(k):
-            assert values[i] == values[k + i], (variable, drawn[i])
+        for offset in (0, 2 * k):
+            for i in range(k):
+                assert values[offset + i] == values[offset + k + i], (
+                    variable,
+                    drawn[i],
+                )
 
 
 @SETTINGS
@@ -388,30 +480,53 @@ def test_non_dependent_adults_never_change_the_exemption(drawn):
 def test_exemption_matches_regulations(drawn):
     units = [(members + [other], inputs) for members, other, inputs in drawn]
     sim = Simulation(situation=situation(units))
-    exempt = sim.calculate("is_benefit_cap_exempt_health_disability", YEAR)
-    on_uc = sim.calculate("universal_credit_pre_benefit_cap", YEAR) > 0
+    overall = {}
+    for scheme, names in SCHEMES.items():
+        specified = sim.calculate(names["specified"], YEAR)
+        overall[scheme] = sim.calculate(names["exempt"], YEAR)
+        for i, (members, inputs) in enumerate(units):
+            expected = reference_specified_benefit(members, inputs, scheme)
+            event(f"{scheme} reference exempt: {expected}")
+            assert specified[i] == expected, (scheme, units[i])
+            assert overall[scheme][i] == reference_exempt(members, inputs, scheme), (
+                scheme,
+                units[i],
+            )
+    # Either scheme's exemption: the former shared reference.
+    union = overall["uc"] | overall["hb"]
     for i, (members, inputs) in enumerate(units):
-        expected = reference_exempt(members, inputs, on_uc[i])
-        event(f"reference exempt: {expected}")
-        assert exempt[i] == expected, units[i]
+        assert union[i] == reference_union(members, inputs), units[i]
 
 
 @SETTINGS
 @given(draws())
 def test_exempt_families_have_no_cap_and_others_the_statutory_cap(drawn):
     units = [(members + [other], inputs) for members, other, inputs in drawn]
-    # 30,000 of Universal Credit alone exceeds either cap. The other
-    # family-level capped benefits are set to nil; they only add to the excess.
-    sim = Simulation(situation=situation(units, extra_benunit=CAPPED_FAMILY))
-    exempt = sim.calculate("is_benefit_cap_exempt", YEAR)
-    cap = sim.calculate("benefit_cap", YEAR)
-    reduction = sim.calculate("benefit_cap_reduction", YEAR)
-    for i, (members, _) in enumerate(units):
-        if exempt[i]:
-            assert np.isinf(cap[i]) and reduction[i] == 0, units[i]
-        else:
-            assert cap[i] == reference_cap(members), units[i]
-            assert reduction[i] >= 30_000 - cap[i], units[i]
+    # 30,000 of either award alone exceeds either cap. The other family-level
+    # capped benefits are set to nil; they only add to the excess.
+    k = len(units)
+    sim = Simulation(situation=situation(by_scheme(units)))
+    total = sim.calculate("benefit_cap_welfare_benefits", YEAR)
+    for group, (scheme, names) in enumerate(SCHEMES.items()):
+        part = slice(group * k, (group + 1) * k)
+        exempt = sim.calculate(names["exempt"], YEAR)[part]
+        cap = sim.calculate(names["cap"], YEAR)[part]
+        reduction = sim.calculate(names["reduction"], YEAR)[part]
+        for i, (members, _) in enumerate(units):
+            if exempt[i]:
+                assert np.isinf(cap[i]) and reduction[i] == 0, (scheme, units[i])
+            else:
+                assert cap[i] == reference_cap(members), (scheme, units[i])
+                excess = max(total[part][i] - cap[i], 0)
+                # UC reg 81: the excess less the childcare element (nil
+                # here). HB reg 75D(2): no more than leaves reg 75's 50p a
+                # week, 30,000 - 0.50 x 52.
+                expected = excess if scheme == "uc" else min(excess, 30_000 - 26)
+                assert reduction[i] == pytest.approx(expected, abs=0.01), (
+                    scheme,
+                    units[i],
+                )
+                assert reduction[i] >= 30_000 - cap[i] - 0.01, (scheme, units[i])
 
 
 SINGLE_HEAD_ROLES = ["claimant", "partner", *sorted(ROLES), "other"]
@@ -446,17 +561,23 @@ def test_each_head_alone_matches_regulations(mode):
     sim = Simulation(
         situation=situation([(members, no_entries) for _, members in units])
     )
-    exempt = sim.calculate("is_benefit_cap_exempt_health_disability", YEAR)
-    on_uc = sim.calculate("universal_credit_pre_benefit_cap", YEAR) > 0
-    mismatches = [
-        (key, bool(exempt[i]))
-        for i, (key, members) in enumerate(units)
-        if exempt[i] != reference_exempt(members, no_entries, on_uc[i])
-    ]
-    assert not mismatches, mismatches
-    # Every role meets every circumstance, and both outcomes occur.
+    exemptions = {}
+    for scheme, names in SCHEMES.items():
+        exempt = sim.calculate(names["specified"], YEAR)
+        exemptions[scheme] = exempt
+        mismatches = [
+            (scheme, key, bool(exempt[i]))
+            for i, (key, members) in enumerate(units)
+            if exempt[i] != reference_specified_benefit(members, no_entries, scheme)
+        ]
+        assert not mismatches, mismatches
+        # Both outcomes occur under each scheme.
+        assert exempt.any() and not exempt.all()
+    # The schemes differ: UC's elements and 16-year-old school leaver, HB's
+    # young person's armed forces independence payment.
+    assert (exemptions["uc"] != exemptions["hb"]).any()
+    # Every role meets every circumstance.
     assert len(units) == len(SINGLE_HEAD_ROLES) * len(CIRCUMSTANCES)
-    assert exempt.any() and not exempt.all()
 
 
 def element_reform(element, amount):
@@ -480,6 +601,10 @@ def element_reform(element, amount):
     return ReplaceElement
 
 
+# The Universal Credit exception the elements give (UC Regs 2013 reg
+# 83(1)(a), (j)); Housing Benefit has no element exception.
+UC_SPECIFIED = SCHEMES["uc"]["specified"]
+
 # The circumstance that gives each element (UC Regs 2013 regs 27(1), 29(1)).
 # The carer flag is set directly, with no hours of care, so that no
 # entitlement to Carer's Allowance lifts the cap by another route.
@@ -502,7 +627,7 @@ def test_an_element_a_reform_gives_is_decided_by_its_value(element):
         reform=element_reform(element, 6_000),
     )
     assert positive.calculate(element, YEAR)[0] == 6_000
-    assert positive.calculate("is_benefit_cap_exempt_health_disability", YEAR)[0]
+    assert positive.calculate(UC_SPECIFIED, YEAR)[0]
     # A reform's amount that equals the model's own (here, what the model's
     # formula gives for the other member's circumstance) is still the
     # reform's.
@@ -515,7 +640,7 @@ def test_an_element_a_reform_gives_is_decided_by_its_value(element):
         reform=element_reform(element, model_amount),
     )
     assert same.calculate(element, YEAR)[0] == model_amount
-    assert same.calculate("is_benefit_cap_exempt_health_disability", YEAR)[0]
+    assert same.calculate(UC_SPECIFIED, YEAR)[0]
 
     claimant = blank(role="claimant", age=40)
     claimant[circumstance] = True
@@ -524,14 +649,14 @@ def test_an_element_a_reform_gives_is_decided_by_its_value(element):
         reform=element_reform(element, 0),
     )
     assert nil.calculate(element, YEAR)[0] == 0
-    assert not nil.calculate("is_benefit_cap_exempt_health_disability", YEAR)[0]
+    assert not nil.calculate(UC_SPECIFIED, YEAR)[0]
     # Without the reform the claimant's circumstance gives the element and
     # lifts the cap.
     baseline = Simulation(
         situation=situation([([claimant], {"working_tax_credit": 0})])
     )
     assert baseline.calculate(element, YEAR)[0] > 0
-    assert baseline.calculate("is_benefit_cap_exempt_health_disability", YEAR)[0]
+    assert baseline.calculate(UC_SPECIFIED, YEAR)[0]
 
 
 def test_the_rebalancing_adds_no_entry_and_keeps_one():
@@ -548,7 +673,7 @@ def test_the_rebalancing_adds_no_entry_and_keeps_one():
     assert calculated.calculate("uc_LCWRA_element", year)[0] > 0
     benunit = calculated.populations["benunit"]
     assert supplied_input(benunit, "uc_LCWRA_element", period(year)) is None
-    assert not calculated.calculate("is_benefit_cap_exempt_health_disability", year)[0]
+    assert not calculated.calculate(UC_SPECIFIED, year)[0]
 
     entered = Simulation(
         situation=situation(
@@ -558,7 +683,7 @@ def test_the_rebalancing_adds_no_entry_and_keeps_one():
     )
     benunit = entered.populations["benunit"]
     assert supplied_input(benunit, "uc_LCWRA_element", period(year)) is not None
-    assert entered.calculate("is_benefit_cap_exempt_health_disability", year)[0]
+    assert entered.calculate(UC_SPECIFIED, year)[0]
 
 
 # An element is an entry only while the value stored is one: the model's own
@@ -629,9 +754,7 @@ def test_an_entry_equal_to_the_model_value_is_an_entry(enter):
     same simulation, however it is entered."""
     year = 2026
     without_entry = Simulation(situation=element_situation(year))
-    assert not without_entry.calculate("is_benefit_cap_exempt_health_disability", year)[
-        0
-    ]
+    assert not without_entry.calculate(UC_SPECIFIED, year)[0]
     simulation = Simulation(situation=element_situation(year))
     model_amount = float(simulation.calculate("uc_LCWRA_element", year)[0])
     assert model_amount > 0
@@ -644,11 +767,11 @@ def test_an_entry_equal_to_the_model_value_is_an_entry(enter):
         model_amount
     )
     assert is_entered(simulation, year)
-    assert simulation.calculate("is_benefit_cap_exempt_health_disability", year)[0]
+    assert simulation.calculate(UC_SPECIFIED, year)[0]
     # As in a simulation built with the entry.
     fresh = Simulation(situation=element_situation(year, model_amount))
     assert is_entered(fresh, year)
-    assert fresh.calculate("is_benefit_cap_exempt_health_disability", year)[0]
+    assert fresh.calculate(UC_SPECIFIED, year)[0]
 
 
 def test_clones_and_branches_keep_their_own_record_of_model_values():
@@ -673,7 +796,7 @@ def test_clones_and_branches_keep_their_own_record_of_model_values():
     assert simulation.calculate("uc_LCWRA_element", year)[0] == pytest.approx(
         model_amount
     )
-    assert not simulation.calculate("is_benefit_cap_exempt_health_disability", year)[0]
+    assert not simulation.calculate(UC_SPECIFIED, year)[0]
 
 
 @pytest.fixture(scope="module")
@@ -683,7 +806,7 @@ def rebalanced():
     return simulation, float(simulation.calculate("uc_LCWRA_element", year)[0])
 
 
-REBALANCED_YEARS = [2026, 2027, 2028, 2029]
+REBALANCED_YEARS = list(REBALANCING_YEARS)
 
 
 @pytest.mark.parametrize(
@@ -707,7 +830,7 @@ REBALANCED_YEARS = [2026, 2027, 2028, 2029]
 def test_an_input_makes_the_element_an_entry_only_in_years_it_stores(
     rebalanced, input_period, amount, entered_years
 ):
-    """The rebalancing stores the model's element for 2026-2029. An input
+    """The rebalancing stores the model's element for each rebalancing year. An input
     for another period that leaves a year's stored value in place leaves it
     the model's, so the non-claimant's limited capability still does not
     lift the cap that year; an input stored for the year is an entry, even
@@ -721,10 +844,7 @@ def test_an_input_makes_the_element_an_entry_only_in_years_it_stores(
     for year in REBALANCED_YEARS:
         entered = year in entered_years
         assert is_entered(simulation, year) == entered, year
-        assert (
-            simulation.calculate("is_benefit_cap_exempt_health_disability", year)[0]
-            == entered
-        ), year
+        assert simulation.calculate(UC_SPECIFIED, year)[0] == entered, year
 
 
 def test_an_inconsistent_input_for_part_of_a_year_keeps_the_model_value(

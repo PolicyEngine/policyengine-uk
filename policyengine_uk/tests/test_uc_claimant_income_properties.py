@@ -300,7 +300,7 @@ def test_dependants_earnings_do_not_lift_the_benefit_cap(units, year):
             err_msg=f"{v}: {units}",
         )
     assert not np.any(
-        np.asarray(with_income.calculate("is_benefit_cap_exempt_earnings", year))
+        np.asarray(with_income.calculate("is_uc_benefit_cap_exempt_earnings", year))
     ), units
 
 

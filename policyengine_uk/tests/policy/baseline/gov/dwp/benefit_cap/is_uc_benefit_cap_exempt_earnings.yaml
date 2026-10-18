@@ -1,5 +1,5 @@
-# Benefit cap exceptions, Universal Credit Regulations 2013 regs. 82-83 and
-# Housing Benefit Regulations 2006 reg. 75F.
+# Universal Credit benefit cap earnings exception, Universal Credit
+# Regulations 2013 reg. 82.
 # https://www.legislation.gov.uk/uksi/2013/376/regulation/82
 # https://www.gov.uk/benefit-cap/when-youre-not-affected
 
@@ -22,8 +22,8 @@
       benunit:
         members: [person]
   output:
-    is_benefit_cap_exempt_earnings: true
-    is_benefit_cap_exempt: true
+    is_uc_benefit_cap_exempt_earnings: true
+    is_uc_benefit_cap_exempt: true
 
 - name: Earnings below the threshold do not except, even with large unearned income
   # The same unearned income with earnings of 8,000 leaves net earnings below
@@ -39,7 +39,7 @@
       benunit:
         members: [person]
   output:
-    is_benefit_cap_exempt_earnings: false
+    is_uc_benefit_cap_exempt_earnings: false
 
 - name: A couple's earnings are combined for the earnings exception
   # Reg. 82(1)(a) applies to "the claimant's and their partner's combined
@@ -57,7 +57,7 @@
       benunit:
         members: [person1, person2]
   output:
-    is_benefit_cap_exempt_earnings: true
+    is_uc_benefit_cap_exempt_earnings: true
 
 - name: Relievable pension contributions reduce earned income
   # Reg. 55(5)(a) deducts relievable pension contributions from employed
@@ -74,7 +74,7 @@
       benunit:
         members: [person]
   output:
-    is_benefit_cap_exempt_earnings: false
+    is_uc_benefit_cap_exempt_earnings: false
 
 - name: Tax on private pension income does not reduce earned income for the earnings exception
   # Reg. 55(5)(b) deducts only income tax paid "in respect of the
@@ -106,7 +106,7 @@
   output:
     earned_income_tax: [546, 0, 0]
     uc_income_tax_on_earnings: [0, 0, 0]
-    is_benefit_cap_exempt_earnings: true
+    is_uc_benefit_cap_exempt_earnings: true
     benefit_cap_reduction: 0
     universal_credit: 33_876.72
   absolute_error_margin: 1
@@ -142,7 +142,7 @@
         rent: 30_000
   output:
     uc_individual_earned_income_before_mif: [10_600, 0, 0, 0]
-    is_benefit_cap_exempt_earnings: true
+    is_uc_benefit_cap_exempt_earnings: true
     benefit_cap_reduction: 0
     universal_credit: 31_074.08
   absolute_error_margin: 1
@@ -180,7 +180,7 @@
     is_uc_assessed_claimant: [true, true, false, false]
     housing_benefit_pension_age_regulations_apply: false
     uc_individual_earned_income_before_mif: [11_000, 0, 0, 0]
-    is_benefit_cap_exempt_earnings: true
+    is_uc_benefit_cap_exempt_earnings: true
     benefit_cap_reduction: 0
     universal_credit: 42_066.40
   absolute_error_margin: 1
@@ -199,7 +199,7 @@
         members: [person]
   output:
     # 10,300 clears 846 x 12 = 10,152.
-    is_benefit_cap_exempt_earnings: true
+    is_uc_benefit_cap_exempt_earnings: true
 
 - name: The 2026-27 earnings threshold rises to 881 a month
   period: 2026
@@ -213,7 +213,7 @@
         members: [person]
   output:
     # The same earnings fall short of 881 x 12 = 10,572.
-    is_benefit_cap_exempt_earnings: false
+    is_uc_benefit_cap_exempt_earnings: false
 
 - name: Earnings above the 2026-27 threshold except from the cap
   period: 2026
@@ -226,168 +226,4 @@
       benunit:
         members: [person]
   output:
-    is_benefit_cap_exempt_earnings: true
-
-# --- Armed Forces Independence Payment is a statutory exception ---
-
-- name: Armed Forces Independence Payment excepts from the benefit cap
-  period: 2026
-  input:
-    people:
-      person:
-        age: 35
-        armed_forces_independence_payment: 5_740
-    benunits:
-      benunit:
-        members: [person]
-  output:
-    is_benefit_cap_exempt_health_disability: true
-    is_benefit_cap_exempt: true
-
-- name: Without Armed Forces Independence Payment the cap applies
-  period: 2026
-  input:
-    people:
-      person:
-        age: 35
-        armed_forces_independence_payment: 0
-    benunits:
-      benunit:
-        members: [person]
-  output:
-    is_benefit_cap_exempt_health_disability: false
-    is_benefit_cap_exempt: false
-
-- name: A child's Armed Forces Independence Payment does not except the benefit unit
-  # HB Regs 2006 reg 75F(1)(ea) names the claimant, partner or a young person
-  # the claimant is responsible for, not a child under 16. For Universal
-  # Credit, AFIP is within "attendance allowance" (UC Regs 2013 reg 2), which
-  # excepts only where "a claimant is receiving" it (reg 83(1)(c)).
-  period: 2026
-  input:
-    people:
-      parent:
-        age: 35
-      child:
-        age: 10
-        armed_forces_independence_payment: 5_740
-    benunits:
-      benunit:
-        members: [parent, child]
-  output:
-    is_benefit_cap_exempt_health_disability: false
-    is_benefit_cap_exempt: false
-
-- name: A dependent young person's AFIP does not lift the Universal Credit cap
-  # For Universal Credit, AFIP is within "attendance allowance" (UC Regs
-  # 2013 reg 2), and reg 83(1)(c) excepts only where "a claimant is
-  # receiving" it. The 17-year-old is a qualifying young person, not a
-  # claimant, so the family's Universal Credit is capped at the London
-  # family rate of 25,323 a year.
-  period: 2026
-  input:
-    people:
-      parent:
-        age: 45
-      young_person:
-        age: 17
-        current_education: UPPER_SECONDARY
-        armed_forces_independence_payment: 5_740
-      child1:
-        age: 10
-      child2:
-        age: 8
-    benunits:
-      benunit:
-        members: [parent, young_person, child1, child2]
-    households:
-      household:
-        members: [parent, young_person, child1, child2]
-        region: LONDON
-        tenure_type: RENT_FROM_COUNCIL
-        rent: 30_000
-  output:
-    is_qualifying_young_person_for_child_benefit: [false, true, false, false]
-    is_uc_assessed_claimant: [true, false, false, false]
-    is_benefit_cap_exempt_health_disability: false
-    is_benefit_cap_exempt: false
-    benefit_cap: 25_323
-    universal_credit_pre_benefit_cap: 52_792.44
-    benefit_cap_reduction: 30_737.64
-    universal_credit: 22_054.80
-  absolute_error_margin: 1
-
-- name: A dependent young person's AFIP lifts the Housing Benefit cap
-  # HB Regs 2006 reg 75F(1)(ea) names "the claimant, the claimant's partner
-  # or a young person for whom the claimant or the claimant's partner is
-  # responsible". The same family on legacy Housing Benefit (an existing
-  # award, no Universal Credit claim) is outside the cap, so its Housing
-  # Benefit is paid in full. Without the AFIP it would be capped by 7,945.
-  period: 2026
-  input:
-    people:
-      parent:
-        age: 45
-        housing_benefit_reported: 10_000
-      young_person:
-        age: 17
-        current_education: UPPER_SECONDARY
-        armed_forces_independence_payment: 5_740
-      child1:
-        age: 10
-      child2:
-        age: 8
-    benunits:
-      benunit:
-        members: [parent, young_person, child1, child2]
-        would_claim_uc: false
-    households:
-      household:
-        members: [parent, young_person, child1, child2]
-        region: LONDON
-        tenure_type: RENT_FROM_COUNCIL
-        rent: 30_000
-  output:
-    universal_credit_pre_benefit_cap: 0
-    is_benefit_cap_exempt_health_disability: true
-    is_benefit_cap_exempt: true
-    benefit_cap_reduction: 0
-    housing_benefit_pre_benefit_cap: 30_000
-    housing_benefit: 30_000
-  absolute_error_margin: 1
-
-# --- Other exceptions are unchanged ---
-
-- name: State pension age excepts from the benefit cap
-  period: 2026
-  input:
-    people:
-      person:
-        age: 70
-    benunits:
-      benunit:
-        members: [person]
-  output:
-    is_benefit_cap_exempt_other: true
-    is_benefit_cap_exempt: true
-
-- name: Armed Forces Compensation Scheme payments except from the benefit cap
-  # A guaranteed income payment (article 15(1)(c) of the Armed Forces and
-  # Reserve Forces (Compensation Scheme) Order 2011) and a war disablement
-  # pension except: UC Regs 2013 reg 83(1)(d)-(e); HB Regs 2006 reg
-  # 75F(1)(d), with reg 75F(2)(a). This asserts the health and disability
-  # exception and the overall result, not is_benefit_cap_exempt_other, which
-  # also checks afcs today but loses it when #2076 moves AFCS into
-  # is_benefit_cap_exempt_health_disability.
-  period: 2026
-  input:
-    people:
-      person:
-        age: 35
-        afcs_reported: 2_000
-    benunits:
-      benunit:
-        members: [person]
-  output:
-    is_benefit_cap_exempt_health_disability: true
-    is_benefit_cap_exempt: true
+    is_uc_benefit_cap_exempt_earnings: true
