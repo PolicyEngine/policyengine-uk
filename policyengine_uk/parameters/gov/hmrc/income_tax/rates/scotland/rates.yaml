@@ -73,12 +73,11 @@ brackets:
   - threshold:
       values:
         2017-04-06: null
-        # Top rate threshold: £125,140 total income = £112,570 above PA
-        # (£125,140 - £12,570 personal allowance)
-        2024-04-06: 112_570
-        2025-04-06: 112_570
-        # Scottish Budget 2025-26 announced freeze through 2026-27
-        2026-04-06: 112_570
+        # The personal allowance is fully withdrawn at £125,140, so the
+        # taxable-income top limit equals total income: do not subtract PA.
+        2024-04-06: 125_140
+        2025-04-06: 125_140
+        2026-04-06: 125_140
       metadata:
         uprating: gov.economic_assumptions.indices.obr.consumer_price_index
     rate:
@@ -89,6 +88,14 @@ metadata:
   rate_unit: /1
   label: Scottish Income Tax rates
   reference:
+    - title: Scottish Rate Resolution 2024-25 (S6M-12252), paragraphs (a)-(f)
+      href: https://www.parliament.scot/chamber-and-committees/votes-and-motions/S6M-12252
+    - title: Scottish Rate Resolution 2025-26 (S6M-16531), paragraphs (a)-(f)
+      href: https://www.parliament.scot/chamber-and-committees/votes-and-motions/S6M-16531
+    - title: Scottish Rate Resolution 2026-27 (S6M-20844), paragraphs (a)-(f)
+      href: https://www.parliament.scot/chamber-and-committees/votes-and-motions/S6M-20844
+    - title: Scottish Rate Resolution 2026-27 explanatory note - personal allowance and top limit
+      href: https://www.gov.scot/publications/scottish-rate-resolution-2026-2027-draft-motion-explanatory-note/pages/3/
     - title: GOV.UK
       href: https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past
     - title: Scottish Budget 2025-26 - Higher rate threshold freeze

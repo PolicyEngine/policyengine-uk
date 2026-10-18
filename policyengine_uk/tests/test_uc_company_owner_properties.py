@@ -96,7 +96,7 @@ VARIABLES = [
     "universal_credit",
     "uc_assessable_capital",
     "uc_earned_income",
-    "is_benefit_cap_exempt_earnings",
+    "is_uc_benefit_cap_exempt_earnings",
 ]
 PERSON_VARIABLES = [
     "uc_individual_earned_income",
@@ -542,7 +542,7 @@ def test_universal_credit_monotone_in_company_facts(unit_list, bump, asset_bump)
         ]
     got = calculate(variants)
     uc = got["universal_credit"].reshape(-1, 6)
-    exempt = got["is_benefit_cap_exempt_earnings"].reshape(-1, 6)
+    exempt = got["is_uc_benefit_cap_exempt_earnings"].reshape(-1, 6)
     tol = 1e-6
     base, more_income, more_capital, more_holding, more_assets, engaged = uc.T
     # Extra earnings that lift the benefit cap (reg. 82(1)(a)) can raise the
