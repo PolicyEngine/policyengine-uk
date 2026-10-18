@@ -2,6 +2,10 @@
 
 Views are discoverable Parameters for existing metadata serializers. Numerical
 processing explicitly excludes them; no view owns a second policy timeline.
+Retire the Core-internal adaptations when stable alias/processing contracts
+replace them. Remove legacy views through an explicit compatibility migration
+once callers, saved reforms and metadata consumers use canonical scale paths;
+retain their contract tests until that transition is complete.
 """
 
 import copy
@@ -48,8 +52,25 @@ class NIComponent:
     rate: object
 
 
+def _validate_ni_zero_bracket(scale):
+    """The initial zero band is a fixed representation sentinel."""
+    bracket = scale.brackets[0]
+    for name in ("threshold", "rate"):
+        leaf = bracket.children.get(name)
+        if (
+            not isinstance(leaf, Parameter)
+            or not leaf.values_list
+            or any(point.value != 0 for point in leaf.values_list)
+        ):
+            raise ValueError(
+                f"NI canonical leaf {scale.name}[0].{name} is fixed at zero; "
+                "update the contribution bands after bracket 0 instead"
+            )
+
+
 class NIParameterScale(ParameterScale):
     def _get_at_instant(self, instant):
+        _validate_ni_zero_bracket(self)
         scale = super()._get_at_instant(instant)
         scale.components = tuple(
             NIComponent(bracket.threshold(instant), bracket.rate(instant))
@@ -311,6 +332,7 @@ def validate_ni_scale_compatibility(parameters):
                 raise ValueError(
                     f"NI canonical schedule {path} was structurally replaced; update its component leaves"
                 )
+            _validate_ni_zero_bracket(scale)
         for old, new in NI_LEGACY_PATHS.items():
             node = ni
             try:

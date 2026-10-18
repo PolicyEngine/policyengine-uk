@@ -5,7 +5,11 @@ parameter scales. Each schedule holds its contribution rates and the thresholds
 at which they apply. The schedules retain their dated values and units.
 
 All paths below start with `gov.hmrc.national_insurance.`. Bracket indices start
-at zero; bracket zero supplies the initial zero-rate band.
+at zero. Bracket zero supplies the fixed zero-threshold, zero-rate sentinel.
+Contribution reforms use brackets 1 and 2 below. Any nonzero, missing or null
+threshold or rate in bracket zero is rejected with a targeted error naming the
+canonical leaf. Validation covers its full dated history, including future
+entries; an explicit update to zero leaves calculations unchanged.
 
 | Scale | Contribution bands | Threshold period in the parameter files |
 | --- | --- | --- |
@@ -66,6 +70,13 @@ Edit the canonical scale components when changing the model. Their dated values,
 references, units and uprating metadata supply the legacy scalar views. The NI
 threshold generator writes to these canonical leaves. Parameter processing visits
 each numerical history once; metadata discovery also exposes the legacy names.
+
+Metadata consumers should map a legacy name to its canonical leaf and present
+one control for that history. Both spellings remain discoverable, so listing
+every metadata record can duplicate a control. The pinned, source-extracted API
+contract tests cover parameter records and updates; they do not verify a
+deployed API or the app's tree, search and control presentation. Consumer owners
+must check those surfaces before relying on the migration in a UI.
 
 For NI rate reforms in behavioural scenarios, see
 [Labour supply dynamics](../../../usage/dynamics.md).

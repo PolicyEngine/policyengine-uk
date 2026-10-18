@@ -407,3 +407,149 @@ def test_legacy_parent_preserves_core_tracing_and_fresh_cache_reads():
     assert parent("2026").main == 0.21
     assert [row[0] for row in reads] == [PREFIX + "class_1.rates.employee.main"] * 2
     assert [row[-1] for row in reads] == [0.08, 0.21]
+
+
+_NI_ZERO_SCALES = (
+    "class_1.employee_scale",
+    "class_1.employer_scale",
+    "class_4.contribution_scale",
+)
+_NI_ZERO_LEAVES = tuple(
+    (scale, leaf) for scale in _NI_ZERO_SCALES for leaf in ("threshold", "rate")
+)
+
+
+def _ni_zero_error(scale, leaf):
+    import re
+
+    path = PREFIX + scale + "[0]." + leaf
+    return r"NI.*" + re.escape(path) + r".*fixed at zero"
+
+
+def _ni_zero_situation():
+    return {
+        "people": {
+            "p": {
+                "age": {2026: 40},
+                "employment_income": {2026: 60_000},
+                "self_employment_income": {2026: 30_000},
+            }
+        },
+        "benunits": {"b": {"members": ["p"]}},
+        "households": {
+            "h": {
+                "members": ["p"],
+                "region": {2026: "LONDON"},
+                "tenure_type": {2026: "OWNED_OUTRIGHT"},
+                "council_tax": {2026: 0},
+            }
+        },
+    }
+
+
+def _ni_zero_scenario(route, changes):
+    from policyengine_core.reforms import Reform
+    from policyengine_uk.utils.scenario import Scenario
+
+    if route == "changes":
+        return Scenario(parameter_changes=changes)
+    if route == "core":
+        return Scenario.from_reform(Reform.from_dict(changes))
+    if route == "callable":
+
+        class UpdateNILeaves(Reform):
+            def apply(self):
+                def update(parameters):
+                    for path, values in changes.items():
+                        parameters.get_child(path).update(
+                            period="2026", value=values["2026"]
+                        )
+                    return parameters
+
+                self.modify_parameters(update)
+
+        return Scenario.from_reform(UpdateNILeaves)
+    return Scenario.from_reform(changes)
+
+
+@pytest.mark.parametrize("scale,leaf", _NI_ZERO_LEAVES)
+@pytest.mark.parametrize("route", ["dict", "changes", "core", "callable"])
+def test_ni_zero_band_reforms_are_rejected(scale, leaf, route):
+    from policyengine_uk import Simulation
+
+    path = PREFIX + scale + "[0]." + leaf
+    changes = {path: {"2026": 0.5 if leaf == "rate" else 1}}
+    with pytest.raises(ValueError, match=_ni_zero_error(scale, leaf)):
+        sim = Simulation(
+            situation=_ni_zero_situation(),
+            scenario=_ni_zero_scenario(route, changes),
+        )
+        sim.calculate("national_insurance", 2026)
+
+
+@pytest.mark.parametrize("scale,leaf", _NI_ZERO_LEAVES)
+@pytest.mark.parametrize("baseline", [False, True])
+def test_ni_zero_band_future_edits_cannot_hide_behind_a_cached_read(
+    scale, leaf, baseline
+):
+    source = CountryTaxBenefitSystem().parameters
+    tree = source.clone()
+    target = tree.baseline if baseline else tree
+    target("2026")
+    path = PREFIX + scale + "[0]." + leaf
+    target.get_child(path).update(start="2041-01-01", value=1)
+    with pytest.raises(ValueError, match=_ni_zero_error(scale, leaf)):
+        target("2026")
+    assert source.get_child(path)("2041") == 0
+    assert source.baseline.get_child(path)("2041") == 0
+
+
+@pytest.mark.parametrize("scale,leaf", _NI_ZERO_LEAVES)
+@pytest.mark.parametrize("operation", ["process_parameters", "reset_parameter_caches"])
+def test_ni_zero_band_validation_rejects_updates_without_mutating_source(
+    scale, leaf, operation
+):
+    source = CountryTaxBenefitSystem()
+    changed = source.clone()
+    if operation == "process_parameters":
+        changed.reset_parameters()
+    path = PREFIX + scale + "[0]." + leaf
+    changed.parameters.get_child(path).update(period="2026", value=1)
+    with pytest.raises(ValueError, match=_ni_zero_error(scale, leaf)):
+        getattr(changed, operation)()
+    assert source.parameters.get_child(path)("2026") == 0
+
+
+@pytest.mark.parametrize("scale,leaf", _NI_ZERO_LEAVES)
+@pytest.mark.parametrize("damage", ["missing", "null"])
+def test_ni_zero_band_malformed_leaves_raise_the_targeted_error(scale, leaf, damage):
+    tree = CountryTaxBenefitSystem().parameters.clone()
+    raw_scale = tree.get_child(PREFIX + scale)
+    bracket = raw_scale.brackets[0]
+    if damage == "missing":
+        del bracket.children[leaf]
+        delattr(bracket, leaf)
+    else:
+        bracket.children[leaf].update(period="2026", value=None)
+    with pytest.raises(ValueError, match=_ni_zero_error(scale, leaf)):
+        raw_scale("2026")
+
+
+@pytest.mark.parametrize("scale", _NI_ZERO_SCALES)
+@pytest.mark.parametrize("route", ["dict", "changes", "core", "callable"])
+def test_ni_zero_band_explicit_zero_updates_are_noops(scale, route):
+    import numpy as np
+    from policyengine_uk import Simulation
+
+    changes = {
+        PREFIX + scale + "[0]." + leaf: {"2026": 0} for leaf in ("threshold", "rate")
+    }
+    original = Simulation(situation=_ni_zero_situation())
+    changed = Simulation(
+        situation=_ni_zero_situation(),
+        scenario=_ni_zero_scenario(route, changes),
+    )
+    for output in ("national_insurance", "ni_class_1_employer", "household_net_income"):
+        np.testing.assert_array_equal(
+            changed.calculate(output, 2026), original.calculate(output, 2026)
+        )

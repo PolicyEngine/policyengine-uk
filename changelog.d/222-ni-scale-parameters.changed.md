@@ -1,1 +1,3 @@
 - Store marginal National Insurance schedules as parameter scales while preserving contribution calculations and existing scalar reform paths.
+- Reject unsupported changes to the fixed zero-rate, zero-threshold NI scale sentinel with a targeted error.
+- Direct YAML readers must migrate the ten removed scalar files to the canonical scale files; parameter-tree readers retain the legacy compatibility paths.
