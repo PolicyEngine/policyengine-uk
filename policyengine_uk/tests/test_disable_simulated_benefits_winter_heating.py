@@ -16,8 +16,11 @@ Invariants, for every household and each of the reform's years:
 1. Conservation: winter_fuel_allowance + pawhp equals the household's
    reported winter heating payment, so the report is counted once in
    household income (both variables are in household_benefits once).
-2. Placement: the report is pawhp in Scotland in the years PAWHP is paid
-   (from the 2024 qualifying week) and winter_fuel_allowance otherwise.
+2. Placement: the report is pawhp for a household living in Scotland that
+   year, in the years PAWHP is paid (from the 2024 qualifying week), and
+   winter_fuel_allowance otherwise. Where the household lives is read in
+   each year, so a household that moves into or out of Scotland changes
+   scheme with the move.
 3. Differential: household_benefits exceeds that of the same dataset with no
    reported winter heating payment by the report, plus the pensioner
    Cost-of-Living Payment it brings in 2022-23 and 2023-24.
@@ -30,6 +33,7 @@ from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import CountryTaxBenefitSystem, Microsimulation, Simulation
+from policyengine_uk.data import UKMultiYearDataset
 from policyengine_uk.data.dataset_schema import UKSingleYearDataset
 from policyengine_uk.reforms.policyengine.disable_simulated_benefits import (
     BENEFITS,
@@ -61,6 +65,7 @@ FIRST_PAWHP_YEAR = 2024
 # set from BENEFITS, and why.
 NOT_IN_BENEFITS = {
     "winter_fuel_allowance": "set with pawhp from the one reported winter heating payment",
+    "carers_allowance": "set with carer_support_payment from the one reported Carer's Allowance",
     "maternity_allowance": "already the reported amount (adds maternity_allowance_reported)",
     "employee_pension_contributions": "not a benefit",
     "tax": "not a benefit",
@@ -113,9 +118,12 @@ def values(simulation, variable, year):
 
 
 def check_winter_heating(simulation, regions, winter_heating, first_year):
+    """regions: each household's region, the same in every year, or a dict of
+    them by year."""
     reported = np.asarray(winter_heating, dtype=float)
-    in_scotland = np.asarray(regions) == "SCOTLAND"
     for year in range(first_year, first_year + YEARS_IN_FUTURE):
+        regions_in_year = regions[year] if isinstance(regions, dict) else regions
+        in_scotland = np.asarray(regions_in_year) == "SCOTLAND"
         wfa = values(simulation, "winter_fuel_allowance", year)
         pawhp = values(simulation, "pawhp", year)
         np.testing.assert_allclose(wfa + pawhp, reported, err_msg=str(year))
@@ -238,3 +246,84 @@ def test_reported_winter_heating_is_conserved(first_year, households):
         dataset=dataset(first_year, regions, winter_heating), scenario=REFORM_ON
     )
     check_winter_heating(simulation, regions, winter_heating, first_year)
+
+
+def pensioner_situation(regions_by_year):
+    """One pensioner of 72 who reports a £300 winter heating payment in the
+    first year and lives in each year where regions_by_year says."""
+    years = list(regions_by_year)
+    return {
+        "people": {
+            "pensioner": {
+                "age": {year: 72 + year - years[0] for year in years},
+                "winter_fuel_allowance_reported": {years[0]: 300},
+            }
+        },
+        "benunits": {"family": {"members": ["pensioner"]}},
+        "households": {"home": {"members": ["pensioner"], "region": regions_by_year}},
+    }
+
+
+@pytest.mark.parametrize(
+    "before, after", [("LONDON", "SCOTLAND"), ("SCOTLAND", "LONDON")]
+)
+def test_a_household_that_moves_is_paid_under_each_years_scheme(before, after):
+    """The split reads the country in each year: a household's outputs in a
+    year equal those of a household that has lived in that year's country
+    throughout."""
+    first = 2025
+    years = range(first, first + YEARS_IN_FUTURE)
+    moved = {year: before if year == first else after for year in years}
+    stayed = {year: after for year in years}
+    simulation = Simulation(situation=pensioner_situation(moved), scenario=REFORM_ON)
+    control = Simulation(situation=pensioner_situation(stayed), scenario=REFORM_ON)
+    check_winter_heating(
+        simulation, {year: [moved[year]] for year in years}, [300], first
+    )
+    for year in years[1:]:
+        for name in [
+            "winter_fuel_allowance",
+            "pawhp",
+            "household_benefits",
+            "hbai_household_net_income",
+        ]:
+            np.testing.assert_allclose(
+                values(simulation, name, year),
+                values(control, name, year),
+                err_msg=f"{name} {year}",
+            )
+
+
+@PROPERTY_SETTINGS
+@given(
+    first_year=st.sampled_from([2022, 2023, 2024, 2025]),
+    households=st.lists(
+        st.tuples(
+            st.lists(
+                st.sampled_from(["SCOTLAND", "LONDON", "NORTHERN_IRELAND"]),
+                min_size=YEARS_IN_FUTURE,
+                max_size=YEARS_IN_FUTURE,
+            ),
+            st.sampled_from([0, 150.5, 300]),
+        ),
+        min_size=1,
+        max_size=4,
+    ),
+)
+def test_reported_winter_heating_follows_each_years_country(first_year, households):
+    """Conservation and placement in every year, with each household's region
+    drawn afresh for each year (a multi-year dataset)."""
+    years = range(first_year, first_year + YEARS_IN_FUTURE)
+    regions_by_year = {
+        year: [path[i] for path, _ in households] for i, year in enumerate(years)
+    }
+    winter_heating = [amount for _, amount in households]
+    simulation = Simulation(
+        dataset=UKMultiYearDataset(
+            datasets=[
+                dataset(year, regions_by_year[year], winter_heating) for year in years
+            ]
+        ),
+        scenario=REFORM_ON,
+    )
+    check_winter_heating(simulation, regions_by_year, winter_heating, first_year)
