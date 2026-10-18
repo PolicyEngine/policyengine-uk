@@ -193,3 +193,51 @@
     employee_pension_contributions_reported: 25000
   output:
     pension_contributions_relief: 22000
+
+# Supplied ANI is an explicit input contract. Restore the same actual pension
+# relief for equal total relevant earnings, regardless of the SSP wage split.
+- name: Supplied ANI all-wages annual allowance control
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    region: LONDON
+    age: 50
+    employment_income: 22000
+    statutory_sick_pay: 0
+    statutory_maternity_pay: 0
+    self_employment_income: 0
+    employee_pension_contributions_reported: 22000
+    personal_pension_contributions: 0
+    employer_pension_contributions: 0
+    pension_contributions_via_salary_sacrifice: 0
+    adjusted_net_income: 5000
+  output:
+    employment_benefits: 0
+    pension_contributions_relief: 22000
+    net_income: 27000
+    pension_contributions_for_annual_allowance: 22000
+    pension_annual_allowance_threshold_income: 5000
+    pension_annual_allowance_adjusted_income: 27000
+
+- name: Supplied ANI SSP preserves annual allowance earnings base
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    region: LONDON
+    age: 50
+    employment_income: 20000
+    statutory_sick_pay: 2000
+    statutory_maternity_pay: 0
+    self_employment_income: 0
+    employee_pension_contributions_reported: 22000
+    personal_pension_contributions: 0
+    employer_pension_contributions: 0
+    pension_contributions_via_salary_sacrifice: 0
+    adjusted_net_income: 5000
+  output:
+    employment_benefits: 2000
+    pension_contributions_relief: 22000
+    net_income: 27000
+    pension_contributions_for_annual_allowance: 22000
+    pension_annual_allowance_threshold_income: 5000
+    pension_annual_allowance_adjusted_income: 27000

@@ -1,5 +1,8 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.pensions import pension_contributions_relief_amount
+from policyengine_uk.utils.pensions import (
+    pension_contributions_relief_amount,
+    relevant_uk_earnings,
+)
 
 
 class pension_contributions_relief(Variable):
@@ -48,17 +51,9 @@ class pension_contributions_relief(Variable):
     def formula(person, period, parameters):
         hmrc = parameters(period).gov.hmrc
         contributions = person("pension_contributions", period)
-        # Relevant UK earnings (s. 189(2), PTM044100) include taxable statutory
-        # employment pay, held separately from wages in employment_benefits.
-        # A trading loss gives no relevant earnings; it does not reduce pay.
-        relevant_uk_earnings = (
-            person("employment_income", period)
-            + person("employment_benefits", period)
-            + max_(0, person("self_employment_income", period))
-        )
         return pension_contributions_relief_amount(
             contributions,
-            relevant_uk_earnings,
+            relevant_uk_earnings(person, period),
             person("personal_pension_contributions", period),
             person("age", period),
             hmrc,
