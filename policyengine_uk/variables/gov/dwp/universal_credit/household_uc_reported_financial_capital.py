@@ -9,9 +9,16 @@ class household_uc_reported_financial_capital(Variable):
         "Amounts consumed from the household financial proxy, counted once "
         "per benefit unit: a nonnegative complete uc_reported_capital override "
         "takes precedence over benunit_reported_capital. Without an override, "
-        "use the nonnegative financial observation. Subtracting a complete "
-        "override retains the inherited residual-pool convention; it does "
-        "not imply that the override's asset composition is observed."
+        "use the nonnegative financial observation. A complete override "
+        "replaces ordinary sources before regulation 77 company substitution, "
+        "so it includes its claimant's and partner's disregarded holdings. "
+        "Consume the larger of the override and those holdings capped at "
+        "household corporate_wealth: holdings already covered by an override "
+        "must not leave the pool twice, while an override below them must not "
+        "leave their remainder for another unit to count. A dependant's "
+        "holding leaves the pool separately in household_uc_pool_company_holdings. "
+        "Subtracting complete overrides retains the inherited residual-pool "
+        "convention."
     )
     definition_period = YEAR
     unit = GBP
@@ -21,8 +28,14 @@ class household_uc_reported_financial_capital(Variable):
         person = household.members
         financial_capital = person.benunit("benunit_reported_capital", period)
         complete_override = person.benunit("uc_reported_capital", period)
+        own_holdings = min_(
+            person.benunit("uc_claimant_company_holding_disregard", period),
+            max_(0, person.household("corporate_wealth", period)),
+        )
         consumed_capital = where(
-            complete_override >= 0, complete_override, financial_capital
+            complete_override >= 0,
+            max_(complete_override, own_holdings),
+            financial_capital,
         )
         return household.sum(
             max_(0, consumed_capital) * person("is_benunit_head", period)

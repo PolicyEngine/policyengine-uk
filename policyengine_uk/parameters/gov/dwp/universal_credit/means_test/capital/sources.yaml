@@ -4,9 +4,12 @@ description: >
   financial proxies and covered person-level sources, including a Lifetime ISA.
   Each benefit unit's complete uc_reported_capital override, otherwise its
   observed financial total, reduces this financial pool. Subtracting complete
-  overrides retains the inherited allocation convention despite their unknown
-  asset composition. The residual is allocated by claimant/partner counts
-  to benefit units with neither a financial observation nor a complete override,
+  overrides retains the inherited allocation convention. An override precedes
+  regulation 77 company substitution and includes its claimant's and partner's
+  holdings: consume at least their disregarded holdings capped at corporate_wealth
+  without removing them again from the pool. The residual is allocated by
+  claimant/partner counts to benefit units with neither a financial observation
+  nor a complete override,
   including units that do not receive UC. This allocation is an assumption
   about unobserved ownership, not a statutory rule. Countable property is
   valued and shared independently through property_sources across ALL

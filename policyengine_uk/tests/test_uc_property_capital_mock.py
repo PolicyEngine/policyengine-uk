@@ -174,6 +174,32 @@ def test_mock_complete_override_zero_consumes_its_whole_capital_share(tmp_path):
     )
 
 
+def test_mock_owner_override_consumes_its_company_holding_once(tmp_path):
+    year = 2026
+    simulation = _load_mock(
+        tmp_path,
+        _mock_year(
+            (-1, -1),
+            overrides=[10_000.0, -1.0],
+            household_inputs={"savings": 20_000, "corporate_wealth": 10_000},
+            person_inputs={
+                "stands_as_sole_owner_or_partner_of_company": [True, False],
+                "owned_company_carries_on_property_business": [True, False],
+                "owned_company_holding_value": [10_000.0, 0.0],
+                "owned_company_capital": [0.0, 0.0],
+            },
+            year=year,
+        ),
+    )
+
+    # The owner's override already contains the holding. The other unit keeps
+    # the £20k residual and is ineligible for UC after the H5 input round trip.
+    np.testing.assert_allclose(
+        simulation.calculate("uc_assessable_capital", year), [0, 20_000]
+    )
+    assert simulation.calculate("universal_credit", year)[1] == 0
+
+
 def test_mock_financial_total_already_covers_lifetime_isa(tmp_path):
     simulation = _load_mock(
         tmp_path,

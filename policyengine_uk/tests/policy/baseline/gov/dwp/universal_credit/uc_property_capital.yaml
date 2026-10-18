@@ -90,3 +90,36 @@
     uc_assessable_capital: [6_000, 6_000]
     uc_tariff_income: [0, 0]
     universal_credit: [5_098.80, 5_098.80]
+
+- name: A complete override consumes its owner's company holding only once
+  period: 2026
+  input:
+    people:
+      owner:
+        age: 30
+        is_claimant_or_partner: true
+        stands_as_sole_owner_or_partner_of_company: true
+        owned_company_carries_on_property_business: true
+        owned_company_holding_value: 10_000
+        owned_company_capital: 0
+      other_claimant:
+        age: 30
+        is_claimant_or_partner: true
+    benunits:
+      overridden:
+        members: [owner]
+        would_claim_uc: true
+        uc_reported_capital: 10_000
+      missing:
+        members: [other_claimant]
+        would_claim_uc: true
+    households:
+      household:
+        members: [owner, other_claimant]
+        savings: 20_000
+        corporate_wealth: 10_000
+  output:
+    household_uc_reported_financial_capital: 10_000
+    household_uc_pool_company_holdings: 0
+    uc_assessable_capital: [0, 20_000]
+    universal_credit: [5_098.80, 0]

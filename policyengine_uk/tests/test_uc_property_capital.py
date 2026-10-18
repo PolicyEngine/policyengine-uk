@@ -529,7 +529,7 @@ def test_capital_is_independent_of_person_and_benefit_unit_row_order(
         assert reordered[unit] == pytest.approx(baseline[unit])
 
 
-@pytest.mark.parametrize("complete_override", [0, 20_000])
+@pytest.mark.parametrize("complete_override", [0, 4_000, 10_000, 20_000])
 @pytest.mark.parametrize(
     "financial_report", [None, -1, 10_000], ids=["omitted", "missing", "observed"]
 )
@@ -555,10 +555,45 @@ def test_complete_override_company_holding_cannot_leak_into_missing_unit_pool(
     assert _values(simulation, "uc_company_owner_treatment_applies")[0]
     assert _values(simulation, "uc_company_holding_disregard")[0] == 10_000
     assert _values(simulation, "uc_company_capital")[0] == 0
-    # The complete override supersedes any financial observation. Its asset
-    # composition is unknown, so the holding still leaves the pool separately.
-    assert _values(simulation, "household_uc_pool_company_holdings")[0] == 10_000
+    # The complete override precedes regulation 77 and therefore includes its
+    # owner's holding. It consumes at least that holding from the pool once,
+    # including when zero or smaller than the holding, and supersedes the
+    # financial observation.
+    assert _values(simulation, "household_uc_pool_company_holdings")[0] == 0
+    assert _values(simulation, "household_uc_reported_financial_capital")[0] == max(
+        complete_override, 10_000
+    )
     np.testing.assert_allclose(
         _values(simulation),
-        [max(0, complete_override - 10_000), max(0, 6_000 - complete_override)],
+        [
+            max(0, complete_override - 10_000),
+            max(0, 16_000 - max(complete_override, 10_000)),
+        ],
     )
+
+
+def test_owner_override_consumes_company_holding_once_in_twenty_thousand_savings_case():
+    year = 2026
+    situation = _situation(
+        [{"override": {year: 10_000}}, {"financial": {year: -1}}],
+        {"corporate_wealth": {year: 10_000}, "savings": {year: 20_000}},
+    )
+    for person in situation["people"].values():
+        person["age"] = {year: 30}
+        person["is_claimant_or_partner"] = {year: True}
+    for unit in situation["benunits"].values():
+        unit["would_claim_uc"] = {year: True}
+    situation["people"]["p0_0"].update(
+        {
+            "stands_as_sole_owner_or_partner_of_company": {year: True},
+            "owned_company_carries_on_property_business": {year: True},
+            "owned_company_holding_value": {year: 10_000},
+            "owned_company_capital": {year: 0},
+        }
+    )
+    simulation = Simulation(situation=situation)
+    # £30k household pool less the owner's £10k override leaves £20k. The
+    # override includes the holding; removing it again would leave £10k and
+    # incorrectly award the other unit £4,263.60 Universal Credit in 2026.
+    np.testing.assert_allclose(_values(simulation, year=year), [0, 20_000])
+    assert _values(simulation, "universal_credit", year=year)[1] == 0
