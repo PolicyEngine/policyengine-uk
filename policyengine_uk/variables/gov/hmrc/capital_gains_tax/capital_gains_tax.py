@@ -1,3 +1,5 @@
+import numpy as np
+
 from policyengine_uk.model_api import *
 from policyengine_uk.utils.capital_gains import badr_gains_before_response
 
@@ -29,8 +31,8 @@ class capital_gains_tax(Variable):
         "other two in proportion with the rest of the gains. All three are "
         "clipped so that together they never exceed capital_gains. The annual "
         "exempt amount is set "
-        "against the schedule with the highest top rate first (TCGA 1992 "
-        "s. 1K(5)); the unused basic rate band goes to relief gains first, as "
+        "against the schedule whose top gains are charged at the highest rate "
+        "first (TCGA 1992 s. 1K(5)); the unused basic rate band goes to relief gains first, as "
         "s. 1I(4)-(6) requires, and then to the schedule with the widest gap "
         "between its higher and basic rates (s. 1I(7)-(9)). Gains above the "
         "basic rate band are split at the income tax higher rate limit only so "
@@ -138,19 +140,6 @@ class capital_gains_tax(Variable):
             "main": main,
             "badr": badr,
         }
-        top_rate = {name: rates[name].higher_rate for name in rates}
-        top_rate["badr"] = cgt.badr.rate
-
-        # Annual exempt amount, TCGA 1992 s. 1K(5): deducted in the way most
-        # beneficial to the taxpayer, which is against the highest top rate
-        # first. Relief gains carry the lowest rate and come last.
-        after_aea = {}
-        aea_left = aea
-        for name in sorted(amounts, key=lambda name: -top_rate[name]):
-            used = min_(amounts[name], aea_left)
-            after_aea[name] = amounts[name] - used
-            aea_left = aea_left - used
-
         # Basic rate band. Relief gains take it first, TCGA 1992 s. 1I(4)-(6).
         # The taxpayer then allocates the rest, s. 1I(7)-(9), which saves most
         # on the schedule with the widest higher-minus-basic gap. Carried
@@ -160,13 +149,6 @@ class capital_gains_tax(Variable):
             rates,
             key=lambda name: -(rates[name].higher_rate - rates[name].basic_rate),
         )
-        inside_basic, above_basic = {}, {}
-        band_left = remaining_basic_rate_band
-        for name in basic_order:
-            inside_basic[name], above_basic[name], band_left = _take(
-                after_aea[name], band_left
-            )
-
         # Gains above the basic rate band are split at the higher rate limit,
         # stacked on top of taxable income, so reforms can charge an
         # additional rate; in law the two rates are equal. Relief gains are
@@ -175,12 +157,59 @@ class capital_gains_tax(Variable):
             rates,
             key=lambda name: -(rates[name].additional_rate - rates[name].higher_rate),
         )
-        inside_higher, above_higher = {}, {}
-        band_left = remaining_higher_rate_band
-        for name in higher_order:
-            inside_higher[name], above_higher[name], band_left = _take(
-                above_basic[name], band_left
-            )
+
+        def allocate_bands(schedule_amounts):
+            inside_basic, above_basic = {}, {}
+            band_left = remaining_basic_rate_band
+            for name in basic_order:
+                inside_basic[name], above_basic[name], band_left = _take(
+                    schedule_amounts[name], band_left
+                )
+            inside_higher, above_higher = {}, {}
+            band_left = remaining_higher_rate_band
+            for name in higher_order:
+                inside_higher[name], above_higher[name], band_left = _take(
+                    above_basic[name], band_left
+                )
+            return inside_basic, inside_higher, above_higher
+
+        # Annual exempt amount, TCGA 1992 s. 1K(5): deducted in the way most
+        # beneficial to the taxpayer, which is against the schedule whose top
+        # gains are charged at the highest rate first. A schedule's top gains
+        # are at its additional rate when, before the exemption, any of them
+        # reach above the higher rate band, which happens whenever taxable
+        # income is already above the higher rate limit; otherwise they are
+        # at its higher rate. Relief gains carry their own flat rate. The
+        # order is set for each person, and ties keep declaration order.
+        _, _, above_higher_before_aea = allocate_bands(amounts)
+        names = list(amounts)
+        top_rate = np.stack(
+            [
+                (
+                    np.full_like(amounts[name], cgt.badr.rate, dtype=float)
+                    if name == "badr"
+                    else where(
+                        above_higher_before_aea[name] > 0,
+                        rates[name].additional_rate,
+                        rates[name].higher_rate,
+                    )
+                )
+                for name in names
+            ]
+        )
+        stacked = np.stack([amounts[name] for name in names])
+        order = np.argsort(-top_rate, axis=0, kind="stable")
+        stacked_after_aea = np.empty_like(stacked)
+        aea_left = aea
+        for position in range(len(names)):
+            index = order[position : position + 1]
+            amount = np.take_along_axis(stacked, index, axis=0)[0]
+            used = min_(amount, aea_left)
+            np.put_along_axis(stacked_after_aea, index, (amount - used)[None], axis=0)
+            aea_left = aea_left - used
+        after_aea = {name: stacked_after_aea[i] for i, name in enumerate(names)}
+
+        inside_basic, inside_higher, above_higher = allocate_bands(after_aea)
 
         def schedule_tax(name):
             schedule = rates[name]

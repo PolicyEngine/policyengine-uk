@@ -336,6 +336,49 @@ class TestEqualisationReforms:
             assert reformed[schedule] == pytest.approx(41_764.5), schedule
 
 
+class TestExemptionAllocation:
+    """The annual exempt amount goes where it saves most (TCGA 1992 s. 1K(5)).
+
+    Gains stack on taxable income, so a schedule's top gains can be at its
+    additional rate. The order of the exemption is set for each person from
+    the rate their top gains are actually charged at.
+    """
+
+    YEAR = 2025
+    ADDITIONAL_RATE_ONLY = {"gov.hmrc.cgt.additional_rate": {"2025": 0.45}}
+
+    def test_exemption_follows_each_persons_top_rate(self):
+        people, benunits, households = {}, {}, {}
+        for i, income in enumerate((200_000, 100_000)):
+            people[f"person_{i}"] = {
+                "age": {self.YEAR: 45},
+                "employment_income": {self.YEAR: income},
+                "capital_gains": {self.YEAR: 50_000},
+                "capital_gains_residential_property": {self.YEAR: 25_000},
+            }
+            benunits[f"benunit_{i}"] = {"members": [f"person_{i}"]}
+            households[f"household_{i}"] = {"members": [f"person_{i}"]}
+        sim = Microsimulation(
+            situation={
+                "people": people,
+                "benunits": benunits,
+                "households": households,
+            },
+            scenario=Scenario(parameter_changes=self.ADDITIONAL_RATE_ONLY),
+        )
+        tax = sim.calculate("capital_gains_tax", self.YEAR).values
+
+        # Taxable income 200,000 is above the higher rate limit, so main
+        # gains are at the reformed 45% and residential gains at 24%. The
+        # 3,000 exemption goes against main gains: 25,000 x 0.24 + 22,000 x
+        # 0.45 = 15,900, not 22,000 x 0.24 + 25,000 x 0.45 = 16,530.
+        assert tax[0] == pytest.approx(15_900)
+        # Taxable income 87,430 leaves 37,710 of higher band. Main gains fill
+        # it first, so none reach the 45% rate and every gain is at 24%:
+        # 47,000 x 0.24, wherever the exemption goes.
+        assert tax[1] == pytest.approx(11_280)
+
+
 class TestScheduleParameters:
     """Dates and values of the new gov.hmrc.cgt parameters by fiscal year."""
 

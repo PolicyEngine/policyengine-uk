@@ -136,3 +136,20 @@
     capital_gains: 50_000
   output:
     capital_gains_tax: 21_150
+
+- name: Additional rate reform, main and residential gains, exemption on main gains.
+  # Taxable income 200,000 is above the higher rate limit, so all gains are
+  # above the higher rate band. Main gains are at the reformed 45% additional
+  # rate and residential property gains at their unchanged 24%, so the 3,000
+  # annual exempt amount is most beneficial against main gains (TCGA 1992
+  # s. 1K(5)): 25,000 x 0.24 = 6,000 and (25,000 - 3,000) x 0.45 = 9,900.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.cgt.additional_rate: 0.45
+    age: 45
+    employment_income: 200_000
+    capital_gains: 50_000
+    capital_gains_residential_property: 25_000
+  output:
+    capital_gains_tax: 15_900
