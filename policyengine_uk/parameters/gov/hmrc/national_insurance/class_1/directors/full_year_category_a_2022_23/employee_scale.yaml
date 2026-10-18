@@ -1,0 +1,21 @@
+description: The annual primary Class 1 National Insurance schedule for a full-year category A director in one employment in 2022–23.
+brackets:
+  - threshold:
+      2022-04-06: 0
+    rate:
+      2022-04-06: 0
+  - threshold:
+      2022-04-06: 11908
+    rate:
+      2022-04-06: 0.1273
+  - threshold:
+      2022-04-06: 50270
+    rate:
+      2022-04-06: 0.0273
+metadata:
+  label: Full-year category A director annual employee NI 2022–23
+  threshold_unit: currency-GBP
+  rate_unit: /1
+  reference:
+    - title: HMRC rates and thresholds for employers 2022 to 2023, annual director primary thresholds and category A rates
+      href: https://www.gov.uk/guidance/rates-and-thresholds-for-employers-2022-to-2023

@@ -1,0 +1,1 @@
+- Added the 2022–23 annual employee National Insurance schedule for explicitly declared full-year category A directors in one employment, preserving ordinary employees and other years.
