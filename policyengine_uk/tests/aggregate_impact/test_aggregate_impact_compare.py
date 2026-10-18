@@ -398,8 +398,6 @@ def test_an_unknown_axis_is_refused():
 
 def test_measure_records_an_unpinned_dataset_by_its_bytes(tmp_path, monkeypatch):
     """With --dataset-file and no --pin, the measured bytes are the identity."""
-    import json
-
     import policyengine_uk
     from policyengine_uk.utils.aggregate_impact import __main__ as cli
     from policyengine_uk.utils.aggregate_impact import measure as measure_module
