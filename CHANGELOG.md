@@ -1,3 +1,14 @@
+## [2.136.0] - 2026-10-18
+
+### Added
+
+- - Added an aggregate-impact report (`python -m policyengine_uk.utils.aggregate_impact`) that measures a model checkout on the pinned certified dataset and compares base with head: receipts by tax head, spending and caseloads, poverty, inequality, deciles and the standard reform costings over 2025-26 to 2031-32, with accounting identities and a counted-once check against a reviewed fiscal partition (`policyengine_uk/data/fiscal_partition.yaml`).
+
+### Changed
+
+- - Microsimulation tests now run on the certified uk-data 1.58.1 dataset, pinned by commit and SHA-256, and fail instead of skipping when `POLICYENGINE_UK_REQUIRE_TEST_DATA` is set and the data is unavailable; the reform-cost fixtures are rebased onto it, keeping their earlier values as receipts.
+
+
 ## [2.135.7] - 2026-10-18
 
 ### Changed
