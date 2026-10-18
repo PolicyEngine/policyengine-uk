@@ -160,30 +160,63 @@ print(f"Childcare support: £{childcare_support:.2f} per month")
 
 ### From pandas DataFrames
 
-If you have data in a DataFrame, convert it to the right format:
+A DataFrame holds one row per person and one column per input and year, named
+`variable_name__year` (note the double underscore `__`). This is the format
+`Simulation.to_input_dataframe()` exports, so an exported frame loads back.
 
 ```python
 import pandas as pd
 
-# Your data needs specific column naming
+from policyengine_uk import Simulation
+
 df = pd.DataFrame(
     {
-        "person_id__2025": [1, 2, 3],
-        "age__2025": [25, 45, 65],
-        "employment_income__2025": [20000, 40000, 0],
-        "state_pension__2025": [0, 0, 180],  # Weekly pension
+        "person_id__2025": [1, 2, 3, 4],
+        "benunit_id__2025": [1, 1, 1, 2],
+        "household_id__2025": [1, 1, 1, 2],
+        "age__2025": [38, 36, 7, 70],
+        "employment_income__2025": [32_000, 18_000, 0, 0],
+        # A household value repeats on the row of each member.
+        "region__2025": ["LONDON", "LONDON", "LONDON", "WALES"],
+        "council_tax__2025": [1_800, 1_800, 1_800, 1_400],
     }
 )
 
-# Create simulation from the DataFrame
-sim_from_df = Simulation(dataset=df)
-# Calculate total income tax across all people in the dataset
-total_tax = sim_from_df.calculate("income_tax", 2025).sum()
-print(f"Total income tax from all people: £{total_tax:.2f}")
+sim = Simulation(dataset=df)
+print(sim.calculate("income_tax", 2025))  # One value per person
+print(sim.calculate("council_tax", 2025))  # One value per household
 ```
 
+- `benunit_id__<year>` and `household_id__<year>` name each person's benefit
+  unit and household. Without them, `person_benunit_id__<year>` and
+  `person_household_id__<year>` name them; with neither, each person is a
+  benefit unit and household of their own.
+- A benefit unit or household variable takes the value on its members' rows,
+  which must all hold the same value.
+- Identifiers are whole numbers, and each person's `person_id` is their own.
+- The simulation's `dataset` is the `UKMultiYearDataset` the frame describes,
+  with a year for each year the frame gives values for (identifier columns
+  hold for every year, so they add none). Values for a month or another
+  period that is not one year are set on the simulation directly. A variable
+  given for both months and the year is set column by column in the frame's
+  order, since a year's value is spread over the months not already set.
+- `to_input_dataframe()` gives the identifier columns for every year that one
+  of its columns gives a whole year's value for, since a simulation built from
+  the frame holds the identifiers in each of those years. So an exported frame
+  loads back to a simulation that exports the same frame, even when the
+  simulation was given inputs for years outside its data, such as the
+  Universal Credit health element status the rebalancing records for 2026 to
+  2029.
+
 ```{important}
-The column naming follows the pattern `variable_name__year` for time-varying variables. Note the double underscore `__` between the variable name and year.
+The model stores `person_household_id` and `person_benunit_id` as 32-bit
+floats, which round identifiers of `2**24` (16,777,216) or more, so a frame
+exported from a simulation with large identifiers holds them rounded. The
+loader takes the groups from the exact `household_id` and `benunit_id` columns,
+which also keeps an exported frame saved as CSV loading correctly. It refuses a
+frame that names its groups only with 32-bit float identifiers that large, and
+warns when it names them only with wider floats that large, which may have
+been rounded before they were saved.
 ```
 
 ### From entity tables with `UKSingleYearDataset` and `UKMultiYearDataset`
@@ -264,6 +297,10 @@ print(sim.calculate("household_net_income", 2026))
 `Simulation` and `Microsimulation` can also load H5 files from local paths,
 Hugging Face URLs, or Google Cloud Storage URLs:
 
+Files written by either `UKSingleYearDataset.save(path)` or
+`UKMultiYearDataset.save(path)` can be loaded with `Simulation(dataset=path)`.
+The loader detects single-year tables and multi-year groups from the H5 layout.
+
 ```python
 sim = Microsimulation(
     dataset="gs://policyengine-uk-data-private/enhanced_frs_2023_24.h5@1.55.10"
@@ -326,7 +363,7 @@ print(f"Additional government revenue: £{revenue_change:.1f}bn")
 ```
 
 ```{note}
-Revenue calculations use the accounting identity: when household net income decreases, government revenue increases by the same amount (assuming no behavioural responses).
+Revenue calculations use the accounting identity: when household net income decreases, government revenue increases by the same amount. The identity holds while no behavioural response moves household income. Realised capital gains are part of household income and respond by default to reforms that change the tax on them, including reforms to income tax bands and allowances ([capital gains realisation response](../assumptions/capital-gains-responses.md)), so for those reforms use `gov_balance` instead. Household and distributional results for those reforms count gains no longer realised as income lost, although the gains are deferred rather than lost.
 ```
 
 ```python
