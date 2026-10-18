@@ -1,8 +1,9 @@
 """Split a Universal Credit award's reductions between debt deductions and
 the benefit cap.
 
-uc_deductions and uc_benefit_cap_reduction both call this, so they agree by
-construction, and neither reads the other, which keeps the graph acyclic.
+uc_deductions and uc_benefit_cap_reduction_after_floor both call this, so
+they agree by construction, and neither reads the other, which keeps the
+graph acyclic.
 """
 
 from policyengine_uk.model_api import *
@@ -14,8 +15,9 @@ def allocate_uc_reductions(
     """Return (deductions, applied cap reduction) for each benefit unit.
 
     pre_cap_award: universal_credit_pre_benefit_cap.
-    gross_cap_reduction: benefit_cap_reduction, the regulation 81 amount of
-        SI 2013/376. Housing Benefit reads it too, so it is never floored.
+    gross_cap_reduction: uc_benefit_cap_reduction, the regulation 81 amount
+        of SI 2013/376. benefit_cap_reduction and uc_has_deduction read it
+        too, so it is never floored.
     deduction_demand: the deduction rate times the standard allowance,
         before the one-penny rule.
     max_reduction: uc_maximum_reduction, infinite when no protected floor is

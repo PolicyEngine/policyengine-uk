@@ -11,9 +11,9 @@
   period: 2025
   absolute_error_margin: 0
   input:
-    # Top rate (48%) starts at 125,140 total income (112,570 above PA)
-    # At this income, PA is fully tapered, so taxable income = 125,140
-    # This exceeds the top rate threshold of 112,570
+    # The personal allowance is fully withdrawn at £125,140; the taxable
+    # top-rate limit is £125,140 too. tax_band classification is separate
+    # from the amount of income charged at 48% (see #2350).
     adjusted_net_income: 125140
     region: SCOTLAND
   output:
@@ -25,10 +25,105 @@
   absolute_error_margin: 0
   input:
     # 100,000 income is above advanced rate threshold (62,430 above PA)
-    # but below top rate threshold (112,570 above PA)
+    # but below the £125,140 taxable top-rate threshold
     # PA at 100,000 is 12,570 (not yet tapered), taxable = 87,430
     adjusted_net_income: 100000
     region: SCOTLAND
   output:
     # TaxBand enum uses ADDITIONAL for both Advanced (45%) and Top (48%) rates
     tax_band: ADDITIONAL
+
+- name: Scottish 2024 pay of 120000 has no tax at the 48 percent rate
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 120000
+    region: SCOTLAND
+  output:
+    # S6M-12252: 45% continues to £125,140 of taxable income.
+    # https://www.parliament.scot/chamber-and-committees/votes-and-motions/S6M-12252
+    earned_taxable_income: 117430
+    earned_income_tax: 44278.31
+    income_tax: 44278.31
+
+- name: Scottish 2024 pay of 150000 has exactly 24860 taxed at 48 percent
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 150000
+    region: SCOTLAND
+  output:
+    # Lower bands: £47,747.81; top band: £24,860 * 48% = £11,932.80.
+    earned_taxable_income: 150000
+    earned_income_tax: 59680.61
+    income_tax: 59680.61
+
+- name: Scottish 2025 pay of 120000 has no tax at the 48 percent rate
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 120000
+    region: SCOTLAND
+  output:
+    # S6M-16531: 45% continues to £125,140 of taxable income.
+    # https://www.parliament.scot/chamber-and-committees/votes-and-motions/S6M-16531
+    earned_taxable_income: 117430
+    earned_income_tax: 44263.80
+    income_tax: 44263.80
+
+- name: Scottish 2025 pay of 150000 has exactly 24860 taxed at 48 percent
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 150000
+    region: SCOTLAND
+  output:
+    # Lower bands: £47,733.30; top band: £24,860 * 48% = £11,932.80.
+    earned_taxable_income: 150000
+    earned_income_tax: 59666.10
+    income_tax: 59666.10
+
+- name: Scottish 2026 pay of 120000 has no tax at the 48 percent rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 120000
+    region: SCOTLAND
+  output:
+    # S6M-20844: 45% continues to £125,140 of taxable income.
+    # https://www.parliament.scot/chamber-and-committees/votes-and-motions/S6M-20844
+    earned_taxable_income: 117430
+    earned_income_tax: 44232.05
+    income_tax: 44232.05
+
+- name: Scottish 2026 pay of 150000 has exactly 24860 taxed at 48 percent
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 150000
+    region: SCOTLAND
+  output:
+    # Lower bands: £47,701.55; top band: £24,860 * 48% = £11,932.80.
+    earned_taxable_income: 150000
+    earned_income_tax: 59634.35
+    income_tax: 59634.35
+
+- name: Scottish 2026 pay of 130000 has exactly 4860 taxed at 48 percent
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 130000
+    region: SCOTLAND
+  output:
+    # S6M-20844: lower bands £47,701.55 plus £4,860 * 48% = £2,332.80.
+    # Companion to Axiom scot_e130k_top_rate_pa_tapered.
+    earned_taxable_income: 130000
+    earned_income_tax: 50034.35
+    income_tax: 50034.35

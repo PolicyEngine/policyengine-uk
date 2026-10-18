@@ -17,12 +17,12 @@
 #
 # How the 2031+ series are constructed:
 # - CPI hits its 2% target on 2031-01-01 and is held flat.
-# - RPI, CPIH and average earnings ramp linearly from the final EFO value
-#   (2030-01-01) to the steady-state value, converging by 2035-2036. After
-#   convergence the series are held flat through 2073-01-01.
-# - This convergence path is consistent with the OBR's Fiscal Risks and
-#   Sustainability long-run assumptions and is regenerated when a new EFO
-#   is released; the helper module
+# - RPI, CPIH and average earnings use the checked-in convergence rates;
+#   their annual steps are not uniform. RPI/CPIH reach steady state in 2035,
+#   earnings in 2036; the rates then hold flat through 2073-01-01.
+# - These intermediate rates are model assumptions beyond the EFO horizon.
+#   Review them when a new EFO is released. The helper module below creates
+#   cumulative indices from these rates, not the convergence paths themselves:
 #   `policyengine_uk/parameters/gov/economic_assumptions/create_economic_assumption_indices.py`
 #   refreshes downstream indices from these growth rates.
 #
@@ -32,6 +32,12 @@
 #                                                          long-term projections)
 #   https://obr.uk/box/the-long-run-difference-between-rpi-and-cpi-inflation/
 #   https://www.bankofengland.co.uk/monetary-policy/inflation
+
+metadata:
+  # Each value is the growth over a calendar year, dated 1 January, and
+  # processing reads it there, so a bare-year reform key names the calendar
+  # year (policyengine_uk/utils/dated_reforms.py).
+  calendar_year_series: true
 
 obr:
   rpi:

@@ -16,7 +16,7 @@ from policyengine_uk.utils.marginal_rates import marginal_rate_step
 
 def calculate_derivative(
     sim: Simulation,
-    target_variable: str = "hbai_household_net_income",
+    target_variable: str = "hbai_household_net_income_before_reset_to_zero",
     input_variable: str = "employment_income",
     year: int = 2025,
     count_adults: int = 2,
@@ -30,7 +30,9 @@ def calculate_derivative(
 
     Args:
         sim: PolicyEngine simulation object
-        target_variable: Variable to measure changes in (typically household_net_income)
+        target_variable: Variable to measure changes in (by default HBAI net
+            income before a negative income is reset to zero, so that the
+            rate reflects the household's actual budget constraint)
         input_variable: Variable to change (typically employment_income)
         year: Year for calculation
         count_adults: Number of adults to apply changes to
@@ -89,7 +91,7 @@ def calculate_derivative(
 
 def calculate_relative_income_change(
     sim: Simulation,
-    target_variable: str = "hbai_household_net_income",
+    target_variable: str = "hbai_household_net_income_before_reset_to_zero",
     year: int = 2025,
 ) -> pd.DataFrame:
     """Calculate relative change in income between baseline and scenario.
@@ -135,7 +137,7 @@ def calculate_relative_income_change(
 
 def calculate_derivative_change(
     sim: Simulation,
-    target_variable: str = "hbai_household_net_income",
+    target_variable: str = "hbai_household_net_income_before_reset_to_zero",
     input_variable: str = "employment_income",
     year: int = 2025,
     count_adults: int = 2,

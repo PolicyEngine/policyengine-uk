@@ -21,7 +21,7 @@ def make_situation(**benunit_overrides):
         "members": ["person"],
         "would_claim_uc": {YEAR: True},
         "universal_credit_pre_benefit_cap": {YEAR: 6_000},
-        "benefit_cap_reduction": {YEAR: 0},
+        "uc_benefit_cap_reduction": {YEAR: 0},
         **benunit_overrides,
     }
     return {
@@ -109,7 +109,7 @@ class TestReformLevers:
         # of the standard allowance; the floor limits the combined
         # reductions to (1 - 0.85) x standard allowance.
         situation = make_situation(
-            benefit_cap_reduction={YEAR: 2_500},
+            uc_benefit_cap_reduction={YEAR: 2_500},
             uc_latent_deduction_rate={YEAR: 0.25},
             uc_deduction_combination={YEAR: "ADVANCE_ONLY"},
         )
@@ -193,12 +193,12 @@ class TestReformLevers:
         )
 
     def test_floor_components_reconcile_with_the_reduction_applied(self):
-        # uc_deductions and uc_benefit_cap_reduction are what the award
-        # actually loses, so they must sum to the entitlement forgone. Before
+        # uc_deductions and uc_benefit_cap_reduction_after_floor are what the
+        # award actually loses, so they must sum to the entitlement forgone. Before
         # the floor was pushed into the components, they reported £960 and
         # £1,000 against a £720 reduction actually applied.
         situation = make_situation(
-            benefit_cap_reduction={YEAR: 1_000},
+            uc_benefit_cap_reduction={YEAR: 1_000},
             uc_latent_deduction_rate={YEAR: 0.30},
             uc_deduction_combination={YEAR: "ADVANCE_ONLY"},
         )
@@ -212,13 +212,15 @@ class TestReformLevers:
         )
         sa = reform.calculate("uc_standard_allowance", YEAR)[0]
         deductions = reform.calculate("uc_deductions", YEAR)[0]
-        cap_reduction = reform.calculate("uc_benefit_cap_reduction", YEAR)[0]
+        cap_reduction = reform.calculate("uc_benefit_cap_reduction_after_floor", YEAR)[
+            0
+        ]
         universal_credit = reform.calculate("universal_credit", YEAR)[0]
         assert deductions + cap_reduction == pytest.approx(0.15 * sa)
         assert deductions + cap_reduction == pytest.approx(6_000 - universal_credit)
-        # The gross benefit cap reduction is unchanged: it also drives
-        # Housing Benefit, which the Universal Credit floor does not protect.
-        assert reform.calculate("benefit_cap_reduction", YEAR)[0] == 1_000
+        # The gross regulation 81 reduction is unchanged: benefit_cap_reduction
+        # and the deduction incidence read it.
+        assert reform.calculate("uc_benefit_cap_reduction", YEAR)[0] == 1_000
 
     def test_the_benefit_cap_reduction_absorbs_the_floor_first(self):
         # Deductions of 10% of the standard allowance fit inside a 15% floor
@@ -226,7 +228,7 @@ class TestReformLevers:
         # the 5% left. test_jrf_2026_example_keeps_a_full_rate_deduction
         # covers JRF's own example, where a 15% deduction fills the allowance.
         situation = make_situation(
-            benefit_cap_reduction={YEAR: 2_500},
+            uc_benefit_cap_reduction={YEAR: 2_500},
             uc_latent_deduction_rate={YEAR: 0.10},
             uc_deduction_combination={YEAR: "ADVANCE_ONLY"},
         )
@@ -240,9 +242,9 @@ class TestReformLevers:
         )
         sa = reform.calculate("uc_standard_allowance", YEAR)[0]
         assert reform.calculate("uc_deductions", YEAR)[0] == pytest.approx(0.10 * sa)
-        assert reform.calculate("uc_benefit_cap_reduction", YEAR)[0] == pytest.approx(
-            0.05 * sa
-        )
+        assert reform.calculate("uc_benefit_cap_reduction_after_floor", YEAR)[
+            0
+        ] == pytest.approx(0.05 * sa)
 
     def test_jrf_2026_example_keeps_a_full_rate_deduction(self):
         # JRF's September 2026 briefing: standard allowance £98 a week, a
@@ -256,12 +258,14 @@ class TestReformLevers:
             uc_deduction_combination={YEAR: "ADVANCE_ONLY"},
         )
         sa = Simulation(situation=situation).calculate("uc_standard_allowance", YEAR)[0]
-        situation["benunits"]["benunit"]["benefit_cap_reduction"] = {YEAR: 80 / 98 * sa}
+        situation["benunits"]["benunit"]["uc_benefit_cap_reduction"] = {
+            YEAR: 80 / 98 * sa
+        }
         reform = Simulation(situation=situation, reform=FLOOR_85)
         assert reform.calculate("uc_deductions", YEAR)[0] == pytest.approx(0.15 * sa)
-        assert reform.calculate("uc_benefit_cap_reduction", YEAR)[0] == pytest.approx(
-            0, abs=0.01
-        )
+        assert reform.calculate("uc_benefit_cap_reduction_after_floor", YEAR)[
+            0
+        ] == pytest.approx(0, abs=0.01)
         assert reform.calculate("universal_credit", YEAR)[0] == pytest.approx(
             6_000 - 0.15 * sa
         )
@@ -274,27 +278,29 @@ class TestReformLevers:
         # reduction absorbs the floor: £720.25 and £0, not £499.88/£220.37
         # or £99.88/£620.37.
         situation = make_situation(
-            benefit_cap_reduction={YEAR: gross_cap_reduction},
+            uc_benefit_cap_reduction={YEAR: gross_cap_reduction},
             uc_latent_deduction_rate={YEAR: 0.30},
             uc_deduction_combination={YEAR: "ADVANCE_ONLY"},
         )
         reform = Simulation(situation=situation, reform=FLOOR_85)
         sa = reform.calculate("uc_standard_allowance", YEAR)[0]
         assert reform.calculate("uc_deductions", YEAR)[0] == pytest.approx(0.15 * sa)
-        assert reform.calculate("uc_benefit_cap_reduction", YEAR)[0] == 0
+        assert reform.calculate("uc_benefit_cap_reduction_after_floor", YEAR)[0] == 0
         assert reform.calculate("universal_credit", YEAR)[0] == pytest.approx(
             6_000 - 0.15 * sa
         )
-        assert reform.calculate("benefit_cap_reduction", YEAR)[0] == gross_cap_reduction
+        assert (
+            reform.calculate("uc_benefit_cap_reduction", YEAR)[0] == gross_cap_reduction
+        )
 
     @pytest.mark.parametrize("floor", [0, 0.85])
     def test_applied_cap_never_exceeds_the_award_lost(self, floor):
         # A £1,000 gross cap reduction on a £500 award takes £500, not £1,000
-        # (no floor) or the £720.25 floor allowance. The gross figure, which
-        # Housing Benefit reads, is unchanged.
+        # (no floor) or the £720.25 floor allowance. The gross regulation 81
+        # figure is unchanged.
         situation = make_situation(
             universal_credit_pre_benefit_cap={YEAR: 500},
-            benefit_cap_reduction={YEAR: 1_000},
+            uc_benefit_cap_reduction={YEAR: 1_000},
         )
         reform = Simulation(
             situation=situation,
@@ -305,9 +311,9 @@ class TestReformLevers:
             },
         )
         assert reform.calculate("uc_deductions", YEAR)[0] == 0
-        assert reform.calculate("uc_benefit_cap_reduction", YEAR)[0] == 500
+        assert reform.calculate("uc_benefit_cap_reduction_after_floor", YEAR)[0] == 500
         assert reform.calculate("universal_credit", YEAR)[0] == 0
-        assert reform.calculate("benefit_cap_reduction", YEAR)[0] == 1_000
+        assert reform.calculate("uc_benefit_cap_reduction", YEAR)[0] == 1_000
 
     def test_floor_changes_nothing_where_it_does_not_bind(self):
         # A £700 award, a £1,000 gross cap and deduction demand above the
@@ -316,13 +322,13 @@ class TestReformLevers:
         # split alone rather than moving the loss from the cap to deductions.
         situation = make_situation(
             universal_credit_pre_benefit_cap={YEAR: 700},
-            benefit_cap_reduction={YEAR: 1_000},
+            uc_benefit_cap_reduction={YEAR: 1_000},
             uc_latent_deduction_rate={YEAR: 0.30},
             uc_deduction_combination={YEAR: "ADVANCE_ONLY"},
         )
         reform = Simulation(situation=situation, reform=FLOOR_85)
         assert reform.calculate("uc_deductions", YEAR)[0] == 0
-        assert reform.calculate("uc_benefit_cap_reduction", YEAR)[0] == 700
+        assert reform.calculate("uc_benefit_cap_reduction_after_floor", YEAR)[0] == 700
         assert reform.calculate("universal_credit", YEAR)[0] == 0
 
     def test_a_floor_above_the_standard_allowance_adds_nothing(self):
@@ -330,7 +336,7 @@ class TestReformLevers:
         # subtracting it added £960 to a £6,000 award. The allowance clamps
         # at zero, where the floor protects the standard allowance entirely.
         situation = make_situation(
-            benefit_cap_reduction={YEAR: 1_000},
+            uc_benefit_cap_reduction={YEAR: 1_000},
             uc_latent_deduction_rate={YEAR: 0.25},
             uc_deduction_combination={YEAR: "ADVANCE_ONLY"},
         )
@@ -343,7 +349,7 @@ class TestReformLevers:
             },
         )
         assert reform.calculate("uc_deductions", YEAR)[0] == 0
-        assert reform.calculate("uc_benefit_cap_reduction", YEAR)[0] == 0
+        assert reform.calculate("uc_benefit_cap_reduction_after_floor", YEAR)[0] == 0
         assert reform.calculate("universal_credit", YEAR)[0] == pytest.approx(6_000)
 
     def test_no_deductions_without_a_universal_credit_claim(self):
@@ -358,7 +364,7 @@ class TestReformLevers:
         )
         assert sim.calculate("universal_credit", YEAR)[0] == 0
         assert sim.calculate("uc_deductions", YEAR)[0] == 0
-        assert sim.calculate("uc_benefit_cap_reduction", YEAR)[0] == 0
+        assert sim.calculate("uc_benefit_cap_reduction_after_floor", YEAR)[0] == 0
 
     def test_zeroing_every_type_share_leaves_a_valid_enum_array(self):
         situation = make_situation(
