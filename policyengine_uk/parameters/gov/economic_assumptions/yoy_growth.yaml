@@ -33,6 +33,12 @@
 #   https://obr.uk/box/the-long-run-difference-between-rpi-and-cpi-inflation/
 #   https://www.bankofengland.co.uk/monetary-policy/inflation
 
+metadata:
+  # Each value is the growth over a calendar year, dated 1 January, and
+  # processing reads it there, so a bare-year reform key names the calendar
+  # year (policyengine_uk/utils/dated_reforms.py).
+  calendar_year_series: true
+
 obr:
   rpi:
     description: Retail price index year-on-year growth.

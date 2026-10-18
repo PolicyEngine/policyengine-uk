@@ -6,7 +6,7 @@ from hypothesis import strategies as st
 import policyengine_uk.scenarios.uc_reform as uc_reform
 from policyengine_uk import Scenario, Simulation
 
-YEARS = range(2025, 2030)
+YEARS = range(2025, uc_reform.REBALANCING_YEARS[-1] + 1)
 
 
 def _uc_claimant(age_2025: int) -> dict:
@@ -186,7 +186,7 @@ def test_a_scalar_override_applies_in_every_year(monkeypatch):
             parameter_changes={PROTECTED: 500}, applied_before_data_load=True
         ),
     )
-    for year in range(2026, 2030):
+    for year in uc_reform.REBALANCING_YEARS:
         assert _protected_monthly(sim, year) == pytest.approx(500, rel=0, abs=1e-3)
 
 
@@ -276,7 +276,7 @@ def test_new_claimants_use_fixed_health_element():
     }
     sim = Simulation(situation=situation)
 
-    for year in range(2026, 2030):
+    for year in uc_reform.REBALANCING_YEARS:
         health_element = sim.calculate("uc_LCWRA_element", year)[0] / 12
         assert health_element == pytest.approx(_new_claimant_rate(sim, year))
 
@@ -308,7 +308,7 @@ def test_household_award_does_not_depend_on_its_position():
     sim = Simulation(situation=_many_uc_claimants(40))
     alone = Simulation(situation=_uc_claimant(30))
 
-    for year in range(2026, 2030):
+    for year in uc_reform.REBALANCING_YEARS:
         health_elements = sim.calculate("uc_LCWRA_element", year)
         assert np.all(health_elements == health_elements[0])
         assert health_elements[0] == pytest.approx(

@@ -90,25 +90,34 @@ def test_revenue_falls_short_of_the_static_estimate():
 
 
 def test_zero_elasticity_leaves_gains_unchanged():
-    """The default elasticity of zero keeps costings static."""
+    """An elasticity of zero keeps costings static."""
     sim = simulate(elasticity=0)
     response = sim.calculate("capital_gains_behavioural_response", YEAR).sum()
 
     assert response == 0
 
 
-def test_default_elasticities_leave_gains_unchanged():
-    """Both elasticity conventions default to zero, keeping costings static."""
-    sim = simulate()
-    response = sim.calculate("capital_gains_behavioural_response", YEAR).sum()
+def test_the_default_is_a_retention_rate_elasticity_of_one():
+    """With no elasticity set, gains respond as at a retention-rate elasticity
+    of 1 (issue #2396): a marginal rate rising from 24% to 45% scales them by
+    (1 - 0.45) / (1 - 0.24)."""
+    default = simulate()
+    explicit = simulate(elasticity=1.0)
 
-    assert response == 0
+    gains = default.calculate("capital_gains_before_response", YEAR).values[0]
+    response = default.calculate("capital_gains_behavioural_response", YEAR).values
+    explicit_response = explicit.calculate(
+        "capital_gains_behavioural_response", YEAR
+    ).values
+
+    assert 1 + response[0] / gains == pytest.approx(0.55 / 0.76, abs=1e-5)
+    assert list(response) == list(explicit_response)
 
 
 def test_mtr_response_matches_hand_calculated_factor():
     """The MTR elasticity applies the exact marginal-rate log change."""
     mtr_elasticity = -0.5
-    sim = simulate(mtr_elasticity=mtr_elasticity)
+    sim = simulate(elasticity=0, mtr_elasticity=mtr_elasticity)
 
     gains = sim.calculate("capital_gains_before_response", YEAR).values[0]
     response = sim.calculate("capital_gains_behavioural_response", YEAR).values[0]
@@ -121,7 +130,7 @@ def test_mtr_response_matches_hand_calculated_factor():
 def test_mtr_change_clamps_zero_marginal_rate():
     """A zero MTR uses the 0.001 floor instead of taking log(0)."""
     zero_rates = {parameter: {str(YEAR): 0.0} for parameter in EQUALISED_RATES}
-    sim = simulate(mtr_elasticity=-0.5, rate_changes=zero_rates)
+    sim = simulate(elasticity=0, mtr_elasticity=-0.5, rate_changes=zero_rates)
 
     mtr_change = sim.calculate("relative_capital_gains_mtr_change", YEAR).values[0]
     expected_change = math.log(0.001) - math.log(0.24)
@@ -131,8 +140,10 @@ def test_mtr_change_clamps_zero_marginal_rate():
 
 
 def test_both_elasticities_raise():
-    """The retention-rate and MTR conventions cannot both be activated."""
-    sim = simulate(elasticity=1.0, mtr_elasticity=-0.5)
+    """The retention-rate and MTR conventions cannot both be activated: a
+    retention-rate elasticity changed from its default raises alongside an
+    MTR elasticity."""
+    sim = simulate(elasticity=0.5, mtr_elasticity=-0.5)
 
     with pytest.raises(
         ValueError,
@@ -175,7 +186,7 @@ def test_measurement_leaves_the_response_variable_active():
 
 def test_mtr_response_is_deterministic_across_recalculation():
     """Repeated MTR measurement is idempotent and leaves the response live."""
-    sim = simulate(mtr_elasticity=-0.5)
+    sim = simulate(elasticity=0, mtr_elasticity=-0.5)
     live_variable = sim.tax_benefit_system.variables[
         "capital_gains_behavioural_response"
     ]
@@ -207,6 +218,104 @@ def test_pre_created_measurement_branch_cannot_poison_the_system():
 
     assert response < 0
     assert after is before
+
+
+# Gains near the top of the basic rate band, where the marginal rate depends on
+# the level of gains. Inputs are for the year before, so YEAR is uprated.
+BAND_EDGE_SITUATION = {
+    "people": {
+        "person": {
+            "age": {YEAR - 1: 45, YEAR: 46},
+            "employment_income": {YEAR - 1: 30_000},
+            "capital_gains": {YEAR - 1: 22_000},
+        }
+    },
+    "benunits": {"benunit": {"members": ["person"]}},
+    "households": {"household": {"members": ["person"]}},
+}
+RESPONSE_PARTS = (
+    "capital_gains_behavioural_response",
+    "capital_gains_badr_behavioural_response",
+    "relative_capital_gains_retention_rate_change",
+    "relative_capital_gains_mtr_change",
+)
+
+
+def response_parts(sim) -> dict:
+    return {
+        variable: sim.calculate(variable, YEAR).values.copy()
+        for variable in RESPONSE_PARTS
+    }
+
+
+def test_response_is_the_same_on_recalculation_near_a_band_edge():
+    """The reform's measurement branch started from the gains the reform had
+    already calculated, after the response, so recalculating measured the rate
+    at lower gains: -4,766.83 became +1,191.71 (found with issue #2268). The
+    branch now measures from inputs alone."""
+    sim = Microsimulation(
+        situation=BAND_EDGE_SITUATION,
+        scenario=Scenario(
+            parameter_changes={
+                **EQUALISED_RATES,
+                "gov.simulation.capital_gains_responses.elasticity": {str(YEAR): 1.0},
+            }
+        ),
+    )
+    sim.calculate("household_net_income", YEAR)
+    first = response_parts(sim)
+    for variable in RESPONSE_PARTS:
+        sim.delete_arrays(variable, YEAR)
+    second = response_parts(sim)
+
+    assert first["capital_gains_behavioural_response"][0] < 0
+    for variable in RESPONSE_PARTS:
+        assert second[variable] == pytest.approx(first[variable]), variable
+
+
+def test_response_does_not_depend_on_calculating_the_baseline_first():
+    """Without economic assumptions the reform's gains stay at their 2025
+    level while the baseline's grow. The baseline's measurement branch started
+    from the gains the baseline had calculated, so calculating the baseline
+    first measured its rate at its own gains: the response went from 709.68 to
+    1,157.90 (found with issue #2268)."""
+    from policyengine_uk.scenarios.no_economic_assumptions import (
+        remove_economic_assumptions,
+    )
+
+    def modify(simulation):
+        remove_economic_assumptions(simulation)
+        parameters = simulation.tax_benefit_system.parameters
+        for name, value in {
+            **{name: rates[str(YEAR)] for name, rates in EQUALISED_RATES.items()},
+            "gov.simulation.capital_gains_responses.elasticity": 1.0,
+        }.items():
+            parameters.get_child(name).update(period="year:2000:100", value=value)
+        simulation.tax_benefit_system.reset_parameter_caches()
+
+    def build():
+        return Microsimulation(
+            situation=BAND_EDGE_SITUATION,
+            scenario=Scenario(
+                simulation_modifier=modify, applied_before_data_load=True
+            ),
+        )
+
+    alone = build()
+    reform_gains = alone.calculate("capital_gains_before_response", YEAR).values
+    # The baseline is a Simulation, which returns arrays.
+    baseline_gains = alone.baseline.calculate("capital_gains_before_response", YEAR)
+    assert reform_gains[0] < baseline_gains[0]
+    expected = response_parts(alone)
+
+    baseline_first = build()
+    baseline_first.baseline.calculate("household_net_income", YEAR)
+    baseline_first.baseline.calculate("marginal_tax_rate_on_capital_gains", YEAR)
+    parts = response_parts(baseline_first)
+
+    assert expected["capital_gains_behavioural_response"][0] != 0
+    for variable in RESPONSE_PARTS:
+        assert parts[variable] == pytest.approx(expected[variable]), variable
 
 
 def test_two_gainers_in_one_household_respond_symmetrically():
@@ -335,9 +444,9 @@ def test_badr_elasticity_applies_to_qualifying_gains():
 
 
 def test_badr_elasticity_alone_moves_only_qualifying_gains():
-    """A BADR elasticity with the main elasticity left at zero still responds,
+    """A BADR elasticity with the main elasticity set to zero still responds,
     on the qualifying gains alone."""
-    sim = simulate_badr(separate_badr_elasticity=True)
+    sim = simulate_badr(elasticity=0, separate_badr_elasticity=True)
 
     mixed = 0.5 * factor(1.4, 0.21) + 0.5
     assert realisation_factors(sim) == pytest.approx(

@@ -10,7 +10,7 @@
         members: person
         would_claim_uc: true
         universal_credit_pre_benefit_cap: 6_000
-        benefit_cap_reduction: 0
+        uc_benefit_cap_reduction: 0
     households:
       household:
         members: person
@@ -30,7 +30,7 @@
         members: person
         would_claim_uc: true
         universal_credit_pre_benefit_cap: 6_000
-        benefit_cap_reduction: 0
+        uc_benefit_cap_reduction: 0
         uc_latent_deduction_rate: 0.25
         uc_deduction_combination: ADVANCE_ONLY
     households:
@@ -54,7 +54,7 @@
         members: person
         would_claim_uc: true
         universal_credit_pre_benefit_cap: 6_000
-        benefit_cap_reduction: 0
+        uc_benefit_cap_reduction: 0
         uc_latent_deduction_rate: 0.25
         uc_deduction_combination: ADVANCE_ONLY
     households:
@@ -77,7 +77,7 @@
         members: person
         would_claim_uc: true
         universal_credit_pre_benefit_cap: 6_000
-        benefit_cap_reduction: 0
+        uc_benefit_cap_reduction: 0
         uc_latent_deduction_rate: 0.28
         uc_deduction_combination: GOVERNMENT_ONLY
     households:
@@ -100,7 +100,7 @@
         members: person
         would_claim_uc: true
         universal_credit_pre_benefit_cap: 500
-        benefit_cap_reduction: 0
+        uc_benefit_cap_reduction: 0
         uc_latent_deduction_rate: 0.25
         uc_deduction_combination: ADVANCE_ONLY
     households:
@@ -124,7 +124,7 @@
         members: person
         would_claim_uc: true
         universal_credit_pre_benefit_cap: 6_000
-        benefit_cap_reduction: 0
+        uc_benefit_cap_reduction: 0
     households:
       household:
         members: person

@@ -34,6 +34,7 @@ from policyengine_uk.utils.scenario import Scenario
 from policyengine_uk.data.economic_assumptions import (
     extend_single_year_dataset,
     reset_growthfactor_uprating,
+    uprating_input_fingerprint,
 )
 from policyengine_uk.data.dataset_sources import materialize_gcs_dataset_url
 from policyengine_uk.data.input_dataframe import (
@@ -61,26 +62,118 @@ from policyengine_uk.utils.supplied_inputs import (
 )
 from policyengine_uk.reforms import create_structural_reforms_from_parameters
 from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases import (
-    canonicalize_lsr_parameter_path,
+    canonicalize_parameter_changes,
 )
 
-from .tax_benefit_system import CountryTaxBenefitSystem, DEFAULT_DATASET_ENV_VAR
+from .tax_benefit_system import (
+    CountryTaxBenefitSystem,
+    DEFAULT_DATASET_ENV_VAR,
+    parameter_reads_calendar_years,
+)
+
+
+def _projects_data(situation, dataset) -> bool:
+    """Whether building from this source projects a dataset's later years.
+
+    ``extend_single_year_dataset`` projects a single-year dataset from the
+    parameters: one read from a file or URL (including the default dataset),
+    a ``UKSingleYearDataset`` or a policyengine-core ``Dataset``. A situation,
+    a DataFrame and a multi-year dataset are taken as given.
+    """
+    if situation is not None:
+        return False
+    return not isinstance(dataset, (pd.DataFrame, UKMultiYearDataset))
+
+
+def _scenario_assignments(scenario) -> list:
+    """A scenario's statutory-timeline changes: ``parameter_changes``, then
+    each of its ``dated_reforms``, in order."""
+    assignments = []
+    if scenario.parameter_changes:
+        assignments += read_parameter_changes(
+            _canonical_parameter_paths(scenario.parameter_changes),
+            calendar_years=parameter_reads_calendar_years(),
+        )
+    assignments += scenario.dated_assignments(order_start=len(assignments))
+    return assignments
 
 
 def _canonical_parameter_paths(changes: dict) -> dict:
     """Changes keyed by canonical parameter paths (labour supply aliases)."""
-    return {
-        canonicalize_lsr_parameter_path(path): value for path, value in changes.items()
-    }
+    return canonicalize_parameter_changes(changes)
 
 
 from microdf import MicroDataFrame
+
+
+class _InputKeyLog(set):
+    """A simulation's record of its inputs while Simulation.apply_reform runs.
+
+    policyengine-core records each input in the simulation's
+    ``_user_input_keys`` as (variable, branch, period). ``Holder._set`` adds
+    the key once it has stored the value, again when it replaces one, and on
+    every route: ``Simulation.set_input``, ``Holder.set_input``, a
+    ``set_input`` helper, another thread. A value core does not store adds
+    no key: one ``Simulation.set_input`` gets for a period after the
+    variable's end, one for a neutralized variable, or one for a sub-period
+    that a ``set_input`` helper skips because it already holds an input.
+    This set also adds each key to every set in ``logs``: one for each
+    reform being applied to the simulation, the innermost last.
+
+    A copy or pickle of it is a plain set, so a simulation deep-copied or
+    pickled while a reform runs logs nothing. A shallow copy of the
+    simulation shares its record, as it shares its holders.
+    """
+
+    def __init__(self, keys=(), logs: list = ()):
+        super().__init__(keys)
+        self.logs = logs
+
+    def add(self, key) -> None:
+        super().add(key)
+        for log in self.logs:
+            log.add(key)
+
+    def __reduce__(self):
+        return set, (list(self),)
+
+
+# The logs (see _InputKeyLog) of the reforms Simulation.apply_reform is
+# applying, by the id of the simulation it applies them to, while it does.
+# Kept outside the simulation, because core's clone copies its __dict__:
+# a clone or branch made while a reform runs must not log for it.
+_reform_logs: Dict[int, list] = {}
+
 
 # Cache for fully-loaded, uprated, enum-pre-encoded multi-year datasets keyed
 # by URL and, when selected, the CGT projection fingerprint and runtime.
 # Avoids repeating HDF5 reading (0.84s), uprating (0.69s) and enum
 # encoding (0.67s) on every Simulation() call after the first.
 _url_dataset_cache: dict = {}
+# The uprating fingerprint of current law, for each CGT projection selection
+# (None: no projection), computed once. Only datasets uprated under current
+# law are cached: a simulation whose uprating inputs differ builds its own.
+_current_law_uprating_fingerprints: dict = {}
+
+
+def _current_law_uprating_fingerprint(capital_gains_projection) -> str:
+    key = (
+        None
+        if capital_gains_projection is None
+        else capital_gains_projection.fingerprint
+    )
+    if key not in _current_law_uprating_fingerprints:
+        system = (
+            CountryTaxBenefitSystem()
+            if capital_gains_projection is None
+            else CountryTaxBenefitSystem(
+                capital_gains_projection=capital_gains_projection
+            )
+        )
+        _current_law_uprating_fingerprints[key] = uprating_input_fingerprint(
+            system.parameters
+        )
+    return _current_law_uprating_fingerprints[key]
 
 
 def get_default_dataset_url() -> str:
@@ -147,6 +240,10 @@ class Simulation(CoreSimulation):
     # true for a region or constituency filtered from the data. The builders
     # set it, so rebuilding a simulation in place keeps it right.
     built_from_dataset: bool = False
+    # True when part of the scenario is applied before data load, so the
+    # parameters the data is built with may not be current law's. Such a
+    # simulation neither reads nor writes the URL dataset cache.
+    _scenario_before_data_load: bool = False
 
     def __init__(
         self,
@@ -177,6 +274,7 @@ class Simulation(CoreSimulation):
             capital_gains_projection: Optional common baseline gains projection,
                 shared with the reform's baseline. Omit to retain GDP per capita.
         """
+        self._defer_uc_health_warning = True
         self._cgt_input_provenance = {}
         self._cgt_defaulted_periods = set()
         self._cgt_calculation_depth = 0
@@ -196,6 +294,10 @@ class Simulation(CoreSimulation):
 
         if reform is not None:
             scenario = Scenario.from_reform(reform)
+        # Only a construction-time reference: preserve the existing reading
+        # of this scenario's single-day leftovers while rejecting unreadable
+        # overrides from a user modifier's separate from_reform call.
+        self._building_dated_reforms = scenario.dated_reforms if scenario else None
 
         self.branch_name = "default"
         self.invalidated_caches = set()
@@ -210,13 +312,33 @@ class Simulation(CoreSimulation):
 
         self.branches: Dict[str, Simulation] = {}
 
+        # What the scenario applies before the data is built and after it. A
+        # scenario is one or the other; a sum of scenarios applied at
+        # different times runs each part's modifier at the part's own time.
+        before_data_load, after_data_load = (
+            scenario.parts_by_data_load() if scenario is not None else (None, None)
+        )
+        self._scenario_before_data_load = before_data_load is not None
+
         # A scenario's parameter changes rebuild the parameters from the
         # statutory tree, so they come before its modifier, whose edits a
-        # rebuild would discard.
-        if scenario is not None and scenario.applied_before_data_load:
-            self.apply_scenario_parameters(scenario)
-            if scenario.simulation_modifier is not None:
-                scenario.simulation_modifier(self)
+        # rebuild would discard. A sum's parameter changes all come with its
+        # before-load part. Without one, they come before the data is built
+        # when they change what the dataset's uprating reads (a growth rate,
+        # say), so the data's projected years follow them; otherwise just
+        # after.
+        after_parameters_before_data = (
+            before_data_load is None
+            and after_data_load is not None
+            and _projects_data(situation, dataset)
+            and self._scenario_changes_uprating_inputs(after_data_load)
+        )
+        if before_data_load is not None:
+            self.apply_scenario_parameters(before_data_load)
+            if before_data_load.simulation_modifier is not None:
+                before_data_load.simulation_modifier(self)
+        elif after_parameters_before_data:
+            self.apply_scenario_parameters(after_data_load)
         self._refresh_capital_gains_projection()
         # Build simulation from appropriate source
         if situation is not None:
@@ -236,13 +358,13 @@ class Simulation(CoreSimulation):
         else:
             raise ValueError(f"Unsupported dataset type: {dataset.__class__}")
 
-        # Parameter changes applied after data load leave the data as built
-        # (a changed economic assumption does not re-uprate it), but come
+        # Parameter changes that leave the data's uprating alone come here,
         # before the steps below that read the parameters: the Universal
         # Credit rebalancing inputs and the structural reforms switched on by
-        # parameters.
-        if scenario is not None and not scenario.applied_before_data_load:
-            self.apply_scenario_parameters(scenario)
+        # parameters. Changes a scenario's modifier makes after data load
+        # (including single-day reform-dict keys) leave the data as built.
+        if after_data_load is not None and not after_parameters_before_data:
+            self.apply_scenario_parameters(after_data_load)
 
         # Universal Credit reform (July 2025). Needs closer integration in the baseline,
         # but adding here for ease of toggling on/off via the 'active' parameter.
@@ -254,14 +376,12 @@ class Simulation(CoreSimulation):
 
         self.tax_benefit_system.reset_parameter_caches()
 
-        # Core applies a reform by calling its apply() with the tax-benefit
-        # system as self, so reforms that change the data (such as
-        # disable_simulated_benefits) reach the simulation through
-        # tax_benefit_system.simulation. Core's Simulation.__init__ sets it;
-        # this __init__ replaces core's, so it sets it too.
+        # Apply structural reforms based on parameters. Core applies a reform
+        # to the tax-benefit system, so reforms that set inputs (such as
+        # disable_simulated_benefits and adjust_budgets) reach the simulation
+        # through it. Core's own constructor sets this link; this one does not
+        # call it, so set it here (apply_reform also sets it for each reform).
         self.tax_benefit_system.simulation = self
-
-        # Apply structural reforms based on parameters
         structural_reform = create_structural_reforms_from_parameters(
             self.tax_benefit_system.parameters,
             period_(self.default_input_period),
@@ -292,15 +412,22 @@ class Simulation(CoreSimulation):
         else:
             self.baseline = self.clone()
         self.baseline._cgt_warning_enabled = False
+        self.baseline._defer_uc_health_warning = False
+        self.baseline._building_dated_reforms = None
 
         self.calculated_periods = []
 
-        if scenario is not None and not scenario.applied_before_data_load:
-            if scenario.simulation_modifier is not None:
-                scenario.simulation_modifier(self)
+        if after_data_load is not None:
+            if after_data_load.simulation_modifier is not None:
+                after_data_load.simulation_modifier(self)
         self._refresh_capital_gains_projection()
         self._capture_cgt_supplied_inputs()
         self._cgt_warning_enabled = True
+        from policyengine_uk.scenarios.uc_reform import warn_shadowed_lcwra_reform
+
+        self._defer_uc_health_warning = False
+        self._building_dated_reforms = None
+        warn_shadowed_lcwra_reform(self)
 
     def _refresh_capital_gains_projection(self) -> None:
         projection = self.tax_benefit_system.capital_gains_projection
@@ -316,8 +443,85 @@ class Simulation(CoreSimulation):
 
     def apply_reform(self, reform: dict | tuple | Type[Reform]) -> None:
         """Apply a runtime reform while keeping generated CGT assumptions coherent."""
-        super().apply_reform(reform)
-        self._refresh_capital_gains_projection()
+        # Reforms that set inputs (disable_simulated_benefits, adjust_budgets)
+        # reach the simulation through its tax-benefit system's link. A clone
+        # or branch may share its parent's system, so link the system to this
+        # simulation while the reform is applied, then restore the link.
+        system = self.tax_benefit_system
+        linked = getattr(system, "simulation", None)
+        system.simulation = self
+        # Log the inputs the reform stores (see _InputKeyLog and the
+        # _user_input_keys property). Within another reform applied to this
+        # simulation (a tuple's parts, or a reform that applies one), log
+        # them for that one too.
+        logs = _reform_logs.setdefault(id(self), [])
+        stored = set()
+        logs.append(stored)
+        self._user_input_keys = getattr(self, "_user_input_keys", None) or set()
+        try:
+            super().apply_reform(reform)
+            self._refresh_capital_gains_projection()
+        finally:
+            logs.pop()
+            if not logs:
+                del _reform_logs[id(self)]
+            # A plain set again, unless an enclosing reform is still logging.
+            self._user_input_keys = set(self._user_input_keys)
+            if linked is not None:
+                system.simulation = linked
+        # input_variables is taken when the simulation is built.
+        # reset_calculations deletes the values of every variable it does not
+        # name (as core's derivative did before policyengine-core 3.33.0, from
+        # which it keeps every input), and the marginal rate formulas those of
+        # every such variable that has a formula. A reform applied afterwards
+        # (a Reform class passed as reform=, or one applied to a clone or
+        # branch) can store inputs: new ones, or ones that replace an input
+        # set since the build. Name every variable with an input the reform
+        # stored that this simulation still holds, under a branch name it
+        # reads and a reset deletes, or a reset would delete what the reform
+        # stored and recalculate the formula. input_variables names whole
+        # variables, so a reset then keeps every input of the variable, any
+        # set since the build included. A reform that raises names nothing it
+        # stored itself (a reform it applied first has named its own). Assign
+        # a new list: a clone or branch shares its parent's.
+        input_variables = getattr(self, "input_variables", None)
+        if input_variables is not None:
+            branches = set(self._get_visible_branch_names())
+            supplied = {
+                name
+                for name, branch, _ in stored & self._user_input_keys
+                if branch in branches
+            }
+            added = sorted(supplied - set(input_variables))
+            if added:
+                self.input_variables = list(input_variables) + added
+
+    @property
+    def _user_input_keys(self) -> set:
+        # policyengine-core's record of the simulation's inputs, kept in
+        # __dict__ as core keeps it. While apply_reform applies a reform to
+        # this simulation, a set assigned here becomes a log (see
+        # _InputKeyLog), so a record core replaces mid-reform still logs: a
+        # branch's, when a reform applied to its parent rebuilds it, or one
+        # rebuilt when the system is rebound.
+        try:
+            return self.__dict__["_user_input_keys"]
+        except KeyError:
+            raise AttributeError("_user_input_keys") from None
+
+    @_user_input_keys.setter
+    def _user_input_keys(self, keys) -> None:
+        logs = _reform_logs.get(id(self))
+        if logs and keys is not None:
+            keys = _InputKeyLog(keys, logs)
+        self.__dict__["_user_input_keys"] = keys
+
+    @_user_input_keys.deleter
+    def _user_input_keys(self) -> None:
+        try:
+            del self.__dict__["_user_input_keys"]
+        except KeyError:
+            raise AttributeError("_user_input_keys") from None
 
     def delete_arrays(self, variable: str, period: Period = None) -> None:
         super().delete_arrays(variable, period)
@@ -590,7 +794,24 @@ class Simulation(CoreSimulation):
         }
 
     def _dataset_cache_key(self, source: str):
-        if self.tax_benefit_system.capital_gains_projection is None:
+        """The URL dataset cache key for a source, or None not to cache.
+
+        A cached dataset is already projected to later years, so it is shared
+        only between simulations that project it identically: none with a
+        scenario applied before data load (whose modifier can change how the
+        data is read, as a structural reform re-ordering an enum does), and
+        only those whose uprating inputs are current law's. A simulation with
+        changed inputs (a macro scenario, ``no_economic_assumptions``, or a
+        reform that changes them) neither reads nor writes the cache.
+        """
+        if self._scenario_before_data_load:
+            return None
+        system = self.tax_benefit_system
+        if uprating_input_fingerprint(
+            system.parameters
+        ) != _current_law_uprating_fingerprint(system.capital_gains_projection):
+            return None
+        if system.capital_gains_projection is None:
             return source
         metadata = self.capital_gains_projection_metadata
         return (
@@ -620,7 +841,10 @@ class Simulation(CoreSimulation):
         read) and the parameters are processed as current law is.
         """
         self.apply_parameter_assignments(
-            read_parameter_changes(_canonical_parameter_paths(changes))
+            read_parameter_changes(
+                _canonical_parameter_paths(changes),
+                calendar_years=parameter_reads_calendar_years(),
+            )
         )
 
     def apply_scenario_parameters(self, scenario: Scenario) -> None:
@@ -632,13 +856,22 @@ class Simulation(CoreSimulation):
         statutory tree does not define) are applied by the scenario's
         modifier instead.
         """
-        assignments = []
-        if scenario.parameter_changes:
-            assignments += read_parameter_changes(
-                _canonical_parameter_paths(scenario.parameter_changes)
-            )
-        assignments += scenario.dated_assignments(order_start=len(assignments))
-        self.apply_parameter_assignments(assignments)
+        self.apply_parameter_assignments(_scenario_assignments(scenario))
+
+    def _scenario_changes_uprating_inputs(self, scenario: Scenario) -> bool:
+        """Whether a scenario's parameter changes change the dataset uprating.
+
+        Compares the uprating fingerprint of the parameters with the changes
+        (rebuilt on a copy of the system, a rebuild the memo then serves to
+        this one) with that of the parameters without them.
+        """
+        assignments = _scenario_assignments(scenario)
+        if not assignments:
+            return False
+        system = self.tax_benefit_system
+        return uprating_input_fingerprint(
+            system.parameters_with(assignments)
+        ) != uprating_input_fingerprint(system.parameters)
 
     def apply_parameter_assignments(self, assignments: list) -> None:
         """Rebuild the parameters with changes on the statutory timeline."""
@@ -682,7 +915,7 @@ class Simulation(CoreSimulation):
             return
         if dataset_source.startswith("gs://"):
             cache_key = self._dataset_cache_key(dataset_source)
-            if cache_key in _url_dataset_cache:
+            if cache_key is not None and cache_key in _url_dataset_cache:
                 multi_year_dataset = _url_dataset_cache[cache_key]
                 self.build_from_multi_year_dataset(multi_year_dataset)
                 self._restore_cgt_extension_provenance(multi_year_dataset)
@@ -721,8 +954,9 @@ class Simulation(CoreSimulation):
         # Pre-encode string enum columns to int16 once before caching so
         # subsequent loads skip the expensive astype(str) + searchsorted path.
         _pre_encode_enum_columns(multi_year_dataset, self.tax_benefit_system)
-        if cache_key is not None:
-            _url_dataset_cache[self._dataset_cache_key(cache_key)] = multi_year_dataset
+        key = self._dataset_cache_key(cache_key) if cache_key is not None else None
+        if key is not None:
+            _url_dataset_cache[key] = multi_year_dataset
 
         self.build_from_multi_year_dataset(multi_year_dataset)
         self._restore_cgt_extension_provenance(multi_year_dataset)
@@ -743,7 +977,7 @@ class Simulation(CoreSimulation):
         # Return early from in-memory cache if available: skips HDF5 reading,
         # uprating and enum encoding (~2.2s on the first load).
         cache_key = self._dataset_cache_key(url)
-        if cache_key in _url_dataset_cache:
+        if cache_key is not None and cache_key in _url_dataset_cache:
             multi_year_dataset = _url_dataset_cache[cache_key]
             self.build_from_multi_year_dataset(multi_year_dataset)
             self._restore_cgt_extension_provenance(multi_year_dataset)
