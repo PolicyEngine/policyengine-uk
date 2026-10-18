@@ -1,0 +1,13 @@
+description: Reliefs against general income listed in ITA 2007 s.24A, such as trade loss relief, are limited to the greater of this amount and a share of adjusted total income.
+values:
+  0000-01-01: .inf
+  2013-04-06: 50_000
+metadata:
+  label: Cap on certain income tax reliefs, fixed amount
+  period: year
+  unit: currency-GBP
+  reference:
+    - title: Income Tax Act 2007 s. 24A(3)
+      href: https://www.legislation.gov.uk/ukpga/2007/3/section/24A
+    - title: Finance Act 2013 Sch. 3 (cap introduced from 2013-14)
+      href: https://www.legislation.gov.uk/ukpga/2013/29/schedule/3
