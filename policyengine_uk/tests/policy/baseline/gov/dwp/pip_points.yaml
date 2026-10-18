@@ -24,7 +24,7 @@
     pip_dl_points: 8
   output:
     pip_dl_category: STANDARD
-    pip_dl: 3842.28
+    pip_dl: 3842.80
 
 - name: PIP daily living — 11 points stays at standard
   period: 2025
@@ -33,7 +33,7 @@
     pip_dl_points: 11
   output:
     pip_dl_category: STANDARD
-    pip_dl: 3842.28
+    pip_dl: 3842.80
 
 - name: PIP daily living — 12 points hits the enhanced threshold
   period: 2025
@@ -51,7 +51,7 @@
     pip_m_points: 8
   output:
     pip_m_category: STANDARD
-    pip_m: 1517.88
+    pip_m: 1518.40
 
 - name: PIP mobility — 12 points hits the enhanced threshold
   period: 2025
@@ -60,7 +60,7 @@
     pip_m_points: 12
   output:
     pip_m_category: ENHANCED
-    pip_m: 4006.08
+    pip_m: 4006.60
 
 - name: PIP — input category overrides points-derived category
   period: 2025
@@ -71,3 +71,59 @@
   output:
     pip_dl_category: ENHANCED
     pip_dl: 5740.80
+
+- name: PIP — categories supplied for an earlier year carry forward without points
+  period: 2026
+  input:
+    pip_dl_category:
+      2025: ENHANCED
+    pip_m_category:
+      2025: STANDARD
+  output:
+    pip_dl_category: ENHANCED
+    pip_m_category: STANDARD
+
+- name: PIP — points supplied for the year replace an earlier year's category
+  period: 2026
+  input:
+    pip_dl_category:
+      2025: ENHANCED
+    pip_dl_points:
+      2026: 8
+    pip_m_category:
+      2025: STANDARD
+    pip_m_points:
+      2026: 0
+  output:
+    pip_dl_category: STANDARD
+    pip_m_category: NONE
+
+- name: PIP — points supplied after an earlier category carry forward and win
+  period: 2026
+  input:
+    pip_dl_category:
+      2024: STANDARD
+    pip_dl_points:
+      2025: 12
+    pip_m_category:
+      2024: ENHANCED
+    pip_m_points:
+      2025: 7
+  output:
+    pip_dl_category: ENHANCED
+    pip_m_category: NONE
+
+- name: PIP — a category supplied after earlier points carries forward and wins
+  period: 2026
+  input:
+    pip_dl_points:
+      2024: 12
+    pip_dl_category:
+      2025: NONE
+    pip_m_points:
+      2024: 0
+    pip_m_category:
+      2025: ENHANCED
+  output:
+    pip_dl_category: NONE
+    pip_m_category: ENHANCED

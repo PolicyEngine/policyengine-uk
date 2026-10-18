@@ -5,7 +5,7 @@ metadata:
   unit: integer
   label: PIP daily living standard rate points threshold
   reference:
-    - title: Social Security (Personal Independence Payment) Regulations 2013, reg. 5(2)(a)
+    - title: Social Security (Personal Independence Payment) Regulations 2013, reg. 5(3)(a)
       href: https://www.legislation.gov.uk/uksi/2013/377/regulation/5
     - title: PIP assessment guide for assessment providers — Part 2 (Daily Living)
       href: https://www.gov.uk/government/publications/personal-independence-payment-assessment-guide-for-assessment-providers

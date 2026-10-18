@@ -1,10 +1,11 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.pip import pip_category
 from policyengine_uk.variables.gov.dwp.pip.pip import PIPCategory
 
 
 class pip_m_category(Variable):
     label = "PIP (mobility) category"
-    documentation = "If you receive the mobility component of the Personal Independence Payment, you will be in one of the following categories: Standard or Enhanced. If not, select None. Survey reported amounts should be converted to this category in the data pipeline. When not provided as input, the category is derived from `pip_m_points` against the points thresholds in `gov.dwp.pip.mobility.points_thresholds`."
+    documentation = "If you receive the mobility component of the Personal Independence Payment, you will be in one of the following categories: Standard or Enhanced. If not, select None. Survey reported amounts should be converted to this category in the data pipeline. When not provided as input for the year, the category is derived from `pip_m_points` supplied for the year against the points thresholds in `gov.dwp.pip.mobility.points_thresholds`. Without points for the year, a category supplied for an earlier year carries forward, unless points were supplied for a later year than that category."
     entity = Person
     definition_period = YEAR
     value_type = Enum
@@ -12,17 +13,5 @@ class pip_m_category(Variable):
     default_value = PIPCategory.NONE
 
     def formula(person, period, parameters):
-        points = person("pip_m_points", period)
         thresholds = parameters(period).gov.dwp.pip.mobility.points_thresholds
-        return select(
-            [
-                points >= thresholds.enhanced,
-                points >= thresholds.standard,
-                points < thresholds.standard,
-            ],
-            [
-                PIPCategory.ENHANCED,
-                PIPCategory.STANDARD,
-                PIPCategory.NONE,
-            ],
-        )
+        return pip_category(person, period, thresholds, "m")
