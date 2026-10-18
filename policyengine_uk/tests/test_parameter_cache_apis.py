@@ -23,10 +23,12 @@ def parameter_tree():
     def branch(value):
         return {"nested": {"amount": {"values": {"2025-01-01": value}}}}
 
-    return ParameterNode(
-        "",
-        data={"branch": branch(11), "baseline": {"branch": branch(23)}},
-    )
+    # Keep the real UK subtrees, including NI scales and their compatibility
+    # views. Mutate only this clone, never the constructor's cached roots.
+    root = CountryTaxBenefitSystem().parameters.clone()
+    root.add_child("branch", ParameterNode("branch", data=branch(11)))
+    root.baseline.add_child("branch", ParameterNode("branch", data=branch(23)))
+    return root
 
 
 def small_system():
