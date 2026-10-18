@@ -218,6 +218,33 @@
     earned_taxable_income: [37_430, 0]
     income_tax: [7_486, 0]
 
+- name: Marriage-neutral IT — supplied ANI restores pension relief to the taxable base
+  period: 2024
+  absolute_error_margin: 0.01
+  reforms:
+    - policyengine_uk.reforms.cps.marriage_tax_reforms.marriage_neutral_it_reform
+  input:
+    people:
+      supplied:
+        age: 45
+        employment_income: 150_000
+        personal_pension_contributions: 60_000
+        adjusted_net_income: 90_000
+    benunits:
+      supplied_family:
+        members: [supplied]
+        is_married: false
+    households:
+      supplied_household:
+        members: [supplied]
+        region: LONDON
+  output:
+    net_income: 150_000
+    adjusted_net_income: 90_000
+    pension_contributions_relief: 60_000
+    personal_allowance: 12_570
+    income_tax: 23_432
+
 - name: Marriage-neutral IT — a supplied adjusted net income gets the grossed-up gift back
   period: 2026
   absolute_error_margin: 1
