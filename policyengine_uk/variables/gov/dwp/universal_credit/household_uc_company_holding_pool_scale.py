@@ -7,7 +7,10 @@ class household_uc_company_holding_pool_scale(Variable):
     label = "Share of company holdings represented in the UC household financial pool"
     documentation = (
         "Common proportional scale for disregarded company holdings when "
-        "deducting them from the household financial pool. Total holdings "
+        "deducting them from the household financial pool. Before budgeting, "
+        "clip each person's holding to [0, max(0, corporate_wealth)], mapping "
+        "positive infinity to the upper bound and negative infinity to zero. "
+        "Total bounded holdings "
         "share one budget of nonnegative corporate_wealth across override "
         "floors and separate pool deductions. This allocation is independent "
         "of row order and treats holders equally. It is a defensive rule for "
@@ -18,10 +21,14 @@ class household_uc_company_holding_pool_scale(Variable):
     unit = "/1"
 
     def formula(household, period, parameters):
-        holdings = household.sum(
-            household.members("uc_company_holding_disregard", period)
-        )
         corporate_wealth = max_(0, household("corporate_wealth", period))
+        person = household.members
+        holding = person("uc_company_holding_disregard", period)
+        upper_bound = max_(0, person.household("corporate_wealth", period))
+        finite_holding = np.where(
+            np.isfinite(holding), holding, np.where(holding > 0, upper_bound, 0)
+        )
+        holdings = household.sum(np.clip(finite_holding, 0, upper_bound))
         return where(
             holdings > 0,
             min_(1, corporate_wealth / where(holdings > 0, holdings, 1)),

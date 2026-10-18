@@ -8,8 +8,11 @@ description: >
   regulation 77 company substitution and includes its claimant's and partner's
   holdings: consume at least their disregarded holdings after applying one
   household corporate_wealth budget without removing them again from the pool.
-  If total holdings exceed nonnegative corporate_wealth, scale each person's
-  holding proportionally before override floors and separate pool deductions.
+  First clip each person's holding to [0, max(0, corporate_wealth)], with
+  positive infinity mapped to the upper bound and negative infinity to zero.
+  If total bounded holdings exceed nonnegative corporate_wealth, scale each
+  person's bounded holding proportionally before override floors and separate
+  pool deductions.
   This is a defensive rule for inconsistent inputs, not a statutory determination;
   regulation 77 substitution in the owner's own assessment is unchanged.
   The residual is allocated by

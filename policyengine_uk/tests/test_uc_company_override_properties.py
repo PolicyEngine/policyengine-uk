@@ -12,6 +12,8 @@ from itertools import product
 
 import numpy as np
 import pytest
+from hypothesis import example, given, settings
+from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
 
@@ -138,13 +140,18 @@ def test_company_overrides_conserve_capital_and_keep_holdings_out_of_other_units
             spec.get("override", max(0, spec.get("financial", -1))) for spec in specs
         ]
         explicit_consumption = sum(explicit)
-        # Allocate the single corporate budget by ownership shares. This
-        # oracle never applies a fresh corporate cap to an individual route.
-        total_holdings = sum(holdings) + dependants
+        # Invalid holdings are bounded per person, before grouping into units.
+        # Allocate one budget by those ownership shares; never recap a route.
+        bounded_holdings = [
+            sum(min(corporate, value) for value in group)
+            for group in (LAYOUTS[layout][0], LAYOUTS[layout][2], ())
+        ]
+        bounded_dependants = sum(min(corporate, value) for value in LAYOUTS[layout][1])
+        total_holdings = sum(bounded_holdings) + bounded_dependants
         budget = min(corporate, total_holdings)
         scale = budget / total_holdings if total_holdings else 0
-        effective_holdings = [holding * scale for holding in holdings]
-        extra_holding_draw = dependants * scale + sum(
+        effective_holdings = [holding * scale for holding in bounded_holdings]
+        extra_holding_draw = bounded_dependants * scale + sum(
             holding
             if absent
             else max(0, holding - spec["override"])
@@ -312,3 +319,96 @@ def test_regrouping_holdings_between_holders_and_units_preserves_residual_pool()
     np.testing.assert_allclose(
         groups, np.repeat(groups[:, :1], len(arrangements), axis=1), atol=0.03
     )
+
+
+@pytest.mark.parametrize(
+    "specs, rows, expected_capital, expected_uc",
+    [
+        (
+            [(None, (np.inf,), ()), (None, (0,), ())],
+            [0, 1],
+            [10_000, 10_000],
+            [4_263.60, 4_263.60],
+        ),
+        (
+            [("benunit_reported_capital", (0,), (np.inf,)), (None, (0,), ())],
+            [1],
+            [20_000],
+            [0],
+        ),
+        (
+            [
+                ("uc_reported_capital", (10_000,), ()),
+                ("benunit_reported_capital", (-6_000,), ()),
+                (None, (0,), ()),
+            ],
+            [0, 1, 2],
+            [0, 6_000, 20_000],
+            [5_098.80, 5_098.80, 0],
+        ),
+    ],
+    ids=["infinite-owner", "infinite-dependant", "negative-offset"],
+)
+def test_invalid_holdings_cannot_contaminate_other_units_capital(
+    specs, rows, expected_capital, expected_uc
+):
+    """Preserve sound parent outputs without changing raw reg. 77 substitution.
+
+    An infinite dependant already makes its own reporting unit's raw
+    substitution undefined; this regression isolates the unrelated unit.
+    """
+    situation, _ = _pool_property_situation([(specs, 4_000, 20_000)])
+    simulation = Simulation(situation=situation)
+    capital = simulation.calculate("uc_assessable_capital", YEAR)[rows]
+    uc = simulation.calculate("universal_credit", YEAR)[rows]
+    assert np.isfinite(capital).all()
+    assert np.isfinite(uc).all()
+    np.testing.assert_allclose(capital, expected_capital, atol=0.03)
+    np.testing.assert_allclose(uc, expected_uc, atol=0.03)
+    for variable in (
+        "household_uc_reported_financial_capital",
+        "household_uc_pool_company_holdings",
+    ):
+        assert np.isfinite(simulation.calculate(variable, YEAR)).all()
+
+
+@settings(max_examples=16, deadline=None, derandomize=True)
+@example(holdings=(np.inf, -np.inf, -6_000, 1e30), corporate=4_000, savings=20_000)
+@example(holdings=(np.inf, 0, 0, 0), corporate=0, savings=20_000)
+@given(
+    holdings=st.tuples(
+        *(st.floats(width=32, allow_infinity=True, allow_nan=False) for _ in range(4))
+    ),
+    corporate=st.floats(0, 30_000, allow_nan=False, allow_infinity=False),
+    savings=st.floats(0, 50_000, allow_nan=False, allow_infinity=False),
+)
+def test_invalid_holdings_share_a_finite_budget_and_preserve_savings(
+    holdings, corporate, savings
+):
+    """Invalid pool inputs cannot spend savings or poison any assessed capital.
+
+    Non-finite holdings belong to missing-report units, including a dependant.
+    Raw regulation 77 substitution for an infinite holding in a reporting unit
+    is an inherited limitation outside this household-budget contract.
+    """
+    specs = [
+        ("uc_reported_capital", (10_000,), ()),
+        ("benunit_reported_capital", (-6_000,), ()),
+        (None, holdings[:2], holdings[2:]),
+        (None, (0,), ()),
+    ]
+    situation, residual_rows = _pool_property_situation([(specs, corporate, savings)])
+    simulation = Simulation(situation=situation)
+    capital = np.asarray(simulation.calculate("uc_assessable_capital", YEAR))
+    assert np.isfinite(capital).all()
+    deductions = sum(
+        simulation.calculate(variable, YEAR)[0]
+        for variable in (
+            "household_uc_reported_financial_capital",
+            "household_uc_pool_company_holdings",
+        )
+    )
+    assert np.isfinite(deductions)
+    assert 0 <= deductions <= max(0, corporate) + 0.03
+    missing_capital = sum(capital[row] for row, _ in residual_rows[0])
+    assert missing_capital >= savings - 0.03

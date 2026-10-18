@@ -25,8 +25,11 @@ class household_uc_pool_company_holdings(Variable):
         "When financial reports and holdings are compatible, no benunit counts "
         "any part of a disregarded holding. An inconsistent financial report "
         "that omits a known holding can leave it in the residual pool. A holding "
-        "is shares, held within the household's corporate_wealth. All "
-        "household holdings share one nonnegative corporate_wealth budget "
+        "is shares, held within the household's corporate_wealth. Each "
+        "person's holding is first clipped to [0, max(0, corporate_wealth)], "
+        "with positive infinity mapped to the upper bound and negative infinity "
+        "to zero before any multiplication. All household holdings then share "
+        "one nonnegative corporate_wealth budget "
         "through household_uc_company_holding_pool_scale: when their total "
         "exceeds it, scale each person's holding proportionally before "
         "either the override floor or this deduction. This is a defensive "
@@ -48,8 +51,13 @@ class household_uc_pool_company_holdings(Variable):
         off_reported_capital = (
             has_financial_report | has_complete_override
         ) & claimant_or_partner
+        holding = person("uc_company_holding_disregard", period)
+        upper_bound = max_(0, person.household("corporate_wealth", period))
+        finite_holding = np.where(
+            np.isfinite(holding), holding, np.where(holding > 0, upper_bound, 0)
+        )
         holdings = household.sum(
-            person("uc_company_holding_disregard", period)
+            np.clip(finite_holding, 0, upper_bound)
             * person.household("household_uc_company_holding_pool_scale", period)
             * ~off_reported_capital
         )

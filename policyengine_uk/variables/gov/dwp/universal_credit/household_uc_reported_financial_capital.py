@@ -13,7 +13,10 @@ class household_uc_reported_financial_capital(Variable):
         "replaces ordinary sources before regulation 77 company substitution, "
         "so it includes its claimant's and partner's disregarded holdings. "
         "Consume the larger of the override and those holdings after applying "
-        "household_uc_company_holding_pool_scale. All household holdings share "
+        "household_uc_company_holding_pool_scale. Each person's holding is "
+        "first clipped to [0, max(0, corporate_wealth)], with positive infinity "
+        "mapped to the upper bound and negative infinity to zero before any "
+        "multiplication. All household holdings share "
         "one nonnegative corporate_wealth budget: if their total exceeds it, "
         "scale each person's holding proportionally before either this "
         "override floor or the separate pool deduction. This is a defensive "
@@ -34,9 +37,18 @@ class household_uc_reported_financial_capital(Variable):
         person = household.members
         financial_capital = person.benunit("benunit_reported_capital", period)
         complete_override = person.benunit("uc_reported_capital", period)
-        own_holdings = person.benunit(
-            "uc_claimant_company_holding_disregard", period
-        ) * person.household("household_uc_company_holding_pool_scale", period)
+        holding = person("uc_company_holding_disregard", period)
+        upper_bound = max_(0, person.household("corporate_wealth", period))
+        finite_holding = np.where(
+            np.isfinite(holding), holding, np.where(holding > 0, upper_bound, 0)
+        )
+        bounded_holdings = np.clip(finite_holding, 0, upper_bound)
+        # Match the claimant holding variable's storage precision before scaling.
+        own_holdings = person.benunit.sum(
+            bounded_holdings * person("is_uc_claimant", period)
+        ).astype(holding.dtype) * person.household(
+            "household_uc_company_holding_pool_scale", period
+        )
         consumed_capital = where(
             complete_override >= 0,
             max_(complete_override, own_holdings),
