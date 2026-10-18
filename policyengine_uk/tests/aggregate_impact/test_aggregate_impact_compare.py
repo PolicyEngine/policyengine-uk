@@ -23,7 +23,19 @@ from policyengine_uk.utils.aggregate_impact.compare import (
 from policyengine_uk.tests.aggregate_impact.test_aggregate_impact_measure import (
     _rebuilt,
 )
-from policyengine_uk.utils.aggregate_impact.measure import weighted_gini
+from policyengine_uk.utils.aggregate_impact.measure import (
+    Recorder,
+    definitions_digest,
+    runtime_identity,
+    tool_digest,
+    weighted_gini,
+)
+from policyengine_uk.utils.aggregate_impact.partition import (
+    default_partition_path,
+    group_label,
+    load_partition,
+)
+from policyengine_uk.utils.aggregate_impact.reforms import load_reforms
 from policyengine_uk.utils.aggregate_impact.render import fmt_change, fmt_level, render
 from policyengine_uk.utils.aggregate_impact.spec import Threshold, load_spec
 
@@ -172,6 +184,122 @@ def test_a_move_is_flagged_exactly_when_it_exceeds_the_larger_bound(
 
 
 # The data axis: one model, two datasets (uk-data pull requests).
+
+
+@pytest.fixture(scope="module")
+def shipped_model_measurement():
+    """Real model identities with synthetic, data-free measurement values."""
+    partition = load_partition(default_partition_path())
+    spec = load_spec()
+    measured = result({})
+    measured["partition"] = partition.as_dict()
+    measured["runtime"] = runtime_identity()
+    # This synthetic measurement assumes released dependencies, regardless
+    # of which editable dependencies a developer uses to run these tests.
+    measured["runtime"]["local_installs"] = []
+    tool_sha = tool_digest()
+    definitions_sha = definitions_digest(spec, load_reforms())
+    measured["provenance"].update(
+        tool_sha256=tool_sha,
+        definitions_sha256=definitions_sha,
+        metrics_version=f"{TOOL_SCHEMA}+{tool_sha[:16]}+{definitions_sha[:16]}",
+        model_loaded_before_fingerprint=False,
+    )
+    rec = Recorder()
+    for head in partition.heads:
+        section = "receipts" if head.kind == "tax" else "spending"
+        for year in spec.years:
+            rec.metric(
+                f"{section}.{head.id}",
+                head.label,
+                section,
+                "gbp",
+                year,
+                1.0,
+                group=group_label(head.report_group),
+            )
+    measured["metrics"] = list(rec.metrics.values())
+    return measured
+
+
+def test_shipped_model_data_axis_self_comparison(shipped_model_measurement):
+    side = shipped_model_measurement
+    assert any(
+        h["variable"] == "war_widows_pension"
+        for h in side["partition"]["spending_heads"]
+    )
+    summary = compare(side, copy.deepcopy(side), SPEC, axis="data")
+    assert summary["status"] == "pass", summary["failures"]
+    assert any(r["id"] == "spending.war_widows_pension" for r in summary["rows"])
+    assert all(not row["changed"] for row in summary["rows"])
+
+
+def test_shipped_model_allows_distinct_data_only_on_the_data_axis(
+    shipped_model_measurement,
+):
+    base, head = (
+        copy.deepcopy(shipped_model_measurement),
+        copy.deepcopy(shipped_model_measurement),
+    )
+    head["provenance"]["dataset"]["verified_sha256"] = "2" * 64
+    # The caller's checkout is provenance, separate from the imported model.
+    head["provenance"]["git_sha"] = "different-caller-checkout"
+    model_summary = compare(base, head, SPEC)
+    assert model_summary["status"] == "fail"
+    assert any("same verified dataset" in f for f in model_summary["failures"])
+    data_summary = compare(base, head, SPEC, axis="data")
+    assert data_summary["status"] == "pass", data_summary["failures"]
+
+
+@pytest.mark.parametrize(
+    "path, value, message",
+    [
+        (("runtime", "policyengine_uk"), "9.9.9", "one policyengine-uk version"),
+        (
+            ("runtime", "policyengine_uk_fingerprint"),
+            "e" * 64,
+            "one policyengine-uk fingerprint",
+        ),
+        (("runtime", "distributions"), ["different-dependency==0.0"], "one runtime"),
+        (("runtime", "python"), "different-python", "one runtime"),
+        (("runtime", "machine"), "different-machine", "one runtime"),
+        (("partition", "sha256"), "different-partition", "fiscal partition"),
+        (
+            ("provenance", "metrics_version"),
+            "different-definitions",
+            "metric definitions",
+        ),
+        (("provenance", "dataset", "verified_sha256"), None, "record the bytes"),
+    ],
+    ids=[
+        "version",
+        "fingerprint",
+        "dependencies",
+        "python",
+        "machine",
+        "partition",
+        "metrics",
+        "dataset",
+    ],
+)
+def test_shipped_model_data_axis_rejects_identity_differences(
+    shipped_model_measurement, path, value, message
+):
+    base, head = (
+        copy.deepcopy(shipped_model_measurement),
+        copy.deepcopy(shipped_model_measurement),
+    )
+    head["provenance"]["dataset"]["verified_sha256"] = "2" * 64
+    field = head
+    for key in path[:-1]:
+        field = field[key]
+    if value is None:
+        field.pop(path[-1])
+    else:
+        field[path[-1]] = value
+    summary = compare(base, head, SPEC, axis="data")
+    assert summary["status"] == "fail"
+    assert any(message in f for f in summary["failures"]), summary["failures"]
 
 
 def _on(data_sha, **provenance):

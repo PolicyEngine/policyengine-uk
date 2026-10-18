@@ -84,10 +84,11 @@ Run from inside the package (`python -m policyengine_uk.utils.aggregate_impact`)
 model, so the data axis refuses its results.
 
 An unpinned file is identified by its SHA-256. The data axis fails unless
-both sides ran the same policyengine-uk commit and version, runtime,
-partition and metric definitions, so every move is the data's. It does
-not match households across the two files: each side's own deciles are
-compared instead.
+both sides ran the same policyengine-uk version and file fingerprint,
+runtime, partition and metric definitions, so every move is the data's.
+The caller's `git_sha` records provenance and need not match. It does not
+match households across the two files: each side's own deciles are compared
+instead.
 
 For use from other code (qualification in policyengine.py), see `api.py`:
 `compute_budget_metrics(sim, years=...)` returns a long-format report.
