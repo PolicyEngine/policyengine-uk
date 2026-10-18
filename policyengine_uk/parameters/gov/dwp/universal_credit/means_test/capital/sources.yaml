@@ -6,8 +6,13 @@ description: >
   observed financial total, reduces this financial pool. Subtracting complete
   overrides retains the inherited allocation convention. An override precedes
   regulation 77 company substitution and includes its claimant's and partner's
-  holdings: consume at least their disregarded holdings capped at corporate_wealth
-  without removing them again from the pool. The residual is allocated by
+  holdings: consume at least their disregarded holdings after applying one
+  household corporate_wealth budget without removing them again from the pool.
+  If total holdings exceed nonnegative corporate_wealth, scale each person's
+  holding proportionally before override floors and separate pool deductions.
+  This is a defensive rule for inconsistent inputs, not a statutory determination;
+  regulation 77 substitution in the owner's own assessment is unchanged.
+  The residual is allocated by
   claimant/partner counts to benefit units with neither a financial observation
   nor a complete override,
   including units that do not receive UC. This allocation is an assumption

@@ -200,6 +200,41 @@ def test_mock_owner_override_consumes_its_company_holding_once(tmp_path):
     assert simulation.calculate("universal_credit", year)[1] == 0
 
 
+@pytest.mark.parametrize("layout", ["two-overrides", "override-and-dependant"])
+def test_mock_company_holding_routes_share_one_corporate_budget(tmp_path, layout):
+    """The two review regressions preserve £20k savings after real H5 loading."""
+    year = 2026
+    dependant = layout == "override-and-dependant"
+    holdings = [6_000.0, 4_000.0, 0.0, 0.0] if dependant else [6_000.0, 4_000.0, 0.0]
+    flags = [holding > 0 for holding in holdings]
+    simulation = _load_mock(
+        tmp_path,
+        _mock_year(
+            (-1, 0 if dependant else -1, -1),
+            adults=[2, 1, 1] if dependant else [1, 1, 1],
+            overrides=[0.0, -1.0 if dependant else 0.0, -1.0],
+            household_inputs={"savings": 20_000, "corporate_wealth": 4_000},
+            person_inputs={
+                "age": [30, 10, 30, 30] if dependant else [30, 30, 30],
+                "is_claimant_or_partner": [True, False, True, True]
+                if dependant
+                else [True, True, True],
+                "stands_as_sole_owner_or_partner_of_company": flags,
+                "owned_company_carries_on_property_business": flags,
+                "owned_company_holding_value": holdings,
+                "owned_company_capital": [0.0] * len(holdings),
+            },
+            year=year,
+        ),
+    )
+
+    np.testing.assert_allclose(
+        simulation.calculate("uc_assessable_capital", year), [0, 0, 20_000]
+    )
+    assert not simulation.calculate("is_uc_eligible", year)[2]
+    assert simulation.calculate("universal_credit", year)[2] == 0
+
+
 def test_mock_financial_total_already_covers_lifetime_isa(tmp_path):
     simulation = _load_mock(
         tmp_path,

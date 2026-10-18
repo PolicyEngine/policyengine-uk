@@ -12,13 +12,19 @@ class household_uc_reported_financial_capital(Variable):
         "use the nonnegative financial observation. A complete override "
         "replaces ordinary sources before regulation 77 company substitution, "
         "so it includes its claimant's and partner's disregarded holdings. "
-        "Consume the larger of the override and those holdings capped at "
-        "household corporate_wealth: holdings already covered by an override "
+        "Consume the larger of the override and those holdings after applying "
+        "household_uc_company_holding_pool_scale. All household holdings share "
+        "one nonnegative corporate_wealth budget: if their total exceeds it, "
+        "scale each person's holding proportionally before either this "
+        "override floor or the separate pool deduction. This is a defensive "
+        "rule for inconsistent inputs, not a statutory determination. "
+        "Holdings already covered by an override "
         "must not leave the pool twice, while an override below them must not "
         "leave their remainder for another unit to count. A dependant's "
         "holding leaves the pool separately in household_uc_pool_company_holdings. "
         "Subtracting complete overrides retains the inherited residual-pool "
-        "convention."
+        "convention. The scale changes only deductions from the household "
+        "pool, not regulation 77 substitution in the owner's own assessment."
     )
     definition_period = YEAR
     unit = GBP
@@ -28,10 +34,9 @@ class household_uc_reported_financial_capital(Variable):
         person = household.members
         financial_capital = person.benunit("benunit_reported_capital", period)
         complete_override = person.benunit("uc_reported_capital", period)
-        own_holdings = min_(
-            person.benunit("uc_claimant_company_holding_disregard", period),
-            max_(0, person.household("corporate_wealth", period)),
-        )
+        own_holdings = person.benunit(
+            "uc_claimant_company_holding_disregard", period
+        ) * person.household("household_uc_company_holding_pool_scale", period)
         consumed_capital = where(
             complete_override >= 0,
             max_(complete_override, own_holdings),
