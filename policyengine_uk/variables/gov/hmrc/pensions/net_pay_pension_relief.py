@@ -18,10 +18,10 @@ class net_pay_pension_relief(Variable):
         "employee contributions are relieved before personal ones, so "
         "contributions relieved at source never change it. Nothing is "
         "relieved from age 75 (s.188(3)(a)). The model gives the relief "
-        "itself through allowances (pension_contributions_relief), which "
-        "counts only wages and trading profits as relevant UK earnings, so "
-        "where statutory pay makes up part of the earnings it can give less "
-        "relief than this deduction."
+        "itself through allowances (pension_contributions_relief). That "
+        "counts only wages and trading profits as relevant UK earnings "
+        "(issue #2371), so where statutory pay makes up part of the earnings "
+        "it can give less relief than this deduction."
     )
     definition_period = YEAR
     unit = GBP
