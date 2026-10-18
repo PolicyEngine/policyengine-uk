@@ -61,10 +61,11 @@ class adjusted_total_income(Variable):
             min_(person("pension_contributions", period), relief_limit)
             * under_age_limit
         )
-        # Net pay contributions already came off total income at Step 1, and
-        # they never exceed the contributions relieved here (employee
-        # contributions up to taxable employment income, which is part of
-        # relevant earnings). So this is total income before them less every
+        # Net pay contributions already came off total income at Step 1. With
+        # contributions of zero or more they never exceed the contributions
+        # relieved here (employee contributions up to taxable employment
+        # income, which is part of relevant earnings). Either way the add-back
+        # cancels the deduction: this is total income before them less every
         # relieved contribution, up to float32 rounding of a few pence on
         # incomes near £1m.
         not_yet_deducted = relieved_contributions - person(
