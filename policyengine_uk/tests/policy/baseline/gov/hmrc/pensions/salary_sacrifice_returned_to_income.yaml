@@ -83,3 +83,63 @@
     salary_sacrifice_returned_to_income: 0
     pension_contributions_via_salary_sacrifice_adjusted: 5_000
     employment_income: 40_000
+
+# Issue #2173: cash pay is already after the contractual employer sacrifice.
+# The unchanged 0.16% broad-base haircut reduces 97,000 by 155.20; the 8,000
+# NIC-only excess does not enter ANI or become a member pension payment.
+- name: NI-only sacrifice excess preserves both childcare income tests, 2173
+  period: 2029
+  absolute_error_margin: 0.02
+  input:
+    people:
+      parent:
+        age: 40
+        employment_income_before_lsr: 97_000
+        pension_contributions_via_salary_sacrifice: 10_000
+      child:
+        age: 2
+    benunits:
+      family:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        region: LONDON
+  output:
+    employment_income: [96_844.80, 0]
+    adjusted_net_income: [96_844.80, 0]
+    ni_class_1_income: [104_844.80, 0]
+    salary_sacrifice_pension_ni_excess: [8_000, 0]
+    salary_sacrifice_returned_to_income: [0, 0]
+    employee_pension_contributions: [0, 0]
+    tax_free_childcare_meets_income_requirements: [true, false]
+    extended_childcare_entitlement_meets_income_requirements: [true, false]
+
+# Conditional supplied-ANI contract, paired with the parent's 2026 SSP case.
+# The cap is inactive, so there is no broad-base haircut. The supplied return
+# is actual pay/member cash: 19,500 + 500 pay and 21,500 + 500 member payments.
+- name: Actual returned pay and SSP retain supplied-ANI annual allowance treatment
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    region: LONDON
+    age: 50
+    employment_income_before_lsr: 19_500
+    salary_sacrifice_returned_to_income: 500
+    statutory_sick_pay: 2_000
+    statutory_maternity_pay: 0
+    self_employment_income: 0
+    employee_pension_contributions_reported: 21_500
+    personal_pension_contributions: 0
+    employer_pension_contributions: 0
+    pension_contributions_via_salary_sacrifice: 0
+    adjusted_net_income: 5_000
+  output:
+    employment_income: 20_000
+    employment_benefits: 2_000
+    employee_pension_contributions: 22_000
+    pension_contributions_relief: 22_000
+    net_income: 27_000
+    pension_contributions_for_annual_allowance: 22_000
+    pension_annual_allowance_threshold_income: 5_000
+    pension_annual_allowance_adjusted_income: 27_000

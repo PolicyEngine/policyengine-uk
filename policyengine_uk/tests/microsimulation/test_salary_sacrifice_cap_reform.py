@@ -4,11 +4,11 @@ Test suite for salary sacrifice pension cap reform fiscal impacts.
 This tests the £2,000 salary sacrifice cap policy announced in Autumn Budget 2025,
 which takes effect from April 2029.
 
-Methodology (matching blog at https://policyengine.org/uk/research/uk-salary-sacrifice-cap):
+Current NI-only model routing (historical population benchmarks below):
 - Excess above £2,000 is NIC-only earnings; pension contributions stay employer payments
 - Ordinary income-tax treatment is unchanged; only NIC exemption is capped
 - Broad-base haircut: employers spread NI costs across ALL workers (~0.16% of employment income)
-- Revenue comes from NI on the redirected excess
+- Revenue comes from NI on the excess included in NI earnings
 
 Expected revenue: ~£3.3 billion in 2029-30
 
@@ -60,7 +60,7 @@ def test_salary_sacrifice_cap_revenue_impact(baseline_simulation, reform_simulat
     """
     Test that the £2,000 salary sacrifice cap raises ~£3.3 billion.
 
-    This matches the PolicyEngine blog methodology:
+    The current NI-only model routing is:
     - Excess is included only in NI earnings
     - Broad-base haircut reduces all workers' income as a separate assumption
     - Employer pension contributions retain their income-tax treatment
@@ -148,7 +148,7 @@ def test_income_tax_impact(baseline_simulation, reform_simulation):
 
 
 @pytest.mark.microsimulation
-def test_excess_redirected_to_pension(reform_simulation):
+def test_excess_included_in_ni_earnings(reform_simulation):
     """
     Test that full excess is included in NIC earnings.
 
@@ -211,7 +211,7 @@ def test_affected_population(reform_simulation):
 
 
 @pytest.mark.microsimulation
-def test_full_excess_redirected(reform_simulation):
+def test_full_excess_included_in_ni_earnings(reform_simulation):
     """
     Test that the full excess is included in NIC earnings (no targeted haircut).
 

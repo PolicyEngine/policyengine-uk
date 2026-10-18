@@ -2,6 +2,8 @@ from policyengine_uk.model_api import *
 
 
 class salary_sacrifice_returned_to_income(Variable):
+    """Legacy supplied input, defaulting to zero; never computed by the model."""
+
     label = "Salary sacrifice actually returned to ordinary income"
     documentation = (
         "Legacy ordinary-pay/member-payment input, defaulting to zero. The "
