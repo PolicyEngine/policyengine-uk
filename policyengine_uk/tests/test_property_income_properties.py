@@ -365,8 +365,12 @@ def test_no_one_lowers_their_tax_by_switching_route_alone(couple_sim, drawn):
 # (ITEPA 2003 s.681I(4)), even without finance costs at stake; and a couple's
 # Pension Credit decides whether the partner is entitled to a payment, which
 # moves the shared payment, and so the charge, of anyone else in the
-# household. Each landlord must still choose the route that gives them the
-# lower income tax including the charge, with every other route held fixed.
+# household. Each landlord with finance costs to relieve must still choose
+# the route that gives them the lower income tax including the charge, with
+# every other route held fixed. Landlords without finance costs take the
+# allowance without comparing (uses_property_allowance); review r7's lone
+# pensioner below shows that can cost more, an intended limit pinned by its
+# own test.
 PENSIONER_YEAR = 2025
 PENSIONER_HOUSEHOLDS = 6
 PENSIONER_REGIONS = ["LONDON", "LONDON", "SCOTLAND", "WALES", "LONDON", "SCOTLAND"]
@@ -505,7 +509,14 @@ def test_no_pensioner_lowers_their_tax_and_charge_by_switching_alone(
     set_pensioner_inputs(sim, drawn)
     routes = sim.calculate("uses_property_allowance", PENSIONER_YEAR)
     income_tax = sim.calculate("income_tax", PENSIONER_YEAR).astype(float)
-    choosing = sim.calculate("property_allowance_deduction_if_used", PENSIONER_YEAR) > 0
+    profit = sim.calculate("property_income", PENSIONER_YEAR) - sim.calculate(
+        "deductible_property_finance_costs", PENSIONER_YEAR
+    )
+    choosing = (
+        (sim.calculate("property_allowance_deduction_if_used", PENSIONER_YEAR) > 0)
+        & (sim.calculate("property_finance_costs_relievable", PENSIONER_YEAR) > 0)
+        & (profit > 0)
+    )
     position = np.arange(len(routes)) % (len(ROLES) + CHILDREN)
     for k in range(len(ROLES)):
         # One landlord per household switches; households do not interact.
@@ -521,3 +532,33 @@ def test_no_pensioner_lowers_their_tax_and_charge_by_switching_alone(
             income_tax[switching],
             switched_tax[switching],
         )
+
+
+def test_a_landlord_without_finance_costs_takes_the_allowance_even_where_it_costs_more(
+    pensioner_sim,
+):
+    """Intended violation: review r7's lone pensioner (no finance costs).
+
+    The allowance lowers tax before the charge by £160 but ends £80 of Pension
+    Credit and with it the exemption from the £200 charge, so expenses would
+    give the lower income tax (£5,187.40 against £5,227.40). The model does
+    not compare routes for landlords without finance costs, so it takes the
+    allowance.
+    """
+    sim = pensioner_sim
+    drawn = [LONE_PENSIONER] * PENSIONER_HOUSEHOLDS
+    set_pensioner_inputs(sim, drawn)
+    members = len(ROLES) + CHILDREN
+    claimants = np.arange(sim.calculate("age", PENSIONER_YEAR).size) % members == 0
+    # The figures are England's and Wales's rates; Scotland's differ.
+    english_or_welsh = np.repeat(
+        [region != "SCOTLAND" for region in PENSIONER_REGIONS], members
+    )
+    pinned = claimants & english_or_welsh
+    routes = sim.calculate("uses_property_allowance", PENSIONER_YEAR)
+    income_tax = sim.calculate("income_tax", PENSIONER_YEAR).astype(float)
+    assert routes[claimants].all()
+    assert income_tax[pinned] == pytest.approx(5_227.40, abs=0.01)
+    set_pensioner_inputs(sim, drawn, routes & ~claimants)
+    with_expenses = sim.calculate("income_tax", PENSIONER_YEAR).astype(float)
+    assert with_expenses[pinned] == pytest.approx(5_187.40, abs=0.01)

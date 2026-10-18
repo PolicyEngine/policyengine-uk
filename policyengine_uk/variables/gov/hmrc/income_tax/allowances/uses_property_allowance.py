@@ -57,11 +57,15 @@ class uses_property_allowance(Variable):
         "Ties keep the default, so a person with receipts within the "
         "allowance keeps full relief even where electing out would carry "
         "finance costs forward. Without finance costs to relieve, the "
-        "default is the allowance whenever it lowers taxable property "
-        "income. Before the winter fuel payment charge that default is "
-        "always the lower tax, so it is taken without comparing. While the "
-        "charge has effect, lower tax before the charge can end an award "
-        "that exempts the person from it, so the routes are compared."
+        "allowance is used whenever it lowers taxable property income, "
+        "without comparing tax. That is always the lower tax before the "
+        "winter fuel payment charge. While the charge has effect it can "
+        "rarely cost more: the lower tax can raise the income Pension Credit "
+        "counts and end an award that exempts the person from the charge. "
+        "The model does not compare routes for these landlords, because "
+        "that works out the benefits on both routes for the whole "
+        "population and made simulations several times slower; on the "
+        "Enhanced FRS the comparison changed no one's tax."
     )
     definition_period = YEAR
     reference = [
@@ -94,27 +98,20 @@ class uses_property_allowance(Variable):
             person("property_finance_costs_relievable", period) > 0
         ) & (profit > 0)
         # Without a reduction at stake, lower taxable property income means
-        # lower tax before the winter fuel payment charge. The charge can
-        # reverse that: lower tax can raise income that Pension Credit
-        # counts, end the award and with it the exemption (s.681I(4)), and
-        # the charge can exceed the saving. So while it has effect, compare
-        # income tax on each route for everyone the allowance would help.
-        charge_in_effect = parameters(
-            period
-        ).gov.hmrc.income_tax.charges.winter_fuel_payment.in_effect
-        compared = reduction_at_stake | charge_in_effect
-        uses = lowers_income & ~compared
-        choosing = lowers_income & compared
+        # lower tax before the winter fuel payment charge, so the allowance
+        # is used without comparing. The charge can rarely reverse that
+        # (lower tax can end Pension Credit and with it the exemption,
+        # s.681I(4)); see the documentation for why that is not compared.
+        uses = lowers_income & ~reduction_at_stake
+        choosing = lowers_income & reduction_at_stake
         if not choosing.any():
             # Nobody has a choice to weigh: skip the branches.
             return uses
-        # With a reduction at stake, full relief applies unless electing out
-        # of it (s. 783BJ) lowers tax, and partial relief applies only if
-        # electing for it (s. 783BK) lowers tax. Without one, the allowance
-        # is the default. Until a person decides, they keep their default.
+        # Full relief applies unless electing out of it (s. 783BJ) lowers
+        # tax; partial relief applies only if electing for it (s. 783BK)
+        # lowers tax. Until a person decides, they keep that default.
         full_relief = person("property_receipts_within_allowance", period)
-        default = full_relief | ~reduction_at_stake
-        route = where(choosing, default, uses)
+        route = where(choosing, full_relief, uses)
         for variable in INDEPENDENT_OF_ROUTE:
             person(variable, period)
         simulation = person.simulation
@@ -144,7 +141,7 @@ class uses_property_allowance(Variable):
                 # Tax is computed to the penny; smaller differences are
                 # rounding.
                 saving = np.round(tax_not_using - tax_using, 2)
-                prefers_allowance = where(default, saving >= 0, saving > 0)
+                prefers_allowance = where(full_relief, saving >= 0, saving > 0)
                 decided = where(deciding, prefers_allowance, route)
                 changed = changed or bool((decided != route).any())
                 route = decided

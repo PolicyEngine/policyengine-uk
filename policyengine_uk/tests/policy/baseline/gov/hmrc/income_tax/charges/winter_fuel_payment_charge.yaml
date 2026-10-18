@@ -800,7 +800,7 @@
     income_tax_before_winter_fuel_payment_charge: [4_490, 0, 0, 0, 0, 0]
     income_tax: [4_490, 0, 0, 0, 0, 0]
 
-- name: 2025 a landlord without finance costs keeps expenses when the allowance would end Pension Credit
+- name: 2025 a landlord without finance costs takes the allowance even where it ends Pension Credit (a model limit)
   # Private pension £35,207; property receipts £3,500, expenses £200 (profit
   # £3,300), no finance costs; six children. With partial relief (the £1,000
   # allowance in place of £200 of expenses): total income £37,707, tax
@@ -812,8 +812,10 @@
   # minimum guarantee of £33,399.60 (with the amounts for the children), so
   # only the expenses route gets Pension Credit (£80), which exempts the
   # pensioner from the £200 charge (s.681I(4)). Total tax: £5,227.40 with the
-  # allowance, £5,187.40 with expenses, so the pensioner does not elect for
-  # partial relief.
+  # allowance, £5,187.40 with expenses, so a pensioner choosing the lower tax
+  # would not elect for partial relief. The model does not compare routes for
+  # landlords without finance costs (uses_property_allowance), so it takes the
+  # allowance: no Pension Credit, charged the £200. This case pins that limit.
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -845,13 +847,13 @@
         members: [pensioner, child_1, child_2, child_3, child_4, child_5, child_6]
         country: ENGLAND
   output:
-    uses_property_allowance: [false, false, false, false, false, false, false]
-    total_income_charged_to_tax: [38_507, 0, 0, 0, 0, 0, 0]
-    pension_credit_income: 33_319.60
-    pension_credit: 80
+    uses_property_allowance: [true, false, false, false, false, false, false]
+    total_income_charged_to_tax: [37_707, 0, 0, 0, 0, 0, 0]
+    pension_credit_income: 33_479.60
+    pension_credit: 0
     winter_fuel_payment: [200, 0, 0, 0, 0, 0, 0]
-    winter_fuel_payment_charge: [0, 0, 0, 0, 0, 0, 0]
-    income_tax: [5_187.40, 0, 0, 0, 0, 0, 0]
+    winter_fuel_payment_charge: [200, 0, 0, 0, 0, 0, 0]
+    income_tax: [5_227.40, 0, 0, 0, 0, 0, 0]
 
 - name: 2025 landlords in two benefit units of one household each elect with the other's route fixed
   # One household. Unit A: a claimant aged 70 with private pension
