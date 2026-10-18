@@ -16,7 +16,7 @@ from copy import deepcopy
 
 import numpy as np
 import pytest
-from hypothesis import example, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -498,7 +498,7 @@ def test_property_allocation_conserves_value_including_complete_override_shares(
     assert assessed.sum() + consumed == pytest.approx(total_property, abs=0.03)
 
 
-@PROPERTY_SETTINGS
+@settings(PROPERTY_SETTINGS, suppress_health_check=[HealthCheck.too_slow])
 @given(
     reports=st.lists(st.sampled_from([-1, 0, 6_000]), min_size=3, max_size=3),
     property_value=st.integers(0, 100_000),
