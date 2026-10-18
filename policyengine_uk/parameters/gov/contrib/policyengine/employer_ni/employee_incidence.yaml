@@ -1,5 +1,5 @@
 description: >-
-  Share of the computed fixed-employer-cost pay change passed to employees in the same model year. The default of 1 applies the full adjustment to eligible earnings computed from components; 0 disables this wage channel. A supplied final employment_income holder overrides that formula, while UK Simulation construction remaps situation earnings to employment_income_before_lsr. The consumer and capital assumptions allocate remaining modeled employer-cost changes. This is a modeling assumption, not an empirically estimated default.
+  Share of the fixed-employer-cost pay change passed to employees in the same model year; set all three incidence parameters to 0 to disable these channels.
 values:
   2010-01-01: 1
 metadata:

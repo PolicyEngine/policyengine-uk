@@ -1,5 +1,5 @@
 description: >-
-  Share of the remaining modeled employer-cost change allocated to capital after employee incidence. The default is 0.5. This channel is inactive at employee incidence 1 or capital incidence 0; otherwise it uses population person weights and household corporate wealth shares, with zero returned when the dataset attribute is absent or total wealth is zero. The amount enters household_tax. Set all three incidence parameters to 0 to disable these three channels. No empirical estimate is claimed for this default.
+  Share of the remaining employer-cost change allocated to capital after employee incidence; set all three incidence parameters to 0 to disable these channels.
 values:
   2010-01-01: 0.5
 metadata:
