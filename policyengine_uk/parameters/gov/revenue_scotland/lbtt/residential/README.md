@@ -1,4 +1,6 @@
-# Additional Dwelling Supplement
+# Residential
+
+## Additional Dwelling Supplement
 
 [SSI 2024/367, articles 1–3](https://www.legislation.gov.uk/ssi/2024/367/made)
 raises the supplement from 6% to 8% for transactions with an effective date
