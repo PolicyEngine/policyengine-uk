@@ -355,7 +355,12 @@ class TestExemptionAllocation:
     """
 
     YEAR = 2025
-    ADDITIONAL_RATE_ONLY = {"gov.hmrc.cgt.additional_rate": {"2025": 0.45}}
+    # The tax on gains held fixed shows where the exemption goes, so the
+    # realisation response is switched off.
+    ADDITIONAL_RATE_ONLY = {
+        "gov.hmrc.cgt.additional_rate": {"2025": 0.45},
+        "gov.simulation.capital_gains_responses.elasticity": {"2025": 0},
+    }
 
     def test_exemption_follows_each_persons_top_rate(self):
         people, benunits, households = {}, {}, {}
