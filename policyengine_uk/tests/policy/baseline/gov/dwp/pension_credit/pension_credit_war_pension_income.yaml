@@ -299,7 +299,7 @@
         country: ENGLAND
   output:
     # Reg 15(1)(n) excepts bereavement support payment. Unchanged behaviour:
-    # passes on the base too.
+    # pension_credit_income and guarantee_credit are the same on main.
     pension_credit_war_pension_income: 0
     pension_credit_income: 0
     guarantee_credit: 238 * 52
