@@ -1086,12 +1086,30 @@ class Simulation(CoreSimulation):
             )
         )
 
+        # Populations use sorted group IDs; arrays in a Core dataset follow
+        # the order of that period's supplied identifier array instead.
+        group_orders = {
+            entity: {
+                period: np.argsort(ids) for period, ids in data[f"{entity}_id"].items()
+            }
+            for entity in ("benunit", "household")
+        }
+
         # Load all variable values
         for variable in data:
             for time_period in data[variable]:
                 if variable not in self.tax_benefit_system.variables:
                     continue
-                self.set_input(variable, time_period, data[variable][time_period])
+                values = data[variable][time_period]
+                entity = self.tax_benefit_system.variables[variable].entity.key
+                # Leave scalars for Core to normalize and validate against
+                # the population size; only arrays have a group row order.
+                if entity in group_orders and np.ndim(values) > 0:
+                    order = group_orders[entity].get(
+                        time_period, group_orders[entity][first_time_period]
+                    )
+                    values = np.asarray(values)[order]
+                self.set_input(variable, time_period, values)
 
         # Now convert to the new UKSingleYearDataset
         self.input_variables = self.get_known_variables()
@@ -1127,6 +1145,13 @@ class Simulation(CoreSimulation):
         """
         if self.disable_economic_assumptions:
             dataset = dataset.copy()
+            # The reset copies base-year values positionally. Align only the
+            # copied group tables first when their row order differs by year.
+            for year in dataset.years:
+                for entity in ("benunit", "household"):
+                    table = getattr(dataset[year], entity)
+                    order = np.argsort(table[f"{entity}_id"].to_numpy())
+                    setattr(dataset[year], entity, table.iloc[order])
             reset_growthfactor_uprating(dataset)
 
         # Ensure enum columns are encoded and _enum_columns is populated so
@@ -1145,7 +1170,11 @@ class Simulation(CoreSimulation):
 
         # Load variable values for all years
         for year in dataset.years:
-            for table in dataset[year].tables:
+            for entity, table in zip(dataset[year].table_names, dataset[year].tables):
+                if entity in ("benunit", "household"):
+                    # Align each year's group inputs to the sorted population
+                    # without reordering the caller's table or the people.
+                    table = table.iloc[np.argsort(table[f"{entity}_id"].to_numpy())]
                 for variable in table.columns:
                     if variable not in self.tax_benefit_system.variables:
                         continue
