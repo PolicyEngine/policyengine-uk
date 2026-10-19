@@ -1,0 +1,1 @@
+- Added the Warm Home Discount in England and Wales (`warm_home_discount`) from winter 2025-26, with parameters for the rebate amount and the qualifying means-tested benefits.
