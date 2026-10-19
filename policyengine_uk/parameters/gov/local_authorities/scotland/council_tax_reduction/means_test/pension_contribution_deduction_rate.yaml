@@ -1,0 +1,19 @@
+description: The Scotland Council Tax Reduction schemes deduct this share of pension contributions when they calculate an applicant's net earnings and a self-employed earner's net profit, for applicants of pension age and for applicants under pension age with no award of Universal Credit.
+values:
+  2013-04-01: 0.5
+metadata:
+  period: year
+  unit: /1
+  label: Scotland Council Tax Reduction pension contribution deduction rate
+  economy: false
+  reference:
+    - title: The Council Tax Reduction (State Pension Credit) (Scotland) Regulations 2012 reg. 33(2)(b) and (c) and (4)(c) (employed earners of pension age)
+      href: https://www.legislation.gov.uk/ssi/2012/319/regulation/33
+    - title: The Council Tax Reduction (State Pension Credit) (Scotland) Regulations 2012 reg. 36(1)(b)(ii), (2)(c) and (8)(b) (self-employed earners of pension age)
+      href: https://www.legislation.gov.uk/ssi/2012/319/regulation/36
+    - title: The Council Tax Reduction (Scotland) Regulations 2021 reg. 50(3)(b) and (c) and (5)(c) (employed earners under pension age with no award of Universal Credit, from 1 April 2022)
+      href: https://www.legislation.gov.uk/ssi/2021/249/regulation/50
+    - title: The Council Tax Reduction (Scotland) Regulations 2021 reg. 51(9) (self-employed earners under pension age with no award of Universal Credit, by SSI 2012/303 reg. 37)
+      href: https://www.legislation.gov.uk/ssi/2021/249/regulation/51
+    - title: The Council Tax Reduction (Scotland) Regulations 2012 reg. 35(3)(b) and (c) and (6)(c) and reg. 37(1)(b)(ii), (3)(c) and (9)(b) (persons under pension age, to 31 March 2022)
+      href: https://www.legislation.gov.uk/ssi/2012/303/contents/made

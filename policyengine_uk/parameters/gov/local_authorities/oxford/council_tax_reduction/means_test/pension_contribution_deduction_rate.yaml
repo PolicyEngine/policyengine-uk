@@ -1,0 +1,13 @@
+description: The Oxford Council Tax Reduction scheme deducts this share of pension contributions when it calculates the net earnings and self-employed net profit of a working-age applicant.
+values:
+  2026-04-01: 0.5
+metadata:
+  period: year
+  unit: /1
+  label: Oxford Council Tax Reduction pension contribution deduction rate
+  economy: false
+  reference:
+    - title: Oxford City Council Council Tax Reduction Scheme 2026 to 2027, Part 1 para. 18 (50% of contributions to occupational or personal pension schemes)
+      href: https://www.oxford.gov.uk/council-tax-reduction/council-tax-reduction-scheme-2026-27
+    - title: Oxford City Council Council Tax Reduction Scheme 2026 to 2027, Annex 5 (one half of personal pension scheme payments, self-employed earners)
+      href: https://www.oxford.gov.uk/council-tax-reduction/council-tax-reduction-scheme-2026-27/3
