@@ -1,3 +1,15 @@
+## [2.139.0] - 2026-10-19
+
+### Added
+
+- Record the unused FYE 2019 joint Income Support/income-related ESA caseload take-up benchmark with its publication-date availability and sampling interval.
+
+### Fixed
+
+- - Count other investment income (National Savings, securities and trust interest) in `total_income`, which income tax already charges, so post-tax income and the Winter Fuel Payment income test see it. Housing Benefit and national Council Tax Reduction non-dependant deductions keep banding on income without it until the remunerative-work test is modelled (#2007) (#2174).
+  - Keep the Winter Fuel Payment for a pensioner whose total income is exactly £35,000: the winter fuel payment charge applies only where total income exceeds £35,000 (ITEPA 2003 s.681I(1)(b)).
+
+
 ## [2.138.0] - 2026-10-19
 
 ### Added
