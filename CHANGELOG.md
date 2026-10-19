@@ -1,3 +1,10 @@
+## [2.136.1] - 2026-10-19
+
+### Fixed
+
+- - Fixed Universal Credit capital assessment so reported financial savings do not suppress countable property, with assessment-year sale-expense and secured-debt valuation and property allocation independent of financial reports. Retained the inherited residual financial convention, including subtraction of complete overrides from the financial pool, and company substitution after ordinary-source overrides, and documented the legacy pension-proxy limitation. Complete overrides consume their owners' disregarded company holdings once. Override floors and separate holding deductions share one household corporate-wealth budget proportionally, preventing inconsistent holdings from consuming ordinary savings. Bounded each holding before that budget to isolate negative and infinite inputs from other units' capital.
+
+
 ## [2.136.0] - 2026-10-18
 
 ### Added
