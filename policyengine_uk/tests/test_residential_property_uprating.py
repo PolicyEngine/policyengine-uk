@@ -329,3 +329,131 @@ def test_purchase_projection_preserves_other_indices_and_zero():
             atol=0.01,
         )
     assert sim.calculate("additional_residential_property_purchased", year)[1] == 0
+
+
+# Later-year C1 controls use the published 2026 classifications independently
+# of the formula's numerical conversion. Values at a boundary are liable.
+C1_2026_VALUES = np.array(
+    [
+        1_999_999,
+        2_000_000,
+        2_499_999,
+        2_500_000,
+        3_499_999,
+        3_500_000,
+        4_999_999,
+        5_000_000,
+    ],
+    dtype=np.float32,
+)
+C1_PUBLISHED_BANDS = np.array([0, 1, 1, 2, 2, 3, 3, 4])
+
+
+def c1_direct_properties(values, observed_year=2026, overrides=None):
+    people = {f"adult{i}": {"age": {observed_year: 40}} for i in range(len(values))}
+    homes = {}
+    for i, value in enumerate(values):
+        inputs = {observed_year: float(value)}
+        if overrides is not None:
+            year, later_values = overrides
+            inputs[year] = float(later_values[i])
+        homes[f"home{i}"] = {
+            "members": [f"adult{i}"],
+            "region": "LONDON",
+            "tenure_type": "OWNED_OUTRIGHT",
+            "main_residence_value": inputs,
+        }
+    return Simulation(situation={"people": people, "households": homes})
+
+
+def c1_current_amounts_and_table(sim, year):
+    scale = sim.tax_benefit_system.parameters(
+        str(year)
+    ).gov.hmrc.council_tax.high_value_surcharge.amount
+    # Only unchanged current-year charge amounts supply the money oracle.
+    # Classification comes from the literal published band labels above.
+    assert scale.thresholds == [0, 2_000_000, 2_500_000, 3_500_000, 5_000_000]
+    return np.array(scale.amounts), (list(scale.thresholds), list(scale.amounts))
+
+
+@pytest.mark.parametrize("source", ["direct", "dataset"])
+@pytest.mark.parametrize("year", [2029, 2032])
+def test_c1_later_year_preserves_all_published_2026_bands(source, year):
+    if source == "dataset":
+        sim = Microsimulation(
+            dataset=property_dataset(C1_2026_VALUES, np.zeros(8), fiscal_year=2026)
+        )
+    else:
+        sim = c1_direct_properties(C1_2026_VALUES)
+    amounts, before = c1_current_amounts_and_table(sim, year)
+    actual = sim.calculate("high_value_council_tax_surcharge", year)
+    np.testing.assert_allclose(actual, amounts[C1_PUBLISHED_BANDS], rtol=0, atol=0.01)
+    assert [
+        int(np.flatnonzero(np.isclose(amounts, x, rtol=0, atol=0.01))[0])
+        for x in actual
+    ] == C1_PUBLISHED_BANDS.tolist()
+    assert c1_current_amounts_and_table(sim, year)[1] == before
+
+
+@pytest.mark.parametrize("year", [2029, 2032])
+def test_c1_later_explicit_property_value_overrides_2026(year):
+    # Both directions matter: the later explicit input can remove or add a bill.
+    sim = c1_direct_properties(
+        [6_000_000, 1_000_000], overrides=(year, [1_000_000, 8_000_000])
+    )
+    amounts, before = c1_current_amounts_and_table(sim, year)
+    np.testing.assert_allclose(
+        sim.calculate("high_value_council_tax_surcharge", year),
+        amounts[[0, 4]],
+        rtol=0,
+        atol=0.01,
+    )
+    np.testing.assert_array_equal(
+        sim.calculate("main_residence_value", year), [1_000_000, 8_000_000]
+    )
+    assert c1_current_amounts_and_table(sim, year)[1] == before
+
+
+@pytest.mark.parametrize("year", [2029, 2032])
+def test_c1_one_float32_step_below_current_price_boundary_is_not_snapped(year):
+    parameters = c1_direct_properties([1_000_000]).tax_benefit_system.parameters
+    hpi = parameters.get_child("gov.economic_assumptions.indices.obr.house_prices")
+    # This is the storage representation of each fixed published boundary,
+    # not a neighbourhood or pound-rounding allowance.
+    boundaries = np.array(
+        [2_000_000, 2_500_000, 3_500_000, 5_000_000], dtype=np.float32
+    )
+    boundaries = boundaries * (hpi(str(year)) / hpi("2026"))
+    below = np.nextafter(boundaries, np.float32(-np.inf))
+    assert np.all(below < boundaries)
+    values = np.column_stack([below, boundaries]).ravel()
+    sim = c1_direct_properties(values, observed_year=year)
+    amounts, before = c1_current_amounts_and_table(sim, year)
+    actual = sim.calculate("high_value_council_tax_surcharge", year)
+    np.testing.assert_allclose(actual, amounts[C1_PUBLISHED_BANDS], rtol=0, atol=0.01)
+    assert c1_current_amounts_and_table(sim, year)[1] == before
+
+
+def test_c1_cross_year_query_order_preserves_parameter_tables():
+    forward = c1_direct_properties(C1_2026_VALUES)
+    reverse = c1_direct_properties(C1_2026_VALUES)
+    before = {
+        year: c1_current_amounts_and_table(forward, year)[1]
+        for year in [2028, 2029, 2032]
+    }
+    forward_results = {
+        year: forward.calculate("high_value_council_tax_surcharge", year)
+        for year in [2028, 2029, 2032]
+    }
+    reverse_results = {
+        year: reverse.calculate("high_value_council_tax_surcharge", year)
+        for year in [2032, 2029, 2028]
+    }
+    for year in [2028, 2029, 2032]:
+        amounts, after = c1_current_amounts_and_table(forward, year)
+        assert after == before[year]
+        assert c1_current_amounts_and_table(reverse, year)[1] == before[year]
+        np.testing.assert_array_equal(forward_results[year], reverse_results[year])
+        np.testing.assert_allclose(
+            forward_results[year], amounts[C1_PUBLISHED_BANDS], rtol=0, atol=0.01
+        )

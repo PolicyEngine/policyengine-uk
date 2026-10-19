@@ -1,3 +1,5 @@
+import numpy as np
+
 from policyengine_uk.model_api import *
 
 
@@ -42,9 +44,12 @@ class high_value_council_tax_surcharge(Variable):
         baseline_index = parameters(
             "2026"
         ).gov.economic_assumptions.indices.obr.house_prices
-        value_2026_prices = property_value / (current_index / baseline_index)
-
-        surcharge = p.gov.hmrc.council_tax.high_value_surcharge.amount.calc(
-            value_2026_prices
-        )
+        charge_scale = p.gov.hmrc.council_tax.high_value_surcharge.amount.copy()
+        # Compare prices and fixed 2026 bands in the same stored precision;
+        # inverse division can put a projected exact boundary in a lower band.
+        charge_scale.thresholds = (
+            np.array(charge_scale.thresholds, dtype=property_value.dtype)
+            * (current_index / baseline_index)
+        ).tolist()
+        surcharge = charge_scale.calc(property_value)
         return where(in_england & owns_home, surcharge, 0)
