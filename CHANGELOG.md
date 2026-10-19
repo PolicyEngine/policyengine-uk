@@ -1,3 +1,10 @@
+## [2.139.3] - 2026-10-19
+
+### Fixed
+
+- - Updated Welsh residential Land Transaction Tax tables for annual model years from 2023 (main rates) and 2025 (higher rates), retaining their statutory change dates.
+
+
 ## [2.139.2] - 2026-10-19
 
 ### Fixed
