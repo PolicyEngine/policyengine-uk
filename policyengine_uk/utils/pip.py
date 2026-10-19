@@ -1,5 +1,6 @@
 """Shared logic for the PIP component categories."""
 
+import numpy as np
 from policyengine_core.periods import Period
 
 from policyengine_uk.model_api import select
@@ -9,46 +10,63 @@ from policyengine_uk.utils.supplied_inputs import (
 )
 from policyengine_uk.variables.gov.dwp.pip.pip import PIPCategory
 
+# The default of the points inputs: the person was not assessed. Zero is an
+# assessment that scored no points.
+NOT_ASSESSED = -1
+
 
 def pip_category(person, period: Period, thresholds, component: str):
     """The PIP category for ``component`` ("dl" or "m") in ``period``.
 
     A category supplied for the period is an input, so this only runs when
-    there is none. Points supplied for the period are then the evidence. If
-    they are not, the most recent earlier input decides: a category supplied
-    in an earlier year carries forward, as it would for an input-only
-    variable, unless points were supplied in a later year than that
-    category. Points, like other inputs, carry forward from the latest year
-    they were supplied. Points default to zero, below the standard
-    threshold, so with neither input the category is NONE.
+    there is none. Each person's evidence is then the more recent of their
+    points and the category supplied for an earlier year, which carries
+    forward as it would for an input-only variable:
 
-    Inputs are stored for the whole population, so "supplied" is decided
-    per year, not per person. If points are supplied for a year for anyone,
-    everyone's category that year comes from points, and a person given
-    only an earlier category reads the default of zero points (NONE). Give
-    such a person their points or category for that year as well.
+    - a person's points come from the latest year up to ``period`` for
+      which they were assessed (points other than ``NOT_ASSESSED``);
+    - they decide the category if they are for a later year than the latest
+      earlier category, or if there is no earlier category;
+    - otherwise the earlier category carries forward. With neither, the
+      category is NONE.
+
+    Points are decided per person: one person's points for a year leave
+    another person's carried category alone. A category supplied for a year
+    is stored for the whole population, so it applies to everyone that year,
+    with NONE for anyone not given one, as before the points existed.
     """
     category_variable = f"pip_{component}_category"
     points_variable = f"pip_{component}_points"
-    if supplied_input(person, points_variable, period) is None:
-        earlier_categories = [
-            p
-            for p in supplied_input_periods(person, category_variable)
-            if p.start < period.start
-        ]
-        earlier_points = [
-            p
-            for p in supplied_input_periods(person, points_variable)
-            if p.start < period.start
-        ]
-        if earlier_categories and (
-            not earlier_points
-            or earlier_categories[-1].start >= earlier_points[-1].start
-        ):
-            return supplied_input(person, category_variable, earlier_categories[-1])
-    points = person(points_variable, period)
-    return select(
+
+    earlier_categories = [
+        p
+        for p in supplied_input_periods(person, category_variable)
+        if p.start < period.start
+    ]
+    category_period = earlier_categories[-1] if earlier_categories else None
+
+    points = np.full(person.count, NOT_ASSESSED)
+    # Whether the person's latest points are for a later year than the
+    # latest earlier category (always, if there is no such category).
+    points_are_newer = np.zeros(person.count, dtype=bool)
+    for points_period in supplied_input_periods(person, points_variable):
+        if points_period.start > period.start:
+            break
+        values = supplied_input(person, points_variable, points_period)
+        assessed = values != NOT_ASSESSED
+        points = np.where(assessed, values, points)
+        points_are_newer = np.where(
+            assessed,
+            category_period is None or points_period.start > category_period.start,
+            points_are_newer,
+        )
+
+    from_points = select(
         [points >= thresholds.enhanced, points >= thresholds.standard],
-        [PIPCategory.ENHANCED, PIPCategory.STANDARD],
-        default=PIPCategory.NONE,
+        [PIPCategory.ENHANCED.index, PIPCategory.STANDARD.index],
+        default=PIPCategory.NONE.index,
     )
+    if category_period is None:
+        return from_points
+    carried = np.asarray(supplied_input(person, category_variable, category_period))
+    return np.where(points_are_newer, from_points, carried)

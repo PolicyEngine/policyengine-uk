@@ -5,7 +5,7 @@ from policyengine_uk.variables.gov.dwp.pip.pip import PIPCategory
 
 class pip_m_category(Variable):
     label = "PIP (mobility) category"
-    documentation = "If you receive the mobility component of the Personal Independence Payment, you will be in one of the following categories: Standard or Enhanced. If not, select None. Survey reported amounts should be converted to this category in the data pipeline. When not provided as input for the year, the category is derived from `pip_m_points` supplied for the year against the points thresholds in `gov.dwp.pip.mobility.points_thresholds`. Without points for the year, a category supplied for an earlier year carries forward, unless points were supplied for a later year than that category."
+    documentation = "If you receive the mobility component of the Personal Independence Payment, you will be in one of the following categories: Standard or Enhanced. If not, select None. Survey reported amounts should be converted to this category in the data pipeline. When not provided as input for the year, the category is derived from the person's latest `pip_m_points` for this or an earlier year against the points thresholds in `gov.dwp.pip.mobility.points_thresholds`. A category supplied for an earlier year carries forward instead, unless the person has points for a later year than that category."
     entity = Person
     definition_period = YEAR
     value_type = Enum
