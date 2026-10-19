@@ -1,3 +1,14 @@
+## [2.139.2] - 2026-10-19
+
+### Fixed
+
+- - Updated the Scottish Additional Dwelling Supplement to 8% for annual model years from 2025, retaining its statutory 5 December 2024 parameter date.
+- - Reduced the savings starting-rate band from the first pound of taxable non-savings income, correcting savings tax on mixed incomes.
+- - Added migration directions for saved reforms using the removed couple carer premium parameter.
+- - Fixed group inputs being assigned to the wrong benefit unit or household when dataset tables were not sorted by identifier.
+- - Froze the Scottish higher, advanced and top income tax thresholds through 2028-29 under the announced Budget policy, with subsequent CPI projections starting from the frozen amounts.
+
+
 ## [2.139.1] - 2026-10-19
 
 ### Fixed
