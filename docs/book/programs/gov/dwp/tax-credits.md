@@ -47,7 +47,25 @@ from the means test, gated by the `would_claim_WTC` take-up input.
 The `min_hours` tree (`min_hours/default.yaml`, `lower.yaml`,
 `old_age.yaml`, `couple_with_children.yaml`) encodes the bands that gate
 WTC eligibility — typically 30 hours/week for adults with no kids, 16 for
-lone parents, with a lower band for over-60s.
+lone parents, with a lower band for workers aged 60 or over.
+
+For the joint-claim rules from 6 April 2012, an individual's own age or
+disability must qualify that individual's hours. Two childless workers cannot
+pool 15 hours each to meet the ordinary 30-hour route, and a nonworking
+partner cannot lend their age or disability to the worker. Parents can combine
+24 hours, with at least one claimant working 16 hours. Hours worked by a
+child or other dependant do not count towards that total. The `min_age` and
+`min_age_without_children_or_disability` parameters provide the 16-year and
+25-year thresholds; the existing `min_hours.old_age` parameter provides 60.
+Native annual formula selection retains the earlier formula for a year whose
+start precedes 6 April 2012; this change does not certify all earlier rules.
+
+`is_disabled_for_benefits` remains a generic proxy for the statutory disabled
+worker conditions. For parents, the model also retains its existing proxy
+for an exception based on the other partner's disability. These flags do not
+encode all regulation 9 or regulation 13 tests, incapacity, hospital or prison
+status, carer's allowances, or the expected four-week and paid-work conditions.
+The reported-award, migration, take-up and scheme-closure rules remain separate.
 
 ## Child Tax Credit (CTC)
 
