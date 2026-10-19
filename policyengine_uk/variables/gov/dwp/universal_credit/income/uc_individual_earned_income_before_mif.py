@@ -24,16 +24,12 @@ class uc_individual_earned_income_before_mif(Variable):
     unit = GBP
     reference = [
         dict(
-            title="Universal Credit Regulations 2013 reg. 55(3)(a)",
+            title="Universal Credit Regulations 2013 reg. 55(3)(a), (4) and (5)",
             href="https://www.legislation.gov.uk/uksi/2013/376/regulation/55",
         ),
         dict(
             title="Universal Credit Regulations (Northern Ireland) 2016 reg. 55(3)(a)",
             href="https://www.legislation.gov.uk/nisr/2016/216/regulation/55",
-        ),
-        dict(
-            title="Universal Credit Regulations 2013 reg. 55(4) and (5)",
-            href="https://www.legislation.gov.uk/uksi/2013/376/regulation/55",
         ),
         dict(
             title="Universal Credit Regulations 2013 reg. 57(2)",
