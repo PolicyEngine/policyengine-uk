@@ -1,0 +1,540 @@
+# Industrial injuries disablement benefit (IIDB), severe disablement allowance
+# (SDA), incapacity benefit (IB) and war pensions in Council Tax Reduction
+# income.
+#
+# Every scheme counts IIDB, SDA and IB:
+# - England, pensioners: SI 2012/2885 Sch 1 para 16(1)(j), social security
+#   benefits other than those listed; (j)(v) excepts only IIDB's increases
+#   under SSCBA 1992 ss.104 and 105.
+# - English working-age schemes: gross income (SI 2012/2886 Sch para 54(1))
+#   less Sch 8, which disregards none of the three (para 14 disregards
+#   "attendance allowance", defined to include the ss.104 and 105 increases).
+#   Kingston upon Thames, Merton and Newham copy the default scheme; Oxford's
+#   para 24 counts income other than earnings unless its Appendix 5 lists it.
+# - Wales: WSI 2013/3029 Sch 1 para 10(1)(j) and Sch 6 para 17(1) with Sch 9.
+# - Scotland: SSI 2012/319 reg 27(1)(j) (pension age) and SSI 2021/249 reg
+#   57(1)(b)(ix) to (xi) (working age, a closed list).
+#
+# War pensions and AFCS payments (afcs, war_widows_pension):
+# - Scotland counts none of them: SSI 2012/319 reg 31(10) and Sch 3 para 1
+#   disregard each payment in full, and SSI 2021/249 reg 57(1) does not name
+#   them.
+# - England and Wales prescribe a £10 a week disregard (SI 2012/2885 Sch 5
+#   para 1; WSI 2013/3029 Sch 4 para 1 and Sch 9 para 20) that councils may
+#   exceed (WSI 2013/3029 reg 34(5); LGFA 1992 Sch 1A para 2(11) and
+#   s.13A(1)(c)). The model takes the full disregard where it cannot see the
+#   council's choice.
+# - Of the English working-age schemes the model runs, Westminster's, Oxford's
+#   and Merton's disregard war pensions in full. Kingston upon Thames (Sch 8
+#   para 20) and Newham (Sch 8 para 19) disregard £10 a week of each payment;
+#   Kingston limits the family's total to £20 a week (Sch 8 para 40).
+#
+# Weekly rates, 2026-27 (SI 2026/148 Sch 1, restating SSCBA 1992 Sch 4):
+# disablement pension at 100% 233.90, 50% 116.95, 20% 46.78; long-term
+# incapacity benefit 146.60; severe disablement allowance 103.85 plus the
+# higher age related addition 15.50, 119.35 in all. Full new State Pension
+# 241.30 (SI 2026/148 art 6(1)), 12,547.60 a year, below the 12,570 personal
+# allowance. IIDB, SDA and war pensions are not taxed in the model; State
+# Pension and IB are. Pension Credit standard minimum guarantee 238.00
+# (single). CTR applicable amounts: personal allowance 256.00 (single, pension
+# age) and 95.55 (single, 25 or over); the reduction is withdrawn at 20% of
+# income above the applicable amount. Council tax is 2,000 throughout.
+
+- name: IIDB counts as pension-age Council Tax Reduction income in England
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        state_pension: 241.30 * 52
+        iidb_reported: 116.95 * 52
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_pc: false
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        region: SOUTH_EAST
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_pensioner: true
+    income_tax: 0
+    # 12,547.60 + 6,081.40
+    council_tax_reduction_applicable_income: 241.30 * 52 + 116.95 * 52
+    council_tax_reduction_applicable_amount: 256.00 * 52
+    # 2,000 - 0.2 x (18,629.00 - 13,312.00) = 936.60
+    council_tax_benefit: 2_000 - 0.2 * ((241.30 + 116.95 - 256.00) * 52)
+
+- name: IIDB counts as pension-age Council Tax Reduction income in Wales
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        state_pension: 241.30 * 52
+        iidb_reported: 233.90 * 52
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_pc: false
+    households:
+      household:
+        members: [pensioner]
+        country: WALES
+        region: WALES
+        local_authority: CARDIFF
+        council_tax: 2_000
+        savings: 0
+  output:
+    income_tax: 0
+    # 12,547.60 + 12,162.80
+    council_tax_reduction_applicable_income: 241.30 * 52 + 233.90 * 52
+
+- name: IIDB counts as pension-age Council Tax Reduction income in Scotland
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        state_pension: 241.30 * 52
+        iidb_reported: 46.78 * 52
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_pc: false
+    households:
+      household:
+        members: [pensioner]
+        country: SCOTLAND
+        region: SCOTLAND
+        local_authority: GLASGOW_CITY
+        council_tax: 2_000
+        savings: 0
+  output:
+    income_tax: 0
+    # 12,547.60 + 2,432.56
+    council_tax_reduction_applicable_income: 241.30 * 52 + 46.78 * 52
+    council_tax_reduction_applicable_amount: 256.00 * 52
+    # 2,000 - 0.2 x (14,980.16 - 13,312.00) = 1,666.37
+    council_tax_benefit: 2_000 - 0.2 * ((241.30 + 46.78 - 256.00) * 52)
+
+- name: SDA counts as working-age Council Tax Reduction income under the Westminster scheme
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 55
+        sda_reported: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        region: LONDON
+        local_authority: WESTMINSTER
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_pensioner: false
+    # 103.85 + 15.50
+    sda: 119.35 * 52
+    council_tax_reduction_applicable_income: 119.35 * 52
+
+- name: IB counts as working-age Council Tax Reduction income in Wales
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 55
+        incapacity_benefit_reported: 146.60 * 52
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        country: WALES
+        region: WALES
+        local_authority: CARDIFF
+        council_tax: 2_000
+        savings: 0
+  output:
+    # 7,623.20 is below the personal allowance.
+    income_tax: 0
+    council_tax_reduction_applicable_income: 146.60 * 52
+
+- name: IIDB and IB count as working-age Council Tax Reduction income in Scotland
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 50
+        iidb_reported: 46.78 * 52
+        incapacity_benefit_reported: 146.60 * 52
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        country: SCOTLAND
+        region: SCOTLAND
+        local_authority: GLASGOW_CITY
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_pensioner: false
+    income_tax: 0
+    # 2,432.56 + 7,623.20
+    council_tax_reduction_applicable_income: (46.78 + 146.60) * 52
+    council_tax_reduction_applicable_amount: 95.55 * 52
+    # 2,000 - 0.2 x (10,055.76 - 4,968.60) = 982.57
+    council_tax_benefit: 2_000 - 0.2 * ((46.78 + 146.60 - 95.55) * 52)
+
+- name: Taxable IB counts net of income tax under the Westminster scheme
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 55
+        incapacity_benefit_reported: 146.60 * 52
+        private_pension_income: 10_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        region: LONDON
+        local_authority: WESTMINSTER
+        council_tax: 2_000
+        savings: 0
+  output:
+    # 0.2 x (7,623.20 + 10,000 - 12,570) = 1,010.64
+    income_tax: 0.2 * (146.60 * 52 + 10_000 - 12_570)
+    # 17,623.20 - 1,010.64 = 16,612.56
+    council_tax_reduction_applicable_income: 146.60 * 52 + 10_000 - 0.2 * (146.60 * 52 + 10_000 - 12_570)
+
+- name: War pensions do not count as pension-age Council Tax Reduction income in England
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 75
+        state_pension: 241.30 * 52
+        afcs_reported: 5_000
+        war_widows_pension_reported: 3_000
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_pc: false
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        region: SOUTH_EAST
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    income_tax: 0
+    council_tax_reduction_applicable_income: 241.30 * 52
+
+- name: War pensions do not count as working-age Council Tax Reduction income in Wales
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 45
+        afcs_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        country: WALES
+        region: WALES
+        local_authority: CARDIFF
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_applicable_income: 0
+
+- name: War pensions do not count as pension-age Council Tax Reduction income in Scotland
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 80
+        state_pension: 241.30 * 52
+        war_widows_pension_reported: 3_000
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_pc: false
+    households:
+      household:
+        members: [pensioner]
+        country: SCOTLAND
+        region: SCOTLAND
+        local_authority: GLASGOW_CITY
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_applicable_income: 241.30 * 52
+
+- name: War pensions do not count as working-age Council Tax Reduction income in Scotland
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 45
+        afcs_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        country: SCOTLAND
+        region: SCOTLAND
+        local_authority: GLASGOW_CITY
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_applicable_income: 0
+
+- name: The Kingston upon Thames working-age scheme counts a war pension less 10 a week
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        afcs_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        region: LONDON
+        local_authority: KINGSTON_UPON_THAMES
+        council_tax: 2_000
+        savings: 0
+  output:
+    # 5,000 - 520
+    council_tax_reduction_applicable_income: 5_000 - 10 * 52
+
+- name: The Kingston upon Thames scheme disregards 10 a week of each war pension
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        afcs_reported: 5_000
+        war_widows_pension_reported: 3_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        region: LONDON
+        local_authority: KINGSTON_UPON_THAMES
+        council_tax: 2_000
+        savings: 0
+  output:
+    # 8,000 - 2 x 520: two payments, two disregards, within the 20 a week limit.
+    council_tax_reduction_applicable_income: 8_000 - 2 * 10 * 52
+
+- name: The Kingston upon Thames scheme limits a family's war pension disregards to 20 a week
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        afcs_reported: 5_000
+        war_widows_pension_reported: 3_000
+      partner:
+        age: 40
+        afcs_reported: 5_000
+        war_widows_pension_reported: 3_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+        region: LONDON
+        local_authority: KINGSTON_UPON_THAMES
+        council_tax: 2_000
+        savings: 0
+  output:
+    # Four payments would give 4 x 10 a week; Sch 8 para 40 limits the
+    # family's total to 20 a week: 16,000 - 1,040.
+    council_tax_reduction_applicable_income: 16_000 - 20 * 52
+
+- name: The Newham working-age scheme disregards 10 a week of each war pension, with no family limit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        afcs_reported: 5_000
+        war_widows_pension_reported: 3_000
+      partner:
+        age: 40
+        afcs_reported: 5_000
+        war_widows_pension_reported: 3_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+        region: LONDON
+        local_authority: NEWHAM
+        council_tax: 2_000
+        savings: 0
+  output:
+    # Newham's limit (its Sch 8 para 39) names paras 20 and 21, not the war
+    # pension para 19: 16,000 - 4 x 520.
+    council_tax_reduction_applicable_income: 16_000 - 4 * 10 * 52
+
+- name: A war pension below 10 a week counts as nothing under the Newham scheme
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        afcs_reported: 300
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        region: LONDON
+        local_authority: NEWHAM
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_applicable_income: 0
+
+- name: The Westminster working-age scheme disregards war pensions in full
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        afcs_reported: 5_000
+        war_widows_pension_reported: 3_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        region: LONDON
+        local_authority: WESTMINSTER
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_applicable_income: 0
+
+- name: The national pensioner scheme takes the full war pension disregard in Kingston upon Thames
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        afcs_reported: 5_000
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_pc: false
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        region: LONDON
+        local_authority: KINGSTON_UPON_THAMES
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_pensioner: true
+    council_tax_reduction_applicable_income: 0
+
+- name: A guarantee credit recipient with IIDB has nil Council Tax Reduction income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        state_pension: 150 * 52
+        iidb_reported: 46.78 * 52
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_pc: true
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        region: SOUTH_EAST
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    # 7,800 + 2,432.56 = 10,232.56, or 196.78 a week, below the 238.00
+    # minimum guarantee (SPC Regs 2002 reg 15(1) counts IIDB).
+    pension_credit_income: (150 + 46.78) * 52
+    in_receipt_of_guarantee_credit: true
+    # SI 2012/2885 Sch 1 para 13: the whole income is disregarded.
+    council_tax_reduction_applicable_income: 0
+    council_tax_benefit: 2_000
