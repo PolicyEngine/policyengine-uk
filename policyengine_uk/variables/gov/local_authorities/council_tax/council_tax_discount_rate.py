@@ -67,9 +67,10 @@ class council_tax_discount_rate(Variable):
     unit = "/1"
 
     def formula(household, period, parameters):
-        # LGFA 1992 s.6(5): a resident is an individual aged 18 or over whose
-        # sole or main residence is the dwelling. Disregards are not modelled,
-        # so every resident adult is counted (see documentation).
+        # LGFA 1992 s.6(5) (England and Wales) and s.99(1) (Scotland): a
+        # resident is an individual aged 18 or over whose sole or main
+        # residence is the dwelling. Disregards are not modelled, so every
+        # resident adult is counted (see documentation).
         discounts = parameters(period).gov.local_authorities.council_tax.discounts
         age = household.members("age", period)
         residents = household.sum(age >= discounts.resident_minimum_age)

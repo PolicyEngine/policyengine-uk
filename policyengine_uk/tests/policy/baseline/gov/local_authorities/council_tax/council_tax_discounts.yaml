@@ -233,7 +233,7 @@
     council_tax_discount_rate: 0
 
 - name: A child alongside one adult does not count as a resident, so the 25% discount applies
-  # LGFA 1992 s.6(5): a resident is an individual aged 18 or over.
+  # LGFA 1992 s.6(5) (s.99(1) in Scotland): a resident is an individual aged 18 or over.
   period: 2026
   absolute_error_margin: 0.01
   input:
