@@ -15,7 +15,8 @@ values:
   - pension_credit_earnings
   - working_tax_credit
   # War pensions (SPCA s.15(1)(g)) and AFCS guaranteed income payments
-  # (reg. 15(5)(aa)), each person's less £10 a week (Sch. IV para. 1).
+  # (reg. 15(5)(aa)) of the claimant and partner, each payment less £10 a
+  # week (Sch. IV para. 1).
   - pension_credit_war_pension_income
   - state_pension
   - private_pension_income

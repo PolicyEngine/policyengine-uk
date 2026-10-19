@@ -5,13 +5,13 @@
 # widower's pension"; SPC Regs 2002 reg 15(5)(aa) counts "a guaranteed income
 # payment". Reg 17(7) applies Sch IV, whose para 1 disregards "£10 of any of
 # the following": war disablement pensions, war widow's or widower's pensions
-# and guaranteed income payments among them. PolicyEngine applies one £10 a
-# week to each person's qualifying payments together (para 1's "£10 of any of
-# the following" and para 11(3)(b)'s single "£10 ... disregarded in accordance
-# with paragraph 1(a) to (f)"), and computes the claimant's and the partner's
-# amounts separately (reg 14: "any reference in this Part to the claimant
-# shall apply equally to any partner of the claimant"). Reg 9 does not exclude
-# these payments from Savings Credit qualifying income.
+# and guaranteed income payments among them. PolicyEngine reads "£10 of any of
+# the following" as £10 of each qualifying payment: afcs and
+# war_widows_pension each get £10 a week, and an unused disregard does not
+# pass to another payment or to the other member of a couple. The claimant's
+# and the partner's payments count (SPCA s.5; reg 14: "any reference in this
+# Part to the claimant shall apply equally to any partner of the claimant").
+# Reg 9 does not exclude these payments from Savings Credit qualifying income.
 #
 # Statutory 2026-27 rates (SI 2026/148 art 29): standard minimum guarantee
 # £238.00 single and £363.25 couple (reg 6(1)); severe disability addition
@@ -112,7 +112,7 @@
     pension_credit_income: (30 - 10) * 52
     guarantee_credit: (238 - 20) * 52
 
-- name: Case 5, one person with an AFCS payment and a war widow's pension gets one £10.
+- name: Case 5, one person with an AFCS payment and a war widow's pension gets £10 off each.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -130,10 +130,10 @@
         members: [person1]
         country: ENGLAND
   output:
-    # (20 + 15 - 10) * 52 = 25 * 52 = 1,300; 12,376 - 1,300 = 11,076.
-    pension_credit_war_pension_income: (20 + 15 - 10) * 52
-    pension_credit_income: (20 + 15 - 10) * 52
-    guarantee_credit: (238 - 25) * 52
+    # ((20 - 10) + (15 - 10)) * 52 = 15 * 52 = 780; 12,376 - 780 = 11,596.
+    pension_credit_war_pension_income: (10 + 5) * 52
+    pension_credit_income: (10 + 5) * 52
+    guarantee_credit: (238 - 15) * 52
 
 - name: Case 6, each member of a couple gets their own £10.
   period: 2026
@@ -249,6 +249,7 @@
   output:
     is_claimant_or_partner: [true, true, false, false]
     # Only the claimant's and partner's payments count (SPCA s.5; reg 14).
+    # Unchanged behaviour: passes on the base too.
     pension_credit_war_pension_income: 0
     pension_credit_income: 0
 
@@ -330,3 +331,27 @@
     # ITEPA 2003 s.639: no income tax on war widow's pensions.
     social_security_income: 0
     income_tax: 0
+
+- name: Case 13, an unused disregard on one payment does not pass to the person's other payment.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 0
+        afcs: 5 * 52
+        war_widows_pension: 30 * 52
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    # max(5 - 10, 0) + max(30 - 10, 0) = 20 a week, not 5 + 30 - 10 = 25.
+    # 20 * 52 = 1,040; 12,376 - 1,040 = 11,336.
+    pension_credit_war_pension_income: 20 * 52
+    pension_credit_income: 20 * 52
+    guarantee_credit: (238 - 20) * 52
