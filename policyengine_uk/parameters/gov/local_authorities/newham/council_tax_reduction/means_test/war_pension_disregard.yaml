@@ -1,0 +1,10 @@
+description: Weekly amount of each war disablement pension, war widow's or widower's pension and Armed Forces Compensation Scheme guaranteed income payment disregarded from a working-age applicant's income under the Newham Council Tax Reduction scheme.
+values:
+  2026-04-01: 10
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Newham Council Tax Reduction war pension disregard
+  reference:
+    - title: Council Tax Reduction Scheme 2026, Sch 8 para 19 (PDF page 292)
+      href: https://www.newham.gov.uk/downloads/file/10753/council-tax-reduction-scheme-2026#page=292

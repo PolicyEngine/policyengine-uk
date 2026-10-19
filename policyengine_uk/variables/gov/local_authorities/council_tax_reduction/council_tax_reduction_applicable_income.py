@@ -1,4 +1,8 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.config import (
+    is_kingston_upon_thames_working_age,
+    is_newham_working_age,
+)
 from policyengine_uk.variables.household.demographic.country import Country
 
 
@@ -20,9 +24,11 @@ class council_tax_reduction_applicable_income(Variable):
         "maintenance disregards and the rest) are not modelled. Industrial "
         "injuries disablement benefit, severe disablement allowance and "
         "incapacity benefit count in every scheme. War pensions and Armed "
-        "Forces Compensation Scheme payments do not: Scotland disregards or "
-        "omits them, and English and Welsh councils may disregard them beyond "
-        "the prescribed £10 a week."
+        "Forces Compensation Scheme payments count, less £10 a week each, "
+        "only under the Kingston upon Thames and Newham working-age schemes: "
+        "Scotland disregards or omits them, and elsewhere in England and "
+        "Wales councils may disregard them beyond the prescribed £10 a week, "
+        "so the model takes the full disregard."
     )
     definition_period = YEAR
     unit = GBP
@@ -40,15 +46,15 @@ class council_tax_reduction_applicable_income(Variable):
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/4",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/3",
         "https://www.legislation.gov.uk/ssi/2012/319/schedule/2",
-        "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/16",
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/5/paragraph/1",
         "https://www.legislation.gov.uk/uksi/2012/2886/schedule/paragraph/39",
         "https://www.legislation.gov.uk/uksi/2012/2886/schedule/paragraph/54",
         "https://www.legislation.gov.uk/wsi/2013/3029/regulation/34",
-        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/10",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/17",
         "https://www.legislation.gov.uk/ssi/2012/319/schedule/3/paragraph/1",
         "https://www.legislation.gov.uk/ukpga/1992/14/schedule/1A/paragraph/2",
+        "https://www.kingston.gov.uk/sites/default/files/2026-03/Council%20Tax%20Reduction%20Scheme%202026%20-%202027.pdf#page=136",
+        "https://www.newham.gov.uk/downloads/file/10753/council-tax-reduction-scheme-2026#page=292",
     ]
 
     def formula(benunit, period, parameters):
@@ -126,21 +132,28 @@ class council_tax_reduction_applicable_income(Variable):
             "incapacity_benefit",
         ]
         # War disablement pensions, war widow's or widower's pensions and
-        # Armed Forces Compensation Scheme payments (afcs, war_widows_pension)
-        # are not counted. Scotland counts none of them: SSI 2012/319 Sch 3
-        # para 1 disregards each in full, and SSI 2021/249 reg 57(1), a closed
-        # list, does not name them. England and Wales prescribe a £10 a week
-        # disregard (SI 2012/2885 Sch 5 para 1; SI 2012/2886 Sch 6 para 1 and
-        # Sch 8 para 20; WSI 2013/3029 Sch 4 para 1 and Sch 9 para 20), which
-        # a council may exceed: Wales makes it a minimum for war disablement
-        # and war widow's or widower's pensions (WSI 2013/3029 reg 34(5)), an
-        # English scheme may make provision equivalent to the council tax
-        # benefit rules (LGFA 1992 Sch 1A para 2(11)), and any council may
-        # reduce council tax further (s.13A(1)(c)). The model takes the full
-        # disregard, as Housing Benefit does for local schemes under SSAA 1992
-        # s.134(8)(a). Reg 34(5) does not cover guaranteed income payments, so
-        # in Wales this over-disregards them, but afcs does not separate them
-        # from war disablement pensions.
+        # Armed Forces Compensation Scheme payments (afcs, war_widows_pension).
+        # Scotland counts none of them: SSI 2012/319 Sch 3 para 1 disregards
+        # each in full, and SSI 2021/249 reg 57(1), a closed list, does not
+        # name them. England and Wales prescribe a £10 a week disregard (SI
+        # 2012/2885 Sch 5 para 1; SI 2012/2886 Sch 6 para 1 and Sch 8 para 20;
+        # WSI 2013/3029 Sch 4 para 1 and Sch 9 para 20), which a council may
+        # exceed: Wales makes it a minimum for war disablement and war widow's
+        # or widower's pensions (WSI 2013/3029 reg 34(5)), an English scheme
+        # may make provision equivalent to the council tax benefit rules (LGFA
+        # 1992 Sch 1A para 2(11)), and any council may reduce council tax
+        # further (s.13A(1)(c)). Where the model cannot see the council's
+        # choice it takes the full disregard, as Housing Benefit does for local
+        # schemes under SSAA 1992 s.134(8)(a). Reg 34(5) does not cover
+        # guaranteed income payments, so in Wales that over-disregards them,
+        # but afcs does not separate them from war disablement pensions.
+        # Of the English working-age schemes the model runs, Westminster's,
+        # Oxford's and Merton's disregard war pensions in full. Kingston upon
+        # Thames (Sch 8 para 20) and Newham (Sch 8 para 19) disregard £10 a
+        # week of each payment, the reading Pension Credit's identically
+        # worded disregard takes, and Kingston limits the family's total to
+        # £20 a week (Sch 8 para 40). Newham's limit (its para 39) names its
+        # paras 20 and 21, not the war pension para 19, so it does not apply.
         income_components = [
             "employment_income",
             "self_employment_income",
@@ -173,6 +186,41 @@ class council_tax_reduction_applicable_income(Variable):
         )
         credits = add_for_members(benunit, period, ["tax_credits"], members)
         increased_income = income + personal_benefit_income + credits + benefits
+
+        local_authority = benunit.household("local_authority", period)
+        kingston = is_kingston_upon_thames_working_age(
+            local_authority, country, pensioner
+        )
+        newham = is_newham_working_age(local_authority, country, pensioner)
+        local_authorities = parameters(period).gov.local_authorities
+        kingston_test = (
+            local_authorities.kingston_upon_thames.council_tax_reduction.means_test
+        )
+        newham_test = local_authorities.newham.council_tax_reduction.means_test
+        payment_disregard = WEEKS_IN_YEAR * where(
+            kingston,
+            kingston_test.war_pension_disregard,
+            newham_test.war_pension_disregard,
+        )
+        war_pensions = 0
+        war_pension_disregards = 0
+        for payment in ["afcs", "war_widows_pension"]:
+            amount = person(payment, period) * members
+            war_pensions += benunit.sum(amount)
+            war_pension_disregards += benunit.sum(
+                min_(amount, benunit.project(payment_disregard))
+            )
+        war_pension_disregards = where(
+            kingston,
+            min_(
+                war_pension_disregards,
+                kingston_test.war_pension_disregard_limit * WEEKS_IN_YEAR,
+            ),
+            war_pension_disregards,
+        )
+        increased_income += where(
+            kingston | newham, war_pensions - war_pension_disregards, 0
+        )
 
         if not bi.interactions.include_in_means_tests:
             increased_income -= add_for_members(

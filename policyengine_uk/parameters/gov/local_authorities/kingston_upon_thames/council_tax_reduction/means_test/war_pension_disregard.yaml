@@ -1,0 +1,10 @@
+description: Weekly amount of each war disablement pension, war widow's or widower's pension and Armed Forces Compensation Scheme guaranteed income payment disregarded from a working-age applicant's income under the Kingston upon Thames Council Tax Reduction scheme.
+values:
+  2026-04-01: 10
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Kingston upon Thames Council Tax Reduction war pension disregard
+  reference:
+    - title: Council Tax Reduction Scheme 2026 - 2027, Sch 8 para 20 (PDF page 136)
+      href: https://www.kingston.gov.uk/sites/default/files/2026-03/Council%20Tax%20Reduction%20Scheme%202026%20-%202027.pdf#page=136
