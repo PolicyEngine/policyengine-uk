@@ -69,21 +69,29 @@ children, with effect back to 30 August 2018, after the Supreme Court's
 
 To model this we need:
 
-- `is_bereaved_recently` (Person, YEAR): a new input flagging
-  whether the person has been bereaved in the last 18 months.
+- `bsp_initial_payment_due` (Person, YEAR): a new input that is true
+  only in the year the BSP claim is made after the partner's death, so
+  the [single initial payment](https://www.gov.uk/bereavement-support-payment/what-youll-get)
+  is paid once. A flag for "bereaved in the last 18 months" would stay
+  true across two consecutive annual periods and pay the lump sum twice.
 - `bsp_higher_rate_eligible` (Person, YEAR): whether they have a
   dependent child.
 - `bsp_months_remaining` (Person, YEAR): how many of the 18 monthly
-  instalments fall within the simulation year.
+  instalments fall within the simulation year (0 to 12). This is where
+  the 18-month window belongs.
 
 The BSP formula then becomes:
 
 ```
 bsp = (
-    lump_sum_amount * is_bereaved_recently
+    lump_sum_amount * bsp_initial_payment_due
     + monthly_amount * bsp_months_remaining
 )
 ```
+
+An alternative is a single date-of-death (or claim-date) input from
+which both the initial-payment year and the months in each year are
+derived. Either way the lump sum is tied to one year only.
 
 Both `lump_sum_amount` and `monthly_amount` parameter trees split on
 `bsp_higher_rate_eligible` (£3,500 / £350 vs £2,500 / £100).
@@ -113,11 +121,11 @@ the current data they sit inside `bsp_reported` (see above), so they
 are already counted in income; the gap is that they can't be told
 apart from BSP or reformed separately.
 
-### Phase 3: data-side bereavement flag
+### Phase 3: data-side bereavement inputs
 
-`is_bereaved_recently` doesn't exist in the FRS. The FRS is a
-cross-section, not a panel, and doesn't record when a partner died, so
-the flag would need imputing in the data (Microcosm UK, as the
+Neither `bsp_initial_payment_due` nor `bsp_months_remaining` exists in
+the FRS. The FRS is a cross-section, not a panel, and doesn't record
+when a partner died, so these inputs would need imputing in the data (Microcosm UK, as the
 replacement dataset):
 
 - start from FRS respondents who report BSP (once it is separated from
@@ -126,7 +134,7 @@ replacement dataset):
   and region.
 
 This is the heaviest of the three phases; without it the new
-variables work for the household calculator (which can input the flag
+variables work for the household calculator (which can input them
 directly) but not for microsim aggregates.
 
 ## Open questions

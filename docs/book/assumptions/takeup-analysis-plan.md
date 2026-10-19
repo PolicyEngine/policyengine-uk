@@ -93,8 +93,13 @@ For each programme above, the analysis should produce:
    analysis year, plus the source (HMRC, DWP or an academic study) and
    vintage.
 2. **Effective take-up rate post-pipeline:** counted from the built
-   dataset as `sum(would_claim_X * weight) / sum(eligible_X * weight)`,
-   where `eligible_X` is computed from the runtime formulas.
+   dataset as
+   `sum(would_claim_X * eligible_X * weight) / sum(eligible_X * weight)`,
+   where `eligible_X` is computed from the runtime formulas. The
+   numerator counts only eligible units, because `would_claim_X` can be
+   true for ineligible units too (otherwise one eligible unit and two
+   willing units would give 200%). Where no unit is eligible the
+   denominator is zero; report the rate as undefined (n/a), not 0%.
 3. **Published outturn share** for the same year: DWP and HMRC
    statistical publications giving claimant counts and either eligible
    population counts (where DWP estimates them) or a published take-up

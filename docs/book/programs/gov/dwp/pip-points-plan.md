@@ -160,7 +160,7 @@ machinery (for reform analysis) get the activity-level surface.
 
 - [The Social Security (Personal Independence Payment) Regulations 2013 (SI 2013/377)][si-377]: Schedule 1, Parts 2 and 3 define the point system.
 - DWP, [Personal Independence Payment: Assessment guide][assess-guide].
-- DWP, [PIP statistics](https://www.gov.uk/government/collections/personal-independence-payment-statistics: caseload by component and band.
+- DWP, [PIP statistics](https://www.gov.uk/government/collections/personal-independence-payment-statistics): caseload by component and band.
 - DWP, [Modernising support for independent living: the health and disability green paper (April 2024)][green-paper]: proposals on the descriptors.
 - DWP, [Pathways to Work: Reforming Benefits and Support to Get Britain Working (March 2025)](https://www.gov.uk/government/consultations/pathways-to-work-reforming-benefits-and-support-to-get-britain-working-green-paper): the four-point proposal.
 - Issue: [#1069](https://github.com/PolicyEngine/policyengine-uk/issues/1069).

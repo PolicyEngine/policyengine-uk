@@ -64,11 +64,17 @@ Truss "growth plan" basic-rate cut to 19% (announced September 2022,
 reversed October 2022) is the canonical example. To represent this
 honestly:
 
-1. Add the announced value at the announced effective date with a
-   reference to the announcement.
-2. Add a *second* row at the reversal date with the original value (or
-   the actual landing value) and a reference to the reversal
-   announcement.
+1. When the announcement is made, add the announced value at the
+   announced effective date with a reference to the announcement (for
+   the Truss case, 19% from 6 April 2023).
+2. When it is reversed, remove that row, or replace its value with the
+   value that actually applies from that date (20% from 6 April 2023),
+   and cite the reversal announcement. A new row at the reversal date
+   does not cancel the future row: parameter rows apply from their own
+   dates, so a 20% row dated October 2022 is followed by the 19% row in
+   April 2023, and fiscal-year conversion still gives 19% for 2023.
+3. Keep the announcement history in the row's references and in version
+   control rather than in a live value.
 
 The baseline then follows what was finally enacted. PolicyEngine UK has
 no "policy as announced on date X" switch, so to score an announcement as
