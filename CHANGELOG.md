@@ -1,3 +1,16 @@
+## [2.137.1] - 2026-10-19
+
+### Changed
+
+- - Clarified the Pension Credit qualifying-age documentation for men born on 6 November 1953, who reach it at their State Pension age of 65.
+- - Documented historical Housing Benefit child personal allowance rules and their deferred implementation.
+
+### Fixed
+
+- - Updated England childcare entitlement valuations to the published 2025–26 and 2026–27 national-average funding rates.
+- - Fixed non-finite wealth and consumption tax incidence when dataset-weighted totals were zero.
+
+
 ## [2.137.0] - 2026-10-19
 
 ### Added
