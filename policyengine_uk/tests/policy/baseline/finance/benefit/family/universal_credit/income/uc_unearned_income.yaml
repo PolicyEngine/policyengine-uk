@@ -221,9 +221,10 @@
         savings: 0
         other_residential_property_value: 10_000
   output:
-    # £10,000 of let property is 90% x 10,000 = £9,000 of capital (reg.
-    # 49(1)(a)): (9,000 - 6,000) / 250 = 12 steps x £4.35 x 12 = £626.40.
-    # Neither the rent nor the interest is added on top of it.
+    # Reg. 49: £10,000 property less 10% sale expenses, with no debt,
+    # is £9,000. Tariff: (9,000 - 6,000) / 250 = 12 steps x £4.35 x 12
+    # = £626.40. Neither the rent nor the interest is added on top of it.
+    uc_assessable_capital: 9_000
     uc_tariff_income: 626.40
     uc_unearned_income: 626.40
 

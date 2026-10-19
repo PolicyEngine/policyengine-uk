@@ -1,3 +1,372 @@
+## [2.139.2] - 2026-10-19
+
+### Fixed
+
+- - Updated the Scottish Additional Dwelling Supplement to 8% for annual model years from 2025, retaining its statutory 5 December 2024 parameter date.
+- - Reduced the savings starting-rate band from the first pound of taxable non-savings income, correcting savings tax on mixed incomes.
+- - Added migration directions for saved reforms using the removed couple carer premium parameter.
+- - Fixed group inputs being assigned to the wrong benefit unit or household when dataset tables were not sorted by identifier.
+- - Froze the Scottish higher, advanced and top income tax thresholds through 2028-29 under the announced Budget policy, with subsequent CPI projections starting from the frozen amounts.
+
+
+## [2.139.1] - 2026-10-19
+
+### Fixed
+
+- - Corrected OBR labour supply grouping so cohabiting couples receive the same demographic coefficients as married couples.
+- - Corrected the 2016-17 personal allowance to £11,000, fixing income tax calculations for that tax year.
+- - Corrected Carer's Allowance earnings to deduct notional Class 2 and Class 4 National Insurance only when the carer is liable for those contributions.
+- - Corrected residential property uprating and the High Value Council Tax Surcharge's 2026 valuation conversion to use the OBR house-price index.
+  - Aligned projected additional-dwelling purchase prices with residential house-price growth.
+  - Preserved exact 2026 surcharge-band classifications in later-year property projections without rounding household valuations.
+
+
+## [2.139.0] - 2026-10-19
+
+### Added
+
+- Record the unused FYE 2019 joint Income Support/income-related ESA caseload take-up benchmark with its publication-date availability and sampling interval.
+
+### Fixed
+
+- - Count other investment income (National Savings, securities and trust interest) in `total_income`, which income tax already charges, so post-tax income and the Winter Fuel Payment income test see it. Housing Benefit and national Council Tax Reduction non-dependant deductions keep banding on income without it until the remunerative-work test is modelled (#2007) (#2174).
+  - Keep the Winter Fuel Payment for a pensioner whose total income is exactly £35,000: the winter fuel payment charge applies only where total income exceeds £35,000 (ITEPA 2003 s.681I(1)(b)).
+
+
+## [2.138.0] - 2026-10-19
+
+### Added
+
+- Document the field-specific handling of negative FRS tax, benefit and income amounts, with pinned source code and the boundary between raw survey fields and model inputs.
+
+### Fixed
+
+- Document parameter description conventions and validate year-zero YAML, required descriptions and malformed files without silently skipping them.
+
+
+## [2.137.1] - 2026-10-19
+
+### Changed
+
+- - Clarified the Pension Credit qualifying-age documentation for men born on 6 November 1953, who reach it at their State Pension age of 65.
+- - Documented historical Housing Benefit child personal allowance rules and their deferred implementation.
+
+### Fixed
+
+- - Updated England childcare entitlement valuations to the published 2025–26 and 2026–27 national-average funding rates.
+- - Fixed non-finite wealth and consumption tax incidence when dataset-weighted totals were zero.
+
+
+## [2.137.0] - 2026-10-19
+
+### Added
+
+- Compare two datasets on one model with the aggregate-impact tool: measure an unpinned built file by its SHA-256, and `compare --axis data` fails unless both sides ran the same model, runtime, partition and metric definitions.
+
+
+## [2.136.1] - 2026-10-19
+
+### Fixed
+
+- - Fixed Universal Credit capital assessment so reported financial savings do not suppress countable property, with assessment-year sale-expense and secured-debt valuation and property allocation independent of financial reports. Retained the inherited residual financial convention, including subtraction of complete overrides from the financial pool, and company substitution after ordinary-source overrides, and documented the legacy pension-proxy limitation. Complete overrides consume their owners' disregarded company holdings once. Override floors and separate holding deductions share one household corporate-wealth budget proportionally, preventing inconsistent holdings from consuming ordinary savings. Bounded each holding before that budget to isolate negative and infinite inputs from other units' capital.
+
+
+## [2.136.0] - 2026-10-18
+
+### Added
+
+- - Added an aggregate-impact report (`python -m policyengine_uk.utils.aggregate_impact`) that measures a model checkout on the pinned certified dataset and compares base with head: receipts by tax head, spending and caseloads, poverty, inequality, deciles and the standard reform costings over 2025-26 to 2031-32, with accounting identities and a counted-once check against a reviewed fiscal partition (`policyengine_uk/data/fiscal_partition.yaml`).
+
+### Changed
+
+- - Microsimulation tests now run on the certified uk-data 1.58.1 dataset, pinned by commit and SHA-256, and fail instead of skipping when `POLICYENGINE_UK_REQUIRE_TEST_DATA` is set and the data is unavailable; the reform-cost fixtures are rebased onto it, keeping their earlier values as receipts.
+
+
+## [2.135.7] - 2026-10-18
+
+### Changed
+
+- Split the undated VAT grossing factor `gov.simulation.microdata_vat_coverage` (0.38) into two documented factors: `gov.simulation.vat.household_share_of_receipts` (0.7, HMRC's share of VAT liabilities on household consumption) and `gov.simulation.vat.survey_consumption_coverage` (0.67, derived on Microcosm UK 2024-25 against OBR VAT receipts). Total VAT on that dataset now matches 2024-25 receipts instead of overshooting by 24%. `microdata_vat_coverage` is kept as a deprecated parameter equal to their product (0.469); a reform that sets it to another value still takes effect.
+
+### Fixed
+
+- - Add `war_widows_pension_reported` (CPI-uprated) and `war_widows_pension`, counted wherever `bsp` is, so datasets can move FRS benefit code 9 (War Widow's or Widower's Pension) out of `bsp_reported`. Bereavement Support Payment rates have been frozen since April 2017, but `bsp_reported` is about 90% war widow's pension in FRS 2024-25, so it keeps CPI uprating until the datasets split the two (#2381). Results are unchanged for existing datasets.
+
+
+## [2.135.6] - 2026-10-17
+
+### Fixed
+
+- - Corrected the pension annual allowance taper to use separate threshold and adjusted income tests, including employer pension inputs, full salary sacrifice before the NICs exemption cap and gross pension relief. Applied whole-pound rounding and the statutory limits from 2016–17 onwards.
+  - Removed the NICs-only salary-sacrifice reclassification from the taper income tests, including post-75 and basic relief-at-source cases.
+  - Excluded member contributions made at 75 or over from the default DC pension input while retaining all employer contributions and salary sacrifice.
+  - Recomputed income-dependent trading-loss relief from actual income for both annual allowance income tests, including the general-income and relief-cap limits.
+  - Limited trading-loss relief after relievable net-pay contributions in every year and kept supplied adjusted-net-income inputs independent of the NICs cap.
+  - Restricted the basic pension-relief uplift above earnings to relief at source when rebuilding the annual allowance trading-loss cap.
+
+
+## [2.135.5] - 2026-10-17
+
+### Fixed
+
+- - A clone or branch that applies a reform now links the tax-benefit system to itself while it does, so a reform that sets inputs, such as `disable_simulated_benefits`, sets the clone's or branch's inputs and never its parent's. A reform applied after the simulation is built (one passed as `reform=`, or applied to a built simulation, clone or branch) now keeps through `reset_calculations` (and, before policyengine-core 3.33.0, `derivative`) every input it stores and leaves in place, however it stores it, including one that replaces an input set since the build; an input set since the build that the reform did not store is still reset, as before, unless the reform stores an input of the same variable (a reset keeps or clears whole variables).
+  - Under `disable_simulated_benefits`, set the claimant's and partner's income-related ESA and income-based JSA (`claimant_or_partner_esa_income`, `claimant_or_partner_jsa_income`) for each year from the dataset-year reports of whoever is the claimant or partner that year, and set Income Support from their reports alone. The reform holds each benefit at its dataset-year amount while the reported amounts are uprated, so in a later year the stored award matched neither reading of the reports and another member's award was taken to be the claimant's. Another member's own Income Support report is left out of household income, as it is with the reform off, where Income Support is calculated only for the claimant's family.
+  - Under `disable_simulated_benefits`, no family is moved off its legacy benefits: the reform holds `legacy_benefits_closed` false for its ten years, since it pays every reported legacy award and Universal Credit in every year. So, after the closure of income-based JSA and Income Support from April 2026, an adult outside the couple is still on the income-related ESA the reform pays them, and the closure ends no family's Housing Benefit or tax credit eligibility and prompts no Universal Credit claim. Only the closure is held: the model's other rules still apply, though the reform pays the amounts reported. So a family the model has claim Universal Credit anyway is still not eligible for Housing Benefit or tax credits, and an adult outside the couple is on the income-based JSA they report, as their own claim, only in the years the model has the scheme open (to 2025); the claimant and partner are on the award the reform holds for them.
+  - Under `disable_simulated_benefits`, count a Scottish carer's reported Carer's Allowance once. The reform set `carers_allowance` from the report in every country and left `carer_support_payment` simulated, so from 2025, when the model pays a carer in Scotland Carer Support Payment in place of Carer's Allowance, a Scottish carer was paid both. Now, as with the winter heating payments, in each year the report is the `carer_support_payment` of a carer living in Scotland that year, from 2025, and their `carers_allowance` before then, and everyone else's `carers_allowance`; neither benefit is simulated beside it. The entitlements before the overlapping-benefit reduction stay the model's for both. This split and the winter heating one read where the household lives in each year, as the model does, when the reform is applied, so a household that moves into or out of Scotland is paid under that year's scheme: before, both read the dataset year's country, so a carer who moved to Scotland was paid Carer's Allowance and lost the Scottish Carer Supplement.
+  - Neutralizing `esa_income` or `jsa_income` also neutralizes the claimant's and partner's award, so an award entered for them, or set by the reform, no longer outlives the benefit it is part of.
+  - Read the claimant's and partner's income-related ESA and income-based JSA in the benefit cap (its total of welfare benefits, and the ESA support component exemptions from both the Universal Credit and Housing Benefit caps) from `claimant_or_partner_esa_income` and `claimant_or_partner_jsa_income` wherever the cap's couple is the claimant and partner. Under `disable_simulated_benefits` the cap read an award held for another member of the benefit unit (a non-dependent adult claiming in their own right) as the couple's in every year after the dataset year, so it raised the cap's total and could exempt a claimant with a support component who receives no ESA. An award entered for those variables directly now reaches the cap too, and an award within half a penny of zero is no award there, as elsewhere. A Universal Credit couple that is not the claimant and partner (only with `is_uc_claimant` or `is_uc_assessed_claimant` entered, or more than two members entered as claimant or partner) is still read from `esa_income` and `jsa_income` by value.
+  - Read the claimant's and partner's income-related ESA and income-based JSA in `income_support_eligible` from `claimant_or_partner_esa_income` and `claimant_or_partner_jsa_income`, as the means tests and passports do, so an award entered for them directly, or set by the reform, is read the same way everywhere. The two variables share one formula, which now treats an award within half a penny of zero as no award, as `income_support_eligible` did, so the float residual left by reports that exactly match the tariff income is no longer the claimant's or partner's award, and no passport or status that reads their award counts it. A member outside the couple is still on their own award as before: it is read from their own report, without that rule. When `esa_income` or `jsa_income` holds the plain total of the reported awards, Income Support now reads the plain total of the claimant's and partner's reports, as the two variables already did; it used to read their award after the capital test.
+
+
+## [2.135.4] - 2026-10-17
+
+### Changed
+
+- - Tests cover more release manifests that pypi-state must refuse (a missing, repeated or unreadable entry), the manifest check-dist writes being the one pypi-state reads, and agreement with a clean dist under every --require state.
+
+
+## [2.135.3] - 2026-10-17
+
+### Fixed
+
+- - Fixed standalone dated-reform modifiers silently dropping parameter changes, warned when UC rebalancing supersedes an LCWRA amount reform, and restored new-claimant draws for data-built core simulations.
+  - Preserved standalone modifier order across repeated and reordered reforms and retained no-op behavior for already-effective reforms on copies.
+  - Deferred LCWRA override warnings until standalone tuple and sum modifiers finish, with one warning per amount-reform application.
+  - Preserved callback-only Scenario.apply compatibility for lightweight simulation objects without a tax-benefit system.
+  - Replayed mixed statutory and legacy modifiers in their requested order, restricting composite no-ops to exact latest write sequences with current values.
+
+
+## [2.135.2] - 2026-10-17
+
+### Fixed
+
+- - The release workflow's PyPI checks compare PyPI with the manifest of the files it built and tested, written before publishing, so the attestation files trusted publishing adds to dist no longer fail the release after upload, and releases are tagged and announced to policyengine.py again.
+
+
+## [2.135.1] - 2026-10-17
+
+### Fixed
+
+- - Pay no Pension Credit child amount (SPC Regs 2002 Schedule IIA) to a family awarded child tax credit or working tax credit, including an award at a nil rate (reg 6(6)(d) and (11); TCA 2002 s.14(3)). The new variable `has_tax_credit_award` records the award.
+  - Pay no Schedule IIA amount before it began on 1 February 2019 (SI 2018/676 reg 2). The new parameter `gov.dwp.pension_credit.guarantee_credit.child.in_effect` dates it.
+
+
+## [2.135.0] - 2026-10-17
+
+### Added
+
+- Per-scheme benefit cap variables (`uc_benefit_cap`, `is_uc_benefit_cap_single_claimant_rate`, `is_uc_benefit_cap_exempt`, `is_uc_benefit_cap_exempt_earnings`, `is_uc_benefit_cap_exempt_specified_benefit`, `is_uc_benefit_cap_exempt_qualifying_age`, `uc_benefit_cap_reduction`; `housing_benefit_benefit_cap`, `is_housing_benefit_benefit_cap_single_claimant_rate`, `is_housing_benefit_benefit_cap_exempt`, `is_housing_benefit_benefit_cap_exempt_working_tax_credit`, `is_housing_benefit_benefit_cap_exempt_specified_benefit`, `housing_benefit_benefit_cap_reduction`; `benefit_cap_welfare_benefits`), with the parameter `gov.dwp.housing_benefit.minimum_weekly_amount`.
+
+### Fixed
+
+- Universal Credit and Housing Benefit each apply their own benefit cap. The UC cap (UC Regs 2013 regs 79-83) treats a member of a couple claiming as a single person (reg 3(3)) as a single claimant, lifts the cap for earnings and the LCWRA and carer elements but not for working tax credit, lifts it on age only where the single claimant or both joint claimants have reached the qualifying age for State Pension Credit (SI 2014/1230 reg 60C), and takes the childcare costs element off the reduction (reg 81). The HB cap (HB Regs 2006 Part 8A) treats that couple as a couple, lifts the cap for working tax credit and the benefits in reg 75F (the partner's included) but not for earnings or UC elements, does not reach pension-age claims (reg 5), and leaves at least 50 pence a week of HB (reg 75D(2)). A family paid both (Housing Benefit for specified or temporary accommodation alongside UC, which the model gives only when both are supplied) is capped once, through UC: UC counts the Housing Benefit as nil (reg 80(2A)) and the HB cap does not apply to a claimant receiving UC (reg 75F(1)(g)). The UC shared accommodation test (`is_lha_shared_accommodation_rate_specified_renter`, UC Sch 4 paras 27-29) applies reg 3(3) whatever legacy benefits the family reports, and armed forces independence payment now excepts a renter under 35 from it (UC reg 2). Armed forces independence payment lifts the UC cap only when a claimant receives it (UC reg 83(1)(c) with reg 2), no longer when a young person does, and lifts the HB cap when the claimant, the partner or a young person they are responsible for receives it (HB reg 75F(1)(ea)). The shared-rules stopgap for reg 3(3) single claims (`stays_on_legacy_benefits` and the two helpers built on it) is gone.
+
+### Removed
+
+- The shared benefit cap variables `benefit_cap`, `is_benefit_cap_exempt`, `is_benefit_cap_exempt_earnings`, `is_benefit_cap_exempt_health_disability`, `is_benefit_cap_exempt_other` and `is_benefit_cap_single_claimant_rate`, replaced by each scheme's own. `benefit_cap_reduction` remains as the sum of the Universal Credit and Housing Benefit reductions.
+
+
+## [2.134.9] - 2026-10-16
+
+### Fixed
+
+- - After a dated reform to the personal allowance or the basic rate limit (indexed by ITA 2007 ss57 and 21) or to the NICs secondary threshold ends, indexation now resumes from the changed amount, as it does after the Finance Act 2021 freeze. The NICs thresholds aligned with the allowance and limit follow them, and one changed on its own is aligned again afterwards. Uprated amounts such as benefit rates still return to their uprated path.
+
+
+## [2.134.8] - 2026-10-16
+
+### Fixed
+
+- - Deducted relieved pension contributions from adjusted net income so that the Personal Allowance taper and High Income Child Benefit Charge reflect pension relief, while retaining a single deduction from the income tax base and restoring pension relief consistently for supplied ANI in the marriage-neutral reform.
+
+
+## [2.134.7] - 2026-10-16
+
+### Fixed
+
+- - A dated reform starting exactly on a parameter's first stated date no longer has its value backdated to the years before it.
+
+
+## [2.134.6] - 2026-10-16
+
+### Fixed
+
+- - Applied the Universal Credit Act 2025 standard allowance uplifts for 2027-28 to 2029-30 through a dedicated uprating index under `gov.economic_assumptions.indices`, including when dated reforms rebuild parameters, while preserving the legislated 2026-27 rates.
+
+
+## [2.134.5] - 2026-10-16
+
+### Fixed
+
+- - Limited pension contributions relief by relevant UK earnings (or the £3,600 basic amount through relief at source) instead of the annual allowance. Calculated the annual allowance charge across UK or Scottish tax bands with unused allowance carried forward, applying the statutory named-rate ordinary-income condition to the RAS band extension and preserving Gift Aid's separate gross band extension. Separate savings and UK property rates do not establish RAS eligibility.
+
+
+## [2.134.4] - 2026-10-16
+
+### Fixed
+
+- - From 2030-31, keep paying pre-2026 (protected) Universal Credit LCWRA claimants the protected amount, uprated from its 2029-30 level by the LCWRA element's uprating index, and new claimants the new-claimant amount. The rebalancing scenario used to stop in 2029-30, so every claimant fell to the new-claimant amount (a protected claimant from £457.15 to £235.86 a month). The new-claimant share is now the parameter `gov.dwp.universal_credit.rebalancing.new_claimant_share`, held at 22% after 2029-30.
+
+
+## [2.134.3] - 2026-10-16
+
+### Fixed
+
+- - Corrected the Scottish 48% top-rate threshold to £125,140 of taxable income for 2024–25, 2025–26 and 2026–27, accounting for the fully withdrawn personal allowance.
+
+
+## [2.134.2] - 2026-10-15
+
+### Fixed
+
+- - Hold the Universal Credit LCWRA element at £217.26 a month for 2026-27 to 2029-30, as Universal Credit Act 2025 s. 3 freezes it, and uprate it from that amount by the benefit uprating index from 2030-31. It was CPI-uprated from 2027-28. The freeze is `gov.dwp.universal_credit.rebalancing.health_element_freeze` and applies while the rebalancing reforms are active. The amount the rebalancing scenario pays new claimants (`rebalancing.new_claimant_health_element`) follows the same path, so lifting the freeze reaches them.
+
+
+## [2.134.1] - 2026-10-15
+
+### Fixed
+
+- Stop charging a household's whole stock of other residential and non-residential property as a purchase whenever it buys its main residence. `property_purchased` now sets only the main-residence purchase; `additional_residential_property_purchased` (the price of one additional dwelling, charged at the higher rates for additional dwellings) and `non_residential_property_purchased` are inputs, nil unless set directly or imputed by a dataset, and are uprated like the property stocks when a dataset supplies them.
+
+
+## [2.134.0] - 2026-10-15
+
+### Added
+
+- - Added `capital_gains_response_assumption` (`policyengine_uk.utils.capital_gains`), which reports the capital gains realisation response a simulation applies in a year (the convention, each elasticity and where it came from), and `CapitalGainsResponseWarning`, issued when an `mtr_elasticity` applies in place of the retention-rate default.
+
+### Changed
+
+- - Made a retention-rate elasticity of 1.0 the default capital gains realisation response (`gov.simulation.capital_gains_responses.elasticity`, previously 0), the central value Advani, Lonsdale and Summers (2024, pp. 36-37) use for the medium-term effect of a package that also broadens the base, with 0.5 and 2.0 as sensitivities. For a rate change alone their reasoning points to a higher value, and responses in the first year can be larger, so the default can overstate what a rate rise raises; for a large rise it can even give the opposite sign to official costings. CGT reforms are no longer costed statically unless the elasticity is set to 0, and gains qualifying for Business Asset Disposal Relief take the same 1.0. Reforms to income tax bands and allowances also move realised gains, by changing the rate gains are taxed at, so costings that include CGT move too. Household net income counts gains no longer realised as income lost, so household and distributional results for these reforms change as well as revenue. An `mtr_elasticity` set while the retention-rate settings keep their defaults now applies alone in its periods, with a `CapitalGainsResponseWarning`; retention-rate settings changed to nonzero values still raise alongside it. Simulations that apply their baseline's rules (any simulation without a reform, and a reform's own baseline) and populations without gains no longer measure marginal rates on gains, and marginal tax rates on earnings hold realised gains fixed instead of measuring the response again at the higher pay. `marginal_tax_rate_on_capital_gains` now measures the rise in capital gains tax rather than the fall in household net income, which gives the same rate at about a sixth of the cost.
+
+
+## [2.133.0] - 2026-10-15
+
+### Added
+
+- - Added `policyengine_uk.utils.measurement_branches`: `measurement_branch`, which measures a simulation's results at set inputs in a branch with every behavioural response switched off, and `held_behavioural_responses` and `hold_behavioural_responses`, which hold the responses fixed in a branch that steps an input to measure a marginal rate.
+
+### Fixed
+
+- - Measured the elasticity-based labour supply responses against the reform's baseline simulation rather than a copy of the reform, so a reform that changes marginal rates or net income now gets a response when `gov.simulation.labour_supply_responses` elasticities are set. The labour supply and capital gains measurements now start from what their simulation was given, not what it had already calculated, and hold every behavioural response at zero, so neither response depends on what was calculated first or includes the other. Marginal tax rates (on earnings, on employer cost and on capital gains) hold every behavioural response at the simulation's values in the branches where they step an input, instead of measuring the responses again there. A branch that shares its simulation's rules, such as the Pension Credit branch of the UC non-dependant exemption, takes the simulation's labour supply response instead of measuring it again, and a labour supply term whose elasticity is zero is zero without a measurement.
+
+
+## [2.132.6] - 2026-10-15
+
+### Fixed
+
+- `Scenario.apply` on a built simulation now changes the parameter a deprecated `labor_supply_responses` path copies, as constructing the simulation with the scenario does; it used to edit only the alias copy, which formulas do not read, unless the scenario had been summed.
+
+
+## [2.132.5] - 2026-10-15
+
+### Fixed
+
+- - Fixed loading local multi-year H5 datasets saved by `UKMultiYearDataset.save` by distinguishing yearly groups from single-year pandas tables.
+
+
+## [2.132.4] - 2026-10-15
+
+### Fixed
+
+- - HBAI household net income before housing costs now resets a negative figure to zero, as HBAI does; income after housing costs, deciles, poverty flags and poverty gaps follow from the reset figure. Poverty headcounts do not change while both person-weighted BHC and AHC median incomes are positive (as on the enhanced FRS); poverty gaps fall and income totals rise by the sum of the negative incomes. Households whose income is reset now count in the bottom income decile instead of being left out with decile -1, as long as households at zero hold at most a tenth of people, so bottom-decile figures move. The figure before the reset is the new `hbai_household_net_income_before_reset_to_zero`, which the labour supply responses use, so they are unchanged.
+
+
+## [2.132.3] - 2026-10-15
+
+### Fixed
+
+- Dataset caching no longer couples a macro scenario to other simulations: a scenario built first left its projected incomes for its own baseline and every later simulation from the same `hf://` or `gs://` dataset, and one built after a baseline got current law's data. Dated parameter changes that change what the dataset projection reads, such as a reform dict setting an OBR growth rate for a year, are now written before the data is built, so incomes, rents and council tax follow them.
+
+
+## [2.132.2] - 2026-10-15
+
+### Changed
+
+- - Added Winter Fuel Payment and Pension Age Winter Heating Payment tests for couples on Income Support, income-based jobseeker's allowance and income-related employment and support allowance: couples of pensionable age, who get one payment, and couples whose claimant is under pensionable age, in the 2024 and 2025 qualifying weeks.
+
+
+## [2.132.1] - 2026-10-14
+
+### Fixed
+
+- - Removed the projection-horizon job's working notes (`REPORT.md` and `PROGRESS.md`), committed to the repository root by mistake with #2376, and made Lint fail when agent working notes are committed there.
+
+
+## [2.132.0] - 2026-10-14
+
+### Fixed
+
+- - A sum of scenarios keeps the timing of each part's modifier. A part applied before data load, such as `no_economic_assumptions`, is still applied before it when added to a reform, so `no_economic_assumptions + reform` freezes the data as well as the parameters. Likewise a macro scenario applied before data load, plus a reform, projects the data with the macro growth. Modifiers of parts applied after data load, including ones that edit the data, still run after it. A sum with a part applied before data load applies all of its parameter changes first, as `+` merges them, so the data follows them all and a modifier's edits survive. A simulation with a scenario applied before data load no longer reads or writes the `hf://` and `gs://` dataset cache, so its projection no longer reaches its baseline or later simulations. The sum of scenarios that are all applied before data load is now applied before it. A sum now calls the modifiers its operands had when it was made. Its fields still hold the whole sum, and `Scenario.parts_by_data_load()` returns what is applied before and after data load.
+
+### Removed
+
+- - Removed `gov.simulation.labour_supply_responses.obr_elasticities` and its legacy alias `gov.simulation.labor_supply_responses.obr_elasticities`. Nothing read this switch, so setting it changed no output. A reform or saved policy that still names it now fails with directions to `gov.dynamic.obr_labour_supply_assumptions`, the switch under which `Simulation.apply_dynamics` applies the OBR labour supply elasticities.
+
+
+## [2.131.2] - 2026-10-14
+
+### Fixed
+
+- - Fixed HBAI household income after housing costs to deduct ground rent and housing service charges, so equivalised AHC income and poverty measures include these costs.
+
+
+## [2.131.1] - 2026-10-14
+
+### Fixed
+
+- A bare-year reform key, or a key dated 1 January, on the economic growth rates, the indices built from them and the household parameters now names that calendar year. A bare year used to name the fiscal year from 6 April, which moved the next year: a 2027 earnings growth rate showed as 2027's but moved the 2028 index and the April 2029 triple lock. A 1 January key used to override that one day after processing, which nothing built from the parameter read. A change to an uprated household parameter past its last stated value now leaves the years around it on their projected path instead of freezing them. Reforms to series built during processing (the triple lock rate, the indices, the lagged series) now uprate what is built from them. Deprecated `labor_supply_responses` paths in reform dicts reach the parameters formulas read, and changes to a parameter given by both its path and its alias are merged in order instead of one being silently dropped.
+
+
+## [2.131.0] - 2026-10-14
+
+### Added
+
+- - Added Income Tax trade loss relief against general income under ITA 2007 s.64, subject to available net income and the s.24A relief cap.
+
+### Changed
+
+- - Uprated trading losses separately from profits, applied programme-specific UC and tax-credit income rules, and included losses as negative market and HBAI income. Income Tax carry-forward now uses only explicitly supplied unrelieved losses; Class 4 retains its separate automatic loss history.
+  - Coordinated the taxpayer's trading allowance election with current-year Income Tax and Class 4 loss relief, retaining whichever gives the greater current-year income deduction.
+
+### Fixed
+
+- - Base the trading allowance election on losses supplied for that tax year, preserving earlier Class 4 loss balances when later loss inputs are unset.
+- - Fixed Universal Credit trading-loss netting to include company trade results.
+
+
+## [2.130.1] - 2026-10-14
+
+### Fixed
+
+- - Fixed the benefit-cap earnings exemption to count statutory pay and use Universal Credit's actual net earnings before the minimum income floor, with a pinned regression for the release failure.
+
+
+## [2.130.0] - 2026-10-13
+
+### Added
+
+- - Universal Credit now applies regulation 77 to a person who stands as sole owner or partner of a company carrying on a trade or property business.
+    - A trading company's income counts as their self-employed earnings on top of any pay from it. A company loss is set against the profit of any trade they carry on themselves, the tax and National Insurance on their trades come off that total, and a negative result counts as nil, so neither a loss nor the tax on a trade it cancels comes off their pay.
+    - Only a claimant's or partner's company earnings reduce the award.
+    - The minimum income floor applies when the trade is their main employment.
+    - The company's capital replaces the value of their shares. Trade assets are disregarded while they work in the trade. In households with several benefit units, the shares leave the household's capital before it is shared out, including a dependant's, which count for nobody.
+    - The intermediaries (IR35) exclusion follows reg. 77(5) as in force: Chapters 8 and 9 of ITEPA Part 2 until 27 November 2018, and Chapters 8 to 10 from main-employment activities from 28 November 2018. Annual simulations take the rule in force at the start of the year, so 2018 uses the earlier rule throughout.
+    - New `owned_company_*` inputs describe the company. Every input defaults to no such company, so existing datasets are unchanged.
+- - Added explicit, versioned capital-gains projection scenarios shared by dataset and household simulations, with population adjustments, bounded years, errors for direct reforms to generated paths and an experimental OBR EOT sensitivity.
+  - Added per-variable and period application provenance distinguishing supplied inputs, applied projections and defaults, an explicit supplied-input flag, and a warning when supplied future gains bypass an explicitly selected projection, including annual inputs read by monthly calculations. Population rebuilds reset this provenance.
+  - Added an experimental marker to projection metadata and cache fingerprints, set for the bundled OBR EOT sensitivity without changing its growth assumptions.
+
+
+## [2.129.1] - 2026-10-13
+
+### Fixed
+
+- - End a reported income-related ESA award when the claimant is engaged in remunerative work or the partner is (Welfare Reform Act 2007 Sch 1 para 6(1)(e), (f)). For the claimant that is any paid work other than exempt work (ESA Regs 2008 reg 41(1)): work with earnings of no more than £20 a week, or of under 16 hours a week with earnings within 16 times the National Minimum Wage rounded up to the next 50p (£195.50 in 2025-26, £203.50 in 2026-27; reg 45(2), (4), (9A)). Earnings (new `esa_exempt_work_earnings`) are pay less PAYE and primary Class 1 on the pay alone and half the pension contributions (reg 96(3)), with statutory sick, maternity and paternity pay, which are not earnings (reg 95(2)(b)), adding neither to the pay nor to the tax and Class 1 taken off it, plus a self-employed profit less reg 99's notional basic-rate tax above the personal and blind person's allowances, main-rate Class 4 on the profit itself (reg 99(4)'s chargeable income, before capital allowances, the trading allowance and loss relief; reg 98(5)), Class 2 until 5 April 2024 (reg 99(3)(a); new `gov.dwp.ESA.income.self_employment_class_2.{deducted, above_lower_profits_threshold}`) and half the personal pension contributions (reg 98(3)), with no loss set against pay (reg 98(11)). The claimant's test is the new `esa_income_claimant_remunerative_work`. For the partner it is 24 hours a week or more (reg 42(1)), except for a carer (reg 43(2)(c)); hours come from the new `esa_income_remunerative_work_hours`.
+  - End a reported income-based JSA award when the claimant works 16 hours a week or more (Jobseekers Act 1995 s.1(2)(e); JSA Regs 1996 reg 51(1)(a)) or the partner works 24 or more (s.3(1)(e); reg 51(1)(b)). A member of a joint-claim couple whose partner works 16 to under 24 hours can claim alone (reg 3E(2)(g)), so 24 hours is the limit for the other member of any couple. The JSA regulations have no exception for carers doing unrelated paid work. Hours come from the new `jsa_remunerative_work_hours`.
+  - The claimant is a member who reports the award; when the claimant or partner reports one, only they are tested, so a non-dependant's award never changes theirs, other than through the legacy closure (`legacy_benefits_closed`), which reads every member's reports. The Income Support gate reads the screened awards. A member outside the couple, such as a non-dependent adult, claims in their own right, so `is_on_income_related_esa` and `is_on_income_based_jsa` test their own claim on their own work (the ESA claimant's exempt work limits, or JSA's 16 hours) as well as their report, tariff income and the capital limit: a working one's own report no longer exempts them from a council tax reduction non-dependant deduction, and a non-working one stays on their award when the claimant's own claim fails, though not once the family's legacy benefits have closed (`legacy_benefits_closed`), which the model applies to every member's award (a simplification: SI 2014/1230 reg 46(1) ends only the claimant's and partner's). New parameters `gov.dwp.ESA.exempt_work.{lower_earnings_limit, hours_limit, higher_earnings_limit}`, `gov.dwp.ESA.income.remunerative_work.partner_hours` and `gov.dwp.JSA.remunerative_work.{claimant_hours, partner_hours}`; the descriptions of `gov.dwp.JSA.hours.single` and `couple` now say what reg 51 sets.
+
+
 ## [2.129.0] - 2026-10-13
 
 ### Added

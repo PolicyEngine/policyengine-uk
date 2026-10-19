@@ -41,3 +41,9 @@ def valued_capital(value_of, sources, sale_expenses):
             value = max_(0, value - value_of(SECURED_DEBT[source]))
         total = total + value
     return total
+
+
+def counted_share(sale_expenses, source):
+    """Share of a source's market value counted as capital: 90% where its
+    sale would incur expenses (reg. 49(1)(a)), otherwise all of it."""
+    return 1 - sale_expenses.rate if source in sale_expenses.sources else 1

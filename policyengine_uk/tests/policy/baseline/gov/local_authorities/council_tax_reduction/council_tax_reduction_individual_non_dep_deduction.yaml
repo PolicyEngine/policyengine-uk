@@ -1,0 +1,54 @@
+# The national Council Tax Reduction non-dependant deduction bands on gross
+# income, but SI 2012/2885 Sch 1 para 8(2) applies the bands only to a
+# non-dependant in remunerative work, which this formula does not yet test
+# (#2007). Other investment income, now in total_income, is left out of the
+# band until it does, so a non-worker whose only income is investment income
+# is not banded on it.
+
+- name: Other investment income does not band a non-worker for CTR
+  period: 2025
+  input:
+    council_tax_reduction_individual_non_dep_deduction_eligible: true
+    other_investment_income: 28_912 # 556 weekly, no hours
+  output:
+    # The same as a non-dependant with no income. Banding the £556 would give
+    # 115.45 * 52 = 6,003.40.
+    council_tax_reduction_individual_non_dep_deduction: 0
+
+- name: Other investment income does not move a worker's CTR band
+  period: 2025
+  input:
+    council_tax_reduction_individual_non_dep_deduction_eligible: true
+    hours_worked: 1_950 # 37.5 hours a week
+    employment_income: 9_517 # just over 183 weekly
+    other_investment_income: 28_912 # 556 weekly
+  output:
+    # Banded on the £183 of earnings: 45.15 * 52 = 2,347.80.
+    council_tax_reduction_individual_non_dep_deduction: 45.15 * 52
+
+- name: A pensioner's CTR is not cut for a non-dependant's investment income
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_household_head: true
+      adult_child:
+        age: 30
+        other_investment_income: 28_912 # 556 a week, no hours
+    benunits:
+      claimant_family:
+        members: [claimant]
+      adult_child_family:
+        members: [adult_child]
+    households:
+      household:
+        members: [claimant, adult_child]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 15_000
+        council_tax: 2_000
+        country: ENGLAND
+  output:
+    # Banding the £556 would give 115.45 * 52 = 6,003.40.
+    council_tax_reduction_non_dep_deductions: [0, 0]

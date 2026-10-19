@@ -151,7 +151,7 @@
     uc_assessable_capital: [20_000, 20_000]
     is_uc_eligible: [false, false]
 
-- name: Mixed reported and unreported benunits use residual household capital
+- name: Benefit units with and without financial observations use residual household capital
   period: 2025
   absolute_error_margin: 0
   input:
@@ -163,7 +163,7 @@
     benunits:
       benunit_1:
         members: person_1
-        uc_reported_capital: 12_000
+        benunit_reported_capital: 12_000
       benunit_2:
         members: person_2
     households:
@@ -259,8 +259,7 @@
         members: person
         other_residential_property_value: 50_000
   output:
-    # Market value less 10% for the expenses of sale (UC Regs 2013
-    # reg. 49(1)(a)).
+    # Reg. 49: £50,000 market value less 10% sale expenses, with no debt.
     uc_assessable_capital: 45_000
     is_uc_eligible: false
 
@@ -279,8 +278,7 @@
         members: person
         non_residential_property_value: 50_000
   output:
-    # Market value less 10% for the expenses of sale (UC Regs 2013
-    # reg. 49(1)(a)).
+    # Reg. 49: £50,000 market value less 10% sale expenses, with no debt.
     uc_assessable_capital: 45_000
     is_uc_eligible: false
 

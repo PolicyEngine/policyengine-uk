@@ -36,3 +36,30 @@
     total_income: 9_517 # just over 183 weekly, the lower edge of the second band
   output:
     household_benefits_individual_non_dep_deduction: 45.15 * 52
+
+# Other investment income counts in total_income (ITA 2007 s. 23), but it is
+# left out of the non-dependant band until the reg 74(2) remunerative-work
+# test is modelled (#2007). Otherwise a non-worker whose only income is
+# investment income would be banded on it, where reg 74(1)(b) gives them the
+# minimum whatever their income.
+- name: Other investment income does not band a non-worker
+  period: 2025
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    other_investment_income: 28_912 # 556 weekly, no hours
+  output:
+    # The same as a non-dependant with no income. Banding the £556 would give
+    # 115.45 * 52 = 6,003.40.
+    household_benefits_individual_non_dep_deduction: 0
+
+- name: Other investment income does not move a worker's band
+  period: 2025
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    hours_worked: 1_950 # 37.5 hours a week
+    employment_income: 9_517 # just over 183 weekly
+    other_investment_income: 28_912 # 556 weekly
+  output:
+    # Banded on the £183 of earnings: 45.15 * 52 = 2,347.80. Adding the £556
+    # would give the top band, 126.65 * 52 = 6,585.80.
+    household_benefits_individual_non_dep_deduction: 45.15 * 52

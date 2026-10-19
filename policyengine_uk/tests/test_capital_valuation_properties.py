@@ -148,9 +148,21 @@ def applies(variable, unit, guarantee_credit=0.0, hb_passported=False):
     return (unit["age"] >= 67) == (variable in PENSION_AGE_ONLY)
 
 
-def expected_capital(unit, node):
+def expected_capital(unit, node, variable=None):
     """Reg. 49(1) applied source by source, independently of the model."""
     total = 0.0
+    if variable == "uc_assessable_capital":
+        # Universal Credit values countable property on its own path
+        # (property_sources), outside the financial sources.
+        for source in [
+            "other_residential_property_value",
+            "non_residential_property_value",
+        ]:
+            total += max(
+                0.0,
+                unit["assets"][source] * (1 - LEGAL_RATE)
+                - unit["debts"][DEBTS[source]],
+            )
     for source in node.sources:
         value = unit["assets"][source]
         if source in SALE_EXPENSE_ASSETS:
@@ -189,7 +201,7 @@ def check_valuation(units):
             if hb and unit["age"] >= 67 and gc > 0:
                 assert valued[variable][i] == 0, unit
             if applies(variable, unit, gc, valued["hb_passported"][i]):
-                expected = expected_capital(unit, node)
+                expected = expected_capital(unit, node, variable)
                 assert close(valued[variable][i], expected), (variable, unit)
                 if hb and unit["age"] < 67 and expected > 0:
                     hb_checked["working_age_differential"] += 1
