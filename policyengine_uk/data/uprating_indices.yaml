@@ -89,6 +89,9 @@ gov.economic_assumptions.yoy_growth.obr.petrol_spending_litre_proxy:
 gov.economic_assumptions.yoy_growth.obr.house_prices:
 - main_residence_value
 - other_residential_property_value
+# Imputed additional-dwelling prices share the home-price forecast,
+# holding the imputed purchase quantity fixed.
+- additional_residential_property_purchased
 gov.economic_assumptions.yoy_growth.obr.mortgage_interest:
 - mortgage_interest_repayment
 - property_finance_costs
@@ -115,8 +118,7 @@ gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 - non_residential_property_secured_debt
 - other_investment_income
 - other_residential_property_secured_debt
-# Purchase-price inputs retain their existing GDP-per-capita uprating.
-- additional_residential_property_purchased
+# Non-residential purchase prices and land retain GDP-per-capita growth.
 - non_residential_property_purchased
 - owned_land
 # A formula of benunit_reported_capital; listed so a dataset that stores it

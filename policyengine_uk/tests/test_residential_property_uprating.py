@@ -224,3 +224,108 @@ def test_frozen_assumptions_keep_residential_stocks_at_observed_values():
     sim = Microsimulation(dataset=property_dataset(), scenario=no_economic_assumptions)
     for asset, values in zip(ASSETS, [MAIN_VALUES, OTHER_VALUES]):
         np.testing.assert_array_equal(sim.calculate(asset, 2028), values)
+
+
+def purchase_projection_dataset(region="LONDON"):
+    """Synthetic single-dwelling prices, including a no-purchase household."""
+    dataset = property_dataset(np.zeros(2), np.zeros(2))
+    dataset.household["region"] = region
+    dataset.household["property_purchased"] = False
+    dataset.household["additional_residential_property_purchased"] = [300_000.0, 0.0]
+    dataset.household["non_residential_property_purchased"] = [200_000.0, 0.0]
+    dataset.household["owned_land"] = [400_000.0, 0.0]
+    return dataset
+
+
+def raw_purchase_price_growth(parameters, series, year):
+    """Multiply raw YoY assumptions independently of the projection mapping."""
+    growth = parameters.get_child(f"gov.economic_assumptions.yoy_growth.obr.{series}")
+    # OBR's March 2026 forecast ends in 2030. Later years repeat its last
+    # rate under the existing model convention, not an official forecast.
+    return np.prod([1 + growth(str(y)) for y in range(2025, year + 1)])
+
+
+@pytest.mark.parametrize("year", [2030, 2032])
+def test_dataset_additional_purchase_prices_use_house_price_growth(year):
+    sim = Microsimulation(dataset=purchase_projection_dataset())
+    parameters = sim.tax_benefit_system.parameters
+    expected = np.array([300_000.0, 0.0]) * raw_purchase_price_growth(
+        parameters, "house_prices", year
+    )
+    gdp_price = 300_000 * raw_purchase_price_growth(parameters, "per_capita.gdp", year)
+    assert not np.isclose(expected[0], gdp_price)
+    np.testing.assert_allclose(
+        sim.dataset[year].household["additional_residential_property_purchased"],
+        expected,
+        rtol=1e-7,
+        atol=0.01,
+    )
+    np.testing.assert_allclose(
+        sim.calculate("additional_residential_property_purchased", year),
+        expected,
+        rtol=1e-7,
+        atol=0.01,
+    )
+
+
+@pytest.mark.parametrize(
+    "region,tax",
+    [
+        ("LONDON", "stamp_duty_land_tax"),
+        ("WALES", "land_transaction_tax"),
+        ("SCOTLAND", "land_and_buildings_transaction_tax"),
+    ],
+)
+def test_projected_additional_purchase_prices_reach_transaction_taxes(region, tax):
+    year = 2028
+    dataset = purchase_projection_dataset(region)
+    # Isolate the additional dwelling from other transaction-tax bases.
+    dataset.household["non_residential_property_purchased"] = 0.0
+    projected = Microsimulation(dataset=dataset)
+    prices = np.array([300_000.0, 0.0]) * raw_purchase_price_growth(
+        projected.tax_benefit_system.parameters, "house_prices", year
+    )
+    direct = Simulation(
+        situation={
+            "people": {f"adult{i}": {"age": {year: 40}} for i in range(2)},
+            "households": {
+                f"home{i}": {
+                    "members": [f"adult{i}"],
+                    "region": region,
+                    "property_purchased": False,
+                    "additional_residential_property_purchased": {year: float(price)},
+                }
+                for i, price in enumerate(prices)
+            },
+        }
+    )
+    # A directly supplied target-year purchase remains that exact input.
+    np.testing.assert_array_equal(
+        direct.calculate("additional_residential_property_purchased", year),
+        prices.astype(np.float32),
+    )
+    expected_tax = direct.calculate(tax, year)
+    assert expected_tax[0] > 0
+    assert expected_tax[1] == 0
+    np.testing.assert_allclose(
+        projected.calculate(tax, year), expected_tax, rtol=0, atol=0.01
+    )
+
+
+def test_purchase_projection_preserves_other_indices_and_zero():
+    year = 2032
+    sim = Microsimulation(dataset=purchase_projection_dataset())
+    factor = raw_purchase_price_growth(
+        sim.tax_benefit_system.parameters, "per_capita.gdp", year
+    )
+    for variable, observed in [
+        ("non_residential_property_purchased", 200_000),
+        ("owned_land", 400_000),
+    ]:
+        np.testing.assert_allclose(
+            sim.dataset[year].household[variable],
+            np.array([observed, 0]) * factor,
+            rtol=1e-7,
+            atol=0.01,
+        )
+    assert sim.calculate("additional_residential_property_purchased", year)[1] == 0

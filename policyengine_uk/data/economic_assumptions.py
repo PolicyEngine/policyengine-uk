@@ -283,6 +283,7 @@ def apply_single_year_uprating(
 
     # Next, apply custom uprating.
 
+    # apply_uprating replaces these chained stocks from the original observation.
     current_year = uprate_residential_property(current_year, previous_year, parameters)
 
     # Council Tax is uprated by OBR forecasts/outturns by country.
