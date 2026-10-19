@@ -24,9 +24,11 @@ inputs standing for actual awards, independent of the model's rate formulas.
 Invariants:
 
 1. Differential: Pension Credit and pension-age Housing Benefit assess the
-   same income. Where Guarantee Credit is not paid and Housing Benefit income
-   is above its zero floor, Housing Benefit applicable income plus its income
-   disregard equals Pension Credit income. The disregard is added back because
+   same income. Where neither Guarantee Credit nor Savings Credit is due and
+   Housing Benefit income is above its zero floor, Housing Benefit applicable
+   income plus its income disregard equals Pension Credit income. (With a
+   savings-credit-only award, Housing Benefit takes the Secretary of State's
+   assessment plus the savings credit, HB (SPC) Regs 2006 reg 27, by design.) The disregard is added back because
    the model applies the HB earnings disregard (HB (SPC) Regs Sch 4) whether or
    not there are earnings; there are none here. There is no other intended
    difference on this domain: both measures deduct the claimant's and
@@ -36,11 +38,14 @@ Invariants:
 2. Guarantee Credit is non-increasing in each of the four benefits, and while
    it is positive it falls pound for pound with the extra Pension Credit
    income, which is the extra benefit less the extra income tax and National
-   Insurance (the model taxes IB).
+   Insurance (the model taxes IB), less any Carer's Allowance or Carer Support
+   Payment the benefit displaces: SDA, IB and MA overlap with them (Social
+   Security (Overlapping Benefits) Regulations 1979; carers_allowance_overlapping_benefits).
 3. Savings Credit income never exceeds Pension Credit income. Adding an amount
    of a reg 9 source (working tax credit, IB, SDA, MA, contribution-based JSA
    or contributory ESA) changes Savings Credit income only through income tax
-   and National Insurance, and never raises Savings Credit. Draws for this
+   and National Insurance and through any Carer's Allowance or Carer Support
+   Payment it displaces (as in invariant 2), and never raises Savings Credit. Draws for this
    invariant are aged 77 or over: the model dates State Pension age as birth
    year plus the current State Pension age (66 in 2026), so they meet its
    test of reaching it before the 2016 Savings Credit cutoff.
@@ -192,6 +197,7 @@ def test_pension_credit_and_housing_benefit_assess_the_same_prescribed_benefits(
         families,
         [
             "guarantee_credit",
+            "savings_credit",
             "pension_credit_income",
             "housing_benefit_eligible",
             "housing_benefit_applicable_income",
@@ -199,10 +205,11 @@ def test_pension_credit_and_housing_benefit_assess_the_same_prescribed_benefits(
         ],
     )
     hb_income = g["housing_benefit_applicable_income"]
-    # Where Guarantee Credit is not paid, and away from the zero floor on
-    # Housing Benefit income.
+    # Where neither credit is due, and away from the zero floor on Housing
+    # Benefit income.
     compared = (
         (g["guarantee_credit"] <= 0)
+        & (g["savings_credit"] <= 0)
         & g["housing_benefit_eligible"].astype(bool)
         & (hb_income > 0)
     )
@@ -235,20 +242,25 @@ def test_guarantee_credit_falls_pound_for_pound_with_each_prescribed_benefit(
             "pension_credit_income",
             "income_tax",
             "national_insurance",
+            "carers_allowance",
+            "carer_support_payment",
         ],
     )
     gc = g["guarantee_credit"]
     pc_income = g["pension_credit_income"]
     tax = g["income_tax"] + g["national_insurance"]
+    carer_benefit = g["carers_allowance"] + g["carer_support_payment"]
     assert np.all(np.diff(gc, axis=-1) <= 0.01), (families, gc)
-    # The extra Pension Credit income is the extra benefit less the extra tax.
+    # The extra Pension Credit income is the extra benefit less the extra tax
+    # and less any carer's benefit the benefit displaces.
     extra_income = np.diff(pc_income, axis=-1)
     positive_income = (pc_income[..., :-1] > 0) & (pc_income[..., 1:] > 0)
+    expected = (
+        np.diff(AMOUNTS) - np.diff(tax, axis=-1) + np.diff(carer_benefit, axis=-1)
+    )
     assert np.allclose(
-        extra_income[positive_income],
-        (np.diff(AMOUNTS) - np.diff(tax, axis=-1))[positive_income],
-        atol=0.01,
-    ), (families, pc_income, tax)
+        extra_income[positive_income], expected[positive_income], atol=0.01
+    ), (families, pc_income, tax, carer_benefit)
     # While Guarantee Credit is paid, it falls by exactly that much.
     paid = gc[..., 1:] > 0
     assert np.allclose(-np.diff(gc, axis=-1)[paid], extra_income[paid], atol=0.01), (
@@ -287,6 +299,8 @@ def test_reg_9_sources_change_savings_credit_income_only_through_tax(
             "savings_credit",
             "income_tax",
             "national_insurance",
+            "carers_allowance",
+            "carer_support_payment",
         ],
     )
     sc_income = g["savings_credit_income"]
@@ -299,9 +313,13 @@ def test_reg_9_sources_change_savings_credit_income_only_through_tax(
     )
     tax = g["income_tax"] + g["national_insurance"]
     extra_tax = tax[..., 1] - tax[..., 0]
+    carer_benefit = g["carers_allowance"] + g["carer_support_payment"]
+    carer_change = carer_benefit[..., 1] - carer_benefit[..., 0]
     assert np.allclose(
-        sc_income[..., 1], np.maximum(sc_income[..., 0] - extra_tax, 0), atol=0.01
-    ), (families, amount, sc_income, tax)
+        sc_income[..., 1],
+        np.maximum(sc_income[..., 0] - extra_tax + carer_change, 0),
+        atol=0.01,
+    ), (families, amount, sc_income, tax, carer_benefit)
 
 
 @PROPERTY_SETTINGS
