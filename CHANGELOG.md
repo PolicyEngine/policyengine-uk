@@ -1,3 +1,63 @@
+## [2.138.0] - 2026-10-19
+
+### Added
+
+- Document the field-specific handling of negative FRS tax, benefit and income amounts, with pinned source code and the boundary between raw survey fields and model inputs.
+
+### Fixed
+
+- Document parameter description conventions and validate year-zero YAML, required descriptions and malformed files without silently skipping them.
+
+
+## [2.137.1] - 2026-10-19
+
+### Changed
+
+- - Clarified the Pension Credit qualifying-age documentation for men born on 6 November 1953, who reach it at their State Pension age of 65.
+- - Documented historical Housing Benefit child personal allowance rules and their deferred implementation.
+
+### Fixed
+
+- - Updated England childcare entitlement valuations to the published 2025–26 and 2026–27 national-average funding rates.
+- - Fixed non-finite wealth and consumption tax incidence when dataset-weighted totals were zero.
+
+
+## [2.137.0] - 2026-10-19
+
+### Added
+
+- Compare two datasets on one model with the aggregate-impact tool: measure an unpinned built file by its SHA-256, and `compare --axis data` fails unless both sides ran the same model, runtime, partition and metric definitions.
+
+
+## [2.136.1] - 2026-10-19
+
+### Fixed
+
+- - Fixed Universal Credit capital assessment so reported financial savings do not suppress countable property, with assessment-year sale-expense and secured-debt valuation and property allocation independent of financial reports. Retained the inherited residual financial convention, including subtraction of complete overrides from the financial pool, and company substitution after ordinary-source overrides, and documented the legacy pension-proxy limitation. Complete overrides consume their owners' disregarded company holdings once. Override floors and separate holding deductions share one household corporate-wealth budget proportionally, preventing inconsistent holdings from consuming ordinary savings. Bounded each holding before that budget to isolate negative and infinite inputs from other units' capital.
+
+
+## [2.136.0] - 2026-10-18
+
+### Added
+
+- - Added an aggregate-impact report (`python -m policyengine_uk.utils.aggregate_impact`) that measures a model checkout on the pinned certified dataset and compares base with head: receipts by tax head, spending and caseloads, poverty, inequality, deciles and the standard reform costings over 2025-26 to 2031-32, with accounting identities and a counted-once check against a reviewed fiscal partition (`policyengine_uk/data/fiscal_partition.yaml`).
+
+### Changed
+
+- - Microsimulation tests now run on the certified uk-data 1.58.1 dataset, pinned by commit and SHA-256, and fail instead of skipping when `POLICYENGINE_UK_REQUIRE_TEST_DATA` is set and the data is unavailable; the reform-cost fixtures are rebased onto it, keeping their earlier values as receipts.
+
+
+## [2.135.7] - 2026-10-18
+
+### Changed
+
+- Split the undated VAT grossing factor `gov.simulation.microdata_vat_coverage` (0.38) into two documented factors: `gov.simulation.vat.household_share_of_receipts` (0.7, HMRC's share of VAT liabilities on household consumption) and `gov.simulation.vat.survey_consumption_coverage` (0.67, derived on Microcosm UK 2024-25 against OBR VAT receipts). Total VAT on that dataset now matches 2024-25 receipts instead of overshooting by 24%. `microdata_vat_coverage` is kept as a deprecated parameter equal to their product (0.469); a reform that sets it to another value still takes effect.
+
+### Fixed
+
+- - Add `war_widows_pension_reported` (CPI-uprated) and `war_widows_pension`, counted wherever `bsp` is, so datasets can move FRS benefit code 9 (War Widow's or Widower's Pension) out of `bsp_reported`. Bereavement Support Payment rates have been frozen since April 2017, but `bsp_reported` is about 90% war widow's pension in FRS 2024-25, so it keeps CPI uprating until the datasets split the two (#2381). Results are unchanged for existing datasets.
+
+
 ## [2.135.6] - 2026-10-17
 
 ### Fixed
