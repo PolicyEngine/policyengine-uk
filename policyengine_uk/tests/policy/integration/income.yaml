@@ -100,8 +100,13 @@
       members: [person1, person2]
   output:
     property_income_tax: [17_792, 6_776.20]
-    savings_income_tax: [0, 0]
-    income_tax: [17_792, 6_776.20]
+    # Savings sit above the property income (ITA 2007 s. 16). Person 1:
+    # 75,900 - 12,570 = 63,330 of non-savings taxable income, so a higher-
+    # rate taxpayer with a £500 savings allowance and no starting rate:
+    # (2,900 - 500) x 40% = 960. Person 2: 46,451 - 12,570 = 33,881, a
+    # basic-rate taxpayer with £1,000: (1,525 - 1,000) x 20% = 105.
+    savings_income_tax: [960, 105]
+    income_tax: [18_752, 6_881.20]
 
 - name: Household net income can be negative
   period: 2020

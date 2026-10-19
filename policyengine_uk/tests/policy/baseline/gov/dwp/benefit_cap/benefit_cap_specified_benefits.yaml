@@ -1,0 +1,1687 @@
+# Benefit cap exceptions for receipt of specified benefits.
+#
+# HB Regs 2006 (SI 2006/213) reg 75F(1): "The benefit cap does not apply
+# where— (a) the claimant or the claimant's partner is receiving an
+# employment and support allowance under Part 1 of the Welfare Reform Act
+# which includes a support component; (b) the claimant or the claimant's
+# partner is receiving an industrial injuries benefit ...; (c) ... an
+# attendance allowance; ... (d) ... a war pension; (e) the claimant, the
+# claimant's partner or a child or young person for whom the claimant or the
+# claimant's partner is responsible, is receiving a disability living
+# allowance; ... (ea) the claimant, the claimant's partner or a young person
+# for whom the claimant or the claimant's partner is responsible, is
+# receiving a personal independence payment, adult disability payment or an
+# armed forces independence payment ...; ... (h) the claimant, the claimant's
+# partner, or a young person for whom the claimant or the claimant's partner
+# is responsible, is entitled to a carer's allowance ...; (ha) ... carer
+# support payment". Reg 75F(2)(a): a war pension includes "a guaranteed
+# income payment".
+#
+# UC Regs 2013 (SI 2013/376) reg 83(1) refers to "a claimant" and adds
+# "the LCWRA element is included in the award" (a) and "the carer element
+# is included in the award of universal credit" (j). HB reg 75F lists
+# specified benefits, without exceptions for those UC elements. Each
+# scheme has its own cap and exemptions; common cases assert both.
+#
+# DLA: UC reg 83(1)(f) includes "a child or qualifying young person";
+# HB reg 75F(1)(e) includes "a child or young person". PIP, CA and CSP:
+# UC reg 83(1)(g), (i), (ia) includes "a qualifying young person"; HB reg
+# 75F(1)(ea), (h), (ha) includes "a young person". Their definitions are
+# UC regs 4-5 and HB regs 2(1), 19 respectively.
+#
+# 2025-26 caps (UC reg 80A(2); HB reg 75CA): single outside London 14,753;
+# couple or family outside London 22,020. Each family lives in the North
+# East. Benefit amounts are set directly, so the expected values follow from
+# the cap arithmetic alone: UC reg 81 deducts the excess less the childcare
+# element from a UC award; HB reg 75D deducts the excess from HB, leaving
+# at least 50p a week. The shared reduction is the two schemes' sum.
+# Where neither scheme has an award, both reductions and their sum are 0.
+#
+# A "non-dependent adult" below is a benefit-unit member aged 30 (50 in the
+# attendance allowance case) who is neither the claimant, the partner, nor a
+# child or young person they are responsible for. Their own benefits and
+# circumstances never lift either scheme's specified-benefit exception, and
+# nor do their age or earnings: Housing Benefit's age exception reads the
+# claimant and partner (its pension-age regulations, HB Regs 2006 reg 5),
+# Universal Credit's the claimants (SI 2014/1230 reg 60C), and the earnings
+# exception the claimants (UC Regs 2013 reg 82(1)(a)).
+
+# --- ESA with the support component: HB reg 75F(1)(a), UC reg 83(1)(a) ---
+
+- name: Claimant's contributory ESA with the support component lifts the cap
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_contrib_reported: 7_000
+        esa_includes_support_component: true
+    benunits:
+      family:
+        members: [claimant]
+        universal_credit_pre_benefit_cap: 18_000
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: true
+    is_uc_benefit_cap_exempt: true
+    is_housing_benefit_benefit_cap_exempt: true
+    benefit_cap_reduction: 0
+    universal_credit: 18_000
+
+- name: Claimant's contributory ESA without the support component does not lift the cap
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_contrib_reported: 7_000
+        esa_includes_support_component: false
+    benunits:
+      family:
+        members: [claimant]
+        universal_credit_pre_benefit_cap: 18_000
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+    is_uc_benefit_cap_exempt: false
+    is_housing_benefit_benefit_cap_exempt: false
+    uc_benefit_cap: 14_753
+    # 18,000 UC + 7,000 ESA - 14,753 = 10,247
+    benefit_cap_reduction: 10_247
+    # 18,000 - 10,247
+    universal_credit: 7_753
+
+- name: Claimant's income-related ESA with the support component lifts the Housing Benefit cap
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 6_000
+        esa_includes_support_component: true
+    benunits:
+      family:
+        members: [claimant]
+        would_claim_uc: false
+        would_claim_housing_benefit: true
+        housing_benefit_pre_benefit_cap: 9_000
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    esa_income: 6_000
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: true
+    benefit_cap_reduction: 0
+    housing_benefit: 9_000
+
+- name: Claimant's income-related ESA without the support component does not lift the Housing Benefit cap
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 6_000
+        esa_includes_support_component: false
+    benunits:
+      family:
+        members: [claimant]
+        would_claim_uc: false
+        would_claim_housing_benefit: true
+        housing_benefit_pre_benefit_cap: 9_000
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    esa_income: 6_000
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+    housing_benefit_benefit_cap: 14_753
+    # 9,000 HB + 6,000 ESA - 14,753 = 247 (HB reg 75D(1))
+    benefit_cap_reduction: 247
+    housing_benefit: 8_753
+
+- name: Partner's contributory ESA with the support component lifts the couple's cap
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      partner:
+        age: 38
+        is_claimant_or_partner: true
+        esa_contrib_reported: 7_000
+        esa_includes_support_component: true
+    benunits:
+      family:
+        members: [claimant, partner]
+        universal_credit_pre_benefit_cap: 18_000
+    households:
+      home:
+        members: [claimant, partner]
+        region: NORTH_EAST
+  output:
+    is_couple: true
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: true
+    benefit_cap_reduction: 0
+
+- name: Partner's contributory ESA without the support component leaves the couple capped
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      partner:
+        age: 38
+        is_claimant_or_partner: true
+        esa_contrib_reported: 7_000
+        esa_includes_support_component: false
+    benunits:
+      family:
+        members: [claimant, partner]
+        universal_credit_pre_benefit_cap: 18_000
+    households:
+      home:
+        members: [claimant, partner]
+        region: NORTH_EAST
+  output:
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+    uc_benefit_cap: 22_020
+    # 18,000 + 7,000 - 22,020 = 2,980
+    benefit_cap_reduction: 2_980
+
+- name: A non-dependent adult's ESA with the support component does not lift the cap
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      adult:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_contrib_reported: 7_000
+        esa_includes_support_component: true
+    benunits:
+      family:
+        members: [claimant, adult]
+        universal_credit_pre_benefit_cap: 18_000
+    households:
+      home:
+        members: [claimant, adult]
+        region: NORTH_EAST
+  output:
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+    housing_benefit_pension_age_regulations_apply: false
+    is_uc_benefit_cap_exempt: false
+    is_housing_benefit_benefit_cap_exempt: false
+    uc_benefit_cap: 14_753
+    # Their 7,000 is theirs, not in the family's capped total:
+    # 18,000 - 14,753.
+    benefit_cap_reduction: 3_247
+    universal_credit: 14_753
+
+- name: Income-related ESA that the capital test stops is not received, so it does not lift the cap
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 6_000
+        esa_includes_support_component: true
+        # Isolate the ESA head. Universal Credit would still give this person
+        # limited capability for work-related activity from the ESA
+        # assessment (UC Regs 2013 reg 40(1)(a)(ii)), which could lift the UC
+        # cap under reg 83(1)(a). HB reg 75F has no LCWRA-element exception.
+        uc_limited_capability_for_WRA: false
+    benunits:
+      family:
+        members: [claimant]
+        would_claim_uc: false
+        esa_income_eligible: false
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    esa_income: 0
+    is_on_income_related_esa: false
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+
+- name: With no support-component input, a person's own contributory ESA is taken to include it
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_contrib_reported: 7_000
+    benunits:
+      family:
+        members: [claimant]
+        universal_credit_pre_benefit_cap: 18_000
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    esa_includes_support_component: true
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: true
+    benefit_cap_reduction: 0
+
+- name: A person without ESA has no support component
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+    benunits:
+      family:
+        members: [claimant]
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    esa_includes_support_component: false
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+
+- name: An income-related award entered for the family is the claimant's, with the support component
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+    benunits:
+      family:
+        members: [claimant]
+        esa_income: 6_000
+        would_claim_uc: false
+        would_claim_housing_benefit: true
+        housing_benefit_pre_benefit_cap: 9_000
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    is_on_income_related_esa: true
+    esa_includes_support_component: true
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: true
+    housing_benefit: 9_000
+
+- name: A partner who reports the couple's income-related ESA has the support component
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      partner:
+        age: 38
+        is_claimant_or_partner: true
+        esa_income_reported: 6_000
+    benunits:
+      family:
+        members: [claimant, partner]
+        would_claim_uc: false
+    households:
+      home:
+        members: [claimant, partner]
+        region: NORTH_EAST
+  output:
+    # The award is the partner's, payable to them (HB Regs 2006 reg 2(3A));
+    # the claimant has no allowance of their own (WRA 2007 s.4(4)(b): "the
+    # claimant has limited capability for work-related activity" refers to
+    # the person whose allowance it is).
+    is_on_income_related_esa: [false, true]
+    esa_includes_support_component: [false, true]
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: true
+
+- name: An ESA recipient without the support component has no LCWRA, whatever their disability flag
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_contrib_reported: 7_000
+        esa_includes_support_component: false
+        is_disabled_for_benefits: true
+    benunits:
+      family:
+        members: [claimant]
+        universal_credit_pre_benefit_cap: 18_000
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    # UC Regs 2013 reg 40(1)(a)(ii): Universal Credit takes the ESA work
+    # capability determination, which found limited capability for work only.
+    uc_limited_capability_for_WRA: false
+    uc_LCWRA_element: 0
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+    # 18,000 + 7,000 - 14,753
+    benefit_cap_reduction: 10_247
+
+- name: An ESA recipient with the support component and the disability flag has LCWRA
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_contrib_reported: 7_000
+        esa_includes_support_component: true
+        is_disabled_for_benefits: true
+    benunits:
+      family:
+        members: [claimant]
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    uc_limited_capability_for_WRA: true
+    # 2025-26 LCWRA element: 423.27 a month x 12
+    uc_LCWRA_element: 5_079.24
+
+- name: The support component alone does not give LCWRA (it is only ever inferred away)
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_contrib_reported: 7_000
+        esa_includes_support_component: true
+        is_disabled_for_benefits: false
+    benunits:
+      family:
+        members: [claimant]
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    uc_limited_capability_for_WRA: false
+    # The ESA head still lifts the cap.
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: true
+- name: An ESA recipient without the support component, flagged disabled, keeps limited capability for work
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_contrib_reported: 7_000
+        esa_includes_support_component: false
+        is_disabled_for_benefits: true
+    benunits:
+      family:
+        members: [claimant]
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    # The ESA award removes limited capability for work-related activity
+    # (no support component) but not for work, which keeps the work allowance
+    # (UC Regs 2013 regs 22(1)(b), 39(1)(a)).
+    uc_limited_capability_for_WRA: false
+    uc_limited_capability_for_work: true
+    is_uc_work_allowance_eligible: true
+
+- name: A 17-year-old ESA recipient without the support component, flagged disabled, meets the reduced UC minimum age
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 17
+        is_benunit_head: true
+        esa_contrib_reported: 3_000
+        esa_includes_support_component: false
+        is_disabled_for_benefits: true
+    benunits:
+      family:
+        members: [claimant]
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    # UC Regs 2013 reg 8(1)(a): limited capability for work.
+    uc_limited_capability_for_WRA: false
+    uc_limited_capability_for_work: true
+    meets_uc_minimum_age_condition: true
+- name: An income-related award entered for a single claimant is theirs, with the support component
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_disabled_for_benefits: true
+    benunits:
+      family:
+        members: [claimant]
+        esa_income: 6_000
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    has_own_esa_award: true
+    esa_includes_support_component: true
+    uc_limited_capability_for_WRA: true
+    # 2025-26 LCWRA element: 423.27 a month x 12
+    uc_LCWRA_element: 5_079.24
+- name: An income-related award entered for a single claimant without the support component gives no LCWRA
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_includes_support_component: false
+        is_disabled_for_benefits: true
+    benunits:
+      family:
+        members: [claimant]
+        esa_income: 6_000
+        would_claim_uc: false
+        would_claim_housing_benefit: true
+        housing_benefit_pre_benefit_cap: 9_000
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    uc_limited_capability_for_WRA: false
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+    # 9,000 + 6,000 - 14,753
+    benefit_cap_reduction: 247
+
+- name: An income-related award entered for a couple is the award of the claimant who heads the family
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 38
+        is_claimant_or_partner: true
+        is_benunit_head: true
+      partner:
+        age: 40
+        is_claimant_or_partner: true
+        is_benunit_head: false
+    benunits:
+      family:
+        members: [claimant, partner]
+        esa_income: 6_000
+        would_claim_uc: false
+    households:
+      home:
+        members: [claimant, partner]
+        region: NORTH_EAST
+  output:
+    # Payable to the claimant who heads the family (HB Regs 2006 reg 2(3A)).
+    is_on_income_related_esa: [true, false]
+    has_own_esa_award: [true, false]
+    esa_includes_support_component: [true, false]
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: true
+
+- name: Without ESA, LCWRA still follows the disability flag
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_disabled_for_benefits: true
+    benunits:
+      family:
+        members: [claimant]
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    uc_limited_capability_for_WRA: true
+
+- name: LCWRA entered as false leaves limited capability for work to the disability flag
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 6_000
+        is_disabled_for_benefits: true
+        uc_limited_capability_for_WRA: false
+    benunits:
+      family:
+        members: [claimant]
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+        rent: 9_000
+  output:
+    # uc_limited_capability_for_work is LCWRA or the disability flag, so an
+    # entry of false for LCWRA alone does not remove it. This is wider than
+    # before uc_limited_capability_for_work existed, when the work allowance
+    # read LCWRA (work allowance 0, UC 7,381.68) and this claimant was subject
+    # to all work-related requirements.
+    uc_limited_capability_for_WRA: false
+    uc_limited_capability_for_work: true
+    uc_LCWRA_element: 0
+    is_uc_work_allowance_eligible: true
+    # 2025-26 lower work allowance (with a housing costs element): 411 x 12
+    uc_work_allowance: 4_932
+    # Welfare Reform Act 2012 s.21(1)(a)
+    uc_work_related_group_apart_from_earnings: WORK_PREPARATION
+    # Standard allowance 400.14 x 12 = 4,801.68, plus housing costs 5,880,
+    # less 55% of earnings above the work allowance (no income tax or
+    # National Insurance on 6,000): 10,681.68 - 0.55 x (6,000 - 4,932)
+    uc_housing_costs_element: 5_880
+    universal_credit: 10_094.28
+
+# --- Claimant or partner only: HB reg 75F(1)(b)-(d), UC reg 83(1)(b)-(e) ---
+
+- name: Partner's industrial injuries benefit lifts the cap
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      partner:
+        age: 38
+        is_claimant_or_partner: true
+        iidb_reported: 3_000
+    benunits:
+      family:
+        members: [claimant, partner]
+    households:
+      home:
+        members: [claimant, partner]
+        region: NORTH_EAST
+  output:
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: true
+
+- name: A young person's industrial injuries benefit does not lift the cap
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+        iidb_reported: 3_000
+    benunits:
+      family:
+        members: [parent, young_person]
+    households:
+      home:
+        members: [parent, young_person]
+        region: NORTH_EAST
+  output:
+    is_child_or_young_person_for_legacy_benefits: [false, true]
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+
+- name: A non-dependent adult's industrial injuries benefit does not lift the cap
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      adult:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        iidb_reported: 3_000
+    benunits:
+      family:
+        members: [claimant, adult]
+    households:
+      home:
+        members: [claimant, adult]
+        region: NORTH_EAST
+  output:
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+
+- name: Claimant's attendance allowance lifts the cap
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 50
+        attendance_allowance: 4_000
+    benunits:
+      family:
+        members: [claimant]
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: true
+
+- name: A non-dependent adult's attendance allowance does not lift the cap
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      adult:
+        age: 50
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        attendance_allowance: 4_000
+    benunits:
+      family:
+        members: [claimant, adult]
+    households:
+      home:
+        members: [claimant, adult]
+        region: NORTH_EAST
+  output:
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+
+- name: Claimant's armed forces compensation payment lifts the cap
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        afcs_reported: 6_000
+    benunits:
+      family:
+        members: [claimant]
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: true
+
+- name: A non-dependent adult's armed forces compensation payment does not lift the cap
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      adult:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        afcs_reported: 6_000
+    benunits:
+      family:
+        members: [claimant, adult]
+    households:
+      home:
+        members: [claimant, adult]
+        region: NORTH_EAST
+  output:
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+    housing_benefit_pension_age_regulations_apply: false
+    is_uc_benefit_cap_exempt: false
+    is_housing_benefit_benefit_cap_exempt: false
+
+# --- Disability living allowance: HB reg 75F(1)(e), UC reg 83(1)(f) ---
+
+- name: A child's DLA lifts the cap
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 35
+        is_parent: true
+      child:
+        age: 10
+        dla: 4_000
+    benunits:
+      family:
+        members: [parent, child]
+    households:
+      home:
+        members: [parent, child]
+        region: NORTH_EAST
+  output:
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: true
+
+- name: A young person's DLA lifts the cap
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+        dla: 4_000
+    benunits:
+      family:
+        members: [parent, young_person]
+    households:
+      home:
+        members: [parent, young_person]
+        region: NORTH_EAST
+  output:
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: true
+
+- name: A 16-year-old's DLA lifts the cap whatever their education (UC reg 5(1)(a))
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+      sixteen:
+        age: 16
+        current_education: NOT_IN_EDUCATION
+        dla: 4_000
+    benunits:
+      family:
+        members: [parent, sixteen]
+    households:
+      home:
+        members: [parent, sixteen]
+        region: NORTH_EAST
+  output:
+    is_child_or_young_person_for_legacy_benefits: [false, false]
+    # UC reg 5(1)(a): "up to, but not including, the 1st September following
+    # their 16th birthday". Annual ages count the 16-year-old for the year.
+    # HB reg 19(1) requires a Child Benefit "qualifying young person";
+    # this person is outside education and is not one in the model.
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+
+- name: A 19-year-old outside education is not a young person, so their DLA does not lift the cap
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+      adult_child:
+        age: 19
+        current_education: NOT_IN_EDUCATION
+        dla: 4_000
+    benunits:
+      family:
+        members: [parent, adult_child]
+    households:
+      home:
+        members: [parent, adult_child]
+        region: NORTH_EAST
+  output:
+    is_claimant_or_partner: [true, false]
+    is_child_or_young_person_for_legacy_benefits: [false, false]
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+
+- name: A looked-after child's DLA does not lift the cap
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 35
+      child:
+        age: 10
+        is_looked_after_by_local_authority: true
+        dla: 4_000
+    benunits:
+      family:
+        members: [claimant, child]
+    households:
+      home:
+        members: [claimant, child]
+        region: NORTH_EAST
+  output:
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+
+- name: A non-dependent adult's DLA does not lift the cap
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      adult:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        dla: 4_000
+    benunits:
+      family:
+        members: [claimant, adult]
+        universal_credit_pre_benefit_cap: 18_000
+    households:
+      home:
+        members: [claimant, adult]
+        region: NORTH_EAST
+  output:
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+    is_uc_benefit_cap_exempt: false
+    is_housing_benefit_benefit_cap_exempt: false
+    uc_benefit_cap: 14_753
+    # 18,000 - 14,753
+    benefit_cap_reduction: 3_247
+
+# --- PIP, AFIP, Carer's Allowance, Carer Support Payment: claimant, partner
+# or a young person (HB reg 75F(1)(ea), (h), (ha); UC reg 83(1)(g), (i), (ia)) ---
+
+- name: A young person's PIP lifts the cap
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+        pip_dl: 5_000
+    benunits:
+      family:
+        members: [parent, young_person]
+    households:
+      home:
+        members: [parent, young_person]
+        region: NORTH_EAST
+  output:
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: true
+
+- name: Claimant's PIP lifts the cap
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        pip_dl: 5_000
+    benunits:
+      family:
+        members: [claimant]
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: true
+
+- name: A non-dependent adult's PIP does not lift the cap
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      adult:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        pip_dl: 5_000
+    benunits:
+      family:
+        members: [claimant, adult]
+    households:
+      home:
+        members: [claimant, adult]
+        region: NORTH_EAST
+  output:
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+
+- name: Claimant's armed forces independence payment lifts the cap
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        armed_forces_independence_payment: 8_000
+    benunits:
+      family:
+        members: [claimant]
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: true
+
+- name: A non-dependent adult's armed forces independence payment does not lift the cap
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      adult:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        armed_forces_independence_payment: 8_000
+    benunits:
+      family:
+        members: [claimant, adult]
+    households:
+      home:
+        members: [claimant, adult]
+        region: NORTH_EAST
+  output:
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+
+- name: A young person's Carer's Allowance lifts the cap
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+        carers_allowance: 4_000
+    benunits:
+      family:
+        members: [parent, young_person]
+    households:
+      home:
+        members: [parent, young_person]
+        region: NORTH_EAST
+  output:
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: true
+
+- name: A young person's Carer Support Payment lifts the cap
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+        carer_support_payment: 4_000
+    benunits:
+      family:
+        members: [parent, young_person]
+    households:
+      home:
+        members: [parent, young_person]
+        country: SCOTLAND
+        region: SCOTLAND
+  output:
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: true
+
+- name: A non-dependent adult's Carer's Allowance and caring do not lift the cap
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      adult:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        carers_allowance: 4_000
+        care_hours: 40
+    benunits:
+      family:
+        members: [claimant, adult]
+    households:
+      home:
+        members: [claimant, adult]
+        region: NORTH_EAST
+  output:
+    is_carer_for_benefits: [false, true]
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+
+- name: A young person's armed forces independence payment lifts the cap (HB reg 75F(1)(ea))
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+        armed_forces_independence_payment: 8_000
+    benunits:
+      family:
+        members: [parent, young_person]
+    households:
+      home:
+        members: [parent, young_person]
+        region: NORTH_EAST
+  output:
+    # UC reg 83(1)(c): "a claimant is receiving attendance allowance";
+    # reg 2 includes AFIP in attendance allowance, so this young person
+    # does not lift the UC cap. HB reg 75F(1)(ea) includes "a young person"
+    # receiving "an armed forces independence payment".
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: true
+
+- name: A 16-year-old out of education with armed forces independence payment does not lift the cap
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+      sixteen:
+        age: 16
+        current_education: NOT_IN_EDUCATION
+        armed_forces_independence_payment: 8_000
+    benunits:
+      family:
+        members: [parent, sixteen]
+    households:
+      home:
+        members: [parent, sixteen]
+        region: NORTH_EAST
+  output:
+    # Not a Housing Benefit young person (not in education), and Universal
+    # Credit counts the payment for a claimant only (UC Regs 2013 reg 2).
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+
+- name: A 16-year-old receiving benefits in their own right is not a young person, so their DLA does not lift the cap
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+      sixteen:
+        age: 16
+        current_education: NOT_IN_EDUCATION
+        receives_benefits_in_own_right: true
+        dla: 4_000
+    benunits:
+      family:
+        members: [parent, sixteen]
+    households:
+      home:
+        members: [parent, sixteen]
+        region: NORTH_EAST
+  output:
+    # UC Regs 2013 reg 5(5); HB Regs 2006 reg 19(2).
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+
+# --- UC LCWRA and carer elements: UC reg 83(1)(a), (j); regs 27(1), 29(1) ---
+
+- name: Claimant's limited capability for work-related activity lifts the cap
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        uc_limited_capability_for_WRA: true
+    benunits:
+      family:
+        members: [claimant]
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    # UC reg 83(1)(a): "the LCWRA element is included in the award".
+    # HB reg 75F(1) lists specified benefits, without a UC LCWRA element.
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+
+- name: A non-dependent adult's limited capability for work-related activity does not lift the cap
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      adult:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        uc_limited_capability_for_WRA: true
+    benunits:
+      family:
+        members: [claimant, adult]
+    households:
+      home:
+        members: [claimant, adult]
+        region: NORTH_EAST
+  output:
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+
+- name: A disabled child's limited capability does not lift the cap without DLA
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 35
+        is_parent: true
+      child:
+        age: 10
+        uc_limited_capability_for_WRA: true
+    benunits:
+      family:
+        members: [parent, child]
+    households:
+      home:
+        members: [parent, child]
+        region: NORTH_EAST
+  output:
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+
+- name: A claimant caring 40 hours a week lifts the cap through the UC carer element
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        care_hours: 40
+        would_claim_carers_allowance: false
+    benunits:
+      family:
+        members: [claimant]
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    carers_allowance: 0
+    is_carer_for_benefits: true
+    # UC reg 83(1)(j): "the carer element is included in the award of
+    # universal credit". HB reg 75F has no UC-carer-element exception.
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+
+- name: A non-dependent adult with every exempting benefit and circumstance does not lift the cap
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      adult:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_contrib_reported: 7_000
+        esa_income_reported: 2_000
+        esa_includes_support_component: true
+        iidb_reported: 3_000
+        attendance_allowance: 4_000
+        afcs_reported: 6_000
+        dla: 4_000
+        pip_dl: 5_000
+        armed_forces_independence_payment: 8_000
+        carers_allowance: 4_000
+        carer_support_payment: 4_000
+        care_hours: 40
+        uc_limited_capability_for_WRA: true
+    benunits:
+      family:
+        members: [claimant, adult]
+    households:
+      home:
+        members: [claimant, adult]
+        region: NORTH_EAST
+  output:
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+    housing_benefit_pension_age_regulations_apply: false
+    is_uc_benefit_cap_exempt: false
+    is_housing_benefit_benefit_cap_exempt: false
+    uc_benefit_cap: 14_753
+    housing_benefit_benefit_cap: 14_753
+
+- name: A carer element entered for the award lifts the cap (UC reg 83(1)(j))
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+    benunits:
+      family:
+        members: [claimant]
+        uc_carer_element: 2_417.52
+        universal_credit_pre_benefit_cap: 18_000
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    # UC reg 83(1)(j): "the carer element is included in the award of
+    # universal credit". HB reg 75F has no UC-carer-element exception.
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+    benefit_cap_reduction: 0
+
+- name: An LCWRA element entered for the award lifts the cap (UC reg 83(1)(a))
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+    benunits:
+      family:
+        members: [claimant]
+        uc_LCWRA_element: 5_079.24
+        universal_credit_pre_benefit_cap: 18_000
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    # UC reg 83(1)(a): "the LCWRA element is included in the award".
+    # HB reg 75F(1) lists specified benefits, without a UC LCWRA element.
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+    benefit_cap_reduction: 0
+
+- name: An LCWRA element entered for the award lifts the cap whatever a non-dependant's limited capability
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        uc_limited_capability_for_WRA: false
+      adult:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        uc_limited_capability_for_WRA: true
+    benunits:
+      family:
+        members: [claimant, adult]
+        uc_LCWRA_element: 5_079.24
+        universal_credit_pre_benefit_cap: 18_000
+    households:
+      home:
+        members: [claimant, adult]
+        region: NORTH_EAST
+  output:
+    # The award includes the element (reg 83(1)(a)); who else in the benefit
+    # unit has limited capability does not matter.
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+    benefit_cap_reduction: 0
+
+- name: A carer element entered for the award lifts the cap whatever a non-dependant's caring
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      adult:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        care_hours: 35
+    benunits:
+      family:
+        members: [claimant, adult]
+        uc_carer_element: 2_417.52
+        universal_credit_pre_benefit_cap: 18_000
+    households:
+      home:
+        members: [claimant, adult]
+        region: NORTH_EAST
+  output:
+    # Reg 83(1)(j): the award includes the carer element.
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+    benefit_cap_reduction: 0
+
+- name: An LCWRA element entered as nil means the award does not include it, though the claimant has limited capability
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        uc_limited_capability_for_WRA: true
+    benunits:
+      family:
+        members: [claimant]
+        uc_LCWRA_element: 0
+        universal_credit_pre_benefit_cap: 18_000
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    # Reg 83(1)(a) asks whether the element is included in the award (for
+    # example, not during the reg 28 waiting period). 18,000 - 14,753.
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+    benefit_cap_reduction: 3_247
+
+- name: A non-dependant's limited capability does not lift the cap when no element is entered
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        uc_limited_capability_for_WRA: false
+      adult:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        uc_limited_capability_for_WRA: true
+    benunits:
+      family:
+        members: [claimant, adult]
+        universal_credit_pre_benefit_cap: 18_000
+    households:
+      home:
+        members: [claimant, adult]
+        region: NORTH_EAST
+  output:
+    # No claimant has limited capability (reg 27(1)), so the element the
+    # model calculates from the adult's flag is not a claimant's: 18,000 -
+    # 14,753.
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+    benefit_cap_reduction: 3_247
+
+- name: From 2026 too, a non-dependant's limited capability does not lift the cap when no element is entered
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        uc_limited_capability_for_WRA: false
+      adult:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        uc_limited_capability_for_WRA: true
+    benunits:
+      family:
+        members: [claimant, adult]
+        universal_credit_pre_benefit_cap: 18_000
+    households:
+      home:
+        members: [claimant, adult]
+        region: NORTH_EAST
+  output:
+    # The Universal Credit rebalancing rescales the element the model
+    # calculates from the adult's flag (scenarios/uc_reform.py); it is still
+    # not a claimant's element (reg 27(1)). 18,000 - 14,753.
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+    benefit_cap_reduction: 3_247
+
+- name: From 2026 too, an LCWRA element entered for the award lifts the cap whatever a non-dependant's limited capability
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        uc_limited_capability_for_WRA: false
+      adult:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        uc_limited_capability_for_WRA: true
+    benunits:
+      family:
+        members: [claimant, adult]
+        uc_LCWRA_element: 5_157.60
+        universal_credit_pre_benefit_cap: 18_000
+    households:
+      home:
+        members: [claimant, adult]
+        region: NORTH_EAST
+  output:
+    # The rebalancing may rescale an entered element, but it stays the
+    # award's (reg 83(1)(a)).
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+    benefit_cap_reduction: 0
+
+- name: A carer element the family's entered carer flag gives lifts the cap, though no member is flagged
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+    benunits:
+      family:
+        members: [claimant]
+        benunit_has_carer: true
+        universal_credit_pre_benefit_cap: 18_000
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    # The award includes the carer element (reg 83(1)(j)), and no member who
+    # is not a claimant has caring responsibilities to give it instead.
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+    benefit_cap_reduction: 0
+
+- name: A nil carer element is not included in the award, though the claimant cares
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_carer_for_benefits: true
+    benunits:
+      family:
+        members: [claimant]
+        benunit_has_carer: false
+        universal_credit_pre_benefit_cap: 18_000
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    # Reg 83(1)(j) asks whether the award includes the element; the
+    # family's entered flag gives none. 18,000 - 14,753.
+    uc_carer_element: 0
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+    benefit_cap_reduction: 3_247
+
+# --- Working tax credit: HB reg 75E(2) ---
+
+- name: The family's working tax credit lifts the cap
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+    benunits:
+      family:
+        members: [claimant]
+        working_tax_credit: 1_000
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    # HB reg 75E(2): "the claimant is, or the claimant and the claimant's
+    # partner are jointly, entitled to working tax credit". WTC is outside
+    # HB reg 75F and UC reg 83, and lifts only the HB cap through reg 75E.
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+    is_housing_benefit_benefit_cap_exempt_working_tax_credit: true
+    is_uc_benefit_cap_exempt: false
+    is_housing_benefit_benefit_cap_exempt: true
+
+# --- UC earnings (reg 82) and HB pension-age regulations (reg 5) ---
+
+- name: Earnings of 20,000 a year meet the model's earnings exception
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        employment_income: 20_000
+    benunits:
+      family:
+        members: [claimant]
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    # Income tax (20,000 - 12,570) x 20% = 1,486; NI (20,000 - 12,570) x 8%
+    # = 594.40; 20,000 - 1,486 - 594.40 = 17,919.60 >= 10,152.
+    is_uc_benefit_cap_exempt_earnings: true
+
+- name: Earnings of 9,000 a year do not meet the model's earnings exception
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        employment_income: 9_000
+    benunits:
+      family:
+        members: [claimant]
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    # Below the personal allowance and primary threshold: 9,000 < 10,152.
+    is_uc_benefit_cap_exempt_earnings: false
+
+- name: A claimant over the qualifying age for State Pension Credit and off Universal Credit is outside the cap (HB pension-age regulations)
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 70
+    benunits:
+      family:
+        members: [claimant]
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    # HB reg 5(3): "these Regulations shall not apply ... if he ... has
+    # attained the qualifying age for state pension credit" (subject to
+    # reg 5(1)(b)); the pension-age regulations contain no benefit cap.
+    # Universal Credit's cap has no age exception for a claimant (UC reg
+    # 79(1) names only the exceptions "in regulation 82 ... or 83"), but SI
+    # 2014/1230 reg 60C disapplies it where every claimant has reached the
+    # qualifying age.
+    housing_benefit_pension_age_regulations_apply: true
+    is_uc_benefit_cap_exempt_qualifying_age: true
+    is_uc_benefit_cap_exempt: true
+    is_housing_benefit_benefit_cap_exempt: true
+
+- name: A non-dependent adult over State Pension age does not lift the cap
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      adult:
+        age: 70
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members: [claimant, adult]
+        universal_credit_pre_benefit_cap: 18_000
+    households:
+      home:
+        members: [claimant, adult]
+        region: NORTH_EAST
+  output:
+    # Housing Benefit's pension-age regulations read the claimant and
+    # partner (HB Regs 2006 reg 5), and SI 2014/1230 reg 60C the claimants;
+    # Universal Credit has no other age exception. 18,000 - 14,753.
+    housing_benefit_pension_age_regulations_apply: false
+    is_uc_benefit_cap_exempt_qualifying_age: false
+    is_uc_benefit_cap_exempt: false
+    is_housing_benefit_benefit_cap_exempt: false
+    benefit_cap_reduction: 3_247
+
+- name: A non-dependent adult's earnings do not meet the earnings exception
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      adult:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        employment_income: 20_000
+    benunits:
+      family:
+        members: [claimant, adult]
+        universal_credit_pre_benefit_cap: 18_000
+    households:
+      home:
+        members: [claimant, adult]
+        region: NORTH_EAST
+  output:
+    # UC Regs 2013 reg 82(1)(a) reads the claimant's earned income. 18,000 -
+    # 14,753.
+    is_uc_benefit_cap_exempt_earnings: false
+    is_uc_benefit_cap_exempt: false
+    is_housing_benefit_benefit_cap_exempt: false
+    benefit_cap_reduction: 3_247
