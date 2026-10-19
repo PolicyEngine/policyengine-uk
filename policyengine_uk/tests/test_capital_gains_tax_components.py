@@ -350,8 +350,9 @@ class TestExemptionAllocation:
     """The annual exempt amount goes where it saves most (TCGA 1992 s. 1K(5)).
 
     Gains stack on taxable income, so a schedule's top gains can be at its
-    additional rate. The order of the exemption is set for each person from
-    the rate their top gains are actually charged at.
+    additional rate. The exemption is set for each person, pound by pound,
+    against the gains where it saves most, so it moves to another schedule
+    once a schedule's gains fall to a lower rate.
     """
 
     YEAR = 2025
@@ -392,6 +393,36 @@ class TestExemptionAllocation:
         # it first, so none reach the 45% rate and every gain is at 24%:
         # 47,000 x 0.24, wherever the exemption goes.
         assert tax[1] == pytest.approx(11_280)
+
+    def test_exemption_moves_on_when_the_marginal_rate_falls(self):
+        sim = Microsimulation(
+            situation={
+                "people": {
+                    "person": {
+                        "age": {self.YEAR: 45},
+                        "employment_income": {self.YEAR: 124_000},
+                        "capital_gains": {self.YEAR: 27_000},
+                        "capital_gains_carried_interest": {self.YEAR: 25_000},
+                    }
+                },
+                "benunits": {"benunit": {"members": ["person"]}},
+                "households": {
+                    "household": {
+                        "members": ["person"],
+                        "region": {self.YEAR: "LONDON"},
+                    }
+                },
+            },
+            scenario=Scenario(parameter_changes=self.ADDITIONAL_RATE_ONLY),
+        )
+        tax = sim.calculate("capital_gains_tax", self.YEAR).values
+
+        # Taxable income 123,430 leaves 1,710 of higher band, so 290 of the
+        # 2,000 main gains are at 45% and the rest at 24%; carried interest
+        # is at 32%. The exemption takes the 290 at 45%, then 2,710 of
+        # carried interest: 1,710 x 0.24 + 22,290 x 0.32 = 7,543.20, not
+        # 7,680 from exempting all the main gains first.
+        assert tax[0] == pytest.approx(7_543.20)
 
 
 class TestScheduleParameters:

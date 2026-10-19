@@ -153,3 +153,24 @@
     capital_gains_residential_property: 25_000
   output:
     capital_gains_tax: 15_900
+
+- name: Additional rate reform, exemption follows the rate as main gains cross the higher rate limit.
+  # The personal allowance is 12,570 - (124,000 - 100,000) / 2 = 570, so
+  # taxable income is 123,430 and 125,140 - 123,430 = 1,710 of higher band is
+  # left. Main gains fill it first: 1,710 of the 2,000 main gains at 24% and
+  # 290 at the reformed 45%. Carried interest is at 32% in either band. The
+  # exemption saves 45% on the top 290 of main gains, then 32% on carried
+  # interest rather than 24% on the rest of the main gains (TCGA 1992
+  # s. 1K(5)): 1,710 x 0.24 + (25,000 - 2,710) x 0.32 = 7,543.20, not 7,680
+  # from exempting all the main gains first.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.cgt.additional_rate: 0.45
+    gov.simulation.capital_gains_responses.elasticity: 0
+    age: 45
+    employment_income: 124_000
+    capital_gains: 27_000
+    capital_gains_carried_interest: 25_000
+  output:
+    capital_gains_tax: 7_543.20

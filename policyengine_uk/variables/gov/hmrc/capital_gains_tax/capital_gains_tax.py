@@ -17,6 +17,12 @@ def _take(amount, band_left):
     return inside, above, band_left - inside
 
 
+# Each pass of the exemption allocation ends where a schedule's gains cross a
+# band boundary, so a handful is enough; four schedules in three bands give at
+# most twelve boundaries.
+_MAX_EXEMPTION_PASSES = 16
+
+
 class capital_gains_tax(Variable):
     label = "capital gains tax"
     documentation = (
@@ -31,8 +37,8 @@ class capital_gains_tax(Variable):
         "other two in proportion with the rest of the gains. All three are "
         "clipped so that together they never exceed capital_gains. The annual "
         "exempt amount is set "
-        "against the schedule whose top gains are charged at the highest rate "
-        "first (TCGA 1992 s. 1K(5)); the unused basic rate band goes to relief gains first, as "
+        "against the gains where it saves most tax, pound by pound "
+        "(TCGA 1992 s. 1K(5)); the unused basic rate band goes to relief gains first, as "
         "s. 1I(4)-(6) requires, and then to the schedule with the widest gap "
         "between its higher and basic rates (s. 1I(7)-(9)). Gains above the "
         "basic rate band are split at the income tax higher rate limit only so "
@@ -174,40 +180,91 @@ class capital_gains_tax(Variable):
             return inside_basic, inside_higher, above_higher
 
         # Annual exempt amount, TCGA 1992 s. 1K(5): deducted in the way most
-        # beneficial to the taxpayer, which is against the schedule whose top
-        # gains are charged at the highest rate first. A schedule's top gains
-        # are at its additional rate when, before the exemption, any of them
-        # reach above the higher rate band, which happens whenever taxable
-        # income is already above the higher rate limit; otherwise they are
-        # at its higher rate. Relief gains carry their own flat rate. The
-        # order is set for each person, and ties keep declaration order.
-        _, _, above_higher_before_aea = allocate_bands(amounts)
+        # beneficial to the taxpayer. Each pound saves the tax it would have
+        # borne at the margin, which depends on the schedule it comes off and,
+        # where removing it frees band for another schedule, on that schedule
+        # too. So the exemption is set greedily: in each pass, against the
+        # schedule where a pound saves most, up to the point where any
+        # schedule's gains cross a band boundary and the saving can change.
+        # Ties keep declaration order. Under current law, where the higher and
+        # additional rates are equal, this gives the same allocation as
+        # ranking the schedules by rate, apart from float rounding where the
+        # exemption is split across schedules.
         names = list(amounts)
-        top_rate = np.stack(
-            [
-                (
-                    np.full_like(amounts[name], cgt.badr.rate, dtype=float)
-                    if name == "badr"
-                    else where(
-                        above_higher_before_aea[name] > 0,
-                        rates[name].additional_rate,
+        flat_rate = {"badr": cgt.badr.rate}
+
+        def slices(schedule_amounts):
+            inside_basic, inside_higher, above_higher = allocate_bands(schedule_amounts)
+            result = []
+            for name in names:
+                if name in flat_rate:
+                    band_rates = [flat_rate[name]] * 3
+                else:
+                    band_rates = [
+                        rates[name].basic_rate,
                         rates[name].higher_rate,
+                        rates[name].additional_rate,
+                    ]
+                parts = [inside_basic[name], inside_higher[name], above_higher[name]]
+                result += list(zip(parts, band_rates))
+            return result
+
+        left = {name: amounts[name].astype(float) for name in names}
+        used = {name: np.zeros_like(left[name]) for name in names}
+        aea_left = np.full_like(left["main"], aea)
+        step = 1e-6
+        for _ in range(_MAX_EXEMPTION_PASSES):
+            if not np.any(aea_left > 0):
+                break
+            base = slices(left)
+            savings, room = [], []
+            for name in names:
+                nudged = dict(left)
+                nudged[name] = left[name] - step
+                saving = np.zeros_like(aea_left)
+                distance = np.full_like(aea_left, np.inf)
+                for (part, rate), (moved, _) in zip(base, slices(nudged)):
+                    slope = np.round((moved - part) / step)
+                    saving = saving - slope * rate
+                    shrinking = (slope < 0) & (part > 0)
+                    distance = where(
+                        shrinking,
+                        min_(distance, part / where(shrinking, -slope, 1)),
+                        distance,
                     )
-                )
-                for name in names
-            ]
-        )
-        stacked = np.stack([amounts[name] for name in names])
-        order = np.argsort(-top_rate, axis=0, kind="stable")
-        stacked_after_aea = np.empty_like(stacked)
-        aea_left = aea
-        for position in range(len(names)):
-            index = order[position : position + 1]
-            amount = np.take_along_axis(stacked, index, axis=0)[0]
-            used = min_(amount, aea_left)
-            np.put_along_axis(stacked_after_aea, index, (amount - used)[None], axis=0)
-            aea_left = aea_left - used
-        after_aea = {name: stacked_after_aea[i] for i, name in enumerate(names)}
+                active = (left[name] > 0) & (aea_left > 0)
+                savings.append(where(active, np.round(saving, 9), -np.inf))
+                room.append(min_(left[name], distance))
+            savings = np.stack(savings)
+            best = np.argmax(savings, axis=0)
+            can_take = np.max(savings, axis=0) > -np.inf
+            for i, name in enumerate(names):
+                taken = where(can_take & (best == i), min_(aea_left, room[i]), 0)
+                left[name] = left[name] - taken
+                used[name] = used[name] + taken
+                aea_left = aea_left - taken
+        # Any exemption left after the passes, which only happens when gains
+        # cross more band boundaries than there are passes, goes in
+        # declaration order.
+        for name in names:
+            taken = min_(aea_left, left[name])
+            used[name] = used[name] + taken
+            aea_left = aea_left - taken
+        # Where the whole exemption went against one schedule, deduct it in a
+        # single step so that the passes add no rounding of their own.
+        schedules_used = sum((used[name] > 0).astype(int) for name in names)
+        after_aea = {
+            name: where(
+                schedules_used <= 1,
+                where(
+                    used[name] > 0,
+                    amounts[name] - min_(amounts[name], aea),
+                    amounts[name],
+                ),
+                amounts[name] - used[name],
+            ).astype(amounts[name].dtype)
+            for name in names
+        }
 
         inside_basic, inside_higher, above_higher = allocate_bands(after_aea)
 
