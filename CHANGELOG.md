@@ -1,3 +1,15 @@
+## [2.139.1] - 2026-10-19
+
+### Fixed
+
+- - Corrected OBR labour supply grouping so cohabiting couples receive the same demographic coefficients as married couples.
+- - Corrected the 2016-17 personal allowance to £11,000, fixing income tax calculations for that tax year.
+- - Corrected Carer's Allowance earnings to deduct notional Class 2 and Class 4 National Insurance only when the carer is liable for those contributions.
+- - Corrected residential property uprating and the High Value Council Tax Surcharge's 2026 valuation conversion to use the OBR house-price index.
+  - Aligned projected additional-dwelling purchase prices with residential house-price growth.
+  - Preserved exact 2026 surcharge-band classifications in later-year property projections without rounding household valuations.
+
+
 ## [2.139.0] - 2026-10-19
 
 ### Added
