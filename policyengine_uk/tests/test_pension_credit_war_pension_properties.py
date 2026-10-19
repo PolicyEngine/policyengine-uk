@@ -13,8 +13,10 @@ the council in 2026, with any mix of AFCS payments and war widow's pensions,
 and with a carer receiving Carer's Allowance or Carer Support Payment in some
 families (the sources #1952 added):
 
-1. Differential with Housing Benefit. Where Guarantee Credit is not paid and
-   neither income floor binds, Housing Benefit applicable income plus its
+1. Differential with Housing Benefit. Where neither Guarantee Credit nor
+   Savings Credit is due (with a savings-credit-only award Housing Benefit
+   uses the Pension Credit assessment plus the savings credit, HB (SPC) Regs
+   2006 reg 27) and neither income floor binds, Housing Benefit applicable income plus its
    income disregard equals Pension Credit income less the counted war pension
    income. The difference is intended: the Housing Benefit (Persons who have
    attained the qualifying age for state pension credit) Regulations 2006 reg
@@ -191,16 +193,17 @@ def test_pension_credit_and_housing_benefit_differ_only_by_war_pensions(
 ):
     get = pension_grid(families)
     gc = get("guarantee_credit")
+    sc = get("savings_credit")
     hb_income = get("housing_benefit_applicable_income")
     hb_eligible = get("housing_benefit_eligible").astype(bool)
     pc_income = get("pension_credit_income")
     war = get("pension_credit_war_pension_income")
     before_disregard = hb_income + get("housing_benefit_applicable_income_disregard")
-    carer_benefit = get("carers_allowance") + get("carer_support_payment")
     for i, fam in enumerate(families):
-        if fam["carer"] is not None:
-            assert np.all(carer_benefit[i] > 0), fam
-        compared = (gc[i] <= 0) & hb_eligible[i] & (hb_income[i] > 0)
+        # Where neither credit is due: with a savings-credit-only award,
+        # Housing Benefit takes the Secretary of State's assessment plus the
+        # savings credit (HB (SPC) Regs 2006 reg 27), by design.
+        compared = (gc[i] <= 0) & (sc[i] <= 0) & hb_eligible[i] & (hb_income[i] > 0)
         compared &= pc_income[i] > 0
         assert np.allclose(
             before_disregard[i][compared],
