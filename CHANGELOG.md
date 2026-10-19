@@ -1,3 +1,14 @@
+## [2.139.4] - 2026-10-19
+
+### Fixed
+
+- - Corrected dividend income-tax band thresholds from 2016 to 2025 to use their statutory tax-year dates.
+- - Corrected historical Care to Learn weekly caps while preserving the existing annual date approximation.
+- - Exempted non-dependants responsible for a child under five from Universal Credit housing cost contributions.
+- - Applied the shared Pension Credit eligibility conditions to computed Savings Credit amounts.
+- - Included statutory sick and maternity pay in the relevant earnings limits for pension contribution relief and annual-allowance income tests.
+
+
 ## [2.139.3] - 2026-10-19
 
 ### Fixed
