@@ -3,14 +3,15 @@
 # and Housing Benefit income.
 #
 # SPC Regs 2002 reg 15(1): "all social security benefits are prescribed except"
-# a closed list. The list does not name the four benefits; for IIDB it excepts
-# only the increases under SSCBA 1992 ss.104 and 105 (constant attendance and
+# a closed list. The list does not name the four benefits. For IIDB it excepts
+# the increases under SSCBA 1992 ss.104 and 105 (constant attendance and
 # exceptionally severe disablement) and Sch 8 paras 4 and 7(2)(b) (reg
-# 15(1)(c)-(e)). Reg 9 makes WTC, IB, SDA and MA (with contribution-based JSA,
-# contributory ESA and reg 15(5)(d) maintenance) non-qualifying income for
-# Savings Credit; IIDB stays qualifying income. HB (SPC) Regs 2006 reg 29(1)(j)
-# counts the same social security benefits for pension-age Housing Benefit, and
-# HB Regs 2006 reg 40 counts working-age gross income less Sch 5.
+# 15(1)(c)-(e)); (h) excepts increases for a dependant other than a partner.
+# Reg 9 makes WTC, IB, SDA and MA (with contribution-based JSA, contributory
+# ESA and reg 15(5)(d) maintenance) non-qualifying income for Savings Credit;
+# IIDB stays qualifying income. HB (SPC) Regs 2006 reg 29(1)(j) counts the same
+# social security benefits for pension-age Housing Benefit, and HB Regs 2006
+# reg 40 counts working-age gross income less Sch 5.
 #
 # The awards are ordinary awards with no excepted increase, entered as reported
 # amounts (SDA as a reported award, which the model pays at gov.dwp.sda.maximum).
@@ -20,12 +21,13 @@
 #   (Part I). Art 9: SMP reg 6 rate 194.32, which is the MA standard rate under
 #   SSCBA s.35A(1)(b) from 6 April 2026 (art 1). Art 29: standard minimum
 #   guarantee 238.00 single and 363.25 couple; Savings Credit threshold 208.07
-#   single.
+#   single and 329.75 couple.
 #   SI 2025/295 Sch 1 Part V: IIDB 20% 45.06; art 29: single standard minimum
 #   guarantee 227.10.
-# MA and IB are rarely paid above State Pension age (the Enhanced FRS has no
-# pension-age recipients); the cases test classification. None of these
-# claimants pays income tax, so tax does not enter any expected value.
+# The cases test classification, not whether a pensioner would be paid MA or
+# IB. None of these claimants pays income tax, so tax does not enter any
+# expected value; the model taxes IB, so the IB cases also assert that its
+# income tax is zero.
 
 - name: Case 1, single pensioner with IIDB at 20 percent.
   period: 2026
@@ -463,6 +465,7 @@
     benunits:
       benunit:
         members: [person1, person2]
+        # As in Case 16 (the working-age disregard is HB Regs 2006 Sch 4).
         housing_benefit_applicable_income_disregard: 0
     households:
       household:
@@ -474,3 +477,65 @@
     income_tax: [0, 0]
     # HB Regs 2006 reg 40(1): 7,623.20 + 6,206.20 = 13,829.40.
     housing_benefit_applicable_income: (146.60 + 103.85 + 15.50) * 52
+
+- name: Case 18, working tax credit does not add to a positive Savings Credit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 80
+        state_pension: 0
+        private_pension_income: 221.82 * 52
+    benunits:
+      benunit:
+        members: [person1]
+        # An illustrative award, as in Case 15.
+        working_tax_credit: 200
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    # 11,534.64 + 200 = 11,734.64.
+    pension_credit_income: 221.82 * 52 + 200
+    # Reg 9(a): the pension only.
+    savings_credit_income: 221.82 * 52
+    # 0.6 x (221.82 - 208.07) x 52 = 429.00; income is below the minimum
+    # guarantee, so nothing is withdrawn. Counting the tax credit would give
+    # 0.6 x (11,734.64 - 10,819.64) = 549.00.
+    savings_credit: 0.6 * (221.82 - 208.07) * 52
+    # 12,376 - 11,734.64 = 641.36.
+    guarantee_credit: 238 * 52 - (221.82 * 52 + 200)
+
+- name: Case 19, a partner's SDA is not qualifying income for a couple's Savings Credit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 80
+        state_pension: 0
+        private_pension_income: 12_000
+      person2:
+        age: 78
+        state_pension: 0
+        sda_reported: 1
+    benunits:
+      benunit:
+        members: [person1, person2]
+    households:
+      household:
+        members: [person1, person2]
+        country: ENGLAND
+  output:
+    # 12,000 + 6,206.20 = 18,206.20.
+    pension_credit_income: 12_000 + (103.85 + 15.50) * 52
+    # Reg 9(d): qualifying income is the 12,000 pension, below the couple
+    # threshold of 329.75 x 52 = 17,147. Counting the partner's SDA would give
+    # 0.6 x (18,206.20 - 17,147) = 635.52.
+    savings_credit_income: 12_000
+    is_savings_credit_eligible: false
+    savings_credit: 0
+    # 18,889 - 18,206.20 = 682.80.
+    guarantee_credit: 363.25 * 52 - (12_000 + (103.85 + 15.50) * 52)
