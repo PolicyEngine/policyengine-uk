@@ -239,6 +239,104 @@ def definitions_digest(spec: Spec, reforms: Sequence) -> str:
     return hashlib.sha256(text.encode()).hexdigest()
 
 
+def model_fingerprint() -> Optional[str]:
+    """SHA-256 over the imported policyengine_uk package's own files.
+
+    Identifies the model that ran, whatever installed it: a wheel, an
+    editable checkout, or a modified copy carrying the same version. Tests,
+    compiled caches and this tool's directory are left out, so neither a
+    test edit nor a newer copy of the tool changes the model's identity.
+
+    It fails closed: a wheel and an editable checkout of the same commit
+    ship different file sets, and an untracked file in the package (a
+    ``.DS_Store``) changes it, so such pairs are refused rather than matched.
+    """
+    import importlib.util
+
+    spec = importlib.util.find_spec("policyengine_uk")
+    if spec is None or not spec.origin:
+        return None
+    root = Path(spec.origin).parent
+    tool = Path(__file__).resolve().parent
+    digest = hashlib.sha256()
+    for path in sorted(root.rglob("*")):
+        relative = path.relative_to(root)
+        if (
+            not path.is_file()
+            or "__pycache__" in relative.parts
+            or relative.parts[:1] == ("tests",)
+            or path.suffix == ".pyc"
+            or tool in path.resolve().parents
+        ):
+            continue
+        digest.update(relative.as_posix().encode())
+        digest.update(b"\0")
+        digest.update(path.read_bytes())
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
+def model_loaded() -> bool:
+    """Whether policyengine_uk's model is already built in this process.
+
+    Importing the package builds the tax-benefit system and caches its
+    parameters, as ``python -m policyengine_uk.utils.aggregate_impact`` does
+    before the command runs. A fingerprint taken after that may not be the
+    model in memory: a checkout switched between the import and the
+    fingerprint leaves the old parameters with the new files' fingerprint
+    (Sol re-review 7 of #2425). A copy of this tool run as its own package,
+    as CI runs it, imports the model only to build the simulation.
+    """
+    return "policyengine_uk.system" in sys.modules
+
+
+def _local_installs() -> list:
+    """Distributions not installed from a package index (PEP 610).
+
+    A distribution with ``direct_url.json`` came from a local directory, a
+    file, a VCS checkout or an archive URL. Its version can differ from the
+    release of that number, so a data comparison can't take its version as
+    its identity (Sol re-review 5 of #2425).
+    """
+    out = set()
+    for d in metadata.distributions():
+        try:
+            text = d.read_text("direct_url.json")
+        except Exception:  # noqa: BLE001 - unreadable metadata is not local
+            text = None
+        if not text or not d.metadata["Name"]:
+            continue
+        try:
+            info = json.loads(text)
+        except ValueError:
+            continue
+        if isinstance(info, dict):
+            out.add(d.metadata["Name"].lower().replace("_", "-"))
+    return sorted(out)
+
+
+def stable_runtime(rec: "Recorder", fingerprint_at_start: Optional[str]) -> dict:
+    """The runtime identity, with no model fingerprint if the files changed.
+
+    Records ``model:unchanged``; a model whose files differ between the start
+    and the end of a measurement gets no fingerprint, so a data comparison
+    refuses it.
+    """
+    runtime = runtime_identity()
+    unchanged = runtime["policyengine_uk_fingerprint"] == fingerprint_at_start
+    rec.check(
+        "model:unchanged",
+        "The policyengine_uk files did not change during the measurement",
+        unchanged,
+        "the model's files changed while it was measured",
+        section="data",
+        scope="",
+    )
+    if not unchanged:
+        runtime["policyengine_uk_fingerprint"] = None
+    return runtime
+
+
 def runtime_identity() -> dict:
     """The installed distributions and interpreter that ran the measurement."""
     distributions = sorted(
@@ -261,6 +359,8 @@ def runtime_identity() -> dict:
         "platform": platform.platform(),
         "machine": platform.machine(),
         "policyengine_uk": version("policyengine-uk"),
+        "policyengine_uk_fingerprint": model_fingerprint(),
+        "local_installs": _local_installs(),
         "policyengine_core": version("policyengine-core"),
         "numpy": version("numpy"),
         "distributions": [f"{n}=={v}" for n, v in distributions],
@@ -1391,6 +1491,7 @@ def measure(
     run_guard: bool = True,
     provenance: Optional[Mapping] = None,
     guard_variables: Optional[Sequence[str]] = None,
+    fingerprint_at_start: Optional[str] = None,
 ) -> tuple:
     """Measure a simulation over the spec's horizon.
 
@@ -1400,6 +1501,13 @@ def measure(
     started = time.time()
     timings = {}
     rec = Recorder()
+    # Taken again when the result is assembled: a model whose files change
+    # during the measurement (a branch switched in a shared checkout) has no
+    # single identity (Sol review of #2425).
+    # Best taken by the caller before the simulation is built, since building
+    # it reads the model's files (Sol re-review 5 of #2425).
+    if fingerprint_at_start is None:
+        fingerprint_at_start = model_fingerprint()
     model_lists, list_problems = read_model_lists(partition)
     problems = list_problems + closure_problems(
         partition, model_lists, sim.tax_benefit_system.variables
@@ -1532,6 +1640,7 @@ def measure(
         )
     # After the reform costings, so that they are covered too.
     _finite_metrics_check(rec)
+    runtime = stable_runtime(rec, fingerprint_at_start)
     timings["total"] = round(time.time() - started, 2)
 
     provenance = dict(provenance or {})
@@ -1547,7 +1656,7 @@ def measure(
         "label": label,
         "years": spec.years,
         "provenance": provenance,
-        "runtime": runtime_identity(),
+        "runtime": runtime,
         "partition": partition.as_dict(),
         "metrics": list(rec.metrics.values()),
         "checks": list(rec.checks.values()),
