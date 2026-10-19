@@ -10,6 +10,10 @@ the model does not infer it from salary, dividends or company ownership.
 The input label names its supported 2022–23 period. In other model years,
 even an explicit `True` leaves the ordinary calculation unchanged.
 
+[Regulation 8(3) of the Social Security (Contributions) Regulations
+2001][reg8] sets the earnings period to the year for a director of the
+company at the beginning of that year.
+
 HMRC's [2022–23 employer guidance][rates] gives this annual director schedule:
 
 | Annual NI earnings | Employee rate |
@@ -82,10 +86,15 @@ override contract; the new fact does not validate that supplied amount.
 This is a partial response to
 [#721](https://github.com/PolicyEngine/policyengine-uk/issues/721), which
 remains open. It introduces no director imputation, population estimate or
-encoded policy-parity claim. Integration with the separate NI scale migration
-in [PR #2490](https://github.com/PolicyEngine/policyengine-uk/pull/2490) requires
-coordination of the two employee component files; tests on this branch alone
-do not establish that combined-tree compatibility.
+encoded policy-parity claim.
+
+## References
+
+- [Social Security (Contributions) Regulations 2001, regulation 8][reg8] — earnings periods for directors.
+- [Social Security Contributions and Benefits Act 1992, section 8](https://www.legislation.gov.uk/ukpga/1992/4/section/8) — calculation of primary Class 1 contributions.
+- [HMRC NIM12000 — Class 1 NICs: company directors](https://www.gov.uk/hmrc-internal-manuals/national-insurance-manual/nim12000).
+- [HMRC CA44 — National Insurance for company directors](https://www.gov.uk/government/publications/ca44-national-insurance-for-company-directors).
 
 [rates]: https://www.gov.uk/guidance/rates-and-thresholds-for-employers-2022-to-2023
 [directors]: https://www.gov.uk/employee-directors
+[reg8]: https://www.legislation.gov.uk/uksi/2001/1004/regulation/8
