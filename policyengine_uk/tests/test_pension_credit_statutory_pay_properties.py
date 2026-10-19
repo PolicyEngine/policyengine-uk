@@ -6,7 +6,9 @@ earnings of an employed earner, and reg 15(1)(o) to (q) except them from the
 social security benefits prescribed as income. Pension Credit counted none of
 them, while pension-age Housing Benefit counted statutory sick and maternity
 pay. Both Housing Benefit schemes count statutory paternity pay as earnings
-too (HB Regs 2006 reg 35(1)(i); HB (SPC) Regs 2006 reg 35(1)(i)).
+too (HB Regs 2006 reg 35(1)(i); HB (SPC) Regs 2006 reg 35(1)(i)), which the
+model's Housing Benefit does not yet do (PolicyEngine/policyengine-uk#2368
+adds it), so invariant 1 draws only statutory sick and maternity pay.
 
 What the model taxes (read from the code, not changed here): income tax sees
 statutory sick and maternity pay through employment_benefits, which
@@ -21,7 +23,9 @@ income applies, and with a carer in some families so that the Carer's
 Allowance and Carer Support Payment counted since #1952 are covered too:
 
 1. Differential: Pension Credit and pension-age Housing Benefit assess the
-   same income. Where Guarantee Credit is not paid, Housing Benefit income is
+   same income. Where neither Guarantee Credit nor Savings Credit is due (a
+   savings-credit-only award makes Housing Benefit use the Pension Credit
+   assessment plus the savings credit), Housing Benefit income is
    above its zero floor and Pension Credit income is above its zero floor,
 
        pension_credit_income + pension_credit_earnings_disregard
@@ -39,8 +43,10 @@ Allowance and Carer Support Payment counted since #1952 are covered too:
    claimant and partner.
 2. Metamorphic: moving an amount between employment income and statutory
    sick or maternity pay of the same person changes nothing: Pension Credit
-   earnings, the earnings disregard, Pension Credit income, Housing Benefit
-   applicable income, income tax and National Insurance are all unchanged.
+   earnings, the earnings disregard, Pension Credit income, income tax and
+   National Insurance are all unchanged. (Housing Benefit is not checked: its
+   own earnings rules, housing_benefit_net_earnings and the Sch 4
+   disregards, are outside this change.)
    Moving it to statutory paternity pay
    leaves Pension Credit earnings and National Insurance unchanged and changes
    Pension Credit income only through income tax, which does not see that
@@ -94,22 +100,22 @@ def maybe(strategy):
 
 
 @st.composite
-def adult(draw, min_age=67):
+def adult(draw, min_age=67, pays=tuple(STATUTORY_PAY)):
     person = dict(
         age=draw(st.integers(min_age, 95)),
         state_pension=draw(money(12_000)),
         employment_income=draw(maybe(money(5_000))),
     )
-    for pay in STATUTORY_PAY:
+    for pay in pays:
         person[pay] = draw(maybe(money(ANNUAL_RATE[pay])))
     return person
 
 
 @st.composite
-def family(draw, partner_min_age=67):
-    adults = [draw(adult())]
+def family(draw, partner_min_age=67, pays=tuple(STATUTORY_PAY)):
+    adults = [draw(adult(pays=pays))]
     if draw(st.booleans()):
-        adults.append(draw(adult(min_age=partner_min_age)))
+        adults.append(draw(adult(min_age=partner_min_age, pays=pays)))
     carer = draw(st.sampled_from([None] + list(range(len(adults)))))
     country = draw(st.sampled_from(list(REGIONS)))
     return dict(
@@ -155,6 +161,7 @@ def situation(families, steps, vary):
 
 BENUNIT_VARIABLES = [
     "guarantee_credit",
+    "savings_credit",
     "pension_credit_earnings",
     "pension_credit_earnings_disregard",
     "pension_credit_income",
@@ -187,8 +194,13 @@ def with_private_pension(fam, pension):
     ]
 
 
+# The statutory payments the model's Housing Benefit counts (see the module
+# docstring on statutory paternity pay).
+HOUSING_BENEFIT_PAY = ("statutory_sick_pay", "statutory_maternity_pay")
+
+
 @PROPERTY_SETTINGS
-@given(st.lists(family(), min_size=1, max_size=4))
+@given(st.lists(family(pays=HOUSING_BENEFIT_PAY), min_size=1, max_size=4))
 def test_pension_credit_and_housing_benefit_assess_the_same_statutory_pay(families):
     g = grid(
         families,
@@ -198,8 +210,12 @@ def test_pension_credit_and_housing_benefit_assess_the_same_statutory_pay(famili
     for i, fam in enumerate(families):
         pc_income = g["pension_credit_income"][i]
         hb_income = g["housing_benefit_applicable_income"][i]
+        # Where neither credit is due: with a savings-credit-only award,
+        # Housing Benefit takes the Secretary of State's assessment plus the
+        # savings credit (HB (SPC) Regs 2006 reg 27), by design.
         compared = (
             (g["guarantee_credit"][i] <= 0)
+            & (g["savings_credit"][i] <= 0)
             & g["housing_benefit_eligible"][i].astype(bool)
             & (hb_income > 0)
             & (pc_income > 0)
@@ -211,8 +227,6 @@ def test_pension_credit_and_housing_benefit_assess_the_same_statutory_pay(famili
         assert np.allclose(
             pension_credit[compared], housing_benefit[compared], atol=0.01
         ), (fam, pension_credit[compared], housing_benefit[compared])
-        has_pay = g["statutory_sick_pay"][i] + g["statutory_maternity_pay"][i] + g["statutory_paternity_pay"][i] > 0  # TEMP-COUNT
-        print("COUNT inv1", int(compared.sum()), int((compared & has_pay).sum()), int((compared & (g["statutory_paternity_pay"][i] > 0)).sum()), fam["carer"] is not None, len(compared))  # TEMP-COUNT
 
 
 @st.composite
@@ -245,11 +259,11 @@ def test_moving_pay_between_wages_and_statutory_pay(cases):
     as_pay = grid(families, PENSIONS, placed(True))
     for i, (fam, mover, pay, amount) in enumerate(cases):
         context = (fam, mover, pay, amount)
-        print("COUNT inv2", pay, len(PENSIONS), int(((as_wages["pension_credit_income"][i] > 0) & (as_pay["pension_credit_income"][i] > 0)).sum()), round(amount, 2), int(as_pay["national_insurance"][i].max() > 0), int(np.abs(as_pay["income_tax"][i] - as_wages["income_tax"][i]).max() > 0.01))  # TEMP-COUNT
         for variable in ["pension_credit_earnings", "national_insurance"]:
-            assert np.allclose(
-                as_wages[variable][i], as_pay[variable][i], atol=0.01
-            ), (variable, context)
+            assert np.allclose(as_wages[variable][i], as_pay[variable][i], atol=0.01), (
+                variable,
+                context,
+            )
         if pay == "statutory_paternity_pay":
             # Income tax does not see statutory paternity pay.
             def before_tax(g):
@@ -273,7 +287,6 @@ def test_moving_pay_between_wages_and_statutory_pay(cases):
                 "income_tax",
                 "pension_credit_earnings_disregard",
                 "pension_credit_income",
-                "housing_benefit_applicable_income",
             ]:
                 assert np.allclose(
                     as_wages[variable][i], as_pay[variable][i], atol=0.01
@@ -306,5 +319,4 @@ def test_guarantee_credit_never_rises_with_statutory_pay(cases):
         _, _, pay, _ = case
         assert np.all(np.diff(g[pay][i]) > 0), case
         steps = np.diff(g["guarantee_credit"][i])
-        print("COUNT inv3", pay, len(steps), int((g["guarantee_credit"][i][:-1] > 0).sum()), int((steps < -0.01).sum()))  # TEMP-COUNT
         assert np.all(steps <= 0.01), (case, steps)

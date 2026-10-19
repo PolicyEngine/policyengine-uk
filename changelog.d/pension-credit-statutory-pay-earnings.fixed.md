@@ -1,1 +1,1 @@
-Count statutory sick, maternity and paternity pay as Pension Credit earnings (State Pension Credit Regulations 2002 reg. 17A(2)(h) and (i)), and count statutory paternity pay in Housing Benefit income.
+- Count statutory sick, maternity and paternity pay as Pension Credit earnings of an employed earner (State Pension Credit Regulations 2002 reg. 17A(2)(h) and (i)), including in the Schedule VI earnings disregard and the income tax on earnings.

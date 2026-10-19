@@ -8,9 +8,8 @@ class pension_credit_earnings(Variable):
         "their partner's (State Pension Credit Act 2002 s.5), but not that of "
         "children or young persons in the family. Earnings include statutory "
         "sick, maternity and paternity pay (State Pension Credit Regulations "
-        "2002 reg. 17A(2)(h) and (i)); the parameter "
-        "gov.dwp.pension_credit.guarantee_credit.earnings_sources lists the "
-        "sources and the statutory payments that have no variable."
+        "2002 reg. 17A(2)(h) and (i)), listed in "
+        "gov.dwp.pension_credit.guarantee_credit.statutory_payments."
     )
     entity = BenUnit
     definition_period = YEAR
@@ -24,9 +23,8 @@ class pension_credit_earnings(Variable):
     )
 
     def formula(benunit, period, parameters):
-        sources = parameters(
-            period
-        ).gov.dwp.pension_credit.guarantee_credit.earnings_sources
+        gc = parameters(period).gov.dwp.pension_credit.guarantee_credit
+        sources = list(gc.earnings_sources) + list(gc.statutory_payments)
         person = benunit.members
         # A loss in one employment is not set against earnings in another
         # (Computation of Earnings Regs 1996 reg. 13(12), applied by SPC

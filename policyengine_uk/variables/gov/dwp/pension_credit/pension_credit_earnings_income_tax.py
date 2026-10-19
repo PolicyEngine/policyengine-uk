@@ -33,24 +33,31 @@ def income_tax_with_inputs_zeroed(simulation, period, variables):
         del simulation.branches[name]
 
 
+def employed_earnings_sources(parameters, period):
+    """Employment income and the statutory payments that SPC Regs 2002 reg.
+    17A(2) makes earnings of an employed earner."""
+    payments = parameters(period).gov.dwp.pension_credit.guarantee_credit
+    return ["employment_income"] + list(payments.statutory_payments)
+
+
 class pension_credit_income_tax_without_employment_income(Variable):
     value_type = float
     entity = Person
     label = "Income tax without employment income, for Pension Credit"
     documentation = (
-        "The person's income tax if nobody in the simulation had employment "
-        "income. " + DECISION
+        "The person's income tax if nobody in the simulation had employed "
+        "earnings: employment income and the statutory sick, maternity and "
+        "paternity pay that SPC Regs 2002 reg. 17A(2) counts as earnings. " + DECISION
     )
     definition_period = YEAR
     unit = GBP
 
     def formula(person, period, parameters):
         income_tax = person("income_tax", period)
-        if not (person("employment_income", period) != 0).any():
+        sources = employed_earnings_sources(parameters, period)
+        if not any((person(source, period) != 0).any() for source in sources):
             return income_tax
-        return income_tax_with_inputs_zeroed(
-            person.simulation, period, ["employment_income"]
-        )
+        return income_tax_with_inputs_zeroed(person.simulation, period, sources)
 
 
 class pension_credit_income_tax_without_earnings(Variable):
@@ -58,8 +65,9 @@ class pension_credit_income_tax_without_earnings(Variable):
     entity = Person
     label = "Income tax without earnings, for Pension Credit"
     documentation = (
-        "The person's income tax if nobody in the simulation had employment "
-        "or self-employment income. " + DECISION
+        "The person's income tax if nobody in the simulation had employed "
+        "earnings (employment income and statutory sick, maternity and "
+        "paternity pay) or self-employment income. " + DECISION
     )
     definition_period = YEAR
     unit = GBP
@@ -73,7 +81,7 @@ class pension_credit_income_tax_without_earnings(Variable):
         return income_tax_with_inputs_zeroed(
             person.simulation,
             period,
-            ["employment_income", "self_employment_income"],
+            employed_earnings_sources(parameters, period) + ["self_employment_income"],
         )
 
 
