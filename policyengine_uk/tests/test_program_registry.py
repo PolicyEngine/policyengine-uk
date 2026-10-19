@@ -39,3 +39,18 @@ def test_maternity_allowance_does_not_advertise_unrelated_parameters():
     """Reported Maternity Allowance has no policy parameter subtree (#2116)."""
     program = next(p for p in PROGRAMS if p["id"] == "maternity_allowance")
     assert "parameter_prefix" not in program
+
+
+def test_benefit_cap_does_not_advertise_unrelated_parameters(tax_benefit_system):
+    """The advertised Benefit Cap subtree excludes other DWP programs (#2116)."""
+    program = next(p for p in PROGRAMS if p["id"] == "benefit_cap")
+    advertised = tax_benefit_system.parameters.get_child(program["parameter_prefix"])
+    benefit_cap = tax_benefit_system.parameters.gov.dwp.benefit_cap
+
+    assert "universal_credit" not in advertised.children
+    assert "JSA" not in advertised.children
+    assert advertised.get_child("single.in_london") is benefit_cap.single.in_london
+    assert (
+        advertised.get_child("non_single.outside_london")
+        is benefit_cap.non_single.outside_london
+    )
