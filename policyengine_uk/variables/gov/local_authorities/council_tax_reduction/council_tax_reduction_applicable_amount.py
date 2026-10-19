@@ -57,6 +57,10 @@ class council_tax_reduction_applicable_amount(Variable):
         premiums = where(
             pensioner,
             benunit("pension_age_benefits_premiums", period),
-            benunit("working_age_benefits_premiums", period),
+            benunit("working_age_benefits_premiums", period)
+            + (
+                benunit("council_tax_reduction_severe_disability_premium", period)
+                - benunit("severe_disability_premium", period)
+            ),
         )
         return personal_allowance + premiums
