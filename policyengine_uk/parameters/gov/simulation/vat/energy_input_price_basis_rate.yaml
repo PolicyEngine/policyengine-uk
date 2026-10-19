@@ -5,11 +5,15 @@ metadata:
   economy: false
   label: VAT rate included in energy input prices
   derivation: >-
-    The default electricity and gas inputs are NEED kWh consumption valued at
-    DESNZ Quarterly Energy Prices average domestic prices paid (standard
-    electricity table 2.2.4 and gas table 2.3.4, all payment methods, 2024-25),
-    which include VAT at 5%. The VAT-exclusive base is therefore the input divided
-    by 1.05. Reading the statutory reduced rate here instead would make a
+    policyengine-uk has no default dataset, so the price basis of the
+    electricity and gas inputs belongs to the data build. Both builds price
+    them including VAT at 5%. Microcosm UK values them at DESNZ Quarterly
+    Energy Prices average domestic prices paid including fixed costs (standard
+    electricity table 2.2.4 and gas table 2.3.4, all payment methods, FY2024-25
+    in the 2024-25 release). The legacy Enhanced FRS (policyengine-uk-data)
+    values NEED kWh at Ofgem Q2 2026 price cap unit rates, which include VAT.
+    The VAT-exclusive base is therefore the input divided by 1.05 on either
+    build. Reading the statutory reduced rate here instead would make a
     reform to that rate reprice the inputs (PolicyEngine/policyengine-uk#2189,
     review finding C1).
   reference:

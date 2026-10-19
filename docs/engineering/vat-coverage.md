@@ -161,8 +161,9 @@ vat = (standard rate x full_rate_vat_consumption
       + domestic_energy_vat
 ```
 
-The electricity and gas inputs are priced at DESNZ Quarterly Energy Prices
-average domestic prices paid, which include VAT at 5%, so `domestic_energy_vat` charges the statutory rates on the
+The electricity and gas inputs are priced including 5% VAT by the data build
+(Microcosm UK at DESNZ Quarterly Energy Prices average prices paid; the legacy
+Enhanced FRS at Ofgem price cap unit rates), so `domestic_energy_vat` charges the statutory rates on the
 input divided by 1.05. The divisor is the fixed price-basis parameter
 `gov.simulation.vat.energy_input_price_basis_rate`, not the statutory reduced
 rate, so a reform to a VAT rate leaves the VAT-exclusive base unchanged.
