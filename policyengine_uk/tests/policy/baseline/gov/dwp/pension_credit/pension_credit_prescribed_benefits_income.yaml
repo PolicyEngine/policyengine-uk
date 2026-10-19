@@ -467,6 +467,10 @@
         members: [person1, person2]
         # As in Case 16 (the working-age disregard is HB Regs 2006 Sch 4).
         housing_benefit_applicable_income_disregard: 0
+        # A legacy Housing Benefit claim: a Universal Credit claim would
+        # passport Housing Benefit (housing_benefit_on_passporting_benefit)
+        # and make its income nil, and this case tests the means test itself.
+        claims_universal_credit: false
     households:
       household:
         members: [person1, person2]

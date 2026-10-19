@@ -23,11 +23,12 @@ class savings_credit_income(Variable):
         is_claimant_or_partner = person("is_claimant_or_partner", period)
         excluded_income = 0
         for source in pc.savings_credit.excluded_income:
-            # Person-level sources count for the claimant and partner only;
+            # Person-level sources count for the claimant and partner only,
+            # each floored at nil as pension_credit_income counts them;
             # benefit-unit sources (working tax credit) count once.
             if person.entity.get_variable(source).entity.is_person:
                 excluded_income += benunit.sum(
-                    person(source, period) * is_claimant_or_partner
+                    max_(0, person(source, period)) * is_claimant_or_partner
                 )
             else:
                 excluded_income += add(benunit, period, [source])
