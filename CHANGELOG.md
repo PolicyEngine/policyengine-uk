@@ -1,3 +1,10 @@
+## [2.137.0] - 2026-10-19
+
+### Added
+
+- Compare two datasets on one model with the aggregate-impact tool: measure an unpinned built file by its SHA-256, and `compare --axis data` fails unless both sides ran the same model, runtime, partition and metric definitions.
+
+
 ## [2.136.1] - 2026-10-19
 
 ### Fixed
