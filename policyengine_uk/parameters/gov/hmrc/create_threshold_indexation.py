@@ -59,7 +59,11 @@ income tax equivalent for the same year:
 - upper profits limit = personal allowance + basic rate limit;
 - primary threshold and upper earnings limit = those annual amounts divided
   by 52 and rounded to the penny, the weekly convention the parameter files
-  already use (12,570 / 52 = 241.73 and 50,270 / 52 = 966.73).
+  already use (12,570 / 52 = 241.73 and 50,270 / 52 = 966.73);
+- upper secondary threshold and apprentice upper secondary threshold = the
+  upper earnings limit. HMRC's Budget 2025 note says they "will remain aligned
+  to the National Insurance contributions UEL" to 2030-31, and they have
+  equalled it in every year since they were introduced.
 
 The secondary threshold is not aligned with an income tax threshold. HMRC's
 Autumn Budget 2024 note says that after its freeze it "will be increased in
@@ -85,7 +89,7 @@ The values are computed when the parameters are processed. Every reform route
 (a reform dict, ``parameter_changes``, ``Reform.from_dict``) writes its changes
 onto the parameters before they are processed, as does a simulation modifier
 that resets and reprocesses them (as ``no_economic_assumptions`` does), so the
-values are rebuilt with the change: a changed CPI forecast moves all seven,
+values are rebuilt with the change: a changed CPI forecast moves all nine,
 and a change to the personal allowance or basic rate limit after 2030-31 also
 moves the aligned NICs thresholds (see ``policyengine_uk.utils.dated_reforms``).
 The exceptions edit the processed parameters, so they do not move the others:
@@ -127,6 +131,8 @@ INDEXED_THRESHOLDS = (
     "gov.hmrc.national_insurance.class_1.thresholds.primary_threshold",
     "gov.hmrc.national_insurance.class_1.thresholds.upper_earnings_limit",
     "gov.hmrc.national_insurance.class_1.thresholds.secondary_threshold",
+    "gov.hmrc.national_insurance.class_1.thresholds.upper_secondary_threshold",
+    "gov.hmrc.national_insurance.class_1.thresholds.apprentice_upper_secondary_threshold",
     "gov.hmrc.national_insurance.class_4.thresholds.lower_profits_limit",
     "gov.hmrc.national_insurance.class_4.thresholds.upper_profits_limit",
 )
@@ -317,6 +323,8 @@ def add_threshold_indexation(parameters: ParameterNode) -> ParameterNode:
         class_1.primary_threshold,
         class_1.upper_earnings_limit,
         class_1.secondary_threshold,
+        class_1.upper_secondary_threshold,
+        class_1.apprentice_upper_secondary_threshold,
         class_4.lower_profits_limit,
         class_4.upper_profits_limit,
     ]
@@ -348,12 +356,13 @@ def add_threshold_indexation(parameters: ParameterNode) -> ParameterNode:
         class_1.primary_threshold,
         {year: weekly_equivalent(value) for year, value in personal_allowance.items()},
     )
+    upper_earnings_limit = {
+        year: weekly_equivalent(value) for year, value in higher_rate_threshold.items()
+    }
+    write_unstated_tax_years(class_1.upper_earnings_limit, upper_earnings_limit)
+    write_unstated_tax_years(class_1.upper_secondary_threshold, upper_earnings_limit)
     write_unstated_tax_years(
-        class_1.upper_earnings_limit,
-        {
-            year: weekly_equivalent(value)
-            for year, value in higher_rate_threshold.items()
-        },
+        class_1.apprentice_upper_secondary_threshold, upper_earnings_limit
     )
     write_unstated_tax_years(class_1.secondary_threshold, secondary_threshold)
     for parameter in indexed:

@@ -11,6 +11,8 @@ profits limits (UEL, UPL) with the higher rate threshold, PA + BRL. After
 2030-31 it says all of them will be uprated by September CPI (Explanatory
 Memorandum to SI 2026/231 para 5.1). ``create_threshold_indexation`` writes
 those paths; the secondary threshold (ST) rises by September CPI, unrounded.
+The upper secondary thresholds for the under-21 group and for apprentices
+(UST, AUST) stay equal to the UEL, as they have been since introduced.
 
 Model year Y is the tax year starting 6 April Y. The model stores the PT and
 UEL as the annual amount over 52, to the penny (241.73 and 966.73), so 52
@@ -50,7 +52,7 @@ Invariants:
    thresholds together by the statute; with September CPI <= 0, or with no
    economic assumptions, they stay at their frozen levels; a reprocessed
    override of the PA or BRL keeps the NICs thresholds aligned with it.
-9. No double indexing: none of the seven parameters carries ``uprating``
+9. No double indexing: none of the nine parameters carries ``uprating``
    metadata, so core uprating does not extend them.
 10. The September CPI series: each April's rise is the previous September's
     CPI to 0.1 percentage points (halves up), and zero unless positive; its
@@ -99,6 +101,8 @@ PATHS = {
     "primary_threshold": "national_insurance/class_1/thresholds/primary_threshold.yaml",
     "upper_earnings_limit": "national_insurance/class_1/thresholds/upper_earnings_limit.yaml",
     "secondary_threshold": "national_insurance/class_1/thresholds/secondary_threshold.yaml",
+    "upper_secondary_threshold": "national_insurance/class_1/thresholds/upper_secondary_threshold.yaml",
+    "apprentice_upper_secondary_threshold": "national_insurance/class_1/thresholds/apprentice_upper_secondary_threshold.yaml",
     "lower_profits_limit": "national_insurance/class_4/thresholds/lower_profits_limit.yaml",
     "upper_profits_limit": "national_insurance/class_4/thresholds/upper_profits_limit.yaml",
 }
@@ -110,7 +114,7 @@ def system():
 
 
 def threshold_parameters(root):
-    """The seven parameters under a ``gov`` node."""
+    """The nine parameters under a ``gov`` node."""
     hmrc = root.hmrc
     class_1 = hmrc.national_insurance.class_1.thresholds
     class_4 = hmrc.national_insurance.class_4.thresholds
@@ -123,6 +127,10 @@ def threshold_parameters(root):
         "primary_threshold": class_1.primary_threshold,
         "upper_earnings_limit": class_1.upper_earnings_limit,
         "secondary_threshold": class_1.secondary_threshold,
+        "upper_secondary_threshold": class_1.upper_secondary_threshold,
+        "apprentice_upper_secondary_threshold": (
+            class_1.apprentice_upper_secondary_threshold
+        ),
         "lower_profits_limit": class_4.lower_profits_limit,
         "upper_profits_limit": class_4.upper_profits_limit,
     }
@@ -435,6 +443,8 @@ def synthetic_parameters(last_years, rates, horizon, bases):
                                 "primary_threshold",
                                 "upper_earnings_limit",
                                 "secondary_threshold",
+                                "upper_secondary_threshold",
+                                "apprentice_upper_secondary_threshold",
                             )
                         }
                     },
@@ -468,6 +478,12 @@ def synthetic_values(root, year):
         "secondary_threshold": hmrc.national_insurance.class_1.thresholds.secondary_threshold(
             instant
         ),
+        "upper_secondary_threshold": hmrc.national_insurance.class_1.thresholds.upper_secondary_threshold(
+            instant
+        ),
+        "apprentice_upper_secondary_threshold": hmrc.national_insurance.class_1.thresholds.apprentice_upper_secondary_threshold(
+            instant
+        ),
         "lower_profits_limit": hmrc.national_insurance.class_4.thresholds.lower_profits_limit(
             instant
         ),
@@ -485,6 +501,8 @@ FROZEN_AMOUNTS = {
     "primary_threshold": 241.73,
     "upper_earnings_limit": 966.73,
     "secondary_threshold": 96.153846,
+    "upper_secondary_threshold": 966.73,
+    "apprentice_upper_secondary_threshold": 966.73,
     "lower_profits_limit": 12_570,
     "upper_profits_limit": 50_270,
 }
@@ -493,6 +511,13 @@ NICS_ALIGNED = {
     "upper_profits_limit": lambda pa, brl: pa + brl,
     "primary_threshold": lambda pa, brl: float(weekly_equivalent(Decimal(repr(pa)))),
     "upper_earnings_limit": lambda pa, brl: float(
+        weekly_equivalent(Decimal(repr(pa + brl)))
+    ),
+    # The upper secondary thresholds stay equal to the UEL.
+    "upper_secondary_threshold": lambda pa, brl: float(
+        weekly_equivalent(Decimal(repr(pa + brl)))
+    ),
+    "apprentice_upper_secondary_threshold": lambda pa, brl: float(
         weekly_equivalent(Decimal(repr(pa + brl)))
     ),
 }
@@ -516,6 +541,12 @@ NICS_ALIGNED = {
             "basic_rate_limit": st.integers(300, 450).map(lambda n: 100 * n),
             "primary_threshold": st.integers(15_000, 30_000).map(lambda n: n / 100),
             "upper_earnings_limit": st.integers(80_000, 120_000).map(lambda n: n / 100),
+            "upper_secondary_threshold": st.integers(80_000, 120_000).map(
+                lambda n: n / 100
+            ),
+            "apprentice_upper_secondary_threshold": st.integers(80_000, 120_000).map(
+                lambda n: n / 100
+            ),
             "secondary_threshold": st.integers(5_000, 20_000).map(lambda n: n / 100),
             "lower_profits_limit": st.integers(5_000, 20_000),
             "upper_profits_limit": st.integers(40_000, 70_000),
