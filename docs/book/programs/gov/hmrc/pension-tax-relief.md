@@ -27,10 +27,16 @@ by their pension contributions, up to the annual limit for relief in
 - and only for people under `gov.hmrc.pensions.pension_contributions_relief_age_limit`
   (75).
 
-So someone with no earnings who pays £3,600 gross into a personal pension
-gets £3,600 of relief, the basic-rate top-up paid into their pension under
-relief at source, while the same payment as an employee contribution gets
-none. Two open pull requests would change this section once merged:
+So someone with no earnings who makes a £3,600 gross contribution to a
+personal pension gets a £3,600 `pension_contributions_relief`, while the same
+payment as an employee contribution gets none. That £3,600 is the deduction
+from taxable income, not a cash top-up. Under relief at source the £3,600
+gross contribution is £2,880 paid by the contributor plus £720 (20%) that the
+pension provider claims from HMRC and adds to the pension
+([Finance Act 2004 s. 192](https://www.legislation.gov.uk/ukpga/2004/12/section/192)).
+PolicyEngine does not represent the £720 claim as a payment, and with no
+taxable income the deduction saves no income tax. Two open pull requests
+would change this section once merged:
 [#2464](https://github.com/PolicyEngine/policyengine-uk/pull/2464) would add
 Statutory Sick Pay and Statutory Maternity Pay to relevant earnings, and
 [#2488](https://github.com/PolicyEngine/policyengine-uk/pull/2488) would apply
