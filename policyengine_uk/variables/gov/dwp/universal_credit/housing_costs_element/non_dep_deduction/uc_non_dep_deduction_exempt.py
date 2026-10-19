@@ -18,7 +18,7 @@ class uc_non_dep_deduction_exempt(Variable):
 
     def formula(person, period, parameters):
         return (
-            (person.benunit("pension_credit", period) > 0)
+            person.benunit("uc_non_dep_receives_pension_credit", period)
             | person("dla_sc_middle_plus", period)
             | (person("pip_dl", period) > 0)
             | (person("attendance_allowance", period) > 0)
