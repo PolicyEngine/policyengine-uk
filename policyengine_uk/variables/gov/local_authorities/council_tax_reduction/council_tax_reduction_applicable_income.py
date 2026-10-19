@@ -17,7 +17,12 @@ class council_tax_reduction_applicable_income(Variable):
         "also exclude Child Benefit from general-rule income; statutory sick "
         "and maternity pay remain counted as earnings. The other adjustments those "
         "provisions allow (childcare charges, the £20 earnings disregards, "
-        "maintenance disregards and the rest) are not modelled."
+        "maintenance disregards and the rest) are not modelled. Industrial "
+        "injuries disablement benefit, severe disablement allowance and "
+        "incapacity benefit count in every scheme. War pensions and Armed "
+        "Forces Compensation Scheme payments do not: Scotland disregards or "
+        "omits them, and English and Welsh councils may disregard them beyond "
+        "the prescribed £10 a week."
     )
     definition_period = YEAR
     unit = GBP
@@ -35,6 +40,15 @@ class council_tax_reduction_applicable_income(Variable):
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/4",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/3",
         "https://www.legislation.gov.uk/ssi/2012/319/schedule/2",
+        "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/16",
+        "https://www.legislation.gov.uk/uksi/2012/2885/schedule/5/paragraph/1",
+        "https://www.legislation.gov.uk/uksi/2012/2886/schedule/paragraph/39",
+        "https://www.legislation.gov.uk/uksi/2012/2886/schedule/paragraph/54",
+        "https://www.legislation.gov.uk/wsi/2013/3029/regulation/34",
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/10",
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/17",
+        "https://www.legislation.gov.uk/ssi/2012/319/schedule/3/paragraph/1",
+        "https://www.legislation.gov.uk/ukpga/1992/14/schedule/1A/paragraph/2",
     ]
 
     def formula(benunit, period, parameters):
@@ -94,7 +108,39 @@ class council_tax_reduction_applicable_income(Variable):
             "statutory_sick_pay",
             "statutory_maternity_pay",
             "ssmg",
+            # Every scheme the model runs counts these three benefits. At
+            # pension age they are social security benefits that the income
+            # lists do not except: SI 2012/2885 Sch 1 para 16(1)(j), the
+            # default scheme SI 2012/2886 Sch para 39(1)(j), WSI 2013/3029
+            # Sch 1 para 10(1)(j) and SSI 2012/319 reg 27(1)(j). At working
+            # age England and Wales count gross income (SI 2012/2886 Sch para
+            # 54(1); WSI 2013/3029 Sch 6 para 17(1)) less disregards that do
+            # not list them (their Schs 8 and 9), and Scotland's closed list
+            # names them (SSI 2021/249 reg 57(1)(b)(ix) to (xi)). Each scheme
+            # leaves out IIDB's constant attendance and exceptionally severe
+            # disablement increases (SSCBA 1992 ss.104 and 105), by name or as
+            # "attendance allowance" (Sch 8 and Sch 9 para 14), but iidb is
+            # the whole reported payment and cannot separate them.
+            "iidb",
+            "sda",
+            "incapacity_benefit",
         ]
+        # War disablement pensions, war widow's or widower's pensions and
+        # Armed Forces Compensation Scheme payments (afcs, war_widows_pension)
+        # are not counted. Scotland counts none of them: SSI 2012/319 Sch 3
+        # para 1 disregards each in full, and SSI 2021/249 reg 57(1), a closed
+        # list, does not name them. England and Wales prescribe a £10 a week
+        # disregard (SI 2012/2885 Sch 5 para 1; SI 2012/2886 Sch 6 para 1 and
+        # Sch 8 para 20; WSI 2013/3029 Sch 4 para 1 and Sch 9 para 20), which
+        # a council may exceed: Wales makes it a minimum for war disablement
+        # and war widow's or widower's pensions (WSI 2013/3029 reg 34(5)), an
+        # English scheme may make provision equivalent to the council tax
+        # benefit rules (LGFA 1992 Sch 1A para 2(11)), and any council may
+        # reduce council tax further (s.13A(1)(c)). The model takes the full
+        # disregard, as Housing Benefit does for local schemes under SSAA 1992
+        # s.134(8)(a). Reg 34(5) does not cover guaranteed income payments, so
+        # in Wales this over-disregards them, but afcs does not separate them
+        # from war disablement pensions.
         income_components = [
             "employment_income",
             "self_employment_income",
