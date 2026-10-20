@@ -1,3 +1,17 @@
+## [2.140.0] - 2026-10-20
+
+### Added
+
+- Added normalized annual BHC and AHC squared poverty-gap components and documented person-weighted aggregation and undefined poverty-line handling.
+- - Added a configurable Income Support withdrawal rate, preserving the existing 100% default.
+
+### Fixed
+
+- Use Scotland's working-age Council Tax Reduction young-person definition for the severe disability premium's non-dependant test within the applicant's benefit unit, retaining existing looked-after and other-benefit-unit treatment.
+- Count Incapacity Benefit and Severe Disablement Allowance as Universal Credit unearned income from the GB transitional commencement, preserving earlier history and the existing annual-model limitations.
+- Fix stale construction-time reform wrappers after foreign writes or direct edits while preserving copied scenarios and constructor readings; document mixed-composite replay, indexed-threshold construction and the existing rejection of built overrides whose keys contain no 1 January annual value.
+
+
 ## [2.139.5] - 2026-10-20
 
 ### Changed
