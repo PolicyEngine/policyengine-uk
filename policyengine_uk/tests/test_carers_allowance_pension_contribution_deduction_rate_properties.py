@@ -21,14 +21,15 @@ that no floor binds:
 3. Eligibility follows earnings through the limit: on both sides the person
    is gainfully employed exactly when weekly earnings, with a fraction of a
    penny disregarded (reg. 5), exceed the limit, and then has no underlying
-   entitlement. A lower share can only end entitlement and a higher share can
+   entitlement. The pence are counted in the precision the model stores
+   earnings in (float32), as the formula counts them. A lower share can only end entitlement and a higher share can
    only restore it.
 4. Current law: the share is 0.5 in every year from 2015 (the first year the
    model simulates) to 2030.
 """
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -42,7 +43,10 @@ COUNTRIES = ["ENGLAND", "WALES", "SCOTLAND", "NORTHERN_IRELAND"]
 YEARS = [2016, 2020, 2024, 2026, 2030]
 # Shares on a grid of twentieths, each exact in binary.
 SHARES = [i / 20 for i in range(21) if i != 10]
-TOLERANCE = 0.01
+# The model stores amounts as float32, whose spacing is about 0.008 at the
+# largest earnings drawn (up to 120,000), so two stored values can differ from
+# the exact difference by more than a penny.
+TOLERANCE = 0.05
 
 PROPERTY_SETTINGS = settings(
     max_examples=6,
@@ -107,20 +111,38 @@ VARIABLES = [
 
 def calculate(people, year, reform=None):
     sim = Simulation(situation=situation(people, year), reform=reform)
-    return {v: np.asarray(sim.calculate(v, year), dtype=float) for v in VARIABLES}
+    # Keep each variable's stored dtype: the rounding check below must count
+    # pence in the precision the formula does.
+    return {v: np.asarray(sim.calculate(v, year)) for v in VARIABLES}
 
 
 def over_limit(earnings, limit):
-    # Reg. 5: a fraction of a penny is disregarded.
+    # Reg. 5: a fraction of a penny is disregarded. ``earnings`` is the stored
+    # array, so this counts the pence as is_gainfully_employed_for_carers_allowance
+    # does, in float32: promoting to float64 first floors 10,608.52 a year,
+    # stored as 10,608.51953125, to 204.00 a week instead of 204.01.
     return np.floor(earnings / 52 * 100 + 1e-6) / 100 > limit
+
+
+# A carer one penny a week over the 2026-27 limit (10,608.52 / 52 = 204.01), on
+# the float32 boundary described in over_limit.
+PENNY_OVER = dict(
+    country="ENGLAND",
+    age=45,
+    employment_income=10_608.52,
+    self_employment_income=0.0,
+    employee_pension_contributions=0.0,
+    personal_pension_contributions=0.0,
+)
 
 
 @PROPERTY_SETTINGS
 @given(
-    st.lists(carers(), min_size=1, max_size=24),
-    reforms(),
-    st.sampled_from(YEARS),
+    people=st.lists(carers(), min_size=1, max_size=24),
+    shares=reforms(),
+    year=st.sampled_from(YEARS),
 )
+@example(people=[PENNY_OVER], shares=dict(ca=0.25, hb=0.75), year=2026)
 def test_earnings_fall_by_contributions_times_the_change_in_share(people, shares, year):
     base = calculate(people, year)
     moved = calculate(
@@ -138,16 +160,16 @@ def test_earnings_fall_by_contributions_times_the_change_in_share(people, shares
             carer["employee_pension_contributions"]
             + carer["personal_pension_contributions"]
         )
-        assert abs(base["pension_contributions"][i] - contributions) < TOLERANCE, case
+        stored = float(base["pension_contributions"][i])
+        assert abs(stored - contributions) < TOLERANCE, case
+        before = float(base["carers_allowance_earnings"][i])
+        after = float(moved["carers_allowance_earnings"][i])
         if contributions > 0:
             # Floors are slack: earnings stay positive on both sides.
-            assert base["carers_allowance_earnings"][i] > 0, case
-            assert moved["carers_allowance_earnings"][i] > 0, case
+            assert before > 0 and after > 0, case
         # Invariants 1 and 2: exactly contributions x the change in the
         # Carer's Allowance share, not the Housing Benefit share.
-        change = (
-            base["carers_allowance_earnings"][i] - moved["carers_allowance_earnings"][i]
-        )
+        change = before - after
         assert abs(change - contributions * (shares["ca"] - 0.5)) < TOLERANCE, case
         # Invariant 3: the gainful-employment test follows earnings.
         for values in (base, moved):
