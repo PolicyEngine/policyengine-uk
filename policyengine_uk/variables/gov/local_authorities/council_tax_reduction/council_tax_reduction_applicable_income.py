@@ -162,9 +162,14 @@ class council_tax_reduction_applicable_income(Variable):
         has_savings_credit_only_award = benunit(
             "in_receipt_of_savings_credit_only", period
         )
-        savings_credit_only_income = benunit("pension_credit_income", period) + benunit(
-            "pension_credit", period
-        )
+        # The general route counts no war pension (as Housing Benefit, a full
+        # disregard), so the war pension income in the Secretary of State's
+        # assessment is taken out here too.
+        savings_credit_only_income = max_(
+            0,
+            benunit("pension_credit_income", period)
+            - benunit("pension_credit_war_pension_income", period),
+        ) + benunit("pension_credit", period)
         return select(
             [in_receipt_of_guarantee_credit, has_savings_credit_only_award],
             [0, savings_credit_only_income],
