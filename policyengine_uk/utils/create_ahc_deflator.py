@@ -179,4 +179,4 @@ if __name__ == "__main__":
     modified_cpi_forecast = create_modified_cpi_forecast(
         cpi, water_index, rent_index, historical_modified_cpi, initial_weights
     )
-    print(modified_cpi_forecast.to_markdown(index=False))
+    print(modified_cpi_forecast.to_string(index=False))
