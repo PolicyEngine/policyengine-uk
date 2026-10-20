@@ -94,10 +94,12 @@ ROUTES = {
 # pension age and 55 and under working age.
 WORKING_AGE = (25, 55)
 PENSION_AGE = (68, 90)
-# Shares other than 0.5, on a grid of twentieths so that each is exact in
-# binary and every pair differs by at least 0.05.
+# Shares other than 0.5, on a grid of twentieths so that every pair differs
+# by at least 0.05. The model holds the share as float32 (0.05 reads back as
+# 0.0500000007), so shares are compared within RATE_TOLERANCE.
 SHARES = [i / 20 for i in range(21) if i != 10]
 TOLERANCE = 0.05
+RATE_TOLERANCE = 1e-6
 
 
 @st.composite
@@ -209,7 +211,7 @@ def test_each_scheme_moves_by_contributions_times_its_own_change_in_share(
             assert values["income_support_applicable_income"][i] > 0, case
         rate = "council_tax_reduction_pension_contribution_deduction_rate"
         assert base[rate][i] == 0.5, case
-        assert moved[rate][i] == shares[scheme], case
+        assert abs(moved[rate][i] - shares[scheme]) < RATE_TOLERANCE, case
         # Invariant 1 (with 2): exactly contributions x the scheme's change.
         for variable, share in (
             ("council_tax_reduction_applicable_income", shares[scheme]),
