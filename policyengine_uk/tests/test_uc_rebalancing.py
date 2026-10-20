@@ -412,13 +412,14 @@ def test_a_branch_can_state_its_own_status():
 
 # The inactive health-component counterfactual starts from pre-Act 2025 law,
 # independently of the new/protected claimant split (issue #2283).
+# The independently sourced 2026 CPI-only monthly-penny anchor is £439.35.
 def _inactive_lcwra_expected(sim, year):
     parameters = sim.tax_benefit_system.parameters
 
     def index(y):
         return float(parameters(str(y)).gov.benefit_uprating_cpi)
 
-    return LCWRA_2025 * index(year) / index(2025) * 12
+    return 439.35 * index(year) / index(2026) * 12
 
 
 @pytest.mark.parametrize("year", [2026, 2027])
@@ -603,3 +604,29 @@ def test_inactive_cached_awards_follow_public_late_amount_reform(repeat_modifier
         sim.calculate("uc_LCWRA_element", 2026)[0],
         sim.calculate("universal_credit", 2026)[0],
     ] == pytest.approx([3_600, 8_698.80], rel=0, abs=0.01)
+
+
+def test_inactive_2026_uses_penny_rounded_september_cpi_anchor():
+    # Declared CPI-only counterfactual: DWP 2025 LCWRA £423.27, September
+    # 2025 CPI 3.8%; round the monthly £439.35426 to £439.35, then annualise.
+    # SSAA 1992 s.150 permits discretion; this is not an enacted LCWRA rate.
+    sim = Simulation(
+        situation=_uc_claimant(30),
+        scenario=Scenario(
+            parameter_changes={
+                "gov.dwp.universal_credit.rebalancing.active": False,
+            },
+            applied_before_data_load=True,
+        ),
+    )
+    actual = sim.calculate("uc_LCWRA_element", 2026)[0]
+    assert actual > 0
+    assert actual == pytest.approx(5_272.20, rel=0, abs=0.01)
+    assert actual / 12 == pytest.approx(439.35, rel=0, abs=0.001)
+    # Existing legislated SA stays separate: single25+ £424.90/month.
+    assert sim.calculate("uc_standard_allowance", 2026)[0] == pytest.approx(
+        424.90 * 12, rel=0, abs=0.01
+    )
+    assert sim.calculate("universal_credit", 2026)[0] == pytest.approx(
+        10_371.00, rel=0, abs=0.01
+    )

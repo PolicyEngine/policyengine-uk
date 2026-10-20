@@ -246,21 +246,22 @@ def _lcwra_amount_is_overridden(sim, year: int) -> bool:
 
 
 def _inactive_health_element_monthly(sim, year: int) -> float:
-    """The pre-Act amount, uprated independently from the last pre-Act year.
+    """The CPI-only counterfactual, independent of previous paid awards.
 
-    The Act's new-claimant anchor remains on the underlying parameter. A
-    year with rebalancing switched off instead follows the ordinary benefit
-    index from the 2025-26 amount; it never reads a prior paid award.
+    Anchor 2026-27 to the pre-Act amount increased by September 2025 CPI,
+    rounded to monthly pennies. This is a scenario convention, not an
+    enacted LCWRA rate or a uniquely required SSAA 1992 s.150 rounding rule.
+    Later years follow the ordinary benefit index from that 2026 anchor.
     """
     parameters = sim.tax_benefit_system.parameters
-    base_year = FIRST_REBALANCING_YEAR - 1
-    before = parameters(str(base_year)).gov
-    current = parameters(str(year)).gov
-    return (
-        before.dwp.universal_credit.elements.disabled.amount
-        * current.benefit_uprating_cpi
-        / before.benefit_uprating_cpi
+    before = parameters(str(FIRST_REBALANCING_YEAR - 1)).gov
+    anchor = round(
+        float(before.dwp.universal_credit.elements.disabled.amount)
+        * _relevant_cpi_factor(sim, FIRST_REBALANCING_YEAR),
+        2,
     )
+    anchor_index = parameters(str(FIRST_REBALANCING_YEAR)).gov.benefit_uprating_cpi
+    return anchor * parameters(str(year)).gov.benefit_uprating_cpi / anchor_index
 
 
 # Only functions registered here are this internal amount wrapper. External
