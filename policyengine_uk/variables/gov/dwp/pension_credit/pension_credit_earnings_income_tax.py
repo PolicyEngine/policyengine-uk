@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 DECISION = (
     "PolicyEngine does not model PAYE codes, so which part of a person's "
     "income tax is payable on their earnings is a methodology choice, put to "
-    "Max on PolicyEngine/policyengine-uk#2019; this provisional choice treats "
+    "Max on PolicyEngine/policyengine-uk#2019 and settled as option (a): treat "
     "earnings as the top slice of the person's income. "
 )
 
@@ -16,15 +16,9 @@ def income_tax_with_inputs_zeroed(simulation, period, variables):
         name += "_"
     branch = simulation.get_branch(name)
     try:
-        # A branch starts with the values already calculated, so drop them
-        # before replacing the inputs, as marginal_tax_rate does.
-        system_variables = simulation.tax_benefit_system.variables
-        for variable in system_variables:
-            if (
-                variable not in simulation.input_variables
-                and not system_variables[variable].is_input_variable()
-            ):
-                branch.delete_arrays(variable)
+        # Preserve every explicit stored input, including formula overrides
+        # supplied through set_input after the simulation was constructed.
+        branch.drop_computed_arrays()
         people = branch.populations["person"]
         for variable in variables:
             branch.set_input(variable, period, np.zeros(people.count))
