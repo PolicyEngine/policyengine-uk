@@ -22,17 +22,20 @@ class oxford_council_tax_reduction(Variable):
         working_age = is_oxford_working_age(
             household("local_authority", period),
             household("country", period),
-            household("council_tax_reduction_household_has_pensioner", period),
+            benunit("council_tax_reduction_pensioner", period),
         )
-        is_household_head_benunit = benunit("benunit_contains_household_head", period)
+        is_household_head_benunit = benunit(
+            "council_tax_reduction_claimant_benunit", period
+        )
         would_claim = benunit("would_claim_council_tax_reduction", period)
-        universal_credit = benunit("universal_credit", period)
-        has_uc_award = universal_credit > 0
+        # Appendix 3 covers applicants awarded Universal Credit, or who would
+        # be but for deductions or other adjustments to the award.
+        has_uc_award = benunit("council_tax_reduction_universal_credit_award", period)
 
         relevant_income_based_benefit = benunit(
             "council_tax_reduction_relevant_income_based_benefit",
             period,
-        )
+        ) & ~benunit("council_tax_reduction_head_applies_alone", period)
         # Scheme paragraphs 28-29 apply the limit to capital not ignored by
         # Appendix 6, which ignores capital already taken into account for
         # Universal Credit, Income Support, income-based Jobseeker's Allowance
@@ -59,7 +62,7 @@ class oxford_council_tax_reduction(Variable):
         support_rate = ctr.income_band.maximum_support_rate.calc(weekly_income)
         liability = household(
             "council_tax_reduction_maximum_eligible_liability", period
-        )
+        ) * benunit("council_tax_reduction_joint_liability_share", period)
         non_dep_deductions = benunit(
             "oxford_council_tax_reduction_non_dep_deductions", period
         )

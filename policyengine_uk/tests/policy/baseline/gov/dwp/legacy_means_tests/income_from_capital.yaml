@@ -10,7 +10,9 @@
 # para 22; HB (SPC) Sch 5 para 10; SPC Sch IV para 9).
 #
 # Tax figures: personal allowance £12,570; basic rate 20%; property allowance
-# £1,000; personal savings allowance £1,000 for a basic-rate taxpayer;
+# £1,000 (gross receipts are supplied as property_rental_income, with no
+# expenses, so the allowance is deducted by partial relief, ITTOIA 2005
+# s.783BH); personal savings allowance £1,000 for a basic-rate taxpayer;
 # dividend allowance £500; dividend ordinary rate 8.75% in 2025-26 and 10.75%
 # in 2026-27 (the model's rate); employee NI 8% above £12,570.
 
@@ -28,6 +30,7 @@
         age: 30
         employment_income: 10_000
         property_income: 5_200
+        property_rental_income: 5_200
         income_support_reported: 1
       child:
         age: 3
@@ -58,6 +61,7 @@
         age: 40
         employment_income: 14_000
         property_income: 6_000
+        property_rental_income: 6_000
         savings_interest_income: 500
         dividend_income: 1_000
     benunits:
@@ -93,6 +97,7 @@
         state_pension: 12_000
         private_pension_income: 2_000
         property_income: 3_000
+        property_rental_income: 3_000
         sublet_income: 5_200
     benunits:
       benunit:
@@ -124,6 +129,7 @@
         age: 80
         state_pension: 10_000
         property_income: 4_000
+        property_rental_income: 4_000
     benunits:
       benunit:
         members: [person]
@@ -184,6 +190,7 @@
         age: 70
         state_pension: 12_000
         property_income: 4_000
+        property_rental_income: 4_000
         sublet_income: 2_600
     benunits:
       benunit:
@@ -351,6 +358,7 @@
         age: 40
         employment_income: 14_000
         property_income: 6_000
+        property_rental_income: 6_000
         other_tax_credits: 1_000
     benunits:
       benunit:
@@ -378,24 +386,63 @@
     income_tax: 1_986
     legacy_means_test_income_tax: 1_486
 
-- name: Tax on counted income is floored at nil when reductions exceed the Step 4 tax
-  # Step 4 tax is 286 on earnings and 1,000 on rent; Step 6 reductions of
-  # 2,000 exceed it, so income tax is nil even with a 500 Step 7 charge
-  # (1,786 - 2,000 < 0). The rent's share of the reductions (1,000 of the
-  # 1,286 used) removes its tax, and the charge is not tax on counted income:
-  # 0 - 0 - 500 is floored at nil.
+- name: Tax on counted income is floored at nil when the supplied income tax is below the charges
+  # An isolation of the helper's floor with income_tax supplied, not a
+  # statutory tax calculation. Step 4 tax is 286 on earnings and 1,000 on
+  # rent; 2,000 of Step 6 reductions leave nil (ITA 2007 s.29(2): only so far
+  # as there is Step 5 tax), and the 500 Step 7 charge is then added (s.23
+  # Step 7), so the statutory liability is 500. Supplied at nil, as the
+  # model's income_tax currently nets the charge against the reductions, the
+  # helper gives 0 - 0 (rent's tax after its share of reductions) - 500
+  # (the charge), floored at nil; with 500 it gives 500 - 0 - 500 = 0.
   period: 2025
   input:
     age: 40
     employment_income: 14_000
     property_income: 6_000
+    property_rental_income: 6_000
     other_tax_credits: 2_000
     CB_HITC: 500
+    income_tax: 0
   output:
     earned_income_tax: 286
     property_income_tax: 1_000
-    income_tax: 0
     legacy_means_test_income_tax: 0
+
+- name: The finance-cost reduction comes off the tax on rent first
+  # ITTOIA 2005 ss.274A-274AA give the reduction on the property business's
+  # finance costs, at most its profits, so it relieves the tax on rent. The
+  # tax components are supplied: 286 on earnings, 1,000 on rent, a 400
+  # finance-cost reduction. Income tax 1,286 - 400 = 886; the rent's tax
+  # after the reduction is 600, so the tax on counted income is 886 - 600 =
+  # 286 (shared pro rata it would be 197.04).
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    earned_income_tax: 286
+    property_income_tax: 1_000
+    property_finance_cost_relief: 400
+  output:
+    income_tax: 886
+    legacy_means_test_income_tax: 286
+
+- name: Other reductions are shared pro rata after the finance-cost reduction
+  # As above with 500 of other tax credits. The finance-cost reduction leaves
+  # 286 + 600 = 886 of tax; the 500 is shared in proportion to it: counted
+  # income bears 500 x 286 / 886 = 161.40, leaving 124.60. Income tax is
+  # 1,286 - 900 = 386, and 386 - (600 - 500 x 600 / 886 = 261.40) = 124.60.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    earned_income_tax: 286
+    property_income_tax: 1_000
+    property_finance_cost_relief: 400
+    other_tax_credits: 500
+  output:
+    income_tax: 386
+    legacy_means_test_income_tax: 124.60
 
 - name: Working-age Housing Benefit award with rent from a let property
   # A continuing award (2025-26). Earnings 10,000 use 10,000 of the personal
@@ -413,6 +460,7 @@
         age: 40
         employment_income: 10_000
         property_income: 5_000
+        property_rental_income: 5_000
         housing_benefit_reported: 1
     benunits:
       benunit:
@@ -533,6 +581,7 @@
       benunit:
         members: [person]
         universal_credit: 0
+        claims_universal_credit: false
     households:
       household:
         members: [person]
@@ -553,6 +602,7 @@
       benunit:
         members: [person]
         universal_credit: 0
+        claims_universal_credit: false
     households:
       household:
         members: [person]
@@ -982,3 +1032,628 @@
   output:
     council_tax_reduction_pensioner: true
     council_tax_reduction_applicable_income: 5_160
+
+- name: Wales disregards the whole capital of an Income Support recipient
+  # WSI 2013/3029 Sch 6 para 26(2) and Sch 10 para 8: the whole capital of an
+  # applicant on Income Support is disregarded, so £20,000 of property (an
+  # input; £18,000 after sale expenses) does not breach the £16,000 limit.
+  # The Income Support (an input) is below the applicable amount (an input),
+  # so the award is the full 2,000.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        income_support: 4_000
+        council_tax_reduction_applicable_amount: 6_000
+    households:
+      household:
+        members: [person]
+        country: WALES
+        local_authority: CARDIFF
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        other_residential_property_value: 20_000
+  output:
+    council_tax_reduction_assessable_capital: 0
+    council_tax_reduction: 2_000
+
+- name: Scotland disregarded an Income Support recipient's capital before April 2022
+  # SSI 2012/303 Sch 5 para 7 (as at 1 April 2021): the whole capital of an
+  # applicant on Income Support is disregarded.
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        income_support: 4_000
+        council_tax_reduction_applicable_amount: 6_000
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        other_residential_property_value: 20_000
+  output:
+    council_tax_reduction_assessable_capital: 0
+    council_tax_reduction: 2_000
+
+- name: From April 2022 Scotland tests an Income Support recipient's capital
+  # SSI 2021/249 has no disregard of a passported applicant's capital: reg
+  # 13(11) treats only the income conditions as met, and reg 13(1) applies
+  # the £16,000 limit. £20,000 of property less 10% sale expenses is 18,000.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        income_support: 4_000
+        council_tax_reduction_applicable_amount: 6_000
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        other_residential_property_value: 20_000
+  output:
+    council_tax_reduction_assessable_capital: 18_000
+    council_tax_reduction: 0
+
+- name: Kingston upon Thames disregards the whole capital of an Income Support recipient
+  # The council keeps the disregard (its 2026-27 scheme, Schedule 10 para 8), so the
+  # household's £18,000 of property (after sale expenses) does not breach the
+  # £16,000 limit, and the passported award is the full 2,000.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        income_support: 4_000
+        council_tax_reduction_applicable_amount: 6_000
+    households:
+      household:
+        members: [person]
+        country: ENGLAND
+        local_authority: KINGSTON_UPON_THAMES
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        other_residential_property_value: 20_000
+  output:
+    council_tax_reduction_assessable_capital: 18_000
+    council_tax_reduction: 2_000
+
+- name: Merton disregards the whole capital of an Income Support recipient
+  # The council keeps the disregard (its 2026-27 scheme, Schedule 10 para 8), so the
+  # household's £18,000 of property (after sale expenses) does not breach the
+  # £16,000 limit, and the passported award is the full 2,000.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        income_support: 4_000
+        council_tax_reduction_applicable_amount: 6_000
+    households:
+      household:
+        members: [person]
+        country: ENGLAND
+        local_authority: MERTON
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        other_residential_property_value: 20_000
+  output:
+    council_tax_reduction_assessable_capital: 18_000
+    council_tax_reduction: 2_000
+
+- name: Westminster disregards the whole capital of an Income Support recipient
+  # The council keeps the disregard (the default scheme's Schedule 10 para 8, which the council's scheme mirrors), so the
+  # household's £18,000 of property (after sale expenses) does not breach the
+  # £16,000 limit, and the passported award is the full 2,000.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        income_support: 4_000
+        council_tax_reduction_applicable_amount: 6_000
+    households:
+      household:
+        members: [person]
+        country: ENGLAND
+        local_authority: WESTMINSTER
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        other_residential_property_value: 20_000
+  output:
+    council_tax_reduction_assessable_capital: 18_000
+    council_tax_reduction: 2_000
+
+- name: Newham tests an Income Support recipient's capital
+  # Newham's 2026 scheme leaves the default scheme's Schedule 10 paragraphs 8
+  # and 9 blank, so the £18,000 of property (after sale expenses) is tested
+  # against its £6,000 capital limit and there is no award.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        income_support: 4_000
+        council_tax_reduction_applicable_amount: 6_000
+    households:
+      household:
+        members: [person]
+        country: ENGLAND
+        local_authority: NEWHAM
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        other_residential_property_value: 20_000
+  output:
+    council_tax_reduction_assessable_capital: 18_000
+    council_tax_reduction: 0
+
+- name: Wales uses the Universal Credit capital assessment when the benefit cap reduces the award to nil
+  # The benefit cap reduces a Universal Credit award (UC Regs 2013 reg 81)
+  # rather than ending it: here a £1,000 award (an input) is capped to nil.
+  # WSI 2013/3029 Sch 6 para 9(6) still takes capital from the award's
+  # assessment, £15,000 (an input), not the household's £18,000 of property
+  # after sale expenses. The UC assumed yield on 9,000 over 6,000: 36 x 4.35
+  # x 12 = 1,879.20, below the applicable amount (an input), so the award is
+  # the full 2,000.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        claims_all_entitled_benefits: true
+        claims_universal_credit: true
+        universal_credit_pre_benefit_cap: 1_000
+        uc_benefit_cap_reduction_after_floor: 1_000
+        uc_reported_capital: 15_000
+        council_tax_reduction_applicable_amount: 6_000
+    households:
+      household:
+        members: [person]
+        country: WALES
+        local_authority: CARDIFF
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        other_residential_property_value: 20_000
+  output:
+    universal_credit: 0
+    council_tax_reduction_universal_credit_award: true
+    council_tax_reduction_assessable_capital: 15_000
+    council_tax_reduction_tariff_income: 1_879.20
+    council_tax_reduction: 2_000
+
+- name: Before April 2022 Scotland used the Universal Credit capital assessment for a capped award
+  # SSI 2012/303 reg 26(6) (reg 26(4) as made), with the award capped to nil
+  # as above.
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        claims_all_entitled_benefits: true
+        claims_universal_credit: true
+        universal_credit_pre_benefit_cap: 1_000
+        uc_benefit_cap_reduction_after_floor: 1_000
+        uc_reported_capital: 15_000
+        council_tax_reduction_applicable_amount: 6_000
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        other_residential_property_value: 20_000
+  output:
+    universal_credit: 0
+    council_tax_reduction_universal_credit_award: true
+    council_tax_reduction_assessable_capital: 15_000
+    council_tax_reduction_tariff_income: 1_879.20
+    council_tax_reduction: 2_000
+
+- name: Oxford ignores a capped Universal Credit award's capital
+  # Appendix 3 covers applicants who would be awarded Universal Credit but for
+  # deductions or other adjustments, and Appendix 6 ignores capital already
+  # taken into account for it, so the £18,000 of property does not breach
+  # paragraph 28's £16,000 limit. Weekly income nil: band 1, 100% of 2,000.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        claims_all_entitled_benefits: true
+        claims_universal_credit: true
+        universal_credit_pre_benefit_cap: 1_000
+        uc_benefit_cap_reduction_after_floor: 1_000
+        uc_reported_capital: 15_000
+        council_tax_reduction_applicable_amount: 6_000
+    households:
+      household:
+        members: [person]
+        country: ENGLAND
+        local_authority: OXFORD
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        other_residential_property_value: 20_000
+  output:
+    universal_credit: 0
+    council_tax_reduction_universal_credit_award: true
+    council_tax_reduction_assessable_capital: 15_000
+    oxford_council_tax_reduction: 2_000
+    council_tax_reduction: 2_000
+
+- name: From April 2022 Scotland applies the Universal Credit yield to a capped award on its own capital
+  # SSI 2021/249 reg 10A: an award includes one reduced to nil; reg 63(1)(a)
+  # applies the monthly yield, £4.35 per £250 over £6,000, to the capital
+  # the authority calculates, here the £18,000 of property after sale
+  # expenses (counted up to the limit: 40 x 4.35 x 12 = 2,088). It is over the
+  # £16,000 limit, so there is no award.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        claims_all_entitled_benefits: true
+        claims_universal_credit: true
+        universal_credit_pre_benefit_cap: 1_000
+        uc_benefit_cap_reduction_after_floor: 1_000
+        uc_reported_capital: 15_000
+        council_tax_reduction_applicable_amount: 6_000
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        other_residential_property_value: 20_000
+  output:
+    universal_credit: 0
+    council_tax_reduction_universal_credit_award: true
+    council_tax_reduction_assessable_capital: 18_000
+    council_tax_reduction_tariff_income: 2_088
+    council_tax_reduction: 0
+
+- name: An English pensioner couple's Universal Credit input does not bring in the working-age capital rules
+  # Universal Credit needs a claimant under the qualifying age (UC Regs 2013
+  # reg 3(2)(a)), so the £1,000 award supplied to a couple aged 71 and 70 is
+  # disregarded in choosing the scheme (council_tax_reduction_pensioner),
+  # and the Universal Credit capital assessment (£15,000, an input) is not
+  # used either: the household's £20,000 of property, valued at £18,000,
+  # exceeds the £16,000 limit. Pensioner tariff income on capital up to
+  # £16,000: 12 x 52 = 624.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 71
+      partner:
+        age: 70
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        claims_all_entitled_benefits: true
+        would_claim_pc: false
+        universal_credit: 1_000
+        uc_reported_capital: 15_000
+        council_tax_reduction_applicable_amount: 6_000
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 1_500
+        other_residential_property_value: 20_000
+  output:
+    council_tax_reduction_pensioner: true
+    council_tax_reduction_assessable_capital: 18_000
+    council_tax_reduction_tariff_income: 624
+    council_tax_reduction: 0
+
+- name: A Welsh pensioner couple's Universal Credit input does not bring in the working-age capital rules
+  # Universal Credit needs a claimant under the qualifying age (UC Regs 2013
+  # reg 3(2)(a)), so the £1,000 award supplied to a couple aged 71 and 70 is
+  # disregarded in choosing the scheme (council_tax_reduction_pensioner),
+  # and the Universal Credit capital assessment (£15,000, an input) is not
+  # used either: the household's £20,000 of property, valued at £18,000,
+  # exceeds the £16,000 limit. Pensioner tariff income on capital up to
+  # £16,000: 12 x 52 = 624.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 71
+      partner:
+        age: 70
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        claims_all_entitled_benefits: true
+        would_claim_pc: false
+        universal_credit: 1_000
+        uc_reported_capital: 15_000
+        council_tax_reduction_applicable_amount: 6_000
+    households:
+      household:
+        members: [claimant, partner]
+        country: WALES
+        local_authority: CARDIFF
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 1_500
+        other_residential_property_value: 20_000
+  output:
+    council_tax_reduction_pensioner: true
+    council_tax_reduction_assessable_capital: 18_000
+    council_tax_reduction_tariff_income: 624
+    council_tax_reduction: 0
+
+- name: Wales does not count sub-tenant rent for a Universal Credit recipient
+  # WSI 2013/3029 Sch 6 para 9(1): the authority uses the Secretary of State's assessment of income
+  # for the award, adjusted only for the award itself and non-dependants.
+  # Universal Credit's unearned income (UC Regs 2013 reg 66) has no head for
+  # rent from a sub-tenant, so the £5,200 (£4,160 after the £20 a week
+  # disregard) does not count. Income is the award, 3,000 (an input), below
+  # the applicable amount (an input): the full 1,500.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        sublet_income: 5_200
+    benunits:
+      benunit:
+        members: [person]
+        claims_all_entitled_benefits: true
+        universal_credit: 3_000
+        council_tax_reduction_applicable_amount: 6_000
+    households:
+      household:
+        members: [person]
+        country: WALES
+        local_authority: CARDIFF
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 1_500
+  output:
+    legacy_benefits_home_letting_income: 4_160
+    council_tax_reduction_applicable_income: 3_000
+    council_tax_reduction: 1_500
+
+- name: Scotland before April 2022 does not count sub-tenant rent for a Universal Credit recipient
+  # SSI 2012/303 reg 26(1): the authority uses the Secretary of State's assessment of income
+  # for the award, adjusted only for the award itself and non-dependants.
+  # Universal Credit's unearned income (UC Regs 2013 reg 66) has no head for
+  # rent from a sub-tenant, so the £5,200 (£4,160 after the £20 a week
+  # disregard) does not count. Income is the award, 3,000 (an input), below
+  # the applicable amount (an input): the full 1,500.
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        sublet_income: 5_200
+    benunits:
+      benunit:
+        members: [person]
+        claims_all_entitled_benefits: true
+        universal_credit: 3_000
+        council_tax_reduction_applicable_amount: 6_000
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 1_500
+  output:
+    legacy_benefits_home_letting_income: 4_160
+    council_tax_reduction_applicable_income: 3_000
+    council_tax_reduction: 1_500
+
+- name: Welsh working-age tariff income counts any part of a £250 step
+  # WSI 2013/3029 Sch 6 para 33: £1 a week for each complete £250 over
+  # £6,000 and £1 for any part. Savings 6,001, 6,250 and 6,251 give 1, 1 and 2
+  # a week: 52, 52 and 104 a year.
+  period: 2026
+  input:
+    people:
+      a:
+        age: 40
+      b:
+        age: 40
+      c:
+        age: 40
+    benunits:
+      ba:
+        members: [a]
+        would_claim_uc: false
+      bb:
+        members: [b]
+        would_claim_uc: false
+      bc:
+        members: [c]
+        would_claim_uc: false
+    households:
+      ha:
+        members: [a]
+        country: WALES
+        local_authority: CARDIFF
+        savings: 6_001
+      hb:
+        members: [b]
+        country: WALES
+        local_authority: CARDIFF
+        savings: 6_250
+      hc:
+        members: [c]
+        country: WALES
+        local_authority: CARDIFF
+        savings: 6_251
+  output:
+    council_tax_reduction_tariff_income: [52, 52, 104]
+
+- name: The Universal Credit yield also counts any part of a £250 step
+  # UC Regs 2013 reg 72(1): £4.35 a month for each £250 over £6,000 and for
+  # any part. UC capital 6,001, 6,250 and 6,251 (inputs) give 1, 1 and 2
+  # steps: 52.20, 52.20 and 104.40 a year.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      a:
+        age: 40
+      b:
+        age: 40
+      c:
+        age: 40
+    benunits:
+      ba:
+        members: [a]
+        universal_credit: 1_000
+        uc_reported_capital: 6_001
+      bb:
+        members: [b]
+        universal_credit: 1_000
+        uc_reported_capital: 6_250
+      bc:
+        members: [c]
+        universal_credit: 1_000
+        uc_reported_capital: 6_251
+    households:
+      ha:
+        members: [a]
+        country: WALES
+        local_authority: CARDIFF
+      hb:
+        members: [b]
+        country: WALES
+        local_authority: CARDIFF
+      hc:
+        members: [c]
+        country: WALES
+        local_authority: CARDIFF
+  output:
+    council_tax_reduction_tariff_income: [52.20, 52.20, 104.40]
+
+- name: Debt secured on a let property comes off its value after the sale expenses
+  # SI 2012/2885 Sch 1 para 32: market value less 10% where there would be
+  # expenses of sale, then less any encumbrance secured on it. £20,000 less
+  # £2,000, less £4,000 secured on it (an input), is £14,000, within the
+  # £16,000 limit. Tariff income (Sch 1 para 37): 4,000 / 500 = 8 a week, 416
+  # a year.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        private_pension_income: 14_000
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_pc: false
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        other_residential_property_value: 20_000
+        other_residential_property_secured_debt: 4_000
+  output:
+    council_tax_reduction_assessable_capital: 14_000
+    council_tax_reduction_tariff_income: 416
+
+- name: Negative equity in one property does not reduce other capital
+  # The debt is deducted from the asset it is secured on, and that asset is
+  # valued at nil, not below: a £10,000 property (£9,000 after sale
+  # expenses) with £15,000 secured on it adds nothing to £12,000 of savings.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        private_pension_income: 14_000
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_pc: false
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        savings: 12_000
+        other_residential_property_value: 10_000
+        other_residential_property_secured_debt: 15_000
+  output:
+    council_tax_reduction_assessable_capital: 12_000

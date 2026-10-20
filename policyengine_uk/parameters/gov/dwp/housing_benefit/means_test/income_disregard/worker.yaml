@@ -1,11 +1,49 @@
-description: This amount of earnings is disreagrded for workers under the Housing Benefit.
+description: Housing Benefit increases the earnings disregard by this weekly amount (the additional earnings disregard) where the claimant meets one of its work conditions and their net earnings at least equal the other earnings disregards, the deductible childcare charges and this amount.
 values:
-  2015-04-01: 37.1
+  # SI 2006/213 and 2006/214 as made (in force 6 March 2006): £14.50. Each
+  # up-rating order substituted the sum from 1 April (for specified
+  # purposes; the first Monday of April otherwise): SI 2006/645 (£14.90; arts 19(9), 20(7)),
+  # SI 2007/688 (£15.45), SI 2008/632 (£16.05), SI 2009/497 (£16.85) and
+  # SI 2010/793 (£17.10). SI 2006/645 amended the provisions these
+  # Regulations consolidated, so legislation.gov.uk's revised text of SI
+  # 2006/213 and 2006/214 omits £14.90; SI 2007/688 arts 19(9) and 20(9)
+  # replace "£14.90". Read from legislation.gov.uk on 2026-10-01 and
+  # 2026-10-02.
+  2006-03-06: 14.5
+  2006-04-01: 14.9
+  2007-04-01: 15.45
+  2008-04-01: 16.05
+  2009-04-01: 16.85
+  2010-04-01: 17.1
+  # The Social Security (Coronavirus) (Further Measures) Regulations 2020
+  # reg. 5 (NI: S.R. 2020/53 reg. 5) read £37.10 for £17.10 from 6 April 2020
+  # until the end of 4 April 2021.
+  2020-04-06: 37.1
+  2021-04-05: 17.1
 metadata:
   period: week
   unit: currency-GBP
   label: Housing benefit worker earnings disregard
-  uprating: gov.benefit_uprating_cpi
-  reference: 
-    - title: The Housing Benefit Regulations 2006 Schedule 4 (5)(6)(17)
-      href: https://www.legislation.gov.uk/uksi/2006/213/data.pdf#page=242
+  reference:
+    - title: The Housing Benefit Regulations 2006, Schedule 4 paragraph 17(1) and (3)(c)
+      href: https://www.legislation.gov.uk/uksi/2006/213/schedule/4/paragraph/17
+    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006, Schedule 4 paragraph 9(1) and (3)(c)
+      href: https://www.legislation.gov.uk/uksi/2006/214/schedule/4/paragraph/9
+    - title: The Housing Benefit Regulations (Northern Ireland) 2006, Schedule 5 paragraph 17(1) and (3)(c)
+      href: https://www.legislation.gov.uk/nisr/2006/405/schedule/5/paragraph/17
+    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations (Northern Ireland) 2006, Schedule 5 paragraph 9(1) and (3)(c)
+      href: https://www.legislation.gov.uk/nisr/2006/406/schedule/5/paragraph/9
+    - title: The Social Security Benefits Up-rating Order 2006, article 19(9) and 20(7)
+      href: https://www.legislation.gov.uk/uksi/2006/645/article/19/made
+    - title: The Social Security Benefits Up-rating Order 2007, article 19(9) and 20(9)
+      href: https://www.legislation.gov.uk/uksi/2007/688/article/19
+    - title: The Social Security Benefits Up-rating Order 2008, article 19(10) and 20(10)
+      href: https://www.legislation.gov.uk/uksi/2008/632/article/19
+    - title: The Social Security Benefits Up-rating Order 2009, article 19(11) and 20(10)
+      href: https://www.legislation.gov.uk/uksi/2009/497/article/19
+    - title: The Social Security Benefits Up-rating Order 2010, article 19(10) and 20(9)
+      href: https://www.legislation.gov.uk/uksi/2010/793/article/19
+    - title: The Social Security (Coronavirus) (Further Measures) Regulations 2020, regulation 5
+      href: https://www.legislation.gov.uk/uksi/2020/371/regulation/5
+    - title: The Social Security (Coronavirus) (Further Measures) Regulations (Northern Ireland) 2020, regulation 5
+      href: https://www.legislation.gov.uk/nisr/2020/53/regulation/5

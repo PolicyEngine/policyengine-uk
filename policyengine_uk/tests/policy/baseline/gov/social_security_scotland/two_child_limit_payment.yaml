@@ -1,5 +1,5 @@
 # Two Child Limit Payment tests
-# Payment is active from April 2025 onwards (fiscal year 2025-26)
+# The proposed regulations were never laid. Positive cases enable a counterfactual.
 
 - name: No payment in Scotland before April 2025
   period: 2024
@@ -28,10 +28,11 @@
     # Payment not in effect before April 2025
     two_child_limit_payment: 0
 
-- name: Payment in Scotland in 2025
+- name: Counterfactual - Payment in Scotland in 2025
   period: 2025
-  absolute_error_margin: 1
+  absolute_error_margin: 0.01
   input:
+    gov.social_security_scotland.two_child_limit_payment.in_effect: true
     people:
       parent:
         age: 30
@@ -53,12 +54,13 @@
         region: SCOTLAND
   output:
     # UC child element amount * 12 months * 1 affected child
-    two_child_limit_payment: 3514
+    two_child_limit_payment: 3513.72
 
-- name: Payment for multiple affected children in Scotland
+- name: Counterfactual - Payment for multiple affected children in Scotland
   period: 2025
-  absolute_error_margin: 1
+  absolute_error_margin: 0.01
   input:
+    gov.social_security_scotland.two_child_limit_payment.in_effect: true
     people:
       parent:
         age: 30
@@ -83,12 +85,13 @@
         region: SCOTLAND
   output:
     # UC child element amount * 12 months * 2 affected children
-    two_child_limit_payment: 7027
+    two_child_limit_payment: 7027.44
 
-- name: Large family with three affected children in Scotland
+- name: Counterfactual - Large family with three affected children in Scotland
   period: 2025
-  absolute_error_margin: 1
+  absolute_error_margin: 0.01
   input:
+    gov.social_security_scotland.two_child_limit_payment.in_effect: true
     people:
       parent:
         age: 35
@@ -116,12 +119,13 @@
         region: SCOTLAND
   output:
     # UC child element amount * 12 months * 3 affected children
-    two_child_limit_payment: 10541
+    two_child_limit_payment: 10541.16
 
 - name: No payment if no children affected in Scotland
   period: 2025
   absolute_error_margin: 1
   input:
+    gov.social_security_scotland.two_child_limit_payment.in_effect: true
     people:
       parent:
         age: 30
@@ -145,6 +149,7 @@
   period: 2025
   absolute_error_margin: 1
   input:
+    gov.social_security_scotland.two_child_limit_payment.in_effect: true
     people:
       parent:
         age: 30
@@ -171,6 +176,7 @@
   period: 2025
   absolute_error_margin: 1
   input:
+    gov.social_security_scotland.two_child_limit_payment.in_effect: true
     people:
       parent:
         age: 30
@@ -197,6 +203,7 @@
   period: 2025
   absolute_error_margin: 1
   input:
+    gov.social_security_scotland.two_child_limit_payment.in_effect: true
     people:
       parent:
         age: 30
@@ -219,10 +226,11 @@
   output:
     two_child_limit_payment: 0
 
-- name: Two parent household in Scotland
+- name: Counterfactual - Two parent household in Scotland
   period: 2025
-  absolute_error_margin: 1
+  absolute_error_margin: 0.01
   input:
+    gov.social_security_scotland.two_child_limit_payment.in_effect: true
     people:
       parent_1:
         age: 35
@@ -245,9 +253,64 @@
         members: [parent_1, parent_2, child_1, child_2, child_3]
         region: SCOTLAND
   output:
-    two_child_limit_payment: 3514
+    two_child_limit_payment: 3513.72
 
-- name: Payment continues in Scotland in 2026
+- name: Counterfactual - Payment continues in Scotland in 2026
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.social_security_scotland.two_child_limit_payment.in_effect: true
+    people:
+      parent:
+        age: 30
+      child_1:
+        age: 5
+        uc_is_child_limit_affected: false
+      child_2:
+        age: 3
+        uc_is_child_limit_affected: false
+      child_3:
+        age: 1
+        uc_is_child_limit_affected: true
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, child_3]
+    households:
+      household:
+        members: [parent, child_1, child_2, child_3]
+        region: SCOTLAND
+  output:
+    # Counterfactual amount uses the 2026 UC child element
+    two_child_limit_payment: 3647.28
+
+- name: No baseline payment in Scotland in 2025
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    people:
+      parent:
+        age: 30
+      child_1:
+        age: 5
+        uc_is_child_limit_affected: false
+      child_2:
+        age: 3
+        uc_is_child_limit_affected: false
+      child_3:
+        age: 1
+        uc_is_child_limit_affected: true
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, child_3]
+    households:
+      household:
+        members: [parent, child_1, child_2, child_3]
+        region: SCOTLAND
+  output:
+    # No regulations introduced the payment
+    two_child_limit_payment: 0
+
+- name: No baseline payment in Scotland in 2026
   period: 2026
   absolute_error_margin: 1
   input:
@@ -271,5 +334,5 @@
         members: [parent, child_1, child_2, child_3]
         region: SCOTLAND
   output:
-    # Payment continues as two-child limit still in effect
-    two_child_limit_payment: 3647.28
+    # No regulations introduced the payment
+    two_child_limit_payment: 0

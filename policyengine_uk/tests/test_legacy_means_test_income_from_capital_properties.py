@@ -34,7 +34,8 @@ Invariants, for any generated population of families:
    16,000 capital limit (40 steps of 250 at 4.35 a month, 2,088 a year), nil
    outside the national schemes (Northern Ireland, and English people under
    pension age, whose local schemes set their own), and never falls when
-   savings rise while the family stays on the same route.
+   savings rise while the family stays on the same route (pensioner, UC
+   award, passport, guarantee credit, savings credit only).
 """
 
 import numpy as np
@@ -245,6 +246,8 @@ def test_council_tax_reduction_tariff_income_is_bounded_and_monotone(
     variables = [
         "council_tax_reduction_tariff_income",
         "council_tax_reduction_pensioner",
+        "council_tax_reduction_universal_credit_award",
+        "council_tax_reduction_relevant_income_based_benefit",
         "in_receipt_of_guarantee_credit",
         "in_receipt_of_savings_credit_only",
     ]
@@ -262,7 +265,10 @@ def test_council_tax_reduction_tariff_income_is_bounded_and_monotone(
 
     def route(values):
         return (
-            values["council_tax_reduction_pensioner"].astype(int) * 4
+            values["council_tax_reduction_pensioner"].astype(int) * 16
+            + values["council_tax_reduction_universal_credit_award"].astype(int) * 8
+            + values["council_tax_reduction_relevant_income_based_benefit"].astype(int)
+            * 4
             + values["in_receipt_of_guarantee_credit"].astype(int) * 2
             + values["in_receipt_of_savings_credit_only"].astype(int)
         )

@@ -1,20 +1,36 @@
 import datetime
+from typing import NamedTuple
 
 from policyengine_core.model_api import *
 from policyengine_core import periods
+
+from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases import (
+    canonicalize_lsr_parameter_path,
+)
 
 
 def str_to_instant(s):
     return periods.Instant(tuple(map(lambda s: int(s), s.split("-"))))
 
 
+# Parameter metadata a dated reform records (``write_assignment``) when its
+# change starts on or before the parameter's first stated value: that value,
+# which backdating then extends instead of the change's. Recording it rather
+# than writing it at the backdating date keeps the generation steps, which run
+# before backdating and read a parameter's first year, seeing the parameter as
+# current law does.
+BACKDATED_VALUE = "backdated_value"
+
+
 def backdate_parameters(root: str = None, first_instant: str = "2021-01-01") -> Reform:
     first_instant = str_to_instant(first_instant)
     node = root
     for param in node.get_descendants():
-        if hasattr(param, "values_list"):
+        if isinstance(param, Parameter):
             earliest = param.values_list[-1]
             earliest_value = earliest.value
+            if param.metadata and BACKDATED_VALUE in param.metadata:
+                earliest_value = param.metadata.pop(BACKDATED_VALUE)
             earliest_instant = str_to_instant(earliest.instant_str)
             if first_instant < earliest_instant:
                 num_days = (earliest_instant.date - first_instant.date).days
@@ -117,4 +133,136 @@ def convert_to_fiscal_year_parameters(parameters):
                     period=f"{year}",
                     value=value,
                 )
+    return parameters
+
+
+_STATE_PENSION_AGE_REPLACEMENT = (
+    "State Pension age now follows the statutory timetable by date of birth "
+    "(Pensions Act 1995 Sch 4 para 1). Change the rows of "
+    "gov.dwp.state_pension.age.age_by_birth_date (the age, in months) or "
+    "gov.dwp.state_pension.age.day_by_birth_date (the day) for the births you "
+    "want to change, for example gov.dwp.state_pension.age.age_by_birth_date[14]"
+    ".amount for people born from 6 March 1961 until the next bracket, or "
+    "gov.dwp.state_pension.age.male.age for men born before 6 December 1953. "
+    "Read a person's State Pension age from the state_pension_age or is_SP_age "
+    "variables."
+)
+
+_OBR_ELASTICITIES_REPLACEMENT = (
+    "Nothing read it, so setting it never changed any output. The OBR's labour "
+    "supply elasticities are applied by Simulation.apply_dynamics, called on a "
+    "simulation with a baseline, when gov.dynamic.obr_labour_supply_assumptions "
+    "is true, which it is by default."
+)
+
+
+class RemovedParameter(NamedTuple):
+    label: str
+    replacement: str
+
+
+# Parameters removed from the tree, with the label of the node left at each
+# path and what replaces the parameter, so a reform or saved policy that still
+# names one fails with directions instead of a bare lookup error.
+REMOVED_PARAMETERS = {
+    "gov.dwp.state_pension.age.male": RemovedParameter(
+        "removed male State Pension age parameter", _STATE_PENSION_AGE_REPLACEMENT
+    ),
+    "gov.dwp.state_pension.age.female": RemovedParameter(
+        "removed female State Pension age parameter", _STATE_PENSION_AGE_REPLACEMENT
+    ),
+    "gov.dwp.carer_premium.couple": RemovedParameter(
+        "removed couple carer premium parameter",
+        "The carer premium is calculated per qualifying claimant or partner. "
+        "Change gov.dwp.carer_premium.single (the per-person weekly amount) instead.",
+    ),
+    "gov.simulation.labour_supply_responses.obr_elasticities": RemovedParameter(
+        "removed OBR elasticities switch", _OBR_ELASTICITIES_REPLACEMENT
+    ),
+    "gov.dwp.pension_credit.income.savings_credit_excluded_sources": RemovedParameter(
+        "removed duplicate Savings Credit excluded-income list",
+        "The model never read it. Change "
+        "gov.dwp.pension_credit.savings_credit.excluded_income, the list of "
+        "income that is not qualifying income for Savings Credit (SPC Regs "
+        "2002 reg 9), instead.",
+    ),
+}
+
+
+def check_parameter_not_removed(path: str) -> None:
+    """Raise a ValueError naming the replacement if path was removed.
+
+    A legacy ``labor_supply_responses`` path is checked as its
+    ``labour_supply_responses`` equivalent.
+    """
+    removed = REMOVED_PARAMETERS.get(canonicalize_lsr_parameter_path(path))
+    if removed is not None:
+        raise ValueError(
+            f"The parameter {path} has been removed. {removed.replacement}"
+        )
+
+
+class RemovedParameterNode(ParameterNode):
+    """Keep a removed path discoverable without accepting scalar reforms.
+
+    Male State Pension age still has valid children, so the compatibility
+    node must support normal tree traversal and cloning. API reform code
+    reads values_list before updating; both operations give migration help.
+    Read at an instant, the node is an empty node rather than an error, so
+    that its parent can still be read at an instant.
+    """
+
+    @property
+    def values_list(self):
+        check_parameter_not_removed(self.name)
+
+    def update(self, *args, **kwargs):
+        check_parameter_not_removed(self.name)
+
+
+class RemovedParameterRoot(ParameterNode):
+    """Reject explicit lookups of removed scalars, including empty policies."""
+
+    def get_child(self, path: str):
+        check_parameter_not_removed(path)
+        return super().get_child(path)
+
+
+def add_removed_parameter_aliases(parameters: ParameterNode) -> ParameterNode:
+    if not isinstance(parameters, RemovedParameterRoot):
+        root = RemovedParameterRoot(parameters.name, data={})
+        root.__dict__ = parameters.__dict__.copy()
+        for child in root.children.values():
+            child.parent = root
+        parameters = root
+    for path, removed in REMOVED_PARAMETERS.items():
+        parent_path, name = path.rsplit(".", 1)
+        parent = parameters
+        for part in parent_path.split("."):
+            parent = parent.children[part]
+        previous = parent.children.get(name)
+        if isinstance(previous, RemovedParameterNode):
+            continue
+        if previous is not None and not isinstance(previous, ParameterNode):
+            raise ValueError(
+                f"{path} is listed in REMOVED_PARAMETERS but the parameter still "
+                "exists. Delete its YAML file, or remove it from REMOVED_PARAMETERS."
+            )
+        alias = RemovedParameterNode(path, data={})
+        if previous is not None:
+            alias.metadata.update(previous.metadata)
+            for child_name, child in previous.children.items():
+                alias.add_child(child_name, child)
+        alias.description = (
+            f"The parameter {path} has been removed. {removed.replacement}"
+        )
+        alias.metadata.update(
+            label=removed.label,
+            removed=True,
+            economy=False,
+            household=False,
+        )
+        parent.children[name] = alias
+        setattr(parent, name, alias)
+        alias.parent = parent
     return parameters

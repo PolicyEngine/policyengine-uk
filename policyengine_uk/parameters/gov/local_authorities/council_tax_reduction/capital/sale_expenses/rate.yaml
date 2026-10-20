@@ -1,9 +1,11 @@
 description: >
   Share of the current market or surrender value deducted from council tax
   reduction capital where there would be expenses attributable to sale. It is
-  a flat 10% whatever the actual costs. The amount of any encumbrance secured
-  on the asset is also deducted, but the data cannot identify debt secured on
-  property other than the home, so that deduction is not modelled.
+  a flat 10% whatever the actual costs, taken from the market value before
+  any encumbrance secured on the asset is deducted (DMG 29624). The
+  encumbrance is then deducted where an asset-specific secured-debt input
+  exists (other residential and non-residential property); those inputs
+  default to nil because the survey does not record them.
 values:
   2013-04-01: 0.1
 metadata:
@@ -25,3 +27,5 @@ metadata:
       href: https://www.legislation.gov.uk/ssi/2012/303/regulation/46
     - title: The Council Tax Reduction (Scotland) Regulations 2021 reg. 70
       href: https://www.legislation.gov.uk/ssi/2021/249/regulation/70
+    - title: Decision Makers' Guide chapter 29, para. 29624 (sale expenses before encumbrances)
+      href: https://assets.publishing.service.gov.uk/media/69d8f3a496c86b751317022c/dmg-Ch-29.pdf

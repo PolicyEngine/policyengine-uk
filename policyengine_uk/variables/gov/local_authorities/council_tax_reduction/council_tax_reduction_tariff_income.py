@@ -24,7 +24,9 @@ class council_tax_reduction_tariff_income(Variable):
         "Pensioners: £1 a week for each £500, or part of £500, of capital over "
         "£10,000. People under pension age in Wales and Scotland: £1 a week "
         "for each £250, or part of £250, over £6,000; with an award of "
-        "Universal Credit, the Universal Credit assumed yield of £4.35 a month "
+        "Universal Credit (council_tax_reduction_universal_credit_award, "
+        "including an award the benefit cap or deductions reduce to nil), the "
+        "Universal Credit assumed yield of £4.35 a month "
         "for each £250, or part, over £6,000, which the Welsh scheme and the "
         "Scottish scheme to March 2022 take from the Secretary of State's "
         "assessment of income and the Scottish scheme from April 2022 sets at "
@@ -113,12 +115,16 @@ class council_tax_reduction_tariff_income(Variable):
             default=0,
         )
         pensioner = benunit("council_tax_reduction_pensioner", period)
-        has_uc_award = benunit("universal_credit", period) > 0
+        # An award of Universal Credit, including one the benefit cap or
+        # deductions reduce to nil, selects the UC assumed yield.
+        universal_credit_award = benunit(
+            "council_tax_reduction_universal_credit_award", period
+        )
         income_based_benefit = benunit(
             "council_tax_reduction_relevant_income_based_benefit", period
-        )
+        ) & ~benunit("council_tax_reduction_head_applies_alone", period)
         tariff_income = select(
-            [pensioner, has_uc_award, income_based_benefit],
+            [pensioner, universal_credit_award, income_based_benefit],
             [
                 pensioner_weekly * WEEKS_IN_YEAR,
                 universal_credit_monthly * MONTHS_IN_YEAR,

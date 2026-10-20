@@ -1,0 +1,11 @@
+description: >-
+  Age below which a child lowers the expected hours of their responsible carer
+  for Universal Credit.
+values:
+  2013-04-29: 13
+metadata:
+  unit: year
+  label: Universal Credit responsible carer reduced expected hours child age limit
+  reference:
+    - title: The Universal Credit Regulations 2013 reg. 88(2)(b)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/88

@@ -1,6 +1,7 @@
 - name: Capped at 0
   period: 2025
   input:
+    would_claim_uc: false  # not on Universal Credit, which passports the means test
     # Benefits
     child_benefit: 1_000
     income_support: 0
@@ -25,6 +26,7 @@
 - name: Baseline inputs
   period: 2025
   input:
+    would_claim_uc: false  # not on Universal Credit, which passports the means test
     # Benefits
     child_benefit: 1_000
     income_support: 0
@@ -47,15 +49,18 @@
     housing_benefit_applicable_income: 1_000
 
 - name: Pension contributions halved
+  # SI 2006/213 reg 36(3)(b): half of the pension contributions come off
+  # earnings. 3,250 - 1,500 / 2 = 2,500.
   period: 2025
   input:
+    would_claim_uc: false  # not on Universal Credit, which passports the means test
     # Benefits
-    child_benefit: 1_000
-    income_support: 2_250
+    child_benefit: 0
+    income_support: 0
     jsa_income: 0
     esa_income: 0
     # Income
-    employment_income: 0
+    employment_income: 3_250
     self_employment_income: 0
     property_income: 0
     private_pension_income: 0
@@ -70,56 +75,191 @@
   output:
     housing_benefit_applicable_income: 2_500
 
-- name: Added tax credits; rent from let property is capital, not income
-  # An isolated check of the formula's components, not a full assessment: in
-  # law an Income Support recipient's whole income is disregarded (Sch 5
-  # para 4), as is child benefit (para 65). HB Regs 2006 reg 46(4) treats
-  # income derived from capital as capital and Sch 5 para 17 disregards it, so
-  # the £1,000 of property income does not count: 1,000 child benefit + 2,250
-  # IS + 1,000 tax credits - 1,500 / 2.
+- name: Added Tax and income
+  # Earnings plus working tax credit, which counts in full where Sch 5
+  # para 56 does not apply. 3,250 + 2,000 - 1,500 / 2 = 4,500.
   period: 2025
   input:
+    would_claim_uc: false  # not on Universal Credit, which passports the means test
     # Benefits
-    child_benefit: 1_000
-    income_support: 2_250
+    child_benefit: 0
+    income_support: 0
     jsa_income: 0
     esa_income: 0
     # Income
-    employment_income: 0
+    employment_income: 3_250
     self_employment_income: 0
-    property_income: 1_000
+    property_income: 0
     private_pension_income: 0
     # Tax
     income_tax: 0
     national_insurance: 0
     # Other 
-    tax_credits: 1_000
+    tax_credits: 2_000
     pension_contributions: 1_500
     housing_benefit_applicable_income_disregard: 0
     housing_benefit_applicable_income_childcare_element: 0
   output:
-    housing_benefit_applicable_income: 3_500
+    housing_benefit_applicable_income: 4_500
 
 - name: Pension contributions capped at 0
+  # Applicable income is floored at nil: 3,250 - 100,000 / 2 < 0.
   period: 2025
   input:
+    would_claim_uc: false  # not on Universal Credit, which passports the means test
     # Benefits
-    child_benefit: 1_000
-    income_support: 2_250
+    child_benefit: 0
+    income_support: 0
     jsa_income: 0
     esa_income: 0
     # Income
-    employment_income: 0
+    employment_income: 3_250
     self_employment_income: 0
-    property_income: 1_000
+    property_income: 0
     private_pension_income: 0
     # Tax
     income_tax: 0
     national_insurance: 0
     # Other 
-    tax_credits: 1_000
+    tax_credits: 0
     pension_contributions: 100_000
     housing_benefit_applicable_income_disregard: 0
     housing_benefit_applicable_income_childcare_element: 0
   output:
     housing_benefit_applicable_income: 0
+
+- name: Continuing council tenant retains the default half-pension deduction
+  # SI 2006/213 reg 36(3)(c): half of the personal pension contribution.
+  # Earnings are below the tax and NI thresholds. Net earnings are
+  # 12,000 - 0.5 * 2,000 = 11,000; the single earnings disregard is 5 * 52.
+  # Applicable income is 10,740 and the allowance is 92.05 * 52 = 4,786.60.
+  # HB = 10,000 - 0.65 * (10,740 - 4,786.60) = 6,130.29.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 12_000
+        weekly_hours: 16
+        personal_pension_contributions: 2_000
+        housing_benefit_reported: 1_000  # continuing award, not calculated cash
+    benunits:
+      benunit:
+        members: [person]
+        would_claim_uc: false
+    households:
+      household:
+        members: [person]
+        tenure_type: RENT_FROM_COUNCIL
+        region: LONDON
+        num_bedrooms: 1
+        rent: 10_000
+  output:
+    housing_benefit: 6_130.29
+    housing_benefit_applicable_income: 10_740
+    housing_benefit_net_earnings: 11_000
+    housing_benefit_applicable_income_disregard: 260
+    housing_benefit_applicable_amount: 4_786.60
+    pension_contributions: 2_000
+    income_tax: 0
+    national_insurance: 0
+    housing_benefit_non_dep_deductions: 0
+    housing_benefit_benefit_cap_reduction: 0
+    housing_benefit_on_passporting_benefit: false
+    housing_benefit_eligible: true
+    would_claim_housing_benefit: true
+    legacy_benefits_closed: false
+    universal_credit: 0
+
+- name: Quarter-pension deduction reform reduces the continuing Housing Benefit award
+  # Model reform, not current law: 12,000 - 0.25 * 2,000 - 260 = 11,240.
+  # HB = 10,000 - 0.65 * (11,240 - 4,786.60) = 5,805.29.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.dwp.housing_benefit.means_test.pension_contribution_deduction_rate: 0.25
+    people:
+      person:
+        age: 40
+        employment_income: 12_000
+        weekly_hours: 16
+        personal_pension_contributions: 2_000
+        housing_benefit_reported: 1_000
+    benunits:
+      benunit:
+        members: [person]
+        would_claim_uc: false
+    households:
+      household:
+        members: [person]
+        tenure_type: RENT_FROM_COUNCIL
+        region: LONDON
+        num_bedrooms: 1
+        rent: 10_000
+  output:
+    housing_benefit: 5_805.29
+    housing_benefit_applicable_income: 11_240
+    housing_benefit_net_earnings: 11_500
+    housing_benefit_applicable_income_disregard: 260
+    housing_benefit_applicable_amount: 4_786.60
+
+- name: Zero pension deduction reform counts the full income
+  # Model reform: 12,000 - 0 * 2,000 - 260 = 11,740.
+  # HB = 10,000 - 0.65 * (11,740 - 4,786.60) = 5,480.29.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.dwp.housing_benefit.means_test.pension_contribution_deduction_rate: 0
+    people:
+      person:
+        age: 40
+        employment_income: 12_000
+        weekly_hours: 16
+        personal_pension_contributions: 2_000
+        housing_benefit_reported: 1_000
+    benunits:
+      benunit:
+        members: [person]
+        would_claim_uc: false
+    households:
+      household:
+        members: [person]
+        tenure_type: RENT_FROM_COUNCIL
+        region: LONDON
+        num_bedrooms: 1
+        rent: 10_000
+  output:
+    housing_benefit_applicable_income: 11_740
+    housing_benefit: 5_480.29
+    housing_benefit_net_earnings: 12_000
+
+- name: Full pension deduction reform increases the continuing Housing Benefit award
+  # Model reform: 12,000 - 1 * 2,000 - 260 = 9,740.
+  # HB = 10,000 - 0.65 * (9,740 - 4,786.60) = 6,780.29.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.dwp.housing_benefit.means_test.pension_contribution_deduction_rate: 1
+    people:
+      person:
+        age: 40
+        employment_income: 12_000
+        weekly_hours: 16
+        personal_pension_contributions: 2_000
+        housing_benefit_reported: 1_000
+    benunits:
+      benunit:
+        members: [person]
+        would_claim_uc: false
+    households:
+      household:
+        members: [person]
+        tenure_type: RENT_FROM_COUNCIL
+        region: LONDON
+        num_bedrooms: 1
+        rent: 10_000
+  output:
+    housing_benefit: 6_780.29
+    housing_benefit_applicable_income: 9_740
+    housing_benefit_net_earnings: 10_000

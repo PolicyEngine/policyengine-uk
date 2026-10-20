@@ -16,14 +16,16 @@ class housing_benefit_pension_age_regulations_apply(Variable):
         "benefit cap (Part 8A of the working-age regulations) does not reach "
         "Housing Benefit under the pension-age regulations. A Universal Credit "
         "award counts only where a claimant or partner is under the qualifying "
-        "age. That is right for the cap, which SI 2014/1230 reg 60C disapplies "
-        "for a claim where every claimant has reached that age, but not for "
-        "reg 5 itself, under which such an award would bring in the "
-        "working-age regulations. The model has no lawful such awards (tax "
-        "credit migrants under SI 2014/1230 reg 60A are not modelled), and its "
-        "Universal Credit eligibility test also needs a claimant or partner "
-        "under State Pension age, so the pension-age regulations are the right "
-        "result."
+        "age. That is not right for reg 5 itself, under which such an award "
+        "would bring in the working-age regulations. The model's only such "
+        "awards go to tax "
+        "credit migrants under SI 2014/1230 reg 60A (claims_uc_at_legacy_"
+        "closure). While entitled, they leave the pension-age route and get "
+        "no Housing Benefit under either set of regulations; a claim with "
+        "nil entitlement keeps that route. Their Universal Credit awards are "
+        "not capped (SI 2014/1230 reg 60C), through Universal Credit's own "
+        "exception (is_uc_benefit_cap_exempt_qualifying_age), not this "
+        "variable, which the Housing Benefit cap reads (HB Regs 2006 reg 5)."
     )
     definition_period = YEAR
     reference = (
@@ -35,9 +37,11 @@ class housing_benefit_pension_age_regulations_apply(Variable):
     def formula(benunit, period, parameters):
         person = benunit.members
         claimant_or_partner = person("is_claimant_or_partner", period)
-        # is_SP_age stands in for the qualifying age for State Pension Credit,
-        # as elsewhere in the model.
-        over_qualifying_age = person("is_SP_age", period)
+        # HB (SPC) Regs 2006 reg 5(1): "has attained the qualifying age for
+        # state pension credit"; reg 5(2) excludes the benefits below.
+        over_qualifying_age = person(
+            "has_attained_state_pension_credit_qualifying_age", period
+        )
         attained_qualifying_age = benunit.any(claimant_or_partner & over_qualifying_age)
         # Universal Credit needs a claimant or partner under the qualifying age
         # (WRA 2012 s.4(1)(b); UC Regs 2013 reg 3(2)(a)), except for tax credit

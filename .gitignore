@@ -55,6 +55,7 @@ policyengine_uk/calibration/*.h5
 *.ipynb
 !docs/**/*.ipynb
 !uprating_growth_factors.csv
+!policyengine_uk/parameters/gov/dwp/LHA/lha_published_rates_sources.csv
 
 # Virtual environments
 .venv/

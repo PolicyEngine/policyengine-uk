@@ -17,8 +17,8 @@
 # SSCBA 1992 s.6(3) ends primary Class 1 at pensionable age "without prejudice
 # to any liability to pay secondary Class 1 contributions". Secondary
 # contributions are due on earners over 16 (s.6(1)(b)) with no upper age.
-# The model annualises the weekly secondary threshold as 52 weeks: 2026-27 is
-# £96 x 52 = £4,992 at 15%; 2024-25 is £175 x 52 = £9,100 at 13.8%.
+# The annual secondary threshold is £5,000 at 15% in 2026-27 (SI 2001/1004
+# reg 11(3A)(b)) and £175 x 52 = £9,100 at 13.8% in 2024-25.
 
 - name: Employer NI is charged on an employee aged 70 (2026)
   period: 2026
@@ -28,11 +28,11 @@
     employment_income: 40_000
   output:
     ni_class_1_employee: 0
-    ni_class_1_employer: 5_251.20  # 0.15 x (40,000 - 4,992)
-    ni_employer: 5_251.20
+    ni_class_1_employer: 5_250.00  # 0.15 x (40,000 - 5,000)
+    ni_employer: 5_250.00
     national_insurance: 0
-    total_national_insurance: 5_251.20
-    employer_cost: 45_251.20
+    total_national_insurance: 5_250.00
+    employer_cost: 45_250.00
 
 - name: Employer NI is charged on an employee aged 70 (2024)
   period: 2024
@@ -52,7 +52,7 @@
     employment_income: 60_000
   output:
     ni_class_1_employee: 0
-    ni_class_1_employer: 8_251.20  # 0.15 x (60,000 - 4,992)
+    ni_class_1_employer: 8_250.00  # 0.15 x (60,000 - 5,000)
 
 - name: Earnings below the secondary threshold over state pension age
   period: 2026
@@ -77,7 +77,7 @@
     ni_liable: true
     ni_class_1_secondary_liable: true
     ni_class_1_employee: 2_194.40  # 0.08 x (40,000 - 12,570)
-    ni_class_1_employer: 5_251.20
+    ni_class_1_employer: 5_250.00
 
 - name: At state pension age, only the employer side is charged
   period: 2026
@@ -90,7 +90,7 @@
     ni_liable: false
     ni_class_1_secondary_liable: true
     ni_class_1_employee: 0
-    ni_class_1_employer: 5_251.20
+    ni_class_1_employer: 5_250.00
 
 - name: No employer NI on an earner under 16
   period: 2026
@@ -101,3 +101,119 @@
   output:
     ni_class_1_employee: 0
     ni_class_1_employer: 0
+
+# SI 2001/1004 reg 11(3A)(b): the annual secondary threshold is £5,000 from
+# 2025-26, not 52 x the rounded weekly £96 = £4,992 (#1967).
+
+- name: No employer NI on annual earnings of exactly £5,000 (2025-26)
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    ni_class_1_income: 5_000
+  output:
+    ni_class_1_employer: 0
+
+- name: Employer NI on annual earnings of £4,992 to £5,000 is nil (2026-27)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    ni_class_1_income: 4_996
+  output:
+    ni_class_1_employer: 0
+
+- name: Employer NI starts above £5,000 a year (2026-27)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    ni_class_1_income: 6_000
+  output:
+    ni_class_1_employer: 150  # 0.15 x (6,000 - 5,000)
+
+- name: Employer NI on £40,000 in 2025-26 uses the £5,000 annual threshold
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    ni_class_1_income: 40_000
+  output:
+    ni_class_1_employer: 5_250  # 0.15 x (40,000 - 5,000)
+
+# 2015-16 and 2016-17: the secondary threshold was £156 a week (SI 2001/1004
+# reg 10(d)) and £8,112 for an annual earnings period (reg 11(3A)(b)), at
+# 13.8%. £155 was the primary threshold (#2178).
+
+- name: Employer NI uses the £8,112 annual secondary threshold in 2015-16
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    ni_class_1_income: 20_000
+  output:
+    ni_class_1_employer: 1_640.54  # 0.138 x (20,000 - 8,112) = 1,640.544
+
+- name: No employer NI at the annual secondary threshold in 2016-17
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    ni_class_1_income: 8_112
+  output:
+    ni_class_1_employer: 0
+
+- name: No employer NI just below the annual secondary threshold in 2016-17
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    ni_class_1_income: 8_100  # 52 x £155 = £8,060 would charge £5.52
+  output:
+    ni_class_1_employer: 0
+
+# 2022-23: the Health and Social Care Levy Act 2021 s.5(2)(b) made the
+# secondary percentage 15.05%, until the Health and Social Care Levy (Repeal)
+# Act 2022 s.2(1) restored 13.8% for earnings paid from 6 November 2022. Model
+# year 2022 takes the rate at 30 April, 15.05%, as the employee main rate takes
+# 13.25%. The annual secondary threshold is £175 x 52 = £9,100. HMRC, "Rates and
+# thresholds for employers 2022 to 2023": 15.05% from 6 April to 5 November
+# 2022, 13.8% from 6 November 2022 to 5 April 2023, £9,100 a year.
+
+- name: Employer NI on £30,000 in 2022-23 is at the 15.05% levy rate
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 30_000
+  output:
+    ni_class_1_employer: 3_145.45  # 0.1505 x (30,000 - 9,100)
+    ni_employer: 3_145.45
+
+- name: Employer NI on £30,000 in 2023-24 is back at 13.8%
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 30_000
+  output:
+    ni_class_1_employer: 2_884.20  # 0.138 x (30,000 - 9,100)
+    ni_employer: 2_884.20
+
+- name: Employer NI on £30,000 in 2021-22 is at 13.8%
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 30_000
+  output:
+    ni_class_1_employer: 2_920.08  # 0.138 x (30,000 - 170 x 52)
+
+- name: The 2022-23 levy rate applies above the upper earnings limit
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 100_000
+  output:
+    ni_class_1_employer: 13_680.45  # 0.1505 x (100,000 - 9,100)

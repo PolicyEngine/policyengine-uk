@@ -1,0 +1,18 @@
+description: >
+  Whether the Newham council tax reduction scheme for people under pension age
+  disregards the whole capital of an applicant on Income Support, income-based
+  Jobseeker's Allowance or income-related Employment and Support Allowance.
+  The council's 2026 scheme omits the default scheme's disregard of the whole
+  capital of an applicant on Income Support, income-based Jobseeker's
+  Allowance or income-related Employment and Support Allowance: Schedule 10
+  paragraphs 8 and 9 are left blank, so that capital is tested against the
+  limit.
+metadata:
+  label: Newham council tax reduction disregards passported applicants' capital
+  unit: bool
+  period: year
+  reference:
+    - title: London Borough of Newham Council Tax Reduction Scheme 2026, Schedule 10 paras. 8-9
+      href: https://www.newham.gov.uk/downloads/file/10753/council-tax-reduction-scheme-2026
+values:
+  2026-04-01: false
