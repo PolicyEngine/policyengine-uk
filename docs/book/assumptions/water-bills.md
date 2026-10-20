@@ -90,6 +90,8 @@ Ofwat's bills cover England and Wales. When a dataset is projected forward, each
 - Scotland takes `scottish_water.water_bills`. Scottish Water sets household charges within limits from the [Water Industry Commission for Scotland](https://wics.scot/) (WICS), and every council tax band's charge is a fixed fraction of Band D, so each band rises by the same percentage.
 - Northern Ireland has no domestic water charges, so any charge a dataset gives its households is held flat.
 
+This holds to the end of the dataset projection (2032). After it, policyengine-core grows every household's charge by the index the variable declares, Ofwat's England and Wales series, as it did before this split.
+
 | Year | Scottish Water growth | Source |
 |------|-------------|--------|
 | 2022 | 4.2% | [WICS, charges scheme 2022-23](https://wics.scot/publications/price-setting/strategic-review-charges-2021-27/scottish-waters-charges-scheme/charges-scheme-2022-23) |
@@ -101,6 +103,6 @@ Ofwat's bills cover England and Wales. When a dataset is projected forward, each
 | 2028 | 3.9% | As above |
 | 2029 | 4.1% | As above, with CPI at 2.1% |
 
-Each year is the charging year starting in April, so 2025 is 2025-26. Later years hold the 2029-30 rate. [WICS publishes its Final Determination for 2027-33](https://wics.scot/latest/wics-publishes-2027-33-draft-determination) on 29 October 2026; the 2027-2029 values should then be replaced with it.
+Each year is the charging year starting in April, so 2025 is 2025-26. Later years to 2032 hold the 2029-30 rate. [WICS publishes its Final Determination for 2027-33](https://wics.scot/latest/wics-publishes-2027-33-draft-determination) on 29 October 2026; the 2027-2029 values should then be replaced with it.
 
 `policyengine_uk/utils/create_ahc_deflator.py` still reads the England and Wales index. It is a standalone script that the model does not run.

@@ -61,6 +61,8 @@ _COUNCIL_TAX_GROWTH_SERIES = {
 # household bill in England and Wales. Scottish Water's charges follow limits
 # set by the Water Industry Commission for Scotland. Northern Ireland has no
 # domestic water charges, so any a dataset gives its households are held flat.
+# Past PROJECTION_END_YEAR, policyengine-core grows the column by the index
+# its variable declares (Ofwat's) in every country.
 # An unknown region takes the England and Wales series, which covers most
 # households in Great Britain.
 WATER_BILLS_GROWTH = "gov.economic_assumptions.yoy_growth"
@@ -438,13 +440,14 @@ def uprate_water_and_sewerage_charges(
             "Cannot uprate water and sewerage charges for unrecognised regions: "
             f"{sorted(unrecognised)}"
         )
-    growth = parameters.get_child(WATER_BILLS_GROWTH)
     growth_by_region = {}
     for name, series in _WATER_GROWTH_SERIES.items():
         rate = (
             None
             if series is None
-            else growth.get_child(series)(current_year.time_period)
+            else parameters.get_child(f"{WATER_BILLS_GROWTH}.{series}")(
+                current_year.time_period
+            )
         )
         growth_by_region[name] = 0.0 if rate is None else rate
     growth_rates = region.map(growth_by_region).to_numpy()
