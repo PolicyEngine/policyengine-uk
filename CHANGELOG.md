@@ -1,3 +1,10 @@
+## [2.141.5] - 2026-10-20
+
+### Fixed
+
+- Means-test the Council Tax Reduction applicant and their partner rather than the benefit unit's claimant and partner, so a household head who is liable for the council tax but shares a benefit unit with a young couple is assessed on her own income, allowance, premiums and exemption.
+
+
 ## [2.141.4] - 2026-10-20
 
 ### Fixed

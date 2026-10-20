@@ -419,9 +419,10 @@ def universal_credit_route(values, i):
 
 
 def passported(values, i):
+    # council_tax_reduction_relevant_income_based_benefit already leaves out a
+    # household head who applies alone (#2078).
     return (
         values["council_tax_reduction_relevant_income_based_benefit"][i]
-        and not values["council_tax_reduction_head_applies_alone"][i]
         and not values["council_tax_reduction_pensioner"][i]
     )
 

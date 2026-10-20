@@ -70,10 +70,14 @@ class council_tax_reduction_assessable_capital(Variable):
     ]
 
     def formula(benunit, period, parameters):
-        in_receipt_of_guarantee_credit = benunit(
+        # The benefit unit's Pension Credit is its claimant's and partner's, not
+        # a household head's who applies alone
+        # (council_tax_reduction_head_applies_alone).
+        applicant_family = ~benunit("council_tax_reduction_head_applies_alone", period)
+        in_receipt_of_guarantee_credit = applicant_family & benunit(
             "in_receipt_of_guarantee_credit", period
         )
-        has_savings_credit_only_award = benunit(
+        has_savings_credit_only_award = applicant_family & benunit(
             "in_receipt_of_savings_credit_only", period
         )
         country = benunit.household("country", period)
@@ -99,10 +103,8 @@ class council_tax_reduction_assessable_capital(Variable):
         # capital of an applicant on Income Support, income-based JSA or
         # income-related ESA is disregarded. SSI 2021/249 has no such
         # disregard: reg 13(11) treats only the income conditions as met.
-        passported = (
-            working_age
-            & benunit("council_tax_reduction_relevant_income_based_benefit", period)
-            & ~benunit("council_tax_reduction_head_applies_alone", period)
+        passported = working_age & benunit(
+            "council_tax_reduction_relevant_income_based_benefit", period
         )
         disregards_passported_capital = wales | (
             scotland & p_scotland.disregards_passported_applicants_capital

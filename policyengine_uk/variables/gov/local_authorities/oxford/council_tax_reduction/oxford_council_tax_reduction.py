@@ -1,5 +1,8 @@
 from policyengine_uk.model_api import *
 import numpy as np
+from policyengine_uk.variables.gov.local_authorities.council_tax_reduction._legacy import (
+    applicant_has_universal_credit,
+)
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.config import (
     is_oxford_working_age,
 )
@@ -30,12 +33,12 @@ class oxford_council_tax_reduction(Variable):
         would_claim = benunit("would_claim_council_tax_reduction", period)
         # Appendix 3 covers applicants awarded Universal Credit, or who would
         # be but for deductions or other adjustments to the award.
-        has_uc_award = benunit("council_tax_reduction_universal_credit_award", period)
+        has_uc_award = applicant_has_universal_credit(benunit, period)
 
         relevant_income_based_benefit = benunit(
             "council_tax_reduction_relevant_income_based_benefit",
             period,
-        ) & ~benunit("council_tax_reduction_head_applies_alone", period)
+        )
         # Scheme paragraphs 28-29 apply the limit to capital not ignored by
         # Appendix 6, which ignores capital already taken into account for
         # Universal Credit, Income Support, income-based Jobseeker's Allowance
@@ -52,7 +55,11 @@ class oxford_council_tax_reduction(Variable):
         )
 
         annual_income = benunit("council_tax_reduction_applicable_income", period)
-        child_benefit = benunit("child_benefit", period)
+        # Applicable income counts Child Benefit only where the applicant is
+        # the benefit unit's claimant, so only then is it taken off again.
+        child_benefit = benunit("child_benefit", period) * ~benunit(
+            "council_tax_reduction_head_applies_alone", period
+        )
         weekly_income = max_(0, annual_income - child_benefit) / WEEKS_IN_YEAR
         weekly_income += where(has_uc_award, 0, weekly_tariff_income)
         weekly_income = where(

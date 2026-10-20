@@ -122,7 +122,7 @@ class council_tax_reduction_tariff_income(Variable):
         )
         income_based_benefit = benunit(
             "council_tax_reduction_relevant_income_based_benefit", period
-        ) & ~benunit("council_tax_reduction_head_applies_alone", period)
+        )
         tariff_income = select(
             [pensioner, universal_credit_award, income_based_benefit],
             [
