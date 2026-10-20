@@ -4,12 +4,13 @@ from policyengine_uk.model_api import *
 class housing_benefit_attained_pension_age_before_cutoff(Variable):
     value_type = bool
     entity = BenUnit
-    label = "a member attained State Pension age before the Housing Benefit cutoff"
+    label = "claimant or partner attained State Pension age before the Housing Benefit cutoff"
     documentation = (
-        "Whether any member of the benefit unit attained State Pension age "
-        "before the pension-age cutoff (1 April 2021). Such units keep the "
-        "higher pension-age personal allowance; units whose members all "
-        "attained it on or after the cutoff get the lower one. Before the "
+        "Whether the Housing Benefit claimant or their partner attained State "
+        "Pension age before the pension-age cutoff (1 April 2021). Such units "
+        "keep the higher pension-age personal allowance; units where neither "
+        "did get the lower one. Other members of the benefit unit do not "
+        "count. Before the "
         "cutoff took effect there was a single pension-age allowance, the "
         "higher one, so this is true for every unit then."
     )
@@ -45,5 +46,11 @@ class housing_benefit_attained_pension_age_before_cutoff(Variable):
         #
         # Dates are compared as YYYYMMDD integers, which are exact; as float32
         # they would not be (20210401 would round to 20210400).
-        attained = benunit.members("state_pension_age_date", period)
-        return benunit.any(attained < cutoff)
+        #
+        # Schedule 3 para 1 reads the claimant's and partner's ages ("the
+        # claimant", "one member or both members" of a couple), so other
+        # members of the benefit unit do not count.
+        person = benunit.members
+        claimant_or_partner = person("is_claimant_or_partner", period)
+        attained = person("state_pension_age_date", period)
+        return benunit.any(claimant_or_partner & (attained < cutoff))

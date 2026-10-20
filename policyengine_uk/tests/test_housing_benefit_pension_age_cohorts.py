@@ -29,6 +29,8 @@ Invariants, for any pension-age single person or couple in any year:
    amounts (SI 2012/2885 Sch 2 para 1, amended by SI 2021/29), so its
    allowance equals Housing Benefit's; the Scottish and Welsh schemes have
    one pension-age rate, the higher one.
+7. Only the claimant and partner (HB) or the applicant and partner (CTR)
+   count: adding another member of any age never changes either allowance.
 """
 
 from datetime import date, timedelta
@@ -247,3 +249,63 @@ def test_higher_rates_match_the_statute(year):
     assert P.single.aged(at) == pytest.approx(single, abs=1e-6)
     assert P.lone_parent.aged(at) == pytest.approx(single, abs=1e-6)
     assert P.couple.aged(at) == pytest.approx(couple, abs=1e-6)
+
+
+@settings(
+    max_examples=10,
+    deadline=None,
+    derandomize=True,
+    suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large],
+)
+@given(
+    units=st.lists(st.lists(MEMBER, min_size=1, max_size=2), min_size=1, max_size=15),
+    others=st.lists(MEMBER, min_size=15, max_size=15),
+    year=st.sampled_from(YEARS),
+)
+def test_other_members_do_not_change_the_cohort(units, others, year):
+    """Invariant 7: the cohort reads only the claimant and partner (HB) or
+    the applicant and partner (England CTR). Adding a member who is neither,
+    of any age, never changes either allowance."""
+    plain = build(units, year)
+    people, benunits = {}, {}
+    mid_year = grid_months(date(year, 10, 6))
+    for u, members in enumerate(units):
+        names = []
+        for k, (birth, male) in enumerate(members + [others[u]]):
+            age_in_months = mid_year - grid_months(birth)
+            age = int(age_in_months // 12)
+            name = f"u{u}p{k}"
+            people[name] = {
+                "age": {year: age},
+                "months_since_last_birthday": {year: age_in_months - 12 * age},
+                "is_male": {year: male},
+                "is_claimant_or_partner": {year: k < len(members)},
+                "is_council_tax_reduction_applicant_or_partner": {
+                    year: k < len(members)
+                },
+            }
+            names.append(name)
+        pension_age = at_pension_age(members, year)
+        benunits[f"u{u}"] = {
+            "members": names,
+            "housing_benefit_eligible": {year: True},
+            "housing_benefit_pension_age_regulations_apply": {year: pension_age},
+            "council_tax_reduction_pensioner": {year: pension_age},
+            "benefits_premiums": {year: 0},
+        }
+    with_others = Simulation(
+        situation={
+            "people": people,
+            "benunits": benunits,
+            "households": {"h": {"members": list(people), "region": {year: "LONDON"}}},
+        }
+    )
+    for variable in (
+        "housing_benefit_applicable_amount",
+        "council_tax_reduction_applicable_amount",
+    ):
+        np.testing.assert_allclose(
+            with_others.calculate(variable, year),
+            plain.calculate(variable, year),
+            atol=0.005,
+        )

@@ -54,7 +54,7 @@ class council_tax_reduction_applicable_amount(Variable):
         if p.pension_age_cutoff is not None:
             in_england = benunit.household("country", period) == Country.ENGLAND
             lower = in_england & ~benunit(
-                "housing_benefit_attained_pension_age_before_cutoff", period
+                "council_tax_reduction_attained_pension_age_before_cutoff", period
             )
             single_aged = where(lower, p.single.aged_from_cutoff, single_aged)
             couple_aged = where(lower, p.couple.aged_from_cutoff, couple_aged)

@@ -158,3 +158,34 @@
         region: EAST_MIDLANDS
   output:
     council_tax_reduction_applicable_amount: 363.25 * 52
+
+- name: In England, an older non-applicant does not change the applicant's cohort
+  # SI 2012/2885 Sch 2 para 1 reads the applicant's and partner's ages. The
+  # applicant attained State Pension age in 2025, after the cutoff, so the
+  # lower single rate applies: 238 x 52.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 67
+        date_of_birth: 19590101
+        is_claimant_or_partner: true
+        is_household_head: true
+      other_adult:
+        age: 80
+        date_of_birth: 19460101
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members: [claimant, other_adult]
+        council_tax_reduction_pensioner: true
+        benefits_premiums: 0
+        pension_age_benefits_premiums: 0
+    households:
+      home:
+        members: [claimant, other_adult]
+        country: ENGLAND
+  output:
+    council_tax_reduction_attained_pension_age_before_cutoff: false
+    council_tax_reduction_applicable_amount: 238 * 52
