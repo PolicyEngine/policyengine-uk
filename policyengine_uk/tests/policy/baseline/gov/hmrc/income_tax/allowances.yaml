@@ -30,14 +30,14 @@
   period: 2020
   absolute_error_margin: 0
   input:
-    adjusted_net_income: 10000
+    net_income: 10000
   output:
     pension_annual_allowance: 40000
 - name: Annual Allowance reduced
   period: 2020
   absolute_error_margin: 0
   input:
-    adjusted_net_income: 320000
+    net_income: 320000
   output:
     pension_annual_allowance: 4000
 - name: Trading allowance full deduction

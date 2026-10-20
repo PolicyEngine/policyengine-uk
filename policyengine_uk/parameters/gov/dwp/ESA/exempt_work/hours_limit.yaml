@@ -1,0 +1,14 @@
+description: Work done for less than this many hours a week, with earnings within the higher earnings limit, is exempt work (permitted work) for Employment and Support Allowance.
+values:
+  2008-10-27:
+    value: 16
+    reference:
+      - title: Employment and Support Allowance Regulations 2008 reg. 45(4) (as made)
+        href: https://www.legislation.gov.uk/uksi/2008/794/regulation/45/2008-10-27
+metadata:
+  unit: hour
+  period: week
+  label: ESA exempt work hours limit
+  reference:
+    - title: Employment and Support Allowance Regulations 2008 reg. 45(4)
+      href: https://www.legislation.gov.uk/uksi/2008/794/regulation/45

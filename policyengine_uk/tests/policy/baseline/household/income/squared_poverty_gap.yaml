@@ -1,0 +1,80 @@
+# Normalized statistical components; input income and lines isolate the
+# existing HBAI gap contract. No poverty gap or squared output is supplied.
+- name: Income above both lines has zero squared poverty gaps
+  period: 2025
+  input:
+    hbai_household_net_income_before_reset_to_zero: 120
+    poverty_line_bhc: 100
+    poverty_line_ahc: 100
+  output:
+    squared_poverty_gap_bhc: 0
+    squared_poverty_gap_ahc: 0
+
+- name: Income exactly on the lines has zero squared poverty gaps
+  period: 2025
+  input:
+    hbai_household_net_income_before_reset_to_zero: 100
+    poverty_line_bhc: 100
+    poverty_line_ahc: 100
+  output:
+    squared_poverty_gap_bhc: 0
+    squared_poverty_gap_ahc: 0
+
+- name: Half-line income gives a normalized squared gap of one quarter
+  period: 2025
+  input:
+    hbai_household_net_income_before_reset_to_zero: 50
+    poverty_line_bhc: 100
+    poverty_line_ahc: 100
+  output:
+    squared_poverty_gap_bhc: 0.25
+    squared_poverty_gap_ahc: 0.25
+    poverty_gap_bhc: 50
+    poverty_gap_ahc: 50
+
+- name: Zero income gives a normalized squared gap of one
+  period: 2025
+  input:
+    hbai_household_net_income_before_reset_to_zero: 0
+    poverty_line_bhc: 100
+    poverty_line_ahc: 100
+  output:
+    squared_poverty_gap_bhc: 1
+    squared_poverty_gap_ahc: 1
+
+- name: Common currency rescaling preserves normalized squared gaps
+  period: 2025
+  input:
+    hbai_household_net_income_before_reset_to_zero: 5000
+    poverty_line_bhc: 10000
+    poverty_line_ahc: 10000
+  output:
+    squared_poverty_gap_bhc: 0.25
+    squared_poverty_gap_ahc: 0.25
+
+- name: Each squared gap uses its matching income and poverty line
+  period: 2025
+  input:
+    hbai_household_net_income_before_reset_to_zero: 50
+    poverty_line_bhc: 100
+    poverty_line_ahc: 80
+    rent: 90
+  output:
+    squared_poverty_gap_bhc: 0.25
+    squared_poverty_gap_ahc: 2.25
+    hbai_household_net_income_ahc: -40
+    poverty_gap_bhc: 50
+    poverty_gap_ahc: 120
+
+- name: Existing BHC reset and negative AHC income are preserved
+  period: 2025
+  input:
+    hbai_household_net_income_before_reset_to_zero: -50
+    poverty_line_bhc: 100
+    poverty_line_ahc: 100
+    rent: 50
+  output:
+    squared_poverty_gap_bhc: 1
+    squared_poverty_gap_ahc: 2.25
+    hbai_household_net_income: 0
+    hbai_household_net_income_ahc: -50

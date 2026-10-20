@@ -8,6 +8,13 @@ class savings_credit(Variable):
     value_type = float
     unit = GBP
     reference = "https://www.legislation.gov.uk/ukpga/2002/16/section/3"
+    documentation = (
+        "The savings credit element of State Pension Credit, zero unless the "
+        "benefit unit meets the shared Pension Credit entitlement conditions. "
+        "This is the computed component before Pension Credit take-up; a "
+        "positive amount does not by itself establish an award in payment."
+    )
+    defined_for = "is_pension_credit_eligible"
 
     def formula(benunit, period, parameters):
         income = benunit("savings_credit_income", period)
