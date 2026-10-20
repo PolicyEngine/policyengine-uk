@@ -177,7 +177,7 @@
     pension_credit_income: 18_514
     pension_credit: 0
 
-- name: Positive property income still counts in Pension Credit income.
+- name: Positive property income does not count in Pension Credit income, nor does its tax.
   period: 2026
   absolute_error_margin: 1
   input:
@@ -195,8 +195,11 @@
         region: WALES
         tenure_type: OWNED_OUTRIGHT
   output:
-    # 20,000 + 3,000, less income tax of 20% of (23,000 - 12,570) = 2,086.
-    pension_credit_income: 20_914
+    # SPC Regs 2002 Sch IV para 18 disregards actual income from capital; the
+    # let property counts through deemed income instead. Only the tax on the
+    # pension is deducted (reg 17(10)(a)): 20,000 - 20% x (20,000 - 12,570) =
+    # 18,514, as without the property.
+    pension_credit_income: 18_514
     pension_credit: 0
 
 # Issue #2255, earnings. A self-employment loss is not set against wages
