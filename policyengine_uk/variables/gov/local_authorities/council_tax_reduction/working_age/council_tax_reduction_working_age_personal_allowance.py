@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.working_age._applicant import (
+    applicant_family,
     working_age_applicant_or_partner,
     working_age_couple,
     working_age_lone_parent,
@@ -41,12 +42,14 @@ class council_tax_reduction_working_age_personal_allowance(Variable):
         person = benunit.members
         claimant_or_partner = working_age_applicant_or_partner(person, period)
         age = benunit.max(where(claimant_or_partner, person("age", period), -np.inf))
+        # The applicant's or partner's own ESA: contributory ESA is personal;
+        # income-related ESA is the benefit unit's claimant's and partner's,
+        # not a household head's who applies alone.
         on_esa = (
-            add_for_members(
-                benunit, period, ["esa_contrib", "esa_income"], claimant_or_partner
-            )
-            > 0
-        )
+            add_for_members(benunit, period, ["esa_contrib"], claimant_or_partner)
+            + applicant_family(benunit, period)
+            * benunit("claimant_or_partner_esa_income", period)
+        ) > 0
         has_universal_credit = benunit(
             "council_tax_reduction_working_age_has_universal_credit", period
         )
