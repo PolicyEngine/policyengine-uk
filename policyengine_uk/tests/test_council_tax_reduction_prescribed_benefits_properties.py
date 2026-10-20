@@ -202,6 +202,20 @@ KINGSTON_COUPLE = dict(
 )
 
 
+# A working-age lone adult in Westminster, close in age to a dependant.
+YOUNG_PARENT = dict(
+    ages=[32],
+    state_pensions=[0.0],
+    earnings=[12_000.0],
+    benefits=[dict(iidb=0.0, incapacity_benefit=0.0, sda=False)],
+    property_income=0.0,
+    area="WESTMINSTER",
+    council_tax=2_000.0,
+    savings=0.0,
+    would_claim_pc=False,
+)
+
+
 def area_of(fam):
     if fam["ages"][0] >= 67:
         return PENSION_AGE_AREAS[fam["area"]]
@@ -223,6 +237,12 @@ def situation(variants):
             b = fam["benefits"][j]
             person = {
                 "age": {YEAR: age},
+                # The generated adults are the claimant and partner, and any
+                # dependant is not: say so for everyone, so the model's
+                # presumption (a member under 20 and 16 or more years younger
+                # than the claimant is their child) cannot read a dependant
+                # close in age to the claimant as a partner.
+                "is_claimant_or_partner": {YEAR: True},
                 "state_pension": {YEAR: fam["state_pensions"][j]},
                 "employment_income": {YEAR: fam["earnings"][j]},
                 "private_pension_income": {YEAR: private_pension * (j == 0)},
@@ -238,7 +258,10 @@ def situation(variants):
         if fam.get("dependant_age") is not None:
             j = len(fam["ages"])
             name = f"p{i}_{j}"
-            people[name] = {"age": {YEAR: fam["dependant_age"]}}
+            people[name] = {
+                "age": {YEAR: fam["dependant_age"]},
+                "is_claimant_or_partner": {YEAR: False},
+            }
             for variable, value in extra.get(j, {}).items():
                 people[name][variable] = {YEAR: value}
             names.append(name)
@@ -421,6 +444,9 @@ DEPENDANT_CHANGES = {
     st.integers(16, 19),
 )
 @example([GENERAL_RULES_PENSIONER, KINGSTON_COUPLE], "iidb", 17)
+# Found by CI: a dependant of 17 is under 16 years younger than a claimant of
+# 32, so without the declared roles the model read them as a partner.
+@example([YOUNG_PARENT], "iidb", 17)
 def test_dependants_benefits_never_count(families, change, dependant_age):
     families = [{**fam, "dependant_age": dependant_age} for fam in families]
     variants = []
