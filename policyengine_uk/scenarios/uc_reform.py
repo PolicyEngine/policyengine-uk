@@ -5,6 +5,7 @@ from policyengine_uk.data.economic_assumptions import PROJECTION_END_YEAR
 from policyengine_uk.utils.supplied_inputs import set_model_value, supplied_input
 import numpy as np
 import warnings
+from weakref import WeakKeyDictionary
 from policyengine_core.periods import instant, period as period_
 
 
@@ -262,6 +263,19 @@ def _inactive_health_element_monthly(sim, year: int) -> float:
     )
 
 
+# Only functions registered here are this internal amount wrapper. External
+# wrappers, even ones copying function attributes, keep their own provenance.
+_INACTIVE_HEALTH_ELEMENT_ORIGINS = WeakKeyDictionary()
+
+
+def lcwra_formula_origin(formula, period):
+    """Resolve the formula delegated by our internal LCWRA amount wrapper."""
+    if formula is None:
+        return None
+    original = _INACTIVE_HEALTH_ELEMENT_ORIGINS.get(formula)
+    return original.get_formula(period) if original is not None else formula
+
+
 def _add_inactive_health_element_formula(sim):
     """Keep the counterfactual as calculated output, invalidated by reforms."""
     system = sim.tax_benefit_system
@@ -284,6 +298,7 @@ def _add_inactive_health_element_formula(sim):
                 return current
             return current * _inactive_health_element_monthly(simulation, year) / amount
 
+    _INACTIVE_HEALTH_ELEMENT_ORIGINS[uc_LCWRA_element.formula] = original
     variable = system.update_variable(uc_LCWRA_element)
     variable._inactive_health_element_formula = True
 
