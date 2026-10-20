@@ -84,7 +84,8 @@ class pension_credit_employment_income_tax(Variable):
         "personal savings allowance) and any effect of one partner's earnings "
         "on the other's tax (through the marriage allowance), so Pension "
         "Credit income does not change with either partner's earnings while "
-        "the disregard covers them. " + DECISION
+        "the disregard covers them, provided the zero floor on net earnings "
+        "does not limit the pension-contribution deduction. " + DECISION
     )
     definition_period = YEAR
     unit = GBP
