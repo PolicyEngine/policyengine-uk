@@ -9,6 +9,7 @@ reg. 19). Each programme sets its own rate and the capital sources whose sale
 would incur expenses in a ``capital.sale_expenses`` parameter node.
 """
 
+import numpy as np
 from policyengine_core.model_api import max_
 
 # Household inputs holding the debt secured on each capital source, such as a
@@ -29,14 +30,15 @@ def valued_capital(value_of, sources, sale_expenses):
 
     ``value_of(variable)`` returns that household variable on the entity the
     caller is working with. The sale-expense deduction is taken from the gross
-    value before the encumbrance (ADM H1608), and a source carrying secured
-    debt is never valued below nil.
+    value before the encumbrance (ADM H1608) and the result rounded down to the
+    penny in the claimant's favour, as ADM H1665 does for quoted shares. A
+    source carrying secured debt is never valued below nil.
     """
     total = 0
     for source in sources:
         value = value_of(source)
         if source in sale_expenses.sources:
-            value = value * (1 - sale_expenses.rate)
+            value = penny_floor(value * (1 - sale_expenses.rate))
         if source in SECURED_DEBT:
             value = max_(0, value - value_of(SECURED_DEBT[source]))
         total = total + value
@@ -47,3 +49,13 @@ def counted_share(sale_expenses, source):
     """Share of a source's market value counted as capital: 90% where its
     sale would incur expenses (reg. 49(1)(a)), otherwise all of it."""
     return 1 - sale_expenses.rate if source in sale_expenses.sources else 1
+
+
+def penny_floor(amount):
+    """Round down to the penny, in the claimant's favour (ADM H1665).
+
+    Computed in float64, and rounded to a millionth of a penny first, so binary
+    noise just under a whole penny (10,799.9999999 for 90% of 12,000) does not
+    lose a penny."""
+    pence = np.round(np.asarray(amount, dtype=np.float64) * 100, 6)
+    return np.floor(pence) / 100

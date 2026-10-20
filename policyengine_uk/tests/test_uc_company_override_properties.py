@@ -144,7 +144,6 @@ def test_company_overrides_conserve_capital_and_keep_holdings_out_of_other_units
         explicit = [
             spec.get("override", max(0, spec.get("financial", -1))) for spec in specs
         ]
-        explicit_consumption = sum(explicit)
         # Invalid holdings are bounded per person, before grouping into units.
         # Allocate one budget by those ownership shares; never recap a route.
         bounded_holdings = [
@@ -155,9 +154,19 @@ def test_company_overrides_conserve_capital_and_keep_holdings_out_of_other_units
         total_holdings = sum(bounded_holdings) + bounded_dependants
         budget = min(corporate, total_holdings)
         scale = budget / total_holdings if total_holdings else 0
-        effective_holdings = [
-            SHARE_VALUE * holding * scale for holding in bounded_holdings
-        ]
+        market_holdings = [holding * scale for holding in bounded_holdings]
+        effective_holdings = [SHARE_VALUE * holding for holding in market_holdings]
+        # A recorded financial total holds its owners' holdings at full value;
+        # the pool counts them at 90%, so its known holding part is consumed at
+        # 90% (reg. 49(1)(a)) and the rest of the report in full.
+        explicit_consumption = sum(
+            spec["override"]
+            if "override" in spec
+            else max(0, spec["financial"] - (1 - SHARE_VALUE) * market)
+            if spec.get("financial", -1) >= 0
+            else 0
+            for spec, market in zip(specs, market_holdings)
+        )
         extra_holding_draw = SHARE_VALUE * bounded_dependants * scale + sum(
             holding
             if absent
@@ -189,11 +198,17 @@ def test_company_overrides_conserve_capital_and_keep_holdings_out_of_other_units
         # owners, without scaling that substitution. This identity also
         # covers inconsistent observations and exhausted residual pools.
         # A complete override is a countable figure, so the holding comes off
-        # it at 90%; a recorded financial total is used unvalued, so in full.
+        # it at 90%. A recorded financial total is used unvalued, so the owner
+        # loses the holding in full while the pool gives up only its 90%
+        # value: what the report removes from the pool beyond the owner's own
+        # remaining capital is its consumption less that capital.
         owner_substitution = sum(
-            min(SHARE_VALUE * holding if "override" in spec else holding, reported)
-            for holding, reported, absent, spec in zip(
-                holdings, explicit, missing, specs
+            min(SHARE_VALUE * holding, reported)
+            if "override" in spec
+            else max(0, reported - (1 - SHARE_VALUE) * market)
+            - max(0, reported - holding)
+            for holding, market, reported, absent, spec in zip(
+                holdings, market_holdings, explicit, missing, specs
             )
             if not absent
         )

@@ -52,14 +52,24 @@ class household_uc_reported_financial_capital(Variable):
         ).astype(holding.dtype) * person.household(
             "household_uc_company_holding_pool_scale", period
         )
-        # A complete override is a countable figure, so the holdings it must at
-        # least cover are counted at the reg. 49(1) value of corporate_wealth.
+        # The pool counts corporate_wealth, and the holdings in it, at the reg.
+        # 49(1) value. A complete override is a countable figure, so the
+        # holdings it must at least cover are counted at that value. A recorded
+        # financial total is used unvalued and holds the holdings at full value,
+        # so its known holding part is consumed at the counted value too; the
+        # owner's own assessment still takes the full holding off the report.
         p = parameters(period).gov.dwp.universal_credit.means_test.capital
-        own_holdings = own_holdings * counted_share(p.sale_expenses, "corporate_wealth")
+        valued_holdings = own_holdings * counted_share(
+            p.sale_expenses, "corporate_wealth"
+        )
         consumed_capital = where(
             complete_override >= 0,
-            max_(complete_override, own_holdings),
-            financial_capital,
+            max_(complete_override, valued_holdings),
+            where(
+                financial_capital >= 0,
+                max_(0, financial_capital - (own_holdings - valued_holdings)),
+                financial_capital,
+            ),
         )
         return household.sum(
             max_(0, consumed_capital) * person("is_benunit_head", period)

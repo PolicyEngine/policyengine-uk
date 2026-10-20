@@ -293,3 +293,26 @@
     pension_credit_deemed_income: 12_480
     guarantee_credit: 0
     housing_benefit_assessable_capital: 130_000
+
+- name: UC rounds the share valuation down to the penny, at the capital limit
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # 90% of 16,666.67 is 15,000.003, rounded down to the penny in the
+        # claimant's favour (ADM H1665): 15,000.00. With 1,000 of savings the
+        # capital is exactly the 16,000 limit, which does not exceed it (WRA
+        # 2012 s. 5(1)(a)).
+        savings: 1_000
+        corporate_wealth: 16_666.67
+  output:
+    uc_assessable_capital: 16_000
+    is_uc_eligible: true

@@ -127,3 +127,43 @@
     # 19,000 for the other claimant.
     uc_assessable_capital: [1_000, 19_000]
     universal_credit: [5_098.80, 0]
+
+- name: A recorded financial total consumes its owner's company holding at its counted value
+  period: 2026
+  input:
+    people:
+      owner:
+        age: 30
+        is_claimant_or_partner: true
+        stands_as_sole_owner_or_partner_of_company: true
+        owned_company_carries_on_property_business: true
+        owned_company_holding_value: 10_000
+        owned_company_capital: 0
+      other_claimant:
+        age: 30
+        is_claimant_or_partner: true
+    benunits:
+      reporting:
+        members: [owner]
+        would_claim_uc: true
+        benunit_reported_capital: 10_000
+      missing:
+        members: [other_claimant]
+        would_claim_uc: true
+    households:
+      household:
+        members: [owner, other_claimant]
+        savings: 16_500
+        corporate_wealth: 10_000
+  output:
+    # The pool counts the 10,000 of shares at 90% (reg. 49(1)(a)): 16,500 +
+    # 9,000 = 25,500. The recorded total holds the holding at full value, so
+    # its holding part is consumed at the counted 9,000, not 10,000: the
+    # report consumes 10,000 - 1,000 = 9,000. The owner's own assessment takes
+    # the full holding off the report (10,000 - 10,000 = 0), and the other
+    # claimant keeps all 16,500 of savings, over the 16,000 limit. The total
+    # reconciles: 0 + 16,500 + the 9,000 disregarded holding = 25,500.
+    household_uc_reported_financial_capital: 9_000
+    household_uc_pool_company_holdings: 0
+    uc_assessable_capital: [0, 16_500]
+    universal_credit: [5_098.80, 0]
