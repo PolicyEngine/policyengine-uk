@@ -133,9 +133,13 @@ class council_tax_reduction_applicable_income(Variable):
                 benunit, period, ["basic_income"], members
             )
 
-        pension_contributions = (
-            add_for_members(benunit, period, ["pension_contributions"], members) * 0.5
-        )
+        # The scheme's own share of pension contributions (one-half in each:
+        # SI 2012/2885 Sch 1 para 19(2)(b)-(c), WSI 2013/3029 Sch 1 para 13
+        # and Sch 6 para 15, SSI 2012/319 reg 33 and SSI 2021/249 reg 50(3),
+        # and the councils' schemes).
+        pension_contributions = add_for_members(
+            benunit, period, ["pension_contributions"], members
+        ) * benunit("council_tax_reduction_pension_contribution_deduction_rate", period)
         tax = add_for_members(
             benunit, period, ["income_tax", "national_insurance"], members
         )
