@@ -1687,3 +1687,29 @@
     council_tax_reduction_pensioner: false
     legacy_benefits_home_letting_income: 4_160
     council_tax_reduction_applicable_income: 3_000
+
+- name: A Scottish Income Support recipient's capital counts but yields no tariff income
+  # SSI 2021/249 has no disregard of a passported applicant's capital, so the
+  # 10,000 of savings is the applicant's capital (under the 16,000 limit,
+  # reg 13(1)). But reg 13(11) treats a qualifying income-related benefit
+  # claimant as meeting the income conditions, so their income, including
+  # the reg 63 assumed yield, is not assessed: nil tariff income.
+  period: 2026
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        would_claim_uc: false
+        income_support: 4_000
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        savings: 10_000
+  output:
+    council_tax_reduction_assessable_capital: 10_000
+    council_tax_reduction_tariff_income: 0
