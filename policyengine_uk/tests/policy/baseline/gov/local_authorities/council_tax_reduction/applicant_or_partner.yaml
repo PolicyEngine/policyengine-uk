@@ -765,7 +765,7 @@
     council_tax_reduction_net_earnings: [10_000]
     # The single disregard of £5 a week plus the additional £17.10, which she
     # earns by working 30 hours a week at 25 or over (SI 2012/2885 Sch 4
-    # paras 2 and 10): (5 + 17.10) * 52. Not the couple's £10 rate, and not
+    # paras 8(a) and 10): (5 + 17.10) * 52. Not the couple's £10 rate, and not
     # the young couple's work conditions.
     council_tax_reduction_pensioner_earnings_disregard: [1_149.20]
     council_tax_reduction_applicable_income: [8_850.80]

@@ -26,9 +26,10 @@ class council_tax_reduction_premiums(Variable):
         "is_cared_for_by_carer_benefit_recipient, which gives a carer in her "
         "own benefit unit to her but a carer in another benefit unit only to "
         "that unit's claimants and partners. So a carer outside her benefit "
-        "unit (who must then be blind or on a qualifying benefit, or they "
-        "would bar the premium as her non-dependant) does not end her severe "
-        "disability premium, though in law they would."
+        "unit does not end her severe disability premium, though in law they "
+        "would. Such a carer is under 18, blind or on a qualifying benefit, "
+        "since any other resident aged 18 or over already bars the premium as "
+        "her non-dependant."
     )
     definition_period = YEAR
     unit = GBP
