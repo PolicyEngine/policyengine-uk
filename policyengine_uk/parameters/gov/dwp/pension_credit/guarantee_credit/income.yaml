@@ -26,3 +26,12 @@ values:
   # Supplement, which is a separate variable.
   - carers_allowance
   - carer_support_payment
+  # Reg. 15(1) does not list these either. Reg. 15(1)(c) excepts the constant
+  # attendance and exceptionally severe disablement increases of IIDB (SSCBA
+  # ss.104 and 105), but iidb is the whole reported payment and cannot
+  # separate them. Incapacity benefit's increases for a dependant other than
+  # a partner (reg. 15(1)(h)) are not separated either.
+  - iidb
+  - sda
+  - incapacity_benefit
+  - maternity_allowance

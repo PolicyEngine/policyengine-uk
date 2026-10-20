@@ -179,6 +179,13 @@ REMOVED_PARAMETERS = {
     "gov.simulation.labour_supply_responses.obr_elasticities": RemovedParameter(
         "removed OBR elasticities switch", _OBR_ELASTICITIES_REPLACEMENT
     ),
+    "gov.dwp.pension_credit.income.savings_credit_excluded_sources": RemovedParameter(
+        "removed duplicate Savings Credit excluded-income list",
+        "The model never read it. Change "
+        "gov.dwp.pension_credit.savings_credit.excluded_income, the list of "
+        "income that is not qualifying income for Savings Credit (SPC Regs "
+        "2002 reg 9), instead.",
+    ),
 }
 
 
