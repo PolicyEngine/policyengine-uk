@@ -85,6 +85,12 @@ def test_other_trade_loss_keeps_protected_couple_notional_class2():
                 simulation.calculate("pension_credit", 2023)[0],
             )
         )
+    # SI 2023/316 art.30(2)(a), (d): the couple guarantee plus the higher
+    # severe-disability addition is (£306.85 + £152.80) * 52 = £23,901.80.
+    # https://www.legislation.gov.uk/uksi/2023/316/article/30/made
+    # PC income = £20,000 - £2,082.10 deductions - £1,040 disregard =
+    # £16,877.90; the award is £23,901.80 - £16,877.90 = £7,023.90.
+    assert results[0] == pytest.approx((2_082.10, 16_877.90, 7_023.90), abs=0.01)
     assert results[1] == pytest.approx(results[0], abs=0.01)
 
 
