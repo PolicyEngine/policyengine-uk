@@ -1,3 +1,58 @@
+## [2.140.1] - 2026-10-20
+
+### Fixed
+
+- - Fixed Housing Benefit applicable income to use the configured pension contribution deduction rate, preserving the current 50% deduction.
+- Preserve dataset-supplied values for variables with formulas in default input DataFrame exports, so reloading an export retains inputs such as reported State Pension. Exclude calculated caches and model-generated pseudo-inputs while retaining recorded input storage and branch precedence.
+- - Based TV licence charges on licensable viewing and corrected the HBAI free-licence value.
+
+
+## [2.140.0] - 2026-10-20
+
+### Added
+
+- Added normalized annual BHC and AHC squared poverty-gap components and documented person-weighted aggregation and undefined poverty-line handling.
+- - Added a configurable Income Support withdrawal rate, preserving the existing 100% default.
+
+### Fixed
+
+- Use Scotland's working-age Council Tax Reduction young-person definition for the severe disability premium's non-dependant test within the applicant's benefit unit, retaining existing looked-after and other-benefit-unit treatment.
+- Count Incapacity Benefit and Severe Disablement Allowance as Universal Credit unearned income from the GB transitional commencement, preserving earlier history and the existing annual-model limitations.
+- Fix stale construction-time reform wrappers after foreign writes or direct edits while preserving copied scenarios and constructor readings; document mixed-composite replay, indexed-threshold construction and the existing rejection of built overrides whose keys contain no 1 January annual value.
+
+
+## [2.139.5] - 2026-10-20
+
+### Changed
+
+- - Documented employer NI incidence assumptions, input handling, revenue measures and current household examples.
+
+### Fixed
+
+- - Separated Universal Credit's higher disabled child condition from tax credits, included certified blindness, and prevented the lower and higher additions from stacking.
+- - Corrected Working Tax Credit eligibility so age, disability and hours conditions applied to the same claimant or partner, while preserving the parental combined-hours and partner-exception routes.
+- - Restricted the Child Tax Credit family element to families responsible for a qualifying child or young person born before 6 April 2017, while preserving earlier supported years.
+- - Excluded Child Benefit from Great Britain's pensioner Council Tax Reduction general-rule income, preserving working-age and statutory-pay treatment.
+
+
+## [2.139.4] - 2026-10-19
+
+### Fixed
+
+- - Corrected dividend income-tax band thresholds from 2016 to 2025 to use their statutory tax-year dates.
+- - Corrected historical Care to Learn weekly caps while preserving the existing annual date approximation.
+- - Exempted non-dependants responsible for a child under five from Universal Credit housing cost contributions.
+- - Applied the shared Pension Credit eligibility conditions to computed Savings Credit amounts.
+- - Included statutory sick and maternity pay in the relevant earnings limits for pension contribution relief and annual-allowance income tests.
+
+
+## [2.139.3] - 2026-10-19
+
+### Fixed
+
+- - Updated Welsh residential Land Transaction Tax tables for annual model years from 2023 (main rates) and 2025 (higher rates), retaining their statutory change dates.
+
+
 ## [2.139.2] - 2026-10-19
 
 ### Fixed
