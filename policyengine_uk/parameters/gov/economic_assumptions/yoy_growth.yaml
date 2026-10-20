@@ -5,8 +5,6 @@
 # - 2025-2030: OBR forecast from the latest Economic and Fiscal Outlook
 #   (EFO, March 2026). Values come from the EFO economy supplementary
 #   tables — RPI/CPI/CPIH from Table 1.7, average earnings from Table 1.6.
-#   consumer_price_index_ahc is derived, not published by the OBR; its
-#   metadata documents the method.
 # - 2031-2073: OBR long-run equilibrium assumptions, taken from the OBR
 #   Fiscal Risks and Sustainability report and the long-run RPI-CPI wedge
 #   methodology. Steady-state values:
