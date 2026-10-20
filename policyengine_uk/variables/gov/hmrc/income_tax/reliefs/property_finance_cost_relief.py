@@ -46,7 +46,7 @@ class property_finance_cost_relief(Variable):
         # High Income Child Benefit Charge, are not reduced.
         other_reductions = [
             variable
-            for variable in income_tax.income_tax_subtractions
+            for variable in income_tax.step_6_tax_reductions
             if variable != "property_finance_cost_relief"
         ]
         tax_left = max_(
