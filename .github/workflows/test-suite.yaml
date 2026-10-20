@@ -82,6 +82,9 @@ jobs:
           TESTS: ${{ steps.env.outputs.tests }}
         run: policyengine-core test "$TESTS/policy" -c policyengine_uk
       - name: List the Python tests
+        id: collect
+        # Keep Result's coverage audit available after a policy YAML failure.
+        if: ${{ !cancelled() && steps.env.outcome == 'success' }}
         # Every Python test, collected without --shard, in the environment
         # the shards use. Result checks that the shards ran each of these
         # exactly once.
@@ -99,6 +102,7 @@ jobs:
             --collect-only -q -p no:cacheprovider > collected.txt
           tail -n 1 collected.txt
       - name: Upload the list of Python tests
+        if: ${{ !cancelled() && steps.collect.outcome == 'success' }}
         uses: actions/upload-artifact@v7
         with:
           name: test-collected
