@@ -1,0 +1,1 @@
+Uprate Scottish households' water and sewerage charges by Scottish Water's published charge rises, and hold Northern Ireland's flat, instead of applying the Ofwat England and Wales series to every household.

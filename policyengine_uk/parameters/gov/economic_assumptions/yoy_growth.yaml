@@ -1214,6 +1214,44 @@ ofwat:
           href: https://www.ofwat.gov.uk/price-review/
         - title: Ofwat 2025-26 media statement
           href: https://www.ofwat.gov.uk/average-bills-2025-26-press-statement/
+scottish_water:
+  water_bills:
+    description: Growth in Scottish Water's household water and waste water charges, used to project the water_and_sewerage_charges of Scottish households.
+    # Scottish Water sets its own charges within limits from the Water
+    # Industry Commission for Scotland (WICS), so Scottish households do not
+    # follow the Ofwat path for England and Wales. Each value is a charging
+    # year from 1 April, stored at 1 January (2025 holds 2025-26), as in
+    # ofwat.water_bills.
+    values:
+      # Outturn: the published rise in household charges.
+      2021-01-01: 0.018
+      2022-01-01: 0.042
+      2023-01-01: 0.05
+      2024-01-01: 0.088
+      2025-01-01: 0.099
+      2026-01-01: 0.0867
+      # Projection (an assumption, not a final determination): CPI plus 2%,
+      # the cap in the WICS draft determination for 2027-33 (30 June 2026).
+      # The final determination is due on 29 October 2026. CPI is the OBR
+      # March 2026 forecast in consumer_price_index, 2.0% in each of 2027 to
+      # 2030, so 0.020 + 0.02 = 0.04. Later years hold this rate.
+      2027-01-01: 0.04
+    metadata:
+      unit: /1
+      label: Scottish Water household charges growth
+      reference:
+        - title: WICS, letter on Scottish Water's Charges Scheme 2022-23 (2021-22 1.8%, 2022-23 4.2%)
+          href: https://wics.scot/publications/price-setting/strategic-review-charges-2021-27/scottish-waters-charges-scheme/charges-scheme-2022-23
+        - title: Scottish Water, Water and Waste Water Charges for 2023/24 Announced (2 February 2023, 5%)
+          href: https://www.scottishwater.co.uk/About-Us/News-and-Views/2023/01/010223-Charges
+        - title: Scottish Water, Water and Waste Water Charges 2024 to 2025 (8.8%)
+          href: https://www.scottishwater.co.uk/About-Us/News-and-Views/2024/02/Water-and-Waste-Water-Charges-2024-and-2025
+        - title: Scottish Water, Charges 2025 to 2026 (28 January 2025, 9.9%)
+          href: https://www.scottishwater.co.uk/About-Us/News-and-Views/2025/01/Charges-2025-to-2026-Announcement
+        - title: Scottish Water, Average Water Bills to Rise £42 in 2026 (22 January 2026, 8.67%)
+          href: https://www.scottishwater.co.uk/about-us/news-and-views/2026/01/230126-charges-2026
+        - title: WICS publishes 2027-33 Draft Determination (cap of CPI plus 2%)
+          href: https://wics.scot/latest/wics-publishes-2027-33-draft-determination
 finance_ni:
   domestic_rates:
     description: Growth in the average Northern Ireland domestic rates bill (regional rate plus district rate), used to project the domestic_rates dataset input.

@@ -7,4 +7,7 @@ class water_and_sewerage_charges(Variable):
     label = "water and sewerage charges"
     documentation = "Total amount spent on water and sewerage charges"
     definition_period = YEAR
-    uprating = "gov.economic_assumptions.indices.ofwat.water_bills"
+    # No `uprating` attribute: the dataset projection uprates this by country
+    # (uprate_water_charges in policyengine_uk/data/economic_assumptions.py),
+    # as it does council tax, because Scotland and Northern Ireland do not
+    # follow the Ofwat path for England and Wales.

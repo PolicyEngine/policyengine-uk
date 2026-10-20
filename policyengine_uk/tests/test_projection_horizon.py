@@ -205,7 +205,6 @@ def test_unmapped_inputs_preserve_legacy_years_and_grow_after_2030(projected):
         "rail_usage",
         "stocks_and_shares_isa",
         "cash_isa",
-        "water_and_sewerage_charges",
         "employee_pension_contributions_reported",
         "pension_contributions_via_salary_sacrifice",
         "housing_service_charges",

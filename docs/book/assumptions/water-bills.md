@@ -77,3 +77,13 @@ The model uses these resulting year-on-year growth rates:
 | 2027 | 5.1% |
 | 2028 | 3.8% |
 | 2029 | 4.3% |
+
+### Scotland and Northern Ireland
+
+The Ofwat series covers England and Wales only. The dataset projection uprates `water_and_sewerage_charges` by country (`uprate_water_charges` in `policyengine_uk/data/economic_assumptions.py`):
+
+- England and Wales take `ofwat.water_bills`.
+- Scotland takes `scottish_water.water_bills`, the published rise in Scottish Water's household charges: 1.8% (2021-22), 4.2%, 5%, 8.8%, 9.9% and 8.67% (2026-27). From 2027-28 it assumes 4% a year: CPI (the OBR's 2.0%) plus 2%, the cap in the Water Industry Commission for Scotland's draft determination for 2027-33. The final determination is due on 29 October 2026.
+- Northern Ireland has no domestic water charges, so any charge a dataset gives its households is held flat.
+
+The variable has no `uprating` attribute, so like council tax it is held at its last projected value after the projection horizon.
