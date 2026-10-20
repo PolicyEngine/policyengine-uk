@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.pension_credit import employed_earnings_sources
 
 DECISION = (
     "PolicyEngine does not model PAYE codes, so which part of a person's "
@@ -33,17 +34,10 @@ def income_tax_with_inputs_zeroed(simulation, period, variables):
         del simulation.branches[name]
 
 
-def employed_earnings_sources(parameters, period):
-    """Employment income and the statutory payments that SPC Regs 2002 reg.
-    17A(2) makes earnings of an employed earner."""
-    payments = parameters(period).gov.dwp.pension_credit.guarantee_credit
-    return ["employment_income"] + list(payments.statutory_payments)
-
-
 class pension_credit_income_tax_without_employment_income(Variable):
     value_type = float
     entity = Person
-    label = "Income tax without employment income, for Pension Credit"
+    label = "Income tax without employed earnings, for Pension Credit"
     documentation = (
         "The person's income tax if nobody in the simulation had employed "
         "earnings: employment income and the statutory sick, maternity and "
@@ -91,9 +85,10 @@ class pension_credit_employment_income_tax(Variable):
     label = "Income tax on employed earnings, for Pension Credit"
     documentation = (
         "The income tax payable on the claimant's and partner's employed "
-        "earnings, which SPC Regs 2002 reg. 17(10) disregards in their net "
-        "amount: the fall in the claimant's and partner's income tax without "
-        "anyone's employment income, never negative. It includes any tax the "
+        "earnings (employment income and statutory sick, maternity and "
+        "paternity pay), which SPC Regs 2002 reg. 17(10) disregards in their "
+        "net amount: the fall in the claimant's and partner's income tax "
+        "without anyone's employed earnings, never negative. It includes any tax the "
         "earnings add on savings and dividends (a lost starting-rate band or "
         "personal savings allowance) and any effect of one partner's earnings "
         "on the other's tax (through the marriage allowance), so Pension "
@@ -122,8 +117,8 @@ class pension_credit_self_employment_income_tax(Variable):
     label = "Income tax actually payable on self-employed profit, for Pension Credit"
     documentation = (
         "The income tax the claimant's and partner's self-employment income "
-        "adds to their income tax, beneath any employment income: the fall in "
-        "their income tax without anyone's employment income when nobody has "
+        "adds to their income tax, beneath any employed earnings: the fall in "
+        "their income tax without anyone's employed earnings when nobody has "
         "self-employment income either, never negative. Pension Credit income "
         "replaces it with the notional tax of the Computation of Earnings "
         "Regulations 1996 reg. 14 (SPC Regs 2002 reg. 17(11)). " + DECISION

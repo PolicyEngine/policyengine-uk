@@ -20,10 +20,13 @@
 # Annual amounts are 52 times the weekly rate.
 # Earnings disregards (Sch VI): 5 single (para 5(a)), 10 couple (para 5(b)),
 # 20 for a carer (para 3), once per claim (para 4A).
-# No case has income tax or National Insurance: every person's taxable income
-# is below the 12,570 personal allowance (ITA 2007 s.35(1)), and every weekly
-# earnings figure is below the 242 primary threshold for 2026-27 (SS
-# (Contributions) Regs 2001 reg 10(c)).
+# Cases 1 to 7 have no income tax or National Insurance: every person's
+# taxable income is below the 12,570 personal allowance (ITA 2007 s.35(1)), and
+# every weekly earnings figure is below the 242 primary threshold for 2026-27
+# (SS (Contributions) Regs 2001 reg 10(c)). Cases 8 to 11 are taxed: the tax
+# payable on earnings (reg 17(10)) is the top-slice extra tax the employed
+# earnings cause, as in #2019, and statutory pay is employed earnings, so the
+# tax on it is part of that. Case 12 is a Savings Credit case.
 
 - name: Case 1, a single pensioner's statutory sick pay is Pension Credit earnings.
   period: 2026
@@ -230,3 +233,154 @@
     # makes a couple eligible for Pension Credit only if both are over State
     # Pension age (is_pension_credit_eligible).
     pension_credit_income: (194.32 - 10) * 52
+
+- name: Case 8, tax on statutory sick pay is tax on earnings, so it comes off with the pay.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 12_570
+        statutory_sick_pay: 200
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    # The State Pension uses the whole personal allowance, so the 200 of
+    # statutory sick pay bears 40 of tax, all of it tax on employed earnings.
+    income_tax: 40
+    pension_credit_employment_income_tax: 40
+    # Net earnings 200 - 40 = 160, below the 5 * 52 = 260 Sch VI amount.
+    pension_credit_earnings_disregard: 160
+    # 12,570 + 200 - 40 - 160 = 12,570: statutory pay inside the disregard
+    # leaves Pension Credit income where it is without it.
+    pension_credit_income: 12_570
+
+- name: Case 9, only the tax the statutory pay causes counts as tax on earnings.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 13_000
+        statutory_sick_pay: 300
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    # (13,300 - 12,570) * 0.2 = 146; without the pay, (13,000 - 12,570) * 0.2
+    # = 86, so the tax on employed earnings is 60.
+    income_tax: 146
+    pension_credit_employment_income_tax: 60
+    # Net earnings 300 - 60 = 240, below 260.
+    pension_credit_earnings_disregard: 240
+    # 13,000 + 300 - 146 - 240 = 12,914 = 13,000 less the 86 on the pension.
+    pension_credit_income: 12_914
+
+- name: Case 10, self-employed profit is taxed beneath statutory pay.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 12_000
+        self_employment_income: 2_000
+        statutory_sick_pay: 123.25 * 52
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    # Taxable income 12,000 + 2,000 + 6,409 = 20,409: (20,409 - 12,570) * 0.2
+    # = 1,567.80. Without the statutory pay, (14,000 - 12,570) * 0.2 = 286;
+    # without any earnings, nil. Tax on employed earnings 1,281.80, on the
+    # self-employed profit 286.
+    income_tax: 1_567.80
+    pension_credit_employment_income_tax: 1_281.80
+    pension_credit_self_employment_income_tax: 286
+    pension_credit_earnings: 2_000 + 123.25 * 52
+    pension_credit_earnings_disregard: 5 * 52
+    # 12,000 + 2,000 + 6,409 - 1,567.80 - 260 = 18,581.20, plus the 286 of
+    # actual tax on the profit, which reg 17(11) replaces with the notional
+    # tax of the Computation of Earnings Regs (nil here): 18,867.20.
+    pension_credit_income: 18_867.20
+
+- name: Case 11, a couple's statutory maternity pay and the marriage allowance.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 20_000
+      person2:
+        age: 40
+        employment_income: 5_000
+        statutory_maternity_pay: 194.32 * 52
+    benunits:
+      benunit:
+        members: [person1, person2]
+    households:
+      household:
+        members: [person1, person2]
+        country: ENGLAND
+  output:
+    # Tax on employed earnings is the fall in the couple's tax without them:
+    # the partner's own 506.928, plus 252 of the claimant's, because without
+    # her earnings she could transfer 1,260 of marriage allowance to him.
+    pension_credit_employment_income_tax: 758.928
+    pension_credit_earnings: 5_000 + 194.32 * 52
+    pension_credit_earnings_disregard: 10 * 52
+    # 20,000 + 15,104.64 - (1,486 + 506.928) - 202.77 (Class 1 NI) - 520.
+    pension_credit_income: 32_388.94
+
+- name: Case 12, statutory sick pay is qualifying income for Savings Credit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 80
+        state_pension: 14_000
+      person2:
+        age: 67
+        state_pension: 0
+        statutory_sick_pay: 123.25 * 52
+    benunits:
+      benunit:
+        members: [person1, person2]
+    households:
+      household:
+        members: [person1, person2]
+        country: ENGLAND
+  output:
+    # The partner's income is below the personal allowance, so 1,260 of it
+    # transfers to the claimant (marriage allowance): (14,000 - 12,570) * 0.2
+    # - 0.2 * 1,260 = 34. The pay bears no tax and no NI.
+    income_tax: [34, 0]
+    marriage_allowance: [1_260, 0]
+    pension_credit_earnings_disregard: 10 * 52
+    # 14,000 + 6,409 - 34 - 520 = 19,855, above the 18,889 couple guarantee.
+    pension_credit_income: 19_855
+    guarantee_credit: 0
+    # Reg 9 does not exclude statutory pay, so it is qualifying income.
+    savings_credit_income: 19_855
+    # Couple threshold 329.75 * 52 = 17,147. Amount A = min(0.6 * (18,889 -
+    # 17,147), 0.6 * (19,855 - 17,147)) = min(1,045.20, 1,624.80) = 1,045.20;
+    # amount B = 0.4 * (19,855 - 18,889) = 386.40; savings credit 658.80.
+    savings_credit: 658.80
+

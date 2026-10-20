@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.pension_credit import employed_earnings_sources
 
 
 class pension_credit_earnings_disregard(Variable):
@@ -99,11 +100,11 @@ class pension_credit_earnings_disregard(Variable):
         # notional tax and contributions of CER 1996 regs. 13(4) and 14. Both:
         # less half of pension contributions (reg. 17A(4A); CER 1996 reg.
         # 13(4)(c)).
-        # Employed earnings include the statutory payments of reg. 17A(2)(h)
-        # and (i), each floored at nil like the wages.
-        employment = max_(0, person("employment_income", period)) + sum(
-            max_(0, person(payment, period))
-            for payment in pc.guarantee_credit.statutory_payments
+        # Employed earnings: wages and the statutory payments of reg.
+        # 17A(2)(h) and (i), each floored at nil.
+        employment = sum(
+            max_(0, person(source, period))
+            for source in employed_earnings_sources(parameters, period)
         )
         self_employment = max_(0, person("self_employment_income", period))
         deductions = add(
