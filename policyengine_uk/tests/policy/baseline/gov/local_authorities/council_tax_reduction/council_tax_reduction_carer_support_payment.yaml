@@ -12,19 +12,20 @@
 # the supplement's tax does not reach Council Tax Reduction either: at working
 # age SSI 2021/249 deducts tax only from earnings, and at pension age SSI
 # 2012/319 reg 31(12) disregards the tax payable on income taken into
-# account, which the supplement is not. The model deducts all income tax, so
-# the taxable supplement reaches the model's Council Tax Reduction income
-# through income tax and in no other way.
+# account, which the supplement is not. The pension-age route deducts all
+# income tax, so there the taxable supplement reaches the model's Council Tax
+# Reduction income through income tax and in no other way. The working-age
+# route (Scotland and Wales) deducts only the tax on earnings, and Scotland
+# counts unearned income gross (reg 57), so the supplement's tax does not
+# reach it.
 # Neither instrument disregards CSP above the CA amount.
 #
 # Weekly rates. 2026: CSP and CA 86.45, Scottish Carer Supplement 11.70,
 # carer premium 48.15, personal allowance 95.55 (single, 25 or over), 256.00
 # (single, pension age) and 383.35 (couple, pension age). 2025: CSP 83.30, no
-# supplement, and Scotland's working-age carer premium 46.40 and personal
-# allowance 92.05 (SSI 2025/24 reg 16; the Housing Benefit amounts the
-# pension-age route reads were 46.38 and 92.04, see #2110). Wales's 2026
-# working-age personal allowance is its own, 101.85 (W.S.I. 2026/13 reg
-# 11(a)). 2024: CA
+# supplement, carer premium 46.40 (SSI 2021/249 Sch 1 para 5(1), as in force on
+# 1 April 2025), and personal allowance 92.05. Wales's 2026 working-age
+# personal allowance is its own, 101.85 (W.S.I. 2026/13 reg 11(a)). 2024: CA
 # 81.90, carer premium 45.60, personal allowance 90.50. Reduction is withdrawn
 # at 20% of income above the applicable amount. Council tax is 2,000
 # throughout.
@@ -228,8 +229,6 @@
     carer_support_payment: 83.30 * 52
     scottish_carer_supplement: 0
     council_tax_reduction_working_age_applicable_income: 7_000 + 83.30 * 52
-    # Scotland's own 2025-26 working-age amounts (SSI 2025/24 reg 16): personal
-    # allowance 92.05 and carer premium 46.40 a week.
     council_tax_reduction_working_age_applicable_amount: (92.05 + 46.40) * 52
     # 2,000 - 0.2 x (11,331.60 - 7,199.40) = 1,173.56
     council_tax_reduction: 2_000 - 0.2 * (7_000 + 83.30 * 52 - (92.05 + 46.40) * 52)
@@ -425,12 +424,14 @@
     council_tax_reduction: 2_000
 
 - name: An English pensioner carer's Council Tax Reduction is unchanged
+  # Aged 72: State Pension age was reached in 2019, before 1 April 2021, so
+  # the higher personal allowance applies (SI 2012/2885 Sch 2 para 1).
   period: 2026
   absolute_error_margin: 0.01
   input:
     people:
       carer:
-        age: 70
+        age: 72
         state_pension: 0
         private_pension_income: 14_000
         care_hours: 35

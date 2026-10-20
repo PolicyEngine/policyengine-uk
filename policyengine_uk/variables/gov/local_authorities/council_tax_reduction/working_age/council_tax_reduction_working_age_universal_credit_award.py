@@ -21,4 +21,7 @@ class council_tax_reduction_working_age_universal_credit_award(Variable):
     def formula(benunit, period, parameters):
         award_before_cap = benunit("universal_credit_pre_benefit_cap", period)
         cap_reduction = benunit("benefit_cap_reduction", period)
-        return max_(0, award_before_cap - cap_reduction)
+        has_universal_credit = benunit(
+            "council_tax_reduction_working_age_has_universal_credit", period
+        )
+        return has_universal_credit * max_(0, award_before_cap - cap_reduction)

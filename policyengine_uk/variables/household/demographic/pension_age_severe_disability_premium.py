@@ -7,14 +7,15 @@ class pension_age_severe_disability_premium(Variable):
     label = "Severe disability premium for pension-age Housing Benefit and CTR"
     documentation = (
         "The severe disability premium in the Housing Benefit and Council Tax "
-        "Reduction applicable amount of a family over State Pension age. "
+        "Reduction applicable amount of a family whose claimant or partner has "
+        "reached the qualifying age for State Pension Credit. "
         "HB(SPC) Regs 2006 Sch 3 para 6 sets the same conditions as the "
         "working-age premium (HB Regs 2006 Sch 3 para 14): the qualifying "
         "benefits, both partners qualifying unless the other is blind, no "
         "non-dependant aged 18 or over with the same exceptions (para 6(6), "
         "reg 3), and no carer benefit paid for caring for the claimant or "
         "partner. Para 12 sets the same weekly amounts. So this is "
-        "severe_disability_premium for a family over State Pension age, with "
+        "severe_disability_premium for such a family, with "
         "its amounts and its documented assumptions: where only one partner "
         "qualifies and the other is blind, the qualifying partner is taken to "
         "claim, as a couple may agree under HB(SPC) reg 63(1) and the CTR "
@@ -41,5 +42,15 @@ class pension_age_severe_disability_premium(Variable):
     )
 
     def formula(benunit, period, parameters):
-        pension_age = benunit.any(benunit.members("is_SP_age", period))
-        return where(pension_age, benunit("severe_disability_premium", period), 0)
+        # HB(SPC) Regs 2006 reg 5 and the CTR pensioner tests turn on a
+        # claimant or partner having attained the qualifying age for State
+        # Pension Credit; each programme's own switch then chooses the
+        # schedule (benefits_premiums, council_tax_reduction_applicable_amount).
+        person = benunit.members
+        over_qualifying_age = benunit.any(
+            person("is_claimant_or_partner", period)
+            & person("has_attained_state_pension_credit_qualifying_age", period)
+        )
+        return where(
+            over_qualifying_age, benunit("severe_disability_premium", period), 0
+        )

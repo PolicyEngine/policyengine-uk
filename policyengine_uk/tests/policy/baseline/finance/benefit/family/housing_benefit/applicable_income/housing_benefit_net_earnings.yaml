@@ -136,6 +136,7 @@
         age: 0
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [parent, child]
   output:
     # SI 2006/213 reg 35(1)(i). £8,000 is below the personal allowance and

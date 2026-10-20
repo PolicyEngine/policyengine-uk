@@ -11,10 +11,9 @@ class consumption_shareholding(Variable):
 
     def formula(household, period, parameters):
         consumption = household("consumption", period)
-        if (
-            household.simulation.dataset is not None
-            and household("consumption", period).sum() != 0
-        ):
+        if household.simulation.dataset is not None:
             weight = household("household_weight", period)
-            return consumption / (consumption * weight).sum()
+            weighted_total = (consumption * weight).sum()
+            if weighted_total != 0:
+                return consumption / weighted_total
         return 0

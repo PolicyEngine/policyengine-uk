@@ -1,0 +1,16 @@
+description: The Department for Education applies the extended childcare entitlement income limit to a parent or partner who meets the conditions through limited capability for work or a listed benefit, if this is true.
+metadata:
+  reference:
+    - title: The Childcare (Free of Charge for Working Parents) (England) Regulations 2016 - Regulations 4(5), 4(7) and 9
+      href: https://www.legislation.gov.uk/uksi/2016/1257/regulation/4/made
+    - title: The Childcare (Free of Charge for Working Parents) (England) Regulations 2022 - Regulations 14(4) and 15(4)
+      href: https://www.legislation.gov.uk/uksi/2022/1134/regulation/14
+  period: year
+  unit: bool
+  label: Extended childcare entitlement income limit applies to exempt parent or partner
+values:
+  # SI 2016/1257 reg 4(5) and (7): the parent and any partner must not expect
+  # adjusted net income above £100,000; reg 9 deems only qualifying paid work.
+  2015-01-01: true
+  # SI 2022/1134 regs 14(4) and 15(4) carry no income condition.
+  2022-12-01: false

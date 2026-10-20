@@ -1,6 +1,7 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.working_age._applicant import (
     working_age_applicant_or_partner,
+    working_age_child,
 )
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.config import (
     is_scotland_scheme,
@@ -43,9 +44,7 @@ class council_tax_reduction_working_age_childcare_deduction(Variable):
         scotland = is_scotland_scheme(benunit.household("country", period))
         person = benunit.members
         claimant_or_partner = working_age_applicant_or_partner(person, period)
-        children = benunit.sum(
-            person("is_child_or_young_person_for_legacy_benefits", period)
-        )
+        children = benunit.sum(working_age_child(person, period))
         two_or_more = children >= 2
         has_universal_credit = benunit(
             "council_tax_reduction_working_age_has_universal_credit", period

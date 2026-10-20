@@ -16,7 +16,7 @@ class council_tax_reduction_working_age_capital(Variable):
         "income-based Jobseeker's Allowance or income-related Employment and "
         "Support Allowance has all capital disregarded. Otherwise, as for "
         "other council tax reduction claims in the model, household savings "
-        "stand in for the claimant's and partner's capital."
+        "stand in for the applicant's and partner's capital."
     )
     definition_period = YEAR
     unit = GBP

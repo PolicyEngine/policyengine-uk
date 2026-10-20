@@ -11,7 +11,9 @@ class meets_pension_credit_age_conditions(Variable):
         "2019), so has any partner, unless the couple keeps Pension Credit "
         "under the SI 2019/37 article 4 saving. A family meeting these "
         "conditions is on the pension-age route (Pension Credit and pension-age "
-        "Housing Benefit) and is not eligible for Universal Credit."
+        "Housing Benefit) and is not eligible for Universal Credit unless "
+        "it claims it when DWP moves it off its legacy benefits "
+        "(claims_uc_at_legacy_closure)."
     )
     definition_period = YEAR
     reference = (
@@ -26,8 +28,14 @@ class meets_pension_credit_age_conditions(Variable):
         person = benunit.members
         claimant_or_partner = person("is_claimant_or_partner", period)
         count = benunit.sum(claimant_or_partner)
+        # SPCA 2002 s.1(2)(b): "has attained the qualifying age";
+        # s.4(1A) excludes a partner who "has not attained the qualifying age".
         all_pension_age = (count > 0) & (
-            benunit.sum(claimant_or_partner & person("is_SP_age", period)) == count
+            benunit.sum(
+                claimant_or_partner
+                & person("has_attained_state_pension_credit_qualifying_age", period)
+            )
+            == count
         )
         # Parameters are read at 30 April of the model year
         # (convert_to_fiscal_year_parameters), so model year 2019 (2019-20)

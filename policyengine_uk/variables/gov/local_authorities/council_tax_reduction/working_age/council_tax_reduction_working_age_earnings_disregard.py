@@ -1,6 +1,10 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.working_age._applicant import (
+    working_age_adult_premium_conditions,
     working_age_applicant_or_partner,
+    working_age_child,
+    working_age_couple,
+    working_age_lone_parent,
 )
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.config import (
     is_scotland_scheme,
@@ -17,7 +21,8 @@ class council_tax_reduction_working_age_earnings_disregard(Variable):
         "lone parent; otherwise £20 of the family's earnings where the "
         "applicable amount includes a disability or severe disability "
         "premium (in Scotland also for a Universal Credit applicant with "
-        "limited capability for work who is in employment); otherwise, with a "
+        "limited capability for work, where the applicant or partner is under "
+        "pensionable age and one of them is in employment); otherwise, with a "
         "carer benefit in payment, £20 of the carers' own "
         "earnings, plus up to £10 of a non-carer partner's earnings within the "
         "same £20. In Scotland, where the carer premium is included but no "
@@ -63,30 +68,33 @@ class council_tax_reduction_working_age_earnings_disregard(Variable):
         earnings = benunit("council_tax_reduction_working_age_earned_income", period)
         weekly_earnings = earnings / WEEKS_IN_YEAR
 
-        lone_parent = benunit("is_lone_parent", period)
-        couple = benunit("is_couple", period)
+        lone_parent = working_age_lone_parent(benunit, period)
+        couple = working_age_couple(benunit, period)
         has_universal_credit = benunit(
             "council_tax_reduction_working_age_has_universal_credit", period
         )
-        # Scotland also gives the £20 to a Universal Credit applicant or
-        # partner with limited capability for work (or for work-related
-        # activity) where one of them is under pensionable age and in
-        # employment (SSI 2021/249 Sch 3 para 4(3)).
+        # Scotland also gives the £20 to a Universal Credit applicant with
+        # limited capability for work (or for work and work-related
+        # activity) where "either the applicant or the applicant's partner
+        # has not reached pensionable age and at least one of them is engaged
+        # in employment" (SSI 2021/249 Sch 3 para 4(3)): the member under
+        # pensionable age and the member in employment need not be the same
+        # person. Either member of a couple may be the applicant.
         scottish_uc_limited_capability = (
             scotland
             & has_universal_credit
             & benunit.any(
                 claimant_or_partner & person("uc_limited_capability_for_WRA", period)
             )
-            & benunit.any(
-                claimant_or_partner
-                & ~person("is_SP_age", period)
-                & (weekly_person_earnings > 0)
-            )
+            & benunit.any(claimant_or_partner & ~person("is_SP_age", period))
+            & benunit.any(claimant_or_partner & (weekly_person_earnings > 0))
+        )
+        has_disability_premium, _, has_severe_disability_premium, _ = (
+            working_age_adult_premium_conditions(benunit, period, parameters)
         )
         disability = (
-            (benunit("disability_premium", period) > 0)
-            | (benunit("severe_disability_premium", period) > 0)
+            has_disability_premium
+            | has_severe_disability_premium
             | scottish_uc_limited_capability
         )
         # The carer disregard needs a carer benefit in payment (Wales Sch 8
@@ -149,14 +157,12 @@ class council_tax_reduction_working_age_earnings_disregard(Variable):
             & person("is_disabled_for_benefits", period)
             & remunerative
         )
-        children = benunit.sum(
-            person("is_child_or_young_person_for_legacy_benefits", period)
-        )
+        children = benunit.sum(working_age_child(person, period))
         work_condition = (
             full_time_25_or_over
             | (couple & (children > 0) & in_work)
             | (lone_parent & in_work)
-            | ((benunit("disability_premium", period) > 0) & disabled_worker)
+            | (has_disability_premium & disabled_worker)
         )
         childcare = benunit(
             "council_tax_reduction_working_age_childcare_deduction", period

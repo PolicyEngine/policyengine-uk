@@ -1,4 +1,8 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.income_tax import (
+    calc_income_tax_with_gift_aid,
+    first_extended_scottish_threshold,
+)
 
 
 class property_income_tax(Variable):
@@ -34,15 +38,12 @@ class property_income_tax(Variable):
         determining which tax band it falls into.
         """
         rates = parameters(period).gov.hmrc.income_tax.rates
-        taxable_property = person("taxable_property_income", period)
-        non_savings_after_allowances = max_(
-            0,
-            person("adjusted_net_income", period)
-            - person("taxable_savings_interest_income", period)
-            - person("taxable_dividend_income", period)
-            - person("allowances", period),
+        non_savings_after_allowances = person(
+            "non_savings_income_after_allowances", period
         )
-        property_after_allowances = min_(taxable_property, non_savings_after_allowances)
+        property_after_allowances = person(
+            "taxable_property_income_after_allowances", period
+        )
         other_earned_taxable = max_(
             0, non_savings_after_allowances - property_after_allowances
         )
@@ -50,15 +51,27 @@ class property_income_tax(Variable):
 
         # Scottish taxpayers: use Scottish rates via calc method
         # Tax on (other earned + property) minus tax on (other earned)
-        scottish_tax = rates.scotland.rates.calc(
-            other_earned_taxable + property_after_allowances
-        ) - rates.scotland.rates.calc(other_earned_taxable)
+        gross_gift = person("gift_aid_grossed_up", period)
+        first_extended = first_extended_scottish_threshold(rates.scotland.rates)
+        scottish_tax = calc_income_tax_with_gift_aid(
+            rates.scotland.rates,
+            other_earned_taxable + property_after_allowances,
+            gross_gift,
+            first_extended,
+            len(rates.scotland.rates.thresholds),
+        ) - calc_income_tax_with_gift_aid(
+            rates.scotland.rates,
+            other_earned_taxable,
+            gross_gift,
+            first_extended,
+            len(rates.scotland.rates.thresholds),
+        )
 
         # rUK taxpayers: use property-specific rates
         property_rates = rates.property
         thresholds = rates.uk.thresholds
-        basic_upper = thresholds[1]  # Higher rate threshold
-        higher_upper = thresholds[2]  # Additional rate threshold
+        basic_upper = thresholds[1] + gross_gift
+        higher_upper = thresholds[2] + gross_gift
 
         # Property income in basic rate band
         basic_rate_space = max_(0, basic_upper - other_earned_taxable)

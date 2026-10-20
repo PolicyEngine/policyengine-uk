@@ -6,9 +6,9 @@ class council_tax_reduction_working_age_passported(Variable):
     entity = BenUnit
     label = "Passported to the maximum working-age council tax reduction"
     documentation = (
-        "Whether the claimant or partner is on Income Support, income-based "
+        "Whether the applicant or partner is on Income Support, income-based "
         "Jobseeker's Allowance or income-related Employment and Support "
-        "Allowance and not on Universal Credit. In Scotland such a claimant "
+        "Allowance and not on Universal Credit. In Scotland such an applicant "
         "gets the maximum reduction (SSI 2021/249 reg 13(11)); in Wales the "
         "whole of their income and capital is disregarded (WSI 2013/3029 "
         "Sch 9 para 8, Sch 10 para 8)."

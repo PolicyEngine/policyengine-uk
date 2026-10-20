@@ -12,7 +12,7 @@ class council_tax_reduction_working_age_employed_earned_income(Variable):
     entity = BenUnit
     label = "Working-age council tax reduction net employed earnings"
     documentation = (
-        "The employed part of the claimant's and partner's net earnings: "
+        "The employed part of the applicant's and partner's net earnings: "
         "employment income and statutory sick, maternity and paternity pay, "
         "sharing each person's deductions pro rata with their self-employed "
         "earnings. Scotland's additional £17.10 earnings disregard turns on "
@@ -24,5 +24,5 @@ class council_tax_reduction_working_age_employed_earned_income(Variable):
 
     def formula(benunit, period, parameters):
         person = benunit.members
-        _, employed = working_age_earnings(person, period)
+        _, employed = working_age_earnings(person, period, parameters)
         return benunit.sum(working_age_applicant_or_partner(person, period) * employed)

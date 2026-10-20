@@ -35,7 +35,6 @@
         savings: 0
   output:
     council_tax_reduction_pensioner: false
-    council_tax_reduction_household_has_pensioner: false
     council_tax_reduction_scheme_supported: false
     simulated_council_tax_reduction_benunit: 0
     council_tax_benefit: 700
@@ -64,7 +63,6 @@
   output:
     is_uc_entitled: false
     council_tax_reduction_pensioner: true
-    council_tax_reduction_household_has_pensioner: true
     council_tax_reduction_scheme_supported: true
     # No income, so the full liability.
     council_tax_benefit: 2_000
@@ -96,7 +94,6 @@
   output:
     jsa_income: 4_000
     council_tax_reduction_pensioner: false
-    council_tax_reduction_household_has_pensioner: false
     council_tax_benefit: 700
 
 - name: An English couple over State Pension age is a pensioner couple
@@ -120,7 +117,6 @@
         savings: 0
   output:
     council_tax_reduction_pensioner: true
-    council_tax_reduction_household_has_pensioner: true
     council_tax_reduction_scheme_supported: true
 
 - name: A Newham mixed-age couple on Universal Credit gets Newham's working-age scheme
@@ -144,7 +140,7 @@
         council_tax: 2_000
         savings: 0
   output:
-    council_tax_reduction_household_has_pensioner: false
+    council_tax_reduction_pensioner: false
     council_tax_reduction_scheme_supported: true
     # Newham's scheme on the Universal Credit route. The pensioner scheme
     # would give the full 2,000 (income 10,000 is below the pension-age
@@ -182,7 +178,6 @@
   output:
     benunit_contains_household_head: [true, false]
     council_tax_reduction_pensioner: [false, false]
-    council_tax_reduction_household_has_pensioner: false
     newham_council_tax_reduction_non_dep_deductions: [392.08, 0]
     council_tax_benefit: [508.83, 0]
 
@@ -213,7 +208,6 @@
   output:
     is_uc_entitled: true
     council_tax_reduction_pensioner: true
-    council_tax_reduction_household_has_pensioner: true
     council_tax_reduction_scheme_supported: true
 
 - name: A pensioner aged 70 with an 18-year-old in education and no is_parent keeps pensioner CTR
@@ -246,10 +240,11 @@
     is_uc_eligible: false
     is_uc_entitled: false
     housing_benefit_pension_age_regulations_apply: true
-    is_benefit_cap_exempt: true
+    # Housing Benefit under the pension-age regulations has no cap; there is
+    # no Universal Credit award to cap.
+    is_housing_benefit_benefit_cap_exempt: true
     benefit_cap_reduction: 0
     council_tax_reduction_pensioner: true
-    council_tax_reduction_household_has_pensioner: true
     council_tax_reduction_scheme_supported: true
     # The pensioner scheme meets the 2,000 in full.
     council_tax_benefit: 2_000
@@ -276,7 +271,6 @@
         savings: 0
   output:
     council_tax_reduction_pensioner: false
-    council_tax_reduction_household_has_pensioner: false
     council_tax_reduction_scheme_supported: true
 
 - name: A Scottish mixed-age couple on Universal Credit is not a pensioner couple
@@ -300,17 +294,16 @@
         savings: 0
   output:
     council_tax_reduction_pensioner: false
-    council_tax_reduction_household_has_pensioner: false
     council_tax_reduction_scheme_supported: true
 
-- name: In Wales the cap reaches Council Tax Reduction through Universal Credit income
-  # A mixed-age couple on Universal Credit is not a CTR pensioner, so the
-  # Welsh route for Universal Credit applicants applies (WSI 2013/3029 Sch 6
-  # paras 3 and 9): the applicable amount is the UC maximum amount (30,000)
-  # and income is the Secretary of State's income (nil) plus the award after
-  # the cap (cap 22,020 outside London; 30,000 + 3,000 - 22,020 = 10,980 off,
-  # leaving 19,020). Income is below the applicable amount, so the family gets
-  # the maximum reduction.
+- name: A capped Welsh mixed-age UC award takes the working-age UC route
+  # WSI 2013/3029 reg 3 excludes a "person with an award of universal credit"
+  # from pensioner status, so the Welsh route for Universal Credit applicants
+  # applies (Sch 6 paras 3 and 9): the applicable amount is the UC maximum
+  # amount (30,000) and income is the Secretary of State's income (nil) plus
+  # the award after the cap (cap 22,020 outside London; 30,000 + 3,000 -
+  # 22,020 = 10,980 off, leaving 19,020). Income is below the applicable
+  # amount, so the family gets the maximum reduction.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -339,6 +332,7 @@
   output:
     benefit_cap_reduction: 10_980
     universal_credit: 19_020
+    council_tax_reduction_pensioner: false
     council_tax_reduction_devolved_working_age: true
     council_tax_reduction_working_age_applicable_amount: 30_000
     council_tax_reduction_working_age_applicable_income: 19_020

@@ -1,6 +1,7 @@
 from policyengine_uk.model_api import *
 import numpy as np
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction._legacy import (
+    applicant_has_universal_credit,
     legacy_council_tax_reduction,
 )
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.config import (
@@ -23,9 +24,9 @@ class kingston_upon_thames_council_tax_reduction(Variable):
         working_age = is_kingston_upon_thames_working_age(
             household("local_authority", period),
             household("country", period),
-            benunit("council_tax_reduction_claim_pensioner", period),
+            benunit("council_tax_reduction_pensioner", period),
         )
-        has_uc_award = benunit("universal_credit", period) > 0
+        has_uc_award = applicant_has_universal_credit(benunit, period)
         capital = household("savings", period)
         weekly_tariff_income = np.ceil(
             max_(0, capital - ctr.means_test.tariff_income_threshold)

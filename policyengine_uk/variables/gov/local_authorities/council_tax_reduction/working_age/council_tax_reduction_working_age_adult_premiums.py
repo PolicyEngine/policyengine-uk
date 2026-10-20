@@ -1,4 +1,8 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.working_age._applicant import (
+    working_age_adult_premium_conditions,
+    working_age_couple,
+)
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.config import (
     is_scotland_scheme,
 )
@@ -15,7 +19,7 @@ class council_tax_reduction_working_age_adult_premiums(Variable):
         "legacy-benefit premium variables (disability_premium, "
         "enhanced_disability_premium, severe_disability_premium), including "
         "whether the severe disability premium is at the single or couple "
-        "rate. The carer premium is paid for each qualifying claimant or "
+        "rate. The carer premium is paid for each qualifying applicant or "
         "partner. The employment and support allowance components, and the "
         "disability premium's exclusion for limited capability for work, are "
         "not modelled."
@@ -32,7 +36,6 @@ class council_tax_reduction_working_age_adult_premiums(Variable):
         scotland = is_scotland_scheme(benunit.household("country", period))
         scot = p.scotland.council_tax_reduction.working_age.adult_premiums
         wales = p.wales.council_tax_reduction.working_age.adult_premiums
-        dwp = parameters(period).gov.dwp.disability_premia
 
         def amount(node, field=None):
             s = getattr(scot, node)
@@ -41,14 +44,10 @@ class council_tax_reduction_working_age_adult_premiums(Variable):
                 s, w = getattr(s, field), getattr(w, field)
             return where(scotland, s, w)
 
-        couple = benunit("is_couple", period)
-        disability = benunit("disability_premium", period) > 0
-        enhanced = benunit("enhanced_disability_premium", period) > 0
-        severe_weekly = benunit("severe_disability_premium", period) / WEEKS_IN_YEAR
-        severe = severe_weekly > 0
-        # The legacy variable pays either the single or the double rate;
-        # follow whichever it chose.
-        severe_double = severe_weekly > (dwp.severe_single + dwp.severe_couple) / 2
+        couple = working_age_couple(benunit, period)
+        disability, enhanced, severe, severe_double = (
+            working_age_adult_premium_conditions(benunit, period, parameters)
+        )
         weekly = (
             disability
             * where(

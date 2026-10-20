@@ -1,6 +1,7 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.working_age._applicant import (
     working_age_applicant_or_partner,
+    applicant_family,
 )
 
 
@@ -9,7 +10,7 @@ class council_tax_reduction_working_age_unearned_income(Variable):
     entity = BenUnit
     label = "Working-age council tax reduction unearned income"
     documentation = (
-        "Annual unearned income of the claimant and partner counted in a "
+        "Annual unearned income of the applicant and partner counted in a "
         "working-age council tax reduction claim in Scotland or Wales, other "
         "than Universal Credit and tariff income from capital. Retirement "
         "pensions, contributory Jobseeker's Allowance and Employment and "
@@ -53,7 +54,10 @@ class council_tax_reduction_working_age_unearned_income(Variable):
             ],
             members,
         )
-        tax_credits = add(benunit, period, ["working_tax_credit", "child_tax_credit"])
+        # Tax credits are the benefit unit's claimant's and partner's.
+        tax_credits = applicant_family(benunit, period) * add(
+            benunit, period, ["working_tax_credit", "child_tax_credit"]
+        )
         bi = parameters(period).gov.contrib.ubi_center.basic_income
         basic_income = (
             add_for_members(benunit, period, ["basic_income"], members)

@@ -12,12 +12,14 @@ class council_tax_reduction_working_age_unearned_income_tax(Variable):
     entity = BenUnit
     label = "Working-age council tax reduction tax on counted unearned income"
     documentation = (
-        "Income tax of the claimant and partner on the taxable unearned "
+        "Income tax of the applicant and partner on the taxable unearned "
         "income the working-age schemes count (pensions, State Pension and "
-        "taxable benefits): their non-savings income tax less the tax on their "
-        "earnings, shared pro rata with property income. Wales disregards it "
-        "from unearned income (WSI 2013/3029 Sch 9 para 4); Scotland counts "
-        "unearned income gross (SSI 2021/249 reg 57)."
+        "taxable benefits): their non-savings income tax other than on "
+        "property income (earned_income_tax) less the tax on their earnings, "
+        "shared pro rata with taxable income the schemes do not count (the "
+        "Scottish Carer Supplement). Wales disregards it from unearned income "
+        "(WSI 2013/3029 Sch 9 para 4); Scotland counts unearned income gross "
+        "(SSI 2021/249 reg 57)."
     )
     definition_period = YEAR
     unit = GBP

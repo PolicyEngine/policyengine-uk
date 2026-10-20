@@ -611,9 +611,13 @@
 
 - name: Scotland, the £17.10 needs employed earnings from April 2022
   # Sch 3 para 15(1): a self-employed lone parent gets only the £25 disregard
-  # (1,300 a year). Earnings 15,000 less income tax 461.70 and Class 4 NI
-  # 145.80 = 14,392.50; income 13,092.50; applicable amount (95.55 + 109.85)
-  # x 52 = 10,680.80; award 1,800 - 0.2 x 2,411.70 = 1,317.66.
+  # (1,300 a year). Without Universal Credit the profit is reduced by the
+  # prescribed notional deductions, not the tax paid (SSI 2021/249 reg 51(9);
+  # SSI 2012/303 reg 38): income tax at the basic rate, 20% x (15,000 -
+  # 12,570) = 486 (the 461.70 actually paid includes the 19% starter band),
+  # and Class 4, 6% x (15,000 - 12,570) = 145.80. Net profit 14,368.20;
+  # income 13,068.20; applicable amount (95.55 + 109.85) x 52 = 10,680.80;
+  # award 1,800 - 0.2 x 2,387.40 = 1,322.52.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -637,8 +641,10 @@
         council_tax: 1_800
         savings: 0
   output:
+    income_tax: [461.70, 0]
+    council_tax_reduction_working_age_earned_income: 14_368.20
     council_tax_reduction_working_age_earnings_disregard: 1_300
-    simulated_council_tax_reduction_benunit: 1_317.66
+    simulated_council_tax_reduction_benunit: 1_322.52
 
 - name: Scotland, an employed lone parent working 30 hours gets the £17.10
   # (25 + 17.10) x 52 = 2,189.20.
@@ -957,3 +963,153 @@
     national_insurance: 500
     council_tax_reduction_working_age_earned_income: 12_000
     simulated_council_tax_reduction_benunit: 445.72
+
+- name: Wales, property income does not dilute the tax disregarded from a pension
+  # Sch 9 para 4 disregards the tax on income counted under Sch 6 para 17.
+  # Property income is taxed separately (property_income_tax) and is not in
+  # the tax on the pension: 0.2 x (14,000 - 12,570) = 286, all of it
+  # disregarded, as without the property income. Income 14,000 - 286 =
+  # 13,714 (the rent is treated as capital); applicable amount 101.85 x 52 =
+  # 5,296.20; award 2,000 - 0.2 x 8,417.80 = 316.44.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        private_pension_income: 14_000
+        property_income: 6_000
+        council_tax_benefit_reported: 100
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: WALES
+        country: WALES
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_working_age_unearned_income_tax: 286
+    council_tax_reduction_working_age_applicable_income: 13_714
+    simulated_council_tax_reduction_benunit: 316.44
+
+- name: Scotland, the LCWRA £20 disregard where the younger partner has LCWRA and the older one works
+  # Sch 3 para 4(3): "either the applicant or the applicant's partner has not
+  # reached pensionable age and at least one of them is engaged in
+  # employment"; the two need not be the same person. A mixed-age couple on
+  # Universal Credit is on the working-age route. Earnings 12,000 (no tax,
+  # and no NI over State Pension age) - 1,040 = 10,960; no children, so no
+  # Universal Credit counts; applicable amount 150.15 x 52 = 7,807.80; award
+  # 1,800 - 0.2 x 3,152.20 = 1,169.56.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        uc_limited_capability_for_WRA: true
+        council_tax_benefit_reported: 100
+      partner:
+        age: 70
+        employment_income: 12_000
+        weekly_hours: 20
+        state_pension: 0
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        would_claim_uc: true
+    households:
+      household:
+        members: [claimant, partner]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 1_800
+        rent: 6_000
+        savings: 0
+  output:
+    council_tax_reduction_pensioner: false
+    council_tax_reduction_working_age_has_universal_credit: true
+    council_tax_reduction_working_age_earnings_disregard: 1_040
+    council_tax_reduction_working_age_applicable_income: 10_960
+    simulated_council_tax_reduction_benunit: 1_169.56
+
+- name: Wales, a self-employed profit gets the notional tax deduction, not the tax paid
+  # WSI 2013/3029 Sch 6 paras 24(3) and 25: income tax at the basic rate on
+  # the profit less the personal allowance, as if the profit were the only
+  # income, and Class 4 on it. The £5,000 profit is below the allowance, so
+  # nothing comes off it, although the tax paid on it is 1,000 (the £12,570
+  # pay takes the allowance). Pay 12,570, below the primary threshold, bears
+  # no tax or Class 1. Earnings 12,570 + 5,000 = 17,570.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        employment_income: 12_570
+        self_employment_income: 5_000
+        weekly_hours: 20
+        council_tax_benefit_reported: 100
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: WALES
+        country: WALES
+        council_tax: 1_800
+        savings: 0
+  output:
+    income_tax: 1_000
+    council_tax_reduction_working_age_earned_income: 17_570
+
+- name: Scotland, a working-age household head who applies alone has her own pension counted
+  # #2078: the household head is liable but is not the benefit unit's
+  # claimant or partner, so she applies alone as a single person. SSI
+  # 2021/249 reg 36 counts her £100,000 private pension; the young parents'
+  # child and awards are theirs. 20% of the excess is far above the £1,800
+  # bill, so there is no reduction.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+        private_pension_income: 100_000
+      young_mother:
+        age: 17
+        is_parent: true
+        is_household_head: false
+      young_father:
+        age: 17
+        is_parent: true
+        is_household_head: false
+      baby:
+        age: 0
+        is_household_head: false
+    benunits:
+      family:
+        members: [head, young_mother, young_father, baby]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+    households:
+      home:
+        members: [head, young_mother, young_father, baby]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_head_applies_alone: true
+    is_council_tax_reduction_applicant_or_partner: [true, false, false, false]
+    council_tax_reduction_devolved_working_age: true
+    council_tax_reduction_working_age_child_amounts: 0
+    council_tax_reduction_working_age_applicable_amount: 95.55 * 52
+    council_tax_reduction_working_age_applicable_income: 100_000
+    simulated_council_tax_reduction_benunit: 0

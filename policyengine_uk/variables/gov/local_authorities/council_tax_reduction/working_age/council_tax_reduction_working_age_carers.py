@@ -12,7 +12,7 @@ class council_tax_reduction_working_age_carers(Variable):
     entity = BenUnit
     label = "Claimants and partners qualifying for the working-age CTR carer premium"
     documentation = (
-        "The number of claimants and partners who qualify for the working-age "
+        "The number of applicants and partners who qualify for the working-age "
         "carer premium: entitled to Carer's Allowance or, in Scotland, Carer "
         "Support Payment, whether or not an overlapping benefit reduces the "
         "payment to nil. In Scotland an award of Universal Credit that "

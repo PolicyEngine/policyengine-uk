@@ -30,10 +30,10 @@
 - name: Annual Allowance for Pension Contributions
   period: 2024
   input:
-    adjusted_net_income: 60_000
+    net_income: 60_000
   output:
     # AA = £60,000 from 2023-04-06 (FA 2004 s.228, amended by Finance (No. 2) Act 2023)
-    # ANI of £60,000 is below the taper threshold of £260,000, so full AA applies
+    # Net income of £60,000 is below the taper threshold of £260,000, so full AA applies
     pension_annual_allowance: 60_000
 
 - name: Trading Allowance Deduction
@@ -47,6 +47,7 @@
 - name: Property Allowance Deduction
   period: 2024
   input:
+    property_rental_income: 3000
     property_income: 3000
     gov.hmrc.income_tax.allowances.property_allowance: 1000
   output:
@@ -59,7 +60,7 @@
   output:
     savings_allowance: 1000.0
 
-- name: Allowances Applicable to Adjusted Net Income
+- name: Allowances applicable to net income exclude Gift Aid
   period: 2024
   input:
     personal_allowance: 12000
@@ -69,4 +70,6 @@
     charitable_investment_gifts: 100
     other_deductions: 50
   output: 
-    allowances: 14950.0
+    # ITA 2007 s.414(2)(b) extends limits instead of deducting the gift.
+    # https://www.legislation.gov.uk/ukpga/2007/3/section/414
+    allowances: 14450.0

@@ -12,14 +12,17 @@ class council_tax_reduction_working_age_person_earned_income(Variable):
     entity = Person
     label = "Working-age council tax reduction net earned income (person)"
     documentation = (
-        "A claimant's or partner's annual net earnings for a working-age "
+        "An applicant's or partner's annual net earnings for a working-age "
         "council tax reduction claim in Scotland or Wales, before earnings "
         "disregards. Only income tax and National Insurance in respect of the "
         "employment or trade are deducted (not tax on pensions, benefits, "
         "property, savings or dividends, nor voluntary Class 3 "
         "contributions). With Universal Credit, Wales uses the Universal "
-        "Credit earned income the award is based on, and Scotland adds "
-        "statutory sick, maternity and paternity pay to it; otherwise half of "
+        "Credit earned income the award is based on, after the minimum income "
+        "floor, and Scotland the Universal Credit measure without the floor. "
+        "Without Universal Credit, self-employed profit is reduced by the "
+        "schemes' notional basic-rate tax and Class 4 (and, before April "
+        "2024, Class 2) contributions rather than the tax paid, and half of "
         "pension contributions are deducted. Children's and other members' "
         "earnings do not count."
     )
@@ -33,5 +36,5 @@ class council_tax_reduction_working_age_person_earned_income(Variable):
     )
 
     def formula(person, period, parameters):
-        net, _ = working_age_earnings(person, period)
+        net, _ = working_age_earnings(person, period, parameters)
         return working_age_applicant_or_partner(person, period) * net
