@@ -1,7 +1,7 @@
 import os
 
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.benefit_unit import award_of_members
+from policyengine_uk.utils.benefit_unit import award_of_couple
 from policyengine_uk.utils.supplied_inputs import supplied_input
 from policyengine_uk.utils.uc_work_related_requirements import (
     other_member_of_single_claim,
@@ -132,11 +132,12 @@ class is_uc_benefit_cap_exempt_specified_benefit(Variable):
         # Reg 83(1)(a): "the claimant is receiving an employment and support
         # allowance ... which includes a support component". Contributory and
         # income-related allowances both carry it; another member's allowance
-        # does not count. The couple's income-related award is the part of
-        # the family's award on the couple's reports, as in
-        # claimant_or_partner_esa_income, and it is received by its payee
+        # does not count. The couple's income-related award is
+        # claimant_or_partner_esa_income where the couple is the claimant and
+        # partner, and is read from their reports otherwise
+        # (award_of_couple); it is received by its payee
         # (is_payee_of_couple_award).
-        couple_esa_award = award_of_members(
+        couple_esa_award = award_of_couple(
             benunit,
             period,
             "esa_income",

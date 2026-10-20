@@ -64,3 +64,18 @@ At the unchanged 2026 rates, an otherwise qualifying carer aged 16 receives
 mobility amounts are respectively £4,160 and £1,575.60 annually once the relevant
 age floor is met. These conditional examples do not estimate a population effect
 or establish independently encoded parity.
+
+## Combined CSP conditions
+
+This change is stacked on the repaired [PR #2473](https://github.com/PolicyEngine/policyengine-uk/pull/2473).
+Both the age condition and the earnings condition apply to computed CSP, including
+the reported-Carer’s-Allowance input proxy. Natural-pay cases combine age15,
+fractional ages below16, age16, the exact annual earnings limit and favorable
+fractional-penny treatment. The shared reader retains merged [PR #2444](https://github.com/PolicyEngine/policyengine-uk/pull/2444)
+NI-age deductions. Existing annual/award-week, PAYE and care-charge qualifications
+remain in the [CSP earnings assumptions](carer-support-payment-earnings.md).
+
+Only after #2473 actually merges should this branch be retargeted and revalidated
+on current main; a queue entry or passing checks do not establish that landing.
+The shared-parameter change in open [PR #2518](https://github.com/PolicyEngine/policyengine-uk/pull/2518)
+requires future CSP-reader/prose coordination; it is not copied or repaired here.

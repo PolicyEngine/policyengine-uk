@@ -1,4 +1,4 @@
-description: Limited capability for work and work-related activity (LCWRA) element amount under Universal Credit. From April 2026 this is the amount for claimants other than pre-2026, severe conditions criteria or terminally ill claimants, which Universal Credit Act 2025 s. 3 freezes for 2026-27 to 2029-30.
+description: Limited capability for work and work-related activity (LCWRA) element amount under Universal Credit. From April 2026 this is the amount for claimants other than pre-2026, severe conditions criteria or terminally ill claimants, which Universal Credit Act 2025 s. 3 freezes for 2026-27 to 2029-30. In years when the rebalancing modifier runs, the rebalancing protected_health_element and new_claimant_health_element parameters set the amount paid, so a health element reform for those years changes those parameters.
 values:
   2016-04-10: 315.6
   2017-04-10: 318.76

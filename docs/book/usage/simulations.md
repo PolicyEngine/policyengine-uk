@@ -271,6 +271,11 @@ Each table should contain the ID columns needed to link entities together:
 - `benunit`: `benunit_id`, plus any benefit-unit variables
 - `household`: `household_id`, plus any household-level variables
 
+Benefit-unit and household rows can be in any order. The loader aligns each
+year's group inputs by its ID column to the simulation's sorted group IDs;
+person rows keep their supplied order. This alignment does not reorder the
+caller's tables. Multi-year tables must still describe the same population.
+
 Use `UKSingleYearDataset` when you have one cross-section and want PolicyEngine
 UK to extend it forward using its standard uprating assumptions.
 
