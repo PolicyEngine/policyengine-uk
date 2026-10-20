@@ -140,6 +140,25 @@ def test_caps_apply_before_annual_averaging_and_preserve_january_changes():
     )
 
 
+def test_a_cap_change_part_way_through_a_year_keeps_its_date():
+    simulation = Simulation(
+        dataset=bus_dataset(),
+        scenario=Scenario(
+            parameter_changes={"gov.dft.bus.fares.cap": {"2026-10-01.2100-12-31": 1}}
+        ),
+    )
+    bus = simulation.tax_benefit_system.parameters.gov.dft.bus
+    assert bus.fares.cap.metadata["preserve_calendar_dates"]
+    assert bus.reference_fares.cap.metadata["preserve_calendar_dates"]
+    assert bus.fares("2026-09-30").cap == 3
+    assert bus.fares("2026-10-01").cap == 1
+    # 178 days at £3 from 6 April, then 187 at £1. Annualised, the change
+    # would have waited for the 2027 calendar year.
+    assert annual_capped_fare(4, bus.fares, 2026) == pytest.approx(
+        (178 * 3 + 187 * 1) / 365
+    )
+
+
 def test_clone_does_not_lose_journey_input_provenance():
     original = Simulation(dataset=bus_dataset())
     expected = original.calculate("bus_fare_spending", 2024)[0]
