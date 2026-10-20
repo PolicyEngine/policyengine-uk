@@ -36,10 +36,17 @@ class council_tax_reduction_premiums(Variable):
 
     def formula(benunit, period, parameters):
         pensioner = benunit("council_tax_reduction_pensioner", period)
+        # The working-age severe disability premium takes Council Tax
+        # Reduction's own family test (council_tax_reduction_severe_disability_
+        # premium, which differs from the shared premium in Scotland).
         benefit_unit_premiums = where(
             pensioner,
             benunit("pension_age_benefits_premiums", period),
-            benunit("working_age_benefits_premiums", period),
+            benunit("working_age_benefits_premiums", period)
+            + (
+                benunit("council_tax_reduction_severe_disability_premium", period)
+                - benunit("severe_disability_premium", period)
+            ),
         )
         head_applies_alone = benunit("council_tax_reduction_head_applies_alone", period)
         person = benunit.members
