@@ -1,1 +1,0 @@
-Preserve dataset-supplied values for variables with formulas in default input DataFrame exports, so reloading an export retains inputs such as reported State Pension. Exclude calculated caches and model-generated pseudo-inputs while retaining recorded input storage and branch precedence.

@@ -1,1 +1,0 @@
-- Fixed Housing Benefit applicable income to use the configured pension contribution deduction rate, preserving the current 50% deduction.
