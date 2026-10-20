@@ -69,8 +69,9 @@ class housing_benefit_applicable_income(Variable):
             "ssmg",
             # Counted by both regimes: HB (SPC) Regs 2006 reg 29(1)(j), whose
             # exceptions touching these are the IIDB increases under SSCBA
-            # ss.104-105 and Sch 8 (heads (iii)-(v)) and non-partner dependant
-            # increases (head (viii)), and HB Regs 2006 reg 40 with Sch 5,
+            # ss.104-105 (head (iii)) and non-partner dependant increases (head
+            # (viii)); heads (iv) and (v) cover the Sch 8 schemes for old
+            # industrial injury cases. And HB Regs 2006 reg 40 with Sch 5,
             # whose para 9 attendance allowance disregard covers the
             # ss.104-105 increases (reg 2(1)). iidb is the whole reported
             # payment and cannot separate those increases.

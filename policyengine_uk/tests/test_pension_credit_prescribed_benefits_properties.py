@@ -5,7 +5,9 @@ security benefits" as income except a closed list. The list does not name
 industrial injuries disablement benefit (IIDB), severe disablement allowance
 (SDA), incapacity benefit (IB) or maternity allowance (MA). For IIDB it
 excepts the constant attendance and exceptionally severe disablement
-increases (reg 15(1)(c)-(e)), which the reported IIDB amount cannot separate.
+increases (reg 15(1)(c)), which the reported IIDB amount cannot separate;
+(d) and (e) except payments under the Sch 8 schemes for old industrial
+injury cases.
 Pension-age Housing Benefit counts the same benefits under HB (SPC) Regs 2006
 reg 29(1)(j), whose exceptions for these benefits match reg 15(1)'s. Reg 9
 makes working tax credit, IB, SDA, MA, contribution-based JSA and contributory
@@ -26,12 +28,11 @@ Invariants:
 1. Differential: Pension Credit and pension-age Housing Benefit assess the
    same income. Where neither Guarantee Credit nor Savings Credit is due and
    Housing Benefit income is above its zero floor, Housing Benefit applicable
-   income plus its income disregard equals Pension Credit income. (With a
-   savings-credit-only award, Housing Benefit takes the Secretary of State's
-   assessment plus the savings credit, HB (SPC) Regs 2006 reg 27, by design.) The disregard is added back because
-   the model applies the HB earnings disregard (HB (SPC) Regs Sch 4) whether or
-   not there are earnings; there are none here. There is no other intended
-   difference on this domain: both measures deduct the claimant's and
+   income equals Pension Credit income. (With a savings-credit-only award,
+   Housing Benefit takes the Secretary of State's assessment plus the savings
+   credit, HB (SPC) Regs 2006 reg 27, by design.) There are no earnings, so
+   the Housing Benefit earnings disregard, which is capped at net earnings, is
+   nil. There is no other intended difference on this domain: both measures deduct the claimant's and
    partner's income tax and National Insurance, and neither counts the
    Scottish Carer Supplement (SPC Regs reg 15(1)(ri); HB (SPC) Regs reg
    29(1)(j)(xviiha)).
@@ -45,10 +46,10 @@ Invariants:
    of a reg 9 source (working tax credit, IB, SDA, MA, contribution-based JSA
    or contributory ESA) changes Savings Credit income only through income tax
    and National Insurance and through any Carer's Allowance or Carer Support
-   Payment it displaces (as in invariant 2), and never raises Savings Credit. Draws for this
-   invariant are aged 77 or over: the model dates State Pension age as birth
-   year plus the current State Pension age (66 in 2026), so they meet its
-   test of reaching it before the 2016 Savings Credit cutoff.
+   Payment it displaces (as in invariant 2), and never raises Savings Credit.
+   Draws for this invariant are aged 77 or over, old enough to have reached
+   State Pension age, on the model's timetable by date of birth, before the
+   April 2016 Savings Credit cutoff.
 4. Boundary: on the private-pension step where Guarantee Credit ends,
    household net income, excluding the TV licence fee, does not fall. The free
    TV licence for over-75s on Pension Credit is a genuine statutory cliff, so
@@ -201,7 +202,6 @@ def test_pension_credit_and_housing_benefit_assess_the_same_prescribed_benefits(
             "pension_credit_income",
             "housing_benefit_eligible",
             "housing_benefit_applicable_income",
-            "housing_benefit_applicable_income_disregard",
         ],
     )
     hb_income = g["housing_benefit_applicable_income"]
@@ -213,11 +213,10 @@ def test_pension_credit_and_housing_benefit_assess_the_same_prescribed_benefits(
         & g["housing_benefit_eligible"].astype(bool)
         & (hb_income > 0)
     )
-    before_disregard = hb_income + g["housing_benefit_applicable_income_disregard"]
     pc_income = g["pension_credit_income"]
-    assert np.allclose(before_disregard[compared], pc_income[compared], atol=0.01), (
+    assert np.allclose(hb_income[compared], pc_income[compared], atol=0.01), (
         families,
-        before_disregard[compared],
+        hb_income[compared],
         pc_income[compared],
     )
 

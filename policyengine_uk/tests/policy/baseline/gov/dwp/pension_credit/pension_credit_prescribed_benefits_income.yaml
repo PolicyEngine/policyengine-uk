@@ -5,8 +5,9 @@
 # SPC Regs 2002 reg 15(1): "all social security benefits are prescribed except"
 # a closed list. The list does not name the four benefits. For IIDB it excepts
 # the increases under SSCBA 1992 ss.104 and 105 (constant attendance and
-# exceptionally severe disablement) and Sch 8 paras 4 and 7(2)(b) (reg
-# 15(1)(c)-(e)); (h) excepts increases for a dependant other than a partner.
+# exceptionally severe disablement; reg 15(1)(c)); (d) and (e) except payments
+# under the Sch 8 schemes for old industrial injury cases, and (h) increases
+# for a dependant other than a partner.
 # Reg 9 makes WTC, IB, SDA and MA (with contribution-based JSA, contributory
 # ESA and reg 15(5)(d) maintenance) non-qualifying income for Savings Credit;
 # IIDB stays qualifying income. HB (SPC) Regs 2006 reg 29(1)(j) counts the same
@@ -243,10 +244,6 @@
     benunits:
       benunit:
         members: [person1]
-        # SI 2025/295 art 29 sets the single standard minimum guarantee at
-        # 227.10; the model's 2025 parameter holds 221.85, so the statutory
-        # amount is supplied to isolate the income rule.
-        minimum_guarantee: 227.10 * 52
     households:
       household:
         members: [person1]
@@ -254,6 +251,7 @@
   output:
     # 1,000 + 2,343.12 = 3,343.12.
     pension_credit_income: 1_000 + 45.06 * 52
+    # SI 2025/295 art 29: single standard minimum guarantee 227.10.
     # 11,809.20 - 3,343.12 = 8,466.08.
     guarantee_credit: 227.10 * 52 - (1_000 + 45.06 * 52)
 
@@ -434,10 +432,6 @@
     benunits:
       benunit:
         members: [person1]
-        # The model applies the HB earnings disregard (HB (SPC) Regs Sch 4)
-        # whether or not there are earnings; there are none here, so it is
-        # set to zero to isolate the income rule.
-        housing_benefit_applicable_income_disregard: 0
     households:
       household:
         members: [person1]
@@ -448,7 +442,8 @@
     # 1,000 + 12,162.80 = 13,162.80, above the 12,376 minimum guarantee.
     pension_credit_income: 1_000 + 233.90 * 52
     guarantee_credit: 0
-    # HB (SPC) Regs reg 29(1)(j): the same 13,162.80.
+    # HB (SPC) Regs reg 29(1)(j): the same 13,162.80. There are no earnings,
+    # so the earnings disregard (capped at net earnings) is nil.
     housing_benefit_applicable_income: 1_000 + 233.90 * 52
 
 - name: Case 17, working-age Housing Benefit counts incapacity benefit and SDA.
@@ -465,8 +460,6 @@
     benunits:
       benunit:
         members: [person1, person2]
-        # As in Case 16 (the working-age disregard is HB Regs 2006 Sch 4).
-        housing_benefit_applicable_income_disregard: 0
         # A legacy Housing Benefit claim: a Universal Credit claim would
         # passport Housing Benefit (housing_benefit_on_passporting_benefit)
         # and make its income nil, and this case tests the means test itself.
@@ -479,7 +472,8 @@
         rent: 6_000
   output:
     income_tax: [0, 0]
-    # HB Regs 2006 reg 40(1): 7,623.20 + 6,206.20 = 13,829.40.
+    # HB Regs 2006 reg 40(1): 7,623.20 + 6,206.20 = 13,829.40; no earnings,
+    # so no earnings disregard.
     housing_benefit_applicable_income: (146.60 + 103.85 + 15.50) * 52
 
 - name: Case 18, working tax credit does not add to a positive Savings Credit.
@@ -543,3 +537,63 @@
     savings_credit: 0
     # 18,889 - 18,206.20 = 682.80.
     guarantee_credit: 363.25 * 52 - (12_000 + (103.85 + 15.50) * 52)
+
+- name: Case 20, savings-credit-only Housing Benefit counts IIDB through the Pension Credit assessment.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 80
+        state_pension: 0
+        private_pension_income: 200 * 52
+        iidb_reported: 46.78 * 52
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: NORTH_WEST
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_000
+  output:
+    # 10,400 + 2,432.56 = 12,832.56, above the 12,376 minimum guarantee; no
+    # income tax (below the personal allowance; IIDB is not taxable).
+    pension_credit_income: 200 * 52 + 46.78 * 52
+    guarantee_credit: 0
+    # Amount A = min(0.6 * (238 - 208.07), 0.6 * (246.78 - 208.07)) * 52
+    #          = 0.6 * 29.93 * 52 = 933.816; amount B = 0.4 * (12,832.56 -
+    #          12,376) = 182.624; savings credit 751.192, so the award is
+    #          savings credit only.
+    savings_credit: 751.192
+    # HB (SPC) Regs 2006 reg 27: the Secretary of State's assessment plus the
+    # savings credit payable, no earnings disregard (no earnings):
+    # 12,832.56 + 751.192 = 13,583.752. On main IIDB was not Pension Credit
+    # income, Guarantee Credit was paid and Housing Benefit income was nil.
+    housing_benefit_applicable_income: 13_583.752
+
+- name: Case 21, working-age Housing Benefit counts IIDB.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 45
+        iidb_reported: 233.90 * 52
+    benunits:
+      benunit:
+        members: [person1]
+        # A legacy Housing Benefit claim (see Case 17).
+        claims_universal_credit: false
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_000
+  output:
+    income_tax: 0
+    # HB Regs 2006 reg 40(1): IIDB at the 100% rate, 233.90 * 52 = 12,162.80.
+    housing_benefit_applicable_income: 233.90 * 52
