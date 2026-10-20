@@ -481,3 +481,46 @@
         region: WALES
   output:
     wales_childcare_offer: 0
+
+# current_education's default formula puts an 18- or 19-year-old in post-
+# secondary education when nothing is supplied, so a parent of that age
+# counts as a parent in education (guidance para 71). Survey data supplies
+# current_education, so this default matters only for household calculations.
+- name: A 19-year-old lone parent with no education input counts as in education by default
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 19
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        region: WALES
+  output:
+    wales_childcare_offer: 7_003.50
+
+- name: A 19-year-old lone parent not in education and not working is ineligible
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 19
+        current_education: NOT_IN_EDUCATION
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        region: WALES
+  output:
+    wales_childcare_offer: 0

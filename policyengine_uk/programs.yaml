@@ -429,7 +429,7 @@ programs:
     coverage: Wales
     variable: wales_childcare_offer
     parameter_prefix: gov.welsh_government.childcare_offer
-    verified_start_year: 2019
+    verified_start_year: 2020
     verified_end_year: 2026
     notes: The childcare element only, valued at the Welsh Government's hourly rate to providers. Up to 30 hours a week less the local authority's nursery education hours (10, the minimum) for 39 term weeks, and 30 hours for 9 holiday weeks. Nursery education, funded by local authorities, is not valued.
 
