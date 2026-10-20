@@ -63,7 +63,7 @@
         members: [person1]
         country: ENGLAND
   output:
-    # max(5 - 10, 0) * 52 = 0. Unchanged behaviour: passes on the base too.
+    # max(5 - 10, 0) * 52 = 0.
     pension_credit_war_pension_income: 0
     pension_credit_income: 0
     guarantee_credit: 238 * 52
@@ -85,7 +85,7 @@
         members: [person1]
         country: ENGLAND
   output:
-    # max(10 - 10, 0) * 52 = 0. Unchanged behaviour: passes on the base too.
+    # max(10 - 10, 0) * 52 = 0.
     pension_credit_war_pension_income: 0
     pension_credit_income: 0
     guarantee_credit: 238 * 52
@@ -249,7 +249,6 @@
   output:
     is_claimant_or_partner: [true, true, false, false]
     # Only the claimant's and partner's payments count (SPCA s.5; reg 14).
-    # Unchanged behaviour: passes on the base too.
     pension_credit_war_pension_income: 0
     pension_credit_income: 0
 
@@ -355,3 +354,46 @@
     pension_credit_war_pension_income: 20 * 52
     pension_credit_income: 20 * 52
     guarantee_credit: (238 - 20) * 52
+
+- name: Case 14, savings-credit-only Housing Benefit and CTR do not count an AFCS payment.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 80
+        state_pension: 0
+        private_pension_income: 250 * 52
+        afcs: 30 * 52
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: NORTH_WEST
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_000
+        council_tax: 1_500
+  output:
+    # Income tax on the private pension: (13,000 - 12,570) * 0.2 = 86; the AFCS
+    # payment is not taxable income.
+    income_tax: 86
+    pension_credit_war_pension_income: (30 - 10) * 52
+    # 13,000 + 1,040 - 86 = 13,954, above the 12,376 minimum guarantee.
+    pension_credit_income: 13_954
+    guarantee_credit: 0
+    # Amount A = min(0.6 * (238 - 208.07), 0.6 * (13,954 / 52 - 208.07)) * 52
+    #          = 0.6 * 29.93 * 52 = 933.816; amount B = 0.4 * (13,954 - 12,376)
+    #          = 631.20; savings credit = 302.616, so the award is savings
+    #          credit only.
+    savings_credit: 302.616
+    # HB (SPC) Regs 2006 reg 27: the Secretary of State's assessment plus the
+    # savings credit payable. The model takes the authority to disregard war
+    # pensions in full (SSAA 1992 s.134(8); HB/CTB Guidance Manual P2.576), so
+    # the 1,040 counted for Pension Credit comes out: 13,954 - 1,040 + 302.616
+    # = 13,216.616. There are no earnings, so no earnings disregard.
+    housing_benefit_applicable_income: 13_216.616
+    # The CTR pensioner scheme's savings-credit-only route, the same way.
+    council_tax_reduction_applicable_income: 13_216.616

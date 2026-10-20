@@ -9,16 +9,22 @@ class pension_credit_war_pension_income(Variable):
     unit = GBP
     documentation = (
         "The claimant's and partner's war disablement pensions, war widow's or "
-        "widower's pensions and Armed Forces Compensation Scheme payments, each "
-        "payment less the Sch. IV para. 1 disregard. afcs holds Armed Forces "
-        "Compensation Scheme payments, including guaranteed income payments, "
-        "and war disablement pensions; war_widows_pension holds war widow's or "
-        "widower's pensions. Each of the two gets its own weekly disregard, "
-        "which does not pass to the other payment or to the other member of a "
-        "couple. Dependants' and other benefit-unit members' payments do not "
-        "count (State Pension Credit Act 2002 s.5; reg. 14). Components that "
-        "Sch. IV paras 2 to 6 and 12 disregard in full, and reg. 15(5)(a) and "
-        "(ab) payments that count in full, are not separated in the data."
+        "widower's pensions and Armed Forces Compensation Scheme guaranteed "
+        "income payments, each payment less the Sch. IV para. 1 disregard "
+        "(£10 of each payment, the reading PolicyEngine applies). afcs holds "
+        "Armed Forces Compensation Scheme payments, including guaranteed "
+        "income payments, and war disablement pensions together, so a person "
+        "with both gets one £10 on the sum, not £10 on each. war_widows_pension "
+        "holds war widow's or widower's pensions. Each of the two variables "
+        "gets its own weekly disregard, which does not pass to the other or to "
+        "the other member of a couple. Dependants' and other benefit-unit "
+        "members' payments do not count (State Pension Credit Act 2002 s.5; "
+        "reg. 14). Not modelled: Sch. IV para. 1(cc), under which the unused "
+        "part of the £10 on a guaranteed income payment abated below £10 by an "
+        "Armed Forces Pension Scheme pension comes off that pension; the "
+        "components that Sch. IV paras 2 to 6 and 12 disregard in full; and "
+        "reg. 15(5)(a) and (ab) payments that count in full. The data cannot "
+        "separate any of them."
     )
     reference = (
         "https://www.legislation.gov.uk/ukpga/2002/16/section/15",

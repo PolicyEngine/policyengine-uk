@@ -24,7 +24,9 @@ families (the sources #1952 added):
    Social Security Administration Act 1992 s.134(8) lets an authority modify
    its scheme to disregard "the whole or part" of a prescribed war
    disablement or war widow's pension, and `housing_benefit_applicable_income`
-   counts neither `afcs` nor `war_widows_pension`. That is an assumption that
+   counts neither `afcs` nor `war_widows_pension` (on the savings-credit-only
+   route it removes the war pension income the Pension Credit assessment
+   counts; see invariant 5). That is an assumption that
    the authority runs such a local scheme with a full disregard; it is not a
    statement about any particular authority. The draws have no earnings, no
    pension contributions and capital of at most £10,000, so neither tariff
@@ -39,6 +41,14 @@ families (the sources #1952 added):
    claimant's and partner's payments only as a collection: reassigning the
    amounts between the two sources and between the claimant and partner
    changes neither, because each payment has its own £10 a week.
+5. Housing Benefit and Council Tax Reduction disregard war pensions in full on
+   every route. Comparing each family with and without its payments, where
+   neither run pays Guarantee Credit, both runs take the same route
+   (savings-credit-only or general) and neither income floor binds, Housing
+   Benefit applicable income and Council Tax Reduction applicable income
+   change by exactly the change in Pension Credit paid: on the
+   savings-credit-only route they add the savings credit payable (HB (SPC)
+   Regs 2006 reg 27), which the payments reduce, and nothing else.
 """
 
 import numpy as np
@@ -82,9 +92,9 @@ def weekly_payment():
 
 
 @st.composite
-def adult(draw):
+def adult(draw, min_age=67):
     return dict(
-        age=draw(st.integers(67, 95)),
+        age=draw(st.integers(min_age, 95)),
         state_pension=draw(money(15_000)),
         afcs=draw(weekly_payment()),
         war_widows_pension=draw(weekly_payment()),
@@ -92,8 +102,8 @@ def adult(draw):
 
 
 @st.composite
-def family(draw):
-    adults = [draw(adult()) for _ in range(draw(st.integers(1, 2)))]
+def family(draw, min_age=67):
+    adults = [draw(adult(min_age)) for _ in range(draw(st.integers(1, 2)))]
     return dict(
         adults=adults,
         # A carer in some families, by caring hours or a reported award.
@@ -234,10 +244,12 @@ def test_counted_war_pension_income_bounds_and_closed_form(families):
 def test_guarantee_credit_does_not_rise_with_an_afcs_payment(families):
     # The first adult's AFCS payment runs over the grid; their war widow's
     # pension and the partner's payments stay as drawn.
+    # No private pension, so that Guarantee Credit is usually paid and the
+    # property is not met vacuously by a Guarantee Credit of nil throughout.
     rows = [
         (
             fam,
-            fam["private_pension"],
+            0.0,
             [(weekly * WEEKS, fam["adults"][0]["war_widows_pension"])]
             + drawn_payments(fam)[1:],
         )
@@ -263,3 +275,42 @@ def test_reassigning_payments_between_sources_and_partners(families):
         original, after = get(variable), get_moved(variable)
         for i, fam in enumerate(families):
             assert np.allclose(original[i], after[i], atol=0.01), (fam, variable)
+
+
+def no_payments(fam):
+    return [(0.0, 0.0) for _ in fam["adults"]]
+
+
+# Aged 77 or over, so that Savings Credit, and with it the savings-credit-only
+# route, is often due.
+@PROPERTY_SETTINGS
+@given(st.lists(family(min_age=77), min_size=1, max_size=4))
+def test_housing_benefit_and_ctr_disregard_war_pensions_on_every_route(families):
+    with_payments = pension_grid(families)
+    without = pension_grid(families, payments=no_payments)
+    variables = [
+        "guarantee_credit",
+        "in_receipt_of_savings_credit_only",
+        "pension_credit",
+        "housing_benefit_applicable_income",
+        "council_tax_reduction_applicable_income",
+    ]
+    a = {v: with_payments(v) for v in variables}
+    b = {v: without(v) for v in variables}
+    same_route = (
+        (a["guarantee_credit"] <= 0)
+        & (b["guarantee_credit"] <= 0)
+        & (
+            a["in_receipt_of_savings_credit_only"].astype(bool)
+            == b["in_receipt_of_savings_credit_only"].astype(bool)
+        )
+    )
+    paid_change = a["pension_credit"] - b["pension_credit"]
+    for income in [
+        "housing_benefit_applicable_income",
+        "council_tax_reduction_applicable_income",
+    ]:
+        compared = same_route & (a[income] > 0) & (b[income] > 0)
+        assert np.allclose(
+            (a[income] - b[income])[compared], paid_change[compared], atol=0.01
+        ), (families, income)
