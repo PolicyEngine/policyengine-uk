@@ -9,8 +9,10 @@ class carers_allowance_earnings(Variable):
     documentation = (
         "Net earnings from employment and self-employment, as the Carer's "
         "Allowance gainful-employment test counts them (Computation of "
-        "Earnings Regulations 1996), less half of the person's pension "
-        "contributions. A trading loss counts as nil.\n\n"
+        "Earnings Regulations 1996), less a share of the person's pension "
+        "contributions: one half in law (regs. 10(4)(b) and 13(4)(c)), read "
+        "from gov.dwp.carers_allowance.pension_contribution_deduction_rate. "
+        "A trading loss counts as nil.\n\n"
         "Employment (reg. 10(4)): gross pay less the income tax and primary "
         "Class 1 contributions deducted from it. The law deducts the tax "
         "actually withheld; the model approximates it as the tax PAYE would "
@@ -119,7 +121,12 @@ class carers_allowance_earnings(Variable):
             * class_2_contribution_weeks(period.start.year)
         )
 
-        half_pension_contributions = 0.5 * person("pension_contributions", period)
+        # Regs. 10(4)(b) and 13(1)(b)(ii), (4)(c) and (10)(b): one half of
+        # pension contributions and premiums.
+        pension_share = parameters(
+            period
+        ).gov.dwp.carers_allowance.pension_contribution_deduction_rate
+        pension_deduction = pension_share * person("pension_contributions", period)
         return max_(
             0,
             pay
@@ -129,5 +136,5 @@ class carers_allowance_earnings(Variable):
             - trading_tax
             - trading_class_4
             - trading_class_2
-            - half_pension_contributions,
+            - pension_deduction,
         )
