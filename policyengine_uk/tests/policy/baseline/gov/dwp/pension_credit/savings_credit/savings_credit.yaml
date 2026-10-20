@@ -30,11 +30,13 @@
   period: 2025
   absolute_error_margin: 0.01
   input:
+    age: 80
     is_savings_credit_eligible: true
     relation_type: SINGLE
     savings_credit_income: 11_000
     pension_credit_income: 11_000
   output:
+    is_pension_credit_eligible: true
     # 0.6 * (11,000 - 198.27 * 52).
     savings_credit: 413.976
 
@@ -42,11 +44,13 @@
   period: 2025
   absolute_error_margin: 0.01
   input:
+    age: 80
     is_savings_credit_eligible: true
     relation_type: COUPLE
     savings_credit_income: 17_000
     pension_credit_income: 17_000
   output:
+    is_pension_credit_eligible: true
     # 0.6 * (17,000 - 314.34 * 52).
     savings_credit: 392.592
 
@@ -54,6 +58,7 @@
   period: 2027
   absolute_error_margin: 0.01
   input:
+    age: 80
     is_savings_credit_eligible: true
     relation_type: SINGLE
     savings_credit_income: 12_000
@@ -61,5 +66,6 @@
     standard_minimum_guarantee: 12_376
     minimum_guarantee: 20_000
   output:
+    is_pension_credit_eligible: true
     # 0.6 * (12,000 - 216.7146545 * 52).
     savings_credit: 438.5028
