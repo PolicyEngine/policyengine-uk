@@ -1,3 +1,11 @@
+## [2.141.2] - 2026-10-20
+
+### Fixed
+
+- - Council Tax Reduction and Income Support read their own pension contribution deduction shares (one-half in each scheme) instead of a hard-coded 0.5, and the Council Tax Reduction pensioner earnings disregards cap at net earnings with the scheme's own share, so a reform of Housing Benefit's share no longer moves them.
+- - Carer's Allowance earnings read their pension contribution deduction share (one-half, Computation of Earnings Regulations 1996 regs. 10(4)(b) and 13) from a new parameter, `gov.dwp.carers_allowance.pension_contribution_deduction_rate`, instead of a hard-coded 0.5, so the share can be reformed.
+
+
 ## [2.141.1] - 2026-10-20
 
 ### Fixed
