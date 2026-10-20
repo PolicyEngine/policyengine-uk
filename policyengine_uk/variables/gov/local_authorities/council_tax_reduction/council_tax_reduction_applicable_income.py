@@ -123,11 +123,12 @@ class council_tax_reduction_applicable_income(Variable):
         # 105), by name or as "attendance allowance" (Sch 8 and Sch 9 para
         # 14), but iidb is the whole reported payment and cannot separate
         # them. Only the applicant's and partner's count (Sch 1 para 11; SSI
-        # 2021/249 reg 36(1)), so these leave out the dependants that the
-        # wider mask above still reaches.
+        # 2021/249 reg 36(1)): the Council Tax Reduction applicant and partner,
+        # which is the household head alone where the head applies alone, and
+        # never the dependants that the wider mask above still reaches.
         applicant_and_partner_benefits = ["iidb", "sda", "incapacity_benefit"]
-        applicant_and_partner = (
-            person("is_claimant_or_partner", period) | applicant_counted_as_young_person
+        applicant_and_partner = person(
+            "is_council_tax_reduction_applicant_or_partner", period
         )
         # War disablement pensions, war widow's or widower's pensions and
         # Armed Forces Compensation Scheme payments (afcs, war_widows_pension).
