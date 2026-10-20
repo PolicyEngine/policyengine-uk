@@ -29,7 +29,7 @@ class council_tax_reduction_applicable_income(Variable):
         "awards (Child Benefit, Income Support, income-based JSA, "
         "income-related ESA, Universal Credit, tax credits, Pension Credit) "
         "and its children belong to its claimant and partner, not to the "
-        "head, so none of them counts."
+        "head, so none of them counts. "
         "No scheme "
         "counts income derived from capital, such as rent from property, "
         "interest and dividends, as income, so it is not listed and tax on it "
