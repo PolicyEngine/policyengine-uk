@@ -55,6 +55,22 @@ September CPI (article 11 of each Order). Until the fix for
 [#1941](https://github.com/PolicyEngine/policyengine-uk/issues/1941) the
 model uprated the part above the full rate by the full rate too.
 
+For the years the Up-rating Orders cover (to April 2026), the model
+reproduces each Order's percentage exactly. For later years the Act sets a
+floor, not a rate: the Order must raise additional pensions "by a percentage
+not less than" the rise in prices (s.150(2)), and protected payments by no
+less (s.151A(3)). The model pays exactly September CPI, the floor and what
+every Order has given. A reform that raises the part above the full rate by
+more has no parameter to set; it needs a reform to this variable.
+
+Two simplifications remain. For a contracted-out record the Order's increase
+applies to the gross additional pension, part of which the State pays on the
+guaranteed minimum pension, so uprating only the reported amount above the
+full rate by September CPI understates that record's growth. And additional
+pension inside a reported total below the full basic rate is not separated,
+so it is uprated with the full rate (as `overlapping_state_pension` also
+notes).
+
 So a reform to the full rates, or to the triple lock, moves only basic and
 new State Pension. A reform that sets a full rate to zero leaves additional
 pensions and protected payments in place; `gov.contrib.abolish_state_pension`
@@ -407,8 +423,11 @@ tracked in [#1929](https://github.com/PolicyEngine/policyengine-uk/issues/1929):
 - **Awards.** Each record keeps its reported amount, the part up to the
   full rate uprated by the flat rate and the part above it by September CPI,
   including records whose cohort moves from basic to new State
-  Pension. The model's State Pension per recipient grows 17.0% over those
-  years. DWP's spending per recipient, less those paid abroad, grows 18.3%,
+  Pension. In the runs behind the table above, which predate the fix for
+  #1941 and uprated the part above the full rate by the flat rate too, the
+  model's State Pension per recipient grew 17.0% over those years; uprating
+  that part by September CPI makes it grow more slowly. DWP's spending per
+  recipient, less those paid abroad, grows 18.3%,
   as its new State Pension spending grows from £56.1bn to £102.4bn and its
   basic State Pension spending falls from £66.7bn to £57.8bn.
 
