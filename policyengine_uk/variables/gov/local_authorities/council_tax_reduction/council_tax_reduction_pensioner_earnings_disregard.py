@@ -17,9 +17,11 @@ class council_tax_reduction_pensioner_earnings_disregard(Variable):
         "disregards and the additional amount. The amounts and work "
         "conditions are those of the Housing Benefit pension-age schedule "
         "(SI 2006/214 Sch 4), and an employee's actual earnings have the same "
-        "deductions (SI 2012/2885 Sch 1 para 19, WSI 2013/3029 Sch 1 para "
-        "13, SSI 2012/319 reg 33), so the Housing Benefit net earnings and "
-        "work conditions are used. The notional tax on estimated earnings "
+        "kinds of deduction (SI 2012/2885 Sch 1 para 19, WSI 2013/3029 Sch 1 "
+        "para 13, SSI 2012/319 reg 33), so the Housing Benefit work "
+        "conditions and earnings rules are used, with the scheme's own share "
+        "of pension contributions (council_tax_reduction_net_earnings). The "
+        "notional tax on estimated earnings "
         "and on self-employed profit can differ (Scotland deducts only the "
         "personal allowance, SSI 2012/319 regs 33(4) and 37(1)); the model "
         "applies the Housing Benefit approximation to all of them. The earnings test leaves out "
@@ -61,7 +63,7 @@ class council_tax_reduction_pensioner_earnings_disregard(Variable):
                 default=england[amount],
             )
 
-        net_earnings = benunit("housing_benefit_net_earnings", period)
+        net_earnings = benunit("council_tax_reduction_net_earnings", period)
         # SI 2012/2885 Sch 4 paras 2 and 8; WSI 2013/3029 Sch 3 paras 2 and 8;
         # SSI 2012/319 Sch 2 paras 2 and 8. A lone parent has £25 in all,
         # not £25 plus para 8's £5, as for Housing Benefit.

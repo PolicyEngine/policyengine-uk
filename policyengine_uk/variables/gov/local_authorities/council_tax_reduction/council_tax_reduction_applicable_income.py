@@ -133,9 +133,13 @@ class council_tax_reduction_applicable_income(Variable):
                 benunit, period, ["basic_income"], members
             )
 
-        pension_contributions = (
-            add_for_members(benunit, period, ["pension_contributions"], members) * 0.5
-        )
+        # The scheme's own share of pension contributions (one-half in each:
+        # SI 2012/2885 Sch 1 para 19(2)(b)-(c), WSI 2013/3029 Sch 1 para 13
+        # and Sch 6 para 15, SSI 2012/319 reg 33 and SSI 2021/249 reg 50(3),
+        # and the councils' schemes).
+        pension_contributions = add_for_members(
+            benunit, period, ["pension_contributions"], members
+        ) * benunit("council_tax_reduction_pension_contribution_deduction_rate", period)
         tax = add_for_members(
             benunit, period, ["income_tax", "national_insurance"], members
         )
@@ -162,9 +166,14 @@ class council_tax_reduction_applicable_income(Variable):
         has_savings_credit_only_award = benunit(
             "in_receipt_of_savings_credit_only", period
         )
-        savings_credit_only_income = benunit("pension_credit_income", period) + benunit(
-            "pension_credit", period
-        )
+        # The general route counts no war pension (as Housing Benefit, a full
+        # disregard), so the war pension income in the Secretary of State's
+        # assessment is taken out here too.
+        savings_credit_only_income = max_(
+            0,
+            benunit("pension_credit_income", period)
+            - benunit("pension_credit_war_pension_income", period),
+        ) + benunit("pension_credit", period)
         return select(
             [in_receipt_of_guarantee_credit, has_savings_credit_only_award],
             [0, savings_credit_only_income],

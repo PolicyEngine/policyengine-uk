@@ -630,3 +630,68 @@ def test_inactive_2026_uses_penny_rounded_september_cpi_anchor():
     assert sim.calculate("universal_credit", 2026)[0] == pytest.approx(
         10_371.00, rel=0, abs=0.01
     )
+
+
+@pytest.mark.parametrize("protected_floor", [0, 0.85])
+def test_inactive_health_cash_reconciles_with_currentmain_deductions(protected_floor):
+    # Natural LCWRA circumstances make this claimant benefit-cap exempt.
+    # The 15% deduction rate is an explicit interface input, not imputed
+    # debt incidence. A protected floor is a separate modeled reform.
+    situation = _uc_claimant(30)
+    situation["benunits"]["benunit"]["uc_deduction_rate"] = {2026: 0.15}
+    sim = Simulation(
+        situation=situation,
+        scenario=Scenario(
+            parameter_changes={
+                "gov.dwp.universal_credit.rebalancing.active": False,
+                "gov.dwp.universal_credit.deductions.protected_floor": protected_floor,
+            },
+            applied_before_data_load=True,
+        ),
+    )
+    # Declared CPI-only monthly-penny counterfactual, not an enacted rate:
+    # LCWRA 5272.20 + legislated SA 5098.80 = 10371; debt is 764.82.
+    assert sim.calculate("uc_LCWRA_element", 2026)[0] == pytest.approx(
+        5_272.20, rel=0, abs=0.01
+    )
+    assert sim.calculate("uc_standard_allowance", 2026)[0] == pytest.approx(
+        5_098.80, rel=0, abs=0.01
+    )
+    assert sim.calculate("uc_benefit_cap_reduction", 2026)[0] == 0
+    assert sim.calculate("uc_benefit_cap_reduction_after_floor", 2026)[0] == 0
+    assert sim.calculate("universal_credit_pre_benefit_cap", 2026)[0] == pytest.approx(
+        10_371.00, rel=0, abs=0.01
+    )
+    assert sim.calculate("uc_deductions", 2026)[0] == pytest.approx(
+        764.82, rel=0, abs=0.01
+    )
+    assert sim.calculate("universal_credit", 2026)[0] == pytest.approx(
+        9_606.18, rel=0, abs=0.01
+    )
+    assert (
+        sim.calculate("uc_deductions", 2026)[0]
+        + sim.calculate("uc_benefit_cap_reduction_after_floor", 2026)[0]
+    ) == pytest.approx(
+        sim.calculate("universal_credit_pre_benefit_cap", 2026)[0]
+        - sim.calculate("universal_credit", 2026)[0],
+        rel=0,
+        abs=0.01,
+    )
+    # Both caches are now primed. The public late amount reform retains
+    # precedence while the new deduction components still reconcile.
+    Scenario(
+        parameter_changes={
+            "gov.dwp.universal_credit.elements.disabled.amount": 300,
+        }
+    ).apply(sim)
+    assert sim.calculate("uc_LCWRA_element", 2026)[0] == pytest.approx(
+        3_600, rel=0, abs=0.01
+    )
+    assert sim.calculate("uc_deductions", 2026)[0] == pytest.approx(
+        764.82, rel=0, abs=0.01
+    )
+    assert sim.calculate("universal_credit", 2026)[0] == pytest.approx(
+        7_933.98, rel=0, abs=0.01
+    )
+    assert sim.calculate("uc_benefit_cap_reduction", 2026)[0] == 0
+    assert sim.calculate("uc_benefit_cap_reduction_after_floor", 2026)[0] == 0
