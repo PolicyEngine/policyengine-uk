@@ -58,8 +58,10 @@ class housing_benefit_savings_credit_only_income(Variable):
         # disregard war pensions in full under a section 134(8) local scheme,
         # as the general route does (HB/CTB Guidance Manual P2.576 lets it
         # modify the Pension Service's figure for that).
-        pension_credit_income = benunit("pension_credit_income", period) - benunit(
-            "pension_credit_war_pension_income", period
+        pension_credit_income = max_(
+            0,
+            benunit("pension_credit_income", period)
+            - benunit("pension_credit_war_pension_income", period),
         )
         # Reg 27(4)(a): the savings credit payable. A savings-credit-only
         # award pays only the savings credit, so this is the Pension Credit
