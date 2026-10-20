@@ -796,8 +796,8 @@ obr:
       # The OBR March 2026 forecast of September 2026 CPI is 2.1%, which
       # would give 3.1%, but August 2026 CPI outturn was already 3.1%.
       2027-01-01: 0.033
-      # 2028-2030: OBR March 2026 forecasts of September 2027-2029 CPI
-      # (2.0%-2.1%, cpi_september statutory uprating input) + 1pp, to 0.1pp.
+      # 2028-2030: OBR March 2026 Q3 CPI forecasts for 2027-2029 (Table 1.7:
+      # 2.01%, 2.02%, 2.00%) + 1pp, to 0.1pp.
       2028-01-01: 0.030
       2029-01-01: 0.030
       2030-01-01: 0.030
