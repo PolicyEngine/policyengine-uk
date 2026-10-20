@@ -1,1 +1,0 @@
-Use Scotland's working-age Council Tax Reduction young-person definition for the severe disability premium's non-dependant test within the applicant's benefit unit, retaining existing looked-after and other-benefit-unit treatment.
