@@ -1,4 +1,4 @@
-description: Since April 2021, pension-age Housing Benefit personal allowances depend on when the claimant and any partner attained State Pension age. The higher allowances apply if either attained it before this date, written as a YYYYMMDD number; the lower allowances apply if both (or a single claimant) attained it on or after this date. Other members of the benefit unit do not count.
+description: Since April 2021, pension-age Housing Benefit personal allowances depend on when the claimant and any partner attained State Pension age. The higher allowances apply if the claimant or partner attained it before this date, written as a YYYYMMDD number; otherwise the lower allowances apply. Other members of the benefit unit do not count.
 values:
   2021-04-01: 20210401
 metadata:
