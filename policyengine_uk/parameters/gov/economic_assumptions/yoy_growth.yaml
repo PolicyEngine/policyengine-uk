@@ -5,6 +5,8 @@
 # - 2025-2030: OBR forecast from the latest Economic and Fiscal Outlook
 #   (EFO, March 2026). Values come from the EFO economy supplementary
 #   tables — RPI/CPI/CPIH from Table 1.7, average earnings from Table 1.6.
+#   consumer_price_index_ahc is derived, not published by the OBR; its
+#   metadata documents the method.
 # - 2031-2073: OBR long-run equilibrium assumptions, taken from the OBR
 #   Fiscal Risks and Sustainability report and the long-run RPI-CPI wedge
 #   methodology. Steady-state values:
@@ -487,25 +489,42 @@ obr:
   consumer_price_index_ahc:
     description: Consumer price index year-on-year growth, modified to remove housing costs.
     values:
-      2022-01-01: 0.107
-      2023-01-01: 0.057
-      2024-01-01: 0.018
-      2025-01-01: 0.0266
-      2026-01-01: 0.0158
-      2027-01-01: 0.0190
-      2028-01-01: 0.0190
-      2029-01-01: 0.0190
-      2030-01-01: 0.0190
+      # Outturn (2022-2025): ONS ad hoc 3582, calendar-year average of CPI
+      # excluding rents, maintenance and repairs, and water charges.
+      2022-01-01: 0.0927
+      2023-01-01: 0.0826
+      2024-01-01: 0.0327
+      2025-01-01: 0.0265
+      # Forecast (2026-2030): derived by policyengine_uk/utils/create_ahc_deflator.py
+      # from OBR CPI and rent forecasts and Ofwat water bills (see documentation).
+      2026-01-01: 0.0217
+      2027-01-01: 0.0188
+      2028-01-01: 0.0194
+      2029-01-01: 0.0194
+      2030-01-01: 0.0192
     metadata:
       unit: /1
       label: After housing costs consumer price index growth
+      documentation: |
+        CPI excluding rents, maintenance and repairs, and water charges, the
+        price index DWP uses to deflate after-housing-costs incomes in HBAI.
+        The OBR does not publish it. Outturn is the ONS ad hoc series. Forecast
+        growth is OBR calendar-year CPI growth with rents (OBR actual rents
+        growth), water (Ofwat average bills) and maintenance and repair
+        (assumed to grow with CPI) removed using ONS CPI item weights:
+        other = (CPI - w_rent x rent - w_water x water - w_repair x CPI) / w_other,
+        with weights rolled forward each year by relative price growth.
+        policyengine_uk/utils/create_ahc_deflator.py computes it, and
+        policyengine_uk/tests/test_ahc_deflator.py checks the stored values
+        against it. Rerun the script after changing CPI, rent or water bill
+        growth.
       reference:
-        - title: OBR EFO March 2026
+        - title: ONS ad hoc 3582, CPI series excluding rents, maintenance repairs and water charges, February 2007 to June 2026
+          href: https://www.ons.gov.uk/economy/inflationandpriceindices/adhocs/3582consumerpriceindicesseriesexcludingrentsmaintenancerepairsandwaterchargesfebruary2007tojune2026
+        - title: OBR EFO March 2026 (detailed forecast tables, economy, Table 1.7), CPI and actual rents inputs
           href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
         - title: ONS CPI weights
           href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/consumerpriceinflationupdatingweightsannexatablesw1tow3
-        - title: ONS CPI series excluding housing costs
-          href: https://www.ons.gov.uk/economy/inflationandpriceindices/adhocs/2863consumerpriceindicesseriesexcludingrentsmaintenancerepairsandwaterchargesfortheperiodjanuary1996toapril2025
 
   cpih:
     description: Consumer price index including owner occupiers' housing costs year-on-year growth.

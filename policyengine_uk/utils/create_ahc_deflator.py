@@ -1,14 +1,35 @@
+"""Derive gov.economic_assumptions.yoy_growth.obr.consumer_price_index_ahc.
+
+DWP's HBAI deflates after-housing-costs incomes by CPI excluding rents,
+maintenance and repairs, and water charges. The OBR does not forecast that
+index, so this script derives it:
+
+- Outturn years are calendar-year averages of the monthly index in ONS ad hoc
+  3582, growth taken on the previous calendar year.
+- Forecast years remove rents (OBR actual rents), water (Ofwat bills) and
+  maintenance and repair (assumed to grow with CPI) from OBR CPI growth,
+  using ONS CPI item weights rolled forward each year by relative prices.
+
+Run ``python -m policyengine_uk.utils.create_ahc_deflator`` and copy the
+``modified_cpi_yoy`` column, rounded to four decimal places, into
+yoy_growth.yaml. policyengine_uk/tests/test_ahc_deflator.py checks that the
+stored values match.
+"""
+
 import pandas as pd
 import numpy as np
 
 from policyengine_uk.system import system
 
-# Source: ONS series ref 2863
+# Source: ONS ad hoc 3582, Consumer Price Indices series excluding rents,
+# maintenance repairs and water charges: February 2007 to June 2026 (Table 1,
+# 2015=100). Calendar-year averages of the monthly index; growth is on the
+# previous calendar-year average (2021 average: 111.1167).
 historical_modified_cpi = pd.DataFrame(
     {
-        "period": ["2022-01-01", "2023-01-01", "2024-01-01"],
-        "modified_cpi_index": [126.05, 133.22, 135.68],
-        "modified_cpi_yoy": [0.107, 0.057, 0.018],
+        "period": ["2022-01-01", "2023-01-01", "2024-01-01", "2025-01-01"],
+        "modified_cpi_index": [121.4167, 131.4417, 135.7417, 139.3417],
+        "modified_cpi_yoy": [0.0927, 0.0826, 0.0327, 0.0265],
     }
 )
 
@@ -40,8 +61,8 @@ def create_modified_cpi_forecast(
     rent_index_parameter,
     historical_modified_cpi,
     initial_weights,
-    forecast_start_year=2025,
-    forecast_end_year=2029,
+    forecast_start_year=2026,
+    forecast_end_year=2030,
 ):
     cpi_values = get_parameter_values(
         cpi_parameter, forecast_start_year, forecast_end_year
