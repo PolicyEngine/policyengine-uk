@@ -1,0 +1,66 @@
+# The only outcomes other than a pass that CI's Test job accepts.
+#
+# .github/check_test_shards.py fails the Test job when a test is skipped, is an
+# expected failure (xfail), passes while marked xfail (XPASS), or a module is
+# skipped at collection, unless an entry below accepts it. A test that
+# quietly stops running, for example because the dataset credentials are
+# missing or an import is skipped, then turns the job red instead of green.
+#
+# Each [[allow]] entry has:
+#   nodeid   a pytest node id; shell-style wildcards (*, ?, [...]) allowed
+#   outcome  skipped, xfailed, xpassed or collect-skipped (a skipped module)
+#   why      why this is acceptable, with the issue that tracks a known bug
+#   reason   optional regex the skip or xfail reason must contain
+#   modes    optional: ["source"] (the checked-out tree) or ["wheel"] (the
+#            installed wheel the release workflow tests); both by default
+#   data     optional: ["present"] or ["absent"] dataset credentials; both
+#            by default
+#
+# Keep entries narrow. An entry that matches nothing in a run is reported as a
+# warning; remove it once its bug is fixed. Failures can never be accepted.
+
+[[allow]]
+nodeid = "policyengine_uk/tests/test_uc_state_pension_properties.py::test_state_pension_does_not_change_partners_marriage_allowance"
+outcome = "xfailed"
+reason = "#1947"
+why = "Known bug #1947 (Marriage Allowance booked on the recipient), pinned by a strict xfail until it is fixed."
+
+[[allow]]
+nodeid = "policyengine_uk/tests/test_build_metadata.py::test_runtime_metadata_uses_bundle_contract_when_available"
+outcome = "skipped"
+reason = "policyengine_bundles"
+why = "Optional contract check that runs only where policyengine_bundles is installed. It is not on PyPI or in uv.lock, so CI never has it."
+
+[[allow]]
+nodeid = "policyengine_uk/tests/test_build_metadata.py::test_git_sha_reads_this_checkout_head"
+outcome = "skipped"
+reason = "not running from a git checkout"
+modes = ["wheel"]
+why = "An installed wheel is not a git checkout, so there is no HEAD to compare with."
+
+[[allow]]
+nodeid = "policyengine_uk/tests/test_variable_code_sharing.py::test_a_simulation_leaves_coverage_no_new_code_objects"
+outcome = "skipped"
+reason = "coverage is not measuring with sys.monitoring"
+modes = ["wheel"]
+why = "The release workflow tests the installed wheel without coverage, so this check of coverage's code objects has nothing to measure there. It runs and passes against the source tree on every PR, where coverage measures with sys.monitoring."
+
+[[allow]]
+nodeid = "policyengine_uk/tests/code_health/*"
+outcome = "collect-skipped"
+reason = '\.github'
+modes = ["wheel"]
+why = "Tests of the CI scripts in .github skip themselves in an installed wheel, which does not contain .github; they run against the source tree on every PR."
+
+[[allow]]
+nodeid = "policyengine_uk/tests/*"
+outcome = "skipped"
+reason = "^Requires POLICYENGINE_UK_DEFAULT_DATASET or HUGGING_FACE_TOKEN"
+data = ["absent"]
+why = "Microsimulation tests need the private dataset. Runs without its credentials (pull requests from forks and Dependabot) skip them; every run with the credentials must execute them."
+
+[[allow]]
+nodeid = "policyengine_uk/tests/test_dwp_published_rates.py::test_projection_continues_from_last_published_rate[[]*"
+outcome = "skipped"
+reason = '^(not uprated|series ends before 2026-27|Universal Credit Act 2025 s\.1 departs from CPI uprating)$'
+why = "The test is parametrised over every DWP rate parameter and skips those it does not apply to: parameters with no uprating, series that end before 2026-27, and the four UC standard allowances, whose minimum the Universal Credit Act 2025 s.1 sets above CPI uprating (#1925). The LCWRA element, frozen by s.3, is checked against its own uprating index (#2284). 64 cases on 12 October 2026."

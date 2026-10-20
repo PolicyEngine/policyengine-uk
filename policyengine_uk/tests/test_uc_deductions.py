@@ -15,7 +15,7 @@ def make_situation(**benunit_overrides):
         "members": ["person"],
         "would_claim_uc": {YEAR: True},
         "universal_credit_pre_benefit_cap": {YEAR: 6_000},
-        "benefit_cap_reduction": {YEAR: 0},
+        "uc_benefit_cap_reduction": {YEAR: 0},
         **benunit_overrides,
     }
     return {
@@ -103,7 +103,7 @@ class TestReformLevers:
         # of the standard allowance; the floor limits the combined
         # reductions to (1 - 0.85) x standard allowance.
         situation = make_situation(
-            benefit_cap_reduction={YEAR: 2_500},
+            uc_benefit_cap_reduction={YEAR: 2_500},
             uc_latent_deduction_rate={YEAR: 0.25},
             uc_deduction_combination={YEAR: "ADVANCE_ONLY"},
         )

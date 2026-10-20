@@ -1,54 +1,220 @@
-- name: Full savings starter rate allowance
-  period: 2024
-  input:
-    basic_rate_savings_income_pre_starter: 5_000
-    taxable_savings_interest_income: 6_000
-    received_allowances_savings_income: 0
-    earned_taxable_income: 15_000
-    taxable_dividend_income: 0
-  output:
-    savings_starter_rate_income: 5_000
+# ITA 2007 ss.12(1),(5) and16 place savings above taxable non-savings
+# income, and dividends above savings. The £5,000 starting band is reduced
+# from the first taxable non-savings pound, after lawful allowance deduction.
+# Sources: https://www.legislation.gov.uk/ukpga/2007/3/section/12
+# https://www.legislation.gov.uk/ukpga/2007/3/section/16
+# https://www.gov.uk/apply-tax-free-interest-on-savings/how-much-is-tax-free
+# 2026-27: PA £12,570; starting band £5,000; basic savings rate20%;
+# PSA £1,000/basic or£500/higher; dividend nil band£500, rates10.75/35.75%.
+# All cases use actual annual income inputs. No intermediate tax base or
+# allowance is forced. These ordinary cases use the PA allocation giving
+# greatest overall relief under s25(2), not the future2027-28 s25(3A) rule.
 
-- name: Partial savings starter rate allowance
-  period: 2024
+- name: First taxable non-savings income reduces the starting band
+  period: 2026
+  absolute_error_margin: 0.01
   input:
-    basic_rate_savings_income_pre_starter: 4_000
-    taxable_savings_interest_income: 5_000
-    received_allowances_savings_income: 0
-    earned_taxable_income: 19_000
-    taxable_dividend_income: 0
+    age: 55
+    region: LONDON
+    employment_income: 14_000
+    savings_interest_income: 6_000
   output:
+    savings_income_tax: 286
+    income_tax: 572
+    # N=14,000-12,570=1,430; starter=5,000-1,430=3,570.
+    # Savings tax=(6,000-3,570-1,000)*20%=286; wage tax=286.
     savings_starter_rate_income: 3_570
+    savings_allowance: 1_000
 
-- name: No savings starter rate allowance due to high non-savings income
-  period: 2024
+- name: Wages above the starting-band ceiling give no starting rate
+  period: 2026
+  absolute_error_margin: 0.01
   input:
-    basic_rate_savings_income_pre_starter: 2_000
-    taxable_savings_interest_income: 3_000
-    received_allowances_savings_income: 0
-    earned_taxable_income: 23_000
-    taxable_dividend_income: 1_000
+    age: 55
+    region: LONDON
+    employment_income: 30_000
+    savings_interest_income: 4_000
   output:
+    savings_income_tax: 600
+    income_tax: 4_086
+    # The issue's £30,000 wages/£4,000 interest reproduction:
+    # savings=(4,000-1,000)*20%=600; wages=17,430*20%=3,486.
     savings_starter_rate_income: 0
 
-- name: Savings income exceeds allowance
-  period: 2024
+- name: Wages at the personal allowance leave the full starting band
+  period: 2026
+  absolute_error_margin: 0.01
   input:
-    basic_rate_savings_income_pre_starter: 10_000
-    taxable_savings_interest_income: 11_000
-    received_allowances_savings_income: 0
-    earned_taxable_income: 16_000
-    taxable_dividend_income: 0
+    age: 55
+    region: LONDON
+    employment_income: 12_570
+    savings_interest_income: 6_000
   output:
+    savings_income_tax: 0
+    income_tax: 0
     savings_starter_rate_income: 5_000
 
-- name: Partial allowance with dividend income
-  period: 2024
+- name: One pound above the personal allowance uses one pound of the band
+  period: 2026
+  absolute_error_margin: 0.01
   input:
-    basic_rate_savings_income_pre_starter: 5_000
-    taxable_savings_interest_income: 6_000
-    received_allowances_savings_income: 0
-    earned_taxable_income: 16_000
-    taxable_dividend_income: 2_000
+    age: 55
+    region: LONDON
+    employment_income: 12_571
+    savings_interest_income: 6_000
   output:
+    savings_income_tax: 0.20
+    income_tax: 0.40
+    savings_starter_rate_income: 4_999
+
+- name: One pound below the starting-band ceiling leaves one pound
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 55
+    region: LONDON
+    employment_income: 17_569
+    savings_interest_income: 6_000
+  output:
+    savings_income_tax: 999.80
+    income_tax: 1_999.60
+    savings_starter_rate_income: 1
+
+- name: Wages at the starting-band ceiling exhaust the band
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 55
+    region: LONDON
+    employment_income: 17_570
+    savings_interest_income: 6_000
+  output:
+    savings_income_tax: 1_000
+    income_tax: 2_000
+    savings_starter_rate_income: 0
+
+- name: Starting-rate income is capped by the available interest
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 55
+    region: LONDON
+    employment_income: 14_000
+    savings_interest_income: 1_000
+  output:
+    savings_income_tax: 0
+    income_tax: 286
+    savings_starter_rate_income: 1_000
+
+- name: Unused personal allowance covers savings before the starting band
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 55
+    region: LONDON
+    employment_income: 10_000
+    savings_interest_income: 9_000
+  output:
+    savings_income_tax: 86
+    income_tax: 86
+    # £2,570 unused PA leaves£6,430 interest, then£5,000 starter+£1,000 PSA.
     savings_starter_rate_income: 5_000
+
+- name: Private pension income reduces the starting band like wages
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 55
+    region: LONDON
+    private_pension_income: 14_000
+    savings_interest_income: 6_000
+  output:
+    savings_income_tax: 286
+    income_tax: 572
+    savings_starter_rate_income: 3_570
+
+- name: Chargeable property profits reduce the starting band
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 55
+    region: LONDON
+    # £16,000 receipts less£2,000 actual expenses:£14,000 profit.
+    # Actual expenses exceed the property allowance; no finance-cost credit.
+    property_rental_income: 16_000
+    property_allowable_expenses: 2_000
+    property_income: 14_000
+    savings_interest_income: 6_000
+  output:
+    savings_income_tax: 286
+    income_tax: 572
+    taxable_property_income: 14_000
+    savings_starter_rate_income: 3_570
+
+- name: Wages and property together reduce the same starting band
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 55
+    region: LONDON
+    employment_income: 10_000
+    property_rental_income: 6_000
+    property_allowable_expenses: 2_000
+    property_income: 4_000
+    savings_interest_income: 6_000
+  output:
+    savings_income_tax: 286
+    income_tax: 572
+    # Combined non-savings income£14,000; PA leaves£1,430 taxable.
+    savings_starter_rate_income: 3_570
+
+- name: Dividends above savings do not directly reduce the starting band
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 55
+    region: LONDON
+    employment_income: 14_000
+    savings_interest_income: 6_000
+    dividend_income: 1_000
+  output:
+    savings_income_tax: 286
+    income_tax: 625.75
+    savings_starter_rate_income: 3_570
+    savings_allowance: 1_000
+    dividend_income_tax: 53.75
+
+- name: Higher-rate dividends reduce the PSA without consuming the starting band
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 55
+    region: LONDON
+    employment_income: 14_000
+    savings_interest_income: 6_000
+    dividend_income: 40_000
+  output:
+    savings_income_tax: 386
+    income_tax: 7_350.75
+    # £1,430 non-savings+£6,000 savings occupy£7,430 of the basic band.
+    # Dividends:£29,770*10.75%+£9,730*35.75%=£6,678.75 after£500 nil rate.
+    savings_starter_rate_income: 3_570
+    savings_allowance: 500
+    dividend_income_tax: 6_678.75
+
+- name: Starting-band limit and phase-out remain reformable
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    # Synthetic parameter control, not a statement of current law:
+    # £4,000 band less50% of£1,430 leaves£3,285; tax£343+£286=£629.
+    gov.hmrc.income_tax.rates.savings_starter_rate.allowance: 4_000
+    gov.hmrc.income_tax.rates.savings_starter_rate.phase_out: 0.5
+    age: 55
+    region: LONDON
+    employment_income: 14_000
+    savings_interest_income: 6_000
+  output:
+    savings_income_tax: 343
+    income_tax: 629
+    savings_starter_rate_income: 3_285
