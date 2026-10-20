@@ -52,10 +52,21 @@ def test_war_widows_pension_reported_declares_cpi_uprating():
 
 @pytest.mark.parametrize("aggregate", AGGREGATES_THAT_COUNT_BSP)
 def test_war_widows_pension_counts_wherever_bsp_does(aggregate):
+    # £40,000 of private pension keeps the widow out of every means test, so
+    # each aggregate moves by the payment itself. War widow's pension is
+    # Pension Credit income (SPCA 2002 s.15(1)(g)) and BSP is not (SPC Regs
+    # 2002 reg 15(1)(n)), so for a widow on Pension Credit the two would
+    # change the totals by different amounts.
     def value(person_inputs):
         sim = Simulation(
             situation={
-                "people": {"widow": {"age": 70, **person_inputs}},
+                "people": {
+                    "widow": {
+                        "age": 70,
+                        "private_pension_income": {2026: 40_000},
+                        **person_inputs,
+                    }
+                },
                 "benunits": {"benunit": {"members": ["widow"]}},
                 "households": {"household": {"members": ["widow"]}},
             }

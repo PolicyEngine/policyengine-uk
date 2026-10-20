@@ -101,8 +101,10 @@ class housing_benefit_applicable_income(Variable):
                 benunit, period, ["basic_income"], members
             )
         # Reduce increased income by pension contributions and tax
+        p = parameters(period).gov.dwp.housing_benefit.means_test
         pension_contributions = (
-            add_for_members(benunit, period, ["pension_contributions"], members) * 0.5
+            add_for_members(benunit, period, ["pension_contributions"], members)
+            * p.pension_contribution_deduction_rate
         )
         TAX_COMPONENTS = ["income_tax", "national_insurance"]
         tax = add_for_members(benunit, period, TAX_COMPONENTS, members)

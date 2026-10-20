@@ -217,7 +217,7 @@
     scottish_carer_supplement: 0
     council_tax_reduction_applicable_income: 7_000 + 83.30 * 52
     council_tax_reduction_applicable_amount: (92.05 + 46.40) * 52
-    # 2,000 - 0.2 x (11,331.60 - 7,198.88) = 1,173.46
+    # 2,000 - 0.2 x (11,331.60 - 7,199.40) = 1,173.56
     council_tax_reduction: 2_000 - 0.2 * (7_000 + 83.30 * 52 - (92.05 + 46.40) * 52)
 
 - name: In 2024 the Scottish carer is still on Carer's Allowance, which was already counted
@@ -411,12 +411,14 @@
     council_tax_reduction: 2_000
 
 - name: An English pensioner carer's Council Tax Reduction is unchanged
+  # Aged 72: State Pension age was reached in 2019, before 1 April 2021, so
+  # the higher personal allowance applies (SI 2012/2885 Sch 2 para 1).
   period: 2026
   absolute_error_margin: 0.01
   input:
     people:
       carer:
-        age: 70
+        age: 72
         state_pension: 0
         private_pension_income: 14_000
         care_hours: 35
