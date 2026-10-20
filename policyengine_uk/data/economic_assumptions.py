@@ -1,4 +1,10 @@
 from policyengine_uk.data import UKMultiYearDataset, UKSingleYearDataset
+from policyengine_uk.data.capital_gains_projection import (
+    CGT_DATASET_INPUTS,
+    CGT_INDEX_PATH,
+)
+
+import hashlib
 
 import yaml
 from policyengine_core.parameters import ParameterNode
@@ -67,6 +73,8 @@ _COUNCIL_TAX_GROWTH_SERIES = {
 # which the Enhanced FRS does not store, so it falls to -1); one whose
 # variable has an `uprating` attribute is scaled by that index; any other,
 # rent and council tax among them, is held at its last projected value.
+# A finite CGT scenario can shorten the whole dataset horizon; it never
+# extends beyond the evidence declared by that scenario.
 PROJECTION_END_YEAR = 2032
 
 # Before this horizon was extended, Core uprated unmapped inputs from 2030.
@@ -97,13 +105,100 @@ def _unmapped_uprating_indices(uprating):
     }
 
 
+COUNCIL_TAX_GROWTH = "gov.economic_assumptions.yoy_growth.obr.council_tax"
+SOCIAL_RENT_GROWTH = "gov.economic_assumptions.yoy_growth.obr.social_rent"
+PRIVATE_RENT_GROWTH = "gov.economic_assumptions.yoy_growth.ons.private_rental_prices"
+RESIDENTIAL_PROPERTY_INDEX = "gov.economic_assumptions.indices.obr.house_prices"
+RESIDENTIAL_PROPERTY_INPUTS = (
+    "main_residence_value",
+    "other_residential_property_value",
+)
+
+
+def _uprating_index_map() -> dict:
+    with open(Path(__file__).parent / "uprating_indices.yaml", "r") as f:
+        return yaml.safe_load(f)
+
+
+def uprating_input_paths() -> list:
+    """Every parameter path the dataset uprating reads.
+
+    ``apply_single_year_uprating`` and the functions it calls read these, and
+    no other parameters: the growth rates in ``uprating_indices.yaml``, the
+    council tax and rent series, the cumulative residential property index,
+    the indices of the input variables that
+    file leaves out (after ``LEGACY_PROJECTION_END_YEAR``) and the capital
+    gains projection's metadata (``CGT_INDEX_PATH``). A path may name a node
+    (the regional private rent series), which covers its parameters.
+    """
+    uprating = _uprating_index_map()
+    series = {value for value in _COUNCIL_TAX_GROWTH_SERIES.values() if value}
+    return sorted(
+        set(uprating)
+        | {f"{COUNCIL_TAX_GROWTH}.{name}" for name in series}
+        | {
+            SOCIAL_RENT_GROWTH,
+            PRIVATE_RENT_GROWTH,
+            CGT_INDEX_PATH,
+            RESIDENTIAL_PROPERTY_INDEX,
+        }
+        | set(_unmapped_uprating_indices(uprating).values())
+    )
+
+
+def uprating_input_fingerprint(parameters: ParameterNode) -> str:
+    """A digest of the parameter values the dataset uprating reads.
+
+    Two parameter trees with the same fingerprint uprate a dataset
+    identically, so an uprated dataset can be shared between them. It covers
+    each read parameter's full timeline and the capital gains projection's
+    metadata.
+    """
+    from policyengine_core.parameters import Parameter
+
+    parts = []
+    for path in uprating_input_paths():
+        try:
+            node = parameters.get_child(path)
+        except ValueError:
+            parts.append((path, None))
+            continue
+        leaves = (
+            [node]
+            if isinstance(node, Parameter)
+            else [p for p in node.get_descendants() if isinstance(p, Parameter)]
+        )
+        for leaf in sorted(leaves, key=lambda leaf: leaf.name):
+            parts.append(
+                (
+                    leaf.name,
+                    tuple(
+                        (entry.instant_str, repr(entry.value))
+                        for entry in leaf.values_list
+                    ),
+                )
+            )
+        if path == CGT_INDEX_PATH:
+            parts.append((path, repr((node.metadata or {}).get("projection"))))
+    return hashlib.sha256(repr(parts).encode()).hexdigest()
+
+
 def extend_single_year_dataset(
     dataset: UKSingleYearDataset,
     tax_benefit_system_parameters: ParameterNode,
-    end_year: int = PROJECTION_END_YEAR,
+    end_year: int | None = None,
 ) -> UKMultiYearDataset:
+    """Project a supplied year to the shared default within any finite CGT span."""
     # Extend years and uprate
     start_year = int(dataset.time_period)
+    if end_year is None:
+        projection = tax_benefit_system_parameters.get_child(CGT_INDEX_PATH).metadata[
+            "projection"
+        ]
+        end_year = max(
+            start_year,
+            min(PROJECTION_END_YEAR, projection.get("end_year", PROJECTION_END_YEAR)),
+        )
     datasets = [dataset]
     for year in range(start_year, end_year + 1):
         next_year = dataset.copy()
@@ -130,13 +225,20 @@ def apply_uprating(
     if copy:
         dataset = dataset.copy()
 
+    first_year = min(dataset.datasets.keys())
     for year in dataset.datasets.keys():
-        if year == min(dataset.datasets.keys()):
+        if year == first_year:
             continue  # Don't uprate the first year
         current_year = dataset.datasets[year]
         prev_year = dataset.datasets[year - 1]
         apply_single_year_uprating(
             current_year, prev_year, tax_benefit_system_parameters
+        )
+        # Core projects from the supplied observation in one multiplication.
+        # Chaining annual stock projections can lose an exact band boundary
+        # through intermediate float32 rounding, even with the same index.
+        uprate_residential_property(
+            current_year, dataset.datasets[first_year], tax_benefit_system_parameters
         )
 
     return dataset
@@ -149,10 +251,27 @@ def apply_single_year_uprating(
 ):
     # Apply uprating to a single year dataset.
 
+    projection = parameters.get_child(CGT_INDEX_PATH).metadata["projection"]
+    if "base_year" in projection and any(
+        variable in previous_year.person.columns for variable in CGT_DATASET_INPUTS
+    ):
+        source_year = int(previous_year.time_period)
+        target_year = int(current_year.time_period)
+        if (
+            not projection["base_year"]
+            <= source_year
+            < target_year
+            <= projection["end_year"]
+        ):
+            raise ValueError(
+                f"Capital gains projection {projection['name']!r} supports "
+                f"{projection['base_year']}–{projection['end_year']}, "
+                f"not {source_year}–{target_year}."
+            )
+
     # First, apply standard variable-YoY growth based uprating.
 
-    with open(Path(__file__).parent / "uprating_indices.yaml", "r") as f:
-        uprating = yaml.safe_load(f)
+    uprating = _uprating_index_map()
     for index_name, variables in uprating.items():
         index_rel_change = parameters.get_child(index_name)(current_year.time_period)
         for variable in variables:
@@ -163,6 +282,9 @@ def apply_single_year_uprating(
                     getattr(current_year, table_name)[variable] = current_year_value
 
     # Next, apply custom uprating.
+
+    # apply_uprating replaces these chained stocks from the original observation.
+    current_year = uprate_residential_property(current_year, previous_year, parameters)
 
     # Council Tax is uprated by OBR forecasts/outturns by country.
 
@@ -202,6 +324,43 @@ def apply_single_year_uprating(
 
     current_year.validate()
 
+    return current_year
+
+
+def uprate_residential_property(
+    current_year: UKSingleYearDataset,
+    previous_year: UKSingleYearDataset,
+    parameters: ParameterNode,
+):
+    """Keep residential stocks on Core and HVCTS's cumulative HPI basis.
+
+    Cumulative index levels are rounded when generated. Use one ratio from
+    the supplied observation, at the variable's Core storage precision, so
+    forward projection and inverse band conversion share the same basis.
+    """
+    from policyengine_uk.system import system
+
+    assets = [
+        name
+        for name in RESIDENTIAL_PROPERTY_INPUTS
+        if name in current_year.household.columns
+    ]
+    if not assets:
+        return current_year
+    index = parameters.get_child(RESIDENTIAL_PROPERTY_INDEX)
+    previous_index = _uprating_index_value(index, f"{previous_year.time_period}-01-01")
+    current_index = _uprating_index_value(index, f"{current_year.time_period}-01-01")
+    # Preserve Core's handling of missing, zero and terminated indices.
+    ratio = (
+        current_index / previous_index
+        if previous_index not in (None, 0) and current_index is not None
+        else 1
+    )
+    for asset in assets:
+        observed = previous_year.household[asset].to_numpy(
+            dtype=system.variables[asset].dtype
+        )
+        current_year.household[asset] = observed * ratio
     return current_year
 
 
@@ -422,8 +581,7 @@ def reset_uprating(
 def reset_growthfactor_uprating(
     dataset: UKMultiYearDataset,
 ):
-    with open(Path(__file__).parent / "uprating_indices.yaml", "r") as f:
-        uprating = yaml.safe_load(f)
+    uprating = _uprating_index_map()
 
     growthfactor_uprated_variables = {
         variable for variables in uprating.values() for variable in variables
