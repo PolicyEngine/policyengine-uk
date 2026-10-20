@@ -519,6 +519,62 @@
     council_tax_reduction_head_applies_alone: true
     council_tax_reduction_applicable_income: 116.95 * 52
 
+- name: Where a household head applies alone, her own IIDB counts with her State Pension, and the father's does not
+  # Only the merged code counts both: the head's State Pension through the
+  # applicant's member mask, her IIDB through the applicant-and-partner mask.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandmother:
+        age: 80
+        is_household_head: true
+        state_pension: 241.30 * 52
+        iidb_reported: 46.78 * 52
+      mother:
+        age: 45
+        is_parent: true
+        is_household_head: false
+      father:
+        age: 46
+        is_parent: true
+        is_household_head: false
+        iidb_reported: 233.90 * 52
+      child:
+        age: 10
+        is_household_head: false
+    benunits:
+      family:
+        members: [grandmother, mother, father, child]
+        would_claim_uc: false
+        would_claim_pc: false
+        would_claim_child_benefit: false
+    households:
+      home:
+        members: [grandmother, mother, father, child]
+        country: ENGLAND
+        region: SOUTH_EAST
+        local_authority: MAIDSTONE
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_head_applies_alone: true
+    is_council_tax_reduction_applicant_or_partner: [true, false, false, false]
+    council_tax_reduction_pensioner: true
+    # State Pension 12,547.60, below the 12,570 personal allowance.
+    income_tax: [0, 0, 0, 0]
+    # State Pension 241.30 * 52 = 12,547.60, plus her IIDB at 20%
+    # 46.78 * 52 = 2,432.56: 14,980.16. The father's 12,162.80 IIDB is not
+    # hers (SI 2012/2885 Sch 1 para 11).
+    council_tax_reduction_applicable_income: 14_980.16
+    # A single pensioner who reached pensionable age before April 2021:
+    # 256.00 * 52 = 13,312.00.
+    council_tax_reduction_applicable_amount: 13_312
+    # 1,800 - 0.2 x (14,980.16 - 13,312.00) = 1,800 - 333.632 = 1,466.368.
+    # The couple are in her benefit unit, so the model charges no
+    # non-dependant deduction for them (#2017).
+    council_tax_benefit: 1_466.368
+
 - name: A guarantee credit recipient with IIDB has nil Council Tax Reduction income
   period: 2026
   absolute_error_margin: 0.01
