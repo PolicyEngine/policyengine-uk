@@ -1,0 +1,13 @@
+description: The Childcare Offer for Wales excludes families in which a parent's gross income exceeds this amount a year.
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Childcare Offer for Wales gross income limit per parent
+  reference:
+    - title: Welsh Government, The Childcare Offer for Wales, Assessing parents' income to determine eligibility for the Offer, version 1 (July 2020), questions 1 and 8
+      href: https://www.gov.wales/sites/default/files/publications/2023-04/atisn17333doc1.pdf
+    - title: Welsh Government, Childcare Offer for Wales guidance for local authorities, version 8.3 (April 2026), paragraphs 57 and 69
+      href: https://www.gov.wales/sites/default/files/publications/2026-04/childcare-offer-for-wales-guidance-for-local-authorities-april-2026-english_0.pdf
+values:
+  # The July 2020 guidance is the earliest source found for the limit.
+  2019-08-01: 100_000

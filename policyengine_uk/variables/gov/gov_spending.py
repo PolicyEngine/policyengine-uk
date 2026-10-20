@@ -41,6 +41,7 @@ GOV_SPENDING_VARIABLES = [
     "extended_childcare_entitlement",
     "universal_childcare_entitlement",
     "targeted_childcare_entitlement",
+    "wales_childcare_offer",
     "care_to_learn",
     "childcare_grant",
     "parents_learning_allowance",

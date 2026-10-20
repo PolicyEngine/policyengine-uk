@@ -1,0 +1,483 @@
+# Childcare Offer for Wales: the childcare element, valued at the Welsh
+# Government's hourly rate to providers. Sources: Childcare Offer for Wales
+# guidance for local authorities, version 8.3 (April 2026), and the Welsh
+# Government's rate statements (see the parameters for each).
+#
+# Term time (39 weeks): 30 hours less 10 hours of nursery education (the
+# local authority minimum) = 20 childcare hours. Holidays (9 weeks): 30
+# childcare hours. Full use: 20 x 39 + 30 x 9 = 780 + 270 = 1,050 hours.
+# Rates: £4.50 (to March 2022), £5.00 (April 2022), £6.40 (7 April 2025),
+# £6.67 (6 April 2026). Years are sampled at 30 April.
+# Minimum earnings in 2026: 16 hours x £12.71 (National Living Wage) =
+# £203.36 a week, or £10,574.72 over 52 weeks.
+
+- name: Working couple in Wales with a 3-year-old gets the full childcare element in 2026
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent1:
+        age: 30
+        employment_income: 20000
+      parent2:
+        age: 30
+        employment_income: 20000
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+    households:
+      household:
+        members: [parent1, parent2, child]
+        region: WALES
+  output:
+    # 1,050 x 6.67
+    wales_childcare_offer: 7_003.50
+    wales_childcare_offer_eligible: true
+
+- name: Working couple in Wales with a 4-year-old in 2025
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent1:
+        age: 30
+        employment_income: 20000
+      parent2:
+        age: 30
+        employment_income: 20000
+      child:
+        age: 4
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+    households:
+      household:
+        members: [parent1, parent2, child]
+        region: WALES
+  output:
+    # 1,050 x 6.40
+    wales_childcare_offer: 6_720.00
+
+- name: Working couple in Wales with a 3-year-old in 2023
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent1:
+        age: 30
+        employment_income: 20000
+      parent2:
+        age: 30
+        employment_income: 20000
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+    households:
+      household:
+        members: [parent1, parent2, child]
+        region: WALES
+  output:
+    # 1,050 x 5.00
+    wales_childcare_offer: 5_250.00
+
+- name: Working couple in Wales with a 3-year-old in 2021
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent1:
+        age: 30
+        employment_income: 20000
+      parent2:
+        age: 30
+        employment_income: 20000
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+    households:
+      household:
+        members: [parent1, parent2, child]
+        region: WALES
+  output:
+    # 1,050 x 4.50
+    wales_childcare_offer: 4_725.00
+
+- name: The Offer was not in every local authority by April 2019
+  period: 2019
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent1:
+        age: 30
+        employment_income: 20000
+      parent2:
+        age: 30
+        employment_income: 20000
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+    households:
+      household:
+        members: [parent1, parent2, child]
+        region: WALES
+  output:
+    wales_childcare_offer: 0
+
+- name: Two qualifying children each get the childcare element
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent1:
+        age: 30
+        employment_income: 20000
+      parent2:
+        age: 30
+        employment_income: 20000
+      child1:
+        age: 3
+      child2:
+        age: 4
+    benunits:
+      benunit:
+        members: [parent1, parent2, child1, child2]
+    households:
+      household:
+        members: [parent1, parent2, child1, child2]
+        region: WALES
+  output:
+    # 2 x 1,050 x 6.67
+    wales_childcare_offer: 14_007.00
+
+- name: A child using 15 funded hours a week gets 5 childcare hours in term time
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent1:
+        age: 30
+        employment_income: 20000
+      parent2:
+        age: 30
+        employment_income: 20000
+      child:
+        age: 3
+        max_free_entitlement_hours_used: 15
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+    households:
+      household:
+        members: [parent1, parent2, child]
+        region: WALES
+  output:
+    # ((15 - 10) x 39 + 15 x 9) x 6.67 = (195 + 135) x 6.67
+    wales_childcare_offer: 2_201.10
+
+- name: A child using 8 funded hours a week gets childcare only in the holidays
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent1:
+        age: 30
+        employment_income: 20000
+      parent2:
+        age: 30
+        employment_income: 20000
+      child:
+        age: 3
+        max_free_entitlement_hours_used: 8
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+    households:
+      household:
+        members: [parent1, parent2, child]
+        region: WALES
+  output:
+    # (0 x 39 + 8 x 9) x 6.67 = 72 x 6.67
+    wales_childcare_offer: 480.24
+
+- name: The same family in England gets nothing from the Welsh Offer
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent1:
+        age: 30
+        employment_income: 20000
+      parent2:
+        age: 30
+        employment_income: 20000
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+    households:
+      household:
+        members: [parent1, parent2, child]
+        region: NORTH_WEST
+  output:
+    wales_childcare_offer: 0
+
+- name: A 2-year-old does not qualify
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent1:
+        age: 30
+        employment_income: 20000
+      parent2:
+        age: 30
+        employment_income: 20000
+      child:
+        age: 2
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+    households:
+      household:
+        members: [parent1, parent2, child]
+        region: WALES
+  output:
+    wales_childcare_offer: 0
+
+- name: A 5-year-old does not qualify
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent1:
+        age: 30
+        employment_income: 20000
+      parent2:
+        age: 30
+        employment_income: 20000
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+    households:
+      household:
+        members: [parent1, parent2, child]
+        region: WALES
+  output:
+    wales_childcare_offer: 0
+
+- name: A parent with gross income over £100,000 makes the family ineligible
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent1:
+        age: 30
+        employment_income: 100001
+      parent2:
+        age: 30
+        employment_income: 20000
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+    households:
+      household:
+        members: [parent1, parent2, child]
+        region: WALES
+  output:
+    wales_childcare_offer: 0
+    wales_childcare_offer_parent_condition: [false, true, false]
+
+- name: A parent with gross income of exactly £100,000 still qualifies
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent1:
+        age: 30
+        employment_income: 100000
+      parent2:
+        age: 30
+        employment_income: 20000
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+    households:
+      household:
+        members: [parent1, parent2, child]
+        region: WALES
+  output:
+    wales_childcare_offer: 7_003.50
+
+- name: A parent earning under 16 hours at the minimum wage makes a couple ineligible
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent1:
+        age: 30
+        employment_income: 20000
+      parent2:
+        age: 30
+        employment_income: 10000
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+    households:
+      household:
+        members: [parent1, parent2, child]
+        region: WALES
+  output:
+    # 10,000 / 52 = 192.31 < 203.36
+    wales_childcare_offer: 0
+
+- name: A lone parent earning just over the minimum qualifies
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 10600
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        region: WALES
+  output:
+    # 10,600 / 52 = 203.85 >= 203.36
+    wales_childcare_offer: 7_003.50
+
+- name: A lone parent in higher education with no earnings qualifies
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        current_education: TERTIARY
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        region: WALES
+  output:
+    wales_childcare_offer: 7_003.50
+
+- name: A non-working parent entitled to Carer's Allowance qualifies when the partner works
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent1:
+        age: 30
+        employment_income: 20000
+      parent2:
+        age: 30
+        is_entitled_to_carer_benefit: true
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+    households:
+      household:
+        members: [parent1, parent2, child]
+        region: WALES
+  output:
+    wales_childcare_offer: 7_003.50
+    wales_childcare_offer_parent_condition: [true, true, false]
+
+- name: A non-working couple with no exception benefit is ineligible
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent1:
+        age: 30
+        employment_income: 20000
+      parent2:
+        age: 30
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+    households:
+      household:
+        members: [parent1, parent2, child]
+        region: WALES
+  output:
+    wales_childcare_offer: 0
+
+- name: A lone parent cannot qualify through a carer benefit, even with an older child in education
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        is_entitled_to_carer_benefit: true
+      teenager:
+        age: 17
+        current_education: UPPER_SECONDARY
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, teenager, child]
+    households:
+      household:
+        members: [parent, teenager, child]
+        region: WALES
+  output:
+    wales_childcare_offer: 0
+    wales_childcare_offer_parent_condition: [false, false, false]
+
+- name: A family that would not claim gets nothing
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent1:
+        age: 30
+        employment_income: 20000
+      parent2:
+        age: 30
+        employment_income: 20000
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+        would_claim_wales_childcare_offer: false
+    households:
+      household:
+        members: [parent1, parent2, child]
+        region: WALES
+  output:
+    wales_childcare_offer: 0

@@ -420,6 +420,19 @@ programs:
     verified_end_year: 2025
     notes: 570 free hours/year for 2-year-olds in families on qualifying benefits or low incomes; kept when the family is also eligible for the extended entitlement, which adds working parent hours on top.
 
+  - id: wales_childcare_offer
+    name: Childcare Offer for Wales
+    full_name: Childcare Offer for Wales (working parents of 3- and 4-year-olds)
+    category: Education
+    agency: Welsh Government
+    status: partial
+    coverage: Wales
+    variable: wales_childcare_offer
+    parameter_prefix: gov.welsh_government.childcare_offer
+    verified_start_year: 2019
+    verified_end_year: 2026
+    notes: The childcare element only, valued at the Welsh Government's hourly rate to providers. Up to 30 hours a week less the local authority's nursery education hours (10, the minimum) for 39 term weeks, and 30 hours for 9 holiday weeks. Nursery education, funded by local authorities, is not valued.
+
   - id: childcare_grant
     name: Childcare Grant
     full_name: Student Finance England Childcare Grant
