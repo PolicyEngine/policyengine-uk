@@ -63,13 +63,9 @@ less (s.151A(3)). The model pays exactly September CPI, the floor and what
 every Order has given. A reform that raises the part above the full rate by
 more has no parameter to set; it needs a reform to this variable.
 
-Two simplifications remain. For a contracted-out record the Order's increase
-applies to the gross additional pension, part of which the State pays on the
-guaranteed minimum pension, so uprating only the reported amount above the
-full rate by September CPI understates that record's growth. And additional
-pension inside a reported total below the full basic rate is not separated,
-so it is uprated with the full rate (as `overlapping_state_pension` also
-notes).
+One simplification remains: additional pension inside a reported total
+below the full basic rate is not separated, so it is uprated with the full
+rate (as `overlapping_state_pension` also notes).
 
 So a reform to the full rates, or to the triple lock, moves only basic and
 new State Pension. A reform that sets a full rate to zero leaves additional
