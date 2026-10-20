@@ -1,3 +1,10 @@
+## [2.141.4] - 2026-10-20
+
+### Fixed
+
+- A before-load `Scenario` change to DfE, DHSC or DfT spending now constructs: `adjust_budgets` skips a year with no allocation instead of writing NaN, and scales each year's allocation by that year's own budget change without carrying an earlier year's change forward.
+
+
 ## [2.141.3] - 2026-10-20
 
 ### Fixed
