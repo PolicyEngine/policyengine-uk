@@ -126,15 +126,24 @@ GENERATION_STEPS = (
 def _add_generated_parameters(
     parameters: ParameterNode,
     generated: Optional[List[ParameterAssignment]] = None,
+    unreformed: Optional[ParameterNode] = None,
 ) -> ParameterNode:
     """Run the generation steps, writing changes to generated parameters.
 
     Each change in ``generated`` is written onto its parameter just after
     the step that generates it, so the later steps, and uprating, read it.
+    ``unreformed`` supplies the guarantee base for the separately set Savings
+    Credit threshold and protected Housing Benefit allowance projections.
     """
     pending = list(generated or [])
     for step in GENERATION_STEPS:
-        parameters = step(parameters)
+        if step in (
+            add_savings_credit_threshold_projection,
+            add_protected_pension_age_uprating,
+        ):
+            parameters = step(parameters, unreformed=unreformed)
+        else:
+            parameters = step(parameters)
         if pending:
             defines = tree_defines(parameters)
             for assignment in [a for a in pending if defines(a.path)]:
@@ -182,11 +191,14 @@ def process_parameter_tree(
     tree carrying dated reform changes passes ``unreformed``, the same tree
     without them, which the copy is taken from instead (#2188).
     ``annualise=False`` stops after the projection and adds no copy.
+    ``unreformed`` also keeps the Pension Credit guarantee component of the
+    threshold and protected HB projections independent of guarantee reforms,
+    including during intermediate projections with ``annualise=False``.
     ``generated`` holds the reform's changes to generated parameters, each
     written just after the step that generates it (see
     ``_add_generated_parameters``).
     """
-    parameters = _add_generated_parameters(parameters, generated)
+    parameters = _add_generated_parameters(parameters, generated, unreformed)
 
     # Create baseline parameters for reform comparisons
     if annualise:
@@ -708,7 +720,10 @@ def prior_law_projection(
         projected_timelines()
         if statutory and not generated
         else process_parameter_tree(
-            unreformed.clone(), annualise=False, generated=generated
+            unreformed.clone(),
+            unreformed=unreformed,
+            annualise=False,
+            generated=generated,
         )[1]
     )
     environment = {path: start.get(path) for path in needing}
@@ -727,7 +742,7 @@ def prior_law_projection(
                         tree.get_child(assignment.path), assignment, lookup
                     )
             updated[path] = process_parameter_tree(
-                tree, annualise=False, generated=generated
+                tree, unreformed=unreformed, annualise=False, generated=generated
             )[1].get(path)
         if _same_timelines(updated, environment):
             return lookup

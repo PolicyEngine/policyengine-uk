@@ -201,10 +201,19 @@ def _projection_parameter(
 
 def add_savings_credit_threshold_projection(
     parameters: ParameterNode,
+    unreformed: ParameterNode | None = None,
 ) -> ParameterNode:
-    """Add forecast indices for each Savings Credit threshold."""
+    """Add forecast indices for each Savings Credit threshold.
+
+    The separately set threshold is not re-derived by a guarantee reform,
+    including a reform to the projection's base year. Other inputs and any
+    explicit threshold reform still come from the reform's parameter tree.
+    """
     savings_credit = parameters.gov.dwp.pension_credit.savings_credit
-    guarantees = parameters.gov.dwp.pension_credit.guarantee_credit.minimum_guarantee
+    guarantee_source = parameters if unreformed is None else unreformed
+    guarantees = (
+        guarantee_source.gov.dwp.pension_credit.guarantee_credit.minimum_guarantee
+    )
     earnings_index = (
         parameters.gov.economic_assumptions.indices.statutory_earnings_floor
     )

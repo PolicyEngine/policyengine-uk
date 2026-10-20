@@ -149,10 +149,20 @@ def _projection_parameter(
 
 def add_protected_pension_age_uprating(
     parameters: ParameterNode,
+    unreformed: ParameterNode | None = None,
 ) -> ParameterNode:
-    """Add relationship-specific protected-allowance forecast indices."""
+    """Add relationship-specific protected-allowance forecast indices.
+
+    A guarantee reform does not re-derive the separately set HB allowance.
+    Use its unreformed guarantee component so the enacted-base validation
+    remains meaningful, even when a reform exceeds the protected allowance.
+    Earnings and CPI inputs still come from the reform's parameter tree.
+    """
     allowances = parameters.gov.dwp.housing_benefit.allowances
-    guarantees = parameters.gov.dwp.pension_credit.guarantee_credit.minimum_guarantee
+    guarantee_source = parameters if unreformed is None else unreformed
+    guarantees = (
+        guarantee_source.gov.dwp.pension_credit.guarantee_credit.minimum_guarantee
+    )
     earnings_index = (
         parameters.gov.economic_assumptions.indices.statutory_earnings_floor
     )
