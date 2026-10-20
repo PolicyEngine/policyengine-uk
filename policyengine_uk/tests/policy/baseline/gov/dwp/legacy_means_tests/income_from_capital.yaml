@@ -1657,3 +1657,33 @@
         other_residential_property_secured_debt: 15_000
   output:
     council_tax_reduction_assessable_capital: 12_000
+
+- name: A Scottish mixed-age couple on Income Support is under the working-age scheme
+  # SSI 2021/249 reg 3(1): the scheme for people under pensionable age applies
+  # where the applicant has reached pensionable age but the applicant or
+  # partner has a qualifying income-related benefit, here Income Support (an
+  # input, with no Universal Credit). Its reg 57(1) has no head for
+  # sub-tenant rent, so only the Income Support, 3,000, counts.
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 70
+        sublet_income: 5_200
+      partner:
+        age: 40
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        income_support: 3_000
+        would_claim_uc: false
+        would_claim_pc: false
+    households:
+      household:
+        members: [claimant, partner]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+  output:
+    council_tax_reduction_pensioner: false
+    legacy_benefits_home_letting_income: 4_160
+    council_tax_reduction_applicable_income: 3_000
