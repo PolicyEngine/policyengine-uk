@@ -176,7 +176,9 @@ the cash paid in.
   source) contributions are money purchase.
 - `defined_benefit_pension_input_amount` replaces those contributions in
   `pension_contributions_for_annual_allowance`. Supply it where it is known,
-  as on a pension savings statement. Otherwise it is the contributions times
+  as on a pension savings statement, with the share of the contributions that
+  fund it: contributions outside the share also count as money purchase
+  input. Otherwise it is the contributions times
   `gov.simulation.pensions.defined_benefit_input_per_contribution`, which is
   1. In the four largest public service schemes in 2024-25 the input of an
   active member with ten years' service is 0.8 to 1.2 times employer and
@@ -189,7 +191,9 @@ the cash paid in.
 **Carry forward.** [s. 228A](https://www.legislation.gov.uk/ukpga/2004/12/section/228A)
 adds the allowance left unused in each of the three previous tax years in
 which the person was a scheme member, earliest first. `unused_pension_annual_allowance`
-can be supplied. From 2020-21 it otherwise defaults to an estimate:
+can be supplied for a year; the supplied value is not carried into later
+years, whose window differs. From 2020-21 it otherwise defaults to an
+estimate:
 
 - In each of the five previous years, the pension input amount was this
   year's times `gov.simulation.pensions.prior_year_input_ratio` (1), and the

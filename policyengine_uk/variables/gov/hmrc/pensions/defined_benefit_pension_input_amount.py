@@ -11,7 +11,10 @@ class defined_benefit_pension_input_amount(Variable):
         "s. 234): 16 times the annual pension, plus any separate lump sum, at "
         "the end of the period less the same at its start, with the start "
         "value raised by CPI (s. 235), and nil if negative. Supply it where "
-        "known, as on a scheme's pension savings statement. Otherwise it is "
+        "known, as on a scheme's pension savings statement, together with "
+        "defined_benefit_pension_share for the workplace contributions that "
+        "fund it: contributions outside that share are counted as money "
+        "purchase input as well. Otherwise it is "
         "defined_benefit_pension_contributions times "
         "gov.simulation.pensions.defined_benefit_input_per_contribution."
     )

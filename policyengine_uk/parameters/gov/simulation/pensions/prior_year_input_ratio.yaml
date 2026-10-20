@@ -1,7 +1,9 @@
 description: >-
-  Pension input amount in each of the three previous tax years as a share of
-  this year's, after average earnings growth, used to estimate unused annual
-  allowance carried forward where data has no pension history.
+  Pension input amount in each previous tax year as a share of this year's,
+  after average earnings growth, used to estimate unused annual allowance
+  carried forward where data has no pension history. The estimate looks back
+  five years: the three whose unused allowance is carried forward and the two
+  before them, whose unused allowance an excess in those three uses first.
 # Finance Act 2004 s. 228A carries forward the annual allowance that the
 # pension input amount left unused in each of the three previous tax years in
 # which the individual was a member of a registered pension scheme, earliest
