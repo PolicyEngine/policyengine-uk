@@ -387,14 +387,33 @@ def test_generated_parameters_are_the_series_processing_builds():
     generates = tbs_module.generated_parameter_defines()
     statutory = tbs_module.statutory_parameter_defines()
     processed = tbs_module.processed_parameters()
+    protected_allowance_index = (
+        "gov.dwp.housing_benefit.allowances.protected_pension_age_uprating"
+    )
+    savings_credit_index = "gov.dwp.pension_credit.savings_credit.threshold_uprating"
+    # Pension-age forecast indices are generated in their program trees.
+    generated_prefixes = (
+        f"{INDICES}.",
+        f"{GROWTH}.",
+        f"{protected_allowance_index}.",
+        f"{savings_credit_index}.",
+    )
     for path in tbs_module._leaf_paths(processed):
         if path.startswith("baseline.") or path.startswith(
             "gov.simulation.labor_supply_responses."
         ):
             assert not generates(path), path
             continue
-        built = path.startswith((f"{INDICES}.", f"{GROWTH}.")) and not statutory(path)
+        built = path.startswith(generated_prefixes) and not statutory(path)
         assert generates(path) is built, path
+    for relationship in ("single", "couple"):
+        assert generates(f"{protected_allowance_index}.{relationship}")
+        assert not generates(f"gov.dwp.housing_benefit.allowances.{relationship}.aged")
+    for relationship in ("SINGLE", "COUPLE"):
+        assert generates(f"{savings_credit_index}.{relationship}")
+        assert not generates(
+            f"gov.dwp.pension_credit.savings_credit.threshold.{relationship}"
+        )
     assert generates(TRIPLE_LOCK)
     assert generates(f"{INDICES}.uc_standard_allowance")
     assert not generates(MINIMUM_RATE)
