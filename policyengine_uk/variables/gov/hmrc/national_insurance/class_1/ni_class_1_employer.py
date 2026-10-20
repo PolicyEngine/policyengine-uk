@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.employer_ni import secondary_class_1_threshold
 
 
 class ni_class_1_employer(Variable):
@@ -42,32 +43,8 @@ class ni_class_1_employer(Variable):
             taxed_earnings = earnings + added_pension_contributions
         else:
             taxed_earnings = earnings
-        thresholds = class_1.thresholds
-        age_limits = class_1.secondary_zero_rate_age_limits
-        secondary_threshold = thresholds.secondary_threshold * WEEKS_IN_YEAR
-        age = person("age", period)
-        # s.9A: 0% up to the upper secondary threshold for an earner under 21.
-        under_21_threshold = where(
-            age < age_limits.under_21_group,
-            thresholds.upper_secondary_threshold * WEEKS_IN_YEAR,
-            0,
-        )
-        # s.9B: 0% up to the apprentice upper secondary threshold for a
-        # relevant apprentice (an apprentice under 25). s.9A(1A) gives s.9B
-        # priority, and s.9A still zero-rates an under-21 apprentice's earnings
-        # above the apprentice threshold up to the under-21 one, so the higher
-        # of the two applies.
-        relevant_apprentice = person("is_apprentice", period) & (
-            age < age_limits.relevant_apprentice
-        )
-        apprentice_threshold = where(
-            relevant_apprentice,
-            thresholds.apprentice_upper_secondary_threshold * WEEKS_IN_YEAR,
-            0,
-        )
-        # Earnings above the higher of these thresholds and the secondary
-        # threshold bear the secondary percentage (s.9A(9)-(10), s.9B(7)).
-        threshold = max_(
-            secondary_threshold, max_(under_21_threshold, apprentice_threshold)
-        )
+        # Earnings above the secondary threshold, or the UST/AUST for an
+        # earner under 21 or a relevant apprentice, bear the secondary
+        # percentage (s.9A, s.9B).
+        threshold = secondary_class_1_threshold(person, period, class_1)
         return class_1.rates.employer * max_(taxed_earnings - threshold, 0)

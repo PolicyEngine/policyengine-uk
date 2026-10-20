@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.employer_ni import secondary_class_1_threshold
 
 
 class adjusted_employer_cost(Variable):
@@ -30,7 +31,8 @@ class adjusted_employer_cost(Variable):
         parameters = parameters(period)
         class_1 = parameters.gov.hmrc.national_insurance.class_1
         r_r = class_1.rates.employer
-        t_r = class_1.thresholds.secondary_threshold * WEEKS_IN_YEAR
+        # The secondary threshold, or the UST/AUST where a zero rate applies.
+        t_r = secondary_class_1_threshold(person, period, class_1)
         p_r = parameters.gov.contrib.policyengine.employer_ni.exempt_employer_pension_contributions
         pen_con_subtracted_r = employer_pension_contributions
         if p_r:

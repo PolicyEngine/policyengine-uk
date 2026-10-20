@@ -1,0 +1,38 @@
+from policyengine_core.model_api import WEEKS_IN_YEAR, max_, where
+
+
+def secondary_class_1_threshold(person, period, class_1):
+    """Annual earnings above which the secondary percentage applies.
+
+    The secondary threshold (SSCBA 1992 s.9), raised to the upper secondary
+    threshold for an earner under 21 (s.9A) and to the apprentice upper
+    secondary threshold for a relevant apprentice under 25 (s.9B). s.9A(1A)
+    gives s.9B priority, and s.9A still zero-rates an under-21 apprentice's
+    earnings above the apprentice threshold up to the under-21 one, so the
+    higher threshold applies. Earnings above it bear the secondary percentage
+    (s.9A(9)-(10), s.9B(7)).
+
+    `class_1` is a Class 1 parameter node, so a variable can apply the
+    baseline and the reformed schedule with the same function.
+    """
+    thresholds = class_1.thresholds
+    age_limits = class_1.secondary_zero_rate_age_limits
+    age = person("age", period)
+    under_21_threshold = where(
+        age < age_limits.under_21_group,
+        thresholds.upper_secondary_threshold,
+        0,
+    )
+    relevant_apprentice = person("is_apprentice", period) & (
+        age < age_limits.relevant_apprentice
+    )
+    apprentice_threshold = where(
+        relevant_apprentice,
+        thresholds.apprentice_upper_secondary_threshold,
+        0,
+    )
+    weekly = max_(
+        thresholds.secondary_threshold,
+        max_(under_21_threshold, apprentice_threshold),
+    )
+    return weekly * WEEKS_IN_YEAR

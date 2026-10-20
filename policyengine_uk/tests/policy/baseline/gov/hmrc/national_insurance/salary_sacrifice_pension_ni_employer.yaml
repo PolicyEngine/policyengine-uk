@@ -157,3 +157,18 @@
   output:
     # The £3,000 returned sits above the secondary threshold.
     salary_sacrifice_pension_ni_employer: 3_000 * 0.15
+
+- name: No employer NI on returned pay for an earner aged 19 on £40,000
+  period: 2029
+  absolute_error_margin: 0.01
+  input:
+    age: 19
+    employment_income_before_lsr: 40_000
+    pension_contributions_via_salary_sacrifice: 6_000
+    gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
+    gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
+  output:
+    # £4,000 returned; total pay £44,000 is below the UST (£50,270).
+    salary_sacrifice_returned_to_income: 4_000
+    salary_sacrifice_pension_ni_employer: 0
+    ni_class_1_employer: 0
