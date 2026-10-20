@@ -44,6 +44,14 @@ That means:
   [source notes](https://github.com/PolicyEngine/microcosm/blob/d1fda720/packages/microcosm-build/src/microcosm/build/uk/spec/sources.yaml#L1870)
   say code 6 mixes benefits and code 9 is tax-free War Widow's Pension. So the reported "BSP" also carries legacy
   widow's benefits and War Widow's Pension.
+- Since [#2382](https://github.com/PolicyEngine/policyengine-uk/pull/2382)
+  (2.135.7), War Widow's Pension has its own variables,
+  `war_widows_pension_reported` and `war_widows_pension`. `bsp_reported`
+  keeps CPI uprating only until the datasets move FRS code 9 out of it
+  ([policyengine-uk-data#578](https://github.com/PolicyEngine/policyengine-uk-data/issues/578),
+  [microcosm#1222](https://github.com/PolicyEngine/microcosm/issues/1222));
+  [#2381](https://github.com/PolicyEngine/policyengine-uk/issues/2381)
+  tracks freezing it after that.
 
 ## Proposed scope
 
@@ -96,6 +104,12 @@ derived. Either way the lump sum is tied to one year only.
 Both `lump_sum_amount` and `monthly_amount` parameter trees split on
 `bsp_higher_rate_eligible` (£3,500 / £350 vs £2,500 / £100).
 
+These parameters should be held flat, with no `uprating` key. BSP is
+not uprated: the four amounts in [SI 2017/410 reg 3][bsp-reg-3] have
+been £350, £3,500, £100 and £2,500 since April 2017, and the
+[Social Security Benefits Up-rating Order 2026][uprating-2026]
+(SI 2026/148), art 19, says each of them "remains unchanged".
+
 ### Phase 2: historical WPA under the same formula
 
 Widowed Parent's Allowance (under [Social Security Contributions and
@@ -139,14 +153,6 @@ directly) but not for microsim aggregates.
 
 ## Open questions
 
-- BSP isn't uprated each year. The rates have been £2,500/£3,500 and
-  £100/£350 since 2017. The model's `bsp_reported` is nonetheless
-  uprated with CPI, which suits the War Widow's Pension and legacy
-  widow's benefits it also contains but not BSP itself. Should the new
-  parameter tree carry an explicit
-  `uprating: gov.economic_assumptions.indices.obr.consumer_price_index`
-  to mirror what other DWP rates do, or hold flat to match the
-  historical reality?
 - WPA recipients who would have been on BSP under the new rules: do we
   want a reform-side parameter "treat all WPA receipts as if they were
   BSP" for counterfactual analysis?
@@ -159,6 +165,7 @@ directly) but not for microsim aggregates.
 
 - [Pensions Act 2014, Part 5](https://www.legislation.gov.uk/ukpga/2014/19/part/5): primary statute for BSP.
 - [Bereavement Support Payment Regulations 2017 (SI 2017/410)][bsp-regs].
+- [Social Security Benefits Up-rating Order 2026 (SI 2026/148), art 19][uprating-2026]: holds the four BSP amounts unchanged.
 - [Bereavement Benefits (Remedial) Order 2023 (SI 2023/134)](https://www.legislation.gov.uk/uksi/2023/134/contents): cohabiting-parent extension, effective from 30 August 2018.
 - [SSCBA 1992 s. 39A][sscba-39a]: legacy WPA basis.
 - gov.uk, [Bereavement Support Payment](https://www.gov.uk/bereavement-support-payment) and [Widowed Parent's Allowance](https://www.gov.uk/widowed-parents-allowance).
@@ -167,4 +174,6 @@ directly) but not for microsim aggregates.
 
 [pa-2014-5]: https://www.legislation.gov.uk/ukpga/2014/19/part/5
 [bsp-regs]: https://www.legislation.gov.uk/uksi/2017/410/contents
+[bsp-reg-3]: https://www.legislation.gov.uk/uksi/2017/410/regulation/3
+[uprating-2026]: https://www.legislation.gov.uk/uksi/2026/148/article/19
 [sscba-39a]: https://www.legislation.gov.uk/ukpga/1992/4/section/39A
