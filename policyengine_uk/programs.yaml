@@ -318,9 +318,10 @@ programs:
     agency: DWP
     status: complete
     coverage: UK
-    variable: benefit_cap
+    variable: benefit_cap_reduction
     parameter_prefix: gov.dwp
     verified_start_year: 2022
+    notes: Universal Credit (uc_benefit_cap) and Housing Benefit (housing_benefit_benefit_cap) each apply their own cap; benefit_cap_reduction is the sum of their reductions
 
   - id: tax_credits
     name: Tax credits
@@ -404,7 +405,7 @@ programs:
     parameter_prefix: gov.dfe.extended_childcare_entitlement
     verified_start_year: 2023
     verified_end_year: 2025
-    notes: Additional 570 hours/year on top of the universal entitlement for working parents meeting the earnings test.
+    notes: Working parent hours above the child's legally applicable universal (3-4) or targeted (2) hours, which count towards the 30 a week regardless of standalone take-up (Childcare Act 2016 s.1(6)); up to 570 extended hours/year for children eligible for either base programme, and up to 1,140 for younger children without a base entitlement from September 2025.
 
   - id: targeted_childcare_entitlement
     name: Targeted childcare entitlement
@@ -417,7 +418,7 @@ programs:
     parameter_prefix: gov.dfe.targeted_childcare_entitlement
     verified_start_year: 2023
     verified_end_year: 2025
-    notes: Free hours for disadvantaged 2-year-olds and, since April 2024, working families with younger children.
+    notes: 570 free hours/year for 2-year-olds in families on qualifying benefits or low incomes; kept when the family is also eligible for the extended entitlement, which adds working parent hours on top.
 
   - id: childcare_grant
     name: Childcare Grant

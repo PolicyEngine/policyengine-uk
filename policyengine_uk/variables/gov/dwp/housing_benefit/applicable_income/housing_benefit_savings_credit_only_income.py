@@ -33,11 +33,13 @@ class housing_benefit_savings_credit_only_income(Variable):
         "maintenance disregards (neither income definition counts "
         "maintenance), the exempt work disregard, the income and capital of a "
         "partner treated as a household member but not in the Pension Credit "
-        "assessment, income of a non-dependant treated as the claimant's, and "
-        "war pensions (Great Britain: local schemes under section 134(8) of "
+        "assessment, and income of a non-dependant treated as the claimant's. "
+        "War pensions (Great Britain: local schemes under section 134(8) of "
         "the Social Security Administration Act 1992; Northern Ireland: war "
-        "pension income above £10 disregarded under Schedule 6 paragraph 1); "
-        "the model has no war pension income."
+        "pension income above £10 disregarded under Schedule 6 paragraph 1) "
+        "are taken as wholly disregarded, as in the general route: the war "
+        "pension income the Secretary of State counts "
+        "(pension_credit_war_pension_income) is removed from the assessment."
     )
     definition_period = YEAR
     unit = GBP
@@ -51,8 +53,16 @@ class housing_benefit_savings_credit_only_income(Variable):
 
     def formula(benunit, period, parameters):
         # SI 2006/214 reg 27(1) and (3) (NI: SR 2006/406 reg 25): the
-        # Secretary of State's assessment of net income for the award.
-        pension_credit_income = benunit("pension_credit_income", period)
+        # Secretary of State's assessment of net income for the award, less
+        # the war pension income it counts: the model takes the authority to
+        # disregard war pensions in full under a section 134(8) local scheme,
+        # as the general route does (HB/CTB Guidance Manual P2.576 lets it
+        # modify the Pension Service's figure for that).
+        pension_credit_income = max_(
+            0,
+            benunit("pension_credit_income", period)
+            - benunit("pension_credit_war_pension_income", period),
+        )
         # Reg 27(4)(a): the savings credit payable. A savings-credit-only
         # award pays only the savings credit, so this is the Pension Credit
         # paid (under the Pension Credit freeze, the frozen amount).

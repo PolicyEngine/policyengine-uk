@@ -39,6 +39,9 @@ gov.economic_assumptions.yoy_growth.obr.consumer_price_index:
 - alcohol_and_tobacco_consumption
 - bus_fare_spending
 - bus_fare_spending_reported
+# bsp_reported still holds FRS code 9 (War Widow's Pension, CPI-uprated) as
+# well as Bereavement Support Payment, whose rates are frozen. It moves off
+# this index once datasets put code 9 in war_widows_pension_reported (#2381).
 - bsp_reported
 - carers_allowance_reported
 - child_benefit_reported
@@ -76,22 +79,30 @@ gov.economic_assumptions.yoy_growth.obr.consumer_price_index:
 - statutory_sick_pay
 - transport_consumption
 - universal_credit_reported
+- war_widows_pension_reported
 - winter_fuel_allowance_reported
 - working_tax_credit_reported
 gov.economic_assumptions.yoy_growth.obr.diesel_spending_litre_proxy:
 - diesel_spending
 gov.economic_assumptions.yoy_growth.obr.petrol_spending_litre_proxy:
 - petrol_spending
+gov.economic_assumptions.yoy_growth.obr.house_prices:
+- main_residence_value
+- other_residential_property_value
+# Imputed additional-dwelling prices share the home-price forecast,
+# holding the imputed purchase quantity fixed.
+- additional_residential_property_purchased
 gov.economic_assumptions.yoy_growth.obr.mortgage_interest:
 - mortgage_interest_repayment
 - property_finance_costs
 - property_finance_costs_brought_forward
-gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
+gov.economic_assumptions.yoy_growth.capital_gains:
 - capital_gains
 - capital_gains_before_response
 - capital_gains_badr
 - capital_gains_residential_property
 - capital_gains_carried_interest
+gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 - benunit_reported_capital
 - corporate_wealth
 - dividend_income
@@ -99,14 +110,16 @@ gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 - household_lifetime_isa_balance
 - lifetime_isa_balance
 - lump_sum_income
-- main_residence_value
 - maintenance_income
 - miscellaneous_income
 - mortgage_capital_repayment
 - net_financial_wealth
 - non_residential_property_value
+- non_residential_property_secured_debt
 - other_investment_income
-- other_residential_property_value
+- other_residential_property_secured_debt
+# Non-residential purchase prices and land retain GDP-per-capita growth.
+- non_residential_property_purchased
 - owned_land
 # A formula of benunit_reported_capital; listed so a dataset that stores it
 # directly is uprated like the input.
@@ -119,11 +132,12 @@ gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 - savings
 - savings_interest_income
 - sublet_income
-# A formula of benunit_reported_capital; listed so a dataset that stores it
-# directly is uprated like the input.
+# An explicit complete UC override stored in a dataset is uprated like the
+# financial input; its default no longer derives from that input.
 - uc_reported_capital
 gov.economic_assumptions.yoy_growth.obr.per_capita.mixed_income:
 - self_employment_income
+- trading_loss
 gov.economic_assumptions.yoy_growth.obr.private_pension_index:
 - private_pension_income
 gov.economic_assumptions.yoy_growth.ons.population:
