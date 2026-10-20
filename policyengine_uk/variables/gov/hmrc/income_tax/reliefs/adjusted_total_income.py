@@ -12,10 +12,12 @@ class adjusted_total_income(Variable):
         "contributions under a net pay arrangement (FA 2004 s.193(2)). "
         "Steps 3 and 4 deduct the other pension contributions given relief "
         "(ss.192-194). Together these are the person's own contributions "
-        "up to the greater of "
-        "their relevant UK earnings (s.189(2): taxable employment income, "
-        "including benefits and statutory pay, and trading profits) and the "
-        "basic amount (s.190), none from "
+        "up to relevant UK earnings (s.189(2): taxable employment income, "
+        "including benefits and statutory pay, and trading profits). The "
+        "basic amount can increase that limit only through relief at source "
+        "(ss.190(3), 191(7)), which the model represents with gross personal "
+        "pension contributions; employee contributions represent net pay. "
+        "None is relieved from "
         "age 75 (s.188(3)(a)). The annual allowance limits tax-relieved "
         "saving through a charge, not the relief itself, so it is not applied "
         "here. Step 2 adds back payroll giving, which the model does not have."
@@ -30,6 +32,10 @@ class adjusted_total_income(Variable):
         dict(
             title="Finance Act 2004 ss. 188-190",
             href="https://www.legislation.gov.uk/ukpga/2004/12/section/190",
+        ),
+        dict(
+            title="Finance Act 2004 s. 191(7)",
+            href="https://www.legislation.gov.uk/ukpga/2004/12/section/191",
         ),
     ]
 
@@ -51,9 +57,17 @@ class adjusted_total_income(Variable):
         relevant_earnings = (
             person("taxable_employment_income", period) + profits_before_carry_forward
         )
-        relief_limit = max_(
-            p.income_tax.reliefs.pension_contribution.basic_amount, relevant_earnings
+        # FA 2004 ss.190(3),191(7): only actual relief-at-source contributions
+        # can use the basic-amount increase above relevant UK earnings.
+        basic_amount_increase = min_(
+            max_(
+                0,
+                p.income_tax.reliefs.pension_contribution.basic_amount
+                - relevant_earnings,
+            ),
+            person("personal_pension_contributions", period),
         )
+        relief_limit = relevant_earnings + basic_amount_increase
         under_age_limit = (
             person("age", period) < p.pensions.pension_contributions_relief_age_limit
         )

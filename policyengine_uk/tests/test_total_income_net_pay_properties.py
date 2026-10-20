@@ -15,8 +15,9 @@ contribution, in 2025:
    relief. Contributions relieved at source never change it.
 3. Adjusted total income (s.24A(8)), which reads total income for Step 1,
    still deducts each relieved contribution once: it is the taxable pay and
-   pension less the contributions relieved, up to the greater of £3,600 and
-   the taxable pay.
+   pension less the contributions relieved, up to the taxable pay, which only
+   contributions relieved at source can raise towards the £3,600 basic amount
+   (ss.190(3), 191(7)).
 4. The charge is the whole payment when total income exceeds £35,000, and
    nothing otherwise (no relevant benefit is entered).
 
@@ -141,7 +142,11 @@ def test_net_pay_contributions_and_only_they_come_off_total_income(template, peo
             person["employee_pension_contributions"]
             + person["personal_pension_contributions"]
         )
-        relieved = under_75 * min(contributions, max(3_600.0, taxable_pay))
+        basic_amount_increase = min(
+            max(0.0, 3_600.0 - taxable_pay),
+            person["personal_pension_contributions"],
+        )
+        relieved = under_75 * min(contributions, taxable_pay + basic_amount_increase)
         adjusted_total_income = max(
             0.0, taxable_pay + person["private_pension_income"] - relieved
         )
