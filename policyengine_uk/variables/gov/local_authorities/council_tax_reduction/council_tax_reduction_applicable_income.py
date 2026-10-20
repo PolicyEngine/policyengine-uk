@@ -1,7 +1,7 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.config import (
-    is_kingston_upon_thames_working_age,
-    is_newham_working_age,
+    is_kingston_upon_thames_area,
+    is_newham_area,
 )
 from policyengine_uk.variables.household.demographic.country import Country
 
@@ -25,10 +25,10 @@ class council_tax_reduction_applicable_income(Variable):
         "injuries disablement benefit, severe disablement allowance and "
         "incapacity benefit count in every scheme. War pensions and Armed "
         "Forces Compensation Scheme payments count, less £10 a week each, "
-        "only under the Kingston upon Thames and Newham working-age schemes: "
-        "Scotland disregards or omits them, and elsewhere in England and "
-        "Wales councils may disregard them beyond the prescribed £10 a week, "
-        "so the model takes the full disregard."
+        "only under the Kingston upon Thames and Newham schemes: Scotland "
+        "disregards or omits them, and elsewhere in England and Wales "
+        "councils may disregard them beyond the prescribed £10 a week, so the "
+        "model takes the full disregard."
     )
     definition_period = YEAR
     unit = GBP
@@ -55,6 +55,8 @@ class council_tax_reduction_applicable_income(Variable):
         "https://www.legislation.gov.uk/ukpga/1992/14/schedule/1A/paragraph/2",
         "https://www.kingston.gov.uk/sites/default/files/2026-03/Council%20Tax%20Reduction%20Scheme%202026%20-%202027.pdf#page=136",
         "https://www.newham.gov.uk/downloads/file/10753/council-tax-reduction-scheme-2026#page=292",
+        "https://www.kingston.gov.uk/sites/default/files/2026-03/Council%20Tax%20Reduction%20Scheme%202026%20-%202027.pdf#page=127",
+        "https://www.newham.gov.uk/downloads/file/10753/council-tax-reduction-scheme-2026#page=273",
     ]
 
     def formula(benunit, period, parameters):
@@ -147,13 +149,15 @@ class council_tax_reduction_applicable_income(Variable):
         # schemes under SSAA 1992 s.134(8)(a). Reg 34(5) does not cover
         # guaranteed income payments, so in Wales that over-disregards them,
         # but afcs does not separate them from war disablement pensions.
-        # Of the English working-age schemes the model runs, Westminster's,
-        # Oxford's and Merton's disregard war pensions in full. Kingston upon
-        # Thames (Sch 8 para 20) and Newham (Sch 8 para 19) disregard £10 a
-        # week of each payment, the reading Pension Credit's identically
-        # worded disregard takes, and Kingston limits the family's total to
-        # £20 a week (Sch 8 para 40). Newham's limit (its para 39) names its
-        # paras 20 and 21, not the war pension para 19, so it does not apply.
+        # Of the councils whose schemes the model reads, Westminster's,
+        # Oxford's and Merton's working-age schemes disregard war pensions in
+        # full. Kingston upon Thames and Newham disregard only £10 a week of
+        # each payment, the reading Pension Credit's identically worded
+        # disregard takes, at working age (Kingston Sch 8 para 20, Newham Sch 8
+        # para 19) and at pension age (each council's Sch 6 para 1). Kingston
+        # limits a working-age family's total to £20 a week (Sch 8 para 40);
+        # Newham's limit (its para 39) names its paras 20 and 21, not the war
+        # pension para 19, and neither pensioner schedule has a limit.
         income_components = [
             "employment_income",
             "self_employment_income",
@@ -188,10 +192,8 @@ class council_tax_reduction_applicable_income(Variable):
         increased_income = income + personal_benefit_income + credits + benefits
 
         local_authority = benunit.household("local_authority", period)
-        kingston = is_kingston_upon_thames_working_age(
-            local_authority, country, pensioner
-        )
-        newham = is_newham_working_age(local_authority, country, pensioner)
+        kingston = is_kingston_upon_thames_area(local_authority, country)
+        newham = is_newham_area(local_authority, country)
         local_authorities = parameters(period).gov.local_authorities
         kingston_test = (
             local_authorities.kingston_upon_thames.council_tax_reduction.means_test
@@ -211,7 +213,7 @@ class council_tax_reduction_applicable_income(Variable):
                 min_(amount, benunit.project(payment_disregard))
             )
         war_pension_disregards = where(
-            kingston,
+            kingston & ~pensioner,
             min_(
                 war_pension_disregards,
                 kingston_test.war_pension_disregard_limit * WEEKS_IN_YEAR,

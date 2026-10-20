@@ -24,10 +24,12 @@
 #   exceed (WSI 2013/3029 reg 34(5); LGFA 1992 Sch 1A para 2(11) and
 #   s.13A(1)(c)). The model takes the full disregard where it cannot see the
 #   council's choice.
-# - Of the English working-age schemes the model runs, Westminster's, Oxford's
-#   and Merton's disregard war pensions in full. Kingston upon Thames (Sch 8
-#   para 20) and Newham (Sch 8 para 19) disregard £10 a week of each payment;
-#   Kingston limits the family's total to £20 a week (Sch 8 para 40).
+# - Of the councils whose schemes the model reads, Westminster's, Oxford's and
+#   Merton's working-age schemes disregard war pensions in full. Kingston upon
+#   Thames and Newham disregard £10 a week of each payment at working age
+#   (Kingston Sch 8 para 20, Newham Sch 8 para 19) and at pension age (each
+#   council's Sch 6 para 1). Kingston limits a working-age family's total to
+#   £20 a week (Sch 8 para 40); neither pensioner schedule has a limit.
 #
 # Weekly rates, 2026-27 (SI 2026/148 Sch 1, restating SSCBA 1992 Sch 4):
 # disablement pension at 100% 233.90, 50% 116.95, 20% 46.78; long-term
@@ -485,7 +487,7 @@
   output:
     council_tax_reduction_applicable_income: 0
 
-- name: The national pensioner scheme takes the full war pension disregard in Kingston upon Thames
+- name: The Kingston upon Thames scheme counts a pensioner's war pension less 10 a week
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -503,6 +505,62 @@
         country: ENGLAND
         region: LONDON
         local_authority: KINGSTON_UPON_THAMES
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_pensioner: true
+    # Sch 6 para 1: 5,000 - 520.
+    council_tax_reduction_applicable_income: 5_000 - 10 * 52
+
+- name: The Kingston upon Thames pensioner schedule has no family limit on war pension disregards
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        afcs_reported: 5_000
+        war_widows_pension_reported: 3_000
+      partner:
+        age: 70
+        afcs_reported: 5_000
+        war_widows_pension_reported: 3_000
+    benunits:
+      benunit:
+        members: [pensioner, partner]
+        would_claim_pc: false
+    households:
+      household:
+        members: [pensioner, partner]
+        country: ENGLAND
+        region: LONDON
+        local_authority: KINGSTON_UPON_THAMES
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_pensioner: true
+    # Four payments, four disregards of 520; Sch 8 para 40 is a working-age
+    # limit: 16,000 - 2,080.
+    council_tax_reduction_applicable_income: 16_000 - 4 * 10 * 52
+
+- name: The national pensioner scheme takes the full war pension disregard outside the councils the model reads
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        afcs_reported: 5_000
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_pc: false
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        region: SOUTH_EAST
+        local_authority: MAIDSTONE
         council_tax: 2_000
         savings: 0
   output:

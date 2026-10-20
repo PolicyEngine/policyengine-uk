@@ -23,9 +23,11 @@ where the model cannot see the council's choice: Scotland disregards or omits
 them (SSI 2012/319 Sch 3 para 1; SSI 2021/249 reg 57(1)), and English and
 Welsh councils may disregard more than the prescribed £10 a week (WSI 2013/3029
 reg 34(5); LGFA 1992 Sch 1A para 2(11) and s.13A(1)(c)). Kingston upon Thames
-(Sch 8 para 20) and Newham (Sch 8 para 19) disregard only £10 a week of each
-payment at working age, and Kingston limits the family's total to £20 a week
-(Sch 8 para 40). Westminster, Merton and Oxford disregard them in full.
+and Newham disregard only £10 a week of each payment, at working age (Kingston
+Sch 8 para 20, Newham Sch 8 para 19) and at pension age (each council's Sch 6
+para 1), and Kingston limits a working-age family's total to £20 a week (Sch 8
+para 40). Westminster's, Merton's and Oxford's working-age schemes disregard
+them in full.
 
 Invariants, in 2026, for single people and couples with no children:
 
@@ -47,10 +49,11 @@ Invariants, in 2026, for single people and couples with no children:
    strictly between nil and the liability, it falls by 20% of the rise in
    income.
 3. War pensions: adding war pensions leaves Council Tax Reduction income
-   unchanged under the general rules, except under the Kingston upon Thames
-   and Newham working-age schemes, where it rises by the payments less £10 a
-   week of each (in Kingston, less at most £20 a week in all). The disregards
-   are written out here from the schemes, not read from the parameters.
+   unchanged under the general rules, except in Kingston upon Thames and
+   Newham, where it rises by the payments less £10 a week of each (for a
+   working-age family in Kingston, less at most £20 a week in all). The
+   disregards are written out here from the schemes, not read from the
+   parameters.
 
 These compare the model's own measures. Invariant 1 relies on both measures
 deducting the family's whole income tax and National Insurance, an existing
@@ -84,6 +87,7 @@ PROPERTY_SETTINGS = settings(
 PENSION_AGE_AREAS = {
     "MAIDSTONE": ("ENGLAND", "SOUTH_EAST"),
     "KINGSTON_UPON_THAMES": ("ENGLAND", "LONDON"),
+    "NEWHAM": ("ENGLAND", "LONDON"),
     "CARDIFF": ("WALES", "WALES"),
     "GLASGOW_CITY": ("SCOTLAND", "SCOTLAND"),
 }
@@ -370,12 +374,13 @@ def war_pensions(draw):
     }
 
 
-def local_war_pension_income(payments, area):
-    """Counted war pensions under Kingston's Sch 8 para 20 and 40 or
-    Newham's Sch 8 para 19, from each adult's payments."""
+def local_war_pension_income(payments, area, pensioner):
+    """Counted war pensions under Kingston's or Newham's scheme (Sch 6 para
+    1 at pension age; Kingston Sch 8 paras 20 and 40 and Newham Sch 8 para 19
+    at working age), from each adult's payments."""
     amounts = [x for person in payments for x in person.values()]
     disregard = sum(min(x, LOCAL_WAR_PENSION_DISREGARD) for x in amounts)
-    if area == "KINGSTON_UPON_THAMES":
+    if area == "KINGSTON_UPON_THAMES" and not pensioner:
         disregard = min(disregard, KINGSTON_DISREGARD_LIMIT)
     return sum(amounts) - disregard
 
@@ -403,8 +408,8 @@ def test_war_pensions_count_only_where_the_scheme_says(data):
     general = (r[base] == 0) & (r[plus] == 0) & (income[base] > 0)
     expected = np.array(
         [
-            local_war_pension_income(pay, fam["area"])
-            if fam["area"] in LOCAL_WAR_PENSION_AREAS and not pensioner[2 * k]
+            local_war_pension_income(pay, fam["area"], pensioner[2 * k])
+            if fam["area"] in LOCAL_WAR_PENSION_AREAS
             else 0.0
             for k, (fam, pay) in enumerate(zip(families, payments))
         ]
