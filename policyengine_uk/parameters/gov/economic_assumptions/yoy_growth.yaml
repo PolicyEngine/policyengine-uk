@@ -5,6 +5,10 @@
 # - 2025-2030: OBR forecast from the latest Economic and Fiscal Outlook
 #   (EFO, March 2026). Values come from the EFO economy supplementary
 #   tables — RPI/CPI/CPIH from Table 1.7, average earnings from Table 1.6.
+#   Exceptions are documented on each series: mortgage_interest 2030 is
+#   carried over from the November 2025 EFO, consumer_price_index_ahc is
+#   derived rather than published by the OBR, and social_rent forecasts
+#   apply the England social rent cap.
 # - 2031-2073: OBR long-run equilibrium assumptions, taken from the OBR
 #   Fiscal Risks and Sustainability report and the long-run RPI-CPI wedge
 #   methodology. Steady-state values:
@@ -755,6 +759,10 @@ obr:
       2027-01-01: 0.1040
       2028-01-01: 0.0476
       2029-01-01: 0.0468
+      # 2030: the OBR November 2025 EFO calendar-2030 forecast (5.535%),
+      # carried over. The March 2026 EFO stops forecasting mortgage interest
+      # payments after 2030 Q1 (Table 1.7 note), so it has no calendar-2030
+      # figure; its 2030 Q1 rate is 5.40% and its 2029-30 rate 5.05%.
       2030-01-01: 0.0553
     metadata:
       unit: /1
@@ -762,13 +770,18 @@ obr:
       reference:
         - title: OBR EFO March 2026 (detailed forecast tables, economy, Table 1.7)
           href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
+        - title: OBR EFO November 2025 (detailed forecast tables, economy, Table 1.7), 2030 value only
+          href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
 
   social_rent:
     description: >
       Average social rent year-on-year growth across the stock. Historical
       values use observed Regulator of Social Housing stock-average general
       needs social rent growth in England. Forecast values use the England
-      social rent policy cap with no additional composition multiplier.
+      social rent policy cap with no additional composition multiplier: the
+      April increase in year Y is CPI inflation in the previous September
+      plus 1 percentage point. The OBR does not publish a social rent
+      forecast.
     values:
       # Observed RSH stock-average growth (2022-2025)
       2022-01-01: 0.016
@@ -776,8 +789,15 @@ obr:
       2024-01-01: 0.072
       2025-01-01: 0.080
       # Forecast (2026-2030): policy cap with composition multiplier set to 1.
+      # 2026: ONS September 2025 CPI 3.8% + 1pp.
       2026-01-01: 0.048
+      # 2027: placeholder. The cap needs September 2026 CPI (ONS, due
+      # 21 October 2026) + 1pp; 3.3% is calendar-2026 CPI (2.3%) + 1pp.
+      # The OBR March 2026 forecast of September 2026 CPI is 2.1%, which
+      # would give 3.1%, but August 2026 CPI outturn was already 3.1%.
       2027-01-01: 0.033
+      # 2028-2030: OBR March 2026 forecasts of September 2027-2029 CPI
+      # (2.0%-2.1%, cpi_september statutory uprating input) + 1pp, to 0.1pp.
       2028-01-01: 0.030
       2029-01-01: 0.030
       2030-01-01: 0.030
@@ -795,8 +815,9 @@ obr:
           href: https://www.gov.uk/government/statistics/registered-provider-social-housing-stock-and-rents-in-england-2024-to-2025
         - title: Policy statement on rents for social housing
           href: https://www.gov.uk/government/publications/direction-on-the-rent-standard-2026/policy-statement-on-rents-for-social-housing
-        - title: OBR EFO March 2026 (detailed forecast tables, economy, Table 1.7)
-          href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
+        - title: ONS D7G7, CPI annual rate, all items (September CPI input to the cap)
+          href: https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/d7g7/mm23
+
   rent:
     description: Rent year-on-year growth, private and social (ONS series D7GQ).
     values:
