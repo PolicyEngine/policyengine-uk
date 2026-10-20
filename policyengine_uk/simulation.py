@@ -30,7 +30,7 @@ from policyengine_uk.data.dataset_schema import (
     UKMultiYearDataset,
     UKSingleYearDataset,
 )
-from policyengine_uk.utils.scenario import Scenario
+from policyengine_uk.utils.scenario import ConstructionReformState, Scenario
 from policyengine_uk.data.economic_assumptions import (
     extend_single_year_dataset,
     reset_growthfactor_uprating,
@@ -51,6 +51,7 @@ from policyengine_uk.data.capital_gains_projection import (
     capital_gains_application_metadata,
 )
 from policyengine_uk.utils.dependencies import get_variable_dependencies
+from policyengine_uk.utils.input_dataframe_export import input_dataframe
 from policyengine_uk.utils.supplied_inputs import (
     SUPPLIED_INPUT_VARIABLES,
     copy_model_values,
@@ -104,6 +105,46 @@ def _canonical_parameter_paths(changes: dict) -> dict:
 
 
 from microdf import MicroDataFrame
+
+
+class _InputKeyLog(set):
+    """A simulation's record of its inputs while Simulation.apply_reform runs.
+
+    policyengine-core records each input in the simulation's
+    ``_user_input_keys`` as (variable, branch, period). ``Holder._set`` adds
+    the key once it has stored the value, again when it replaces one, and on
+    every route: ``Simulation.set_input``, ``Holder.set_input``, a
+    ``set_input`` helper, another thread. A value core does not store adds
+    no key: one ``Simulation.set_input`` gets for a period after the
+    variable's end, one for a neutralized variable, or one for a sub-period
+    that a ``set_input`` helper skips because it already holds an input.
+    This set also adds each key to every set in ``logs``: one for each
+    reform being applied to the simulation, the innermost last.
+
+    A copy or pickle of it is a plain set, so a simulation deep-copied or
+    pickled while a reform runs logs nothing. A shallow copy of the
+    simulation shares its record, as it shares its holders.
+    """
+
+    def __init__(self, keys=(), logs: list = ()):
+        super().__init__(keys)
+        self.logs = logs
+
+    def add(self, key) -> None:
+        super().add(key)
+        for log in self.logs:
+            log.add(key)
+
+    def __reduce__(self):
+        return set, (list(self),)
+
+
+# The logs (see _InputKeyLog) of the reforms Simulation.apply_reform is
+# applying, by the id of the simulation it applies them to, while it does.
+# Kept outside the simulation, because core's clone copies its __dict__:
+# a clone or branch made while a reform runs must not log for it.
+_reform_logs: Dict[int, list] = {}
+
 
 # Cache for fully-loaded, uprated, enum-pre-encoded multi-year datasets keyed
 # by URL and, when selected, the CGT projection fingerprint and runtime.
@@ -234,6 +275,7 @@ class Simulation(CoreSimulation):
             capital_gains_projection: Optional common baseline gains projection,
                 shared with the reform's baseline. Omit to retain GDP per capita.
         """
+        self._defer_uc_health_warning = True
         self._cgt_input_provenance = {}
         self._cgt_defaulted_periods = set()
         self._cgt_calculation_depth = 0
@@ -253,6 +295,11 @@ class Simulation(CoreSimulation):
 
         if reform is not None:
             scenario = Scenario.from_reform(reform)
+        # Only a construction-time reference: preserve the existing reading
+        # of this scenario's single-day leftovers while rejecting unreadable
+        # overrides from a user modifier's separate from_reform call.
+        self._building_dated_reforms = scenario.dated_reforms if scenario else None
+        self._construction_reform_state = None
 
         self.branch_name = "default"
         self.invalidated_caches = set()
@@ -290,8 +337,10 @@ class Simulation(CoreSimulation):
         )
         if before_data_load is not None:
             self.apply_scenario_parameters(before_data_load)
+            self._construction_reform_state = ConstructionReformState(self)
             if before_data_load.simulation_modifier is not None:
                 before_data_load.simulation_modifier(self)
+            self._construction_reform_state.observe_user_edits(self)
         elif after_parameters_before_data:
             self.apply_scenario_parameters(after_data_load)
         self._refresh_capital_gains_projection()
@@ -320,6 +369,8 @@ class Simulation(CoreSimulation):
         # (including single-day reform-dict keys) leave the data as built.
         if after_data_load is not None and not after_parameters_before_data:
             self.apply_scenario_parameters(after_data_load)
+        if self._construction_reform_state is None and self._building_dated_reforms:
+            self._construction_reform_state = ConstructionReformState(self)
 
         # Universal Credit reform (July 2025). Needs closer integration in the baseline,
         # but adding here for ease of toggling on/off via the 'active' parameter.
@@ -331,14 +382,12 @@ class Simulation(CoreSimulation):
 
         self.tax_benefit_system.reset_parameter_caches()
 
-        # Core applies a reform by calling its apply() with the tax-benefit
-        # system as self, so reforms that change the data (such as
-        # disable_simulated_benefits) reach the simulation through
-        # tax_benefit_system.simulation. Core's Simulation.__init__ sets it;
-        # this __init__ replaces core's, so it sets it too.
+        # Apply structural reforms based on parameters. Core applies a reform
+        # to the tax-benefit system, so reforms that set inputs (such as
+        # disable_simulated_benefits and adjust_budgets) reach the simulation
+        # through it. Core's own constructor sets this link; this one does not
+        # call it, so set it here (apply_reform also sets it for each reform).
         self.tax_benefit_system.simulation = self
-
-        # Apply structural reforms based on parameters
         structural_reform = create_structural_reforms_from_parameters(
             self.tax_benefit_system.parameters,
             period_(self.default_input_period),
@@ -369,15 +418,26 @@ class Simulation(CoreSimulation):
         else:
             self.baseline = self.clone()
         self.baseline._cgt_warning_enabled = False
+        self.baseline._defer_uc_health_warning = False
+        self.baseline._building_dated_reforms = None
+        self.baseline._construction_reform_state = None
 
         self.calculated_periods = []
 
         if after_data_load is not None:
+            if self._construction_reform_state is not None:
+                self._construction_reform_state.refresh_framework(self)
             if after_data_load.simulation_modifier is not None:
                 after_data_load.simulation_modifier(self)
         self._refresh_capital_gains_projection()
         self._capture_cgt_supplied_inputs()
         self._cgt_warning_enabled = True
+        from policyengine_uk.scenarios.uc_reform import warn_shadowed_lcwra_reform
+
+        self._defer_uc_health_warning = False
+        self._building_dated_reforms = None
+        self._construction_reform_state = None
+        warn_shadowed_lcwra_reform(self)
 
     def _refresh_capital_gains_projection(self) -> None:
         projection = self.tax_benefit_system.capital_gains_projection
@@ -393,8 +453,85 @@ class Simulation(CoreSimulation):
 
     def apply_reform(self, reform: dict | tuple | Type[Reform]) -> None:
         """Apply a runtime reform while keeping generated CGT assumptions coherent."""
-        super().apply_reform(reform)
-        self._refresh_capital_gains_projection()
+        # Reforms that set inputs (disable_simulated_benefits, adjust_budgets)
+        # reach the simulation through its tax-benefit system's link. A clone
+        # or branch may share its parent's system, so link the system to this
+        # simulation while the reform is applied, then restore the link.
+        system = self.tax_benefit_system
+        linked = getattr(system, "simulation", None)
+        system.simulation = self
+        # Log the inputs the reform stores (see _InputKeyLog and the
+        # _user_input_keys property). Within another reform applied to this
+        # simulation (a tuple's parts, or a reform that applies one), log
+        # them for that one too.
+        logs = _reform_logs.setdefault(id(self), [])
+        stored = set()
+        logs.append(stored)
+        self._user_input_keys = getattr(self, "_user_input_keys", None) or set()
+        try:
+            super().apply_reform(reform)
+            self._refresh_capital_gains_projection()
+        finally:
+            logs.pop()
+            if not logs:
+                del _reform_logs[id(self)]
+            # A plain set again, unless an enclosing reform is still logging.
+            self._user_input_keys = set(self._user_input_keys)
+            if linked is not None:
+                system.simulation = linked
+        # input_variables is taken when the simulation is built.
+        # reset_calculations deletes the values of every variable it does not
+        # name (as core's derivative did before policyengine-core 3.33.0, from
+        # which it keeps every input), and the marginal rate formulas those of
+        # every such variable that has a formula. A reform applied afterwards
+        # (a Reform class passed as reform=, or one applied to a clone or
+        # branch) can store inputs: new ones, or ones that replace an input
+        # set since the build. Name every variable with an input the reform
+        # stored that this simulation still holds, under a branch name it
+        # reads and a reset deletes, or a reset would delete what the reform
+        # stored and recalculate the formula. input_variables names whole
+        # variables, so a reset then keeps every input of the variable, any
+        # set since the build included. A reform that raises names nothing it
+        # stored itself (a reform it applied first has named its own). Assign
+        # a new list: a clone or branch shares its parent's.
+        input_variables = getattr(self, "input_variables", None)
+        if input_variables is not None:
+            branches = set(self._get_visible_branch_names())
+            supplied = {
+                name
+                for name, branch, _ in stored & self._user_input_keys
+                if branch in branches
+            }
+            added = sorted(supplied - set(input_variables))
+            if added:
+                self.input_variables = list(input_variables) + added
+
+    @property
+    def _user_input_keys(self) -> set:
+        # policyengine-core's record of the simulation's inputs, kept in
+        # __dict__ as core keeps it. While apply_reform applies a reform to
+        # this simulation, a set assigned here becomes a log (see
+        # _InputKeyLog), so a record core replaces mid-reform still logs: a
+        # branch's, when a reform applied to its parent rebuilds it, or one
+        # rebuilt when the system is rebound.
+        try:
+            return self.__dict__["_user_input_keys"]
+        except KeyError:
+            raise AttributeError("_user_input_keys") from None
+
+    @_user_input_keys.setter
+    def _user_input_keys(self, keys) -> None:
+        logs = _reform_logs.get(id(self))
+        if logs and keys is not None:
+            keys = _InputKeyLog(keys, logs)
+        self.__dict__["_user_input_keys"] = keys
+
+    @_user_input_keys.deleter
+    def _user_input_keys(self) -> None:
+        try:
+            del self.__dict__["_user_input_keys"]
+        except KeyError:
+            raise AttributeError("_user_input_keys") from None
 
     def delete_arrays(self, variable: str, period: Period = None) -> None:
         super().delete_arrays(variable, period)
@@ -438,6 +575,9 @@ class Simulation(CoreSimulation):
 
     def clone(self, *args, **kwargs) -> "Simulation":
         clone = super().clone(*args, **kwargs)
+        clone._construction_reform_state = copy.deepcopy(
+            getattr(self, "_construction_reform_state", None)
+        )
         copy_model_values(self, clone)
         clone._cgt_input_provenance = copy.deepcopy(
             getattr(self, "_cgt_input_provenance", {})
@@ -912,7 +1052,9 @@ class Simulation(CoreSimulation):
         """Export the simulation's inputs as a DataFrame that
         ``Simulation(dataset=...)`` loads back.
 
-        policyengine-core exports each input for the periods it was set for.
+        Export supplied values, including overrides of variables with formulas,
+        for the periods they were set for. Calculated caches and values stored
+        by the model itself are not supplied inputs.
         The identifiers are also given for every whole year a column names,
         where a simulation built from the frame holds them, so that the frame
         loads back to a simulation that exports the same frame. See
@@ -922,12 +1064,12 @@ class Simulation(CoreSimulation):
             include_computed_variables: If True, export every stored value,
                 calculated ones included, as policyengine-core does.
         """
-        return with_identifiers_in_each_year(
-            super().to_input_dataframe(
-                include_computed_variables=include_computed_variables
-            ),
-            self.tax_benefit_system,
+        frame = (
+            super().to_input_dataframe(include_computed_variables=True)
+            if include_computed_variables
+            else input_dataframe(self)
         )
+        return with_identifiers_in_each_year(frame, self.tax_benefit_system)
 
     def build_from_dataset(self, dataset: Dataset) -> None:
         """Build simulation from a Dataset object.
@@ -959,12 +1101,30 @@ class Simulation(CoreSimulation):
             )
         )
 
+        # Populations use sorted group IDs; arrays in a Core dataset follow
+        # the order of that period's supplied identifier array instead.
+        group_orders = {
+            entity: {
+                period: np.argsort(ids) for period, ids in data[f"{entity}_id"].items()
+            }
+            for entity in ("benunit", "household")
+        }
+
         # Load all variable values
         for variable in data:
             for time_period in data[variable]:
                 if variable not in self.tax_benefit_system.variables:
                     continue
-                self.set_input(variable, time_period, data[variable][time_period])
+                values = data[variable][time_period]
+                entity = self.tax_benefit_system.variables[variable].entity.key
+                # Leave scalars for Core to normalize and validate against
+                # the population size; only arrays have a group row order.
+                if entity in group_orders and np.ndim(values) > 0:
+                    order = group_orders[entity].get(
+                        time_period, group_orders[entity][first_time_period]
+                    )
+                    values = np.asarray(values)[order]
+                self.set_input(variable, time_period, values)
 
         # Now convert to the new UKSingleYearDataset
         self.input_variables = self.get_known_variables()
@@ -1000,6 +1160,13 @@ class Simulation(CoreSimulation):
         """
         if self.disable_economic_assumptions:
             dataset = dataset.copy()
+            # The reset copies base-year values positionally. Align only the
+            # copied group tables first when their row order differs by year.
+            for year in dataset.years:
+                for entity in ("benunit", "household"):
+                    table = getattr(dataset[year], entity)
+                    order = np.argsort(table[f"{entity}_id"].to_numpy())
+                    setattr(dataset[year], entity, table.iloc[order])
             reset_growthfactor_uprating(dataset)
 
         # Ensure enum columns are encoded and _enum_columns is populated so
@@ -1018,7 +1185,11 @@ class Simulation(CoreSimulation):
 
         # Load variable values for all years
         for year in dataset.years:
-            for table in dataset[year].tables:
+            for entity, table in zip(dataset[year].table_names, dataset[year].tables):
+                if entity in ("benunit", "household"):
+                    # Align each year's group inputs to the sorted population
+                    # without reordering the caller's table or the people.
+                    table = table.iloc[np.argsort(table[f"{entity}_id"].to_numpy())]
                 for variable in table.columns:
                     if variable not in self.tax_benefit_system.variables:
                         continue

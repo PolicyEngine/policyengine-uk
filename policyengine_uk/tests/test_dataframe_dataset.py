@@ -59,11 +59,6 @@ that may stand for more than one whole number
 group's own integer identifier is given beside it; and members of a group that
 give different values for one of its variables.
 
-Limit of the default export, which is not the loader's: ``to_input_dataframe()``
-leaves out values a dataset supplies for a variable that has a formula, such
-as ``state_pension_reported``. ``to_input_dataframe(include_computed_variables=
-True)`` exports them, and must be taken before the simulation calculates
-anything, since it also exports every calculated value.
 """
 
 import io

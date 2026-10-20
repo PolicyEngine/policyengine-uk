@@ -388,3 +388,56 @@
     is_entitled_to_carer_benefit:
     - false
     - false
+
+- name: Post2444 pension-age Class4 exemption removes CSP when natural net earnings exceed cap
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    self_employment_income: 15000
+    personal_pension_contributions: 7700
+    care_hours: 40
+    country: SCOTLAND
+  output:
+    carers_allowance_earnings: 10664
+    carer_support_payment_pre_overlap: 0
+
+- name: Post2444 SPA-reaching year keeps Class4 deduction and CSP
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 66
+    self_employment_income: 15000
+    personal_pension_contributions: 7700
+    care_hours: 40
+    country: SCOTLAND
+    months_since_last_birthday: 4
+  output:
+    carers_allowance_earnings: 10518.2
+    carer_support_payment_pre_overlap: 4495.4
+
+- name: Post2444 pension-age historical Class2 earnings have no age-exempt deduction
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    self_employment_income: 7000
+    personal_pension_contributions: 1400
+    care_hours: 40
+    country: SCOTLAND
+  output:
+    carers_allowance_earnings: 6300
+    carer_support_payment_pre_overlap: 0
+
+- name: Post2444 working-age historical Class2 deduction control
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    self_employment_income: 7000
+    personal_pension_contributions: 1400
+    care_hours: 40
+    country: SCOTLAND
+  output:
+    carers_allowance_earnings: 6146.6
+    carer_support_payment_pre_overlap: 0

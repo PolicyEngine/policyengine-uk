@@ -60,3 +60,18 @@ differs from an overlapping benefit reducing an otherwise entitled person's
 payment to zero. The Scottish Carer Supplement is paid only when CSP is
 payable. Caring hours and reported caring can still qualify a person for the
 Universal Credit carer element, which does not apply this earnings limit.
+
+## Integration dependencies
+
+The shared Carer’s Allowance earnings reader retains the age-conditioned Class 2
+and Class 4 deductions from merged [PR #2444](https://github.com/PolicyEngine/policyengine-uk/pull/2444).
+Natural trading-income cases cover exemption after State Pension age and Class 4
+liability in the tax year that pensionable age is reached. The existing annual
+approximation remains. [PR #2474](https://github.com/PolicyEngine/policyengine-uk/pull/2474)
+is the separate minimum-age change and must retain this earnings condition when
+stacked or integrated.
+
+The open [PR #2518](https://github.com/PolicyEngine/policyengine-uk/pull/2518)
+changes a shared Carer’s Allowance earnings parameter. Once this reader is shared
+with CSP, that parameter’s effects on CSP require coordination and validation;
+this page does not assume the two benefits remain independent of that parameter.
