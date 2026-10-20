@@ -1,4 +1,8 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.child_benefit import (
+    child_benefit_charge_percentage,
+    round_down_to_pounds,
+)
 
 
 class CB_HITC(Variable):
@@ -15,10 +19,12 @@ class CB_HITC(Variable):
         hitc = parameters(period).gov.hmrc.income_tax.charges.CB_HITC
         personal_income = person("adjusted_net_income", period)
         income = person.benunit.sum(personal_income)
-        percentage = max_(income - hitc.phase_out_start, 0) / (
-            hitc.phase_out_end - hitc.phase_out_start
+        # The same s. 681C(3) rounding as the baseline charge, on the
+        # household's combined income.
+        percentage = child_benefit_charge_percentage(
+            income, hitc.phase_out_start, hitc.phase_out_end
         )
-        return min_(percentage, 1) * CB_received
+        return round_down_to_pounds(percentage * round_down_to_pounds(CB_received))
 
 
 class make_cb_hitc_household_based(Variable):
