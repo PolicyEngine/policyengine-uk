@@ -260,12 +260,12 @@ hand, run it with `--gaps-only`.
 
 ### Scenarios
 
-A macro scenario applied before the data load that edits calendar-year
-growth moves the forecast inputs one for one, and so the triple lock.
-Calendar-year series are keyed to 1 January, so key the change
-`year:YYYY-01-01:1`: a bare year names the fiscal year from 6 April, which
-lands in the next calendar-year value and so moves the following year's
-inputs.
+A macro scenario that edits calendar-year growth moves the forecast inputs
+one for one, and so the triple lock. Calendar-year series are keyed to
+1 January, and a bare year (or `year:YYYY-01-01:1`) names that calendar
+year: 5% earnings growth in 2027 sets the May to July 2027 input and so the
+April 2028 rise. Apply it before the data load to project the data's
+incomes with it too.
 
 ```python
 from policyengine_uk.model_api import Scenario
@@ -273,7 +273,7 @@ from policyengine_uk.model_api import Scenario
 scenario = Scenario(
     parameter_changes={
         "gov.economic_assumptions.yoy_growth.obr.average_earnings": {
-            "year:2027-01-01:1": 0.05,
+            "2027": 0.05,
         },
     },
     applied_before_data_load=True,
@@ -300,10 +300,12 @@ Scenario(
 )
 ```
 
-These changes, and the reform levers below, must go through
-`Scenario(parameter_changes=...)`. The rates are built when parameters are
-processed, and a `reform=` dictionary edits parameters after that, so it
-changes the parameter but not the uprating.
+These changes, and the reform levers below, work through
+`Scenario(parameter_changes=...)` or a `reform=` dictionary alike: both are
+written onto the parameters before the rates are built. A rate can also be
+set directly, as `gov.economic_assumptions.yoy_growth.triple_lock` or the
+statutory override `triple_lock/outturn.yaml`; either uprates the pension
+from that April.
 
 ### Reform levers
 

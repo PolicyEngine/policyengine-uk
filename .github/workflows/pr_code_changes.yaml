@@ -1,29 +1,85 @@
 # Workflow that runs on code changes to a pull request.
+#
+# It runs on every pull request to main, with no path filter, so its checks,
+# "Test / Result" above all, report on every pull request and a branch rule
+# can require them: GitHub leaves a required check pending forever when a
+# path filter skips its workflow, and a second workflow on the other paths
+# cannot stand in, because a pull request that touches both kinds of path
+# runs both. The Changes job decides instead. When no code changed, the jobs
+# below are skipped, which a required check counts as passing, and the test
+# suite reports Result as a pass without running.
+#
+# It also runs for merge queue groups (merge_group): with a merge queue on
+# main, each pull request is tested again merged onto the latest main, with
+# any pull requests queued ahead of it, and main moves only to a commit that
+# passed. Each pull request was green on its own while #2251 and #2270
+# together broke main on 11 October 2026 (7343f948).
 
 name: Code changes
 on:
   pull_request:
     branches:
       - main
-
-    paths:
-      - policyengine_uk/**
-      - tests/**
-      - .github/**
-      - pyproject.toml
-      - uv.lock
+  merge_group:
   workflow_dispatch:
 
 # A new push to a pull request supersedes the run on its previous head, so
-# cancel that run instead of letting it hold runners. Manual dispatches are
-# grouped by ref and never cancelled.
+# cancel that run instead of letting it hold runners. Merge groups and manual
+# dispatches are grouped by ref (each merge group has its own) and never
+# cancelled.
 concurrency:
   group: pr-code-changes-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  Changes:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 5
+    outputs:
+      code: ${{ steps.diff.outputs.code }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          # The pull request's merge commit and its first parent, the base.
+          fetch-depth: 2
+      - name: Did the pull request change code?
+        id: diff
+        env:
+          EVENT: ${{ github.event_name }}
+          # The paths that make a change "code": the same list as the push
+          # filter in code_changes.yaml (a test keeps them equal).
+          CODE_PATHS: |
+            policyengine_uk/**
+            tests/**
+            .github/**
+            pyproject.toml
+            uv.lock
+            Makefile
+            conftest.py
+            .gitignore
+            README.md
+        run: |
+          set -euo pipefail
+          # Only a pull request can skip its tests. A merge queue group
+          # always runs them: main moves to the group's commit, and its
+          # base_sha can be the group queued ahead of it rather than main,
+          # so a diff against it could call a code change "no code".
+          if [ "$EVENT" != pull_request ]; then
+            echo "code=true" | tee -a "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # The merge commit's first parent is the base branch.
+          base=HEAD^1
+          # NUL-separated and unquoted, with a rename listed as its old and
+          # new paths, so a file moved out of policyengine_uk/ still counts.
+          git -c core.quotePath=false diff --name-only --no-renames -z "$base" HEAD \
+            > "$RUNNER_TEMP/changed.txt"
+          python3 .github/changed_code.py "$RUNNER_TEMP/changed.txt" | tee -a "$GITHUB_OUTPUT"
   Python-Compat:
     name: Install + smoke-import (py${{ matrix.python-version }})
+    needs: Changes
+    if: needs.Changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
@@ -43,6 +99,10 @@ jobs:
       - name: Smoke-import
         run: python -c "import policyengine_uk; print('import OK')"
   Lint:
+    # On every pull request, whatever it changes: ruff formats and checks
+    # notebooks under docs/ and scripts/ too, so a documentation-only change
+    # can break Lint for every later pull request (#1696 landed a notebook
+    # that failed the format check; #1743 fixed it).
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -51,163 +111,75 @@ jobs:
           uses: astral-sh/setup-uv@v8.1.0
         - name: Check formatting
           run: uvx ruff format --check .
-  # The tests run as four jobs: the YAML policy tests, and the Python tests
-  # split over three runners. As one job they took 59 minutes on 10 October
-  # 2026 (run 38075384588: 2.6 minutes of YAML tests, then 55.8 minutes of
-  # pytest on four workers), and runs were cancelled at a 60-minute limit
-  # (issues #2099 and #2257).
-  Test-YAML:
-      name: Test (YAML)
-      # Linux arm64 keeps the CPU architecture of the macOS runners this job
-      # used to run on. GitHub-hosted macOS runners are scarce, so PR runs
-      # queued for hours; the parameter tree and every test result are
-      # identical on both.
-      runs-on: ubuntu-24.04-arm
-      # About 4 minutes on 10 October (run 38085920460).
-      timeout-minutes: 30
-      permissions:
-        contents: "read"
-        id-token: "write"
-      steps:
-          - name: Checkout repo
-            uses: actions/checkout@v6
-          - name: Install uv
-            uses: astral-sh/setup-uv@v8.1.0
-
-          - name: Set up Python
-            uses: actions/setup-python@v6
-            with:
-                python-version: '3.13'
-          - uses: "google-github-actions/auth@v3"
-            with:
-              workload_identity_provider: "projects/322898545428/locations/global/workloadIdentityPools/policyengine-research-id-pool/providers/prod-github-provider"
-              service_account: "policyengine-research@policyengine-research.iam.gserviceaccount.com"
-
-          - name: Install package
-            run: uv pip install -e .[dev] --system
-          - name: Install policyengine
-            run: uv pip install policyengine --system
-          - name: UV sync
-            run: uv sync --extra dev
-          - name: Run YAML tests
-            run: make test-yaml
-          - name: List the Python tests
-            # Every Python test, collected without --shard. The Test job
-            # checks that the shards below ran each of these exactly once.
-            run: |
-              # Only export token if non-empty (avoids 'Bearer ' error for Dependabot PRs)
-              if [ -n "$HF_TOKEN_VALUE" ]; then
-                export HUGGING_FACE_TOKEN="$HF_TOKEN_VALUE"
-              fi
-              pytest policyengine_uk/tests --collect-only -q -p no:cacheprovider > collected.txt
-              tail -n 1 collected.txt
-            env:
-              HF_TOKEN_VALUE: ${{ secrets.HUGGING_FACE_TOKEN }}
-          - name: Upload the list of Python tests
-            uses: actions/upload-artifact@v7
-            with:
-              name: test-collected
-              path: collected.txt
-              if-no-files-found: error
-              overwrite: true
-              retention-days: 7
-          - name: Test documentation builds
-            run: make documentation
-  Test-Python:
-      # Shard K of N runs the tests whose node id hashes to K (--shard in
-      # policyengine_uk/tests/conftest.py), so each test is in exactly one
-      # shard. N is the number of jobs this matrix makes: to add a shard, add
-      # a number to the list.
-      name: Test (Python ${{ matrix.shard }}/${{ strategy.job-total }})
-      runs-on: ubuntu-24.04-arm
-      # The shards took 15, 20 and 15 minutes on 10 October (run
-      # 38085920460). 60 minutes leaves room for a slow runner and still
-      # stops a hung shard.
-      timeout-minutes: 60
-      strategy:
-        fail-fast: false
-        matrix:
-          shard: [1, 2, 3]
-      permissions:
-        contents: "read"
-        id-token: "write"
-      steps:
-          - name: Checkout repo
-            uses: actions/checkout@v6
-          - name: Install uv
-            uses: astral-sh/setup-uv@v8.1.0
-
-          - name: Set up Python
-            uses: actions/setup-python@v6
-            with:
-                python-version: '3.13'
-          - uses: "google-github-actions/auth@v3"
-            with:
-              workload_identity_provider: "projects/322898545428/locations/global/workloadIdentityPools/policyengine-research-id-pool/providers/prod-github-provider"
-              service_account: "policyengine-research@policyengine-research.iam.gserviceaccount.com"
-
-          - name: Install package
-            run: uv pip install -e .[dev] --system
-          - name: Install policyengine
-            run: uv pip install policyengine --system
-          - name: UV sync
-            run: uv sync --extra dev
-          - name: Run tests with coverage
-            run: |
-              # Only export token if non-empty (avoids 'Bearer ' error for Dependabot PRs)
-              if [ -n "$HF_TOKEN_VALUE" ]; then
-                export HUGGING_FACE_TOKEN="$HF_TOKEN_VALUE"
-              fi
-              # Four pytest-xdist workers, one per core; together they peak at
-              # about 9 GB of the runner's 16 GB.
-              make test-python PYTEST_ARGS="-n 4 --dist worksteal --shard ${{ matrix.shard }}/${{ strategy.job-total }} --junitxml=junit-${{ matrix.shard }}.xml"
-            env:
-              HF_TOKEN_VALUE: ${{ secrets.HUGGING_FACE_TOKEN }}
-              # Measure coverage with sys.monitoring instead of the C trace
-              # function: the same lines are reported, at less cost per line.
-              COVERAGE_CORE: sysmon
-          - name: Upload the test results
-            if: ${{ !cancelled() }}
-            uses: actions/upload-artifact@v7
-            with:
-              name: test-junit-${{ matrix.shard }}
-              path: junit-${{ matrix.shard }}.xml
-              if-no-files-found: error
-              overwrite: true
-              retention-days: 7
-          - name: Upload coverage to Codecov
-            uses: codecov/codecov-action@v6
-            with:
-              files: ./coverage.xml
-              fail_ci_if_error: false
-              verbose: true
+        - name: Lint
+          # The ruff rules pyproject.toml selects, then two pyflakes rules it
+          # ignores, checked in the package: F811, a definition that a later
+          # one of the same name silently replaces (two PRs that each add a
+          # Simulation.set_input merge cleanly, and the second wins; uk hub
+          # notice 16), and F821, an undefined name. Neither has a finding
+          # in the package today.
+          run: |
+            uvx ruff check .
+            uvx ruff check --select F811,F821 policyengine_uk
+        - name: No agent working notes at the repository root
+          # Agent jobs keep their working notes at the root of their
+          # worktree, and #2376's REPORT.md and PROGRESS.md reached main by
+          # mistake on 12 October 2026. Their evidence belongs on the pull
+          # request. The check is in Lint because Lint runs on every pull
+          # request: these files are not code paths, so a pull request that
+          # adds only them skips Test. It runs even when ruff failed, so one
+          # run reports both. An explicit bash shell adds pipefail, so a git
+          # failure fails the step instead of passing it.
+          if: ${{ !cancelled() }}
+          shell: bash
+          run: |
+            notes=$(git ls-files -- ':(top,icase)REPORT.md' ':(top,icase)PROGRESS.md' \
+              ':(top,icase)HANDOFF.md' ':(top,icase)handoffs.jsonl' | tr '\n' ' ')
+            if [ -n "$notes" ]; then
+              echo "::error::Agent working notes at the repository root: ${notes}- post their evidence on the pull request and remove them."
+              exit 1
+            fi
+  Docs:
+    # The documentation, built against a pull request's code changes. A
+    # pull request that changes only docs/ builds it in pr_docs_changes.yaml.
+    name: Documentation build
+    needs: Changes
+    if: needs.Changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.1.0
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - name: Install package
+        run: uv pip install -e .[dev] --system
+      - name: Install policyengine
+        run: uv pip install policyengine --system
+      - name: Test documentation builds
+        run: make documentation
+  # The YAML tests, the Python tests on four runners, and the check that
+  # every test ran once and passed, in the locked environment. As one job
+  # they took 59 minutes on 10 October 2026 (run 38075384588), and runs were
+  # cancelled at a 60-minute limit (issues #2099 and #2257). The release
+  # workflow runs the same suite on the wheel it publishes. Require
+  # "Test / Result".
   Test:
-      # One result for the whole suite. It fails if any test job failed, or
-      # if the shards did not run every collected Python test exactly once.
-      needs: [Test-YAML, Test-Python]
-      if: ${{ !cancelled() }}
-      # The shards' runners, not ubuntu-latest: on 10 October this 5-second
-      # job waited 32 minutes for an ubuntu-latest runner after the shards
-      # had finished (run 38085920460).
-      runs-on: ubuntu-24.04-arm
-      timeout-minutes: 10
-      steps:
-          - name: Check that every test job passed
-            run: |
-              echo "YAML: ${{ needs.Test-YAML.result }}; Python: ${{ needs.Test-Python.result }}"
-              test "${{ needs.Test-YAML.result }}" = success
-              test "${{ needs.Test-Python.result }}" = success
-          - name: Checkout repo
-            if: ${{ !cancelled() }}
-            uses: actions/checkout@v6
-          - name: Download the test lists and results
-            if: ${{ !cancelled() }}
-            uses: actions/download-artifact@v8
-            with:
-              pattern: test-*
-              merge-multiple: true
-          - name: Check that every Python test ran in exactly one shard
-            # Runs even when a test job failed, so its report names the
-            # failed tests.
-            if: ${{ !cancelled() }}
-            run: python3 .github/check_test_shards.py --collected collected.txt --junit junit-*.xml
+    needs: Changes
+    uses: ./.github/workflows/test-suite.yaml
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      # Skip only on an explicit "false", so a missing output runs the tests.
+      skip: ${{ needs.Changes.outputs.code == 'false' }}
+      # A merge group decides what main becomes: it must run the
+      # microsimulation tests, never accept them as skipped for want of
+      # the dataset credentials.
+      require-data: ${{ github.event_name == 'merge_group' }}
+    secrets:
+      HUGGING_FACE_TOKEN: ${{ secrets.HUGGING_FACE_TOKEN }}

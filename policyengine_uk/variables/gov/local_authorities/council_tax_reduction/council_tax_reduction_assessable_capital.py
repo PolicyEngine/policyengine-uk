@@ -31,10 +31,14 @@ class council_tax_reduction_assessable_capital(Variable):
     ]
 
     def formula(benunit, period, parameters):
-        in_receipt_of_guarantee_credit = benunit(
+        # The benefit unit's Pension Credit is its claimant's and partner's, not
+        # a household head's who applies alone
+        # (council_tax_reduction_head_applies_alone).
+        applicant_family = ~benunit("council_tax_reduction_head_applies_alone", period)
+        in_receipt_of_guarantee_credit = applicant_family & benunit(
             "in_receipt_of_guarantee_credit", period
         )
-        has_savings_credit_only_award = benunit(
+        has_savings_credit_only_award = applicant_family & benunit(
             "in_receipt_of_savings_credit_only", period
         )
         return select(

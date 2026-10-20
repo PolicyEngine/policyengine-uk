@@ -25,6 +25,22 @@ Use this skill whenever adding, moving, or reviewing tests.
   private H5 files in unit-style tests. Mock those seams or skip cleanly when the
   external artifact is unavailable.
 
+## Microsimulation Data
+
+Microsimulation tests run on one certified dataset, pinned by Hugging Face
+commit and SHA-256 in `policyengine_uk/tests/certified_dataset.yaml`. With
+`HUGGING_FACE_TOKEN` set, `conftest.py` selects that dataset and verifies its
+bytes before the first data test runs. Without a token, data tests skip.
+
+Set `POLICYENGINE_UK_REQUIRE_TEST_DATA=1` in jobs that must run the data tests.
+Each data test then fails at setup when the dataset is unavailable, instead of
+skipping, and runs only on the pinned dataset. Credential-free tests are
+unaffected.
+
+The reform fixtures in `microsimulation/reforms_config.yaml` record the dataset
+they were computed on. When the pin moves, recompute them on the new dataset,
+and add each new value under `receipts` rather than overwriting the old ones.
+
 ## Commands
 
 Run lint and formatting before committing:
@@ -61,21 +77,43 @@ When a command is not run, record why.
 
 ## How CI Runs The Tests
 
-The test jobs in `.github/workflows/pr_code_changes.yaml` and
-`code_changes.yaml` run the YAML policy tests in one job and split the Python
-tests over several runners. Each of those runs one shard:
+Pull requests and merge queue groups (`.github/workflows/pr_code_changes.yaml`),
+pushes to `main` (`code_changes.yaml`, never cancelled, and skipped for a
+commit the merge queue already tested) and releases (`versioning.yaml`) all run
+the same suite,
+`.github/workflows/test-suite.yaml`, in the locked environment
+(`uv sync --frozen --extra dev`). Pull requests and `main` test the source
+tree; a release tests the wheel it is about to publish, installed on its own.
+
+The suite runs the YAML policy tests in one job and splits the Python tests
+over four runners. Each runner runs one shard:
 
 ```bash
-make test-python PYTEST_ARGS="-n 4 --dist worksteal --shard K/N"
+pytest policyengine_uk/tests -n 4 --dist worksteal --shard K/4 -o xfail_strict=true
 ```
 
 `--shard K/N` is defined in `policyengine_uk/tests/conftest.py`. It keeps the
 tests whose node id hashes to shard K of N, so every test is in exactly one
-shard, including a test added later. The final `Test` job runs
-`.github/check_test_shards.py`, which fails unless every collected test ran in
-exactly one shard.
+shard, including a test added later. Each shard records every test's outcome
+with `.github/pytest_outcome_log.py`. The final job, `Test / Result`, runs
+`.github/check_test_shards.py`. It fails unless every collected test ran in
+exactly one shard and passed. The exceptions are outcomes accepted in
+`.github/test_outcome_allowlist.toml`:
+
+- A skip, an expected failure (`xfail`), an XPASS or a skipped module fails
+  the job unless an allowlist entry covers it. A test that quietly stops
+  running turns CI red. For example, when the dataset credentials are missing,
+  the microsimulation tests are allowed to skip only in runs that have no
+  credentials.
+- `xfail` markers are strict. When the bug a marker pins is fixed, the test
+  fails until you remove the marker and its allowlist entry.
+- A new known bug pinned by a strict `xfail` needs an allowlist entry that
+  names its issue. Keep entries narrow, and remove them when they are no
+  longer needed; the check warns about entries that matched nothing.
+
+To reproduce CI's check locally on the whole suite, run `make test-ci`.
 
 - To rerun what one CI shard ran, pass the same `--shard K/N` locally.
-- To make CI faster, add a shard to the `shard` matrix in both workflows.
+- To make CI faster, add a shard to the `shard` matrix in `test-suite.yaml`.
 - Do not split tests by file or directory in a workflow: a test outside the
   listed paths would silently not run.

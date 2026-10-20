@@ -13,4 +13,4 @@ class maintenance_loan_candidate_benunit_income(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        return person.benunit.sum(person.benunit.members("adjusted_net_income", period))
+        return person.benunit.sum(person.benunit.members("net_income", period))
