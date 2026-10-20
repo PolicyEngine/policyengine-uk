@@ -1,0 +1,271 @@
+# The benefit cap and State Pension age.
+#
+# The Universal Credit cap (UC Regs 2013 regs 79, 82 and 83) turns on earnings
+# and benefit receipt, not age, so it applies to a mixed-age couple's joint
+# award (reg 3(2)(a)). The one age-based exception, SI 2014/1230 reg 60C,
+# covers only claims where every claimant has reached the qualifying age.
+# The Housing Benefit cap (HB Regs 2006 Part 8A) reaches only Housing Benefit
+# under the working-age regulations, which by reg 5 cover a claimant or partner
+# over the qualifying age for State Pension Credit only while either of them
+# is on Universal Credit, Income Support, income-based JSA or income-related
+# ESA. Housing Benefit under the pension-age regulations (SI 2006/214) has no
+# cap.
+#
+# The Universal Credit and Housing Benefit amounts before the cap are inputs,
+# so these cases test the cap alone. The couple cap in London is 25,323.
+
+- name: A mixed-age couple on Universal Credit is capped
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 70
+      younger:
+        age: 50
+      child_1:
+        age: 4
+      child_2:
+        age: 7
+    benunits:
+      benunit:
+        members: [older, younger, child_1, child_2]
+        universal_credit_pre_benefit_cap: 30_000
+        child_benefit: 3_000
+        uc_deductions: 0
+    households:
+      household:
+        members: [older, younger, child_1, child_2]
+        region: LONDON
+  output:
+    is_uc_entitled: true
+    housing_benefit_pension_age_regulations_apply: false
+    is_uc_benefit_cap_exempt_qualifying_age: false
+    is_uc_benefit_cap_exempt: false
+    uc_benefit_cap: 25_323
+    # 30,000 + 3,000 - 25,323
+    benefit_cap_reduction: 7_677
+    universal_credit: 22_323
+
+- name: The same couple is excepted when its earnings reach the reg 82 threshold
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 70
+      younger:
+        age: 50
+        employment_income: 20_000
+      child_1:
+        age: 4
+      child_2:
+        age: 7
+    benunits:
+      benunit:
+        members: [older, younger, child_1, child_2]
+        universal_credit_pre_benefit_cap: 30_000
+        child_benefit: 3_000
+        uc_deductions: 0
+    households:
+      household:
+        members: [older, younger, child_1, child_2]
+        region: LONDON
+  output:
+    is_uc_benefit_cap_exempt_qualifying_age: false
+    is_uc_benefit_cap_exempt_earnings: true
+    is_uc_benefit_cap_exempt: true
+    benefit_cap_reduction: 0
+    universal_credit: 30_000
+
+- name: A mixed-age couple on Housing Benefit and no working-age benefit is not capped
+  # Neither member is on Universal Credit or a legacy income-related benefit,
+  # so the pension-age Housing Benefit regulations apply (HB Regs 2006 reg
+  # 5(3)); they have no benefit cap.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 70
+      younger:
+        age: 50
+    benunits:
+      benunit:
+        members: [older, younger]
+        would_claim_uc: false
+        would_claim_housing_benefit: true
+        housing_benefit_pre_benefit_cap: 30_000
+    households:
+      household:
+        members: [older, younger]
+        region: LONDON
+  output:
+    is_uc_entitled: false
+    housing_benefit_pension_age_regulations_apply: true
+    is_housing_benefit_benefit_cap_exempt: true
+    benefit_cap_reduction: 0
+    housing_benefit: 30_000
+
+- name: A mixed-age couple on income-based JSA has working-age Housing Benefit, which is capped
+  # HB Regs 2006 reg 5(1)(b): the working-age regulations, and so Part 8A,
+  # apply to a claimant over the qualifying age whose partner is on
+  # income-based JSA. The model stops paying income-based JSA from April 2026
+  # (gov.dwp.JSA.income.active), so this case is in 2025-26.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 70
+      younger:
+        age: 50
+        jsa_income_reported: 4_000
+    benunits:
+      benunit:
+        members: [older, younger]
+        would_claim_uc: false
+        would_claim_housing_benefit: true
+        housing_benefit_pre_benefit_cap: 30_000
+    households:
+      household:
+        members: [older, younger]
+        region: LONDON
+  output:
+    jsa_income: 4_000
+    housing_benefit_pension_age_regulations_apply: false
+    is_housing_benefit_benefit_cap_exempt: false
+    housing_benefit_benefit_cap: 25_323
+    # 30,000 + 4,000 - 25,323
+    benefit_cap_reduction: 8_677
+    housing_benefit: 21_323
+
+- name: A couple over State Pension age is not capped
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 72
+      younger:
+        age: 68
+    benunits:
+      benunit:
+        members: [older, younger]
+        would_claim_housing_benefit: true
+        housing_benefit_pre_benefit_cap: 30_000
+    households:
+      household:
+        members: [older, younger]
+        region: LONDON
+  output:
+    is_uc_entitled: false
+    housing_benefit_pension_age_regulations_apply: true
+    is_housing_benefit_benefit_cap_exempt: true
+    benefit_cap_reduction: 0
+    housing_benefit: 30_000
+
+- name: A working-age couple on Universal Credit is capped, as before
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 45
+      younger:
+        age: 40
+      child_1:
+        age: 4
+      child_2:
+        age: 7
+    benunits:
+      benunit:
+        members: [older, younger, child_1, child_2]
+        universal_credit_pre_benefit_cap: 30_000
+        child_benefit: 3_000
+        uc_deductions: 0
+    households:
+      household:
+        members: [older, younger, child_1, child_2]
+        region: LONDON
+  output:
+    housing_benefit_pension_age_regulations_apply: false
+    is_uc_benefit_cap_exempt: false
+    benefit_cap_reduction: 7_677
+    universal_credit: 22_323
+
+- name: A pensioner whose only younger adult is a qualifying young person is not capped
+  # Universal Credit needs a claimant or partner under the qualifying age (UC
+  # Regs 2013 reg 3(2)(a)), and the model's is_uc_eligible needs one too, so
+  # the award here is an input. The only claim a claimant over that age can
+  # make is a qualifying claim by a tax credit migrant (SI 2014/1230 reg
+  # 60A), and SI 2014/1230 reg 60C disapplies the cap for it. The
+  # 18-year-old is a dependant, not a partner, so the parent is the only
+  # claimant, and the award does not take the family out of the pension-age
+  # Housing Benefit rules, which have no cap.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 70
+        is_parent: true
+      young_person:
+        age: 18
+        current_education: UPPER_SECONDARY
+      child:
+        age: 9
+    benunits:
+      benunit:
+        members: [parent, young_person, child]
+        universal_credit_pre_benefit_cap: 30_000
+        child_benefit: 3_000
+        uc_deductions: 0
+    households:
+      household:
+        members: [parent, young_person, child]
+        region: LONDON
+  output:
+    is_claimant_or_partner: [true, false, false]
+    is_uc_entitled: true
+    housing_benefit_pension_age_regulations_apply: true
+    is_uc_benefit_cap_exempt_qualifying_age: true
+    is_uc_benefit_cap_exempt: true
+    is_housing_benefit_benefit_cap_exempt: true
+    benefit_cap_reduction: 0
+    universal_credit: 30_000
+
+- name: Without is_parent the young person is still a dependant, so the award is not capped
+  # is_claimant_or_partner presumes a member under 20 and at least 16 years
+  # younger than the claimant to be their child when relationships are not
+  # given, so the 18-year-old is not a partner under State Pension age and
+  # the result matches the case above.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 70
+      young_person:
+        age: 18
+        current_education: UPPER_SECONDARY
+      child:
+        age: 9
+    benunits:
+      benunit:
+        members: [parent, young_person, child]
+        universal_credit_pre_benefit_cap: 30_000
+        child_benefit: 3_000
+        uc_deductions: 0
+    households:
+      household:
+        members: [parent, young_person, child]
+        region: LONDON
+  output:
+    is_claimant_or_partner: [true, false, false]
+    housing_benefit_pension_age_regulations_apply: true
+    is_uc_benefit_cap_exempt_qualifying_age: true
+    is_uc_benefit_cap_exempt: true
+    is_housing_benefit_benefit_cap_exempt: true
+    benefit_cap_reduction: 0
+    universal_credit: 30_000

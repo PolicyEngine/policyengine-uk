@@ -25,7 +25,7 @@ class maintenance_loan_living_arrangement(Variable):
     def formula(person, period, parameters):
         in_higher_education = person("maintenance_loan_in_higher_education", period)
         has_sponsor = person("maintenance_loan_has_sponsor", period)
-        is_household_head = person("is_household_head", period)
+        is_household_head = person("is_resolved_household_head", period)
         is_couple = person.benunit("is_couple", period)
         is_parent = person("is_parent", period)
         tenure_holder = person.household.get_holder("tenure_type")

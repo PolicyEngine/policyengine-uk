@@ -10,7 +10,6 @@ Reference: https://obr.uk/docs/dlm_uploads/NICS-Cut-Impact-on-Labour-Supply-Note
 import numpy as np
 import pandas as pd
 from policyengine_uk import Simulation
-import warnings
 
 from policyengine_uk.dynamics.demographics import benunit_age_18_composition
 from policyengine_uk.model_api import WEEKS_IN_YEAR
@@ -27,7 +26,7 @@ def calculate_participation_elasticities(
     """Calculate labour force participation elasticities by demographic group.
 
     Uses OBR elasticity estimates (Table A1) to assign participation elasticities
-    based on gender, marital status, presence/age of children, and earnings quintile.
+    based on gender, partnership status, presence/age of children, and earnings quintile.
 
     Args:
         sim: PolicyEngine simulation object
@@ -38,14 +37,14 @@ def calculate_participation_elasticities(
     """
     # Get demographic characteristics
     gender = sim.calculate("gender")
-    is_married = sim.calculate("is_married", map_to="person")
+    # OBR Tables A1/A2 include cohabiting couples; legal marriage is separate.
+    is_couple = sim.calculate("is_couple", map_to="person")
     composition = benunit_age_18_composition(sim)
     has_children = composition["count_under_18"].values > 0
     youngest_child_age = composition["youngest_under_18_age"].values
-    is_single = ~is_married
+    is_single = ~is_couple
 
-    # Get partner employment status for married individuals
-    is_household_head = sim.calculate("is_household_head", map_to="person")
+    # Get partner employment status for individuals in couples
     benunit_count_adults = composition["count_aged_18_or_over"].values
     employment_income = sim.calculate("employment_income")
     benunit_id = sim.calculate("benunit_id", map_to="person")
@@ -127,7 +126,7 @@ def calculate_participation_elasticities(
     assign_elasticities(single_women_no_children, "single_women_no_children")
 
     # Women without children by partner employment status
-    women_no_children = (gender == "FEMALE") & ~has_children & is_married
+    women_no_children = (gender == "FEMALE") & ~has_children & is_couple
     assign_elasticities(
         women_no_children & ~partner_employed,
         "women_no_children_nonworking_partner",
@@ -153,7 +152,7 @@ def calculate_participation_elasticities(
     )
 
     # Women with children by partner employment status and youngest child age
-    women_with_children = (gender == "FEMALE") & has_children & is_married
+    women_with_children = (gender == "FEMALE") & has_children & is_couple
 
     # Non-working partner
     women_nonworking_partner = women_with_children & ~partner_employed
@@ -587,7 +586,7 @@ def apply_participation_responses(
     # Calculate excluded individuals
     from .labour_supply import calculate_excluded_from_labour_supply_responses
 
-    excluded = calculate_excluded_from_labour_supply_responses(sim, count_adults)
+    excluded = calculate_excluded_from_labour_supply_responses(sim, count_adults, year)
 
     # Get employment status
     employment_income = sim.calculate("employment_income", year)

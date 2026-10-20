@@ -1,0 +1,119 @@
+# HB Regs 2006 (SI 2006/213) reg 74(7)-(8) and (10); SI 2006/214 reg 55(7)-(9).
+
+- name: Full-time tertiary student is exempt
+  period: 2026
+  input:
+    age: 20
+    would_claim_uc: false
+    current_education: TERTIARY
+  output:
+    housing_benefit_non_dep_deduction_exempt: true
+
+- name: Full-time student in non-advanced education is exempt
+  period: 2026
+  input:
+    age: 18
+    would_claim_uc: false
+    current_education: UPPER_SECONDARY
+  output:
+    housing_benefit_non_dep_deduction_exempt: true
+
+- name: Higher education flag alone makes a student exempt
+  period: 2026
+  input:
+    age: 30
+    would_claim_uc: false
+    current_education: NOT_IN_EDUCATION
+    in_HE: true
+  output:
+    housing_benefit_non_dep_deduction_exempt: true
+
+- name: A worker not in education is not exempt
+  period: 2026
+  input:
+    age: 30
+    would_claim_uc: false
+    current_education: NOT_IN_EDUCATION
+    employment_income: 20_000
+  output:
+    housing_benefit_non_dep_deduction_exempt: false
+
+- name: State Pension Credit recipient is exempt at any age
+  period: 2026
+  input:
+    age: 70
+    would_claim_uc: false
+    current_education: NOT_IN_EDUCATION
+    pension_credit: 1_000
+  output:
+    housing_benefit_non_dep_deduction_exempt: true
+
+- name: Income Support under 25 is exempt
+  period: 2026
+  input:
+    age: 24
+    would_claim_uc: false
+    current_education: NOT_IN_EDUCATION
+    income_support: 1_000
+  output:
+    housing_benefit_non_dep_deduction_exempt: true
+
+- name: Income Support at 25 is not exempt
+  period: 2026
+  input:
+    age: 25
+    would_claim_uc: false
+    current_education: NOT_IN_EDUCATION
+    income_support: 1_000
+  output:
+    housing_benefit_non_dep_deduction_exempt: false
+
+- name: Income-based JSA under 25 is exempt
+  period: 2026
+  input:
+    age: 24
+    would_claim_uc: false
+    current_education: NOT_IN_EDUCATION
+    jsa_income: 1_000
+  output:
+    housing_benefit_non_dep_deduction_exempt: true
+
+- name: Income-related ESA under 25 is not exempt without an assessment-phase input
+  period: 2026
+  input:
+    age: 24
+    would_claim_uc: false
+    current_education: NOT_IN_EDUCATION
+    esa_income: 1_000
+  output:
+    # reg 74(8)(a) exempts only ESA(IR) without the support component and
+    # outside the work-related activity group; the model has no ESA group input.
+    housing_benefit_non_dep_deduction_exempt: false
+
+- name: Universal Credit without earned income under 25 is exempt
+  period: 2026
+  input:
+    age: 24
+    current_education: NOT_IN_EDUCATION
+    universal_credit_pre_benefit_cap: 1_000
+  output:
+    housing_benefit_non_dep_deduction_exempt: true
+
+- name: Universal Credit with earned income under 25 is not exempt
+  period: 2026
+  input:
+    age: 24
+    current_education: NOT_IN_EDUCATION
+    universal_credit_pre_benefit_cap: 1_000
+    employment_income: 2_000
+  output:
+    housing_benefit_non_dep_deduction_exempt: false
+
+- name: Universal Credit without earned income at 25 is not exempt
+  period: 2026
+  input:
+    age: 25
+    current_education: NOT_IN_EDUCATION
+    universal_credit_pre_benefit_cap: 1_000
+  output:
+    housing_benefit_non_dep_deduction_exempt: false

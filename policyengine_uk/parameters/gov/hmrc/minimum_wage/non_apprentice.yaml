@@ -1,152 +1,436 @@
 description: Minimum wage rate for non-apprentices by age.
 
+# The thresholds are every age boundary the law has used since October 2012
+# (18, 21, 23 and 25), giving the bands under 18, 18 to 20, 21 to 22, 23 to 24
+# and 25 or over. The thresholds do not change. Where the law groups adjacent
+# bands, they carry the same rate.
+#
+# - Until 31 March 2016 one adult rate applied from age 21 (NMW Regulations
+#   1999 reg. 11, then NMW Regulations 2015 reg. 4(1)(a)).
+# - From 1 April 2016 the national living wage (NMW Regulations 2015 reg. 4)
+#   applied from age 25, and reg. 4A(1)(a) set a lower rate for ages 21 to 24
+#   (S.I. 2016/68 reg. 3).
+# - From 1 April 2021 the national living wage applied from age 23
+#   (S.I. 2021/329 reg. 2(3)(b)), leaving reg. 4A(1)(a) for ages 21 and 22.
+# - From 1 April 2024 it applies from age 21, and reg. 4A(1)(a) is omitted
+#   (S.I. 2024/432 reg. 2(3)(a)).
+#
+# Rates take effect on the commencement date of each amending S.I. Until
+# October 2015 all rate changes took effect on 1 October. The national living
+# wage has changed each 1 April since 2016; the other rates changed on
+# 1 October 2016 and each 1 April from 2017.
+
 brackets:
 - threshold:
     2012-10-01: 0
   amount:
-    2012-10-01: 3.68
-    2013-10-01: 3.72
-    2014-10-01: 3.79
-    2015-10-01: 3.87
-    2016-10-01: 4.0
-    2017-04-01: 4.05
-    2018-04-01: 4.2
-    2019-04-01: 4.35
-    2020-04-01: 4.55
-    2021-04-01: 4.62
-    2022-04-01: 4.81
+    2012-10-01:
+      value: 3.68
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2011, regulation 5(b) (rate from 1 October 2011, unchanged by S.I. 2012/2397)
+          href: https://www.legislation.gov.uk/uksi/2011/2345/made
+    2013-10-01:
+      value: 3.72
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2013, regulation 2(3)(b)
+          href: https://www.legislation.gov.uk/uksi/2013/1975/made
+    2014-10-01:
+      value: 3.79
+      reference:
+        - title: The National Minimum Wage (Amendment) (No. 2) Regulations 2014, regulation 3(2)(b)
+          href: https://www.legislation.gov.uk/uksi/2014/2485/made
+    2015-10-01:
+      value: 3.87
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2015, regulation 2(2)(c)
+          href: https://www.legislation.gov.uk/uksi/2015/1724/made
+    2016-04-01:
+      value: 3.87
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2016, regulation 3 (substituted regulation 4A(1)(c), under 18)
+          href: https://www.legislation.gov.uk/uksi/2016/68/made
+    2016-10-01:
+      value: 4.0
+      reference:
+        - title: The National Minimum Wage (Amendment) (No. 2) Regulations 2016, regulation 2(2)(c)
+          href: https://www.legislation.gov.uk/uksi/2016/953/made
+    2017-04-01:
+      value: 4.05
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2017, regulation 2(3)(c)
+          href: https://www.legislation.gov.uk/uksi/2017/465/made
+    2018-04-01:
+      value: 4.2
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2018, regulation 2(3)(c)
+          href: https://www.legislation.gov.uk/uksi/2018/455/made
+    2019-04-01:
+      value: 4.35
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2019, regulation 2(3)(c)
+          href: https://www.legislation.gov.uk/uksi/2019/603/made
+    2020-04-01:
+      value: 4.55
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2020, regulation 2(3)(c)
+          href: https://www.legislation.gov.uk/uksi/2020/338/made
+    2021-04-01:
+      value: 4.62
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2021, regulation 2(3)(d)
+          href: https://www.legislation.gov.uk/uksi/2021/329/made
+    2022-04-01:
+      value: 4.81
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2022, regulation 2(3)(c)
+          href: https://www.legislation.gov.uk/uksi/2022/382/made
+    2023-04-01:
+      value: 5.28
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2023, regulation 2(3)(c)
+          href: https://www.legislation.gov.uk/uksi/2023/354/made
     2024-04-01:
       value: 6.4
       reference:
-        - title: The National Minimum Wage (Amendment) (No. 2) Regulations 2024
+        - title: The National Minimum Wage (Amendment) (No. 2) Regulations 2024, regulation 2(3)(c)
           href: https://www.legislation.gov.uk/uksi/2024/432/made
     2025-04-01:
       value: 7.55
       reference:
-        - title: The National Minimum Wage (Amendment) Regulations 2025
+        - title: The National Minimum Wage (Amendment) Regulations 2025, regulation 2(3)(b)
           href: https://www.legislation.gov.uk/uksi/2025/401/made
     2026-04-01:
       value: 8
       reference:
-        - title: National Minimum Wage and National Living Wage rates
-          href: https://www.gov.uk/national-minimum-wage-rates
+        - title: The National Minimum Wage (Amendment) Regulations 2026, regulation 2(3)(b)
+          href: https://www.legislation.gov.uk/uksi/2026/357/made
 - threshold:
     2012-10-01: 18
   amount:
-    2012-10-01: 4.98
-    2013-10-01: 5.03
-    2014-10-01: 5.13
-    2015-10-01: 5.3
-    2016-10-01: 5.55
-    2017-04-01: 5.6
-    2018-04-01: 5.9
-    2019-04-01: 6.15
-    2020-04-01: 6.45
-    2021-04-01: 6.56
-    2022-04-01: 6.83
+    2012-10-01:
+      value: 4.98
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2011, regulation 5(a) (rate from 1 October 2011, unchanged by S.I. 2012/2397)
+          href: https://www.legislation.gov.uk/uksi/2011/2345/made
+    2013-10-01:
+      value: 5.03
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2013, regulation 2(3)(a)
+          href: https://www.legislation.gov.uk/uksi/2013/1975/made
+    2014-10-01:
+      value: 5.13
+      reference:
+        - title: The National Minimum Wage (Amendment) (No. 2) Regulations 2014, regulation 3(2)(a)
+          href: https://www.legislation.gov.uk/uksi/2014/2485/made
+    2015-10-01:
+      value: 5.3
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2015, regulation 2(2)(b)
+          href: https://www.legislation.gov.uk/uksi/2015/1724/made
+    2016-04-01:
+      value: 5.3
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2016, regulation 3 (substituted regulation 4A(1)(b), ages 18 to 20)
+          href: https://www.legislation.gov.uk/uksi/2016/68/made
+    2016-10-01:
+      value: 5.55
+      reference:
+        - title: The National Minimum Wage (Amendment) (No. 2) Regulations 2016, regulation 2(2)(b)
+          href: https://www.legislation.gov.uk/uksi/2016/953/made
+    2017-04-01:
+      value: 5.6
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2017, regulation 2(3)(b)
+          href: https://www.legislation.gov.uk/uksi/2017/465/made
+    2018-04-01:
+      value: 5.9
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2018, regulation 2(3)(b)
+          href: https://www.legislation.gov.uk/uksi/2018/455/made
+    2019-04-01:
+      value: 6.15
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2019, regulation 2(3)(b)
+          href: https://www.legislation.gov.uk/uksi/2019/603/made
+    2020-04-01:
+      value: 6.45
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2020, regulation 2(3)(b)
+          href: https://www.legislation.gov.uk/uksi/2020/338/made
+    2021-04-01:
+      value: 6.56
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2021, regulation 2(3)(c)
+          href: https://www.legislation.gov.uk/uksi/2021/329/made
+    2022-04-01:
+      value: 6.83
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2022, regulation 2(3)(b)
+          href: https://www.legislation.gov.uk/uksi/2022/382/made
+    2023-04-01:
+      value: 7.49
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2023, regulation 2(3)(b)
+          href: https://www.legislation.gov.uk/uksi/2023/354/made
     2024-04-01:
       value: 8.6
       reference:
-        - title: The National Minimum Wage (Amendment) (No. 2) Regulations 2024
+        - title: The National Minimum Wage (Amendment) (No. 2) Regulations 2024, regulation 2(3)(b)
           href: https://www.legislation.gov.uk/uksi/2024/432/made
     2025-04-01:
       value: 10
       reference:
-        - title: The National Minimum Wage (Amendment) Regulations 2025
+        - title: The National Minimum Wage (Amendment) Regulations 2025, regulation 2(3)(a)
           href: https://www.legislation.gov.uk/uksi/2025/401/made
     2026-04-01:
       value: 10.85
       reference:
-        - title: National Minimum Wage and National Living Wage rates
-          href: https://www.gov.uk/national-minimum-wage-rates
+        - title: The National Minimum Wage (Amendment) Regulations 2026, regulation 2(3)(a)
+          href: https://www.legislation.gov.uk/uksi/2026/357/made
 - threshold:
     2012-10-01: 21
   amount:
-    2012-10-01: 6.19
-    2013-10-01: 6.31
-    2014-10-01: 6.5
-    2015-10-01: 6.7
-    2016-04-01: 6.7
-    2016-10-01: 6.95
-    2017-04-01: 7.05
-    2018-04-01: 7.38
-    2019-04-01: 7.7
-    2020-04-01: 8.2
-    2021-04-01: 8.36
-    2022-04-01: 9.18
+    2012-10-01:
+      value: 6.19
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2012, regulation 2(2)
+          href: https://www.legislation.gov.uk/uksi/2012/2397/made
+    2013-10-01:
+      value: 6.31
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2013, regulation 2(2)
+          href: https://www.legislation.gov.uk/uksi/2013/1975/made
+    2014-10-01:
+      value: 6.5
+      reference:
+        - title: The National Minimum Wage (Amendment) (No. 2) Regulations 2014, regulation 3(1)
+          href: https://www.legislation.gov.uk/uksi/2014/2485/made
+    2015-10-01:
+      value: 6.7
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2015, regulation 2(2)(a)
+          href: https://www.legislation.gov.uk/uksi/2015/1724/made
+    2016-04-01:
+      value: 6.7
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2016, regulation 3 (substituted regulation 4A(1)(a), ages 21 to 24)
+          href: https://www.legislation.gov.uk/uksi/2016/68/made
+    2016-10-01:
+      value: 6.95
+      reference:
+        - title: The National Minimum Wage (Amendment) (No. 2) Regulations 2016, regulation 2(2)(a)
+          href: https://www.legislation.gov.uk/uksi/2016/953/made
+    2017-04-01:
+      value: 7.05
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2017, regulation 2(3)(a)
+          href: https://www.legislation.gov.uk/uksi/2017/465/made
+    2018-04-01:
+      value: 7.38
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2018, regulation 2(3)(a)
+          href: https://www.legislation.gov.uk/uksi/2018/455/made
+    2019-04-01:
+      value: 7.7
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2019, regulation 2(3)(a)
+          href: https://www.legislation.gov.uk/uksi/2019/603/made
+    2020-04-01:
+      value: 8.2
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2020, regulation 2(3)(a)
+          href: https://www.legislation.gov.uk/uksi/2020/338/made
+    2021-04-01:
+      value: 8.36
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2021, regulation 2(3)(a)
+          href: https://www.legislation.gov.uk/uksi/2021/329/made
+    2022-04-01:
+      value: 9.18
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2022, regulation 2(3)(a)
+          href: https://www.legislation.gov.uk/uksi/2022/382/made
+    2023-04-01:
+      value: 10.18
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2023, regulation 2(3)(a)
+          href: https://www.legislation.gov.uk/uksi/2023/354/made
     2024-04-01:
       value: 11.44
       reference:
-        - title: The National Minimum Wage (Amendment) (No. 2) Regulations 2024
+        - title: The National Minimum Wage (Amendment) (No. 2) Regulations 2024, regulation 2(2) and 2(3)(a) (national living wage from age 21)
           href: https://www.legislation.gov.uk/uksi/2024/432/made
     2025-04-01:
       value: 12.21
       reference:
-        - title: The National Minimum Wage (Amendment) Regulations 2025
+        - title: The National Minimum Wage (Amendment) Regulations 2025, regulation 2(2)
           href: https://www.legislation.gov.uk/uksi/2025/401/made
     2026-04-01:
       value: 12.71
       reference:
-        - title: National Minimum Wage and National Living Wage rates
-          href: https://www.gov.uk/national-minimum-wage-rates
+        - title: The National Minimum Wage (Amendment) Regulations 2026, regulation 2(2)
+          href: https://www.legislation.gov.uk/uksi/2026/357/made
 - threshold:
     2012-10-01: 23
   amount:
-    2012-10-01: 6.19
-    2013-10-01: 6.31
-    2014-10-01: 6.5
-    2015-10-01: 6.7
-    2016-10-01: 6.95
-    2017-04-01: 7.05
-    2018-04-01: 7.38
-    2019-04-01: 7.7
-    2020-04-01: 8.2
-    2021-04-01: 8.91
-    2022-04-01: 9.5
+    2012-10-01:
+      value: 6.19
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2012, regulation 2(2)
+          href: https://www.legislation.gov.uk/uksi/2012/2397/made
+    2013-10-01:
+      value: 6.31
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2013, regulation 2(2)
+          href: https://www.legislation.gov.uk/uksi/2013/1975/made
+    2014-10-01:
+      value: 6.5
+      reference:
+        - title: The National Minimum Wage (Amendment) (No. 2) Regulations 2014, regulation 3(1)
+          href: https://www.legislation.gov.uk/uksi/2014/2485/made
+    2015-10-01:
+      value: 6.7
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2015, regulation 2(2)(a)
+          href: https://www.legislation.gov.uk/uksi/2015/1724/made
+    2016-04-01:
+      value: 6.7
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2016, regulation 3 (substituted regulation 4A(1)(a), ages 21 to 24)
+          href: https://www.legislation.gov.uk/uksi/2016/68/made
+    2016-10-01:
+      value: 6.95
+      reference:
+        - title: The National Minimum Wage (Amendment) (No. 2) Regulations 2016, regulation 2(2)(a)
+          href: https://www.legislation.gov.uk/uksi/2016/953/made
+    2017-04-01:
+      value: 7.05
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2017, regulation 2(3)(a)
+          href: https://www.legislation.gov.uk/uksi/2017/465/made
+    2018-04-01:
+      value: 7.38
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2018, regulation 2(3)(a)
+          href: https://www.legislation.gov.uk/uksi/2018/455/made
+    2019-04-01:
+      value: 7.7
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2019, regulation 2(3)(a)
+          href: https://www.legislation.gov.uk/uksi/2019/603/made
+    2020-04-01:
+      value: 8.2
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2020, regulation 2(3)(a)
+          href: https://www.legislation.gov.uk/uksi/2020/338/made
+    2021-04-01:
+      value: 8.91
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2021, regulation 2(2) and 2(3)(b) (national living wage from age 23)
+          href: https://www.legislation.gov.uk/uksi/2021/329/made
+    2022-04-01:
+      value: 9.5
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2022, regulation 2(2)
+          href: https://www.legislation.gov.uk/uksi/2022/382/made
+    2023-04-01:
+      value: 10.42
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2023, regulation 2(2)
+          href: https://www.legislation.gov.uk/uksi/2023/354/made
     2024-04-01:
       value: 11.44
       reference:
-        - title: The National Minimum Wage (Amendment) (No. 2) Regulations 2024
+        - title: The National Minimum Wage (Amendment) (No. 2) Regulations 2024, regulation 2(2)
           href: https://www.legislation.gov.uk/uksi/2024/432/made
     2025-04-01:
       value: 12.21
       reference:
-        - title: The National Minimum Wage (Amendment) Regulations 2025
+        - title: The National Minimum Wage (Amendment) Regulations 2025, regulation 2(2)
           href: https://www.legislation.gov.uk/uksi/2025/401/made
     2026-04-01:
       value: 12.71
       reference:
-        - title: National Minimum Wage and National Living Wage rates
-          href: https://www.gov.uk/national-minimum-wage-rates
+        - title: The National Minimum Wage (Amendment) Regulations 2026, regulation 2(2)
+          href: https://www.legislation.gov.uk/uksi/2026/357/made
 - threshold:
     2012-10-01: 25
   amount:
-    2012-10-01: 6.19
-    2013-10-01: 6.31
-    2014-10-01: 6.5
-    2015-10-01: 6.7
-    2016-04-01: 7.2
-    2017-04-01: 7.5
-    2018-04-01: 7.83
-    2019-04-01: 8.21
-    2020-04-01: 8.72
-    2021-04-01: 8.91
-    2022-04-01: 9.5
+    2012-10-01:
+      value: 6.19
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2012, regulation 2(2)
+          href: https://www.legislation.gov.uk/uksi/2012/2397/made
+    2013-10-01:
+      value: 6.31
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2013, regulation 2(2)
+          href: https://www.legislation.gov.uk/uksi/2013/1975/made
+    2014-10-01:
+      value: 6.5
+      reference:
+        - title: The National Minimum Wage (Amendment) (No. 2) Regulations 2014, regulation 3(1)
+          href: https://www.legislation.gov.uk/uksi/2014/2485/made
+    2015-10-01:
+      value: 6.7
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2015, regulation 2(2)(a)
+          href: https://www.legislation.gov.uk/uksi/2015/1724/made
+    2016-04-01:
+      value: 7.2
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2016, regulation 3 (substituted regulation 4, the national living wage)
+          href: https://www.legislation.gov.uk/uksi/2016/68/made
+    2017-04-01:
+      value: 7.5
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2017, regulation 2(2)
+          href: https://www.legislation.gov.uk/uksi/2017/465/made
+    2018-04-01:
+      value: 7.83
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2018, regulation 2(2)
+          href: https://www.legislation.gov.uk/uksi/2018/455/made
+    2019-04-01:
+      value: 8.21
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2019, regulation 2(2)
+          href: https://www.legislation.gov.uk/uksi/2019/603/made
+    2020-04-01:
+      value: 8.72
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2020, regulation 2(2)
+          href: https://www.legislation.gov.uk/uksi/2020/338/made
+    2021-04-01:
+      value: 8.91
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2021, regulation 2(2)
+          href: https://www.legislation.gov.uk/uksi/2021/329/made
+    2022-04-01:
+      value: 9.5
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2022, regulation 2(2)
+          href: https://www.legislation.gov.uk/uksi/2022/382/made
+    2023-04-01:
+      value: 10.42
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2023, regulation 2(2)
+          href: https://www.legislation.gov.uk/uksi/2023/354/made
     2024-04-01:
       value: 11.44
       reference:
-        - title: The National Minimum Wage (Amendment) (No. 2) Regulations 2024
+        - title: The National Minimum Wage (Amendment) (No. 2) Regulations 2024, regulation 2(2)
           href: https://www.legislation.gov.uk/uksi/2024/432/made
     2025-04-01:
       value: 12.21
       reference:
-        - title: The National Minimum Wage (Amendment) Regulations 2025
+        - title: The National Minimum Wage (Amendment) Regulations 2025, regulation 2(2)
           href: https://www.legislation.gov.uk/uksi/2025/401/made
     2026-04-01:
       value: 12.71
       reference:
-        - title: National Minimum Wage and National Living Wage rates
-          href: https://www.gov.uk/national-minimum-wage-rates
+        - title: The National Minimum Wage (Amendment) Regulations 2026, regulation 2(2)
+          href: https://www.legislation.gov.uk/uksi/2026/357/made
 
 metadata:
   amount_unit: currency-GBP
@@ -157,5 +441,7 @@ metadata:
   threshold_unit: year
   type: single_amount
   reference:
+  - title: The National Minimum Wage Regulations 2015, regulations 4 and 4A
+    href: https://www.legislation.gov.uk/uksi/2015/621/contents
   - href: https://www.gov.uk/national-minimum-wage-rates
     title: GOV.UK - National Minimum Wage

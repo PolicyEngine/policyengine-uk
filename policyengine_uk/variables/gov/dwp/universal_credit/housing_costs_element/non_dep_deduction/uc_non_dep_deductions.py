@@ -24,23 +24,34 @@ class uc_non_dep_deductions(Variable):
         # the renter's extended benefit unit (UC Regs 2013 Sch 4 para 13).
         person = benunit.members
         deductions = person("uc_individual_non_dep_deduction", period)
-        # Non-dependants from other families live outside the household
-        # head's family and are not liable for rent. A non-dependant counts
-        # in one claim only (para 9(2)(f)), which the model gives to the
-        # household head's family, so a sharer, boarder or lodger has none
-        # from other families.
+        # Non-dependants from other families are not liable for rent (para
+        # 9(2)(d)), and each counts in one Universal Credit claim only (para
+        # 9(2)(f)): see uc_non_dependants_counted.
         other_family = person("is_non_dependant_of_household_head", period)
-        head_family = benunit.any(person("is_household_head", period))
-        from_other_families = head_family * benunit.max(
-            person.household.sum(deductions * other_family)
-        )
-        # A member of the renter's own benefit unit who is not the claimant,
-        # partner or a qualifying young person is a non-dependant of the
-        # renter (para 9(1)(c) and (2)(a), (g)).
-        own_family = (
+        # A member of a renter's own benefit unit who is not the claimant,
+        # partner or a qualifying young person is a non-dependant of that
+        # renter (para 9(1)(c) and (2)(a), (g)). Their own family's claim
+        # counts them if it makes one; otherwise the claim that counts the
+        # household's other non-dependants does (para 9(2)(f)).
+        in_unit = (
             person("is_benefit_unit_non_dependant_for_universal_credit", period)
             & ~other_family
         )
-        from_own_family = benunit.sum(deductions * own_family)
+        own_claim = (
+            benunit("benunit_is_rent_liable", period)
+            & benunit("is_uc_eligible", period)
+            & benunit("claims_universal_credit", period)
+        )
+        to_own_claim = in_unit & benunit.project(own_claim)
+        counted = benunit("uc_non_dependants_counted", period)
+        from_household = counted * benunit.max(
+            person.household.sum(
+                deductions * ((other_family | in_unit) & ~to_own_claim)
+            )
+        )
+        from_own_family = benunit.sum(deductions * to_own_claim)
+        # Sch 4 para 15: no contribution for any non-dependant where the
+        # renter, or either joint renter, is blind or receives a qualifying
+        # disability benefit.
         renter_exempt = benunit("uc_non_dep_deductions_renter_exempt", period)
-        return where(renter_exempt, 0, from_other_families + from_own_family)
+        return where(renter_exempt, 0, from_household + from_own_family)

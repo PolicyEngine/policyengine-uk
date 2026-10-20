@@ -1,0 +1,185 @@
+# Council Tax Reduction non-dependant deductions as enacted, weekly, for the
+# financial year starting 1 April of each year, from each year's amending
+# instrument (source) and the point-in-time text of the scheme provision on
+# legislation.gov.uk. Bands include their lower edge; the first amount is
+# para (1)(b), the last para (1)(a). Wales: WSI 2012/3144 (2013-14), then WSI
+# 2013/3029 Sch 1 para 3 and Sch 6 para 5 (identical scales). Scotland: SSI
+# 2012/319 reg 48, SSI 2012/303 reg 67 and SSI 2021/249 reg 90 (identical).
+
+england_pensioners:
+  parameter: gov.local_authorities.england.council_tax_reduction.pensioners.non_dep_deduction.amount
+  years:
+    2013:
+      thresholds: [0, 186.00, 322.00, 401.00]
+      amounts: [3.65, 7.25, 9.15, 10.95]
+      source: https://www.legislation.gov.uk/uksi/2012/3085/made
+    2014:
+      thresholds: [0, 188.00, 326.00, 406.00]
+      amounts: [3.70, 7.45, 9.40, 11.25]
+      source: https://www.legislation.gov.uk/uksi/2013/3181/made
+    2015:
+      thresholds: [0, 189.00, 328.00, 408.00]
+      amounts: [3.74, 7.52, 9.49, 11.36]
+      source: https://www.legislation.gov.uk/uksi/2014/3312/made
+    2016:
+      thresholds: [0, 195.00, 338.00, 420.00]
+      amounts: [3.77, 7.58, 9.56, 11.45]
+      source: https://www.legislation.gov.uk/uksi/2015/2041/made
+    2017:
+      thresholds: [0, 196.95, 341.40, 424.20]
+      amounts: [3.80, 7.65, 9.65, 11.55]
+      source: https://www.legislation.gov.uk/uksi/2016/1262/made
+    2018:
+      thresholds: [0, 202.85, 351.65, 436.90]
+      amounts: [3.90, 7.90, 9.95, 11.90]
+      source: https://www.legislation.gov.uk/uksi/2017/1305/made
+    2019:
+      thresholds: [0, 207.70, 360.10, 447.40]
+      amounts: [4.00, 8.10, 10.20, 12.20]
+      source: https://www.legislation.gov.uk/uksi/2018/1346/made
+    2020:
+      thresholds: [0, 217.00, 377.00, 469.00]
+      amounts: [4.05, 8.25, 10.35, 12.40]
+      source: https://www.legislation.gov.uk/uksi/2020/23/made
+    2021:
+      thresholds: [0, 217.00, 377.00, 469.00]
+      amounts: [4.05, 8.30, 10.40, 12.45]
+      source: https://www.legislation.gov.uk/uksi/2021/29/made
+    2022:
+      thresholds: [0, 224.00, 389.00, 484.00]
+      amounts: [4.20, 8.55, 10.70, 12.85]
+      source: https://www.legislation.gov.uk/uksi/2022/25/made
+    2023:
+      thresholds: [0, 236.00, 410.00, 511.00]
+      amounts: [4.60, 9.40, 11.80, 14.15]
+      source: https://www.legislation.gov.uk/uksi/2023/16/made
+    2024:
+      thresholds: [0, 256.00, 445.00, 554.00]
+      amounts: [4.90, 10.05, 12.60, 15.10]
+      source: https://www.legislation.gov.uk/uksi/2024/29/made
+    2025:
+      thresholds: [0, 266.00, 463.00, 577.00]
+      amounts: [5.00, 10.20, 12.80, 15.35]
+      source: https://www.legislation.gov.uk/uksi/2025/39/made
+    2026:
+      thresholds: [0, 279.00, 485.00, 605.00]
+      amounts: [5.20, 10.60, 13.30, 15.95]
+      source: https://www.legislation.gov.uk/uksi/2026/27/made
+wales:
+  parameter: gov.local_authorities.wales.council_tax_reduction.non_dep_deduction.amount
+  years:
+    2013:
+      thresholds: [0, 186.00, 322.00, 401.00]
+      amounts: [3.65, 7.25, 9.15, 10.95]
+      source: https://www.legislation.gov.uk/wsi/2013/112/made
+    2014:
+      thresholds: [0, 188.00, 326.00, 406.00]
+      amounts: [3.75, 7.50, 9.45, 11.30]
+      source: https://www.legislation.gov.uk/wsi/2014/66/made
+    2015:
+      thresholds: [0, 189.00, 328.00, 408.00]
+      amounts: [3.90, 7.80, 9.85, 11.75]
+      source: https://www.legislation.gov.uk/wsi/2015/44/made
+    2016:
+      thresholds: [0, 194.00, 338.00, 420.00]
+      amounts: [4.05, 8.10, 10.25, 12.25]
+      source: https://www.legislation.gov.uk/wsi/2016/50/made
+    2017:
+      thresholds: [0, 200.00, 346.00, 430.00]
+      amounts: [4.20, 8.40, 10.60, 12.70]
+      source: https://www.legislation.gov.uk/wsi/2017/46/made
+    2018:
+      thresholds: [0, 205.00, 355.00, 440.00]
+      amounts: [4.35, 8.70, 10.95, 13.10]
+      source: https://www.legislation.gov.uk/wsi/2018/14/made
+    2019:
+      thresholds: [0, 210.00, 365.00, 450.00]
+      amounts: [4.55, 9.15, 11.50, 13.75]
+      source: https://www.legislation.gov.uk/wsi/2019/11/made
+    2020:
+      thresholds: [0, 217.00, 377.00, 469.00]
+      amounts: [4.85, 9.75, 12.25, 14.65]
+      source: https://www.legislation.gov.uk/wsi/2020/16/made
+    2021:
+      thresholds: [0, 217.00, 377.00, 469.00]
+      amounts: [5.10, 10.20, 12.85, 15.35]
+      source: https://www.legislation.gov.uk/wsi/2021/34/made
+    2022:
+      thresholds: [0, 224.00, 389.00, 484.00]
+      amounts: [5.30, 10.60, 13.35, 15.95]
+      source: https://www.legislation.gov.uk/wsi/2022/51/made
+    2023:
+      thresholds: [0, 236.00, 410.00, 511.00]
+      amounts: [5.45, 10.90, 13.70, 16.40]
+      source: https://www.legislation.gov.uk/wsi/2023/47/made
+    2024:
+      thresholds: [0, 256.00, 445.00, 554.00]
+      amounts: [5.80, 11.55, 14.50, 17.35]
+      source: https://www.legislation.gov.uk/wsi/2024/56/made
+    2025:
+      thresholds: [0, 266.00, 463.00, 577.00]
+      amounts: [6.25, 12.45, 15.65, 18.70]
+      source: https://www.legislation.gov.uk/wsi/2025/59/made
+    2026:
+      thresholds: [0, 279.00, 485.00, 605.00]
+      amounts: [6.70, 13.35, 16.80, 20.05]
+      source: https://www.legislation.gov.uk/wsi/2026/13/made
+scotland:
+  parameter: gov.local_authorities.scotland.council_tax_reduction.non_dep_deduction.amount
+  years:
+    2013:
+      thresholds: [0, 186.00, 322.00, 401.00]
+      amounts: [3.65, 7.25, 9.15, 10.95]
+      source: https://www.legislation.gov.uk/ssi/2013/49/made
+    2014:
+      thresholds: [0, 188.00, 326.00, 406.00]
+      amounts: [3.75, 7.50, 9.50, 11.35]
+      source: https://www.legislation.gov.uk/ssi/2014/35/made
+    2015:
+      thresholds: [0, 189.00, 328.00, 408.00]
+      amounts: [3.85, 7.70, 9.80, 11.70]
+      source: https://www.legislation.gov.uk/ssi/2015/46/made
+    2016:
+      thresholds: [0, 195.00, 338.00, 420.00]
+      amounts: [3.90, 7.75, 9.85, 11.80]
+      source: https://www.legislation.gov.uk/ssi/2016/81/made
+    2017:
+      thresholds: [0, 200.00, 346.00, 430.00]
+      amounts: [3.95, 7.85, 9.95, 11.90]
+      source: https://www.legislation.gov.uk/ssi/2017/41/made
+    2018:
+      thresholds: [0, 204.00, 354.00, 439.00]
+      amounts: [4.05, 8.10, 10.25, 12.25]
+      source: https://www.legislation.gov.uk/ssi/2018/69/made
+    2019:
+      thresholds: [0, 209.00, 363.00, 451.00]
+      amounts: [4.15, 8.30, 10.50, 12.55]
+      source: https://www.legislation.gov.uk/ssi/2019/29/made
+    2020:
+      thresholds: [0, 213.00, 370.00, 458.00]
+      amounts: [4.25, 8.45, 10.70, 12.80]
+      source: https://www.legislation.gov.uk/ssi/2020/25/made
+    2021:
+      thresholds: [0, 213.00, 370.00, 458.00]
+      amounts: [4.30, 8.50, 10.80, 12.90]
+      source: https://www.legislation.gov.uk/ssi/2021/51/made
+    2022:
+      thresholds: [0, 228.00, 396.00, 490.00]
+      amounts: [4.45, 8.80, 11.15, 13.30]
+      source: https://www.legislation.gov.uk/ssi/2022/52/made
+    2023:
+      thresholds: [0, 241.00, 418.00, 517.00]
+      amounts: [4.90, 9.70, 12.30, 14.65]
+      source: https://www.legislation.gov.uk/ssi/2023/38/made
+    2024:
+      thresholds: [0, 260.00, 451.00, 558.00]
+      amounts: [5.25, 10.35, 13.15, 15.65]
+      source: https://www.legislation.gov.uk/ssi/2024/35/made
+    2025:
+      thresholds: [0, 273.00, 474.00, 586.00]
+      amounts: [5.35, 10.55, 13.40, 15.95]
+      source: https://www.legislation.gov.uk/ssi/2025/24/made
+    2026:
+      thresholds: [0, 286.00, 497.00, 614.00]
+      amounts: [5.55, 10.95, 13.90, 16.55]
+      source: https://www.legislation.gov.uk/ssi/2026/56/made

@@ -1,0 +1,17 @@
+description: Scotland's working-age Council Tax Reduction scheme makes no deduction for a non-dependant who is, or whose partner is, on Income Support, income-based JSA or income-related ESA and who is not on Universal Credit (a "qualifying income-related benefit claimant"), from the year this applies (SSI 2021/249 reg. 90(8)(a) with reg. 4(1)). Before April 2022 (SSI 2012/303 reg. 67(8)(a)), and in the pension-age scheme, only a non-dependant who is on one of these benefits is exempt.
+values:
+  2013-04-01: false
+  2022-04-01: true
+metadata:
+  label: Scotland working-age CTR exempts a non-dependant whose partner is on an income-related benefit
+  unit: bool
+  period: year
+  reference:
+    - title: Council Tax Reduction (Scotland) Regulations 2021, reg. 90(8)(a)
+      href: https://www.legislation.gov.uk/ssi/2021/249/regulation/90
+    - title: Council Tax Reduction (Scotland) Regulations 2021, reg. 4(1) ("qualifying income-related benefit claimant")
+      href: https://www.legislation.gov.uk/ssi/2021/249/regulation/4
+    - title: Council Tax Reduction (Scotland) Regulations 2021, reg. 1 (in force 1 April 2022)
+      href: https://www.legislation.gov.uk/ssi/2021/249/regulation/1
+    - title: Council Tax Reduction (Scotland) Regulations 2012, reg. 67(8)(a)
+      href: https://www.legislation.gov.uk/ssi/2012/303/regulation/67

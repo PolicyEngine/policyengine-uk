@@ -28,7 +28,7 @@ from .participation import (
 
 
 def calculate_excluded_from_labour_supply_responses(
-    sim: Simulation, count_adults: int = 2
+    sim: Simulation, count_adults: int = 2, year: int = None
 ):
     """Calculate which individuals are excluded from labour supply responses.
 
@@ -38,17 +38,18 @@ def calculate_excluded_from_labour_supply_responses(
     Args:
         sim: PolicyEngine simulation object
         count_adults: Number of adults to include in calculations
+        year: Year for calculation (the simulation's default period if None)
 
     Returns:
         Boolean array indicating which individuals are excluded
     """
     # Exclude self-employed, full-time students, aged 60+, and adult_index == (0, >= count_adults + 1)
-    employment_status = sim.calculate("employment_status")
+    employment_status = sim.calculate("employment_status", year)
     self_employed = np.isin(employment_status, ["FT_SELF_EMPLOYED", "PT_SELF_EMPLOYED"])
     student = employment_status == "STUDENT"
-    age = sim.calculate("age")
+    age = sim.calculate("age", year)
     age_60_plus = age >= 60
-    adult_index = sim.calculate("adult_index")
+    adult_index = sim.calculate("adult_index", year)
     excluded = (
         self_employed
         | student
@@ -95,7 +96,7 @@ class LabourSupplyResponseData(BaseModel):
 
 def apply_labour_supply_responses(
     sim: Simulation,
-    target_variable: str = "hbai_household_net_income",
+    target_variable: str = "hbai_household_net_income_before_reset_to_zero",
     input_variable: str = "employment_income",
     year: int = 2025,
     count_adults: int = 2,
@@ -109,7 +110,11 @@ def apply_labour_supply_responses(
 
     Args:
         sim: PolicyEngine simulation object (should have baseline attribute)
-        target_variable: Variable that drives labour supply decisions
+        target_variable: Variable that drives labour supply decisions. The
+            default is HBAI net income before HBAI resets a negative income
+            to zero: the household's actual budget constraint. The reset is
+            a statistical convention; measured on the reset figure, a pay
+            rise for a household below zero would look fully withdrawn.
         input_variable: Variable representing labour supply (typically employment_income)
         year: Year for calculation
         count_adults: Number of adults to calculate responses for
@@ -193,7 +198,7 @@ def apply_labour_supply_responses(
 
 def apply_progression_responses(
     sim: Simulation,
-    target_variable: str = "hbai_household_net_income",
+    target_variable: str = "hbai_household_net_income_before_reset_to_zero",
     input_variable: str = "employment_income",
     year: int = 2025,
     count_adults: int = 2,
@@ -207,7 +212,11 @@ def apply_progression_responses(
 
     Args:
         sim: PolicyEngine simulation object (should have baseline attribute)
-        target_variable: Variable that drives labour supply decisions
+        target_variable: Variable that drives labour supply decisions. The
+            default is HBAI net income before HBAI resets a negative income
+            to zero: the household's actual budget constraint. The reset is
+            a statistical convention; measured on the reset figure, a pay
+            rise for a household below zero would look fully withdrawn.
         input_variable: Variable representing labour supply (typically employment_income)
         year: Year for calculation
         count_adults: Number of adults to calculate responses for
@@ -273,8 +282,8 @@ def apply_progression_responses(
     df = pd.concat([derivative_changes, income_changes], axis=1).fillna(0)
 
     # Get elasticity parameters by demographic group
-    substitution_elasticities = calculate_labour_substitution_elasticities(sim)
-    income_elasticities = calculate_labour_net_income_elasticities(sim)
+    substitution_elasticities = calculate_labour_substitution_elasticities(sim, year)
+    income_elasticities = calculate_labour_net_income_elasticities(sim, year)
 
     df["income_elasticity"] = income_elasticities
     df["substitution_elasticity"] = substitution_elasticities
@@ -296,27 +305,37 @@ def apply_progression_responses(
 
     df = pd.concat([df, response_df], axis=1)
 
-    # Apply relative {substitution, income, total} changes to hours as well
-    # Apply relative changes to hours using the same factor for all response types
+    # Apply relative {substitution, income, total} changes to hours as well,
+    # using the same factor for all response types.
+    # People without employment income have no hours to change.
+    earnings = df["employment_income"].to_numpy(dtype=float)
+    ftes_per_pound = np.divide(
+        df["hours_per_week"].to_numpy(dtype=float) / 37.5,
+        earnings,
+        out=np.zeros(len(df)),
+        where=earnings > 0,
+    )
     for response_type in [
         "substitution_response",
         "income_response",
         "total_response",
     ]:
         df[f"{response_type}_ftes"] = (
-            df[response_type] / df["employment_income"] * df["hours_per_week"] / 37.5
+            df[response_type].to_numpy(dtype=float) * ftes_per_pound
         )
 
     excluded = calculate_excluded_from_labour_supply_responses(
-        sim, count_adults=count_adults
+        sim, count_adults=count_adults, year=year
     )
 
-    for col in df.columns:
-        df.loc[excluded, col] = 0
+    # Zero excluded people's rows. mask returns a new frame, so this works
+    # when columns wrap read-only arrays (pandas copy-on-write).
+    df = df.mask(pd.Series(excluded, index=df.index), 0, axis=0)
 
     df["excluded"] = excluded
 
-    response = response_df["total_response"].values
+    # Excluded people get no response.
+    response = np.where(excluded, 0, response_df["total_response"].to_numpy())
 
     # Apply the labour supply response to the simulation
     sim.reset_calculations()

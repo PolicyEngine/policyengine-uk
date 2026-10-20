@@ -1,0 +1,112 @@
+# Dates verified in the amending instruments: GB S.I. 2013/388 reg 2 and
+# S.I. 2013/591 art 2; NI S.I. 2013/3021 art 1 and S.R. 2016/228 reg 1.
+# Calendar-year cases exercise the list at 1 January: AFIP added on
+# 24 December 2013 enters the 2014 snapshot; PIP added on 20 June 2016 enters
+# the 2017 snapshot. These cases do not assert within-year payment proration.
+# Pre-2015 cases supply receipt amounts directly because the AA and PIP rate
+# parameters begin in 2015; they test qualifying lists, not historical rates.
+
+- name: GB PIP and AFIP do not qualify in model year 2013
+  period: 2013
+  input:
+    country: ENGLAND
+    attendance_allowance: 0
+    pip_dl: 1
+    armed_forces_independence_payment: 1
+  output:
+    receives_severe_disability_premium_qualifying_benefit: false
+
+- name: GB PIP qualifies in model year 2014
+  period: 2014
+  input:
+    country: ENGLAND
+    attendance_allowance: 0
+    pip_dl: 1
+  output:
+    receives_severe_disability_premium_qualifying_benefit: true
+
+- name: GB AFIP qualifies in model year 2014
+  period: 2014
+  input:
+    country: ENGLAND
+    attendance_allowance: 0
+    pip_dl: 0
+    armed_forces_independence_payment: 1
+  output:
+    receives_severe_disability_premium_qualifying_benefit: true
+
+- name: NI PIP and AFIP do not qualify in model year 2013
+  period: 2013
+  input:
+    country: NORTHERN_IRELAND
+    attendance_allowance: 0
+    pip_dl: 1
+    armed_forces_independence_payment: 1
+  output:
+    receives_severe_disability_premium_qualifying_benefit: false
+
+- name: NI PIP does not qualify in model year 2014, unlike GB
+  period: 2014
+  input:
+    country: NORTHERN_IRELAND
+    attendance_allowance: 0
+    pip_dl: 1
+  output:
+    receives_severe_disability_premium_qualifying_benefit: false
+
+- name: NI AFIP qualifies in model year 2014
+  period: 2014
+  input:
+    country: NORTHERN_IRELAND
+    attendance_allowance: 0
+    pip_dl: 0
+    armed_forces_independence_payment: 1
+  output:
+    receives_severe_disability_premium_qualifying_benefit: true
+
+- name: NI AFIP remains qualifying in model year 2017
+  period: 2017
+  input:
+    country: NORTHERN_IRELAND
+    armed_forces_independence_payment: 1
+  output:
+    receives_severe_disability_premium_qualifying_benefit: true
+
+- name: NI PIP does not qualify in model year 2016
+  period: 2016
+  input:
+    country: NORTHERN_IRELAND
+    pip_dl: 1
+  output:
+    receives_severe_disability_premium_qualifying_benefit: false
+
+- name: NI PIP qualifies in model year 2017
+  period: 2017
+  input:
+    country: NORTHERN_IRELAND
+    pip_dl: 1
+  output:
+    receives_severe_disability_premium_qualifying_benefit: true
+
+- name: Contemporary NI PIP and GB AFIP qualify in separate households
+  period: 2026
+  input:
+    people:
+      pip_recipient:
+        pip_dl: 1
+      afip_recipient:
+        armed_forces_independence_payment: 1
+    benunits:
+      pip_family:
+        members: [pip_recipient]
+      afip_family:
+        members: [afip_recipient]
+    households:
+      ni_household:
+        members: [pip_recipient]
+        country: NORTHERN_IRELAND
+      gb_household:
+        members: [afip_recipient]
+        country: ENGLAND
+  output:
+    receives_severe_disability_premium_qualifying_benefit: [true, true]

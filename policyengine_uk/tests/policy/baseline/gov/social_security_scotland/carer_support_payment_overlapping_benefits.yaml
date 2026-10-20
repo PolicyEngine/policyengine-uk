@@ -1,0 +1,173 @@
+# Carer Support Payment after the overlapping-benefit reduction.
+# Carer's Assistance (Carer Support Payment) (Scotland) Regulations 2023
+# (SSI 2023/302) reg 16(2): for any award week in which the carer is entitled
+# to an overlapping benefit, Carer Support Payment is reduced by the amount of
+# that benefit, and is £0 where the benefit is at least as much. Reg 16(3) and
+# (6) list State Pension (any pension under the Pensions Act 2014 Part 1) and
+# Retirement Pension excluding additional pension and graduated retirement
+# benefit. Reg 14A pays the Scottish Carer Supplement for each award week in
+# which Carer Support Payment is payable.
+# 2026-27 weekly rates: Carer Support Payment 86.45 and Scottish Carer
+# Supplement 11.70 (SSI 2026/170 reg 12(3)); 2025-26 Carer Support Payment
+# 83.30. Pension Credit standard minimum guarantee 238.00, carer addition
+# 48.15.
+# Reg 16(2) works award week by award week. Cases using reported annual
+# benefits verify the model's annual-netting approximation; part-year spells
+# are not resolved. Constant year-round amounts agree with the weekly rule.
+
+- name: Case 1, State Pension below Carer Support Payment reduces it and the supplement is paid in full.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 70
+        state_pension: 2_000
+        care_hours: 35
+    benunits:
+      benunit:
+        members: [carer]
+    households:
+      household:
+        members: [carer]
+        country: SCOTLAND
+  output:
+    carers_allowance: 0
+    carer_support_payment_pre_overlap: 86.45 * 52
+    carer_support_payment: 86.45 * 52 - 2_000
+    scottish_carer_supplement: 11.70 * 52
+    # SPC Regs 2002 reg 15(4)(g): the reduced amount counts; the supplement
+    # does not count (reg 15(1)(ri)).
+    pension_credit_income: 86.45 * 52
+    guarantee_credit: (238 + 48.15 - 86.45) * 52
+
+- name: Case 2, State Pension above Carer Support Payment reduces it to £0 with no supplement.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 70
+        state_pension: 6_000
+        care_hours: 35
+    benunits:
+      benunit:
+        members: [carer]
+    households:
+      household:
+        members: [carer]
+        country: SCOTLAND
+  output:
+    carer_support_payment_pre_overlap: 86.45 * 52
+    carer_support_payment: 0
+    scottish_carer_supplement: 0
+    is_entitled_to_carer_benefit: true
+    is_carer_for_benefits: true
+    carer_minimum_guarantee_addition: 48.15 * 52
+    pension_credit_income: 6_000
+
+- name: Case 3, State Pension equal to Carer Support Payment gives £0 (reg 16(2)(b)).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    state_pension: 86.45 * 52
+    care_hours: 35
+    country: SCOTLAND
+  output:
+    carer_support_payment: 0
+    scottish_carer_supplement: 0
+
+- name: Case 4, the 2025-26 rate.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    state_pension: 2_000
+    care_hours: 35
+    country: SCOTLAND
+  output:
+    carer_support_payment: 83.30 * 52 - 2_000
+
+- name: Case 5, annual netting of contributory ESA reduces Carer Support Payment.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    esa_contrib_reported: 3_000
+    care_hours: 35
+    country: SCOTLAND
+  output:
+    carer_support_payment_overlapping_benefits: 3_000
+    carer_support_payment: 86.45 * 52 - 3_000
+    scottish_carer_supplement: 11.70 * 52
+
+- name: Case 6, the additional pension in an old State Pension does not overlap.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 80
+    basic_state_pension: 2_000
+    additional_state_pension: 5_000
+    care_hours: 35
+    country: SCOTLAND
+  output:
+    overlapping_state_pension: 2_000
+    carer_support_payment: 86.45 * 52 - 2_000
+
+- name: Case 7, a new State Pension overlaps in full, protected payment included.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 68
+    new_state_pension: 2_000
+    additional_state_pension: 5_000
+    care_hours: 35
+    country: SCOTLAND
+  output:
+    overlapping_state_pension: 7_000
+    carer_support_payment: 0
+    scottish_carer_supplement: 0
+
+- name: Case 8, nil CSP keeps the premium but gives no UC non-dependant carer exemption.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    care_hours: 35
+    incapacity_benefit_reported: 5_000
+    country: SCOTLAND
+  output:
+    carer_support_payment: 0
+    is_entitled_to_carer_benefit: true
+    carer_premium: 48.15 * 52
+    uc_non_dep_deduction_exempt: false
+
+- name: Case 9, partial CSP gives the UC non-dependant carer exemption.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    care_hours: 35
+    incapacity_benefit_reported: 1_000
+    country: SCOTLAND
+  output:
+    carer_support_payment: 86.45 * 52 - 1_000
+    receives_carer_benefit: true
+    uc_non_dep_deduction_exempt: true
+
+- name: Case 10, a Scottish carer without a claim has no addition premium or receipt exemption.
+  period: 2026
+  input:
+    age: 40
+    care_hours: 35
+    would_claim_carers_allowance: false
+    country: SCOTLAND
+  output:
+    carer_support_payment: 0
+    is_entitled_to_carer_benefit: false
+    is_carer_for_benefits: true
+    benunit_has_carer: true
+    carer_minimum_guarantee_addition: 0
+    carer_premium: 0
+    uc_non_dep_deduction_exempt: false

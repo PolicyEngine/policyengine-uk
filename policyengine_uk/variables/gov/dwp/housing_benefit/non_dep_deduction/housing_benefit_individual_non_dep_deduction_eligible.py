@@ -10,7 +10,8 @@ class housing_benefit_individual_non_dep_deduction_eligible(Variable):
         "who is not liable for rent (see is_non_dependant_of_household_head) "
         "or a member of their own benefit unit who is not the claimant, "
         "partner or a child or young person (see "
-        "is_benefit_unit_non_dependant_for_legacy_benefits)."
+        "is_benefit_unit_non_dependant_for_legacy_benefits), who is not "
+        "exempt (housing_benefit_non_dep_deduction_exempt)."
     )
     definition_period = YEAR
     reference = (
@@ -25,4 +26,6 @@ class housing_benefit_individual_non_dep_deduction_eligible(Variable):
             "is_benefit_unit_non_dependant_for_legacy_benefits", period
         )
         age_eligible = person("age", period) >= p.age_threshold
-        return non_dependant & age_eligible
+        # An exempt non-dependant attracts no deduction (reg 74(7)-(10)).
+        exempt = person("housing_benefit_non_dep_deduction_exempt", period)
+        return non_dependant & age_eligible & ~exempt

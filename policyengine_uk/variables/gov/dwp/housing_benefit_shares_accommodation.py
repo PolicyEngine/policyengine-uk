@@ -9,10 +9,12 @@ class housing_benefit_shares_accommodation(Variable):
         "Whether the family lacks exclusive use of two or more rooms, or of "
         "one room with a bathroom, toilet and kitchen. Rooms shared only with "
         "the family's own household, its non-dependants or people who pay it "
-        "rent still count as exclusive. A boarder or lodger shares the "
-        "householder's rooms, and in a household whose rent is shared every "
-        "liable family shares the others' rooms. The household input "
-        "is_shared_accommodation marks any other case."
+        "rent still count as exclusive. The data record no rooms, so the "
+        "model presumes that a boarder or lodger, and every family liable for "
+        "a household's shared rent, lacks exclusive use, and the household "
+        "input is_shared_accommodation marks any other case. The presumption "
+        "is rebuttable: set this variable directly for a family with, for "
+        "example, an exclusive bedroom and sitting room."
     )
     definition_period = YEAR
     reference = "https://www.legislation.gov.uk/uksi/2006/213/regulation/13D"

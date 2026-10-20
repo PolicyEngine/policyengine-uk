@@ -5,22 +5,32 @@ from policyengine_uk.variables.household.demographic.highest_education import (
 
 
 def in_other_non_liable_family(person, period):
-    """Whether each person is in a family that is neither the oldest adult's
-    nor liable for the rent. This stands in for SI 2012/2885 reg 9(2)(a) and
-    (d)-(e): such a family is outside the claimant's family, and not jointly
-    liable or paying the claimant. It is a proxy: a family jointly liable for
-    the council tax but paying no rent is wrongly included, which #2009's
-    claimant-family test fixes. The eligibility for a non-dependant deduction
-    and the local schemes' aggregation both use this, so they stay on one
-    definition."""
-    return ~person.benunit("benunit_contains_household_head", period) & ~person.benunit(
-        "benunit_is_rent_liable", period
+    """Whether each person is outside every family claiming Council Tax
+    Reduction for the household, outside every family liable for a share of
+    its rent, and not paying the householder for their own occupation: all
+    such people aged 18 or over are the applicants' non-dependants (SI
+    2012/2885 reg 9(2)(a), (d)-(e) and the Welsh and Scottish equivalents).
+    The eligibility for a non-dependant deduction and the local schemes'
+    aggregation both use this, so they stay on one definition."""
+    return (
+        ~person.benunit("council_tax_reduction_claimant_benunit", period)
+        & ~person.benunit("liable_for_share_of_household_rent", period)
+        & ~person("pays_rent_to_householder", period)
     )
 
 
 def is_full_time_student_non_dep(person, period):
     return (person("current_education", period) != EducationType.NOT_IN_EDUCATION) | (
         person("in_HE", period)
+    )
+
+
+def applicant_has_universal_credit(benunit, period):
+    """Whether the Council Tax Reduction applicant has the benefit unit's
+    Universal Credit award. The award belongs to the benefit unit's claimant
+    and partner, so not to a household head who applies alone."""
+    return (benunit("universal_credit", period) > 0) & ~benunit(
+        "council_tax_reduction_head_applies_alone", period
     )
 
 
@@ -39,7 +49,7 @@ def legacy_council_tax_reduction(
     applicable_amount = benunit("council_tax_reduction_applicable_amount", period)
     applicable_income = benunit("council_tax_reduction_applicable_income", period)
     universal_credit = benunit("universal_credit", period)
-    has_uc_award = universal_credit > 0
+    has_uc_award = applicant_has_universal_credit(benunit, period)
     uc_applicable_amount = benunit("uc_maximum_amount", period)
     uc_applicable_income = (
         benunit("uc_earned_income", period)
@@ -112,21 +122,35 @@ def local_non_dep_deductions(
     # A non-dependant of two or more jointly liable people is apportioned
     # equally between them (SI 2012/2885 Sch 1 para 8(5)).
     share = benunit("council_tax_reduction_joint_liability_share", period)
-    return (deductions_in_household - deduction_for_benunit) * share
+    # No deduction from an applicant who, or whose partner, is blind or gets a
+    # qualifying disability benefit, whatever other claimants in the household
+    # get (the councils' schemes follow SI 2012/2886 Sch para 30(6)).
+    applicant_exempt = benunit(
+        "council_tax_reduction_applicant_has_non_dep_exemption", period
+    )
+    return where(
+        applicant_exempt, 0, (deductions_in_household - deduction_for_benunit) * share
+    )
 
 
 def normal_gross_income_non_dep_deduction(
     person,
     period,
     ctr,
-    working_age,
+    in_scheme_area,
     exempt_income_based_benefits=True,
     exempt_uc_no_earned_income=True,
 ):
+    """The deduction a non-dependant brings under one council's scheme.
+
+    It depends on the non-dependant alone. Whether a claimant's award uses it
+    (the claimant's own scheme) and whether the claimant is exempt from
+    non-dependant deductions are decided per claimant family.
+    """
     gross_income_components = [
         "employment_income",
         "self_employment_income",
-        "property_income",
+        "property_income_after_finance_costs",
         "private_pension_income",
         "savings_interest_income",
         "dividend_income",
@@ -149,22 +173,22 @@ def normal_gross_income_non_dep_deduction(
         ctr.non_dep_deduction.amount.calc(weekly_benunit_gross_income),
         ctr.non_dep_deduction.amount.calc(0),
     )
-    claimant_exempt = person.household(
-        "council_tax_reduction_household_has_non_dep_exemption", period
-    )
     full_time_student = is_full_time_student_non_dep(person, period)
+    # No deduction for a non-dependant "who is on" Income Support, income-based
+    # JSA or income-related ESA: an award payable to them (Default Scheme Sch
+    # para 2(3)-(4)). Of a couple, only the payee is on the couple's award, and
+    # another member of their benefit unit's award never counts.
     income_based_benefit = (
-        (person.benunit("income_support", period) > 0)
-        | (person.benunit("jsa_income", period) > 0)
-        | (person.benunit("esa_income", period) > 0)
+        person("is_on_income_support", period)
+        | person("is_on_income_based_jsa", period)
+        | person("is_on_income_related_esa", period)
         | (person.benunit("pension_credit", period) > 0)
     )
     has_uc = person.benunit("universal_credit", period) > 0
     no_earned_income = weekly_benunit_earned_income <= 0
     exempt = (
-        claimant_exempt
-        | full_time_student
+        full_time_student
         | (exempt_income_based_benefits & income_based_benefit)
         | (exempt_uc_no_earned_income & has_uc & no_earned_income)
     )
-    return working_age * where(exempt, 0.0, weekly_deduction * WEEKS_IN_YEAR)
+    return in_scheme_area * where(exempt, 0.0, weekly_deduction * WEEKS_IN_YEAR)
