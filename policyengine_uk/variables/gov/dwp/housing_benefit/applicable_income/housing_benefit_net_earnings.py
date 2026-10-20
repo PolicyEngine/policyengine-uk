@@ -1,4 +1,7 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income._net_earnings import (
+    person_net_earnings,
+)
 
 
 class housing_benefit_net_earnings(Variable):
@@ -12,8 +15,9 @@ class housing_benefit_net_earnings(Variable):
         "in one employment is not set against another) plus statutory sick "
         "and maternity pay (regulation 35(1)(i); pension age regulation "
         "35(1)(h)), less income tax, "
-        "Class 1, 2 and 4 National Insurance, and half of pension "
-        "contributions, floored at zero. For an employee the regulations "
+        "Class 1, 2 and 4 National Insurance, and Housing Benefit's share of "
+        "pension contributions (pension_contribution_deduction_rate, one-half "
+        "in law), floored at zero. For an employee the regulations "
         "deduct the income tax deducted from the earnings (regulation 36(3); "
         "pension age regulation 36(2)); for the self-employed, a notional "
         "basic-rate tax on the profit alone less personal reliefs (regulation "
@@ -44,9 +48,12 @@ class housing_benefit_net_earnings(Variable):
     )
 
     def formula(benunit, period, parameters):
+        p = parameters(period).gov.dwp.housing_benefit.means_test
+        person = benunit.members
+        net_earnings = person_net_earnings(
+            person, period, p.pension_contribution_deduction_rate
+        )
         # The claimant and partner: a child's or young person's earnings are
         # not the claimant's (reg 25(3); pension age reg 23(3)).
-        person = benunit.members
-        net_earnings = person("housing_benefit_person_net_earnings", period)
         claimant_or_partner = person("is_claimant_or_partner", period)
         return benunit.sum(net_earnings * claimant_or_partner)
