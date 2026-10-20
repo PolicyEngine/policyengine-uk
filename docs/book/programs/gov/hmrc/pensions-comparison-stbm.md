@@ -23,7 +23,7 @@ more detail on the PolicyEngine side.
 | How relief is given | Reduces taxable income by the contribution (`pension_contributions_relief`) | Treats contributions as paid net of basic rate: grosses them up by 1/(1 − basic rate) and widens every rate band above the starting band by the gross amount, as under relief at source |
 | Contributions that get relief | The person's own contributions | Employee contributions, additional voluntary contributions **and employer contributions** |
 | Basic-rate relief added to the pot | Not shown separately | Recorded separately (`pension_relief_at_source`) |
-| Earnings limit | Relief capped at employment plus self-employment income | No earnings cap; £3,600 limit when total income is below it |
+| Earnings limit | Relief capped at relevant UK earnings: employment income, employer-paid Statutory Sick Pay and Statutory Maternity Pay, and self-employment profit | No earnings cap; £3,600 limit when total income is below it |
 | Annual allowance | £60,000, tapered on adjusted net income above £260,000 (`pension_annual_allowance`) | Tapered on total income above a threshold-income parameter |
 | Contributions above the allowance | Charged at the marginal rate (`personal_pension_contributions_tax`) | Relief stops at the allowance; no separate charge |
 | Employer contributions in the data | Read from the data (`employer_pension_contributions`) | Imputed when missing from the FRS, using the ONS ASHE employer-contribution bands (`src/Pensions.jl`) |

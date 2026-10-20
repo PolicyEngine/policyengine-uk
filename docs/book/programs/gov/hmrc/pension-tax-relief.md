@@ -15,9 +15,17 @@ with the limit in `utils/pensions.py`) reduces the person's taxable income
 by their pension contributions, up to the annual limit for relief in
 [Finance Act 2004 s. 190](https://www.legislation.gov.uk/ukpga/2004/12/section/190):
 
-- the person's relevant UK earnings, which the model takes as employment
-  income plus self-employment profit (a trading loss counts as zero, and
-  does not reduce employment income);
+- the person's relevant UK earnings
+  ([s. 189(2)](https://www.legislation.gov.uk/ukpga/2004/12/section/189)),
+  which the model takes as employment income, plus employer-paid Statutory
+  Sick Pay and Statutory Maternity Pay (`employment_benefits`, listed as
+  relevant UK earnings in HMRC's
+  [PTM044100](https://www.gov.uk/hmrc-internal-manuals/pensions-tax-manual/ptm044100)),
+  plus self-employment profit (a trading loss counts as zero, and does not
+  reduce employment earnings). Statutory Paternity Pay is not yet counted;
+  open pull request
+  [#2368](https://github.com/PolicyEngine/policyengine-uk/pull/2368) would
+  add it to taxable employment pay;
 - raised towards `gov.hmrc.income_tax.reliefs.pension_contribution.basic_amount`
   (£3,600) where earnings are lower, but only by relief-at-source
   contributions ([s. 191(7)](https://www.legislation.gov.uk/ukpga/2004/12/section/191)).
@@ -35,10 +43,10 @@ gross contribution is £2,880 paid by the contributor plus £720 (20%) that the
 pension provider claims from HMRC and adds to the pension
 ([Finance Act 2004 s. 192](https://www.legislation.gov.uk/ukpga/2004/12/section/192)).
 PolicyEngine does not represent the £720 claim as a payment, and with no
-taxable income the deduction saves no income tax. Two open pull requests
-would change this section once merged:
-[#2464](https://github.com/PolicyEngine/policyengine-uk/pull/2464) would add
-Statutory Sick Pay and Statutory Maternity Pay to relevant earnings, and
+taxable income the deduction saves no income tax. Statutory Sick Pay and
+Statutory Maternity Pay were added to relevant earnings by
+[#2464](https://github.com/PolicyEngine/policyengine-uk/pull/2464), merged on
+19 October 2026. One open pull request would change this section once merged:
 [#2488](https://github.com/PolicyEngine/policyengine-uk/pull/2488) would apply
 the same relief-at-source-only rule to the pension uplift in adjusted total
 income.
