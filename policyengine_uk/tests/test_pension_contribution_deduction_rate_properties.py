@@ -27,7 +27,8 @@ Pension Credit or Universal Credit claim):
    scheme's share (or Housing Benefit's) would miss invariant 1. Pensioners in
    Merton follow the England pensioner scheme, not Merton's, and families in
    Northern Ireland, which has no Council Tax Reduction, read the England
-   default scheme's share.
+   default scheme's share. An explicit example puts a contributing family on
+   every route, so each is tested whatever else Hypothesis draws.
 3. The pensioner earnings disregards do not move when the disregard caps are
    slack.
 4. Differential: at current law Council Tax Reduction net earnings equal
@@ -38,7 +39,7 @@ Pension Credit or Universal Credit claim):
 """
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -184,11 +185,38 @@ def contributions(unit):
     return sum(adult["personal_pension_contributions"] for adult in unit["adults"])
 
 
+def every_route():
+    """One contributing family on each route, a couple on one of them, so that
+    every route is tested whatever Hypothesis draws."""
+    units = []
+    for route in sorted(ROUTES):
+        age = 70 if ROUTES[route][2] else 40
+        adult = dict(
+            age=age, employment_income=20_000.0, personal_pension_contributions=2_000.0
+        )
+        units.append(dict(route=route, adults=[adult]))
+    # A partner two years older, in the same age band as the head.
+    partner_age = units[0]["adults"][0]["age"] + 2
+    units[0]["adults"].append(
+        dict(
+            age=partner_age,
+            employment_income=30_000.0,
+            personal_pension_contributions=1_500.0,
+        )
+    )
+    return units
+
+
 @PROPERTY_SETTINGS
 @given(
     st.lists(families(), min_size=1, max_size=26),
     reforms(),
     st.sampled_from([2026, 2028, 2030]),
+)
+@example(
+    units=every_route(),
+    shares=dict(zip(PARAMETERS, SHARES)),
+    year=2026,
 )
 def test_each_scheme_moves_by_contributions_times_its_own_change_in_share(
     units, shares, year

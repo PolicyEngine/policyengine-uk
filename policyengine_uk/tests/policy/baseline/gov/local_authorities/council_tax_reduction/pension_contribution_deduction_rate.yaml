@@ -698,7 +698,35 @@
   # 300 - 0.25 x 200 = 250, but the Council Tax Reduction cap stays at its own
   # 300 - 0.5 x 200 = 200, so the disregard stays 200 and applicable income
   # 5,000. Reading Housing Benefit's net earnings, the disregard was 250 and
-  # applicable income 5,300 - 0.5 x 200 - 250 = 4,950.
+  # applicable income 5,300 - 0.5 x 200 - 250 = 4,950. The outputs use only
+  # variables that exist before this change, so the case fails there by value.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.dwp.housing_benefit.means_test.pension_contribution_deduction_rate: 0.25
+    people:
+      pensioner:
+        age: 70
+        employment_income: 300
+        personal_pension_contributions: 200
+        state_pension: 5_000
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_uc: false
+        would_claim_pc: false
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    housing_benefit_net_earnings: 250
+    council_tax_reduction_pensioner_earnings_disregard: 200
+    council_tax_reduction_applicable_income: 5_000
+
+- name: Under a reform of the Housing Benefit share Council Tax Reduction net earnings keep the scheme's share
+  # Model reform, not current law. The same pensioner: the England pensioner
+  # scheme's share stays 0.5, so its net earnings stay 300 - 0.5 x 200 = 200.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -720,10 +748,7 @@
         country: ENGLAND
   output:
     council_tax_reduction_pension_contribution_deduction_rate: 0.5
-    housing_benefit_net_earnings: 250
     council_tax_reduction_net_earnings: 200
-    council_tax_reduction_pensioner_earnings_disregard: 200
-    council_tax_reduction_applicable_income: 5_000
 
 - name: A couple's contributions are summed at the scheme's share
   # Scotland, working age. Each partner earns 10,000 and they contribute 2,000

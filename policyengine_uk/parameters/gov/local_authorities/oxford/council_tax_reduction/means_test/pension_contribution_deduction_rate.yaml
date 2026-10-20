@@ -1,4 +1,4 @@
-description: The Oxford Council Tax Reduction scheme deducts this share of pension contributions when it calculates the net earnings and self-employed net profit of a working-age applicant.
+description: The Oxford Council Tax Reduction scheme deducts this share of pension contributions when it calculates the net earnings and self-employed net profit of a working-age applicant who does not receive Universal Credit. An applicant who does is assessed on the net earned income DWP provides (Appendix 3), which the model does not yet do (issue 2520).
 values:
   2026-04-01: 0.5
 metadata:
@@ -11,3 +11,5 @@ metadata:
       href: https://www.oxford.gov.uk/council-tax-reduction/council-tax-reduction-scheme-2026-27
     - title: Oxford City Council Council Tax Reduction Scheme 2026 to 2027, Annex 5 (one half of personal pension scheme payments, self-employed earners)
       href: https://www.oxford.gov.uk/council-tax-reduction/council-tax-reduction-scheme-2026-27/3
+    - title: Oxford City Council Council Tax Reduction Scheme 2026 to 2027, Appendix 3 (applicants who receive Universal Credit)
+      href: https://www.oxford.gov.uk/council-tax-reduction/council-tax-reduction-scheme-2026-27/4
