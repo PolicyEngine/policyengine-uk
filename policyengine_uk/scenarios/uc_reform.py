@@ -1,4 +1,4 @@
-from policyengine_uk.model_api import Scenario
+from policyengine_uk.model_api import Scenario, Variable
 from policyengine_uk import Microsimulation
 from policyengine_uk.utils.data_source import built_from_data
 from policyengine_uk.data.economic_assumptions import PROJECTION_END_YEAR
@@ -262,7 +262,34 @@ def _inactive_health_element_monthly(sim, year: int) -> float:
     )
 
 
+def _add_inactive_health_element_formula(sim):
+    """Keep the counterfactual as calculated output, invalidated by reforms."""
+    system = sim.tax_benefit_system
+    original = system.get_variable("uc_LCWRA_element")
+    if getattr(original, "_inactive_health_element_formula", False):
+        return
+
+    class uc_LCWRA_element(Variable):
+        def formula(benunit, period, parameters):
+            current = original.get_formula(period)(benunit, period, parameters)
+            year = period.start.year
+            if year not in REBALANCING_YEARS:
+                return current
+            simulation = benunit.simulation
+            p = parameters(period).gov.dwp.universal_credit
+            if p.rebalancing.active or _lcwra_amount_is_overridden(simulation, year):
+                return current
+            amount = p.elements.disabled.amount
+            if amount == 0:
+                return current
+            return current * _inactive_health_element_monthly(simulation, year) / amount
+
+    variable = system.update_variable(uc_LCWRA_element)
+    variable._inactive_health_element_formula = True
+
+
 def add_universal_credit_reform(sim: Microsimulation):
+    _add_inactive_health_element_formula(sim)
     rebalancing = sim.tax_benefit_system.parameters.gov.dwp.universal_credit.rebalancing
 
     generator = np.random.default_rng(43)
@@ -281,20 +308,8 @@ def add_universal_credit_reform(sim: Microsimulation):
                 is not None
             ):
                 continue
-            # Re-read the underlying consumer, not an award this modifier
-            # stored on an earlier invocation or before a parameter edit.
+            # Recalculate through the formula, preserving user-supplied awards.
             sim.delete_arrays("uc_LCWRA_element", year)
-            if _lcwra_amount_is_overridden(sim, year):
-                continue
-            current = np.array(sim.calculate("uc_LCWRA_element", year))
-            amount = sim.tax_benefit_system.parameters(
-                str(year)
-            ).gov.dwp.universal_credit.elements.disabled.amount
-            if amount != 0:
-                # Scale the existing consumer's result, retaining its claimant
-                # eligibility/counting rules and zero awards.
-                current *= _inactive_health_element_monthly(sim, year) / amount
-                set_model_value(sim, "uc_LCWRA_element", year, current)
             continue
         is_post_2025_claimant = _new_claimant_health_element_status(
             sim, year, uc_seed < new_claimant_share(year), is_data

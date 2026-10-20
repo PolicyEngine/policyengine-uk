@@ -574,3 +574,32 @@ def test_inactive_health_amount_reform_on_a_built_simulation_keeps_precedence():
     ).apply(sim)
     uc_reform.add_universal_credit_reform(sim)
     assert sim.calculate("uc_LCWRA_element", 2026)[0] == pytest.approx(300 * 12)
+
+
+@pytest.mark.parametrize("repeat_modifier", [False, True])
+def test_inactive_cached_awards_follow_public_late_amount_reform(repeat_modifier):
+    sim = Simulation(
+        situation=_uc_claimant(30),
+        scenario=Scenario(
+            parameter_changes={
+                "gov.dwp.universal_credit.rebalancing.active": False,
+            },
+            applied_before_data_load=True,
+        ),
+    )
+    # Prime both caches before using the public parameter-change lifecycle.
+    assert sim.calculate("uc_LCWRA_element", 2026)[0] > 3_600
+    assert sim.calculate("universal_credit", 2026)[0] > 8_698.80
+    Scenario(
+        parameter_changes={
+            "gov.dwp.universal_credit.elements.disabled.amount": 300,
+        }
+    ).apply(sim)
+    if repeat_modifier:
+        uc_reform.add_universal_credit_reform(sim)
+    # The 2026 single-25+ standard allowance is £424.90/month (SI 2026/113),
+    # plus the explicitly reformed £300/month LCWRA amount, with no reductions.
+    assert [
+        sim.calculate("uc_LCWRA_element", 2026)[0],
+        sim.calculate("universal_credit", 2026)[0],
+    ] == pytest.approx([3_600, 8_698.80], rel=0, abs=0.01)
