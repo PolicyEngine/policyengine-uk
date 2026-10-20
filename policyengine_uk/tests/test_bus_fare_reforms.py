@@ -46,6 +46,65 @@ def bus_dataset(region="SOUTH_EAST", journeys=True, zero=False):
     )
 
 
+def projected_dataset(region="SOUTH_EAST", london_trips=(0, 0), other_trips=(100, 20)):
+    """A 2024 dataset that Simulation extends to later years, so journeys are
+    supplied in each year. A UKMultiYearDataset supplies only its own years."""
+    person = pd.DataFrame(
+        {
+            "person_id": [1, 2],
+            "person_benunit_id": [1, 1],
+            "person_household_id": [1, 1],
+            "age": [30, 30],
+            "bus_in_london_trips": list(london_trips),
+            "other_local_bus_trips": list(other_trips),
+            "bus_pass_eligible": [False, False],
+            "local_bus_single_fare_share": [0.7, 0.7],
+        }
+    )
+    household = pd.DataFrame(
+        {
+            "household_id": [1],
+            "region": [region],
+            "tenure_type": ["OWNED_OUTRIGHT"],
+            "council_tax": [1_500.0],
+            "rent": [0.0],
+            "household_weight": [1.0],
+            "bus_fare_spending": [999.0],
+        }
+    )
+    return UKSingleYearDataset(
+        person=person,
+        benunit=pd.DataFrame({"benunit_id": [1]}),
+        household=household,
+        fiscal_year=2024,
+    )
+
+
+def test_england_fares_follow_each_area_index():
+    # Trips set so 2024-25 spending is in the ratio of published receipts
+    # (BUS05ai: London GBP 1,347.43m, England outside London GBP 2,069.95m).
+    london = 1_347.434943 / (2.369144880275 * 1.017729905895)
+    outside = 2_069.953713 / (1.12466920264 * 1.554716967657)
+    simulation = Simulation(
+        dataset=projected_dataset(london_trips=(london, 0), other_trips=(0, outside))
+    )
+    total = {
+        year: simulation.calculate("bus_fare_spending", year)[0]
+        for year in (2024, 2025)
+    }
+    assert total[2024] == pytest.approx(1_347.434943 + 2_069.953713, rel=1e-5)
+    # Each area moves with its own BUS0415a index, FY2025-26 over FY2024-25:
+    # London 196.1017 / 196.1 and England outside London 214.1797 / 190.2282.
+    assert total[2025] == pytest.approx(
+        1_347.434943 * 1.0000086 + 2_069.953713 * 1.1259092, rel=1e-5
+    )
+    # So England rises 7.6%, more than DfT's England index (205.616 / 193.297,
+    # +6.4%). Its December 2024 to March 2025 step is 5.6%, against 11.0%
+    # outside London and none in London, so it weights outside London at about
+    # one half where receipts weight it at 61%.
+    assert total[2025] / total[2024] == pytest.approx(1.0763, abs=1e-4)
+
+
 def test_loaded_total_does_not_mask_journeys_or_cap_reforms():
     simulation = Simulation(
         dataset=bus_dataset(),

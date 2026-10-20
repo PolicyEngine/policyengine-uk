@@ -186,6 +186,13 @@ REMOVED_PARAMETERS = {
         "income that is not qualifying income for Savings Credit (SPC Regs "
         "2002 reg 9), instead.",
     ),
+    "gov.dft.bus.reference_year": RemovedParameter(
+        "removed bus fare reference year",
+        "Bus fares now follow gov.dft.bus.local_bus_fares_index from the "
+        "benchmark year gov.dft.bus.benchmark_year, and the cap term compares "
+        "gov.dft.bus.fares.cap with gov.dft.bus.reference_fares.cap in the same "
+        "year. Change gov.dft.bus.fares.cap to model a cap.",
+    ),
 }
 
 

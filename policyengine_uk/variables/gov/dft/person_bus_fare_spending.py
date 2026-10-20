@@ -6,10 +6,11 @@ from policyengine_uk.utils.supplied_inputs import supplied_input
 class person_bus_fare_spending(Variable):
     label = "personal bus and coach fare spending"
     documentation = (
-        "Fare-paying bus journeys priced at the published yield, with changes "
-        "in the single-fare cap applied only to single-ticket boardings in "
-        "England outside London. Without usable journey data, allocates "
-        "reported household spending by age. See docs/engineering/bus-fares.md."
+        "Fare-paying bus journeys priced at the published yield, moved by each "
+        "area's published fares index, with changes in the single-fare cap "
+        "applied only to single-ticket boardings in England outside London. "
+        "Without usable journey data, allocates reported household spending "
+        "by age. See docs/engineering/bus-fares.md."
     )
     entity = Person
     definition_period = YEAR
@@ -56,17 +57,40 @@ class person_bus_fare_spending(Variable):
             [p.boardings_per_trip.SCOTLAND, p.boardings_per_trip.NORTHERN_IRELAND],
             default=p.boardings_per_trip.ENGLAND_OUTSIDE_LONDON,
         )
+        # Each area's benchmark yield moves with its published fares index.
+        # Northern Ireland has no index, so its yield moves with CPI.
+        benchmark = parameters(f"{int(p.benchmark_year)}-01-01").gov
+        index = p.local_bus_fares_index
+        benchmark_index = benchmark.dft.bus.local_bus_fares_index
+        cpi_growth = (
+            parameters(period).gov.economic_assumptions.indices.obr.consumer_price_index
+            / benchmark.economic_assumptions.indices.obr.consumer_price_index
+        )
+        london_yield = (
+            p.yield_per_boarding.LONDON * index.LONDON / benchmark_index.LONDON
+        )
         other_yield = select(
             [in_scotland, in_ni],
-            [p.yield_per_boarding.SCOTLAND, p.yield_per_boarding.NORTHERN_IRELAND],
-            default=p.yield_per_boarding.ENGLAND_OUTSIDE_LONDON,
+            [
+                p.yield_per_boarding.SCOTLAND
+                * index.SCOTLAND
+                / benchmark_index.SCOTLAND,
+                p.yield_per_boarding.NORTHERN_IRELAND * cpi_growth,
+            ],
+            default=p.yield_per_boarding.ENGLAND_OUTSIDE_LONDON
+            * index.ENGLAND_OUTSIDE_LONDON
+            / benchmark_index.ENGLAND_OUTSIDE_LONDON,
         )
+        # The index already reflects the cap in reference_fares. Add the
+        # effect of the cap differing from it in the same year: scheduled
+        # changes after the last published quarter, and reforms.
+        year = period.start.year
         uncapped = max_(person("local_bus_uncapped_single_fare", period), 0)
         current_single = annual_capped_fare(
-            uncapped, parameters.gov.dft.bus.fares, period.start.year
+            uncapped, parameters.gov.dft.bus.fares, year
         )
         reference_single = annual_capped_fare(
-            uncapped, parameters.gov.dft.bus.reference_fares, int(p.reference_year)
+            uncapped, parameters.gov.dft.bus.reference_fares, year
         )
         single_share = clip(person("local_bus_single_fare_share", period), 0, 1)
         other_yield = max_(
@@ -75,9 +99,7 @@ class person_bus_fare_spending(Variable):
             0,
         )
         spending = (
-            max_(london_trips, 0)
-            * p.boardings_per_trip.LONDON
-            * p.yield_per_boarding.LONDON
+            max_(london_trips, 0) * p.boardings_per_trip.LONDON * london_yield
             + max_(other_trips, 0) * other_boardings * other_yield
         )
         spending *= (

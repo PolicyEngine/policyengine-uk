@@ -66,6 +66,47 @@ residents because non-residents also travel there. Scotland and Northern
 Ireland use the English other-local-bus trip rate as a proxy, as Microcosm does.
 These translations include interchanges and differences between operator
 boardings and resident trips; they are not counts of legs for a known trip.
+`gov.dft.bus.benchmark_year` (2024) names the fiscal year these facts describe.
+
+## Fares by year
+
+In other years each area's yield moves with its published fares index:
+
+```
+yield(t) = benchmark_yield * index(t) / index(benchmark_year)
+```
+
+`gov.dft.bus.local_bus_fares_index` holds DfT's
+[BUS0415a](https://www.gov.uk/government/statistical-data-sets/bus04-costs-fares-and-revenue)
+quarter-end values (March 2005 = 100) for London, England outside London and
+Scotland, from the release to March 2026. Each value is dated at the start of
+the quarter it ends, and `fiscal_year_blend` day-weights the quarters over
+6 April to 5 April, the model's year. FY2024–25 outside London is therefore
+(86 × 181.6 + 92 × 185.7 + 92 × 185.9 + 90 × 206.4 + 5 × 210.5) / 365 = 190.23,
+within 0.2% of the mean of its four quarter ends (189.9). After the last
+published quarter the index grows with the OBR consumer price index each
+January, as `private_rent_index` does. Northern Ireland has no published index,
+so its yield grows with CPI from the benchmark year. Wales stays unpriced.
+
+| Area | FY2024–25 | FY2025–26 | FY2026–27 | FY2027–28 |
+|---|---:|---:|---:|---:|
+| London | 196.10 | 196.10 | 197.13 | 201.08 |
+| England outside London | 190.23 | 214.18 | 219.09 | 223.48 |
+| Scotland | 210.63 | 229.94 | 235.90 | 240.63 |
+
+FY2025–26 and earlier are published; later years are CPI projections. The
+index records prices paid, so it already contains each cap in force while it
+is published, including the rise to £3 in January 2025 (outside London 185.9
+in December 2024, 206.4 in March 2025). The cap term below adds only what the
+index cannot contain.
+
+Each area follows its own index, so the England total moves with the
+receipts-weighted mix of the London and outside-London indices: +7.6% in
+FY2025–26. DfT's England index rose 6.4%. Its step from December 2024 to
+March 2025 was 5.6%, against 11.0% outside London and none in London, so it
+weights outside London at about one half, where receipts weight it at 61%.
+A receipts target moved by the England index therefore sits below the model's
+England total.
 
 ## Caps and the uncapped counterfactual
 
@@ -80,23 +121,38 @@ The cap does not affect the London series, Scottish or Northern Irish fares.
 England outside London uses a representative participating-service assumption;
 route-level participation and local lower caps require caller-supplied fares.
 
-The published yield already includes ticket discounts and the benchmark cap.
-For an English fare-paying person's other-local-bus boardings, the model uses:
+The published yield and index already include ticket discounts and the cap in
+force. `gov.dft.bus.reference_fares.cap` records that cap: the cap in force up
+to the last published quarter of the index (£3 from January 2025), held after
+it. For an English fare-paying person's other-local-bus boardings, the model
+uses:
 
 ```
-current_yield = max(0, benchmark_yield + single_share *
-                   (annual_min(uncapped_fare, current_cap) -
-                    annual_min(uncapped_fare, reference_cap)))
-spending = trips * boardings_per_trip * current_yield
+yield(t) = max(0, benchmark_yield * index(t) / index(benchmark_year)
+                  + single_share *
+                    (annual_min(uncapped_fare, fares.cap, t) -
+                     annual_min(uncapped_fare, reference_fares.cap, t)))
+spending = trips * boardings_per_trip * yield(t)
 ```
+
+Both schedules are read in the same year. While the index is published they
+agree and the cap term is zero, so the baseline is the published path. After
+the last published quarter the term adds the scheduled changes: the £2 cap from
+January 2027 and its end in 2028. A reform of `fares.cap` adds its own
+difference from the reference. Leave `reference_fares` unchanged in reforms.
+When a newly published quarter is added to the index, extend
+`reference_fares.cap` with the cap then in force;
+`policyengine_uk/tests/test_bus_fare_parameters.py` fails until the two
+schedules agree up to the last published quarter.
 
 `annual_min` caps the fare in each date interval, then weights the intervals
 from 6 April to 5 April, assuming uniform journeys through the year. It does
-not cap a fare using the average cap. Both `fares` and `reference_fares` preserve
-calendar dates. `reference_year` is 2024 and `reference_fares` holds the benchmark
-schedule fixed when the policy cap changes. The source receipts use 1 April to
-31 March; this approximation treats them as the corresponding model year's
-benchmark. Annual Scenario changes apply to the full model fiscal year.
+not cap a fare using the average cap. Both `fares` and `reference_fares` keep
+calendar dates (their index files propagate `preserve_calendar_dates` to the
+cap leaves), so a cap change part-way through a year applies from its date.
+The source receipts use 1 April to 31 March; this approximation treats them as
+the corresponding model year's benchmark. Annual Scenario changes apply to the
+full model fiscal year.
 
 The default uncapped fare is £2.748019953976. This is an aggregate assumption,
 not an observed fare distribution. The FY2024–25 cap grant is £515,693,216.60.
@@ -127,8 +183,8 @@ spending. Both default to one; they are neutral reform controls rather than
 historical index series. Keep the denominator positive. `ridership_index`
 defaults to one and multiplies journey-priced spending, leaving supplied
 journey inputs intact. The model includes no demand elasticity or automatic
-ridership growth. Benchmark yields and trip translations stay nominally
-constant after 2024 unless changed explicitly. Dataset CPI-uprated household
+ridership growth. Trip translations stay constant after 2024 unless changed
+explicitly; yields move with the fares index. Dataset CPI-uprated household
 bus totals do not determine prices where journeys are available.
 
 A proportional scenario can set `gov.dft.bus.fare_index` to 0.9 for a 10%
