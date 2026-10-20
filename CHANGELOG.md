@@ -1,3 +1,39 @@
+## [2.141.2] - 2026-10-20
+
+### Fixed
+
+- - Council Tax Reduction and Income Support read their own pension contribution deduction shares (one-half in each scheme) instead of a hard-coded 0.5, and the Council Tax Reduction pensioner earnings disregards cap at net earnings with the scheme's own share, so a reform of Housing Benefit's share no longer moves them.
+- - Carer's Allowance earnings read their pension contribution deduction share (one-half, Computation of Earnings Regulations 1996 regs. 10(4)(b) and 13) from a new parameter, `gov.dwp.carers_allowance.pension_contribution_deduction_rate`, instead of a hard-coded 0.5, so the share can be reformed.
+
+
+## [2.141.1] - 2026-10-20
+
+### Fixed
+
+- Give pension-age Housing Benefit claimants who attained State Pension age on or after 1 April 2021 (and couples who both did) the lower personal allowance in SI 2006/214 Sch 3 para 1(1)(c) and (2)(c), £238.00 and £363.25 a week in 2026-27, instead of the £256.00 and £383.35 kept by earlier cohorts. England's pensioner Council Tax Reduction applies the same split (SI 2012/2885 Sch 2 para 1); Scotland and Wales keep one rate. Adds `state_pension_age_date`, the day each person attains State Pension age.
+
+
+## [2.141.0] - 2026-10-20
+
+### Fixed
+
+- - Pension Credit income now counts industrial injuries disablement benefit, severe disablement allowance, incapacity benefit and maternity allowance (SPC Regs 2002 reg 15(1)); Savings Credit treats working tax credit, incapacity benefit, severe disablement allowance and maternity allowance as non-qualifying income (reg 9); Housing Benefit income now counts industrial injuries disablement benefit, severe disablement allowance and incapacity benefit.
+- - Count war disablement pensions, war widow's or widower's pensions and Armed Forces Compensation Scheme guaranteed income payments of the claimant and partner in Pension Credit income, each payment less £10 a week (State Pension Credit Regulations 2002 Sch. IV para. 1). Housing Benefit and Council Tax Reduction continue to disregard them in full, including where they take the Pension Credit assessment of a savings-credit-only award.
+
+### Removed
+
+- - Removed the unused duplicate parameter `gov.dwp.pension_credit.income.savings_credit_excluded_sources`; `gov.dwp.pension_credit.savings_credit.excluded_income` is the list the model reads.
+
+
+## [2.140.1] - 2026-10-20
+
+### Fixed
+
+- - Fixed Housing Benefit applicable income to use the configured pension contribution deduction rate, preserving the current 50% deduction.
+- Preserve dataset-supplied values for variables with formulas in default input DataFrame exports, so reloading an export retains inputs such as reported State Pension. Exclude calculated caches and model-generated pseudo-inputs while retaining recorded input storage and branch precedence.
+- - Based TV licence charges on licensable viewing and corrected the HBAI free-licence value.
+
+
 ## [2.140.0] - 2026-10-20
 
 ### Added

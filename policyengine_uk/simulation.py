@@ -51,6 +51,7 @@ from policyengine_uk.data.capital_gains_projection import (
     capital_gains_application_metadata,
 )
 from policyengine_uk.utils.dependencies import get_variable_dependencies
+from policyengine_uk.utils.input_dataframe_export import input_dataframe
 from policyengine_uk.utils.supplied_inputs import (
     SUPPLIED_INPUT_VARIABLES,
     copy_model_values,
@@ -1051,7 +1052,9 @@ class Simulation(CoreSimulation):
         """Export the simulation's inputs as a DataFrame that
         ``Simulation(dataset=...)`` loads back.
 
-        policyengine-core exports each input for the periods it was set for.
+        Export supplied values, including overrides of variables with formulas,
+        for the periods they were set for. Calculated caches and values stored
+        by the model itself are not supplied inputs.
         The identifiers are also given for every whole year a column names,
         where a simulation built from the frame holds them, so that the frame
         loads back to a simulation that exports the same frame. See
@@ -1061,12 +1064,12 @@ class Simulation(CoreSimulation):
             include_computed_variables: If True, export every stored value,
                 calculated ones included, as policyengine-core does.
         """
-        return with_identifiers_in_each_year(
-            super().to_input_dataframe(
-                include_computed_variables=include_computed_variables
-            ),
-            self.tax_benefit_system,
+        frame = (
+            super().to_input_dataframe(include_computed_variables=True)
+            if include_computed_variables
+            else input_dataframe(self)
         )
+        return with_identifiers_in_each_year(frame, self.tax_benefit_system)
 
     def build_from_dataset(self, dataset: Dataset) -> None:
         """Build simulation from a Dataset object.
