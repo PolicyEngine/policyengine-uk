@@ -289,6 +289,10 @@ def whole_pence_around_a_limit(draw):
     suppress_health_check=[HealthCheck.too_slow],
 )
 @given(case=whole_pence_around_a_limit())
+# Either side of the boundary in 2020-21 and 2024-25, where float32 pence
+# misjudged the penny over (#2541).
+@example(case=(2020, 128, [665_651, 665_652]))
+@example(case=(2024, 151, [785_251, 785_252]))
 def test_whole_pence_are_judged_exactly(case):
     """Invariant 5."""
     year, limit, pence = case
@@ -315,6 +319,9 @@ def amounts_around_a_limit(draw):
     suppress_health_check=[HealthCheck.too_slow],
 )
 @given(case=amounts_around_a_limit())
+# 2022-23: £6,864.51 and £6,864.52 a year, a penny a week either side of the
+# boundary of the £132 limit, with amounts a tenth of a penny off them.
+@example(case=(2022, 132, [6_864.509, 6_864.51, 6_864.511, 6_864.52, 6_864.521]))
 def test_the_formula_matches_exact_arithmetic_and_rises_with_earnings(case):
     """Invariants 6 and 7, for amounts with any fraction of a penny."""
     year, limit, amounts = case
