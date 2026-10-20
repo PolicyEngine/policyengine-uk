@@ -3,16 +3,38 @@ import numpy as np
 from policyengine_uk.utils.supplied_inputs import supplied_input
 
 
-def relevant_uk_earnings(person, period):
-    """FA 2004 s.189 earnings, including employer-paid taxable SSP/SMP.
+def trading_profits_before_losses(person, period, hmrc):
+    """Trading profits chargeable under ITTOIA 2005 Part 2, before losses.
 
-    Statutory employment pay is held separately from wages. A trading loss
-    does not reduce those employment earnings (HMRC PTM044100).
+    Capital allowances are a trading expense (CAA 2001 s.247) and the trading
+    allowance replaces expenses (ITTOIA 2005 s.783AC), so both come off.
+    Losses brought forward (ITA 2007 s.83) are a Step 2 relief, which the
+    model deducts from trading profits (loss_relief); they stay in here.
     """
-    return (
-        person("employment_income", period)
-        + person("employment_benefits", period)
-        + np.maximum(0, person("self_employment_income", period))
+    from policyengine_core.model_api import add
+
+    deductions = [
+        deduction
+        for deduction in hmrc.income_tax.bases.taxable_self_employment_income_deductions
+        if deduction != "loss_relief"
+    ]
+    return np.maximum(
+        0, person("self_employment_income", period) - add(person, period, deductions)
+    )
+
+
+def relevant_uk_earnings(person, period, hmrc):
+    """FA 2004 s.189(2) relevant UK earnings.
+
+    Employment income chargeable to income tax, before the deductions for
+    pension contributions that this relief itself gives: pay and
+    employer-paid taxable SSP/SMP, which the model holds separately from
+    wages, less allowable expenses. Trading income is the profit chargeable
+    under ITTOIA 2005 Part 2, before losses.
+    A trading loss does not reduce employment earnings (HMRC PTM044100).
+    """
+    return person("taxable_employment_income", period) + (
+        trading_profits_before_losses(person, period, hmrc)
     )
 
 
@@ -46,11 +68,9 @@ def annual_allowance_net_income(person, period, parameters):
     relievable net pay. A supplied legacy return is actual pay/member payment;
     the computed NICs-only excess never enters income or contributions.
     """
-    from policyengine_core.model_api import add
-
     hmrc = parameters(period).gov.hmrc
     actual_member_contributions = person("pension_contributions", period)
-    actual_earnings = relevant_uk_earnings(person, period)
+    actual_earnings = relevant_uk_earnings(person, period, hmrc)
     supplied_ani = supplied_input(person, "adjusted_net_income", period)
     if supplied_ani is not None:
         # Supplied ANI already determines net income, including its losses.
@@ -76,29 +96,18 @@ def annual_allowance_net_income(person, period, parameters):
     if not np.any((relievable_net_pay > 0) & (person("trading_loss", period) > 0)):
         return net_income
 
-    actual_taxable_pay = person("taxable_employment_income", period)
     income_before_loss = np.maximum(
         0, person("net_income_before_trade_loss_relief", period)
     )
     # Rebuild adjusted_total_income (s.24A(8)) from actual pay and member
     # contributions, retaining its treatment of brought-forward trade losses
     # and pension relief. Brought-forward losses only reduce trading profits.
-    other_deductions = [
-        deduction
-        for deduction in hmrc.income_tax.bases.taxable_self_employment_income_deductions
-        if deduction != "loss_relief"
-    ]
-    profits_before_carry_forward = np.maximum(
-        0,
-        person("self_employment_income", period)
-        - add(person, period, other_deductions),
-    )
-    losses_brought_forward_deducted = profits_before_carry_forward - person(
-        "taxable_self_employment_income", period
-    )
+    losses_brought_forward_deducted = trading_profits_before_losses(
+        person, period, hmrc
+    ) - person("taxable_self_employment_income", period)
     relieved_contributions = pension_contributions_relief_amount(
         actual_member_contributions,
-        actual_taxable_pay + profits_before_carry_forward,
+        actual_earnings,
         person("personal_pension_contributions", period),
         person("age", period),
         hmrc,

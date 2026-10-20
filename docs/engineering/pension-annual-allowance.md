@@ -76,6 +76,14 @@ net pay. Threshold income deducts [FA 2004 ss. 188–191 pension
 relief](https://www.legislation.gov.uk/ukpga/2004/12/section/188) on actual
 earnings and contributions.
 
+Ordinary pension relief, the ordinary `adjusted_total_income` and both income
+tests take relevant UK earnings
+([s. 189(2)](https://www.legislation.gov.uk/ukpga/2004/12/section/189)) from
+one helper, `relevant_uk_earnings`: employment income chargeable to income
+tax before deductions for pension contributions (pay and employer-paid taxable
+statutory pay, less allowable expenses), and trading profits after capital
+allowances and the trading allowance but before losses brought forward.
+
 An explicitly supplied `adjusted_net_income` is authoritative. For this input
 path, the helper restores gross Gift Aid and pension relief recomputed on
 actual contributions and earnings. It does not remove an actual supplied
