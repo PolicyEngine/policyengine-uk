@@ -36,8 +36,12 @@ adult) claims in their own right, so:
   member reports never changes any of these readers for the claimant's family
   or for its existing members;
 - adding such a member changes a reader only by ending the family's severe
-  disability premium, which a non-dependant aged 18 or over does (IS Regs
-  1987 Sch 2 para 13(2)(a)(ii); HB Regs 2006 Sch 3 para 14(2)(a)(ii)). That
+  disability premium, or, for the two Council Tax Reduction readers, by
+  becoming the household head (these families flag none, so the eldest
+  member is the head) who is liable and applies alone, so that the applicant
+  changes (CTR_APPLICANT_READERS). A non-dependant aged 18 or over ends the
+  premium (IS Regs 1987 Sch 2 para 13(2)(a)(ii); HB Regs 2006 Sch 3 para
+  14(2)(a)(ii)). That
   rule is subject to para 13(3), which ignores a non-dependant on a
   qualifying disability benefit, a blind one and some carers; the added
   members here are none of those. The family's Income Support then falls by
@@ -244,6 +248,40 @@ def other_members(draw):
     }
 
 
+# Council Tax Reduction reads the applicant and partner, and the applicant is
+# the person liable for the council tax, whom the model takes to be the
+# household head (is_resolved_household_head; PolicyEngine/policyengine-uk#2009
+# and #2078). These families flag no head, so the head is the eldest member: an
+# added member older than the claimant and partner becomes the liable head,
+# who then applies alone (council_tax_reduction_head_applies_alone). Their
+# presence then changes the applicant, which is intended, so those families
+# are left out of the comparison with the family on its own for these two
+# readers. What the added member reports still never changes them: the first
+# property compares a silent added member with the member as drawn for every
+# family.
+CTR_APPLICANT_READERS = [
+    "council_tax_reduction_applicable_income",
+    "council_tax_reduction_relevant_income_based_benefit",
+]
+
+
+def became_ctr_applicant(sim, k, starts, sizes):
+    """For each of the first k units, whether the member added in unit k + i
+    made it a family whose household head applies alone, and checks that this
+    happens only where that member is the resolved household head."""
+    head_alone = sim.calculate("council_tax_reduction_head_applies_alone", YEAR)
+    head = sim.calculate("is_resolved_household_head", YEAR)
+    changed = []
+    for i in range(k):
+        became = bool(head_alone[k + i]) and not bool(head_alone[i])
+        if became:
+            added = starts[k + i] + sizes[k + i] - 1
+            assert head[added], i
+            event("added member became the Council Tax Reduction applicant")
+        changed.append(became)
+    return changed
+
+
 def situation(units, year=YEAR, benunit_inputs=None):
     people, benunits, households = {}, {}, {}
     for i, (adults, non_couple, household, other) in enumerate(units):
@@ -387,6 +425,7 @@ def test_other_members_awards_never_change_the_readers(drawn):
         fall = income_support[i] - income_support[k + i]
         lost = premium[i] - premium[k + i]
         assert -0.01 <= fall <= lost + 0.01, drawn[i]
+    new_applicant = became_ctr_applicant(sim, k, starts, sizes)
     for variable in FAMILY_READERS:
         values = sim.calculate(variable, YEAR)
         for i in range(k):
@@ -395,6 +434,8 @@ def test_other_members_awards_never_change_the_readers(drawn):
                 variable,
                 drawn[i],
             )
+            if variable in CTR_APPLICANT_READERS and new_applicant[i]:
+                continue
             # Their presence changes one only by ending the premium, and
             # never the awards the family's own members report.
             if not premium_ended[i] or variable in PREMIUM_FREE_READERS:
@@ -589,9 +630,12 @@ def _family_readers_never_change(drawn, enter_is_mixed_age_couple=False):
     k = len(drawn)
     for i in range(k):
         assert not flags[starts[k + i] + sizes[k + i] - 1], drawn[i]
+    new_applicant = became_ctr_applicant(sim, k, starts, sizes)
     for variable in FAMILY_READERS:
         values = sim.calculate(variable, YEAR)
         for i in range(k):
+            if variable in CTR_APPLICANT_READERS and new_applicant[i]:
+                continue
             assert np.isclose(values[i], values[k + i], atol=0.01), (
                 variable,
                 drawn[i],
