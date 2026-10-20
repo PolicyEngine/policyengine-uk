@@ -47,7 +47,25 @@ from the means test, gated by the `would_claim_WTC` take-up input.
 The `min_hours` tree (`min_hours/default.yaml`, `lower.yaml`,
 `old_age.yaml`, `couple_with_children.yaml`) encodes the bands that gate
 WTC eligibility — typically 30 hours/week for adults with no kids, 16 for
-lone parents, with a lower band for over-60s.
+lone parents, with a lower band for workers aged 60 or over.
+
+For the joint-claim rules from 6 April 2012, an individual's own age or
+disability must qualify that individual's hours. Two childless workers cannot
+pool 15 hours each to meet the ordinary 30-hour route, and a nonworking
+partner cannot lend their age or disability to the worker. Parents can combine
+24 hours, with at least one claimant working 16 hours. Hours worked by a
+child or other dependant do not count towards that total. The `min_age` and
+`min_age_without_children_or_disability` parameters provide the 16-year and
+25-year thresholds; the existing `min_hours.old_age` parameter provides 60.
+Native annual formula selection retains the earlier formula for a year whose
+start precedes 6 April 2012; this change does not certify all earlier rules.
+
+`is_disabled_for_benefits` remains a generic proxy for the statutory disabled
+worker conditions. For parents, the model also retains its existing proxy
+for an exception based on the other partner's disability. These flags do not
+encode all regulation 9 or regulation 13 tests, incapacity, hospital or prison
+status, carer's allowances, or the expected four-week and paid-work conditions.
+The reported-award, migration, take-up and scheme-closure rules remain separate.
 
 ## Child Tax Credit (CTC)
 
@@ -59,10 +77,43 @@ benunit worked. PolicyEngine computes it via `ctc_entitlement`, gated by
 
 | Element | Parameter |
 |---------|-----------|
-| Family | `family_element.yaml` (extinct from 2017 for new claims) |
+| Family | `family_element.yaml` (one amount, subject to the birth-date condition below) |
 | Per qualifying child | `child_element.yaml` |
 | Disabled child addition | `dis_child_element.yaml` |
 | Severely disabled child addition | `severe_dis_child_element.yaml` |
+
+### Family element birth-date condition
+
+From 6 April 2017, the family element is included only if a claimant or
+joint claimant is responsible for a qualifying child or qualifying young
+person born **strictly before 6 April 2017**. A child born on that date
+does not qualify. One qualifying child is enough for the single family
+amount; an older adult or an excluded child cannot unlock it. The model
+uses its existing CTC child/QYP responsibility mask, including its existing
+looked-after-child and own-right-benefit approximations.
+
+`CTC_family_element` applies this condition separately from the individual
+child element's two-child limit. Its activation and cutoff parameters live
+under `child_tax_credit/eligibility/`; reforming them does not change the
+individual-element cutoff. The existing flat £545 amount is unchanged.
+Before the condition applies, supported model years retain the prior flat
+family amount. The false activation value at 2015-01-01 anchors model
+coverage, rather than statutory commencement. Annual parameters use the
+existing April sampling convention; this is not a part-year award model.
+
+The rule reuses `birth_day`: a supplied valid `date_of_birth` must agree
+with legal age on 6 October. A missing or zero date uses the existing
+annual age and months-since-birthday fallback; `birth_year` is not a
+replacement. Those conventions are not exact birth-date observations.
+Explicit family-element and final-amount inputs retain the ordinary model
+override contract and are not evidence of legal entitlement. Continuing
+claims, income tests, minimum awards, other elements and 2025 closure are
+unchanged; this update does not audit daily statutory award rounding.
+
+Historical coverage remains incomplete: this change addresses the
+supported 2015+ birth-date rule only. The pre-2011 baby addition and
+2003–2014 coverage remain follow-up work under issue #2050; no raw
+historical values or annual-conversion rules were extended.
 
 ### Two-child limit
 
