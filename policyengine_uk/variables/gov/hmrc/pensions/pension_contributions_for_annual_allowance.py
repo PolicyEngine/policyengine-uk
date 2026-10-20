@@ -33,12 +33,10 @@ class pension_contributions_for_annual_allowance(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        # The returned sacrifice is still an employer payment in income-tax
-        # law. Remove it from member contributions before the age exclusion,
-        # then include the full employer sacrifice once at every age.
-        member_contributions = person("pension_contributions", period) - person(
-            "salary_sacrifice_returned_to_income", period
-        )
+        # A supplied ordinary return is an actual member payment, while the
+        # NICs-only excess is not. Include full employer sacrifice separately
+        # once at every age, retaining the age exclusion for member payments.
+        member_contributions = person("pension_contributions", period)
         under_age_limit = (
             person("age", period)
             < parameters(
