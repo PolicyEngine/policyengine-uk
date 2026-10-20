@@ -444,9 +444,9 @@ DEPENDANT_CHANGES = {
     st.integers(16, 19),
 )
 @example([GENERAL_RULES_PENSIONER, KINGSTON_COUPLE], "iidb", 17)
-# Found by CI: a dependant of 17 is under 16 years younger than a claimant of
+# Found by CI: a dependant of 19 is under 16 years younger than a claimant of
 # 32, so without the declared roles the model read them as a partner.
-@example([YOUNG_PARENT], "iidb", 17)
+@example([YOUNG_PARENT], "iidb", 19)
 def test_dependants_benefits_never_count(families, change, dependant_age):
     families = [{**fam, "dependant_age": dependant_age} for fam in families]
     variants = []
