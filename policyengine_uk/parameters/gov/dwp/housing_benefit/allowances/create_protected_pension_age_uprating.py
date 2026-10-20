@@ -150,18 +150,27 @@ def _projection_parameter(
 def add_protected_pension_age_uprating(
     parameters: ParameterNode,
     unreformed: ParameterNode | None = None,
+    intermediate_projection: bool = False,
 ) -> ParameterNode:
     """Add relationship-specific protected-allowance forecast indices.
 
     A guarantee reform does not re-derive the separately set HB allowance.
-    Use its unreformed guarantee component so the enacted-base validation
-    remains meaningful, even when a reform exceeds the protected allowance.
-    Earnings and CPI inputs still come from the reform's parameter tree.
+    Use the unreformed guarantee unless the corresponding HB base changes.
+    A changed allowance instead uses the reformed guarantee, so the guard
+    validates a consistent pair even for joint cuts and intermediate rebuilds.
+    Intermediate prior-law rebuilds can temporarily omit a guarantee cut
+    while retaining the HB cut. Use the enacted pair for that transient invalid
+    pair; the completed reform is still validated. Earnings and CPI inputs
+    come from the reform's parameter tree.
     """
     allowances = parameters.gov.dwp.housing_benefit.allowances
-    guarantee_source = parameters if unreformed is None else unreformed
+    projection_base = parameters if unreformed is None else unreformed
+    base_allowances = projection_base.gov.dwp.housing_benefit.allowances
+    reformed_guarantees = (
+        parameters.gov.dwp.pension_credit.guarantee_credit.minimum_guarantee
+    )
     guarantees = (
-        guarantee_source.gov.dwp.pension_credit.guarantee_credit.minimum_guarantee
+        projection_base.gov.dwp.pension_credit.guarantee_credit.minimum_guarantee
     )
     earnings_index = (
         parameters.gov.economic_assumptions.indices.statutory_earnings_floor
@@ -176,11 +185,20 @@ def add_protected_pension_age_uprating(
     allowances.add_child("protected_pension_age_uprating", projection)
 
     relationship_parameters = {
-        "single": (allowances.single.aged, guarantees.SINGLE),
-        "couple": (allowances.couple.aged, guarantees.COUPLE),
+        "single": (base_allowances.single.aged, guarantees.SINGLE),
+        "couple": (base_allowances.couple.aged, guarantees.COUPLE),
     }
     final_observation_year = last_input_year(parameters)
     for relationship, (allowance, guarantee) in relationship_parameters.items():
+        reformed_allowance = getattr(allowances, relationship).aged
+        if reformed_allowance(BASE_INSTANT) != allowance(BASE_INSTANT):
+            reformed_guarantee = getattr(reformed_guarantees, relationship.upper())
+            if not (
+                intermediate_projection
+                and reformed_allowance(BASE_INSTANT) < reformed_guarantee(BASE_INSTANT)
+            ):
+                allowance = reformed_allowance
+                guarantee = reformed_guarantee
         projection.add_child(
             relationship,
             _projection_parameter(

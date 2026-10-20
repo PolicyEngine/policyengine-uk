@@ -206,13 +206,18 @@ def add_savings_credit_threshold_projection(
     """Add forecast indices for each Savings Credit threshold.
 
     The separately set threshold is not re-derived by a guarantee reform,
-    including a reform to the projection's base year. Other inputs and any
-    explicit threshold reform still come from the reform's parameter tree.
+    including a reform to the projection's base year. Use the unreformed
+    guarantee unless the corresponding threshold base changes, in which case
+    use the reformed pair. Other inputs come from the reform's tree.
     """
     savings_credit = parameters.gov.dwp.pension_credit.savings_credit
-    guarantee_source = parameters if unreformed is None else unreformed
+    projection_base = parameters if unreformed is None else unreformed
+    base_thresholds = projection_base.gov.dwp.pension_credit.savings_credit.threshold
     guarantees = (
-        guarantee_source.gov.dwp.pension_credit.guarantee_credit.minimum_guarantee
+        projection_base.gov.dwp.pension_credit.guarantee_credit.minimum_guarantee
+    )
+    reformed_guarantees = (
+        parameters.gov.dwp.pension_credit.guarantee_credit.minimum_guarantee
     )
     earnings_index = (
         parameters.gov.economic_assumptions.indices.statutory_earnings_floor
@@ -226,14 +231,19 @@ def add_savings_credit_threshold_projection(
     )
     savings_credit.add_child("threshold_uprating", projection)
     relationship_parameters = {
-        "SINGLE": (guarantees.SINGLE, savings_credit.threshold.SINGLE),
-        "COUPLE": (guarantees.COUPLE, savings_credit.threshold.COUPLE),
+        "SINGLE": (guarantees.SINGLE, base_thresholds.SINGLE),
+        "COUPLE": (guarantees.COUPLE, base_thresholds.COUPLE),
     }
     final_observation_year = last_input_year(parameters)
     for relationship, (
         guarantee_parameter,
         threshold_parameter,
     ) in relationship_parameters.items():
+        base_instant = projection_instant(BASE_YEAR)
+        reformed_threshold = getattr(savings_credit.threshold, relationship)
+        if reformed_threshold(base_instant) != threshold_parameter(base_instant):
+            threshold_parameter = reformed_threshold
+            guarantee_parameter = getattr(reformed_guarantees, relationship)
         projection.add_child(
             relationship,
             _projection_parameter(

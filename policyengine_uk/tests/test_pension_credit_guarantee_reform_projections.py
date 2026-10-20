@@ -3,11 +3,16 @@
 import pytest
 from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
+from policyengine_core.periods import instant
 
 from policyengine_uk import Simulation, system
 from policyengine_uk.model_api import Scenario
 from policyengine_uk.parameters.gov.dwp.housing_benefit.allowances.create_protected_pension_age_uprating import (
     protected_allowance_index_values,
+)
+from policyengine_uk.tax_benefit_system import (
+    CountryTaxBenefitSystem,
+    process_parameter_tree,
 )
 
 
@@ -98,6 +103,99 @@ def test_2026_guarantee_reform_pays_the_reformed_credit_without_rebuilding_hb(
     _assert_projections_unchanged(simulation)
 
 
+@pytest.mark.parametrize("route", ["reform", "scenario"])
+@pytest.mark.parametrize("couple,expected", [(False, 15_600), (True, 23_868)])
+def test_simultaneous_calendar_guarantee_reforms_keep_independent_projections(
+    couple, expected, route
+):
+    """Rebuilding prior law for either dated change must tolerate the other."""
+    changes = {
+        f"{GUARANTEE}.SINGLE": {"year:2026-01-01:1": 300},
+        f"{GUARANTEE}.COUPLE": {"year:2026-01-01:1": 459},
+    }
+    simulation = _simulation(couple, changes, [2026], route)
+
+    assert simulation.calculate("pension_credit", 2026)[0] == pytest.approx(expected)
+    _assert_projections_unchanged(simulation)
+
+
+@pytest.mark.parametrize("route", ["reform", "scenario"])
+@pytest.mark.parametrize("calendar_year", [False, True])
+@pytest.mark.parametrize("couple", [False, True])
+def test_joint_guarantee_and_hb_cuts_use_consistent_reformed_components(
+    couple, calendar_year, route
+):
+    guarantees = {"SINGLE": 200, "COUPLE": 300}
+    allowances = {"single": 220, "lone_parent": 220, "couple": 330}
+    values = {
+        **{f"{GUARANTEE}.{name}": value for name, value in guarantees.items()},
+        **{f"{HB_ALLOWANCES}.{name}.aged": value for name, value in allowances.items()},
+    }
+    changes = {
+        path: {"year:2026-01-01:1": value} if calendar_year else value
+        for path, value in values.items()
+    }
+    simulation = _simulation(couple, changes, [2026], route)
+    parameters = simulation.tax_benefit_system.parameters
+    expected_credit = guarantees["COUPLE" if couple else "SINGLE"] * 52
+
+    assert simulation.calculate("pension_credit", 2026)[0] == pytest.approx(
+        expected_credit
+    )
+    for name, amount in allowances.items():
+        allowance = parameters.get_child(f"{HB_ALLOWANCES}.{name}.aged")
+        assert allowance("2026-04-30") == pytest.approx(amount)
+
+    for name in ("single", "couple"):
+        path = f"{HB_ALLOWANCES}.protected_pension_age_uprating.{name}"
+        index = parameters.get_child(path)
+        assumptions = parameters.gov.economic_assumptions
+        earnings = assumptions.indices.statutory_earnings_floor
+        earnings_growth = earnings("2027-04-30") / earnings("2026-04-30")
+        cpi_growth = assumptions.statutory_uprating_inputs.cpi_september("2026-09-01")
+        guarantee = guarantees[name.upper()]
+        base = allowances[name]
+        expected = (
+            guarantee * earnings_growth + (base - guarantee) * (1 + cpi_growth)
+        ) / base
+        assert index("2027-04-30") == pytest.approx(expected)
+
+
+@pytest.mark.parametrize("calendar_year", [False, True])
+def test_joint_guarantee_and_savings_threshold_cuts_use_reformed_components(
+    calendar_year,
+):
+    guarantees = {"SINGLE": 200, "COUPLE": 300}
+    thresholds = {"SINGLE": 180, "COUPLE": 280}
+    values = {
+        **{f"{GUARANTEE}.{name}": value for name, value in guarantees.items()},
+        **{
+            f"{SAVINGS_CREDIT}.threshold.{name}": value
+            for name, value in thresholds.items()
+        },
+    }
+    changes = {
+        path: {"year:2026-01-01:1": value} if calendar_year else value
+        for path, value in values.items()
+    }
+    simulation = _simulation(False, changes, [2026])
+    parameters = simulation.tax_benefit_system.parameters
+    for relationship, base_threshold in thresholds.items():
+        threshold = parameters.get_child(f"{SAVINGS_CREDIT}.threshold.{relationship}")
+        assert threshold("2026-04-30") == pytest.approx(base_threshold)
+        path = f"{SAVINGS_CREDIT}.threshold_uprating.{relationship}"
+        index = parameters.get_child(path)
+        assumptions = parameters.gov.economic_assumptions
+        earnings = assumptions.indices.statutory_earnings_floor
+        earnings_growth = earnings("2027-04-30") / earnings("2026-04-30")
+        cpi_growth = assumptions.statutory_uprating_inputs.cpi_september("2026-09-01")
+        # These reformed gaps imply exact £12 maxima at the 60% phase-in rate.
+        expected_threshold = guarantees[relationship] * earnings_growth - 20 * (
+            1 + cpi_growth
+        )
+        assert index("2027-04-30") == pytest.approx(expected_threshold / base_threshold)
+
+
 @settings(
     max_examples=20,
     deadline=None,
@@ -130,7 +228,7 @@ def test_2026_guarantee_reform_pays_the_reformed_credit_without_rebuilding_hb(
 def test_nonnegative_guarantee_reforms_never_break_pension_age_projections(
     year, weekly_guarantee, couple, route, calendar_year
 ):
-    # Exercise the entire finite non-negative domain. Reading the weekly
+    # Generate across the finite non-negative domain. Reading the weekly
     # rate avoids overflowing the model's float32 annual-award variables.
     relationship = "COUPLE" if couple else "SINGLE"
     path = f"{GUARANTEE}.{relationship}"
@@ -186,3 +284,33 @@ def test_invalid_enacted_protected_allowance_still_raises(relationship):
             assumptions.statutory_uprating_inputs.cpi_september,
             2026,
         )
+
+
+@pytest.mark.parametrize("allowance_name,amount", [("single", 200), ("couple", 300)])
+def test_invalid_statutory_allowance_still_raises_during_projection(
+    allowance_name, amount
+):
+    tax_benefit_system = CountryTaxBenefitSystem()
+    tax_benefit_system.reset_parameters()
+    parameters = tax_benefit_system.parameters
+    parameters.get_child(f"{HB_ALLOWANCES}.{allowance_name}.aged").update(
+        start=instant("2026-04-01"), stop=None, value=amount
+    )
+
+    with pytest.raises(ValueError, match="cannot be lower than"):
+        process_parameter_tree(parameters, annualise=False)
+
+
+@pytest.mark.parametrize("route", ["reform", "scenario"])
+@pytest.mark.parametrize(
+    "relationship,allowance_name", [("SINGLE", "single"), ("COUPLE", "couple")]
+)
+def test_invalid_completed_joint_reform_still_raises(
+    route, relationship, allowance_name
+):
+    changes = {
+        f"{GUARANTEE}.{relationship}": {"year:2026-01-01:1": 230},
+        f"{HB_ALLOWANCES}.{allowance_name}.aged": {"year:2026-01-01:1": 220},
+    }
+    with pytest.raises(ValueError, match="cannot be lower than"):
+        _simulation(relationship == "COUPLE", changes, [2026], route)
