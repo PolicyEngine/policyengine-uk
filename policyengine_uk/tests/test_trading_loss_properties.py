@@ -29,7 +29,9 @@ Invariants, for any people and incomes:
    award equal the same family with those profits cut by the loss. The
    model's means tests use annual tax deductions, so otherwise the loss
    reaches them through those deductions. UC's own deductions for tax and
-   NI on earnings are held alongside Income Tax and NI.
+   NI on earnings and Pension Credit's tax attribution to employed and
+   self-employed earnings are held alongside Income Tax and NI, including
+   the actual Class 2/4 components replaced by notional PC deductions.
 5. Tax credits (SI 2002/2006 reg 3(1) Step 4): the claimants' losses (not a
    child's) come off their applicable income, never below zero, and the award
    never falls.
@@ -610,6 +612,24 @@ def test_zero_profit_trade_loss_cannot_raise_tax_or_reduce_programme_award(
 
 @PROPERTY_SETTINGS
 @example(PINNED_FAMILIES)
+@example(
+    [
+        (
+            [
+                adult(age=18, self_employment_income=17_809.094330166412),
+                {"age": 0, "trading_loss": 3_692.5341857798658},
+            ],
+            home(1.0, "NORTH_EAST"),
+        ),
+        # Actual Class 4 falls to zero with this loss, while CER deductions
+        # still use the separate positive employment's 30,000 profit. Holding
+        # total NI also requires holding its actual Class 4 component.
+        (
+            [adult(self_employment_income=30_000, trading_loss=20_000)],
+            home(0.0),
+        ),
+    ]
+)
 @given(st.lists(families(), min_size=4, max_size=10))
 def test_means_tests_see_the_loss_only_through_tax(units):
     with_loss = Simulation(situation=family_situation(units))
@@ -622,10 +642,30 @@ def test_means_tests_see_the_loss_only_through_tax(units):
     deductions = [
         "income_tax",
         "national_insurance",
+        # PC replaces these actual components with CER notional deductions;
+        # hold them consistently with the total national_insurance input.
+        "ni_class_2",
+        "ni_class_4",
         "uc_income_tax_on_earnings",
         "uc_national_insurance_on_earnings",
     ]
     tax = {v: values(with_loss, v) for v in deductions}
+    # SPC Regs reg 17(11) substitutes CER notional deductions for the tax
+    # actually attributable to profits. Holding income_tax alone also holds
+    # it in the no-profit counterfactual, incorrectly setting that attribution
+    # to zero. Preserve both PC tax allocations from the with-loss side.
+    # In the child-loss example the adult has no loss: actual/notional tax
+    # is (17,809.09433 - 12,570) x 20% = 1,047.818866, and notional Class 4
+    # is 5,239.09433 x 6% = 314.345660. Holding both tax allocations gives
+    # PC income 17,809.09433 - 1,047.818866 - 314.345660 - 1,040 = 15,406.93
+    # on both sides; the child's loss never enters the claimant's earnings.
+    pc_tax = {
+        v: values(with_loss, v)
+        for v in [
+            "pension_credit_employment_income_tax",
+            "pension_credit_self_employment_income_tax",
+        ]
+    }
     loss = values(with_loss, "trading_loss")
     profits = values(with_loss, "self_employment_income")
     mif = np.asarray(with_loss.calculate("uc_mif_applies", YEAR))
@@ -644,7 +684,13 @@ def test_means_tests_see_the_loss_only_through_tax(units):
         situation=family_situation(
             units,
             {name: held(k) for k, name in enumerate(names)},
-            {b: {"universal_credit": float(uc[k])} for k, b in enumerate(benunits)},
+            {
+                b: {
+                    "universal_credit": float(uc[k]),
+                    **{v: float(pc_tax[v][k]) for v in pc_tax},
+                }
+                for k, b in enumerate(benunits)
+            },
         )
     )
     for variable in MEANS_TESTED:
