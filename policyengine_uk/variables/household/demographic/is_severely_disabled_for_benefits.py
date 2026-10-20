@@ -30,10 +30,10 @@ class is_severely_disabled_for_benefits(Variable):
         "use the stored value instead of this formula "
         "(policyengine-uk-data#494 aligns its definition with this one). "
         "The legacy severe disability premium has its own, wider list "
-        "(receives_severe_disability_premium_qualifying_benefit). The flag "
-        "also gates the Universal Credit higher disabled child addition, "
-        "whose condition (UC Regs 2013 reg 24(2)(b)) adds blindness and has "
-        "no armed forces independence payment limb; that is not yet separated."
+        "(receives_severe_disability_premium_qualifying_benefit). Universal "
+        "Credit uses its separate higher disabled child condition "
+        "(meets_uc_higher_disabled_child_condition), which includes certified "
+        "blindness and excludes attendance allowance and AFIP."
     )
     definition_period = YEAR
     reference = (

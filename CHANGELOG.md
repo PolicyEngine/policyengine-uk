@@ -1,3 +1,203 @@
+## [2.141.6] - 2026-10-20
+
+### Fixed
+
+- - Uprate `water_and_sewerage_charges`, `housing_service_charges` and `pension_contributions_via_salary_sacrifice`, which declared an uprating index but were absent from `uprating_indices.yaml` and so stayed flat through 2030. Also uprate twelve columns added since with the same gap, each by the index it declares: `cash_isa`, `stocks_and_shares_isa`, `mortgage_debt`, `consumer_debt`, `rent_paid_as_boarder`, `rent_paid_as_lodger`, `owned_company_capital`, `owned_company_holding_value` and `owned_company_trade_assets` (per-capita GDP) and `self_employment_gross_receipts` and `owned_company_income_share` (per-capita mixed income), plus `pension_contributions_via_salary_sacrifice_pre_2015` (average earnings). Adds a code-health test asserting that every variable declaring `uprating` appears in that file under the matching index, so the gap fails at the point it is introduced. `rail_usage` is excluded because its declared index is a cumulative level rather than a year-on-year rate, and the three energy columns because the data build already prices them (#1868). Updates Ofwat water bill growth to the published 27% for 2025-26 (was the 26% forecast) and 5.4% for 2026-27 (was a 5.5% projection), and documents the sources and vintage of the water bill and population growth series.
+- - Limited the ordinary income-tax loss-cap pension uplift above earnings to relief-at-source contributions.
+
+
+## [2.141.5] - 2026-10-20
+
+### Fixed
+
+- Means-test the Council Tax Reduction applicant and their partner rather than the benefit unit's claimant and partner, so a household head who is liable for the council tax but shares a benefit unit with a young couple is assessed on her own income, allowance, premiums and exemption.
+
+
+## [2.141.4] - 2026-10-20
+
+### Fixed
+
+- A before-load `Scenario` change to DfE, DHSC or DfT spending now constructs: `adjust_budgets` skips a year with no allocation instead of writing NaN, and scales each year's allocation by that year's own budget change without carrying an earlier year's change forward.
+
+
+## [2.141.3] - 2026-10-20
+
+### Fixed
+
+- - The Aggregate impact report now compares a pull request's merge commit with that commit's first parent, the tip of the branch it merges into. It used the event's `pull_request.base.sha`, which lags that branch once it moves on, so newer merges to `main` were counted as the pull request's impact.
+- - Fixed Universal Credit deductions and benefit cap reductions to report what the award actually loses under a protected minimum floor, so the components sum to the reduction applied instead of over-reporting it. Where the floor binds, deductions are met first and the cap reduction absorbs the rest, however heavily the award is capped.
+  - Added `uc_benefit_cap_reduction_after_floor`, the benefit cap reduction applied to a Universal Credit award after the protected floor and bounded by the award, leaving the regulation 81 amount `uc_benefit_cap_reduction` gross.
+  - Fixed a protected floor above 1 adding money to Universal Credit awards, by clamping the permitted reduction at zero.
+  - Fixed Universal Credit deductions applying to benefit units that do not claim Universal Credit. Deductions and the applied cap reduction use the same claim test as the award (`claims_universal_credit`), so a claim made when legacy benefits close keeps both.
+  - Corrected the effective date of the 25% deductions cap to 12 April 2021, and the one-penny minimum payable citation to Schedule 6, paragraph 3(1)(a) of SI 2013/380.
+
+
+## [2.141.2] - 2026-10-20
+
+### Fixed
+
+- - Council Tax Reduction and Income Support read their own pension contribution deduction shares (one-half in each scheme) instead of a hard-coded 0.5, and the Council Tax Reduction pensioner earnings disregards cap at net earnings with the scheme's own share, so a reform of Housing Benefit's share no longer moves them.
+- - Carer's Allowance earnings read their pension contribution deduction share (one-half, Computation of Earnings Regulations 1996 regs. 10(4)(b) and 13) from a new parameter, `gov.dwp.carers_allowance.pension_contribution_deduction_rate`, instead of a hard-coded 0.5, so the share can be reformed.
+
+
+## [2.141.1] - 2026-10-20
+
+### Fixed
+
+- Give pension-age Housing Benefit claimants who attained State Pension age on or after 1 April 2021 (and couples who both did) the lower personal allowance in SI 2006/214 Sch 3 para 1(1)(c) and (2)(c), £238.00 and £363.25 a week in 2026-27, instead of the £256.00 and £383.35 kept by earlier cohorts. England's pensioner Council Tax Reduction applies the same split (SI 2012/2885 Sch 2 para 1); Scotland and Wales keep one rate. Adds `state_pension_age_date`, the day each person attains State Pension age.
+
+
+## [2.141.0] - 2026-10-20
+
+### Fixed
+
+- - Pension Credit income now counts industrial injuries disablement benefit, severe disablement allowance, incapacity benefit and maternity allowance (SPC Regs 2002 reg 15(1)); Savings Credit treats working tax credit, incapacity benefit, severe disablement allowance and maternity allowance as non-qualifying income (reg 9); Housing Benefit income now counts industrial injuries disablement benefit, severe disablement allowance and incapacity benefit.
+- - Count war disablement pensions, war widow's or widower's pensions and Armed Forces Compensation Scheme guaranteed income payments of the claimant and partner in Pension Credit income, each payment less £10 a week (State Pension Credit Regulations 2002 Sch. IV para. 1). Housing Benefit and Council Tax Reduction continue to disregard them in full, including where they take the Pension Credit assessment of a savings-credit-only award.
+
+### Removed
+
+- - Removed the unused duplicate parameter `gov.dwp.pension_credit.income.savings_credit_excluded_sources`; `gov.dwp.pension_credit.savings_credit.excluded_income` is the list the model reads.
+
+
+## [2.140.1] - 2026-10-20
+
+### Fixed
+
+- - Fixed Housing Benefit applicable income to use the configured pension contribution deduction rate, preserving the current 50% deduction.
+- Preserve dataset-supplied values for variables with formulas in default input DataFrame exports, so reloading an export retains inputs such as reported State Pension. Exclude calculated caches and model-generated pseudo-inputs while retaining recorded input storage and branch precedence.
+- - Based TV licence charges on licensable viewing and corrected the HBAI free-licence value.
+
+
+## [2.140.0] - 2026-10-20
+
+### Added
+
+- Added normalized annual BHC and AHC squared poverty-gap components and documented person-weighted aggregation and undefined poverty-line handling.
+- - Added a configurable Income Support withdrawal rate, preserving the existing 100% default.
+
+### Fixed
+
+- Use Scotland's working-age Council Tax Reduction young-person definition for the severe disability premium's non-dependant test within the applicant's benefit unit, retaining existing looked-after and other-benefit-unit treatment.
+- Count Incapacity Benefit and Severe Disablement Allowance as Universal Credit unearned income from the GB transitional commencement, preserving earlier history and the existing annual-model limitations.
+- Fix stale construction-time reform wrappers after foreign writes or direct edits while preserving copied scenarios and constructor readings; document mixed-composite replay, indexed-threshold construction and the existing rejection of built overrides whose keys contain no 1 January annual value.
+
+
+## [2.139.5] - 2026-10-20
+
+### Changed
+
+- - Documented employer NI incidence assumptions, input handling, revenue measures and current household examples.
+
+### Fixed
+
+- - Separated Universal Credit's higher disabled child condition from tax credits, included certified blindness, and prevented the lower and higher additions from stacking.
+- - Corrected Working Tax Credit eligibility so age, disability and hours conditions applied to the same claimant or partner, while preserving the parental combined-hours and partner-exception routes.
+- - Restricted the Child Tax Credit family element to families responsible for a qualifying child or young person born before 6 April 2017, while preserving earlier supported years.
+- - Excluded Child Benefit from Great Britain's pensioner Council Tax Reduction general-rule income, preserving working-age and statutory-pay treatment.
+
+
+## [2.139.4] - 2026-10-19
+
+### Fixed
+
+- - Corrected dividend income-tax band thresholds from 2016 to 2025 to use their statutory tax-year dates.
+- - Corrected historical Care to Learn weekly caps while preserving the existing annual date approximation.
+- - Exempted non-dependants responsible for a child under five from Universal Credit housing cost contributions.
+- - Applied the shared Pension Credit eligibility conditions to computed Savings Credit amounts.
+- - Included statutory sick and maternity pay in the relevant earnings limits for pension contribution relief and annual-allowance income tests.
+
+
+## [2.139.3] - 2026-10-19
+
+### Fixed
+
+- - Updated Welsh residential Land Transaction Tax tables for annual model years from 2023 (main rates) and 2025 (higher rates), retaining their statutory change dates.
+
+
+## [2.139.2] - 2026-10-19
+
+### Fixed
+
+- - Updated the Scottish Additional Dwelling Supplement to 8% for annual model years from 2025, retaining its statutory 5 December 2024 parameter date.
+- - Reduced the savings starting-rate band from the first pound of taxable non-savings income, correcting savings tax on mixed incomes.
+- - Added migration directions for saved reforms using the removed couple carer premium parameter.
+- - Fixed group inputs being assigned to the wrong benefit unit or household when dataset tables were not sorted by identifier.
+- - Froze the Scottish higher, advanced and top income tax thresholds through 2028-29 under the announced Budget policy, with subsequent CPI projections starting from the frozen amounts.
+
+
+## [2.139.1] - 2026-10-19
+
+### Fixed
+
+- - Corrected OBR labour supply grouping so cohabiting couples receive the same demographic coefficients as married couples.
+- - Corrected the 2016-17 personal allowance to £11,000, fixing income tax calculations for that tax year.
+- - Corrected Carer's Allowance earnings to deduct notional Class 2 and Class 4 National Insurance only when the carer is liable for those contributions.
+- - Corrected residential property uprating and the High Value Council Tax Surcharge's 2026 valuation conversion to use the OBR house-price index.
+  - Aligned projected additional-dwelling purchase prices with residential house-price growth.
+  - Preserved exact 2026 surcharge-band classifications in later-year property projections without rounding household valuations.
+
+
+## [2.139.0] - 2026-10-19
+
+### Added
+
+- Record the unused FYE 2019 joint Income Support/income-related ESA caseload take-up benchmark with its publication-date availability and sampling interval.
+
+### Fixed
+
+- - Count other investment income (National Savings, securities and trust interest) in `total_income`, which income tax already charges, so post-tax income and the Winter Fuel Payment income test see it. Housing Benefit and national Council Tax Reduction non-dependant deductions keep banding on income without it until the remunerative-work test is modelled (#2007) (#2174).
+  - Keep the Winter Fuel Payment for a pensioner whose total income is exactly £35,000: the winter fuel payment charge applies only where total income exceeds £35,000 (ITEPA 2003 s.681I(1)(b)).
+
+
+## [2.138.0] - 2026-10-19
+
+### Added
+
+- Document the field-specific handling of negative FRS tax, benefit and income amounts, with pinned source code and the boundary between raw survey fields and model inputs.
+
+### Fixed
+
+- Document parameter description conventions and validate year-zero YAML, required descriptions and malformed files without silently skipping them.
+
+
+## [2.137.1] - 2026-10-19
+
+### Changed
+
+- - Clarified the Pension Credit qualifying-age documentation for men born on 6 November 1953, who reach it at their State Pension age of 65.
+- - Documented historical Housing Benefit child personal allowance rules and their deferred implementation.
+
+### Fixed
+
+- - Updated England childcare entitlement valuations to the published 2025–26 and 2026–27 national-average funding rates.
+- - Fixed non-finite wealth and consumption tax incidence when dataset-weighted totals were zero.
+
+
+## [2.137.0] - 2026-10-19
+
+### Added
+
+- Compare two datasets on one model with the aggregate-impact tool: measure an unpinned built file by its SHA-256, and `compare --axis data` fails unless both sides ran the same model, runtime, partition and metric definitions.
+
+
+## [2.136.1] - 2026-10-19
+
+### Fixed
+
+- - Fixed Universal Credit capital assessment so reported financial savings do not suppress countable property, with assessment-year sale-expense and secured-debt valuation and property allocation independent of financial reports. Retained the inherited residual financial convention, including subtraction of complete overrides from the financial pool, and company substitution after ordinary-source overrides, and documented the legacy pension-proxy limitation. Complete overrides consume their owners' disregarded company holdings once. Override floors and separate holding deductions share one household corporate-wealth budget proportionally, preventing inconsistent holdings from consuming ordinary savings. Bounded each holding before that budget to isolate negative and infinite inputs from other units' capital.
+
+
+## [2.136.0] - 2026-10-18
+
+### Added
+
+- - Added an aggregate-impact report (`python -m policyengine_uk.utils.aggregate_impact`) that measures a model checkout on the pinned certified dataset and compares base with head: receipts by tax head, spending and caseloads, poverty, inequality, deciles and the standard reform costings over 2025-26 to 2031-32, with accounting identities and a counted-once check against a reviewed fiscal partition (`policyengine_uk/data/fiscal_partition.yaml`).
+
+### Changed
+
+- - Microsimulation tests now run on the certified uk-data 1.58.1 dataset, pinned by commit and SHA-256, and fail instead of skipping when `POLICYENGINE_UK_REQUIRE_TEST_DATA` is set and the data is unavailable; the reform-cost fixtures are rebased onto it, keeping their earlier values as receipts.
+
+
 ## [2.135.7] - 2026-10-18
 
 ### Changed
