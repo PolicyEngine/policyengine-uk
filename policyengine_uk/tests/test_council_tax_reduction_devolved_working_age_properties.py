@@ -3,11 +3,14 @@
 Invariants, for any working-age family in Scotland or Wales:
 
 1. The award is between 0 and the council tax liability.
-2. Wales, Universal Credit: the award does not depend on the rent. The UC
-   housing costs element sits in both the applicable amount (the UC maximum
-   amount, WSI 2013/3029 Sch 6 para 3) and the income (the award, para 9), so
-   it cancels. Benefit-capped awards are excluded: the cap lowers the award
-   but not the maximum amount.
+2. Wales, Universal Credit: the award does not depend on the rent, given a
+   housing costs element. The element sits in both the applicable amount
+   (the UC maximum amount, WSI 2013/3029 Sch 6 para 3) and the income (the
+   award, para 9), so it cancels. Benefit-capped awards are excluded: the cap
+   lowers the award but not the maximum amount. A family without housing
+   costs is also excluded, intentionally: gaining a housing costs element
+   lowers the UC work allowance (UC Regs 2013 reg 22), which changes the
+   award by more than the element.
 3. Universal Credit, both countries: the award never rises with the
    claimant's earnings. In Wales excess income is the Secretary of State's
    income plus the award less the maximum amount, which rises by at least 45p
@@ -119,6 +122,7 @@ def test_devolved_working_age_award_properties(units, raise_by):
         "council_tax_reduction_working_age_has_universal_credit", YEAR
     )
     capped = sim.calculate("benefit_cap_reduction", YEAR) > 0
+    housing = sim.calculate("uc_housing_costs_element", YEAR) > 0
     liability = sim.calculate(
         "council_tax_reduction_maximum_eligible_liability", YEAR, map_to="benunit"
     )
@@ -130,6 +134,8 @@ def test_devolved_working_age_award_properties(units, raise_by):
         rent_i = n + i
         if (
             units[i]["region"] == "WALES"
+            and housing[i]
+            and housing[rent_i]
             and has_uc[i]
             and has_uc[rent_i]
             and not capped[i]
@@ -262,3 +268,37 @@ def test_welsh_fixed_amounts_start_with_the_2013_scheme():
         earliest = parameter.values_list[-1]
         assert earliest.instant_str == "2013-04-01", name
         assert earliest.value == value, name
+
+
+def test_welsh_universal_credit_rent_cancels_only_given_housing_costs():
+    """Property 2's boundary, executed: an 18-year-old lone parent with a baby
+    and £21,462 earnings on Universal Credit in Wales. At rents of £1,000 and
+    £6,000 the housing costs element cancels and the award is the same; with
+    no rent the work allowance is the higher one (UC Regs 2013 reg 22), the
+    award is larger and so is the income CTR counts, so the reduction is
+    lower. Intended, not a defect."""
+
+    def family(rent):
+        return {
+            "region": "WALES",
+            "people": [
+                {
+                    "age": 18,
+                    "employment_income": 21_462,
+                    "council_tax_benefit_reported": 100,
+                },
+                {"age": 0},
+            ],
+            "would_claim_uc": True,
+            "rent": rent,
+            "council_tax": 2_400,
+            "savings": 0,
+            "esa_income": 0,
+        }
+
+    sim = Simulation(situation=situation([family(0), family(1_000), family(6_000)]))
+    award = sim.calculate("simulated_council_tax_reduction_benunit", YEAR)
+    work_allowance = sim.calculate("uc_work_allowance", YEAR)
+    assert work_allowance[0] > work_allowance[1] == work_allowance[2]
+    assert abs(award[1] - award[2]) < 0.01
+    assert award[0] < award[1]
