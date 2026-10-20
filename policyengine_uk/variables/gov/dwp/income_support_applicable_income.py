@@ -7,7 +7,11 @@ class income_support_applicable_income(Variable):
     label = "Relevant income for Income Support means test"
     definition_period = YEAR
     unit = GBP
-    reference = "https://www.legislation.gov.uk/uksi/1987/1967/schedule/8"
+    reference = (
+        "https://www.legislation.gov.uk/uksi/1987/1967/schedule/8",
+        "https://www.legislation.gov.uk/uksi/1987/1967/regulation/36",
+        "https://www.legislation.gov.uk/uksi/1987/1967/regulation/38",
+    )
 
     def formula(benunit, period, parameters):
         # Members whose income counts: the claimant and partner and, as the model did
@@ -38,8 +42,10 @@ class income_support_applicable_income(Variable):
         income += add_for_members(benunit, period, ["social_security_income"], members)
         income += benunit("income_support_tariff_income", period)
         income -= tax
+        # IS Regs 1987 reg 36(3)(b) and reg 38(1)(b)(ii), (3)(c) and (9)(b).
         income -= (
-            add_for_members(benunit, period, ["pension_contributions"], members) * 0.5
+            add_for_members(benunit, period, ["pension_contributions"], members)
+            * IS.means_test.pension_contribution_deduction_rate
         )
         # Schedule 8 paras 5, 6 and 10 use mutually exclusive claimant types.
         mt = IS.means_test

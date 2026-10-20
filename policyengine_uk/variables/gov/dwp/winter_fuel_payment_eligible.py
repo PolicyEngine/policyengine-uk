@@ -56,6 +56,9 @@ class winter_fuel_payment_eligible(Variable):
             "is_on_winter_fuel_payment_relevant_benefit", period
         )
         income_test = p.taxable_income_test
+        # The deprecated test admits total income equal to the limit, as the
+        # charge it stood in for reaches only total income that "exceeds
+        # £35,000" (ITEPA 2003 s.681I(1)(b)).
         meets_income_test = (
             person.household.any(
                 age_eligible

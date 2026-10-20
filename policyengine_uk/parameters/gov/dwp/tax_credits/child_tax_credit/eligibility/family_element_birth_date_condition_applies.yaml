@@ -1,0 +1,13 @@
+description: Whether the Child Tax Credit family element requires a responsible child or qualifying young person born before the family-element cutoff. The false 2015 value anchors existing model coverage, not legal commencement.
+values:
+  2015-01-01: false
+  2017-04-06: true
+metadata:
+  unit: bool
+  period: year
+  label: Child Tax Credit family element birth date condition applies
+  reference:
+    - title: The Child Tax Credit (Amendment) Regulations 2017, regulations 1 and 4(b)
+      href: https://www.legislation.gov.uk/uksi/2017/387/regulation/4/made
+    - title: The Child Tax Credit (Amendment) Regulations 2017, regulation 1
+      href: https://www.legislation.gov.uk/uksi/2017/387/regulation/1/made
