@@ -3,11 +3,13 @@
 # Model2026: eldest Child Benefit27.05*52=1406.60; aged allowance256*52=13312.
 # These genuine claim/takeup inputs use the general rules, not PC overrides.
 - name: England pensioner Child Benefit is excluded before the CTR taper
+  # Aged 72: State Pension age was reached in 2019, before 1 April 2021, so
+  # the higher personal allowance applies (SI 2012/2885 Sch 2 para 1).
   period: 2026
   absolute_error_margin: 0.01
   input:
     people:
-      parent: {age: 70, is_parent: true, state_pension: 16000}
+      parent: {age: 72, is_parent: true, state_pension: 16000}
       child: {age: 9}
     benunits:
       family:
@@ -83,11 +85,13 @@
     council_tax_reduction: 3000
 
 - name: Not claiming Child Benefit preserves the pensioner general-rule income
+  # Aged 72: State Pension age was reached in 2019, before 1 April 2021, so
+  # the higher personal allowance applies (SI 2012/2885 Sch 2 para 1).
   period: 2026
   absolute_error_margin: 0.01
   input:
     people:
-      parent: {age: 70, is_parent: true, state_pension: 16000}
+      parent: {age: 72, is_parent: true, state_pension: 16000}
       child: {age: 9}
     benunits:
       family:
