@@ -24,10 +24,10 @@ more detail on the PolicyEngine side.
 | Contributions that get relief | The person's own contributions | Employee contributions, additional voluntary contributions **and employer contributions** |
 | Basic-rate relief added to the pot | Not shown separately | Recorded separately (`pension_relief_at_source`) |
 | Earnings limit | Relief capped at relevant UK earnings: employment income, employer-paid Statutory Sick Pay and Statutory Maternity Pay, and self-employment profit | No earnings cap; £3,600 limit when total income is below it |
-| Annual allowance | £60,000, tapered on adjusted net income above £260,000 (`pension_annual_allowance`) | Tapered on total income above a threshold-income parameter |
-| Contributions above the allowance | Charged at the marginal rate (`personal_pension_contributions_tax`) | Relief stops at the allowance; no separate charge |
+| Annual allowance | £60,000 (`pension_annual_allowance`), tapered only when adjusted income is above £260,000 and threshold income is above £200,000, as in FA 2004 s. 228ZA | Tapered on total income above a threshold-income parameter |
+| Contributions above the allowance | Annual allowance charge on the excess, taxed as the top slice of income (`personal_pension_contributions_tax`) | Relief stops at the allowance; no separate charge |
 | Employer contributions in the data | Read from the data (`employer_pension_contributions`) | Imputed when missing from the FRS, using the ONS ASHE employer-contribution bands (`src/Pensions.jl`) |
-| Carry-forward of unused allowance | Not modelled | Not modelled |
+| Carry-forward of unused allowance | Input `unused_pension_annual_allowance` (FA 2004 s. 228A) adds to the allowance; defaults to nil, as the survey data has no past pension input amounts | Not modelled |
 
 ## Where the two models differ
 
@@ -38,16 +38,15 @@ methods give the same total relief. They can differ when the person pays
 little or no income tax: STBM still records the basic-rate addition to the
 pot, which PolicyEngine UK does not show.
 
-**Shared gap: the personal allowance taper.** In law, gross pension
-contributions reduce adjusted net income
+**The personal allowance taper.** In law, gross pension contributions
+reduce adjusted net income
 ([Income Tax Act 2007 s. 58](https://www.legislation.gov.uk/ukpga/2007/3/section/58)),
 so contributing can restore personal allowance lost above £100,000.
-Neither model does this. In PolicyEngine UK, `adjusted_net_income` adds up
-the taxable income components without deducting `pension_contributions_relief`:
-an employee on £110,000 has adjusted net income of £110,000 and a personal
-allowance of £7,570 in 2025-26 whether or not they contribute £10,000.
-STBM widens the bands but leaves the taper income unchanged, and its code
-flags this as unchecked.
+PolicyEngine UK does this: `adjusted_net_income` deducts
+`pension_contributions_relief`, so an employee on £110,000 has a personal
+allowance of £7,570 in 2025-26, and the full £12,570 if they pay £10,000
+gross into a personal pension. STBM widens the bands but leaves the taper
+income unchanged, and its code flags this as unchecked.
 
 ### 2. Employer contributions
 
@@ -59,14 +58,29 @@ employee's bands further than the law does.
 
 ### 3. Annual allowance taper
 
-The legal taper uses "adjusted income", which adds employer contributions,
-and applies only when "threshold income" is also above £200,000.
+The legal taper
+([FA 2004 s. 228ZA](https://www.legislation.gov.uk/ukpga/2004/12/section/228ZA))
+uses "adjusted income", which adds employer contributions, and applies only
+when "threshold income" is also above £200,000 (from 2023-24).
 
-- PolicyEngine UK tapers on adjusted net income, with no threshold-income
-  test.
+- PolicyEngine UK applies both tests
+  (`pension_annual_allowance_adjusted_income` and
+  `pension_annual_allowance_threshold_income`). An employee on £300,000
+  who pays £100,000 gross into a personal pension in 2025-26 has adjusted
+  income of £300,000 but threshold income of £200,000, so keeps the full
+  £60,000 allowance. Its limits: by default the pension input amount is
+  cash contributions, so defined-benefit accrual is counted only if supplied
+  as an input, and all salary sacrifice is treated as made on or after
+  9 July 2015.
 - STBM tapers on total income above a threshold parameter.
 
-Neither follows the statute exactly. Both affect only very high earners.
+Both affect only very high earners.
+
+PolicyEngine UK does not model the money purchase annual allowance, the
+£10,000 limit on money purchase savings after pensions are first flexibly
+accessed
+([FA 2004 s. 227ZA](https://www.legislation.gov.uk/ukpga/2004/12/section/227ZA)).
+It always uses the default chargeable amount.
 
 ### 4. Lifetime and lump sum allowances
 
@@ -77,7 +91,9 @@ are drawn, not to contributions.
 
 ## What neither model does
 
-- Carry-forward of unused annual allowance from the previous three years.
+- Working out carry-forward of unused annual allowance from the previous
+  three years. PolicyEngine UK accepts the result as an input but does not
+  derive it from past years.
 - Behavioural responses: contributions are held fixed when tax rates change.
 - Decumulation: crystallisation, the tax-free lump sum, and annuity versus
   drawdown choices.
@@ -87,6 +103,7 @@ are drawn, not to contributions.
 - STBM source: [`IncomeTaxCalculations.jl`][stbm-it] and [`Pensions.jl`][stbm-pen] at `f534ca1`.
 - [STBM blog: pension contributions][stbm-blog].
 - PolicyEngine UK: [pension tax relief](./pension-tax-relief.md); variables [`pension_contributions_relief`](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/variables/gov/hmrc/pensions/pension_contributions_relief.py), [`pension_annual_allowance`](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/variables/gov/hmrc/income_tax/allowances/pension_annual_allowance.py) and [`personal_pension_contributions_tax`](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/variables/gov/hmrc/pensions/private_pension_contributions_tax.py).
+- [Finance Act 2004 s. 228ZA](https://www.legislation.gov.uk/ukpga/2004/12/section/228ZA) (taper) and [s. 228A](https://www.legislation.gov.uk/ukpga/2004/12/section/228A) (carry-forward).
 - HMRC, [Pensions Tax Manual: annual allowance taper](https://www.gov.uk/hmrc-internal-manuals/pensions-tax-manual/ptm057100).
 - Issue: [#672](https://github.com/PolicyEngine/policyengine-uk/issues/672).
 

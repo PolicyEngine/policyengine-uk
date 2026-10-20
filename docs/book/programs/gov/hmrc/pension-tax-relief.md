@@ -5,7 +5,7 @@ pension contributions and addresses the confusion reported in
 [#704](https://github.com/PolicyEngine/policyengine-uk/issues/704)
 about whether higher-rate taxpayers receive the right amount of
 relief. #704 is still open (October 2026); the figures below were re-run
-on policyengine-uk 2.135.6.
+on policyengine-uk 2.140.0.
 
 ## What the model does
 
@@ -62,7 +62,15 @@ rounded down to whole pounds, to a minimum of £10,000
 ([Finance Act 2004 s. 228ZA](https://www.legislation.gov.uk/ukpga/2004/12/section/228ZA);
 parameters under `gov.hmrc.income_tax.allowances.annual_allowance`). See
 `docs/engineering/pension-annual-allowance.md` for the income conventions.
-The money purchase annual allowance is not modelled.
+Unused allowance carried forward from the previous three tax years
+([s. 228A](https://www.legislation.gov.uk/ukpga/2004/12/section/228A)) is
+the input `unused_pension_annual_allowance`, which is added to the allowance
+when the charge is worked out. It defaults to nil, because survey data does
+not record past pension input amounts, and the model does not derive it from
+earlier years. The money purchase annual allowance, the £10,000 limit on
+money purchase savings after pensions are first flexibly accessed
+([s. 227ZA](https://www.legislation.gov.uk/ukpga/2004/12/section/227ZA)),
+is not modelled.
 
 Contributions **above** the annual allowance can still be relieved and
 separately attract the annual allowance charge,
@@ -76,7 +84,10 @@ contributions made before age 75, employer contributions and salary
 sacrifice ([Finance Act 2004 s. 233](https://www.legislation.gov.uk/ukpga/2004/12/section/233)).
 For example, an employee on £100,000 who pays £70,000 into a personal pension
 in 2025-26 gets £70,000 of relief and a £2,000 charge on the £10,000 excess,
-which falls in the basic rate band.
+which falls in the basic rate band. With £10,000 of unused allowance
+brought forward, there is no charge. By default the pension input amount is
+cash contributions: defined-benefit accrual counts only if supplied through
+`pension_contributions_for_annual_allowance`.
 
 Relieved contributions also reduce `adjusted_net_income`, so they restore
 personal allowance lost above £100,000, as in law
@@ -94,7 +105,7 @@ rate, plus any personal allowance restored.
 The four scenarios reported in #704 (all 2025-26, all self-employed,
 single person aged 40, no other income, contributions entered as
 `personal_pension_contributions`). The "model" column was re-run in
-October 2026 on policyengine-uk 2.135.6:
+October 2026 on policyengine-uk 2.140.0:
 
 | ID    | Self-employed income | Pension contribution | Expected income-tax change | What the model returns | Why |
 |-------|---------------------|----------------------|-----------------------------|------------------------|-----|
