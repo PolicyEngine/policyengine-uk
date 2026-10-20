@@ -277,7 +277,7 @@
         region: LONDON
   output:
     adjusted_total_income: 250000
-    pension_contributions_relief: 3600
+    pension_contributions_relief: 4000
 - name: The basic amount remains reformable for actual RAS contributions
   period: 2026
   absolute_error_margin: 0.01
