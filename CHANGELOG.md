@@ -1,3 +1,15 @@
+## [2.141.0] - 2026-10-20
+
+### Fixed
+
+- - Pension Credit income now counts industrial injuries disablement benefit, severe disablement allowance, incapacity benefit and maternity allowance (SPC Regs 2002 reg 15(1)); Savings Credit treats working tax credit, incapacity benefit, severe disablement allowance and maternity allowance as non-qualifying income (reg 9); Housing Benefit income now counts industrial injuries disablement benefit, severe disablement allowance and incapacity benefit.
+- - Count war disablement pensions, war widow's or widower's pensions and Armed Forces Compensation Scheme guaranteed income payments of the claimant and partner in Pension Credit income, each payment less £10 a week (State Pension Credit Regulations 2002 Sch. IV para. 1). Housing Benefit and Council Tax Reduction continue to disregard them in full, including where they take the Pension Credit assessment of a savings-credit-only award.
+
+### Removed
+
+- - Removed the unused duplicate parameter `gov.dwp.pension_credit.income.savings_credit_excluded_sources`; `gov.dwp.pension_credit.savings_credit.excluded_income` is the list the model reads.
+
+
 ## [2.140.1] - 2026-10-20
 
 ### Fixed
