@@ -408,3 +408,169 @@ def test_a_branch_can_state_its_own_status():
         _new_claimant_rate(sim, 2026)
     )
     assert sim.calculate("uc_LCWRA_element", 2026)[0] == pytest.approx(parent)
+
+
+# The inactive health-component counterfactual starts from pre-Act 2025 law,
+# independently of the new/protected claimant split (issue #2283).
+def _inactive_lcwra_expected(sim, year):
+    parameters = sim.tax_benefit_system.parameters
+
+    def index(y):
+        return float(parameters(str(y)).gov.benefit_uprating_cpi)
+
+    return LCWRA_2025 * index(year) / index(2025) * 12
+
+
+@pytest.mark.parametrize("year", [2026, 2027])
+def test_inactive_health_element_restores_pre_act_uprated_amount(year):
+    sim = Simulation(
+        situation=_uc_claimant(30),
+        scenario=Scenario(
+            parameter_changes={
+                "gov.dwp.universal_credit.rebalancing.active": False,
+            },
+            applied_before_data_load=True,
+        ),
+    )
+    actual = sim.calculate("uc_LCWRA_element", year)[0]
+    # Nonzero verifies that this is the explicit-year claimant, not the
+    # nondiagnostic scalar-input/default-2025 situation from preflight.
+    assert actual > 0
+    assert actual == pytest.approx(_inactive_lcwra_expected(sim, year), rel=0, abs=1e-3)
+
+
+@pytest.mark.parametrize("new_claimant", [False, True])
+def test_inactive_health_amount_is_independent_of_claimant_cohort(new_claimant):
+    situation = _uc_claimant(30)
+    situation["benunits"]["benunit"]["uc_receives_new_claimant_health_element"] = {
+        year: new_claimant for year in YEARS
+    }
+    sim = Simulation(
+        situation=situation,
+        scenario=Scenario(
+            parameter_changes={
+                "gov.dwp.universal_credit.rebalancing.active": False,
+            },
+            applied_before_data_load=True,
+        ),
+    )
+    assert sim.calculate("uc_LCWRA_element", 2026)[0] == pytest.approx(
+        _inactive_lcwra_expected(sim, 2026), rel=0, abs=1e-3
+    )
+
+
+def test_mixed_toggle_uses_independent_inactive_years_and_retains_active_path():
+    baseline = Simulation(situation=_uc_claimant(30))
+    sim = Simulation(
+        situation=_uc_claimant(30),
+        scenario=Scenario(
+            parameter_changes={
+                "gov.dwp.universal_credit.rebalancing.active": {
+                    "2026": False,
+                    "2027": True,
+                    "2028": False,
+                },
+            },
+            applied_before_data_load=True,
+        ),
+    )
+    for year in [2026, 2028]:
+        assert sim.calculate("uc_LCWRA_element", year)[0] == pytest.approx(
+            _inactive_lcwra_expected(sim, year), rel=0, abs=1e-3
+        )
+    assert sim.calculate("uc_LCWRA_element", 2027)[0] == pytest.approx(
+        baseline.calculate("uc_LCWRA_element", 2027)[0], rel=0, abs=1e-3
+    )
+
+
+@pytest.mark.parametrize("route", ["scenario", "legacy_reform"])
+def test_inactive_health_element_keeps_explicit_parameter_amount(route):
+    changes = {
+        "gov.dwp.universal_credit.rebalancing.active": False,
+        "gov.dwp.universal_credit.elements.disabled.amount": {"2026": 300},
+    }
+    kwargs = {
+        "scenario": Scenario(parameter_changes=changes, applied_before_data_load=True)
+    }
+    if route == "legacy_reform":
+        kwargs = {
+            "reform": {
+                "gov.dwp.universal_credit.rebalancing.active": {"2026": False},
+                "gov.dwp.universal_credit.elements.disabled.amount": {
+                    "2026-01-01": 300
+                },
+            }
+        }
+    sim = Simulation(situation=_uc_claimant(30), **kwargs)
+    assert sim.calculate("uc_LCWRA_element", 2026)[0] == pytest.approx(300 * 12)
+
+
+def test_inactive_health_element_keeps_directly_supplied_award():
+    situation = _uc_claimant(30)
+    situation["benunits"]["benunit"]["uc_LCWRA_element"] = {"2026": 7_200}
+    sim = Simulation(
+        situation=situation,
+        scenario=Scenario(
+            parameter_changes={
+                "gov.dwp.universal_credit.rebalancing.active": False,
+            },
+            applied_before_data_load=True,
+        ),
+    )
+    assert sim.calculate("uc_LCWRA_element", 2026)[0] == 7_200
+
+
+def test_inactive_health_element_reaches_final_uc_without_forced_intermediates():
+    sim = Simulation(
+        situation=_uc_claimant(30),
+        scenario=Scenario(
+            parameter_changes={
+                "gov.dwp.universal_credit.rebalancing.active": False,
+            },
+            applied_before_data_load=True,
+        ),
+    )
+    # No earnings, other benefits, housing or children: the standard allowance
+    # plus the independent inactive health amount is the whole UC award.
+    expected = STANDARD_ALLOWANCE_2026["SINGLE_OLD"] * 12 + _inactive_lcwra_expected(
+        sim, 2026
+    )
+    assert sim.calculate("universal_credit", 2026)[0] == pytest.approx(
+        expected, rel=0, abs=1e-3
+    )
+
+
+def test_inactive_health_modifier_is_idempotent():
+    sim = Simulation(
+        situation=_uc_claimant(30),
+        scenario=Scenario(
+            parameter_changes={
+                "gov.dwp.universal_credit.rebalancing.active": False,
+            },
+            applied_before_data_load=True,
+        ),
+    )
+    expected = _inactive_lcwra_expected(sim, 2026)
+    uc_reform.add_universal_credit_reform(sim)
+    assert sim.calculate("uc_LCWRA_element", 2026)[0] == pytest.approx(
+        expected, rel=0, abs=1e-3
+    )
+
+
+def test_inactive_health_amount_reform_on_a_built_simulation_keeps_precedence():
+    sim = Simulation(
+        situation=_uc_claimant(30),
+        scenario=Scenario(
+            parameter_changes={
+                "gov.dwp.universal_credit.rebalancing.active": False,
+            },
+            applied_before_data_load=True,
+        ),
+    )
+    Scenario(
+        parameter_changes={
+            "gov.dwp.universal_credit.elements.disabled.amount": 300,
+        }
+    ).apply(sim)
+    uc_reform.add_universal_credit_reform(sim)
+    assert sim.calculate("uc_LCWRA_element", 2026)[0] == pytest.approx(300 * 12)

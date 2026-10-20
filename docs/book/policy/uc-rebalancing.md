@@ -24,7 +24,7 @@ Universal Credit Act 2025 s. 3 freezes the element for 2026-27 to 2029-30: it di
 
 Two parameters hold this amount, and both are uprated by `gov.economic_assumptions.indices.uc_health_element`, so they follow the same path:
 
-- `gov.dwp.universal_credit.elements.disabled.amount` is the LCWRA element the `uc_LCWRA_element` formula pays. A simulation uses it whenever the rebalancing reforms are inactive, and from 2033-34, after the data's projection ends, when the rebalancing scenario no longer sets the element.
+- `gov.dwp.universal_credit.elements.disabled.amount` is the LCWRA element the `uc_LCWRA_element` formula pays. For an inactive year processed by the rebalancing scenario, the scenario replaces that paid amount with the pre-Act counterfactual described below. From 2033-34, after the data's projection ends, the rebalancing scenario no longer sets the element and the formula reads this parameter.
 - `gov.dwp.universal_credit.rebalancing.new_claimant_health_element` is the amount the rebalancing scenario pays new claimants in the years it sets the element, `uc_reform.REBALANCING_YEARS` (2026-27 to 2032-33).
 
 A change to the freeze or to the benefit uprating index moves both, and so does a reform that sets the index, `gov.economic_assumptions.indices.uc_health_element`, directly (it replaces the freeze and the no-fall floor for the years it names). A reform to either amount itself does not change the other.
@@ -91,6 +91,8 @@ scenario = Scenario(
 
 sim = Simulation(scenario=scenario)
 ```
+
+For the health component, an inactive year uses the 2025-26 monthly LCWRA amount (£423.27), uprated by the model's ordinary benefit uprating index from 2025-26 to that year. It does not apply the new/protected claimant split, the health-element freeze or the protected-amount floor. Each inactive year starts independently from that pre-Act amount, so a mixed on/off schedule cannot feed an inactive award into the later protected calculation. Explicit LCWRA amount reforms and directly supplied element awards retain precedence. The underlying `elements.disabled.amount` parameter still holds the legislated new-claimant amount; this counterfactual changes the paid health element through the scenario. This is a health-component counterfactual, not validation that the toggle disables every provision of the Act.
 
 The 2026-27 standard allowance stays at its legislated rates, which include the 2.3% uplift; from 2027-28 it follows CPI alone from the 2026-27 rates less that uplift.
 

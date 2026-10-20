@@ -2,10 +2,10 @@ from policyengine_uk.model_api import Scenario
 from policyengine_uk import Microsimulation
 from policyengine_uk.utils.data_source import built_from_data
 from policyengine_uk.data.economic_assumptions import PROJECTION_END_YEAR
-from policyengine_uk.utils.supplied_inputs import set_model_value
+from policyengine_uk.utils.supplied_inputs import set_model_value, supplied_input
 import numpy as np
 import warnings
-from policyengine_core.periods import instant
+from policyengine_core.periods import instant, period as period_
 
 
 # Universal Credit Act 2025: the first tax year of the rebalancing (2026-27,
@@ -214,6 +214,54 @@ def _new_claimant_health_element_status(
     return status
 
 
+def _lcwra_amount_is_overridden(sim, year: int) -> bool:
+    """An explicit LCWRA amount keeps precedence over the inactive path."""
+    from policyengine_uk.utils.dated_reforms import legacy_override_bounds
+    from policyengine_uk.tax_benefit_system import (
+        reform_parameter_defines,
+        parameter_reads_calendar_years,
+    )
+
+    system = sim.tax_benefit_system
+    overrides = list(getattr(system, "legacy_overrides", ()))
+    # Single-day constructor overrides run after this modifier. Respect
+    # their requested window before caching an inactive award.
+    for dated in getattr(sim, "_building_dated_reforms", None) or ():
+        _, pending = dated.read(
+            reform_parameter_defines(),
+            calendar_years=parameter_reads_calendar_years(),
+        )
+        overrides.extend(pending)
+    statutory_sample = instant(f"{year}-{FISCAL_YEAR_SAMPLE_DATE}")
+    annual_sample = instant(f"{year}-01-01")
+    return any(
+        change.path == LCWRA_AMOUNT and change.start <= statutory_sample <= change.stop
+        for change in getattr(system, "dated_assignments", ())
+    ) or any(
+        change.path == LCWRA_AMOUNT and start <= annual_sample <= stop
+        for change in overrides
+        for start, stop in [legacy_override_bounds(change, system.parameters)]
+    )
+
+
+def _inactive_health_element_monthly(sim, year: int) -> float:
+    """The pre-Act amount, uprated independently from the last pre-Act year.
+
+    The Act's new-claimant anchor remains on the underlying parameter. A
+    year with rebalancing switched off instead follows the ordinary benefit
+    index from the 2025-26 amount; it never reads a prior paid award.
+    """
+    parameters = sim.tax_benefit_system.parameters
+    base_year = FIRST_REBALANCING_YEAR - 1
+    before = parameters(str(base_year)).gov
+    current = parameters(str(year)).gov
+    return (
+        before.dwp.universal_credit.elements.disabled.amount
+        * current.benefit_uprating_cpi
+        / before.benefit_uprating_cpi
+    )
+
+
 def add_universal_credit_reform(sim: Microsimulation):
     rebalancing = sim.tax_benefit_system.parameters.gov.dwp.universal_credit.rebalancing
 
@@ -227,6 +275,26 @@ def add_universal_credit_reform(sim: Microsimulation):
     is_data = built_from_data(sim)
     for year in REBALANCING_YEARS:
         if not rebalancing.active(year):
+            population = sim.get_variable_population("uc_LCWRA_element")
+            if (
+                supplied_input(population, "uc_LCWRA_element", period_(year))
+                is not None
+            ):
+                continue
+            # Re-read the underlying consumer, not an award this modifier
+            # stored on an earlier invocation or before a parameter edit.
+            sim.delete_arrays("uc_LCWRA_element", year)
+            if _lcwra_amount_is_overridden(sim, year):
+                continue
+            current = np.array(sim.calculate("uc_LCWRA_element", year))
+            amount = sim.tax_benefit_system.parameters(
+                str(year)
+            ).gov.dwp.universal_credit.elements.disabled.amount
+            if amount != 0:
+                # Scale the existing consumer's result, retaining its claimant
+                # eligibility/counting rules and zero awards.
+                current *= _inactive_health_element_monthly(sim, year) / amount
+                set_model_value(sim, "uc_LCWRA_element", year, current)
             continue
         is_post_2025_claimant = _new_claimant_health_element_status(
             sim, year, uc_seed < new_claimant_share(year), is_data
