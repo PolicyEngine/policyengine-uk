@@ -44,6 +44,7 @@ SUPPLIED_INPUT_VARIABLES = frozenset(
         "bus_in_london_trips",
         "other_local_bus_trips",
         "local_bus_trips",
+        "local_bus_uncapped_single_fare",
         "ni_class_4_losses_brought_forward",
         "ni_class_4_trading_loss",
         "trading_loss",

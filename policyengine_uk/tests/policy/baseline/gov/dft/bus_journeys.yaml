@@ -194,3 +194,37 @@
     # 100 * 1.252853758464 * GBP 2.550929922065 * 1.034 (OBR CPI, 2025 over
     # 2024, as the engine's index rounds it: 1.61059 / 1.55763).
     person_bus_fare_spending: 330.46
+
+# Cap changes use the table of uncapped single fares in
+# gov.dft.bus.uncapped_single_fares: 55% of singles at GBP 1.65, 30% at
+# GBP 2.21 and 15% at GBP 3.87 at FY2024-25 prices, uprated with OBR CPI
+# (FY2025-26 x 1.61059 / 1.55763 = 1.0340). Case 10's passenger has 100 trips
+# * 1.12466920264 boardings * 0.7 single share = 78.7268 single boardings, at
+# a GBP 196.87 baseline.
+- name: Case 14, without a cap in 2025-26 the singles above GBP 3 pay in full.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    region: SOUTH_EAST
+    other_local_bus_trips: 100
+    bus_pass_eligible: false
+    local_bus_single_fare_share: 0.7
+    gov.dft.bus.fares.cap: .inf
+  output:
+    # Only the high band (3.87 * 1.0340 = 4.0016) is above GBP 3:
+    # 196.87 + 78.7268 * 0.15 * 1.0016.
+    person_bus_fare_spending: 208.70
+
+- name: Case 15, a GBP 2 cap in 2025-26 saves the middle and high bands.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    region: SOUTH_EAST
+    other_local_bus_trips: 100
+    bus_pass_eligible: false
+    local_bus_single_fare_share: 0.7
+    gov.dft.bus.fares.cap: 2
+  output:
+    # Middle band 2.21 * 1.0340 = 2.2851 falls to 2; the high band falls
+    # from 3 to 2: 196.87 - 78.7268 * (0.30 * 0.2851 + 0.15 * 1).
+    person_bus_fare_spending: 178.33

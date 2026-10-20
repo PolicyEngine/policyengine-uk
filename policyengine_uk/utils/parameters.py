@@ -193,6 +193,14 @@ REMOVED_PARAMETERS = {
         "gov.dft.bus.fares.cap with gov.dft.bus.reference_fares.cap in the same "
         "year. Change gov.dft.bus.fares.cap to model a cap.",
     ),
+    "gov.dft.bus.uncapped_single_fare": RemovedParameter(
+        "removed single uncapped bus fare",
+        "Cap changes are priced from a table of uncapped single fares, "
+        "gov.dft.bus.uncapped_single_fares, with the share of single tickets "
+        "and the mean fare of each band (LOW, MIDDLE, HIGH). To price every "
+        "single ticket at one fare, set that band's share to 1 and the others "
+        "to 0, or supply local_bus_uncapped_single_fare for each person.",
+    ),
 }
 
 

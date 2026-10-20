@@ -50,6 +50,92 @@ def test_reference_cap_is_the_cap_the_published_index_reflects():
             assert reference == held, day
 
 
+BANDS = ("LOW", "MIDDLE", "HIGH")
+SINGLE_SHARE = 0.70
+# DfT BUS01a journeys less BUS01c concessionary journeys, England outside London.
+FARE_PAYING_2023_24 = 1_780_912_900.016 - 499_730_082.115
+FARE_PAYING_2024_25 = 1_850_509_887.261 - 519_107_608.594
+
+
+def cpi(year):
+    indices = system.parameters.gov.economic_assumptions.indices.obr
+    return indices.consumer_price_index(f"{year}-01-01")
+
+
+def bands(year=2024):
+    """(share, fare) of each band, as the model reads them in a year."""
+    table = system.parameters.gov.dft.bus.uncapped_single_fares
+    at = f"{year}-01-01"
+    return [
+        (table.share.children[band](at), table.fare.children[band](at))
+        for band in BANDS
+    ]
+
+
+def saving(cap, year=2024, price_ratio=1.0):
+    """Mean saving per single ticket from a cap held all year."""
+    return sum(share * max(price_ratio * fare - cap, 0) for share, fare in bands(year))
+
+
+def test_uncapped_fare_bands():
+    (low_share, low), (middle_share, middle), (high_share, high) = bands()
+    assert low_share + middle_share + high_share == pytest.approx(1)
+    # Bands at FY2024-25 prices: at or below GBP 2, up to GBP 3, above GBP 3.
+    assert low <= 2 < middle <= 3 < high
+    # Fares move with CPI after FY2024-25; shares stay.
+    for year in (2025, 2027):
+        for (share, fare), (later_share, later_fare) in zip(bands(), bands(year)):
+            assert later_share == share
+            assert later_fare == pytest.approx(fare * cpi(year) / cpi(2024))
+
+
+def test_table_matches_dft_cap_evaluation():
+    # Frontier Economics and SYSTRA for DfT, Table 6: all single tickets
+    # averaged GBP 2.15 before the cap and GBP 1.83 after (a GBP 0.32
+    # saving); those above GBP 2 averaged GBP 2.73, which puts their share
+    # near 0.32 / 0.73 = 0.44. Read at face value, as the fit does.
+    table = bands()
+    above = [(share, fare) for share, fare in table if fare > 2]
+    above_share = sum(share for share, _ in above)
+    assert sum(share * fare for share, fare in table) == pytest.approx(2.15, abs=0.03)
+    assert above_share == pytest.approx(0.44, abs=0.05)
+    assert sum(share * fare for share, fare in above) / above_share == pytest.approx(
+        2.73, abs=0.05
+    )
+    assert saving(2) == pytest.approx(0.32, abs=0.03)
+
+
+def test_table_matches_january_2025_index_step():
+    # BUS0415a outside London rose 11.0% from December 2024 to March 2025,
+    # when the cap rose from GBP 2 to GBP 3; neighbouring quarters moved 0.1%
+    # to 2.3%. The cap's part, 9% to 11% of the yield at the December 2024
+    # index level (1.554716967657 * 185.9 / 190.2282).
+    december_yield = 1.554716967657 * 185.9 / 190.2282
+    step = SINGLE_SHARE * (saving(2) - saving(3)) / december_yield
+    assert 0.09 <= step <= 0.11
+
+
+def test_table_matches_2023_24_fare_cap_grant():
+    # BUS05bi fare cap support for 2023-24, a full year at GBP 2: GBP 278.95m,
+    # over 1,281m fare-paying boardings. Fares at 2023-24 prices.
+    grant = (
+        SINGLE_SHARE
+        * FARE_PAYING_2023_24
+        * saving(2, price_ratio=cpi(2023) / cpi(2024))
+    )
+    assert grant == pytest.approx(278_951_028, rel=0.15)
+
+
+def test_table_matches_announced_cap_funding():
+    # Over GBP 150m for the GBP 3 cap in 2025 (DfT written statement, 29
+    # October 2024) and GBP 400m for the GBP 2 cap in 2027 (DfT, 22 July 2026),
+    # at the 2024-25 number of fare-paying boardings.
+    cap_3 = SINGLE_SHARE * FARE_PAYING_2024_25 * saving(3, year=2025)
+    cap_2 = SINGLE_SHARE * FARE_PAYING_2024_25 * saving(2, year=2027)
+    assert cap_3 == pytest.approx(150e6, rel=0.20)
+    assert cap_2 == pytest.approx(400e6, rel=0.20)
+
+
 def test_removed_reference_year_gives_directions():
     with pytest.raises(ValueError) as error:
         Simulation(
@@ -62,3 +148,17 @@ def test_removed_reference_year_gives_directions():
     assert "gov.dft.bus.reference_year has been removed" in message
     assert "gov.dft.bus.benchmark_year" in message
     assert "gov.dft.bus.fares.cap" in message
+
+
+def test_removed_uncapped_single_fare_gives_directions():
+    with pytest.raises(ValueError) as error:
+        Simulation(
+            situation={"people": {"person": {"age": {2025: 30}}}},
+            scenario=Scenario(
+                parameter_changes={"gov.dft.bus.uncapped_single_fare": {"2025": 4}}
+            ),
+        )
+    message = str(error.value)
+    assert "gov.dft.bus.uncapped_single_fare has been removed" in message
+    assert "gov.dft.bus.uncapped_single_fares" in message
+    assert "local_bus_uncapped_single_fare" in message

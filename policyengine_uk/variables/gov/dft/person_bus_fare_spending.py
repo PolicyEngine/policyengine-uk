@@ -1,5 +1,5 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.bus_fares import annual_capped_fare, has_bus_journeys
+from policyengine_uk.utils.bus_fares import has_bus_journeys, single_fare_cap_change
 from policyengine_uk.utils.supplied_inputs import supplied_input
 
 
@@ -83,19 +83,31 @@ class person_bus_fare_spending(Variable):
         )
         # The index already reflects the cap in reference_fares. Add the
         # effect of the cap differing from it in the same year: scheduled
-        # changes after the last published quarter, and reforms.
-        year = period.start.year
-        uncapped = max_(person("local_bus_uncapped_single_fare", period), 0)
-        current_single = annual_capped_fare(
-            uncapped, parameters.gov.dft.bus.fares, year
-        )
-        reference_single = annual_capped_fare(
-            uncapped, parameters.gov.dft.bus.reference_fares, year
+        # changes after the last published quarter, and reforms. Single
+        # tickets cost the person's supplied uncapped fare, or else follow
+        # the table of uncapped single fares.
+        supplied_fare = supplied_input(person, "local_bus_uncapped_single_fare", period)
+        if supplied_fare is None:
+            bands = p.uncapped_single_fares
+            shares = [bands.share.LOW, bands.share.MIDDLE, bands.share.HIGH]
+            if min(shares) < 0 or abs(sum(shares) - 1) > 1e-6:
+                raise ValueError(
+                    "The shares in gov.dft.bus.uncapped_single_fares.share must "
+                    "be non-negative and sum to one"
+                )
+            fares = [bands.fare.LOW, bands.fare.MIDDLE, bands.fare.HIGH]
+        else:
+            shares, fares = [1], [supplied_fare]
+        cap_change = single_fare_cap_change(
+            [max_(fare, 0) for fare in fares],
+            shares,
+            parameters.gov.dft.bus.fares,
+            parameters.gov.dft.bus.reference_fares,
+            period.start.year,
         )
         single_share = clip(person("local_bus_single_fare_share", period), 0, 1)
         other_yield = max_(
-            other_yield
-            + in_england * single_share * (current_single - reference_single),
+            other_yield + in_england * single_share * cap_change,
             0,
         )
         spending = (

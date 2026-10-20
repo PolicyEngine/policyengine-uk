@@ -27,8 +27,9 @@ false and the person pays fares even if eligible for a statutory concession.
 For fare-paying passengers,
 `local_bus_single_fare_share` is the share of boardings bought as singles,
 bounded to [0, 1]. Its fallback is 0.70, the 2024 NTS other-local-bus estimate.
-An optional `local_bus_uncapped_single_fare` overrides the representative
-uncapped fare described below. Negative quantities and fares price at zero.
+An optional `local_bus_uncapped_single_fare` replaces the table of uncapped
+single fares described below for that person. Negative quantities and fares
+price at zero.
 
 On loading a UK `Simulation`, a supplied household `bus_fare_spending` moves
 to `bus_fare_spending_reported`. The stored total therefore cannot freeze the
@@ -129,9 +130,9 @@ uses:
 
 ```
 yield(t) = max(0, benchmark_yield * index(t) / index(benchmark_year)
-                  + single_share *
-                    (annual_min(uncapped_fare, fares.cap, t) -
-                     annual_min(uncapped_fare, reference_fares.cap, t)))
+                  + single_share * sum over bands b of share_b *
+                    (annual_min(fare_b, fares.cap, t) -
+                     annual_min(fare_b, reference_fares.cap, t)))
 spending = trips * boardings_per_trip * yield(t)
 ```
 
@@ -154,26 +155,61 @@ The source receipts use 1 April to 31 March; this approximation treats them as
 the corresponding model year's benchmark. Annual Scenario changes apply to the
 full model fiscal year.
 
-The default uncapped fare is £2.748019953976. This is an aggregate assumption,
-not an observed fare distribution. The FY2024–25 cap grant is £515,693,216.60.
-With `F = B - C` outside London and single share `s = 0.70`, the assumption
-solves `s * (u - annual_min(u, reference_cap)) = grant / F`. Since `2 < u < 3`,
-the reference year has 270 days at £2 and 95 at `u`, giving:
+### Uncapped single fares
 
-```
-u = 2 + grant / (F * 0.70 * 270/365)
-```
+What a cap saves depends on how uncapped single fares are spread, not on their
+average. `gov.dft.bus.uncapped_single_fares` holds three bands, each with its
+share of single tickets and its mean uncapped fare at FY2024–25 prices:
 
-Removing the cap therefore raises the benchmark yield from about £1.55 to
-£1.94 at the representative share, matching the grant-addback calculation
-in issue #1871. This assumes full grant pass-through and no demand response.
-Individual shares can differ, so a dataset aggregate need not recover the
-published grant. Caps at or above £2.75, including the £3 cap, have no effect
-relative to uncapped travel under the default £2.748 representative fare.
-The default has no fare distribution above these caps, so it cannot estimate
-the savings those caps give to passengers with higher fares. Supply
-person-specific `local_bus_uncapped_single_fare` values above a cap to model
-its effect on those passengers. Very large reductions can reach the zero-yield
+| Band | Share | Mean fare |
+|---|---:|---:|
+| `LOW`, at or below £2 | 0.55 | £1.65 |
+| `MIDDLE`, above £2 and up to £3 | 0.30 | £2.21 |
+| `HIGH`, above £3 | 0.15 | £3.87 |
+
+The fares rise with the OBR CPI after FY2024–25 and the shares stay, so a fixed
+cap saves more as fares rise. The model caps each band's mean fare under both
+schedules and weights the bands by their shares, which must sum to one. With
+the bands at their means, the table is exact for caps of £2 and £3 at
+FY2024–25 prices and approximate for other caps; a cap below the low band's
+mean needs more bands.
+
+`scripts/fit_bus_cap_savings.py` fits the table by least squares to the facts
+below, each scaled by its tolerance. It searches shares in steps of one point
+and fares in steps of one penny, keeps each band's mean at least 10% above its
+lower edge, and sets the low band's fare so all singles average £2.15:
+
+| Fact | Source | Target | Table gives |
+|---|---|---:|---:|
+| A full year at £2, 2023–24 | Fare cap support, DfT BUS05bi | £278.95m ± 10% | £280.9m |
+| Part of the December 2024 to March 2025 index step outside London due to the £3 cap | BUS0415a: +11.0%; neighbouring quarters 0.1% to 2.3% | 10% ± 1 point of the yield | 9.8% |
+| The £3 cap in 2025 | ["over £150 million"](https://www.gov.uk/government/speeches/national-bus-fare-cap) | £150m ± 20% | £140.0m |
+| The £2 cap in 2027 | ["£400 million"](https://www.gov.uk/government/speeches/2-bus-fares-from-january-2027) | £400m ± 20% | £411.6m |
+| Mean pre-cap price of single tickets | [DfT evaluation](https://www.gov.uk/government/publications/evaluation-of-the-2-bus-fare-cap), Table 6 | £2.15 ± £0.10 | £2.15 |
+| Share of single tickets above £2 | Table 6: £0.32 / (£2.73 − £2.00) | 0.44 ± 0.05 | 0.45 |
+| Their mean pre-cap price | Table 6 | £2.73 ± £0.10 | £2.76 |
+
+The costs use the 0.70 default single share and fare-paying boardings outside
+London (BUS01 journeys less BUS01c concessionary journeys: 1,281m in 2023–24
+and 1,331m in 2024–25, which also stands for 2025 and 2027), with fares moved
+to each year by CPI. Table 6 compares January to October 2022 with the same
+months of 2023 and is read at face value, for the table's shape. Deflated to
+2022 prices it would put the 2023–24 saving about a third above the grant.
+Possible reasons, not checked, are that the grant pays operators for revenue
+lost net of the journeys the cap added, and that Table 6 covers the larger
+participating operators only. The two announced figures are budgets; the £2
+cap's first ten months paid £210m against £245m planned. The table is a fitted
+central estimate, not an observed fare distribution.
+
+At FY2025–26 prices the table saves £0.39 per single ticket for a full year at
+£2 against no cap, and £0.15 at £3: about £0.36bn and £0.14bn a year at
+2024–25 boardings. The single £2.748 fare this replaced saved £0.75 at £2
+(about £0.70bn) and nothing at £3.
+
+A dataset or calculator can supply `local_bus_uncapped_single_fare` for each
+person. Where it is supplied, that person's single tickets cost that one fare
+before the cap, and the table is not used. Single-year datasets extended by
+`Simulation` uprate it with CPI. Very large reductions can reach the zero-yield
 floor.
 
 ## Other reform controls and limits

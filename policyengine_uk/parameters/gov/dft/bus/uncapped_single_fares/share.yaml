@@ -1,0 +1,27 @@
+description: Share of single bus tickets in England outside London in each band of uncapped
+  fare at FY2024-25 prices. LOW is at or below GBP 2, MIDDLE above GBP 2 and up to GBP 3, and
+  HIGH above GBP 3. The shares must sum to one.
+metadata:
+  unit: /1
+  period: year
+  label: share of single tickets by uncapped fare band
+  propagate_metadata_to_children: true
+  reference:
+  - title: Frontier Economics and SYSTRA for DfT, evaluation of the first 10 months of the GBP 2
+      bus fare cap, Table 6
+    href: https://www.gov.uk/government/publications/evaluation-of-the-2-bus-fare-cap
+  - title: DfT bus statistics, BUS01 and BUS05i (fare cap support), 2023-24
+    href: https://www.gov.uk/government/statistical-data-sets/bus-statistics-data-tables
+  - title: DfT bus statistics, table BUS0415a, local bus fares index (release to March 2026)
+    href: https://assets.publishing.service.gov.uk/media/6a310ac715f2a70fac7e6006/bus0415.ods
+  - title: DfT written statement, national bus fare cap (over GBP 150 million for the GBP 3 cap
+      in 2025), 29 October 2024
+    href: https://www.gov.uk/government/speeches/national-bus-fare-cap
+  - title: DfT, GBP 2 bus fares from January 2027 (GBP 400 million), 22 July 2026
+    href: https://www.gov.uk/government/speeches/2-bus-fares-from-january-2027
+LOW:
+  '2024-01-01': 0.55
+MIDDLE:
+  '2024-01-01': 0.3
+HIGH:
+  '2024-01-01': 0.15
