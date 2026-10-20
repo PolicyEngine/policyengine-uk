@@ -112,6 +112,11 @@ DATASET_UPRATING_EXCLUSIONS = frozenset(
         "gas_consumption",
     }
 )
+# Inputs that describe only the year they are stored for, so are not carried
+# into projected years. Unused annual allowance comes from the three tax years
+# before this one (Finance Act 2004 s. 228A), a window that moves each year; a
+# projected year uses the variable's own estimate instead (#2523).
+YEAR_SPECIFIC_INPUTS = frozenset({"unused_pension_annual_allowance"})
 
 
 def _unmapped_uprating_indices(uprating):
@@ -293,6 +298,13 @@ def apply_single_year_uprating(
                 f"{projection['base_year']}–{projection['end_year']}, "
                 f"not {source_year}–{target_year}."
             )
+
+    # Year-specific inputs are dropped from every projected year.
+    for table_name in current_year.table_names:
+        table = getattr(current_year, table_name)
+        stored = [name for name in YEAR_SPECIFIC_INPUTS if name in table.columns]
+        if stored:
+            table.drop(columns=stored, inplace=True)
 
     # First, apply standard variable-YoY growth based uprating.
 

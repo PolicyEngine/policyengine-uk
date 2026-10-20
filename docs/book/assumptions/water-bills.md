@@ -99,7 +99,7 @@ This holds to the end of the dataset projection (2032). After it, policyengine-c
 | 2024 | 8.8% | [WICS, charges scheme 2024-25](https://wics.scot/publications/price-setting/strategic-review-charges-2021-27/scottish-waters-charges-scheme/charges-scheme-2024-25) |
 | 2025 | 9.9% | [Scottish Water, 28 January 2025](https://www.scottishwater.co.uk/About-Us/News-and-Views/2025/01/Charges-2025-to-2026-Announcement) |
 | 2026 | 8.67% | [Scottish Water, 22 January 2026](https://www.scottishwater.co.uk/about-us/news-and-views/2026/01/230126-charges-2026) |
-| 2027 | 3.9% | WICS Draft Determination 2027-33: CPI + 2%, with WICS's CPI assumption of 1.9% |
+| 2027 | 3.9% | [WICS Draft Determination 2027-33](https://wics.scot/system/files/2026-06/Draft-Determination-2027-33.pdf): the CPI + 2% core cap (para. 9.1.3) with WICS's CPI forecast of 1.9% (Table 68) |
 | 2028 | 3.9% | As above |
 | 2029 | 4.1% | As above, with CPI at 2.1% |
 

@@ -16,10 +16,10 @@ class unused_pension_annual_allowance(Variable):
         "input amount, for years in which the individual was a member of a "
         "registered pension scheme, less any part already used up in an "
         "intervening year (earliest year first). It increases this year's "
-        "annual allowance (s. 228A(2)). Supply it where the history is known; "
-        "a supplied value applies to its own year only, since the window of "
-        "years moves on, and after the dataset projection ends (2032) this "
-        "estimate replaces a stored value. "
+        "annual allowance (s. 228A(2)). Supply it where the history is known. "
+        "A value supplied or stored for a year applies to that year only, "
+        "since the window of years moves on: dataset projection does not copy "
+        "it into later years, which use this estimate. "
         "Survey data records no past pension input, so from 2020-21 the "
         "default assumes that in each of the five previous years the input "
         "was this year's times gov.simulation.pensions.prior_year_input_ratio "
@@ -27,8 +27,11 @@ class unused_pension_annual_allowance(Variable):
         "by average earnings growth, and that a person with pension input "
         "this year was a member in each of those years. Each year's excess "
         "over its allowance uses the unused allowance of the three years "
-        "before it, earliest first (s. 228A(7)). Before 2020-21 the default "
-        "is nil."
+        "before it, earliest first (s. 228A(7)). The five years leave out "
+        "the unused allowance an excess three years back would have used "
+        "first, so the estimate can carry slightly too little forward, and "
+        "the 2015-16 pension input period alignment rules are not applied. "
+        "Before 2020-21 the default is nil."
     )
     entity = Person
     definition_period = YEAR

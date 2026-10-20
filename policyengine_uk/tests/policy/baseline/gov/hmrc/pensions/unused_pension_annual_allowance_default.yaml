@@ -101,3 +101,22 @@
     employer_pension_contributions: 30_000
   output:
     unused_pension_annual_allowance: 0
+
+- name: A taper that binds only in an earlier year cuts what that year leaves
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 180_000
+    employer_pension_contributions: 20_000
+  output:
+    # Adjusted income of 200,000 is under 2022-23's taper limit of 240,000.
+    # Deflated by earnings growth of 6.14% (2022), 5.9% (2021) and 0.3%
+    # (2020), the 2019-20 adjusted income is 177,400.16 and threshold income
+    # 159,660.15, over that year's limits of 150,000 and 110,000, so its
+    # allowance is 40,000 - floor((177,400.16 - 150,000) / 2) = 26,300, and
+    # its input of 17,740.02 leaves 8,559.98. 2020-21 and 2021-22 are under
+    # 240,000 and leave 22,206.76 and 21,156.96 of 40,000. Untapered, 2019-20
+    # would leave 22,259.98, for 65,623.70 in all.
+    pension_annual_allowance: 40_000
+    unused_pension_annual_allowance: 51_923.71

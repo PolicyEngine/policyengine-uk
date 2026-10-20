@@ -1263,10 +1263,12 @@ scottish_water:
     #   announced and WICS approved for each year. Every council tax band's
     #   charge is a fixed fraction of Band D, so each band rises by the same
     #   percentage.
-    # - 2027-2029: the cap in WICS's Draft Determination for 2027-33
-    #   (consultation 30 June to 1 September 2026), CPI + 2% a year, with
-    #   WICS's CPI assumption of 1.9%, 1.9% and 2.1%. WICS publishes the
-    #   Final Determination on 29 October 2026; replace these with it.
+    # - 2027-2029: the core cap in WICS's Draft Determination for 2027-33
+    #   (consultation 30 June to 1 September 2026), CPI + 2% in each of the
+    #   first three years (para. 9.1.3), with CPI from WICS's forecast of
+    #   October CPI in the previous year, 1.9%, 1.9% and 2.1% (Table 68, from
+    #   OBR's March 2026 forecast). WICS publishes the Final Determination on
+    #   29 October 2026; replace these with it.
     # Later years hold the 2029-30 rate.
     values:
       2022-01-01: 0.042
@@ -1291,7 +1293,9 @@ scottish_water:
           href: https://www.scottishwater.co.uk/About-Us/News-and-Views/2025/01/Charges-2025-to-2026-Announcement
         - title: Scottish Water, "Average water bills to rise £42 in 2026" (22 January 2026; 8.67%)
           href: https://www.scottishwater.co.uk/about-us/news-and-views/2026/01/230126-charges-2026
-        - title: WICS, "WICS publishes 2027-33 Draft Determination" (CPI + 2% cap; Final Determination 29 October 2026)
+        - title: WICS, Strategic Review of Charges 2027-33 Draft Determination (June 2026), para. 9.1.3 (CPI + 2% core cap) and Table 68 (CPI forecast, p. 258)
+          href: https://wics.scot/system/files/2026-06/Draft-Determination-2027-33.pdf
+        - title: WICS, "WICS publishes 2027-33 Draft Determination" (Final Determination 29 October 2026)
           href: https://wics.scot/latest/wics-publishes-2027-33-draft-determination
 finance_ni:
   domestic_rates:

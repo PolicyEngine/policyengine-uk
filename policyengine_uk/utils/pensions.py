@@ -26,12 +26,16 @@ def trading_profits_before_losses(person, period, hmrc):
 def relevant_uk_earnings(person, period, hmrc):
     """FA 2004 s.189(2) relevant UK earnings.
 
-    Employment income chargeable to income tax, before the deductions for
-    pension contributions that this relief itself gives: pay and
-    employer-paid taxable SSP/SMP, which the model holds separately from
-    wages, less allowable expenses. Trading income is the profit chargeable
-    under ITTOIA 2005 Part 2, before losses.
-    A trading loss does not reduce employment earnings (HMRC PTM044100).
+    Employment income chargeable to income tax is net taxable earnings
+    (ITEPA 2003 ss.9(2) and 11): pay and employer-paid taxable SSP/SMP, which
+    the model holds separately from wages, less the allowable expenses in
+    s.327(3). s.327(5) also lists the deductions for pension contributions
+    (FA 2004 ss.188-194), but those are the relief that these earnings limit,
+    so they are not taken off; the limit would otherwise depend on itself.
+    Trading income is the profit chargeable under ITTOIA 2005 Part 2, before
+    losses. A trading loss does not reduce employment earnings (HMRC
+    PTM044100). Furnished holiday lettings profits, relevant UK earnings
+    before 2025-26 (s.189(2)(ba) and (bb)), are not modelled separately.
     """
     return person("taxable_employment_income", period) + (
         trading_profits_before_losses(person, period, hmrc)

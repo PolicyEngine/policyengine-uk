@@ -13,13 +13,17 @@ description: >-
 # income tested for that year's taper is deflated the same way. A ratio of 0
 # assumes no input in those years, the most allowance there could be to
 # carry forward. HMRC publishes no count of carry-forward use: Self Assessment
-# reports only the excess over the allowance once it is applied.
+# reports only the excess over the allowance once it is applied. So 1 is a
+# convention, not an estimate from statistics. With smooth earnings growth it
+# leaves almost nothing to carry forward for anyone over this year's
+# allowance, while real excesses are often lumpy (a defined-benefit promotion,
+# a one-off contribution), so it probably understates carry forward.
 values:
   2004-04-06: 1
 metadata:
   unit: /1
   period: year
-  label: Pension input in each of the three previous years relative to this year
+  label: Pension input in each previous year relative to this year, for carry forward
   reference:
     - title: Finance Act 2004 s. 228A
       href: https://www.legislation.gov.uk/ukpga/2004/12/section/228A

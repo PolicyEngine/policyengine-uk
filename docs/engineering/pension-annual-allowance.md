@@ -80,9 +80,12 @@ Ordinary pension relief, the ordinary `adjusted_total_income` and both income
 tests take relevant UK earnings
 ([s. 189(2)](https://www.legislation.gov.uk/ukpga/2004/12/section/189)) from
 one helper, `relevant_uk_earnings`: employment income chargeable to income
-tax before deductions for pension contributions (pay and employer-paid taxable
-statutory pay, less allowable expenses), and trading profits after capital
-allowances and the trading allowance but before losses brought forward.
+tax, which is net taxable earnings ([ITEPA 2003 ss. 9(2) and
+11](https://www.legislation.gov.uk/ukpga/2003/1/section/11)), so pay and
+employer-paid taxable statutory pay less allowable expenses; and trading
+profits after capital allowances and the trading allowance but before losses
+brought forward. The pension deductions that s. 327(5) also lists are the
+relief these earnings limit, so they are not taken off.
 
 An explicitly supplied `adjusted_net_income` is authoritative. For this input
 path, the helper restores gross Gift Aid and pension relief recomputed on
@@ -186,14 +189,18 @@ the cash paid in.
   survey employer contributions drawn from regular contribution rates leave
   out deficit repair payments.
 - With the default share of nil, every contribution is counted as money
-  purchase input, as before.
+  purchase input, as before. With the ratio at 1, a supplied share alone
+  changes the input only for net-pay contributions to a defined-benefit
+  scheme from age 75, which now count, since the defined-benefit input has
+  no age limit. Results move only once data supplies a valued input amount.
 
 **Carry forward.** [s. 228A](https://www.legislation.gov.uk/ukpga/2004/12/section/228A)
 adds the allowance left unused in each of the three previous tax years in
 which the person was a scheme member, earliest first. `unused_pension_annual_allowance`
-can be supplied for a year; the supplied value is not carried into later
-years, whose window differs. From 2020-21 it otherwise defaults to an
-estimate:
+can be supplied for a year. A supplied or stored value applies to that year
+only: the window of years moves on, so dataset projection does not copy it
+into later years (`YEAR_SPECIFIC_INPUTS` in `data/economic_assumptions.py`),
+which use the estimate. From 2020-21 it otherwise defaults to an estimate:
 
 - In each of the five previous years, the pension input amount was this
   year's times `gov.simulation.pensions.prior_year_input_ratio` (1), and the
@@ -208,7 +215,10 @@ estimate:
 
 With a ratio of 1 the estimate matters mainly where the allowance has risen,
 as it did to £60,000 in 2023-24, or where pay has grown. A ratio of 0, no input
-in earlier years, gives the most there could be.
+in earlier years, gives the most there could be. The ratio of 1 is a
+convention, since HMRC publishes no statistics on carry forward. Real
+excesses are often lumpy (a defined-benefit promotion, a one-off
+contribution), so a steady history probably understates carry forward.
 
 **Against HMRC.** HMRC's Private pension statistics (July 2026) count 30,440
 individuals reporting contributions above their allowance through Self
@@ -217,6 +227,8 @@ estimate annual allowance charges of £0.3bn (Table 6). On the certified
 Enhanced FRS the model's 2024 count and charge are several times these,
 because the dataset imputes employer contributions as three times employee
 contributions ([policyengine-uk-data#606](https://github.com/PolicyEngine/policyengine-uk-data/issues/606)).
-`tests/microsimulation/test_annual_allowance_against_hmrc.py` checks both
-against half to one and a half times HMRC's figures, as a strict expected
-failure until that is fixed.
+With employer contributions at a third of their stored values, the count,
+the charge and the chargeable amount (against Table 7's £672m of excess) all
+fall within half to one and a half times HMRC's figures.
+`tests/microsimulation/test_annual_allowance_against_hmrc.py` checks all three
+against that band, as a strict expected failure until the data is fixed.

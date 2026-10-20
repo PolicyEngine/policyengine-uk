@@ -13,7 +13,10 @@ class uc_benefit_cap_earnings_exception_threshold(Variable):
         "wage, the hourly rate in regulation 4 of the National Minimum Wage "
         "Regulations, multiplied by 52 and divided by 12, with any fraction "
         "of a pound disregarded (reg. 6(1A)(za)). Before then it was a fixed "
-        "£430 a month."
+        "£430 a month. gov.hmrc.minimum_wage.non_apprentice holds its April "
+        "2026 rate in later years, so the threshold stays at £10,572 a year "
+        "from 2026-27 until that parameter is projected, as the minimum "
+        "income floor does."
     )
     definition_period = YEAR
     unit = GBP

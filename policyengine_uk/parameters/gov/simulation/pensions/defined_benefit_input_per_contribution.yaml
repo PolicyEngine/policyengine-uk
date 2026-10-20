@@ -15,10 +15,15 @@ description: >-
 # - Civil Service alpha (2.32%, CPI): 37%; 28.97% plus 4.6-8.05%, 1.00 to 1.10.
 # - LGPS 2014 (1/49, CPI): 33%; about 21.1% plus 5.5-12.5%, 0.97 to 1.23.
 # The ratio is lower where employer rates are higher (Police 2015, 35.3%;
-# Armed Forces 2015, 73.5%). Survey employer contributions drawn from
-# employers' regular contribution rates leave out deficit repair payments, so
-# contributions are counted at their face value: a ratio of 1. Data that
-# values defined-benefit accrual supplies defined_benefit_pension_input_amount.
+# Armed Forces 2015, 73.5%), and private-sector schemes, whose employer rates
+# are often much higher, would push it below 1 too. Survey employer
+# contributions drawn from employers' regular contribution rates leave out
+# deficit repair payments. A ratio of 1, counting contributions at face value,
+# is a chosen midpoint: the ten years' service and the step to exactly 1 are
+# judgements. The comparison holds from 2023-24, since when these schemes
+# revalue on 6 April with the same September CPI as s. 235's opening value;
+# it does not hold for pension input periods before then. Data that values
+# defined-benefit accrual supplies defined_benefit_pension_input_amount.
 values:
   2004-04-06: 1
 metadata:

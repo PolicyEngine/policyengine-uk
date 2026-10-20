@@ -70,4 +70,4 @@ nodeid = "policyengine_uk/tests/microsimulation/test_annual_allowance_against_hm
 outcome = "xfailed"
 reason = "policyengine-uk-data#606"
 data = ["present"]
-why = "Known data gap PolicyEngine/policyengine-uk-data#606: the certified Enhanced FRS imputes employer pension contributions as three times employee contributions, which puts the 2024 annual allowance charge several times above HMRC's. Pinned by a strict xfail until the dataset fixes it (#2523)."
+why = "Known data gaps, chiefly PolicyEngine/policyengine-uk-data#606: the certified Enhanced FRS imputes employer pension contributions as three times employee contributions, which puts the 2024 annual allowance count, charge and excess several times above HMRC's; with a third of those contributions all three fall within the band. Pinned by a strict xfail until the data is fixed (#2523)."
