@@ -1,0 +1,14 @@
+description: A non-dependant responsible for a child below this age is exempt from Universal Credit housing cost contributions.
+values:
+  2013-04-29: 5
+metadata:
+  unit: year
+  period: year
+  label: Universal Credit housing contribution child responsibility age limit
+  reference:
+    - title: Universal Credit Regulations 2013, Schedule 4 paragraph 16(2)(i)
+      href: https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/16
+    - title: Universal Credit Regulations 2013, regulation 4
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/4
+    - title: Universal Credit Regulations 2013, regulation 1 (commencement on 29 April 2013)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/1/made

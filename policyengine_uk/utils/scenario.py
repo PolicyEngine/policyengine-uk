@@ -14,6 +14,10 @@ from policyengine_uk.utils.dated_reforms import (
     apply_legacy_overrides,
     read_reform_dict,
     read_reform_from_dict,
+    read_override_reform,
+    reform_modifiers_are_effective,
+    unwritten_reform_overrides,
+    validate_annualised_overrides,
 )
 from policyengine_uk.utils.parameters import check_parameter_not_removed
 
@@ -68,16 +72,89 @@ def _is_reform_from_dict(reform: Type[Reform]) -> bool:
     )
 
 
-def _legacy_override_modifier(dated: DatedReform) -> Callable[[Simulation], None]:
-    """Apply what a dated reform leaves to the annualised parameters.
+class ConstructionReformState:
+    """The constructor's writes, until user code edits their parameter paths.
 
-    That is single-day or single-month reform-dict keys and paths the
-    statutory tree does not define, such as a parameter a structural reform
-    in the same tuple adds. The simulation applies the rest from the
-    statutory timeline before any modifier runs.
+    Ownership compares contents so copied scenarios and member wrappers keep
+    the construction reading. Current values alone cannot identify writes:
+    a foreign override can have the same value but a different date reading.
+    """
+
+    def __init__(self, simulation):
+        from policyengine_uk.tax_benefit_system import (
+            parameter_reads_calendar_years,
+            reform_parameter_defines,
+        )
+
+        self.owned = copy.deepcopy(tuple(simulation._building_dated_reforms or ()))
+        self.paths = set()
+        for dated in self.owned:
+            assignments, _ = dated.read(
+                reform_parameter_defines(),
+                calendar_years=parameter_reads_calendar_years(),
+            )
+            self.paths.update(entry.path for entry in assignments)
+        self.dirty = set()
+        self.expected = {}
+        self.refresh_framework(simulation)
+
+    @staticmethod
+    def _current(simulation, path):
+        system = simulation.tax_benefit_system
+        target = system.parameters.get_child(path)
+        return copy.deepcopy(
+            (
+                [(entry.instant_str, entry.value) for entry in target.values_list],
+                [entry for entry in system.dated_assignments if entry.path == path],
+                [entry for entry in system.legacy_overrides if entry.path == path],
+            )
+        )
+
+    def _check_paths(self, simulation, paths):
+        for path in paths:
+            if self.expected[path] != self._current(simulation, path):
+                self.dirty.add(path)
+        return not self.dirty.intersection(paths)
+
+    def pristine(self, simulation, dated_reforms):
+        if any(dated not in self.owned for dated in dated_reforms):
+            return False
+        paths = self.paths.intersection(
+            path for dated in dated_reforms for path in dated.changes
+        )
+        return self._check_paths(simulation, paths)
+
+    def accept_owned(self, simulation, dated):
+        # Only called after a pristine own modifier writes its leftovers.
+        for path in self.paths.intersection(dated.changes):
+            self.expected[path] = self._current(simulation, path)
+
+    def observe_user_edits(self, simulation):
+        self._check_paths(simulation, self.paths)
+
+    def refresh_framework(self, simulation):
+        # The framework may change clean paths between the two user phases.
+        # A user edit observed before that boundary must not become owned.
+        for path in self.paths - self.dirty:
+            self.expected[path] = self._current(simulation, path)
+
+
+def _construction_modifiers_are_pristine(dated_reforms, simulation):
+    state = getattr(simulation, "_construction_reform_state", None)
+    return state is not None and state.pristine(simulation, dated_reforms)
+
+
+def _legacy_override_modifier(dated: DatedReform) -> Callable[[Simulation], None]:
+    """Override changes that are no longer effective on the simulation.
+
+    Construction retains its statutory and legacy readings. On copies,
+    exact latest sequences from a single write log may be no-ops, including
+    legacy single-day keys. Mixed statutory/legacy sequences always replay;
+    external overrides require a key containing a 1 January value.
     """
 
     def modifier(simulation: Simulation) -> None:
+        _reset_uc_health_warning(simulation, (dated,))
         from policyengine_uk.tax_benefit_system import (
             parameter_reads_calendar_years,
             reform_parameter_defines,
@@ -85,18 +162,90 @@ def _legacy_override_modifier(dated: DatedReform) -> Callable[[Simulation], None
 
         # Scenario.apply edits an already-built simulation's annualised
         # parameters, so there every change of the reform is an override.
-        every_change = getattr(simulation, APPLYING_TO_BUILT_SIMULATION, False)
-        defines = (lambda path: False) if every_change else reform_parameter_defines()
-        _, legacy = dated.read(
-            defines,
-            warn=not every_change,
-            calendar_years=parameter_reads_calendar_years(),
+        applying = getattr(simulation, APPLYING_TO_BUILT_SIMULATION, False)
+        construction_owned = not applying and _construction_modifiers_are_pristine(
+            (dated,), simulation
         )
-        if not legacy:
-            return
-        _add_overrides(simulation, legacy)
+        state = getattr(simulation, "_construction_reform_state", None)
+        construction_replay = (
+            not applying
+            and state is not None
+            and dated in state.owned
+            and not construction_owned
+        )
+        every_change = applying or construction_replay
+        if construction_replay:
+            _warn_annualised_overrides()
+        if every_change:
+            _, legacy = read_override_reform(
+                dated.changes, dated.reading, lambda path: False
+            )
+            overriding = True
+        elif construction_owned:
+            _, legacy = dated.read(
+                reform_parameter_defines(),
+                warn=True,
+                calendar_years=parameter_reads_calendar_years(),
+            )
+            overriding = False
+        elif reform_modifiers_are_effective((dated,), simulation.tax_benefit_system):
+            legacy, overriding = [], False
+        else:
+            legacy, overriding = unwritten_reform_overrides(
+                dated.changes,
+                dated.reading,
+                reform_parameter_defines(),
+                getattr(simulation.tax_benefit_system, "dated_assignments", ()),
+                parameter_reads_calendar_years(),
+                simulation.tax_benefit_system,
+            )
+            overriding = overriding or (bool(legacy) and not construction_owned)
+        if legacy:
+            if overriding:
+                if not every_change:
+                    _warn_annualised_overrides()
+            validate_annualised_overrides(
+                simulation.tax_benefit_system.parameters,
+                legacy,
+                require_annual_value=overriding,
+                defer_invalid_keys=True,
+            )
+            try:
+                _add_overrides(simulation, legacy)
+            except (ValueError, TypeError, KeyError):
+                validate_annualised_overrides(
+                    simulation.tax_benefit_system.parameters,
+                    legacy,
+                    require_annual_value=overriding,
+                )
+                raise
+        if construction_owned:
+            simulation._construction_reform_state.accept_owned(simulation, dated)
+        from policyengine_uk.scenarios.uc_reform import warn_shadowed_lcwra_reform
 
+        warn_shadowed_lcwra_reform(simulation)
+
+    modifier._dated_reforms = (dated,)
     return modifier
+
+
+def _reset_uc_health_warning(simulation, dated_reforms, parameter_changes=None):
+    """An amount reform gets one diagnostic for this application."""
+    from policyengine_uk.scenarios.uc_reform import LCWRA_AMOUNT
+
+    if LCWRA_AMOUNT in (parameter_changes or {}) or any(
+        LCWRA_AMOUNT in dated.changes for dated in dated_reforms
+    ):
+        simulation._uc_health_amount_warning_emitted = False
+
+
+def _warn_annualised_overrides() -> None:
+    logger.warning(
+        "Scenario.apply edits the built simulation's annualised "
+        "parameters, so its dated reform keys are not annualised "
+        "again. Pass the scenario when constructing the Simulation to "
+        "apply them on the statutory timeline."
+    )
 
 
 def _add_overrides(simulation: Simulation, overrides: List[LegacyOverride]) -> None:
@@ -139,11 +288,60 @@ def _chain(
 ) -> Optional[Callable[[Simulation], None]]:
     """A modifier that runs ``first`` and then ``second``, either of them None."""
     if first and second:
+        first_dated = getattr(first, "_dated_reforms", None)
+        second_dated = getattr(second, "_dated_reforms", None)
+        dated = (
+            first_dated + second_dated
+            if first_dated is not None and second_dated is not None
+            else None
+        )
 
         def chained(simulation: Simulation) -> None:
-            first(simulation)
-            second(simulation)
+            if simulation is None:
+                first(simulation)
+                second(simulation)
+                return
+            deferred = getattr(simulation, "_defer_uc_health_warning", False)
+            _reset_uc_health_warning(simulation, dated or ())
+            simulation._defer_uc_health_warning = True
+            try:
+                already_effective = (
+                    dated is not None
+                    and not getattr(simulation, APPLYING_TO_BUILT_SIMULATION, False)
+                    and not getattr(simulation, "_building_dated_reforms", None)
+                    and reform_modifiers_are_effective(
+                        dated, simulation.tax_benefit_system
+                    )
+                )
+                if not already_effective:
+                    # An external composite whose complete sequence cannot
+                    # be skipped must replay every child as Scenario.apply
+                    # does, without child-level no-op shortcuts.
+                    applying = getattr(simulation, APPLYING_TO_BUILT_SIMULATION, False)
+                    replay = (
+                        dated is not None
+                        and not applying
+                        and not _construction_modifiers_are_pristine(dated, simulation)
+                    )
+                    if replay:
+                        _warn_annualised_overrides()
+                        setattr(simulation, APPLYING_TO_BUILT_SIMULATION, True)
+                    try:
+                        first(simulation)
+                        second(simulation)
+                    finally:
+                        if replay:
+                            delattr(simulation, APPLYING_TO_BUILT_SIMULATION)
+            finally:
+                simulation._defer_uc_health_warning = deferred
+            if not deferred:
+                from policyengine_uk.scenarios.uc_reform import (
+                    warn_shadowed_lcwra_reform,
+                )
 
+                warn_shadowed_lcwra_reform(simulation)
+
+        chained._dated_reforms = dated
         return chained
     return first or second
 
@@ -482,13 +680,11 @@ class Scenario(BaseModel):
         Args:
             simulation: The simulation to modify
         """
+        _reset_uc_health_warning(
+            simulation, self.dated_reforms or (), self.parameter_changes
+        )
         if self.dated_reforms:
-            logger.warning(
-                "Scenario.apply edits the built simulation's annualised "
-                "parameters, so its dated reform keys are not annualised "
-                "again. Pass the scenario when constructing the Simulation to "
-                "apply them on the statutory timeline."
-            )
+            _warn_annualised_overrides()
 
         # Apply parameter changes first
         overrides: List[LegacyOverride] = []
@@ -525,11 +721,14 @@ class Scenario(BaseModel):
 
         # Then apply simulation modifier
         if self.simulation_modifier:
+            deferred = getattr(simulation, "_defer_uc_health_warning", False)
+            simulation._defer_uc_health_warning = True
             setattr(simulation, APPLYING_TO_BUILT_SIMULATION, True)
             try:
                 self.simulation_modifier(simulation)
             finally:
                 delattr(simulation, APPLYING_TO_BUILT_SIMULATION)
+                simulation._defer_uc_health_warning = deferred
             # UK simulations derive paired CGT series after modifiers run.
             # Keep Scenario compatible with Core and other country simulations.
             refresh_projection = getattr(
@@ -537,6 +736,9 @@ class Scenario(BaseModel):
             )
             if callable(refresh_projection):
                 refresh_projection()
+        from policyengine_uk.scenarios.uc_reform import warn_shadowed_lcwra_reform
+
+        warn_shadowed_lcwra_reform(simulation)
 
     def __repr__(self) -> str:
         """String representation of the Scenario."""

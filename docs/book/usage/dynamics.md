@@ -86,35 +86,22 @@ Participation results are absent from the current coordinator.
 ### Separate participation calls
 
 `policyengine_uk.dynamics.participation.apply_participation_responses` accepts
-an explicit calculation year. Its demographics, adult positions, gain-to-work
-counterfactuals and earnings/hours writeback use that year. Direct callers of
-`calculate_participation_elasticities` may omit its optional year to retain
-the simulation's default-period behaviour. These paths expect the weighted
-`Microsimulation` calculation interface; a supplied situation can exercise
-them without a population dataset.
+an explicit year for demographics, gain-to-work counterfactuals and earnings/hours
+writeback. `calculate_participation_elasticities` also accepts a year; omitting it
+uses the simulation default. These calls use the weighted `Microsimulation`
+interface, including situations supplied without a population dataset.
 
-Spillovers retain 20 equal-width bins, now bounded by eligible response
-candidates only. Adding excluded people cannot move those bounds. The bins,
-unweighted within-bin averages, spillover factor and replacement-rate
-transformation are inherited model approximations, not methods specified by the
-OBR note. The existing exclusions, coefficients, age-18 grouping, wage imputation
-and full-time-equivalent quintile placement are unchanged.
+Partnership groups include cohabiting couples, as corrected in
+[PR #2445](https://github.com/PolicyEngine/policyengine-uk/pull/2445). Spillover
+bins use eligible response candidates only. The existing coefficients, 20 bins,
+unweighted within-bin averages and spillover assumptions remain unchanged.
 
-A local `numpy.random.RandomState` preserves the legacy MT19937 stream for a
-given seed, without changing NumPy's process-global random state. Draws are
-consumed in ascending worker-row order, followed by ascending non-worker-row
-order, including candidates with zero probabilities or nonpositive imputed
-wages. The two draw loops are vectorized with the same candidate order and
-storage precision. This does not make stochastic assignments invariant to row
-permutations. New entrants' weekly hours are converted to annual hours using the
-framework's `WEEKS_IN_YEAR` constant.
-
-These corrections do not activate participation in the coordinator, validate
-calibration or certify whole-population speed. Repeated wage imputation and
-income recomputations remain, and broader performance/caching work stays open
-in [issue1836](https://github.com/PolicyEngine/policyengine-uk/issues/1836).
-The separate cohabiting-group correction in PR2445 also needs to be retained at
-eventual integration; this branch does not certify that combined landing.
+A local `numpy.random.RandomState` preserves the seeded MT19937 draw order:
+ascending worker rows, then ascending non-worker rows, including zero-probability
+and nonpositive-wage candidates. It leaves NumPy's global random state unchanged.
+Entrants' weekly hours use `WEEKS_IN_YEAR` to produce annual hours. The current
+coordinator still returns no participation results; cost and performance work
+remains open in [issue #1836](https://github.com/PolicyEngine/policyengine-uk/issues/1836).
 
 ## Analysing distributional effects
 

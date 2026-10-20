@@ -1,5 +1,5 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.benefit_unit import award_of_members
+from policyengine_uk.utils.benefit_unit import award_of_couple
 from policyengine_uk.variables.gov.dwp._legacy_award_payee import (
     is_payee_of_couple_award,
 )
@@ -104,11 +104,10 @@ class is_housing_benefit_benefit_cap_exempt_specified_benefit(Variable):
         # an employment and support allowance ... which includes a support
         # component". Contributory and income-related allowances both carry
         # it; another member's allowance does not count. The couple's
-        # income-related award is the part of the family's award on the
-        # couple's reports, as in claimant_or_partner_esa_income, and it is
-        # received by its payee (reg 2(3A); is_on_income_related_esa reads
-        # the same).
-        couple_esa_award = award_of_members(
+        # income-related award is claimant_or_partner_esa_income
+        # (award_of_couple), and it is received by its payee (reg 2(3A);
+        # is_on_income_related_esa reads the same).
+        couple_esa_award = award_of_couple(
             benunit,
             period,
             "esa_income",

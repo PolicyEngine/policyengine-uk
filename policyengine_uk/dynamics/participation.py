@@ -27,7 +27,7 @@ def calculate_participation_elasticities(
     """Calculate labour force participation elasticities by demographic group.
 
     Uses OBR elasticity estimates (Table A1) to assign participation elasticities
-    based on gender, marital status, presence/age of children, and earnings quintile.
+    based on gender, partnership status, presence/age of children, and earnings quintile.
 
     Args:
         sim: PolicyEngine simulation object
@@ -39,13 +39,14 @@ def calculate_participation_elasticities(
     """
     # Get demographic characteristics
     gender = sim.calculate("gender", year)
-    is_married = sim.calculate("is_married", year, map_to="person")
+    # OBR Tables A1/A2 include cohabiting couples; legal marriage is separate.
+    is_couple = sim.calculate("is_couple", year, map_to="person")
     composition = benunit_age_18_composition(sim, year)
     has_children = composition["count_under_18"].values > 0
     youngest_child_age = composition["youngest_under_18_age"].values
-    is_single = ~is_married
+    is_single = ~is_couple
 
-    # Get partner employment status for married individuals
+    # Get partner employment status for individuals in couples
     benunit_count_adults = composition["count_aged_18_or_over"].values
     employment_income = sim.calculate("employment_income", year)
     benunit_id = sim.calculate("benunit_id", year, map_to="person")
@@ -127,7 +128,7 @@ def calculate_participation_elasticities(
     assign_elasticities(single_women_no_children, "single_women_no_children")
 
     # Women without children by partner employment status
-    women_no_children = (gender == "FEMALE") & ~has_children & is_married
+    women_no_children = (gender == "FEMALE") & ~has_children & is_couple
     assign_elasticities(
         women_no_children & ~partner_employed,
         "women_no_children_nonworking_partner",
@@ -153,7 +154,7 @@ def calculate_participation_elasticities(
     )
 
     # Women with children by partner employment status and youngest child age
-    women_with_children = (gender == "FEMALE") & has_children & is_married
+    women_with_children = (gender == "FEMALE") & has_children & is_couple
 
     # Non-working partner
     women_nonworking_partner = women_with_children & ~partner_employed
@@ -667,6 +668,7 @@ def apply_participation_responses(
 
     surplus_participation_change = np.zeros_like(direct_participation_change)
 
+    # NaN groups are safe: ineligible rows are in neither response-candidate mask.
     for group in np.unique(elasticity_groups[~np.isnan(elasticity_groups)]):
         group_mask = elasticity_groups == group
         workers_in_group = group_mask & currently_working

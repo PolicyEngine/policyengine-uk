@@ -261,3 +261,40 @@ def test_omitted_year_retains_default_elasticity_contract():
     np.testing.assert_array_equal(
         p.calculate_participation_elasticities(sim, np.array([3])), [0.136]
     )
+
+
+@pytest.mark.parametrize("year, expected", [(2025, 0.453), (2027, 0.589)])
+def test_cohabiting_parent_uses_requested_year_and_couple_group(year, expected):
+    """Retain #2445 couple grouping and #1836 explicit-year demographics together.
+
+    Existing OBR Table A1 third-quintile matrix: working-partner mothers use
+    0.453 at child age2 and0.589 at age4. These are engineering routing oracles.
+    """
+    sim = Microsimulation(
+        situation={
+            "people": {
+                "mother": {
+                    "age": {"2025": 40, "2027": 42},
+                    "gender": "FEMALE",
+                    "employment_income": {"2025": 20000, "2027": 20000},
+                },
+                "partner": {
+                    "age": {"2025": 40, "2027": 42},
+                    "gender": "MALE",
+                    "employment_income": {"2025": 25000, "2027": 25000},
+                },
+                "child": {"age": {"2025": 2, "2027": 4}},
+            },
+            "benunits": {
+                "family": {
+                    "members": ["mother", "partner", "child"],
+                    "is_married": {"2025": False, "2027": False},
+                }
+            },
+            "households": {"home": {"members": ["mother", "partner", "child"]}},
+        }
+    )
+    assert sim.calculate("is_couple", year).iloc[0]
+    assert not sim.calculate("is_married", year).iloc[0]
+    actual = p.calculate_participation_elasticities(sim, np.array([3, 3, 3]), year)
+    assert actual[0] == pytest.approx(expected)
