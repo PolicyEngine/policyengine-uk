@@ -1,3 +1,156 @@
+## [2.140.0] - 2026-10-20
+
+### Added
+
+- Added normalized annual BHC and AHC squared poverty-gap components and documented person-weighted aggregation and undefined poverty-line handling.
+- - Added a configurable Income Support withdrawal rate, preserving the existing 100% default.
+
+### Fixed
+
+- Use Scotland's working-age Council Tax Reduction young-person definition for the severe disability premium's non-dependant test within the applicant's benefit unit, retaining existing looked-after and other-benefit-unit treatment.
+- Count Incapacity Benefit and Severe Disablement Allowance as Universal Credit unearned income from the GB transitional commencement, preserving earlier history and the existing annual-model limitations.
+- Fix stale construction-time reform wrappers after foreign writes or direct edits while preserving copied scenarios and constructor readings; document mixed-composite replay, indexed-threshold construction and the existing rejection of built overrides whose keys contain no 1 January annual value.
+
+
+## [2.139.5] - 2026-10-20
+
+### Changed
+
+- - Documented employer NI incidence assumptions, input handling, revenue measures and current household examples.
+
+### Fixed
+
+- - Separated Universal Credit's higher disabled child condition from tax credits, included certified blindness, and prevented the lower and higher additions from stacking.
+- - Corrected Working Tax Credit eligibility so age, disability and hours conditions applied to the same claimant or partner, while preserving the parental combined-hours and partner-exception routes.
+- - Restricted the Child Tax Credit family element to families responsible for a qualifying child or young person born before 6 April 2017, while preserving earlier supported years.
+- - Excluded Child Benefit from Great Britain's pensioner Council Tax Reduction general-rule income, preserving working-age and statutory-pay treatment.
+
+
+## [2.139.4] - 2026-10-19
+
+### Fixed
+
+- - Corrected dividend income-tax band thresholds from 2016 to 2025 to use their statutory tax-year dates.
+- - Corrected historical Care to Learn weekly caps while preserving the existing annual date approximation.
+- - Exempted non-dependants responsible for a child under five from Universal Credit housing cost contributions.
+- - Applied the shared Pension Credit eligibility conditions to computed Savings Credit amounts.
+- - Included statutory sick and maternity pay in the relevant earnings limits for pension contribution relief and annual-allowance income tests.
+
+
+## [2.139.3] - 2026-10-19
+
+### Fixed
+
+- - Updated Welsh residential Land Transaction Tax tables for annual model years from 2023 (main rates) and 2025 (higher rates), retaining their statutory change dates.
+
+
+## [2.139.2] - 2026-10-19
+
+### Fixed
+
+- - Updated the Scottish Additional Dwelling Supplement to 8% for annual model years from 2025, retaining its statutory 5 December 2024 parameter date.
+- - Reduced the savings starting-rate band from the first pound of taxable non-savings income, correcting savings tax on mixed incomes.
+- - Added migration directions for saved reforms using the removed couple carer premium parameter.
+- - Fixed group inputs being assigned to the wrong benefit unit or household when dataset tables were not sorted by identifier.
+- - Froze the Scottish higher, advanced and top income tax thresholds through 2028-29 under the announced Budget policy, with subsequent CPI projections starting from the frozen amounts.
+
+
+## [2.139.1] - 2026-10-19
+
+### Fixed
+
+- - Corrected OBR labour supply grouping so cohabiting couples receive the same demographic coefficients as married couples.
+- - Corrected the 2016-17 personal allowance to £11,000, fixing income tax calculations for that tax year.
+- - Corrected Carer's Allowance earnings to deduct notional Class 2 and Class 4 National Insurance only when the carer is liable for those contributions.
+- - Corrected residential property uprating and the High Value Council Tax Surcharge's 2026 valuation conversion to use the OBR house-price index.
+  - Aligned projected additional-dwelling purchase prices with residential house-price growth.
+  - Preserved exact 2026 surcharge-band classifications in later-year property projections without rounding household valuations.
+
+
+## [2.139.0] - 2026-10-19
+
+### Added
+
+- Record the unused FYE 2019 joint Income Support/income-related ESA caseload take-up benchmark with its publication-date availability and sampling interval.
+
+### Fixed
+
+- - Count other investment income (National Savings, securities and trust interest) in `total_income`, which income tax already charges, so post-tax income and the Winter Fuel Payment income test see it. Housing Benefit and national Council Tax Reduction non-dependant deductions keep banding on income without it until the remunerative-work test is modelled (#2007) (#2174).
+  - Keep the Winter Fuel Payment for a pensioner whose total income is exactly £35,000: the winter fuel payment charge applies only where total income exceeds £35,000 (ITEPA 2003 s.681I(1)(b)).
+
+
+## [2.138.0] - 2026-10-19
+
+### Added
+
+- Document the field-specific handling of negative FRS tax, benefit and income amounts, with pinned source code and the boundary between raw survey fields and model inputs.
+
+### Fixed
+
+- Document parameter description conventions and validate year-zero YAML, required descriptions and malformed files without silently skipping them.
+
+
+## [2.137.1] - 2026-10-19
+
+### Changed
+
+- - Clarified the Pension Credit qualifying-age documentation for men born on 6 November 1953, who reach it at their State Pension age of 65.
+- - Documented historical Housing Benefit child personal allowance rules and their deferred implementation.
+
+### Fixed
+
+- - Updated England childcare entitlement valuations to the published 2025–26 and 2026–27 national-average funding rates.
+- - Fixed non-finite wealth and consumption tax incidence when dataset-weighted totals were zero.
+
+
+## [2.137.0] - 2026-10-19
+
+### Added
+
+- Compare two datasets on one model with the aggregate-impact tool: measure an unpinned built file by its SHA-256, and `compare --axis data` fails unless both sides ran the same model, runtime, partition and metric definitions.
+
+
+## [2.136.1] - 2026-10-19
+
+### Fixed
+
+- - Fixed Universal Credit capital assessment so reported financial savings do not suppress countable property, with assessment-year sale-expense and secured-debt valuation and property allocation independent of financial reports. Retained the inherited residual financial convention, including subtraction of complete overrides from the financial pool, and company substitution after ordinary-source overrides, and documented the legacy pension-proxy limitation. Complete overrides consume their owners' disregarded company holdings once. Override floors and separate holding deductions share one household corporate-wealth budget proportionally, preventing inconsistent holdings from consuming ordinary savings. Bounded each holding before that budget to isolate negative and infinite inputs from other units' capital.
+
+
+## [2.136.0] - 2026-10-18
+
+### Added
+
+- - Added an aggregate-impact report (`python -m policyengine_uk.utils.aggregate_impact`) that measures a model checkout on the pinned certified dataset and compares base with head: receipts by tax head, spending and caseloads, poverty, inequality, deciles and the standard reform costings over 2025-26 to 2031-32, with accounting identities and a counted-once check against a reviewed fiscal partition (`policyengine_uk/data/fiscal_partition.yaml`).
+
+### Changed
+
+- - Microsimulation tests now run on the certified uk-data 1.58.1 dataset, pinned by commit and SHA-256, and fail instead of skipping when `POLICYENGINE_UK_REQUIRE_TEST_DATA` is set and the data is unavailable; the reform-cost fixtures are rebased onto it, keeping their earlier values as receipts.
+
+
+## [2.135.7] - 2026-10-18
+
+### Changed
+
+- Split the undated VAT grossing factor `gov.simulation.microdata_vat_coverage` (0.38) into two documented factors: `gov.simulation.vat.household_share_of_receipts` (0.7, HMRC's share of VAT liabilities on household consumption) and `gov.simulation.vat.survey_consumption_coverage` (0.67, derived on Microcosm UK 2024-25 against OBR VAT receipts). Total VAT on that dataset now matches 2024-25 receipts instead of overshooting by 24%. `microdata_vat_coverage` is kept as a deprecated parameter equal to their product (0.469); a reform that sets it to another value still takes effect.
+
+### Fixed
+
+- - Add `war_widows_pension_reported` (CPI-uprated) and `war_widows_pension`, counted wherever `bsp` is, so datasets can move FRS benefit code 9 (War Widow's or Widower's Pension) out of `bsp_reported`. Bereavement Support Payment rates have been frozen since April 2017, but `bsp_reported` is about 90% war widow's pension in FRS 2024-25, so it keeps CPI uprating until the datasets split the two (#2381). Results are unchanged for existing datasets.
+
+
+## [2.135.6] - 2026-10-17
+
+### Fixed
+
+- - Corrected the pension annual allowance taper to use separate threshold and adjusted income tests, including employer pension inputs, full salary sacrifice before the NICs exemption cap and gross pension relief. Applied whole-pound rounding and the statutory limits from 2016–17 onwards.
+  - Removed the NICs-only salary-sacrifice reclassification from the taper income tests, including post-75 and basic relief-at-source cases.
+  - Excluded member contributions made at 75 or over from the default DC pension input while retaining all employer contributions and salary sacrifice.
+  - Recomputed income-dependent trading-loss relief from actual income for both annual allowance income tests, including the general-income and relief-cap limits.
+  - Limited trading-loss relief after relievable net-pay contributions in every year and kept supplied adjusted-net-income inputs independent of the NICs cap.
+  - Restricted the basic pension-relief uplift above earnings to relief at source when rebuilding the annual allowance trading-loss cap.
+
+
 ## [2.135.5] - 2026-10-17
 
 ### Fixed
