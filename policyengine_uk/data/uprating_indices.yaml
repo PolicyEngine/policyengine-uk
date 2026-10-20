@@ -159,7 +159,5 @@ gov.economic_assumptions.yoy_growth.obr.private_pension_index:
 - private_pension_income
 gov.economic_assumptions.yoy_growth.obr.lagged_average_earnings:
 - housing_service_charges
-gov.economic_assumptions.yoy_growth.ofwat.water_bills:
-- water_and_sewerage_charges
 gov.economic_assumptions.yoy_growth.ons.population:
 - household_weight
