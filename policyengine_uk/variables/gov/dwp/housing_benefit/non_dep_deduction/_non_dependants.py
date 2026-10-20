@@ -86,14 +86,15 @@ def non_dependant_weekly_gross_income(person, period):
 
 def universal_credit_after_benefit_cap(benunit, period):
     """A family's Universal Credit award after the benefit cap (UC Regs 2013
-    reg 81), for a family that is not liable for rent. universal_credit itself
-    depends on Housing Benefit through the cap, so the cap is applied here to
-    the capped benefits other than Housing Benefit, which such a family does
-    not receive. The award is reduced by the excess minus the childcare costs
-    element, and not at all where that element is greater than the excess
-    (reg 81(1)-(2))."""
+    reg 81), for a family that is not liable for rent. universal_credit and
+    uc_benefit_cap_reduction depend on Housing Benefit through the welfare
+    benefits they count, so the cap (uc_benefit_cap) is applied here to the
+    capped benefits other than Housing Benefit, which such a family does not
+    receive (UC reg 80(2A) counts it as nil in any case). The award is
+    reduced by the excess minus the childcare costs element, and not at all
+    where that element is greater than the excess (reg 81(1)-(2))."""
     capped = add(benunit, period, CAPPED_BENEFITS_EXCEPT_HOUSING_BENEFIT)
-    excess = max_(0, capped - benunit("benefit_cap", period))
+    excess = max_(0, capped - benunit("uc_benefit_cap", period))
     reduction = max_(0, excess - benunit("uc_childcare_element", period))
     return max_(0, benunit("universal_credit_pre_benefit_cap", period) - reduction)
 

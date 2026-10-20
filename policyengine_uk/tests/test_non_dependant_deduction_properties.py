@@ -292,10 +292,10 @@ def calculate(sim, year):
             "housing_benefit_non_dep_deductions_claimant_exempt",
             "council_tax_reduction_non_dep_deductions",
             "universal_credit_pre_benefit_cap",
-        ],
-        household=[
-            "council_tax_reduction_household_has_non_dep_exemption",
-            "council_tax_reduction_household_has_pensioner",
+            "council_tax_reduction_applicant_has_non_dep_exemption",
+            "council_tax_reduction_pensioner",
+            "council_tax_reduction_joint_liability_share",
+            "share_of_household_rent",
         ],
     )
     return {
@@ -398,8 +398,11 @@ def test_non_dependant_deduction_invariants(population, year):
     p = SYSTEM.parameters(str(year))
     hb = p.gov.dwp.housing_benefit.non_dep_deduction
     hb_lowest, hb_top = hb.amount.amounts[0] * WEEKS, hb.amount.amounts[-1] * WEEKS
+    # Each applicant's scheme follows its own family; the applicant is each
+    # household's claimant family (benefit units 0, 2, 4, ...).
+    applicant_pensioner = r["council_tax_reduction_pensioner"].astype(bool)[0::2]
     pension_age = np.repeat(
-        r["council_tax_reduction_household_has_pensioner"],
+        applicant_pensioner,
         [1 + len(h["non_dependants"]) for h in population],
     )
     # Claimant or partner of each person's own family (SSCBA s.137 couple).
@@ -554,14 +557,16 @@ def test_non_dependant_deduction_invariants(population, year):
         r["housing_benefit_non_dep_deductions_claimant_exempt"].astype(bool),
         claimant_exempt,
     )
-    expected_hb = np.where(claimant_exempt, 0, expected_hb)
+    expected_hb = np.where(
+        claimant_exempt, 0, expected_hb * r["share_of_household_rent"]
+    )
     np.testing.assert_allclose(
         r["housing_benefit_non_dep_deductions"], expected_hb, atol=0.01
     )
     # 4-5. Council Tax Reduction aggregation and the applicant exemption.
     welsh_working_age = [
         population[b // 2]["country"] == "WALES"
-        and not r["council_tax_reduction_household_has_pensioner"][b // 2]
+        and not applicant_pensioner[b // 2]
         and r["universal_credit_pre_benefit_cap"][b] > 0
         for b in range(benunit_count)
     ]
@@ -574,11 +579,14 @@ def test_non_dependant_deduction_invariants(population, year):
     )
     # The applicant is the claimant family (its member is the oldest).
     np.testing.assert_array_equal(
-        r["council_tax_reduction_household_has_non_dep_exemption"].astype(bool),
-        disabled,
+        r["council_tax_reduction_applicant_has_non_dep_exemption"].astype(bool),
+        claimant_exempt,
     )
-    household_exempt = np.repeat(disabled, 2)
-    expected_ctr = np.where(household_exempt, 0, expected_ctr)
+    expected_ctr = np.where(
+        claimant_exempt,
+        0,
+        expected_ctr * r["council_tax_reduction_joint_liability_share"],
+    )
     np.testing.assert_allclose(
         r["council_tax_reduction_non_dep_deductions"], expected_ctr, atol=0.01
     )

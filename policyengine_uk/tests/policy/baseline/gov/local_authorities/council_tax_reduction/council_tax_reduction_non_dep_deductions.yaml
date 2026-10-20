@@ -948,41 +948,10 @@
     council_tax_reduction_individual_non_dep_deduction: [0, 0.00]
     council_tax_reduction_non_dep_deductions: [0.00, 0]
 
-- name: "England: no Universal Credit exemption in 2014-15"
-  period: 2014
-  absolute_error_margin: 0.01
-  input:
-    people:
-      claimant:
-        age: 70
-      son:
-        total_income: 0
-        weekly_hours: 0
-        age: 40
-        current_education: NOT_IN_EDUCATION
-    benunits:
-      claimant_unit:
-        members: [claimant]
-      son_unit:
-        members: [son]
-        would_claim_uc: false
-        income_support: 0
-        jsa_income: 0
-        esa_income: 0
-        pension_credit: 0
-        universal_credit_pre_benefit_cap: 1000
-    households:
-      household:
-        members: [claimant, son]
-        country: ENGLAND
-        local_authority: MAIDSTONE
-        council_tax: 2_000
-        savings: 0
-  output:
-    # Parameters before 2015 are read at 1 January (PE-UK converts to fiscal
-    # years from 2015), so only the exemption is asserted here.
-    council_tax_reduction_non_dep_deduction_exempt: [false, false]
-
+# The UC limb starts in 2015-16 in England (SI 2014/3312) and Wales (WSI
+# 2015/44). The model no longer has parameters for several other inputs in
+# 2014, so the year before is not simulated here; Scotland's later start
+# (2016-17) is tested in 2015-16 below.
 - name: "England: Universal Credit exemption from 2015-16"
   period: 2015
   absolute_error_margin: 0.01
@@ -1017,41 +986,6 @@
     # inserted by SI 2014/3312
     council_tax_reduction_individual_non_dep_deduction: [0, 0.00]
     council_tax_reduction_non_dep_deductions: [0.00, 0]
-
-- name: "Wales: no Universal Credit exemption in 2014-15"
-  period: 2014
-  absolute_error_margin: 0.01
-  input:
-    people:
-      claimant:
-        age: 70
-      son:
-        total_income: 0
-        weekly_hours: 0
-        age: 40
-        current_education: NOT_IN_EDUCATION
-    benunits:
-      claimant_unit:
-        members: [claimant]
-      son_unit:
-        members: [son]
-        would_claim_uc: false
-        income_support: 0
-        jsa_income: 0
-        esa_income: 0
-        pension_credit: 0
-        universal_credit_pre_benefit_cap: 1000
-    households:
-      household:
-        members: [claimant, son]
-        country: WALES
-        local_authority: CARDIFF
-        council_tax: 2_000
-        savings: 0
-  output:
-    # Parameters before 2015 are read at 1 January (PE-UK converts to fiscal
-    # years from 2015), so only the exemption is asserted here.
-    council_tax_reduction_non_dep_deduction_exempt: [false, false]
 
 - name: "Wales: Universal Credit exemption from 2015-16"
   period: 2015

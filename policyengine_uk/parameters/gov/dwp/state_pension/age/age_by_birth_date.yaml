@@ -1,0 +1,119 @@
+description: People attain State Pension age when they reach this age, which depends on their date of birth; zero where the statute sets a day instead of an age.
+metadata:
+  type: single_amount
+  threshold_unit: date
+  amount_unit: month
+  label: State Pension age by date of birth
+  documentation: Applies to women, and to men born on or after 6 December 1953; men born earlier follow the male rule. Where the statute sets the day on which State Pension age is attained, the amount is zero and day_by_birth_date gives the day. A person attains State Pension age on the later of the two.
+  reference:
+    - title: Pensions Act 1995, Schedule 4, paragraph 1 (rules for determining pensionable age)
+      href: https://www.legislation.gov.uk/ukpga/1995/26/schedule/4
+    - title: Pensions Act 2014, section 26 (increase in pensionable age to 67)
+      href: https://www.legislation.gov.uk/ukpga/2014/19/section/26
+    - title: Pensions Act 2011, section 1 (equalisation and increase to 66)
+      href: https://www.legislation.gov.uk/ukpga/2011/19/section/1
+    - title: Pensions Act 2007, section 13 (increases to 66, 67 and 68)
+      href: https://www.legislation.gov.uk/ukpga/2007/22/section/13
+    - title: Pensions (Northern Ireland) Order 1995, Schedule 2, paragraph 1 (the same timetable for Northern Ireland, with each rule numbered one higher)
+      href: https://www.legislation.gov.uk/nisi/1995/3213/schedule/2
+
+# The timetable is keyed from the Pensions Act 1995 and reflects its current
+# text, last amended by the Pensions Act 2014 (section 26, in force 14 July
+# 2014). Earlier versions are not encoded separately: every amendment moved
+# only people who had not yet reached pensionable age, so the timetable gives
+# the right status for any past date.
+#
+# Dates of birth and days are written as YYYYMMDD numbers. Each bracket runs
+# from its threshold (inclusive) to the next threshold.
+
+# An age of N years and M months is attained on the same day of the month, or
+# on the month's last day where that day does not exist. That gives the three
+# days rule (7A) sets for table 3: 30 November 2026 for a birthday on 31 July
+# 1960, 30 September 2027 for 31 December 1960 and 30 November 2027 for 31
+# January 1961.
+brackets:
+  # Rule (2): a woman born before 6th April 1950 attains pensionable age when she attains the age of 60.
+  - threshold:
+      1995-07-19: 0
+    amount:
+      1995-07-19: 720
+  # Rules (3) and (5), tables 1 and 2: born 6th April 1950 to 5th October 1954, pensionable age is attained on the day shown in day_by_birth_date.
+  - threshold:
+      1995-07-19: 19500406
+    amount:
+      1995-07-19: 0
+  # Rule (6): a person born after 5th October 1954 but before 6th April 1960 attains pensionable age when the person attains the age of 66.
+  - threshold:
+      1995-07-19: 19541006
+    amount:
+      1995-07-19: 792
+  # Rule (7), table 3: 6th April 1960 to 5th May 1960: 66 years and 1 month.
+  - threshold:
+      1995-07-19: 19600406
+    amount:
+      1995-07-19: 793
+  # Rule (7), table 3: 6th May 1960 to 5th June 1960: 66 years and 2 months.
+  - threshold:
+      1995-07-19: 19600506
+    amount:
+      1995-07-19: 794
+  # Rule (7), table 3: 6th June 1960 to 5th July 1960: 66 years and 3 months.
+  - threshold:
+      1995-07-19: 19600606
+    amount:
+      1995-07-19: 795
+  # Rule (7), table 3: 6th July 1960 to 5th August 1960: 66 years and 4 months.
+  - threshold:
+      1995-07-19: 19600706
+    amount:
+      1995-07-19: 796
+  # Rule (7), table 3: 6th August 1960 to 5th September 1960: 66 years and 5 months.
+  - threshold:
+      1995-07-19: 19600806
+    amount:
+      1995-07-19: 797
+  # Rule (7), table 3: 6th September 1960 to 5th October 1960: 66 years and 6 months.
+  - threshold:
+      1995-07-19: 19600906
+    amount:
+      1995-07-19: 798
+  # Rule (7), table 3: 6th October 1960 to 5th November 1960: 66 years and 7 months.
+  - threshold:
+      1995-07-19: 19601006
+    amount:
+      1995-07-19: 799
+  # Rule (7), table 3: 6th November 1960 to 5th December 1960: 66 years and 8 months.
+  - threshold:
+      1995-07-19: 19601106
+    amount:
+      1995-07-19: 800
+  # Rule (7), table 3: 6th December 1960 to 5th January 1961: 66 years and 9 months.
+  - threshold:
+      1995-07-19: 19601206
+    amount:
+      1995-07-19: 801
+  # Rule (7), table 3: 6th January 1961 to 5th February 1961: 66 years and 10 months.
+  - threshold:
+      1995-07-19: 19610106
+    amount:
+      1995-07-19: 802
+  # Rule (7), table 3: 6th February 1961 to 5th March 1961: 66 years and 11 months.
+  - threshold:
+      1995-07-19: 19610206
+    amount:
+      1995-07-19: 803
+  # Rule (8): a person born after 5th March 1961 but before 6th April 1977 attains pensionable age when the person attains the age of 67.
+  - threshold:
+      1995-07-19: 19610306
+    amount:
+      1995-07-19: 804
+  # Rule (9), table 4: born 6th April 1977 to 5th April 1978, pensionable age is attained on the day shown in day_by_birth_date.
+  - threshold:
+      1995-07-19: 19770406
+    amount:
+      1995-07-19: 0
+  # Rule (10): a person born after 5th April 1978 attains pensionable age when the person attains the age of 68.
+  - threshold:
+      1995-07-19: 19780406
+    amount:
+      1995-07-19: 816

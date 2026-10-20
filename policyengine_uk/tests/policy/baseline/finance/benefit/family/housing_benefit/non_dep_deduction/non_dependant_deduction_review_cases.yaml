@@ -46,7 +46,7 @@
     # person in the family (reg 19; SSCBA s.142). The son's 576.92 a week is
     # in the HB 485 band (119.85) and the CTR 485 band (13.30).
     housing_benefit_non_dep_deductions_claimant_exempt: [false, false]
-    council_tax_reduction_household_has_non_dep_exemption: false
+    council_tax_reduction_applicant_has_non_dep_exemption: [false, false]
     housing_benefit_non_dep_deductions: [6_232.20, 0]
     council_tax_reduction_non_dep_deductions: [691.60, 0]
 
@@ -365,7 +365,7 @@
         esa_income: 0
         pension_credit: 0
         universal_credit_pre_benefit_cap: 30000
-        benefit_cap: 20000
+        uc_benefit_cap: 20000
     households:
       household:
         members: [claimant, non_dependant]
@@ -476,7 +476,7 @@
     # partner is blind, so no deduction for the lodger (576.92 a week, which
     # would otherwise be 119.85 HB and 16.80 CTR a week).
     housing_benefit_non_dep_deductions_claimant_exempt: [true, false]
-    council_tax_reduction_household_has_non_dep_exemption: true
+    council_tax_reduction_applicant_has_non_dep_exemption: [true, false]
     housing_benefit_non_dep_deductions: [0, 0]
     council_tax_reduction_non_dep_deductions: [0, 0]
 
@@ -567,7 +567,7 @@
   output:
     # Merton scheme para 30(6): no deduction where the applicant or partner
     # gets the daily living component of PIP.
-    council_tax_reduction_household_has_non_dep_exemption: true
+    council_tax_reduction_applicant_has_non_dep_exemption: [true, false]
     merton_council_tax_reduction_non_dep_deductions: [0, 0]
 
 # Round 3 of the independent review: gross and earned income, the Scottish
@@ -939,7 +939,7 @@
         universal_credit_pre_benefit_cap: 22_000
         uc_childcare_element: 12_000
         child_benefit: 2_500
-        benefit_cap: 22_020
+        uc_benefit_cap: 22_020
         child_tax_credit: 0
         working_tax_credit: 0
         income_support: 0
@@ -1056,7 +1056,7 @@
         universal_credit_pre_benefit_cap: 14_000
         uc_childcare_element: 0
         child_benefit: 5_129.80
-        benefit_cap: 22_020
+        uc_benefit_cap: 22_020
         child_tax_credit: 0
         working_tax_credit: 0
         income_support: 0

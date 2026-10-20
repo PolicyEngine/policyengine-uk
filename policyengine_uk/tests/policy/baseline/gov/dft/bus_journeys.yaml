@@ -1,0 +1,128 @@
+# Hand arithmetic isolates the cap, ticket share and trip/boarding distinction.
+# DfT national cap: England outside London, single tickets only.
+- name: Case 1, a one-pound cap applies only to the single-fare share.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.dft.bus.reference_year: 2025
+    gov.dft.bus.reference_fares.cap: 2
+    region: SOUTH_EAST
+    other_local_bus_trips: 100
+    bus_pass_eligible: false
+    local_bus_single_fare_share: 0.5
+    local_bus_uncapped_single_fare: 4
+    gov.dft.bus.boardings_per_trip.ENGLAND_OUTSIDE_LONDON: 2
+    gov.dft.bus.yield_per_boarding.ENGLAND_OUTSIDE_LONDON: 3
+    gov.dft.bus.fares.cap: 1
+  output:
+    local_bus_trips: 100
+    # 100 * 2 * (3 + 0.5 * (min(4, 1) - min(4, 2))) = 500.
+    person_bus_fare_spending: 500
+    bus_fare_spending: 500
+
+- name: Case 2, pass holders pay nothing even when they make journeys.
+  period: 2025
+  input:
+    gov.dft.bus.reference_year: 2025
+    gov.dft.bus.reference_fares.cap: 2
+    region: SOUTH_EAST
+    other_local_bus_trips: 100
+    bus_pass_eligible: true
+  output:
+    person_bus_fare_spending: 0
+    bus_fare_spending: 0
+
+- name: Case 3, a national cap does not change London bus fares.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.dft.bus.reference_year: 2025
+    gov.dft.bus.reference_fares.cap: 2
+    region: SOUTH_EAST
+    bus_in_london_trips: 100
+    local_bus_single_fare_share: 1
+    gov.dft.bus.boardings_per_trip.LONDON: 2
+    gov.dft.bus.yield_per_boarding.LONDON: 3
+    gov.dft.bus.fares.cap: 0
+  output:
+    person_bus_fare_spending: 600
+
+- name: Case 4, season-ticket journeys are unaffected by a single-fare cap.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.dft.bus.reference_year: 2025
+    gov.dft.bus.reference_fares.cap: 2
+    region: SOUTH_EAST
+    local_bus_trips: 100
+    local_bus_single_fare_share: 0
+    gov.dft.bus.boardings_per_trip.ENGLAND_OUTSIDE_LONDON: 2
+    gov.dft.bus.yield_per_boarding.ENGLAND_OUTSIDE_LONDON: 3
+    gov.dft.bus.fares.cap: 0
+  output:
+    person_bus_fare_spending: 600
+
+- name: Case 5, members pay from their own journeys rather than their ages.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.dft.bus.reference_year: 2025
+    gov.dft.bus.reference_fares.cap: 2
+    gov.dft.bus.boardings_per_trip.ENGLAND_OUTSIDE_LONDON: 1
+    gov.dft.bus.yield_per_boarding.ENGLAND_OUTSIDE_LONDON: 2
+    gov.dft.bus.fares.cap: 2
+    people:
+      person1: {age: 30, other_local_bus_trips: 100}
+      person2: {age: 30, other_local_bus_trips: 20}
+      person3: {age: 70, other_local_bus_trips: 200, bus_pass_eligible: true}
+    households:
+      family: {members: [person1, person2, person3], region: SOUTH_EAST}
+  output:
+    person_bus_fare_spending: [200, 40, 0]
+    bus_fare_spending: 240
+
+- name: Case 6, a cap above the uncapped fare does not raise it.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.dft.bus.reference_year: 2025
+    gov.dft.bus.reference_fares.cap: 2
+    region: SOUTH_EAST
+    other_local_bus_trips: 100
+    local_bus_single_fare_share: 1
+    local_bus_uncapped_single_fare: 1.5
+    gov.dft.bus.boardings_per_trip.ENGLAND_OUTSIDE_LONDON: 1
+    gov.dft.bus.yield_per_boarding.ENGLAND_OUTSIDE_LONDON: 2
+    gov.dft.bus.fares.cap: 3
+  output:
+    person_bus_fare_spending: 200
+
+- name: Case 7, a proportional fare reform also reaches non-single tickets.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.dft.bus.reference_year: 2025
+    gov.dft.bus.reference_fares.cap: 2
+    region: SOUTH_EAST
+    other_local_bus_trips: 100
+    local_bus_single_fare_share: 0
+    gov.dft.bus.boardings_per_trip.ENGLAND_OUTSIDE_LONDON: 1
+    gov.dft.bus.yield_per_boarding.ENGLAND_OUTSIDE_LONDON: 2
+    gov.dft.bus.fare_index: 0.5
+  output:
+    person_bus_fare_spending: 100
+
+- name: Case 8, the national cap does not apply in Scotland.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.dft.bus.reference_year: 2025
+    gov.dft.bus.reference_fares.cap: 2
+    region: SCOTLAND
+    other_local_bus_trips: 100
+    local_bus_single_fare_share: 1
+    gov.dft.bus.boardings_per_trip.SCOTLAND: 1
+    gov.dft.bus.yield_per_boarding.SCOTLAND: 2
+    gov.dft.bus.fares.cap: 0
+  output:
+    person_bus_fare_spending: 200

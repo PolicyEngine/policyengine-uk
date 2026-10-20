@@ -313,3 +313,37 @@
     # under the 192 band (20.40); the young person, under 16 hours, pays 20.40
     # if not exempt (eligibility is an input here).
     household_benefits_individual_non_dep_deduction: [1_060.80, 1_060.80]
+
+# 2025-26 bands and deductions (HB Regs 2006 reg 74 as up-rated by SI 2025/295
+# art 23(3); DWP Benefit and pension rates 2025 to 2026): under £183 a week
+# 19.65; £183 45.15; £266 62.00; £348 101.35; £463 115.45; £577 and above
+# 126.65.
+- name: 2025-26 top band in remunerative work
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    age: 30
+    total_income: 30_056 # 578 a week
+    weekly_hours: 35
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+  output:
+    household_benefits_individual_non_dep_deduction: 126.65 * 52
+
+- name: 2025-26 lowest amount out of remunerative work
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    age: 30
+    total_income: 5_200 # 100 a week
+    weekly_hours: 0
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+  output:
+    household_benefits_individual_non_dep_deduction: 19.65 * 52

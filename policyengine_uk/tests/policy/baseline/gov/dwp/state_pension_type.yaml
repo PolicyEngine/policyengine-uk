@@ -37,3 +37,44 @@
     is_male: false
   output:
     state_pension_type: BASIC
+
+# Pensions Act 2014 s.1(2): people who reach State Pension age before 6 April
+# 2016 are not entitled to the new State Pension. Men born before 6 April 1951
+# reached it at 65 before then; women born 6 March to 5 April 1953 on 6 March
+# 2016 and women born 6 April to 5 May 1953 on 6 July 2016 (table 1).
+
+- name: Man born 5 April 1951 reached State Pension age on 5 April 2016, so gets BASIC
+  period: 2021
+  input:
+    age: 70
+    months_since_last_birthday: 6.032258
+    is_male: true
+  output:
+    state_pension_type: BASIC
+
+- name: Man born 6 April 1951 reached State Pension age on 6 April 2016, so gets NEW
+  period: 2021
+  input:
+    age: 70
+    months_since_last_birthday: 6
+    is_male: true
+  output:
+    state_pension_type: NEW
+
+- name: Woman born 5 April 1953 reached State Pension age on 6 March 2016, so gets BASIC
+  period: 2021
+  input:
+    age: 68
+    months_since_last_birthday: 6.032258
+    is_male: false
+  output:
+    state_pension_type: BASIC
+
+- name: Woman born 6 April 1953 reached State Pension age on 6 July 2016, so gets NEW
+  period: 2021
+  input:
+    age: 68
+    months_since_last_birthday: 6
+    is_male: false
+  output:
+    state_pension_type: NEW
