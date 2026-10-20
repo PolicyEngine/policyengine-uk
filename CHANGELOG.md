@@ -1,3 +1,35 @@
+## [2.139.5] - 2026-10-20
+
+### Changed
+
+- - Documented employer NI incidence assumptions, input handling, revenue measures and current household examples.
+
+### Fixed
+
+- - Separated Universal Credit's higher disabled child condition from tax credits, included certified blindness, and prevented the lower and higher additions from stacking.
+- - Corrected Working Tax Credit eligibility so age, disability and hours conditions applied to the same claimant or partner, while preserving the parental combined-hours and partner-exception routes.
+- - Restricted the Child Tax Credit family element to families responsible for a qualifying child or young person born before 6 April 2017, while preserving earlier supported years.
+- - Excluded Child Benefit from Great Britain's pensioner Council Tax Reduction general-rule income, preserving working-age and statutory-pay treatment.
+
+
+## [2.139.4] - 2026-10-19
+
+### Fixed
+
+- - Corrected dividend income-tax band thresholds from 2016 to 2025 to use their statutory tax-year dates.
+- - Corrected historical Care to Learn weekly caps while preserving the existing annual date approximation.
+- - Exempted non-dependants responsible for a child under five from Universal Credit housing cost contributions.
+- - Applied the shared Pension Credit eligibility conditions to computed Savings Credit amounts.
+- - Included statutory sick and maternity pay in the relevant earnings limits for pension contribution relief and annual-allowance income tests.
+
+
+## [2.139.3] - 2026-10-19
+
+### Fixed
+
+- - Updated Welsh residential Land Transaction Tax tables for annual model years from 2023 (main rates) and 2025 (higher rates), retaining their statutory change dates.
+
+
 ## [2.139.2] - 2026-10-19
 
 ### Fixed

@@ -2,6 +2,7 @@ from policyengine_uk.model_api import *
 from policyengine_uk.utils.pensions import (
     annual_allowance_net_income,
     pension_contributions_relief_amount,
+    relevant_uk_earnings,
 )
 
 
@@ -37,11 +38,7 @@ class pension_annual_allowance_threshold_income(Variable):
         # actual member contributions. Its relief need not equal the returned
         # amount: after 75 there is none, and low earnings can use basic RAS.
         actual_member_contributions = person("pension_contributions", period) - returned
-        actual_earnings = (
-            person("employment_income", period)
-            - returned
-            + max_(0, person("self_employment_income", period))
-        )
+        actual_earnings = relevant_uk_earnings(person, period) - returned
         relief = where(
             returned > 0,
             pension_contributions_relief_amount(
