@@ -13,6 +13,7 @@ from policyengine_uk.utils.benefit_unit import CLAIMANT_OR_PARTNER_AWARDS
 BENEFITS = [
     "afcs",
     "bsp",
+    "war_widows_pension",
     "child_benefit",
     "child_tax_credit",
     "council_tax_benefit",
