@@ -9,12 +9,15 @@ BRANCH_OUTPUTS = [
 # Inputs to income tax that do not depend on the election. They are resolved
 # before branching and held at the simulation's values in both branches, so
 # the result does not depend on which variable a caller asks for first, and a
-# choice made in branches upstream of them (a reform's split of adjusted net
-# income, or a labour supply response in employment income) is not made again
-# for the counterfactual.
+# choice made in branches upstream of them (a reform's split of net income, or
+# a labour supply response in employment income) is not made again for the
+# counterfactual. Net income is held as well as adjusted net income: a branch
+# holding only adjusted net income would read it as a supplied input and
+# rebuild net income from it (net_income_from_adjusted_net_income).
 INDEPENDENT_OF_ELECTION = [
     "age",
     "employment_income",
+    "net_income",
     "adjusted_net_income",
     "gift_aid_grossed_up",
     "gift_aid",

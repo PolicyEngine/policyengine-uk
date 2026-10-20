@@ -25,6 +25,11 @@ Scotland:
 5. The couple's income tax, with the election the model makes, never falls
    when either spouse has more income.
 6. No one outside a married couple gives up or receives anything.
+7. Differential against the tax bands: outside Scotland, with no dividends or
+   property income, a person meets the income conditions exactly when the
+   model's own band variables put none of their income above the basic rate
+   limit, with pension relief and Gift Aid (which extends the limits, ITA
+   2007 s. 414(2)(b)) in play.
 """
 
 import numpy as np
@@ -408,6 +413,62 @@ def test_only_married_couples_transfer(units, year):
     }
     spouse_units = set(model["benunit"][model["is_marriage_allowance_spouse"]])
     assert spouse_units == married_pairs, units
+
+
+# Incomes the rate test and the band variables both see. Dividends (tested as
+# if the dividend nil rate were omitted, s. 55B(2)(ba)) and property income
+# (banded inside property_income_tax) have no band variables to compare with.
+BANDED_INCOMES = {
+    "employment_income": 160_000,
+    "private_pension_income": 30_000,
+    "savings_interest_income": 20_000,
+    # Net pay arrangement and relief at source (FA 2004 ss. 188-192).
+    "employee_pension_contributions": 20_000,
+    "personal_pension_contributions": 10_000,
+    "gift_aid": 10_000,
+}
+ABOVE_BASIC_RATE = [
+    "higher_rate_earned_income",
+    "add_rate_earned_income",
+    "higher_rate_savings_income",
+    "add_rate_savings_income",
+]
+# At the basic rate limit after pension relief, and 1 above it.
+PENSION_SAVERS = [
+    dict(employment_income=55_270.0, employee_pension_contributions=5_000.0),
+    dict(employment_income=55_271.0, employee_pension_contributions=5_000.0),
+]
+
+
+@st.composite
+def taxpayers(draw):
+    return {variable: draw(amounts(cap)) for variable, cap in BANDED_INCOMES.items()}
+
+
+@PROPERTY_SETTINGS
+@given(
+    people=st.lists(taxpayers(), min_size=1, max_size=20), year=st.sampled_from(YEARS)
+)
+@example(people=PENSION_SAVERS, year=2026)
+def test_income_conditions_match_the_tax_bands(people, year):
+    # The rate test (s. 55B(2)(b), s. 55C(1)(c)) must use the income the tax
+    # bands use (net income less allowances, so pension relief once) and the
+    # same Gift Aid-extended limits.
+    situation = {"people": {}, "benunits": {}, "households": {}}
+    for i, incomes in enumerate(people):
+        person = {variable: {year: value} for variable, value in incomes.items()}
+        situation["people"][f"p{i}"] = {"age": {year: 40}, **person}
+        situation["benunits"][f"b{i}"] = {"members": [f"p{i}"]}
+        situation["households"][f"h{i}"] = {
+            "members": [f"p{i}"],
+            "region": {year: "LONDON"},
+        }
+    sim = Simulation(situation=situation)
+    above_basic = sum(np.asarray(sim.calculate(v, year)) for v in ABOVE_BASIC_RATE)
+    meets = np.asarray(
+        sim.calculate("meets_marriage_allowance_income_conditions", year)
+    )
+    np.testing.assert_array_equal(meets, above_basic <= 0, err_msg=str(people))
 
 
 def test_2015_transferable_amount_is_fixed_whatever_the_allowance():

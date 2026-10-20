@@ -12,35 +12,37 @@ def liable_only_at_marriage_allowance_rates(person, period, parameters):
     savings higher rate. Dividends covered by the dividend nil rate still
     count: s. 55B(2)(ba) and s. 55C(1)(ca) test the dividend upper rate as if
     s. 13A were omitted.
+
+    The bands are the ones the model taxes with: Gift Aid extends the rate
+    limits by the grossed-up gift (s. 414(2)(b)), as in earned_income_tax,
+    and does not come off the income.
     """
     rates = parameters(period).gov.hmrc.income_tax.rates
-    savings = person("taxable_savings_interest_income", period)
-    dividends = person("taxable_dividend_income", period)
+    gross_gift = person("gift_aid_grossed_up", period)
     # Earnings, pensions, property and other non-savings income after
-    # allowances, as in property_income_tax.
-    non_savings = max_(
-        0,
-        person("adjusted_net_income", period)
-        - savings
-        - dividends
-        - person("allowances", period),
-    )
+    # allowances: the income below savings and dividends (s. 16), from net
+    # income, not adjusted net income, which deducts the gross gift and the
+    # pension relief already in allowances (s. 58).
+    non_savings = person("non_savings_taxable_income", period)
     # The Scottish higher rate follows the starter, basic and intermediate
     # rates; before 2018-19 the Scottish scale had only the basic rate below it.
     scottish = rates.scotland.rates
     scottish_higher = scottish.thresholds[3 if len(scottish.rates) > 3 else 1]
     non_savings_limit = where(
         person("pays_scottish_income_tax", period),
-        scottish_higher,
-        rates.uk.thresholds[1],
+        scottish_higher + gross_gift,
+        rates.uk.thresholds[1] + gross_gift,
     )
     savings_above_basic = add(
         person, period, ["higher_rate_savings_income", "add_rate_savings_income"]
     )
     # Dividends are the top slice, above all non-savings income (property
     # included) and savings (s. 16), counted before the dividend allowance;
-    # the dividend upper rate starts at the basic rate limit (s. 13). The
-    # savings test above uses the model's own savings bands.
+    # the dividend upper rate starts at the basic rate limit (s. 13), extended
+    # by the gross gift. The savings test above uses the model's own savings
+    # bands, which Gift Aid extends too.
+    savings = person("taxable_savings_interest_income", period)
+    dividends = person("taxable_dividend_income", period)
     below_dividends = non_savings + max_(
         0, savings - person("received_allowances_savings_income", period)
     )
@@ -48,7 +50,8 @@ def liable_only_at_marriage_allowance_rates(person, period, parameters):
         0, dividends - person("received_allowances_dividend_income", period)
     )
     dividends_above_basic = (dividends_after_allowances > 0) & (
-        below_dividends + dividends_after_allowances > rates.uk.thresholds[1]
+        below_dividends + dividends_after_allowances
+        > rates.uk.thresholds[1] + gross_gift
     )
     return (
         (non_savings <= non_savings_limit)

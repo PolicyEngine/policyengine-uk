@@ -849,3 +849,60 @@
     uses_property_allowance: [false, true]
     makes_marriage_allowance_election: [false, true]
     income_tax: [3_234, 138]
+
+- name: A recipient whose earnings after pension relief reach the higher rate cannot gain (s. 55B(2)(b))
+  period: 2026
+  input:
+    people:
+      recipient:
+        age: 40
+        employment_income: 60_000
+        employee_pension_contributions: 5_000
+      transferor:
+        age: 38
+    benunits:
+      benunit:
+        members: [recipient, transferor]
+        is_married: true
+    households:
+      household:
+        members: [recipient, transferor]
+        region: LONDON
+  output:
+    # 60,000 less 5,000 of relieved contributions (FA 2004 s. 188) and the
+    # 12,570 allowance leaves 42,430, 4,730 of it at the higher rate:
+    # 37,700 x 20% + 4,730 x 40% = 9,432. So no election.
+    meets_marriage_allowance_income_conditions: [false, true]
+    makes_marriage_allowance_election: [false, false]
+    marriage_allowance: [0, 0]
+    income_tax: [9_432, 0]
+
+- name: A Gift Aid donor's dividends within the extended basic rate limit let them gain (s. 55B(2)(ba), ITA 2007 s. 414(2)(b))
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      recipient:
+        age: 40
+        employment_income: 12_570
+        dividend_income: 40_000
+        gift_aid: 3_200
+      transferor:
+        age: 38
+    benunits:
+      benunit:
+        members: [recipient, transferor]
+        is_married: true
+    households:
+      household:
+        members: [recipient, transferor]
+        region: LONDON
+  output:
+    # The 3,200 gift grosses up to 4,000 and extends the basic rate limit to
+    # 41,700, so all 40,000 of dividends (above earnings that use the whole
+    # allowance) are within it: (40,000 - 500 dividend allowance) x 10.75% =
+    # 4,246.25, less 20% x 1,260 = 252 from the transferor's election.
+    meets_marriage_allowance_income_conditions: [true, true]
+    makes_marriage_allowance_election: [false, true]
+    marriage_allowance: [1_260, 0]
+    income_tax: [3_994.25, 0]

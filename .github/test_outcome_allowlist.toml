@@ -20,12 +20,6 @@
 # warning; remove it once its bug is fixed. Failures can never be accepted.
 
 [[allow]]
-nodeid = "policyengine_uk/tests/test_uc_state_pension_properties.py::test_state_pension_does_not_change_partners_marriage_allowance"
-outcome = "xfailed"
-reason = "#1947"
-why = "Known bug #1947 (Marriage Allowance booked on the recipient), pinned by a strict xfail until it is fixed."
-
-[[allow]]
 nodeid = "policyengine_uk/tests/test_build_metadata.py::test_runtime_metadata_uses_bundle_contract_when_available"
 outcome = "skipped"
 reason = "policyengine_bundles"
