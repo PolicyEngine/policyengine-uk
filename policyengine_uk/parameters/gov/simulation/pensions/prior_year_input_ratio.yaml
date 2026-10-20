@@ -1,0 +1,27 @@
+description: >-
+  Pension input amount in each of the three previous tax years as a share of
+  this year's, after average earnings growth, used to estimate unused annual
+  allowance carried forward where data has no pension history.
+# Finance Act 2004 s. 228A carries forward the annual allowance that the
+# pension input amount left unused in each of the three previous tax years in
+# which the individual was a member of a registered pension scheme, earliest
+# year first. Surveys record this year's contributions only. With a ratio of
+# 1, each previous year's input is this year's deflated by average earnings
+# growth, as for a member saving the same share of pay each year, and the
+# income tested for that year's taper is deflated the same way. A ratio of 0
+# assumes no input in those years, the most allowance there could be to
+# carry forward. HMRC publishes no count of carry-forward use: Self Assessment
+# reports only the excess over the allowance once it is applied.
+values:
+  2004-04-06: 1
+metadata:
+  unit: /1
+  period: year
+  label: Pension input in each of the three previous years relative to this year
+  reference:
+    - title: Finance Act 2004 s. 228A
+      href: https://www.legislation.gov.uk/ukpga/2004/12/section/228A
+    - title: HMRC Pensions Tax Manual PTM055100 (carry forward)
+      href: https://www.gov.uk/hmrc-internal-manuals/pensions-tax-manual/ptm055100
+    - title: HMRC, HS345 Pension savings tax charges (2025)
+      href: https://www.gov.uk/government/publications/pensions-tax-charges-on-any-excess-over-the-lifetime-allowance-annual-allowance-special-annual-allowance-and-on-unauthorised-payments-hs345-self/hs345-pension-savings-tax-charges-2025

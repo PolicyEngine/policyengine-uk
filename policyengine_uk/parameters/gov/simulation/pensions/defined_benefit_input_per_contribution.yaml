@@ -1,0 +1,44 @@
+description: >-
+  Defined-benefit pension input amount per pound of contributions paid into
+  defined-benefit arrangements, used for the annual allowance where the input
+  amount itself is not supplied.
+# The statutory input amount values the increase in a member's rights over
+# the year (Finance Act 2004 s. 234): 16 times the annual pension, plus any
+# separate lump sum, at the end of the year less the same at the start, the
+# start raised by CPI (s. 235). It is not the cash paid in. For an active
+# member with ten years' service in 2024-25 (opening value raised by CPI of
+# 6.7%), it is about this share of pensionable pay in the four largest public
+# service schemes, against employer plus member contributions:
+# - NHS 2015 (1/54 accrual, revalued at CPI + 1.5%): 34%; contributions 23.7%
+#   plus 5.2-12.5%, a ratio of 0.94 to 1.18.
+# - Teachers 2015 (1/57, CPI + 1.6%): 33%; 28.68% plus 7.4-11.7%, 0.81 to 0.90.
+# - Civil Service alpha (2.32%, CPI): 37%; 28.97% plus 4.6-8.05%, 1.00 to 1.10.
+# - LGPS 2014 (1/49, CPI): 33%; about 21.1% plus 5.5-12.5%, 0.97 to 1.23.
+# The ratio is lower where employer rates are higher (Police 2015, 35.3%;
+# Armed Forces 2015, 73.5%). Survey employer contributions drawn from
+# employers' regular contribution rates leave out deficit repair payments, so
+# contributions are counted at their face value: a ratio of 1. Data that
+# values defined-benefit accrual supplies defined_benefit_pension_input_amount.
+values:
+  2004-04-06: 1
+metadata:
+  unit: /1
+  period: year
+  label: Defined-benefit pension input per pound of contributions
+  reference:
+    - title: Finance Act 2004 s. 234 (defined benefits arrangements)
+      href: https://www.legislation.gov.uk/ukpga/2004/12/section/234
+    - title: Finance Act 2004 s. 235 (CPI increase in the opening value)
+      href: https://www.legislation.gov.uk/ukpga/2004/12/section/235
+    - title: NHS Pension Scheme Regulations 2015 Sch. 9 para. 13 (1/54 accrual)
+      href: https://www.legislation.gov.uk/uksi/2015/94/schedule/9/paragraph/13/made
+    - title: NHS Pension Scheme annual report and accounts 2024-25 (23.7% employer; 5.2% to 12.5% member)
+      href: https://assets.publishing.service.gov.uk/media/687a5e455f0f5104b9806baa/nhs-pension-scheme-annual-report-and-accounts-2024-to-2025.pdf
+    - title: Teachers' Pension Scheme annual report and accounts 2024-25 (1/57 accrual, CPI + 1.6%; 28.6% employer plus 0.08% levy; 7.4% to 11.7% member)
+      href: https://assets.publishing.service.gov.uk/media/687610ae55c4bd0544dcae36/DfE_TPS_Annual_Report_2024-25.pdf
+    - title: Civil Superannuation annual account 2024-25 (alpha 2.32% accrual; 28.97% employer)
+      href: https://www.gov.uk/government/publications/civil-superannuation-annual-account-2024-to-2025/civil-superannuation-annual-account-2024-to-2025-html
+    - title: LGPS Scheme Advisory Board, 2022 valuations report (21.1% average employer rate)
+      href: https://joomla.lgpsboard.org/index.php/2022-valuations-report
+    - title: Local Government Pension Scheme Regulations 2013 reg. 23 (1/49 accrual)
+      href: https://www.legislation.gov.uk/uksi/2013/2356/regulation/23/made

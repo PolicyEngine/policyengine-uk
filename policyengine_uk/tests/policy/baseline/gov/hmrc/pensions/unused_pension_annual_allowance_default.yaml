@@ -1,0 +1,103 @@
+# Unused annual allowance carried forward (FA 2004 s. 228A) where no history
+# is supplied. From 2020-21 the default assumes the person's pension input in
+# each of the five previous years was this year's (prior_year_input_ratio 1)
+# deflated by average earnings growth, the incomes tested for the taper
+# likewise, and that they were a scheme member in each year. Each year's
+# excess uses the unused allowance of the three years before it, earliest
+# first (s. 228A(7)), and the unused allowance of the three years before this
+# one is carried forward.
+#
+# For 2026 the deflators are average earnings growth of 3.4% (2026), 5.3%
+# (2025), 5.1% (2024), 6.22% (2023) and 6.14% (2022): 0.967118 for 2025,
+# 0.918441 for 2024, 0.873873 for 2023, 0.822701 for 2022 and 0.775109 for
+# 2021. The standard allowance is 40,000 to 2022-23 and 60,000 from 2023-24.
+# Every case is a person aged 45 in London with employment income of 100,000.
+# Sources: https://www.legislation.gov.uk/ukpga/2004/12/section/228A
+# https://www.gov.uk/hmrc-internal-manuals/pensions-tax-manual/ptm055100
+
+- name: Steady saving under the allowance carries forward three years of unused allowance
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 100_000
+    employer_pension_contributions: 50_000
+  output:
+    # Inputs of 43,693.66 (2023), 45,922.03 (2024) and 48,355.90 (2025)
+    # leave 16,306.34 + 14,077.97 + 11,644.10 of their 60,000 allowances.
+    unused_pension_annual_allowance: 42_028.41
+    pension_annual_allowance_chargeable_amount: 0
+
+- name: An excess in a later year uses the earliest unused allowance first
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 100_000
+    employer_pension_contributions: 63_000
+  output:
+    # 2023 input 55,054.01 leaves 4,945.99 unused and 2024 input 57,861.76
+    # leaves 2,138.24. 2025 input 60,928.43 exceeds 60,000 by 928.43, which
+    # uses 2023's unused allowance (2021 and 2022 have none). 4,017.56 +
+    # 2,138.24 = 6,155.80, against 7,084.23 without that ordering.
+    unused_pension_annual_allowance: 6_155.80
+    # 63,000 - 60,000 is within the 6,155.80 carried forward.
+    pension_annual_allowance_chargeable_amount: 0
+
+- name: Saving above the allowance every year leaves nothing to carry forward
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 100_000
+    employer_pension_contributions: 70_000
+  output:
+    # Deflated inputs of 54,258 to 67,698 exceed each year's allowance.
+    unused_pension_annual_allowance: 0
+    pension_annual_allowance_chargeable_amount: 10_000
+
+- name: A supplied unused allowance overrides the default
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 100_000
+    employer_pension_contributions: 70_000
+    unused_pension_annual_allowance: 4_000
+  output:
+    pension_annual_allowance_chargeable_amount: 6_000
+
+- name: No pension input this year means no carry-forward is assumed
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 100_000
+  output:
+    unused_pension_annual_allowance: 0
+
+- name: A tapered allowance in every earlier year leaves nothing to carry forward
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 400_000
+    employer_pension_contributions: 50_000
+  output:
+    # Adjusted income of 450,000 tapers the allowance to the 10,000 minimum
+    # (60,000 - (450,000 - 260,000) / 2 is below it). Deflated, the earlier
+    # years' incomes are tapered to their minimums too (4,000 in 2021-22 and
+    # 2022-23), all below the deflated inputs.
+    pension_annual_allowance: 10_000
+    unused_pension_annual_allowance: 0
+    pension_annual_allowance_chargeable_amount: 40_000
+
+- name: Before 2020-21 the default is nil
+  period: 2019
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 100_000
+    employer_pension_contributions: 30_000
+  output:
+    unused_pension_annual_allowance: 0

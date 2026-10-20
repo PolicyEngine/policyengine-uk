@@ -64,3 +64,10 @@ nodeid = "policyengine_uk/tests/test_dwp_published_rates.py::test_projection_con
 outcome = "skipped"
 reason = '^(not uprated|series ends before 2026-27|Universal Credit Act 2025 s\.1 departs from CPI uprating)$'
 why = "The test is parametrised over every DWP rate parameter and skips those it does not apply to: parameters with no uprating, series that end before 2026-27, and the four UC standard allowances, whose minimum the Universal Credit Act 2025 s.1 sets above CPI uprating (#1925). The LCWRA element, frozen by s.3, is checked against its own uprating index (#2284). 64 cases on 12 October 2026."
+
+[[allow]]
+nodeid = "policyengine_uk/tests/microsimulation/test_annual_allowance_against_hmrc.py::test_2024_annual_allowance_charge_and_payers_are_near_hmrc"
+outcome = "xfailed"
+reason = "policyengine-uk-data#606"
+data = ["present"]
+why = "Known data gap PolicyEngine/policyengine-uk-data#606: the certified Enhanced FRS imputes employer pension contributions as three times employee contributions, which puts the 2024 annual allowance charge several times above HMRC's. Pinned by a strict xfail until the dataset fixes it (#2523)."

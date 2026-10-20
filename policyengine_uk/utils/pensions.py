@@ -139,3 +139,48 @@ def annual_allowance_net_income(person, period, parameters):
         - actual_loss_relief,
     )
     return np.where(relievable_net_pay > 0, reconstructed, net_income)
+
+
+def annual_allowance_for_year(adjusted_income, threshold_income, allowance, year):
+    """The annual allowance (FA 2004 s.228) under one tax year's parameters.
+
+    From 2016-17 the standard allowance is tapered only when both adjusted
+    income and threshold income exceed their limits (s.228ZA), and the
+    reduction rounds down to whole pounds before the tapered minimum
+    applies. The original multiplier is the standard allowance less £10,000
+    over £60,000, a half at the statutory £40,000; from 2020-21 the
+    multiplier is expressly a half.
+    """
+    adjusted_income = np.asarray(adjusted_income, dtype=float)
+    if year < 2016:
+        return np.full(adjusted_income.shape, float(allowance.default))
+    if year < 2020:
+        rate = (allowance.default - allowance.minimum) / allowance.taper_income_range
+    else:
+        rate = allowance.reduction_rate
+    # s.228ZA(3)(b) derives the threshold limit from the standard allowance.
+    high_income = (adjusted_income > allowance.taper) & (
+        np.asarray(threshold_income) > allowance.taper - allowance.default
+    )
+    reduction = np.floor(np.maximum(0, adjusted_income - allowance.taper) * rate)
+    return np.where(
+        high_income,
+        np.maximum(allowance.minimum, allowance.default - reduction),
+        allowance.default,
+    )
+
+
+def workplace_pension_contributions(person, period):
+    """Contributions to workplace arrangements.
+
+    Employer contributions, employee contributions under a net pay
+    arrangement (including any supplied legacy return to ordinary pay, an
+    actual member payment) and the full salary sacrifice. The NICs-only
+    salary-sacrifice excess is not a contribution. Personal pension
+    contributions (relief at source) are not included.
+    """
+    return (
+        person("employee_pension_contributions", period)
+        + person("employer_pension_contributions", period)
+        + person("pension_contributions_via_salary_sacrifice_from_pay", period)
+    )
