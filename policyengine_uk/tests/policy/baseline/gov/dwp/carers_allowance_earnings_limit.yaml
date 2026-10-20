@@ -321,3 +321,32 @@
     carers_allowance_earnings: 10_518.20
     is_gainfully_employed_for_carers_allowance: false
     carers_allowance_pre_overlap: 86.45 * 52
+
+- name: Case 21, in 2024-25 a penny a week under the next whole penny over £151 is within the limit.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 7_852.51
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # 7,852.51 / 52 = £151.0098, which counts as £151.00 (reg. 5).
+    carers_allowance_earnings: 7_852.51
+    is_gainfully_employed_for_carers_allowance: false
+    carers_allowance: 81.90 * 52
+
+- name: Case 22, in 2024-25 a whole penny over £151 is over the limit.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 7_852.52
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # 7,852.52 / 52 = £151.01. Float32 holds 7,852.52 as 7,852.52001953125;
+    # counting pence in float32 used to give £151.00 (#2541).
+    carers_allowance_earnings: 7_852.52
+    is_gainfully_employed_for_carers_allowance: true
+    carers_allowance: 0

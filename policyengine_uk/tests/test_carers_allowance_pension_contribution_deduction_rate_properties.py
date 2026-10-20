@@ -21,12 +21,16 @@ that no floor binds:
 3. Eligibility follows earnings through the limit: on both sides the person
    is gainfully employed exactly when weekly earnings, with a fraction of a
    penny disregarded (reg. 5), exceed the limit, and then has no underlying
-   entitlement. The pence are counted in the precision the model stores
-   earnings in (float32), as the formula counts them. A lower share can only end entitlement and a higher share can
-   only restore it.
+   entitlement. The pence are counted as the formula counts them: the stored
+   (float32) annual earnings are taken to the nearest penny, then spread over
+   52 weeks in whole pence. A lower share can only end entitlement and a
+   higher share can only restore it.
 4. Current law: the share is 0.5 in every year from 2015 (the first year the
    model simulates) to 2030.
 """
+
+import math
+from fractions import Fraction
 
 import numpy as np
 from hypothesis import HealthCheck, example, given, settings
@@ -111,21 +115,23 @@ VARIABLES = [
 
 def calculate(people, year, reform=None):
     sim = Simulation(situation=situation(people, year), reform=reform)
-    # Keep each variable's stored dtype: the rounding check below must count
-    # pence in the precision the formula does.
+    # Keep each stored value as the formula reads it: the rounding check below
+    # must start from the same float32 amount.
     return {v: np.asarray(sim.calculate(v, year)) for v in VARIABLES}
 
 
 def over_limit(earnings, limit):
-    # Reg. 5: a fraction of a penny is disregarded. ``earnings`` is the stored
-    # array, so this counts the pence as is_gainfully_employed_for_carers_allowance
-    # does, in float32: promoting to float64 first floors 10,608.52 a year,
-    # stored as 10,608.51953125, to 204.00 a week instead of 204.01.
-    return np.floor(earnings / 52 * 100 + 1e-6) / 100 > limit
+    # Reg. 5, as is_gainfully_employed_for_carers_allowance applies it, in
+    # exact rational arithmetic: the stored amount to the nearest penny a
+    # year, an exact half penny disregarded, then whole pence a week, a
+    # fraction of a penny disregarded. 10,608.52 a year, stored as
+    # 10,608.51953125, is 1,060,852 pence and 20,401 pence (204.01) a week.
+    annual_pence = math.ceil(Fraction(float(earnings)) * 100 - Fraction(1, 2))
+    return annual_pence // 52 > Fraction(str(limit)) * 100
 
 
-# A carer one penny a week over the 2026-27 limit (10,608.52 / 52 = 204.01), on
-# the float32 boundary described in over_limit.
+# A carer one penny a week over the 2026-27 limit (10,608.52 / 52 = 204.01),
+# stored just below 10,608.52 as described in over_limit.
 PENNY_OVER = dict(
     country="ENGLAND",
     age=45,
