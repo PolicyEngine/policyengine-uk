@@ -3,6 +3,19 @@ import numpy as np
 from policyengine_uk.utils.supplied_inputs import supplied_input
 
 
+def relevant_uk_earnings(person, period):
+    """FA 2004 s.189 earnings, including employer-paid taxable SSP/SMP.
+
+    Statutory employment pay is held separately from wages. A trading loss
+    does not reduce those employment earnings (HMRC PTM044100).
+    """
+    return (
+        person("employment_income", period)
+        + person("employment_benefits", period)
+        + np.maximum(0, person("self_employment_income", period))
+    )
+
+
 def pension_contributions_relief_amount(
     contributions, relevant_uk_earnings, ras_contributions, age, hmrc
 ):
@@ -39,11 +52,7 @@ def annual_allowance_net_income(person, period, parameters):
     returned = person("salary_sacrifice_returned_to_income", period)
     hmrc = parameters(period).gov.hmrc
     actual_member_contributions = person("pension_contributions", period) - returned
-    actual_earnings = (
-        person("employment_income", period)
-        - returned
-        + np.maximum(0, person("self_employment_income", period))
-    )
+    actual_earnings = relevant_uk_earnings(person, period) - returned
     supplied_ani = supplied_input(person, "adjusted_net_income", period)
     if supplied_ani is not None:
         # Supplied ANI already determines net income, including its losses.

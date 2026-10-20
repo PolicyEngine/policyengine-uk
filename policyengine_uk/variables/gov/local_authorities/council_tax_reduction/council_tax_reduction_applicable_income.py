@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.household.demographic.country import Country
 
 
 class council_tax_reduction_applicable_income(Variable):
@@ -12,7 +13,9 @@ class council_tax_reduction_applicable_income(Variable):
         "use the Secretary of State's Pension Credit assessment of income, plus "
         "the savings credit payable, where the award is savings credit only. "
         "Otherwise a pension-age family's net earnings are reduced by the "
-        "pensioner earnings disregards. The other adjustments those "
+        "pensioner earnings disregards. Great Britain's pensioner schemes "
+        "also exclude Child Benefit from general-rule income; statutory sick "
+        "and maternity pay remain counted as earnings. The other adjustments those "
         "provisions allow (childcare charges, the £20 earnings disregards, "
         "maintenance disregards and the rest) are not modelled."
     )
@@ -21,8 +24,10 @@ class council_tax_reduction_applicable_income(Variable):
     reference = [
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/13",
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/14",
+        "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/16",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/7",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/8",
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/10",
         "https://www.legislation.gov.uk/ssi/2012/319/regulation/24",
         "https://www.legislation.gov.uk/ssi/2012/319/regulation/25",
         "https://www.legislation.gov.uk/ssi/2012/319/regulation/27",
@@ -100,6 +105,22 @@ class council_tax_reduction_applicable_income(Variable):
         benefits = add_for_members(
             benunit, period, benunit_means_tested_benefits, members
         )
+        country = benunit.household("country", period)
+        in_great_britain = (
+            (country == Country.ENGLAND)
+            | (country == Country.SCOTLAND)
+            | (country == Country.WALES)
+        )
+        pensioner = benunit("council_tax_reduction_pensioner", period)
+        # England Sch 1 para 16(1)(j)(vi), Wales Sch 1 para 10(1)(j)(vi)
+        # and Scotland reg 27(1)(j)(vii) exclude this exact BenUnit award.
+        # Remove it before the general-rules floor. SSP/SMP remain counted
+        # in personal_benefits as earnings; working-age/NI income is unchanged.
+        benefits -= where(
+            pensioner & in_great_britain,
+            add_for_members(benunit, period, ["child_benefit"], members),
+            0,
+        )
         income = add_for_members(benunit, period, income_components, members)
         personal_benefit_income = add_for_members(
             benunit, period, personal_benefits, members
@@ -112,9 +133,13 @@ class council_tax_reduction_applicable_income(Variable):
                 benunit, period, ["basic_income"], members
             )
 
-        pension_contributions = (
-            add_for_members(benunit, period, ["pension_contributions"], members) * 0.5
-        )
+        # The scheme's own share of pension contributions (one-half in each:
+        # SI 2012/2885 Sch 1 para 19(2)(b)-(c), WSI 2013/3029 Sch 1 para 13
+        # and Sch 6 para 15, SSI 2012/319 reg 33 and SSI 2021/249 reg 50(3),
+        # and the councils' schemes).
+        pension_contributions = add_for_members(
+            benunit, period, ["pension_contributions"], members
+        ) * benunit("council_tax_reduction_pension_contribution_deduction_rate", period)
         tax = add_for_members(
             benunit, period, ["income_tax", "national_insurance"], members
         )
@@ -141,9 +166,14 @@ class council_tax_reduction_applicable_income(Variable):
         has_savings_credit_only_award = benunit(
             "in_receipt_of_savings_credit_only", period
         )
-        savings_credit_only_income = benunit("pension_credit_income", period) + benunit(
-            "pension_credit", period
-        )
+        # The general route counts no war pension (as Housing Benefit, a full
+        # disregard), so the war pension income in the Secretary of State's
+        # assessment is taken out here too.
+        savings_credit_only_income = max_(
+            0,
+            benunit("pension_credit_income", period)
+            - benunit("pension_credit_war_pension_income", period),
+        ) + benunit("pension_credit", period)
         return select(
             [in_receipt_of_guarantee_credit, has_savings_credit_only_award],
             [0, savings_credit_only_income],

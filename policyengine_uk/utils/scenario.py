@@ -72,6 +72,78 @@ def _is_reform_from_dict(reform: Type[Reform]) -> bool:
     )
 
 
+class ConstructionReformState:
+    """The constructor's writes, until user code edits their parameter paths.
+
+    Ownership compares contents so copied scenarios and member wrappers keep
+    the construction reading. Current values alone cannot identify writes:
+    a foreign override can have the same value but a different date reading.
+    """
+
+    def __init__(self, simulation):
+        from policyengine_uk.tax_benefit_system import (
+            parameter_reads_calendar_years,
+            reform_parameter_defines,
+        )
+
+        self.owned = copy.deepcopy(tuple(simulation._building_dated_reforms or ()))
+        self.paths = set()
+        for dated in self.owned:
+            assignments, _ = dated.read(
+                reform_parameter_defines(),
+                calendar_years=parameter_reads_calendar_years(),
+            )
+            self.paths.update(entry.path for entry in assignments)
+        self.dirty = set()
+        self.expected = {}
+        self.refresh_framework(simulation)
+
+    @staticmethod
+    def _current(simulation, path):
+        system = simulation.tax_benefit_system
+        target = system.parameters.get_child(path)
+        return copy.deepcopy(
+            (
+                [(entry.instant_str, entry.value) for entry in target.values_list],
+                [entry for entry in system.dated_assignments if entry.path == path],
+                [entry for entry in system.legacy_overrides if entry.path == path],
+            )
+        )
+
+    def _check_paths(self, simulation, paths):
+        for path in paths:
+            if self.expected[path] != self._current(simulation, path):
+                self.dirty.add(path)
+        return not self.dirty.intersection(paths)
+
+    def pristine(self, simulation, dated_reforms):
+        if any(dated not in self.owned for dated in dated_reforms):
+            return False
+        paths = self.paths.intersection(
+            path for dated in dated_reforms for path in dated.changes
+        )
+        return self._check_paths(simulation, paths)
+
+    def accept_owned(self, simulation, dated):
+        # Only called after a pristine own modifier writes its leftovers.
+        for path in self.paths.intersection(dated.changes):
+            self.expected[path] = self._current(simulation, path)
+
+    def observe_user_edits(self, simulation):
+        self._check_paths(simulation, self.paths)
+
+    def refresh_framework(self, simulation):
+        # The framework may change clean paths between the two user phases.
+        # A user edit observed before that boundary must not become owned.
+        for path in self.paths - self.dirty:
+            self.expected[path] = self._current(simulation, path)
+
+
+def _construction_modifiers_are_pristine(dated_reforms, simulation):
+    state = getattr(simulation, "_construction_reform_state", None)
+    return state is not None and state.pristine(simulation, dated_reforms)
+
+
 def _legacy_override_modifier(dated: DatedReform) -> Callable[[Simulation], None]:
     """Override changes that are no longer effective on the simulation.
 
@@ -90,13 +162,26 @@ def _legacy_override_modifier(dated: DatedReform) -> Callable[[Simulation], None
 
         # Scenario.apply edits an already-built simulation's annualised
         # parameters, so there every change of the reform is an override.
-        every_change = getattr(simulation, APPLYING_TO_BUILT_SIMULATION, False)
+        applying = getattr(simulation, APPLYING_TO_BUILT_SIMULATION, False)
+        construction_owned = not applying and _construction_modifiers_are_pristine(
+            (dated,), simulation
+        )
+        state = getattr(simulation, "_construction_reform_state", None)
+        construction_replay = (
+            not applying
+            and state is not None
+            and dated in state.owned
+            and not construction_owned
+        )
+        every_change = applying or construction_replay
+        if construction_replay:
+            _warn_annualised_overrides()
         if every_change:
             _, legacy = read_override_reform(
                 dated.changes, dated.reading, lambda path: False
             )
             overriding = True
-        elif dated in (getattr(simulation, "_building_dated_reforms", None) or ()):
+        elif construction_owned:
             _, legacy = dated.read(
                 reform_parameter_defines(),
                 warn=True,
@@ -114,11 +199,7 @@ def _legacy_override_modifier(dated: DatedReform) -> Callable[[Simulation], None
                 parameter_reads_calendar_years(),
                 simulation.tax_benefit_system,
             )
-            overriding = overriding or (
-                bool(legacy)
-                and dated
-                not in (getattr(simulation, "_building_dated_reforms", None) or ())
-            )
+            overriding = overriding or (bool(legacy) and not construction_owned)
         if legacy:
             if overriding:
                 if not every_change:
@@ -138,6 +219,8 @@ def _legacy_override_modifier(dated: DatedReform) -> Callable[[Simulation], None
                     require_annual_value=overriding,
                 )
                 raise
+        if construction_owned:
+            simulation._construction_reform_state.accept_owned(simulation, dated)
         from policyengine_uk.scenarios.uc_reform import warn_shadowed_lcwra_reform
 
         warn_shadowed_lcwra_reform(simulation)
@@ -238,7 +321,7 @@ def _chain(
                     replay = (
                         dated is not None
                         and not applying
-                        and not getattr(simulation, "_building_dated_reforms", None)
+                        and not _construction_modifiers_are_pristine(dated, simulation)
                     )
                     if replay:
                         _warn_annualised_overrides()

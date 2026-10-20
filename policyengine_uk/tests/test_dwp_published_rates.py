@@ -2,9 +2,12 @@
 
 The fixture fixtures/dwp_benefit_and_pension_rates.yaml lists, for each
 parameter with a published counterpart, the rate for each fiscal year as
-published by DWP (and HMRC for tax credits). Each year appears in two
-documents, that year's and the next year's, and the fixture holds the value
-both agree on. Values are in the parameter's own unit and period.
+published by DWP (and HMRC for tax credits). Each year to 2025-26 appears in
+two documents, that year's and the next year's, and the fixture holds the
+value both agree on; for UC's 2021-22 amounts, which changed in October 2021,
+it holds the April amounts. 2026-27 has only its own edition so far and is
+checked against SI 2026/148. Values are in the parameter's own unit and
+period.
 
 Invariants:
 
