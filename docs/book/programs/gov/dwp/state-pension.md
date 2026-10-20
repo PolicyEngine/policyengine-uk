@@ -68,7 +68,21 @@ pension-age Housing Benefit (Housing Benefit (State Pension Credit)
 Regulations 2006 reg 29(1)(c)). It never reduces Carer's Allowance: an age
 addition is adjusted only by reference to another age addition
 ([Overlapping Benefits Regulations 1979 reg 4(3)](https://www.legislation.gov.uk/uksi/1979/597/regulation/4)
-and Sch 1 row 4).
+and Sch 1 row 4), so `overlapping_state_pension` leaves it out. It does
+reduce Scotland's Carer Support Payment: that payment overlaps with a
+Retirement Pension, defined as "a pension payable under Part II and Part III
+of the 1992 Act, excluding any additional pension or graduated retirement
+benefit"
+([SSI 2023/302 reg 16(3)(a) and (6)](https://www.legislation.gov.uk/ssi/2023/302/regulation/16)),
+and the age addition is in Part III. So
+`carer_support_payment_overlapping_state_pension` keeps it in.
+
+Two edges. A basic State Pension recipient over 80 whose reported amount is
+below the addition (under 25p a week) has a reported amount of nil once the
+addition is taken off, and is paid the £13 a year, which is more than they
+reported. And the contributed `gov.contrib.cec.state_pension_increase`
+reform scales `state_pension` as a whole, age addition included, although no
+Up-rating Order raises the age addition.
 
 The basic, new and additional State Pension split the amount a person
 reported in the data year (the dataset's first year), less any age addition,
