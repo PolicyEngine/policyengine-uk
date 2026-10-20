@@ -25,15 +25,19 @@ Invariants, for any generated population of single-adult households:
    of the household's unencumbered sources, and capital is never negative.
    (Isolation between two encumbered sources is pinned by the differential and
    by a YAML case.)
+6. Pennies: 90% of any whole-penny value stored as a float32 input is the
+   exact figure rounded down to the penny (ADM H1665), checked in integer
+   pence up to 131,071.99, the largest value float32 holds to the penny.
 """
 
 from functools import reduce
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
+from policyengine_uk.utils.capital_valuation import less_sale_expenses
 
 YEAR = 2026
 PROPERTY_SETTINGS = settings(
@@ -278,3 +282,16 @@ def test_capital_is_non_increasing_in_rate_and_secured_debt(units, r1, r2, scale
     for variable in PROGRAMMES:
         assert np.all(at_high[variable] <= at_low[variable] + 0.01), variable
         assert np.all(more_debt[variable] <= at_low[variable] + 0.01), variable
+
+
+@settings(max_examples=200, deadline=None, derandomize=True)
+@given(st.lists(st.integers(0, 13_107_199), min_size=1, max_size=1_000))
+# 16,001 is 14,400.8994 after a float32 multiplication; 1,000.10 is stored as
+# 1,000.0999756; 12,000 is 10,799.9999999 in binary.
+@example([1_600_100, 100_010, 1_200_000])
+def test_sale_expenses_round_down_to_the_penny(pence):
+    stored = np.asarray(pence, dtype=np.int64).astype(np.float32) / np.float32(100)
+    valued = less_sale_expenses(stored, LEGAL_RATE)
+    assert valued.dtype == np.float64
+    exact = [9 * amount // 10 for amount in pence]
+    assert np.round(valued * 100).astype(np.int64).tolist() == exact

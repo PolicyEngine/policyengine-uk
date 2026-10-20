@@ -316,3 +316,25 @@
   output:
     uc_assessable_capital: 16_000
     is_uc_eligible: true
+
+- name: UC values property and shares less sale expenses to the penny
+  period: 2026
+  absolute_error_margin: 0.005
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # 90% of 16,001 is 14,400.90 and 90% of 1,000.10 is 900.09, each
+        # rounded down to the penny (ADM H1665): 15,300.99. Float32 arithmetic
+        # would give 14,400.89 and 900.08.
+        other_residential_property_value: 16_001
+        corporate_wealth: 1_000.10
+  output:
+    uc_assessable_capital: 15_300.99
+    is_uc_eligible: true

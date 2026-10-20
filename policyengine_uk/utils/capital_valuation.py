@@ -38,7 +38,7 @@ def valued_capital(value_of, sources, sale_expenses):
     for source in sources:
         value = value_of(source)
         if source in sale_expenses.sources:
-            value = penny_floor(value * (1 - sale_expenses.rate))
+            value = less_sale_expenses(value, sale_expenses.rate)
         if source in SECURED_DEBT:
             value = max_(0, value - value_of(SECURED_DEBT[source]))
         total = total + value
@@ -49,6 +49,17 @@ def counted_share(sale_expenses, source):
     """Share of a source's market value counted as capital: 90% where its
     sale would incur expenses (reg. 49(1)(a)), otherwise all of it."""
     return 1 - sale_expenses.rate if source in sale_expenses.sources else 1
+
+
+def less_sale_expenses(value, rate):
+    """Market value less the sale-expense ``rate`` (reg. 49(1)(a)), rounded
+    down to the penny in the claimant's favour (ADM H1665).
+
+    Inputs are stored in float32, and a float32 product loses pennies: 90% of
+    16,001 is 14,400.8994 in float32 rather than 14,400.90. So the value is
+    taken to the penny in float64 before the deduction."""
+    pounds = np.round(np.asarray(value, dtype=np.float64), 2)
+    return penny_floor(pounds * (1 - np.asarray(rate, dtype=np.float64)))
 
 
 def penny_floor(amount):
