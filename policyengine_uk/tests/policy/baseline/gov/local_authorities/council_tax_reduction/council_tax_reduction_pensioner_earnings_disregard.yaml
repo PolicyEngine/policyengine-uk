@@ -430,7 +430,6 @@
     benunits:
       benunit:
         members: [pensioner]
-        would_claim_council_tax_reduction: true
         claims_all_entitled_benefits: true
     households:
       household:

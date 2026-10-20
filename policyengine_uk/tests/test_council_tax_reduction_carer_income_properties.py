@@ -208,7 +208,6 @@ def situation(families):
                 benunits[f"b{i}_{k}_{c}"] = {
                     "members": names,
                     "would_claim_uc": {YEAR: False},
-                    "would_claim_council_tax_reduction": {YEAR: True},
                 }
                 households[f"h{i}_{k}_{c}"] = {
                     "members": names,

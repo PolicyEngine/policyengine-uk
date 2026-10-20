@@ -136,10 +136,7 @@ def situation(families):
                     person[variable] = {YEAR: value}
                 people[name] = person
                 names.append(name)
-            benunits[f"b{i}_{k}"] = {
-                "members": names,
-                "would_claim_council_tax_reduction": {YEAR: True},
-            }
+            benunits[f"b{i}_{k}"] = {"members": names}
             households[f"h{i}_{k}"] = {
                 "members": names,
                 "country": {YEAR: fam["country"]},
@@ -289,12 +286,7 @@ def test_income_follows_the_route_for_the_award(families):
 def single_pensioner(**person):
     return {
         "people": {"pensioner": person},
-        "benunits": {
-            "benunit": {
-                "members": ["pensioner"],
-                "would_claim_council_tax_reduction": {YEAR: True},
-            }
-        },
+        "benunits": {"benunit": {"members": ["pensioner"]}},
         "households": {
             "household": {
                 "members": ["pensioner"],

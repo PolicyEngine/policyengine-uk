@@ -268,7 +268,6 @@ def build(population, alone=False, perturb_others=False, awards=None):
                 "liable_for_share_of_household_rent": fam["role"] == "sharer"
                 and not alone,
                 "claims_all_entitled_benefits": True,
-                "would_claim_council_tax_reduction": True,
                 "would_claim_uc": True,
             }
             if awards is not None:
@@ -619,7 +618,6 @@ def council_situation(homes, with_disability):
                 "members": [pid],
                 "liable_for_share_of_household_rent": f == 1,
                 "claims_all_entitled_benefits": True,
-                "would_claim_council_tax_reduction": True,
                 "would_claim_uc": False,
             }
             ids.append(pid)

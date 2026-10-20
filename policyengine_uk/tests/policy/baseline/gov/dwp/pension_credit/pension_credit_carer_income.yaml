@@ -189,11 +189,9 @@
     benunits:
       benunit_1:
         members: [claimant_1, carer_1]
-        would_claim_council_tax_reduction: true
         housing_benefit_applicable_income_disregard: 0
       benunit_2:
         members: [claimant_2, carer_2]
-        would_claim_council_tax_reduction: true
         housing_benefit_applicable_income_disregard: 0
     households:
       household_1:
@@ -255,11 +253,9 @@
     benunits:
       benunit_1:
         members: [claimant_1, carer_1]
-        would_claim_council_tax_reduction: true
         housing_benefit_applicable_income_disregard: 0
       benunit_2:
         members: [claimant_2, carer_2]
-        would_claim_council_tax_reduction: true
         housing_benefit_applicable_income_disregard: 0
     households:
       household_1:

@@ -23,7 +23,6 @@
     benunits:
       benunit:
         members: [pensioner]
-        would_claim_council_tax_reduction: true
         claims_all_entitled_benefits: true
         minimum_guarantee: 18_500
     households:
@@ -56,7 +55,6 @@
     benunits:
       benunit:
         members: [pensioner]
-        would_claim_council_tax_reduction: true
         claims_all_entitled_benefits: true
         minimum_guarantee: 18_500
     households:
@@ -85,7 +83,6 @@
     benunits:
       benunit:
         members: [pensioner]
-        would_claim_council_tax_reduction: true
         claims_all_entitled_benefits: true
         minimum_guarantee: 18_500
         would_claim_pc: false
@@ -116,7 +113,6 @@
     benunits:
       benunit:
         members: [pensioner]
-        would_claim_council_tax_reduction: true
         claims_all_entitled_benefits: true
     households:
       household:
@@ -144,7 +140,6 @@
     benunits:
       benunit:
         members: [pensioner]
-        would_claim_council_tax_reduction: true
         claims_all_entitled_benefits: true
     households:
       household:
@@ -173,7 +168,6 @@
     benunits:
       benunit:
         members: [pensioner]
-        would_claim_council_tax_reduction: true
         claims_all_entitled_benefits: true
         would_claim_pc: false
     households:
@@ -204,7 +198,6 @@
     benunits:
       benunit:
         members: [claimant, partner]
-        would_claim_council_tax_reduction: true
         claims_all_entitled_benefits: true
     households:
       household:
@@ -233,11 +226,9 @@
     benunits:
       benunit:
         members: [pensioner]
-        would_claim_council_tax_reduction: true
         claims_all_entitled_benefits: true
       son_benunit:
         members: [son]
-        would_claim_council_tax_reduction: true
         would_claim_uc: false
     households:
       household:
@@ -276,7 +267,6 @@
     benunits:
       benunit:
         members: [claimant, partner]
-        would_claim_council_tax_reduction: true
         claims_all_entitled_benefits: true
         would_claim_uc: false
     households:
@@ -305,7 +295,6 @@
     benunits:
       benunit:
         members: [pensioner]
-        would_claim_council_tax_reduction: true
         claims_all_entitled_benefits: true
     households:
       household:
@@ -330,7 +319,6 @@
     benunits:
       benunit:
         members: [pensioner]
-        would_claim_council_tax_reduction: true
         claims_all_entitled_benefits: true
         minimum_guarantee: 18_500
     households:
@@ -357,7 +345,6 @@
     benunits:
       benunit:
         members: [claimant]
-        would_claim_council_tax_reduction: true
         claims_all_entitled_benefits: true
         would_claim_uc: false
     households:
@@ -386,7 +373,6 @@
     benunits:
       benunit:
         members: [pensioner]
-        would_claim_council_tax_reduction: true
         claims_all_entitled_benefits: true
     households:
       household:
@@ -411,7 +397,6 @@
     benunits:
       benunit:
         members: [pensioner]
-        would_claim_council_tax_reduction: true
         claims_all_entitled_benefits: true
         minimum_guarantee: 18_500
     households:
@@ -439,7 +424,6 @@
     benunits:
       benunit:
         members: [pensioner]
-        would_claim_council_tax_reduction: true
         claims_all_entitled_benefits: true
     households:
       household:
@@ -471,7 +455,6 @@
     benunits:
       benunit:
         members: [pensioner]
-        would_claim_council_tax_reduction: true
         claims_all_entitled_benefits: true
     households:
       household:
@@ -503,7 +486,6 @@
     benunits:
       benunit:
         members: [pensioner]
-        would_claim_council_tax_reduction: true
         claims_all_entitled_benefits: true
         would_claim_pc: false
     households:
@@ -536,7 +518,6 @@
     benunits:
       benunit:
         members: [pensioner]
-        would_claim_council_tax_reduction: true
         claims_all_entitled_benefits: true
     households:
       household:
@@ -566,7 +547,6 @@
     benunits:
       benunit:
         members: [pensioner]
-        would_claim_council_tax_reduction: true
         claims_all_entitled_benefits: true
     households:
       household:
@@ -592,7 +572,6 @@
     benunits:
       benunit:
         members: [pensioner]
-        would_claim_council_tax_reduction: true
         claims_all_entitled_benefits: true
     households:
       household:
@@ -624,7 +603,6 @@
     benunits:
       benunit:
         members: [pensioner]
-        would_claim_council_tax_reduction: true
         claims_all_entitled_benefits: true
     households:
       household:
@@ -666,7 +644,6 @@
     benunits:
       benunit:
         members: [pensioner]
-        would_claim_council_tax_reduction: true
         claims_all_entitled_benefits: true
     households:
       household:
@@ -706,7 +683,6 @@
     benunits:
       benunit:
         members: [pensioner]
-        would_claim_council_tax_reduction: true
         claims_all_entitled_benefits: true
     households:
       household:

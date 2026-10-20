@@ -23,12 +23,10 @@
     benunits:
       head_family:
         members: [head]
-        would_claim_council_tax_reduction: true
         would_claim_uc: false
         council_tax_reduction_applicable_income: 0
       sharer_family:
         members: [sharer]
-        would_claim_council_tax_reduction: true
         liable_for_share_of_household_rent: true
         would_claim_uc: false
         # 500 a week.
@@ -67,12 +65,10 @@
     benunits:
       head_family:
         members: [head]
-        would_claim_council_tax_reduction: true
         would_claim_uc: false
         council_tax_reduction_applicable_income: 26_000
       sharer_family:
         members: [sharer]
-        would_claim_council_tax_reduction: true
         liable_for_share_of_household_rent: true
         would_claim_uc: false
         council_tax_reduction_applicable_income: 15_000
@@ -114,18 +110,15 @@
     benunits:
       head_family:
         members: [head]
-        would_claim_council_tax_reduction: true
         would_claim_uc: false
         council_tax_reduction_applicable_income: 0
       sharer_family:
         members: [sharer]
-        would_claim_council_tax_reduction: true
         liable_for_share_of_household_rent: true
         would_claim_uc: false
         council_tax_reduction_applicable_income: 0
       son_family:
         members: [adult_son]
-        would_claim_council_tax_reduction: true
         would_claim_uc: false
     households:
       home:
@@ -164,7 +157,6 @@
     benunits:
       head_family:
         members: [head]
-        would_claim_council_tax_reduction: true
         would_claim_uc: false
         council_tax_reduction_applicable_income: 0
       sharer_family:
@@ -207,7 +199,6 @@
         council_tax_reduction_applicable_income: 0
       sharer_family:
         members: [sharer]
-        would_claim_council_tax_reduction: true
         liable_for_share_of_household_rent: true
         would_claim_uc: false
         council_tax_reduction_applicable_income: 0
@@ -241,7 +232,6 @@
     benunits:
       head_family:
         members: [head]
-        would_claim_council_tax_reduction: true
         would_claim_uc: false
         council_tax_reduction_applicable_income: 0
       child_family:
@@ -312,7 +302,6 @@
     benunits:
       head_family:
         members: [head]
-        would_claim_council_tax_reduction: true
         would_claim_uc: false
         council_tax_reduction_applicable_income: 0
       sharer_family:
@@ -436,12 +425,10 @@
     benunits:
       head_family:
         members: [head]
-        would_claim_council_tax_reduction: true
         would_claim_uc: false
         council_tax_reduction_applicable_income: 15_000
       sharer_family:
         members: [sharer]
-        would_claim_council_tax_reduction: true
         liable_for_share_of_household_rent: true
         would_claim_uc: false
         council_tax_reduction_applicable_income: 8_000
@@ -480,12 +467,10 @@
     benunits:
       head_family:
         members: [head]
-        would_claim_council_tax_reduction: true
         would_claim_uc: false
         council_tax_reduction_applicable_income: 8_000
       sharer_family:
         members: [sharer]
-        would_claim_council_tax_reduction: true
         liable_for_share_of_household_rent: true
         would_claim_uc: false
         council_tax_reduction_applicable_income: 15_000
@@ -520,12 +505,10 @@
     benunits:
       head_family:
         members: [head]
-        would_claim_council_tax_reduction: true
         would_claim_uc: false
         council_tax_reduction_applicable_income: 15_000
       sharer_family:
         members: [sharer]
-        would_claim_council_tax_reduction: true
         liable_for_share_of_household_rent: true
         would_claim_uc: false
         council_tax_reduction_applicable_income: 8_000
@@ -560,12 +543,10 @@
     benunits:
       head_family:
         members: [head]
-        would_claim_council_tax_reduction: true
         would_claim_uc: false
         council_tax_reduction_applicable_income: 8_000
       sharer_family:
         members: [sharer]
-        would_claim_council_tax_reduction: true
         liable_for_share_of_household_rent: true
         would_claim_uc: false
         council_tax_reduction_applicable_income: 15_000
@@ -609,7 +590,6 @@
     benunits:
       family:
         members: [grandmother, young_mother, young_father, baby]
-        would_claim_council_tax_reduction: true
         would_claim_uc: false
         council_tax_reduction_applicable_income: 0
     households:
@@ -682,7 +662,6 @@
         would_claim_uc: false
       sharer_family:
         members: [sharer]
-        would_claim_council_tax_reduction: true
         liable_for_share_of_household_rent: true
         would_claim_uc: false
     households:
@@ -764,7 +743,6 @@
         would_claim_uc: false
       sharer_family:
         members: [sharer]
-        would_claim_council_tax_reduction: true
         liable_for_share_of_household_rent: true
         would_claim_uc: false
         # Too much income for any reduction.
@@ -813,13 +791,11 @@
         council_tax_reduction_applicable_income: 0
       student_family:
         members: [student]
-        would_claim_council_tax_reduction: true
         liable_for_share_of_household_rent: true
         would_claim_uc: false
         council_tax_reduction_applicable_income: 0
       pensioner_family:
         members: [pensioner]
-        would_claim_council_tax_reduction: true
         liable_for_share_of_household_rent: true
         would_claim_uc: false
         council_tax_reduction_applicable_income: 0
@@ -861,13 +837,11 @@
         council_tax_reduction_applicable_income: 0
       student_family:
         members: [student]
-        would_claim_council_tax_reduction: true
         liable_for_share_of_household_rent: true
         would_claim_uc: false
         council_tax_reduction_applicable_income: 0
       pensioner_family:
         members: [pensioner]
-        would_claim_council_tax_reduction: true
         liable_for_share_of_household_rent: true
         would_claim_uc: false
         council_tax_reduction_applicable_income: 0
@@ -903,7 +877,6 @@
     benunits:
       head_family:
         members: [head]
-        would_claim_council_tax_reduction: true
         would_claim_uc: false
         council_tax_reduction_applicable_income: 0
       sharer_family:
@@ -939,7 +912,6 @@
     benunits:
       head_family:
         members: [head]
-        would_claim_council_tax_reduction: true
         would_claim_uc: false
         council_tax_reduction_applicable_income: 0
       sharer_family:
@@ -984,7 +956,6 @@
     benunits:
       family:
         members: [grandmother, young_mother, young_father, baby]
-        would_claim_council_tax_reduction: true
         would_claim_uc: false
         income_support: 3_000
         council_tax_reduction_applicable_income: 0

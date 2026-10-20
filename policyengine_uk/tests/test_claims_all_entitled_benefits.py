@@ -7,15 +7,17 @@ to have reported completely. The formula used to sum the seven reported columns 
 simulation (`add(...).sum() < 1`), so in microdata it was False for every
 benefit unit as soon as any benefit unit reported any of them, and the
 consumers that gate on it collapsed to reporters only. Council Tax Reduction
-now has its own explicit reporters-only default until calibrated data take-up
-lands (uk-data#448; d1390).
+and Housing Benefit have reporters-only defaults on data-built simulations
+(d1390 and d1455); hand-entered situations keep the per-family flag.
 """
 
 import numpy as np
+import pandas as pd
 import pytest
 from hypothesis import example, given, settings, strategies as st
 
 from policyengine_uk import Microsimulation, Simulation
+from policyengine_uk.data import UKMultiYearDataset, UKSingleYearDataset
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
@@ -78,10 +80,10 @@ class TestPerBenefitUnit:
         flag = sim.calculate("claims_all_entitled_benefits", YEAR)
         assert flag.tolist() == [False, True]
 
-    def test_ctr_default_does_not_follow_the_all_benefits_flag(self):
+    def test_situation_ctr_default_follows_each_familys_flag(self):
         sim = Simulation(situation=separate_households(5_000, 0))
         would_claim = sim.calculate("would_claim_council_tax_reduction", YEAR)
-        assert would_claim.tolist() == [False, False]
+        assert would_claim.tolist() == [False, True]
 
     def test_reported_ctr_still_claims_when_the_flag_is_false(self):
         situation = separate_households(5_000, 0)
@@ -93,7 +95,7 @@ class TestPerBenefitUnit:
         ]
         assert sim.calculate("would_claim_council_tax_reduction", YEAR).tolist() == [
             True,
-            False,
+            True,
         ]
 
     def test_reporters_of_any_of_the_seven_are_false(self):
@@ -140,8 +142,118 @@ def test_flag_is_evaluated_per_benefit_unit_in_microdata():
     assert flag.any() and (~flag).any()
 
 
+def mock_dataset(situation):
+    """Synthetic post-ingestion MOCK tables using the normal UK data schema."""
+    tables = {}
+    person_ids = {name: i + 1 for i, name in enumerate(situation["people"])}
+    memberships = {}
+    for plural, entity in (
+        ("people", "person"),
+        ("benunits", "benunit"),
+        ("households", "household"),
+    ):
+        rows = []
+        for index, (_, inputs) in enumerate(situation[plural].items(), start=1):
+            row = {f"{entity}_id": index}
+            for name, value in inputs.items():
+                if name == "members":
+                    for member in value:
+                        memberships.setdefault(person_ids[member], {})[
+                            f"person_{entity}_id"
+                        ] = index
+                else:
+                    row[name] = value[YEAR] if isinstance(value, dict) else value
+            rows.append(row)
+        tables[entity] = pd.DataFrame(rows).fillna(0)
+    for column in ("person_benunit_id", "person_household_id"):
+        tables["person"][column] = [
+            memberships[person_id][column] for person_id in person_ids.values()
+        ]
+    return UKMultiYearDataset(
+        datasets=[UKSingleYearDataset(**tables, fiscal_year=YEAR)]
+    )
+
+
+def pensioner_households():
+    situation = separate_households(0, 0)
+    for person_inputs in situation["people"].values():
+        person_inputs["age"] = {YEAR: 70}
+    for home in situation["households"].values():
+        home.update(
+            region={YEAR: "NORTH_WEST"},
+            tenure_type={YEAR: "RENT_PRIVATELY"},
+            rent={YEAR: 8_000},
+            council_tax={YEAR: 1_800},
+        )
+    return situation
+
+
+@pytest.mark.parametrize("simulation_class", [Simulation, Microsimulation])
+@pytest.mark.parametrize(
+    "takeup, reported, benefit, expected_award",
+    [
+        (
+            "would_claim_council_tax_reduction",
+            "council_tax_benefit_reported",
+            "council_tax_reduction",
+            1_800,
+        ),
+        (
+            "would_claim_housing_benefit",
+            "housing_benefit_reported",
+            "housing_benefit",
+            8_000,
+        ),
+    ],
+)
+def test_mock_data_takeup_is_reporters_only(
+    simulation_class, takeup, reported, benefit, expected_award
+):
+    situation = pensioner_households()
+    situation["people"]["b"][reported] = {YEAR: 100}
+    simulation = simulation_class(dataset=mock_dataset(situation))
+    assert simulation.calculate(takeup, YEAR).tolist() == [False, True]
+    np.testing.assert_allclose(simulation.calculate(benefit, YEAR), [0, expected_award])
+    # The non-reporter is entitled: an explicit input enables its award.
+    for family in situation["benunits"].values():
+        family[takeup] = {YEAR: True}
+    explicit = simulation_class(dataset=mock_dataset(situation))
+    np.testing.assert_allclose(
+        explicit.calculate(benefit, YEAR), [expected_award, expected_award]
+    )
+
+
+def test_hand_entered_housing_benefit_keeps_main_takeup():
+    simulation = Simulation(situation=pensioner_households())
+    assert simulation.calculate("would_claim_housing_benefit", YEAR).tolist() == [
+        True,
+        True,
+    ]
+    np.testing.assert_allclose(
+        simulation.calculate("housing_benefit", YEAR), [8_000, 8_000]
+    )
+
+
+@pytest.mark.parametrize(
+    "reported",
+    [
+        "pension_credit_reported",
+        "child_benefit_reported",
+        "council_tax_benefit_reported",
+    ],
+)
+def test_reports_outside_the_seven_leave_the_all_benefits_flag_true(reported):
+    situation = separate_households(0, 0)
+    situation["people"]["a"][reported] = {YEAR: 100}
+    simulation = Simulation(situation=situation)
+    assert simulation.calculate("claims_all_entitled_benefits", YEAR).tolist() == [
+        True,
+        True,
+    ]
+
+
 # Each generated family is independently eligible or ineligible and may have
-# reported CTR or an explicit take-up input. Other families cannot enable it.
+# reported CTR. No explicit take-up column is supplied; other families cannot enable it.
 CTR_FAMILIES = st.lists(
     st.tuples(
         st.integers(min_value=18, max_value=90),
@@ -149,7 +261,6 @@ CTR_FAMILIES = st.lists(
         st.integers(min_value=0, max_value=50_000),
         st.integers(min_value=0, max_value=50_000),
         st.booleans(),
-        st.sampled_from((None, False, True)),
         st.sampled_from((0, 100)),
     ),
     min_size=1,
@@ -158,12 +269,12 @@ CTR_FAMILIES = st.lists(
 
 
 @given(families=CTR_FAMILIES)
-@example(families=[(40, "SCOTLAND", 0, 0, True, None, 0)])
+@example(families=[(40, "SCOTLAND", 0, 0, True, 0)])
 @example(
     families=[
-        (40, "WALES", 0, 0, True, None, 0),
-        (40, "WALES", 0, 0, True, True, 0),
-        (70, "ENGLAND", 0, 0, False, None, 100),
+        (40, "WALES", 0, 0, True, 0),
+        (40, "WALES", 0, 0, True, 100),
+        (70, "ENGLAND", 0, 0, False, 100),
     ]
 )
 @settings(max_examples=30, deadline=None)
@@ -175,7 +286,7 @@ def test_ctr_is_zero_for_every_nonreporter_without_an_explicit_claim_flag(famili
         "SCOTLAND": "CITY_OF_EDINBURGH",
         "WALES": "CARDIFF",
     }
-    for index, (age, country, income, savings, claims_all, flag, reported) in enumerate(
+    for index, (age, country, income, savings, claims_all, reported) in enumerate(
         families
     ):
         name = f"person_{index}"
@@ -189,8 +300,6 @@ def test_ctr_is_zero_for_every_nonreporter_without_an_explicit_claim_flag(famili
             "claims_all_entitled_benefits": {YEAR: claims_all},
             "would_claim_uc": {YEAR: False},
         }
-        if flag is not None:
-            benunit["would_claim_council_tax_reduction"] = {YEAR: flag}
         situation["benunits"][f"bu_{index}"] = benunit
         situation["households"][f"hh_{index}"] = {
             "members": [name],
@@ -199,8 +308,8 @@ def test_ctr_is_zero_for_every_nonreporter_without_an_explicit_claim_flag(famili
             "council_tax": {YEAR: 1_800},
             "savings": {YEAR: savings},
         }
-        must_be_zero.append(reported == 0 and flag is not True)
-    sim = Simulation(situation=situation)
+        must_be_zero.append(reported == 0)
+    sim = Simulation(dataset=mock_dataset(situation))
     mask = np.array(must_be_zero, dtype=bool)
     assert not sim.calculate("would_claim_council_tax_reduction", YEAR)[mask].any()
     for variable in (

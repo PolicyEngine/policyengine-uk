@@ -207,7 +207,6 @@ def situation(
         benunit = {
             "members": names,
             "claims_all_entitled_benefits": {YEAR: True},
-            "would_claim_council_tax_reduction": {YEAR: True},
             "would_claim_pc": {YEAR: claim_pc},
             "would_claim_uc": {YEAR: unit.get("would_claim_uc", False)},
         }
@@ -226,7 +225,6 @@ def situation(
             benunits[f"n{i}"] = {
                 "members": [name],
                 "claims_all_entitled_benefits": {YEAR: True},
-                "would_claim_council_tax_reduction": {YEAR: True},
                 "would_claim_uc": {YEAR: False},
             }
             benunit_index += 1
@@ -532,7 +530,6 @@ def test_savings_credit_only_award_counts_the_frozen_savings_credit():
             "benunit": {
                 "members": ["pensioner"],
                 "claims_all_entitled_benefits": {YEAR: True},
-                "would_claim_council_tax_reduction": {YEAR: True},
             }
         },
         "households": {
@@ -579,7 +576,6 @@ def freeze_case(age, state_pension, private_pension, savings, reform):
             "benunit": {
                 "members": ["pensioner"],
                 "claims_all_entitled_benefits": {YEAR: True},
-                "would_claim_council_tax_reduction": {YEAR: True},
             }
         },
         "households": {

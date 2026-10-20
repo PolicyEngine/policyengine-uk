@@ -220,9 +220,6 @@ def situation(units):
         benunit = {
             "members": names,
             "would_claim_uc": {PERIOD: unit["would_claim_uc"]},
-            "would_claim_council_tax_reduction": {
-                PERIOD: unit["hb_reported"] == 0 or unit["ctb_reported"] > 0
-            },
             "claims_all_entitled_benefits": {
                 PERIOD: unit["hb_reported"] == 0 and unit["ctb_reported"] == 0
             },

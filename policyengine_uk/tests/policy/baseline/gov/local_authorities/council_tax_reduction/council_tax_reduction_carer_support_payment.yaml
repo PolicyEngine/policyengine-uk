@@ -40,7 +40,6 @@
     benunits:
       benunit:
         members: [carer]
-        would_claim_council_tax_reduction: true
         would_claim_uc: false
     households:
       household:
@@ -76,7 +75,6 @@
     benunits:
       benunit:
         members: [carer]
-        would_claim_council_tax_reduction: true
         would_claim_uc: false
     households:
       household:
@@ -102,7 +100,6 @@
     benunits:
       benunit:
         members: [carer]
-        would_claim_council_tax_reduction: true
         would_claim_uc: false
     households:
       household:
@@ -131,7 +128,6 @@
     benunits:
       benunit:
         members: [carer]
-        would_claim_council_tax_reduction: true
         would_claim_uc: false
     households:
       household:
@@ -175,7 +171,6 @@
     benunits:
       benunit:
         members: [carer]
-        would_claim_council_tax_reduction: true
         would_claim_uc: false
     households:
       household:
@@ -208,7 +203,6 @@
     benunits:
       benunit:
         members: [carer]
-        would_claim_council_tax_reduction: true
         would_claim_uc: false
     households:
       household:
@@ -238,7 +232,6 @@
     benunits:
       benunit:
         members: [carer]
-        would_claim_council_tax_reduction: true
         would_claim_uc: false
     households:
       household:
@@ -268,7 +261,6 @@
     benunits:
       benunit:
         members: [carer]
-        would_claim_council_tax_reduction: true
     households:
       household:
         members: [carer]
@@ -308,7 +300,6 @@
     benunits:
       benunit:
         members: [claimant, partner]
-        would_claim_council_tax_reduction: true
     households:
       household:
         members: [claimant, partner]
@@ -360,7 +351,6 @@
     benunits:
       benunit:
         members: [claimant, partner]
-        would_claim_council_tax_reduction: true
         is_married: false
     households:
       household:
@@ -403,7 +393,6 @@
     benunits:
       benunit:
         members: [claimant, partner]
-        would_claim_council_tax_reduction: true
     households:
       household:
         members: [claimant, partner]
@@ -434,7 +423,6 @@
     benunits:
       benunit:
         members: [carer]
-        would_claim_council_tax_reduction: true
     households:
       household:
         members: [carer]

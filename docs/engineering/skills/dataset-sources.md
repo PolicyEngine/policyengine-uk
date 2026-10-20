@@ -60,3 +60,17 @@ without downloading or opening private survey files.
 Use real H5 files only when the test specifically needs schema or data behavior.
 If the artifact is private, large, or credential-dependent, skip cleanly or keep
 the verification outside the ordinary PR test suite.
+
+## Data provenance and benefit take-up
+
+`policyengine_uk.utils.data_source.built_from_data` distinguishes dataset-built
+simulations from hand-entered situations, including supported clones, branches
+and UK `build_from_situation` rebuilds. Council Tax Reduction and Housing Benefit
+use this distinction for their take-up defaults: data-built simulations use
+positive reported claims only (d1390 and d1455); situations also use their
+per-benefit-unit `claims_all_entitled_benefits` flag. Explicit inputs override
+these defaults, including a future calibrated dataset column (uk-data#448).
+
+Do not rebuild an existing data-built simulation by calling core's
+`SimulationBuilder.build_from_dict` directly. In core 3.33.2 this leaves stale
+dataset provenance, which copies inherit. Use UK `build_from_situation` instead.

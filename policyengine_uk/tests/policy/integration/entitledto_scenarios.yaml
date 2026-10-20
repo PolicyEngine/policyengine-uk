@@ -93,7 +93,6 @@
     benunits:
       benunit:
         members: [pensioner_1, pensioner_2]
-        would_claim_council_tax_reduction: true
     households:
       household:
         members: [pensioner_1, pensioner_2]

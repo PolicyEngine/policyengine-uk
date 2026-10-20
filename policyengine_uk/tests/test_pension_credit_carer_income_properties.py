@@ -156,10 +156,7 @@ def situation(families):
                         person["carers_allowance_reported"] = {YEAR: 1}
                 people[name] = person
                 names.append(name)
-            benunits[f"b{i}_{k}"] = {
-                "members": names,
-                "would_claim_council_tax_reduction": {YEAR: True},
-            }
+            benunits[f"b{i}_{k}"] = {"members": names}
             households[f"h{i}_{k}"] = {
                 "members": names,
                 "country": {YEAR: fam["country"]},

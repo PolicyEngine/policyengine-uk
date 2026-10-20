@@ -14,7 +14,10 @@ class claims_all_entitled_benefits(Variable):
         "Income Support and income-related ESA); False where it reports £1 "
         "or more, in which case its reported benefits are taken as the "
         "complete set. Datasets and situations can override it directly. "
-        "Council Tax Reduction has a separate reporters-only take-up default."
+        "Council Tax Reduction, Pension Credit and Child Benefit are not among "
+        "these seven: reporting only Pension Credit still leaves this flag true. "
+        "Council Tax Reduction and Housing Benefit separately default to "
+        "reporters only on data-built simulations."
     )
 
     def formula(benunit, period, parameters):

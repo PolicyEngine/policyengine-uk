@@ -23,7 +23,6 @@
     benunits:
       pensioners:
         members: [claimant, partner]
-        would_claim_council_tax_reduction: true
     households:
       household:
         members: [claimant, partner]
@@ -54,7 +53,6 @@
     benunits:
       pensioners:
         members: [claimant, partner]
-        would_claim_council_tax_reduction: true
     households:
       household:
         members: [claimant, partner]
@@ -87,7 +85,6 @@
     benunits:
       pensioners:
         members: [claimant, partner]
-        would_claim_council_tax_reduction: true
     households:
       household:
         members: [claimant, partner]
@@ -119,10 +116,8 @@
     benunits:
       pensioner:
         members: [claimant]
-        would_claim_council_tax_reduction: true
       other_family:
         members: [resident]
-        would_claim_council_tax_reduction: true
     households:
       household:
         members: [claimant, resident]
@@ -158,10 +153,8 @@
     benunits:
       pensioner:
         members: [claimant]
-        would_claim_council_tax_reduction: true
       other_family:
         members: [daughter, grandson]
-        would_claim_council_tax_reduction: true
     households:
       household:
         members: [claimant, daughter, grandson]
@@ -202,7 +195,6 @@
     benunits:
       pensioner:
         members: [claimant]
-        would_claim_council_tax_reduction: true
         # HB(SPC) reg 55(6) and England CTR Sch 1 para 8(6): AA exempts
         # the claimant from deductions. Supply these independently of the
         # current generic deduction formulas to isolate the premium rule.
@@ -210,7 +202,6 @@
         council_tax_reduction_non_dep_deductions: 0
       other_family:
         members: [carer]
-        would_claim_council_tax_reduction: true
     households:
       household:
         members: [claimant, carer]
