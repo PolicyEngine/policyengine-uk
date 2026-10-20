@@ -24,12 +24,16 @@
 #   exceed (WSI 2013/3029 reg 34(5); LGFA 1992 Sch 1A para 2(11) and
 #   s.13A(1)(c)). The model takes the full disregard where it cannot see the
 #   council's choice.
-# - Of the councils whose schemes the model reads, Westminster's, Oxford's and
-#   Merton's working-age schemes disregard war pensions in full. Kingston upon
-#   Thames and Newham disregard £10 a week of each payment at working age
-#   (Kingston Sch 8 para 20, Newham Sch 8 para 19) and at pension age (each
-#   council's Sch 6 para 1). Kingston limits a working-age family's total to
-#   £20 a week (Sch 8 para 40); neither pensioner schedule has a limit.
+# - Of the councils whose schemes the model reads, Westminster disregards war
+#   pensions in full and Oxford ignores them for applicants without Universal
+#   Credit. Newham's scheme keeps the £10, but its discretionary reduction
+#   policy (para 2.1) automatically adds what a full disregard would give.
+#   Kingston upon Thames's schedules keep the £10 while its para 36(6) speaks
+#   of a full disregard, and Merton's "in full" disregard is "subject to
+#   paragraph 40" (a £20 a week limit). The model approximates all of them
+#   with the full disregard.
+# - Only the applicant's and partner's IIDB, SDA and IB count (SI 2012/2885
+#   Sch 1 para 11; SSI 2021/249 reg 36(1)), not a dependant's.
 #
 # Weekly rates, 2026-27 (SI 2026/148 Sch 1, restating SSCBA 1992 Sch 4):
 # disablement pension at 100% 233.90, 50% 116.95, 20% 46.78; long-term
@@ -38,9 +42,13 @@
 # 241.30 (SI 2026/148 art 6(1)), 12,547.60 a year, below the 12,570 personal
 # allowance. IIDB, SDA and war pensions are not taxed in the model; State
 # Pension and IB are. Pension Credit standard minimum guarantee 238.00
-# (single). CTR applicable amounts: personal allowance 256.00 (single, pension
-# age) and 95.55 (single, 25 or over); the reduction is withdrawn at 20% of
-# income above the applicable amount. Council tax is 2,000 throughout.
+# (single). CTR applicable amounts: personal allowance 256.00 for a single
+# person who reached pensionable age before 1 April 2021 (SI 2012/2885 Sch 2
+# para 1, as uprated by SI 2026/27 reg 6; SSI 2026/56 reg 6 in Scotland), so
+# the pensioners with an award asserted below are 80; and 95.55 for a single
+# person aged 25 or over in Scotland's working-age scheme (SSI 2026/56 reg
+# 14). The reduction is withdrawn at 20% of income above the applicable
+# amount. Council tax is 2,000 throughout.
 
 - name: IIDB counts as pension-age Council Tax Reduction income in England
   period: 2026
@@ -48,7 +56,7 @@
   input:
     people:
       pensioner:
-        age: 70
+        age: 80
         state_pension: 241.30 * 52
         iidb_reported: 116.95 * 52
     benunits:
@@ -104,7 +112,7 @@
   input:
     people:
       pensioner:
-        age: 70
+        age: 80
         state_pension: 241.30 * 52
         iidb_reported: 46.78 * 52
     benunits:
@@ -331,138 +339,6 @@
   output:
     council_tax_reduction_applicable_income: 0
 
-- name: The Kingston upon Thames working-age scheme counts a war pension less 10 a week
-  period: 2026
-  absolute_error_margin: 0.01
-  input:
-    people:
-      claimant:
-        age: 40
-        afcs_reported: 5_000
-    benunits:
-      benunit:
-        members: [claimant]
-        would_claim_uc: false
-    households:
-      household:
-        members: [claimant]
-        country: ENGLAND
-        region: LONDON
-        local_authority: KINGSTON_UPON_THAMES
-        council_tax: 2_000
-        savings: 0
-  output:
-    # 5,000 - 520
-    council_tax_reduction_applicable_income: 5_000 - 10 * 52
-
-- name: The Kingston upon Thames scheme disregards 10 a week of each war pension
-  period: 2026
-  absolute_error_margin: 0.01
-  input:
-    people:
-      claimant:
-        age: 40
-        afcs_reported: 5_000
-        war_widows_pension_reported: 3_000
-    benunits:
-      benunit:
-        members: [claimant]
-        would_claim_uc: false
-    households:
-      household:
-        members: [claimant]
-        country: ENGLAND
-        region: LONDON
-        local_authority: KINGSTON_UPON_THAMES
-        council_tax: 2_000
-        savings: 0
-  output:
-    # 8,000 - 2 x 520: two payments, two disregards, within the 20 a week limit.
-    council_tax_reduction_applicable_income: 8_000 - 2 * 10 * 52
-
-- name: The Kingston upon Thames scheme limits a family's war pension disregards to 20 a week
-  period: 2026
-  absolute_error_margin: 0.01
-  input:
-    people:
-      claimant:
-        age: 40
-        afcs_reported: 5_000
-        war_widows_pension_reported: 3_000
-      partner:
-        age: 40
-        afcs_reported: 5_000
-        war_widows_pension_reported: 3_000
-    benunits:
-      benunit:
-        members: [claimant, partner]
-        would_claim_uc: false
-    households:
-      household:
-        members: [claimant, partner]
-        country: ENGLAND
-        region: LONDON
-        local_authority: KINGSTON_UPON_THAMES
-        council_tax: 2_000
-        savings: 0
-  output:
-    # Four payments would give 4 x 10 a week; Sch 8 para 40 limits the
-    # family's total to 20 a week: 16,000 - 1,040.
-    council_tax_reduction_applicable_income: 16_000 - 20 * 52
-
-- name: The Newham working-age scheme disregards 10 a week of each war pension, with no family limit
-  period: 2026
-  absolute_error_margin: 0.01
-  input:
-    people:
-      claimant:
-        age: 40
-        afcs_reported: 5_000
-        war_widows_pension_reported: 3_000
-      partner:
-        age: 40
-        afcs_reported: 5_000
-        war_widows_pension_reported: 3_000
-    benunits:
-      benunit:
-        members: [claimant, partner]
-        would_claim_uc: false
-    households:
-      household:
-        members: [claimant, partner]
-        country: ENGLAND
-        region: LONDON
-        local_authority: NEWHAM
-        council_tax: 2_000
-        savings: 0
-  output:
-    # Newham's limit (its Sch 8 para 39) names paras 20 and 21, not the war
-    # pension para 19: 16,000 - 4 x 520.
-    council_tax_reduction_applicable_income: 16_000 - 4 * 10 * 52
-
-- name: A war pension below 10 a week counts as nothing under the Newham scheme
-  period: 2026
-  absolute_error_margin: 0.01
-  input:
-    people:
-      claimant:
-        age: 40
-        afcs_reported: 300
-    benunits:
-      benunit:
-        members: [claimant]
-        would_claim_uc: false
-    households:
-      household:
-        members: [claimant]
-        country: ENGLAND
-        region: LONDON
-        local_authority: NEWHAM
-        council_tax: 2_000
-        savings: 0
-  output:
-    council_tax_reduction_applicable_income: 0
-
 - name: The Westminster working-age scheme disregards war pensions in full
   period: 2026
   absolute_error_margin: 0.01
@@ -487,7 +363,31 @@
   output:
     council_tax_reduction_applicable_income: 0
 
-- name: The Kingston upon Thames scheme counts a pensioner's war pension less 10 a week
+- name: War pensions do not count under the Kingston upon Thames working-age scheme
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        afcs_reported: 5_000
+        war_widows_pension_reported: 3_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        region: LONDON
+        local_authority: KINGSTON_UPON_THAMES
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_applicable_income: 0
+
+- name: War pensions do not count for a pensioner in Newham
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -504,68 +404,40 @@
         members: [pensioner]
         country: ENGLAND
         region: LONDON
-        local_authority: KINGSTON_UPON_THAMES
+        local_authority: NEWHAM
         council_tax: 2_000
         savings: 0
   output:
     council_tax_reduction_pensioner: true
-    # Sch 6 para 1: 5,000 - 520.
-    council_tax_reduction_applicable_income: 5_000 - 10 * 52
+    council_tax_reduction_applicable_income: 0
 
-- name: The Kingston upon Thames pensioner schedule has no family limit on war pension disregards
+- name: A dependant's IIDB does not count as Council Tax Reduction income
   period: 2026
   absolute_error_margin: 0.01
   input:
     people:
       pensioner:
-        age: 70
-        afcs_reported: 5_000
-        war_widows_pension_reported: 3_000
-      partner:
-        age: 70
-        afcs_reported: 5_000
-        war_widows_pension_reported: 3_000
+        age: 80
+        state_pension: 241.30 * 52
+      dependant:
+        age: 17
+        iidb_reported: 46.78 * 52
     benunits:
       benunit:
-        members: [pensioner, partner]
+        members: [pensioner, dependant]
         would_claim_pc: false
     households:
       household:
-        members: [pensioner, partner]
-        country: ENGLAND
-        region: LONDON
-        local_authority: KINGSTON_UPON_THAMES
-        council_tax: 2_000
-        savings: 0
-  output:
-    council_tax_reduction_pensioner: true
-    # Four payments, four disregards of 520; Sch 8 para 40 is a working-age
-    # limit: 16,000 - 2,080.
-    council_tax_reduction_applicable_income: 16_000 - 4 * 10 * 52
-
-- name: The national pensioner scheme takes the full war pension disregard outside the councils the model reads
-  period: 2026
-  absolute_error_margin: 0.01
-  input:
-    people:
-      pensioner:
-        age: 70
-        afcs_reported: 5_000
-    benunits:
-      benunit:
-        members: [pensioner]
-        would_claim_pc: false
-    households:
-      household:
-        members: [pensioner]
+        members: [pensioner, dependant]
         country: ENGLAND
         region: SOUTH_EAST
         local_authority: MAIDSTONE
         council_tax: 2_000
         savings: 0
   output:
-    council_tax_reduction_pensioner: true
-    council_tax_reduction_applicable_income: 0
+    # Only the applicant's and partner's income counts (Sch 1 para 11);
+    # pensioner schemes also exclude Child Benefit.
+    council_tax_reduction_applicable_income: 241.30 * 52
 
 - name: A guarantee credit recipient with IIDB has nil Council Tax Reduction income
   period: 2026

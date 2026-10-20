@@ -18,18 +18,21 @@ Pension Credit counts them too (SPC Regs 2002 reg 15(1)), so once the
 guarantee credit passport ends, Council Tax Reduction was assessed on less
 income than Pension Credit and Housing Benefit.
 
-War pensions and Armed Forces Compensation Scheme payments stay uncounted
-where the model cannot see the council's choice: Scotland disregards or omits
-them (SSI 2012/319 Sch 3 para 1; SSI 2021/249 reg 57(1)), and English and
-Welsh councils may disregard more than the prescribed £10 a week (WSI 2013/3029
-reg 34(5); LGFA 1992 Sch 1A para 2(11) and s.13A(1)(c)). Kingston upon Thames
-and Newham disregard only £10 a week of each payment, at working age (Kingston
-Sch 8 para 20, Newham Sch 8 para 19) and at pension age (each council's Sch 6
-para 1), and Kingston limits a working-age family's total to £20 a week (Sch 8
-para 40). Westminster's, Merton's and Oxford's working-age schemes disregard
-them in full.
+Only the applicant's and partner's benefits count (SI 2012/2885 Sch 1 para 11;
+SSI 2021/249 reg 36(1)), not a dependant's.
 
-Invariants, in 2026, for single people and couples with no children:
+War pensions and Armed Forces Compensation Scheme payments stay uncounted.
+Scotland disregards or omits them (SSI 2012/319 Sch 3 para 1; SSI 2021/249 reg
+57(1)), and English and Welsh councils may relieve more than the prescribed
+£10 a week (WSI 2013/3029 reg 34(5); LGFA 1992 Sch 1A para 2(11) and
+s.13A(1)(c)). The councils whose schemes the model reads mostly do: Westminster
+and Oxford disregard them in full, Newham's discretionary policy adds what a
+full disregard would give, and Kingston upon Thames's and Merton's texts point
+both ways. The model approximates all of them with the full disregard.
+
+Invariants, in 2026, for single people and couples not claiming Universal
+Credit (whose award would move with the benefits), with no children except in
+invariant 4:
 
 1. Differential: Council Tax Reduction and Pension Credit assess the same
    income. For pension-age families under the national pensioner schemes in
@@ -48,12 +51,12 @@ Invariants, in 2026, for single people and couples with no children:
    credit) is unchanged; in the national schemes, where both awards are
    strictly between nil and the liability, it falls by 20% of the rise in
    income.
-3. War pensions: adding war pensions leaves Council Tax Reduction income
-   unchanged under the general rules, except in Kingston upon Thames and
-   Newham, where it rises by the payments less £10 a week of each (for a
-   working-age family in Kingston, less at most £20 a week in all). The
-   disregards are written out here from the schemes, not read from the
-   parameters.
+3. War pensions: adding war pensions and Armed Forces Compensation Scheme
+   payments leaves Council Tax Reduction income unchanged under the general
+   rules, in every scheme.
+4. Dependants: giving a dependant aged 16 to 19 IIDB, IB within the personal
+   allowance, or SDA leaves Council Tax Reduction income unchanged under the
+   general rules, in every scheme.
 
 These compare the model's own measures. Invariant 1 relies on both measures
 deducting the family's whole income tax and National Insurance, an existing
@@ -73,9 +76,6 @@ IIDB_FULL = 233.90 * WEEKS
 LONG_TERM_IB = 146.60 * WEEKS
 SDA = (103.85 + 15.50) * WEEKS
 WITHDRAWAL_RATE = 0.2
-# £10 a week of each war pension; Kingston's £20 a week family limit.
-LOCAL_WAR_PENSION_DISREGARD = 10 * WEEKS
-KINGSTON_DISREGARD_LIMIT = 20 * WEEKS
 PRIVATE_PENSIONS = np.arange(0, 20_001, 1_000)
 PROPERTY_SETTINGS = settings(
     max_examples=10,
@@ -101,7 +101,6 @@ WORKING_AGE_AREAS = {
     "GLASGOW_CITY": ("SCOTLAND", "SCOTLAND"),
 }
 NATIONAL_SCHEME_AREAS = {"MAIDSTONE", "CARDIFF", "GLASGOW_CITY"}
-LOCAL_WAR_PENSION_AREAS = {"KINGSTON_UPON_THAMES", "NEWHAM"}
 BENUNIT_VARIABLES = [
     "council_tax_reduction_applicable_income",
     "council_tax_benefit",
@@ -189,8 +188,7 @@ PARTIAL_AWARD_PENSIONER = dict(
     savings=0.0,
     would_claim_pc=False,
 )
-# Two adults on the Kingston upon Thames working-age scheme, so the £20 limit
-# binds once each has two war pensions.
+# A working-age couple on the Kingston upon Thames scheme.
 KINGSTON_COUPLE = dict(
     ages=[40, 40],
     state_pensions=[0.0, 0.0],
@@ -236,6 +234,13 @@ def situation(variants):
             for variable, value in extra.get(j, {}).items():
                 person[variable] = {YEAR: value}
             people[name] = person
+            names.append(name)
+        if fam.get("dependant_age") is not None:
+            j = len(fam["ages"])
+            name = f"p{i}_{j}"
+            people[name] = {"age": {YEAR: fam["dependant_age"]}}
+            for variable, value in extra.get(j, {}).items():
+                people[name][variable] = {YEAR: value}
             names.append(name)
         benunits[f"b{i}"] = {
             "members": names,
@@ -374,22 +379,11 @@ def war_pensions(draw):
     }
 
 
-def local_war_pension_income(payments, area, pensioner):
-    """Counted war pensions under Kingston's or Newham's scheme (Sch 6 para
-    1 at pension age; Kingston Sch 8 paras 20 and 40 and Newham Sch 8 para 19
-    at working age), from each adult's payments."""
-    amounts = [x for person in payments for x in person.values()]
-    disregard = sum(min(x, LOCAL_WAR_PENSION_DISREGARD) for x in amounts)
-    if area == "KINGSTON_UPON_THAMES" and not pensioner:
-        disregard = min(disregard, KINGSTON_DISREGARD_LIMIT)
-    return sum(amounts) - disregard
-
-
 @PROPERTY_SETTINGS
 @given(st.data())
-def test_war_pensions_count_only_where_the_scheme_says(data):
-    # Every draw ends with the Kingston couple, whose four payments meet the
-    # £20 a week limit, so the local branch is always exercised.
+def test_war_pensions_never_count(data):
+    # Every draw includes the Kingston couple, so a council whose schedules
+    # keep the £10 is always exercised.
     families = data.draw(st.lists(any_family, min_size=1, max_size=6))
     families = families + [KINGSTON_COUPLE]
     payments = [[data.draw(war_pensions()) for _ in fam["ages"]] for fam in families]
@@ -404,20 +398,43 @@ def test_war_pensions_count_only_where_the_scheme_says(data):
     base, plus = slice(0, None, 2), slice(1, None, 2)
     income = v["council_tax_reduction_applicable_income"]
     r = route(v)
-    pensioner = v["council_tax_reduction_pensioner"].astype(bool)
-    general = (r[base] == 0) & (r[plus] == 0) & (income[base] > 0)
-    expected = np.array(
-        [
-            local_war_pension_income(pay, fam["area"], pensioner[2 * k])
-            if fam["area"] in LOCAL_WAR_PENSION_AREAS
-            else 0.0
-            for k, (fam, pay) in enumerate(zip(families, payments))
-        ]
-    )
+    general = (r[base] == 0) & (r[plus] == 0)
+    assert general[-1]
     rise = income[plus] - income[base]
-    assert np.allclose(rise[general], expected[general], atol=0.01), [
-        (families[k]["area"], payments[k], rise[k], expected[k])
-        for k in np.flatnonzero(general & ~np.isclose(rise, expected, atol=0.01))[:3]
+    assert np.allclose(rise[general], 0, atol=0.01), [
+        (families[k]["area"], payments[k], rise[k])
+        for k in np.flatnonzero(general & ~np.isclose(rise, 0, atol=0.01))[:3]
     ]
-    # The Kingston couple's four payments meet the £20 a week limit.
-    assert np.isclose(rise[-1], 16_000 - KINGSTON_DISREGARD_LIMIT, atol=0.01)
+
+
+DEPENDANT_CHANGES = {
+    "iidb": {"iidb_reported": 0.5 * IIDB_FULL},
+    "incapacity_benefit": {"incapacity_benefit_reported": LONG_TERM_IB},
+    "sda": {"sda_reported": 1.0},
+}
+
+
+@PROPERTY_SETTINGS
+@given(
+    st.lists(any_family, min_size=1, max_size=6),
+    st.sampled_from(sorted(DEPENDANT_CHANGES)),
+    st.integers(16, 19),
+)
+@example([GENERAL_RULES_PENSIONER, KINGSTON_COUPLE], "iidb", 17)
+def test_dependants_benefits_never_count(families, change, dependant_age):
+    families = [{**fam, "dependant_age": dependant_age} for fam in families]
+    variants = []
+    for fam in families:
+        dependant = len(fam["ages"])
+        variants.append((fam, 5_000.0, {}))
+        variants.append((fam, 5_000.0, {dependant: DEPENDANT_CHANGES[change]}))
+    v = calculate(variants)
+    base, plus = slice(0, None, 2), slice(1, None, 2)
+    income = v["council_tax_reduction_applicable_income"]
+    r = route(v)
+    general = (r[base] == 0) & (r[plus] == 0)
+    rise = income[plus] - income[base]
+    assert np.allclose(rise[general], 0, atol=0.01), [
+        (families[k]["area"], families[k]["ages"], change, rise[k])
+        for k in np.flatnonzero(general & ~np.isclose(rise, 0, atol=0.01))[:3]
+    ]
