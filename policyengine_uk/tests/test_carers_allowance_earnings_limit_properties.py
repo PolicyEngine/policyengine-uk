@@ -94,6 +94,9 @@ profit_money = st.floats(min_value=-20_000, max_value=60_000, allow_nan=False)
 # One penny a week over it (10,608.52 / 52 = 204.01), on the float32 boundary
 # described in _over_limit: gainfully employed.
 @example(pay=10_608.52, profit=0.0, pension_share=0.0)
+# A trading loss, with earnings below the limit: the derandomized draws have
+# neither.
+@example(pay=8_000.0, profit=-5_000.0, pension_share=0.1)
 def test_bounds_and_differential(pay, profit, pension_share):
     pension = pay * pension_share
     result = _person(pay, profit, pension)
@@ -102,6 +105,19 @@ def test_bounds_and_differential(pay, profit, pension_share):
     over = _over_limit(earnings)
     assert bool(result["is_gainfully_employed_for_carers_allowance"]) == over
     expected = 0 if over else RATE * WEEKS
+    assert abs(float(result["carers_allowance"]) - expected) < 0.01
+
+
+@pytest.mark.parametrize("pay, gainful", [(10_608.00, False), (10_608.52, True)])
+def test_a_penny_a_week_over_the_2026_limit_ends_entitlement(pay, gainful):
+    """£10,608 a year is £204.00 a week, at the limit; £10,608.52 is £204.01, a
+    penny over it. This pins the outcome for the amount entered, not only
+    agreement with _over_limit. The model stores £10,608.52 as 10,608.51953125
+    (£204.00 a week in exact arithmetic) and reaches £204.01 through float32
+    rounding; see #2541."""
+    result = _person(pay, 0, 0)
+    assert bool(result["is_gainfully_employed_for_carers_allowance"]) == gainful
+    expected = 0 if gainful else RATE * WEEKS
     assert abs(float(result["carers_allowance"]) - expected) < 0.01
 
 
