@@ -8,10 +8,10 @@ Invariants, for any people and incomes:
    general income equals min(loss, max(£50,000, 25% of adjusted total
    income), net income), if ordinary expenses and losses beat the trading
    allowance. Otherwise the allowance applies and current loss relief is nil.
-   Net income is the adjusted net income under ordinary expense treatment
-   without the loss (a separate simulation); adjusted total income is
-   that less the pension contributions given relief (own contributions up to
-   the greater of £3,600 and pay plus profits, none from age 75).
+   Net income is the model's pre-pension net_income under ordinary expense
+   treatment without the loss (a separate simulation); adjusted total income
+   is that less the pension contributions given relief once (own contributions
+   up to the greater of £3,600 and pay plus profits, none from age 75).
 2. Differential: a person's Income Tax with a loss equals the Income Tax of
    the same person without the loss and with their income cut by the relief,
    taken from non-savings income first, then savings, then dividends: the
@@ -34,8 +34,9 @@ Invariants, for any people and incomes:
    child's) come off their applicable income, never below zero, and the award
    never falls.
 6. Household income: market income falls by exactly the household's losses,
-   and HBAI net income moves only through the loss itself, taxes and
-   means-tested or passported benefits; every other component is unchanged.
+   and HBAI net income (before HBAI resets a negative figure to zero) moves
+   only through the loss itself, taxes and means-tested or passported
+   benefits; every other component is unchanged.
 7. Class 4 (SSCBA 1992 Sch 2 para 3): Class 4 profits are self-employment
    profits after capital allowances and the trading allowance, less the
    separate Class 4 loss balance and the year's loss, never below zero.
@@ -90,7 +91,7 @@ MEANS_TESTED = [
 UC_TESTS = [
     "uc_earned_income",
     "universal_credit_pre_benefit_cap",
-    "is_benefit_cap_exempt_earnings",
+    "is_uc_benefit_cap_exempt_earnings",
     "universal_credit",
 ]
 # HBAI components the loss may move: the loss itself, taxes, and benefits
@@ -228,12 +229,12 @@ def test_relief_is_the_loss_within_net_income_and_the_cap(people, regions):
     ]
     a = calculate(
         single_people(people, regions),
-        ["trade_loss_relief_against_general_income", "adjusted_net_income"],
+        ["trade_loss_relief_against_general_income", "net_income"],
     )
     b = calculate(
         single_people(without, regions),
         [
-            "adjusted_net_income",
+            "net_income",
             "taxable_employment_income",
             "taxable_self_employment_income",
         ],
@@ -246,7 +247,7 @@ def test_relief_is_the_loss_within_net_income_and_the_cap(people, regions):
         relieved = (person["age"] < 75) * min(
             person["personal_pension_contributions"], max(3_600.0, earnings)
         )
-        ati = max(0.0, b["adjusted_net_income"][i] - relieved)
+        ati = max(0.0, b["net_income"][i] - relieved)
         cap = max(50_000.0, 0.25 * ati)
         # Generated taxpayers have no receipts, capital allowances or prior
         # losses. With unknown receipts, allowance treatment fully exempts a
@@ -255,20 +256,15 @@ def test_relief_is_the_loss_within_net_income_and_the_cap(people, regions):
         allowance = profit if profit <= 1_000 else 0.0
         ordinary = person["trading_loss"] > allowance
         expected = (
-            min(person["trading_loss"], cap, b["adjusted_net_income"][i])
-            if ordinary
-            else 0.0
+            min(person["trading_loss"], cap, b["net_income"][i]) if ordinary else 0.0
         )
         allowance_kept = 0.0 if ordinary else allowance
         relief = a["trade_loss_relief_against_general_income"][i]
         assert abs(relief - expected) <= tolerance(expected, ati), (person, relief)
         # Ordinary net income falls by the chosen relief or allowance.
         assert abs(
-            b["adjusted_net_income"][i]
-            - allowance_kept
-            - relief
-            - a["adjusted_net_income"][i]
-        ) <= tolerance(b["adjusted_net_income"][i]), person
+            b["net_income"][i] - allowance_kept - relief - a["net_income"][i]
+        ) <= tolerance(b["net_income"][i]), person
 
 
 @st.composite
@@ -727,7 +723,10 @@ def test_household_income_moves_only_through_its_channels(units):
     components = sorted(
         set(HBAI_HOUSEHOLD_NET_INCOME_ADDS + HBAI_HOUSEHOLD_NET_INCOME_SUBTRACTS)
     )
-    variables = components + ["household_market_income", "hbai_household_net_income"]
+    # HBAI income before the reset to zero: the channel identity holds for the
+    # sum of components, which the reset breaks once income crosses zero.
+    hbai = "hbai_household_net_income_before_reset_to_zero"
+    variables = components + ["household_market_income", hbai]
     a_sim = Simulation(situation=family_situation(units))
     b_sim = Simulation(situation=family_situation(without))
 
@@ -753,7 +752,7 @@ def test_household_income_moves_only_through_its_channels(units):
         if v in HBAI_CHANNELS
     )
     assert np.allclose(
-        a["hbai_household_net_income"] - b["hbai_household_net_income"],
+        a[hbai] - b[hbai],
         channels,
         atol=1,
     )

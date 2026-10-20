@@ -33,6 +33,12 @@
 #   https://obr.uk/box/the-long-run-difference-between-rpi-and-cpi-inflation/
 #   https://www.bankofengland.co.uk/monetary-policy/inflation
 
+metadata:
+  # Each value is the growth over a calendar year, dated 1 January, and
+  # processing reads it there, so a bare-year reform key names the calendar
+  # year (policyengine_uk/utils/dated_reforms.py).
+  calendar_year_series: true
+
 obr:
   rpi:
     description: Retail price index year-on-year growth.
@@ -655,7 +661,9 @@ obr:
         2022-01-01: 0.1019
         2023-01-01: 0.0532
         2024-01-01: 0.0372
-        # Forecast (2025-2030) from OBR EFO March 2026, Table A.1 nominal GDP minus population growth
+        # Forecast (2025-2030) from OBR EFO March 2026, Table A.1 nominal GDP minus population growth.
+        # Population growth here is ons.population (March 2025 vintage), not the
+        # lower growth implied by the March 2026 EFO; see ons.population.
         2025-01-01: 0.0438
         2026-01-01: 0.0292
         2027-01-01: 0.0323
@@ -678,6 +686,7 @@ obr:
         2023-01-01: -0.0060
         2024-01-01: 0.0273
         # Forecast (2025-2030) from OBR EFO March 2026, Table 1.12 minus population growth
+        # (ons.population, March 2025 vintage; see ons.population).
         2025-01-01: 0.0069
         2026-01-01: 0.0306
         2027-01-01: 0.0371
@@ -700,6 +709,7 @@ obr:
         2023-01-01: 0.1084
         2024-01-01: 0.0385
         # Forecast (2025-2030) from OBR EFO March 2026, Table 1.12 minus population growth
+        # (ons.population, March 2025 vintage; see ons.population).
         2025-01-01: 0.0275
         2026-01-01: 0.0358
         2027-01-01: 0.0474
@@ -816,6 +826,19 @@ obr:
 ons:
   population:
     description: Population year-on-year growth.
+    # 2022-2073 is the population growth row of the OBR's long-term economic
+    # determinants for the March 2025 EFO, published 19 June 2025 (#1305).
+    # The fiscal year starting in year t is stored at t-01-01, rounded to
+    # four decimals (2025-26's 0.7230% is 2025-01-01: 0.0072). The OBR notes
+    # that readings are at the start of the fiscal year or mid-year. To
+    # 2029-30 the series is the OBR's March 2025 forecast; from 2030-31 it is
+    # the migration category variant of the ONS 2022-based national
+    # population projections. The 2021 value predates #1305 and has no
+    # recorded source. This series is a March 2025 vintage. Calendar-year
+    # population growth implied by the March 2026 EFO economy tables (real GDP
+    # in Table 1.1 over real GDP per person in Table 1.5) is lower: 0.37% in
+    # 2025, against 0.72% here, and 0.30% to 0.36% a year in 2026-2030. The
+    # ONS has since published 2024-based projections (28 April 2026).
     values:
       2021-01-01: 0.004
       2022-01-01: 0.0093
@@ -874,8 +897,10 @@ ons:
       unit: /1
       label: Population growth
       reference:
-        - title: ONS Population Projections
-          href: https://www.ons.gov.uk/
+        - title: OBR, "Long-term economic determinants - March 2025 Economic and fiscal outlook" (19 June 2025), population growth row
+          href: https://obr.uk/supplementary-forecast-information-on-long-term-economic-determinants-and-personal-independence-payment-policy-costing/
+        - title: ONS, "National population projections - 2022-based" (migration category variant, used by the OBR from 2030-31)
+          href: https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationprojections/bulletins/nationalpopulationprojections/2022based
   household_interest_income:
     description: Household interest income year-on-year growth from ONS National Accounts D.41g.
     values:
@@ -1191,12 +1216,27 @@ ons:
 ofwat:
   water_bills:
     description: Water and sewerage bills year-on-year growth.
+    # Growth in the average household water and sewerage bill in England and
+    # Wales. Each value is the charging year starting in April, so 2025-01-01
+    # holds 2025-26.
+    # - 2022-2024: nominal growth in Ofwat's average bill, from the real
+    #   bills and CPIH in policyengine_uk/utils/water/forecast_water_bills.py.
+    # - 2025 (2025-26): 27%, the increase Ofwat reports for 2025-26 in its
+    #   29 January 2026 statement. It replaces the 26% forecast in Ofwat's
+    #   30 January 2025 statement.
+    # - 2026 (2026-27): 5.4%, the national average from Water UK's 28 January
+    #   2026 company charges (GBP 639, up GBP 33), confirmed by Ofwat the next day.
+    # - 2027-2029: projections from forecast_water_bills.py (#1239). They are
+    #   the customer-weighted mean of per-company bills before inflation, from
+    #   the CCW table of Ofwat's PR24 draft determinations, plus a hardcoded
+    #   CPIH path. The weights were in ofwat_increases.csv, which was never
+    #   committed, so these three values cannot be reproduced from the repo.
     values:
       2022-01-01: 0.052
       2023-01-01: 0.092
       2024-01-01: 0.044
-      2025-01-01: 0.26
-      2026-01-01: 0.055
+      2025-01-01: 0.27
+      2026-01-01: 0.054
       2027-01-01: 0.046
       2028-01-01: 0.045
       2029-01-01: 0.045
@@ -1204,10 +1244,14 @@ ofwat:
       unit: /1
       label: Water bills growth
       reference:
-        - title: Ofwat (and custom projections)
-          href: https://www.ofwat.gov.uk/price-review/
-        - title: Ofwat 2025-26 media statement
+        - title: Ofwat, "Ofwat responds to water sector average bill figures" (29 January 2026)
+          href: https://www.ofwat.gov.uk/ofwat-responds-to-water-sector-average-bill-figures/
+        - title: Water UK, "Record investment as average household water bills rise £33 a year from April" (28 January 2026)
+          href: https://www.water.org.uk/news-views-publications/news/record-investment-average-household-water-bills-rise-ps33-year-april
+        - title: Ofwat, "Average bills 2025/26 press statement" (30 January 2025)
           href: https://www.ofwat.gov.uk/average-bills-2025-26-press-statement/
+        - title: CCW, "Breakdown of water companies' bill increases 2025-30" (Ofwat PR24 draft determinations)
+          href: https://www.ccw.org.uk/our-work/price-review/how-much-will-my-water-and-sewerage-bills-increase-by-2030/breakdown-of-water-companies-bill-increases-2025-30/
 finance_ni:
   domestic_rates:
     description: Growth in the average Northern Ireland domestic rates bill (regional rate plus district rate), used to project the domestic_rates dataset input.

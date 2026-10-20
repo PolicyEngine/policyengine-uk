@@ -22,6 +22,7 @@ class hbai_benefits(Variable):
         "attendance_allowance",
         "afcs",
         "bsp",
+        "war_widows_pension",
         "carers_allowance",
         "dla",
         "iidb",

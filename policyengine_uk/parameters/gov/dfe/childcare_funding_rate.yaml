@@ -1,4 +1,7 @@
-description: The Department for Education converts childcare hours into expenses for childcare entitlement at these rates.
+description: >-
+  National-average English local-authority hourly funding used to value
+  childcare entitlements. These combined age-group averages are a model
+  valuation proxy, not individual provider fees or programme-specific rates.
 metadata:
   type: single_amount
   threshold_unit: year
@@ -8,17 +11,30 @@ metadata:
   reference:
     - title: House of Commons Library | Early years funding in England
       href: https://commonslibrary.parliament.uk/research-briefings/cbp-8052/
+    - title: DfE 2025 to 2026 early years national funding formulae technical note, Table 6 (historical, withdrawn)
+      href: https://www.gov.uk/government/publications/early-years-funding-2025-to-2026/2025-to-2026-early-years-national-funding-formulae-technical-note#table-6-2025-to-2026-national-average-of-local-authority-hourly-funding-rates
+    - title: DfE 2026 to 2027 early years national funding formulae technical note, Table 6
+      href: https://www.gov.uk/government/publications/early-years-funding-2026-to-2027/2026-to-2027-early-years-national-funding-formulae-technical-note#table-6-2026-to-2027-national-average-of-local-authority-hourly-funding-rates
 
+# Funding years run April to March. The existing annual model samples
+# 30 April; it retains its separate annual approximation of the hours rollout.
+# Later years continue to use the existing CPI projection, not official rates.
 brackets:
   - threshold:
       2015-01-01: 0
     amount:
       2024-04-01: 11.22
+      2025-04-01: 11.54
+      2026-04-01: 12.04
   - threshold:
       2015-01-01: 2
     amount:
       2024-04-01: 8.28
+      2025-04-01: 8.53
+      2026-04-01: 8.90
   - threshold:
       2015-01-01: 3
     amount:
       2024-04-01: 5.88
+      2025-04-01: 6.12
+      2026-04-01: 6.61
