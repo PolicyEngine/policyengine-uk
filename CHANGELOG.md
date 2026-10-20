@@ -1,3 +1,17 @@
+## [2.141.5] - 2026-10-20
+
+### Fixed
+
+- Means-test the Council Tax Reduction applicant and their partner rather than the benefit unit's claimant and partner, so a household head who is liable for the council tax but shares a benefit unit with a young couple is assessed on her own income, allowance, premiums and exemption.
+
+
+## [2.141.4] - 2026-10-20
+
+### Fixed
+
+- A before-load `Scenario` change to DfE, DHSC or DfT spending now constructs: `adjust_budgets` skips a year with no allocation instead of writing NaN, and scales each year's allocation by that year's own budget change without carrying an earlier year's change forward.
+
+
 ## [2.141.3] - 2026-10-20
 
 ### Fixed
