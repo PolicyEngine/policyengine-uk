@@ -264,3 +264,82 @@
         region: LONDON
   output:
     warm_home_discount: 0
+
+# HBAI counts the Warm Home Discount as miscellaneous income (DWP, HBAI
+# background information and methodology report FYE 2025). Council Tax is
+# set to zero so HBAI income is the benefit plus the rebate.
+
+- name: Rebate counts in HBAI income for a Universal Credit recipient in England
+  period: 2026
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        pension_credit: 0
+        universal_credit: 1000
+        housing_benefit: 0
+        esa_income: 0
+        jsa_income: 0
+        income_support: 0
+    households:
+      household:
+        members: [person]
+        region: LONDON
+        council_tax: 0
+  output:
+    warm_home_discount: 150
+    hbai_household_net_income: 1150
+    hbai_household_net_income_ahc: 1150
+
+- name: No rebate in HBAI income for a Universal Credit recipient in Scotland
+  period: 2026
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        pension_credit: 0
+        universal_credit: 1000
+        housing_benefit: 0
+        esa_income: 0
+        jsa_income: 0
+        income_support: 0
+    households:
+      household:
+        members: [person]
+        region: SCOTLAND
+        council_tax: 0
+  output:
+    warm_home_discount: 0
+    hbai_household_net_income: 1000
+    hbai_household_net_income_ahc: 1000
+
+- name: No rebate in HBAI income for income-based JSA in 2026-27
+  period: 2026
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        pension_credit: 0
+        universal_credit: 0
+        housing_benefit: 0
+        esa_income: 0
+        jsa_income: 1000
+        income_support: 0
+    households:
+      household:
+        members: [person]
+        region: LONDON
+        council_tax: 0
+  output:
+    warm_home_discount: 0
+    hbai_household_net_income: 1000
+    hbai_household_net_income_ahc: 1000

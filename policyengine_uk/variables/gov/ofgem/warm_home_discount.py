@@ -12,7 +12,9 @@ class warm_home_discount(Variable):
         "receives a qualifying means-tested benefit; the rebate is paid "
         "without a claim. Suppliers fund the rebate from their customers' "
         "bills, so it is not government spending, and it is not included in "
-        "household_benefits or household_net_income. The model doesn't check "
+        "household_benefits or household_net_income. HBAI counts it as "
+        "miscellaneous income, so it is included in "
+        "hbai_household_net_income; miscellaneous_income excludes it. The model doesn't check "
         "the supplier, account-holder or property conditions, and doesn't "
         "calculate the separate Scottish scheme."
     )
