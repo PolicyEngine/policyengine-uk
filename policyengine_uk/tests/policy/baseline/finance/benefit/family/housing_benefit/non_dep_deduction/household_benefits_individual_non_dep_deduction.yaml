@@ -347,3 +347,33 @@
     child_benefit: 0
   output:
     household_benefits_individual_non_dep_deduction: 19.65 * 52
+
+- name: 2025-26 second band in remunerative work
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    age: 30
+    total_income: 10_400 # 200 a week
+    weekly_hours: 35
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+  output:
+    household_benefits_individual_non_dep_deduction: 45.15 * 52
+
+- name: 2025-26 middle band in remunerative work
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    age: 30
+    total_income: 20_800 # 400 a week
+    weekly_hours: 35
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+  output:
+    household_benefits_individual_non_dep_deduction: 101.35 * 52

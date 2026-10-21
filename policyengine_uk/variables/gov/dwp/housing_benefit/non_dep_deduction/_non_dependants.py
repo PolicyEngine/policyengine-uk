@@ -36,14 +36,20 @@ STATUTORY_PAY_EARNINGS = [
 ]
 
 # Benefits the benefit cap counts (Welfare Reform Act 2012 s.96(10)), other than
-# Housing Benefit. Bereavement allowance and the widow's benefits have no input.
-CAPPED_BENEFITS_EXCEPT_HOUSING_BENEFIT = [
+# Housing Benefit, awarded to the family. Bereavement allowance and the
+# widow's benefits have no input.
+CAPPED_FAMILY_BENEFITS_EXCEPT_HOUSING_BENEFIT = [
     "child_benefit",
     "child_tax_credit",
     "jsa_income",
     "income_support",
     "esa_income",
     "universal_credit_pre_benefit_cap",
+]
+
+# Capped benefits a person receives in their own right. Only the single person's
+# or couple's count (UC Regs 2013 reg 79(1)).
+CAPPED_PERSONAL_BENEFITS = [
     "jsa_contrib",
     "incapacity_benefit",
     "esa_contrib",
@@ -93,7 +99,13 @@ def universal_credit_after_benefit_cap(benunit, period):
     receive (UC reg 80(2A) counts it as nil in any case). The award is
     reduced by the excess minus the childcare costs element, and not at all
     where that element is greater than the excess (reg 81(1)-(2))."""
-    capped = add(benunit, period, CAPPED_BENEFITS_EXCEPT_HOUSING_BENEFIT)
+    person = benunit.members
+    capped = add(benunit, period, CAPPED_FAMILY_BENEFITS_EXCEPT_HOUSING_BENEFIT) + (
+        benunit.sum(
+            add(person, period, CAPPED_PERSONAL_BENEFITS)
+            * person("is_claimant_or_partner", period)
+        )
+    )
     excess = max_(0, capped - benunit("uc_benefit_cap", period))
     reduction = max_(0, excess - benunit("uc_childcare_element", period))
     return max_(0, benunit("universal_credit_pre_benefit_cap", period) - reduction)

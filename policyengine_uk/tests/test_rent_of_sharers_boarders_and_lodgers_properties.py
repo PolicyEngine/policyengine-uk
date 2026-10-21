@@ -19,7 +19,10 @@ Invariants, for any generated population of households:
    most one family per household counts the household's non-dependants for
    Universal Credit, it is liable for the household's rent, and only it has
    Universal Credit deductions; Housing Benefit deductions over the families
-   liable for the rent sum to the household's non-dependants' deductions; a
+   liable for the rent sum to the household's non-dependant deductions (one
+   per couple, the higher: HB Regs 2006 reg 74(3)) times the share of the
+   rent borne by families whose claimant or partner is not exempt (reg
+   74(6)), and never exceed the sum of individual deductions; a
    boarder's or lodger's family has no Universal Credit or Housing Benefit
    deductions; no sharer, boarder or lodger is a Council Tax Reduction
    non-dependant.
