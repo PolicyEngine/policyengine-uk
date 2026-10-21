@@ -167,7 +167,7 @@ profit_money = st.floats(min_value=-20_000, max_value=60_000, allow_nan=False)
 # £10,608.52 as described in _over_limit: gainfully employed.
 @example(pay=10_608.52, profit=0.0, pension_share=0.0)
 # A trading loss, with earnings below the limit: the derandomized draws have
-# neither.
+# no real loss and no earnings between a few pence and the limit.
 @example(pay=8_000.0, profit=-5_000.0, pension_share=0.1)
 def test_bounds_and_differential(pay, profit, pension_share):
     pension = pay * pension_share
