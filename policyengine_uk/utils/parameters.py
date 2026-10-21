@@ -177,8 +177,20 @@ REMOVED_PARAMETERS = {
     "gov.dwp.state_pension.age.female": RemovedParameter(
         "removed female State Pension age parameter", _STATE_PENSION_AGE_REPLACEMENT
     ),
+    "gov.dwp.carer_premium.couple": RemovedParameter(
+        "removed couple carer premium parameter",
+        "The carer premium is calculated per qualifying claimant or partner. "
+        "Change gov.dwp.carer_premium.single (the per-person weekly amount) instead.",
+    ),
     "gov.simulation.labour_supply_responses.obr_elasticities": RemovedParameter(
         "removed OBR elasticities switch", _OBR_ELASTICITIES_REPLACEMENT
+    ),
+    "gov.dwp.pension_credit.income.savings_credit_excluded_sources": RemovedParameter(
+        "removed duplicate Savings Credit excluded-income list",
+        "The model never read it. Change "
+        "gov.dwp.pension_credit.savings_credit.excluded_income, the list of "
+        "income that is not qualifying income for Savings Credit (SPC Regs "
+        "2002 reg 9), instead.",
     ),
 }
 

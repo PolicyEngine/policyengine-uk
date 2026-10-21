@@ -1,5 +1,5 @@
-"""Index the personal allowance, the basic rate limit and the equivalent NICs
-thresholds by September CPI once their freeze ends.
+"""Index the personal allowance, basic and savings starting-rate limits, and
+the equivalent NICs thresholds by September CPI once their freeze ends.
 
 Income tax
 ----------
@@ -11,6 +11,13 @@ rounded up to a multiple of £10, and that increase is added to the previous
 allowance (s57(3), Steps 1 to 3). s21(1) and (3) raise the basic rate limit by
 the same percentage and round the result up to a multiple of £100. Each year
 starts from the rounded amount of the year before.
+
+s21(3A) similarly raises the savings starting-rate limit, but rounds the
+full result up to a multiple of £10. Finance Act 2026 s9 fixes that annual
+limit at £5,000 through 2030-31 and disapplies s21 for those years. From
+2031-32, ``index_savings_starting_rate_limit`` applies the statutory step
+to the previous rounded year's limit. Future September CPI is a model
+forecast, not a known statutory future amount.
 
 Finance Act 2021 s5, as amended by Finance Act 2023 s5 and Finance Act 2026
 s10, sets the basic rate limit at £37,700 and the personal allowance at
@@ -85,7 +92,7 @@ The values are computed when the parameters are processed. Every reform route
 (a reform dict, ``parameter_changes``, ``Reform.from_dict``) writes its changes
 onto the parameters before they are processed, as does a simulation modifier
 that resets and reprocesses them (as ``no_economic_assumptions`` does), so the
-values are rebuilt with the change: a changed CPI forecast moves all seven,
+values are rebuilt with the change: a changed CPI forecast moves all eight,
 and a change to the personal allowance or basic rate limit after 2030-31 also
 moves the aligned NICs thresholds (see ``policyengine_uk.utils.dated_reforms``).
 The exceptions edit the processed parameters, so they do not move the others:
@@ -105,6 +112,8 @@ WEEKS_IN_YEAR = 52
 # ITA 2007 s57(3) Step 2 and s21(3) Step 2.
 PERSONAL_ALLOWANCE_MULTIPLE = Decimal(10)
 BASIC_RATE_LIMIT_MULTIPLE = Decimal(100)
+# ITA 2007 s21(3A) Step 2.
+SAVINGS_STARTING_RATE_LIMIT_MULTIPLE = Decimal(10)
 PENNY = Decimal("0.01")
 # Fiscal-year conversion reads each tax year's value at 30 April.
 FISCAL_YEAR_SAMPLE_MONTH_DAY = "04-30"
@@ -124,6 +133,7 @@ FILES_LAST_TAX_YEAR = "files_last_tax_year"
 INDEXED_THRESHOLDS = (
     "gov.hmrc.income_tax.allowances.personal_allowance.amount",
     "gov.hmrc.income_tax.rates.uk[1].threshold",
+    "gov.hmrc.income_tax.rates.savings_starter_rate.allowance",
     "gov.hmrc.national_insurance.class_1.employee_scale[1].threshold",
     "gov.hmrc.national_insurance.class_1.employee_scale[2].threshold",
     "gov.hmrc.national_insurance.class_1.employer_scale[1].threshold",
@@ -160,6 +170,14 @@ def index_basic_rate_limit(previous: Decimal, increase: Decimal) -> Decimal:
         return previous
     step_1 = previous * (1 + increase)
     return round_up_to_multiple(step_1, BASIC_RATE_LIMIT_MULTIPLE)
+
+
+def index_savings_starting_rate_limit(previous: Decimal, increase: Decimal) -> Decimal:
+    """ITA 2007 s21(1) and (3A): next year's annual savings starting limit."""
+    if increase <= 0:
+        return previous
+    amount = previous * (1 + increase)
+    return round_up_to_multiple(amount, SAVINGS_STARTING_RATE_LIMIT_MULTIPLE)
 
 
 def weekly_equivalent(annual: Decimal) -> Decimal:
@@ -311,9 +329,13 @@ def add_threshold_indexation(parameters: ParameterNode) -> ParameterNode:
     class_4 = parameters.gov.hmrc.national_insurance.class_4
     personal_allowance_parameter = income_tax.allowances.personal_allowance.amount
     basic_rate_limit_parameter = income_tax.rates.uk.brackets[1].threshold
+    savings_starting_rate_limit_parameter = (
+        income_tax.rates.savings_starter_rate.allowance
+    )
     indexed = [
         personal_allowance_parameter,
         basic_rate_limit_parameter,
+        savings_starting_rate_limit_parameter,
         class_1.employee_scale.brackets[1].threshold,
         class_1.employee_scale.brackets[2].threshold,
         class_1.employer_scale.brackets[1].threshold,
@@ -333,6 +355,12 @@ def add_threshold_indexation(parameters: ParameterNode) -> ParameterNode:
     basic_rate_limit = tax_year_path(
         basic_rate_limit_parameter, years, increases, index_basic_rate_limit
     )
+    savings_starting_rate_limit = tax_year_path(
+        savings_starting_rate_limit_parameter,
+        years,
+        increases,
+        index_savings_starting_rate_limit,
+    )
     higher_rate_threshold = {
         year: personal_allowance[year] + basic_rate_limit[year] for year in years
     }
@@ -345,6 +373,9 @@ def add_threshold_indexation(parameters: ParameterNode) -> ParameterNode:
 
     write_unstated_tax_years(personal_allowance_parameter, personal_allowance)
     write_unstated_tax_years(basic_rate_limit_parameter, basic_rate_limit)
+    write_unstated_tax_years(
+        savings_starting_rate_limit_parameter, savings_starting_rate_limit
+    )
     write_unstated_tax_years(
         class_4.contribution_scale.brackets[1].threshold, personal_allowance
     )

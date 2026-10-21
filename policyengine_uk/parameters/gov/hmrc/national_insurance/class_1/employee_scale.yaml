@@ -8,12 +8,16 @@ brackets:
       values:
         0001-01-01: 0
       metadata:
+        household: false
+        economy: false
         unit: currency-GBP
         period: week
     rate:
       values:
         0001-01-01: 0
       metadata:
+        household: false
+        economy: false
         unit: /1
   - threshold:
       description: The Primary Threshold is the lower bound for the main rate of Class 1 National Insurance.

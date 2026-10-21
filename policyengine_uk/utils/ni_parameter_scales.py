@@ -156,7 +156,28 @@ class LegacyNIParameter(Parameter):
         return leaf
 
 
+class LegacyNIDiscoveryParameter(LegacyNIParameter):
+    """Presentation-only alias; direct lookup keeps canonical metadata identity."""
+
+    @property
+    def metadata(self):
+        return {**self.target.metadata, "household": False, "economy": False}
+
+
 class NICompatibilityNode(ParameterNode):
+    def get_descendants(self):
+        # Enumerators such as the API expose both stable public IDs, but only
+        # the canonical leaf is an editable discovery control. The registered
+        # child itself is unchanged for get_parameter/manual-child updates.
+        for child in self.children.values():
+            if isinstance(child, LegacyNIParameter):
+                view = LegacyNIDiscoveryParameter(child.name, child.target_path)
+                view.parent = child.parent
+                yield view
+            else:
+                yield child
+            yield from child.get_descendants()
+
     def clone(self):
         clone = empty_clone(self)
         clone.__dict__ = self.__dict__.copy()

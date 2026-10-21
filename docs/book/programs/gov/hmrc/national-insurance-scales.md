@@ -71,12 +71,23 @@ references, units and uprating metadata supply the legacy scalar views. The NI
 threshold generator writes to these canonical leaves. Parameter processing visits
 each numerical history once; metadata discovery also exposes the legacy names.
 
-Metadata consumers should map a legacy name to its canonical leaf and present
-one control for that history. Both spellings remain discoverable, so listing
-every metadata record can duplicate a control. The pinned, source-extracted API
-contract tests cover parameter records and updates; they do not verify a
-deployed API or the app's tree, search and control presentation. Consumer owners
-must check those surfaces before relying on the migration in a UI.
+Metadata retains both primitive IDs and their histories and units. Discovery
+marks the ten legacy scalar views and the six fixed-zero leaves with
+`household: false` and `economy: false`; the ten canonical contribution rate and
+threshold leaves remain visible. Direct legacy lookup still resolves the same
+canonical metadata and values, while enumeration supplies presentation-only
+views. Hiding a fixed-zero control does not change its input-validation rule.
+
+The pinned, source-extracted API contract tests cover these flags, all other
+record fields and update routes. They do not verify a deployed API or the app's
+tree, search and control presentation. Consumer owners must check those surfaces
+before relying on the migration in a UI.
+
+The separate full-year Category A director scale and factual-input gate for
+2022–23 retain their constrained annual calculation and monthly allocation.
+They are not replaced by the ordinary employee schedule. The savings starting
+rate remains an annual limit, indexed alongside the five canonical NI threshold
+writers without treating it as a weekly amount.
 
 For NI rate reforms in behavioural scenarios, see
 [Labour supply dynamics](../../../usage/dynamics.md).

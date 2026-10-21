@@ -6,6 +6,11 @@ We're grateful to the [UKMOD](https://www.iser.essex.ac.uk/research/projects/ukm
 
 Code examples and outputs are re-run automatically on each new version of PolicyEngine-UK.
 
+## Survey data
+
+For field-specific import rules and the distinction between raw survey codes and
+model inputs, see [negative FRS amounts](assumptions/frs-negative-values.md).
+
 ## Short demo
 
 ### Baseline estimates

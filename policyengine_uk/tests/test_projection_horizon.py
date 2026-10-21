@@ -1,8 +1,9 @@
 """How far a single-year dataset is projected, and what serves later years.
 
 A single-year dataset is projected to ``PROJECTION_END_YEAR``: each year up to
-it is a dataset year whose inputs ``apply_single_year_uprating`` grows from the
-year before. After it, policyengine-core serves each stored input from the last
+it is a dataset year. Most indexed inputs grow from the year before; residential
+stocks use the original observation and cumulative house-price index at the
+model's storage precision. After it, policyengine-core serves each input from the last
 projected year: a variable with a formula is calculated by it, one with an
 ``uprating`` attribute is scaled by that index, and any other is held at its
 last projected value. Rent and council tax have no ``uprating`` attribute, so
@@ -138,6 +139,19 @@ def _council_tax_growth(region, year):
     return 0.0 if series is None else GROWTH.obr.council_tax.get_child(series)(year)
 
 
+RESIDENTIAL_STOCKS = (
+    "main_residence_value",
+    "other_residential_property_value",
+)
+
+
+def _residential_stock_level(observed, variable, year):
+    """Independent level oracle from the original observation and explicit HPI."""
+    hpi = parameters.get_child("gov.economic_assumptions.indices.obr.house_prices")
+    observed = np.asarray(observed, dtype=system.variables[variable].dtype)
+    return observed * (hpi(year) / hpi(BASE_YEAR))
+
+
 @pytest.fixture(scope="module")
 def projected():
     return extend_single_year_dataset(_dataset(), parameters)
@@ -162,35 +176,32 @@ def test_every_year_to_the_horizon_is_a_dataset_year(projected, sim):
 
 def test_each_singly_indexed_input_grows_by_its_index_every_year(projected):
     """For every variable uprating_indices.yaml lists and every projected
-    year, each record's value is last year's times one plus the index."""
+    year, check its index: residential stocks use the original observation
+    and cumulative HPI; other inputs grow from the previous year's raw YoY."""
+    observed = _dataset()
     for year in range(BASE_YEAR + 1, PROJECTION_END_YEAR + 1):
         for variable, index in INDEX_OF.items():
-            previous = _table(projected[year - 1], variable)[variable].to_numpy()
             current = _table(projected[year], variable)[variable].to_numpy()
-            growth = parameters.get_child(index)(year)
-            assert current == pytest.approx(previous * (1 + growth)), (
-                variable,
-                year,
-            )
+            if variable in RESIDENTIAL_STOCKS:
+                original = _table(observed, variable)[variable].to_numpy()
+                expected = _residential_stock_level(original, variable, year)
+            else:
+                previous = _table(projected[year - 1], variable)[variable].to_numpy()
+                growth = parameters.get_child(index)(year)
+                expected = previous * (1 + growth)
+            assert current == pytest.approx(expected), (variable, year)
 
 
 def test_unmapped_inputs_preserve_legacy_years_and_grow_after_2030(projected):
     """Previously unmapped columns keep their old values through 2030, then
     grow by the same cumulative-index ratio Core used beyond that year.
+    Columns uprating_indices.yaml now lists (the debts, ISAs, lodger and
+    boarder rent, gross receipts, salary sacrifice, water bills and service
+    charges) grow every year instead, so they are no longer fallbacks.
     """
     assert {
-        "mortgage_debt",
-        "consumer_debt",
-        "rent_paid_as_boarder",
-        "self_employment_gross_receipts",
-        "rent_paid_as_lodger",
         "rail_usage",
-        "stocks_and_shares_isa",
-        "cash_isa",
-        "water_and_sewerage_charges",
         "employee_pension_contributions_reported",
-        "pension_contributions_via_salary_sacrifice",
-        "housing_service_charges",
     } <= set(FALLBACK_INDEX_OF)
     for year in range(BASE_YEAR + 1, PROJECTION_END_YEAR + 1):
         for variable, index_name in FALLBACK_INDEX_OF.items():
@@ -258,17 +269,25 @@ def test_rent_and_council_tax_grow_every_projected_year(projected):
 )
 def test_growth_ratio_is_one_plus_the_index(amounts, year, variable):
     """For any positive amounts, any projected year and any singly indexed
-    variable, value / last year's value = 1 + the index, record by record:
-    the growth depends on neither the amount nor the other records."""
+    variable, check its annual growth record by record. Residential ratios
+    come from original-observation cumulative HPI levels at storage precision;
+    every other variable retains its raw one-plus-YoY growth expectation."""
     projected = extend_single_year_dataset(
         _dataset(np.array(amounts)), parameters, end_year=year
     )
-    ratio = (
-        _table(projected[year], variable)[variable].to_numpy()
-        / _table(projected[year - 1], variable)[variable].to_numpy()
-    )
-    index = parameters.get_child(INDEX_OF[variable])(year)
-    assert ratio == pytest.approx(np.full(len(amounts), 1 + index))
+    current = _table(projected[year], variable)[variable].to_numpy()
+    previous = _table(projected[year - 1], variable)[variable].to_numpy()
+    ratio = current / previous
+    if variable in RESIDENTIAL_STOCKS:
+        expected_current = _residential_stock_level(amounts, variable, year)
+        expected_previous = _residential_stock_level(amounts, variable, year - 1)
+        assert current == pytest.approx(expected_current)
+        assert previous == pytest.approx(expected_previous)
+        expected_ratio = expected_current / expected_previous
+    else:
+        index = parameters.get_child(INDEX_OF[variable])(year)
+        expected_ratio = np.full(len(amounts), 1 + index)
+    assert ratio == pytest.approx(expected_ratio)
 
 
 @settings(max_examples=10, deadline=None, derandomize=True)

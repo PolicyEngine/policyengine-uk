@@ -68,7 +68,10 @@ def test_live_parameter_metadata_preserves_legacy_scalar_records():
     actual = build_parameters(
         SimpleNamespace(tax_benefit_system=CountryTaxBenefitSystem())
     )
-    assert {name: actual[name] for name in expected} == expected
+    assert {name: actual[name] for name in expected} == {
+        name: {**record, "household": False, "economy": False}
+        for name, record in expected.items()
+    }
     json.dumps(actual, allow_nan=False)
 
 

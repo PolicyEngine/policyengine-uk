@@ -1,0 +1,212 @@
+# Current GB pensioner income exclusions: England Sch1 para16(1)(j)(vi),
+# Wales Sch1 para10(1)(j)(vi), Scotland reg27(1)(j)(vii).
+# Model2026: eldest Child Benefit27.05*52=1406.60; aged allowance256*52=13312.
+# These genuine claim/takeup inputs use the general rules, not PC overrides.
+- name: England pensioner Child Benefit is excluded before the CTR taper
+  # Aged 72: State Pension age was reached in 2019, before 1 April 2021, so
+  # the higher personal allowance applies (SI 2012/2885 Sch 2 para 1).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent: {age: 72, is_parent: true, state_pension: 16000}
+      child: {age: 9}
+    benunits:
+      family:
+        members: [parent, child]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      home:
+        members: [parent, child]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 3000
+        savings: 0
+  output:
+    child_benefit: 1406.60
+    income_tax: [686, 0]
+    council_tax_reduction_pensioner: true
+    in_receipt_of_guarantee_credit: false
+    in_receipt_of_savings_credit_only: false
+    council_tax_reduction_applicable_income: 15314
+    council_tax_reduction_applicable_amount: 13312
+    # 3000 - .2*(16000 - 686 - 13312) = 2599.60.
+    council_tax_benefit: 2599.60
+    council_tax_reduction: 2599.60
+
+- name: Scottish pensioner Child Benefit does not reduce the final CTR award
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent: {age: 70, is_parent: true, state_pension: 12000}
+      child: {age: 9}
+    benunits:
+      family: {members: [parent, child], would_claim_pc: false, would_claim_uc: false}
+    households:
+      home:
+        members: [parent, child]
+        region: SCOTLAND
+        local_authority: GLASGOW_CITY
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 3000
+        savings: 0
+  output:
+    child_benefit: 1406.60
+    council_tax_reduction_pensioner: true
+    council_tax_reduction_applicable_income: 12000
+    council_tax_benefit: 3000
+    council_tax_reduction: 3000
+
+- name: Welsh pensioner Child Benefit does not reduce the final CTR award
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent: {age: 70, is_parent: true, state_pension: 12000}
+      child: {age: 9}
+    benunits:
+      family: {members: [parent, child], would_claim_pc: false, would_claim_uc: false}
+    households:
+      home:
+        members: [parent, child]
+        region: WALES
+        local_authority: CARDIFF
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 3000
+        savings: 0
+  output:
+    child_benefit: 1406.60
+    council_tax_reduction_pensioner: true
+    council_tax_reduction_applicable_income: 12000
+    council_tax_benefit: 3000
+    council_tax_reduction: 3000
+
+- name: Not claiming Child Benefit preserves the pensioner general-rule income
+  # Aged 72: State Pension age was reached in 2019, before 1 April 2021, so
+  # the higher personal allowance applies (SI 2012/2885 Sch 2 para 1).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent: {age: 72, is_parent: true, state_pension: 16000}
+      child: {age: 9}
+    benunits:
+      family:
+        members: [parent, child]
+        would_claim_pc: false
+        would_claim_uc: false
+        would_claim_child_benefit: false
+    households:
+      home:
+        members: [parent, child]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 3000
+        savings: 0
+  output:
+    child_benefit: 0
+    council_tax_reduction_applicable_income: 15314
+    council_tax_reduction: 2599.60
+
+- name: Excluding pensioner Child Benefit retains the zero floor and liability cap
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent: {age: 70, is_parent: true, personal_pension_contributions: 4000}
+      child: {age: 9}
+    benunits:
+      family: {members: [parent, child], would_claim_pc: false, would_claim_uc: false}
+    households:
+      home:
+        members: [parent, child]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 3000
+        savings: 5000
+  output:
+    child_benefit: 1406.60
+    council_tax_reduction_pensioner: true
+    council_tax_reduction_applicable_income: 0
+    council_tax_reduction: 3000
+
+- name: A Guarantee Credit family still uses the whole-income disregard
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent: {age: 80, is_parent: true}
+      child: {age: 9}
+    benunits:
+      family: {members: [parent, child], would_claim_pc: true, would_claim_uc: false}
+    households:
+      home:
+        members: [parent, child]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 3000
+        savings: 0
+  output:
+    child_benefit: 1406.60
+    in_receipt_of_guarantee_credit: true
+    council_tax_reduction_applicable_income: 0
+    council_tax_reduction: 3000
+
+- name: Northern Ireland intermediate income is preserved outside this GB change
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent: {age: 70, is_parent: true, state_pension: 12000}
+      child: {age: 9}
+    benunits:
+      family: {members: [parent, child], would_claim_pc: false, would_claim_uc: false}
+    households:
+      home:
+        members: [parent, child]
+        region: NORTHERN_IRELAND
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 3000
+        savings: 0
+  output:
+    child_benefit: 1406.60
+    council_tax_reduction_applicable_income: 13406.60
+    council_tax_reduction_scheme_supported: false
+    council_tax_reduction: 0
+
+- name: Pensioner Child Benefit exclusion keeps SSP and SMP counted once as earnings
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older: {age: 70, is_parent: true, state_pension: 12000, statutory_sick_pay: 1000}
+      partner: {age: 30, is_parent: true, gender: FEMALE, statutory_maternity_pay: 2000}
+      baby: {age: 0}
+    benunits:
+      family:
+        members: [older, partner, baby]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      home:
+        members: [older, partner, baby]
+        region: LONDON
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 3000
+        savings: 0
+  output:
+    child_benefit: 1406.60
+    council_tax_reduction_pensioner: true
+    income_tax: [0, 0, 0]
+    council_tax_reduction_pensioner_earnings_disregard: 520
+    # Default marriage election removes the otherwise86tax.
+    # 12000 + 1000 + 2000 - 0 tax - 10*52 disregard = 14480.
+    council_tax_reduction_applicable_income: 14480
+    council_tax_reduction: 3000

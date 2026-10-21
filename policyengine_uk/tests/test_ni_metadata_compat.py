@@ -39,7 +39,7 @@ def test_actual_core_get_parameter_api_normalization_and_update(path, record_pro
             Path(__file__).parent / "fixtures/ni_legacy_parameter_metadata.json"
         ).read_text()
     )["parameters"][OLD]
-    assert actual[OLD] == expected
+    assert actual[OLD] == {**expected, "household": False, "economy": False}
     assert actual[NEW] == {**expected, "parameter": NEW}
     alias = get_parameter(system.parameters, OLD)
     canonical = get_parameter(system.parameters, NEW)
@@ -84,3 +84,58 @@ def test_exact_pinned_json_helper_handles_nonfinite_nested_values():
     assert get_safe_json({"value": [float("inf"), float("-inf"), None, 0.08]}) == {
         "value": ["Infinity", "-Infinity", None, 0.08]
     }
+
+
+# Only these discovery flags intentionally differ from the frozen H record.
+HIDDEN_DISCOVERY_PATHS = (
+    "gov.hmrc.national_insurance.class_1.rates.employee.main",
+    "gov.hmrc.national_insurance.class_1.rates.employee.additional",
+    "gov.hmrc.national_insurance.class_1.thresholds.primary_threshold",
+    "gov.hmrc.national_insurance.class_1.thresholds.upper_earnings_limit",
+    "gov.hmrc.national_insurance.class_1.rates.employer",
+    "gov.hmrc.national_insurance.class_1.thresholds.secondary_threshold",
+    "gov.hmrc.national_insurance.class_4.rates.main",
+    "gov.hmrc.national_insurance.class_4.rates.additional",
+    "gov.hmrc.national_insurance.class_4.thresholds.lower_profits_limit",
+    "gov.hmrc.national_insurance.class_4.thresholds.upper_profits_limit",
+    "gov.hmrc.national_insurance.class_1.employee_scale[0].threshold",
+    "gov.hmrc.national_insurance.class_1.employee_scale[0].rate",
+    "gov.hmrc.national_insurance.class_1.employer_scale[0].threshold",
+    "gov.hmrc.national_insurance.class_1.employer_scale[0].rate",
+    "gov.hmrc.national_insurance.class_4.contribution_scale[0].threshold",
+    "gov.hmrc.national_insurance.class_4.contribution_scale[0].rate",
+)
+
+
+@pytest.mark.parametrize("path", HIDDEN_DISCOVERY_PATHS)
+def test_fixed_zero_and_legacy_discovery_controls_are_hidden(path):
+    actual = build_parameters(
+        SimpleNamespace(tax_benefit_system=CountryTaxBenefitSystem())
+    )
+    assert actual[path]["household"] is False
+    assert actual[path]["economy"] is False
+
+
+def test_discovery_views_do_not_hide_or_mutate_canonical_controls():
+    from policyengine_uk.utils.ni_parameter_scales import NI_LEGACY_PATHS
+
+    system = CountryTaxBenefitSystem()
+    records = build_parameters(SimpleNamespace(tax_benefit_system=system))
+    # Scope identity to the current gov tree, excluding the named baseline copy.
+    discovered = {item.name: item for item in system.parameters.gov.get_descendants()}
+    for old, new in NI_LEGACY_PATHS.items():
+        alias = get_parameter(system.parameters, old)
+        canonical = get_parameter(system.parameters, new)
+        assert alias.metadata is canonical.metadata
+        assert alias.values_list is canonical.values_list
+        assert records[new]["household"] is True
+        assert records[new]["economy"] is True
+        assert records[old] == {
+            **records[new],
+            "parameter": old,
+            "household": False,
+            "economy": False,
+        }
+        assert discovered[old] is not alias
+        assert discovered[old].metadata is not canonical.metadata
+        assert discovered[new] is canonical

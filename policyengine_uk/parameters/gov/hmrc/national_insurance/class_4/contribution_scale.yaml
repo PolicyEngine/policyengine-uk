@@ -8,12 +8,16 @@ brackets:
       values:
         0001-01-01: 0
       metadata:
+        household: false
+        economy: false
         unit: currency-GBP
         period: year
     rate:
       values:
         0001-01-01: 0
       metadata:
+        household: false
+        economy: false
         unit: /1
   - threshold:
       description: The Lower Profits Limit is the threshold at which self-employed earners pay the main Class 4 National Insurance rate.

@@ -408,6 +408,9 @@ def synthetic_parameters(last_years, rates, horizon, bases):
                         }
                     },
                     "rates": {
+                        "savings_starter_rate": {
+                            "allowance": series(5_000, 2021, 2030)
+                        },
                         "uk": {
                             "brackets": [
                                 {
@@ -424,7 +427,7 @@ def synthetic_parameters(last_years, rates, horizon, bases):
                                     ),
                                 },
                             ]
-                        }
+                        },
                     },
                 },
                 "national_insurance": {
@@ -827,3 +830,23 @@ def test_income_tax_and_nics_use_the_indexed_thresholds_in_2031(system):
         assert primary[i] == pytest.approx(expected_primary, abs=0.02), income
         assert additional[i] == pytest.approx(expected_additional, abs=0.02), income
     assert np.all(np.diff(income_tax) >= 0)
+
+
+def test_canonical_threshold_registration_keeps_incoming_savings_writer():
+    """The merged indexation owns eight unique paths, including annual savings."""
+    from policyengine_uk.parameters.gov.hmrc.create_threshold_indexation import (
+        INDEXED_THRESHOLDS,
+    )
+
+    expected = {
+        "gov.hmrc.income_tax.allowances.personal_allowance.amount",
+        "gov.hmrc.income_tax.rates.uk[1].threshold",
+        "gov.hmrc.income_tax.rates.savings_starter_rate.allowance",
+        "gov.hmrc.national_insurance.class_1.employee_scale[1].threshold",
+        "gov.hmrc.national_insurance.class_1.employee_scale[2].threshold",
+        "gov.hmrc.national_insurance.class_1.employer_scale[1].threshold",
+        "gov.hmrc.national_insurance.class_4.contribution_scale[1].threshold",
+        "gov.hmrc.national_insurance.class_4.contribution_scale[2].threshold",
+    }
+    assert len(INDEXED_THRESHOLDS) == len(expected)
+    assert set(INDEXED_THRESHOLDS) == expected
