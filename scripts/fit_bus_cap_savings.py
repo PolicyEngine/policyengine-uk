@@ -31,7 +31,10 @@ FACTS = {
     "january_2025_step": (0.10, 0.01, "absolute"),
     # Funding of "over GBP 150 million" for the GBP 3 cap in 2025 (GBP m).
     "cap_3_in_2025": (150, 0.20, "relative"),
-    # GBP 400 million backing the GBP 2 cap in 2027 (GBP m).
+    # GBP 400 million backing the GBP 2 cap in 2027 (GBP m), read as GBP 2
+    # against no cap: the GBP 3 scheme is funded only to December 2026 and the
+    # GBP 2 scheme replaces it. Read as GBP 2 against a continued GBP 3 cap, the
+    # fitted table gives about GBP 247m, 38% below (see UNFITTED below).
     "cap_2_in_2027": (400, 0.20, "relative"),
     # Frontier Economics and SYSTRA for DfT, Table 6: all single tickets
     # averaged GBP 2.15 before the cap; those above GBP 2 averaged GBP 2.73,
@@ -43,10 +46,41 @@ FACTS = {
 }
 
 
+# Published figures the fit reports but does not target (GBP m).
+UNFITTED = {
+    # BUS05bi fare cap support for 2024-25, the benchmark year: GBP 2 for 270
+    # days, then GBP 3. Grant per fare-paying boarding rose 78% on 2023-24
+    # while fares rose 3% to 7% and the cap rose for the last quarter, so the
+    # figure may hold more than that year's forgone fares (timing or coverage
+    # of payments, not checked). The 2023-24 grant and the two announced
+    # figures all put a full year at GBP 2 near GBP 0.3bn, not GBP 0.6bn.
+    "grant_2024_25": 515.693217,
+    # The GBP 400m read the other way, as GBP 2 against a continued GBP 3 cap.
+    "cap_2_against_3_in_2027": 400,
+}
+
+
 def price_ratios():
     cpi = system.parameters.gov.economic_assumptions.indices.obr.consumer_price_index
     base = cpi("2024-01-01")
     return {year: cpi(f"{year}-01-01") / base for year in (2023, 2025, 2027)}
+
+
+def unfitted(shares, fares, ratios):
+    in_force_2024_25 = sum(
+        s * (f - (270 * min(f, 2) + 95 * min(f, 3)) / 365)
+        for s, f in zip(shares, fares)
+    )
+    return {
+        "grant_2024_25": SINGLE_SHARE * FARE_PAYING_2024_25 / 1e6 * in_force_2024_25,
+        "cap_2_against_3_in_2027": SINGLE_SHARE
+        * FARE_PAYING_2024_25
+        / 1e6
+        * (
+            saving(shares, fares, 2, ratios[2027])
+            - saving(shares, fares, 3, ratios[2027])
+        ),
+    }
 
 
 def saving(shares, fares, cap, ratio=1.0):
@@ -122,3 +156,6 @@ if __name__ == "__main__":
     values = facts(shares, fares, price_ratios())
     for name, (target, tolerance, kind) in FACTS.items():
         print(f"{name:18s} {values[name]:9.4f}  target {target}")
+    checks = unfitted(shares, fares, price_ratios())
+    for name, published in UNFITTED.items():
+        print(f"{name:24s} {checks[name]:9.4f}  published {published}, not fitted")
