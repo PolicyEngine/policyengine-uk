@@ -68,7 +68,10 @@ simulations from hand-entered situations, including supported clones, branches
 and UK `build_from_situation` rebuilds. Council Tax Reduction and Housing Benefit
 use this distinction for their take-up defaults: data-built simulations use
 positive reported claims only (d1390 and d1455); situations also use their
-per-benefit-unit `claims_all_entitled_benefits` flag. Explicit inputs override
+per-benefit-unit `claims_all_entitled_benefits` flag. That flag is itself false
+for every family on data-built simulations, as it was on main for any dataset
+with a reporting family, so Child Tax Credit, Working Tax Credit and Income
+Support take-up also follow reported claims there. Explicit inputs override
 these defaults, including a future calibrated dataset column (uk-data#448).
 
 Do not rebuild an existing data-built simulation by calling core's

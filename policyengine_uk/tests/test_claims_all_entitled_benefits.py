@@ -6,9 +6,12 @@ everything it is entitled to, and a family that reports £1 or more is assumed
 to have reported completely. The formula used to sum the seven reported columns over the whole
 simulation (`add(...).sum() < 1`), so in microdata it was False for every
 benefit unit as soon as any benefit unit reported any of them, and the
-consumers that gate on it collapsed to reporters only. Council Tax Reduction
-and Housing Benefit have reporters-only defaults on data-built simulations
-(d1390 and d1455); hand-entered situations keep the per-family flag.
+consumers that gate on it collapsed to reporters only. Hand-entered situations
+now test each family on its own. Data-built simulations keep main's survey
+result, False for every family, so Child Tax Credit, Working Tax Credit and
+Income Support take-up follow reported claims there; Council Tax Reduction and
+Housing Benefit are reporters-only on data-built simulations in any case
+(d1390 and d1455).
 """
 
 import numpy as np
@@ -131,18 +134,30 @@ class TestPerBenefitUnit:
 
 
 @pytest.mark.microsimulation
-def test_flag_is_evaluated_per_benefit_unit_in_microdata():
+def test_survey_takeup_follows_reports_in_microdata():
+    """On the survey the flag keeps main's value, false for every family, so
+    the legacy take-up flags that read it are reporters only (review r6)."""
     sim = Microsimulation()
-    flag = sim.calculate("claims_all_entitled_benefits", YEAR).values.astype(bool)
-    reported = np.zeros(len(flag))
-    for variable in SEVEN_REPORTED:
-        reported = reported + sim.calculate(variable, YEAR, map_to="benunit").values
-    assert np.array_equal(flag, reported < 1)
-    # Both values must occur: the old formula returned a single value for all.
-    assert flag.any() and (~flag).any()
+    for year in (2024, YEAR):
+        flag = sim.calculate("claims_all_entitled_benefits", year).values
+        assert not flag.astype(bool).any(), year
+        for takeup, reported in (
+            ("would_claim_CTC", "child_tax_credit_reported"),
+            ("would_claim_WTC", "working_tax_credit_reported"),
+        ):
+            reports = sim.calculate(reported, year, map_to="benunit").values > 0
+            claims = sim.calculate(takeup, year).values.astype(bool)
+            assert np.array_equal(claims, reports), (takeup, year)
+        is_reports = (
+            sim.calculate("income_support_reported", year).values
+            * sim.calculate("is_claimant_or_partner", year).values
+        )
+        reported_is = sim.map_result(is_reports, "person", "benunit") > 0
+        claims_is = sim.calculate("would_claim_IS", year).values.astype(bool)
+        assert np.array_equal(claims_is, reported_is), year
 
 
-def mock_dataset(situation):
+def mock_dataset(situation, year=YEAR):
     """Synthetic post-ingestion MOCK tables using the normal UK data schema."""
     tables = {}
     person_ids = {name: i + 1 for i, name in enumerate(situation["people"])}
@@ -162,7 +177,7 @@ def mock_dataset(situation):
                             f"person_{entity}_id"
                         ] = index
                 else:
-                    row[name] = value[YEAR] if isinstance(value, dict) else value
+                    row[name] = value[year] if isinstance(value, dict) else value
             rows.append(row)
         tables[entity] = pd.DataFrame(rows).fillna(0)
     for column in ("person_benunit_id", "person_household_id"):
@@ -170,7 +185,7 @@ def mock_dataset(situation):
             memberships[person_id][column] for person_id in person_ids.values()
         ]
     return UKMultiYearDataset(
-        datasets=[UKSingleYearDataset(**tables, fiscal_year=YEAR)]
+        datasets=[UKSingleYearDataset(**tables, fiscal_year=year)]
     )
 
 
@@ -318,3 +333,218 @@ def test_ctr_is_zero_for_every_nonreporter_without_an_explicit_claim_flag(famili
         "council_tax_reduction",
     ):
         assert (sim.calculate(variable, YEAR)[mask] == 0).all(), variable
+
+
+# Tax credits pay awards until 5 April 2025, so 2024 is a year in which the
+# legacy take-up flags still reach an award.
+TAX_CREDIT_YEAR = 2024
+
+
+def tax_credit_families():
+    """Review r6's MOCK probe: a non-reporting lone parent and a non-reporting
+    working pensioner, beside a family that reports Child Tax Credit and CTR."""
+    year = TAX_CREDIT_YEAR
+    renting = {
+        "region": {year: "NORTH_WEST"},
+        "tenure_type": {year: "RENT_PRIVATELY"},
+        "rent": {year: 8_000},
+        "council_tax": {year: 1_800},
+    }
+    return {
+        "people": {
+            "parent": {
+                "age": {year: 30},
+                "employment_income": {year: 12_000},
+                "weekly_hours": {year: 20},
+            },
+            "child": {"age": {year: 5}},
+            "pensioner": {
+                "age": {year: 68},
+                "employment_income": {year: 9_000},
+                "weekly_hours": {year: 20},
+            },
+            "reporter": {
+                "age": {year: 35},
+                "employment_income": {year: 12_000},
+                "weekly_hours": {year: 20},
+                "child_tax_credit_reported": {year: 3_000},
+                "council_tax_benefit_reported": {year: 500},
+            },
+            "reporter_child": {"age": {year: 6}},
+        },
+        "benunits": {
+            "bu_parent": {
+                "members": ["parent", "child"],
+                "would_claim_uc": {year: False},
+            },
+            "bu_pensioner": {
+                "members": ["pensioner"],
+                "would_claim_uc": {year: False},
+            },
+            "bu_reporter": {
+                "members": ["reporter", "reporter_child"],
+                "would_claim_uc": {year: False},
+            },
+        },
+        "households": {
+            "hh_parent": {"members": ["parent", "child"], **renting},
+            "hh_pensioner": {
+                "members": ["pensioner"],
+                "region": {year: "NORTH_WEST"},
+                "tenure_type": {year: "OWNED_OUTRIGHT"},
+                "council_tax": {year: 1_800},
+            },
+            "hh_reporter": {"members": ["reporter", "reporter_child"], **renting},
+        },
+    }
+
+
+def test_data_built_nonreporters_get_no_tax_credits():
+    """Survey runs keep main's take-up for tax credits (review r6). Tested per
+    family on data, the lone parent's flag turned true, so would_claim_CTC
+    did too, and £3,455 of tax credits reached its CTR and HB means tests,
+    its tax credit award and the 2024 Winter Fuel Payment benefit test."""
+    year = TAX_CREDIT_YEAR
+    situation = tax_credit_families()
+    data = Simulation(dataset=mock_dataset(situation, year))
+    assert data.calculate("claims_all_entitled_benefits", year).tolist() == [
+        False,
+        False,
+        False,
+    ]
+    assert data.calculate("would_claim_CTC", year).tolist() == [False, False, True]
+    for takeup in ("would_claim_WTC", "would_claim_IS"):
+        assert not data.calculate(takeup, year).any(), takeup
+    tax_credits = data.calculate("tax_credits", year)
+    assert tax_credits[:2].tolist() == [0, 0]
+    assert tax_credits[2] > 0
+    # People: parent, child, pensioner, reporter, reporter_child.
+    assert data.calculate("tax_credit_award", year)[0] == 0
+    assert not data.calculate("is_on_winter_fuel_payment_relevant_benefit", year)[0]
+    # The same families entered by hand keep the per-family flag.
+    hand = Simulation(situation=situation)
+    assert hand.calculate("claims_all_entitled_benefits", year).tolist() == [
+        True,
+        True,
+        False,
+    ]
+
+
+# Each take-up flag that reads claims_all_entitled_benefits, and the report
+# that sets it on data-built simulations.
+TAKEUP_REPORTS = {
+    "would_claim_CTC": "child_tax_credit_reported",
+    "would_claim_WTC": "working_tax_credit_reported",
+    "would_claim_IS": "income_support_reported",
+    "would_claim_housing_benefit": "housing_benefit_reported",
+    "would_claim_council_tax_reduction": "council_tax_benefit_reported",
+}
+
+# Outputs downstream of the take-up flags: tax credits, their award and the
+# means tests and benefit tests that read them, and household net income.
+TAKEUP_OUTPUTS = (
+    "tax_credits",
+    "child_tax_credit",
+    "working_tax_credit",
+    "income_support",
+    "housing_benefit",
+    "council_tax_reduction",
+    "council_tax_reduction_applicable_income",
+    "housing_benefit_applicable_income",
+    "tax_credit_award",
+    "is_on_winter_fuel_payment_relevant_benefit",
+    "household_net_income",
+)
+
+LEGACY_FAMILIES = st.lists(
+    st.fixed_dictionaries(
+        {
+            "age": st.integers(min_value=18, max_value=80),
+            "children": st.integers(min_value=0, max_value=2),
+            "earnings": st.integers(min_value=0, max_value=40_000),
+            "hours": st.sampled_from((0, 10, 20, 35)),
+            "renter": st.booleans(),
+            "reports": st.frozensets(
+                st.sampled_from(SEVEN_REPORTED + ["council_tax_benefit_reported"])
+            ),
+        }
+    ),
+    min_size=1,
+    max_size=3,
+)
+
+
+def legacy_families(families, year, takeup=None):
+    """One benefit unit and household per family; the adult reports £100 of
+    each benefit in `reports`. `takeup` adds explicit take-up columns."""
+    situation = {"people": {}, "benunits": {}, "households": {}}
+    for index, family in enumerate(families):
+        adult = f"adult_{index}"
+        members = [adult]
+        situation["people"][adult] = {
+            "age": {year: family["age"]},
+            "employment_income": {year: family["earnings"]},
+            "weekly_hours": {year: family["hours"]},
+            **{report: {year: 100} for report in sorted(family["reports"])},
+        }
+        for child in range(family["children"]):
+            name = f"child_{index}_{child}"
+            situation["people"][name] = {"age": {year: 4 + child}}
+            members.append(name)
+        benunit = {"members": members}
+        for variable, values in (takeup or {}).items():
+            benunit[variable] = {year: bool(values[index])}
+        situation["benunits"][f"bu_{index}"] = benunit
+        situation["households"][f"hh_{index}"] = {
+            "members": members,
+            "region": {year: "NORTH_WEST"},
+            "tenure_type": {
+                year: "RENT_PRIVATELY" if family["renter"] else "OWNED_OUTRIGHT"
+            },
+            "rent": {year: 8_000 if family["renter"] else 0},
+            "council_tax": {year: 1_800},
+        }
+    return situation
+
+
+NO_REPORTS = dict(age=30, children=1, earnings=12_000, hours=20, renter=True)
+
+
+@given(families=LEGACY_FAMILIES, year=st.sampled_from((TAX_CREDIT_YEAR, YEAR)))
+# No family reports anything: main's simulation-wide sum set every flag true
+# here, so this example differs from main by design (reports-only on data).
+@example(families=[{**NO_REPORTS, "reports": frozenset()}], year=TAX_CREDIT_YEAR)
+@example(
+    families=[
+        {**NO_REPORTS, "reports": frozenset()},
+        {
+            **NO_REPORTS,
+            "reports": frozenset(
+                {"child_tax_credit_reported", "council_tax_benefit_reported"}
+            ),
+        },
+    ],
+    year=TAX_CREDIT_YEAR,
+)
+@settings(max_examples=10, deadline=None)
+def test_data_built_takeup_equals_reported_only(families, year):
+    """On data, every take-up flag that reads claims_all_entitled_benefits is
+    the family's own report, and every downstream output equals the same data
+    with those reported-only take-up flags given as explicit inputs."""
+    reported = {
+        takeup: [report in family["reports"] for family in families]
+        for takeup, report in TAKEUP_REPORTS.items()
+    }
+    default = Simulation(dataset=mock_dataset(legacy_families(families, year), year))
+    explicit = Simulation(
+        dataset=mock_dataset(legacy_families(families, year, reported), year)
+    )
+    assert not default.calculate("claims_all_entitled_benefits", year).any()
+    for takeup, expected in reported.items():
+        assert default.calculate(takeup, year).tolist() == expected, takeup
+    for variable in TAKEUP_OUTPUTS:
+        np.testing.assert_array_equal(
+            default.calculate(variable, year),
+            explicit.calculate(variable, year),
+            err_msg=variable,
+        )
