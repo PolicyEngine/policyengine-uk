@@ -55,7 +55,7 @@ class is_gainfully_employed_for_carers_allowance(Variable):
         # penny of the pension deduction as a penny favours the claimant
         # (reg. 5). Spread the pence over 52 weeks (reg. 8(1)(b)(iii)) and
         # disregard the fraction of a penny that leaves (reg. 5). Each step
-        # is exact in float64 for every float32 amount, so no floating-point
+        # is exact in float64 below 2^53 pence a year, so no floating-point
         # rounding decides whether earnings have exceeded the limit (ICA
         # Regulations reg. 8(1)).
         annual_half_pence = np.ceil(earnings.astype(np.float64) * 200 - 0.5)
