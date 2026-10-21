@@ -1,3 +1,10 @@
+## [2.141.11] - 2026-10-21
+
+### Fixed
+
+- - Indexed the annual savings starting-rate limit by September CPI from 2031–32, with statutory £10 rounding after the freeze.
+
+
 ## [2.141.10] - 2026-10-21
 
 ### Changed
