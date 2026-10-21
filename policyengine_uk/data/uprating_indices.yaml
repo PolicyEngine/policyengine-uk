@@ -71,6 +71,7 @@ gov.economic_assumptions.yoy_growth.obr.consumer_price_index:
 - income_support_reported
 - jsa_contrib_reported
 - jsa_income_reported
+- local_bus_uncapped_single_fare
 - maintenance_expenses
 - maternity_allowance_reported
 - miscellaneous_consumption
