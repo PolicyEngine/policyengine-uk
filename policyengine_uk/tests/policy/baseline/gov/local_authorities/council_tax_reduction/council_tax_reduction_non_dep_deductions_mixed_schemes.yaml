@@ -190,9 +190,13 @@
     # the partner of an income-related ESA claimant not on UC, so no
     # deduction. Pension-age sharer (SSI 2012/319 reg 48): only the recipient
     # is exempt; the worker is banded on the couple's 400 a week, 10.95 * 52
-    # = 569.40, half each. The person-level flags report the head's scheme.
+    # = 569.40, half each. The person-level flags report the head's scheme,
+    # so the worker is exempt there. The 70-year-old sharer is on Pension
+    # Credit, so their own flag is true too; it matters only for a
+    # non-dependant.
     council_tax_reduction_non_dep_deductions: [0, 284.70, 0]
-    council_tax_reduction_non_dep_deduction_exempt: [false, false, true, true]
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, false, true, true]
+    council_tax_reduction_non_dep_deduction_exempt: [false, true, true, true]
 
 - name: Scotland, pension-age head and working-age sharer, the partner rule only for the working-age claim
   period: 2026
@@ -237,5 +241,9 @@
         council_tax: 2_000
         savings: 0
   output:
+    # Under the pension-age head's scheme, only the ESA recipient is exempt;
+    # the 70-year-old head's own flag is true because they are on Pension
+    # Credit.
     council_tax_reduction_non_dep_deductions: [284.70, 0, 0]
-    council_tax_reduction_non_dep_deduction_exempt: [false, false, true, false]
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, false, true, true]
+    council_tax_reduction_non_dep_deduction_exempt: [true, false, true, false]
