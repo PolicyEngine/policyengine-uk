@@ -377,3 +377,22 @@
     child_benefit: 0
   output:
     household_benefits_individual_non_dep_deduction: 101.35 * 52
+
+- name: A worker's band counts their investment income
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    age: 30
+    hours_worked: 1_950 # 37.5 hours a week
+    employment_income: 9_517 # just over 183 a week
+    other_investment_income: 28_912 # 556 a week
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+  output:
+    # In remunerative work, banded on all gross income (reg 74(2)), 739.02 a
+    # week: the band from £577, 126.65 * 52. Banding the earnings alone would
+    # give 45.15 * 52 = 2,347.80.
+    household_benefits_individual_non_dep_deduction: 126.65 * 52

@@ -26,7 +26,8 @@ and a non-dependant family of one or two adults:
    the household, of their claimant and partner's higher amount (both amounts
    for a Welsh working-age applicant's non-dependant couple with a Universal
    Credit award) plus each other member's, recomputed here from the
-   individual amounts.
+   individual amounts, times the family's share of the rent (Housing Benefit,
+   reg 74(5)) or of the council tax liability (CTR, Sch 1 para 8(5)).
 6. Monotonicity (metamorphic): raising any non-dependant's income never lowers
    an individual deduction or a family's deductions.
 7. Exhaustive: in every year from 2015 (2019 for Housing Benefit) to 2030,
