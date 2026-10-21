@@ -1,0 +1,12 @@
+description: A child or qualifying young person born before this date, written as a YYYYMMDD number, is transitionally protected from the Universal Credit child limit, and a claimant responsible for one keeps the higher child element for the first child.
+values:
+  0001-01-01: 20170406
+metadata:
+  unit: date
+  period: year
+  label: Universal Credit child limit and higher first child element cutoff date of birth
+  reference:
+    - title: The Universal Credit Regulations 2013 reg. 24A(3) (born before 6 April 2017, as worded from 1 February 2019 until revoked from 6 April 2026; from 6 April 2017 to 31 January 2019 it referred to the transitional circumstances in UC (Transitional Provisions) Regs 2014 reg 40, whose further conditions are not modelled)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/24A/2025-04-06
+    - title: The Universal Credit (Transitional Provisions) Regulations 2014 reg. 43 (saving of the higher first child element)
+      href: https://www.legislation.gov.uk/uksi/2014/1230/regulation/43

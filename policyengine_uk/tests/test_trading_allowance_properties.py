@@ -14,6 +14,8 @@ from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
 
+pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
+
 YEAR = 2027
 ALLOWANCE = 1_000
 OTHER_EMPLOYMENT_INCOME = [0, 8_000, 30_000, 60_000, 110_000, 200_000]

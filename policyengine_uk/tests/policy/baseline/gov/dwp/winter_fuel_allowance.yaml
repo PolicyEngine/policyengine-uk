@@ -8,6 +8,51 @@
   output:
     winter_fuel_allowance: 200
 
+# Controlled age-status inputs distinguish the statutory predicates when a
+# reform separates the timetables. SI 2000/729 reg 2(1)(b) tests qualifying
+# age; from September 2024 SI 2024/869 reg 2(1)(a) tests pensionable age.
+- name: Before 2024 Winter Fuel Payment follows qualifying age before pensionable age
+  period: 2023
+  input:
+    age: 70
+    country: ENGLAND
+    has_attained_state_pension_credit_qualifying_age: true
+    is_SP_age: false
+  output:
+    winter_fuel_allowance: 200
+
+- name: Before 2024 pensionable-age status alone does not satisfy the Winter Fuel qualifying-age test
+  period: 2023
+  input:
+    age: 70
+    country: ENGLAND
+    has_attained_state_pension_credit_qualifying_age: false
+    is_SP_age: true
+  output:
+    winter_fuel_allowance: 0
+
+- name: From 2024 qualifying-age status alone does not satisfy the Winter Fuel pensionable-age test
+  period: 2024
+  input:
+    age: 70
+    country: ENGLAND
+    pension_credit: 100
+    has_attained_state_pension_credit_qualifying_age: true
+    is_SP_age: false
+  output:
+    winter_fuel_allowance: 0
+
+- name: From 2024 Winter Fuel Payment follows pensionable age independently of qualifying-age status
+  period: 2024
+  input:
+    age: 70
+    country: ENGLAND
+    pension_credit: 100
+    has_attained_state_pension_credit_qualifying_age: false
+    is_SP_age: true
+  output:
+    winter_fuel_allowance: 200
+
 - name: Single pensioner aged 80+ gets higher rate WFA
   period: 2023
   absolute_error_margin: 1
@@ -18,8 +63,10 @@
   output:
     winter_fuel_allowance: 300
 
-- name: Household in Scotland gets no WFA (handled by Scottish Government)
-  period: 2023
+- name: Household in Scotland gets no WFA from the 2024 qualifying week (Pension Age Winter Heating Payment instead)
+  # SI 2024/869 and SI 2025/969 extend to England and Wales; SI 2000/729
+  # covered Great Britain up to the 2023 qualifying week.
+  period: 2024
   absolute_error_margin: 1
   input:
     age: 67
@@ -58,4 +105,59 @@
     total_income: 50000
     income_support: 80
   output:
+    winter_fuel_allowance: 200
+
+# ITEPA 2003 s.681I(1)(b): the winter fuel payment charge applies only where
+# total income "exceeds £35,000". The model stands in for the charge with the
+# income test, so a pensioner with exactly £35,000 keeps the payment. Total
+# income is built from pension and other investment income, not input.
+- name: Pensioner with total income just under £35,000 keeps WFP
+  period: 2026
+  absolute_error_margin: 1
+  input:
+    age: 70
+    country: ENGLAND
+    private_pension_income: 15_000
+    other_investment_income: 19_999
+    pension_credit: 0
+  output:
+    total_income: 34_999
+    winter_fuel_allowance: 200
+
+- name: Pensioner with total income of exactly £35,000 keeps WFP
+  period: 2026
+  absolute_error_margin: 1
+  input:
+    age: 70
+    country: ENGLAND
+    private_pension_income: 15_000
+    other_investment_income: 20_000
+    pension_credit: 0
+  output:
+    total_income: 35_000
+    winter_fuel_allowance: 200
+
+- name: Pensioner with total income just over £35,000 loses WFP
+  period: 2026
+  absolute_error_margin: 1
+  input:
+    age: 70
+    country: ENGLAND
+    private_pension_income: 15_000
+    other_investment_income: 20_001
+    pension_credit: 0
+  output:
+    total_income: 35_001
+    winter_fuel_allowance: 0
+
+- name: Pensioner with total income of exactly £35,000 keeps WFP in 2025-26
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    age: 70
+    country: ENGLAND
+    private_pension_income: 35_000
+    pension_credit: 0
+  output:
+    total_income: 35_000
     winter_fuel_allowance: 200

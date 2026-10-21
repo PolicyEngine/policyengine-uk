@@ -1,3 +1,4 @@
+import functools
 from types import SimpleNamespace
 
 import numpy as np
@@ -20,10 +21,12 @@ UPRATED_YEARS = list(range(2023, 2031))
 COUNCIL_TAX_GROWTH = parameters.gov.economic_assumptions.yoy_growth.obr.council_tax
 
 
+@functools.cache
 def _country_of_each_region():
     # The model's own region-to-country mapping (the `country` variable), so
     # the expected growth below comes from a second path to the one the
-    # uprating code takes.
+    # uprating code takes. Built on first use, not at import: a system built
+    # and dropped while the tests are collected would be frozen by conftest.py.
     people = {f"person_{region}": {"age": 40} for region in REGIONS}
     households = {
         f"household_{region}": {"members": [f"person_{region}"], "region": region}
@@ -34,14 +37,11 @@ def _country_of_each_region():
     return dict(zip(REGIONS, countries))
 
 
-COUNTRY = _country_of_each_region()
-
-
 def _expected_growth(region, year):
     # Council tax exists in England, Scotland and Wales; OBR forecasts it for
     # each. Northern Ireland levies domestic rates instead, so its council tax
     # has no growth. An unknown region takes England's.
-    country = COUNTRY[region]
+    country = _country_of_each_region()[region]
     if country == "NORTHERN_IRELAND":
         return 0.0
     series = "england" if country == "UNKNOWN" else country.lower()

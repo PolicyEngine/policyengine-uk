@@ -23,8 +23,8 @@ liability, ND the non-dependant deductions and A the applicable amount:
    nothing otherwise.
 4. Differential: everyone else keeps the previous formula, max(0, L - 0.2 x
    max(0, I - A) - ND) when household savings are within 16,000, where I is the
-   income definition on main before this change less the schemes' pensioner
-   earnings disregard, both recomputed here (the income from its components,
+   income definition on main before this change less pensioners' Child Benefit
+   and the schemes' pensioner earnings disregard, recomputed here (income from its components,
    the disregard from the statutory sums) rather than read from the variables
    under test.
 5. Metamorphic: a guarantee credit recipient's CTR does not change when the
@@ -259,11 +259,13 @@ BENUNIT_VARIABLES = [
     "savings_credit",
     "pension_credit_income",
     "pension_credit_assessable_capital",
+    "council_tax_reduction_pensioner",
 ]
 # council_tax_reduction_applicable_income on main before this change (1c5b4d04):
 # these incomes and benefits, less income tax, National Insurance and half of
 # pension contributions, floored at zero. Since #2033, a pensioner family's
-# earnings disregard also comes off before the floor.
+# earnings disregard also comes off before the floor. These GB families now
+# exclude Child Benefit on the pensioner general-rules route as well.
 MAIN_INCOME_COMPONENTS = [
     "employment_income",
     "self_employment_income",
@@ -293,7 +295,6 @@ PENSIONER_FLAT_DISREGARD = {"lone_parent": 25, "couple": 10, "single": 5}
 PENSIONER_ADDITIONAL_DISREGARD = 17.10
 HOUSEHOLD_VARIABLES = [
     "council_tax_reduction_maximum_eligible_liability",
-    "council_tax_reduction_household_has_pensioner",
     "savings",
 ]
 
@@ -362,16 +363,20 @@ def calculate(units, guarantee=None, **kwargs):
     values["income_under_main_definition"] = np.maximum(
         0,
         benunit_total(MAIN_INCOME_COMPONENTS)
+        - np.where(
+            values["council_tax_reduction_pensioner"],
+            benunit_total(["child_benefit"]),
+            0,
+        )
         - benunit_total(MAIN_DEDUCTIONS)
         - 0.5 * benunit_total(["pension_contributions"])
         - pensioner_earnings_disregard(sim, claimants),
     )
+    # Each claim's scheme follows its own family's pensioner status.
     values["national"] = np.array(
         [
-            unit["country"] != "ENGLAND" or has_pensioner
-            for unit, has_pensioner in zip(
-                units, values["council_tax_reduction_household_has_pensioner"]
-            )
+            unit["country"] != "ENGLAND" or pensioner
+            for unit, pensioner in zip(units, values["council_tax_reduction_pensioner"])
         ]
     )
     return values
