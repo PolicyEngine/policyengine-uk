@@ -1,3 +1,12 @@
+## [2.141.7] - 2026-10-21
+
+### Fixed
+
+- - Added the 2022–23 annual employee National Insurance schedule for explicitly declared full-year category A directors in one employment, preserving ordinary employees and other years.
+- - Corrected the JSA, ESA and DLA program registry variable mappings, narrowed Benefit Cap's parameter prefix to its own subtree, removed Maternity Allowance's unrelated DWP parameter prefix, and added validation of all declared registry variables and parameter prefixes.
+- - Reject data-axis aggregate-impact comparisons when either measurement omits its Python version or machine identity.
+
+
 ## [2.141.6] - 2026-10-20
 
 ### Fixed
