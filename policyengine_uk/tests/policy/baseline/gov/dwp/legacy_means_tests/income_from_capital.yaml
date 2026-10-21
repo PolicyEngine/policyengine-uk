@@ -1343,6 +1343,43 @@
     oxford_council_tax_reduction: 2_000
     council_tax_reduction: 2_000
 
+- name: Oxford adds no tariff income from a capped Universal Credit award's capital
+  # As above, the award is capped to nil but is still an award (Appendix 3),
+  # and Appendix 6 ignores the £15,000 taken into account for it, so no tariff
+  # income is added. Weekly income 24,000 / 52 = 461.54, in band 1 (up to
+  # £480): 100% of 2,000. Treating the nil payment as no award would add
+  # ceil((15,000 - 6,000) / 250) = £36 a week, giving 497.54, band 2 (75%).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        claims_all_entitled_benefits: true
+        claims_universal_credit: true
+        universal_credit_pre_benefit_cap: 1_000
+        uc_benefit_cap_reduction_after_floor: 1_000
+        uc_reported_capital: 15_000
+        council_tax_reduction_applicable_amount: 6_000
+        council_tax_reduction_applicable_income: 24_000
+    households:
+      household:
+        members: [person]
+        country: ENGLAND
+        local_authority: OXFORD
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        other_residential_property_value: 20_000
+  output:
+    universal_credit: 0
+    council_tax_reduction_universal_credit_award: true
+    council_tax_reduction_assessable_capital: 15_000
+    oxford_council_tax_reduction: 2_000
+    council_tax_reduction: 2_000
+
 - name: From April 2022 Scotland applies the Universal Credit yield to a capped award on its own capital
   # SSI 2021/249 reg 10A: an award includes one reduced to nil; reg 63(1)(a)
   # applies the monthly yield, £4.35 per £250 over £6,000, to the capital
