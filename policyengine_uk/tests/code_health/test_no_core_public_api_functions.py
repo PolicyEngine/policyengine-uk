@@ -3,8 +3,9 @@
 ``Reform.from_api``, ``Reform.api_id`` and ``policyengine_core.charts.api``
 send HTTP requests to api.policyengine.org, and policyengine-core is removing
 them. ``policyengine_core.charts`` also re-exports that module's
-``decile_chart`` and ``intra_decile_chart``. Code that uses any of them,
-including a test that replaces ``requests`` in
+``get_api_chart_data``, ``decile_chart`` and ``intra_decile_chart``, and
+``from policyengine_core.charts import api`` imports the module itself. Code
+that uses any of them, including a test that replaces ``requests`` in
 ``policyengine_core.reforms.reform``, fails once a policyengine-core release
 without them is installed. Build reforms with ``Reform.from_dict`` instead.
 """
@@ -21,6 +22,7 @@ REMOVED_CORE_FUNCTION_PATTERN = re.compile(
     r"\.from_api\b"
     r"|\.api_id\b"
     r"|policyengine_core\.charts\.api\b"
+    r"|from\s+policyengine_core\.charts\s+import\s+(?:\([^)]*?|[^\n]*?)\bapi\b"
     r"|\bget_api_chart_data\b"
     r"|\bdecile_chart\b"
     r"|\bintra_decile_chart\b"
@@ -63,6 +65,16 @@ def find_removed_core_function_references(source_text: str) -> list[str]:
             "from policyengine_core.charts import intra_decile_chart",
             "intra_decile_chart",
             id="re_exported_intra_decile_chart",
+        ),
+        pytest.param(
+            "from policyengine_core.charts import api",
+            "from policyengine_core.charts import api",
+            id="chart_module_imported_from_charts",
+        ),
+        pytest.param(
+            "from policyengine_core.charts import format_fig, api as chart_api",
+            "from policyengine_core.charts import format_fig, api",
+            id="chart_module_imported_from_charts_with_alias",
         ),
         pytest.param(
             'monkeypatch.setattr("policyengine_core.reforms.reform.requests.get", '
