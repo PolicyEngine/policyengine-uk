@@ -1224,3 +1224,71 @@
     uc_non_dep_receives_pension_credit: [false, true]
     uc_non_dep_deduction_exempt: [false, true, false]
     uc_non_dep_deductions: [1_158.60, 0]
+
+# The household head is the householder in whose name the accommodation is
+# rented, so she is no one's non-dependant for UC (Sch 4 para 9(2)(d)) or HB
+# (reg 3(2)(d)), even where her benefit unit's claimant and partner are the
+# young couple. For CTR she applies alone and they are her non-dependants.
+- name: UC and HB, a head who applies for CTR alone is not her benefit unit's non-dependant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandmother:
+        age: 70
+        is_household_head: true
+        is_claimant_or_partner: false
+      son:
+        age: 30
+        is_claimant_or_partner: true
+        employment_income: 25_000
+        weekly_hours: 37.5
+      partner:
+        age: 29
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [grandmother, son, partner]
+    households:
+      household:
+        members: [grandmother, son, partner]
+        rent: 12_000
+  output:
+    is_benefit_unit_non_dependant_for_universal_credit: [false, false, false]
+    is_benefit_unit_non_dependant_for_legacy_benefits: [false, false, false]
+    is_benefit_unit_non_dependant_for_council_tax_reduction: [false, true, true]
+    uc_non_dep_deductions: [0]
+    housing_benefit_non_dep_deductions: [0]
+
+# Sch 4 para 9(2)(f): a family that makes no Universal Credit claim treats
+# no one as its non-dependant, so a non-claiming lodger's adult son counts in
+# the householder's claim. "Making a claim" is the model's would-claim flag.
+- name: UC, a non-claiming lodger's adult son counts in the householder's claim
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 40
+        is_household_head: true
+        is_claimant_or_partner: true
+      lodger:
+        age: 39
+        is_claimant_or_partner: true
+        rent_paid_as_lodger: 5_200
+      lodger_son:
+        age: 25
+        is_claimant_or_partner: false
+    benunits:
+      benunit_1:
+        members: [householder]
+      benunit_2:
+        members: [lodger, lodger_son]
+        would_claim_uc: false
+    households:
+      household:
+        members: [householder, lodger, lodger_son]
+        rent: 9_000
+  output:
+    uc_non_dependants_counted: [true, false]
+    uc_non_dep_deductions: [1_158.60, 0]

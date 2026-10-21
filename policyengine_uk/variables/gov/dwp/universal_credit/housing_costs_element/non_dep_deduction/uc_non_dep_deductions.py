@@ -6,10 +6,16 @@ class uc_non_dep_deductions(Variable):
     entity = BenUnit
     label = "Universal Credit non-dependent deductions"
     documentation = (
-        "Housing cost contributions for the renter's non-dependants: those in "
-        "other families of the household, for the household head's family "
-        "only, and those within the renter's own benefit unit. None if the "
-        "renter or a joint renter is exempt."
+        "Housing cost contributions for the renter's non-dependants. Those in "
+        "other families of the household count in one claim, the one "
+        "uc_non_dependants_counted picks (the household head's family if it "
+        "claims, otherwise the first claiming sharer). Those within a "
+        "renter's own benefit unit count in that family's claim if it makes "
+        "one, otherwise in the same counted claim. Making a claim is the "
+        "model's claims_universal_credit flag for a renting, UC-eligible "
+        "family, so a family flagged as claiming counts its own non-dependants "
+        "even where its award is nil. None if the renter or a joint renter is "
+        "exempt."
     )
     definition_period = YEAR
     unit = GBP

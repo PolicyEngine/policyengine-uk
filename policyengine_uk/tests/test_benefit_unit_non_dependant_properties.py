@@ -166,10 +166,13 @@ def build(population, convert=None):
                 )
             if fam["child"]:
                 pid = f"{name}_child"
+                # Inputs set for some members are inputs for all, so the
+                # child's Child Benefit status is stated, not left to default.
                 people[pid] = {
                     "age": 8,
                     "is_claimant_or_partner": False,
                     "is_household_head": False,
+                    "is_child_or_qualifying_young_person_for_child_benefit": True,
                 }
                 ids.append(pid)
                 person_rows.append(
@@ -398,13 +401,17 @@ def run(population, convert=None):
 def test_deductions_match_the_oracle(population):
     sim, person_rows, family_rows, v = run(population)
     exp_uc, exp_hb, exp_ctr, exp_uc_individual = oracle(person_rows, family_rows, **v)
-    # 1. Oracle. The members classed as in-unit non-dependants are exactly
-    # the generated non-QYP members.
+    # 1. Oracle. The members each scheme classes as in-unit non-dependants
+    # are exactly the generated non-QYP members.
     kinds = np.array([row["kind"] for row in person_rows])
-    assert np.array_equal(
-        calc(sim, "is_benefit_unit_non_dependant_for_universal_credit") > 0,
-        kinds == "non_dependant",
-    )
+    for in_unit_variable in (
+        "is_benefit_unit_non_dependant_for_universal_credit",
+        "is_benefit_unit_non_dependant_for_legacy_benefits",
+        "is_benefit_unit_non_dependant_for_council_tax_reduction",
+    ):
+        assert np.array_equal(
+            calc(sim, in_unit_variable) > 0, kinds == "non_dependant"
+        ), in_unit_variable
     assert np.allclose(v["uc"], exp_uc_individual, atol=0.01)
     assert np.allclose(calc(sim, "uc_non_dep_deductions"), exp_uc, atol=0.01)
     assert np.allclose(

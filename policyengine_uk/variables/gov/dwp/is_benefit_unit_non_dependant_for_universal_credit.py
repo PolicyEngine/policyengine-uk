@@ -16,7 +16,11 @@ class is_benefit_unit_non_dependant_for_universal_credit(Variable):
         "young person the renter is responsible for is a member of the "
         "renter's extended benefit unit, and one no one is responsible for, "
         "for example one looked after by a local authority, is excluded by "
-        "para 9(2)(g). A child, under 16, is always one or the other."
+        "para 9(2)(g). A child, under 16, is always one or the other. The "
+        "household head (is_resolved_household_head), a householder in whose "
+        "name the accommodation is rented, is liable for it and so never a "
+        "non-dependant (para 9(2)(d)), even where the benefit unit's "
+        "claimant and partner are someone else."
     )
     definition_period = YEAR
     reference = (
@@ -33,4 +37,11 @@ class is_benefit_unit_non_dependant_for_universal_credit(Variable):
         qualifying_young_person = person(
             "is_qualifying_young_person_for_universal_credit", period
         )
-        return not_a_child & ~claimant_or_partner & ~qualifying_young_person
+        # Para 9(2)(d): the household head is liable for the accommodation.
+        household_head = person("is_resolved_household_head", period)
+        return (
+            not_a_child
+            & ~claimant_or_partner
+            & ~qualifying_young_person
+            & ~household_head
+        )
