@@ -1,3 +1,15 @@
+## [2.145.0] - 2026-10-21
+
+### Fixed
+
+- - Bus fares from journeys now follow DfT's published local bus fares index (BUS0415a) by area and fiscal year from the 2024-25 benchmark, and the OBR CPI after the last published quarter (March 2026), instead of holding the benchmark yield and adding a cap term against a fixed 2024 cap schedule. The 2025-26 yield per fare-paying boarding outside London rises 12.6% (the index) instead of 24.9%. Northern Ireland, which has no published index, follows CPI. Cap changes after the last published quarter (the £2 cap in 2027 and its end in 2028) enter the baseline through the cap term. The bus fare cap schedules now keep their calendar dates, so a cap change part-way through a year applies from its date.
+  - Cap changes are priced from a three-band table of uncapped single fares (`gov.dft.bus.uncapped_single_fares`), fitted to DfT's evaluation of the £2 cap, the 2023-24 fare cap grant, the January 2025 fares index step and the funding announced for the £3 cap in 2025 and the £2 cap in 2027, and uprated with CPI, instead of one £2.748 fare for every single ticket. A £3 cap now binds, and a full year at £2 against no cap saves about £0.36bn a year at 2024-25 boardings instead of £0.70bn. A supplied `local_bus_uncapped_single_fare` replaces the table for that person.
+
+### Removed
+
+- - Removed `gov.dft.bus.reference_year` and `gov.dft.bus.uncapped_single_fare`. The benchmark year of the published bus fare yield is `gov.dft.bus.benchmark_year`; the cap term reads `gov.dft.bus.fares.cap` and `gov.dft.bus.reference_fares.cap` in the same year; and cap changes are priced from `gov.dft.bus.uncapped_single_fares`. A reform naming a removed parameter fails with directions.
+
+
 ## [2.144.0] - 2026-10-21
 
 ### Added
