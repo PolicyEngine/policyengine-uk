@@ -31,20 +31,39 @@ class housing_benefit_applicable_amount(Variable):
         single = benunit("is_single_person", period)
         couple = benunit("is_couple", period)
         lone_parent = benunit("is_lone_parent", period)
+        # Pension-age allowances (SI 2006/214 Sch 3 para 1; NI: SR 2006/406
+        # Sch 4 para 1). Since 1 April 2021 units whose members all attained
+        # State Pension age on or after the cutoff get the lower rates in
+        # sub-paragraphs (1)(c) and (2)(c); the rest keep the higher rates.
+        if p.pension_age_cutoff is None:
+            single_aged, couple_aged, lone_parent_aged = (
+                p.single.aged,
+                p.couple.aged,
+                p.lone_parent.aged,
+            )
+        else:
+            before_cutoff = benunit(
+                "housing_benefit_attained_pension_age_before_cutoff", period
+            )
+            single_aged = where(before_cutoff, p.single.aged, p.single.aged_from_cutoff)
+            couple_aged = where(before_cutoff, p.couple.aged, p.couple.aged_from_cutoff)
+            lone_parent_aged = where(
+                before_cutoff, p.lone_parent.aged, p.lone_parent.aged_from_cutoff
+            )
         single_personal_allowance = (
             u_25 * p.single.younger
             + o_25 * p.single.older
-            + pension_age_regulations * p.single.aged
+            + pension_age_regulations * single_aged
         )
         couple_personal_allowance = (
             u_18 * p.couple.younger
             + o_18 * p.couple.older
-            + pension_age_regulations * p.couple.aged
+            + pension_age_regulations * couple_aged
         )
         lone_parent_personal_allowance = (
             u_18 * p.lone_parent.younger
             + o_18 * p.lone_parent.older
-            + pension_age_regulations * p.lone_parent.aged
+            + pension_age_regulations * lone_parent_aged
         )
         personal_allowance = (
             single * single_personal_allowance

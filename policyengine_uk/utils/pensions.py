@@ -3,6 +3,19 @@ import numpy as np
 from policyengine_uk.utils.supplied_inputs import supplied_input
 
 
+def relevant_uk_earnings(person, period):
+    """FA 2004 s.189 earnings, including employer-paid taxable SSP/SMP.
+
+    Statutory employment pay is held separately from wages. A trading loss
+    does not reduce those employment earnings (HMRC PTM044100).
+    """
+    return (
+        person("employment_income", period)
+        + person("employment_benefits", period)
+        + np.maximum(0, person("self_employment_income", period))
+    )
+
+
 def pension_contributions_relief_amount(
     contributions, relevant_uk_earnings, ras_contributions, age, hmrc
 ):
@@ -10,8 +23,7 @@ def pension_contributions_relief_amount(
 
     Only RAS can use the basic-amount increase above earnings (s. 191(7)).
     The annual allowance does not cap relief, and payments from age 75 are
-    unrelievable. Keeping this calculation shared lets the AA income tests
-    exclude the NICs-only salary-sacrifice reclassification exactly.
+    unrelievable. The AA income tests use the same actual-payment convention.
     """
     basic_amount_increase = np.minimum(
         np.maximum(
@@ -27,28 +39,23 @@ def pension_contributions_relief_amount(
 
 
 def annual_allowance_net_income(person, period, parameters):
-    """Model net income rebuilt without NICs-only returned salary sacrifice.
+    """Model net income with the annual-allowance net-pay/loss ordering.
 
     Like net_income, this is before the separately modelled pension relief.
-    ITA 2007 ss.24A, 25 and 64 require recomputing the loss deduction, not
-    subtracting returned pay after an income-dependent deduction was taken.
-    Ordinary income tax keeps its existing calculation (issue #2454).
+    ITA 2007 ss.24A, 25 and 64 require recomputing the loss deduction after
+    relievable net pay. A supplied legacy return is actual pay/member payment;
+    the computed NICs-only excess never enters income or contributions.
     """
     from policyengine_core.model_api import add
 
-    returned = person("salary_sacrifice_returned_to_income", period)
     hmrc = parameters(period).gov.hmrc
-    actual_member_contributions = person("pension_contributions", period) - returned
-    actual_earnings = (
-        person("employment_income", period)
-        - returned
-        + np.maximum(0, person("self_employment_income", period))
-    )
+    actual_member_contributions = person("pension_contributions", period)
+    actual_earnings = relevant_uk_earnings(person, period)
     supplied_ani = supplied_input(person, "adjusted_net_income", period)
     if supplied_ani is not None:
         # Supplied ANI already determines net income, including its losses.
         # Restore only Gift Aid and pension relief on actual earnings/payments;
-        # neither returned pay nor a replacement loss deduction belongs here.
+        # A replacement loss deduction does not belong on this input path.
         return (
             supplied_ani
             + person("gift_aid_grossed_up", period)
@@ -62,21 +69,16 @@ def annual_allowance_net_income(person, period, parameters):
         )
 
     net_income = person("net_income", period)
-    actual_net_pay = person("employee_pension_contributions", period) - returned
+    actual_net_pay = person("employee_pension_contributions", period)
     relievable_net_pay = pension_contributions_relief_amount(
         actual_net_pay, actual_earnings, 0, person("age", period), hmrc
     )
-    if not np.any(returned) and not np.any(
-        (relievable_net_pay > 0) & (person("trading_loss", period) > 0)
-    ):
+    if not np.any((relievable_net_pay > 0) & (person("trading_loss", period) > 0)):
         return net_income
 
-    taxable_pay = person("taxable_employment_income", period)
-    actual_taxable_pay = np.maximum(0, taxable_pay - returned)
-    removed_taxable_pay = taxable_pay - actual_taxable_pay
+    actual_taxable_pay = person("taxable_employment_income", period)
     income_before_loss = np.maximum(
-        0,
-        person("net_income_before_trade_loss_relief", period) - removed_taxable_pay,
+        0, person("net_income_before_trade_loss_relief", period)
     )
     # Rebuild adjusted_total_income (s.24A(8)) from actual pay and member
     # contributions, retaining its treatment of brought-forward trade losses
@@ -118,16 +120,13 @@ def annual_allowance_net_income(person, period, parameters):
     # below so the callers can deduct or restore member relief once.
     income_after_net_pay = np.maximum(0, income_before_loss - relievable_net_pay)
     actual_loss_relief = np.minimum(loss, np.minimum(loss_cap, income_after_net_pay))
-    # Add back the loss computed using synthetic pay before deducting the
-    # actual-pay loss. Supplied ANI has its own path above. For other people,
-    # net-pay/loss ordering also applies before the NICs cap starts.
+    # Replace the original loss with the loss after relievable net pay.
+    # Supplied ANI has its own path above. This ordering also applies before
+    # the NICs cap starts and when the actual legacy return is zero.
     reconstructed = np.maximum(
         0,
         net_income
         + person("trade_loss_relief_against_general_income", period)
-        - removed_taxable_pay
         - actual_loss_relief,
     )
-    return np.where(
-        (returned > 0) | (relievable_net_pay > 0), reconstructed, net_income
-    )
+    return np.where(relievable_net_pay > 0, reconstructed, net_income)

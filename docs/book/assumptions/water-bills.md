@@ -65,15 +65,19 @@ We store water bills year-on-year growth rates in:
 
 ### Growth rates
 
-The model uses these resulting year-on-year growth rates:
+The model uses these year-on-year growth rates. Each year is the charging year starting in April, so 2025 is 2025-26.
 
-| Year | Growth rate |
-|------|-------------|
-| 2022 | 5.2% |
-| 2023 | 9.2% |
-| 2024 | 4.4% |
-| 2025 | 6.1% |
-| 2026 | 6.1% |
-| 2027 | 5.1% |
-| 2028 | 3.8% |
-| 2029 | 4.3% |
+| Year | Growth rate | Source |
+|------|-------------|--------|
+| 2022 | 5.2% | Ofwat average bills, real bills converted to nominal with CPIH |
+| 2023 | 9.2% | As above |
+| 2024 | 4.4% | As above |
+| 2025 | 27% | [Ofwat statement, 29 January 2026](https://www.ofwat.gov.uk/ofwat-responds-to-water-sector-average-bill-figures/) (later figure; Ofwat's [30 January 2025 statement](https://www.ofwat.gov.uk/average-bills-2025-26-press-statement/) forecast 26%) |
+| 2026 | 5.4% | [Water UK, 28 January 2026](https://www.water.org.uk/news-views-publications/news/record-investment-average-household-water-bills-rise-ps33-year-april): national average £639, up £33 |
+| 2027 | 4.6% | Projection from `forecast_water_bills.py` |
+| 2028 | 4.5% | As above |
+| 2029 | 4.5% | As above |
+
+```{warning}
+The 2027-2029 projections cannot be reproduced from the repository. They take the CCW table, which reflects Ofwat's PR24 *draft* determinations rather than the final ones, weight each company by customer numbers, and add a hardcoded CPIH path. The customer weights were in `ofwat_increases.csv`, which is gitignored and was never committed.
+```

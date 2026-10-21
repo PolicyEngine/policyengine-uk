@@ -30,7 +30,7 @@ from policyengine_uk.data.dataset_schema import (
     UKMultiYearDataset,
     UKSingleYearDataset,
 )
-from policyengine_uk.utils.scenario import Scenario
+from policyengine_uk.utils.scenario import ConstructionReformState, Scenario
 from policyengine_uk.data.economic_assumptions import (
     extend_single_year_dataset,
     reset_growthfactor_uprating,
@@ -51,6 +51,7 @@ from policyengine_uk.data.capital_gains_projection import (
     capital_gains_application_metadata,
 )
 from policyengine_uk.utils.dependencies import get_variable_dependencies
+from policyengine_uk.utils.input_dataframe_export import input_dataframe
 from policyengine_uk.utils.supplied_inputs import (
     SUPPLIED_INPUT_VARIABLES,
     copy_model_values,
@@ -298,6 +299,7 @@ class Simulation(CoreSimulation):
         # of this scenario's single-day leftovers while rejecting unreadable
         # overrides from a user modifier's separate from_reform call.
         self._building_dated_reforms = scenario.dated_reforms if scenario else None
+        self._construction_reform_state = None
 
         self.branch_name = "default"
         self.invalidated_caches = set()
@@ -335,8 +337,10 @@ class Simulation(CoreSimulation):
         )
         if before_data_load is not None:
             self.apply_scenario_parameters(before_data_load)
+            self._construction_reform_state = ConstructionReformState(self)
             if before_data_load.simulation_modifier is not None:
                 before_data_load.simulation_modifier(self)
+            self._construction_reform_state.observe_user_edits(self)
         elif after_parameters_before_data:
             self.apply_scenario_parameters(after_data_load)
         self._refresh_capital_gains_projection()
@@ -365,6 +369,8 @@ class Simulation(CoreSimulation):
         # (including single-day reform-dict keys) leave the data as built.
         if after_data_load is not None and not after_parameters_before_data:
             self.apply_scenario_parameters(after_data_load)
+        if self._construction_reform_state is None and self._building_dated_reforms:
+            self._construction_reform_state = ConstructionReformState(self)
 
         # Universal Credit reform (July 2025). Needs closer integration in the baseline,
         # but adding here for ease of toggling on/off via the 'active' parameter.
@@ -414,10 +420,13 @@ class Simulation(CoreSimulation):
         self.baseline._cgt_warning_enabled = False
         self.baseline._defer_uc_health_warning = False
         self.baseline._building_dated_reforms = None
+        self.baseline._construction_reform_state = None
 
         self.calculated_periods = []
 
         if after_data_load is not None:
+            if self._construction_reform_state is not None:
+                self._construction_reform_state.refresh_framework(self)
             if after_data_load.simulation_modifier is not None:
                 after_data_load.simulation_modifier(self)
         self._refresh_capital_gains_projection()
@@ -427,6 +436,7 @@ class Simulation(CoreSimulation):
 
         self._defer_uc_health_warning = False
         self._building_dated_reforms = None
+        self._construction_reform_state = None
         warn_shadowed_lcwra_reform(self)
 
     def _refresh_capital_gains_projection(self) -> None:
@@ -565,6 +575,9 @@ class Simulation(CoreSimulation):
 
     def clone(self, *args, **kwargs) -> "Simulation":
         clone = super().clone(*args, **kwargs)
+        clone._construction_reform_state = copy.deepcopy(
+            getattr(self, "_construction_reform_state", None)
+        )
         copy_model_values(self, clone)
         clone._cgt_input_provenance = copy.deepcopy(
             getattr(self, "_cgt_input_provenance", {})
@@ -1039,7 +1052,9 @@ class Simulation(CoreSimulation):
         """Export the simulation's inputs as a DataFrame that
         ``Simulation(dataset=...)`` loads back.
 
-        policyengine-core exports each input for the periods it was set for.
+        Export supplied values, including overrides of variables with formulas,
+        for the periods they were set for. Calculated caches and values stored
+        by the model itself are not supplied inputs.
         The identifiers are also given for every whole year a column names,
         where a simulation built from the frame holds them, so that the frame
         loads back to a simulation that exports the same frame. See
@@ -1049,12 +1064,12 @@ class Simulation(CoreSimulation):
             include_computed_variables: If True, export every stored value,
                 calculated ones included, as policyengine-core does.
         """
-        return with_identifiers_in_each_year(
-            super().to_input_dataframe(
-                include_computed_variables=include_computed_variables
-            ),
-            self.tax_benefit_system,
+        frame = (
+            super().to_input_dataframe(include_computed_variables=True)
+            if include_computed_variables
+            else input_dataframe(self)
         )
+        return with_identifiers_in_each_year(frame, self.tax_benefit_system)
 
     def build_from_dataset(self, dataset: Dataset) -> None:
         """Build simulation from a Dataset object.
