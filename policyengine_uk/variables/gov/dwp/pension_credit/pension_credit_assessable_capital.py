@@ -1,5 +1,9 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.capital_valuation import valued_capital
+from policyengine_uk.utils.capital_valuation import (
+    exact_amount,
+    round_to_penny,
+    valued_capital,
+)
 
 
 class pension_credit_assessable_capital(Variable):
@@ -31,11 +35,11 @@ class pension_credit_assessable_capital(Variable):
         person = benunit.members
         p = parameters(period).gov.dwp.pension_credit.income.capital
         household_capital = valued_capital(
-            lambda variable: household(variable, period), p.sources, p.sale_expenses
+            lambda variable: household(variable, period), p
         )
         claimant_or_partner = person("is_claimant_or_partner", period)
         person_capital = sum(
-            benunit.sum(person(source, period) * claimant_or_partner)
+            benunit.sum(exact_amount(person(source, period)) * claimant_or_partner)
             for source in p.person_sources
         )
         any_pension_age = benunit.any(
@@ -55,10 +59,15 @@ class pension_credit_assessable_capital(Variable):
         household_capital_proxy = (
             household_capital * benunit_pension_age_adults / adult_divisor
         )
-        reported_capital = benunit("pension_credit_reported_capital", period)
+        reported_capital = exact_amount(
+            benunit("pension_credit_reported_capital", period)
+        )
         assessed_capital = where(
             reported_capital >= 0,
             reported_capital,
             household_capital_proxy + person_capital,
         )
-        return where(any_pension_age, max_(0, assessed_capital), 0)
+        # A fraction of a penny is disregarded at the last stage (reg. 24A).
+        return round_to_penny(
+            where(any_pension_age, max_(0, assessed_capital), 0), p.round_down
+        )

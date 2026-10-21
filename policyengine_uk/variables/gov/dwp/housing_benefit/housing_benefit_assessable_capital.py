@@ -1,5 +1,9 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.capital_valuation import valued_capital
+from policyengine_uk.utils.capital_valuation import (
+    exact_amount,
+    round_to_penny,
+    valued_capital,
+)
 
 
 class housing_benefit_assessable_capital(Variable):
@@ -47,11 +51,11 @@ class housing_benefit_assessable_capital(Variable):
         )
         p = parameters(period).gov.dwp.housing_benefit.means_test.capital
         household_capital = valued_capital(
-            lambda variable: household(variable, period), p.sources, p.sale_expenses
+            lambda variable: household(variable, period), p
         )
         claimant_or_partner = person("is_claimant_or_partner", period)
         person_capital = sum(
-            benunit.sum(person(source, period) * claimant_or_partner)
+            benunit.sum(exact_amount(person(source, period)) * claimant_or_partner)
             for source in p.person_sources
         )
         benunit_claimants_and_partners = add(
@@ -80,7 +84,7 @@ class housing_benefit_assessable_capital(Variable):
         )
         capital = where(
             savings_credit_only,
-            benunit("pension_credit_assessable_capital", period),
+            exact_amount(benunit("pension_credit_assessable_capital", period)),
             household_capital_proxy + person_capital,
         )
         # Guarantee Credit passport: SI 2006/214 reg 26 (NI: SR 2006/406
@@ -102,8 +106,9 @@ class housing_benefit_assessable_capital(Variable):
         on_passporting_benefit = benunit(
             "housing_benefit_on_passporting_benefit", period
         )
-        return where(
-            passported | on_passporting_benefit,
-            0,
-            max_(0, capital),
+        # Rounded to the nearest penny at the last stage (reg. 80; HB (SPC)
+        # Regs 2006 reg. 61(6)).
+        return round_to_penny(
+            where(passported | on_passporting_benefit, 0, max_(0, capital)),
+            p.round_down,
         )

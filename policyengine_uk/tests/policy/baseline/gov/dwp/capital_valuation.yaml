@@ -294,7 +294,7 @@
     guarantee_credit: 0
     housing_benefit_assessable_capital: 130_000
 
-- name: UC rounds the share valuation down to the penny, at the capital limit
+- name: UC rounds the share valuation to the nearest penny, at the capital limit
   period: 2026
   absolute_error_margin: 0
   input:
@@ -307,10 +307,10 @@
     households:
       household:
         members: person
-        # 90% of 16,666.67 is 15,000.003, rounded down to the penny in the
-        # claimant's favour (ADM H1665): 15,000.00. With 1,000 of savings the
-        # capital is exactly the 16,000 limit, which does not exceed it (WRA
-        # 2012 s. 5(1)(a)).
+        # 90% of 16,666.67 is 15,000.003, rounded to the nearest penny (UC Regs
+        # 2013 reg. 6(1)): 15,000.00. With 1,000 of savings the capital is
+        # exactly the 16,000 limit, which does not exceed it (WRA 2012 s.
+        # 5(1)(a)).
         savings: 1_000
         corporate_wealth: 16_666.67
   output:
@@ -330,11 +330,108 @@
     households:
       household:
         members: person
-        # 90% of 16,001 is 14,400.90 and 90% of 1,000.10 is 900.09, each
-        # rounded down to the penny (ADM H1665): 15,300.99. Float32 arithmetic
-        # would give 14,400.89 and 900.08.
+        # 90% of 16,001 is 14,400.90 and 90% of 1,000.10 is 900.09, exactly:
+        # 15,300.99. Float32 arithmetic would give 14,400.8994 and 900.0899.
         other_residential_property_value: 16_001
         corporate_wealth: 1_000.10
   output:
     uc_assessable_capital: 15_300.99
     is_uc_eligible: true
+
+- name: UC rounds half a penny up, so the capital is a penny over the limit
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # 90% of 16,666.65 is 14,999.985. UC Regs 2013 reg. 6(1) treats a
+        # fraction of half a penny or more as a penny: 14,999.99, so the capital
+        # is 1,000.02 + 14,999.99 = 16,000.01, over the 16,000 limit. Rounding
+        # down, as ADM H1665 does, would give exactly 16,000.00; the regulation
+        # governs the guidance.
+        savings: 1_000.02
+        corporate_wealth: 16_666.65
+  output:
+    uc_assessable_capital: 16_000.01
+    is_uc_eligible: false
+
+- name: Pension Credit values shares as in the ADM and DMG worked example
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    people:
+      person:
+        age: 70
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # 250 shares at 4.1375 are 1,034.375 (ADM H1665; DMG 84763). Less 10%
+        # for the expenses of sale that is 930.9375, and the fraction of a
+        # penny is disregarded because counting it would not be to the
+        # claimant's advantage (SPC Regs 2002 reg. 24A): 930.93.
+        corporate_wealth: 1_034.375
+  output:
+    pension_credit_assessable_capital: 930.93
+
+- name: UC values the worked-example shares to the nearest penny
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # The same 930.9375 is 930.94 to the nearest penny (UC Regs 2013 reg.
+        # 6(1)), where ADM H1665 gives 930.93.
+        corporate_wealth: 1_034.375
+  output:
+    uc_assessable_capital: 930.94
+
+- name: Income Support rounds a shared capital down to the penny
+  period: 2021
+  absolute_error_margin: 0.001
+  input:
+    people:
+      first:
+        age: 30
+        is_claimant_or_partner: true
+      second:
+        age: 30
+        is_claimant_or_partner: true
+      third:
+        age: 30
+        is_claimant_or_partner: true
+    benunits:
+      first_unit:
+        members: [first]
+        would_claim_IS: false
+      second_unit:
+        members: [second]
+        would_claim_IS: false
+      third_unit:
+        members: [third]
+        would_claim_IS: false
+    households:
+      household:
+        members: [first, second, third]
+        # With no Income Support claim in the household, 10,000.01 of savings
+        # is shared by the three adults: 3,333.3366 each, rounded down at the
+        # last stage (IS Regs 1987 reg. 27): 3,333.33.
+        savings: 10_000.01
+  output:
+    income_support_assessable_capital: [3_333.33, 3_333.33, 3_333.33]

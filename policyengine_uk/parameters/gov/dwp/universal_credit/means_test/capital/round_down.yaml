@@ -1,0 +1,19 @@
+description: >
+  Whether a fraction of a penny in a Universal Credit capital calculation is
+  disregarded (true) rather than rounded to the nearest penny (false).
+  Regulation 6(1) disregards a fraction of less than half a penny and treats
+  any other fraction as a penny, for every amount calculated under the
+  regulations, including the reg. 49 valuation and the capital tested
+  against the limit. ADM H1665 rounds a share valuation down in the
+  claimant's favour, but the regulation governs.
+values:
+  2013-04-29: false
+metadata:
+  label: Universal Credit capital rounded down to the penny
+  period: year
+  unit: bool
+  reference:
+    - title: The Universal Credit Regulations 2013 reg. 6(1)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/6
+    - title: The Universal Credit Regulations (Northern Ireland) 2016 reg. 7(1)
+      href: https://www.legislation.gov.uk/nisr/2016/216/regulation/7

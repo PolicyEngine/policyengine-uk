@@ -1,5 +1,9 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.capital_valuation import counted_share
+from policyengine_uk.utils.capital_valuation import (
+    counted_share,
+    exact_amount,
+    round_to_penny,
+)
 
 
 class household_uc_pool_company_holdings(Variable):
@@ -54,8 +58,10 @@ class household_uc_pool_company_holdings(Variable):
         off_reported_capital = (
             has_financial_report | has_complete_override
         ) & claimant_or_partner
-        holding = person("uc_company_holding_disregard", period)
-        upper_bound = max_(0, person.household("corporate_wealth", period))
+        holding = exact_amount(person("uc_company_holding_disregard", period))
+        upper_bound = max_(
+            0, exact_amount(person.household("corporate_wealth", period))
+        )
         finite_holding = np.where(
             np.isfinite(holding), holding, np.where(holding > 0, upper_bound, 0)
         )
@@ -67,4 +73,7 @@ class household_uc_pool_company_holdings(Variable):
         # The holdings sit in corporate_wealth, which the pool counts at the
         # reg. 49(1) value, so they leave it at that value.
         p = parameters(period).gov.dwp.universal_credit.means_test.capital
-        return holdings * counted_share(p.sale_expenses, "corporate_wealth")
+        return round_to_penny(
+            holdings * counted_share(p.sale_expenses, "corporate_wealth"),
+            p.round_down,
+        )

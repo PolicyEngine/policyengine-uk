@@ -1,5 +1,5 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.capital_valuation import less_sale_expenses
+from policyengine_uk.utils.capital_valuation import exact_amount, less_sale_expenses
 
 
 class uc_other_residential_property_capital(Variable):
@@ -22,4 +22,8 @@ class uc_other_residential_property_capital(Variable):
         p = parameters(period).gov.dwp.universal_credit.means_test.capital
         market_value = max_(0, household("other_residential_property_value", period))
         debt = max_(0, household("other_residential_property_secured_debt", period))
-        return max_(0, less_sale_expenses(market_value, p.sale_expenses.rate) - debt)
+        return max_(
+            0,
+            less_sale_expenses(market_value, p.sale_expenses.rate, p.round_down)
+            - exact_amount(debt),
+        )

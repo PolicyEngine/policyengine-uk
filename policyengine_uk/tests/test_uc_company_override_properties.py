@@ -56,7 +56,7 @@ def _company_person(holding=0, dependant=False):
 
 
 def _grid(layout):
-    """Combine 960 independent three-unit households in one simulation."""
+    """Combine 1,280 independent three-unit households in one simulation."""
     people, units, households, cases = {}, {}, {}, []
     first_holdings, dependant_holdings, second_holdings = LAYOUTS[layout]
     claimant_holdings = (sum(first_holdings), sum(second_holdings), 0)
@@ -70,7 +70,7 @@ def _grid(layout):
     ) in enumerate(
         product(
             (0, 4_000, 10_000, 20_000),
-            (None, -1, 10_000),
+            (None, -1, 4_000, 10_000),
             (0, 4_000, 10_000, 20_000),
             (6_000, 20_000),
             OTHER_REPORTS,
@@ -157,12 +157,14 @@ def test_company_overrides_conserve_capital_and_keep_holdings_out_of_other_units
         market_holdings = [holding * scale for holding in bounded_holdings]
         effective_holdings = [SHARE_VALUE * holding for holding in market_holdings]
         # A recorded financial total holds its owners' holdings at full value;
-        # the pool counts them at 90%, so its known holding part is consumed at
-        # 90% (reg. 49(1)(a)) and the rest of the report in full.
+        # the pool counts them at 90% (reg. 49(1)(a)), so the report consumes
+        # its part beyond the holdings in full and the holdings at 90%. Like an
+        # override, a report below the holdings still consumes them: a report
+        # of 4,000 against a 10,000 holding consumes 9,000.
         explicit_consumption = sum(
             spec["override"]
             if "override" in spec
-            else max(0, spec["financial"] - (1 - SHARE_VALUE) * market)
+            else max(0, spec["financial"] - market) + SHARE_VALUE * market
             if spec.get("financial", -1) >= 0
             else 0
             for spec, market in zip(specs, market_holdings)
@@ -205,7 +207,8 @@ def test_company_overrides_conserve_capital_and_keep_holdings_out_of_other_units
         owner_substitution = sum(
             min(SHARE_VALUE * holding, reported)
             if "override" in spec
-            else max(0, reported - (1 - SHARE_VALUE) * market)
+            else max(0, reported - market)
+            + SHARE_VALUE * market
             - max(0, reported - holding)
             for holding, market, reported, absent, spec in zip(
                 holdings, market_holdings, explicit, missing, specs
