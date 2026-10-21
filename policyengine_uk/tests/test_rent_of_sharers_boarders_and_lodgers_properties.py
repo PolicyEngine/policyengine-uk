@@ -284,7 +284,22 @@ def test_non_dependants(population):
     )
     hb_total = sim.map_result(hb_individual, "person", "household")
     assert hb_total.max() > 0
-    assert np.allclose(per_household(sim, hb), hb_total, rtol=1e-5, atol=0.01)
+    # Each non-dependant family pays one deduction for its couple, the higher
+    # (HB Regs 2006 reg 74(3)), and one for each other member. The pool is
+    # apportioned over the families liable for the rent, and none falls on a
+    # family whose claimant or partner is exempt (reg 74(6)).
+    families = sim.populations["benunit"]
+    couple = calc(sim, "is_claimant_or_partner").astype(bool)
+    family_amount = families.max(hb_individual * couple) + families.sum(
+        hb_individual * ~couple
+    )
+    pool = per_household(sim, family_amount)
+    exempt = calc(sim, "housing_benefit_non_dep_deductions_claimant_exempt").astype(
+        bool
+    )
+    borne = per_household(sim, calc(sim, "share_of_household_rent") * ~exempt)
+    assert np.allclose(per_household(sim, hb), pool * borne, rtol=1e-5, atol=0.01)
+    assert np.all(per_household(sim, hb) <= hb_total + 0.01)
     assert np.all(hb[payer] == 0)
     assert np.all(uc[payer] == 0)
     # Council Tax Reduction: sharers, boarders and lodgers are not
