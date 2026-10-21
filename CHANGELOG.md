@@ -1,3 +1,10 @@
+## [2.141.12] - 2026-10-21
+
+### Fixed
+
+- - Fixed the Carer's Allowance earnings-limit property test to count pence in the precision the model stores earnings in (float32), as the formula does, so a draw whose float32 arithmetic rounds across a penny boundary no longer fails at random.
+
+
 ## [2.141.11] - 2026-10-21
 
 ### Fixed
