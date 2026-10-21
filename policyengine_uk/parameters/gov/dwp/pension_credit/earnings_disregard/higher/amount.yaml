@@ -1,0 +1,10 @@
+description: Weekly earnings disregarded from Pension Credit income for a lone parent, a carer, or a claimant or partner on a listed disability benefit or certified blind. It is the most that can be disregarded however many conditions are met.
+values:
+  2003-10-06: 20
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Pension Credit higher earnings disregard
+  reference:
+    - title: The State Pension Credit Regulations 2002 Sch. VI paras. 1, 3, 4 and 4A
+      href: https://www.legislation.gov.uk/uksi/2002/1792/schedule/VI

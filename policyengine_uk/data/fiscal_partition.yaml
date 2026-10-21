@@ -481,7 +481,7 @@ exclusions:
   - {variable: ni_class_3, kind: component, head: nics_individual}
   - {variable: ni_class_4, kind: component, head: nics_individual}
   - {variable: ni_class_1_employer, kind: component, head: nics_employer}
-  - {variable: salary_sacrifice_pension_ni_employee, kind: measure_within, head: nics_individual, note: "The excess sacrifice is added back to employment_income, so Class 1 already charges it."}
+  - {variable: salary_sacrifice_pension_ni_employee, kind: measure_within, head: nics_individual, note: "The excess sacrifice is added back to ni_class_1_income, so Class 1 already charges it."}
   - {variable: salary_sacrifice_pension_ni_employer, kind: measure_within, head: nics_employer, note: "As above, for employer Class 1."}
   - {variable: tax, kind: composite, spans: [income_tax, nics_individual]}
   - {variable: benunit_tax, kind: composite, spans: [income_tax, nics_individual]}

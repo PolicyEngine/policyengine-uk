@@ -29,7 +29,13 @@ class council_tax_reduction_applicable_income(Variable):
         "awards (Child Benefit, Income Support, income-based JSA, "
         "income-related ESA, Universal Credit, tax credits, Pension Credit) "
         "and its children belong to its claimant and partner, not to the "
-        "head, so none of them counts. "
+        "head, so none of them counts. Industrial injuries disablement "
+        "benefit, severe disablement allowance and incapacity benefit count "
+        "in every scheme, for the applicant and partner only, not for "
+        "children or young persons. War pensions and Armed Forces "
+        "Compensation Scheme payments are not counted: Scotland disregards or "
+        "omits them, and English and Welsh councils may relieve them beyond "
+        "the prescribed £10 a week, so the model takes the full disregard. "
         "No scheme "
         "counts income derived from capital, such as rent from property, "
         "interest and dividends, as income, so it is not listed and tax on it "
@@ -82,6 +88,15 @@ class council_tax_reduction_applicable_income(Variable):
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/5",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/7",
         "https://www.legislation.gov.uk/ssi/2021/249/regulation/36",
+        "https://www.legislation.gov.uk/uksi/2012/2885/schedule/5/paragraph/1",
+        "https://www.legislation.gov.uk/uksi/2012/2886/schedule/paragraph/39",
+        "https://www.legislation.gov.uk/uksi/2012/2886/schedule/paragraph/54",
+        "https://www.legislation.gov.uk/wsi/2013/3029/regulation/34",
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/17",
+        "https://www.legislation.gov.uk/ssi/2012/319/schedule/3/paragraph/1",
+        "https://www.legislation.gov.uk/ukpga/1992/14/schedule/1A/paragraph/2",
+        "https://www.legislation.gov.uk/ukpga/1992/14/section/13A",
+        "https://www.newham.gov.uk/downloads/file/209/discretionary-council-tax-reductions-for-individual-council-tax-payers",
     ]
 
     def formula(benunit, period, parameters):
@@ -137,6 +152,57 @@ class council_tax_reduction_applicable_income(Variable):
             "statutory_maternity_pay",
             "ssmg",
         ]
+        # Every scheme the model runs counts these three benefits. At pension
+        # age they are social security benefits that the income lists do not
+        # except: SI 2012/2885 Sch 1 para 16(1)(j), the default scheme SI
+        # 2012/2886 Sch para 39(1)(j), WSI 2013/3029 Sch 1 para 10(1)(j) and
+        # SSI 2012/319 reg 27(1)(j). At working age England and Wales count
+        # gross income (SI 2012/2886 Sch para 54(1); WSI 2013/3029 Sch 6 para
+        # 17(1)) less disregards that do not list them (their Schs 8 and 9),
+        # and Scotland's closed list names them (SSI 2021/249 reg 57(1)(b)(ix)
+        # to (xi)). Each scheme leaves out IIDB's constant attendance and
+        # exceptionally severe disablement increases (SSCBA 1992 ss.104 and
+        # 105), by name or as "attendance allowance" (Sch 8 and Sch 9 para
+        # 14), but iidb is the whole reported payment and cannot separate
+        # them. Only the applicant's and partner's count (Sch 1 para 11; SSI
+        # 2021/249 reg 36(1)): the Council Tax Reduction applicant and partner,
+        # which is the household head alone where the head applies alone, and
+        # never the dependants that the wider mask above still reaches.
+        applicant_and_partner_benefits = ["iidb", "sda", "incapacity_benefit"]
+        applicant_and_partner = person(
+            "is_council_tax_reduction_applicant_or_partner", period
+        )
+        # War disablement pensions, war widow's or widower's pensions and
+        # Armed Forces Compensation Scheme payments (afcs, war_widows_pension).
+        # Scotland counts none of them: SSI 2012/319 Sch 3 para 1 disregards
+        # each in full, and SSI 2021/249 reg 57(1), a closed list, does not
+        # name them. England and Wales prescribe a £10 a week disregard (SI
+        # 2012/2885 Sch 5 para 1; SI 2012/2886 Sch 6 para 1 and Sch 8 para 20;
+        # WSI 2013/3029 Sch 4 para 1 and Sch 9 para 20), which a council may
+        # exceed: Wales makes it a minimum for war disablement and war widow's
+        # or widower's pensions (WSI 2013/3029 reg 34(5)), an English scheme
+        # may make provision equivalent to the council tax benefit rules (LGFA
+        # 1992 Sch 1A para 2(11)), and any council may reduce council tax
+        # further (s.13A(1)(c)). The model takes the full disregard, as
+        # Housing Benefit does for local schemes under SSAA 1992 s.134(8)(a).
+        # The councils whose schemes the model reads mostly go further:
+        # Westminster's working-age and pensioner schemes disregard war
+        # pensions in full, and Oxford's Appendix 5 ignores war pensions for
+        # applicants without Universal Credit. Newham's scheme keeps the £10
+        # (Sch 6 para 1, Sch 8 para 19), but since 2013 it adds automatically
+        # the reduction a full disregard of war compensation payments would
+        # give (its s.13A(1)(c) policy, para 2.1). Kingston upon Thames's
+        # schedules keep the £10 (Sch 6 para 1, Sch 8 para 20) while its para
+        # 36(6) speaks of "the higher amount of full disregard" of the same
+        # payments. Merton's Sch 8 para 20 disregards them "in full" but
+        # "subject to paragraph 40", whose £20 a week limit, read literally,
+        # caps that at working age. These are approximations of the councils'
+        # texts. The full disregard also over-disregards guaranteed income
+        # payments in Wales, which reg 34(5) does not cover, and wherever a
+        # scheme keeps the prescribed £10 without further relief; afcs does
+        # not separate guaranteed income payments from war disablement
+        # pensions, nor either from the constant attendance and severe
+        # disablement additions that every scheme disregards in full.
         income_components = [
             "employment_income",
             "self_employment_income",
@@ -168,6 +234,9 @@ class council_tax_reduction_applicable_income(Variable):
         income = add_for_members(benunit, period, income_components, members)
         personal_benefit_income = add_for_members(
             benunit, period, personal_benefits, members
+        )
+        personal_benefit_income += add_for_members(
+            benunit, period, applicant_and_partner_benefits, applicant_and_partner
         )
         credits = applicant_family * add(benunit, period, ["tax_credits"])
         increased_income = income + personal_benefit_income + credits + benefits

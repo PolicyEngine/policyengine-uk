@@ -20,7 +20,11 @@
         savings: 11_000
   output:
     pension_credit_deemed_income: 104
-    pension_credit_income: 343
+    # 1 + 2 + 4 + 8 + 32 + 64 + 128 + 104 = 343, less the Sch VI disregard:
+    # the 20 pound para 4(1)(a)(vii) amount (contributory ESA), capped at the
+    # 129 of net earnings (no tax or NI on them).
+    pension_credit_earnings_disregard: 129
+    pension_credit_income: 214
 
 - name: Interest and dividends are not counted directly in Pension Credit income.
   period: 2021
@@ -225,6 +229,8 @@
         tenure_type: OWNED_OUTRIGHT
   output:
     pension_credit_earnings: 10_000
-    pension_credit_income: 10_000
-    # 238 x 52 = 12,376, less income of 10,000.
-    pension_credit: 2_376
+    # 10,000 less the 5 pound a week earnings disregard (260); the earnings
+    # are under the personal allowance and the primary threshold.
+    pension_credit_income: 9_740
+    # 238 x 52 = 12,376, less income of 9,740.
+    pension_credit: 2_636
