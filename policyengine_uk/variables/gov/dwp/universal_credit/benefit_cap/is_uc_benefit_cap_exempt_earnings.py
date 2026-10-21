@@ -7,7 +7,9 @@ class is_uc_benefit_cap_exempt_earnings(Variable):
     label = "Exempt from the Universal Credit benefit cap because of earnings"
     documentation = (
         "Whether the claimant's earned income, or a couple's combined earned "
-        "income, reaches the earnings threshold (UC Regs 2013 reg. 82(1)(a)). "
+        "income, reaches the earnings threshold (UC Regs 2013 reg. 82(1)(a), "
+        "uc_benefit_cap_earnings_exception_threshold), which follows the "
+        "national living wage each year. "
         "The measure is the assessed claimants' actual net earned income for "
         "Universal Credit: it includes statutory pay and deducts their own "
         "relievable pension contributions and tax and National Insurance on "
@@ -27,7 +29,6 @@ class is_uc_benefit_cap_exempt_earnings(Variable):
     def formula(benunit, period, parameters):
         person = benunit.members
 
-        # Earnings exemption for UC (£846/month = £10,152/year)
         # Only check earned income, not the UC amount, to avoid a circular dependency.
         # UC Regs 2013 reg. 82(1)(a) tests "the claimant's earned income or,
         # if the claimant is a member of a couple, the couple's combined
@@ -39,5 +40,6 @@ class is_uc_benefit_cap_exempt_earnings(Variable):
         uc_earned = benunit.sum(
             person("uc_individual_earned_income_before_mif", period) * claimant
         )
-        earnings_threshold = 10_152
-        return uc_earned >= earnings_threshold
+        return uc_earned >= benunit(
+            "uc_benefit_cap_earnings_exception_threshold", period
+        )
