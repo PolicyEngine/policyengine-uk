@@ -1,1 +1,0 @@
-- Reuse Pension Credit earnings tax calculations when checking Universal Credit housing contribution exemptions.
