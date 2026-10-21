@@ -565,6 +565,8 @@
       benunit:
         members: [carer_one, carer_two]
         would_claim_uc: false
+        # Each partner cares for a different severely disabled person.
+        partners_care_for_same_severely_disabled_person: false
     households:
       household:
         members: [carer_one, carer_two]
@@ -1154,3 +1156,139 @@
     council_tax_reduction_head_applies_alone: true
     council_tax_reduction_working_age_passported: false
     council_tax_reduction_working_age_personal_allowance: 75.65 * 52
+
+- name: Scotland, partners caring for the same person get one carer premium
+  # SSI 2021/249 Sch 1 para 5(3)-(4). Both partners care 35 hours and the
+  # model gives each Carer Support Payment (86.45 x 52 = 4,495.40), but they
+  # care for the same person, so one premium: (150.15 + 48.15) x 52 =
+  # 10,311.60. Income 10,000 pension + 2 x 4,495.40 = 18,990.80; award
+  # 3,000 - 0.2 x 8,679.20 = 1,264.16 (two premiums would give 1,764.92).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer_one:
+        age: 40
+        care_hours: 35
+        private_pension_income: 10_000
+        council_tax_benefit_reported: 100
+      carer_two:
+        age: 40
+        care_hours: 35
+    benunits:
+      benunit:
+        members: [carer_one, carer_two]
+        would_claim_uc: false
+        partners_care_for_same_severely_disabled_person: true
+    households:
+      household:
+        members: [carer_one, carer_two]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 3_000
+        savings: 0
+  output:
+    council_tax_reduction_working_age_carers: 1
+    council_tax_reduction_working_age_applicable_amount: (150.15 + 48.15) * 52
+    council_tax_reduction_working_age_applicable_income: 18_990.80
+    simulated_council_tax_reduction_benunit: 1_264.16
+
+- name: Scotland, partners caring for different people get a carer premium each
+  # The control: two premiums, (150.15 + 2 x 48.15) x 52 = 12,815.40; award
+  # 3,000 - 0.2 x (18,990.80 - 12,815.40) = 1,764.92.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer_one:
+        age: 40
+        care_hours: 35
+        private_pension_income: 10_000
+        council_tax_benefit_reported: 100
+      carer_two:
+        age: 40
+        care_hours: 35
+    benunits:
+      benunit:
+        members: [carer_one, carer_two]
+        would_claim_uc: false
+        partners_care_for_same_severely_disabled_person: false
+    households:
+      household:
+        members: [carer_one, carer_two]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 3_000
+        savings: 0
+  output:
+    council_tax_reduction_working_age_carers: 2
+    simulated_council_tax_reduction_benunit: 1_764.92
+
+- name: Wales, primary Class 1 comes off pay in full; miscellaneous income is unearned
+  # £15,000 pay and £3,000 Part 5 miscellaneous income, 20 hours, no UC.
+  # Income tax 0.2 x (18,000 - 12,570) = 1,086, all on the two (the lowest
+  # slice), shared pro rata: 905 on pay, 181 on the miscellaneous income.
+  # Class 1 0.08 x (15,000 - 12,570) = 194.40, on pay only (Sch 6 para
+  # 15(3)(a)). Net pay 15,000 - 905 - 194.40 = 13,900.60, less the £5
+  # disregard (260). The miscellaneous income is gross income other than
+  # earnings (Sch 6 para 17), less the tax on it (Sch 9 para 4): 2,819.
+  # Income 13,640.60 + 2,819 = 16,459.60; applicable amount 5,296.20; award
+  # 4,000 - 0.2 x 11,163.40 = 1,767.32.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        employment_income: 15_000
+        miscellaneous_income: 3_000
+        weekly_hours: 20
+        council_tax_benefit_reported: 100
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: WALES
+        country: WALES
+        council_tax: 4_000
+        savings: 0
+  output:
+    income_tax: 1_086
+    council_tax_reduction_working_age_earned_income: 13_900.60
+    council_tax_reduction_working_age_unearned_income: 3_000
+    council_tax_reduction_working_age_unearned_income_tax: 181
+    council_tax_reduction_working_age_applicable_income: 16_459.60
+    simulated_council_tax_reduction_benunit: 1_767.32
+
+- name: Scotland, Part 5 miscellaneous income counts as unearned income
+  # SSI 2021/249 reg 57(1)(o): "income that ... is taxable under Part 5 of
+  # the Income Tax (Trading and Other Income) Act 2005", counted gross. No
+  # earnings. Income 6,000; applicable amount 95.55 x 52 = 4,968.60; award
+  # 2,000 - 0.2 x 1,031.40 = 1,793.72.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        miscellaneous_income: 6_000
+        council_tax_benefit_reported: 100
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_working_age_earned_income: 0
+    council_tax_reduction_working_age_unearned_income: 6_000
+    council_tax_reduction_working_age_applicable_income: 6_000
+    simulated_council_tax_reduction_benunit: 1_793.72

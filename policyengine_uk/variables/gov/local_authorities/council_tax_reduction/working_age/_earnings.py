@@ -72,6 +72,37 @@ def _self_employed_net_profit(person, period, parameters):
     return max_(0, profit - notional_tax - notional_class_4 - notional_class_2)
 
 
+def _pay_and_miscellaneous_tax(person, period):
+    """Income tax and primary Class 1 on pay, and income tax on
+    miscellaneous income.
+
+    The Universal Credit split of a person's income tax
+    (uc_income_tax_on_earnings, less the part on any trade) covers pay,
+    statutory sick, maternity and paternity pay and Part 5 miscellaneous
+    income together. The schemes count miscellaneous income as unearned
+    income (SSI 2021/249 reg 57(1)(o); WSI 2013/3029 Sch 6 para 17), so that
+    tax is shared between pay and miscellaneous income pro rata. Primary
+    Class 1 falls on pay only and comes off it in full.
+    Returns (tax on pay, Class 1 on pay, tax on miscellaneous income).
+    """
+    pay = person("employment_income", period) + add(person, period, STATUTORY_PAY)
+    miscellaneous = max_(0, person("taxable_miscellaneous_income", period))
+    income_tax = person("uc_income_tax_on_earnings", period) - person(
+        "uc_income_tax_on_trade", period
+    )
+    class_1 = person("uc_national_insurance_on_earnings", period) - person(
+        "uc_national_insurance_on_trade", period
+    )
+    miscellaneous_share = np.divide(
+        miscellaneous,
+        pay + miscellaneous,
+        out=np.zeros_like(pay, dtype=float),
+        where=(pay + miscellaneous) > 0,
+    )
+    miscellaneous_tax = income_tax * miscellaneous_share
+    return income_tax - miscellaneous_tax, class_1, miscellaneous_tax
+
+
 def working_age_earnings(person, period, parameters):
     """Net earnings and the employed part of them, per person.
 
@@ -83,14 +114,18 @@ def working_age_earnings(person, period, parameters):
       regs 49 and 51(2)): employed earnings including statutory sick,
       maternity and paternity pay, and self-employed profit, less the income
       tax and National Insurance paid in respect of them and relievable
-      pension contributions, with no minimum income floor.
+      pension contributions, with no minimum income floor. Miscellaneous
+      income, which the Universal Credit model counts as earnings, is
+      unearned income here (reg 57(1)(o)), so it comes out, net of its share
+      of the tax.
     Without Universal Credit:
     - employed earnings are pay and statutory sick, maternity and paternity
       pay, less the income tax and primary Class 1 contributions in respect of
       the employment (SSI 2021/249 reg 50(3)(a); WSI 2013/3029 Sch 6 para
       15(3)(a)). The tax is the model's Universal Credit split of the person's
       income tax (earnings taken as the lowest slice of non-savings income),
-      less the part on any trade, shared pro rata with miscellaneous income;
+      less the part on any trade, shared pro rata with miscellaneous income
+      (_pay_and_miscellaneous_tax); Class 1 comes off in full;
     - self-employed earnings are the net profit with the prescribed notional
       tax and contributions (_self_employed_net_profit);
     - one half of pension contributions comes off
@@ -103,27 +138,16 @@ def working_age_earnings(person, period, parameters):
     )
     wales = is_wales_scheme(person.household("country", period))
     wales_universal_credit = person("uc_individual_earned_income", period)
-    scotland_universal_credit = person("uc_individual_earned_income_before_mif", period)
-
-    employment = person("employment_income", period) + add(
-        person, period, STATUTORY_PAY
-    )
+    pay_tax, class_1, miscellaneous_tax = _pay_and_miscellaneous_tax(person, period)
     miscellaneous = max_(0, person("taxable_miscellaneous_income", period))
-    employment_tax_and_national_insurance = (
-        person("uc_income_tax_on_earnings", period)
-        - person("uc_income_tax_on_trade", period)
-        + person("uc_national_insurance_on_earnings", period)
-        - person("uc_national_insurance_on_trade", period)
+    scotland_universal_credit = max_(
+        0,
+        person("uc_individual_earned_income_before_mif", period)
+        - (miscellaneous - miscellaneous_tax),
     )
-    employment_share = np.divide(
-        employment,
-        employment + miscellaneous,
-        out=np.zeros_like(employment, dtype=float),
-        where=(employment + miscellaneous) > 0,
-    )
-    employed = max_(
-        0, employment - employment_tax_and_national_insurance * employment_share
-    )
+
+    pay = person("employment_income", period) + add(person, period, STATUTORY_PAY)
+    employed = max_(0, pay - pay_tax - class_1)
     self_employed = _self_employed_net_profit(person, period, parameters)
     pension_rate = person.benunit(
         "council_tax_reduction_pension_contribution_deduction_rate", period
@@ -153,6 +177,8 @@ def working_age_unearned_income_tax(person, period):
     tax on earnings (uc_income_tax_on_earnings, earnings being the lowest
     slice), the rest is tax on pensions and benefits, shared pro rata with the
     taxable ones the schemes do not count (the Scottish Carer Supplement).
+    The tax on miscellaneous income, which the schemes count as unearned
+    income, is added (_pay_and_miscellaneous_tax).
     """
     other_non_savings_tax = max_(
         0,
@@ -169,4 +195,5 @@ def working_age_unearned_income_tax(person, period):
         out=np.ones_like(base, dtype=float),
         where=base > 0,
     )
-    return other_non_savings_tax * counted_share
+    _, _, miscellaneous_tax = _pay_and_miscellaneous_tax(person, period)
+    return other_non_savings_tax * counted_share + miscellaneous_tax

@@ -36,11 +36,13 @@ class council_tax_reduction_pension_contribution_deduction_rate(Variable):
         "(UC Regs 2013 reg 55(5)(a) for employed earnings and reg 57(2) step 4 "
         "for self-employed earnings): in Wales (WSI 2013/3029 Sch 6 para 9), "
         "Scotland (SSI 2021/249 regs 49(6)(a) and 51(2)) and Oxford (its "
-        "scheme's Appendix 3). The model has no such route for them yet "
-        "(#1962 for Wales and Scotland, #2520 for Oxford), so the share here "
-        "reaches those applicants too. Merton, Kingston upon Thames, Newham "
-        "and Westminster already assess them on Universal Credit income "
-        "(_legacy.py)."
+        "scheme's Appendix 3). Welsh and Scottish working-age applicants "
+        "with Universal Credit take that route "
+        "(council_tax_reduction_devolved_working_age), so the share here "
+        "reaches only those without it. Oxford has no such route yet (#2520), "
+        "so the share reaches its Universal Credit applicants too. Merton, "
+        "Kingston upon Thames, Newham and Westminster already assess them on "
+        "Universal Credit income (_legacy.py)."
     )
     definition_period = YEAR
     unit = "/1"

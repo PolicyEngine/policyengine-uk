@@ -15,7 +15,8 @@ class council_tax_reduction_working_age_carers(Variable):
         "The number of applicants and partners who qualify for the working-age "
         "carer premium: entitled to Carer's Allowance or, in Scotland, Carer "
         "Support Payment, whether or not an overlapping benefit reduces the "
-        "payment to nil. In Scotland an award of Universal Credit that "
+        "payment to nil; partners caring for the same severely disabled "
+        "person count once. In Scotland an award of Universal Credit that "
         "includes the carer element also qualifies; when no one in the family "
         "is entitled to a carer benefit, it counts as one carer."
     )
@@ -30,6 +31,11 @@ class council_tax_reduction_working_age_carers(Variable):
         claimant_or_partner = working_age_applicant_or_partner(person, period)
         entitled = person("is_entitled_to_carer_benefit", period)
         carers = benunit.sum(claimant_or_partner & entitled)
+        # Partners caring for the same severely disabled person get one
+        # premium (SSI 2021/249 Sch 1 para 5(3)-(4); SSCBA s.70(7ZA) allows
+        # one Carer's Allowance per cared-for person), as in carer_premium.
+        same_person = benunit("partners_care_for_same_severely_disabled_person", period)
+        carers = where(same_person, min_(carers, 1), carers)
         scotland = is_scotland_scheme(benunit.household("country", period))
         # An award of Universal Credit that includes the carer element
         # (SSI 2021/249 Sch 1 para 6(1)(c)); uc_carer_element alone is the

@@ -19,11 +19,14 @@ class council_tax_reduction_working_age_unearned_income(Variable):
         "reduction, as the pension-age route counts it; the Scottish Carer "
         "Supplement is a separate variable that does not count), "
         "maternity allowance, industrial injuries benefit, incapacity benefit, "
-        "severe disablement allowance and working and child tax credits "
-        "count. Child Benefit, the income-related benefits, disability "
-        "benefits, Housing Benefit and child maintenance do not. Actual "
-        "savings interest, dividends and rent are treated as capital, which "
-        "yields tariff income instead."
+        "severe disablement allowance, Part 5 miscellaneous income and "
+        "working and child tax credits count. Child Benefit, the "
+        "income-related benefits, disability benefits, Housing Benefit and "
+        "child maintenance do not. Actual savings interest, dividends and rent "
+        "are treated as capital, which yields tariff income instead. Scotland "
+        "counts a closed list (SSI 2021/249 reg 57(1)); Wales counts gross "
+        "income other than earnings less the Sch 9 disregards (WSI 2013/3029 "
+        "Sch 6 para 17), of which the model counts the sources above."
     )
     definition_period = YEAR
     unit = GBP
@@ -51,6 +54,9 @@ class council_tax_reduction_working_age_unearned_income(Variable):
                 "iidb",
                 "incapacity_benefit",
                 "sda",
+                # Part 5 miscellaneous income (SSI 2021/249 reg 57(1)(o); in
+                # Wales, gross income other than earnings, Sch 6 para 17).
+                "taxable_miscellaneous_income",
             ],
             members,
         )
