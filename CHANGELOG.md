@@ -1,3 +1,10 @@
+## [2.144.0] - 2026-10-21
+
+### Added
+
+- Add `pip_dl_points` and `pip_m_points` person-level inputs and points-threshold parameters under `gov.dwp.pip.{daily_living,mobility}.points_thresholds`, and derive `pip_dl_category` and `pip_m_category` from each person's latest points when the category is not provided as input. A person's category supplied for an earlier year still carries forward unless that person has points for a later year.
+
+
 ## [2.143.0] - 2026-10-21
 
 ### Added
