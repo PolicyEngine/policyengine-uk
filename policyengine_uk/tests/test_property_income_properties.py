@@ -346,8 +346,10 @@ def test_no_one_lowers_their_tax_by_switching_route_alone(couple_sim, drawn):
     set_couple_inputs(couple_sim, drawn)
     routes = couple_sim.calculate("uses_property_allowance", YEAR)
     income_tax = couple_sim.calculate("income_tax", YEAR).astype(float)
-    # While the winter fuel payment charge has effect (YEAR is after
-    # 2025-26), everyone the allowance would help chooses by comparing tax.
+    # Everyone the allowance would help. Those with finance costs to relieve
+    # choose by comparing tax; the rest take the allowance without comparing,
+    # which lowers their own taxable property income and so their tax: these
+    # couples are 40, so no winter fuel payment charge can reverse that.
     choosing = couple_sim.calculate("property_allowance_deduction_if_used", YEAR) > 0
     position = np.arange(2 * COUPLES) % 2
     for k in range(2):
