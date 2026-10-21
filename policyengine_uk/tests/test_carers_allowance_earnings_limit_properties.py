@@ -9,10 +9,14 @@ for trading profit, Class 4) contributions and half of pension contributions
 which deducted Class 2, was omitted from 6 April 2024).
 
 A fraction of a penny is disregarded where counting it would not favour the
-claimant (reg. 5). The model holds annual earnings in float32, so the formula
-first takes them to the nearest penny (an exact half penny disregarded), then
-compares the whole pence a week, after spreading over 52 weeks, with the
-limit. _over_limit restates that rule in exact rational arithmetic.
+claimant (reg. 5). Net earnings are whole pence less half of pension
+contributions (reg. 10(4)(b)), so a whole number of half pence, and the half
+penny of an odd-pence contribution counts as a penny off earnings, which
+favours the claimant. The model holds annual earnings in float32, so the
+formula first takes them to the nearest half penny, disregards a half penny,
+then compares the whole pence a week, after dividing by 52 (reg. 8(1)(b)(iii))
+with the fraction disregarded, with the limit. _over_limit restates that rule
+in exact rational arithmetic.
 
 Invariants, for a carer in England in 2026 caring 35 hours or more, with pay,
 trading profit, employee pension contributions and unearned income drawn
@@ -33,11 +37,20 @@ year it applies, with carers_allowance_earnings entered directly:
 5. Whole pence are judged exactly: annual earnings of A pence are over the
    limit L exactly when A // 52 > 100 x L, that is A >= 52 x (100 x L + 1),
    whatever float32 does to A. So 52 x L + £0.51 a year is within the limit
-   and 52 x L + £0.52 (a penny a week more) is over it.
+   and 52 x L + £0.52 (a penny a year more, and a penny a week over) is over
+   it.
 6. Exact arithmetic: for any stored amount, whole pence or not, the formula
    agrees with _over_limit.
 7. Monotonic in earnings: more earnings never take a person from over the
    limit to within it.
+
+And with pay and an employee pension contribution entered, in whole pence,
+in each year up to the latest limit's first, where pay near the limit pays no
+tax or NI:
+
+8. Half of a pension contribution comes off pay, its half penny counting as a
+   penny (regs. 10(4)(b) and 5): pay of P pence with a contribution of C
+   pence is over the limit L exactly when (P - ceil(C / 2)) // 52 > 100 x L.
 """
 
 import datetime
@@ -126,12 +139,15 @@ def _person(pay, profit, pension, savings=0.0, private_pension=0.0):
 
 def _over_limit(earnings, limit=LIMIT):
     # The formula's rule in exact rational arithmetic, on the stored value:
-    # the nearest penny a year, an exact half penny disregarded, then whole
-    # pence a week, a fraction of a penny disregarded (reg. 5), compared with
-    # the limit. £10,608.52 a year, stored as 10,608.51953125, is 1,060,852
-    # pence a year and 20,401 pence (£204.01) a week, a penny over £204.
-    annual_pence = math.ceil(Fraction(float(earnings)) * 100 - Fraction(1, 2))
-    return annual_pence // WEEKS > Fraction(str(limit)) * 100
+    # the nearest half penny a year (an exact quarter penny down), a half
+    # penny disregarded, then whole pence a week, a fraction of a penny
+    # disregarded (reg. 5), compared with the limit. £10,608.52 a year, stored
+    # as 10,608.51953125, is 1,060,852 pence a year and 20,401 pence (£204.01)
+    # a week, a penny over £204. £7,852.515 (pay of £7,852.52 less half of a
+    # 1p contribution), stored as 7,852.51513671875, is 785,251 pence a year
+    # and 15,100 pence (£151.00) a week, within £151.
+    half_pence = math.ceil(Fraction(float(earnings)) * 200 - Fraction(1, 2))
+    return half_pence // 2 // WEEKS > Fraction(str(limit)) * 100
 
 
 money = st.floats(min_value=0, max_value=60_000, allow_nan=False)
@@ -206,9 +222,9 @@ def _carers(variable, amounts_by_year, reform=None):
     )
 
 
-# A year's earnings at each limit, a penny a week below what is over it, and a
-# penny a week over it: 52 x L + £0.51 is L + £0.0098 a week, which reg. 5
-# takes down to L.
+# A year's earnings at each limit, a penny a year short of £0.01 a week over
+# it, and £0.01 a week over it: 52 x L + £0.51 is L + £0.0098 a week, which
+# reg. 5 takes down to L.
 PENNY_STEPS = ((0.0, False), (0.51, False), (0.52, True))
 
 
@@ -256,6 +272,112 @@ def test_pay_a_penny_a_week_over_each_limit_ends_entitlement():
     assert _penny_steps_misjudged("employment_income", SET_YEARS) == []
 
 
+def _pay_less_pension(year, pairs):
+    """Pay and an employee pension contribution for one carer each."""
+    people = {
+        f"carer_{i}": {
+            "age": {year: 45},
+            "care_hours": {year: 40},
+            "employment_income": {year: pay},
+            "employee_pension_contributions": {year: contribution},
+        }
+        for i, (pay, contribution) in enumerate(pairs)
+    }
+    simulation = Simulation(
+        situation={
+            "people": people,
+            "benunits": {
+                f"b{i}": {"members": [f"carer_{i}"]} for i in range(len(pairs))
+            },
+            "households": {
+                f"h{i}": {"members": [f"carer_{i}"], "country": {year: "ENGLAND"}}
+                for i in range(len(pairs))
+            },
+        }
+    )
+    earnings = simulation.calculate("carers_allowance_earnings", year)
+    gainful = simulation.calculate("is_gainfully_employed_for_carers_allowance", year)
+    return earnings, gainful
+
+
+# Pay and an odd-pence pension contribution: (extra pay over 52 x L, the
+# contribution, over the limit). Half of the contribution comes off pay
+# (reg. 10(4)(b)), and its half penny counts as a penny (reg. 5), so the
+# first three leave 52 x L + £0.51 and the last two 52 x L + £0.52.
+ODD_PENCE_CONTRIBUTIONS = (
+    (0.52, 0.01, False),
+    (0.53, 0.03, False),
+    (48.00, 94.97, False),
+    (0.53, 0.01, True),
+    (0.54, 0.03, True),
+)
+
+
+def test_half_an_odd_pence_pension_contribution_counts_as_a_penny_off():
+    """Regs. 10(4)(b) and 5, for every limit in earnings_limit.yaml in each
+    year up to the latest limit's first. Pay of 52 x L + £0.52 less half of a
+    1p contribution is 52 x L + £0.515, which reg. 5 takes to 52 x L + £0.51,
+    within the limit. Float32 holds that half penny just above it for most
+    limits (£7,852.515 as 7,852.51513671875), so taking the nearest penny
+    instead of the nearest half penny would put it over."""
+    misjudged = []
+    for year, limit in SET_YEARS:
+        pairs = [(WEEKS * limit + extra, c) for extra, c, _ in ODD_PENCE_CONTRIBUTIONS]
+        earnings, gainful = _pay_less_pension(year, pairs)
+        for (pay, contribution), (_, _, over), stored, judged in zip(
+            pairs, ODD_PENCE_CONTRIBUTIONS, earnings, gainful
+        ):
+            # Earnings are pay less half of the contribution, to within
+            # float32's rounding of the inputs and the subtraction.
+            assert abs(float(stored) - (pay - contribution / 2)) < 0.002, (
+                year,
+                pay,
+                contribution,
+                float(stored),
+            )
+            if bool(judged) != over:
+                misjudged.append((year, limit, pay, contribution, bool(judged)))
+    assert misjudged == []
+
+
+@st.composite
+def pay_and_contributions_around_a_limit(draw):
+    year, limit = draw(st.sampled_from(SET_YEARS))
+    # The least pence of earnings a year that is over the limit.
+    over = WEEKS * (limit * 100 + 1)
+    pairs = []
+    for _ in range(draw(st.integers(1, 30))):
+        contribution = draw(st.integers(0, 20_000))
+        # Pay within a few pence of the boundary after the deduction, or
+        # anywhere within £500 a year of the limit. Either way pay is below
+        # the personal allowance and the primary threshold, so no tax or NI.
+        boundary = over + math.ceil(contribution / 2)
+        near = st.integers(boundary - 3, boundary + 3)
+        anywhere = st.integers(
+            WEEKS * limit * 100 - 50_000, WEEKS * limit * 100 + 50_000
+        )
+        pairs.append((draw(st.one_of(near, anywhere)), contribution))
+    return year, limit, pairs
+
+
+@settings(
+    max_examples=10,
+    deadline=None,
+    derandomize=True,
+    suppress_health_check=[HealthCheck.too_slow],
+)
+@given(case=pay_and_contributions_around_a_limit())
+# Odd-pence contributions on either side of the boundary in 2024-25.
+@example(case=(2024, 151, [(785_252, 1), (785_253, 1), (785_253, 3), (785_254, 3)]))
+def test_pay_less_half_a_pension_contribution_is_judged_as_the_law_says(case):
+    """Invariant 8."""
+    year, limit, pairs = case
+    _, gainful = _pay_less_pension(year, [(p / 100, c / 100) for p, c in pairs])
+    for (pay, contribution), judged in zip(pairs, gainful):
+        net = pay - math.ceil(contribution / 2)
+        assert bool(judged) == (net // WEEKS > limit * 100), (year, pay, contribution)
+
+
 def test_a_limit_in_pounds_and_pence_is_read_exactly():
     """A reformed limit of £204.10 is 20,410 pence, not the 20,409.999...
     that 204.1 x 100 gives in floating point: £204.10 a week is within it and
@@ -292,6 +414,8 @@ def whole_pence_around_a_limit(draw):
 # Either side of the boundary in 2020-21 and 2024-25, where float32 pence
 # misjudged the penny over (#2541).
 @example(case=(2020, 128, [665_651, 665_652]))
+@example(case=(2022, 132, [686_451, 686_452]))
+@example(case=(2023, 139, [722_851, 722_852]))
 @example(case=(2024, 151, [785_251, 785_252]))
 def test_whole_pence_are_judged_exactly(case):
     """Invariant 5."""
@@ -300,6 +424,20 @@ def test_whole_pence_are_judged_exactly(case):
     gainful = simulation.calculate("is_gainfully_employed_for_carers_allowance", year)
     for amount, judged in zip(pence, gainful):
         assert bool(judged) == (amount // WEEKS > limit * 100), (year, amount)
+
+
+def _float32_either_side(amount):
+    nearest = np.float32(amount)
+    below = np.nextafter(nearest, np.float32(-np.inf))
+    above = np.nextafter(nearest, np.float32(np.inf))
+    return [float(below), float(nearest), float(above)]
+
+
+EDGES = {
+    limit: _float32_either_side(WEEKS * limit + 0.515)
+    + _float32_either_side(WEEKS * limit + 0.5175)
+    for limit in (139, 204)
+}
 
 
 @st.composite
@@ -319,9 +457,14 @@ def amounts_around_a_limit(draw):
     suppress_health_check=[HealthCheck.too_slow],
 )
 @given(case=amounts_around_a_limit())
-# 2022-23: £6,864.51 and £6,864.52 a year, a penny a week either side of the
-# boundary of the £132 limit, with amounts a tenth of a penny off them.
+# 2022-23: £6,864.51 (within the £132 limit) and £6,864.52 (a penny a week
+# over it), with amounts a tenth of a penny off them.
 @example(case=(2022, 132, [6_864.509, 6_864.51, 6_864.511, 6_864.52, 6_864.521]))
+# The stored amounts either side of 52L + £0.515 (a half penny, within the
+# limit) and 52L + £0.5175 (where the nearest half penny turns from £0.515 to
+# £0.52, over it), for a limit #2541 affected and one it did not.
+@example(case=(2023, 139, EDGES[139]))
+@example(case=(2026, 204, EDGES[204]))
 def test_the_formula_matches_exact_arithmetic_and_rises_with_earnings(case):
     """Invariants 6 and 7, for amounts with any fraction of a penny."""
     year, limit, amounts = case

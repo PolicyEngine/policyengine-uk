@@ -22,8 +22,9 @@ that no floor binds:
    is gainfully employed exactly when weekly earnings, with a fraction of a
    penny disregarded (reg. 5), exceed the limit, and then has no underlying
    entitlement. The pence are counted as the formula counts them: the stored
-   (float32) annual earnings are taken to the nearest penny, then spread over
-   52 weeks in whole pence. A lower share can only end entitlement and a
+   (float32) annual earnings are taken to the nearest half penny, a half
+   penny is disregarded, and the pence are spread over 52 weeks in whole
+   pence. A lower share can only end entitlement and a
    higher share can only restore it.
 4. Current law: the share is 0.5 in every year from 2015 (the first year the
    model simulates) to 2030.
@@ -122,12 +123,13 @@ def calculate(people, year, reform=None):
 
 def over_limit(earnings, limit):
     # Reg. 5, as is_gainfully_employed_for_carers_allowance applies it, in
-    # exact rational arithmetic: the stored amount to the nearest penny a
-    # year, an exact half penny disregarded, then whole pence a week, a
-    # fraction of a penny disregarded. 10,608.52 a year, stored as
-    # 10,608.51953125, is 1,060,852 pence and 20,401 pence (204.01) a week.
-    annual_pence = math.ceil(Fraction(float(earnings)) * 100 - Fraction(1, 2))
-    return annual_pence // 52 > Fraction(str(limit)) * 100
+    # exact rational arithmetic: the stored amount to the nearest half penny
+    # a year (an exact quarter penny down), a half penny disregarded, then
+    # whole pence a week, a fraction of a penny disregarded. 10,608.52 a year,
+    # stored as 10,608.51953125, is 1,060,852 pence and 20,401 pence (204.01)
+    # a week.
+    half_pence = math.ceil(Fraction(float(earnings)) * 200 - Fraction(1, 2))
+    return half_pence // 2 // 52 > Fraction(str(limit)) * 100
 
 
 # A carer one penny a week over the 2026-27 limit (10,608.52 / 52 = 204.01),

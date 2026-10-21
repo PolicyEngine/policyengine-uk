@@ -322,7 +322,7 @@
     is_gainfully_employed_for_carers_allowance: false
     carers_allowance_pre_overlap: 86.45 * 52
 
-- name: Case 21, in 2024-25 a penny a week under the next whole penny over £151 is within the limit.
+- name: Case 21, in 2024-25 a penny a year short of £151.01 a week is within the limit.
   period: 2024
   absolute_error_margin: 0.01
   input:
@@ -348,5 +348,36 @@
     # 7,852.52 / 52 = £151.01. Float32 holds 7,852.52 as 7,852.52001953125;
     # counting pence in float32 used to give £151.00 (#2541).
     carers_allowance_earnings: 7_852.52
+    is_gainfully_employed_for_carers_allowance: true
+    carers_allowance: 0
+
+- name: Case 23, in 2024-25 the half penny of half an odd-pence pension contribution counts as a penny off earnings.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 7_852.52
+    employee_pension_contributions: 0.01
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # 7,852.52 less half of 0.01 is 7,852.515. Counting the half penny of the
+    # deduction as a penny favours the claimant (reg. 5), so earnings are
+    # 7,852.51, or £151.0098 a week, which counts as £151.00.
+    is_gainfully_employed_for_carers_allowance: false
+    carers_allowance: 81.90 * 52
+
+- name: Case 24, in 2024-25 a penny more pay with the same contribution is over the limit.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 7_852.53
+    employee_pension_contributions: 0.01
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # 7,852.53 less 0.005 is 7,852.525, which reg. 5 takes to 7,852.52, or
+    # £151.01 a week.
     is_gainfully_employed_for_carers_allowance: true
     carers_allowance: 0
