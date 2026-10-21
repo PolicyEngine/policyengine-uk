@@ -1111,7 +1111,10 @@
   # 2013 reg 2), and reg 83(1)(c) excepts only where "a claimant is
   # receiving" it. The 17-year-old is a qualifying young person, not a
   # claimant, so the family's Universal Credit is capped at the London
-  # family rate of 25,323 a year.
+  # family rate of 25,323 a year. AFIP also earns no disabled child
+  # addition (reg 24(2) lists DLA, PIP and the Scottish equivalents, and
+  # blindness for the higher rate), so the maximum amount is the standard
+  # allowance, three child elements and the 30,000 housing costs element.
   period: 2026
   input:
     people:
@@ -1140,8 +1143,9 @@
     is_uc_benefit_cap_exempt_specified_benefit: false
     is_uc_benefit_cap_exempt: false
     uc_benefit_cap: 25_323
-    universal_credit_pre_benefit_cap: 52_792.44
-    uc_benefit_cap_reduction: 30_737.64
+    uc_disability_elements: 0
+    universal_credit_pre_benefit_cap: 46_615.92
+    uc_benefit_cap_reduction: 24_561.12
     universal_credit: 22_054.80
   absolute_error_margin: 1
 
