@@ -1,3 +1,10 @@
+## [2.141.9] - 2026-10-21
+
+### Fixed
+
+- Council Tax Reduction income now counts the applicant's and partner's industrial injuries disablement benefit, severe disablement allowance and incapacity benefit in every scheme (SI 2012/2885 Sch 1 para 16; SI 2012/2886 Sch paras 39 and 54; WSI 2013/3029 Sch 1 para 10 and Sch 6 para 17; SSI 2012/319 reg 27; SSI 2021/249 reg 57).
+
+
 ## [2.141.8] - 2026-10-21
 
 ### Changed
