@@ -1381,8 +1381,11 @@
     council_tax_reduction: 2_000
 
 - name: From April 2022 Scotland applies the Universal Credit yield to a capped award on its own capital
-  # SSI 2021/249 reg 10A: an award includes one reduced to nil; reg 63(1)(a)
-  # applies the monthly yield, £4.35 per £250 over £6,000, to the capital
+  # The benefit cap reduces the award rather than ending it (UC Regs 2013
+  # reg 81), so there is still an award of Universal Credit. With one,
+  # unearned income, which includes the assumed yield (reg 57(1)(l)), is
+  # calculated monthly (reg 64(1)), so reg 63(1)(a) applies the monthly
+  # yield, £4.35 per £250 over £6,000, to the capital
   # the authority calculates, here the £18,000 of property after sale
   # expenses (counted up to the limit: 40 x 4.35 x 12 = 2,088). It is over the
   # £16,000 limit, so there is no award.
