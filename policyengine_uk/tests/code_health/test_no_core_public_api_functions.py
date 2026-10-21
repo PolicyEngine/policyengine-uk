@@ -77,6 +77,11 @@ def find_removed_core_function_references(source_text: str) -> list[str]:
             id="chart_module_imported_from_charts_with_alias",
         ),
         pytest.param(
+            "from policyengine_core.charts import (\n    format_fig,\n    api,\n)",
+            "from policyengine_core.charts import (\n    format_fig,\n    api",
+            id="chart_module_in_parenthesized_import",
+        ),
+        pytest.param(
             'monkeypatch.setattr("policyengine_core.reforms.reform.requests.get", '
             "fake_get)",
             "policyengine_core.reforms.reform.requests",
