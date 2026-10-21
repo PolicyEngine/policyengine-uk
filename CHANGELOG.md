@@ -1,3 +1,11 @@
+## [2.141.6] - 2026-10-20
+
+### Fixed
+
+- - Uprate `water_and_sewerage_charges`, `housing_service_charges` and `pension_contributions_via_salary_sacrifice`, which declared an uprating index but were absent from `uprating_indices.yaml` and so stayed flat through 2030. Also uprate twelve columns added since with the same gap, each by the index it declares: `cash_isa`, `stocks_and_shares_isa`, `mortgage_debt`, `consumer_debt`, `rent_paid_as_boarder`, `rent_paid_as_lodger`, `owned_company_capital`, `owned_company_holding_value` and `owned_company_trade_assets` (per-capita GDP) and `self_employment_gross_receipts` and `owned_company_income_share` (per-capita mixed income), plus `pension_contributions_via_salary_sacrifice_pre_2015` (average earnings). Adds a code-health test asserting that every variable declaring `uprating` appears in that file under the matching index, so the gap fails at the point it is introduced. `rail_usage` is excluded because its declared index is a cumulative level rather than a year-on-year rate, and the three energy columns because the data build already prices them (#1868). Updates Ofwat water bill growth to the published 27% for 2025-26 (was the 26% forecast) and 5.4% for 2026-27 (was a 5.5% projection), and documents the sources and vintage of the water bill and population growth series.
+- - Limited the ordinary income-tax loss-cap pension uplift above earnings to relief-at-source contributions.
+
+
 ## [2.141.5] - 2026-10-20
 
 ### Fixed
