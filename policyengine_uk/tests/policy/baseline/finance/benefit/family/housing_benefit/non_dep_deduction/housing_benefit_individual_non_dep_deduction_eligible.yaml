@@ -1,7 +1,7 @@
 - name: Eligible
   period: 2025
   input:
-    benunit_is_rent_liable: false
+    is_non_dependant_of_household_head: true
     age: 18
     # Without this the age-based default puts an 18-year-old in tertiary
     # education, and full-time students are exempt (reg 74(7)(c)).
@@ -15,7 +15,7 @@
 - name: Age ineligible
   period: 2025
   input:
-    benunit_is_rent_liable: false
+    is_non_dependant_of_household_head: true
     age: 17
   output:
     housing_benefit_individual_non_dep_deduction_eligible: false
@@ -28,10 +28,31 @@
   output:
     housing_benefit_individual_non_dep_deduction_eligible: false
 
+# HB Regs 2006 reg 3: a member of the claimant's own benefit unit who is not
+# the claimant, partner or a child or young person. Aged 25 or over, so the
+# reg 74(8) exemptions for younger non-dependants on benefits do not apply.
+- name: Non-dependant within the benefit unit
+  period: 2025
+  input:
+    is_non_dependant_of_household_head: false
+    is_benefit_unit_non_dependant_for_legacy_benefits: true
+    age: 30
+  output:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+
+- name: Non-dependant within the benefit unit, under 18
+  period: 2025
+  input:
+    is_non_dependant_of_household_head: false
+    is_benefit_unit_non_dependant_for_legacy_benefits: true
+    age: 17
+  output:
+    housing_benefit_individual_non_dep_deduction_eligible: false
+
 - name: Exempt non-dependant is ineligible
   period: 2025
   input:
-    benunit_is_rent_liable: false
+    is_non_dependant_of_household_head: true
     age: 20
     current_education: TERTIARY
   output:

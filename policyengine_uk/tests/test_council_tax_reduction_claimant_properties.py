@@ -33,10 +33,13 @@ independently.
 3. Simulated reductions: no family outside the claimants gets one, and a
    household's total never exceeds its council tax. (Reported reductions,
    used where a scheme is not modelled, are outside this test.)
-4. Non-dependants: no claimant or partner of a claimant family is a
-   non-dependant (the applicant's family, SI 2012/2885 reg 9(2)(a)). Pin: no
-   member of a sharer family is one, and every adult outside the claimant
-   families, the sharer families and boarders' and lodgers' families is one.
+4. Non-dependants: no applicant or partner of a claimant family
+   (is_council_tax_reduction_applicant_or_partner) is a non-dependant (the
+   applicant's family, SI 2012/2885 reg 9(2)(a)). Pin: no member of a sharer
+   family is one except a member outside its applicant's family
+   (is_benefit_unit_non_dependant_for_council_tax_reduction), and every
+   adult outside the claimant families, the sharer families and boarders'
+   and lodgers' families is one.
 5. Differential: where the input flags exactly one member of a household,
    or no household in the simulation has the input (so the flag's formula
    picks the eldest), the family holding the head is the one holding the
@@ -314,8 +317,10 @@ def test_claimant_invariants(population):
     person_sharer = sharer[facts["benunit"]]
     lodger = calc(sim, "pays_rent_to_householder")
     adult = age >= 18
-    assert not np.any(non_dep & person_claimant & claimant_or_partner)
-    assert not np.any(non_dep & person_sharer)
+    applicant_or_partner = calc(sim, "is_council_tax_reduction_applicant_or_partner")
+    in_unit = calc(sim, "is_benefit_unit_non_dependant_for_council_tax_reduction")
+    assert not np.any(non_dep & person_claimant & applicant_or_partner)
+    assert not np.any(non_dep & person_sharer & ~in_unit)
     assert np.all(non_dep[adult & ~person_claimant & ~person_sharer & ~lodger])
 
     # 5. Differential with the person-level household head flag. Once anyone in

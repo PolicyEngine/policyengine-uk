@@ -6,6 +6,8 @@
       person:
         age: 22
         uc_non_dep_deduction_exempt: false
+        # A member of another family who is not liable for rent.
+        is_non_dependant_of_household_head: true
     benunits:
       benunit:
         members: person
@@ -21,6 +23,7 @@
       person:
         age: 22
         uc_non_dep_deduction_exempt: true
+        is_non_dependant_of_household_head: true
     benunits:
       benunit:
         members: person
@@ -36,6 +39,8 @@
       person:
         age: 20
         uc_non_dep_deduction_exempt: false
+        # A member of another family who is not liable for rent.
+        is_non_dependant_of_household_head: true
     benunits:
       benunit:
         members: person
