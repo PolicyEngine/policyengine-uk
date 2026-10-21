@@ -162,7 +162,12 @@ def situation(units, year, election=None, bump=None):
     for i, unit in enumerate(units):
         names = []
         for j, adult in enumerate(unit["adults"]):
-            person = {"state_pension": {year: 0.0}}
+            # The roles are given, not inferred: inference from ages alone
+            # can read a couple aged 18 and 100 as parent and child.
+            person = {
+                "state_pension": {year: 0.0},
+                "is_claimant_or_partner": {year: True},
+            }
             for variable, value in adult.items():
                 person[variable] = {year: value}
             if j == 0:
@@ -174,7 +179,10 @@ def situation(units, year, election=None, bump=None):
             people[f"p{i}_{j}"] = person
             names.append(f"p{i}_{j}")
         for k, age in enumerate(unit["children"]):
-            people[f"c{i}_{k}"] = {"age": {year: age}}
+            people[f"c{i}_{k}"] = {
+                "age": {year: age},
+                "is_claimant_or_partner": {year: False},
+            }
             names.append(f"c{i}_{k}")
         benunits[f"b{i}"] = {
             "members": names,
@@ -394,8 +402,30 @@ def test_couples_tax_never_falls_with_more_income(case, year):
     ), (bump, units)
 
 
+# A married couple aged 18 and 100 with no income: the review's
+# counterexample when roles were inferred from ages.
+COUPLE_18_AND_100 = [
+    dict(
+        adults=[
+            dict(
+                age=18,
+                **{
+                    variable: 0.0 for variable in INCOMES if variable != "state_pension"
+                },
+            ),
+            dict(age=100, **{variable: 0.0 for variable in INCOMES}),
+        ],
+        married=True,
+        children=[],
+        region=REGIONS[0],
+        married_couples_allowance=0.0,
+    )
+]
+
+
 @PROPERTY_SETTINGS
 @given(units=couple_populations, year=st.sampled_from(YEARS))
+@example(units=COUPLE_18_AND_100, year=2026)
 def test_only_married_couples_transfer(units, year):
     model = calculate(units, year)
     outside = ~model["is_marriage_allowance_spouse"]
