@@ -1,3 +1,20 @@
+## [2.142.0] - 2026-10-21
+
+### Added
+
+- - Add `defined_benefit_pension_share`, `defined_benefit_pension_contributions` and `defined_benefit_pension_input_amount`, so data can say which workplace pension contributions go to defined-benefit arrangements and supply their statutory pension input amount (Finance Act 2004 s. 234) for the annual allowance. Where the input amount is not supplied it is those contributions times `gov.simulation.pensions.defined_benefit_input_per_contribution`, set at 1 from the accrual and contribution rates of the main public service schemes.
+
+### Changed
+
+- - Estimate unused annual allowance carried forward (Finance Act 2004 s. 228A) from 2020-21 where none is supplied, instead of nil: each of the five previous years' pension input is this year's times `gov.simulation.pensions.prior_year_input_ratio` (1), with incomes and input deflated by average earnings growth, against that year's tapered allowance, used earliest first (s. 228A(7)).
+
+### Fixed
+
+- - Use one definition of relevant UK earnings (Finance Act 2004 s. 189(2)) for pension contribution relief, the annual allowance income tests and the pension deduction in adjusted total income: employment income after allowable expenses but before pension deductions, and trading profits after capital allowances and the trading allowance but before losses brought forward. Relief previously counted pay before expenses and trading profits before capital allowances and the trading allowance.
+- - Uprate water and sewerage charges by country when a dataset is projected: England and Wales by Ofwat's average bills, Scotland by a new Scottish Water series (8.8% in 2024-25, 9.9% in 2025-26 and 8.67% in 2026-27, then the CPI + 2% cap in WICS's draft 2027-33 determination), and Northern Ireland, which has no domestic water charges, not at all. The charges were previously held flat to 2030 and then grown by the England and Wales series everywhere.
+- - Derive the Universal Credit benefit cap's earnings exception threshold each year from the national living wage: the pay for 16 hours a week, times 52 and divided by 12, with any fraction of a pound disregarded (Universal Credit Regulations 2013 regs. 82(1)(a) and 6(1A)(za)), and a fixed £430 a month before April 2017. It was fixed at the 2025-26 figure of £10,152 a year for every year; it is now £9,516 in 2024-25 and £10,572 in 2026-27. The national living wage parameter ends at its April 2026 rate, so the threshold stays at £10,572 in later years until that parameter is projected.
+
+
 ## [2.141.12] - 2026-10-21
 
 ### Fixed
