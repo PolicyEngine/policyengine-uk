@@ -185,7 +185,7 @@
     universal_credit: 42_066.40
   absolute_error_margin: 1
 
-# --- Earnings threshold is a dated parameter, not a hardcoded constant ---
+# --- Earnings threshold follows the national living wage, not a fixed 10,152 ---
 
 - name: The 2025-26 earnings threshold is 846 a month
   period: 2025

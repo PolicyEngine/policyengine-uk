@@ -1,3 +1,74 @@
+## [2.142.0] - 2026-10-21
+
+### Added
+
+- - Add `defined_benefit_pension_share`, `defined_benefit_pension_contributions` and `defined_benefit_pension_input_amount`, so data can say which workplace pension contributions go to defined-benefit arrangements and supply their statutory pension input amount (Finance Act 2004 s. 234) for the annual allowance. Where the input amount is not supplied it is those contributions times `gov.simulation.pensions.defined_benefit_input_per_contribution`, set at 1 from the accrual and contribution rates of the main public service schemes.
+
+### Changed
+
+- - Estimate unused annual allowance carried forward (Finance Act 2004 s. 228A) from 2020-21 where none is supplied, instead of nil: each of the five previous years' pension input is this year's times `gov.simulation.pensions.prior_year_input_ratio` (1), with incomes and input deflated by average earnings growth, against that year's tapered allowance, used earliest first (s. 228A(7)).
+
+### Fixed
+
+- - Use one definition of relevant UK earnings (Finance Act 2004 s. 189(2)) for pension contribution relief, the annual allowance income tests and the pension deduction in adjusted total income: employment income after allowable expenses but before pension deductions, and trading profits after capital allowances and the trading allowance but before losses brought forward. Relief previously counted pay before expenses and trading profits before capital allowances and the trading allowance.
+- - Uprate water and sewerage charges by country when a dataset is projected: England and Wales by Ofwat's average bills, Scotland by a new Scottish Water series (8.8% in 2024-25, 9.9% in 2025-26 and 8.67% in 2026-27, then the CPI + 2% cap in WICS's draft 2027-33 determination), and Northern Ireland, which has no domestic water charges, not at all. The charges were previously held flat to 2030 and then grown by the England and Wales series everywhere.
+- - Derive the Universal Credit benefit cap's earnings exception threshold each year from the national living wage: the pay for 16 hours a week, times 52 and divided by 12, with any fraction of a pound disregarded (Universal Credit Regulations 2013 regs. 82(1)(a) and 6(1A)(za)), and a fixed £430 a month before April 2017. It was fixed at the 2025-26 figure of £10,152 a year for every year; it is now £9,516 in 2024-25 and £10,572 in 2026-27. The national living wage parameter ends at its April 2026 rate, so the threshold stays at £10,572 in later years until that parameter is projected.
+
+
+## [2.141.12] - 2026-10-21
+
+### Fixed
+
+- - Fixed the Carer's Allowance earnings-limit property test to count pence in the precision the model stores earnings in (float32), as the formula does, so a draw whose float32 arithmetic rounds across a penny boundary no longer fails at random.
+
+
+## [2.141.11] - 2026-10-21
+
+### Fixed
+
+- - Indexed the annual savings starting-rate limit by September CPI from 2031–32, with statutory £10 rounding after the freeze.
+
+
+## [2.141.10] - 2026-10-21
+
+### Changed
+
+- - Reuse Pension Credit earnings tax calculations when checking Universal Credit housing contribution exemptions.
+
+### Fixed
+
+- Apply the Pension Credit earnings disregards of SPC Regs 2002 Schedule VI: 20 pounds a week for lone parents, carers and claimants or partners on a listed disability benefit (including working tax credit with a disability element) or certified blind, otherwise 5 pounds (single) or 10 pounds (couple), capped at net earnings. Employed earnings are net of the income tax they add; self-employed earnings, in Pension Credit income too, are net of the notional tax and contributions of the Computation of Earnings Regulations 1996 reg. 14. The Housing Benefit savings-credit-only route now deducts only the higher Housing Benefit disregards.
+
+
+## [2.141.9] - 2026-10-21
+
+### Fixed
+
+- Council Tax Reduction income now counts the applicant's and partner's industrial injuries disablement benefit, severe disablement allowance and incapacity benefit in every scheme (SI 2012/2885 Sch 1 para 16; SI 2012/2886 Sch paras 39 and 54; WSI 2013/3029 Sch 1 para 10 and Sch 6 para 17; SSI 2012/319 reg 27; SSI 2021/249 reg 57).
+
+
+## [2.141.8] - 2026-10-21
+
+### Changed
+
+- Clarify domestic and overseas carbon flows and household incidence, including imported emissions in the consumption footprint and the chart's 2019 DEFRA fallback intensities.
+- Use public Core operations for UK parameter initialization and dated-cache clearing while preserving parameter and reform behavior.
+
+### Fixed
+
+- Updated recent residential SDLT purchase schedules and applied the inclusive first-time-buyer price maximum, retaining annual sampling and contract-protection limitations.
+- - Kept the pension salary-sacrifice cap in National Insurance earnings without inflating ordinary pay or member pension contributions, retained actual supplied ordinary returns in the annual-allowance calculations, and preserved the childcare income tests in #2173.
+
+
+## [2.141.7] - 2026-10-21
+
+### Fixed
+
+- - Added the 2022–23 annual employee National Insurance schedule for explicitly declared full-year category A directors in one employment, preserving ordinary employees and other years.
+- - Corrected the JSA, ESA and DLA program registry variable mappings, narrowed Benefit Cap's parameter prefix to its own subtree, removed Maternity Allowance's unrelated DWP parameter prefix, and added validation of all declared registry variables and parameter prefixes.
+- - Reject data-axis aggregate-impact comparisons when either measurement omits its Python version or machine identity.
+
+
 ## [2.141.6] - 2026-10-20
 
 ### Fixed

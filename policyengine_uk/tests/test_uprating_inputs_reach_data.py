@@ -104,6 +104,8 @@ def mock_dataset_with_every_uprated_input() -> UKSingleYearDataset:
     uprating = economic_assumptions._uprating_index_map()
     names = set(economic_assumptions._unmapped_uprating_indices(uprating))
     names |= {name for variables in uprating.values() for name in variables}
+    # Uprated by country rather than through the index map (#2501).
+    names |= economic_assumptions.COUNTRY_UPRATED_INPUTS
     for name in sorted(names):
         variable = system.variables.get(name)
         if variable is None or variable.value_type is not float:

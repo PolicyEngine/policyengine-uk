@@ -81,3 +81,28 @@ The model uses these year-on-year growth rates. Each year is the charging year s
 ```{warning}
 The 2027-2029 projections cannot be reproduced from the repository. They take the CCW table, which reflects Ofwat's PR24 *draft* determinations rather than the final ones, weight each company by customer numbers, and add a hardcoded CPIH path. The customer weights were in `ofwat_increases.csv`, which is gitignored and was never committed.
 ```
+
+## Scotland and Northern Ireland
+
+Ofwat's bills cover England and Wales. When a dataset is projected forward, each household's `water_and_sewerage_charges` grows by its own country's series (`uprate_water_and_sewerage_charges` in `policyengine_uk/data/economic_assumptions.py`):
+
+- England and Wales, and households with an unknown region, take `ofwat.water_bills`.
+- Scotland takes `scottish_water.water_bills`. Scottish Water sets household charges within limits from the [Water Industry Commission for Scotland](https://wics.scot/) (WICS), and every council tax band's charge is a fixed fraction of Band D, so each band rises by the same percentage.
+- Northern Ireland has no domestic water charges, so any charge a dataset gives its households is held flat.
+
+This holds to the end of the dataset projection (2032). After it, policyengine-core grows every household's charge by the index the variable declares, Ofwat's England and Wales series, as it did before this split.
+
+| Year | Scottish Water growth | Source |
+|------|-------------|--------|
+| 2022 | 4.2% | [WICS, charges scheme 2022-23](https://wics.scot/publications/price-setting/strategic-review-charges-2021-27/scottish-waters-charges-scheme/charges-scheme-2022-23) |
+| 2023 | 5.0% | [WICS, charges scheme 2023-24](https://wics.scot/publications/price-setting/strategic-review-charges-2021-27/scottish-waters-charges-scheme/charges-scheme-2023-24) |
+| 2024 | 8.8% | [WICS, charges scheme 2024-25](https://wics.scot/publications/price-setting/strategic-review-charges-2021-27/scottish-waters-charges-scheme/charges-scheme-2024-25) |
+| 2025 | 9.9% | [Scottish Water, 28 January 2025](https://www.scottishwater.co.uk/About-Us/News-and-Views/2025/01/Charges-2025-to-2026-Announcement) |
+| 2026 | 8.67% | [Scottish Water, 22 January 2026](https://www.scottishwater.co.uk/about-us/news-and-views/2026/01/230126-charges-2026) |
+| 2027 | 3.9% | [WICS Draft Determination 2027-33](https://wics.scot/system/files/2026-06/Draft-Determination-2027-33.pdf): the CPI + 2% core cap (para. 9.1.3) with WICS's CPI forecast of 1.9% (Table 68) |
+| 2028 | 3.9% | As above |
+| 2029 | 4.1% | As above, with CPI at 2.1% |
+
+Each year is the charging year starting in April, so 2025 is 2025-26. Later years to 2032 hold the 2029-30 rate. [WICS publishes its Final Determination for 2027-33](https://wics.scot/latest/wics-publishes-2027-33-draft-determination) on 29 October 2026; the 2027-2029 values should then be replaced with it.
+
+`policyengine_uk/utils/create_ahc_deflator.py` still reads the England and Wales index. It is a standalone script that the model does not run.

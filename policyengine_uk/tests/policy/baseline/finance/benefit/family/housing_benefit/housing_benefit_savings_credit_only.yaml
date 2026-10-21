@@ -141,8 +141,9 @@
     pension_credit_assessable_capital: [20_000, 0]
     # 18,000 + 1,040 = 19,040, above the couple minimum guarantee of 18,889.
     # The non-dependant's is computed but he cannot have Pension Credit:
-    # 20,000 - 1,486 income tax - 594.40 National Insurance = 17,919.60.
-    pension_credit_income: [19_040, 17_919.60]
+    # 20,000 - 1,486 income tax - 594.40 National Insurance - the 5 pound
+    # earnings disregard (260) = 17,659.60.
+    pension_credit_income: [19_040, 17_659.60]
     guarantee_credit: [0, 0]
     # 1,045.20 - 0.4 x (19,040 - 18,889) = 1,045.20 - 60.40 = 984.80.
     savings_credit: [984.80, 0]
@@ -169,9 +170,8 @@
         members: [person1]
         # £5 a week for a single claimant with earnings (Sch 4 para 7(a)),
         # the same as the Pension Credit disregard (SPC Regs 2002 Sch VI
-        # para 5(a)); 5 x 52 = 260. Pension Credit income in the model
-        # disregards no earnings, so deducting it gives the Secretary of
-        # State's figure.
+        # para 5(a)); 5 x 52 = 260. The Secretary of State's figure is
+        # already after it, and reg 27(4) deducts only higher amounts.
         housing_benefit_applicable_income_disregard: 260
     households:
       household:
@@ -180,14 +180,15 @@
         tenure_type: RENT_FROM_COUNCIL
         savings: 0
   output:
-    # 13,000 - 86 = 12,914, as in case 1.
-    pension_credit_income: 12_914
-    savings_credit: 718.62
+    # 13,000 - 86 - the 5 pound Pension Credit earnings disregard (260).
+    pension_credit_income: 12_654
+    # 933.82 - 0.4 x (12,654 - 12,376) = 933.82 - 111.20 = 822.62.
+    savings_credit: 822.62
     in_receipt_of_savings_credit_only: true
-    # 12,914 + 718.62 - 260 = 13,372.62.
-    housing_benefit_applicable_income: 13_372.62
-    # 7,800 - 0.65 x (13,372.62 - 13,312) = 7,800 - 39.40 = 7,760.60.
-    housing_benefit: 7_760.60
+    # 12,654 + 822.62 = 13,476.62; nothing more is disregarded.
+    housing_benefit_applicable_income: 13_476.62
+    # 7,800 - 0.65 x (13,476.62 - 13,312) = 7,800 - 107.00 = 7,693.00.
+    housing_benefit: 7_693
 
 - name: Case 5, savings credit only lone parent in work, childcare charges and the lone parent and additional earnings disregards are deducted.
   period: 2026
@@ -196,7 +197,7 @@
     people:
       person1:
         age: 78
-        state_pension: 11_000
+        state_pension: 12_500
         employment_income: 7_000
         # 20 hours a week, so remunerative work (reg 6) and the reg 31
         # condition for deducting childcare charges are met.
@@ -207,13 +208,10 @@
     benunits:
       benunit:
         members: [person1, person2]
-        # Reg 27(4)(c)(i): the higher amount disregarded for a lone parent's
-        # earnings, £25 a week (Sch 4 para 2) against Pension Credit's £20
-        # (SPC Regs 2002 Sch VI para 1); and (d): the additional £17.10 (Sch
-        # 4 para 9(1)) for a lone parent working 16 hours or more whose net
-        # earnings cover the disregards and childcare. Pension Credit income
-        # in the model disregards no earnings, so the whole of both is
-        # deducted: (25 + 17.10) x 52 = 2,189.20, the value #1908 gives.
+        # The lone parent's £25 a week (Sch 4 para 2) and the additional
+        # £17.10 (Sch 4 para 9(1)) for a lone parent working 16 hours or more
+        # whose net earnings cover the disregards and childcare:
+        # (25 + 17.10) x 52 = 2,189.20, the value #1908 gives.
         housing_benefit_applicable_income_disregard: 2_189.20
     households:
       household:
@@ -222,20 +220,57 @@
         tenure_type: RENT_FROM_COUNCIL
         savings: 0
   output:
-    # (18,000 - 12,570) x 0.2 = 1,086; 18,000 - 1,086 = 16,914.
-    pension_credit_income: 16_914
+    # The lone parent's 20 pound Pension Credit disregard (SPC Regs 2002 Sch
+    # VI para 1): 20 x 52 = 1,040.
+    pension_credit_earnings_disregard: 1_040
+    # (19,500 - 12,570) x 0.2 = 1,386; 19,500 - 1,386 - 1,040 = 17,074.
+    pension_credit_income: 17_074
     # 12,376 + 3,638.96 = 16,014.96.
     minimum_guarantee: 16_014.96
     guarantee_credit: 0
-    # 933.82 - 0.4 x (16,914 - 16,014.96) = 933.82 - 359.62 = 574.20.
-    savings_credit: 574.20
+    # 933.82 - 0.4 x (17,074 - 16,014.96) = 933.82 - 423.62 = 510.20.
+    savings_credit: 510.20
     in_receipt_of_savings_credit_only: true
     # Reg 27(4)(b): 2,600 of childcare (£50 a week), below the weekly
     # maximum and the earnings.
     housing_benefit_applicable_income_childcare_element: 2_600
-    # 16,914 + 574.20 - 2,600 - 2,189.20 = 12,699.
-    housing_benefit_savings_credit_only_income: 12_699
-    housing_benefit_applicable_income: 12_699
+    # Reg 27(4)(c)(i): the higher amount for a lone parent's earnings,
+    # 1,300 - 1,040 = 260; (d): the additional 17.10 x 52 = 889.20.
+    # 17,074 + 510.20 - 2,600 - 260 - 889.20 = 13,835.
+    housing_benefit_savings_credit_only_income: 13_835
+    housing_benefit_applicable_income: 13_835
+
+- name: Case 5a, the same lone parent with less State Pension, whose 20 pound Pension Credit disregard brings a guarantee credit and its passport.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 78
+        state_pension: 11_000
+        employment_income: 7_000
+        hours_worked: 1_040
+      person2:
+        age: 8
+        childcare_expenses: 2_600
+    benunits:
+      benunit:
+        members: [person1, person2]
+        housing_benefit_applicable_income_disregard: 2_189.20
+    households:
+      household:
+        members: [person1, person2]
+        rent: 7_800
+        tenure_type: RENT_FROM_COUNCIL
+        savings: 0
+  output:
+    # (18,000 - 12,570) x 0.2 = 1,086; 18,000 - 1,086 - 1,040 = 15,874.
+    pension_credit_income: 15_874
+    # 16,014.96 - 15,874 = 140.96.
+    guarantee_credit: 140.96
+    in_receipt_of_savings_credit_only: false
+    # The guarantee credit passports the maximum Housing Benefit: the rent.
+    housing_benefit: 7_800
 
 - name: Case 6, guarantee credit and savings credit together, the award is not savings credit only and the guarantee credit passport applies.
   period: 2026

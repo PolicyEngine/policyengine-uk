@@ -164,8 +164,17 @@ def _situation(people, year, overrides=None):
     return situation
 
 
+# Without receipts supplied, the model reads a trading profit within the
+# trading allowance (£1,000 from 2017-18, so in every year here) as fully
+# relieved (ITTOIA 2005 s. 783AF). It is then not chargeable under Part 2 and
+# so is not relevant UK earnings (FA 2004 s. 189(2)(b)).
+TRADING_ALLOWANCE = 1_000
+
+
 def _relevant_earnings(person):
-    return person["employment_income"] + max(0, person["self_employment_income"])
+    profit = max(0, person["self_employment_income"])
+    chargeable_profit = profit if profit > TRADING_ALLOWANCE else 0
+    return person["employment_income"] + chargeable_profit
 
 
 def _with_contributions(people, contributions):

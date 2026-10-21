@@ -1,0 +1,19 @@
+description: >
+  Benefit-unit awards whose receipt qualifies the benefit unit for the higher
+  Pension Credit earnings disregard (Sch. VI para. 4(1)(a)(vii), employment
+  and support allowance, from 27 October 2008). The model holds income-related
+  employment and support allowance on the benefit unit, as the claimant's
+  award; contributory employment and support allowance is a person-level
+  benefit in `disability_benefits`.
+metadata:
+  label: Pension Credit higher earnings disregard benefit-unit disability benefits
+  unit: list
+  reference:
+    - title: The State Pension Credit Regulations 2002 Sch. VI para. 4(1)(a)(vii)
+      href: https://www.legislation.gov.uk/uksi/2002/1792/schedule/VI/paragraph/4
+    - title: The Employment and Support Allowance (Consequential Provisions) (No. 2) Regulations 2008 reg. 4(10)(a)(ii)
+      href: https://www.legislation.gov.uk/uksi/2008/1554/regulation/4
+values:
+  2003-10-06: []
+  2008-10-27:
+    - esa_income
