@@ -1173,3 +1173,57 @@
     # under 16 hours), the couple's one deduction.
     council_tax_reduction_non_dep_deduction_exempt: [false, true, false]
     council_tax_reduction_non_dep_deductions: [288.60, 0]
+
+# Round 6 of the independent review.
+
+- name: A young person's own Maternity Allowance does not cap the family's Universal Credit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 80
+        is_claimant_or_partner: true
+        is_household_head: true
+      worker:
+        age: 20
+        employment_income: 7_000
+        weekly_hours: 16
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 16
+        maternity_allowance: 6_000
+        is_claimant_or_partner: false
+    benunits:
+      claimant_unit:
+        members: [claimant]
+        benunit_is_rent_liable: true
+      family_unit:
+        members: [worker, young_person]
+        benunit_is_rent_liable: false
+        universal_credit_pre_benefit_cap: 14_000
+        uc_childcare_element: 0
+        child_benefit: 5_129.80
+        uc_benefit_cap: 22_020
+        child_tax_credit: 0
+        working_tax_credit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, worker, young_person]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    # UC Regs 2013 reg 79(1): the cap counts the welfare benefits "to which a
+    # single person or couple is entitled". The young person's own 6,000 is
+    # not the claimant's, so the capped total is 19,129.80, under the cap, and
+    # UC stays 14,000. The worker is banded on 7,000 + 14,000 + 5,129.80 =
+    # 502.50 a week: the HB 485 band (119.85) and the CTR 485 band (13.30).
+    housing_benefit_non_dep_deductions: [6_232.20, 0]
+    council_tax_reduction_non_dep_deductions: [691.60, 0]
