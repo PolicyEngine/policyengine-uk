@@ -98,6 +98,37 @@
     # Only person 3 is a non-dependant of the head's family: 3.
     housing_benefit_non_dep_deductions: [3, 0, 0]
 
+- name: A sharer of a nil rent is not a non-dependant
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person_1:
+        age: 40
+        is_household_head: true
+        household_benefits_individual_non_dep_deduction: 0
+      person_2:
+        age: 40
+        household_benefits_individual_non_dep_deduction: 2
+    benunits:
+      benunit_1:
+        members: [person_1]
+        housing_benefit_non_dep_deductions_claimant_exempt: false
+      benunit_2:
+        members: [person_2]
+        liable_for_share_of_household_rent: true
+        housing_benefit_non_dep_deductions_claimant_exempt: false
+    households:
+      household:
+        members: [person_1, person_2]
+        rent: 0
+  output:
+    # Both families are liable for the rent, so each bears half. With a nil
+    # rent neither has any, but the sharer is still a joint occupier, not a
+    # non-dependant (HB Regs 2006 reg 3(2)(d)): no deduction for either.
+    share_of_household_rent: [0.5, 0.5]
+    housing_benefit_non_dep_deductions: [0, 0]
+
 # The review case on #2184: an existing claimant in council housing with an
 # adult child whose only income is £28,912 of other investment income and who
 # does no paid work. The bands apply only in remunerative work (HB Regs 2006

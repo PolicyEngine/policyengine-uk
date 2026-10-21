@@ -22,7 +22,8 @@ Invariants, for any generated population of households:
    liable for the rent sum to the household's non-dependant deductions (one
    per couple, the higher: HB Regs 2006 reg 74(3)) times the share of the
    rent borne by families whose claimant or partner is not exempt (reg
-   74(6)), and never exceed the sum of individual deductions; a
+   74(6)), and never exceed the sum of individual deductions, with a sharer
+   never a non-dependant, even where the rent is nil (reg 3(2)(d)); a
    boarder's or lodger's family has no Universal Credit or Housing Benefit
    deductions; no sharer, boarder or lodger is a Council Tax Reduction
    non-dependant.
@@ -280,8 +281,12 @@ def test_non_dependants(population):
     assert np.all(per_household(sim, uc) <= total + 0.01)
     # Housing Benefit: apportioned over the families liable for the rent.
     hb = calc(sim, "housing_benefit_non_dep_deductions")
-    hb_individual = (
-        calc(sim, "household_benefits_individual_non_dep_deduction") * non_dependant
+    # A sharer's family is a joint occupier, never a non-dependant (HB Regs
+    # 2006 reg 3(2)(d)), even where the rent is nil and so the family is not
+    # benunit_is_rent_liable.
+    sharer = sim.map_result((roles == "sharer").astype(float), "benunit", "person") > 0
+    hb_individual = calc(sim, "household_benefits_individual_non_dep_deduction") * (
+        non_dependant & ~sharer
     )
     hb_total = sim.map_result(hb_individual, "person", "household")
     assert hb_total.max() > 0

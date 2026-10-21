@@ -33,10 +33,18 @@ class housing_benefit_non_dep_deductions(Variable):
         # occupier is apportioned between them by their shares of the
         # payments (reg 74(5); SPC reg 55(5)), so each family liable for the
         # household's rent bears its share; a boarder or lodger bears none.
+        # A family bearing a share is a joint occupier, never a
+        # non-dependant, even where the rent is nil and so the family is not
+        # benunit_is_rent_liable.
         person = benunit.members
-        deductions = person(
-            "household_benefits_individual_non_dep_deduction", period
-        ) * person("is_non_dependant_of_household_head", period)
+        joint_occupier = person.benunit("share_of_household_rent", period) > 0
+        non_dependant = (
+            person("is_non_dependant_of_household_head", period) & ~joint_occupier
+        )
+        deductions = (
+            person("household_benefits_individual_non_dep_deduction", period)
+            * non_dependant
+        )
         deduction_for_benunit = deduction_per_family(benunit, period, deductions, False)
         share = benunit("share_of_household_rent", period)
         claimant_exempt = benunit(
