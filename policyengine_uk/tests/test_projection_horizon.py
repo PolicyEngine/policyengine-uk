@@ -195,20 +195,13 @@ def test_each_singly_indexed_input_grows_by_its_index_every_year(projected):
 def test_unmapped_inputs_preserve_legacy_years_and_grow_after_2030(projected):
     """Previously unmapped columns keep their old values through 2030, then
     grow by the same cumulative-index ratio Core used beyond that year.
+    Columns uprating_indices.yaml now lists (the debts, ISAs, lodger and
+    boarder rent, gross receipts, salary sacrifice, water bills and service
+    charges) grow every year instead, so they are no longer fallbacks.
     """
     assert {
-        "mortgage_debt",
-        "consumer_debt",
-        "rent_paid_as_boarder",
-        "self_employment_gross_receipts",
-        "rent_paid_as_lodger",
         "rail_usage",
-        "stocks_and_shares_isa",
-        "cash_isa",
-        "water_and_sewerage_charges",
         "employee_pension_contributions_reported",
-        "pension_contributions_via_salary_sacrifice",
-        "housing_service_charges",
     } <= set(FALLBACK_INDEX_OF)
     for year in range(BASE_YEAR + 1, PROJECTION_END_YEAR + 1):
         for variable, index_name in FALLBACK_INDEX_OF.items():

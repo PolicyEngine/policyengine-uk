@@ -1,3 +1,58 @@
+## [2.141.10] - 2026-10-21
+
+### Changed
+
+- - Reuse Pension Credit earnings tax calculations when checking Universal Credit housing contribution exemptions.
+
+### Fixed
+
+- Apply the Pension Credit earnings disregards of SPC Regs 2002 Schedule VI: 20 pounds a week for lone parents, carers and claimants or partners on a listed disability benefit (including working tax credit with a disability element) or certified blind, otherwise 5 pounds (single) or 10 pounds (couple), capped at net earnings. Employed earnings are net of the income tax they add; self-employed earnings, in Pension Credit income too, are net of the notional tax and contributions of the Computation of Earnings Regulations 1996 reg. 14. The Housing Benefit savings-credit-only route now deducts only the higher Housing Benefit disregards.
+
+
+## [2.141.9] - 2026-10-21
+
+### Fixed
+
+- Council Tax Reduction income now counts the applicant's and partner's industrial injuries disablement benefit, severe disablement allowance and incapacity benefit in every scheme (SI 2012/2885 Sch 1 para 16; SI 2012/2886 Sch paras 39 and 54; WSI 2013/3029 Sch 1 para 10 and Sch 6 para 17; SSI 2012/319 reg 27; SSI 2021/249 reg 57).
+
+
+## [2.141.8] - 2026-10-21
+
+### Changed
+
+- Clarify domestic and overseas carbon flows and household incidence, including imported emissions in the consumption footprint and the chart's 2019 DEFRA fallback intensities.
+- Use public Core operations for UK parameter initialization and dated-cache clearing while preserving parameter and reform behavior.
+
+### Fixed
+
+- Updated recent residential SDLT purchase schedules and applied the inclusive first-time-buyer price maximum, retaining annual sampling and contract-protection limitations.
+- - Kept the pension salary-sacrifice cap in National Insurance earnings without inflating ordinary pay or member pension contributions, retained actual supplied ordinary returns in the annual-allowance calculations, and preserved the childcare income tests in #2173.
+
+
+## [2.141.7] - 2026-10-21
+
+### Fixed
+
+- - Added the 2022–23 annual employee National Insurance schedule for explicitly declared full-year category A directors in one employment, preserving ordinary employees and other years.
+- - Corrected the JSA, ESA and DLA program registry variable mappings, narrowed Benefit Cap's parameter prefix to its own subtree, removed Maternity Allowance's unrelated DWP parameter prefix, and added validation of all declared registry variables and parameter prefixes.
+- - Reject data-axis aggregate-impact comparisons when either measurement omits its Python version or machine identity.
+
+
+## [2.141.6] - 2026-10-20
+
+### Fixed
+
+- - Uprate `water_and_sewerage_charges`, `housing_service_charges` and `pension_contributions_via_salary_sacrifice`, which declared an uprating index but were absent from `uprating_indices.yaml` and so stayed flat through 2030. Also uprate twelve columns added since with the same gap, each by the index it declares: `cash_isa`, `stocks_and_shares_isa`, `mortgage_debt`, `consumer_debt`, `rent_paid_as_boarder`, `rent_paid_as_lodger`, `owned_company_capital`, `owned_company_holding_value` and `owned_company_trade_assets` (per-capita GDP) and `self_employment_gross_receipts` and `owned_company_income_share` (per-capita mixed income), plus `pension_contributions_via_salary_sacrifice_pre_2015` (average earnings). Adds a code-health test asserting that every variable declaring `uprating` appears in that file under the matching index, so the gap fails at the point it is introduced. `rail_usage` is excluded because its declared index is a cumulative level rather than a year-on-year rate, and the three energy columns because the data build already prices them (#1868). Updates Ofwat water bill growth to the published 27% for 2025-26 (was the 26% forecast) and 5.4% for 2026-27 (was a 5.5% projection), and documents the sources and vintage of the water bill and population growth series.
+- - Limited the ordinary income-tax loss-cap pension uplift above earnings to relief-at-source contributions.
+
+
+## [2.141.5] - 2026-10-20
+
+### Fixed
+
+- Means-test the Council Tax Reduction applicant and their partner rather than the benefit unit's claimant and partner, so a household head who is liable for the council tax but shares a benefit unit with a young couple is assessed on her own income, allowance, premiums and exemption.
+
+
 ## [2.141.4] - 2026-10-20
 
 ### Fixed
