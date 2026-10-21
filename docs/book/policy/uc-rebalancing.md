@@ -24,7 +24,7 @@ Universal Credit Act 2025 s. 3 freezes the element for 2026-27 to 2029-30: it di
 
 Two parameters hold this amount, and both are uprated by `gov.economic_assumptions.indices.uc_health_element`, so they follow the same path:
 
-- `gov.dwp.universal_credit.elements.disabled.amount` is the LCWRA element the `uc_LCWRA_element` formula pays. A simulation uses it whenever the rebalancing reforms are inactive, and from 2033-34, after the data's projection ends, when the rebalancing scenario no longer sets the element.
+- `gov.dwp.universal_credit.elements.disabled.amount` is the LCWRA element the `uc_LCWRA_element` formula pays. For an inactive year processed by the rebalancing scenario, the scenario replaces that paid amount with the pre-Act counterfactual described below. From 2033-34, after the data's projection ends, the rebalancing scenario no longer sets the element and the formula reads this parameter.
 - `gov.dwp.universal_credit.rebalancing.new_claimant_health_element` is the amount the rebalancing scenario pays new claimants in the years it sets the element, `uc_reform.REBALANCING_YEARS` (2026-27 to 2032-33).
 
 A change to the freeze or to the benefit uprating index moves both, and so does a reform that sets the index, `gov.economic_assumptions.indices.uc_health_element`, directly (it replaces the freeze and the no-fall floor for the years it names). A reform to either amount itself does not change the other.
@@ -91,6 +91,8 @@ scenario = Scenario(
 
 sim = Simulation(scenario=scenario)
 ```
+
+For the health component, the inactive 2026-27 amount is a declared CPI-only counterfactual: the 2025-26 monthly LCWRA amount (£423.27) increased by September 2025 CPI (3.8%) and rounded to monthly pennies (£439.35, or £5,272.20 a year). SSAA 1992 section 150 allows discretion over Universal Credit uprating and rounding; this convention is not an enacted LCWRA rate or the only legally possible amount. From 2027-28, the model's ordinary benefit uprating index projects growth from that 2026-27 anchor. It does not apply the new/protected claimant split, the health-element freeze or the protected-amount floor. Each inactive year starts independently from that fixed 2026-27 anchor, so a mixed on/off schedule cannot feed an inactive award into the later protected calculation. Explicit LCWRA amount reforms and directly supplied element awards retain precedence. Applying an amount change through `Scenario.apply` also refreshes an already-calculated health element and final Universal Credit award. The underlying `elements.disabled.amount` parameter still holds the legislated new-claimant amount; this counterfactual changes the paid health element through the scenario. This is a health-component counterfactual, not validation that the toggle disables every provision of the Act. The scenario covers tax years through 2032-33; from 2033-34 the inactive setting falls back to the underlying amount path, so it does not provide a continuous long-run “Act off” projection.
 
 The 2026-27 standard allowance stays at its legislated rates, which include the 2.3% uplift; from 2027-28 it follows CPI alone from the 2026-27 rates less that uplift.
 
