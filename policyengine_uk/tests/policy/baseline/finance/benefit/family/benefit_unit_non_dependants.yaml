@@ -1292,3 +1292,38 @@
   output:
     uc_non_dependants_counted: [true, false]
     uc_non_dep_deductions: [1_158.60, 0]
+
+# A family bearing a share of the rent is a joint occupier, never a
+# non-dependant, even where the rent is nil (HB reg 3(2)(d)). Its own adult son
+# is still a non-dependant of both joint occupiers, apportioned by their
+# shares (reg 74(5)).
+- name: HB, a nil-rent sharer is not a non-dependant but its adult son is shared
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+      sharer:
+        age: 48
+        is_claimant_or_partner: true
+        household_benefits_individual_non_dep_deduction: 2_000
+      sharer_son:
+        age: 25
+        is_claimant_or_partner: false
+        household_benefits_individual_non_dep_deduction: 1_000
+    benunits:
+      benunit_1:
+        members: [head]
+      benunit_2:
+        members: [sharer, sharer_son]
+        liable_for_share_of_household_rent: true
+    households:
+      household:
+        members: [head, sharer, sharer_son]
+        rent: 0
+  output:
+    share_of_household_rent: [0.5, 0.5]
+    housing_benefit_non_dep_deductions: [500, 500]

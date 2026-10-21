@@ -34,10 +34,17 @@ class housing_benefit_non_dep_deductions(Variable):
         # Deductions are made for non-dependants residing with the claimant
         # (HB Regs 2006 reg 74; HB (SPC) Regs 2006 reg 55). Joint occupiers,
         # boarders, lodgers and the landlord's household are not
-        # non-dependants (reg 3(2)(d)-(e), 3(4)).
+        # non-dependants (reg 3(2)(d)-(e), 3(4)). A family bearing a share
+        # of the rent is a joint occupier, never another family's
+        # non-dependant, even where the rent is nil and so the family is not
+        # benunit_is_rent_liable.
         person = benunit.members
         deductions = person("household_benefits_individual_non_dep_deduction", period)
-        other_family = person("is_non_dependant_of_household_head", period)
+        in_joint_occupier_family = person.benunit("share_of_household_rent", period) > 0
+        other_family = (
+            person("is_non_dependant_of_household_head", period)
+            & ~in_joint_occupier_family
+        )
         # A member of a rent-liable family who is not in its claimant's
         # family under reg 3(2)(a) and (c) is a non-dependant too.
         own_family = (
