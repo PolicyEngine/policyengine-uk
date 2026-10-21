@@ -111,6 +111,36 @@
     income_tax_reductions: 27_000
     income_tax: 432
 
+# A landlord's property allowance election weighs income tax on each route, so it
+# has to see the charges the reductions cannot offset. With the £1,000 property
+# allowance (partial relief, ITTOIA 2005 s. 783BK), £99,000 of income leaves
+# £86,430 after the Personal Allowance: Step 5 tax £37,700 × 20% + £48,730 × 40%
+# = £27,032, all of it taken by the £27,200 of credits, so £1,406 of HICBC is
+# left. Without it, £100,000 of income gives £27,432 of Step 5 tax; the credits
+# and £232 of the £400 finance-cost reduction (20% of £2,000) take all of it,
+# and £1,406 of HICBC is left. Either way the liability is £1,406. Before the
+# fix, the allowance route netted the £168 of excess credits against the HICBC
+# and gave £1,238.
+- name: The property allowance election does not let tax reductions offset the High Income Child Benefit Charge.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      landlord:
+        age: 45
+        employment_income: 90_000
+        property_income: 10_000
+        property_rental_income: 10_000
+        property_finance_costs: 2_000
+        other_tax_credits: 27_200
+      child:
+        age: 5
+    benunit:
+      members: [landlord, child]
+  output:
+    CB_HITC: [1_406, 0]
+    income_tax: [1_406, 0]
+
 # The annual allowance charge on £70,000 of employer contributions: £10,000
 # above the £60,000 annual allowance, taxed at 40% as the slice from £87,430
 # to £97,430 of income after allowances (FA 2004 s. 227(4A)-(4B)).
