@@ -1,3 +1,16 @@
+## [2.141.8] - 2026-10-21
+
+### Changed
+
+- Clarify domestic and overseas carbon flows and household incidence, including imported emissions in the consumption footprint and the chart's 2019 DEFRA fallback intensities.
+- Use public Core operations for UK parameter initialization and dated-cache clearing while preserving parameter and reform behavior.
+
+### Fixed
+
+- Updated recent residential SDLT purchase schedules and applied the inclusive first-time-buyer price maximum, retaining annual sampling and contract-protection limitations.
+- - Kept the pension salary-sacrifice cap in National Insurance earnings without inflating ordinary pay or member pension contributions, retained actual supplied ordinary returns in the annual-allowance calculations, and preserved the childcare income tests in #2173.
+
+
 ## [2.141.7] - 2026-10-21
 
 ### Fixed
