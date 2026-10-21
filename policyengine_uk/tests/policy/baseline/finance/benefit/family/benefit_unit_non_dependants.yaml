@@ -1327,3 +1327,37 @@
   output:
     share_of_household_rent: [0.5, 0.5]
     housing_benefit_non_dep_deductions: [500, 500]
+
+# Sch 4 para 9(2)(f): the head's family is flagged not to claim Universal
+# Credit, so its adult son counts in the jointly liable sharer's claim.
+- name: UC, a non-claiming head's adult son counts in a claiming sharer's claim
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+        employment_income: 150_000
+        weekly_hours: 37.5
+      son:
+        age: 25
+        is_claimant_or_partner: false
+      sharer:
+        age: 45
+        is_claimant_or_partner: true
+    benunits:
+      benunit_1:
+        members: [head, son]
+        would_claim_uc: false
+      benunit_2:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+    households:
+      household:
+        members: [head, son, sharer]
+        rent: 12_000
+  output:
+    uc_non_dependants_counted: [false, true]
+    uc_non_dep_deductions: [0, 1_158.60]

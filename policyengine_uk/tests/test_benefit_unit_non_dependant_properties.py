@@ -85,6 +85,9 @@ def family(draw, role):
         extras=draw(st.lists(extra_member(), min_size=0, max_size=2)),
         child=draw(st.booleans()),
         renter_pip=draw(st.booleans()),
+        # Take-up: a family flagged not to claim Universal Credit passes its
+        # in-unit non-dependants to the claim that counts the household's.
+        would_claim_uc=draw(st.booleans()),
         payment=draw(st.floats(1_000, 10_000, allow_nan=False)),
     )
 
@@ -184,7 +187,7 @@ def build(population, convert=None):
                         disability_benefit=False,
                     )
                 )
-            benunit = {"members": ids}
+            benunit = {"members": ids, "would_claim_uc": fam["would_claim_uc"]}
             if fam["role"] == "sharer":
                 benunit["liable_for_share_of_household_rent"] = True
             if fam["role"] == "lodger":
