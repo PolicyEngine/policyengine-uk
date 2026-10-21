@@ -4,6 +4,12 @@ from typing import NamedTuple
 from policyengine_core.model_api import *
 from policyengine_core import periods
 
+from policyengine_uk.utils.ni_parameter_scales import (
+    add_ni_scale_compatibility,
+    canonicalize_ni_parameter_path,
+    canonical_descendants,
+)
+
 from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases import (
     canonicalize_lsr_parameter_path,
 )
@@ -25,7 +31,7 @@ BACKDATED_VALUE = "backdated_value"
 def backdate_parameters(root: str = None, first_instant: str = "2021-01-01") -> Reform:
     first_instant = str_to_instant(first_instant)
     node = root
-    for param in node.get_descendants():
+    for param in canonical_descendants(node):
         if isinstance(param, Parameter):
             earliest = param.values_list[-1]
             earliest_value = earliest.value
@@ -117,7 +123,7 @@ def convert_to_fiscal_year_parameters(parameters):
     """
     # Cover years from 2015 through 2040 for long-term projections
     YEARS = list(range(2015, 2041))
-    for param in parameters.get_descendants():
+    for param in canonical_descendants(parameters):
         if isinstance(param, Parameter):
             if (param.metadata or {}).get("preserve_calendar_dates", False):
                 continue
@@ -240,7 +246,7 @@ class RemovedParameterRoot(ParameterNode):
 
     def get_child(self, path: str):
         check_parameter_not_removed(path)
-        return super().get_child(path)
+        return super().get_child(canonicalize_ni_parameter_path(path))
 
 
 def add_removed_parameter_aliases(parameters: ParameterNode) -> ParameterNode:
@@ -280,4 +286,4 @@ def add_removed_parameter_aliases(parameters: ParameterNode) -> ParameterNode:
         parent.children[name] = alias
         setattr(parent, name, alias)
         alias.parent = parent
-    return parameters
+    return add_ni_scale_compatibility(parameters)
