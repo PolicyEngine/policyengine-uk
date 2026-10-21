@@ -20,6 +20,15 @@ Invariants, for any generated population of families:
    depends on their income including income from capital, which is a
    legitimate way for income from capital to change the tax on counted
    income.
+   Intended exception: Pension Credit's tax on earnings is the extra tax the
+   earnings cause, including on savings and dividends (#2019, Max's ruling
+   d1424). With earnings, income from capital can move that tax: earnings
+   under the personal allowance can leave dividends taxable. So Pension
+   Credit income is invariant wherever pension_credit_employment_income_tax
+   does not move, and elsewhere changes by exactly minus the change in that
+   tax and in the earnings disregard. The awards that follow Pension Credit
+   (Pension Credit, and Housing Benefit and council tax reduction for a
+   family receiving it) are compared wherever it does not move.
 2. Bounds: the counted home-letting income is between nil and the rent, and
    equals the rent less £20 a week, floored at nil.
 3. Monotone: more rent from part of the home never lowers a means-test income
@@ -166,14 +175,53 @@ def calculate(units, year, variables, **kwargs):
 @PROPERTY_SETTINGS
 @given(populations, st.sampled_from(YEARS))
 def test_income_from_capital_changes_no_legacy_means_test(units, year):
-    variables = MEANS_TEST_INCOMES + AWARDS
+    earnings_tax = [
+        "pension_credit_employment_income_tax",
+        "pension_credit_earnings_disregard",
+    ]
+    variables = MEANS_TEST_INCOMES + AWARDS + earnings_tax
     base = calculate(units, year, variables)
     for scale in (0.0, 3.0):
         scaled = calculate(units, year, variables, capital_income_scale=scale)
-        for v in variables:
+        moved = {v: scaled[v] - base[v] for v in earnings_tax}
+        # Intended: income from capital reaches Pension Credit only through
+        # the tax the earnings cause on it (#2019, d1424).
+        steady = np.abs(moved["pension_credit_employment_income_tax"]) < 0.01
+        on_pension_credit = (base["pension_credit"] > 0) | (
+            scaled["pension_credit"] > 0
+        )
+        follows_pension_credit = {
+            "pension_credit_income": ~steady,
+            "pension_credit": ~steady,
+            "housing_benefit": ~steady & on_pension_credit,
+            "housing_benefit_applicable_income": ~steady & on_pension_credit,
+            "council_tax_benefit": ~steady & on_pension_credit,
+            "council_tax_reduction_applicable_income": ~steady & on_pension_credit,
+        }
+        for v in MEANS_TEST_INCOMES + AWARDS:
+            compared = ~follows_pension_credit.get(v, np.zeros_like(steady))
             np.testing.assert_allclose(
-                scaled[v], base[v], atol=0.01, err_msg=f"{v} at scale {scale}"
+                scaled[v][compared],
+                base[v][compared],
+                atol=0.01,
+                err_msg=f"{v} at scale {scale}",
             )
+        # Where the tax on earnings moves, Pension Credit income moves by
+        # exactly minus that change and the disregard's, unless floored.
+        unfloored = (base["pension_credit_income"] > 0) & (
+            scaled["pension_credit_income"] > 0
+        )
+        np.testing.assert_allclose(
+            (scaled["pension_credit_income"] - base["pension_credit_income"])[
+                unfloored
+            ],
+            -(
+                moved["pension_credit_employment_income_tax"]
+                + moved["pension_credit_earnings_disregard"]
+            )[unfloored],
+            atol=0.01,
+            err_msg=f"pension_credit_income decomposition at scale {scale}",
+        )
 
 
 @PROPERTY_SETTINGS
