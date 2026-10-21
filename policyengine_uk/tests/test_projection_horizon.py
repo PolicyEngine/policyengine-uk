@@ -25,6 +25,7 @@ from policyengine_uk import Microsimulation, parameters
 from policyengine_uk.data import UKSingleYearDataset
 from policyengine_uk.data import economic_assumptions
 from policyengine_uk.data.economic_assumptions import (
+    COUNTRY_UPRATED_INPUTS,
     DATASET_UPRATING_EXCLUSIONS,
     LEGACY_PROJECTION_END_YEAR,
     PROJECTION_END_YEAR,
@@ -54,6 +55,7 @@ FALLBACK_INDEX_OF = {
     and variable.value_type in (int, float)
     and name not in INDEX_OF
     and name not in DATASET_UPRATING_EXCLUSIONS
+    and name not in COUNTRY_UPRATED_INPUTS
 }
 # These survey inputs already use FY2026-27 prices, so projection must not
 # apply their class-level CPI index a second time.
@@ -78,6 +80,14 @@ COUNCIL_TAX_SERIES = {
     "NORTH_EAST": "england",
     "SCOTLAND": "scotland",
     "WALES": "wales",
+}
+# Water and sewerage charges grow by country (#2501): Northern Ireland has
+# none to grow.
+WATER_SERIES = {
+    "LONDON": "ofwat.water_bills",
+    "NORTH_EAST": "ofwat.water_bills",
+    "SCOTLAND": "scottish_water.water_bills",
+    "WALES": "ofwat.water_bills",
 }
 
 
@@ -110,6 +120,7 @@ def _dataset(amount=1_000.0, base_year=BASE_YEAR):
             "tenure_type": [tenure for _, tenure in HOUSEHOLDS],
             "rent": amounts,
             "council_tax": amounts,
+            "water_and_sewerage_charges": amounts,
         },
     }
     for variable in (*INDEX_OF, *FALLBACK_INDEX_OF, *ENERGY_VARIABLES):
@@ -196,8 +207,9 @@ def test_unmapped_inputs_preserve_legacy_years_and_grow_after_2030(projected):
     """Previously unmapped columns keep their old values through 2030, then
     grow by the same cumulative-index ratio Core used beyond that year.
     Columns uprating_indices.yaml now lists (the debts, ISAs, lodger and
-    boarder rent, gross receipts, salary sacrifice, water bills and service
-    charges) grow every year instead, so they are no longer fallbacks.
+    boarder rent, gross receipts, salary sacrifice and service charges), and
+    water bills, which grow by country, grow every year instead, so they are
+    no longer fallbacks.
     """
     assert {
         "rail_usage",
@@ -228,10 +240,23 @@ def test_reset_growthfactor_uprating_restores_unmapped_inputs(projected):
     reset = projected.copy()
     reset_growthfactor_uprating(reset)
     for year in range(BASE_YEAR + 1, PROJECTION_END_YEAR + 1):
-        for variable in (*INDEX_OF, *FALLBACK_INDEX_OF):
+        for variable in (*INDEX_OF, *FALLBACK_INDEX_OF, *COUNTRY_UPRATED_INPUTS):
             base = _table(projected[BASE_YEAR], variable)[variable].to_numpy()
             current = _table(reset[year], variable)[variable].to_numpy()
             np.testing.assert_array_equal(current, base, err_msg=f"{variable}, {year}")
+
+
+def test_water_charges_grow_by_country_every_projected_year(projected):
+    # Through the old horizon and after it, each country's own series grows
+    # the charge once a year; Northern Ireland's stays flat.
+    for year in range(BASE_YEAR + 1, PROJECTION_END_YEAR + 1):
+        previous, current = projected[year - 1].household, projected[year].household
+        for i, (region, _) in enumerate(HOUSEHOLDS):
+            series = WATER_SERIES.get(region)
+            growth = 0.0 if series is None else GROWTH.get_child(series)(year)
+            assert current["water_and_sewerage_charges"].iloc[i] == pytest.approx(
+                previous["water_and_sewerage_charges"].iloc[i] * (1 + growth)
+            ), (region, year)
 
 
 def test_rent_and_council_tax_grow_every_projected_year(projected):
