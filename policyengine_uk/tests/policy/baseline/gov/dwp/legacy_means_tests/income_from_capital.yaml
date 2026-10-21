@@ -175,6 +175,7 @@
     pension_credit_income: 13_040
     guarantee_credit: 0
     savings_credit: 668.216
+    pension_credit: 668.216
 
 - name: Pension Credit deducts the tax wages add on dividends, but not the tax on dividends due without wages
   # 2025-26. Wages 10,000 and State Pension 12,000: non-savings tax (22,000 -
@@ -209,7 +210,6 @@
     pension_credit_uncounted_income_tax_without_earnings: 2_531.375
     pension_credit_earnings_disregard: 260
     pension_credit_income: 19_371.625
-    pension_credit: 668.216
 
 - name: English pensioner council tax reduction counts sub-tenant rent less £20, not other rent
   # SI 2012/2885 Sch 1 para 16(1)(v) and Sch 5 para 10 for the sub-tenant rent:
