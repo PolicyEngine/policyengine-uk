@@ -48,6 +48,10 @@ Invariants, for every dataset, sample size ``n``, seed, sampling period and
    sample and closes on the old weight as the sample grows.
 10. Trace and inputs: the tracer starts again, and a supplied input stored on
     disk is kept, not a value calculated later and cached over it in memory.
+11. Model values and origins: a value the model stored as its own
+    (``set_model_value``, as the Universal Credit health element reform does
+    for every simulation) stays the model's, not supplied, and the record of
+    where each capital gains input came from is unchanged.
 
 The properties are generated for datasets of one year, which the model
 projects, and of several years whose weights change differently from
@@ -78,7 +82,10 @@ from policyengine_uk.utils.subsample import (
     subsample_dataset,
 )
 from policyengine_uk.utils.supplied_inputs import (
+    is_model_value,
+    set_model_value,
     stored_supplied_value,
+    supplied_input,
     supplied_input_arrays,
 )
 
@@ -470,6 +477,70 @@ def test_a_trace_starts_again_on_the_sample():
     assert simulation.baseline.tracer is simulation.tracer
     flat = simulation.tracer.get_serialized_flat_trace()
     assert len(flat["household_net_income<2025, (default)>"]["value"]) == 1
+
+
+def test_a_model_value_stays_the_models():
+    """Formulas ask whether a value was supplied (``supplied_input``). A value
+    the model stored as its own must not read as supplied after the rebuild,
+    while a supplied one still does."""
+    simulation = Microsimulation(dataset=dataset())
+    benunits = ids(simulation, "benunit")
+    model = np.arange(1.0, len(benunits) + 1) * 100
+    set_model_value(simulation, "uc_LCWRA_element", 2026, model)
+    simulation.set_input("uc_carer_element", 2026, np.full(len(benunits), 7.0))
+    model_by_benunit = dict(zip(benunits, model))
+    # The Universal Credit health element reform stores the model's own
+    # values for other years in every simulation.
+    model_periods = {
+        str(period)
+        for name, period, values in supplied_input_arrays(simulation)
+        if is_model_value(simulation, name, period, values)
+    }
+    assert {"2026", "2027"} <= model_periods
+
+    simulation.subsample(n=3, seed=1)
+
+    benunit = simulation.populations["benunit"]
+    kept = ids(simulation, "benunit")
+    assert supplied_input(benunit, "uc_LCWRA_element", period_(2026)) is None
+    assert by_id(simulation, "uc_LCWRA_element", 2026) == {
+        unit: model_by_benunit[unit] for unit in kept
+    }
+    assert supplied_input(benunit, "uc_carer_element", period_(2026)).tolist() == (
+        [7.0] * len(kept)
+    )
+    for held in (simulation, simulation.baseline):
+        assert {
+            str(period)
+            for name, period, values in supplied_input_arrays(held)
+            if is_model_value(held, name, period, values)
+        } >= model_periods - {"2026"}
+
+
+def test_where_capital_gains_inputs_came_from_is_kept():
+    data = dataset()
+    data.person["capital_gains"] = np.arange(len(data.person)) * 1_000.0
+    simulation = Microsimulation(dataset=data)
+    full = simulation.dataset
+    before = simulation.capital_gains_projection_metadata["application"]
+    statuses = {record["status"] for record in before["by_period"].values()}
+    assert statuses == {"supplied", "projected"}
+
+    simulation.subsample(n=3, seed=1)
+
+    assert simulation.capital_gains_projection_metadata["application"] == before
+    assert (
+        simulation.dataset._cgt_extension_provenance == full._cgt_extension_provenance
+    )
+    # Differential: a simulation built from the subsampled dataset reports
+    # the same origins as one built from the full dataset.
+    rebuilt = Microsimulation(dataset=simulation.dataset)
+    assert (
+        rebuilt.capital_gains_projection_metadata["application"]
+        == Microsimulation(dataset=full).capital_gains_projection_metadata[
+            "application"
+        ]
+    )
 
 
 def test_results_match_the_same_households_in_the_full_simulation():

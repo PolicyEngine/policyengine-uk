@@ -39,7 +39,12 @@ exercise the programme rules and not the structural presumption, which
 test_child_and_adult_definitions_properties.py covers. Tax credit
 eligibility is supplied too (is_CTC_eligible): without it both CTC disabled
 child elements are zero and invariants 2 and 5 would hold for them
-trivially.
+trivially. With it and the claim the model presumes, each unit would have a
+tax credit award while tax credits ran, and an award removes the Pension
+Credit child addition (SPC Regs 2002 reg 6(6)(d) and (11)). So the award is
+entered as absent (has_tax_credit_award), and the invariants exercise the
+addition in both test years: a unit with a child or qualifying young person
+gets it, and one without gets none.
 """
 
 from itertools import product
@@ -126,7 +131,12 @@ def simulate(units, year):
     # Both CTC disabled child elements are zero for a unit that is not
     # eligible, and no generated unit reports a tax credit award.
     sim.set_input("is_CTC_eligible", year, [True] * len(units))
-    sim.input_variables = [*people[0], "is_CTC_eligible"]
+    # That eligibility and the presumed claim would make a tax credit award,
+    # which removes the Pension Credit child addition (SPC Regs 2002 reg
+    # 6(6)(d) and (11)); no award is entered, so the addition stays under
+    # test for every unit with a dependant.
+    sim.set_input("has_tax_credit_award", year, [False] * len(units))
+    sim.input_variables = [*people[0], "is_CTC_eligible", "has_tax_credit_award"]
     sim.reset_calculations()
     return sim
 

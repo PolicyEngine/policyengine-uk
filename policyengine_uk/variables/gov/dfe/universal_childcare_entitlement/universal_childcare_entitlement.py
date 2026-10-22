@@ -8,6 +8,15 @@ class universal_childcare_entitlement(Variable):
     label = "universal childcare entitlement amount per year"
     definition_period = YEAR
     unit = "currency-GBP"
+    documentation = (
+        "Universal hours claimed on their own, or allocated first from a "
+        "participating child's working parent hours when standalone take-up "
+        "is false. Legal eligibility determines this allocation."
+    )
+    reference = (
+        "https://www.legislation.gov.uk/ukpga/2016/5/section/1",
+        "https://www.legislation.gov.uk/uksi/2014/2147/regulation/4",
+    )
 
     def formula(person, period, parameters):
         p = parameters(period).gov.dfe
@@ -18,4 +27,13 @@ class universal_childcare_entitlement(Variable):
         total_hours_used = max_hours_used * weeks
 
         hours_to_use = min_(total_hours_used, hours)
-        return hours_to_use * p.childcare_funding_rate.calc(age)
+        base_value = hours_to_use * p.childcare_funding_rate.calc(age)
+        standalone_claim = person.benunit("would_claim_universal_childcare", period)
+        working_parent_total = person(
+            "extended_childcare_entitlement_total_per_child", period
+        )
+        # s.1(6) counts provision available, not standalone take-up. Allocate
+        # the first funded hours to universal without creating unpaid hours.
+        return min_(
+            base_value, where(standalone_claim, base_value, working_parent_total)
+        )

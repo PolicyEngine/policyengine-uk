@@ -167,3 +167,53 @@
     # ANI for taper = £110k - £12.5k = £97.5k (below £100k)
     # Full PA restored
     personal_allowance: 12570
+
+# Finance (No. 2) Act 2015 s.5(a) sets the 2016-17 allowance at £11,000.
+# https://www.legislation.gov.uk/ukpga/2015/33/section/5/enacted
+- name: 2016-17 earnings at the personal allowance do not incur income tax
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 11_000
+  output:
+    personal_allowance: 11_000
+    taxed_income: 0
+    income_tax: 0
+
+- name: 2016-17 personal allowance reaches final income tax
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 40_000
+  output:
+    personal_allowance: 11_000
+    taxed_income: 29_000
+    # £29,000 at the 20% basic rate.
+    income_tax: 5_800
+
+- name: 2016-17 allowance tapers from the statutory amount
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 101_000
+  output:
+    # ITA 2007 s.35: £11,000 - (£101,000 - £100,000) / 2.
+    personal_allowance: 10_500
+    taxed_income: 90_500
+    # £32,000 at 20% plus £58,500 at 40% (Finance (No. 2) Act 2015 s.6(a)).
+    # https://www.legislation.gov.uk/ukpga/2015/33/section/6/enacted
+    income_tax: 29_800
+
+- name: 2016-17 allowance is fully withdrawn at 122000 pounds
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 122_000
+  output:
+    personal_allowance: 0
+    taxed_income: 122_000
+    income_tax: 42_400

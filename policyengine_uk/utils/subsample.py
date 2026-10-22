@@ -23,6 +23,7 @@ simulation's populations, whose identifiers and memberships are exact, and
 subsample the baseline and the dataset with the same draw.
 """
 
+import copy
 import hashlib
 import operator
 from dataclasses import dataclass
@@ -48,7 +49,11 @@ from policyengine_uk.data.dataset_schema import (
     UKMultiYearDataset,
     UKSingleYearDataset,
 )
-from policyengine_uk.utils.supplied_inputs import supplied_input_arrays
+from policyengine_uk.utils.supplied_inputs import (
+    is_model_value,
+    set_model_value,
+    supplied_input_arrays,
+)
 
 if TYPE_CHECKING:
     from policyengine_uk.simulation import Simulation
@@ -224,7 +229,7 @@ def subsample_dataset(
         quantize_weights: As for ``Simulation.subsample``.
     """
     if isinstance(dataset, UKMultiYearDataset):
-        return UKMultiYearDataset(
+        subsample = UKMultiYearDataset(
             datasets=[
                 _subsample_single_year_dataset(
                     dataset[year], household_ids, counts, quantize_weights
@@ -232,6 +237,13 @@ def subsample_dataset(
                 for year in dataset.years
             ]
         )
+        # Which capital gains inputs the loader projected, by variable and
+        # year, which a simulation built from the dataset reports.
+        if hasattr(dataset, "_cgt_extension_provenance"):
+            subsample._cgt_extension_provenance = copy.deepcopy(
+                dataset._cgt_extension_provenance
+            )
+        return subsample
     return _subsample_single_year_dataset(
         dataset, household_ids, counts, quantize_weights
     )
@@ -244,9 +256,15 @@ class _Subsample:
     simulation: "Simulation"
     # The arguments of Simulation.build_from_ids.
     ids: Tuple[np.ndarray, ...]
-    # Each supplied input, cut down to the sample.
-    inputs: List[Tuple[str, Period, np.ndarray]]
+    # Each supplied input, cut down to the sample, and whether it is the
+    # model's own value (set_model_value) rather than a supplied one.
+    inputs: List[Tuple[str, Period, np.ndarray, bool]]
     dataset: Optional[UKDataset]
+    # Where each capital gains input came from, by variable and period, and
+    # the periods a neutralised input read as its default: about periods,
+    # not records, so they hold for the sample.
+    cgt_provenance: Optional[dict]
+    cgt_defaulted_periods: Optional[set]
 
 
 def _sorted_positions(kept: np.ndarray, ids: np.ndarray) -> np.ndarray:
@@ -302,11 +320,12 @@ def _plan(
     inputs = []
     for name, period, values in supplied_input_arrays(simulation):
         entity_key = simulation.tax_benefit_system.get_variable(name).entity.key
+        model = is_model_value(simulation, name, period, values)
         if name in WEIGHT_VARIABLES:
             values = _rescaled(
                 name, period, values, entity_counts[entity_key], quantize_weights
             )
-        inputs.append((name, period, values[positions[entity_key]]))
+        inputs.append((name, period, values[positions[entity_key]], model))
 
     # A simulation and its baseline usually share one dataset object, so
     # subsample each dataset once and share the result in the same way.
@@ -330,6 +349,12 @@ def _plan(
         ),
         inputs=inputs,
         dataset=dataset,
+        cgt_provenance=copy.deepcopy(
+            getattr(simulation, "_cgt_input_provenance", None)
+        ),
+        cgt_defaulted_periods=copy.copy(
+            getattr(simulation, "_cgt_defaulted_periods", None)
+        ),
     )
 
 
@@ -350,8 +375,19 @@ def _apply(
     # reported for the sample: a flat trace keeps a variable's first value.
     simulation.tracer = tracer
     simulation.build_from_ids(*subsample.ids)
-    for name, period, values in subsample.inputs:
-        simulation.set_input(name, period, values)
+    for name, period, values, model in subsample.inputs:
+        if model:
+            # Keep it the model's: formulas that ask whether a value was
+            # supplied would otherwise read it as the user's.
+            set_model_value(simulation, name, period, values)
+        else:
+            simulation.set_input(name, period, values)
+    # The rebuild recorded each capital gains input as supplied; restore
+    # where each one came from.
+    if subsample.cgt_provenance is not None:
+        simulation._cgt_input_provenance = copy.deepcopy(subsample.cgt_provenance)
+    if subsample.cgt_defaulted_periods is not None:
+        simulation._cgt_defaulted_periods = set(subsample.cgt_defaulted_periods)
     simulation.start_instant = start_instant
     # Drop results calculated on the populations the subsample replaced.
     simulation._invalidate_all_caches()
