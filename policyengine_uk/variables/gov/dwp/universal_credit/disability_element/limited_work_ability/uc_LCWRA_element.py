@@ -1,4 +1,7 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.uc_work_related_requirements import (
+    other_member_of_single_claim,
+)
 
 
 class uc_LCWRA_element(Variable):
@@ -8,7 +11,8 @@ class uc_LCWRA_element(Variable):
     documentation = (
         "The amount an award includes because a claimant has limited "
         "capability for work and work-related activity. Only a claimant's "
-        "limited capability counts (`is_uc_single_or_joint_claimant`): a "
+        "limited capability counts (`is_uc_assessed_claimant`, less the "
+        "other member of a single claim): a "
         "disabled child or qualifying young person gives the award the "
         "disabled child addition instead (`uc_individual_disabled_child_element`), "
         "and a partner who cannot be a joint claimant, so that the other "
@@ -37,7 +41,9 @@ class uc_LCWRA_element(Variable):
         person = benunit.members
         # Reg. 27(1): the element is "in respect of the fact that a claimant
         # has limited capability for work and work-related activity".
-        claimant = person("is_uc_single_or_joint_claimant", period)
+        claimant = person(
+            "is_uc_assessed_claimant", period
+        ) & ~other_member_of_single_claim(person, period)
         limited_capability = claimant & person("uc_limited_capability_for_WRA", period)
         # Reg. 27(4)(a): "In the case of joint claimants, where each of them
         # has limited capability for work and work-related activity, the

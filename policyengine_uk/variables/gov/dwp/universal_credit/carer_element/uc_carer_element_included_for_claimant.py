@@ -1,4 +1,7 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.uc_work_related_requirements import (
+    other_member_of_single_claim,
+)
 
 
 class uc_carer_element_included_for_claimant(Variable):
@@ -7,7 +10,8 @@ class uc_carer_element_included_for_claimant(Variable):
     label = "Universal Credit carer element included in respect of this claimant"
     documentation = (
         "Whether the Universal Credit award includes the carer element in "
-        "respect of this person. Only a claimant (`is_uc_single_or_joint_claimant`) "
+        "respect of this person. Only a claimant (`is_uc_assessed_claimant`, "
+        "less the other member of a single claim under reg. 3(3)) "
         "who has regular and substantial caring responsibilities for a "
         "severely disabled person (`is_carer_for_benefits`) qualifies, so a "
         "child or qualifying young person who cares does not. A claimant in "
@@ -50,7 +54,9 @@ class uc_carer_element_included_for_claimant(Variable):
         age = person("age", period)
         # Reg. 29(1): "where a claimant has regular and substantial caring
         # responsibilities for a severely disabled person" (reg. 30).
-        claimant = person("is_uc_single_or_joint_claimant", period)
+        claimant = person(
+            "is_uc_assessed_claimant", period
+        ) & ~other_member_of_single_claim(person, period)
         carer = claimant & person("is_carer_for_benefits", period)
         limited_capability = claimant & person("uc_limited_capability_for_WRA", period)
         # Reg. 29(4): a carer with limited capability "(and, in the case of

@@ -629,10 +629,20 @@ def test_an_element_a_reform_gives_is_decided_by_its_value(element):
     assert positive.calculate(element, YEAR)[0] == 6_000
     assert positive.calculate(UC_SPECIFIED, YEAR)[0]
     # A reform's amount that equals the model's own (here, what the model's
-    # formula gives for the other member's circumstance) is still the
-    # reform's.
+    # formula gives for a claimant's circumstance; it gives nothing for the
+    # other member's, regs 27(1), 29(1)) is still the reform's.
+    assert (
+        Simulation(
+            situation=situation([([claimant, other], {"working_tax_credit": 0})])
+        ).calculate(element, YEAR)[0]
+        == 0
+    )
+    claimant_with_circumstance = blank(role="claimant", age=40)
+    claimant_with_circumstance[circumstance] = True
     model_amount = Simulation(
-        situation=situation([([claimant, other], {"working_tax_credit": 0})])
+        situation=situation(
+            [([claimant_with_circumstance, other], {"working_tax_credit": 0})]
+        )
     ).calculate(element, YEAR)[0]
     assert model_amount > 0
     same = Simulation(
@@ -662,18 +672,27 @@ def test_an_element_a_reform_gives_is_decided_by_its_value(element):
 def test_the_rebalancing_adds_no_entry_and_keeps_one():
     """From 2026 the Universal Credit rebalancing rescales uc_LCWRA_element
     (scenarios/uc_reform.py). An element it rescales from the model's own
-    formula is not an entry, so the other member's limited capability still
-    does not lift the cap; an element entered for the award stays entered."""
+    formula is not an entry: the claimant's limited capability gives one that
+    lifts the cap, and the other member's gives none (reg 27(1)); an element
+    entered for the award stays entered."""
     year = 2026
     claimant, other = blank(role="claimant", age=40), blank(role="other", age=30)
+    for holder in ["claimant", "other"]:
+        claimant_flag, other_flag = dict(claimant), dict(other)
+        (claimant_flag if holder == "claimant" else other_flag)[
+            "uc_limited_capability_for_WRA"
+        ] = True
+        calculated = Simulation(
+            situation=situation(
+                [([claimant_flag, other_flag], {"working_tax_credit": 0})], year
+            )
+        )
+        positive = calculated.calculate("uc_LCWRA_element", year)[0] > 0
+        assert positive == (holder == "claimant")
+        benunit = calculated.populations["benunit"]
+        assert supplied_input(benunit, "uc_LCWRA_element", period(year)) is None
+        assert bool(calculated.calculate(UC_SPECIFIED, year)[0]) == positive
     other["uc_limited_capability_for_WRA"] = True
-    calculated = Simulation(
-        situation=situation([([claimant, other], {"working_tax_credit": 0})], year)
-    )
-    assert calculated.calculate("uc_LCWRA_element", year)[0] > 0
-    benunit = calculated.populations["benunit"]
-    assert supplied_input(benunit, "uc_LCWRA_element", period(year)) is None
-    assert not calculated.calculate(UC_SPECIFIED, year)[0]
 
     entered = Simulation(
         situation=situation(
@@ -691,15 +710,34 @@ def test_the_rebalancing_adds_no_entry_and_keeps_one():
 # stored for the period, so an entry equal to it is still an entry.
 
 
+# The model's own amount stored below for a family whose only member with
+# limited capability is not a claimant: twelve months at the 2026-27 rate.
+MODEL_OWNED_ELEMENT = 217.26 * 12
+
+
 def element_situation(year, element=None):
-    """A claimant and a non-claimant adult with limited capability: the
-    model's formula gives the element, which does not lift the cap."""
+    """A claimant and a non-claimant adult with limited capability. The
+    model's formula gives no element for the other member's limited
+    capability (reg 27(1)); ``model_owned`` stores one as the model's own."""
     claimant, other = blank(role="claimant", age=40), blank(role="other", age=30)
     other["uc_limited_capability_for_WRA"] = True
     inputs = {"working_tax_credit": 0}
     if element is not None:
         inputs["uc_LCWRA_element"] = element
     return situation([([claimant, other], inputs)], year)
+
+
+def model_owned(year):
+    """A simulation of ``element_situation`` for ``year`` holding a positive
+    element stored as the model's own (set_model_value, as the rebalancing
+    stores the amounts it rescales) although only the non-claimant has
+    limited capability. Such an element is not included in the award, so it
+    does not lift the cap; an entry of the same amount is, and does."""
+    simulation = Simulation(situation=element_situation(year))
+    set_model_value(
+        simulation, "uc_LCWRA_element", year, np.array([MODEL_OWNED_ELEMENT])
+    )
+    return simulation
 
 
 def is_entered(simulation, year):
@@ -753,9 +791,9 @@ def test_an_entry_equal_to_the_model_value_is_an_entry(enter):
     even one equal to the amount the rebalancing stored as the model's in the
     same simulation, however it is entered."""
     year = 2026
-    without_entry = Simulation(situation=element_situation(year))
+    without_entry = model_owned(year)
     assert not without_entry.calculate(UC_SPECIFIED, year)[0]
-    simulation = Simulation(situation=element_situation(year))
+    simulation = model_owned(year)
     model_amount = float(simulation.calculate("uc_LCWRA_element", year)[0])
     assert model_amount > 0
     assert not is_entered(simulation, year)
@@ -776,7 +814,7 @@ def test_an_entry_equal_to_the_model_value_is_an_entry(enter):
 
 def test_clones_and_branches_keep_their_own_record_of_model_values():
     year = 2026
-    simulation = Simulation(situation=element_situation(year))
+    simulation = model_owned(year)
     model_amount = float(simulation.calculate("uc_LCWRA_element", year)[0])
 
     clone = simulation.clone()
@@ -802,7 +840,10 @@ def test_clones_and_branches_keep_their_own_record_of_model_values():
 @pytest.fixture(scope="module")
 def rebalanced():
     year = 2026
-    simulation = Simulation(situation=element_situation(year))
+    # The situation gives the non-claimant limited capability for 2026 only,
+    # so the model's own element is stored for that year; later years keep
+    # the formula's nil.
+    simulation = model_owned(year)
     return simulation, float(simulation.calculate("uc_LCWRA_element", year)[0])
 
 
@@ -963,7 +1004,10 @@ def test_internal_lcwra_wrapper_keeps_the_model_claimant_filter(
             applied_before_data_load=True,
         ),
     )
-    assert sim.calculate("uc_LCWRA_element", year)[0] > 0
+    # The model's formula gives the element only for a claimant (reg 27(1)).
+    assert (sim.calculate("uc_LCWRA_element", year)[0] > 0) == (
+        holder_role == "claimant"
+    )
     assert not is_entered(sim, year)
     assert bool(sim.calculate(UC_SPECIFIED, year)[0]) == (holder_role == "claimant")
     add_universal_credit_reform(sim)
