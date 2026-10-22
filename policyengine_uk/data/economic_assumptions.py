@@ -583,13 +583,20 @@ def uprate_student_loan_plans(
 
     As we project forward, we need to:
     1. Re-label existing holders to correct plan based on uni start year
-    2. Add Plan 1/2 holders in age bands beyond the base year's coverage
-    3. Add Plan 5 holders (new plan starting 2023)
+    2. Add holders in age bands beyond the base year's coverage
+    3. Add holders from the 2023-and-later intakes
 
     For (2) and (3), we use highest_education == TERTIARY as the signal
     for who is a graduate, then apply a flat take-up probability. Each
     person's take-up draw is keyed on person_id, so the same people take up
     a loan in every year and in any row order.
+
+    New holders follow the funding nation's undergraduate repayment plan.
+    Funding agency is unavailable in the dataset, so current household
+    region proxies for it: England, Wales, SAAS for Scotland, and Student
+    Finance NI for Northern Ireland. This cannot identify cross-border
+    movers. An unknown region leaves the plan unchanged. See
+    https://www.gov.uk/repaying-your-student-loan/which-repayment-plan-you-are-on.
     """
     # Skip if required columns don't exist yet (e.g., during
     # initial dataset creation before imputation runs)
@@ -618,7 +625,25 @@ def uprate_student_loan_plans(
 
     uni_start_year = year - age + 18
     is_england = np.isin(region, list(_ENGLAND_REGIONS))
+    is_wales = region == "WALES"
+    is_scotland = region == "SCOTLAND"
+    is_northern_ireland = region == "NORTHERN_IRELAND"
     is_tertiary = highest_ed == "TERTIARY"
+
+    # England introduced Plan 5 in 2023; Wales kept Plan 2. SAAS and
+    # Student Finance NI use Plans 4 and 1 respectively for all intakes.
+    # Current residence is the funding-nation proxy described above.
+    new_borrower_plan = np.select(
+        [
+            is_scotland,
+            is_northern_ireland,
+            is_england & (uni_start_year >= _PLAN5_FIRST_UNI_START),
+            (is_england | is_wales) & (uni_start_year >= _PLAN2_FIRST_UNI_START),
+            is_england | is_wales,
+        ],
+        ["PLAN_4", "PLAN_1", "PLAN_5", "PLAN_2", "PLAN_1"],
+        default="NONE",
+    )
 
     # Initialize output arrays
     new_plan = base_plan.copy()
@@ -628,10 +653,10 @@ def uprate_student_loan_plans(
     draws = splitmix64_uniform(person["person_id"].values, salt=_STUDENT_LOAN_DRAW_SALT)
 
     # Helper to assign plans to eligible people
-    def assign_with_probability(mask, plan_value, prob=_GRADUATE_LOAN_TAKE_UP):
-        """Assign plan_value to the masked people whose draw is below prob."""
-        sampled = mask & (draws < prob)
-        new_plan[sampled] = plan_value
+    def assign_with_probability(mask, prob=_GRADUATE_LOAN_TAKE_UP):
+        """Assign the funding-nation plan to sampled new borrowers."""
+        sampled = mask & (draws < prob) & (new_borrower_plan != "NONE")
+        new_plan[sampled] = new_borrower_plan[sampled]
         repayments[sampled] = 0.0
 
     # === Step 1: Re-label existing loan holders ===
@@ -650,7 +675,7 @@ def uprate_student_loan_plans(
     new_plan[is_plan5_cohort & is_england] = "PLAN_5"
     new_plan[is_plan5_cohort & ~is_england] = "PLAN_2"
 
-    # === Step 2: Add Plan 1 holders in extended age bands ===
+    # === Step 2: Add holders in the extended pre-2012 age bands ===
     # Income-contingent (Plan 1) loans began with the 1998 intake, aged 44 in
     # 2024. With ages fixed, later years' Plan 1 intakes reach older ages, up
     # to the write-off.
@@ -665,9 +690,9 @@ def uprate_student_loan_plans(
         & (uni_start_year < _PLAN2_FIRST_UNI_START)
         & (uni_start_year + _PLAN1_WRITEOFF_YEARS > year)
     )
-    assign_with_probability(plan1_new_cohort, "PLAN_1")
+    assign_with_probability(plan1_new_cohort)
 
-    # === Step 3: Add Plan 2 holders in extended age bands ===
+    # === Step 3: Add holders in the extended 2012-2022 age bands ===
     # In the base year Plan 2 holders are at most the age of the 2012 intake
     # (30 in 2024). With ages fixed, by 2029 Plan 2 reaches age 35.
     # Target: NONE people who are tertiary-educated, older than the base
@@ -680,20 +705,19 @@ def uprate_student_loan_plans(
         & (uni_start_year >= _PLAN2_FIRST_UNI_START)
         & (uni_start_year < _PLAN5_FIRST_UNI_START)
     )
-    assign_with_probability(plan2_new_cohort, "PLAN_2")
+    assign_with_probability(plan2_new_cohort)
 
-    # === Step 4: Add Plan 5 holders (new plan from 2023) ===
-    # Plan 5 didn't exist in base year. Eligible: tertiary-educated NONE
-    # people in England who would have started uni 2023+.
+    # === Step 4: Add holders from the 2023-and-later intakes ===
+    # Plan 5 is for England only. Other funding nations retain their plans.
+    # Eligible: tertiary-educated NONE people who would have started uni 2023+.
     # Age constraint: must be 21+ (finished 3-year degree) to be repaying.
-    plan5_eligible = (
+    new_intake_eligible = (
         (new_plan == "NONE")
         & is_tertiary
-        & is_england
-        & (uni_start_year >= 2023)
+        & (uni_start_year >= _PLAN5_FIRST_UNI_START)
         & (age >= 21)
     )
-    assign_with_probability(plan5_eligible, "PLAN_5")
+    assign_with_probability(new_intake_eligible)
 
     # Write back to the person table (without the merged region column).
     person_out = current_year.person.copy()

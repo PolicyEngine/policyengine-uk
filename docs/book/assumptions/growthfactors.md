@@ -58,6 +58,24 @@ We apply the OBR's wage growth forecasts to employment-related variables.
 
 We use average earnings for these variables: `employee_pension_contributions`, `employer_pension_contributions`, `employment_income`, `employment_income_before_lsr`, `personal_pension_contributions`, `student_loan_repayments`
 
+### Newly assigned student loan plans
+
+Dataset projection holds ages fixed, so a person of a given age represents a
+later university intake in each projected year. When projection adds a loan
+to a tertiary-educated person without one, it uses current household region
+as a proxy for the funding nation, because the dataset does not record the
+funding agency. This proxy cannot identify people who moved between nations.
+
+The [official repayment-plan rules](https://www.gov.uk/repaying-your-student-loan/which-repayment-plan-you-are-on)
+give SAAS borrowers Plan 4 and Student Finance Northern Ireland borrowers
+Plan 1. For undergraduate loans, England uses Plan 1 before the 2012 intake,
+Plan 2 for 2012–2022, and Plan 5 from 2023; Wales uses Plan 1 before 2012 and
+Plan 2 from 2012. New assignments follow these routes; an unknown region
+leaves the person without an assigned loan. Take-up remains a fixed 40%
+probability with a draw keyed on person ID. This funding-nation routing
+applies to newly assigned loans; the existing-holder relabelling and
+write-off approximations are unchanged.
+
 ## Lagged average earnings
 
 We lag earnings growth by one year and use that to uprate housing service charges (including ground rent).
