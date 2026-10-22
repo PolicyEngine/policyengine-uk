@@ -101,7 +101,7 @@ Each of the variables above is either derived from other variables, or is a dire
 | `free_tv_licence_value` | Not directly uprated | Depends on policy parameters |
 | `income_tax` | Derived | Calculated based on income and tax policy |
 | `national_insurance` | Derived | Calculated based on income and NI policy |
-| `council_tax` | gov.obr.council_tax | Uprated based on outturn CT levels by region growth to 2025, then OBR projections of levels by region onwardss |
+| `council_tax` | gov.economic_assumptions.yoy_growth.obr.council_tax | Uprated by each country's council tax receipts growth (official outturns to 2024-25, then OBR forecasts) divided by population growth, so each country's weighted total tracks its receipts; held flat in Northern Ireland |
 | `domestic_rates` | gov.economic_assumptions.yoy_growth.finance_ni.domestic_rates | Uprated by growth in Northern Ireland's combined regional and district domestic rate poundage to 2026-27, then by an assumed 4.33% a year (2026-27's growth) |
 | `employee_pension_contributions` | gov.obr.per_capita.employment_income | Uprated based on per capita employment income growth |
 | `personal_pension_contributions` | gov.obr.per_capita.employment_income | Uprated based on per capita employment income growth |
