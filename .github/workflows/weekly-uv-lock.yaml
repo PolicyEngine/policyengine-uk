@@ -290,4 +290,4 @@ jobs:
           auth=$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')
           git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $auth" \
             push --force-with-lease="refs/heads/$BRANCH:$HEAD" origin ":refs/heads/$BRANCH" \
-            || echo "::notice::$BRANCH moved after it was checked, so it was not deleted."
+            || echo "::notice::Did not delete $BRANCH: it moved after it was checked, or the push failed."
