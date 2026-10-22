@@ -768,6 +768,9 @@
       benunit:
         members: [person]
         would_claim_uc: false
+        # Its award is abolished in 2027; it does not claim Universal Credit
+        # then, so it is not passported.
+        would_claim_uc_at_legacy_closure: false
         guarantee_credit: 0
         housing_benefit_applicable_amount: 4_968.60
     households:

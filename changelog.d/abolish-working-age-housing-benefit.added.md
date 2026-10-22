@@ -1,0 +1,1 @@
+- Added a specified or temporary accommodation input to preserve working-age Housing Benefit, permit new claims alongside Universal Credit and exclude the corresponding Universal Credit housing costs.

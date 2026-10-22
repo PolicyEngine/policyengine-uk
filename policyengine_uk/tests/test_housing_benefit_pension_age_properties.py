@@ -1,10 +1,14 @@
 """Property-based tests for who can claim Housing Benefit.
 
-New Housing Benefit claims are barred except where the claimant, and any
-partner, has reached the qualifying age for State Pension Credit (SI 2014/1230
-reg 6A(4)); Universal Credit is not available to them (Welfare Reform Act 2012
-s.4(1)(b)). Other families keep Housing Benefit only while they continue an
-existing award and do not claim Universal Credit.
+These tests omit the accommodation input, so its default False applies.
+For this route, new Housing Benefit claims are barred except where the
+claimant, and any partner, has reached the qualifying age for State Pension
+Credit (SI 2014/1230 reg 6A(4)); the model approximates this with members aged
+18 or over. Other families keep Housing Benefit only while they continue an
+existing award and do not claim Universal Credit. YEAR is 2026-27, when
+working-age awards are still payable for part of the year, so eligibility
+follows the same rule; test_housing_benefit_working_age_abolition_properties.py
+covers the abolition itself.
 
 Invariants, for any generated population of families:
 
@@ -31,6 +35,8 @@ A pensioner with an 18 or 19 year old dependant is a pension-age claimant for
 Housing Benefit, Pension Credit and Universal Credit alike (the dependant is
 not a claimant or partner), so that family can claim Housing Benefit and not
 Universal Credit, and the mutual exclusion holds for that shape too.
+Accommodation protection and the HB/non-housing-UC route are tested in the
+abolition property file.
 
 Every member's is_claimant_or_partner is set from its generated role, as the
 FRS supplies it. Without that input an 18- or 19-year-old partner of a
@@ -120,6 +126,10 @@ def situation(units, claims_all=None, flip_would_claim_uc=False, pension_bump=0.
         benunit = {
             "members": names,
             "would_claim_uc": {YEAR: unit["would_claim_uc"] ^ flip_would_claim_uc},
+            # Working-age awards are abolished during 2026; these families do
+            # not claim Universal Credit at the abolition, so a continuing
+            # award runs until then.
+            "would_claim_uc_at_legacy_closure": {YEAR: False},
         }
         # claims_all_entitled_benefits sums reported benefits across the whole
         # simulation, so set it per family whenever any family reports one.
