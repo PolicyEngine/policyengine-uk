@@ -160,9 +160,13 @@
     is_claimant_or_partner: [true, true]
     # SPCA 2002 s.5: gross = 5,000 + 1,000 + 100 + 2,000 + 500 + 200
     # + 104 = 8,904; deductions = 100 + 50 + 25 + 50% * 300 = 325.
-    pension_credit_income: 8_579
+    # Sch VI para 3 (both carers): 20 pounds a week, capped at net earnings
+    # (claimant 1,000 - 100 tax - 100 half contributions = 800; partner
+    # 500 - 25 NI - 50 tax - 50 = 375; 1,175), so 1,040 is disregarded:
+    # 8,904 - 325 - 1,040.
+    pension_credit_income: 7_539
     # Reg.9: remove the claimant's 100 JSA and partner's 200 ESA.
-    savings_credit_income: 8_279
+    savings_credit_income: 7_239
     # Sch.I para.4 and the 2026 carer addition: 2 * 48.15 * 52 = 5,007.60.
     carer_minimum_guarantee_addition: 5_007.60
 

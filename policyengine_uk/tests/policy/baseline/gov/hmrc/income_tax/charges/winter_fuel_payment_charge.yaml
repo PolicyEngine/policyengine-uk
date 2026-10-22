@@ -1090,3 +1090,77 @@
     total_income_charged_to_tax: [36_000]
     winter_fuel_payment: [300]
     winter_fuel_payment_charge: [300]
+
+# Pension Credit's earnings rules (SPC Regs 2002 regs 17(10) and 17(11) and
+# Sch VI, #2019) take the income tax on earnings, like every means test,
+# before the charge: the charge recovers a payment, and it depends on Pension
+# Credit, so counting it would make the model circular.
+
+- name: 2026 a lone pensioner's earnings disregard works alongside the charge
+  # Review r12's reproducer, which raised CycleError while Pension Credit's
+  # earnings tax read income tax after the charge. London, aged 70, £2,000 of
+  # employment income and no State Pension: income tax nil (under the £12,570
+  # personal allowance) and no National Insurance (over State Pension age).
+  # Sch VI para 5(a): £5 a week for a single claimant, 5 x 52 = £260, under
+  # the net earnings of £2,000. Pension Credit income: 2,000 - 260 = £1,740.
+  # Total income £2,000 is under £35,000: the £200 payment is not charged.
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 70
+        employment_income: 2_000
+        state_pension: 0
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+  output:
+    income_tax_before_winter_fuel_payment_charge: [0]
+    pension_credit_employment_income_tax: 0
+    pension_credit_earnings_disregard: 260
+    pension_credit_income: 1_740
+    winter_fuel_payment: [200]
+    winter_fuel_payment_charge: [0]
+    income_tax: [0]
+
+- name: 2026 Pension Credit's tax on earnings leaves out the charge the earnings bring
+  # London, aged 70, £34,000 of private pension and £2,000 of employment
+  # income. Total income £36,000 exceeds £35,000 and there is no relevant
+  # benefit (Pension Credit income is far above the guarantee), so the £200
+  # payment is charged. Tax before the charge: (36,000 - 12,570) x 20% =
+  # £4,686, within the £37,700 basic rate band; with the charge, £4,886.
+  # Without the earnings: (34,000 - 12,570) x 20% = £4,286, and total income
+  # £34,000 is not charged. Taking earnings as the top slice (#2019's option
+  # (a)), they bear 4,686 - 4,286 = £400 of tax; the £200 charge they also
+  # bring is not tax on them. Net earnings 2,000 - 400 = £1,600; disregard
+  # £260. Pension Credit income: 36,000 - 4,686 - 260 = £31,054.
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 70
+        private_pension_income: 34_000
+        employment_income: 2_000
+        state_pension: 0
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+  output:
+    total_income_charged_to_tax: [36_000]
+    income_tax_before_winter_fuel_payment_charge: [4_686]
+    pension_credit_income_tax_without_employment_income: [4_286]
+    pension_credit_employment_income_tax: 400
+    pension_credit_earnings_disregard: 260
+    pension_credit_income: 31_054
+    pension_credit: 0
+    winter_fuel_payment: [200]
+    winter_fuel_payment_charge: [200]
+    income_tax: [4_886]

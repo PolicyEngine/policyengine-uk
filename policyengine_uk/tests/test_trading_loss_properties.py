@@ -37,7 +37,11 @@ Invariants, for any people and incomes:
    award equal the same family with those profits cut by the loss. The
    model's means tests use annual tax deductions, so otherwise the loss
    reaches them through those deductions. UC's own deductions for tax and
-   NI on earnings are held alongside them.
+   NI on earnings and Pension Credit's tax attribution to employed and
+   self-employed earnings are held alongside them, including the actual
+   Class 2/4 components replaced by notional PC deductions. The personal
+   reliefs used for PC's notional tax are held too: the loss can change
+   entitlement to those reliefs without offsetting PC earnings.
 5. Tax credits (SI 2002/2006 reg 3(1) Step 4): the claimants' losses (not a
    child's) come off their applicable income, never below zero, and the award
    never falls.
@@ -740,6 +744,138 @@ def test_zero_profit_trade_loss_cannot_raise_tax_or_reduce_programme_award(
 
 @PROPERTY_SETTINGS
 @example(PINNED_FAMILIES)
+@example(
+    [
+        (
+            [
+                adult(age=57, trading_loss=2_399.8265339892096, hours_worked=0.0),
+                adult(
+                    age=18,
+                    employment_income=1.0,
+                    self_employment_income=24_100.0,
+                    savings_interest_income=1.195,
+                    trading_loss=100.0,
+                    hours_worked=0.0,
+                ),
+                {"age": 4, "trading_loss": 1.9},
+                {"age": 11, "trading_loss": 0.0},
+                {"age": 13, "trading_loss": 4_999.999999999999},
+            ],
+            {
+                "rent": 0.0,
+                "council_tax": 905.6960743779131,
+                "tenure_type": "RENT_FROM_COUNCIL",
+                "region": "SCOTLAND",
+            },
+        ),
+        (
+            [
+                adult(
+                    age=62,
+                    employment_income=48_163.774854368,
+                    private_pension_income=18.8,
+                    savings_interest_income=3_726.67143339902,
+                    hours_worked=0.0,
+                ),
+                adult(
+                    age=45,
+                    employment_income=35_394.709560981835,
+                    self_employment_income=24_566.859819474743,
+                    savings_interest_income=2_950.8270749404533,
+                    trading_loss=33_435.74658513417,
+                    hours_worked=16.0,
+                ),
+                {"age": 11, "trading_loss": 3_414.540906596419},
+                {"age": 7, "trading_loss": 0.0},
+                {"age": 3, "trading_loss": 0.0},
+            ],
+            {
+                "rent": 8_205.896001170435,
+                "council_tax": 2_894.867267754779,
+                "tenure_type": "RENT_PRIVATELY",
+                "region": "NORTH_EAST",
+            },
+        ),
+        (
+            [
+                adult(
+                    age=55,
+                    self_employment_income=22_244.933680665035,
+                    private_pension_income=15_657.59819004124,
+                    trading_loss=20_700.0,
+                ),
+                {"age": 8, "trading_loss": 2_806.337586256281},
+            ],
+            {
+                "rent": 0.0,
+                "council_tax": 2_169.4036386087373,
+                "tenure_type": "RENT_FROM_COUNCIL",
+                "region": "WALES",
+            },
+        ),
+        (
+            [
+                adult(
+                    age=23,
+                    employment_income=1.1,
+                    self_employment_income=16_997.525784723435,
+                    trading_loss=27_557.714012466255,
+                    hours_worked=16.0,
+                )
+            ],
+            {
+                "rent": 0.0,
+                "council_tax": 1_748.2542780681022,
+                "tenure_type": "RENT_PRIVATELY",
+                "region": "WALES",
+            },
+        ),
+        # CI's fifth family: the partner's loss enables a £1,260 Marriage
+        # Allowance. Removing it changes PC notional tax by £252 unless
+        # the statutory personal reliefs are held with the other tax inputs.
+        (
+            [
+                adult(
+                    age=57,
+                    self_employment_income=26_702.388163483578,
+                    private_pension_income=7_714.38595373581,
+                    savings_interest_income=4_509.347498481971,
+                    hours_worked=16.0,
+                ),
+                adult(
+                    age=31,
+                    private_pension_income=17_970.97909886547,
+                    trading_loss=10_351.972522786527,
+                ),
+                {"age": 11, "trading_loss": 0.0},
+            ],
+            {
+                "rent": 374.4475438112428,
+                "council_tax": 2_056.072240654743,
+                "tenure_type": "RENT_FROM_COUNCIL",
+                "region": "NORTH_EAST",
+            },
+        ),
+    ]
+)
+@example(
+    [
+        (
+            [
+                adult(age=18, self_employment_income=17_809.094330166412),
+                {"age": 0, "trading_loss": 3_692.5341857798658},
+            ],
+            home(1.0, "NORTH_EAST"),
+        ),
+        # Actual Class 4 falls to zero with this loss, while CER deductions
+        # still use the separate positive employment's 30,000 profit. Holding
+        # total NI also requires holding its actual Class 4 component.
+        (
+            [adult(self_employment_income=30_000, trading_loss=20_000)],
+            home(0.0),
+        ),
+    ]
+)
 @given(st.lists(families(), min_size=4, max_size=10))
 def test_means_tests_see_the_loss_only_through_tax(units):
     with_loss = Simulation(situation=family_situation(units))
@@ -752,10 +888,38 @@ def test_means_tests_see_the_loss_only_through_tax(units):
     deductions = [
         PRE_CHARGE_TAX,
         "national_insurance",
+        # PC replaces these actual components with CER notional deductions;
+        # hold them consistently with the total national_insurance input.
+        "ni_class_2",
+        "ni_class_4",
         "uc_income_tax_on_earnings",
         "uc_national_insurance_on_earnings",
+        # CER 13 uses these personal reliefs for PC's notional tax. A loss
+        # can alter them (for example by enabling a partner's Marriage
+        # Allowance transfer), so preserve their with-loss values as well.
+        "personal_allowance",
+        "blind_persons_allowance",
+        "marriage_allowance",
+        "married_couples_allowance_deduction",
     ]
     tax = {v: values(with_loss, v) for v in deductions}
+    # SPC Regs reg 17(11) substitutes CER notional deductions for the tax
+    # actually attributable to profits. Holding the pre-charge tax alone also
+    # holds it in the no-profit counterfactual, incorrectly setting that
+    # attribution to zero. Preserve both PC tax allocations from the
+    # with-loss side.
+    # In the child-loss example the adult has no loss: actual/notional tax
+    # is (17,809.09433 - 12,570) x 20% = 1,047.818866, and notional Class 4
+    # is 5,239.09433 x 6% = 314.345660. Holding both tax allocations gives
+    # PC income 17,809.09433 - 1,047.818866 - 314.345660 - 1,040 = 15,406.93
+    # on both sides; the child's loss never enters the claimant's earnings.
+    pc_tax = {
+        v: values(with_loss, v)
+        for v in [
+            "pension_credit_employment_income_tax",
+            "pension_credit_self_employment_income_tax",
+        ]
+    }
     loss = values(with_loss, "trading_loss")
     profits = values(with_loss, "self_employment_income")
     mif = np.asarray(with_loss.calculate("uc_mif_applies", YEAR))
@@ -774,7 +938,13 @@ def test_means_tests_see_the_loss_only_through_tax(units):
         situation=family_situation(
             units,
             {name: held(k) for k, name in enumerate(names)},
-            {b: {"universal_credit": float(uc[k])} for k, b in enumerate(benunits)},
+            {
+                b: {
+                    "universal_credit": float(uc[k]),
+                    **{v: float(pc_tax[v][k]) for v in pc_tax},
+                }
+                for k, b in enumerate(benunits)
+            },
         )
     )
     for variable in MEANS_TESTED:

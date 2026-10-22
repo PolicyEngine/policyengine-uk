@@ -38,6 +38,10 @@ KNOWN_UNUPRATED = {
     "domestic_energy_consumption",
     "electricity_consumption",
     "gas_consumption",
+    # Grown by country in uprate_water_and_sewerage_charges (#2501): Ofwat's
+    # series for England and Wales, Scottish Water's for Scotland, none for
+    # Northern Ireland. A YAML entry would grow it a second time.
+    "water_and_sewerage_charges",
 }
 
 # Variables the YAML deliberately uprates by an index other than the one they

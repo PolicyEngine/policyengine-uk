@@ -31,8 +31,9 @@
 # Pension Credit tariff income (SPC Regs 2002 reg 15(6)), and savings interest
 # is not Pension Credit income.
 #
-# Pension Credit earnings are entered net of the SPC Regs 2002 Sch VI para 5
-# disregard (£5 a week single, £10 a couple), which the model does not apply.
+# Employment income is gross. The model applies the SPC Regs 2002 Sch VI
+# para 5 disregard once (£5 a week single, £10 a couple); do not pre-net a
+# pension_credit_earnings input by that amount.
 # No case has income tax: each person's income is within the personal
 # allowance.
 
@@ -57,7 +58,6 @@
     benunits:
       benunit:
         members: [pensioner]
-        pension_credit_earnings: 2_340  # 2,600 - 5 x 52
     households:
       household:
         members: [pensioner]
@@ -92,7 +92,6 @@
     benunits:
       benunit:
         members: [pensioner]
-        pension_credit_earnings: 2_340
     households:
       household:
         members: [pensioner]
@@ -124,7 +123,6 @@
     benunits:
       benunit:
         members: [pensioner]
-        pension_credit_earnings: 2_340
     households:
       household:
         members: [pensioner]
@@ -153,7 +151,6 @@
     benunits:
       benunit:
         members: [pensioner]
-        pension_credit_earnings: 2_340
     households:
       household:
         members: [pensioner]
@@ -182,7 +179,6 @@
     benunits:
       benunit:
         members: [pensioner]
-        pension_credit_earnings: 2_340
         would_claim_pc: false
     households:
       household:
@@ -231,7 +227,6 @@
       benunit:
         members: [grandparent_1, grandparent_2, grandchild]
         would_claim_uc: false
-        pension_credit_earnings: 2_480  # 3,000 - 10 x 52
         CTC_family_element: 545
     households:
       household:
@@ -277,7 +272,6 @@
       benunit:
         members: [grandparent_1, grandparent_2, grandchild]
         would_claim_uc: false
-        pension_credit_earnings: 2_480
         CTC_family_element: 0
         working_tax_credit_run_on: false
         extended_childcare_entitlement_eligible: false
@@ -374,7 +368,6 @@
         members: [older, younger]
         would_claim_uc: false
         has_mixed_age_couple_pension_credit_saving: true
-        pension_credit_earnings: 2_080  # 2,600 - 10 x 52
     households:
       household:
         members: [older, younger]
@@ -409,7 +402,6 @@
     benunits:
       benunit:
         members: [pensioner]
-        pension_credit_earnings: 2_340
         standard_minimum_guarantee: 11_809.20
     households:
       household:
@@ -440,7 +432,6 @@
     benunits:
       benunit:
         members: [pensioner]
-        pension_credit_earnings: 2_340
     households:
       household:
         members: [pensioner]

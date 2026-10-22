@@ -1,4 +1,8 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.pensions import (
+    pension_contributions_relief_amount,
+    relevant_uk_earnings,
+)
 
 
 class adjusted_total_income(Variable):
@@ -12,11 +16,12 @@ class adjusted_total_income(Variable):
         "contributions under a net pay arrangement (FA 2004 s.193(2)). "
         "Steps 3 and 4 deduct the other pension contributions given relief "
         "(ss.192-194). Together these are the person's own contributions "
-        "up to relevant UK earnings (s.189(2): taxable employment income, "
-        "including benefits and statutory pay, and trading profits). The "
-        "basic amount can increase that limit only through relief at source "
-        "(ss.190(3), 191(7)), which the model represents with gross personal "
-        "pension contributions; employee contributions represent net pay. "
+        "up to relevant UK earnings (s.189(2): employment income, including "
+        "statutory pay, less allowable expenses but before pension "
+        "deductions, and trading profits before losses). The basic amount "
+        "can increase that limit only through relief at source (ss.190(3), "
+        "191(7)), which the model represents with gross personal pension "
+        "contributions; employee contributions represent net pay. "
         "None is relieved from "
         "age 75 (s.188(3)(a)). The annual allowance limits tax-relieved "
         "saving through a charge, not the relief itself, so it is not applied "
@@ -40,40 +45,16 @@ class adjusted_total_income(Variable):
     ]
 
     def formula(person, period, parameters):
-        p = parameters(period).gov.hmrc
-        profits = person("self_employment_income", period)
-        other_deductions = [
-            deduction
-            for deduction in p.income_tax.bases.taxable_self_employment_income_deductions
-            if deduction != "loss_relief"
-        ]
-        profits_before_carry_forward = max_(
-            0, profits - add(person, period, other_deductions)
-        )
+        hmrc = parameters(period).gov.hmrc
         total_income = person("total_income_charged_to_tax", period)
-        # Relevant UK earnings (FA 2004 s.189(2)): employment income chargeable
-        # to tax, including taxable benefits and statutory payments, and
-        # trading profits chargeable to tax.
-        relevant_earnings = (
-            person("taxable_employment_income", period) + profits_before_carry_forward
-        )
-        # FA 2004 ss.190(3),191(7): only actual relief-at-source contributions
-        # can use the basic-amount increase above relevant UK earnings.
-        basic_amount_increase = min_(
-            max_(
-                0,
-                p.income_tax.reliefs.pension_contribution.basic_amount
-                - relevant_earnings,
-            ),
+        # The same relief as pension_contributions_relief, on the same
+        # relevant UK earnings (FA 2004 ss.189-191).
+        relieved_contributions = pension_contributions_relief_amount(
+            person("pension_contributions", period),
+            relevant_uk_earnings(person, period, hmrc),
             person("personal_pension_contributions", period),
-        )
-        relief_limit = relevant_earnings + basic_amount_increase
-        under_age_limit = (
-            person("age", period) < p.pensions.pension_contributions_relief_age_limit
-        )
-        relieved_contributions = (
-            min_(person("pension_contributions", period), relief_limit)
-            * under_age_limit
+            person("age", period),
+            hmrc,
         )
         # Net pay contributions already came off total income at Step 1. With
         # contributions of zero or more they never exceed the contributions
