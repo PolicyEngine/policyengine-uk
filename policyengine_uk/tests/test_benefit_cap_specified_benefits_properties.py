@@ -30,8 +30,10 @@ Each scheme applies its own exceptions. UC reg 83(1)(f) names a "child or
 qualifying young person"; HB reg 75F(1)(e) names a "child or young person".
 UC includes a 16-year-old school leaver (reg 5(1)(a)) who does not receive
 benefits in their own right (reg 5(5)) and is not looked after (reg 4(6)).
-HB young persons follow Child Benefit (reg 19), so only the education-based
-young-person role counts for Housing Benefit below. UC reg 83(1)(c) names
+HB young persons follow Child Benefit (reg 19), which includes a 16-year-old
+school leaver until the 31 August after their 16th birthday (Child Benefit
+(General) Regulations 2006 reg 4), counted for the year as the model does,
+unless they receive benefits in their own right (reg 8). UC reg 83(1)(c) names
 "a claimant" for attendance allowance, which includes armed forces
 independence payment (reg 2); HB reg 75F(1)(ea) also names "a young person"
 for it. Only UC reg 83(1)(a), (j) names the LCWRA and carer elements; only
@@ -273,10 +275,10 @@ def reference_specified_benefit(members, benunit_inputs, scheme):
     claimants = [m for m in members if m["_role"] == "claimant"]
     # UC reg 83 names a "qualifying young person" (reg 5), which includes a
     # 16-year-old school leaver (reg 5(1)(a)); HB reg 75F names a "young
-    # person" (reg 19), a Child Benefit qualifying young person. The
-    # school-leaver role here has no Child Benefit education or terminal-date
-    # circumstance, so it is not one.
-    young_roles = ("young_person", "sixteen") if scheme == "uc" else ("young_person",)
+    # person" (reg 19), a Child Benefit qualifying young person, which
+    # includes one too (Child Benefit (General) Regulations 2006 reg 4).
+    # Neither counts one receiving benefits in their own right.
+    young_roles = ("young_person", "sixteen")
     young_persons = [m for m in members if m["_role"] in young_roles]
     children = [m for m in members if m["_role"] == "child"]
     # No capital, so the couple's income-related award is their reports.
@@ -376,8 +378,8 @@ def reference_cap(members):
     # Each scheme's rate: a single claimant (UC reg 80A(2)(c)) or a claimant
     # who neither has a partner nor is a lone parent (HB regs 2(1), 75CA(2)),
     # with no child or young person. The family-rate helper counts any
-    # 16-year-old for the year (UC reg 5(1)(a); for HB, Child Benefit's
-    # school-leaver terminal dates, which annual ages cannot place); it does
+    # 16-year-old for the year (UC reg 5(1)(a); for HB, Child Benefit reg 4
+    # and its school-leaver terminal dates, which annual ages cannot place); it does
     # not yet apply reg 5(5) to one receiving benefits in their own right.
     claimants = sum(m["_role"] == "claimant" for m in members)
     dependants = any(
@@ -573,8 +575,8 @@ def test_each_head_alone_matches_regulations(mode):
         assert not mismatches, mismatches
         # Both outcomes occur under each scheme.
         assert exempt.any() and not exempt.all()
-    # The schemes differ: UC's elements and 16-year-old school leaver, HB's
-    # young person's armed forces independence payment.
+    # The schemes differ: UC's elements, HB's young person's armed forces
+    # independence payment.
     assert (exemptions["uc"] != exemptions["hb"]).any()
     # Every role meets every circumstance.
     assert len(units) == len(SINGLE_HEAD_ROLES) * len(CIRCUMSTANCES)
