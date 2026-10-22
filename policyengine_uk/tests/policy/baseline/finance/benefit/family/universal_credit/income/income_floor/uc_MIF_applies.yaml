@@ -119,8 +119,22 @@
   input:
     age: 30
     self_employment_income: 3_000
-    uc_has_limited_capability_for_work: true
+    uc_limited_capability_for_work: true
   output:
+    uc_mif_applies: false
+
+- name: Limited capability for work with an ESA award lacking the support component (section 21)
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 30
+    self_employment_income: 3_000
+    is_disabled_for_benefits: true
+    has_own_esa_award: true
+    esa_includes_support_component: false
+  output:
+    uc_limited_capability_for_WRA: false
+    uc_work_related_group_apart_from_earnings: WORK_PREPARATION
     uc_mif_applies: false
 
 - name: Pregnant claimant within 11 weeks of the expected week of confinement (section 19)

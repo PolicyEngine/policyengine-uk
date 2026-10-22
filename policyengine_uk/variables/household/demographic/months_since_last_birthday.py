@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.data_source import built_from_data
 from policyengine_uk.utils.stochastic import splitmix64_uniform, stratified_uniform
 
 
@@ -30,7 +31,7 @@ class months_since_last_birthday(Variable):
         age = person("age", period)
         whole_years = np.floor(age)
         fraction = age - whole_years
-        if getattr(person.simulation, "built_from_dataset", False):
+        if built_from_data(person.simulation):
             position = stratified_uniform(
                 strata=whole_years * 2 + person("is_male", period),
                 draws=splitmix64_uniform(person("person_id", period), salt=2),

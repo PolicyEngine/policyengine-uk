@@ -16,7 +16,7 @@ class plan_2_interest_rate(Variable):
     reference = "https://www.legislation.gov.uk/uksi/2012/1309/regulation/10"
 
     def formula(person, period, parameters):
-        income = person("adjusted_net_income", period)
+        income = person("net_income", period)
         p = parameters(period).gov.hmrc.student_loans
         rpi = parameters(period).gov.economic_assumptions.yoy_growth.obr.rpi
 
