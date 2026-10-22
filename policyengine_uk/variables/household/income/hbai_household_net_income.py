@@ -16,6 +16,7 @@ HBAI_HOUSEHOLD_NET_INCOME_ADDS = [
     "private_pension_income",
     "private_transfer_income",
     "maintenance_income",
+    "spousal_maintenance_income",
     "free_school_meals",
     "free_school_fruit_veg",
     "free_school_milk",

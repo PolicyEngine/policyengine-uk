@@ -47,6 +47,8 @@ metadata:
       href: https://www.legislation.gov.uk/ukpga/2002/16/section/16
     - title: The Universal Credit Regulations 2013 reg. 66(1)(b)(ii), (viii) and (ix) (contributory ESA, maternity allowance, industrial injuries benefit)
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/66
+    - title: The Universal Credit Regulations 2013 reg. 66(1)(d) (maintenance from a spouse, civil partner, former spouse or former civil partner; child maintenance is not listed)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/66
     - title: The Universal Credit Regulations 2013 reg. 2 (employment and support allowance and jobseeker's allowance mean the contributory allowances; industrial injuries benefit means benefit under SSCBA 1992 Part 5)
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/2
     - title: S.I. 2023/1218 art. 23(2) and (5) (defines carer support payment in reg. 2 and inserts reg. 66(1)(b)(iiia), from 19 November 2023)
@@ -75,6 +77,7 @@ values:
   - private_pension_income
   - state_pension
   - uc_tariff_income
+  - spousal_maintenance_income
   2014-06-16:
   - carers_allowance
   - jsa_contrib
@@ -84,6 +87,7 @@ values:
   - private_pension_income
   - state_pension
   - uc_tariff_income
+  - spousal_maintenance_income
   - incapacity_benefit
   - sda
   2023-11-19:
@@ -96,5 +100,6 @@ values:
   - private_pension_income
   - state_pension
   - uc_tariff_income
+  - spousal_maintenance_income
   - incapacity_benefit
   - sda
