@@ -12,9 +12,9 @@ class extended_childcare_entitlement_qualifying_child(Variable):
         "s.1(2)(a)-(b)), not looked after by a local authority, and old "
         "enough by the start of a term (SI 2022/1134 regs 13(2) and 27; SI "
         "2016/1257 regs 3(1) and 35 before 1 December 2022; see "
-        "extended_childcare_entitlement_term_share). A child in a reception "
-        "class does not count: its school place meets the entitlement "
-        "(early_years_child_in_school)."
+        "extended_childcare_entitlement_term_share), and not yet at school "
+        "for all of them: a reception place meets the entitlement "
+        "(early_years_term_share_before_school)."
     )
     definition_period = YEAR
     reference = (
@@ -55,13 +55,13 @@ class extended_childcare_entitlement_qualifying_child(Variable):
         # duty: DfE's statutory guidance (April 2026, footnotes 7 and 17,
         # paras A4.8 and C.6) gives no free hours outside it. Childcare Act
         # 2016 s.1(6) splits a child's hours between this entitlement and the
-        # universal one, so both leave it out.
-        in_school = person("early_years_child_in_school", period)
+        # universal one, so both stop when it starts school.
+        before_school = person("early_years_term_share_before_school", period)
 
         return (
             under_compulsory_school_age
             & in_england
             & meets_minimum_age
             & not_looked_after
-            & ~in_school
+            & (before_school > 0)
         )

@@ -11,7 +11,10 @@ class extended_childcare_entitlement_total_per_child(Variable):
         "universal or targeted programme. Limited by the statutory age "
         "schedule, the child's usage and the family's usage cap, over the "
         "share of the year's terms the child is old enough for "
-        "(extended_childcare_entitlement_term_share)."
+        "(extended_childcare_entitlement_term_share) and not yet at school "
+        "(early_years_term_share_before_school). The minimum age is below "
+        "the school starting age, so the two shares never both fall short "
+        "of the whole year."
     )
     definition_period = YEAR
     unit = GBP
@@ -39,9 +42,11 @@ class extended_childcare_entitlement_total_per_child(Variable):
         family_usage = person.benunit("maximum_extended_childcare_hours_usage", period)
         hours_used = min_(min_(weekly_hours, child_usage), family_usage)
         term_share = person("extended_childcare_entitlement_term_share", period)
+        before_school = person("early_years_term_share_before_school", period)
         return (
             hours_used
             * p.weeks_per_year
             * term_share
+            * before_school
             * p.childcare_funding_rate.calc(age)
         )

@@ -7,9 +7,10 @@ class universal_childcare_entitlement_eligible(Variable):
     label = "eligible for universal childcare entitlement"
     definition_period = YEAR
     documentation = (
-        "Legal eligibility, independent of standalone take-up. A child in a "
-        "reception class gets no universal hours: its school place meets the "
-        "entitlement (early_years_child_in_school)."
+        "Legal eligibility, independent of standalone take-up, in at least "
+        "one of the year's terms. A child in a reception class gets no "
+        "universal hours: its school place meets the entitlement "
+        "(early_years_term_share_before_school)."
     )
     reference = (
         "https://www.legislation.gov.uk/ukpga/2006/21/section/7",
@@ -43,6 +44,9 @@ class universal_childcare_entitlement_eligible(Variable):
         # for a child in a state-funded or council-funded reception class
         # through the school place: DfE's statutory guidance (April 2026,
         # footnotes 7 and 17, paras A4.8 and C.6) gives such a child no free
-        # hours outside it.
-        in_school = person("early_years_child_in_school", period)
-        return in_england & meets_age_condition & not_compulsory_age & ~in_school
+        # hours outside it. A child starting reception in September keeps
+        # the summer term.
+        before_school = person("early_years_term_share_before_school", period)
+        return (
+            in_england & meets_age_condition & not_compulsory_age & (before_school > 0)
+        )

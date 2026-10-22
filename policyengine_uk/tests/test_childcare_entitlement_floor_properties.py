@@ -50,9 +50,10 @@ randomly drawn families, each simulated twice (eligible and not):
    targeted floor is at most 15 hours a week.
 10. Outside England no child gets universal or working parent hours
     (Childcare Act 2006 s.7 and 2016 s.1(2)(b) are duties for England).
-11. A child in school (current_education primary, as in a reception class)
-    gets no universal or working parent hours: its school place meets both
-    duties (guidance footnotes 7 and 17, paras A4.8 and C.6).
+11. No universal or working parent hours in the terms after a child starts
+    school: a reception place meets both duties (guidance footnotes 7 and 17,
+    paras A4.8 and C.6). Reception starts in the September following the
+    fourth birthday (guidance C.5), unless the start is deferred.
 12. Working parent hours start with the first 1 January, 1 April or 1
     September after the child attains the minimum age (SI 2022/1134 reg
     27(1)(a)); the year's terms begin on 1 April, 1 September and 1 January,
@@ -101,28 +102,39 @@ def close(a, b):
     return abs(a - b) <= 0.02 + 1e-6 * abs(b)
 
 
-def in_school(c):
-    """Invariant 11: enrolled in primary education, as in a reception class."""
-    return c.get("education") == "PRIMARY"
-
-
 def months_later(day, months):
     """The same day of the month ``months`` calendar months later."""
     index = day.year * 12 + day.month - 1 + months
     return date(index // 12, index % 12 + 1, day.day)
 
 
+def born_on(age, year):
+    """A whole age is the middle of the year of age; a fractional one is
+    exact on 6 October. The drawn ages are whole months, apart from 4.9: in
+    November either way, years from every boundary these tests use."""
+    months_old = 12 * age if age != int(age) else 12 * age + 6
+    return months_later(date(year, 10, 6), -round(months_old))
+
+
+def year_terms(year):
+    return (date(year, 4, 1), date(year, 9, 1), date(year + 1, 1, 1))
+
+
 def term_share(age, year, minimum_age):
     """Invariant 12: the share of the year's terms after the child attains
     the minimum age."""
-    # A whole age is the middle of the year of age; a fractional one is exact
-    # on 6 October. The drawn ages are whole months, apart from 4.9, which is
-    # years past any minimum age.
-    months_old = 12 * age if age != int(age) else 12 * age + 6
-    born = months_later(date(year, 10, 6), -round(months_old))
-    attains = months_later(born, round(12 * minimum_age))
-    starts = (date(year, 4, 1), date(year, 9, 1), date(year + 1, 1, 1))
-    return sum(attains < start for start in starts) / len(starts)
+    attains = months_later(born_on(age, year), round(12 * minimum_age))
+    return sum(attains < start for start in year_terms(year)) / 3
+
+
+def before_school(c, year):
+    """Invariant 11: the share of the year's terms before the child starts
+    reception, in the September following its fourth birthday."""
+    if c.get("deferred"):
+        return 1
+    born = born_on(c["age"], year)
+    starts_school = date(born.year + 4 + (born.month >= 9), 9, 1)
+    return sum(start < starts_school for start in year_terms(year)) / 3
 
 
 child = st.fixed_dictionaries(
@@ -130,8 +142,8 @@ child = st.fixed_dictionaries(
         "age": st.sampled_from([0, 0.5, 0.75, 1, 2, 2.5, 3, 4, 4.9, 5, 6]),
         "hours_used": st.sampled_from([0, 5, 10, 14.9, 15, 15.1, 20, 30, 45]),
         "looked_after": st.booleans(),
-        # None leaves current_education to its age default.
-        "education": st.sampled_from([None, None, "PRE_PRIMARY", "PRIMARY"]),
+        # A deferred start keeps the year's hours.
+        "deferred": st.sampled_from([False, False, False, True]),
     }
 )
 family = st.fixed_dictionaries(
@@ -171,9 +183,9 @@ def simulate(families, year, eligible, cap_bump=0, hours_bump=0):
                     },
                     "is_looked_after_by_local_authority": {year: c["looked_after"]},
                 }
-                if c.get("education") is not None:
-                    situation["people"][name]["current_education"] = {
-                        year: c["education"]
+                if c.get("deferred"):
+                    situation["people"][name]["early_years_school_start_deferred"] = {
+                        year: True
                     }
                 members.append(name)
             situation["benunits"][f"b{copy}_{i}"] = {
@@ -227,9 +239,11 @@ def reference(c, f, year, eligible):
     weeks = p.weeks_per_year
     under_school_age = age < 5
     in_england = f["england"]
+    # The terms before the child starts school: none of these hours after it.
+    school = before_school(c, year)
     universal_hours = (
         min(c["hours_used"] * weeks, p.universal_childcare_entitlement.hours)
-        if in_england and 3 <= age < 5 and not in_school(c)
+        if in_england and 3 <= age < 5 and school > 0
         else 0
     )
     targeted_hours = (
@@ -241,7 +255,7 @@ def reference(c, f, year, eligible):
         if f["targeted"]
         else 0
     )
-    universal_value = universal_hours * rate
+    universal_value = universal_hours * rate * school
     targeted_value = targeted_hours * rate
     floor = (
         universal_value * f["claims_universal"] + targeted_value * f["claims_targeted"]
@@ -252,7 +266,7 @@ def reference(c, f, year, eligible):
         in_england
         and under_school_age
         and not c["looked_after"]
-        and not in_school(c)
+        and school > 0
         and share > 0
     )
     weekly = (
@@ -266,7 +280,9 @@ def reference(c, f, year, eligible):
         if qualifying
         else 0
     )
-    working_parent_total = weekly * weeks * rate if eligible else 0
+    # A child starting school is years past the minimum age, so the terms it
+    # is old enough for include every term before it starts school.
+    working_parent_total = weekly * weeks * rate * school if eligible else 0
     # In the terms the child is old enough for: the larger of the claimed
     # standalone value and the working parent total, with legal eligibility,
     # independent of standalone take-up, determining which programme funds
@@ -461,7 +477,8 @@ def test_working_parent_hours_schedule_at_rollout_boundaries(
 @example(
     2026,
     [
-        # A 4-year-old in a reception class and one at nursery, with a
+        # A 4-year-old starting reception in September (born on 6 April, so
+        # funded for the summer term), one whose start is deferred, and a
         # 2-year-old sibling.
         {
             "children": [
@@ -469,9 +486,9 @@ def test_working_parent_hours_schedule_at_rollout_boundaries(
                     "age": age,
                     "hours_used": 30,
                     "looked_after": False,
-                    "education": education,
+                    "deferred": deferred,
                 }
-                for age, education in ((4, "PRIMARY"), (4, "PRE_PRIMARY"), (2, None))
+                for age, deferred in ((4, False), (4, True), (2, False))
             ],
             "cap": 30,
             "claims_universal": True,
@@ -531,17 +548,26 @@ def test_becoming_eligible_never_lowers_childcare_support(year, families):
             assert close(copy[0]["family_extended"], per_child), (year, f, copy)
         for c, b, a in zip(f["children"], before, after):
             assert funded(a) >= funded(b) - 0.02, (year, f, c, b, a)
-            legal_universal = f["england"] and 3 <= c["age"] < 5 and not in_school(c)
+            school = before_school(c, year)
+            legal_universal = f["england"] and 3 <= c["age"] < 5 and school > 0
             assert a["universal_eligible"] == b["universal_eligible"] == legal_universal
-            # 11. A school place, not funded hours.
-            if in_school(c):
-                for copy in (a, b):
-                    assert copy["universal_childcare_entitlement"] == 0, (year, f, c)
-                    assert copy["extended_childcare_entitlement_per_child"] == 0, (
-                        year,
-                        f,
-                        c,
-                    )
+            # 11. A school place, not funded hours, once the child starts
+            # school: at most the terms before it.
+            rate = float(
+                system.parameters(f"{year}-01-01").gov.dfe.childcare_funding_rate.calc(
+                    c["age"]
+                )
+            )
+            for copy in (a, b):
+                universal_hours = copy["universal_childcare_entitlement"] / rate
+                assert universal_hours <= (
+                    school * UNIVERSAL_OR_TARGETED_MAX_HOURS + HOURS_TOLERANCE
+                ), (year, f, c, copy)
+                assert (
+                    universal_hours
+                    + copy["extended_childcare_entitlement_per_child"] / rate
+                    <= school * WORKING_PARENT_MAX_HOURS + HOURS_TOLERANCE
+                ), (year, f, c, copy)
             # 8-10. Statutory maximum, no double floor, England only.
             assert_statutory_bounds(c, f, f"{year}-01-01", False, b)
             assert_statutory_bounds(c, f, f"{year}-01-01", True, a)

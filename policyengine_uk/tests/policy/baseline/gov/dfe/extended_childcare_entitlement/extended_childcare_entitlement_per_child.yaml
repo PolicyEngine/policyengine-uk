@@ -191,6 +191,8 @@
     people:
       child:
         age: 4
+        # Four on 15 September 2026, so in reception from September 2027.
+        date_of_birth: 20220915
     benunits:
       benunit:
         members: [child]

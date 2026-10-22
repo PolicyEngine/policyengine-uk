@@ -101,14 +101,16 @@
 
 # Children and Young People (Scotland) Act 2014 s.47(2)(b): an eligible
 # pre-school child "has not commenced attendance at a primary school (other
-# than at a nursery class in such a school)".
-- name: Scottish 4-year-old in primary 1 is not eligible
+# than at a nursery class in such a school)". Primary 1 starts in August for
+# children who turn five from March to the next February (Education (Scotland)
+# Act 1980 s.32).
+- name: Scottish child at primary school all year is not eligible
   period: 2026
   input:
     people:
       child:
         age: 4
-        current_education: PRIMARY
+        early_years_term_share_before_school: 0
     benunits:
       benunit:
         members: [child]
@@ -119,13 +121,15 @@
   output:
     scottish_funded_early_learning_childcare_eligible: false
 
-- name: Scottish 4-year-old in a nursery class is eligible
+- name: Scottish 4-year-old starting primary 1 in August is eligible for the summer term
   period: 2026
+  absolute_error_margin: 0.0001
   input:
     people:
       child:
         age: 4
-        current_education: PRE_PRIMARY
+        # Five on 15 January 2027, so in primary 1 from August 2026.
+        date_of_birth: 20220115
     benunits:
       benunit:
         members: [child]
@@ -134,4 +138,5 @@
         members: [child]
         region: SCOTLAND
   output:
+    early_years_term_share_before_school: 0.3333
     scottish_funded_early_learning_childcare_eligible: true

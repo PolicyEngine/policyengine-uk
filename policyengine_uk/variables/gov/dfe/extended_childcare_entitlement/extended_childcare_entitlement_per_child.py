@@ -51,7 +51,9 @@ class extended_childcare_entitlement_per_child(Variable):
         # The total covers the terms the child is old enough for. Universal
         # or targeted hours claimed on their own run all year, so only those
         # terms' share of them counts; hours allocated from working parent
-        # participation fall in those terms already.
+        # participation fall in those terms already. Terms after the child
+        # starts school are already out of both the total and the universal
+        # hours: a child starting school is years past the minimum age.
         term_share = person("extended_childcare_entitlement_term_share", period)
         universal = person("universal_childcare_entitlement", period)
         targeted = person("targeted_childcare_entitlement", period)

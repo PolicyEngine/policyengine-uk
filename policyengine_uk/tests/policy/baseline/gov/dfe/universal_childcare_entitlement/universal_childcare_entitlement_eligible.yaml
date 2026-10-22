@@ -40,36 +40,27 @@
 
 # DfE's statutory guidance (April 2026, footnotes 7 and 17, paras A4.8 and
 # C.6): a child in a state-funded or council-funded reception class is not
-# entitled to free hours outside the school place.
-- name: Child aged 4 in a reception class in England is not eligible
+# entitled to free hours outside the school place. A child starting reception
+# in September is eligible for the summer term.
+- name: Child aged 4 starting reception in September is eligible for the summer term
   period: 2026
   input:
     age: 4
-    current_education: PRIMARY
+    date_of_birth: 20220831
+    country: ENGLAND
+  output:
+    early_years_term_share_before_school: 0.3333
+    universal_childcare_entitlement_eligible: true
+  absolute_error_margin: 0.0001
+
+- name: Child at school all year is not eligible
+  period: 2026
+  input:
+    age: 4
+    early_years_term_share_before_school: 0
     country: ENGLAND
   output:
     universal_childcare_entitlement_eligible: false
-
-- name: Child aged 4 at nursery in England is eligible
-  period: 2026
-  input:
-    age: 4
-    current_education: PRE_PRIMARY
-    country: ENGLAND
-  output:
-    universal_childcare_entitlement_eligible: true
-
-# A fee-paying independent school's reception class is recorded as primary
-# education, but its children can take funded hours there.
-- name: Child aged 4 in a reception class not counted as in school stays eligible
-  period: 2026
-  input:
-    age: 4
-    current_education: PRIMARY
-    early_years_child_in_school: false
-    country: ENGLAND
-  output:
-    universal_childcare_entitlement_eligible: true
 
 # Childcare Act 2016 s.1(6)(a): the universal hours count towards the working
 # parent's 30 hours, so eligibility for that entitlement does not remove them.

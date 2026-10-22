@@ -1,9 +1,5 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.dates import add_months_to_yyyymmdd, birth_day
-
-# The model year runs from April, so its three terms begin on 1 April and
-# 1 September of the year and 1 January of the next (month, day, years on).
-TERM_STARTS = ((4, 1, 0), (9, 1, 0), (1, 1, 1))
+from policyengine_uk.utils.dates import add_months_to_yyyymmdd, birth_day, term_starts
 
 
 class extended_childcare_entitlement_term_share(Variable):
@@ -43,9 +39,5 @@ class extended_childcare_entitlement_term_share(Variable):
         attains_minimum_age = add_months_to_yyyymmdd(
             birth_day(person, period), 12 * p.young_child_minimum_age
         )
-        year = period.start.year
-        terms = sum(
-            attains_minimum_age < (year + years_on) * 10_000 + month * 100 + day
-            for month, day, years_on in TERM_STARTS
-        )
-        return terms / len(TERM_STARTS)
+        starts = term_starts(period.start.year)
+        return sum(attains_minimum_age < start for start in starts) / len(starts)
