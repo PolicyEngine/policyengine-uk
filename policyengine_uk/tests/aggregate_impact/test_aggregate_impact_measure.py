@@ -580,16 +580,12 @@ def _corporate_sdlt_double_counted():
 
     with open(default_partition_path()) as f:
         raw = yaml.safe_load(f)
-    totals = next(h for h in raw["tax_heads"] if h["id"] == "sdlt_corporate")[
-        "totals"
-    ]
+    totals = next(h for h in raw["tax_heads"] if h["id"] == "sdlt_corporate")["totals"]
     raw["tax_heads"] = [h for h in raw["tax_heads"] if h["id"] != "sdlt_corporate"]
 
     def repoint(ids):
         return list(
-            dict.fromkeys(
-                "sdlt_household" if i == "sdlt_corporate" else i for i in ids
-            )
+            dict.fromkeys("sdlt_household" if i == "sdlt_corporate" else i for i in ids)
         )
 
     for exclusion in raw["exclusions"]:

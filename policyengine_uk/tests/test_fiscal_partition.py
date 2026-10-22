@@ -332,13 +332,13 @@ def household_values(sim: Simulation, variable: str, year: int) -> np.ndarray:
 
 @lru_cache(maxsize=None)
 def traced_reads() -> dict:
-    """Variable name -> names of the variables it reads, at current law."""
-    sim = Simulation(situation=fixed_situation())
-    sim.trace = True
-    for head in heads():
-        sim.calculate(head["variable"], YEAR)
-    for total in MODEL_LISTS:
-        sim.calculate(total, YEAR)
+    """Variable name -> names of the variables it reads, at current law.
+
+    The union of two traces of the same households: as a situation, and as
+    if built from data. Some formulas read further only in a data-built
+    simulation (private school attendance is imputed from net income only
+    there, since #1905), and the guards cover both.
+    """
     children = defaultdict(set)
 
     def walk(node):
@@ -346,8 +346,17 @@ def traced_reads() -> dict:
             children[node.name].add(child.name)
             walk(child)
 
-    for tree in sim.tracer.trees:
-        walk(tree)
+    for built_from_dataset in (False, True):
+        sim = Simulation(situation=fixed_situation())
+        # The flag utils.data_source.built_from_data reads.
+        sim.built_from_dataset = built_from_dataset
+        sim.trace = True
+        for head in heads():
+            sim.calculate(head["variable"], YEAR)
+        for total in MODEL_LISTS:
+            sim.calculate(total, YEAR)
+        for tree in sim.tracer.trees:
+            walk(tree)
     return dict(children)
 
 
