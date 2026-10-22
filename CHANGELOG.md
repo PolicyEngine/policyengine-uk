@@ -1,3 +1,11 @@
+## [2.146.2] - 2026-10-22
+
+### Fixed
+
+- Retain both the minimum-age and earnings conditions when combining Carer Support Payment fixes.
+- Applied the minimum ages to computed Carer's Allowance, Carer Support Payment and DLA mobility awards, preserving DLA care and explicit amount overrides.
+
+
 ## [2.146.1] - 2026-10-22
 
 ### Changed
