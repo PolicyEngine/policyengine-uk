@@ -1,0 +1,476 @@
+# Same-worker WTC conditions, SI2002/2005reg4 (joint variations from6April2012).
+# Amounts use unchanged2024 model parameters; no eligibility/element/final-award overrides.
+# Generic disability and other-disabled-partner exception remain inherited proxies.
+- name: A childless worker cannot borrow a nonworking partners age sixty
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult_0:
+        age: 60
+        hours_worked: 0
+        employment_income: 0
+        is_parent: false
+        is_disabled_for_benefits: false
+        working_tax_credit_reported: 1
+      adult_1:
+        age: 40
+        hours_worked: 1040
+        employment_income: 5000
+        is_parent: false
+        is_disabled_for_benefits: false
+    benunits:
+      family:
+        members:
+        - adult_0
+        - adult_1
+  output:
+    working_tax_credit: 0
+    is_WTC_eligible: false
+- name: A worker aged sixty qualifies on their own sixteen hours
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult_0:
+        age: 60
+        hours_worked: 832
+        employment_income: 5000
+        is_parent: false
+        is_disabled_for_benefits: false
+        working_tax_credit_reported: 1
+      adult_1:
+        age: 40
+        hours_worked: 0
+        employment_income: 0
+        is_parent: false
+        is_disabled_for_benefits: false
+    benunits:
+      family:
+        members:
+        - adult_0
+        - adult_1
+  output:
+    is_WTC_eligible: true
+    working_tax_credit: 4935
+- name: A thirty hour worker cannot borrow a partners age twenty five
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult_0:
+        age: 40
+        hours_worked: 0
+        employment_income: 0
+        is_parent: false
+        is_disabled_for_benefits: false
+        working_tax_credit_reported: 1
+      adult_1:
+        age: 24
+        hours_worked: 1560
+        employment_income: 5000
+        is_parent: false
+        is_disabled_for_benefits: false
+    benunits:
+      family:
+        members:
+        - adult_0
+        - adult_1
+  output:
+    working_tax_credit: 0
+    is_WTC_eligible: false
+- name: A worker aged twenty five qualifies on their own thirty hours
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult_0:
+        age: 40
+        hours_worked: 0
+        employment_income: 0
+        is_parent: false
+        is_disabled_for_benefits: false
+        working_tax_credit_reported: 1
+      adult_1:
+        age: 25
+        hours_worked: 1560
+        employment_income: 5000
+        is_parent: false
+        is_disabled_for_benefits: false
+    benunits:
+      family:
+        members:
+        - adult_0
+        - adult_1
+  output:
+    is_WTC_eligible: true
+    working_tax_credit: 5950
+- name: Two childless fifteen hour workers do not make one thirty hour worker
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult_0:
+        age: 40
+        hours_worked: 780
+        employment_income: 5000
+        is_parent: false
+        is_disabled_for_benefits: false
+        working_tax_credit_reported: 1
+      adult_1:
+        age: 40
+        hours_worked: 780
+        employment_income: 5000
+        is_parent: false
+        is_disabled_for_benefits: false
+    benunits:
+      family:
+        members:
+        - adult_0
+        - adult_1
+  output:
+    working_tax_credit: 0
+    is_WTC_eligible: false
+- name: A childless worker cannot borrow a nonworking partners disability
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult_0:
+        age: 40
+        hours_worked: 0
+        employment_income: 0
+        is_parent: false
+        is_disabled_for_benefits: true
+        working_tax_credit_reported: 1
+      adult_1:
+        age: 40
+        hours_worked: 1040
+        employment_income: 5000
+        is_parent: false
+        is_disabled_for_benefits: false
+    benunits:
+      family:
+        members:
+        - adult_0
+        - adult_1
+  output:
+    working_tax_credit: 0
+    is_WTC_eligible: false
+- name: A disabled worker qualifies on their own sixteen hours
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult_0:
+        age: 40
+        hours_worked: 832
+        employment_income: 5000
+        is_parent: false
+        is_disabled_for_benefits: true
+        working_tax_credit_reported: 1
+      adult_1:
+        age: 40
+        hours_worked: 0
+        employment_income: 0
+        is_parent: false
+        is_disabled_for_benefits: false
+    benunits:
+      family:
+        members:
+        - adult_0
+        - adult_1
+  output:
+    is_WTC_eligible: true
+    working_tax_credit: 8870
+- name: A worker aged fifty nine still needs thirty hours without children
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult_0:
+        age: 59
+        hours_worked: 832
+        employment_income: 5000
+        is_parent: false
+        is_disabled_for_benefits: false
+        working_tax_credit_reported: 1
+      adult_1:
+        age: 40
+        hours_worked: 0
+        employment_income: 0
+        is_parent: false
+        is_disabled_for_benefits: false
+    benunits:
+      family:
+        members:
+        - adult_0
+        - adult_1
+  output:
+    is_WTC_eligible: false
+    working_tax_credit: 0
+- name: Joint parents may combine sixteen and eight hours
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult_0:
+        age: 30
+        hours_worked: 832
+        employment_income: 3000
+        is_parent: true
+        is_disabled_for_benefits: false
+        working_tax_credit_reported: 1
+      adult_1:
+        age: 28
+        hours_worked: 416
+        employment_income: 2000
+        is_parent: true
+        is_disabled_for_benefits: false
+      child_0:
+        age: 10
+        hours_worked: 0
+        employment_income: 0
+    benunits:
+      family:
+        members:
+        - adult_0
+        - adult_1
+        - child_0
+  output:
+    is_WTC_eligible: true
+    working_tax_credit: 4935
+- name: Joint parents twelve hours each do not meet the individual sixteen hour limb
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult_0:
+        age: 30
+        hours_worked: 624
+        employment_income: 5000
+        is_parent: true
+        is_disabled_for_benefits: false
+        working_tax_credit_reported: 1
+      adult_1:
+        age: 28
+        hours_worked: 624
+        employment_income: 5000
+        is_parent: true
+        is_disabled_for_benefits: false
+      child_0:
+        age: 10
+        hours_worked: 0
+        employment_income: 0
+    benunits:
+      family:
+        members:
+        - adult_0
+        - adult_1
+        - child_0
+  output:
+    is_WTC_eligible: false
+    working_tax_credit: 0
+- name: Joint parents sixteen and seven hours do not meet twenty four hours
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult_0:
+        age: 30
+        hours_worked: 832
+        employment_income: 5000
+        is_parent: true
+        is_disabled_for_benefits: false
+        working_tax_credit_reported: 1
+      adult_1:
+        age: 28
+        hours_worked: 364
+        employment_income: 5000
+        is_parent: true
+        is_disabled_for_benefits: false
+      child_0:
+        age: 10
+        hours_worked: 0
+        employment_income: 0
+    benunits:
+      family:
+        members:
+        - adult_0
+        - adult_1
+        - child_0
+  output:
+    is_WTC_eligible: false
+    working_tax_credit: 0
+- name: Parents retain the other disabled partner exception proxy
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult_0:
+        age: 30
+        hours_worked: 832
+        employment_income: 5000
+        is_parent: true
+        is_disabled_for_benefits: false
+        working_tax_credit_reported: 1
+      adult_1:
+        age: 28
+        hours_worked: 0
+        employment_income: 0
+        is_parent: true
+        is_disabled_for_benefits: true
+      child_0:
+        age: 10
+        hours_worked: 0
+        employment_income: 0
+    benunits:
+      family:
+        members:
+        - adult_0
+        - adult_1
+        - child_0
+  output:
+    is_WTC_eligible: true
+    working_tax_credit: 4935
+- name: A childs eight hours cannot complete the parents twenty four hours
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult_0:
+        age: 30
+        hours_worked: 832
+        employment_income: 5000
+        is_parent: true
+        is_disabled_for_benefits: false
+        working_tax_credit_reported: 1
+      adult_1:
+        age: 28
+        hours_worked: 0
+        employment_income: 0
+        is_parent: true
+        is_disabled_for_benefits: false
+      child_0:
+        age: 15
+        hours_worked: 416
+        employment_income: 1000
+    benunits:
+      family:
+        members:
+        - adult_0
+        - adult_1
+        - child_0
+  output:
+    working_tax_credit: 0
+    is_WTC_eligible: false
+- name: An unreported historical claim remains ineligible
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult_0:
+        age: 40
+        hours_worked: 0
+        employment_income: 0
+        is_parent: false
+        is_disabled_for_benefits: false
+        working_tax_credit_reported: 0
+      adult_1:
+        age: 25
+        hours_worked: 1560
+        employment_income: 5000
+        is_parent: false
+        is_disabled_for_benefits: false
+    benunits:
+      family:
+        members:
+        - adult_0
+        - adult_1
+  output:
+    is_WTC_eligible: false
+    working_tax_credit: 0
+- name: A closed historical claim remains ineligible
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult_0:
+        age: 40
+        hours_worked: 0
+        employment_income: 0
+        is_parent: false
+        is_disabled_for_benefits: false
+        working_tax_credit_reported: 1
+      adult_1:
+        age: 25
+        hours_worked: 1560
+        employment_income: 5000
+        is_parent: false
+        is_disabled_for_benefits: false
+    benunits:
+      family:
+        members:
+        - adult_0
+        - adult_1
+        legacy_benefits_closed: true
+  output:
+    is_WTC_eligible: false
+    working_tax_credit: 0
+- name: A single ordinary worker qualifies at thirty hours
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      worker:
+        age: 35
+        hours_worked: 1560
+        employment_income: 5000
+        working_tax_credit_reported: 1
+        is_parent: false
+    benunits:
+      family:
+        members:
+        - worker
+  output:
+    is_WTC_eligible: true
+    working_tax_credit: 3450
+- name: A lone parent retains the sixteen hour route
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      worker:
+        age: 30
+        hours_worked: 832
+        employment_income: 5000
+        working_tax_credit_reported: 1
+        is_parent: true
+      child_0:
+        age: 10
+    benunits:
+      family:
+        members:
+        - worker
+        - child_0
+  output:
+    is_WTC_eligible: true
+    working_tax_credit: 4935
+- name: A single worker below the own age threshold does not qualify
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      worker:
+        age: 24
+        hours_worked: 1560
+        employment_income: 5000
+        working_tax_credit_reported: 1
+        is_parent: false
+    benunits:
+      family:
+        members:
+        - worker
+  output:
+    is_WTC_eligible: false
+    working_tax_credit: 0

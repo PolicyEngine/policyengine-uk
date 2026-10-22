@@ -47,8 +47,8 @@ class employer_ni_fixed_employer_cost_change(Variable):
         )
 
         baseline_class_1 = baseline_parameters.gov.hmrc.national_insurance.class_1
-        r_b = baseline_class_1.rates.employer
-        t_b = baseline_class_1.thresholds.secondary_threshold * WEEKS_IN_YEAR
+        r_b = baseline_class_1.employer_scale.components[1].rate
+        t_b = baseline_class_1.employer_scale.components[1].threshold * WEEKS_IN_YEAR
         p_b = baseline_parameters.gov.contrib.policyengine.employer_ni.exempt_employer_pension_contributions
         pen_con_subtracted_b = employer_pension_contributions if p_b else 0
 
@@ -60,8 +60,8 @@ class employer_ni_fixed_employer_cost_change(Variable):
         # Calculate reform employer cost
         reform_parameters = parameters(period)
         reform_class_1 = reform_parameters.gov.hmrc.national_insurance.class_1
-        r_r = reform_class_1.rates.employer
-        t_r = reform_class_1.thresholds.secondary_threshold * WEEKS_IN_YEAR
+        r_r = reform_class_1.employer_scale.components[1].rate
+        t_r = reform_class_1.employer_scale.components[1].threshold * WEEKS_IN_YEAR
         p_r = reform_parameters.gov.contrib.policyengine.employer_ni.exempt_employer_pension_contributions
         pen_con_subtracted_r = employer_pension_contributions if p_r else 0
 

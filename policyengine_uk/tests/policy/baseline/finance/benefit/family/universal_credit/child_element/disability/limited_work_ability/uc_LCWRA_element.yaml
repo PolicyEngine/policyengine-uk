@@ -36,6 +36,47 @@
   output:
     uc_LCWRA_element: 2_607.12
 
+# Universal Credit Act 2025 s. 3 freezes the element for 2026-27 to 2029-30:
+# £217.26 a month (s. 2) in each year.
+- name: 2027 LCWRA amount is frozen at the 2026-27 rate.
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        uc_limited_capability_for_WRA: true
+    benunits:
+      benunit:
+        members: person
+  output:
+    uc_LCWRA_element: 2_607.12
+
+- name: 2028 LCWRA amount is frozen at the 2026-27 rate.
+  period: 2028
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        uc_limited_capability_for_WRA: true
+    benunits:
+      benunit:
+        members: person
+  output:
+    uc_LCWRA_element: 2_607.12
+
+- name: 2029 LCWRA amount is frozen at the 2026-27 rate.
+  period: 2029
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        uc_limited_capability_for_WRA: true
+    benunits:
+      benunit:
+        members: person
+  output:
+    uc_LCWRA_element: 2_607.12
+
 - name: A single claimant with LCWRA has the LCWRA element, 2025-26
   period: 2025
   absolute_error_margin: 0.01
