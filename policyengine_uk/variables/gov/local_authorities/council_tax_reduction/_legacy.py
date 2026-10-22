@@ -191,10 +191,12 @@ def normal_gross_income_non_dep_deduction(
     )
     full_time_student = is_full_time_student_non_dep(person, period)
     # No deduction for a non-dependant "who is on" Income Support, State
-    # Pension Credit, income-based JSA or income-related ESA (para 30(8)(a)):
-    # an award payable to them (Default Scheme Sch para 2(3)-(4)). Of a couple,
-    # only the payee is on the couple's award, and another member of their
-    # benefit unit is on it only through an award of their own.
+    # Pension Credit, income-based JSA or income-related ESA (para 30(8)(a)).
+    # A person is on income-based JSA or income-related ESA when it is payable
+    # to them (Default Scheme Sch para 2(3)-(4)) and on Income Support when in
+    # receipt of it (para 2(1)); the model reads State Pension Credit the same
+    # way. Of a couple, only the payee is on the couple's award, and another
+    # member of their benefit unit is on it only through an award of their own.
     income_based_benefit = (
         person("is_on_income_support", period)
         | person("is_on_income_based_jsa", period)
