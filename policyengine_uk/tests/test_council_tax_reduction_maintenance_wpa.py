@@ -88,7 +88,12 @@ def family(
                 name: {key: {YEAR: value} for key, value in inputs.items()}
                 for name, inputs in people.items()
             },
-            "benunits": {"family": benunit},
+            "benunits": {
+                "family": {
+                    key: value if key == "members" else {YEAR: value}
+                    for key, value in benunit.items()
+                }
+            },
             "households": {
                 "home": {
                     "members": list(people),
