@@ -15,8 +15,9 @@
 #   org-level APP_ID / APP_PRIVATE_KEY secrets, and runs no dependency code.
 #   It treats the artifact as data and decides everything else itself.
 #
-# The App token is needed because GitHub does not start workflows for pushes
-# or PRs made with GITHUB_TOKEN, so a PR opened with it would get no CI.
+# The App token is needed because GitHub starts no workflows for a push made
+# with GITHUB_TOKEN, and holds the runs for a PR opened with it until someone
+# approves them; with the App token the PR's CI starts on its own.
 #
 # There is at most one open update PR. Each run refreshes it with the newest
 # releases, unless someone else has committed to it (say, a fix for a test the
@@ -283,7 +284,10 @@ jobs:
             -f body="\`uv lock --upgrade\` on \`main\` changes nothing now, so this update is no longer needed." \
             > /dev/null || echo "::warning::Could not comment on #$NUMBER."
           gh api -X PATCH "repos/$GH_REPO/pulls/$NUMBER" -f state=closed > /dev/null
-          # Delete the branch only if it is still the head that was checked.
-          if [ "$(git ls-remote origin "refs/heads/$BRANCH" | cut -f1)" = "$HEAD" ]; then
-            gh api -X DELETE "repos/$GH_REPO/git/refs/heads/$BRANCH"
-          fi
+          # Delete the branch only if it is still the head that was checked:
+          # the lease makes the check and the delete one step, so a push that
+          # lands in between keeps the branch.
+          auth=$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')
+          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $auth" \
+            push --force-with-lease="refs/heads/$BRANCH:$HEAD" origin ":refs/heads/$BRANCH" \
+            || echo "::notice::$BRANCH moved after it was checked, so it was not deleted."
