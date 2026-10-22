@@ -1,3 +1,19 @@
+## [2.148.0] - 2026-10-22
+
+### Added
+
+- Added statutory council tax discounts across Great Britain (Local Government Finance Act 1992 sections 11 and 79, and the Council Tax (Discounts, Disregards and Exemptions) (Wales) Regulations 2026): per-nation appropriate-percentage and no-resident-multiple parameters, a derived discount rate variable, and council tax net of discounts.
+
+### Changed
+
+- - A weekly workflow now runs `uv lock --upgrade` and opens a pull request with the result, so CI's test suite, which installs from `uv.lock`, moves to new dependency releases.
+
+### Fixed
+
+- - Stop Hypothesis drawing literal constants from policyengine_uk's own modules in tests, so pull request checks (source tree) and Release test (installed wheel) generate the same property-test examples (#2397).
+- - Fixed the aggregate-impact uniform-change test to use visible monetary shifts and cover the half-penny and £1 reporting boundaries.
+
+
 ## [2.147.2] - 2026-10-22
 
 ### Fixed
