@@ -9,6 +9,17 @@
     household_owns_tv: false
   output:
     high_value_council_tax_surcharge: 0
+- name: A 2028 value just above the first band on the annual 2026 HPI basis is charged
+  period: 2028
+  input:
+    age: 40
+    region: LONDON
+    tenure_type: OWNED_OUTRIGHT
+    # £2.01m in 2026 prices, grown by 2027 HPI 2.9% and 2028 HPI 2.7%.
+    # This annual index is a proxy for the published 2026 valuation basis.
+    main_residence_value: 2_124_133.83
+  output:
+    high_value_council_tax_surcharge: 2_500
 - name: High value council tax surcharge applies in England and flows into aggregates
   period: 2028
   input:

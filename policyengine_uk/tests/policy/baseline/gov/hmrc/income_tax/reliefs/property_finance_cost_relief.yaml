@@ -106,9 +106,10 @@
     # deducted at Step 2 or Step 3.
     property_finance_costs_relieved: 5_430
     property_finance_costs_carried_forward: 2_570
-    # 20% x 5,430 = 1,086, limited to the Step 5 tax, which the model works
-    # out with Gift Aid deducted: (18,000 - 12,570 - 3,000) x 20% = 486.
-    property_finance_cost_relief: 486
+    # ITA 2007 s.414(2)(b) extends limits without deducting Gift Aid:
+    # https://www.legislation.gov.uk/ukpga/2007/3/section/414
+    # 20% x 5,430 = 1,086, matching the Step 5 tax on £5,430.
+    property_finance_cost_relief: 1_086
     income_tax: 0
 
 - name: A landlord within the personal allowance gets no relief and keeps the costs

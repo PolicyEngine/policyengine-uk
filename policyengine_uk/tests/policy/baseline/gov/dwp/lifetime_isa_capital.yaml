@@ -212,6 +212,9 @@
         members: [parent_1, parent_2, adult_child]
         savings: 9_000
   output:
+    # The complete override replaces the child's LISA and consumes £2,000
+    # from the household financial pool under the inherited convention.
+    # The unreported parents receive the remaining £7,000 financial proxy.
     uc_assessable_capital: [7_000, 2_000]
 
 - name: An adult child's Lifetime ISA counts in the child's Housing Benefit benunit only

@@ -1,9 +1,10 @@
-# Fiscal partition: how the model's tax totals divide into tax heads.
+# Fiscal partition: how the model's tax and spending totals divide into heads.
 #
-# Each head is one receipt (a row of the OBR's current receipts table, split
-# by who pays or where it is charged when the model splits it) and names the
-# one variable that measures the household's share of it. Heads are mutually exclusive: no head's value
-# contains another head's value, and no variable is summed twice in a total.
+# Each tax head is one receipt (a row of the OBR's current receipts table,
+# split by who pays or where it is charged when the model splits it) and
+# names the one variable that measures the household's share of it. Heads
+# are mutually exclusive: no head's value contains another head's value, and
+# no variable is summed twice in a total.
 #
 # The heads were specified from the OBR receipts classification and from each
 # variable's formula, not copied from the model's own lists
@@ -11,6 +12,12 @@
 # PRE_BUDGET_CHANGE_HOUSEHOLD_TAX_VARIABLES). policyengine_uk/tests/
 # test_fiscal_partition.py checks the two against each other and checks the
 # accounting properties below on simulated households.
+# policyengine_uk/tests/aggregate_impact/test_aggregate_impact_partition.py
+# checks closure for every total without data, and the aggregate-impact
+# report checks the accounting properties on the certified dataset.
+#
+# Spending heads divide gov_spending and household_benefits the same way:
+# one benefit or service per head, one variable each.
 #
 # Consumers (tests, the per-PR aggregate impact report) read this file
 # directly. Bump schema_version on any change to field meanings.
@@ -46,12 +53,17 @@
 #     baseline_measure, assessment (a tax amount worked out for a means test,
 #     a ceiling or a record, not a payment), change_measure (a wage change
 #     that already sits inside the incomes a head taxes).
-#   model_double_counts[]: known violations still in the model (none).
+#   model_double_counts[]: known violations still in the model: a variable a
+#     total lists although the head variable `contained_in` already adds it.
+#     None since the #2159 fix gave corporate_sdlt its own head.
 #   uncovered_receipts[]: rows of Table A.5 the model has no household
 #     measure for. With the heads' obr_line values they account for every
 #     tax row of the table.
 #   overlap_guards[]: the places double counting could occur, and the
-#     property the tests check for each.
+#     property the tests check for each. The aggregate-impact report also
+#     checks the geographic_exclusivity guards on the certified dataset.
+#   spending_heads[]: as tax_heads, without obr_line, obr_table_3_1 and
+#     payer, plus caseload (default true): whether reports count recipients.
 schema_version: 1
 
 sources:
@@ -119,6 +131,23 @@ totals:
     dropped_when:
       gov.contrib.abolish_council_tax:
         - council_tax
+
+  gov_spending:
+    label: Government spending in respect of the household
+    description: >-
+      Cash benefits, childcare and student support, and public services in
+      kind (NHS, education, transport subsidies).
+    dropped_when:
+      gov.contrib.abolish_council_tax:
+        - council_tax_benefit
+  household_benefits:
+    label: Benefits received by the household
+    description: >-
+      The benefit side of household net income. It is gov_spending without the
+      contributed budget-change line, which is not paid to households.
+    dropped_when:
+      gov.contrib.abolish_council_tax:
+        - council_tax_benefit
 
 tax_heads:
   # Income and earnings
@@ -561,7 +590,7 @@ exclusions:
   - {variable: employer_ni_fixed_employer_cost_change, kind: change_measure, head: nics_employer, note: "The wage change from an employer NI reform; employment_income already adds it."}
   - {variable: salary_sacrifice_broad_base_haircut, kind: change_measure, head: nics_employer, note: "A wage change employment_income already adds."}
   - {variable: ni_class_1_employer, kind: component, head: nics_employer}
-  - {variable: salary_sacrifice_pension_ni_employee, kind: measure_within, head: nics_individual, note: "The excess sacrifice is added back to employment_income, so Class 1 already charges it."}
+  - {variable: salary_sacrifice_pension_ni_employee, kind: measure_within, head: nics_individual, note: "The excess sacrifice is added back to ni_class_1_income, so Class 1 already charges it."}
   - {variable: salary_sacrifice_pension_ni_employer, kind: measure_within, head: nics_employer, note: "As above, for employer Class 1."}
   - {variable: tax, kind: composite, spans: [income_tax, nics_individual]}
   - {variable: benunit_tax, kind: composite, spans: [income_tax, nics_individual]}
@@ -672,3 +701,409 @@ uncovered_receipts:
   - {obr_line: Energy profits levy}
   - {obr_line: Electricity generator levy}
   - {obr_line: Other taxes}
+
+spending_heads:
+  # Pensioners
+  - id: state_pension
+    label: State Pension
+    variable: state_pension
+    entity: person
+    report_group: pensioner_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: pension_credit
+    label: Pension Credit
+    variable: pension_credit
+    entity: benunit
+    report_group: pensioner_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: winter_fuel_payment
+    label: Winter Fuel Payment
+    variable: winter_fuel_allowance
+    entity: household
+    report_group: pensioner_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: pawhp
+    label: Pension Age Winter Heating Payment (Scotland)
+    variable: pawhp
+    entity: household
+    report_group: pensioner_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  # Working-age means-tested benefits
+  - id: universal_credit
+    label: Universal Credit
+    variable: universal_credit
+    entity: benunit
+    report_group: working_age_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: housing_benefit
+    label: Housing Benefit
+    variable: housing_benefit
+    entity: benunit
+    report_group: working_age_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: council_tax_reduction
+    label: Council Tax Reduction
+    variable: council_tax_benefit
+    entity: benunit
+    report_group: working_age_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: esa_income
+    label: Employment and Support Allowance (income-related)
+    variable: esa_income
+    entity: benunit
+    report_group: working_age_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: esa_contrib
+    label: Employment and Support Allowance (contribution-based)
+    variable: esa_contrib
+    entity: person
+    report_group: working_age_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: jsa_income
+    label: Jobseeker's Allowance (income-based)
+    variable: jsa_income
+    entity: benunit
+    report_group: working_age_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: jsa_contrib
+    label: Jobseeker's Allowance (contribution-based)
+    variable: jsa_contrib
+    entity: person
+    report_group: working_age_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: income_support
+    label: Income Support
+    variable: income_support
+    entity: benunit
+    report_group: working_age_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: working_tax_credit
+    label: Working Tax Credit
+    variable: working_tax_credit
+    entity: benunit
+    report_group: working_age_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: child_tax_credit
+    label: Child Tax Credit
+    variable: child_tax_credit
+    entity: benunit
+    report_group: working_age_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: incapacity_benefit
+    label: Incapacity Benefit
+    variable: incapacity_benefit
+    entity: person
+    report_group: working_age_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  # Disability and carers
+  - id: pip
+    label: Personal Independence Payment
+    variable: pip
+    entity: person
+    report_group: disability_and_carers_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: dla
+    label: Disability Living Allowance
+    variable: dla
+    entity: person
+    report_group: disability_and_carers_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: attendance_allowance
+    label: Attendance Allowance
+    variable: attendance_allowance
+    entity: person
+    report_group: disability_and_carers_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: carers_allowance
+    label: Carer's Allowance
+    variable: carers_allowance
+    entity: person
+    report_group: disability_and_carers_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: carer_support_payment
+    label: Carer Support Payment (Scotland)
+    variable: carer_support_payment
+    entity: person
+    report_group: disability_and_carers_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: scottish_carer_supplement
+    label: Carer's Allowance Supplement (Scotland)
+    variable: scottish_carer_supplement
+    entity: person
+    report_group: disability_and_carers_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: sda
+    label: Severe Disablement Allowance
+    variable: sda
+    entity: person
+    report_group: disability_and_carers_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: iidb
+    label: Industrial Injuries Disablement Benefit
+    variable: iidb
+    entity: person
+    report_group: disability_and_carers_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: afcs
+    label: Armed Forces Compensation Scheme
+    variable: afcs
+    entity: person
+    report_group: disability_and_carers_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: war_widows_pension
+    label: War Widow's or Widower's Pension
+    variable: war_widows_pension
+    entity: person
+    report_group: disability_and_carers_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  # Children and families
+  - id: child_benefit
+    label: Child Benefit
+    variable: child_benefit
+    entity: benunit
+    report_group: child_and_family_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: scottish_child_payment
+    label: Scottish Child Payment
+    variable: scottish_child_payment
+    entity: person
+    report_group: child_and_family_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: two_child_limit_payment
+    label: Two Child Limit Payment (Scotland, counterfactual)
+    variable: two_child_limit_payment
+    entity: benunit
+    report_group: child_and_family_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+    zero_at_baseline: expected
+  - id: healthy_start_vouchers
+    label: Healthy Start vouchers
+    variable: healthy_start_vouchers
+    entity: person
+    report_group: child_and_family_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: maternity_allowance
+    label: Maternity Allowance
+    variable: maternity_allowance
+    entity: person
+    report_group: child_and_family_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: statutory_maternity_pay
+    label: Statutory Maternity Pay
+    variable: statutory_maternity_pay
+    entity: person
+    report_group: child_and_family_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: statutory_paternity_pay
+    label: Statutory Paternity Pay
+    variable: statutory_paternity_pay
+    entity: person
+    report_group: child_and_family_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: statutory_sick_pay
+    label: Statutory Sick Pay
+    variable: statutory_sick_pay
+    entity: person
+    report_group: child_and_family_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: ssmg
+    label: Sure Start Maternity Grant
+    variable: ssmg
+    entity: person
+    report_group: child_and_family_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: bsp
+    label: Bereavement Support Payment
+    variable: bsp
+    entity: person
+    report_group: child_and_family_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  # Childcare and education support
+  - id: tax_free_childcare
+    label: Tax-Free Childcare
+    variable: tax_free_childcare
+    entity: person
+    report_group: childcare_and_education
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: extended_childcare_entitlement
+    label: Extended childcare entitlement
+    variable: extended_childcare_entitlement
+    entity: benunit
+    report_group: childcare_and_education
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: universal_childcare_entitlement
+    label: Universal childcare entitlement
+    variable: universal_childcare_entitlement
+    entity: person
+    report_group: childcare_and_education
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: targeted_childcare_entitlement
+    label: Targeted childcare entitlement
+    variable: targeted_childcare_entitlement
+    entity: person
+    report_group: childcare_and_education
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: care_to_learn
+    label: Care to Learn
+    variable: care_to_learn
+    entity: person
+    report_group: childcare_and_education
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: childcare_grant
+    label: Childcare Grant
+    variable: childcare_grant
+    entity: person
+    report_group: childcare_and_education
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: parents_learning_allowance
+    label: Parents' Learning Allowance
+    variable: parents_learning_allowance
+    entity: person
+    report_group: childcare_and_education
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: adult_dependants_grant
+    label: Adult Dependants' Grant
+    variable: adult_dependants_grant
+    entity: person
+    report_group: childcare_and_education
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: travel_grant
+    label: Travel Grant
+    variable: travel_grant
+    entity: person
+    report_group: childcare_and_education
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: disabled_students_allowance
+    label: Disabled Students' Allowance
+    variable: disabled_students_allowance
+    entity: person
+    report_group: childcare_and_education
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: bursary_fund_16_to_19
+    label: 16 to 19 Bursary Fund
+    variable: bursary_fund_16_to_19
+    entity: person
+    report_group: childcare_and_education
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  # Public services in kind
+  - id: nhs_spending
+    label: NHS spending
+    variable: nhs_spending
+    entity: person
+    report_group: public_services_in_kind
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+    caseload: false
+  - id: dfe_education_spending
+    label: State education spending
+    variable: dfe_education_spending
+    entity: household
+    report_group: public_services_in_kind
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+    caseload: false
+  - id: dft_subsidy_spending
+    label: Transport subsidy spending
+    variable: dft_subsidy_spending
+    entity: household
+    report_group: public_services_in_kind
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+    caseload: false
+  # Cost-of-living and energy support (none in force at current law)
+  - id: cost_of_living_support_payment
+    label: Cost-of-living support payment
+    variable: cost_of_living_support_payment
+    entity: household
+    report_group: cost_of_living_support
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+    zero_at_baseline: expected
+  - id: energy_bills_rebate
+    label: Energy Bills Rebate
+    variable: energy_bills_rebate
+    entity: household
+    report_group: cost_of_living_support
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+    zero_at_baseline: expected
+  - id: epg_subsidy
+    label: Energy Price Guarantee subsidy
+    variable: epg_subsidy
+    entity: household
+    report_group: cost_of_living_support
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+    zero_at_baseline: expected
+  # Reform-only spending
+  - id: basic_income
+    label: Basic income
+    variable: basic_income
+    entity: person
+    report_group: hypothetical_spending
+    totals: [gov_spending, household_benefits]
+    sign: any
+    zero_at_baseline: expected
+  - id: disability_basic_income
+    label: Disability basic income
+    variable: disability_basic_income
+    entity: person
+    report_group: hypothetical_spending
+    totals: [gov_spending, household_benefits]
+    sign: any
+    zero_at_baseline: expected
+  - id: other_public_spending_budget_change
+    label: Other public spending budget change
+    variable: other_public_spending_budget_change
+    entity: household
+    report_group: hypothetical_spending
+    totals: [gov_spending]
+    sign: any
+    zero_at_baseline: expected
+    caseload: false

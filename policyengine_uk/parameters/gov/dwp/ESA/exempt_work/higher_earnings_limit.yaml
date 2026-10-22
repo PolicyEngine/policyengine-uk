@@ -1,0 +1,79 @@
+description: Work done for less than the exempt work hours limit, for which a claimant's earnings in any week do not exceed this amount, is exempt work (permitted work) for Employment and Support Allowance. From 11 April 2011 the limit is 16 times the National Minimum Wage, rounded up to the next 50p, and changes when that wage does.
+values:
+  2008-10-27:
+    value: 92
+    reference:
+      - title: Employment and Support Allowance Regulations 2008 reg. 45(4) (as made)
+        href: https://www.legislation.gov.uk/uksi/2008/794/regulation/45/2008-10-27
+  2009-10-01:
+    value: 93
+    reference:
+      - title: Social Security (Miscellaneous Amendments) (No. 3) Regulations 2009 (SI 2009/2343) reg. 5(2)
+        href: https://www.legislation.gov.uk/uksi/2008/794/regulation/45/2009-10-01
+  # From 11 April 2011 (SI 2011/674 reg. 16(5)): 16 x the National Minimum
+  # Wage, rounded up to the next 50p (reg. 45(9A)). The rate is that in
+  # reg. 11 of the National Minimum Wage Regulations 1999 (ESA Regs reg. 2(1)),
+  # now the National Living Wage; DMG 41190 and Appendix 5 list it.
+  2011-04-11:
+    value: 95 # 16 x £5.93 = £94.88
+    reference:
+      - title: Social Security (Miscellaneous Amendments) Regulations 2011 (SI 2011/674) reg. 16(5)
+        href: https://www.legislation.gov.uk/uksi/2008/794/regulation/45/2011-04-11
+      - title: Decision Makers' Guide ch. 41, para. 41190 and Appendix 5
+        href: https://assets.publishing.service.gov.uk/media/689db34d1fedc616bb13399c/dmg-ch-41.pdf
+  2011-10-01:
+    value: 97.5 # 16 x £6.08 = £97.28
+  2012-10-01:
+    value: 99.5 # 16 x £6.19 = £99.04
+  2013-10-01:
+    value: 101 # 16 x £6.31 = £100.96
+  2014-10-01:
+    value: 104 # 16 x £6.50
+  2015-10-01:
+    value: 107.5 # 16 x £6.70 = £107.20
+  2016-04-01:
+    value: 115.5 # 16 x £7.20 = £115.20
+  2017-04-01:
+    value: 120 # 16 x £7.50
+  2018-04-01:
+    value: 125.5 # 16 x £7.83 = £125.28
+  2019-04-01:
+    value: 131.5 # 16 x £8.21 = £131.36
+  2020-04-01:
+    value: 140 # 16 x £8.72 = £139.52
+  2021-04-01:
+    value: 143 # 16 x £8.91 = £142.56
+  2022-04-01:
+    value: 152 # 16 x £9.50
+  2023-04-01:
+    value: 167 # 16 x £10.42 = £166.72
+  2024-04-01:
+    value: 183.5 # 16 x £11.44 = £183.04
+    reference:
+      - title: DWP benefit and pension rates 2025 to 2026 (permitted work higher, 2024/25)
+        href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2025-to-2026/benefit-and-pension-rates-2025-to-2026
+  2025-04-01:
+    value: 195.5 # 16 x £12.21 = £195.36
+    reference:
+      - title: DWP benefit and pension rates 2025 to 2026 (permitted work higher)
+        href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2025-to-2026/benefit-and-pension-rates-2025-to-2026
+  2026-04-01:
+    value: 203.5 # 16 x £12.71 = £203.36
+    reference:
+      - title: DWP benefit and pension rates 2026 to 2027 (permitted work higher)
+        href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027
+metadata:
+  unit: currency-GBP
+  period: week
+  label: ESA exempt work higher earnings limit
+  # The National Living Wage is set with reference to earnings, so later
+  # years follow average earnings until the rate is announced, rounded up to
+  # the next 50p as reg. 45(9A) rounds 16 x NMW.
+  uprating:
+    parameter: gov.economic_assumptions.indices.obr.average_earnings
+    rounding:
+      type: upwards
+      interval: 0.5
+  reference:
+    - title: Employment and Support Allowance Regulations 2008 reg. 45(4) and (9A)
+      href: https://www.legislation.gov.uk/uksi/2008/794/regulation/45
