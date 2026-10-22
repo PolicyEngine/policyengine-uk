@@ -1,1 +1,0 @@
-- Count only the claimant's and partner's own income-related ESA towards the higher Pension Credit earnings disregard (SPC Regs 2002 Sch VI para 4(1)(a)(vii)): an award another member of the benefit unit claims in their own right no longer raises the disregard to £20 a week.
