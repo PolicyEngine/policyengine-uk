@@ -1,3 +1,46 @@
+## [2.146.1] - 2026-10-22
+
+### Changed
+
+- - Store marginal National Insurance schedules as parameter scales while preserving contribution calculations and existing scalar reform paths.
+  - Reject unsupported changes to the fixed zero-rate, zero-threshold NI scale sentinel with a targeted error.
+  - Direct YAML readers must migrate the ten removed scalar files to the canonical scale files; parameter-tree readers retain the legacy compatibility paths.
+  - Retain incoming savings indexation, director and liability rules while migrating NI readers; hide legacy and fixed-zero discovery controls without removing their IDs or update contracts.
+- - Expanded Savings Credit regression coverage for protected mixed-age couples and clarified computed-amount metadata.
+
+### Fixed
+
+- Preserve age-conditioned National Insurance deductions when validating Carer Support Payment earnings after main integration.
+- Disregard already-allowable employment expenses in Universal Credit employed earnings before the minimum income floor.
+
+  Nonzero employment expenses supplied by a dataset can change Universal Credit microsimulation results. The aggregate effect has not been quantified.
+- - Applied the Carer Support Payment earnings limit, including its own dated thresholds and favorable fractional-penny rule.
+- Fix the default historical income-tax band thresholds and strict upper boundaries, including Marriage Allowance eligibility in 2016 and 2017.
+
+
+## [2.146.0] - 2026-10-22
+
+### Added
+
+- Add council_tax_band_d_amount and simulated_council_tax, computing gross council tax from local authority Band D amounts and statutory band ratios. Band D amounts cover all 350 April 2023 local authorities across England, Wales and Scotland for fiscal 2025 and 2026.
+
+### Fixed
+
+- Keep annual legacy-benefit closure scoped to the claimant and partner or a separate member's own award, so unrelated reports cannot close or shield each other's awards. Preserve the existing migration-date proxy and bounded work and capital tests.
+
+  Keep each person's legacy closure false alongside the family closure when the report-only benefit reform holds migration off.
+
+
+## [2.145.2] - 2026-10-22
+
+### Fixed
+
+- Preserve cohabiting-couple participation groups when calculating responses for an explicit year.
+- - Added Universal Credit benefit cap earnings exception regression tests (Universal Credit Regulations 2013 reg. 82), including the per-claimant earned income cases (tax on pension income, one partner's pension contributions, contributions after 75), and cited regs. 55 and 57 and Finance Act 2004 s. 188 on `is_uc_benefit_cap_exempt_earnings`.
+- Use the requested year and eligible-only spillover bins in participation dynamics, preserving seeded MT19937 draws without changing global NumPy state.
+- When Universal Credit rebalancing is inactive, uprate the LCWRA award from its pre-Act amount while preserving explicit inputs and refreshing cached awards after amount reforms. Preserve the benefit-cap claimant filter through the internal LCWRA amount wrapper while retaining explicit awards and external reforms. Anchored the inactive 2026-27 health-element counterfactual to September CPI with monthly-penny rounding, before projecting later years from that anchor.
+
+
 ## [2.145.1] - 2026-10-21
 
 ### Fixed
