@@ -1,3 +1,63 @@
+## [2.147.2] - 2026-10-22
+
+### Fixed
+
+- - Start a child's working parent hours with the first 1 January, 1 April or 1 September after it reaches the minimum age (SI 2022/1134 reg 27(1)(a); SI 2016/1257 reg 35(3) before December 2022), each of the year's terms counting for a third of it. The new `extended_childcare_entitlement_term_share` reads the date of birth, so a child aged 0 in the middle of the year who was born from October to March now gets one or two terms' hours, where none did before, and a 1-year-old who reached nine months after 1 April loses the summer term. Universal and targeted hours meet the working parent hours term by term. From 2025, household simulations that give only whole ages are unchanged, since such a child is taken to be born on 6 April; in earlier years, at a minimum age of two or three, such a child now qualifies from September.
+- - Stop the universal and working parent free hours in England, and Scotland's funded early learning and childcare, from the term a child starts school. A council meets both English duties for a child in a state-funded or council-funded reception class through the school place (DfE statutory guidance, footnotes 7 and 17, paras A4.8 and C.6), and a child at primary school is not an eligible pre-school child in Scotland (Children and Young People (Scotland) Act 2014 s.47(2)(b)). The new `early_years_term_share_before_school` gives the share of the year's terms before the child starts school, from the date of birth. In England a child starts reception in the September following its fourth birthday (School Admissions Code 2021 para 2.17), so most 4-year-olds keep only the summer term; Scotland's primary 1 starts in August for children who turn five from March to February, and Northern Ireland's in September for children who are four by 1 July. A household simulation that gives only a whole age of 4 takes the child to be born on 6 April, so it now gets a third of the year's universal and working parent hours. Set the new `early_years_school_start_deferred` for a child whose start is deferred, or who takes funded hours in a council-funded independent reception class, to keep the year.
+
+
+## [2.147.1] - 2026-10-22
+
+### Fixed
+
+- - Count landlords' property income after mortgage interest (`property_income_after_finance_costs`) in `hbai_household_net_income`, `market_income` and `household_market_income`, as the Family Resources Survey records it (rent from property after the mortgage payments and loan interest on show card K6). They added `property_income`, the profit before finance costs, so finance costs raised HBAI income by the tax reduction they earn. Income tax and the means tests are unchanged.
+
+
+## [2.147.0] - 2026-10-22
+
+### Added
+
+- - Add `directly_held_shares` and `unit_and_investment_trusts` household inputs for the share-like components of `corporate_wealth`, count share-like capital in every means test as `corporate_wealth` or, where the components exceed it beyond float32 rounding, their sum (`share_like_capital`), and uprate the components and the ISA balances with per-capita GDP.
+
+### Changed
+
+- - Give corporate SDLT its own head in `policyengine_uk/data/fiscal_partition.yaml` now that the totals count it once, and empty `model_double_counts`. Each tax head now names its row of the OBR current receipts table (EFO November 2025, Table A.5) and, where the March 2026 EFO's Table 3.1 footnotes place it, that table's line. The file also lists the receipt rows the model does not cover, more exclusions (tax assessments, wage-change measures, income tax reductions) and more overlap guards. New tests check on simulated households that each tax total is the sum of its heads and counts each head once.
+
+### Fixed
+
+- - Count corporate SDLT once in `household_tax`, `gov_tax` and `pre_budget_change_household_tax`. `expected_sdlt` no longer adds `corporate_sdlt`, which those totals already list. `gov.hmrc.stamp_duty.abolish` now zeroes `corporate_sdlt` and the `stamp_duty_land_tax` liability (no household is `sdlt_liable` once the tax is abolished) as well as `expected_sdlt`, so abolishing SDLT removes all of it. `expected_sdlt` also no longer adds `property_sale_rate` (a 0.045 share) to every household as £0.045 of SDLT.
+- Housing Benefit, Income Support, tax credit and Council Tax Reduction means tests no longer count a child's or young person's own income, tax or personal benefits as the claimant's (HB Regs 2006 reg 25(3), IS Regs 1987 reg 23(2), Tax Credits (Definition and Calculation of Income) Regs 2002 reg 3(1), the Council Tax Reduction applicant-and-partner rules).
+
+
+## [2.146.6] - 2026-10-22
+
+### Fixed
+
+- - Evaluated `claims_all_entitled_benefits` per benefit unit in hand-entered situations, so one family's reported benefits no longer switch off another family's take-up. Data-built simulations keep main's result, false for every family, so survey take-up of tax credits and Income Support still follows reported claims; Council Tax Reduction and Housing Benefit take-up there is limited to reporters (d1390 and d1455) until calibrated take-up inputs land (policyengine-uk-data#448). Explicit take-up inputs continue to override these defaults.
+- - Count statutory sick, maternity and paternity pay as Pension Credit earnings of an employed earner (State Pension Credit Regulations 2002 reg. 17A(2)(h) and (i)), including in the Schedule VI earnings disregard and the income tax on earnings.
+
+
+## [2.146.5] - 2026-10-22
+
+### Fixed
+
+- - Count only the claimant's and partner's own income-related ESA towards the higher Pension Credit earnings disregard (SPC Regs 2002 Sch VI para 4(1)(a)(vii)): an award another member of the benefit unit claims in their own right no longer raises the disregard to £20 a week.
+
+
+## [2.146.4] - 2026-10-22
+
+### Fixed
+
+- - Levied the hypothetical wealth tax (`gov.contrib.ubi_center.wealth_tax`) on household net wealth (`net_wealth`: total wealth less mortgage, consumer and student loan debt), as its documentation says, instead of on gross `total_wealth`. Wealth held against debt is no longer taxed. Baseline results are unchanged because the schedule's rates are zero.
+
+
+## [2.146.3] - 2026-10-22
+
+### Fixed
+
+- - Give the Universal Credit LCWRA element, carer element and work allowance on the claimants' own circumstances (UC Regs 2013 regs 27(1), 29(1), 22(1)(b)), not a dependant's: a disabled child no longer adds the LCWRA element, and a child or qualifying young person who cares no longer adds the carer element. The work allowance still counts the other member of a single claim by a member of a couple (reg 22(3)). Joint claimants who both have limited capability get one LCWRA element (reg 27(4)). Each claimant who is a carer gets a carer element, but carers of the same severely disabled person get one between them (reg 29(2)-(3)). A carer with the LCWRA element does not also get the carer element (reg 29(4)). `receives_uc_carer_element` follows the claimant the carer element is included for, and the disability basic income reform's LCWRA route needs a claimant with limited capability on a UC award.
+
+
 ## [2.146.2] - 2026-10-22
 
 ### Fixed

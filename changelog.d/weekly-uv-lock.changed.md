@@ -1,0 +1,1 @@
+- A weekly workflow now runs `uv lock --upgrade` and opens a pull request with the result, so CI's test suite, which installs from `uv.lock`, moves to new dependency releases.
