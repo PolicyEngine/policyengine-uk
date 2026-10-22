@@ -23,6 +23,7 @@ class housing_benefit_applicable_income(Variable):
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/2",
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/5",
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/40",
+        "https://www.legislation.gov.uk/uksi/2006/213/schedule/5/paragraph/16",
         "https://www.legislation.gov.uk/uksi/2006/213/schedule/5/paragraph/47",
         "https://www.legislation.gov.uk/uksi/2006/214/regulation/29",
         "https://www.legislation.gov.uk/uksi/2006/214/regulation/26",
@@ -106,8 +107,18 @@ class housing_benefit_applicable_income(Variable):
             max_(0, person("spousal_maintenance_income", period))
             * person("is_claimant_or_partner", period)
         ) - benunit("housing_benefit_maintenance_disregard", period)
+        # Widowed parent's allowance less £15 a week (HB Regs 2006 Sch 5
+        # para 16(b); HB (SPC) Regs 2006 Sch 5 para 7).
+        widowed_parents_allowance = benunit(
+            "housing_benefit_widowed_parents_allowance_income", period
+        )
         increased_income = (
-            income + personal_benefits + credits + benefits + spousal_maintenance
+            income
+            + personal_benefits
+            + credits
+            + benefits
+            + spousal_maintenance
+            + widowed_parents_allowance
         )
 
         if not bi.interactions.include_in_means_tests:

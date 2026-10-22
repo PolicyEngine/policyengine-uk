@@ -953,6 +953,13 @@ spending_heads:
     report_group: child_and_family_benefits
     totals: [gov_spending, household_benefits]
     sign: nonnegative
+  - id: widowed_parents_allowance
+    label: Widowed Parent's Allowance
+    variable: widowed_parents_allowance
+    entity: person
+    report_group: child_and_family_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
   # Childcare and education support
   - id: tax_free_childcare
     label: Tax-Free Childcare

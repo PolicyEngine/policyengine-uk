@@ -47,6 +47,8 @@ metadata:
       href: https://www.legislation.gov.uk/ukpga/2002/16/section/16
     - title: The Universal Credit Regulations 2013 reg. 66(1)(b)(ii), (viii) and (ix) (contributory ESA, maternity allowance, industrial injuries benefit)
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/66
+    - title: The Universal Credit Regulations 2013 reg. 66(1)(b)(vi) (widowed parent's allowance; bereavement support payment is not listed)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/66
     - title: The Universal Credit Regulations 2013 reg. 66(1)(d) (maintenance from a spouse, civil partner, former spouse or former civil partner; child maintenance is not listed)
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/66
     - title: The Universal Credit Regulations 2013 reg. 2 (employment and support allowance and jobseeker's allowance mean the contributory allowances; industrial injuries benefit means benefit under SSCBA 1992 Part 5)
@@ -78,6 +80,7 @@ values:
   - state_pension
   - uc_tariff_income
   - spousal_maintenance_income
+  - widowed_parents_allowance
   2014-06-16:
   - carers_allowance
   - jsa_contrib
@@ -88,6 +91,7 @@ values:
   - state_pension
   - uc_tariff_income
   - spousal_maintenance_income
+  - widowed_parents_allowance
   - incapacity_benefit
   - sda
   2023-11-19:
@@ -101,5 +105,6 @@ values:
   - state_pension
   - uc_tariff_income
   - spousal_maintenance_income
+  - widowed_parents_allowance
   - incapacity_benefit
   - sda
