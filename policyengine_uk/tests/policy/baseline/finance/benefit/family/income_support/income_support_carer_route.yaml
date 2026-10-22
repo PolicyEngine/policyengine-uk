@@ -1,13 +1,16 @@
 # Income Support carer route. SSCBA 1992 s.124(1)(e): a person is entitled
 # to Income Support if "he falls within a prescribed category of person".
-# IS Regs 1987 reg 4ZA(1) prescribes the persons in Schedule 1B, and Sch 1B
-# para 4 includes "A person (the carer)" regularly and substantially caring
-# for a disabled person or entitled to Carer's Allowance. A couple choose
-# which of them claims (Claims and Payments Regs 1987 reg 4(3)), but no new
-# claim can be made (UC (Transitional Provisions) Regs 2014 reg 6A(1)) and a
-# partner who takes over an award does so by claiming (reg 4(4)), so the
-# claimant is whichever partner has the existing award. The route opens
-# through that partner's caring; a child's or young person's caring does not.
+# IS Regs 1987 reg 4ZA(1) prescribes the persons in Schedule 1B. Sch 1B
+# para 4 covers "A person (the carer)" who (a) "is regularly and
+# substantially engaged in caring for another person" receiving a qualifying
+# disability benefit, with no Carer's Allowance claim needed, or (b) "is both
+# entitled to, and in receipt of, a carer's allowance or carer support
+# payment". A couple choose which of them claims (Claims and Payments Regs
+# 1987 reg 4(3)), but no new claim can be made (UC (Transitional Provisions)
+# Regs 2014 reg 6A(1)) and a partner who takes over an award does so by
+# claiming (reg 4(4)), so the claimant is whichever partner has the existing
+# award. The route opens through that partner's caring; a child's or young
+# person's caring does not.
 
 - name: IS carer route for a single claimant who cares
   period: 2025
@@ -23,6 +26,25 @@
         esa_income: 0
         income_support_assessable_capital: 0
   output:
+    income_support_eligible: true
+
+- name: IS carer route opens for a claimant who cares without claiming Carer's Allowance (para 4(a))
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        care_hours: 35
+        would_claim_carers_allowance: false
+        income_support_reported: 1000
+    benunits:
+      family:
+        members: [claimant]
+        esa_income: 0
+        income_support_assessable_capital: 0
+  output:
+    is_entitled_to_carer_benefit: false
+    is_carer_for_benefits: true
     income_support_eligible: true
 
 - name: IS carer route when the partner who has the award is the carer

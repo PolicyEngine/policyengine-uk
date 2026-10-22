@@ -11,7 +11,11 @@ class income_support_assessable_capital(Variable):
         "level, the model allocates full household capital to any benunit on the "
         "IS claim path and only falls back to a claimant-and-partner share when "
         "nobody in the household is on that path. This allocation is a "
-        "PolicyEngine convention; the data cannot identify ownership of capital."
+        "PolicyEngine convention; the data cannot identify ownership of capital. "
+        "Person-level sources, such as a Lifetime ISA, count only for the "
+        "holder's own benunit, and only when the holder is its claimant or "
+        "partner (is_claimant_or_partner): a dependant's capital is not the "
+        "claimant's."
     )
     definition_period = YEAR
     unit = GBP
@@ -50,4 +54,12 @@ class income_support_assessable_capital(Variable):
         fallback_proxy = (
             household_capital * benunit_claimants_and_partners / fallback_divisor
         )
-        return where(household_claiming_members > 0, claiming_proxy, fallback_proxy)
+        claimant_or_partner = person("is_claimant_or_partner", period)
+        person_capital = sum(
+            benunit.sum(person(source, period) * claimant_or_partner)
+            for source in IS.means_test.capital.person_sources
+        )
+        household_share = where(
+            household_claiming_members > 0, claiming_proxy, fallback_proxy
+        )
+        return household_share + person_capital

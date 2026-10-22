@@ -321,3 +321,73 @@
   output:
     jsa_income: 4_000
     claimant_or_partner_jsa_income: 0
+
+- name: An entered claimant-or-partner award is the claimant's whatever another member reports
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 3_000
+    benunits:
+      benunit:
+        members: [claimant, other]
+        esa_income: 3_000
+        claimant_or_partner_esa_income: 3_000
+    households:
+      household:
+        members: [claimant, other]
+  output:
+    # esa_income alone equals the other member's report, so it would be read
+    # through the reports; entering the scoped award states whose it is.
+    claimant_or_partner_esa_income: 3_000
+    council_tax_reduction_relevant_income_based_benefit: true
+
+- name: The claimant's raw reported award passes through when esa_income holds the raw total
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 200
+    benunits:
+      benunit:
+        members: [claimant]
+        esa_income: 200
+    households:
+      household:
+        members: [claimant]
+        savings: 10_000
+  output:
+    # The formula would give max(0, 200 - 832) = 0; the stored 200 is the raw
+    # total of the reports (as the disable_simulated_benefits reform sets),
+    # so the claimant's raw report is used.
+    claimant_or_partner_esa_income: 200
+
+- name: A stored zero esa_income is never the claimant's award
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 0.004
+    benunits:
+      benunit:
+        members: [claimant]
+        esa_income: 0
+    households:
+      household:
+        members: [claimant]
+  output:
+    claimant_or_partner_esa_income: 0
+    council_tax_reduction_relevant_income_based_benefit: false

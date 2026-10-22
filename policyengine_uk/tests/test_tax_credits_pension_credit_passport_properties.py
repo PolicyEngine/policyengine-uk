@@ -84,7 +84,12 @@ def families(draw):
     children = [
         {"age": draw(st.integers(0, 15))} for _ in range(draw(st.integers(0, 2)))
     ]
-    benunit = {"would_claim_pc": draw(st.sampled_from([True, True, True, False]))}
+    benunit = {
+        "would_claim_pc": draw(st.sampled_from([True, True, True, False])),
+        # Whether a mixed-age couple keeps Pension Credit under the SI 2019/37
+        # art. 4 saving (no effect on any other family).
+        "has_mixed_age_couple_pension_credit_saving": draw(st.booleans()),
+    }
     household = {"savings": draw(st.sampled_from([0, 5_000, 12_000, 20_000]))}
     return members, children, benunit, household
 
@@ -141,9 +146,9 @@ SETTINGS = settings(
 FAMILIES = st.lists(families(), min_size=1, max_size=6)
 
 # The YAML cases, run on every invocation: random draws seldom raise CTC or
-# hit the third row. Pension Credit earnings are net of SPC Regs Sch VI
-# para 5; the CTC family element and the Sch IIA child amount are entered at
-# their statutory values (see the YAML file).
+# hit the third row. Employment income is gross; the model applies SPC Regs
+# Sch VI para 5 once. The CTC family element is entered at its statutory
+# value (see the YAML file).
 _PENSIONER = {
     "age": 70,
     "employment_income": 2_600,
@@ -152,21 +157,27 @@ _PENSIONER = {
     "working_tax_credit_reported": 1,
 }
 YAML_FAMILIES = [
-    # Guarantee Credit with WTC: passported.
+    # Gross wages 2,600 - single disregard 5 x 52 = 2,340. With passported
+    # WTC 2,435, PC is 218.15 x 52 - 6,000 - 2,340 - 2,435 = 568.80.
     (
         [{**_PENSIONER, "state_pension": 6_000}],
         [],
-        {"pension_credit_earnings": 2_340},
+        {},
         {"savings": 10_000},
     ),
-    # Pension Credit only on the income-tested award: the third row.
+    # The same gross wages leave 2,340 after Sch VI. Passported WTC gives
+    # PC 11,343.80 - 6,600 - 2,340 - 2,435 < 0, so the passport does not hold;
+    # income-tested WTC is 2,435 - (9,200 - 7,955) x 41% = 1,924.55, and
+    # PC remains 11,343.80 - 6,600 - 2,340 - 1,924.55 = 479.25.
     (
         [{**_PENSIONER, "state_pension": 6_600}],
         [],
-        {"pension_credit_earnings": 2_340},
+        {},
         {"savings": 10_000},
     ),
-    # Savings Credit alone, with CTC raised by the passport.
+    # Gross wages 3,000 - couple disregard 10 x 52 = 2,480; pensions 17,000
+    # give PC income 19,480. The 989.976 maximum SC less
+    # (19,480 - 17,313.40) x 40% gives 123.336, so CTC is passported.
     (
         [
             {
@@ -180,20 +191,33 @@ YAML_FAMILIES = [
         ],
         [{"age": 10}],
         {
-            "pension_credit_earnings": 2_480,
-            "child_minimum_guarantee_addition": 0,
             "CTC_family_element": 545,
         },
         {"savings": 10_000},
     ),
-    # A mixed-age couple: no Pension Credit, no passport.
+    # A mixed-age couple without the SI 2019/37 saving: no Pension Credit, no
+    # passport. The older partner was born on 6 January 1954, early enough
+    # for the saving.
     (
         [
-            {**_PENSIONER, "state_pension": 6_000},
+            {**_PENSIONER, "state_pension": 6_000, "months_since_last_birthday": 9},
             {"age": 40},
         ],
         [],
-        {},
+        {"has_mixed_age_couple_pension_credit_saving": False},
+        {"savings": 10_000},
+    ),
+    # With the saving, gross wages 2,600 - couple disregard 520 = 2,080.
+    # PC is 17,313.40 - 6,000 - 2,080 - passported WTC 4,935 = 4,298.40.
+    (
+        [
+            {**_PENSIONER, "state_pension": 6_000, "months_since_last_birthday": 9},
+            {"age": 40},
+        ],
+        [],
+        {
+            "has_mixed_age_couple_pension_credit_saving": True,
+        },
         {"savings": 10_000},
     ),
 ]
@@ -314,7 +338,9 @@ def test_passport_works_in_traced_and_nested_branch_simulations():
             }
         ],
         [],
-        {"pension_credit_earnings": 2_340},
+        # Gross wages 2,600 less Sch VI 260 leave 2,340; PC is
+        # 218.15 x 52 - 6,000 - 2,340 - passported WTC 2,435 = 568.80.
+        {},
         {},
     )
     for trace in [False, True]:
@@ -359,11 +385,14 @@ def test_yaml_families_reach_every_case():
     passported = (on["tax_credits_applicable_income"] == 0) & (
         off["tax_credits_applicable_income"] > 0
     )
-    assert passported.tolist() == [True, False, True, False]
-    # The passport raises WTC (first) and CTC (third).
+    assert passported.tolist() == [True, False, True, False, True]
+    # The passport raises WTC (first and fifth) and CTC (third).
     assert on["working_tax_credit"][0] > off["working_tax_credit"][0]
     assert on["child_tax_credit"][2] > off["child_tax_credit"][2]
+    assert on["working_tax_credit"][4] > off["working_tax_credit"][4]
     # The third row: Pension Credit paid without the passport.
     assert on["pension_credit"][1] > 0 and not passported[1]
-    # The mixed-age couple gets no Pension Credit.
+    # The mixed-age couple gets Pension Credit, and so the passport, only
+    # under the saving.
     assert on["pension_credit"][3] == 0
+    assert on["pension_credit"][4] > 0

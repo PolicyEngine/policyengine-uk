@@ -15,12 +15,14 @@ class meets_uc_minimum_age_condition(Variable):
     in specified circumstances. Observable proxies cover limited capability
     for work, caring, and responsibility for a child.
 
-    uc_limited_capability_for_WRA is the existing LCWRA-named proxy (it defaults
-    to is_disabled_for_benefits), not an observation of LCW or a pending
-    assessment supported by medical evidence under regulation 8(1)(a)-(b).
+    uc_limited_capability_for_work is a proxy (limited capability for work and
+    work-related activity, or is_disabled_for_benefits), not an observation of
+    LCW or a pending assessment supported by medical evidence under regulation
+    8(1)(a)-(b).
     is_carer_for_benefits means receipt of Carer's Allowance or Scottish Carer
-    Support Payment, or at least the Carer's Allowance qualifying hours of
-    care (currently 35 weekly). Its hours limb does not verify the recipient's
+    Support Payment, underlying entitlement to either benefit, or at least
+    the Carer's Allowance qualifying hours of care (currently 35 weekly).
+    Its hours limb does not verify the recipient's
     qualifying disability benefit, and it does not exclude paid care.
 
     For regulation 8(1)(d), responsibility is proxied by being a claimant in a
@@ -41,7 +43,7 @@ class meets_uc_minimum_age_condition(Variable):
         child = person("is_child_for_universal_credit", period)
         responsible_for_child = claimant & person.benunit.any(child & ~claimant)
         reduced_age_exception = (
-            person("uc_limited_capability_for_WRA", period)
+            person("uc_limited_capability_for_work", period)
             | person("is_carer_for_benefits", period)
             | responsible_for_child
         )

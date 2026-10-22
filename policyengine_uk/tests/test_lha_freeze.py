@@ -131,7 +131,8 @@ def test_a_reset_year_is_not_treated_as_a_hold():
         2020, "MAIDSTONE", "C", reform={"gov.dwp.LHA.freeze": {"2020": True}}
     )
 
-    assert reset == pytest.approx(187.91, abs=0.01)
+    # VOA, LHA April 2020 (amended), Table 4: Maidstone two bedrooms.
+    assert reset == pytest.approx(187.56, abs=0.01)
     assert held_instead != pytest.approx(reset, abs=0.01)
 
 
@@ -144,3 +145,66 @@ def test_frozen_years_hold_the_reset_level_for_an_uncapped_area():
         assert _weekly_rate(frozen_year, "MAIDSTONE", "C") == pytest.approx(
             reset, abs=0.01
         )
+
+
+# Northern Ireland: the Rent Officers Orders behind gov.dwp.LHA cover Great
+# Britain only. The Northern Ireland Housing Executive determines Northern
+# Ireland's rates under Northern Ireland regulations (gov.dfc.LHA).
+
+NI_LHA_VARIABLES = ("housing_benefit_LHA_rate", "LHA_cap", "uc_LHA_cap")
+
+
+def _renter(year: int, region: str) -> dict:
+    return {
+        "people": {"person": {"age": {year: 30}}},
+        "benunits": {
+            "benunit": {
+                "members": ["person"],
+                "LHA_category": {year: "C"},
+                "housing_benefit_LHA_category": {year: "C"},
+                "benunit_rent": {year: 100_000},
+            }
+        },
+        "households": {
+            "household": {
+                "members": ["person"],
+                "region": {year: region},
+                "tenure_type": {year: "RENT_PRIVATELY"},
+                "rent": {year: 100_000},
+            }
+        },
+    }
+
+
+def _lha_values(region: str, reform=None, year: int = 2026) -> dict:
+    simulation = Simulation(situation=_renter(year, region), reform=reform)
+    return {
+        variable: float(simulation.calculate(variable, year)[0])
+        for variable in NI_LHA_VARIABLES
+    }
+
+
+def test_great_britain_lha_reforms_leave_northern_ireland_rates_unchanged():
+    for reform in (
+        {"gov.dwp.LHA.freeze": {"2026": False}},
+        {"gov.dwp.LHA.percentile": {"2026": 0.5}},
+    ):
+        assert _lha_values("NORTHERN_IRELAND", reform) == _lha_values(
+            "NORTHERN_IRELAND"
+        )
+
+
+def test_great_britain_lha_unfreeze_changes_great_britain_rates():
+    baseline = _lha_values("LONDON")
+    unfrozen = _lha_values("LONDON", {"gov.dwp.LHA.freeze": {"2026": False}})
+    for variable in NI_LHA_VARIABLES:
+        assert unfrozen[variable] != baseline[variable], variable
+
+
+def test_northern_ireland_lha_unfreeze_changes_only_northern_ireland_rates():
+    reform = {"gov.dfc.LHA.freeze": {"2026": False}}
+    baseline = _lha_values("NORTHERN_IRELAND")
+    unfrozen = _lha_values("NORTHERN_IRELAND", reform)
+    for variable in NI_LHA_VARIABLES:
+        assert unfrozen[variable] != baseline[variable], variable
+    assert _lha_values("LONDON", reform) == _lha_values("LONDON")

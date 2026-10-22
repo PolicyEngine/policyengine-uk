@@ -142,7 +142,7 @@
         income_tax: 100
         national_insurance: 0
         pension_contributions: 200
-        is_carer_for_benefits: true
+        is_entitled_to_carer_benefit: true
       partner:
         age: 75
         private_pension_income: 2_000
@@ -151,7 +151,7 @@
         income_tax: 50
         national_insurance: 25
         pension_contributions: 100
-        is_carer_for_benefits: true
+        is_entitled_to_carer_benefit: true
     benunits:
       benunit:
         members: [claimant, partner]
@@ -160,9 +160,13 @@
     is_claimant_or_partner: [true, true]
     # SPCA 2002 s.5: gross = 5,000 + 1,000 + 100 + 2,000 + 500 + 200
     # + 104 = 8,904; deductions = 100 + 50 + 25 + 50% * 300 = 325.
-    pension_credit_income: 8_579
+    # Sch VI para 3 (both carers): 20 pounds a week, capped at net earnings
+    # (claimant 1,000 - 100 tax - 100 half contributions = 800; partner
+    # 500 - 25 NI - 50 tax - 50 = 375; 1,175), so 1,040 is disregarded:
+    # 8,904 - 325 - 1,040.
+    pension_credit_income: 7_539
     # Reg.9: remove the claimant's 100 JSA and partner's 200 ESA.
-    savings_credit_income: 8_279
+    savings_credit_income: 7_239
     # Sch.I para.4 and the 2026 carer addition: 2 * 48.15 * 52 = 5,007.60.
     carer_minimum_guarantee_addition: 5_007.60
 
@@ -174,11 +178,11 @@
       claimant:
         age: 75
         is_parent: true
-        is_carer_for_benefits: false
+        is_entitled_to_carer_benefit: false
       young_person:
         age: 18
         is_in_non_advanced_education: true
-        is_carer_for_benefits: true
+        is_entitled_to_carer_benefit: true
     benunits:
       benunit:
         members: [claimant, young_person]

@@ -72,14 +72,19 @@ PENSION_CREDIT = ["guarantee_credit", "savings_credit", "pension_credit"]
 
 class previous_tax_credits_current_year_income(tc.tax_credits_current_year_income):
     # The formula before this change: the State Pension in step two, through
-    # social_security_income.
+    # social_security_income. Keep main's claimant scope, net property income
+    # and trading losses, so only the State Pension classification differs.
     def formula(benunit, period, parameters):
         person = benunit.members
-        members = person("is_claimant_or_partner", period) | person(
-            "is_child_or_qualifying_young_person_for_child_tax_credit", period
-        )
+        members = person("is_claimant_or_partner", period)
         TC = parameters(period).gov.dwp.tax_credits
-        income = add_for_members(benunit, period, OTHER_STEP_ONE, members)
+        step_one = [
+            "private_pension_income",
+            "savings_interest_income",
+            "dividend_income",
+            "property_income_after_finance_costs",
+        ]
+        income = add_for_members(benunit, period, step_one, members)
         income = max_(income - TC.means_test.non_earned_disregard, 0)
         step_two = [
             "employment_income",
@@ -87,7 +92,13 @@ class previous_tax_credits_current_year_income(tc.tax_credits_current_year_incom
             "social_security_income",
             "miscellaneous_income",
         ]
-        return income + add_for_members(benunit, period, step_two, members)
+        bi = parameters(period).gov.contrib.ubi_center.basic_income
+        if bi.interactions.include_in_means_tests:
+            step_two.append("basic_income")
+        income += add_for_members(benunit, period, step_two, members)
+        return max_(
+            0, income - add_for_members(benunit, period, ["trading_loss"], members)
+        )
 
 
 previous_tax_credits_current_year_income.__name__ = "tax_credits_current_year_income"
@@ -178,7 +189,12 @@ def situation(units):
 
 
 def law(members):
-    """Reg 3(1) steps one and two, from the claimants' inputs."""
+    """Reg 3(1) steps one and two, from the claimants' inputs.
+
+    Generated adults have no property finance costs or trading losses, so
+    their property income is already the amount counted by the means test.
+    The separate preservation regression covers those deductions.
+    """
     state_pension = sum(m["state_pension"] for m in members)
     other_step_one = sum(m[s] for m in members for s in OTHER_STEP_ONE)
     step_two = sum(m[s] for m in members for s in STEP_TWO)
@@ -339,3 +355,51 @@ def test_social_security_income_is_counted_once():
     assert "state_pension" not in tc.SOCIAL_SECURITY_INCOME
     assert components == set(tc.SOCIAL_SECURITY_INCOME) | {"state_pension"}
     assert not set(tc.STEP_ONE_INCOME) & set(tc.SOCIAL_SECURITY_INCOME)
+
+
+def test_state_pension_change_preserves_claimant_scope_and_deductions():
+    claimant = {
+        **PENSIONER,
+        "state_pension": 9_500,
+        "property_income": 300,
+        "property_finance_costs": 200,
+        "trading_loss": 2_000,
+    }
+    child = {
+        "age": 15,
+        "employment_income": 20_000,
+        "private_pension_income": 1_000,
+        "trading_loss": 5_000,
+    }
+    units = [
+        ([claimant], [child], {"would_claim_pc": False}, {}),
+        ([claimant], [{"age": 15}], {"would_claim_pc": False}, {}),
+        (
+            [{**claimant, "trading_loss": 20_000}],
+            [child],
+            {"would_claim_pc": False},
+            {},
+        ),
+    ]
+    current = Simulation(situation=situation(units))
+    previous = Simulation(situation=situation(units))
+    previous.apply_reform(state_pension_in_step_two)
+    for year in (ACTIVE_YEAR, INACTIVE_YEAR):
+        # State Pension and £100 net property income share the disregard:
+        # 9,500 + (300 - 200) - 300 + 2,600 - 2,000 = 9,900.
+        # A child's income and loss change neither calculation. A claimant's
+        # loss above their remaining income leaves nil in both formulas.
+        np.testing.assert_allclose(
+            current.calculate("tax_credits_current_year_income", year),
+            [9_900, 9_900, 0],
+            atol=TOL,
+            rtol=0,
+        )
+        # Previously the £100 of net property income used only £100 of the
+        # disregard: 0 + 9,500 + 2,600 - 2,000 = 10,100.
+        np.testing.assert_allclose(
+            previous.calculate("tax_credits_current_year_income", year),
+            [10_100, 10_100, 0],
+            atol=TOL,
+            rtol=0,
+        )

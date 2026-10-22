@@ -1,5 +1,8 @@
 from policyengine_uk.model_api import *
 import numpy as np
+from policyengine_uk.variables.gov.local_authorities.council_tax_reduction._legacy import (
+    applicant_has_universal_credit,
+)
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.config import (
     is_oxford_working_age,
 )
@@ -18,12 +21,13 @@ class oxford_council_tax_reduction(Variable):
         working_age = is_oxford_working_age(
             household("local_authority", period),
             household("country", period),
-            household("council_tax_reduction_household_has_pensioner", period),
+            benunit("council_tax_reduction_pensioner", period),
         )
-        is_household_head_benunit = benunit("benunit_contains_household_head", period)
+        is_household_head_benunit = benunit(
+            "council_tax_reduction_claimant_benunit", period
+        )
         would_claim = benunit("would_claim_council_tax_reduction", period)
-        universal_credit = benunit("universal_credit", period)
-        has_uc_award = universal_credit > 0
+        has_uc_award = applicant_has_universal_credit(benunit, period)
 
         capital = household("savings", period)
         capital_eligible = capital <= ctr.means_test.capital_limit
@@ -33,7 +37,11 @@ class oxford_council_tax_reduction(Variable):
         )
 
         annual_income = benunit("council_tax_reduction_applicable_income", period)
-        child_benefit = benunit("child_benefit", period)
+        # Applicable income counts Child Benefit only where the applicant is
+        # the benefit unit's claimant, so only then is it taken off again.
+        child_benefit = benunit("child_benefit", period) * ~benunit(
+            "council_tax_reduction_head_applies_alone", period
+        )
         weekly_income = max_(0, annual_income - child_benefit) / WEEKS_IN_YEAR
         weekly_income += where(has_uc_award, 0, weekly_tariff_income)
         relevant_income_based_benefit = benunit(
@@ -47,7 +55,7 @@ class oxford_council_tax_reduction(Variable):
         support_rate = ctr.income_band.maximum_support_rate.calc(weekly_income)
         liability = household(
             "council_tax_reduction_maximum_eligible_liability", period
-        )
+        ) * benunit("council_tax_reduction_joint_liability_share", period)
         non_dep_deductions = benunit(
             "oxford_council_tax_reduction_non_dep_deductions", period
         )

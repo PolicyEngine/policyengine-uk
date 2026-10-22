@@ -1,48 +1,48 @@
 description: >
-  Model variables currently mapped to countable Universal Credit capital.
-  Regulation 46 takes the whole of a person's capital into account unless it is
-  treated as income or disregarded under regulation 48 and Schedule 10. The
-  current mappings are `savings` for liquid capital,
-  `other_residential_property_value` for residential property other than the
-  home, `non_residential_property_value` for other land and premises, and
-  `corporate_wealth` for shares and similar investment assets. `main_residence_value`
-  is excluded because Schedule 10 paragraph 1 disregards premises occupied as
-  the person's home. `private_pension_wealth` is excluded because Schedule 10
-  paragraph 10 disregards the value of any right to receive a pension under an
-  occupational or personal pension scheme (or any other scheme registered under
-  section 153 of the Finance Act 2004; paragraph 10 of Schedule 10 to the
-  Northern Ireland regulations makes the same disregard); pension income
-  actually drawn counts as unearned income instead. Other Schedule 10 disregards within these broad asset
-  classes are not yet split out separately. Where only household-level capital
-  is available for a multi-benunit household, the model uses a household-wide
-  adult-share proxy for residual capital because the dataset does not identify
-  which adults hold the beneficial interest in each capital asset. The
-  denominator is all unreported adults in the household, including adults in
-  benunits that are not themselves UC claimants. That proxy is a data
-  approximation, not a legislated allocation rule. Regulation 47 is cited only
-  as related context on jointly held capital. If some benunits provide
-  `uc_reported_capital`, the proxy is applied only to the residual household
-  capital for benunits that remain unreported.
+  Household financial proxies for Universal Credit: savings and share-like
+  financial wealth. `share_like_capital` is `corporate_wealth` as supplied, or
+  the sum of its itemised components (`directly_held_shares`,
+  `unit_and_investment_trusts`, `stocks_and_shares_isa`) where they exceed it
+  beyond float32 rounding, so a household given only the components has them
+  counted and no holding counts twice. A nonnegative benunit_reported_capital
+  replaces these financial proxies and covered person-level sources, including
+  a Lifetime ISA. Each benefit unit's complete uc_reported_capital override,
+  otherwise its observed financial total, reduces this financial pool.
+  Subtracting complete overrides retains the inherited allocation convention.
+  An override precedes regulation 77 company substitution and includes its
+  claimant's and partner's holdings: consume at least their disregarded
+  holdings after applying one household share_like_capital budget without
+  removing them again from the pool. First clip each person's holding to [0,
+  max(0, share_like_capital)], with positive infinity mapped to the upper
+  bound and negative infinity to zero. If total bounded holdings exceed
+  nonnegative share_like_capital, scale each person's bounded holding
+  proportionally before override floors and separate pool deductions. This is
+  a defensive rule for inconsistent inputs, not a statutory determination;
+  regulation 77 substitution in the owner's own assessment is unchanged. The
+  residual is allocated by claimant/partner counts to benefit units with
+  neither a financial observation nor a complete override, including units
+  that do not receive UC. This allocation is an assumption about unobserved
+  ownership, not a statutory rule. Countable property is valued and shared
+  independently through property_sources across ALL claimant/partner adults,
+  with complete-override units consuming their shares. Main-home property and
+  the named private_pension_wealth input are excluded under Schedule 10
+  paragraphs 1 and 10. For missing-report households, the legacy
+  corporate_wealth proxy, and so share_like_capital, can still contain non-DB
+  pension wealth that is not separately identified and removed. Asset-specific
+  Schedule 10 disregards within these broad financial classes are not
+  separately observed.
 metadata:
-  label: Universal Credit countable capital sources
+  label: Universal Credit financial capital proxy sources
   period: year
   unit: list
   reference:
     - title: The Universal Credit Regulations 2013 reg. 46(1)
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/46/1
-    - title: The Universal Credit Regulations 2013 reg. 47
-      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/47
     - title: The Universal Credit Regulations 2013 reg. 48(1)
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/48/1
-    - title: The Universal Credit Regulations 2013 Schedule 10 para. 1
-      href: https://www.legislation.gov.uk/uksi/2013/376/schedule/10/paragraph/1
-    - title: The Universal Credit Regulations 2013 Schedule 10 para. 10
-      href: https://www.legislation.gov.uk/uksi/2013/376/schedule/10/paragraph/10
-    - title: The Universal Credit Regulations (Northern Ireland) 2016 Schedule 10 para. 10
-      href: https://www.legislation.gov.uk/nisr/2016/216/schedule/10/paragraph/10
+    - title: The Universal Credit Regulations 2013 Schedule 10
+      href: https://www.legislation.gov.uk/uksi/2013/376/schedule/10
 values:
   2013-04-29:
     - savings
-    - other_residential_property_value
-    - non_residential_property_value
-    - corporate_wealth
+    - share_like_capital
