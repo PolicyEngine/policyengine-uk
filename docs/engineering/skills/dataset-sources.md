@@ -95,6 +95,13 @@ can declare the same named field or H5 attribute before UK conversion. HF/GCS
 materializers retain the existing local-file routing. External multi-year
 amounts and DataFrame inputs remain authoritative when loaded.
 
+Disabling economic assumptions resets energy amounts and their declaration as
+one group. A base year that supplies every stored later energy column replaces
+those amounts and their declaration. With no overlapping base energy, later
+amounts and metadata stay intact. A partial overlap resets shared columns only
+when both declarations match exactly; otherwise the entire later energy group
+and its declaration remain authoritative. Missing columns are never created.
+
 Existing metadata-free private Microcosm releases stay flat under this
 compatibility rule. They require an explicit caller migration based on a
 verified receipt, or a producer release that exports the canonical declaration

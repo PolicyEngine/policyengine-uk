@@ -708,22 +708,45 @@ def reset_growthfactor_uprating(
     }
     growthfactor_uprated_variables.update({"council_tax", "rent"})
     growthfactor_uprated_variables.update(COUNTRY_UPRATED_INPUTS)
-    growthfactor_uprated_variables.update(DATASET_UPRATING_EXCLUSIONS)
     growthfactor_uprated_variables.update(_unmapped_uprating_indices(uprating))
+    growthfactor_uprated_variables.difference_update(DATASET_UPRATING_EXCLUSIONS)
 
     first_year = min(dataset.datasets.keys())
     base_year_dataset = dataset.datasets[first_year]
+    base_energy = DATASET_UPRATING_EXCLUSIONS.intersection(
+        base_year_dataset.household.columns
+    )
 
     for year in dataset.datasets:
         if year == first_year:
             continue
         current_year_dataset = dataset.datasets[year]
-        current_year_dataset.energy_price_basis = base_year_dataset.energy_price_basis
+        current_energy = DATASET_UPRATING_EXCLUSIONS.intersection(
+            current_year_dataset.household.columns
+        )
+        shared_energy = current_energy.intersection(base_energy)
+        replace_energy_group = bool(current_energy) and current_energy <= base_energy
+        reset_energy = replace_energy_group or (
+            current_year_dataset.energy_price_basis
+            == base_year_dataset.energy_price_basis
+        )
+
+        # One declaration describes every stored energy amount. Keep the
+        # later group intact if a partial reset would mix different bases.
         for table_name in current_year_dataset.table_names:
             base_table = getattr(base_year_dataset, table_name)
             current_table = getattr(current_year_dataset, table_name)
             for variable in growthfactor_uprated_variables:
                 if variable in current_table.columns and variable in base_table.columns:
                     current_table[variable] = base_table[variable].values
+        if reset_energy:
+            for variable in shared_energy:
+                current_year_dataset.household[variable] = base_year_dataset.household[
+                    variable
+                ].values
+        if replace_energy_group:
+            current_year_dataset.energy_price_basis = (
+                base_year_dataset.energy_price_basis
+            )
 
     return dataset
