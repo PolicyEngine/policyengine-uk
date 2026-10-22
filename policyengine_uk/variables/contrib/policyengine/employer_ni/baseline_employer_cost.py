@@ -40,7 +40,7 @@ class baseline_employer_cost(Variable):
             period
         )
         baseline_class_1 = baseline_parameters.gov.hmrc.national_insurance.class_1
-        r_b = baseline_class_1.rates.employer
+        r_b = baseline_class_1.employer_scale.components[1].rate
         # The secondary threshold, or the UST/AUST where a zero rate applies.
         t_b = secondary_class_1_threshold(person, period, baseline_class_1)
         p_b = baseline_parameters.gov.contrib.policyengine.employer_ni.exempt_employer_pension_contributions

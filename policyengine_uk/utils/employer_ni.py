@@ -1,3 +1,4 @@
+import numpy as np
 from policyengine_core.model_api import WEEKS_IN_YEAR, max_, where
 
 
@@ -32,7 +33,9 @@ def secondary_class_1_threshold(person, period, class_1):
         0,
     )
     weekly = max_(
-        thresholds.secondary_threshold,
+        class_1.employer_scale.components[1].threshold,
         max_(under_21_threshold, apprentice_threshold),
     )
-    return weekly * WEEKS_IN_YEAR
+    # In the earnings' float32, so that where no zero rate applies the charge
+    # is computed exactly as with the scalar secondary threshold.
+    return np.asarray(weekly * WEEKS_IN_YEAR, dtype=np.float32)

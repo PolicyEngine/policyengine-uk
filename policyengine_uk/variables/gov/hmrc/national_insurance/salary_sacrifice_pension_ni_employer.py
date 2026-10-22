@@ -7,14 +7,14 @@ class salary_sacrifice_pension_ni_employer(Variable):
     documentation = (
         "Additional employer National Insurance contributions due to "
         "salary sacrifice pension contributions exceeding the cap. "
-        "The full excess is redirected to regular pension contributions "
-        "and subject to employer NI. The excess is the top slice of the "
-        "earnings ni_class_1_employer charges, so it bears the secondary "
-        "percentage only above the secondary threshold, or above the upper "
-        "secondary threshold for an earner under 21 (SSCBA 1992 s.9A) or the "
-        "apprentice upper secondary threshold for an apprentice under 25 "
-        "(s.9B). This measures part of ni_class_1_employer; do not add it to "
-        "a National Insurance total."
+        "The excess remains an employer pension contribution and is included "
+        "only in NIC earnings. It is the top slice of the earnings "
+        "ni_class_1_employer charges, so it bears the secondary percentage "
+        "only above the secondary threshold, or above the upper secondary "
+        "threshold for an earner under 21 (SSCBA 1992 s.9A) or the apprentice "
+        "upper secondary threshold for an apprentice under 25 (s.9B). This "
+        "reporting measure is separate from the actual Class 1 contribution "
+        "curve and liability flags; do not add it to a National Insurance total."
     )
     entity = Person
     definition_period = YEAR
@@ -27,9 +27,8 @@ class salary_sacrifice_pension_ni_employer(Variable):
     ]
 
     def formula(person, period, parameters):
-        # Get the excess that's redirected to regular pension
-        # This is the amount subject to employer NI
-        excess = person("salary_sacrifice_returned_to_income", period)
+        # NIC-only earnings; this does not become an actual member payment.
+        excess = person("salary_sacrifice_pension_ni_excess", period)
 
         gov = parameters(period).gov
         class_1 = gov.hmrc.national_insurance.class_1
@@ -40,6 +39,6 @@ class salary_sacrifice_pension_ni_employer(Variable):
         threshold = secondary_class_1_threshold(person, period, class_1)
         above_threshold = max_(earnings - threshold, 0)
         above_threshold_without_excess = max_(earnings - excess - threshold, 0)
-        return class_1.rates.employer * (
+        return class_1.employer_scale.components[1].rate * (
             above_threshold - above_threshold_without_excess
         )

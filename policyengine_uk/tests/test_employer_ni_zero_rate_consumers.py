@@ -18,11 +18,12 @@ at fixed cost solves P + 0.16 x (P - 5,000) = 33,750, so
 P = (33,750 + 800) / 1.16 = £29,784.48, a cut of £215.52.
 
 Case 2 (2029): pay of £30,000 with a £5,000 salary sacrifice against the
-£2,000 cap, so £3,000 returns to pay (total £33,000), and a £2,000 employer
-pension contribution. For an earner aged 20 or an apprentice aged 24 all of
-it is below the UST and AUST, so the amount returned bears no employer NI and
-employer cost is 33,000 + 2,000 = £35,000. At age 21 the £3,000 returned sits
-above the secondary threshold and bears 0.15 x 3,000 = £450.
+£2,000 cap, so the £3,000 excess enters NIC earnings only (total £33,000;
+pay stays £30,000), and a £2,000 employer pension contribution. For an
+earner aged 20 or an apprentice aged 24 all of it is below the UST and AUST,
+so the excess bears no employer NI and employer cost is 30,000 + 2,000 =
+£32,000. At age 21 the £3,000 excess sits above the secondary threshold and
+bears 0.15 x 3,000 = £450.
 """
 
 import numpy as np
@@ -32,7 +33,9 @@ from policyengine_uk import Simulation
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
-RATE_RISE = {"gov.hmrc.national_insurance.class_1.rates.employer": {"2026": 0.16}}
+RATE_RISE = {
+    "gov.hmrc.national_insurance.class_1.employer_scale[1].rate": {"2026": 0.16}
+}
 PAY = 30_000
 CASES = {
     # name: (age, is_apprentice, zero_rated)
@@ -105,7 +108,7 @@ def test_rate_rise_with_mixed_ages_in_one_simulation():
 
 
 @pytest.mark.parametrize("case", CASES)
-def test_salary_sacrifice_returned_pay_is_zero_rated(case):
+def test_salary_sacrifice_excess_is_zero_rated(case):
     age, apprentice, zero_rated = CASES[case]
     inputs = {
         "employment_income": {2029: PAY},
@@ -123,18 +126,21 @@ def test_salary_sacrifice_returned_pay_is_zero_rated(case):
     )
 
     returned = values(simulation, "salary_sacrifice_returned_to_income", 2029)[0]
+    excess = values(simulation, "salary_sacrifice_pension_ni_excess", 2029)[0]
+    nic_earnings = values(simulation, "ni_class_1_income", 2029)[0]
     pay = values(simulation, "employment_income", 2029)[0]
     extra_ni = values(simulation, "salary_sacrifice_pension_ni_employer", 2029)[0]
     adjusted_cost = values(simulation, "adjusted_employer_cost", 2029)[0]
     employer_ni = values(simulation, "ni_class_1_employer", 2029)[0]
 
-    assert returned == pytest.approx(3_000, abs=0.01)
-    assert pay == pytest.approx(33_000, abs=0.01)
+    # The excess enters NIC earnings only; it is not returned to pay.
+    assert returned == pytest.approx(0, abs=0.01)
+    assert excess == pytest.approx(3_000, abs=0.01)
+    assert nic_earnings == pytest.approx(33_000, abs=0.01)
+    assert pay == pytest.approx(PAY, abs=0.01)
     if zero_rated:
         assert extra_ni == pytest.approx(0, abs=0.01)
         assert employer_ni == pytest.approx(0, abs=0.01)
-        assert adjusted_cost == pytest.approx(35_000, abs=0.01)
+        assert adjusted_cost == pytest.approx(32_000, abs=0.01)
     else:
         assert extra_ni == pytest.approx(0.15 * 3_000, abs=0.01)
-    # The cost variable charges what ni_class_1_employer charges.
-    assert adjusted_cost == pytest.approx(33_000 + 2_000 + employer_ni, abs=0.01)

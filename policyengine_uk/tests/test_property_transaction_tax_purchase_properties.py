@@ -121,7 +121,7 @@ def test_main_residence_flag_never_creates_an_additional_purchase(households, ye
     price = out["main_residential_property_purchased"]
     first_home = np.array(
         [h["main_residential_property_purchased_is_first_home"] for h in households]
-    ) & (price < main.first.max)
+    ) & (price <= main.first.max)
     main_rates_tax = np.where(
         first_home, main.first.rate.calc(price), main.subsequent.calc(price)
     )

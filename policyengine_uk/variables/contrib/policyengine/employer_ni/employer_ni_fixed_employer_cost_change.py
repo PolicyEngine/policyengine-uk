@@ -48,7 +48,7 @@ class employer_ni_fixed_employer_cost_change(Variable):
         )
 
         baseline_class_1 = baseline_parameters.gov.hmrc.national_insurance.class_1
-        r_b = baseline_class_1.rates.employer
+        r_b = baseline_class_1.employer_scale.components[1].rate
         # The secondary threshold, or the UST/AUST where a zero rate applies.
         t_b = secondary_class_1_threshold(person, period, baseline_class_1)
         p_b = baseline_parameters.gov.contrib.policyengine.employer_ni.exempt_employer_pension_contributions
@@ -62,7 +62,7 @@ class employer_ni_fixed_employer_cost_change(Variable):
         # Calculate reform employer cost
         reform_parameters = parameters(period)
         reform_class_1 = reform_parameters.gov.hmrc.national_insurance.class_1
-        r_r = reform_class_1.rates.employer
+        r_r = reform_class_1.employer_scale.components[1].rate
         t_r = secondary_class_1_threshold(person, period, reform_class_1)
         p_r = reform_parameters.gov.contrib.policyengine.employer_ni.exempt_employer_pension_contributions
         pen_con_subtracted_r = employer_pension_contributions if p_r else 0

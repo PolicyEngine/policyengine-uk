@@ -56,6 +56,28 @@ _COUNCIL_TAX_GROWTH_SERIES = {
     "UNKNOWN": "england",
 }
 
+# The growth series (under gov.economic_assumptions.yoy_growth) of each Region
+# label's water and sewerage charges (#2501). Ofwat's series is the average
+# household bill in England and Wales. Scottish Water's charges follow limits
+# set by the Water Industry Commission for Scotland. Northern Ireland has no
+# domestic water charges, so any a dataset gives its households are held flat.
+# Past PROJECTION_END_YEAR, policyengine-core grows the column by the index
+# its variable declares (Ofwat's) in every country.
+# An unknown region takes the England and Wales series, which covers most
+# households in Great Britain.
+WATER_BILLS_GROWTH = "gov.economic_assumptions.yoy_growth"
+_WATER_GROWTH_SERIES = {
+    **dict.fromkeys(_ENGLAND_REGIONS, "ofwat.water_bills"),
+    "WALES": "ofwat.water_bills",
+    "SCOTLAND": "scottish_water.water_bills",
+    "NORTHERN_IRELAND": None,
+    "UNKNOWN": "ofwat.water_bills",
+}
+# Inputs uprated by country in this module rather than through
+# uprating_indices.yaml, so the index their variable declares must not grow
+# them a second time after LEGACY_PROJECTION_END_YEAR.
+COUNTRY_UPRATED_INPUTS = frozenset({"water_and_sewerage_charges"})
+
 
 # The last year a single-year dataset is projected to: 2032, fiscal year
 # 2032-33. An OBR forecast runs five years past the fiscal year it is made in,
@@ -90,6 +112,11 @@ DATASET_UPRATING_EXCLUSIONS = frozenset(
         "gas_consumption",
     }
 )
+# Inputs that describe only the year they are stored for, so are not carried
+# into projected years. Unused annual allowance comes from the three tax years
+# before this one (Finance Act 2004 s. 228A), a window that moves each year; a
+# projected year uses the variable's own estimate instead (#2523).
+YEAR_SPECIFIC_INPUTS = frozenset({"unused_pension_annual_allowance"})
 
 
 def _unmapped_uprating_indices(uprating):
@@ -102,12 +129,18 @@ def _unmapped_uprating_indices(uprating):
         if variable.uprating is not None
         and name not in mapped
         and name not in DATASET_UPRATING_EXCLUSIONS
+        and name not in COUNTRY_UPRATED_INPUTS
     }
 
 
 COUNCIL_TAX_GROWTH = "gov.economic_assumptions.yoy_growth.obr.council_tax"
 SOCIAL_RENT_GROWTH = "gov.economic_assumptions.yoy_growth.obr.social_rent"
 PRIVATE_RENT_GROWTH = "gov.economic_assumptions.yoy_growth.ons.private_rental_prices"
+RESIDENTIAL_PROPERTY_INDEX = "gov.economic_assumptions.indices.obr.house_prices"
+RESIDENTIAL_PROPERTY_INPUTS = (
+    "main_residence_value",
+    "other_residential_property_value",
+)
 
 
 def _uprating_index_map() -> dict:
@@ -120,17 +153,25 @@ def uprating_input_paths() -> list:
 
     ``apply_single_year_uprating`` and the functions it calls read these, and
     no other parameters: the growth rates in ``uprating_indices.yaml``, the
-    council tax and rent series, the indices of the input variables that
+    council tax and rent series, the cumulative residential property index,
+    the indices of the input variables that
     file leaves out (after ``LEGACY_PROJECTION_END_YEAR``) and the capital
     gains projection's metadata (``CGT_INDEX_PATH``). A path may name a node
     (the regional private rent series), which covers its parameters.
     """
     uprating = _uprating_index_map()
     series = {value for value in _COUNCIL_TAX_GROWTH_SERIES.values() if value}
+    water_series = {value for value in _WATER_GROWTH_SERIES.values() if value}
     return sorted(
         set(uprating)
         | {f"{COUNCIL_TAX_GROWTH}.{name}" for name in series}
-        | {SOCIAL_RENT_GROWTH, PRIVATE_RENT_GROWTH, CGT_INDEX_PATH}
+        | {f"{WATER_BILLS_GROWTH}.{name}" for name in water_series}
+        | {
+            SOCIAL_RENT_GROWTH,
+            PRIVATE_RENT_GROWTH,
+            CGT_INDEX_PATH,
+            RESIDENTIAL_PROPERTY_INDEX,
+        }
         | set(_unmapped_uprating_indices(uprating).values())
     )
 
@@ -214,13 +255,20 @@ def apply_uprating(
     if copy:
         dataset = dataset.copy()
 
+    first_year = min(dataset.datasets.keys())
     for year in dataset.datasets.keys():
-        if year == min(dataset.datasets.keys()):
+        if year == first_year:
             continue  # Don't uprate the first year
         current_year = dataset.datasets[year]
         prev_year = dataset.datasets[year - 1]
         apply_single_year_uprating(
             current_year, prev_year, tax_benefit_system_parameters
+        )
+        # Core projects from the supplied observation in one multiplication.
+        # Chaining annual stock projections can lose an exact band boundary
+        # through intermediate float32 rounding, even with the same index.
+        uprate_residential_property(
+            current_year, dataset.datasets[first_year], tax_benefit_system_parameters
         )
 
     return dataset
@@ -251,6 +299,13 @@ def apply_single_year_uprating(
                 f"not {source_year}–{target_year}."
             )
 
+    # Year-specific inputs are dropped from every projected year.
+    for table_name in current_year.table_names:
+        table = getattr(current_year, table_name)
+        stored = [name for name in YEAR_SPECIFIC_INPUTS if name in table.columns]
+        if stored:
+            table.drop(columns=stored, inplace=True)
+
     # First, apply standard variable-YoY growth based uprating.
 
     uprating = _uprating_index_map()
@@ -265,9 +320,18 @@ def apply_single_year_uprating(
 
     # Next, apply custom uprating.
 
+    # apply_uprating replaces these chained stocks from the original observation.
+    current_year = uprate_residential_property(current_year, previous_year, parameters)
+
     # Council Tax is uprated by OBR forecasts/outturns by country.
 
     current_year = uprate_council_tax(current_year, previous_year, parameters)
+
+    # Water and sewerage charges are uprated by country.
+
+    current_year = uprate_water_and_sewerage_charges(
+        current_year, previous_year, parameters
+    )
 
     # Rent is uprated by OBR forecasts/outturns by region.
 
@@ -306,6 +370,43 @@ def apply_single_year_uprating(
     return current_year
 
 
+def uprate_residential_property(
+    current_year: UKSingleYearDataset,
+    previous_year: UKSingleYearDataset,
+    parameters: ParameterNode,
+):
+    """Keep residential stocks on Core and HVCTS's cumulative HPI basis.
+
+    Cumulative index levels are rounded when generated. Use one ratio from
+    the supplied observation, at the variable's Core storage precision, so
+    forward projection and inverse band conversion share the same basis.
+    """
+    from policyengine_uk.system import system
+
+    assets = [
+        name
+        for name in RESIDENTIAL_PROPERTY_INPUTS
+        if name in current_year.household.columns
+    ]
+    if not assets:
+        return current_year
+    index = parameters.get_child(RESIDENTIAL_PROPERTY_INDEX)
+    previous_index = _uprating_index_value(index, f"{previous_year.time_period}-01-01")
+    current_index = _uprating_index_value(index, f"{current_year.time_period}-01-01")
+    # Preserve Core's handling of missing, zero and terminated indices.
+    ratio = (
+        current_index / previous_index
+        if previous_index not in (None, 0) and current_index is not None
+        else 1
+    )
+    for asset in assets:
+        observed = previous_year.household[asset].to_numpy(
+            dtype=system.variables[asset].dtype
+        )
+        current_year.household[asset] = observed * ratio
+    return current_year
+
+
 def uprate_council_tax(
     current_year: UKSingleYearDataset,
     previous_year: UKSingleYearDataset,
@@ -332,6 +433,40 @@ def uprate_council_tax(
     current_year.household["council_tax"] = previous_year.household["council_tax"] * (
         1 + growth_rates
     )
+    return current_year
+
+
+def uprate_water_and_sewerage_charges(
+    current_year: UKSingleYearDataset,
+    previous_year: UKSingleYearDataset,
+    parameters: ParameterNode,
+):
+    # Uprate water and sewerage charges for a single year dataset, by country.
+
+    if "water_and_sewerage_charges" not in previous_year.household.columns:
+        return current_year
+    region = pd.Series(np.asarray(current_year.household["region"]).astype(str))
+    unrecognised = set(region) - set(_WATER_GROWTH_SERIES)
+    if unrecognised:
+        raise ValueError(
+            "Cannot uprate water and sewerage charges for unrecognised regions: "
+            f"{sorted(unrecognised)}"
+        )
+    growth_by_region = {}
+    for name, series in _WATER_GROWTH_SERIES.items():
+        rate = (
+            None
+            if series is None
+            else parameters.get_child(f"{WATER_BILLS_GROWTH}.{series}")(
+                current_year.time_period
+            )
+        )
+        growth_by_region[name] = 0.0 if rate is None else rate
+    growth_rates = region.map(growth_by_region).to_numpy()
+
+    current_year.household["water_and_sewerage_charges"] = previous_year.household[
+        "water_and_sewerage_charges"
+    ] * (1 + growth_rates)
     return current_year
 
 
@@ -529,6 +664,7 @@ def reset_growthfactor_uprating(
         variable for variables in uprating.values() for variable in variables
     }
     growthfactor_uprated_variables.update({"council_tax", "rent"})
+    growthfactor_uprated_variables.update(COUNTRY_UPRATED_INPUTS)
     growthfactor_uprated_variables.update(_unmapped_uprating_indices(uprating))
 
     first_year = min(dataset.datasets.keys())

@@ -47,4 +47,6 @@ class ni_class_1_employer(Variable):
         # earner under 21 or a relevant apprentice, bear the secondary
         # percentage (s.9A, s.9B).
         threshold = secondary_class_1_threshold(person, period, class_1)
-        return class_1.rates.employer * max_(taxed_earnings - threshold, 0)
+        return class_1.employer_scale.components[1].rate * max_(
+            taxed_earnings - threshold, 0
+        )

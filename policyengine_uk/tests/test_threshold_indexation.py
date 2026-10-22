@@ -98,13 +98,13 @@ EXACT = 1e-6
 PATHS = {
     "personal_allowance": "income_tax/allowances/personal_allowance/amount.yaml",
     "basic_rate_limit": "income_tax/rates/uk.yaml",
-    "primary_threshold": "national_insurance/class_1/thresholds/primary_threshold.yaml",
-    "upper_earnings_limit": "national_insurance/class_1/thresholds/upper_earnings_limit.yaml",
-    "secondary_threshold": "national_insurance/class_1/thresholds/secondary_threshold.yaml",
+    "primary_threshold": "national_insurance/class_1/employee_scale.yaml",
+    "upper_earnings_limit": "national_insurance/class_1/employee_scale.yaml",
+    "secondary_threshold": "national_insurance/class_1/employer_scale.yaml",
     "upper_secondary_threshold": "national_insurance/class_1/thresholds/upper_secondary_threshold.yaml",
     "apprentice_upper_secondary_threshold": "national_insurance/class_1/thresholds/apprentice_upper_secondary_threshold.yaml",
-    "lower_profits_limit": "national_insurance/class_4/thresholds/lower_profits_limit.yaml",
-    "upper_profits_limit": "national_insurance/class_4/thresholds/upper_profits_limit.yaml",
+    "lower_profits_limit": "national_insurance/class_4/contribution_scale.yaml",
+    "upper_profits_limit": "national_insurance/class_4/contribution_scale.yaml",
 }
 
 
@@ -116,23 +116,23 @@ def system():
 def threshold_parameters(root):
     """The nine parameters under a ``gov`` node."""
     hmrc = root.hmrc
-    class_1 = hmrc.national_insurance.class_1.thresholds
-    class_4 = hmrc.national_insurance.class_4.thresholds
+    class_1 = hmrc.national_insurance.class_1
+    class_4 = hmrc.national_insurance.class_4
     return {
         "personal_allowance": hmrc.income_tax.allowances.personal_allowance.amount,
         # Bracket 1 itself: a scale read at an instant sorts its thresholds,
         # so its thresholds[1] would be the £125,140 additional rate threshold
         # once the basic rate limit passed it.
         "basic_rate_limit": hmrc.income_tax.rates.uk.brackets[1].threshold,
-        "primary_threshold": class_1.primary_threshold,
-        "upper_earnings_limit": class_1.upper_earnings_limit,
-        "secondary_threshold": class_1.secondary_threshold,
-        "upper_secondary_threshold": class_1.upper_secondary_threshold,
+        "primary_threshold": class_1.employee_scale.brackets[1].threshold,
+        "upper_earnings_limit": class_1.employee_scale.brackets[2].threshold,
+        "secondary_threshold": class_1.employer_scale.brackets[1].threshold,
+        "upper_secondary_threshold": class_1.thresholds.upper_secondary_threshold,
         "apprentice_upper_secondary_threshold": (
-            class_1.apprentice_upper_secondary_threshold
+            class_1.thresholds.apprentice_upper_secondary_threshold
         ),
-        "lower_profits_limit": class_4.lower_profits_limit,
-        "upper_profits_limit": class_4.upper_profits_limit,
+        "lower_profits_limit": class_4.contribution_scale.brackets[1].threshold,
+        "upper_profits_limit": class_4.contribution_scale.brackets[2].threshold,
     }
 
 
@@ -416,6 +416,9 @@ def synthetic_parameters(last_years, rates, horizon, bases):
                         }
                     },
                     "rates": {
+                        "savings_starter_rate": {
+                            "allowance": series(5_000, 2021, 2030)
+                        },
                         "uk": {
                             "brackets": [
                                 {
@@ -432,26 +435,83 @@ def synthetic_parameters(last_years, rates, horizon, bases):
                                     ),
                                 },
                             ]
-                        }
+                        },
                     },
                 },
                 "national_insurance": {
                     "class_1": {
+                        "employee_scale": {
+                            "brackets": [
+                                {
+                                    "threshold": {"values": {"2021-01-01": 0}},
+                                    "rate": {"values": {"2021-01-01": 0}},
+                                },
+                                {
+                                    "threshold": series(
+                                        bases["primary_threshold"],
+                                        2021,
+                                        last_years["primary_threshold"],
+                                    ),
+                                    "rate": {"values": {"2021-01-01": 0.08}},
+                                },
+                                {
+                                    "threshold": series(
+                                        bases["upper_earnings_limit"],
+                                        2021,
+                                        last_years["upper_earnings_limit"],
+                                    ),
+                                    "rate": {"values": {"2021-01-01": 0.02}},
+                                },
+                            ]
+                        },
+                        "employer_scale": {
+                            "brackets": [
+                                {
+                                    "threshold": {"values": {"2021-01-01": 0}},
+                                    "rate": {"values": {"2021-01-01": 0}},
+                                },
+                                {
+                                    "threshold": series(
+                                        bases["secondary_threshold"],
+                                        2021,
+                                        last_years["secondary_threshold"],
+                                    ),
+                                    "rate": {"values": {"2021-01-01": 0.15}},
+                                },
+                            ]
+                        },
                         "thresholds": {
                             name: series(bases[name], 2021, last_years[name])
                             for name in (
-                                "primary_threshold",
-                                "upper_earnings_limit",
-                                "secondary_threshold",
                                 "upper_secondary_threshold",
                                 "apprentice_upper_secondary_threshold",
                             )
-                        }
+                        },
                     },
                     "class_4": {
-                        "thresholds": {
-                            name: series(bases[name], 2021, last_years[name])
-                            for name in ("lower_profits_limit", "upper_profits_limit")
+                        "contribution_scale": {
+                            "brackets": [
+                                {
+                                    "threshold": {"values": {"2021-01-01": 0}},
+                                    "rate": {"values": {"2021-01-01": 0}},
+                                },
+                                {
+                                    "threshold": series(
+                                        bases["lower_profits_limit"],
+                                        2021,
+                                        last_years["lower_profits_limit"],
+                                    ),
+                                    "rate": {"values": {"2021-01-01": 0.06}},
+                                },
+                                {
+                                    "threshold": series(
+                                        bases["upper_profits_limit"],
+                                        2021,
+                                        last_years["upper_profits_limit"],
+                                    ),
+                                    "rate": {"values": {"2021-01-01": 0.02}},
+                                },
+                            ]
                         }
                     },
                 },
@@ -462,34 +522,9 @@ def synthetic_parameters(last_years, rates, horizon, bases):
 
 
 def synthetic_values(root, year):
-    hmrc = root.gov.hmrc
     instant = f"{year}-04-30"
     return {
-        "personal_allowance": hmrc.income_tax.allowances.personal_allowance.amount(
-            instant
-        ),
-        "basic_rate_limit": hmrc.income_tax.rates.uk.brackets[1].threshold(instant),
-        "primary_threshold": hmrc.national_insurance.class_1.thresholds.primary_threshold(
-            instant
-        ),
-        "upper_earnings_limit": hmrc.national_insurance.class_1.thresholds.upper_earnings_limit(
-            instant
-        ),
-        "secondary_threshold": hmrc.national_insurance.class_1.thresholds.secondary_threshold(
-            instant
-        ),
-        "upper_secondary_threshold": hmrc.national_insurance.class_1.thresholds.upper_secondary_threshold(
-            instant
-        ),
-        "apprentice_upper_secondary_threshold": hmrc.national_insurance.class_1.thresholds.apprentice_upper_secondary_threshold(
-            instant
-        ),
-        "lower_profits_limit": hmrc.national_insurance.class_4.thresholds.lower_profits_limit(
-            instant
-        ),
-        "upper_profits_limit": hmrc.national_insurance.class_4.thresholds.upper_profits_limit(
-            instant
-        ),
+        name: leaf(instant) for name, leaf in threshold_parameters(root.gov).items()
     }
 
 
@@ -735,6 +770,21 @@ def test_indexed_parameters_carry_no_uprating(name):
     data = yaml.safe_load((PARAMETER_DIR / "gov/hmrc" / PATHS[name]).read_text())
     if name == "basic_rate_limit":
         metadata = data["brackets"][1]["threshold"]["metadata"]
+    elif name in [
+        "primary_threshold",
+        "upper_earnings_limit",
+        "secondary_threshold",
+        "lower_profits_limit",
+        "upper_profits_limit",
+    ]:
+        index = {
+            "primary_threshold": 1,
+            "upper_earnings_limit": 2,
+            "secondary_threshold": 1,
+            "lower_profits_limit": 1,
+            "upper_profits_limit": 2,
+        }[name]
+        metadata = data["brackets"][index]["threshold"]["metadata"]
     else:
         metadata = data["metadata"]
     assert "uprating" not in metadata
@@ -810,3 +860,25 @@ def test_income_tax_and_nics_use_the_indexed_thresholds_in_2031(system):
         assert primary[i] == pytest.approx(expected_primary, abs=0.02), income
         assert additional[i] == pytest.approx(expected_additional, abs=0.02), income
     assert np.all(np.diff(income_tax) >= 0)
+
+
+def test_canonical_threshold_registration_keeps_incoming_savings_writer():
+    """The merged indexation owns ten unique paths, including annual savings."""
+    from policyengine_uk.parameters.gov.hmrc.create_threshold_indexation import (
+        INDEXED_THRESHOLDS,
+    )
+
+    expected = {
+        "gov.hmrc.income_tax.allowances.personal_allowance.amount",
+        "gov.hmrc.income_tax.rates.uk[1].threshold",
+        "gov.hmrc.income_tax.rates.savings_starter_rate.allowance",
+        "gov.hmrc.national_insurance.class_1.employee_scale[1].threshold",
+        "gov.hmrc.national_insurance.class_1.employee_scale[2].threshold",
+        "gov.hmrc.national_insurance.class_1.employer_scale[1].threshold",
+        "gov.hmrc.national_insurance.class_1.thresholds.upper_secondary_threshold",
+        "gov.hmrc.national_insurance.class_1.thresholds.apprentice_upper_secondary_threshold",
+        "gov.hmrc.national_insurance.class_4.contribution_scale[1].threshold",
+        "gov.hmrc.national_insurance.class_4.contribution_scale[2].threshold",
+    }
+    assert len(INDEXED_THRESHOLDS) == len(expected)
+    assert set(INDEXED_THRESHOLDS) == expected
