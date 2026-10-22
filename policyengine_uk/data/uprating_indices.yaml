@@ -21,6 +21,7 @@ gov.economic_assumptions.yoy_growth.obr.average_earnings:
 - employer_pension_contributions
 - employment_income
 - employment_income_before_lsr
+- pension_contributions_via_bonus_sacrifice
 - pension_contributions_via_salary_sacrifice
 # The pre-9 July 2015 share of the line above (FA 2004 s. 228ZA(6)).
 - pension_contributions_via_salary_sacrifice_pre_2015
