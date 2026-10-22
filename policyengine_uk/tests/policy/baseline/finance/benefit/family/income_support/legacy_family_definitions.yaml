@@ -1,8 +1,9 @@
 # IS Regulations 1987 Sch 2 para 1; Sch 8 paras 5, 6 and 10.
-# Annual amounts use existing CPI-uprated 2025 weekly parameters * 52:
-# low = 80.01221579759817 * 52 = 4160.635221475105;
-# high = 101.00013997540619 * 52 = 5252.007278721122;
-# couple = 158.66598990083986 * 52 = 8250.631474843673.
+# Annual amounts are the 2025-26 weekly personal allowances (DWP, Benefit and
+# pension rates 2025 to 2026; SI 2025/295) * 52:
+# low = 72.90 * 52 = 3790.80;
+# high = 92.05 * 52 = 4786.60;
+# couple = 144.65 * 52 = 7521.80.
 # Applicable incomes: 10000 - 52 * (single 5 / lone parent 20 / couple 10)
 # = 9740 / 8960 / 9480. Tax, premiums, other income held at zero.
 # Retained limits: mixed 18-24/under18 incorrectly uses the higher gap amount
@@ -27,7 +28,7 @@
         benefits_premiums: 0
         income_support_tariff_income: 0
   output:
-    income_support_applicable_amount: 4160.635221475105
+    income_support_applicable_amount: 3790.80
     income_support_applicable_income: 9740
 - name: IS lone parent aged 17 uses the under-18 allowance
   period: 2025
@@ -56,7 +57,7 @@
         benefits_premiums: 0
         income_support_tariff_income: 0
   output:
-    income_support_applicable_amount: 4160.635221475105
+    income_support_applicable_amount: 3790.80
     income_support_applicable_income: 8960
 - name: IS lone parent aged 20 with qualifying young person uses parent allowance
   period: 2025
@@ -86,7 +87,7 @@
         benefits_premiums: 0
         income_support_tariff_income: 0
   output:
-    income_support_applicable_amount: 5252.007278721122
+    income_support_applicable_amount: 4786.60
     income_support_applicable_income: 8960
 - name: IS 17-year-old outside education or training is not a legacy young person
   period: 2025
@@ -117,7 +118,7 @@
         benefits_premiums: 0
         income_support_tariff_income: 0
   output:
-    income_support_applicable_amount: 4160.635221475105
+    income_support_applicable_amount: 3790.80
     income_support_applicable_income: 9740
 - name: IS couple with under-18 partner uses retained mixed-age allowance
   period: 2025
@@ -147,7 +148,7 @@
         benefits_premiums: 0
         income_support_tariff_income: 0
   output:
-    income_support_applicable_amount: 5252.007278721122
+    income_support_applicable_amount: 4786.60
     income_support_applicable_income: 9480
 - name: IS couple aged 24 and 17 retains existing mixed-age approximation
   period: 2025
@@ -177,7 +178,7 @@
         benefits_premiums: 0
         income_support_tariff_income: 0
   output:
-    income_support_applicable_amount: 5252.007278721122
+    income_support_applicable_amount: 4786.60
     income_support_applicable_income: 9480
 - name: IS couple both under 18 uses retained young-couple allowance
   period: 2025
@@ -207,7 +208,7 @@
         benefits_premiums: 0
         income_support_tariff_income: 0
   output:
-    income_support_applicable_amount: 4160.635221475105
+    income_support_applicable_amount: 3790.80
     income_support_applicable_income: 9480
 - name: IS couple with qualifying 19-year-old gets only couple disregard
   period: 2025
@@ -244,7 +245,7 @@
         benefits_premiums: 0
         income_support_tariff_income: 0
   output:
-    income_support_applicable_amount: 8250.631474843673
+    income_support_applicable_amount: 7521.80
     income_support_applicable_income: 9480
 - name: IS single claimant age 24 and 25 allowance boundary
   period: 2025
@@ -264,7 +265,7 @@
         benefits_premiums: 0
         income_support_tariff_income: 0
   output:
-    income_support_applicable_amount: 4160.635221475105
+    income_support_applicable_amount: 3790.80
 - name: IS single claimant aged 25 uses older allowance
   period: 2025
   absolute_error_margin: 0.02
@@ -283,4 +284,4 @@
         benefits_premiums: 0
         income_support_tariff_income: 0
   output:
-    income_support_applicable_amount: 5252.007278721122
+    income_support_applicable_amount: 4786.60
