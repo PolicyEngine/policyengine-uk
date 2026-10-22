@@ -32,8 +32,8 @@ Invariants:
    36(1)). A household head aged 18 or 19 who applies alone was reached by
    the income mask only as a Child Benefit young person; they stay in the
    means test where Scotland's working-age scheme does not read them as a
-   young person. A member who is not the applicant counts only as that
-   scheme's young person.
+   young person. A member who is not the applicant never counts: a young
+   person's income is not the applicant's.
 
 The pensioner test and the claimant and partner are supplied, so these tests
 exercise the young person rule alone; the YAML cases use the derived tests.
@@ -452,11 +452,10 @@ def test_applicants_own_earnings_count_under_every_scheme():
         "is_child_or_young_person_for_council_tax_reduction", year
     )[0::3]
     income = sim.calculate("council_tax_reduction_applicable_income", year)
-    np.testing.assert_allclose(income, earnings * (heads | young_person), atol=0.01)
-    # The applicant's earnings count in every case.
-    np.testing.assert_allclose(income[heads], earnings, atol=0.01)
-    # Not vacuous: some applicants are not young persons under their scheme,
-    # and a member who is neither does not count.
-    assert (heads & ~young_person).any()
-    assert (income[~heads & ~young_person] == 0).all()
+    np.testing.assert_allclose(income, earnings * heads, atol=0.01)
+    # The applicant's earnings count in every case, whether or not their
+    # scheme reads them as a young person.
+    assert (heads & ~young_person).any() and (heads & young_person).any()
+    # Not vacuous: a non-applicant who is the scheme's young person does not
+    # count, nor one who is not.
     assert (~heads & ~young_person).any() and (~heads & young_person).any()

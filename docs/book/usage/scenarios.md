@@ -153,6 +153,8 @@ for name, scenario in [
     print(f"{name}: £{net_income / 12:.2f} per month")
 ```
 
+A sum keeps the timing of each part's modifier. A simulation runs the modifiers of the parts set with `applied_before_data_load=True` before it builds its data, and the rest once the data is built, each in the order added. A sum with a part applied before data load applies all of its parameter changes first, before the data is built, with the precedence `+` gives them: changing the parameters rebuilds them, which would discard the edits of a modifier that has already run. The data's projected years then follow every parameter change of the sum. So `no_economic_assumptions + reform` freezes the data and the parameters and applies the reform, and a modifier that edits the data still runs once the data exists. Such a simulation builds its own copy of a `hf://` or `gs://` dataset rather than sharing the cached one, so its baseline and later simulations keep current law's projection. A sum reads `applied_before_data_load=True` only when every part that changes something is applied before data load. `Scenario.parts_by_data_load()` returns what is applied before data load and what is applied after. If you change a sum's `applied_before_data_load` or `simulation_modifier` to another value after making it, the whole sum is applied as one scenario, at the time its own `applied_before_data_load` says.
+
 ## Defining structural scenarios
 
 Beyond simple parameter changes, you sometimes need scenarios that make structural modifications to how the tax-benefit system works. Let's walk through how to create these, using examples similar to those in PolicyEngine UK's scenarios module.
@@ -270,8 +272,8 @@ baseline_sim = Simulation(situation=benefit_cap_family)
 reformed_sim = Simulation(situation=benefit_cap_family, scenario=reindex_benefit_cap)
 
 # Compare the benefit cap levels
-baseline_cap = baseline_sim.calculate("benefit_cap", 2026).mean()
-reformed_cap = reformed_sim.calculate("benefit_cap", 2026).mean()
+baseline_cap = baseline_sim.calculate("uc_benefit_cap", 2026).mean()
+reformed_cap = reformed_sim.calculate("uc_benefit_cap", 2026).mean()
 
 print(
     f"Benefit cap - frozen: £{baseline_cap:.0f}/year, indexed: £{reformed_cap:.0f}/year"
@@ -314,6 +316,19 @@ print(float(baseline.calculate("employment_income", 2026)[0]))
 print(float(static.calculate("employment_income", 2026)[0]))
 ```
 
+Add it to a reform to measure the reform without growth. The sum still applies the freeze before the data is built, so with a dataset (`Simulation(dataset=...)`) the projected years keep the first year's amounts too, and it applies the reform as usual:
+
+```python
+from policyengine_uk.model_api import Scenario
+
+reform = Scenario.from_reform(
+    {"gov.hmrc.income_tax.allowances.personal_allowance.amount": {"2025.2099": 20_000}}
+)
+static_reform = Simulation(
+    situation=situation, scenario=no_economic_assumptions + reform
+)
+```
+
 ## Advanced scenario techniques
 
 ### Time-varying parameters
@@ -329,7 +344,7 @@ A scenario that gradually increases the personal allowance over four years - thi
 # This kind of phasing helps manage fiscal costs and economic adjustment
 phased_scenario = Scenario(
     parameter_changes={
-        "gov.hmrc.income_tax.personal_allowance": {
+        "gov.hmrc.income_tax.allowances.personal_allowance.amount": {
             "2025": 13_000,
             "2026": 14_000,
             "2027": 15_000,
@@ -353,6 +368,68 @@ for year in [2025, 2026, 2027, 2028]:
     tax = sim.calculate("income_tax", year).mean()
     print(f"{year}: Personal allowance £{allowance:.0f}, annual tax £{tax:.2f}")
 ```
+
+### Dated changes
+
+Budgets date their measures: a rate from 6 April, a freeze extended to a later tax year, a change that ends. Every way of passing a reform writes its changes onto each parameter's statutory timeline, the dated values in the YAML files. That covers `Scenario(parameter_changes=...)`, `Simulation(reform=dict)`, `Scenario.from_reform` and policyengine-core's `Reform.from_dict`. The parameters are then processed as current law is:
+
+- uprating and the income tax and NICs threshold indexation project each parameter forward;
+- each parameter is annualised to UK fiscal years by its rule: its value on 30 April, or a day-weighted average over 6 April to 5 April for `fiscal_year_blend` parameters such as the CGT rates. Parameters marked `preserve_calendar_dates` keep their dates.
+
+So a change from 6 April 2027 sets fiscal year 2027. A change to the personal allowance after 2030-31 moves the NICs thresholds aligned with it. A change to a CPI forecast moves everything uprated from it.
+
+```python
+from policyengine_uk import Simulation
+
+rate = "gov.hmrc.income_tax.rates.uk[0].rate"
+situation = {
+    "people": {"person": {"age": {2027: 40}, "employment_income": {2027: 30_000}}},
+    "benunits": {"benunit": {"members": ["person"]}},
+    "households": {"household": {"members": ["person"]}},
+}
+
+# A basic rate of 21% from 6 April 2027 onwards.
+from_april = Simulation(
+    situation=situation, reform={rate: {"2027-04-06.2100-12-31": 0.21}}
+)
+# The same rate for 2027-28 only: 2028-29 is back to current law.
+one_year = Simulation(
+    situation=situation, reform={rate: {"2027-04-06.2028-04-05": 0.21}}
+)
+```
+
+Outside a change's dates, prior law stays in force. Where the timeline states later values, they apply on their dates. Where it states none, prior law depends on how the parameter's future is made:
+
+- the personal allowance and the basic rate limit are indexed from the previous tax year's amount (Income Tax Act 2007 ss21 and 57), so after a change ends indexation resumes from the changed amount. Freezing the allowance at £12,570 to 2033-34 gives £12,570 plus 2034-35's September CPI rise, rounded up to £10, for 2034-35, as the Finance Act 2021 freeze does for 2031-32. The National Insurance thresholds the model aligns with them follow: they align with the resumed path, and after a change to one of them alone they are aligned again;
+- an amount uprated from an index, such as a benefit rate, returns to its uprated path: a one-year change to the UC standard allowance gives the uprated amount the next year. Whether a freeze of such an amount should instead resume from the frozen amount, as the 2016-2020 benefit freeze did, is an open question (policyengine-uk#2430).
+
+A change "from a date onwards" is held flat to the end of 2100 and is not uprated or indexed. That is the key's literal reading, not something statute requires; to let indexation resume after a change, give its last tax year.
+
+Each way of passing a reform reads period keys as it always has:
+
+| Key | `reform=` dict | `parameter_changes` | `Reform.from_dict` |
+|---|---|---|---|
+| `"2027-04-06.2028-04-05"` | those dates | those dates | those dates |
+| `"2027"` or `2027` | fiscal year 2027 only (calendar year 2027 on a calendar-year series) | fiscal year 2027 only (calendar year 2027 on a calendar-year series) | from 1 January 2027 onwards |
+| `"2027-04-06"` | that one day of the annualised value | that one day | from that day onwards |
+| a value with no period | from 1 January 2023 onwards | 2000 to 2099 | 2000 to 2099 |
+
+A single-date key in a `reform=` dict overrides the annualised value on that day only. Formulas read annual values on 1 January, so `"2027-01-01"` sets fiscal year 2027 and `"2027-04-06"` changes nothing. On a calendar-year series (below), a 1 January key names that calendar year instead. The model logs a warning when a key can change nothing. Use `"start.stop"` keys for dated measures.
+
+Some parameters hold one value per calendar year, dated 1 January, and are read there: the growth rates under `gov.economic_assumptions.yoy_growth`, the indices built from them under `gov.economic_assumptions.indices`, and the `household` parameters, which are not annualised. On these a bare year, or its 1 January, names the calendar year. So `{"gov.economic_assumptions.yoy_growth.obr.average_earnings": {"2027": 0.05}}` sets earnings growth in 2027: the 2027 earnings index, the May to July 2027 earnings input and the April 2028 triple lock all follow it.
+
+Processing also builds some parameters from others: the triple lock rate (`gov.economic_assumptions.yoy_growth.triple_lock`), the lagged and private pension series, the September CPI uprating rate and the indices. A change to one is written as soon as it is built, so everything built from it follows. `{"gov.economic_assumptions.yoy_growth.triple_lock": {"2028": 0.05}}` uprates the State Pension by 5% in April 2028, exactly as `gov.dwp.state_pension.triple_lock.outturn` set for that April does. A change to an index uprates whatever is uprated by it. The deprecated `gov.simulation.labor_supply_responses` paths change the `labour_supply_responses` parameters they copy.
+
+A dataset's later years are projected from its first by the economic assumptions as the simulation is built. Dated changes that change what that projection reads (a growth rate, say, through `parameter_changes`, `"start.stop"` or bare-year keys, or a 1 January key on a calendar-year series) are written before the data is built, so incomes, rents and council tax follow them, as with `applied_before_data_load=True`. Other dated changes come just after the data is built, before the steps that read parameters while the simulation is built: the Universal Credit rebalancing awards and the structural reforms that parameters switch on. Other single-day keys and a scenario's own simulation modifier run after those steps, as they always have, and leave the data as built. Datasets loaded from `hf://` or `gs://` are cached once projected, under current law only: a simulation whose projection inputs differ builds its own, so a scenario never reaches its baseline or a later simulation. A sum with a part applied before data load applies all its parameter changes before the data is built (see "Combining scenarios" above).
+
+All of this applies when the scenario or reform is passed to `Simulation(...)`. `Scenario.apply(simulation)` on a simulation that is already built edits its annualised values instead, as it always has: a `"2027-04-06.2028-04-05"` key there overrides those dates of the fiscal-year values, so it does not set fiscal year 2027, and the model logs a warning saying so. Pass the scenario when constructing the simulation for dated measures.
+The modifier returned by `Scenario.from_reform` behaves the same way on a built simulation for changes that are no longer effective, and raises if an external override key contains no 1 January annual value.
+
+During construction, the already-written statutory changes of an original dated reform keep the constructor's reading while their parameter paths remain untouched by foreign writes or direct parameter edits. This includes a value-equal reform called by a wrapper or a deep-copied scenario. The original modifiers still apply their single-day leftovers in order. If a user modifier edits those statutory paths and then requests the same reform, that request instead overrides the built, annualised values. An external composite replays its complete requested sequence; its children cannot skip a write merely because they equal an original constructor reform. Edits before data load remain foreign when a later modifier runs after data load. This boundary concerns parameter writes, not the different award values that Universal Credit rebalancing intentionally stores.
+
+A pure statutory or pure legacy reform can be a no-op on a copy, clone or branch only when its complete write sequence matches the latest recorded writes on its paths, the other log has no writes on those paths, and its values remain current. Mixed statutory and legacy composites on a built simulation always replay in their requested order; this can append duplicate override-log entries and change the copy's original construction reading. For example, a dict with a basic-rate window `"2026-06-01.2027-03-31": 0.31` and a VAT single-day key `"2027-01-01": 0.25` gives the 2027 basic rate its unchanged 20% construction value. Replaying its modifier on a clone overrides 1 January 2027 with 31%; the original simulation stays unchanged. Relative `Reform` classes and custom modifiers still run when called on a copy; a modifier that multiplies a parameter by 1.1 applies that multiplication to the copy's current value. When changing policy parameters on a branch, request `get_branch("policy", clone_system=True)`; the default branch shares its tax-benefit system with its parent.
+
+Dated measures on indexed thresholds also need `Simulation(scenario=...)` or `reform=...` for the statutory projection and indexation resume described above. Applying them to a baseline-built simulation overrides only its already annualised values; it does not recalculate the indexed path after the override ends. An external key that contains no 1 January annual value raises with its path and key, including `"2027-04-06"` and `"2027-04-06.2027-12-31"`.
 
 ### Creating complex scenarios with simulation modifiers
 
