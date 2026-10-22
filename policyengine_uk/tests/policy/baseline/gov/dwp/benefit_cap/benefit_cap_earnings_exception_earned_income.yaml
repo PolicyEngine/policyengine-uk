@@ -5,15 +5,14 @@
 # (reg 55(4)), and the deductions are the person's own relievable pension
 # contributions and the income tax and primary Class 1 contributions paid "in
 # respect of the employment" (reg 55(5)). Income the minimum income floor
-# treats a person as having does not count (reg 82(4)). The threshold is the
-# model's 10,152 a year (issue #1986). Unless stated otherwise, each family is
+# treats a person as having does not count (reg 82(4)). The 2026 threshold is
+# 10,572 a year (881 a month; issue #2523). Unless stated otherwise, each family is
 # a single claimant aged 40 outside London with an entered award of 18,000
 # before the cap, so the cap of 14,753 takes 3,247 unless an exception applies.
 # Sources: https://www.legislation.gov.uk/uksi/2013/376/regulation/55
 # https://www.legislation.gov.uk/uksi/2013/376/regulation/82
 # https://www.gov.uk/guidance/rates-and-thresholds-for-employers-2026-to-2027
-# The existing model threshold is retained here; 11,000 and 10,000 also lie
-# above and below the 2026 NLW-based threshold of 10,574.72 respectively.
+# 11,000 and 10,000 lie above and below it.
 
 - name: Statutory sick pay is earned income for the earnings exception
   period: 2026
@@ -25,7 +24,7 @@
     region: NORTH_EAST
   output:
     uc_individual_earned_income_before_mif: 11_000
-    is_benefit_cap_exempt_earnings: true
+    is_uc_benefit_cap_exempt_earnings: true
     benefit_cap_reduction: 0
 
 - name: Statutory paternity pay is earned income for the earnings exception
@@ -38,7 +37,7 @@
     region: NORTH_EAST
   output:
     uc_individual_earned_income_before_mif: 11_000
-    is_benefit_cap_exempt_earnings: true
+    is_uc_benefit_cap_exempt_earnings: true
     benefit_cap_reduction: 0
 
 - name: Statutory maternity pay is earned income for the earnings exception
@@ -59,11 +58,11 @@
         region: NORTH_EAST
   output:
     # 3,000 + 8,000 = 11,000, under the personal allowance and the primary
-    # threshold, so no tax or NI: 11,000 >= 10,152. Without the maternity
+    # threshold, so no tax or NI: 11,000 >= 10,572. Without the maternity
     # pay the wages alone, 3,000, are under the threshold.
     uc_individual_earned_income_before_mif: 11_000
-    is_benefit_cap_exempt_earnings: true
-    is_benefit_cap_exempt: true
+    is_uc_benefit_cap_exempt_earnings: true
+    is_uc_benefit_cap_exempt: true
     benefit_cap_reduction: 0
 
 - name: Tax on a private pension does not come off the earnings the exception tests
@@ -88,12 +87,12 @@
     # covered by the personal allowance, leaving all the tax on the pension.
     # Reg 55(5)(b) requires tax in respect of employment to be deducted but
     # does not prescribe this allocation between wages and pension income.
-    # No NI on 11,000. 11,000 >= 10,152. Netting the 1,686 off the wages
+    # No NI on 11,000. 11,000 >= 10,572. Netting the 1,686 off the wages
     # would give 9,314, under the threshold.
     income_tax: 1_686
     uc_income_tax_on_earnings: 0
     uc_individual_earned_income_before_mif: 11_000
-    is_benefit_cap_exempt_earnings: true
+    is_uc_benefit_cap_exempt_earnings: true
     benefit_cap_reduction: 0
 
 - name: Relievable pension contributions come off the earnings the exception tests
@@ -114,10 +113,10 @@
         region: NORTH_EAST
   output:
     # Reg 55(5)(a): 11,000 - 1,000 = 10,000, with no tax or NI, is under
-    # 10,152. The cap applies: 18,000 - 14,753 = 3,247.
+    # 10,572. The cap applies: 18,000 - 14,753 = 3,247.
     uc_individual_earned_income_before_mif: 10_000
-    is_benefit_cap_exempt_earnings: false
-    is_benefit_cap_exempt: false
+    is_uc_benefit_cap_exempt_earnings: false
+    is_uc_benefit_cap_exempt: false
     benefit_cap_reduction: 3_247
 
 - name: The minimum income floor does not create an earnings exception
@@ -132,7 +131,7 @@
   output:
     uc_individual_earned_income_before_mif: 5_000
     uc_individual_earned_income: 20_000
-    is_benefit_cap_exempt_earnings: false
+    is_uc_benefit_cap_exempt_earnings: false
     benefit_cap_reduction: 3_247
 
 - name: Means-tested basic income counts toward the couple's earnings exception
@@ -158,15 +157,14 @@
         region: NORTH_EAST
   output:
     # The reform includes basic income in UC earned income, so the shared
-    # expression in #1820 also counts it here: 5,500 + 5,500 >= 10,152.
-    # The total also exceeds #1820's 2026 NLW-based earnings threshold.
+    # expression in #1820 also counts it here: 5,500 + 5,500 >= 10,572.
     # Counting basic income in this test is new in this PR: main's formula
     # never counted it. Whether reg 82 should count it is an open question
     # for #1986 and #1820. The award of 25,000 is above the couple cap
     # outside London (22,020), so without the exemption the cap would take
     # 2,980; with it, nothing.
     uc_individual_earned_income_before_mif: [5_500, 5_500]
-    is_benefit_cap_exempt_earnings: true
+    is_uc_benefit_cap_exempt_earnings: true
     benefit_cap_reduction: 0
 
 - name: Without the basic income reform toggle, basic income does not count toward the earnings exception
@@ -195,5 +193,5 @@
     # applies and the couple cap outside London (22,020) takes
     # 25,000 - 22,020 = 2,980.
     uc_individual_earned_income_before_mif: [0, 0]
-    is_benefit_cap_exempt_earnings: false
+    is_uc_benefit_cap_exempt_earnings: false
     benefit_cap_reduction: 2_980

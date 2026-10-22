@@ -32,38 +32,3 @@ def other_member_of_single_claim(person, period):
     return person("uc_is_ineligible_partner", period) & person.benunit(
         "uc_member_of_couple_claims_as_single_person", period
     )
-
-
-def stays_on_legacy_benefits(benunit, period):
-    """Whether the family stays on legacy benefits rather than claiming UC.
-
-    A family that reports a legacy benefit (`claims_legacy_benefits`) and
-    does not claim Universal Credit keeps its legacy awards; this is the
-    route `housing_benefit_eligible` gives a continuing working-age Housing
-    Benefit award before its legacy benefits close. A family claiming
-    Universal Credit, including at a legacy closure, uses the UC rules.
-    """
-    return benunit("claims_legacy_benefits", period) & ~benunit(
-        "claims_universal_credit", period
-    )
-
-
-def single_claim_in_rules_shared_with_legacy_benefits(benunit, period):
-    """Whether a reg. 3(3) single claim sets the rules the model shares.
-
-    The benefit cap rate and exceptions and the LHA shared accommodation
-    test serve Housing Benefit as well as Universal Credit. Housing Benefit
-    and the other legacy benefits have no single claim by a member of a
-    couple, so a family that stays on legacy benefits keeps the couple rules;
-    a family claiming Universal Credit gets the Universal Credit rule.
-    """
-    return benunit(
-        "uc_member_of_couple_claims_as_single_person", period
-    ) & ~stays_on_legacy_benefits(benunit, period)
-
-
-def other_member_of_single_claim_in_shared_rules(person, period):
-    """`other_member_of_single_claim`, for the rules shared with legacy benefits."""
-    return other_member_of_single_claim(person, period) & ~stays_on_legacy_benefits(
-        person.benunit, period
-    )
