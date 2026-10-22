@@ -26,8 +26,9 @@ class esa_income_eligible(Variable):
         "in it, so when the claimant or partner reports, another member's "
         "report is paid or not with their claim. Whether that member is on "
         "the award themselves (is_on_income_related_esa) is tested on their "
-        "own claim. The award also ends once one of the family's legacy "
-        "benefits has closed (legacy_benefits_closed). This is not a full "
+        "own claim. Reports whose owner has closed legacy benefits are left "
+        "out before choosing candidates (person_legacy_benefits_closed). "
+        "This is not a full "
         "entitlement model."
     )
     definition_period = YEAR
@@ -43,7 +44,9 @@ class esa_income_eligible(Variable):
         ESA = parameters(period).gov.dwp.ESA.income
         person = benunit.members
         capital = benunit("esa_income_assessable_capital", period)
-        reports_award = person("esa_income_reported", period) > 0
+        reports_award = (person("esa_income_reported", period) > 0) & ~person(
+            "person_legacy_benefits_closed", period
+        )
         claimant_or_partner = person("is_claimant_or_partner", period)
         # The candidate claimants: the claimant or partner who reports the
         # award, or, if neither does, whoever in the benefit unit does.
@@ -65,17 +68,4 @@ class esa_income_eligible(Variable):
             (benunit.project(benunit.sum(works_as_partner)) - works_as_partner) > 0
         )
         claimant = candidate & ~claimant_works & ~other_member_works
-        # Once one of the family's legacy benefits has closed, DWP's
-        # migration notice ends this award too: a Universal Credit claim
-        # brings the abolition of income-related ESA (Welfare Reform Act
-        # 2012 s. 33(1)) into force for the claimant (see SI 2025/1148
-        # art. 3A(3)), and a family that does not claim loses the award at the
-        # notice's deadline (SI 2014/1230 reg 46(1)(a)).
-        # A family that claims Universal Credit when its Housing Benefit is
-        # abolished ends this award by that claim too. A family already
-        # claiming Universal Credit is left to the overlap rules (#1914).
-        closed = benunit("legacy_benefits_closed", period) | (
-            benunit("claims_uc_at_legacy_closure", period)
-            & ~benunit("would_claim_uc", period)
-        )
-        return benunit.any(claimant) & ~closed & (capital <= ESA.capital.limit)
+        return benunit.any(claimant) & (capital <= ESA.capital.limit)

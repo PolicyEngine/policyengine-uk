@@ -31,8 +31,8 @@ class jsa_income_eligible(Variable):
         "reports, another member's report is paid or not with their claim. "
         "Whether that member is on the award themselves "
         "(is_on_income_based_jsa) is tested on their own claim. The award "
-        "also ends once one of the family's legacy benefits has closed "
-        "(legacy_benefits_closed). This is not a full entitlement model."
+        "excludes reports whose owner has closed legacy benefits before choosing "
+        "candidates (person_legacy_benefits_closed). This is not a full entitlement model."
     )
     definition_period = YEAR
     reference = (
@@ -48,7 +48,9 @@ class jsa_income_eligible(Variable):
         JSA = parameters(period).gov.dwp.JSA
         person = benunit.members
         capital = benunit("jsa_income_assessable_capital", period)
-        reports_award = person("jsa_income_reported", period) > 0
+        reports_award = (person("jsa_income_reported", period) > 0) & ~person(
+            "person_legacy_benefits_closed", period
+        )
         claimant_or_partner = person("is_claimant_or_partner", period)
         # The candidate claimants: the claimant or partner who reports the
         # award, or, if neither does, whoever in the benefit unit does.
@@ -67,17 +69,4 @@ class jsa_income_eligible(Variable):
             (benunit.project(benunit.sum(works_as_partner)) - works_as_partner) > 0
         )
         claimant = candidate & ~works_as_claimant & ~other_member_works
-        # Once one of the family's legacy benefits has closed, DWP's
-        # migration notice ends this award too: a Universal Credit claim
-        # brings the abolition of income-based JSA (Welfare Reform Act
-        # 2012 s. 33(1)) into force for the claimant (see SI 2025/1148
-        # art. 3A(3)), and a family that does not claim loses the award at the
-        # notice's deadline (SI 2014/1230 reg 46(1)(a)).
-        # A family that claims Universal Credit when its Housing Benefit is
-        # abolished ends this award by that claim too. A family already
-        # claiming Universal Credit is left to the overlap rules (#1914).
-        closed = benunit("legacy_benefits_closed", period) | (
-            benunit("claims_uc_at_legacy_closure", period)
-            & ~benunit("would_claim_uc", period)
-        )
-        return benunit.any(claimant) & ~closed & (capital <= JSA.income.capital.limit)
+        return benunit.any(claimant) & (capital <= JSA.income.capital.limit)
