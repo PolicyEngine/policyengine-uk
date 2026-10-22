@@ -524,3 +524,165 @@
         region: WALES
   output:
     wales_childcare_offer: 0
+
+# Review C1: the Welsh Government extended the Offer to parents in further or
+# higher education from September 2022 (written statement, 2 March 2022).
+# Before that, a parent had to work. Years are sampled at 30 April, so 2022
+# is still before the extension and 2023 is the first year with it.
+- name: A lone parent in higher education with no earnings gets nothing in 2021
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        current_education: TERTIARY
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        region: WALES
+  output:
+    wales_childcare_offer: 0
+
+- name: A lone parent in higher education with no earnings gets nothing in 2022
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        current_education: TERTIARY
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        region: WALES
+  output:
+    wales_childcare_offer: 0
+
+- name: A lone parent in higher education with no earnings qualifies in 2023
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        current_education: TERTIARY
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        region: WALES
+  output:
+    # 1,050 x 5.00
+    wales_childcare_offer: 5_250
+
+# Review C2: gross income for the £100,000 test includes maintenance
+# allowance (Assessing parents' income guidance, July 2020, question 9).
+- name: Maintenance counts towards the £100,000 gross income limit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 99_000
+        maintenance_income: 5_000
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        region: WALES
+  output:
+    # 99,000 + 5,000 = 104,000 > 100,000
+    wales_childcare_offer: 0
+
+- name: Pay plus maintenance of exactly £100,000 still qualifies
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 95_000
+        maintenance_income: 5_000
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        region: WALES
+  output:
+    # 95,000 + 5,000 = 100,000
+    wales_childcare_offer: 7_003.50
+
+# Review C3: guidance para 87 lists "Universal Credit where the individual has
+# been assessed as having limited capability for work", so the parent needs a
+# Universal Credit award, not only a disability.
+- name: A disabled partner with no Universal Credit award does not meet the exception
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent1:
+        age: 30
+        employment_income: 99_000
+      parent2:
+        age: 30
+        is_disabled_for_benefits: true
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+    households:
+      household:
+        members: [parent1, parent2, child]
+        region: WALES
+  output:
+    universal_credit: 0
+    wales_childcare_offer: 0
+
+- name: A partner with limited capability for work on a Universal Credit award meets the exception
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent1:
+        age: 30
+        employment_income: 20_000
+      parent2:
+        age: 30
+        is_disabled_for_benefits: true
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+    households:
+      household:
+        members: [parent1, parent2, child]
+        region: WALES
+  output:
+    receives_uc_with_limited_capability_for_work: [false, true, false]
+    wales_childcare_offer: 7_003.50

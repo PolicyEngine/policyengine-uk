@@ -1,4 +1,4 @@
-description: The Childcare Offer for Wales lets a parent who receives, or has an underlying entitlement to, one of these benefits meet the parent conditions without working or studying, when the other parent works or studies.
+description: The Childcare Offer for Wales lets a parent who receives, or has an underlying entitlement to, one of these benefits (for Universal Credit, an award with an assessment of limited capability for work) meet the parent conditions without working or studying, when the other parent works or studies.
 metadata:
   unit: list
   period: year
@@ -15,4 +15,4 @@ values:
     - esa_contrib  # Employment and support allowance (contribution-based)
     - claimant_or_partner_esa_income  # Employment and support allowance (income-related)
     - receives_limited_capability_for_work_credits  # National insurance credits for incapacity or limited capability for work
-    - uc_limited_capability_for_work  # Universal Credit with limited capability for work
+    - receives_uc_with_limited_capability_for_work  # Universal Credit where the person has been assessed as having limited capability for work

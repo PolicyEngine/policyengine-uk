@@ -1,0 +1,17 @@
+description: The Childcare Offer for Wales counts these income sources as a parent's gross income for its £100,000 limit.
+metadata:
+  unit: list
+  period: year
+  label: Childcare Offer for Wales gross income sources
+  reference:
+    - title: Welsh Government, The Childcare Offer for Wales, Assessing parents' income to determine eligibility for the Offer, version 1 (July 2020), questions 8 and 9
+      href: https://www.gov.wales/sites/default/files/publications/2023-04/atisn17333doc1.pdf#page=7
+values:
+  # Question 8: the test takes all income into account, from work or
+  # investments. Question 9: earned income before tax and payslip deductions,
+  # and unearned income such as dividends, rental income, maintenance
+  # allowance and interest. total_income covers earnings, pensions, benefits,
+  # property, savings and dividend income; maintenance is not part of it.
+  2019-08-01:
+    - total_income
+    - maintenance_income
