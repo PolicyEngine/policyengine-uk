@@ -27,6 +27,8 @@ the child's parent, or the person themselves:
   SI 2019/37 arts 2(3) and 4, through SI 2006/214 reg 5.
 - The extended childcare parent and partner conditions: SI 2022/1134 regs
   11A(1)(e), 14(4)(b) and 15(4).
+- The higher Pension Credit earnings disregard for a claimant or partner on
+  employment and support allowance: SPC Regs 2002 Sch VI para 4(1)(a)(vii).
 
 A member of the benefit unit who is neither the claimant, the partner nor a
 child or young person they are responsible for (for example a non-dependent
@@ -61,9 +63,8 @@ adult) claims in their own right, so:
   (esa_income_eligible and jsa_income_eligible, read independently from the
   law in legacy_award_work_reference). The screens also end the award once
   the family's legacy benefits have closed (legacy_benefits_closed, #2119),
-  and the model then ends every member's status too; no family here reaches
-  that in 2025, when Income Support and income-based JSA are open and
-  nobody reports tax credits;
+  for their own award only; no family here reaches that in 2025, when
+  Income Support and income-based JSA are open and nobody reports tax credits;
 - a person is on an award exactly when they are the payee of their couple's
   positive award (the claimant or partner who reports it, or the claimant)
   or, for anyone else, when their own claim passes: they are not engaged in
@@ -122,6 +123,7 @@ FAMILY_READERS = [
     "income_support_eligible",
     "housing_benefit_pension_age_regulations_apply",
     "has_mixed_age_couple_pension_credit_saving",
+    "pension_credit_earnings_disregard",
 ]
 MEMBER_READERS = [
     "is_scp_eligible",

@@ -72,7 +72,8 @@ CLAIMANT_OR_PARTNER_ONLY = ["income_support"]
 # Benefit or tax credits. An adult outside the couple who reports
 # income-based JSA is on it, as their own claim, only in the years the model
 # has the scheme open (gov.dwp.JSA.income.active: to 2025).
-NOT_MOVED = ["legacy_benefits_closed"]
+# Hold the family closure and each separate member's own closure.
+NOT_MOVED = ["legacy_benefits_closed", "person_legacy_benefits_closed"]
 
 # The first year in which the model pays a carer in Scotland Carer Support
 # Payment in place of Carer's Allowance: carers_allowance_pre_overlap and

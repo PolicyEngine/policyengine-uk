@@ -7,7 +7,6 @@
     main_residential_property_purchased: 0
     council_tax: 0
     household_owns_tv: false
-    gov.hmrc.stamp_duty.property_sale_rate: 0
   output:
     high_value_council_tax_surcharge: 0
 - name: A 2028 value just above the first band on the annual 2026 HPI basis is charged
@@ -30,7 +29,6 @@
     main_residential_property_purchased: 0
     council_tax: 0
     household_owns_tv: false
-    gov.hmrc.stamp_duty.property_sale_rate: 0
   output:
     high_value_council_tax_surcharge: 2_500
     household_tax: 2_500
@@ -45,7 +43,6 @@
     main_residential_property_purchased: 0
     council_tax: 0
     household_owns_tv: false
-    gov.hmrc.stamp_duty.property_sale_rate: 0
   output:
     high_value_council_tax_surcharge: 2_550
     household_tax: 2_550
@@ -59,7 +56,6 @@
     main_residential_property_purchased: 0
     council_tax: 0
     household_owns_tv: false
-    gov.hmrc.stamp_duty.property_sale_rate: 0
   output:
     high_value_council_tax_surcharge: 0
     household_tax: 0
@@ -74,7 +70,6 @@
     main_residential_property_purchased: 0
     council_tax: 1_500
     household_owns_tv: false
-    gov.hmrc.stamp_duty.property_sale_rate: 0
   output:
     high_value_council_tax_surcharge: 2_500
     household_tax: 0

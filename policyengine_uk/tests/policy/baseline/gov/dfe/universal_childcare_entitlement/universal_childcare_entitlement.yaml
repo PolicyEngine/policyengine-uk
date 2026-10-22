@@ -18,6 +18,8 @@
   output:
     universal_childcare_entitlement: 3_351.60
 
+# A whole age is the middle of the year of age: born on 6 April 2020, so in
+# reception from September 2024 and funded for the summer term only.
 - name: Child aged 4 is eligible (person-level)
   period: 2024
   input:
@@ -26,7 +28,7 @@
         age: 4
         universal_childcare_entitlement_eligible: True
   output:
-    universal_childcare_entitlement: 3_351.60
+    universal_childcare_entitlement: 1_117.20  # A third of 570 hours * £5.88
 
 - name: Parent (ineligible)
   period: 2024
@@ -66,7 +68,7 @@
         age: 4
         universal_childcare_entitlement_eligible: True
   output:
-    universal_childcare_entitlement: 3_351.60
+    universal_childcare_entitlement: 1_117.20  # The summer term, as above
 
 - name: Child aged 5 (ineligible)
   period: 2024
@@ -106,6 +108,8 @@
     people:
       child:
         age: 4
+        # Four on 15 September 2024, so in reception from September 2025.
+        date_of_birth: 20200915
         universal_childcare_entitlement_eligible: True
         max_free_entitlement_hours_used: 15
   output:
@@ -121,3 +125,83 @@
         max_free_entitlement_hours_used: 20
   output:
     universal_childcare_entitlement: 3_351.6  # Capped at 15 hours * 38 weeks * £5.88 per hour
+
+# DfE's statutory guidance (April 2026, footnotes 7 and 17, paras A4.8 and
+# C.6): a child in a state-funded or council-funded reception class is "not
+# entitled to any additional free hours outside their school reception class
+# place", under either the universal or the working parent entitlement. A
+# child takes up that place in the September following its fourth birthday
+# (C.5).
+- name: A 4-year-old starting reception in September gets free hours for the summer term only
+  period: 2026
+  absolute_error_margin: 0.05
+  input:
+    people:
+      parent1:
+        age: 35
+        employment_income: 40_000
+      parent2:
+        age: 35
+        employment_income: 30_000
+      child:
+        age: 4
+        date_of_birth: 20220831
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+    households:
+      household:
+        members: [parent1, parent2, child]
+        country: ENGLAND
+  output:
+    # Four on 31 August 2026: a third of 570 universal and 570 working parent
+    # hours, at £6.61.
+    universal_childcare_entitlement: [0, 0, 1_255.90]
+    extended_childcare_entitlement_per_child: [0, 0, 1_255.90]
+
+- name: A 4-year-old with a September birthday keeps the year's universal and working parent hours
+  period: 2026
+  absolute_error_margin: 0.05
+  input:
+    people:
+      parent1:
+        age: 35
+        employment_income: 40_000
+      parent2:
+        age: 35
+        employment_income: 30_000
+      child:
+        age: 4
+        # Four on 1 September 2026, so in reception from September 2027.
+        date_of_birth: 20220901
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+    households:
+      household:
+        members: [parent1, parent2, child]
+        country: ENGLAND
+  output:
+    # 570 universal hours and 570 working parent hours, at £6.61.
+    universal_childcare_entitlement: [0, 0, 3_767.70]
+    extended_childcare_entitlement_per_child: [0, 0, 3_767.70]
+# The School Admissions Code lets parents defer a child's start until later in
+# the school year (C.5).
+- name: A 4-year-old whose reception start is deferred keeps the year's hours
+  period: 2026
+  absolute_error_margin: 0.05
+  input:
+    people:
+      child:
+        age: 4
+        date_of_birth: 20220831
+        early_years_school_start_deferred: true
+    benunits:
+      benunit:
+        members: [child]
+    households:
+      household:
+        members: [child]
+        country: ENGLAND
+  output:
+    universal_childcare_entitlement: 3_767.70
