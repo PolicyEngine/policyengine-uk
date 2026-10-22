@@ -10,6 +10,15 @@ def is_full_time_student_non_dep(person, period):
     )
 
 
+def applicant_has_universal_credit(benunit, period):
+    """Whether the Council Tax Reduction applicant has the benefit unit's
+    Universal Credit award. The award belongs to the benefit unit's claimant
+    and partner, so not to a household head who applies alone."""
+    return (benunit("universal_credit", period) > 0) & ~benunit(
+        "council_tax_reduction_head_applies_alone", period
+    )
+
+
 def legacy_council_tax_reduction(
     benunit,
     period,
@@ -25,7 +34,7 @@ def legacy_council_tax_reduction(
     applicable_amount = benunit("council_tax_reduction_applicable_amount", period)
     applicable_income = benunit("council_tax_reduction_applicable_income", period)
     universal_credit = benunit("universal_credit", period)
-    has_uc_award = universal_credit > 0
+    has_uc_award = applicant_has_universal_credit(benunit, period)
     uc_applicable_amount = benunit("uc_maximum_amount", period)
     uc_applicable_income = (
         benunit("uc_earned_income", period)

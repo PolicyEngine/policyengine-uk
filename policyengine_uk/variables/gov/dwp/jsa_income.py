@@ -18,7 +18,8 @@ class jsa_income(Variable):
     entity = BenUnit
     label = "JSA (income-based)"
     documentation = (
-        "Reported income-based JSA screened through a bounded capital test. "
+        "Reported income-based JSA screened through bounded capital and "
+        "remunerative work tests (jsa_income_eligible). "
         "This is not a full entitlement model."
     )
     definition_period = YEAR

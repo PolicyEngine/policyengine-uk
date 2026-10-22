@@ -8,8 +8,10 @@ class left_pension_route_at_legacy_closure(Variable):
     documentation = (
         "Whether a family meeting the Pension Credit age conditions left that "
         "route when DWP moved it to Universal Credit (legacy_benefits_closed): "
-        "it claimed Universal Credit at the closure and is eligible for it. A "
-        "family that does not claim keeps the route. A wholly pension-age one "
+        "it claimed Universal Credit at the closure and is entitled to it "
+        "before benefit-cap reductions and deductions. A family that does "
+        "not claim, or claims but has nil entitlement, keeps the route. A "
+        "wholly pension-age one "
         "can claim Pension Credit and Housing Benefit afresh, and a protected "
         "mixed-age couple can reclaim Housing Benefit within three months, "
         "keeping its saving. A claimant refused Universal Credit, say on "
@@ -22,6 +24,7 @@ class left_pension_route_at_legacy_closure(Variable):
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/51",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/60A",
         "https://www.legislation.gov.uk/uksi/2019/37/article/4",
+        "https://www.legislation.gov.uk/uksi/2024/604/article/2",
         "https://www.gov.uk/government/publications/housing-benefit-adjudication-circulars-2024/a92024-the-social-security-state-pension-age-claimants-closure-of-tax-credits-amendment-regulations-2024",
     )
 
@@ -30,11 +33,13 @@ class left_pension_route_at_legacy_closure(Variable):
             "meets_pension_credit_age_conditions", period
         )
         # SI 2019/37 art. 4(3)(b)(ii), inserted by SI 2024/604, lets a
-        # protected couple that did not claim Universal Credit reclaim Housing
-        # Benefit within three months of its award ending and keep the saving
-        # (DWP HB circular A9/2024 paras 12-13), so only a claim moves it.
+        # protected couple that did not claim Universal Credit, or claimed
+        # but was not entitled, reclaim Housing Benefit within three months
+        # of its award ending and keep the saving (DWP HB circular A9/2024
+        # paras 12-13). Entitlement is read before benefit-cap reductions
+        # and deductions, which can reduce an entitled family's payment to nil.
         return (
             moved
             & benunit("claims_uc_at_legacy_closure", period)
-            & benunit("is_uc_eligible", period)
+            & benunit("is_uc_entitled", period)
         )

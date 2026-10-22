@@ -43,7 +43,8 @@ class is_uc_eligible(Variable):
         # No family gets both Pension Credit and Universal Credit (UC
         # (Transitional Provisions) Regs 2014 reg 5(1)(d)). A mixed-age couple
         # keeping the SI 2019/37 saving could still choose Universal Credit
-        # jointly (UC Regs 2013 reg 3(2)(a)) and lose the saving; the model
+        # jointly (UC Regs 2013 reg 3(2)(a)) and leave the saving while entitled;
+        # the model
         # keeps it on the Pension Credit route, anchored to its reported
         # Pension Credit or Housing Benefit. That, and routing mixed-age
         # couples not reported on Universal Credit to Pension Credit before
@@ -51,7 +52,8 @@ class is_uc_eligible(Variable):
         pension_credit_route = benunit("meets_pension_credit_age_conditions", period)
         # A family DWP moved off its legacy benefits claims Universal Credit
         # even from the pension-age route: a protected mixed-age couple
-        # claims jointly, giving up the saving (reg 3(2)(a)), and a
+        # claims jointly (reg 3(2)(a)), leaving the pension-age route only
+        # while entitled, and a
         # pension-age Working Tax Credit recipient not entitled to Pension
         # Credit has the upper age condition waived (SI 2014/1230 reg 60A).
         closure_claim = benunit("claims_uc_at_legacy_closure", period)
