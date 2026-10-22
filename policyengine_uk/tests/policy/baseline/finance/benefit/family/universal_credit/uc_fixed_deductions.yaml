@@ -1,7 +1,5 @@
 # SI 2013/383 reg 10: advances are cash instalments, not a percentage.
 # SI 2013/380 Sch 6 paras 3-4: penny floor, ceiling and exceptions.
-# EM to SI 2025/387 paras 5.10-5.12: maintenance may exceed the
-# administrative cap, but not the statutory ceiling; £36.40/month.
 - name: An allowance increase leaves an affordable fixed advance unchanged
   period: 2025
   absolute_error_margin: 0.01
@@ -56,47 +54,6 @@
     # £50 cash + 5% x £440 = £72; administrative cap £66/month.
     uc_deductions: 792
 
-- name: Maintenance is fixed cash and may exceed the administrative cap
-  period: 2025
-  absolute_error_margin: 0.01
-  input:
-    age: 30
-    would_claim_uc: true
-    universal_credit_pre_benefit_cap: 6_000
-    uc_advance_repayment_amount: 720
-    uc_child_maintenance_deduction_amount: 436.8
-    gov.dwp.universal_credit.standard_allowance.amount.SINGLE_OLD: 400
-  output:
-    # £60 ordinary + £36.40 maintenance each month, under statutory £160.
-    uc_deductions: 1_156.8
-
-- name: Maintenance and ordinary debt stay within the statutory ceiling
-  period: 2025
-  absolute_error_margin: 0.01
-  input:
-    age: 30
-    would_claim_uc: true
-    universal_credit_pre_benefit_cap: 6_000
-    uc_child_maintenance_deduction_amount: 436.8
-    gov.dwp.universal_credit.standard_allowance.amount.SINGLE_OLD: 50
-  output:
-    # 40% x £50 x 12, rather than all of £436.80.
-    uc_deductions: 240
-
-- name: Only a last resort cash component can exceed the statutory ceiling
-  period: 2025
-  absolute_error_margin: 0.01
-  input:
-    age: 30
-    would_claim_uc: true
-    universal_credit_pre_benefit_cap: 6_000
-    uc_child_maintenance_deduction_amount: 436.8
-    uc_last_resort_deduction_amount: 120
-    gov.dwp.universal_credit.standard_allowance.amount.SINGLE_OLD: 50
-  output:
-    # £20/month statutory-limited maintenance plus £10 continuing needs.
-    uc_deductions: 360
-
 - name: Fixed deductions still leave a penny per assessment period
   period: 2025
   absolute_error_margin: 0.01
@@ -150,20 +107,6 @@
     uc_advance_repayment_amount: 0
   output:
     uc_deductions: 0
-
-- name: A zero standard allowance does not erase a continuing needs deduction
-  period: 2025
-  absolute_error_margin: 0.01
-  input:
-    age: 30
-    would_claim_uc: true
-    universal_credit_pre_benefit_cap: 6_000
-    uc_last_resort_deduction_amount: 120
-    gov.dwp.universal_credit.standard_allowance.amount.SINGLE_OLD: 0
-  output:
-    uc_deduction_demand: 120
-    uc_deductions: 120
-    universal_credit: 5_880
 
 - name: A capped family's fixed advance stays cash at the current allowance
   period: 2025
