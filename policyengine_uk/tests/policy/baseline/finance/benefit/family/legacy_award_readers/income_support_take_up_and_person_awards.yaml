@@ -105,6 +105,7 @@
     benunits:
       benunit:
         members: [claimant, partner, other]
+        would_claim_uc: false
     households:
       household:
         members: [claimant, partner, other]
@@ -146,6 +147,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
