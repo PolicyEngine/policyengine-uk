@@ -15,4 +15,8 @@ class higher_rate_earned_income(Variable):
     def formula(person, period, parameters):
         income = person("earned_taxable_income", period)
         thresholds = parameters(period).gov.hmrc.income_tax.rates.uk.thresholds
-        return clip(income, thresholds[1], thresholds[2]) - thresholds[1]
+        # ITA 2007 s.414(2)(b): extend both UK rate limits by the gross gift.
+        gross_gift = person("gift_aid_grossed_up", period)
+        return clip(
+            income, (thresholds[1] + gross_gift), (thresholds[2] + gross_gift)
+        ) - (thresholds[1] + gross_gift)

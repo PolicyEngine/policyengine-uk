@@ -17,10 +17,7 @@ class personal_allowance(Variable):
         PA = params.gov.hmrc.income_tax.allowances.personal_allowance
         personal_allowance = PA.amount
         ANI = person("adjusted_net_income", period)
-        # Per ITA 2007 s.58, deduct grossed-up Gift Aid from ANI
-        # when calculating Personal Allowance taper
-        gift_aid_grossed_up = person("gift_aid_grossed_up", period)
-        ANI_for_taper = ANI - gift_aid_grossed_up
-        excess = max_(0, ANI_for_taper - PA.maximum_ANI)
+        # adjusted_net_income includes the s.58 Gift Aid and pension relief.
+        excess = max_(0, ANI - PA.maximum_ANI)
         reduction = excess * PA.reduction_rate
         return max_(0, np.ceil(personal_allowance - reduction))

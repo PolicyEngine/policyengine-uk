@@ -1,41 +1,32 @@
-- name: Attends private school returns False when attendance rate is 0%
+- name: A household situation attends no private school unless set, even at the top of the income distribution
   period: 2024
   input:
-    gov.simulation.private_school_vat.private_school_attendance_rate.100: 0
-    gov.simulation.private_school_vat.private_school_attendance_rate.95: 0
     people:
-      adult: 
+      adult:
         age: 25
       child:
         age: 10
+        attends_private_school_random_draw: 0
     households:
       household:
-        household_weight: 0.001
+        household_weight: 1_000_000_000
         household_market_income: 1_000_000_000
         household_benefits: 0
-        members: [
-          adult,
-          child
-        ]
+        members: [adult, child]
   output:
     attends_private_school: [False, False]
 
-- name: Attends private school successfully returns False when household weights are 0
+- name: A household situation keeps attendance it sets
   period: 2024
   input:
     people:
-      adult: 
+      adult:
         age: 25
       child:
         age: 10
+        attends_private_school: true
     households:
       household:
-        household_weight: 0
-        household_market_income: 1_000_000_000
-        household_benefits: 0
-        members: [
-          adult,
-          child
-        ]
+        members: [adult, child]
   output:
-    attends_private_school: [False, False]
+    attends_private_school: [False, True]

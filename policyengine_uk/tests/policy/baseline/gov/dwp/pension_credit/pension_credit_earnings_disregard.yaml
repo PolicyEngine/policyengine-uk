@@ -424,15 +424,17 @@
       household:
         members: [claimant]
   output:
-    # Income tax is 1,294 with the earnings and 1,086 without (next case): the
-    # earnings take 470 of non-savings income over the personal allowance,
-    # and take the personal allowance off 570 of savings interest. Tax on the
-    # earnings is 208, so net earnings are 832 and the 20 pound disregard of
-    # 1,040 is capped there. Pension Credit counts deemed income from capital
-    # rather than the interest, so its income is 12,000 + 1,040 - 1,294 - 832.
-    income_tax: 1_294
-    pension_credit_employment_income_tax: 208
-    pension_credit_earnings_disregard: 832
+    # Non-savings tax: (12,000 + 1,040 - 12,570) x 20% = 94.
+    # Those taxable non-savings earnings reduce the savings starting-rate
+    # band to 5,000 - 470 = 4,530. Savings tax is
+    # (12,000 - 4,530 - 1,000 PSA) x 20% = 1,294, giving total tax 1,388.
+    # Without wages tax is 1,086 (next case), so employment tax is 302 and
+    # net earnings/disregard are 1,040 - 302 = 738, below the 1,040 cap.
+    # PC counts deemed capital income, not interest: 12,000 + 1,040 - 1,388
+    # - 738 = 10,914. HMRC: /apply-tax-free-interest-on-savings/how-much-is-tax-free.
+    income_tax: 1_388
+    pension_credit_employment_income_tax: 302
+    pension_credit_earnings_disregard: 738
     pension_credit_income: 10_914
 
 - name: The same claimant with savings and no earnings has the same Pension Credit income.
@@ -456,7 +458,7 @@
     # 12,000 - 1,086.
     pension_credit_income: 10_914
 
-- name: Tax on earnings is net of the pension tax relief the earnings unlock.
+- name: Pension contribution relief already available without earnings does not reduce tax attributed to earnings.
   period: 2024
   input:
     people:
@@ -472,16 +474,17 @@
       household:
         members: [claimant]
   output:
-    # The earnings add 400 x 20% = 80 of tax but let the 300 of contributions
-    # be relieved, worth 60: income tax is 506, against 486 without them
-    # (next case), so tax on the earnings is 20. Net earnings are 400 - 20 -
-    # 300 / 2 = 230, under the 5 pound disregard of 260.
+    # Relief is available on these 300 of contributions even without wages
+    # (FA 2004 s.190's 3,600 basic amount, age under 75). With wages tax is
+    # (15,400 - 12,570 - 300) x 20% = 506; without, it is 426 (next case).
+    # Employment tax is 80, so net earnings/disregard are
+    # 400 - 80 - 300 / 2 = 170, under the 5 pound cap of 260.
     income_tax: 506
-    pension_credit_employment_income_tax: 20
-    pension_credit_earnings_disregard: 230
-    # 15,400 - 506 - 150 - 230: more than without the earnings, so earning
-    # more never raises Pension Credit.
-    pension_credit_income: 14_514
+    pension_credit_employment_income_tax: 80
+    pension_credit_earnings_disregard: 170
+    # 15,400 - 506 - 150 - 170 = 14,574; the net-earnings floor means PC
+    # income is 150 more than without wages (next case).
+    pension_credit_income: 14_574
 
 - name: The same claimant with no earnings.
   period: 2024
@@ -498,10 +501,12 @@
       household:
         members: [claimant]
   output:
-    income_tax: 486
+    # No wages are needed for relief on the 300 contribution below the
+    # FA 2004 s.190 basic amount: (15,000 - 12,570 - 300) x 20% = 426.
+    income_tax: 426
     pension_credit_earnings_disregard: 0
-    # 15,000 - 486 - 300 / 2.
-    pension_credit_income: 14_364
+    # 15,000 - 426 - 300 / 2 = 14,424.
+    pension_credit_income: 14_424
 
 - name: A self-employment loss is not set against wages in the disregard (CER 1996 reg 13(12)).
   period: 2025

@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.class_2 import class_2_contribution_weeks, class_2_liable
 
 
 class pension_credit_self_employment_deductions(Variable):
@@ -12,7 +13,7 @@ class pension_credit_self_employment_deductions(Variable):
         "14), in place of those actually payable on the profit: a notional "
         "income tax at the basic rate (the Scottish basic rate for a Scottish "
         "taxpayer) on the profit less only the personal reliefs of ITA 2007 "
-        "Part 3 Chapters 2, 3 and 3A, whatever the person's other income; "
+        "Part 3 Chapters 2, 3 and 3A appropriate to their circumstances; "
         "Class 4 contributions at the main rate on the profit between the "
         "lower and upper profits limits, where Class 4 is payable at all; and "
         "the Class 2 contributions payable, until reg. 14(2)(a) was omitted on "
@@ -24,6 +25,8 @@ class pension_credit_self_employment_deductions(Variable):
         "https://www.legislation.gov.uk/uksi/2002/1792/regulation/17B",
         "https://www.legislation.gov.uk/uksi/1996/2745/regulation/13",
         "https://www.legislation.gov.uk/uksi/1996/2745/regulation/14",
+        "https://www.legislation.gov.uk/uksi/1996/2745/regulation/14/2023-04-06",
+        "https://www.legislation.gov.uk/ukpga/1992/4/section/11/2023-04-06",
     )
 
     def formula(person, period, parameters):
@@ -53,15 +56,27 @@ class pension_credit_self_employment_deductions(Variable):
             - person("married_couples_allowance_deduction", period),
         )
         class_4 = parameters(period).gov.hmrc.national_insurance.class_4
-        lower = class_4.thresholds.lower_profits_limit
-        upper = class_4.thresholds.upper_profits_limit
+        lower = class_4.contribution_scale.components[1].threshold
+        upper = class_4.contribution_scale.components[2].threshold
         notional_class_4 = where(
             person("ni_class_4_liable", period),
-            class_4.rates.main * min_(max_(0, profit - lower), upper - lower),
+            class_4.contribution_scale.components[1].rate
+            * min_(max_(0, profit - lower), upper - lower),
             0,
+        )
+        class_2 = parameters(period).gov.hmrc.national_insurance.class_2
+        # CER 14(2)(a), (3), before 6 April 2024: test this employment's
+        # chargeable income, not actual NI profits after trading allowance
+        # or other employment losses. SSCBA s.11 supplies the rate and
+        # age-liability rules. The compulsory rate is nil from 2024-25.
+        notional_class_2 = (
+            person("ni_liable", period)
+            * class_2_liable(profit, class_2)
+            * class_2.flat_rate
+            * class_2_contribution_weeks(period.start.year)
         )
         return where(
             profit > 0,
-            notional_tax + notional_class_4 + person("ni_class_2", period),
+            notional_tax + notional_class_4 + notional_class_2,
             0,
         )
