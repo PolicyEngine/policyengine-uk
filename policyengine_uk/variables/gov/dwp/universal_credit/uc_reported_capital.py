@@ -22,7 +22,7 @@ class uc_reported_capital(Variable):
         "override can change a missing-report unit's capital. The complete "
         "override consumes its amount, or its claimant's and partner's "
         "disregarded company holdings after their proportional share of the "
-        "household corporate_wealth budget if larger, "
+        "household share_like_capital budget if larger, "
         "from the financial pool, taking "
         "precedence over the same unit's financial report. "
         "This variable does not derive from the financial-only FRS total. "

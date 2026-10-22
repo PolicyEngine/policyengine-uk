@@ -1,0 +1,1 @@
+- Add `directly_held_shares` and `unit_and_investment_trusts` household inputs for the share-like components of `corporate_wealth`, count share-like capital in every means test as `corporate_wealth` or, where the components exceed it beyond float32 rounding, their sum (`share_like_capital`), and uprate the components and the ISA balances with per-capita GDP.
