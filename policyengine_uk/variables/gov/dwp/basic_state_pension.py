@@ -21,7 +21,10 @@ class basic_state_pension(Variable):
         else:
             data_year = period.start.year
 
-        reported = person("state_pension_reported", data_year) / WEEKS_IN_YEAR
+        reported = (
+            person("state_pension_reported", data_year).astype(np.float64)
+            / WEEKS_IN_YEAR
+        )
         pension_type = person("state_pension_type", period)
         # state_pension_reported was observed under the legislated rates, so
         # split it at the baseline's data-year rate, not the reformed one.
@@ -36,7 +39,7 @@ class basic_state_pension(Variable):
             if baseline is not None
             else parameters
         ).gov.dwp.state_pension
-        max_sp_data_year = legislated.basic_state_pension.amount(data_year)
+        max_sp_data_year = np.float64(legislated.basic_state_pension.amount(data_year))
         max_sp_period = parameters.gov.dwp.state_pension.basic_state_pension.amount(
             period
         )
