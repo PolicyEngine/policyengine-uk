@@ -40,9 +40,9 @@
   output:
     is_uc_entitled: true
     housing_benefit_pension_age_regulations_apply: false
-    is_benefit_cap_exempt_other: false
-    is_benefit_cap_exempt: false
-    benefit_cap: 25_323
+    is_uc_benefit_cap_exempt_qualifying_age: false
+    is_uc_benefit_cap_exempt: false
+    uc_benefit_cap: 25_323
     # 30,000 + 3,000 - 25,323
     benefit_cap_reduction: 7_677
     universal_credit: 22_323
@@ -72,9 +72,9 @@
         members: [older, younger, child_1, child_2]
         region: LONDON
   output:
-    is_benefit_cap_exempt_other: false
-    is_benefit_cap_exempt_earnings: true
-    is_benefit_cap_exempt: true
+    is_uc_benefit_cap_exempt_qualifying_age: false
+    is_uc_benefit_cap_exempt_earnings: true
+    is_uc_benefit_cap_exempt: true
     benefit_cap_reduction: 0
     universal_credit: 30_000
 
@@ -103,7 +103,7 @@
   output:
     is_uc_entitled: false
     housing_benefit_pension_age_regulations_apply: true
-    is_benefit_cap_exempt_other: true
+    is_housing_benefit_benefit_cap_exempt: true
     benefit_cap_reduction: 0
     housing_benefit: 30_000
 
@@ -134,9 +134,8 @@
   output:
     jsa_income: 4_000
     housing_benefit_pension_age_regulations_apply: false
-    is_benefit_cap_exempt_other: false
-    is_benefit_cap_exempt: false
-    benefit_cap: 25_323
+    is_housing_benefit_benefit_cap_exempt: false
+    housing_benefit_benefit_cap: 25_323
     # 30,000 + 4,000 - 25,323
     benefit_cap_reduction: 8_677
     housing_benefit: 21_323
@@ -162,7 +161,7 @@
   output:
     is_uc_entitled: false
     housing_benefit_pension_age_regulations_apply: true
-    is_benefit_cap_exempt_other: true
+    is_housing_benefit_benefit_cap_exempt: true
     benefit_cap_reduction: 0
     housing_benefit: 30_000
 
@@ -191,16 +190,19 @@
         region: LONDON
   output:
     housing_benefit_pension_age_regulations_apply: false
-    is_benefit_cap_exempt: false
+    is_uc_benefit_cap_exempt: false
     benefit_cap_reduction: 7_677
     universal_credit: 22_323
 
 - name: A pensioner whose only younger adult is a qualifying young person is not capped
   # Universal Credit needs a claimant or partner under the qualifying age (UC
   # Regs 2013 reg 3(2)(a)), and the model's is_uc_eligible needs one too, so
-  # the award here is an input the family could not hold in law. The
-  # 18-year-old is a dependant, not a partner, so the award does not take the
-  # family out of the pension-age Housing Benefit rules, which have no cap.
+  # the award here is an input. The only claim a claimant over that age can
+  # make is a qualifying claim by a tax credit migrant (SI 2014/1230 reg
+  # 60A), and SI 2014/1230 reg 60C disapplies the cap for it. The
+  # 18-year-old is a dependant, not a partner, so the parent is the only
+  # claimant, and the award does not take the family out of the pension-age
+  # Housing Benefit rules, which have no cap.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -227,7 +229,9 @@
     is_claimant_or_partner: [true, false, false]
     is_uc_entitled: true
     housing_benefit_pension_age_regulations_apply: true
-    is_benefit_cap_exempt_other: true
+    is_uc_benefit_cap_exempt_qualifying_age: true
+    is_uc_benefit_cap_exempt: true
+    is_housing_benefit_benefit_cap_exempt: true
     benefit_cap_reduction: 0
     universal_credit: 30_000
 
@@ -260,7 +264,8 @@
   output:
     is_claimant_or_partner: [true, false, false]
     housing_benefit_pension_age_regulations_apply: true
-    is_benefit_cap_exempt_other: true
-    is_benefit_cap_exempt: true
+    is_uc_benefit_cap_exempt_qualifying_age: true
+    is_uc_benefit_cap_exempt: true
+    is_housing_benefit_benefit_cap_exempt: true
     benefit_cap_reduction: 0
     universal_credit: 30_000
