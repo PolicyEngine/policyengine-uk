@@ -1,0 +1,14 @@
+description: The multiple of the appropriate percentage discounted where a chargeable dwelling in Scotland has no resident. Section 79(2)(a) of the Local Government Finance Act 1992 originally gave twice the appropriate percentage, but it was repealed with effect from 1 April 2005 by regulation 2 of the Council Tax (Discount for Unoccupied Dwellings) (Scotland) Regulations 2005. From that date no discount arises under section 79 merely because a dwelling is unoccupied, so the multiple is zero; unoccupied dwellings in Scotland are dealt with by separate provision that is not modelled here.
+metadata:
+  economy: false
+  unit: /1
+  period: year
+  label: Scotland council tax no-resident discount multiple
+  reference:
+    - title: "Local Government Finance Act 1992, section 79(2)"
+      href: https://www.legislation.gov.uk/ukpga/1992/14/section/79
+    - title: "The Council Tax (Discount for Unoccupied Dwellings) (Scotland) Regulations 2005 (S.S.I. 2005/51), regulation 2"
+      href: https://www.legislation.gov.uk/ssi/2005/51/regulation/2
+values:
+  1993-04-01: 2
+  2005-04-01: 0

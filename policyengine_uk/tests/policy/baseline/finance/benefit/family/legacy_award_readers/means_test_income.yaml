@@ -1,0 +1,125 @@
+# Housing Benefit and council tax reduction count the claimant's (applicant's)
+# and partner's income only: SSCBA 1992 s.136(1) and HB Regs 2006 reg 25(1);
+# CTR (Prescribed Requirements) (England) Regs 2012 Sch 1 para 11. "other" is
+# a member who is neither the claimant, the partner nor a child or young person
+# they are responsible for, so an award they report is their own claim and is
+# not the claimant's income.
+# HB: the model takes the single-person disregard (Sch 4) from all income, so
+# with no income of the claimant's own the result is 0. That the claimant's and
+# partner's own awards are counted in full is checked in
+# test_legacy_award_readers_properties.py, independently of the disregard.
+# CTR: no disregard in council_tax_reduction_applicable_income; universal_credit
+# is entered as 0 so the award is the only income.
+
+- name: HB counts no income-related ESA of another member
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant, other]
+    households:
+      household:
+        members: [claimant, other]
+  output:
+    housing_benefit_applicable_income: 0  # max(0, 0 - 260)
+
+- name: HB counts no income-based JSA of another member
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        jsa_income_reported: 4_000
+    benunits:
+      benunit:
+        members: [claimant, other]
+    households:
+      household:
+        members: [claimant, other]
+  output:
+    housing_benefit_applicable_income: 0
+
+- name: CTR counts no income-related ESA of another member
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant, other]
+        universal_credit: 0
+    households:
+      household:
+        members: [claimant, other]
+  output:
+    council_tax_reduction_applicable_income: 0
+
+- name: CTR counts no income-based JSA of another member
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        jsa_income_reported: 4_000
+    benunits:
+      benunit:
+        members: [claimant, other]
+        universal_credit: 0
+    households:
+      household:
+        members: [claimant, other]
+  output:
+    council_tax_reduction_applicable_income: 0
+
+- name: CTR counts the claimant's own income-related ESA
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      benunit:
+        members: [claimant, other]
+        universal_credit: 0
+    households:
+      household:
+        members: [claimant, other]
+  output:
+    council_tax_reduction_applicable_income: 5_000
