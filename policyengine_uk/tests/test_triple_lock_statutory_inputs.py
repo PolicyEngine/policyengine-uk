@@ -52,10 +52,9 @@ def statutory_inputs(parameters):
 
 
 def test_april_2027_uses_published_may_july_2026_earnings():
-    """May-July 2026 total pay growth was 3.9% (first estimate), above the
-    model's September 2026 CPI forecast (the OBR's 2.1%; August 2026 CPI was
-    3.1%). Unless September CPI exceeds 3.9%, the new State Pension rises from
-    £241.30 to £250.71 (before rounding to 5p)."""
+    """May-July 2026 total pay growth was 3.9% (first estimate), above
+    September 2026 CPI (3.5%, ONS 21 October 2026), so the new State Pension
+    rises from £241.30 to £250.71 (before rounding to 5p)."""
     parameters = system.parameters
     assert uprating(parameters, 2027) == pytest.approx(0.039)
     assert new_state_pension_weekly(parameters, 2027) == pytest.approx(
@@ -67,7 +66,7 @@ def test_every_published_year_has_its_own_value():
     """A missing year would silently carry the previous year's figure."""
     inputs = statutory_inputs(system.parameters)
     for name, month_day, last_published in [
-        ("cpi_september", "09-01", 2025),
+        ("cpi_september", "09-01", 2026),
         ("awe_total_pay_may_july", "07-01", 2026),
     ]:
         parameter = getattr(inputs, name)
@@ -79,7 +78,7 @@ def test_every_published_year_has_its_own_value():
 @pytest.mark.parametrize(
     "name, series, month_day, first_forecast_year",
     [
-        ("cpi_september", "consumer_price_index", "09-01", 2026),
+        ("cpi_september", "consumer_price_index", "09-01", 2027),
         ("awe_total_pay_may_july", "average_earnings", "07-01", 2027),
     ],
 )
@@ -107,7 +106,6 @@ def test_forecasts_are_calendar_growth_plus_the_obr_gap(
 # uprate thresholds"), Q3 CPI from economy Table 1.7 for 2030, and Q2 average
 # earnings growth on a year earlier from economy Table 1.6.
 OBR_SEPTEMBER_CPI = {
-    2026: 0.021157,
     2027: 0.020719,
     2028: 0.020299,
     2029: 0.020480,
@@ -439,7 +437,7 @@ def test_horizon_ends_with_the_shorter_calendar_series():
 
 
 def test_the_rule_needs_the_forecasts_filled_in_first():
-    """Read before the forecasts are filled in, September 2026 CPI is still
+    """Read before the forecasts are filled in, September 2027 CPI is still
     null, and the rule refuses rather than guessing."""
     from policyengine_uk.parameters.gov.dwp.state_pension.triple_lock.create_triple_lock import (
         read_uprating_years,
@@ -448,5 +446,5 @@ def test_the_rule_needs_the_forecasts_filled_in_first():
 
     raw = CountryTaxBenefitSystem()
     raw.reset_parameters()
-    with pytest.raises(ValueError, match="September 2026 CPI"):
+    with pytest.raises(ValueError, match="September 2027 CPI"):
         read_uprating_years(raw.parameters)

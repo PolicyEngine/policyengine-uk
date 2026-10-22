@@ -188,6 +188,19 @@ rise. `create_economic_assumption_indices` compounds it into
 September figure, so a scenario that edits calendar-year CPI or sets
 September CPI directly moves both.
 
+Most benefits rise each April by this measure: the Secretary of State's
+annual review under Social Security Administration Act 1992 s150 measures
+prices by the CPI 12-month rate for the previous September (every Up-rating
+Order Explanatory Memorandum since April 2011; 3.8% for April 2026, written
+statement HCWS1101). `gov.benefit_uprating_cpi`, which the benefit rate
+parameters name as their `uprating`, follows `indices.september_cpi_uprating`,
+and so do the Universal Credit standard allowance and health element indices
+built from it. Amounts outside the s150 prices review that sat on
+`gov.benefit_uprating_cpi` (the Pension Credit standard minimum guarantee and
+savings credit threshold, Housing Benefit pension-age allowances, DfE funding
+rates and the council tax high value surcharge) keep the lagged calendar-year
+CPI projection they had, through `indices.obr.lagged_cpi`.
+
 Income Tax Act 2007 ss21 and 57 index the basic rate limit and the personal
 allowance by this measure once no freeze applies.
 [`../hmrc/create_threshold_indexation.py`](../hmrc/create_threshold_indexation.py)
