@@ -571,6 +571,10 @@ class Simulation(CoreSimulation):
             super().set_input(variable_name, period, value)
         finally:
             forget_replaced_model_values(self, variable_name, records)
+        # Inputs do not carry back, so give the simulation its identifiers
+        # for the year the input starts in if it holds them only for later
+        # years. See ``policyengine_uk.data.input_dataframe.hold_identifiers_in``.
+        hold_identifiers_in(self, variable_name, period)
         if variable_name in CGT_DATASET_INPUTS:
             self._capture_cgt_supplied_inputs(variable_name, replace_period=period)
 
@@ -834,14 +838,6 @@ class Simulation(CoreSimulation):
             metadata["policyengine_uk_version"],
             metadata["policyengine_core_version"],
         )
-
-    def set_input(self, variable_name: str, period, value) -> None:
-        """Set an input as policyengine-core does, then give the simulation
-        its identifiers for the year the input starts in if it holds them
-        only for later years, since inputs do not carry back. See
-        ``policyengine_uk.data.input_dataframe.hold_identifiers_in``."""
-        super().set_input(variable_name, period, value)
-        hold_identifiers_in(self, variable_name, period)
 
     def reset_calculations(self):
         for variable in self.tax_benefit_system.variables:
