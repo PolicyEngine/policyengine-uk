@@ -1,3 +1,23 @@
+## [2.146.1] - 2026-10-22
+
+### Changed
+
+- - Store marginal National Insurance schedules as parameter scales while preserving contribution calculations and existing scalar reform paths.
+  - Reject unsupported changes to the fixed zero-rate, zero-threshold NI scale sentinel with a targeted error.
+  - Direct YAML readers must migrate the ten removed scalar files to the canonical scale files; parameter-tree readers retain the legacy compatibility paths.
+  - Retain incoming savings indexation, director and liability rules while migrating NI readers; hide legacy and fixed-zero discovery controls without removing their IDs or update contracts.
+- - Expanded Savings Credit regression coverage for protected mixed-age couples and clarified computed-amount metadata.
+
+### Fixed
+
+- Preserve age-conditioned National Insurance deductions when validating Carer Support Payment earnings after main integration.
+- Disregard already-allowable employment expenses in Universal Credit employed earnings before the minimum income floor.
+
+  Nonzero employment expenses supplied by a dataset can change Universal Credit microsimulation results. The aggregate effect has not been quantified.
+- - Applied the Carer Support Payment earnings limit, including its own dated thresholds and favorable fractional-penny rule.
+- Fix the default historical income-tax band thresholds and strict upper boundaries, including Marriage Allowance eligibility in 2016 and 2017.
+
+
 ## [2.146.0] - 2026-10-22
 
 ### Added
