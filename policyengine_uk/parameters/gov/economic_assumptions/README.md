@@ -205,6 +205,27 @@ rise. `create_economic_assumption_indices` compounds it into
 September figure, so a scenario that edits calendar-year CPI or sets
 September CPI directly moves both.
 
+Most benefits rise each April by this measure: the Secretary of State's
+annual review under Social Security Administration Act 1992 s150 measures
+prices by the CPI 12-month rate for the previous September (every Up-rating
+Order Explanatory Memorandum since April 2011; 3.8% for April 2026, written
+statement HCWS1101). `gov.benefit_uprating_cpi`, which the benefit rate
+parameters name as their `uprating`, follows `indices.september_cpi_uprating`,
+and so do the Universal Credit standard allowance and health element indices
+built from it. Amounts not raised by September CPI in practice that sat on
+`gov.benefit_uprating_cpi` keep the lagged calendar-year CPI projection they
+had, through `indices.obr.lagged_cpi`. These include the earnings-linked
+Pension Credit standard minimum guarantee, savings credit threshold, Housing
+Benefit pension-age allowances and Housing Benefit non-dependant deduction
+income bands, as well as DfE funding rates and the council tax high value
+surcharge. Lagged calendar-year CPI remains a placeholder pending an
+appropriate earnings-linked model for the first group; deduction amounts
+continue to follow September CPI. The savings credit threshold and Housing
+Benefit pension-age allowances are within the s150 review, under
+[s150(1)(l) and (h)](https://www.legislation.gov.uk/ukpga/1992/5/section/150),
+even though their increases in practice are linked to earnings rather than
+September CPI.
+
 Income Tax Act 2007 ss21 and 57 index the basic rate limit and the personal
 allowance by this measure once no freeze applies.
 [`../hmrc/create_threshold_indexation.py`](../hmrc/create_threshold_indexation.py)
