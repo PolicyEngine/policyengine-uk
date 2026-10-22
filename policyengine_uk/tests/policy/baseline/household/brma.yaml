@@ -1,0 +1,123 @@
+# A household with no BRMA input is placed in its region's BRMA with the most
+# private-rented households (REGION_DEFAULT_BRMA in
+# variables/household/BRMA.py). test_brma_region_default.py checks that the
+# default gives the same LHA rates as inputting that BRMA.
+
+- name: London household without a BRMA gets Inner South East London
+  period: 2025
+  input:
+    age: 40
+    region: LONDON
+    tenure_type: RENT_PRIVATELY
+    rent: 12_000
+  output:
+    brma: INNER_SOUTH_EAST_LONDON
+
+- name: Scottish household without a BRMA gets Lothian
+  period: 2025
+  input:
+    age: 40
+    region: SCOTLAND
+    tenure_type: RENT_PRIVATELY
+    rent: 12_000
+  output:
+    brma: LOTHIAN
+
+- name: Welsh household without a BRMA gets Cardiff
+  period: 2025
+  input:
+    age: 40
+    region: WALES
+    tenure_type: RENT_PRIVATELY
+    rent: 12_000
+  output:
+    brma: CARDIFF
+
+- name: Northern Ireland household without a BRMA gets Belfast
+  period: 2025
+  input:
+    age: 40
+    region: NORTHERN_IRELAND
+    tenure_type: RENT_PRIVATELY
+    rent: 12_000
+  output:
+    brma: BELFAST
+
+- name: An input BRMA overrides the region default
+  period: 2025
+  input:
+    age: 40
+    region: SCOTLAND
+    brma: GREATER_GLASGOW
+    tenure_type: RENT_PRIVATELY
+    rent: 12_000
+  output:
+    brma: GREATER_GLASGOW
+
+- name: An input BRMA outside the household's region is still used
+  period: 2025
+  input:
+    age: 40
+    region: LONDON
+    brma: MAIDSTONE
+    tenure_type: RENT_PRIVATELY
+    rent: 12_000
+  output:
+    brma: MAIDSTONE
+
+- name: Unknown region keeps Maidstone
+  period: 2025
+  input:
+    age: 40
+    region: UNKNOWN
+    tenure_type: RENT_PRIVATELY
+    rent: 12_000
+  output:
+    brma: MAIDSTONE
+
+- name: Every region without a BRMA gets its default
+  period: 2025
+  input:
+    people:
+      p1: {age: 40}
+      p2: {age: 40}
+      p3: {age: 40}
+      p4: {age: 40}
+      p5: {age: 40}
+      p6: {age: 40}
+      p7: {age: 40}
+      p8: {age: 40}
+      p9: {age: 40}
+      p10: {age: 40}
+      p11: {age: 40}
+      p12: {age: 40}
+      p13: {age: 40}
+    households:
+      h1: {members: [p1], region: NORTH_EAST}
+      h2: {members: [p2], region: NORTH_WEST}
+      h3: {members: [p3], region: YORKSHIRE}
+      h4: {members: [p4], region: EAST_MIDLANDS}
+      h5: {members: [p5], region: WEST_MIDLANDS}
+      h6: {members: [p6], region: EAST_OF_ENGLAND}
+      h7: {members: [p7], region: LONDON}
+      h8: {members: [p8], region: SOUTH_EAST}
+      h9: {members: [p9], region: SOUTH_WEST}
+      h10: {members: [p10], region: WALES}
+      h11: {members: [p11], region: SCOTLAND}
+      h12: {members: [p12], region: NORTHERN_IRELAND}
+      h13: {members: [p13], region: UNKNOWN}
+  output:
+    brma:
+      - TYNESIDE
+      - CENTRAL_GREATER_MANCHESTER
+      - LEEDS
+      - LEICESTER
+      - BIRMINGHAM
+      - CENTRAL_NORFOLK_NORWICH
+      - INNER_SOUTH_EAST_LONDON
+      - SOUTHAMPTON
+      - BRISTOL
+      - CARDIFF
+      - LOTHIAN
+      - BELFAST
+      - MAIDSTONE

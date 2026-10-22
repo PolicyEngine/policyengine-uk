@@ -10,6 +10,15 @@ def is_full_time_student_non_dep(person, period):
     )
 
 
+def applicant_has_universal_credit(benunit, period):
+    """Whether the Council Tax Reduction applicant has the benefit unit's
+    Universal Credit award. The award belongs to the benefit unit's claimant
+    and partner, so not to a household head who applies alone."""
+    return (benunit("universal_credit", period) > 0) & ~benunit(
+        "council_tax_reduction_head_applies_alone", period
+    )
+
+
 def legacy_council_tax_reduction(
     benunit,
     period,
@@ -25,7 +34,7 @@ def legacy_council_tax_reduction(
     applicable_amount = benunit("council_tax_reduction_applicable_amount", period)
     applicable_income = benunit("council_tax_reduction_applicable_income", period)
     universal_credit = benunit("universal_credit", period)
-    has_uc_award = universal_credit > 0
+    has_uc_award = applicant_has_universal_credit(benunit, period)
     uc_applicable_amount = benunit("uc_maximum_amount", period)
     uc_applicable_income = (
         benunit("uc_earned_income", period)
@@ -143,10 +152,14 @@ def normal_gross_income_non_dep_deduction(
         ctr.non_dep_deduction.amount.calc(0),
     )
     full_time_student = is_full_time_student_non_dep(person, period)
+    # No deduction for a non-dependant "who is on" Income Support, income-based
+    # JSA or income-related ESA: an award payable to them (Default Scheme Sch
+    # para 2(3)-(4)). Of a couple, only the payee is on the couple's award, and
+    # another member of their benefit unit's award never counts.
     income_based_benefit = (
-        (person.benunit("income_support", period) > 0)
-        | (person.benunit("jsa_income", period) > 0)
-        | (person.benunit("esa_income", period) > 0)
+        person("is_on_income_support", period)
+        | person("is_on_income_based_jsa", period)
+        | person("is_on_income_related_esa", period)
         | (person.benunit("pension_credit", period) > 0)
     )
     has_uc = person.benunit("universal_credit", period) > 0

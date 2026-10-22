@@ -313,14 +313,19 @@ def determination(
     determined: int,
     universal_credit: bool = False,
     adjustment: np.ndarray | None = None,
+    percentile_parameter=None,
 ):
     """The rates determined in ``determined`` for every BRMA and category.
 
     ``adjustment`` is added to the percentile rents before the rules apply
-    (see ``restatement``). Returns (percentile, rate) as [BRMA, category]
-    arrays, weekly for Housing Benefit and monthly for Universal Credit.
+    (see ``restatement``). ``percentile_parameter`` is the percentile to
+    determine at, ``gov.dwp.LHA.percentile`` (Great Britain) by default.
+    Returns (percentile, rate) as [BRMA, category] arrays, weekly for Housing
+    Benefit and monthly for Universal Credit.
     """
     lha = parameters.gov.dwp.LHA
+    if percentile_parameter is None:
+        percentile_parameter = lha.percentile
     rates = published_rates()
 
     if determined < FIRST_RULES_YEAR:
@@ -361,7 +366,7 @@ def determination(
             growth[base_year == value] = index(str(determined)) / index(str(value))
     percentile = percentile * growth
 
-    share = lha.percentile(str(determined))
+    share = percentile_parameter(str(determined))
     if abs(share - PUBLISHED_PERCENTILE) > 1e-9:
         percentile = percentile * _percentile_ratios(float(share))
     if adjustment is not None:
@@ -399,16 +404,52 @@ def lha_rates(parameters, year: int, universal_credit: bool = False) -> dict:
         minimum rules) and ``rate`` (the LHA in force), both [BRMA, category]
         arrays, weekly for Housing Benefit and monthly for Universal Credit.
     """
-    lha = parameters.gov.dwp.LHA
+    great_britain = parameters.gov.dwp.LHA
+    northern_ireland = parameters.gov.dfc.LHA
+    percentile, rate = _rates_in_force(
+        parameters, year, universal_credit, great_britain
+    )
+    # The Rent Officers Orders behind gov.dwp.LHA cover Great Britain; the
+    # Northern Ireland Housing Executive determines Northern Ireland's rates
+    # under Northern Ireland regulations, which gov.dfc.LHA follows. Where
+    # the two would give the same determination, the Great Britain table
+    # already holds Northern Ireland's rates.
+    gb_year = determination_year(great_britain, year)
+    ni_year = determination_year(northern_ireland, year)
+    if ni_year != gb_year or great_britain.percentile(
+        str(gb_year)
+    ) != northern_ireland.percentile(str(ni_year)):
+        ni_percentile, ni_rate = _rates_in_force(
+            parameters, year, universal_credit, northern_ireland
+        )
+        in_ni = northern_ireland_brmas()[:, None]
+        percentile = np.where(in_ni, ni_percentile, percentile)
+        rate = np.where(in_ni, ni_rate, rate)
+    return dict(brmas=published_rates().brmas, percentile=percentile, rate=rate)
+
+
+def _rates_in_force(parameters, year: int, universal_credit: bool, lha) -> tuple:
+    """(percentile, rate) in force in ``year`` under one nation's parameters.
+
+    ``lha`` is the parameter node holding ``freeze`` and ``percentile``:
+    ``gov.dwp.LHA`` for Great Britain or ``gov.dfc.LHA`` for Northern Ireland.
+    """
     determined = determination_year(lha, year)
     adjustment = None
     if determined != year and determined >= FIRST_RULES_YEAR:
         measure = "uc_rate" if universal_credit else "rate"
         adjustment = restatement(measure, determined, year)
-    percentile, rate = determination(
-        parameters, determined, universal_credit, adjustment
+    return determination(
+        parameters, determined, universal_credit, adjustment, lha.percentile
     )
-    return dict(brmas=published_rates().brmas, percentile=percentile, rate=rate)
+
+
+@lru_cache(maxsize=1)
+def northern_ireland_brmas() -> np.ndarray:
+    """Whether each BRMA in the published tables is in Northern Ireland."""
+    households = pd.read_csv(LHA_DIRECTORY / "brma_private_rented_households.csv.gz")
+    names = households.brma[households.region == "NORTHERN_IRELAND"].unique()
+    return published_rates().brmas.isin(names)
 
 
 def benunit_lha(
