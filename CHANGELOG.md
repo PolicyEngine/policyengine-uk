@@ -1,3 +1,16 @@
+## [2.146.0] - 2026-10-22
+
+### Added
+
+- Add council_tax_band_d_amount and simulated_council_tax, computing gross council tax from local authority Band D amounts and statutory band ratios. Band D amounts cover all 350 April 2023 local authorities across England, Wales and Scotland for fiscal 2025 and 2026.
+
+### Fixed
+
+- Keep annual legacy-benefit closure scoped to the claimant and partner or a separate member's own award, so unrelated reports cannot close or shield each other's awards. Preserve the existing migration-date proxy and bounded work and capital tests.
+
+  Keep each person's legacy closure false alongside the family closure when the report-only benefit reform holds migration off.
+
+
 ## [2.145.2] - 2026-10-22
 
 ### Fixed
