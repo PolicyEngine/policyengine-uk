@@ -4,7 +4,9 @@ HB Regs 2006 reg 75F(1) and UC Regs 2013 reg 83(1) lift the cap where:
 
 - the claimant or partner receives ESA that includes the support component
   (75F(1)(a); 83(1)(a)), industrial injuries benefit, attendance allowance
-  or an armed forces compensation payment (75F(1)(b)-(d); 83(1)(b)-(e));
+  or an armed forces compensation payment (75F(1)(b)-(d); 83(1)(b)-(e)). A
+  Universal Credit claim ends the couple's income-related ESA (SI 2013/983
+  art. 4), so a claiming family can count only contributory ESA;
 - the claimant, partner or a child or young person they are responsible for
   receives disability living allowance (75F(1)(e); 83(1)(f));
 - the claimant, partner or a young person they are responsible for receives
@@ -279,8 +281,14 @@ def reference_specified_benefit(members, benunit_inputs, scheme):
     young_roles = ("young_person", "sixteen") if scheme == "uc" else ("young_person",)
     young_persons = [m for m in members if m["_role"] in young_roles]
     children = [m for m in members if m["_role"] == "child"]
-    # No capital, so the couple's income-related award is their reports.
-    couple_award = any(m["esa_income_reported"] > 0 for m in claimants)
+    # No capital, so the couple's income-related award is their reports,
+    # unless the family claims Universal Credit: the claim ends it (SI
+    # 2013/983 art. 4; esa_income_report_closed). would_claim_uc defaults to
+    # true.
+    claims_uc = benunit_inputs.get("would_claim_uc", True)
+    couple_award = not claims_uc and any(
+        m["esa_income_reported"] > 0 for m in claimants
+    )
 
     def support_component(m):
         # Supplied, or assumed for anyone with their own allowance.
@@ -398,9 +406,12 @@ CAPPED_FAMILY = {
 def capped_family(scheme):
     """30,000 of the scheme's award before the cap and none of the other's;
     the other family-level capped benefits are nil, so the capped total is
-    the award plus whatever the claimant's and partner's own benefits add."""
+    the award plus whatever the claimant's and partner's own benefits add.
+    The family claims Universal Credit exactly when it is on it, so the
+    couple's income-related ESA continues only on Housing Benefit."""
     return {
         **CAPPED_FAMILY,
+        "would_claim_uc": scheme == "uc",
         "universal_credit_pre_benefit_cap": 30_000 if scheme == "uc" else 0,
         "housing_benefit_pre_benefit_cap": 30_000 if scheme == "hb" else 0,
     }
