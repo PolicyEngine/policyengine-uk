@@ -24,8 +24,9 @@ class council_tax_reduction_pensioner(Variable):
         "and each claims, a working-age family is assessed under the "
         "working-age rules even if the household head's family is "
         "pension-age, and the reverse. The shared applicable allowance uses "
-        "this test, as does English scheme selection; Welsh and Scottish "
-        "scheme selection retains its existing approximations."
+        "this test, as does scheme selection: English claims that fail it "
+        "fall to the local schemes, and Welsh and Scottish claims that fail it "
+        "take the working-age rules (council_tax_reduction_devolved_working_age)."
     )
     definition_period = YEAR
     reference = (

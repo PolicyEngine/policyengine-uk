@@ -371,6 +371,12 @@ DIFFERENTIAL_VARIABLES = [
     "council_tax_reduction_relevant_income_based_benefit",
     "council_tax_reduction_pensioner",
     "council_tax_reduction_applicant_has_non_dep_exemption",
+    # Scotland's and Wales's working-age route (#1966).
+    "council_tax_reduction_devolved_working_age",
+    "council_tax_reduction_working_age_applicable_income",
+    "council_tax_reduction_working_age_applicable_amount",
+    "council_tax_reduction_working_age_passported",
+    "council_tax_reduction_working_age_has_universal_credit",
     "simulated_council_tax_reduction_benunit",
 ]
 

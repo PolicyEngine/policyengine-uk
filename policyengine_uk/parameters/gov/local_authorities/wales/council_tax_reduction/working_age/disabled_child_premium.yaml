@@ -1,0 +1,80 @@
+description: Weekly disabled child premium for each disabled child or young person in the family of an
+  applicant who is not a pensioner, under the Welsh council tax reduction schemes.
+values:
+  2013-04-01:
+    value: 57.89
+    reference:
+    - title: W.S.I. 2013/112 reg 10(c)(iii)
+      href: https://www.legislation.gov.uk/wsi/2013/112/regulation/10
+  2014-04-01:
+    value: 59.5
+    reference:
+    - title: W.S.I. 2014/66 reg 10(d)(iii)
+      href: https://www.legislation.gov.uk/wsi/2014/66/regulation/10/made
+  2015-04-01:
+    value: 60.06
+    reference:
+    - title: W.S.I. 2015/44 reg 11(d)(iii)
+      href: https://www.legislation.gov.uk/wsi/2015/44/regulation/11
+  2017-04-01:
+    value: 60.9
+    reference:
+    - title: W.S.I. 2017/46 reg 6(c)(ii)(cc)
+      href: https://www.legislation.gov.uk/wsi/2017/46/regulation/6
+  2018-04-01:
+    value: 62.86
+    reference:
+    - title: W.S.I. 2018/14 reg 10(c)(iii)
+      href: https://www.legislation.gov.uk/wsi/2018/14/regulation/10
+  2019-04-01:
+    value: 64.19
+    reference:
+    - title: W.S.I. 2019/11 reg 7(b)(iii)
+      href: https://www.legislation.gov.uk/wsi/2019/11/regulation/7
+  2020-04-01:
+    value: 65.52
+    reference:
+    - title: W.S.I. 2020/16 reg 10(b)(iii)
+      href: https://www.legislation.gov.uk/wsi/2020/16/regulation/10
+  2021-04-01:
+    value: 65.94
+    reference:
+    - title: W.S.I. 2021/34 reg 8(b)(iii)
+      href: https://www.legislation.gov.uk/wsi/2021/34/regulation/8
+  2022-04-01:
+    value: 68.04
+    reference:
+    - title: W.S.I. 2022/51 reg 8(d)(iii)
+      href: https://www.legislation.gov.uk/wsi/2022/51/regulation/8
+  2023-04-01:
+    value: 74.69
+    reference:
+    - title: W.S.I. 2023/47 reg 9(d)(iii)
+      href: https://www.legislation.gov.uk/wsi/2023/47/regulation/9
+  2024-04-01:
+    value: 80.01
+    reference:
+    - title: W.S.I. 2024/56 reg 8(d)(iii)
+      href: https://www.legislation.gov.uk/wsi/2024/56/regulation/8
+  2025-04-01:
+    value: 81.37
+    reference:
+    - title: W.S.I. 2025/59 reg 9(d)(iii)
+      href: https://www.legislation.gov.uk/wsi/2025/59/regulation/9
+  2026-04-01:
+    value: 84.46
+    reference:
+    - title: W.S.I. 2026/13 reg 11(d)(iii)
+      href: https://www.legislation.gov.uk/wsi/2026/13/regulation/11
+metadata:
+  label: Wales working-age CTR disabled child premium
+  unit: currency-GBP
+  period: week
+  reference:
+  - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Sch.
+      7 paras. 13 and 17(3)
+    href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/7
+  - title: The Council Tax Reduction Schemes (Prescribed Requirements and Default Scheme) (Miscellaneous
+      Amendments) (Wales) Regulations 2026 reg. 11(d)
+    href: https://www.legislation.gov.uk/wsi/2026/13/regulation/11
+  uprating: gov.benefit_uprating_cpi

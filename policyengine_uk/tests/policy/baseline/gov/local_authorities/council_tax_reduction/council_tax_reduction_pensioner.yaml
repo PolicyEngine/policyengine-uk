@@ -296,15 +296,14 @@
     council_tax_reduction_pensioner: false
     council_tax_reduction_scheme_supported: true
 
-- name: A capped Welsh mixed-age UC award does not use pensioner CTR allowances
+- name: A capped Welsh mixed-age UC award takes the working-age UC route
   # WSI 2013/3029 reg 3 excludes a "person with an award of universal credit"
-  # from pensioner status; Sch 7 covers "persons who are not pensioners".
-  # The cap still lowers UC income: 30,000 + 3,000 - 22,020 = 10,980.
-  # Under the model's shared national means test, the working-age applicable
-  # amount is 7,807.80 and the remaining 22,020 income exhausts the reduction.
-  # This pins scheme selection, not a statutory Welsh UC award: Sch 6 paras
-  # 3 and 9 use UC's maximum amount and income calculation, which the shared
-  # formula does not yet implement. That separate gap is flagged for review.
+  # from pensioner status, so the Welsh route for Universal Credit applicants
+  # applies (Sch 6 paras 3 and 9): the applicable amount is the UC maximum
+  # amount (30,000) and income is the Secretary of State's income (nil) plus
+  # the award after the cap (cap 22,020 outside London; 30,000 + 3,000 -
+  # 22,020 = 10,980 off, leaving 19,020). Income is below the applicable
+  # amount, so the family gets the maximum reduction.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -318,6 +317,7 @@
     benunits:
       benunit:
         members: [older, younger, child]
+        uc_maximum_amount: 30_000
         universal_credit_pre_benefit_cap: 30_000
         child_benefit: 3_000
         uc_deductions: 0
@@ -332,7 +332,8 @@
   output:
     benefit_cap_reduction: 10_980
     universal_credit: 19_020
-    council_tax_reduction_applicable_income: 22_020
     council_tax_reduction_pensioner: false
-    council_tax_reduction_applicable_amount: 7_807.80
-    council_tax_benefit: 0
+    council_tax_reduction_devolved_working_age: true
+    council_tax_reduction_working_age_applicable_amount: 30_000
+    council_tax_reduction_working_age_applicable_income: 19_020
+    council_tax_benefit: 2_000

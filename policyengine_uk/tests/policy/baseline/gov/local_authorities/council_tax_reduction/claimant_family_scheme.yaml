@@ -434,6 +434,7 @@
         liable_for_share_of_household_rent: true
         would_claim_uc: false
         council_tax_reduction_applicable_income: 8_000
+        council_tax_reduction_working_age_applicable_income: 8_000
     households:
       home:
         members: [head, sharer]
@@ -446,14 +447,17 @@
   output:
     council_tax_reduction_pensioner: [true, false]
     council_tax_reduction_scheme_supported: [true, true]
+    council_tax_reduction_devolved_working_age: [false, true]
+    council_tax_reduction_working_age_applicable_amount: [5_296.20, 5_296.20]
     council_tax_reduction_applicant_has_non_dep_exemption: [true, false]
-    # Each family's own applicable amount: pension-age 256.00 a week, the
-    # working-age single 25 or over 95.55 a week.
+    # Each family's own applicable amount: pension-age 256.00 a week; the
+    # working-age family takes the devolved route and Wales's own single 25
+    # or over allowance, 101.85 a week (W.S.I. 2026/13 reg 11).
     council_tax_reduction_applicable_amount: [13_312, 4_968.60]
     # 900 - 20% x (15,000 - 13,312) = 562.40;
-    # 900 - 20% x (8,000 - 4,968.60) = 293.72.
-    simulated_council_tax_reduction_benunit: [562.40, 293.72]
-    council_tax_reduction: 856.12
+    # 900 - 20% x (8,000 - 5,296.20) = 359.24.
+    simulated_council_tax_reduction_benunit: [562.40, 359.24]
+    council_tax_reduction: 921.64
 
 - name: Wales, working-age head and pension-age sharer are each assessed on their own family
   period: 2026
@@ -471,6 +475,7 @@
         members: [head]
         would_claim_uc: false
         council_tax_reduction_applicable_income: 8_000
+        council_tax_reduction_working_age_applicable_income: 8_000
       sharer_family:
         members: [sharer]
         liable_for_share_of_household_rent: true
@@ -488,10 +493,14 @@
   output:
     council_tax_reduction_pensioner: [false, true]
     council_tax_reduction_scheme_supported: [true, true]
+    council_tax_reduction_devolved_working_age: [true, false]
+    council_tax_reduction_working_age_applicable_amount: [5_296.20, 5_296.20]
     council_tax_reduction_applicant_has_non_dep_exemption: [false, true]
     council_tax_reduction_applicable_amount: [4_968.60, 13_312]
-    simulated_council_tax_reduction_benunit: [293.72, 562.40]
-    council_tax_reduction: 856.12
+    # The working-age family takes Wales's own allowance, 101.85 a week
+    # (W.S.I. 2026/13 reg 11): 900 - 20% x (8,000 - 5,296.20) = 359.24.
+    simulated_council_tax_reduction_benunit: [359.24, 562.40]
+    council_tax_reduction: 921.64
 
 - name: Scotland, pension-age head and working-age sharer are each assessed on their own family
   period: 2026
@@ -514,6 +523,7 @@
         liable_for_share_of_household_rent: true
         would_claim_uc: false
         council_tax_reduction_applicable_income: 8_000
+        council_tax_reduction_working_age_applicable_income: 8_000
     households:
       home:
         members: [head, sharer]
@@ -526,6 +536,8 @@
   output:
     council_tax_reduction_pensioner: [true, false]
     council_tax_reduction_scheme_supported: [true, true]
+    council_tax_reduction_devolved_working_age: [false, true]
+    council_tax_reduction_working_age_applicable_amount: [4_968.60, 4_968.60]
     council_tax_reduction_applicant_has_non_dep_exemption: [false, true]
     council_tax_reduction_applicable_amount: [13_312, 4_968.60]
     simulated_council_tax_reduction_benunit: [562.40, 293.72]
@@ -547,6 +559,7 @@
         members: [head]
         would_claim_uc: false
         council_tax_reduction_applicable_income: 8_000
+        council_tax_reduction_working_age_applicable_income: 8_000
       sharer_family:
         members: [sharer]
         liable_for_share_of_household_rent: true
@@ -564,6 +577,8 @@
   output:
     council_tax_reduction_pensioner: [false, true]
     council_tax_reduction_scheme_supported: [true, true]
+    council_tax_reduction_devolved_working_age: [true, false]
+    council_tax_reduction_working_age_applicable_amount: [4_968.60, 4_968.60]
     council_tax_reduction_applicant_has_non_dep_exemption: [true, false]
     council_tax_reduction_applicable_amount: [4_968.60, 13_312]
     simulated_council_tax_reduction_benunit: [293.72, 562.40]
