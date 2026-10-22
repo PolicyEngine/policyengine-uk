@@ -1298,13 +1298,15 @@ class Simulation(CoreSimulation):
         so is every value the model stored as its own (``set_model_value``),
         which stays the model's. So does the record of where each capital
         gains input came from. Calculated values are dropped and recalculated
-        on the sample, and the tracer starts again. Each supplied weight is replaced so that its
-        total is unchanged in every period: a household's new weight is
-        proportional to the number of times it was drawn, and also to its old
-        weight without ``quantize_weights``. With ``quantize_weights``, a
-        household's new weight in ``time_period``, averaged over draws, is
-        its old one; in another period that holds only if the household's
-        share of the total weight is the same there.
+        on the sample, and the tracer starts again.
+
+        Each supplied weight is replaced so that its total is unchanged in
+        every period: a household's new weight is proportional to the number
+        of times it was drawn, and also to its old weight without
+        ``quantize_weights``. A zero weight stays zero. With
+        ``quantize_weights``, a household's new weight in ``time_period``,
+        averaged over draws, is its old one; in another period that holds
+        only if the household's share of the total weight is the same there.
 
         ``baseline`` is replaced with a copy subsampled to the same
         households, which keeps its own policy and inputs. The baseline the
