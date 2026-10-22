@@ -60,16 +60,13 @@ class is_housing_benefit_benefit_cap_exempt_specified_benefit(Variable):
         "Universal Credit before the cap (universal_credit_pre_benefit_cap), "
         "so a Universal Credit award the cap reduces to nil still lifts the "
         "Housing Benefit cap. A young person is the model's Child Benefit "
-        "qualifying young person, which leaves out a 16-year-old in neither "
-        "non-advanced education nor approved training. The Housing Benefit "
-        "cap rate (is_housing_benefit_benefit_cap_single_claimant_rate) "
-        "counts such a 16-year-old for the year, so a lone parent with one "
-        "gets the family rate, but the 16-year-old's own disability living "
-        "allowance or personal independence payment does not lift the cap. "
-        "In law one status decides both: a school leaver remains a "
-        "qualifying young person until a terminal date or the end of an "
-        "extension period (Child Benefit (General) Regulations 2006 regs. 5 "
-        "and 7), which the model does not place (#2287)."
+        "qualifying young person (HB Regs 2006 reg. 19), which includes a "
+        "16-year-old who has left education, until the 31 August after their "
+        "16th birthday (Child Benefit (General) Regulations 2006 reg. 4), and "
+        "a school leaver in an extension period or before a terminal date "
+        "where those inputs are set (regs. 5 and 7). Such a young person's "
+        "own disability living allowance, personal independence payment or "
+        "armed forces independence payment lifts the cap."
     )
     definition_period = YEAR
     reference = (

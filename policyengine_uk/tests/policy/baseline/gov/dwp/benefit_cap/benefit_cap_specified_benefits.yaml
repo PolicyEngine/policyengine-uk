@@ -821,13 +821,15 @@
         members: [parent, sixteen]
         region: NORTH_EAST
   output:
-    is_child_or_young_person_for_legacy_benefits: [false, false]
+    # HB reg 19(1) requires a Child Benefit "qualifying young person". A
+    # 16-year-old who has left education is one until the 31 August after
+    # their 16th birthday (Child Benefit (General) Regulations 2006 reg. 4),
+    # so they are the family's young person for Housing Benefit too.
+    is_child_or_young_person_for_legacy_benefits: [false, true]
     # UC reg 5(1)(a): "up to, but not including, the 1st September following
     # their 16th birthday". Annual ages count the 16-year-old for the year.
-    # HB reg 19(1) requires a Child Benefit "qualifying young person";
-    # this person is outside education and is not one in the model.
     is_uc_benefit_cap_exempt_specified_benefit: true
-    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: true
 
 - name: A 19-year-old outside education is not a young person, so their DLA does not lift the cap
   period: 2025
@@ -1188,7 +1190,7 @@
     housing_benefit: 30_000
   absolute_error_margin: 1
 
-- name: A 16-year-old out of education with armed forces independence payment does not lift the cap
+- name: A 16-year-old out of education with armed forces independence payment lifts the Housing Benefit cap, not Universal Credit's
   period: 2025
   input:
     people:
@@ -1207,10 +1209,13 @@
         members: [parent, sixteen]
         region: NORTH_EAST
   output:
-    # Not a Housing Benefit young person (not in education), and Universal
-    # Credit counts the payment for a claimant only (UC Regs 2013 reg 2).
+    # A Housing Benefit young person until the 31 August after the 16th
+    # birthday (Child Benefit (General) Regulations 2006 reg. 4), whose armed
+    # forces independence payment lifts the cap (HB Regs 2006 reg. 75F(1)).
+    # Universal Credit counts the payment for a claimant only (UC Regs 2013
+    # reg 2).
     is_uc_benefit_cap_exempt_specified_benefit: false
-    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: true
 
 - name: A 16-year-old receiving benefits in their own right is not a young person, so their DLA does not lift the cap
   period: 2025
