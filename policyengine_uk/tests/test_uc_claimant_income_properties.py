@@ -203,12 +203,17 @@ def situation(units, year, zero_dependants=False, reverse=False, flag_all=False)
         for j, claimant in enumerate(unit["claimants"]):
             person = {k: {year: v} for k, v in claimant.items()}
             person["is_parent"] = {year: bool(unit["dependants"])}
+            # The drawn claimants are the claimant and partner, however far
+            # apart their ages; the age presumption alone would read a
+            # partner 20 or more years younger as the claimant's child.
+            person["is_claimant_or_partner"] = {year: True}
             members.append((f"p{i}_{j}", person))
         for k, dependant in enumerate(unit["dependants"]):
             person = {
                 key: {year: 0.0 if zero_dependants and key in DEPENDANT_INCOME else v}
                 for key, v in dependant.items()
             }
+            person["is_claimant_or_partner"] = {year: False}
             members.append((f"d{i}_{k}", person))
         if reverse:
             members = members[::-1]

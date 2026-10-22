@@ -33,8 +33,9 @@ dependent children or qualifying young persons:
   when the one who cares holds the Income Support award.
 
 Adults are 18 to 85, so pension-age families are covered. No adult under 20
-is 16 or more years younger than the other adult, whom the model would then
-presume to be their parent.
+is 16 or more years younger than the other adult, and no adult is 20 or more
+years younger, either of which the model would read as the other adult's
+child.
 
 Each example builds every family twice in one simulation, in separate
 households and benefit units: once as drawn and once with a changed caring
@@ -98,8 +99,9 @@ def families(draw):
     family = [head]
     if draw(st.booleans()):
         # Within 15 years of the head in both directions when either could be
-        # under 20, so neither is presumed the other's child.
-        oldest_partner = 85 if head_age >= 20 else head_age + 15
+        # under 20, and under 20 years older otherwise, so neither is presumed
+        # the other's child.
+        oldest_partner = min(85, head_age + 19) if head_age >= 20 else head_age + 15
         family.append(
             {
                 "age": draw(st.integers(max(18, head_age - 15), oldest_partner)),
@@ -160,11 +162,23 @@ BOUNDARY = [
     },
     {"age": 33, "is_parent": False, **CARING},
 ]
+# And above 20: a partner 19 years older than a 40-year-old head is drawn; 20
+# years older is not (the model would presume the head to be their child).
+OLDER_PARTNER_BOUNDARY = [
+    {
+        "age": 40,
+        "is_parent": False,
+        "income_support_reported": 1_000,
+        **CARING,
+    },
+    {"age": 59, "is_parent": False, **CARING},
+]
 
 
 @SETTINGS
 @given(st.lists(families(), min_size=1, max_size=6))
 @example(drawn=[(BOUNDARY, 2)])
+@example(drawn=[(OLDER_PARTNER_BOUNDARY, 2)])
 def test_dependants_caring_never_changes_premium_or_is_eligibility(drawn):
     units = [family for family, _ in drawn]
     adults = [n for _, n in drawn]
