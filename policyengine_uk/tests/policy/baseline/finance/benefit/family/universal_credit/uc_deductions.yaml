@@ -107,7 +107,8 @@
       household:
         members: person
   output:
-    # Schedule 6 of SI 2013/380: the award cannot be deducted below one
+    # Schedule 6, paragraph 3(1)(a) of SI 2013/380: the award cannot be
+    # deducted below one
     # penny per assessment period (12p per year).
     uc_deductions: 499.88
     universal_credit: 0.12
@@ -132,3 +133,49 @@
   output:
     uc_deductions: 0
     universal_credit: 6_000
+
+- name: A claim made at legacy closure keeps the benefit cap and deductions
+  # A couple on Child Tax Credit moved off legacy benefits that would not
+  # otherwise claim Universal Credit, but claims on its migration notice
+  # (SI 2014/1230 reg 44). The award is still capped (SI 2013/376 reg 81)
+  # and deductions still apply, so both components use the award's
+  # claims_universal_credit test rather than would_claim_uc.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult_1:
+        age: 35
+        is_claimant_or_partner: true
+        child_tax_credit_reported: 3_000
+      adult_2:
+        age: 33
+        is_claimant_or_partner: true
+      child_1:
+        age: 13
+      child_2:
+        age: 11
+      child_3:
+        age: 9
+      child_4:
+        age: 7
+    benunits:
+      benunit:
+        members: [adult_1, adult_2, child_1, child_2, child_3, child_4]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+        uc_latent_deduction_rate: 0.25
+        uc_deduction_combination: ADVANCE_ONLY
+    households:
+      household:
+        members: [adult_1, adult_2, child_1, child_2, child_3, child_4]
+        rent: 30_000
+        tenure_type: RENT_FROM_COUNCIL
+        region: LONDON
+  output:
+    claims_universal_credit: true
+    universal_credit_pre_benefit_cap: 48_632.64
+    uc_benefit_cap_reduction: 27_355.24
+    uc_benefit_cap_reduction_after_floor: 27_355.24
+    uc_deductions: 1_130.58
+    universal_credit: 20_146.82

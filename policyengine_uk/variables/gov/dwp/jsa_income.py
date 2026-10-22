@@ -28,5 +28,9 @@ class jsa_income(Variable):
     def formula(benunit, period, parameters):
         if not parameters(period).gov.dwp.JSA.income.active:
             return benunit.empty_array()
-        reported_award = add(benunit, period, ["jsa_income_reported"])
+        person = benunit.members
+        reported_award = benunit.sum(
+            person("jsa_income_reported", period)
+            * ~person("person_legacy_benefits_closed", period)
+        )
         return income_related_jsa_award(benunit, period, reported_award)

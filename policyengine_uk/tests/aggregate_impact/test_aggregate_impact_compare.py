@@ -1446,3 +1446,57 @@ def test_withheld_decile_years_are_explained_not_called_missing():
     assert note in text and "need household detail" not in text
     text = _deciles({"deciles": {}, "decile_notes": []}, [2026])
     assert "need household detail" in text
+
+
+@pytest.mark.parametrize(
+    "fields",
+    [("python",), ("machine",), ("python", "machine")],
+    ids=["python", "machine", "both-fields"],
+)
+@pytest.mark.parametrize(
+    "sides",
+    [("base",), ("head",), ("base", "head")],
+    ids=["base", "head", "both-sides"],
+)
+def test_issue_2499_data_axis_requires_runtime_identity_on_each_side(fields, sides):
+    measurements = {"base": _on("1" * 64), "head": _on("2" * 64)}
+    complete = compare(measurements["base"], measurements["head"], SPEC, axis="data")
+    assert complete["status"] == "pass", complete["failures"]
+    for side in sides:
+        for field in fields:
+            del measurements[side]["runtime"][field]
+
+    summary = compare(measurements["base"], measurements["head"], SPEC, axis="data")
+
+    assert summary["status"] == "fail"
+    for field in fields:
+        assert any(field in failure.lower() for failure in summary["failures"])
+
+
+@pytest.mark.parametrize("field", ["python", "machine"])
+@pytest.mark.parametrize("value", [None, ""], ids=["null", "empty"])
+def test_issue_2499_data_axis_rejects_empty_runtime_identity(field, value):
+    base, head = _on("1" * 64), _on("2" * 64)
+    base["runtime"][field] = head["runtime"][field] = value
+
+    summary = compare(base, head, SPEC, axis="data")
+
+    assert summary["status"] == "fail"
+    assert any(field in failure.lower() for failure in summary["failures"])
+
+
+def test_issue_2499_complete_runtime_identity_allows_different_datasets():
+    summary = compare(_on("1" * 64), _on("2" * 64), SPEC, axis="data")
+
+    assert summary["status"] == "pass", summary["failures"]
+
+
+def test_issue_2499_model_axis_preserves_missing_runtime_identity_behavior():
+    base, head = _on("1" * 64), _on("1" * 64)
+    for result in (base, head):
+        del result["runtime"]["python"]
+        del result["runtime"]["machine"]
+
+    summary = compare(base, head, SPEC, axis="model")
+
+    assert summary["status"] == "pass", summary["failures"]

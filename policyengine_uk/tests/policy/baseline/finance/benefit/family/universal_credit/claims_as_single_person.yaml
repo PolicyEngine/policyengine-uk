@@ -722,8 +722,8 @@
     # "Couple" in the cap includes a single claimant's partner (reg. 78(2)).
     # 11,000 a year (916.67 a month) exceeds 16 hours at the national living
     # wage of 12.71 (NMW Regs 2015 reg. 4 from 1 April 2026):
-    # 12.71 x 16 x 52 / 12 = 881.23 a month. The model uses a fixed
-    # 10,152 a year; 11,000 clears both.
+    # 12.71 x 16 x 52 / 12 = 881.23, so 881 a month (UC Regs reg. 6(1A)(za)),
+    # or 10,572 a year.
     is_uc_benefit_cap_exempt_earnings: true
     # Housing Benefit has no earnings exception (HB Regs 2006 regs.
     # 75E-75F); with no working tax credit the HB cap applies.

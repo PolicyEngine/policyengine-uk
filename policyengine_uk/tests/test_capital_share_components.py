@@ -19,11 +19,15 @@ Invariants:
    (corporate_wealth valued less 10%), exactly, annually and monthly.
 4. Split effect: a consistent split raises a working-age single adult's UC
    capital by 10% of trusts plus ISAs, against the unitemised lists.
+5. A disregarded company holding (UC reg 77(2)) leaves the UC capital pool
+   from the part with sale expenses, whether it was entered within
+   corporate_wealth or as directly held shares.
+6. The exempt list exists from the first date any capital list does.
 """
 
 import numpy as np
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import CountryTaxBenefitSystem, Simulation
@@ -59,11 +63,15 @@ SETTINGS = settings(
 system = CountryTaxBenefitSystem()
 
 
-def _parameter(path):
+def _node(path):
     node = system.parameters
     for part in path.split("."):
         node = getattr(node, part)
-    return node(f"{YEAR}-01-01")
+    return node
+
+
+def _parameter(path):
+    return _node(path)(f"{YEAR}-01-01")
 
 
 def _unitemised(sources):
@@ -131,6 +139,8 @@ def test_lists_name_the_two_parts(variable):
         max_size=40,
     )
 )
+# Subtracting trusts and ISA one at a time leaves £0.015625 here; grouped, nil.
+@example([(399_999.984375, (0.0, 200_000.0, 199_999.984375), True)])
 def test_share_like_capital_and_its_parts(rows):
     households = []
     for corporate_wealth, components, itemise in rows:
@@ -160,7 +170,10 @@ def test_share_like_capital_and_its_parts(rows):
 
 
 def test_float32_grouping_of_the_exempt_holdings():
-    """Trusts and ISA summed first: £400,000 less £399,999.98 rounds to nil."""
+    """Trusts and ISA summed first: corporate_wealth of £399,999.984375 and
+    £200,000 + £199,999.984375 of exempt holdings both round to £400,000 in
+    float32, so the part with sale expenses is nil; subtracting the two one at
+    a time would leave £0.015625."""
     households = [
         {
             "corporate_wealth": 399_999.984375,
@@ -191,6 +204,16 @@ def test_an_empty_exempt_list_values_everything_less_10_percent():
     assert got["uc_assessable_capital"] == pytest.approx([11_800, 11_800])
 
 
+def test_the_exempt_list_starts_with_the_first_capital_list():
+    exempt = system.parameters.gov.dwp.share_like_capital.without_sale_expenses
+    first = min(
+        min(entry.instant_str for entry in _node(f"{node}.sources").values_list)
+        for node in NODES.values()
+    )
+    assert first == "1996-10-07"
+    assert min(entry.instant_str for entry in exempt.values_list) == first
+
+
 @pytest.mark.parametrize(
     "variable", ["income_support_assessable_capital", "jsa_income_assessable_capital"]
 )
@@ -216,7 +239,8 @@ def test_unitemised_inputs_match_the_lists_before_itemising(rows):
         {"savings": 6_001, "corporate_wealth": -2},
         {"savings": 0, "corporate_wealth": 17_777.78},  # 90% is £16,000.002
     ]
-    for period in (YEAR, f"{YEAR}-01"):
+    # A projected year as well, where the inputs are uprated.
+    for period in (YEAR, f"{YEAR}-01", YEAR + 1, f"{YEAR + 1}-01"):
         new = _results(households, period=period)
         old = _results(households, reform=UNITEMISED_REFORM, period=period)
         for variable in (*NODES, "is_uc_eligible"):
@@ -243,6 +267,14 @@ def test_a_consistent_split_exempts_trusts_and_isas(rows):
         assert new["uc_assessable_capital"][i] - old["uc_assessable_capital"][
             i
         ] == pytest.approx(LEGAL_RATE * exempt, rel=1e-5, abs=0.05)
+    # Uprated separately in float32, the components still round to their
+    # aggregate in a projected year, so share-like capital is the aggregate.
+    sim = Simulation(situation=_situation(households, age=30))
+    for year in (YEAR, YEAR + 1):
+        assert np.array_equal(
+            sim.calculate("share_like_capital", year),
+            sim.calculate("corporate_wealth", year),
+        ), year
 
 
 def test_components_alone_are_valued_by_type():
@@ -286,6 +318,34 @@ def test_a_genuine_excess_over_the_aggregate_counts():
     assert _results(households)["share_like_capital"][0] == np.float32(16_000.10)
 
 
+def test_float32_rounding_at_the_limit_keeps_the_aggregate():
+    """Components whose float32 sum overshoots £16,000 by a fraction of a
+    penny keep the aggregate; an unitemised penny at the limit counts as
+    before itemising."""
+    split = [
+        {
+            "corporate_wealth": 16_000,
+            "directly_held_shares": 6_744.81,
+            "unit_and_investment_trusts": 6_581.24,
+            "stocks_and_shares_isa": 2_673.95,
+        }
+    ]
+    itemised = np.float32(
+        np.float32(np.float32(6_744.81) + np.float32(6_581.24)) + np.float32(2_673.95)
+    )
+    assert itemised > np.float32(16_000)
+    assert _results(split)["share_like_capital"][0] == 16_000
+    unitemised = [
+        {"savings": 15_999.99, "corporate_wealth": 0.01},
+        {"savings": 6_001, "corporate_wealth": -2},
+    ]
+    for period in (YEAR, f"{YEAR}-01"):
+        new = _results(unitemised, period=period)
+        old = _results(unitemised, reform=UNITEMISED_REFORM, period=period)
+        for variable in (*NODES, "is_uc_eligible"):
+            assert np.array_equal(new[variable], old[variable]), (variable, period)
+
+
 def test_one_unit_of_float32_rounding_above_a_power_of_two_keeps_the_aggregate():
     """Pence-valued components whose float32 sum lands one unit in the last place
     (£0.00195) above £16,384.01: more than 1e-7 of the value, less than 1e-6."""
@@ -297,4 +357,49 @@ def test_one_unit_of_float32_rounding_above_a_power_of_two_keeps_the_aggregate()
             "stocks_and_shares_isa": 81.05,
         }
     ]
+    itemised = np.float32(
+        np.float32(np.float32(16_015.98) + np.float32(286.98)) + np.float32(81.05)
+    )
+    assert itemised - np.float32(16_384.01) == np.float32(0.001953125)
     assert _results(households)["share_like_capital"][0] == np.float32(16_384.01)
+
+
+def test_a_disregarded_company_holding_leaves_the_part_with_sale_expenses():
+    """UC reg 77(2): the owner's £30,000 holding leaves the pool at the 90% its
+    shares are counted at, whether it was entered within corporate_wealth or
+    as directly held shares. Two unreported adults share £10,000 of savings."""
+    from policyengine_uk.variables.gov.dwp.universal_credit.household_uc_company_holding_pool_scale import (
+        HOLDINGS_SOURCE,
+    )
+
+    node = NODES["uc_assessable_capital"]
+    assert HOLDINGS_SOURCE in _parameter(f"{node}.sources")
+    assert HOLDINGS_SOURCE in _parameter(f"{node}.sale_expenses.sources")
+    for shares in ({"corporate_wealth": 30_000}, {"directly_held_shares": 30_000}):
+        situation = {
+            "people": {
+                "owner": {
+                    "age": {YEAR: 40},
+                    "stands_as_sole_owner_or_partner_of_company": {YEAR: True},
+                    "owned_company_carries_on_trade": {YEAR: True},
+                    "owned_company_holding_value": {YEAR: 30_000},
+                },
+                "lodger": {"age": {YEAR: 30}},
+            },
+            "benunits": {
+                "owner_unit": {"members": ["owner"]},
+                "lodger_unit": {"members": ["lodger"]},
+            },
+            "households": {
+                "household": {
+                    "members": ["owner", "lodger"],
+                    "savings": {YEAR: 10_000},
+                    **{name: {YEAR: value} for name, value in shares.items()},
+                }
+            },
+        }
+        sim = Simulation(situation=situation)
+        assert sim.calculate("household_uc_company_holding_pool_scale", YEAR)[0] == 1
+        # The pool counts the shares at 90%, and the holding leaves it at that.
+        assert sim.calculate("household_uc_pool_company_holdings", YEAR)[0] == 27_000
+        assert list(sim.calculate("uc_assessable_capital", YEAR)) == [5_000, 5_000]

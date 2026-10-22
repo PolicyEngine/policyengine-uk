@@ -733,6 +733,8 @@ def _same_model_problems(base: Mapping, head: Mapping, runtime_differences) -> l
         "policyengine-uk version": ("runtime", "policyengine_uk"),
         "policyengine-uk fingerprint": ("runtime", "policyengine_uk_fingerprint"),
         "runtime listing": ("runtime", "distributions"),
+        "Python version": ("runtime", "python"),
+        "machine": ("runtime", "machine"),
         "fiscal partition": ("partition", "sha256"),
         "metric definitions": ("provenance", "metrics_version"),
     }

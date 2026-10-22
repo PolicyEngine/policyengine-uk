@@ -27,9 +27,11 @@ is deducted separately through `allowances`. Employee contributions represent
 net pay and personal contributions represent gross relief at source (RAS).
 Both annual-allowance income tests use
 [`annual_allowance_net_income`](../../policyengine_uk/utils/pensions.py).
-This shared helper reconstructs the model's net-income convention from actual
-income, before separately modeled pension relief, excluding the NICs-only
-salary-sacrifice return. Accordingly:
+This shared helper retains the model's net-income convention before separately
+modeled pension relief and applies net-pay/trading-loss ordering to actual
+income and member payments. The NICs-only excess never enters these amounts;
+a positive supplied legacy ordinary return is actual pay/member payment.
+Accordingly:
 
 - `pension_annual_allowance_adjusted_income` adds the total pension input
   amount to that reconstructed income, then subtracts the individual's actual
@@ -69,20 +71,30 @@ prevents Step 2 relief from exceeding the remaining income. This limit
 applies in every model year, including before the NICs cap begins in 2029.
 It can therefore change pre-2029 allowances for people whose trading-loss
 relief is limited by income and who make relievable net-pay contributions.
-Removing synthetic pay after deducting the
-original relief would retain relief calculated on income the person did not
-receive. Threshold income also recomputes [FA 2004 ss. 188–191 pension
+The helper replaces the original loss with the loss allowed after relievable
+net pay. Threshold income deducts [FA 2004 ss. 188–191 pension
 relief](https://www.legislation.gov.uk/ukpga/2004/12/section/188) on actual
 earnings and contributions.
 
+Ordinary pension relief, the ordinary `adjusted_total_income` and both income
+tests take relevant UK earnings
+([s. 189(2)](https://www.legislation.gov.uk/ukpga/2004/12/section/189)) from
+one helper, `relevant_uk_earnings`: employment income chargeable to income
+tax, which is net taxable earnings ([ITEPA 2003 ss. 9(2) and
+11](https://www.legislation.gov.uk/ukpga/2003/1/section/11)), so pay and
+employer-paid taxable statutory pay less allowable expenses; and trading
+profits after capital allowances and the trading allowance but before losses
+brought forward. The pension deductions that s. 327(5) also lists are the
+relief these earnings limit, so they are not taken off.
+
 An explicitly supplied `adjusted_net_income` is authoritative. For this input
 path, the helper restores gross Gift Aid and pension relief recomputed on
-actual contributions and earnings. It does not remove returned pay or
-reconstruct trading-loss relief: the supplied ANI contains neither synthetic
-pay nor relief recalculated by the NICs reclassification. The annual-allowance
-base is therefore independent of the NICs cap on this path too.
+actual contributions and earnings. It does not remove an actual supplied
+ordinary return or reconstruct trading-loss relief: the supplied ANI already
+determines the income after those losses. The annual-allowance base is
+independent of the NICs cap on this path too.
 
-Other modeled deductions do not depend on the returned pay: brought-forward
+Other modeled deductions retain their existing treatment: brought-forward
 trade losses, capital allowances and the trading allowance depend on trading
 profits. Property finance-cost relief is a downstream tax reducer. Gift Aid's
 adjusted-net-income deduction and rate-limit extension do not reduce either
@@ -116,35 +128,107 @@ for the whole year according to age on that date; payments are not split at
 the birthday. Contributions before 75 that exceed the earnings relief limit
 still count. Adjusted income subtracts all actual member contributions under
 s. 228ZA(4)(d)(ii), including those excluded from the post-75 DC input.
-For defined-benefit
-arrangements, supply the statutory total pension input amount, including
-valued DB accrual, through this variable. Cash employer funding is not a
-valuation of DB rights. Survey estimates retain the existing cash proxy;
-this correction does not reconstruct DB rights, overseas adjustments, unused
-allowance histories or anti-avoidance arrangements under s. 228ZB.
+Defined-benefit
+arrangements are counted separately; see the last section. Supplying
+`pension_contributions_for_annual_allowance` itself overrides the whole total.
+The model does not reconstruct overseas adjustments or anti-avoidance
+arrangements under s. 228ZB.
 
 [The NICs Act 2026](https://www.legislation.gov.uk/ukpga/2026/15/enacted)
-changes NICs treatment without changing s. 228ZA. From 2029, the model moves
-sacrifice above the NICs exemption cap into
-employee contributions and employment income. The AA calculations remove
-that synthetic return from both pay and member contributions and recompute
-income-dependent relief as described above. Pension relief preserves the
+changes NICs treatment without changing s. 228ZA. From 2029, the model includes
+sacrifice above the NICs exemption cap only in Class 1 earnings through
+`salary_sacrifice_pension_ni_excess`. It does not create ordinary pay or member
+contributions. The legacy `salary_sacrifice_returned_to_income` defaults to
+zero; a positive explicit input represents actual ordinary pay/member payment
+and is retained in the AA calculations. Pension relief preserves the
 basic RAS amount even when cash earnings are below £3,600 and gives no member
 relief from age 75. The DC input keeps the full employer sacrifice at every
 age. The threshold-income add-back uses the full
-sacrifice before this reclassification. The separate employer-cost wage
+sacrifice before the NICs cap. The separate employer-cost wage
 response can still change income; it is held fixed when testing the cap's
 statutory effect.
 
-Cap invariance covers the two taper incomes, pension input and allowance.
-Charge comparisons additionally hold ordinary income-tax inputs fixed: the
-separate ANI and personal-allowance interaction can change the marginal tax
-charged on the same excess. Ordinary income tax retains its existing
-reclassification behavior; [#2454](https://github.com/PolicyEngine/policyengine-uk/issues/2454)
-tracks that separate defect.
+With the separate wage response held fixed, the cap does not change ordinary
+pay, member payments, ANI or the personal allowance. Cap-invariance checks
+cover those paths alongside the two taper incomes, pension input, allowance
+and charge. Actual NI liability changes through the existing Class 1 curves.
 
 The taxable death-benefit and grandfathered-sacrifice inputs default to zero.
 Pension relief retains the model's aggregate earnings cap and allocation
 conventions. Historical years use calendar-year proxies for the named tax
 years; the 2015 transitional pension-input alignment rules are outside this
 taper calculation.
+
+## Survey data: defined benefits and carry forward
+
+Surveys record contributions paid this year. Two statutory amounts need more:
+the pension input amount of a defined-benefit arrangement, and unused
+allowance carried forward from earlier years.
+
+**Defined benefits.** A defined-benefit arrangement's pension input amount is
+the increase in the value of the member's rights over the year
+([s. 234](https://www.legislation.gov.uk/ukpga/2004/12/section/234)): 16 times
+the annual pension, plus any separate lump sum, at the end less the same at the
+start, with the start raised by CPI
+([s. 235](https://www.legislation.gov.uk/ukpga/2004/12/section/235)). It is not
+the cash paid in.
+
+- `defined_benefit_pension_share` (an input from 0 to 1, default nil) is the
+  share of the person's workplace contributions (employer, net pay and salary
+  sacrifice) paid into defined-benefit arrangements. Personal (relief at
+  source) contributions are money purchase.
+- `defined_benefit_pension_input_amount` replaces those contributions in
+  `pension_contributions_for_annual_allowance`. Supply it where it is known,
+  as on a pension savings statement, with the share of the contributions that
+  fund it: contributions outside the share also count as money purchase
+  input. Otherwise it is the contributions times
+  `gov.simulation.pensions.defined_benefit_input_per_contribution`, which is
+  1. In the four largest public service schemes in 2024-25 the input of an
+  active member with ten years' service is 0.8 to 1.2 times employer and
+  member contributions together (the parameter file gives the figures), and
+  survey employer contributions drawn from regular contribution rates leave
+  out deficit repair payments.
+- With the default share of nil, every contribution is counted as money
+  purchase input, as before. With the ratio at 1, a supplied share alone
+  changes the input only for net-pay contributions to a defined-benefit
+  scheme from age 75, which now count, since the defined-benefit input has
+  no age limit. Results move only once data supplies a valued input amount.
+
+**Carry forward.** [s. 228A](https://www.legislation.gov.uk/ukpga/2004/12/section/228A)
+adds the allowance left unused in each of the three previous tax years in
+which the person was a scheme member, earliest first. `unused_pension_annual_allowance`
+can be supplied for a year. A supplied or stored value applies to that year
+only: the window of years moves on, so dataset projection does not copy it
+into later years (`YEAR_SPECIFIC_INPUTS` in `data/economic_assumptions.py`),
+which use the estimate. From 2020-21 it otherwise defaults to an estimate:
+
+- In each of the five previous years, the pension input amount was this
+  year's times `gov.simulation.pensions.prior_year_input_ratio` (1), and the
+  incomes tested for that year's taper were this year's, each deflated by
+  average earnings growth.
+- Each year's allowance follows that year's parameters, tapered on those
+  incomes. Each year's excess uses the unused allowance of the three years
+  before it, earliest first (s. 228A(7)), and the unused allowance of the
+  three years before this one is carried forward.
+- A person with pension input this year is taken to have been a scheme member
+  in each of those years; with none, nothing is carried forward.
+
+With a ratio of 1 the estimate matters mainly where the allowance has risen,
+as it did to £60,000 in 2023-24, or where pay has grown. A ratio of 0, no input
+in earlier years, gives the most there could be. The ratio of 1 is a
+convention, since HMRC publishes no statistics on carry forward. Real
+excesses are often lumpy (a defined-benefit promotion, a one-off
+contribution), so a steady history probably understates carry forward.
+
+**Against HMRC.** HMRC's Private pension statistics (July 2026) count 30,440
+individuals reporting contributions above their allowance through Self
+Assessment in 2024-25 (provisional, Table 7), after carry forward, and
+estimate annual allowance charges of £0.3bn (Table 6). On the certified
+Enhanced FRS the model's 2024 count and charge are several times these,
+because the dataset imputes employer contributions as three times employee
+contributions ([policyengine-uk-data#606](https://github.com/PolicyEngine/policyengine-uk-data/issues/606)).
+With employer contributions at a third of their stored values, the count,
+the charge and the chargeable amount (against Table 7's £672m of excess) all
+fall within half to one and a half times HMRC's figures.
+`tests/microsimulation/test_annual_allowance_against_hmrc.py` checks all three
+against that band, as a strict expected failure until the data is fixed.

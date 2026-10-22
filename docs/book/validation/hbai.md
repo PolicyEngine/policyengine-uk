@@ -54,6 +54,29 @@ PolicyEngine does the same. `hbai_household_net_income` is `hbai_household_net_i
 
 In FRS-based datasets, `housing_service_charges` contains the annualised property charges recorded in `CHRGAMT1`–`CHRGAMT9`: ground rent, chief rent, service charges, regular maintenance, caravan site rent, factoring charges, other regular charges and combined charges. `CHRGAMT2`, historically feu duty, is unused in the FRS 2024–25 dictionary. The combined-charge question is an alternative to recording individual amounts. Water and sewerage and rent are separate inputs; calculator users should supply each cost once, with service charges additional to the other housing-cost inputs. See the [FRS 2024–25 question instructions](https://doc.ukdataservice.ac.uk/doc/9563/mrdoc/pdf/9563_frs_2024-25_question_instructions_final.pdf), property charges section (pages 98–99), and its [variable dictionaries](https://doc.ukdataservice.ac.uk/doc/9563/mrdoc/ukda_data_dictionaries.zip).
 
+## Normalized squared poverty gaps
+
+`squared_poverty_gap_bhc` and `squared_poverty_gap_ahc` are annual household, dimensionless components of the Foster–Greer–Thorbecke poverty-severity measure (FGT2). Each is the square of its existing nonnegative `poverty_gap_bhc` or `poverty_gap_ahc`, divided by the matching positive `poverty_line_bhc` or `poverty_line_ahc` **before squaring**:
+
+$$
+s_h = \left(\frac{\max(z_h-y_h,0)}{z_h}\right)^2, \qquad z_h>0.
+$$
+
+For example, income at or above the line gives zero, income halfway to the line gives 0.25, and zero income gives one. Scaling income and its line by the same positive factor leaves the component unchanged. These are normalized components, not GBP-squared poverty gaps or sums.
+
+The statistical definition follows the [World Bank PIP methodology, section 4.1](https://worldbank.github.io/PIP-Methodology-2022-05/surveyestimates.html#monetarypoverty). The variables retain the UK HBAI basis described above: negative BHC income is reset to zero, while AHC income can be negative. The AHC component can therefore exceed one. PIP's own negative-welfare preprocessing is not reproduced here, and these components are not an official DWP severity estimate.
+
+For a person-based population index, map each household's component to every person and take the existing survey-weighted **mean**, not a sum or a household-weighted mean. Given an already configured `Microsimulation` named `sim`:
+
+```python
+component = sim.calculate("squared_poverty_gap_bhc", 2025, map_to="person")
+fgt2 = component.mean(skipna=False)
+```
+
+For example, a one-person household with survey weight 2 and component 0.25, plus a three-person household with survey weight 1 and component 1, gives `(2 * 0.25 + 3 * 1) / (2 + 3) = 0.7`. A household-weighted mean would instead give 0.5. This tiny synthetic example is not a national estimate.
+
+A zero or negative poverty line has an undefined normalized component, returned as `NaN`. The explicit `skipna=False` preserves that invalid-domain signal in a weighted mean rather than silently dropping people; alternatively validate that all included poverty lines are positive before aggregation. No new income, poverty-line, equivalence, survey-weight or dataset assumptions are introduced.
+
 ## Nowcasting/forecasting
 
 
@@ -85,6 +108,6 @@ Each of the variables above is either derived from other variables, or is a dire
 | `maintenance_expenses` | gov.obr.consumer_price_index | Uprated based on CPI inflation |
 | `student_loan_repayments` | gov.economic_assumptions.indices.obr.average_earnings | Uprated based on OBR average earnings projections |
 | `rent` | gov.obr.rent | Social rents uprated by CPI+1%, private rents uprated with outturn data by region to 2025, then with backed-out private rent level growth from OBR aggregate rent forecasts (assuming social rent grows at CPI+1%) |
-| `water_and_sewerage_charges` | gov.obr.consumer_price_index | Uprated based on CPI as proxy |
+| `water_and_sewerage_charges` | gov.economic_assumptions.yoy_growth.ofwat.water_bills (England and Wales), gov.economic_assumptions.yoy_growth.scottish_water.water_bills (Scotland) | Uprated by each country's published bill increases, then projections; Northern Ireland has no domestic water charges and is held flat |
 | `mortgage_interest_repayment` | gov.obr.mortgage_interest | Uprated based on outturn Ofwat data to 2025, then Ofwat projections onwards |
 | `housing_service_charges` | gov.economic_assumptions.indices.obr.lagged_average_earnings | Uprated based on lagged average earnings as proxy |

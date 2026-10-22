@@ -1,4 +1,7 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.dwp.universal_credit.household_uc_company_holding_pool_scale import (
+    HOLDINGS_SOURCE,
+)
 from policyengine_uk.utils.capital_valuation import (
     counted_share,
     exact_amount,
@@ -23,18 +26,18 @@ class household_uc_pool_company_holdings(Variable):
         "company substitution, so it includes its claimant's and partner's "
         "holdings. household_uc_reported_financial_capital consumes the override "
         "or, if larger, their effective holdings after the shared household "
-        "corporate-wealth budget is applied. Removing "
+        "share-like capital budget is applied. Removing "
         "those holdings again here would count the same disregard twice. "
         "All other holdings leave the pool here, including a dependant's "
         "holding even when their benunit supplies a report or override. "
         "When financial reports and holdings are compatible, no benunit counts "
         "any part of a disregarded holding. An inconsistent financial report "
         "that omits a known holding can leave it in the residual pool. A holding "
-        "is shares, held within the household's corporate_wealth. Each "
-        "person's holding is first clipped to [0, max(0, corporate_wealth)], "
+        "is shares, held within the household's share_like_capital_with_sale_expenses. Each "
+        "person's holding is first clipped to [0, max(0, share_like_capital_with_sale_expenses)], "
         "with positive infinity mapped to the upper bound and negative infinity "
         "to zero before any multiplication. All household holdings then share "
-        "one nonnegative corporate_wealth budget "
+        "one nonnegative share_like_capital_with_sale_expenses budget "
         "through household_uc_company_holding_pool_scale: when their total "
         "exceeds it, scale each person's holding proportionally before "
         "either the override floor or this deduction. This is a defensive "
@@ -42,7 +45,8 @@ class household_uc_pool_company_holdings(Variable):
         "shared budget prevents holdings from removing ordinary savings or "
         "property. It does not change regulation 77 substitution in the "
         "owner's own assessment. The holdings leave the pool at the value at "
-        "which the pool counts corporate_wealth: 90% where regulation 49(1)(a) "
+        "which the pool counts the shares that hold them "
+        "(share_like_capital_with_sale_expenses): 90% where regulation 49(1)(a) "
         "deducts 10% for the expenses of selling shares."
     )
     definition_period = YEAR
@@ -59,9 +63,7 @@ class household_uc_pool_company_holdings(Variable):
             has_financial_report | has_complete_override
         ) & claimant_or_partner
         holding = exact_amount(person("uc_company_holding_disregard", period))
-        upper_bound = max_(
-            0, exact_amount(person.household("corporate_wealth", period))
-        )
+        upper_bound = max_(0, exact_amount(person.household(HOLDINGS_SOURCE, period)))
         finite_holding = np.where(
             np.isfinite(holding), holding, np.where(holding > 0, upper_bound, 0)
         )
@@ -70,10 +72,10 @@ class household_uc_pool_company_holdings(Variable):
             * person.household("household_uc_company_holding_pool_scale", period)
             * ~off_reported_capital
         )
-        # The holdings sit in corporate_wealth, which the pool counts at the
+        # The holdings sit in HOLDINGS_SOURCE, which the pool counts at the
         # reg. 49(1) value, so they leave it at that value.
         p = parameters(period).gov.dwp.universal_credit.means_test.capital
         return round_to_penny(
-            holdings * counted_share(p.sale_expenses, "corporate_wealth"),
+            holdings * counted_share(p.sale_expenses, HOLDINGS_SOURCE),
             p.round_down,
         )

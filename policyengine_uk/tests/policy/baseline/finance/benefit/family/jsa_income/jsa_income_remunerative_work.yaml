@@ -445,7 +445,7 @@
     # The lodger's own claim passes, so they are on it; the claimant is not.
     is_on_income_based_jsa: [false, true]
 
-- name: A non-dependent adult's own JSA ends once the family's legacy benefits have closed
+- name: A non-dependent adult's own JSA remains open when only the couple's legacy benefits close
   period: 2025
   absolute_error_margin: 0
   input:
@@ -471,15 +471,13 @@
         members: [claimant, lodger, child]
   output:
     legacy_benefits_closed: true
-    # The lodger does not work, so the screen fails only on the closure.
+    # The separate non-working claim remains open under the annual proxy.
     jsa_remunerative_work_hours: [0, 0, 0]
-    jsa_income_eligible: false
-    jsa_income: 0
-    # The model ends every member's award once the family's legacy benefits
-    # close, the lodger's own claim included, so nobody is on it. That is a
-    # model simplification: in law the migration notice reaches only the
-    # claimant and partner (SI 2014/1230 regs 44(1), (4) and 46(1)).
-    is_on_income_based_jsa: [false, false, false]
+    jsa_income_eligible: true
+    jsa_income: 3000
+    claimant_or_partner_jsa_income: 0
+    # Only the claimant's own award closes; the lodger's own claim passes.
+    is_on_income_based_jsa: [false, true, false]
 
 # The Income Support gate reads the screened award (s.124(1)(f)).
 
@@ -508,3 +506,38 @@
     jsa_income_eligible: false
     jsa_income: 0
     income_support_eligible: true
+
+- name: Issue 2395 couple closure leaves a separate outside JSA award open
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+        is_parent: true
+        child_tax_credit_reported: 2_000
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+        is_parent: true
+      outside:
+        age: 40
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        jsa_income_reported: 5_000
+      child:
+        age: 5
+        is_claimant_or_partner: false
+    benunits:
+      unit:
+        members: [claimant, partner, outside, child]
+        jsa_income_assessable_capital: 0
+    households:
+      household:
+        members: [claimant, partner, outside, child]
+  output:
+    legacy_benefits_closed: true
+    jsa_income: 5_000
+    claimant_or_partner_jsa_income: 0
+    is_on_income_based_jsa: [false, false, true, false]
