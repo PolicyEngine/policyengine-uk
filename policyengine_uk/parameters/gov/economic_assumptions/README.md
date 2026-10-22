@@ -22,7 +22,7 @@ GDP and population assumptions remain supported.
 |-------------------------|----------------------------------------------------------|-------------------------|
 | `consumer_price_index`  | CPI year-on-year growth                                  | EFO Table 1.7           |
 | `cpih`                  | CPI including owner-occupiers' housing costs             | EFO Table 1.7           |
-| `consumer_price_index_ahc` | CPI excluding rents/maintenance/water (AHC measure)   | ONS adhoc 2863          |
+| `consumer_price_index_ahc` | CPI excluding rents/maintenance/water (AHC measure)   | ONS ad hoc 3582; forecast derived by `utils/create_ahc_deflator.py` |
 | `rpi`                   | Retail Price Index year-on-year growth                   | EFO Table 1.7           |
 | `average_earnings`      | Average weekly earnings growth                           | EFO Table 1.6           |
 | `non_labour_income`     | Non-labour household income growth                       | derived from EFO        |
