@@ -1,3 +1,11 @@
+## [2.146.6] - 2026-10-22
+
+### Fixed
+
+- - Evaluated `claims_all_entitled_benefits` per benefit unit in hand-entered situations, so one family's reported benefits no longer switch off another family's take-up. Data-built simulations keep main's result, false for every family, so survey take-up of tax credits and Income Support still follows reported claims; Council Tax Reduction and Housing Benefit take-up there is limited to reporters (d1390 and d1455) until calibrated take-up inputs land (policyengine-uk-data#448). Explicit take-up inputs continue to override these defaults.
+- - Count statutory sick, maternity and paternity pay as Pension Credit earnings of an employed earner (State Pension Credit Regulations 2002 reg. 17A(2)(h) and (i)), including in the Schedule VI earnings disregard and the income tax on earnings.
+
+
 ## [2.146.5] - 2026-10-22
 
 ### Fixed

@@ -1,1 +1,0 @@
-- Count statutory sick, maternity and paternity pay as Pension Credit earnings of an employed earner (State Pension Credit Regulations 2002 reg. 17A(2)(h) and (i)), including in the Schedule VI earnings disregard and the income tax on earnings.
