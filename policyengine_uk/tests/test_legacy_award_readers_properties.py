@@ -489,19 +489,19 @@ def test_adult_non_dependant_ends_the_severe_disability_premium():
 
 # --- Further family shapes (begin) ---
 # Some readers only bite for a claimant over state pension age (the Housing
-# Benefit regulations that apply, the Pension Credit earnings disregard, the
-# mixed-age couple saving), for a single applicant under 25, or for parents of
-# a young child of whom only one works (the extended childcare partner
-# condition). The families above rarely take those shapes, so three more
-# properties check every family and member reader on them. The claimant and
-# partner seldom report an award themselves, and on the savings drawn below the
-# £16,000 capital limit the added member's award survives tariff income, so a
-# reader that wrongly counts it changes (£20,000 of savings screens
-# income-related ESA and income-based JSA to nil). The shapes pay no rent, so
-# Universal Credit stays far below the benefit cap. The cap reads only the
-# couple's own awards and the family's (benefit_cap_reduction), not another
-# member's; the first property checks that on JSA_COUPLE_WITH_LODGER, a family
-# that an added member's £3,000 of JSA would take over the cap if it counted.
+# Benefit regulations that apply, the mixed-age couple saving), for a single
+# applicant under 25, or for parents of a young child of whom only one works
+# (the extended childcare partner condition). The families above rarely take
+# those shapes, so three more properties check every family and member reader
+# on them. The claimant and partner seldom report an award themselves, and on
+# the savings drawn below the £16,000 capital limit the added member's award
+# survives tariff income, so a reader that wrongly counts it changes (£20,000
+# of savings screens income-related ESA and income-based JSA to nil). The
+# shapes pay no rent, so Universal Credit stays far below the benefit cap.
+# The cap reads only the couple's own awards and the family's
+# (benefit_cap_reduction), not another member's; the first property checks
+# that on JSA_COUPLE_WITH_LODGER, a family that an added member's £3,000 of
+# JSA would take over the cap if it counted.
 PENSION_AGE = 68
 # Whether the pension-age property enters is_mixed_age_couple, so that a
 # reader of the couple's award reports is tested on those reports alone.
