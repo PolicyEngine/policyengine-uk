@@ -114,12 +114,16 @@ PROJECTION_END_YEAR = 2032
 # projections for earlier years. Correcting historical mapping omissions is
 # a separate change. Energy values already have FY26/27 prices (#1868), as
 # documented in uprating_indices.yaml, and must remain flat in the dataset.
+# Liquid and solid fuel spending is projected as the other energy inputs are
+# (#2572).
 LEGACY_PROJECTION_END_YEAR = 2030
 DATASET_UPRATING_EXCLUSIONS = frozenset(
     {
         "domestic_energy_consumption",
         "electricity_consumption",
         "gas_consumption",
+        "liquid_fuel_consumption",
+        "solid_fuel_consumption",
     }
 )
 # Inputs that describe only the year they are stored for, so are not carried

@@ -114,6 +114,7 @@ earlier mapping omissions is a separate change.
 are deliberately excluded from this fallback as well as the annual growth
 mapping. Their stored amounts already use FY2026-27 unit prices, so dataset
 projection holds them flat, as documented in `uprating_indices.yaml`.
+`liquid_fuel_consumption` and `solid_fuel_consumption` are excluded with them.
 
 The additional indices have their own source limits:
 
