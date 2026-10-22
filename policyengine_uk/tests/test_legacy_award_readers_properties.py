@@ -535,6 +535,7 @@ def other_members_with_awards(draw):
     return {
         "age": draw(st.integers(16, 60)),
         "current_education": "NOT_IN_EDUCATION",
+        "is_before_first_september_following_16th_birthday": False,
         **awards,
     }
 
