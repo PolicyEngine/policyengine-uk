@@ -73,18 +73,28 @@ def exact_amount(amount):
     """``amount`` in float64, with float32 storage error removed.
 
     Inputs are stored in float32, which holds £1,000.10 as 1,000.0999756 and
-    90% of £16,001 as 14,400.8994. A value is taken to be a whole penny when
-    that penny is within half a unit of the value's own precision, so it is
-    the penny the value was stored from; any other value (a share price to
-    four decimal places, say) is kept exactly as stored. Above £131,072
-    float32 cannot hold every penny, so a penny lost in storage there cannot
-    be recovered."""
-    stored = np.asarray(amount)
-    wide = stored.astype(np.float64)
+    90% of £16,001 as 14,400.8994. A float32 value, or one widened from
+    float32 to float64, is taken to be a whole penny when that penny is within
+    half its float32 spacing: it is then the penny the value was stored from.
+    Below £131,072 float32 holds every penny, so at most one penny is that
+    close. From £131,072 its spacing is wider than a penny, the penny cannot
+    be identified, and the value is kept as stored, so rounding it down
+    never goes against the claimant. Any other value (a share price to four
+    decimal places, or a float64 that is not a float32) is kept exactly."""
+    wide = np.asarray(amount).astype(np.float64)
+    narrow = wide.astype(np.float32)
     pennies = np.round(wide, 2)
-    # An infinite amount has no precision to compare against and passes through.
-    with np.errstate(over="ignore", invalid="ignore"):
-        stored_from_penny = np.abs(pennies - wide) <= np.spacing(np.abs(stored)) / 2
+    # Zero and subnormal values underflow in np.spacing, and an infinite one
+    # overflows; neither is a penny that needs recovering.
+    with np.errstate(over="ignore", under="ignore", invalid="ignore"):
+        precision = np.where(
+            narrow == wide,
+            np.spacing(np.abs(narrow)).astype(np.float64),
+            np.spacing(np.abs(wide)),
+        )
+        stored_from_penny = (2 * np.abs(pennies - wide) <= precision) & (
+            precision < 0.01
+        )
     return np.where(stored_from_penny, pennies, wide)
 
 
@@ -101,6 +111,8 @@ def round_to_penny(amount, round_down):
 
     Computed in float64, and rounded to a millionth of a penny first, so binary
     noise next to a whole or half penny (206.99999999999997 pence for 90% of
-    £2.30) does not move it."""
+    £2.30) does not move it. That tolerance is intended: an amount within a
+    millionth of a penny below a whole penny, which only a value that is not
+    a whole penny can produce, rounds to that penny."""
     pence = np.round(np.asarray(amount, dtype=np.float64) * 100, 6)
     return np.where(round_down, np.floor(pence), np.floor(pence + 0.5)) / 100

@@ -1,8 +1,16 @@
-"""The financial proxy conserves residual capital after financial observations."""
+"""The financial proxy conserves residual capital after financial observations.
+
+Each unreported unit's share of the residual is its own amount, rounded to the
+nearest penny with half a penny rounded up (UC Regs 2013 reg. 6(1)), so the
+shares add up to the residual to within half a penny per unit: 1.00 shared
+three ways is 0.33 each.
+"""
+
+from decimal import ROUND_HALF_UP, Decimal
 
 import numpy as np
 import pytest
-from hypothesis import HealthCheck, given, settings, strategies as st
+from hypothesis import HealthCheck, example, given, settings, strategies as st
 from policyengine_core.simulations import Simulation
 
 from policyengine_uk.system import system
@@ -29,6 +37,10 @@ def household_capital_situations(draw):
             max_size=3,
         )
     )
+    return build_situation(household_specs)
+
+
+def build_situation(household_specs):
     people, benunits, households, expected = {}, {}, {}, []
     for household_index, (capital, unit_specs) in enumerate(household_specs):
         household_members = []
@@ -56,7 +68,7 @@ def household_capital_situations(draw):
             if has_reported:
                 reported_values[len(benunits)] = reported_capital
             else:
-                unreported_indices.append(len(benunits))
+                unreported_indices.append((len(benunits), claimant_count))
             benunits[unit_id] = {
                 "members": members,
                 "benunit_reported_capital": {
@@ -78,6 +90,10 @@ def household_capital_situations(draw):
     return {"people": people, "benunits": benunits, "households": households}, expected
 
 
+def nearest_penny(amount):
+    return float(amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
+
+
 # Test conservation independently of machine-dependent generation timings.
 @settings(
     max_examples=30,
@@ -85,6 +101,8 @@ def household_capital_situations(draw):
     suppress_health_check=[HealthCheck.too_slow],
 )
 @given(household_capital_situations())
+# 1.00 of savings shared by three single claimants is 0.33 each, 0.99 in all.
+@example(build_situation([(1, [(1, 0, False, 0)] * 3)]))
 def test_unreported_capital_shares_sum_to_each_households_residual(case):
     situation, expected = case
     # Reuse baseline rules; each example still gets fresh people and inputs.
@@ -92,7 +110,16 @@ def test_unreported_capital_shares_sum_to_each_households_residual(case):
     assessed_capital = simulation.calculate("uc_assessable_capital", 2025)
 
     assert np.isfinite(assessed_capital).all()
-    for unreported_indices, reported_values, residual in expected:
-        assert assessed_capital[unreported_indices].sum() == pytest.approx(residual)
+    for unreported_units, reported_values, residual in expected:
+        claimants = sum(count for _, count in unreported_units)
+        for index, count in unreported_units:
+            share = Decimal(residual) * count / claimants
+            assert assessed_capital[index] == pytest.approx(
+                nearest_penny(share), abs=0.001
+            )
+        indices = [index for index, _ in unreported_units]
+        assert assessed_capital[indices].sum() == pytest.approx(
+            residual, abs=0.005 * len(indices) + 0.001
+        )
         for index, reported_capital in reported_values.items():
             assert assessed_capital[index] == pytest.approx(reported_capital)

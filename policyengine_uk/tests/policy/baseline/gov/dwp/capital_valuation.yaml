@@ -435,3 +435,47 @@
         savings: 10_000.01
   output:
     income_support_assessable_capital: [3_333.33, 3_333.33, 3_333.33]
+
+- name: Legacy benefits count 16,000.01 of savings in full, over the limit
+  period: 2026
+  absolute_error_margin: 0.004
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # Stored in float32 as 16,000.0098, which is the penny 16,000.01:
+        # rounding down at the last stage (IS Regs 1987 reg. 27; JSA Regs 1996
+        # reg. 92; ESA Regs 2008 reg. 3(a)) must not turn the storage error
+        # into a lost penny, which would put the capital at the 16,000 limit.
+        savings: 16_000.01
+  output:
+    income_support_assessable_capital: 16_000.01
+    jsa_income_assessable_capital: 16_000.01
+    esa_income_assessable_capital: 16_000.01
+
+- name: A Lifetime ISA counts at 75% of its balance to the penny
+  period: 2026
+  absolute_error_margin: 0.004
+  input:
+    people:
+      person:
+        age: 30
+        lifetime_isa_balance: 1_000.04
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+  output:
+    # 75% of 1,000.04 is 750.03, its surrender value below age 60.
+    lifetime_isa_countable_capital: 750.03
+    income_support_assessable_capital: 750.03
+    esa_income_assessable_capital: 750.03
+    uc_assessable_capital: 750.03
