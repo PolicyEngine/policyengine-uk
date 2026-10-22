@@ -88,6 +88,18 @@ def test_sparse_calculator_inputs_do_not_create_extra_receipts():
     assert amount(sim, "vat_change") == 0
 
 
+def test_fractional_fees_do_not_create_a_baseline_vat_change():
+    sim = simulation(
+        full=0,
+        reduced=0,
+        reforms={"gov.simulation.private_school_vat.private_school_fees": 5_000.10},
+    )
+    # P0 is float32 1000.02001953125; multiplying by .2 then dividing
+    # would produce 1000.0200805664062 and a spurious change at baseline.
+    assert amount(sim, "vat_change") == 0
+    assert amount(sim, "vat") + amount(sim, "private_school_vat") == 0
+
+
 def test_published_microcosm_receipts_check_is_unchanged():
     # Rounded aggregate inputs published in docs/engineering/vat-coverage.md.
     sim = simulation(year=2024, full=396.15e9, reduced=25.02e9)

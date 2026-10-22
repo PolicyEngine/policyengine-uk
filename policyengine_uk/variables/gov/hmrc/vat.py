@@ -32,7 +32,9 @@ class vat(Variable):
         # School-specific rate/exemption reforms change the separate head.
         baseline_school_vat = household("baseline_private_school_vat", period)
         baseline_standard_rate = parameters(period).baseline.gov.hmrc.vat.standard_rate
-        school_vat_in_receipts = (
-            baseline_school_vat * p.hmrc.vat.standard_rate / baseline_standard_rate
+        # Form the scalar ratio first: it is exactly one at baseline. A
+        # float32 multiply then divide can otherwise create a tiny vat_change.
+        school_vat_in_receipts = baseline_school_vat * (
+            p.hmrc.vat.standard_rate / baseline_standard_rate
         )
         return raw_vat / coverage - school_vat_in_receipts
