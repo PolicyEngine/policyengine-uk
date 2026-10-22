@@ -10,8 +10,9 @@ class universal_childcare_entitlement(Variable):
     unit = "currency-GBP"
     documentation = (
         "Universal hours claimed on their own, or allocated first from a "
-        "participating child's working parent hours when standalone take-up "
-        "is false. Legal eligibility determines this allocation."
+        "participating child's working parent hours, in the terms it gets "
+        "them, when standalone take-up is false. Legal eligibility "
+        "determines this allocation."
     )
     reference = (
         "https://www.legislation.gov.uk/ukpga/2016/5/section/1",
@@ -33,7 +34,10 @@ class universal_childcare_entitlement(Variable):
             "extended_childcare_entitlement_total_per_child", period
         )
         # s.1(6) counts provision available, not standalone take-up. Allocate
-        # the first funded hours to universal without creating unpaid hours.
+        # the first funded hours to universal without creating unpaid hours,
+        # in the terms the child gets working parent hours.
+        term_share = person("extended_childcare_entitlement_term_share", period)
+        participating_value = min_(term_share * base_value, working_parent_total)
         return min_(
-            base_value, where(standalone_claim, base_value, working_parent_total)
+            base_value, where(standalone_claim, base_value, participating_value)
         )

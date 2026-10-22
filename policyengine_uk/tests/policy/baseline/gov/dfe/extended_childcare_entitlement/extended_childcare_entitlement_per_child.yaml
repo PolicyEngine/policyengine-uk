@@ -54,6 +54,96 @@
     # 30 x 38 x 12.04
     extended_childcare_entitlement_per_child: 13725.60
 
+# SI 2022/1134 reg 27(1)(a): working parent hours start with the first
+# 1 January, 1 April or 1 September after the child is nine months old, each
+# term a third of the year.
+- name: A baby nine months old by 1 January gets the spring term's hours
+  period: 2026
+  absolute_error_margin: 0.05
+  input:
+    people:
+      child:
+        age: 0
+        date_of_birth: 20260315
+    benunits:
+      benunit:
+        members: [child]
+        extended_childcare_entitlement_eligible: true
+  output:
+    # Nine months on 15 December 2026: a third of 30 x 38 x 12.04.
+    extended_childcare_entitlement_per_child: 4575.20
+    is_child_receiving_extended_childcare: true
+
+- name: A baby nine months old by 1 September gets two terms' hours
+  period: 2026
+  absolute_error_margin: 0.05
+  input:
+    people:
+      child:
+        age: 0
+        date_of_birth: 20251115
+    benunits:
+      benunit:
+        members: [child]
+        extended_childcare_entitlement_eligible: true
+  output:
+    # Nine months on 15 August 2026.
+    extended_childcare_entitlement_per_child: 9150.40
+
+- name: A 1-year-old nine months old after 1 April misses the summer term
+  period: 2026
+  absolute_error_margin: 0.05
+  input:
+    people:
+      child:
+        age: 1
+        date_of_birth: 20250720
+    benunits:
+      benunit:
+        members: [child]
+        extended_childcare_entitlement_eligible: true
+  output:
+    # Nine months on 20 April 2026.
+    extended_childcare_entitlement_per_child: 9150.40
+
+# Until April 2024 the minimum age was three (reg 13(2)(a) as made). A
+# standalone universal claim runs all year; the working parent hours top it up
+# to 30 a week only in the terms after the third birthday. Rate: £5.88 (3-4).
+- name: A 3-year-old qualifying from September keeps a full year of universal hours
+  period: 2023
+  absolute_error_margin: 0.05
+  input:
+    people:
+      child:
+        age: 3
+        date_of_birth: 20200801
+    benunits:
+      benunit:
+        members: [child]
+        extended_childcare_entitlement_eligible: true
+  output:
+    # 570 x 5.88, then 15 more hours a week in two of the three terms.
+    universal_childcare_entitlement: 3351.60
+    extended_childcare_entitlement_per_child: 2234.40
+
+- name: Without standalone take-up such a child's universal hours come only in those terms
+  period: 2023
+  absolute_error_margin: 0.05
+  input:
+    people:
+      child:
+        age: 3
+        date_of_birth: 20200801
+    benunits:
+      benunit:
+        members: [child]
+        extended_childcare_entitlement_eligible: true
+        would_claim_universal_childcare: false
+  output:
+    # Two thirds of 570 x 5.88 in each programme.
+    universal_childcare_entitlement: 2234.40
+    extended_childcare_entitlement_per_child: 2234.40
+
 - name: Working parent participation funds universal first even with false standalone take-up
   period: 2026
   absolute_error_margin: 0.05

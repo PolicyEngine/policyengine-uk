@@ -7,17 +7,20 @@ class extended_childcare_entitlement_qualifying_child(Variable):
     label = "qualifying child of working parents for the extended childcare entitlement"
     documentation = (
         "A young child for whom working parents can take up the extended "
-        "childcare entitlement: under compulsory school age and in England "
-        "(Childcare Act 2016 s.1(2)(a)-(b)), and at least the minimum age and "
-        "not looked after by a local authority (SI 2022/1134 reg 13(2); "
-        "SI 2016/1257 reg 3(1) before 1 December 2022). A child in a "
-        "reception class does not count: its school place meets the "
-        "entitlement (early_years_child_in_school)."
+        "childcare entitlement in at least one of the year's terms: under "
+        "compulsory school age and in England (Childcare Act 2016 "
+        "s.1(2)(a)-(b)), not looked after by a local authority, and old "
+        "enough by the start of a term (SI 2022/1134 regs 13(2) and 27; SI "
+        "2016/1257 regs 3(1) and 35 before 1 December 2022; see "
+        "extended_childcare_entitlement_term_share). A child in a reception "
+        "class does not count: its school place meets the entitlement "
+        "(early_years_child_in_school)."
     )
     definition_period = YEAR
     reference = (
         "https://www.legislation.gov.uk/ukpga/2016/5/section/1",
         "https://www.legislation.gov.uk/uksi/2022/1134/regulation/13",
+        "https://www.legislation.gov.uk/uksi/2022/1134/regulation/27",
         "https://www.gov.uk/government/publications/early-education-and-childcare--2/early-education-and-childcare-valid-from-1-april-2026",
     )
 
@@ -40,8 +43,10 @@ class extended_childcare_entitlement_qualifying_child(Variable):
         country = person.household("country", period)
         in_england = country == country.possible_values.ENGLAND
 
+        # Old enough for at least one term: a child reaching the minimum age
+        # after the middle of the year can qualify from the spring term.
         meets_minimum_age = (
-            age >= p.extended_childcare_entitlement.young_child_minimum_age
+            person("extended_childcare_entitlement_term_share", period) > 0
         )
         not_looked_after = ~person("is_looked_after_by_local_authority", period)
 

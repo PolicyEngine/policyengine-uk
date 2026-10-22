@@ -23,12 +23,13 @@ randomly drawn families, each simulated twice (eligible and not):
 2. Legal universal and targeted eligibility does not depend on standalone
    take-up. A participating child's first funded hours, up to 15 a week, go
    to the applicable base programme even when its standalone flag is false.
-3. Each child's funded value equals an independent scalar reference:
-   max(claimed standalone value, working parent total) when eligible, the
-   claimed standalone value otherwise. Programme allocations count the
-   legally available base hours first, preserving that total.
-4. A child's funded hours never exceed the larger of its universal or
-   targeted hours and its working parent total, so never 30 hours a week
+3. Each child's funded value equals an independent scalar reference, term by
+   term: max(claimed standalone value, working parent total) in the terms
+   the child is old enough for when eligible (invariant 12), the claimed
+   standalone value otherwise. Programme allocations count the legally
+   available base hours first, preserving that total.
+4. In no term do a child's funded hours exceed the larger of its universal
+   or targeted hours and its working parent hours, so never 30 hours a week
    plus the universal 15.
 5. Raising the family's maximum hours used, or a child's own hours used,
    never lowers support.
@@ -52,6 +53,11 @@ randomly drawn families, each simulated twice (eligible and not):
 11. A child in school (current_education primary, as in a reception class)
     gets no universal or working parent hours: its school place meets both
     duties (guidance footnotes 7 and 17, paras A4.8 and C.6).
+12. Working parent hours start with the first 1 January, 1 April or 1
+    September after the child attains the minimum age (SI 2022/1134 reg
+    27(1)(a)); the year's terms begin on 1 April, 1 September and 1 January,
+    a third of the year each. A whole age is the middle of the year of age,
+    so the child was born on 6 April; a fractional age is exact on 6 October.
 
 A further property runs the real eligibility test: raising the £100,000
 income limit never lowers childcare support or household net income, and the
@@ -98,6 +104,25 @@ def close(a, b):
 def in_school(c):
     """Invariant 11: enrolled in primary education, as in a reception class."""
     return c.get("education") == "PRIMARY"
+
+
+def months_later(day, months):
+    """The same day of the month ``months`` calendar months later."""
+    index = day.year * 12 + day.month - 1 + months
+    return date(index // 12, index % 12 + 1, day.day)
+
+
+def term_share(age, year, minimum_age):
+    """Invariant 12: the share of the year's terms after the child attains
+    the minimum age."""
+    # A whole age is the middle of the year of age; a fractional one is exact
+    # on 6 October. The drawn ages are whole months, apart from 4.9, which is
+    # years past any minimum age.
+    months_old = 12 * age if age != int(age) else 12 * age + 6
+    born = months_later(date(year, 10, 6), -round(months_old))
+    attains = months_later(born, round(12 * minimum_age))
+    starts = (date(year, 4, 1), date(year, 9, 1), date(year + 1, 1, 1))
+    return sum(attains < start for start in starts) / len(starts)
 
 
 child = st.fixed_dictionaries(
@@ -221,16 +246,20 @@ def reference(c, f, year, eligible):
     floor = (
         universal_value * f["claims_universal"] + targeted_value * f["claims_targeted"]
     )
+    minimum_age = p.extended_childcare_entitlement.young_child_minimum_age
+    share = term_share(age, year, minimum_age)
     qualifying = (
         in_england
         and under_school_age
         and not c["looked_after"]
         and not in_school(c)
-        and age >= p.extended_childcare_entitlement.young_child_minimum_age
+        and share > 0
     )
     weekly = (
         min(
-            float(p.extended_childcare_entitlement.hours.calc(age)),
+            # The hours for its age, or for the minimum age if it reaches
+            # that later in the year.
+            float(p.extended_childcare_entitlement.hours.calc(max(age, minimum_age))),
             c["hours_used"],
             f["cap"],
         )
@@ -238,17 +267,22 @@ def reference(c, f, year, eligible):
         else 0
     )
     working_parent_total = weekly * weeks * rate if eligible else 0
-    total = max(floor, working_parent_total)
-    # Legal eligibility, independent of standalone take-up, determines
-    # which programme funds the first hours of participating children.
+    # In the terms the child is old enough for: the larger of the claimed
+    # standalone value and the working parent total, with legal eligibility,
+    # independent of standalone take-up, determining which programme funds
+    # the first hours. In the other terms: the claimed standalone value.
+    participating = max(floor, working_parent_total)
+    total = share * participating + (1 - share) * floor
     allocations = {
-        "universal_childcare_entitlement": min(universal_value, total),
-        "targeted_childcare_entitlement": min(targeted_value, total),
+        "universal_childcare_entitlement": share * min(universal_value, participating)
+        + (1 - share) * universal_value * f["claims_universal"],
+        "targeted_childcare_entitlement": share * min(targeted_value, participating)
+        + (1 - share) * targeted_value * f["claims_targeted"],
     }
     allocations["extended_childcare_entitlement_per_child"] = total - sum(
         allocations.values()
     )
-    return floor, total, working_parent_total, allocations
+    return floor, total, participating, allocations
 
 
 def funded(child_values):
@@ -447,6 +481,44 @@ def test_working_parent_hours_schedule_at_rollout_boundaries(
         },
     ],
 )
+@example(
+    2026,
+    [
+        # Nine months old on 6 October (eligible from the spring term), and
+        # whole ages 0 (born 6 April, nine months old on 6 January: no term)
+        # and 1 (every term).
+        {
+            "children": [
+                {"age": age, "hours_used": 45, "looked_after": False}
+                for age in (0.75, 0, 1)
+            ],
+            "cap": 60,
+            "claims_universal": True,
+            "claims_targeted": True,
+            "targeted": False,
+            "england": True,
+        },
+    ],
+)
+@example(
+    2024,
+    [
+        # Two from April 2024: 2-year-olds born on 6 April qualify from
+        # September, alongside targeted hours claimed on their own or not.
+        {
+            "children": [
+                {"age": age, "hours_used": 30, "looked_after": False}
+                for age in (2, 2.5, 1)
+            ],
+            "cap": 30,
+            "claims_universal": True,
+            "claims_targeted": claims_targeted,
+            "targeted": True,
+            "england": True,
+        }
+        for claims_targeted in (True, False)
+    ],
+)
 def test_becoming_eligible_never_lowers_childcare_support(year, families):
     values = simulate(families, year, eligible=[False, True])
     not_eligible, eligible = split(values, families, 2)
@@ -477,7 +549,7 @@ def test_becoming_eligible_never_lowers_childcare_support(year, families):
             # 2-3. Legal base hours fund participating children first,
             # even with false standalone flags. Each programme and the
             # combined total match the independent allocation reference.
-            floor, total_after, working_parent_total, expected_after = reference(
+            floor, total_after, participating, expected_after = reference(
                 c, f, year, True
             )
             _, total_before, _, expected_before = reference(c, f, year, False)
@@ -493,8 +565,9 @@ def test_becoming_eligible_never_lowers_childcare_support(year, families):
                     )
             assert close(funded(b), total_before), (year, f, c, b, total_before)
             assert close(funded(a), total_after), (year, f, c, a, total_after)
-            # 4. Never both added in full.
-            assert funded(a) <= max(floor, working_parent_total) + 0.02
+            # 4. Never both added in full, even in the terms with working
+            # parent hours.
+            assert funded(a) <= participating + 0.02
             # 6. Receiving means hours beyond the universal or targeted ones.
             top_up = a["extended_childcare_entitlement_per_child"]
             assert a["receiving"] == (top_up > 0), (year, f, c, a)
@@ -506,7 +579,7 @@ def test_becoming_eligible_never_lowers_childcare_support(year, families):
                 c,
                 a,
                 floor,
-                working_parent_total,
+                participating,
             )
             assert not b["receiving"]
 
