@@ -3,7 +3,9 @@
 `vat` and `baseline_vat` compute the statutory liability on each household's
 recorded consumption (the standard rate on `full_rate_vat_consumption` plus
 the reduced rate on `reduced_rate_vat_consumption`) and divide it by two
-factors, so that total VAT matches receipts:
+factors. This gross amount is calibrated to total VAT receipts. The private
+school component is then allocated to `private_school_vat`, as explained
+below, so the receipts comparison uses `vat + private_school_vat`:
 
 - `gov.simulation.vat.household_share_of_receipts` (0.7): the share of VAT
   liabilities that falls on household final consumption. HMRC's VAT gap
@@ -68,8 +70,9 @@ product         = pre-scaling VAT / OBR VAT receipts      (same year)
 survey coverage = product / household share (0.7)
 ```
 
-`vat` divides each household's statutory VAT by the product, so total `vat`
-equals receipts when the product matches the dataset.
+Dividing each household's statutory VAT by the product gives the gross
+amount. At current law, total `vat + private_school_vat` equals this amount,
+and equals receipts when the product matches the dataset.
 
 ### Results
 
@@ -88,7 +91,7 @@ equals receipts when the product matches the dataset.
 The parameter takes the Microcosm 2024-25 value, 0.67 (product 0.469), the
 latest outturn year.
 
-With that product, total `vat` against receipts is:
+With that product, total current-law `vat + private_school_vat` against receipts is:
 
 | Dataset | 2024-25 | 2025-26 | 2026-27 |
 |---|---|---|---|
@@ -145,6 +148,64 @@ for year, obr in receipts.items():
 For Enhanced FRS, download `enhanced_frs_2024_25.h5` from the model repository
 `policyengine/policyengine-uk-data-private` at the release tag (for example
 `revision="1.58.0"`).
+
+## Private school VAT: splitting the existing receipts total
+
+The OBR VAT total already includes VAT on private school fees. HMRC's
+[VAT-only costing](https://www.gov.uk/government/publications/vat-on-private-school-fees/applying-vat-to-private-school-fees)
+is £460m in 2024-25, £1,505m in 2025-26 and £1,560m in 2026-27. Adding a
+separate school VAT head to the gross amount above would count that receipt
+twice. The model instead separates the school component from the existing
+receipts allocation, keeping the survey coverage at 0.67.
+
+For each household, let `G` be the gross VAT amount above, `P0` be
+`baseline_private_school_vat`, `P` be `private_school_vat`, `r0` be the
+baseline standard rate and `r` be the current standard rate. The allocation
+is:
+
+```text
+school component already in gross VAT = P0 * r / r0
+vat                                  = G - P0 * r / r0
+baseline_vat                         = G0 - P0
+combined VAT                         = vat + P
+                                     = G + P - P0 * r / r0
+```
+
+At current law, `r = r0` and `P = P0`, so combined VAT is exactly `G` for
+every household, year and dataset. The same identity holds after weighting
+and aggregation. It also holds when only the standard rate changes: both
+the allocated component and the explicit school charge move with that
+rate. Subtracting a fixed `P0` from current `vat` would count that rate
+change twice. Restoring the school exemption leaves the allocation in
+place and sets `P` to zero, reducing combined VAT by the school charge.
+
+Both school measures use this simulation's attendance, fees and effective
+VAT basis, with baseline policy held fixed for `P0`. Consequently, changes
+to those assumptions alone preserve the current-law receipts total. The
+official £1,560m costing is a useful external comparison, but subtracting it
+instead of the model's own school component would leave a residual equal
+to the difference between the two. It would also require a dataset-specific
+allocation of that national amount. No new coverage factor is needed for
+this accounting split.
+
+The receipts check therefore retains the original calibration's accuracy.
+Using the rounded 2024-25 Microcosm inputs above,
+`80.48 / (0.67 * 0.7) = £171.599bn`, compared with OBR's £170.994bn: about
+0.35% above receipts. The table's 2025-26 and 2026-27 comparisons also stay
+unchanged. This split prevents an additional school VAT overstatement; the
+existing differences from receipts, including Enhanced FRS's larger
+overstatement, still require dataset-specific calibration. Aggregate impact
+CI compares the combined VAT report group against the PR's base.
+
+Two limits matter when interpreting the split. Model year 2024 represents
+2024-25 but reads annual policy before the January 2025 commencement, so
+`P0` is zero for that year. The £460m part-year receipt remains in general
+VAT; this change does not model its separate timing. Also, general `vat`
+can be negative when a household has imputed or entered school attendance
+and too little recorded consumption to cover the allocated school
+component. It is a receipt-allocation residual. Clipping it to zero would
+break the receipts identity; the combined current-law amount still equals
+the original gross amount.
 
 ## Interaction with an explicit energy VAT base
 

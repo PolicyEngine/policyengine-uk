@@ -19,12 +19,10 @@ rate, with the exemption at current law, restored or removed:
   private_school_vat unchanged, so the fees are never taxed twice;
 - monotone: private_school_vat never falls when the reform rate or the
   standard rate rises;
-- separate inputs: vat (VAT on imputed consumption) is the same whatever the
-  private school parameters, and private_school_vat is the same whatever the
-  household's consumption, including education consumption. This shows
-  neither head reads the other's parameters or inputs; it does not show the
-  bases are separate, since vat's base includes education consumption (see
-  the private_school_vat_and_vat guard in data/fiscal_partition.yaml);
+- receipt partition: school-specific rate and exemption reforms leave the
+  residual vat head unchanged, and private_school_vat is independent of
+  recorded consumption. General VAT nets out the baseline school tax base
+  before the school head is counted (test_private_school_vat_receipts.py);
 - level and change: private_school_vat_change equals private_school_vat
   minus baseline_private_school_vat; baseline_private_school_vat equals
   private_school_vat under baseline policy with this simulation's mean fee
@@ -197,7 +195,7 @@ def test_private_school_vat_never_falls_as_a_rate_rises(households, p, rise):
 
 @SETTINGS
 @given(households=st.lists(household, min_size=1, max_size=3), p=parameter_set)
-def test_vat_and_private_school_vat_read_separate_inputs(households, p):
+def test_school_specific_policy_leaves_residual_vat_unchanged(households, p):
     vat = calc(households, p, "vat")
     for overrides in (
         {"exempt": True, "contrib": 0.0},

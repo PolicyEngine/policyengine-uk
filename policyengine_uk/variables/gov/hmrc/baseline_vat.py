@@ -3,7 +3,7 @@ from policyengine_uk.utils.vat import vat_grossing_factor
 
 
 class baseline_vat(Variable):
-    label = "baseline VAT"
+    label = "baseline VAT excluding private school fees"
     entity = Household
     definition_period = YEAR
     value_type = float
@@ -20,4 +20,7 @@ class baseline_vat(Variable):
         # Survey consumption under-records spending, and households bear only
         # part of VAT liabilities, so household VAT is grossed up to receipts.
         coverage = vat_grossing_factor(p.simulation)
-        return raw_vat / coverage
+        # Match vat's receipt allocation under baseline policy. Using this
+        # simulation's attendance and fee assumptions makes assumptions-only
+        # reforms leave both VAT change measures at zero.
+        return raw_vat / coverage - household("baseline_private_school_vat", period)

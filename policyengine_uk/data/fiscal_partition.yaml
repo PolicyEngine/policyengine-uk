@@ -232,7 +232,7 @@ tax_heads:
 
   # Consumption
   - id: vat
-    label: VAT
+    label: VAT excluding private school fees
     variable: vat
     entity: household
     obr_line: Value added tax
@@ -240,14 +240,28 @@ tax_heads:
     report_group: vat
     payer: consumer incidence
     totals: [gov_tax]
-    sign: nonnegative
+    sign: any
     data_note: >-
+      A residual receipt allocation: baseline school-fee VAT at the current
+      standard rate is subtracted before counting the separate school head.
+      Sparse calculator consumption can make the residual negative; do not
+      clip it, which would inflate combined receipts. Separately,
       Negative for 76 households on policyengine-uk-data 1.58.0
       (enhanced_frs_2024_25) in every year from 2025 to 2030, -£72m weighted
       in 2026: full_rate_vat_consumption is negative there because the
       dataset's consumption (44 households) or full_rate_vat_expenditure_rate
       (32 households) is negative. policyengine-uk-data issue 565. Measured
       2026-10-11.
+    reads:
+      - head: income_tax
+        route: vat -> baseline_private_school_vat -> attends_private_school -> income_tax
+        why: attendance determines the school-fee receipt allocation; the tax itself is not added
+      - head: nics_individual
+        route: vat -> baseline_private_school_vat -> attends_private_school -> national_insurance
+        why: attendance determines the school-fee receipt allocation; the tax itself is not added
+      - head: council_tax
+        route: vat -> baseline_private_school_vat -> attends_private_school -> household_benefits -> council_tax_benefit -> council_tax
+        why: attendance determines the school-fee receipt allocation; the tax itself is not added
   - id: vat_change
     label: Change in VAT from its baseline
     variable: vat_change
@@ -263,6 +277,15 @@ tax_heads:
       - head: vat
         route: vat_change adds vat and subtracts baseline_vat
         why: a change measure built from the level; the two are never in the same total
+      - head: income_tax
+        route: vat_change -> vat -> baseline_private_school_vat -> attends_private_school -> income_tax
+        why: attendance determines the school-fee receipt allocation; the tax itself is not added
+      - head: nics_individual
+        route: vat_change -> vat -> baseline_private_school_vat -> attends_private_school -> national_insurance
+        why: attendance determines the school-fee receipt allocation; the tax itself is not added
+      - head: council_tax
+        route: vat_change -> vat -> baseline_private_school_vat -> attends_private_school -> household_benefits -> council_tax_benefit -> council_tax
+        why: attendance determines the school-fee receipt allocation; the tax itself is not added
   # Standard-rated from 1 January 2025: Finance Act 2025 s.47 inserts VATA
   # 1994 Sch 9 Part 3, taking private school education, vocational training
   # and closely related board and lodging out of the Group 6 exemption, for
@@ -681,25 +704,16 @@ overlap_guards:
     kind: overlapping_base
     heads: [vat, private_school_vat]
     property: >-
-      The two heads read separate inputs and parameters (tested in
-      test_private_school_vat_properties.py), but their bases are not
-      separated household by household. vat applies one household full-rate
-      share (full_rate_vat_expenditure_rate) to all imputed consumption,
-      education included. On the microdata the share is trained on ETB VAT
-      paid in the financial year ending 2024, when private school fees were
-      exempt, and predicted from household composition and income only
-      (policyengine-uk-data datasets/imputations/vat.py): in aggregate it
-      prices the fees as exempt, and a fee-paying household's fees are
-      charged at its blended share. In a household calculation with the
-      default share of 0.5, education consumption entered as an input is
-      charged in vat as well as in private_school_vat, where attendance is
-      an input. private_school_vat charges the fees once, at the higher of
-      the statutory and contributed reform rates. On calibrated data the two
-      overlap in aggregate: policyengine-uk-data calibrates weighted vat to
-      the OBR VAT receipts line, which includes VAT on private school fees
-      from 2025-26 (costed at 1,505m pounds for 2025-26), so gov_tax counts
-      that VAT in both heads until the target nets it out
-      (policyengine-uk-data issue 567).
+      Grossed-up consumption VAT is fitted to receipts including school-fee
+      VAT. vat subtracts baseline_private_school_vat times the current
+      standard rate divided by its baseline rate, then gov_tax adds
+      private_school_vat. At current law the subtraction equals the school
+      head household by household, preserving combined receipts exactly.
+      Scaling the subtraction with the standard rate also prevents a second
+      school-fee rate response. School-specific exemption and contributed
+      rate reforms move only the school head. Both baseline measures hold
+      this simulation's fee and attendance assumptions fixed. See
+      test_private_school_vat_receipts.py and docs/engineering/vat-coverage.md.
   - id: council_tax_gross_and_reduction
     kind: gross_and_net
     heads: [council_tax]
@@ -724,7 +738,7 @@ overlap_guards:
       here as well.
   - id: eligibility_reads
     kind: read_not_inclusion
-    heads: [tv_licence, private_school_vat, private_school_vat_change]
+    heads: [tv_licence, vat, vat_change, private_school_vat, private_school_vat_change]
     property: >-
       These heads reach other heads of the same total only through
       eligibility or imputation (see each head's reads). Raising the other
