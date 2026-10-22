@@ -240,7 +240,7 @@
     is_uc_work_allowance_eligible: true
     uc_work_allowance: 8_520
     uc_maximum_amount: 9_321.36
-    is_benefit_cap_single_claimant_rate: false
+    is_uc_benefit_cap_single_claimant_rate: false
 
 - name: A pensioner with a 16-year-old outside education gets the Pension Credit child addition.
   # 2026-27: born 6 April 2010, before 6 April 2017, so the first child
