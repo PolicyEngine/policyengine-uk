@@ -1,3 +1,10 @@
+## [2.147.1] - 2026-10-22
+
+### Fixed
+
+- - Count landlords' property income after mortgage interest (`property_income_after_finance_costs`) in `hbai_household_net_income`, `market_income` and `household_market_income`, as the Family Resources Survey records it (rent from property after the mortgage payments and loan interest on show card K6). They added `property_income`, the profit before finance costs, so finance costs raised HBAI income by the tax reduction they earn. Income tax and the means tests are unchanged.
+
+
 ## [2.147.0] - 2026-10-22
 
 ### Added
