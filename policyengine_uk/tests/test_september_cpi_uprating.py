@@ -9,7 +9,7 @@ figure, and that scenarios on the inputs move benefit rates.
 """
 
 import pytest
-from policyengine_core.parameters import Parameter, load_parameter_file
+from policyengine_core.parameters import Parameter, ParameterNode, load_parameter_file
 
 from policyengine_uk import Simulation
 from policyengine_uk.model_api import Scenario
@@ -134,9 +134,44 @@ def last_published_year(raw, name):
     return max(int(value.instant_str[:4]) for value in raw.get_child(name).values_list)
 
 
+# An older, unrelated omission: the national financial wealth total is meant
+# to project by GDP per capita, but its node metadata never reaches this leaf.
+# Keep its existing corporate-incidence fallback unchanged in this benefit fix.
+# Limit the exception to this exact leaf so new omissions still fail.
+KNOWN_UNPROPAGATED_UPRATING = {
+    (
+        "household.wealth.national_balance_sheet.household",
+        "household.wealth.national_balance_sheet.household.financial_net_worth",
+    ),
+}
+
+
+def test_node_uprating_reaches_every_leaf():
+    """A node's uprating must reach its leaves, which core actually uprates.
+
+    A leaf can override the parent's index, as the earnings-linked HB income
+    bands do, but must not silently lose uprating altogether.
+    """
+    missing = set()
+    for node in system.parameters.get_descendants():
+        if not isinstance(node, ParameterNode) or not uprating_parameter(node):
+            continue
+        for leaf in node.get_descendants():
+            if isinstance(leaf, Parameter) and not uprating_parameter(leaf):
+                missing.add((node.name, leaf.name))
+    assert missing <= KNOWN_UNPROPAGATED_UPRATING, missing - KNOWN_UNPROPAGATED_UPRATING
+
+
+@pytest.mark.parametrize("children, expected", [("1", 1108.58), ("2", 1900.42)])
+def test_uc_childcare_caps_rise_by_september_cpi_in_april_2027(children, expected):
+    cap = system.parameters.gov.dwp.universal_credit.elements.childcare.cap
+    assert cap.children[children]("2027-04-30") == pytest.approx(expected, abs=0.005)
+
+
 def test_every_parameter_on_the_index_rises_by_september_cpi_after_its_last_value():
     """After its last published value, each parameter uprated by the index
-    rises by exactly the April rise: 0% in April 2016, 2.1% in April 2027."""
+    rises by exactly the April rise: 0% in April 2016, 3.5% in April 2027,
+    and 2.1% in April 2028."""
     parameters = system.parameters
     # The processed tree, including its baseline copy, is uprated, so read
     # the YAML files for the last published dates.
@@ -186,7 +221,23 @@ def test_no_parameter_projects_from_an_earlier_start():
 LAGGED_CPI = "gov.economic_assumptions.indices.obr.lagged_cpi"
 
 
-def test_amounts_outside_the_review_keep_their_lagged_calendar_cpi_projection():
+def test_hb_non_dependant_income_bands_keep_lagged_cpi_while_deductions_use_september():
+    parameters = system.parameters
+    amounts = parameters.gov.dwp.housing_benefit.non_dep_deduction.amount
+    index = parameters.gov.economic_assumptions.indices.obr.lagged_cpi
+    lagged_factor = index("2027-04-30") / index("2026-04-30")
+    for bracket in amounts.brackets:
+        assert uprating_parameter(bracket.threshold) == LAGGED_CPI
+        assert uprating_parameter(bracket.amount) == INDEX
+        assert bracket.threshold("2027-04-30") == pytest.approx(
+            bracket.threshold("2026-04-30") * lagged_factor, abs=PENNY_TENTH
+        )
+        assert bracket.amount("2027-04-30") == pytest.approx(
+            bracket.amount("2026-04-30") * 1.035, abs=PENNY_TENTH
+        )
+
+
+def test_amounts_not_raised_by_september_cpi_keep_their_lagged_calendar_projection():
     """Amounts that were on gov.benefit_uprating_cpi but are not raised by
     September CPI (the Pension Credit standard minimum guarantee, the Housing
     Benefit pension-age allowances, DfE funding rates and others) still rise

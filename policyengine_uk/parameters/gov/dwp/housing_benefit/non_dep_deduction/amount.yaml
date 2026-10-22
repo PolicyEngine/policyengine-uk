@@ -4,9 +4,15 @@ description: The following amount is provided for individuals under the Housing 
 # as set in the Housing Benefit Regulations 2006 reg 74 by each year's
 # Social Security Benefits Up-rating Order (bands unchanged in 2021-22: SI
 # 2021/162 art 24(3)).
+# Deduction amounts rise by September CPI. Income bands follow earnings in
+# practice; retain their previous lagged calendar-year CPI projection as a
+# placeholder until the earnings-linked uprating model covers them.
 brackets:
 - threshold:
-    2018-06-18: 0
+    metadata:
+      uprating: gov.economic_assumptions.indices.obr.lagged_cpi
+    values:
+      2018-06-18: 0
   amount:
     2018-06-18: 15.25
     2019-04-01: 15.6
@@ -18,14 +24,17 @@ brackets:
     2025-04-01: 19.65
     2026-04-01: 20.4
 - threshold:
-    2018-06-18: 139
-    2019-04-01: 143
-    2020-04-01: 149
-    2022-04-01: 154
-    2023-04-01: 162
-    2024-04-01: 176
-    2025-04-01: 183
-    2026-04-01: 192
+    metadata:
+      uprating: gov.economic_assumptions.indices.obr.lagged_cpi
+    values:
+      2018-06-18: 139
+      2019-04-01: 143
+      2020-04-01: 149
+      2022-04-01: 154
+      2023-04-01: 162
+      2024-04-01: 176
+      2025-04-01: 183
+      2026-04-01: 192
   amount:
     2018-06-18: 35
     2019-04-01: 35.85
@@ -37,14 +46,17 @@ brackets:
     2025-04-01: 45.15
     2026-04-01: 46.85
 - threshold:
-    2018-06-18: 204
-    2019-04-01: 209
-    2020-04-01: 217
-    2022-04-01: 224
-    2023-04-01: 236
-    2024-04-01: 256
-    2025-04-01: 266
-    2026-04-01: 279
+    metadata:
+      uprating: gov.economic_assumptions.indices.obr.lagged_cpi
+    values:
+      2018-06-18: 204
+      2019-04-01: 209
+      2020-04-01: 217
+      2022-04-01: 224
+      2023-04-01: 236
+      2024-04-01: 256
+      2025-04-01: 266
+      2026-04-01: 279
   amount:
     2018-06-18: 48.05
     2019-04-01: 49.2
@@ -56,14 +68,17 @@ brackets:
     2025-04-01: 62
     2026-04-01: 64.35
 - threshold:
-    2018-06-18: 265
-    2019-04-01: 272
-    2020-04-01: 283
-    2022-04-01: 292
-    2023-04-01: 308
-    2024-04-01: 334
-    2025-04-01: 348
-    2026-04-01: 365
+    metadata:
+      uprating: gov.economic_assumptions.indices.obr.lagged_cpi
+    values:
+      2018-06-18: 265
+      2019-04-01: 272
+      2020-04-01: 283
+      2022-04-01: 292
+      2023-04-01: 308
+      2024-04-01: 334
+      2025-04-01: 348
+      2026-04-01: 365
   amount:
     2018-06-18: 78.65
     2019-04-01: 80.55
@@ -75,14 +90,17 @@ brackets:
     2025-04-01: 101.35
     2026-04-01: 105.2
 - threshold:
-    2018-06-18: 354
-    2019-04-01: 363
-    2020-04-01: 377
-    2022-04-01: 389
-    2023-04-01: 410
-    2024-04-01: 445
-    2025-04-01: 463
-    2026-04-01: 485
+    metadata:
+      uprating: gov.economic_assumptions.indices.obr.lagged_cpi
+    values:
+      2018-06-18: 354
+      2019-04-01: 363
+      2020-04-01: 377
+      2022-04-01: 389
+      2023-04-01: 410
+      2024-04-01: 445
+      2025-04-01: 463
+      2026-04-01: 485
   amount:
     2018-06-18: 89.55
     2019-04-01: 91.7
@@ -94,14 +112,17 @@ brackets:
     2025-04-01: 115.45
     2026-04-01: 119.85
 - threshold:
-    2018-06-18: 439
-    2019-04-01: 451
-    2020-04-01: 469
-    2022-04-01: 484
-    2023-04-01: 511
-    2024-04-01: 554
-    2025-04-01: 577
-    2026-04-01: 605
+    metadata:
+      uprating: gov.economic_assumptions.indices.obr.lagged_cpi
+    values:
+      2018-06-18: 439
+      2019-04-01: 451
+      2020-04-01: 469
+      2022-04-01: 484
+      2023-04-01: 511
+      2024-04-01: 554
+      2025-04-01: 577
+      2026-04-01: 605
   amount:
     2018-06-18: 98.3
     2019-04-01: 100.65
