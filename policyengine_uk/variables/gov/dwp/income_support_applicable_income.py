@@ -5,13 +5,20 @@ class income_support_applicable_income(Variable):
     value_type = float
     entity = BenUnit
     label = "Relevant income for Income Support means test"
+    documentation = (
+        "The claimant's and partner's income for Income Support, including "
+        "spousal maintenance. Child maintenance is disregarded."
+    )
     definition_period = YEAR
     unit = GBP
     reference = (
         "https://www.legislation.gov.uk/uksi/1987/1967/schedule/8",
         "https://www.legislation.gov.uk/uksi/1987/1967/regulation/36",
         "https://www.legislation.gov.uk/uksi/1987/1967/regulation/38",
+        "https://www.legislation.gov.uk/uksi/1987/1967/regulation/40",
+        "https://www.legislation.gov.uk/uksi/1987/1967/schedule/9/paragraph/15",
         "https://www.legislation.gov.uk/uksi/1987/1967/schedule/9/paragraph/16",
+        "https://www.legislation.gov.uk/uksi/1987/1967/schedule/9/paragraph/73",
     )
 
     def formula(benunit, period, parameters):
@@ -28,6 +35,10 @@ class income_support_applicable_income(Variable):
             "self_employment_income",
             "property_income_after_finance_costs",
             "private_pension_income",
+            # Reg 40 and Sch 9 para 15(3)(a): spousal maintenance is
+            # non-earnings income, even when paid voluntarily. Child
+            # maintenance (maintenance_income) is disregarded by para 73.
+            "spousal_maintenance_income",
         ]
         bi = parameters(period).gov.contrib.ubi_center.basic_income
         if bi.interactions.include_in_means_tests:
