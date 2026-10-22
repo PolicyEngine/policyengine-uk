@@ -20,9 +20,10 @@ The law:
 
 Universal Credit needs a claimant or partner under the qualifying age (UC
 Regs 2013 reg 3(2)(a)). Claimant and partner are is_claimant_or_partner, which
-presumes a member under 20 and at least 16 years younger than the claimant to
-be their child, so a pensioner's qualifying young person is a dependant
-whether or not is_parent is set; the draws cover both. "On Universal Credit"
+the families supply: the drawn adults are the claimant and partner, and the
+qualifying young person and children are not. Left to the age presumption, a
+partner 20 or more years younger would be read as the claimant's child, and
+a mixed-age couple as a single pensioner. "On Universal Credit"
 below means an award before the cap with a claimant or partner under State
 Pension age. Legacy income-related benefit is set as an input.
 
@@ -199,7 +200,10 @@ def situation(units):
         has_young_person = any(role == "young" for role, _ in unit["members"])
         for j, (role, age) in enumerate(unit["members"]):
             name = f"p{i}_{j}"
-            person = {"age": {PERIOD: age}}
+            person = {
+                "age": {PERIOD: age},
+                "is_claimant_or_partner": {PERIOD: role == "adult"},
+            }
             if role == "young":
                 person["current_education"] = {PERIOD: "UPPER_SECONDARY"}
             elif age >= 67:
@@ -215,7 +219,10 @@ def situation(units):
             names.append(name)
         for k in range(unit["children"]):
             name = f"p{i}_c{k}"
-            people[name] = {"age": {PERIOD: 2 + 3 * k}}
+            people[name] = {
+                "age": {PERIOD: 2 + 3 * k},
+                "is_claimant_or_partner": {PERIOD: False},
+            }
             names.append(name)
         benunit = {
             "members": names,
@@ -243,6 +250,7 @@ def situation(units):
 
 
 BENUNIT = [
+    "relation_type",
     "is_uc_entitled",
     "housing_benefit_pension_age_regulations_apply",
     "council_tax_reduction_pensioner",
@@ -281,7 +289,13 @@ def calculate(units, before=False):
         names = BEFORE
     else:
         names = BENUNIT + HOUSEHOLD
-    return {name: np.asarray(simulation.calculate(name, PERIOD)) for name in names}
+    values = {name: simulation.calculate(name, PERIOD) for name in names}
+    return {
+        name: np.asarray(
+            value.decode_to_str() if hasattr(value, "decode_to_str") else value
+        )
+        for name, value in values.items()
+    }
 
 
 def has_pension_age_claimant(unit):
@@ -303,6 +317,9 @@ def test_benefit_cap_and_ctr_pension_age_invariants(units):
     before = calculate(units, before=True)
     cap_only = calculate(units, before="cap")
     for i, unit in enumerate(units):
+        # The drawn couples stay couples, however far apart their ages.
+        adults = sum(role == "adult" for role, _ in unit["members"])
+        assert now["relation_type"][i] == ("COUPLE" if adults == 2 else "SINGLE")
         on_uc = bool(now["is_uc_entitled"][i]) and has_working_age_claimant(unit)
         legacy = unit["legacy"] > 0
         # P1

@@ -49,8 +49,10 @@
       older:
         age: 70
         council_tax_benefit_reported: 700
+        is_claimant_or_partner: true
       younger:
         age: 50
+        is_claimant_or_partner: true
     benunits:
       benunit:
         members: [older, younger]
@@ -63,6 +65,7 @@
         council_tax: 2_000
         savings: 0
   output:
+    relation_type: COUPLE
     is_uc_entitled: false
     council_tax_reduction_pensioner: true
     council_tax_reduction_scheme_supported: true
@@ -79,9 +82,11 @@
       older:
         age: 70
         council_tax_benefit_reported: 700
+        is_claimant_or_partner: true
       younger:
         age: 50
         jsa_income_reported: 4_000
+        is_claimant_or_partner: true
     benunits:
       benunit:
         members: [older, younger]
@@ -94,6 +99,7 @@
         council_tax: 2_000
         savings: 0
   output:
+    relation_type: COUPLE
     jsa_income: 4_000
     council_tax_reduction_pensioner: false
     council_tax_benefit: 700
