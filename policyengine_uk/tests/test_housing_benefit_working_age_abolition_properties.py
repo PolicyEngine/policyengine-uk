@@ -13,18 +13,16 @@ Invariants, for any generated population of families:
    share of 6 April to 5 April falling before the statutory date, counted
    independently here from the two dates (1 before 2026-27, 0 after).
 2. Bounds: 0 <= housing_benefit_payable_share <= 1, and it is 1 for every
-   family with a member over State Pension age or the protected-accommodation
-   input, in every model year.
-3. Abolition: from 2027 no family without a member over State Pension age or
-   the protected-accommodation input receives Housing Benefit, in any country
-   or claim mode.
+   family meeting the Pension Credit age conditions (reg 6A(4)-(5)) or with
+   the protected-accommodation input, in every model year.
+3. Abolition: from 2027 no other family receives Housing Benefit, in any
+   country or claim mode.
 4. Differential against the pre-abolition rule: with working-age awards kept
    payable by a reform, Housing Benefit is what the continuing-award rule paid
    before. Under current law, Housing Benefit before the benefit cap is
-   exactly that amount times the country's payable share for a family with no
-   member over State Pension age or protected-accommodation input, and exactly
-   the same amount for every other family (the cap applies afterwards, so the
-   final amount is compared by 5).
+   exactly that amount times the country's payable share for a family outside
+   those savings, and exactly the same amount for every other family (the cap
+   applies afterwards, so the final amount is compared by 5).
    Mixed populations rarely hold a 2026 working-age continuing award, so a
    targeted test builds only those, for each year and jurisdiction.
 5. Monotonic: the abolition never raises anyone's Housing Benefit and never
@@ -152,6 +150,7 @@ def situation(units, year, claims_all):
 
 
 VARIABLES = [
+    "meets_pension_credit_age_conditions",
     "housing_benefit",
     "housing_benefit_pre_benefit_cap",
     "housing_benefit_eligible",
@@ -165,10 +164,6 @@ VARIABLES = [
 def calculate(units, year, claims_all, reform=None):
     sim = Simulation(situation=situation(units, year, claims_all), reform=reform)
     return {v: np.asarray(sim.calculate(v, year)) for v in VARIABLES}
-
-
-def any_over_pension_age(unit):
-    return any(age >= 68 for _, age in unit["members"])
 
 
 def jurisdiction(unit):
@@ -262,8 +257,11 @@ def test_abolition_matches_the_pre_abolition_rule_scaled_by_the_payable_share(
     assert np.all(kept["housing_benefit_payable_share"] == 1)
     pre_cap = "housing_benefit_pre_benefit_cap"
     for i, unit in enumerate(units):
+        # Reg 6A(4)-(5) save a family meeting the Pension Credit age
+        # conditions, including a mixed-age couple with the SI 2019/37
+        # art. 4 saving; reg 6A(2) saves the accommodation input.
         if (
-            any_over_pension_age(unit)
+            current["meets_pension_credit_age_conditions"][i]
             or unit["in_specified_or_temporary_accommodation"]
         ):
             assert share[i] == 1, unit

@@ -18,8 +18,9 @@ class housing_benefit_eligible(Variable):
         "Benefit), do not claim Universal Credit and have not been moved off "
         "a closed legacy benefit (legacy_benefits_closed). Unprotected working-age "
         "awards ended on 1 July 2026 in Great Britain and 1 October 2026 in "
-        "Northern Ireland, so from then only families with a member over State "
-        "Pension age or the accommodation input continue one. Other unmodelled "
+        "Northern Ireland, so from then only families meeting the Pension "
+        "Credit age conditions or with the accommodation input continue one. "
+        "Other unmodelled "
         "statutory savings are listed in housing_benefit_payable_share's "
         "documentation. Rental, capital and take-up rules still apply; "
         "accommodation-specific eligible rent and benefit-cap rules are not "
@@ -67,8 +68,8 @@ class housing_benefit_eligible(Variable):
         # rules out receiving Universal Credit. Working-age awards outside
         # specified or temporary accommodation were abolished from 1 July
         # 2026 in Great Britain (SI 2025/1148 art. 7) and 1 October 2026 in
-        # Northern Ireland (SR 2025/176 art. 7); a family with no member over
-        # State Pension age continues one only for the part of the year
+        # Northern Ireland (SR 2025/176 art. 7); a family outside the reg
+        # 6A(2)-(5) savings continues one only for the part of the year
         # before that date (housing_benefit_payable_share).
         already_claiming = add(benunit, period, ["housing_benefit_reported"]) > 0
         claiming_uc = benunit("claims_universal_credit", period)

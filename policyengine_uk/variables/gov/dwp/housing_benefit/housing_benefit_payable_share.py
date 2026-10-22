@@ -9,13 +9,16 @@ class housing_benefit_payable_share(Variable):
         "Share of the year for which this family's Housing Benefit award stays "
         "payable. Unprotected working-age awards outside specified and temporary "
         "accommodation were abolished from 1 July 2026 in Great Britain and "
-        "1 October 2026 in Northern Ireland, so for a family with no member "
-        "over State Pension age this is the share of the year before that "
+        "1 October 2026 in Northern Ireland, so for a family outside the "
+        "pension-age savings this is the share of the year before that "
         "date, unless in_specified_or_temporary_accommodation is True. "
-        "That input preserves a share of 1 in every year. Families with a "
-        "member over State Pension age also have a share of 1 (the model's "
-        "pension-age and protected mixed-age approximation). Other saved "
-        "working-age awards are not modelled: qualifying HB claims during the "
+        "That input preserves a share of 1 in every year. A family meeting "
+        "the Pension Credit age conditions (meets_pension_credit_age_conditions: "
+        "a single claimant, or both members of a couple, over the qualifying "
+        "age, or a mixed-age couple with the SI 2019/37 art. 4 saving) also "
+        "has a share of 1; a mixed-age couple without the saving does not. "
+        "Other saved working-age awards are not modelled, so their awards "
+        "wrongly end on the abolition date: qualifying HB claims during the "
         "final UC assessment period on reaching pension-credit age, with "
         "entitlement from reaching that age and the relevant Decisions and "
         "Appeals Schedule 1 paragraph 26 applying (reg 6A(3); NI reg 4A(3)); "
@@ -34,6 +37,7 @@ class housing_benefit_payable_share(Variable):
         "https://www.legislation.gov.uk/uksi/2025/1148/article/7",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/6A",
         "https://www.legislation.gov.uk/nisr/2025/176/article/7",
+        "https://www.legislation.gov.uk/uksi/2019/37/article/4",
     )
 
     def formula(benunit, period, parameters):
@@ -47,17 +51,17 @@ class housing_benefit_payable_share(Variable):
             payable.great_britain,
         )
         # SI 2025/1148 art. 7(4)(a) saves claimants within SI 2014/1230
-        # reg 6A(2)-(5). Reg 6A(4) (pension age) and 6A(5) (mixed-age couples
-        # saved by SI 2019/37 art. 4) are the savings the model can see: any
-        # member over State Pension age keeps the award running. In law a
-        # mixed-age couple is saved only if the older member claims under the
-        # pension-age regulations and the couple has been entitled since
-        # 14 May 2019, which the data cannot show. Specified and temporary
-        # accommodation is supplied explicitly under reg 6A(2) (NI reg 4A(2)).
-        # The other savings described in the variable documentation have no
-        # inputs for their history and date conditions.
-        any_over_SP_age = benunit.any(benunit.members("is_SP_age", period))
+        # reg 6A(2)-(5) (NI: SR 2025/176 art. 7(4)(a), reg 4A(2)-(5)).
+        # Reg 6A(4) (a single claimant, or both members of a couple, over the
+        # qualifying age for State Pension Credit) and 6A(5) (a mixed-age
+        # couple saved by SI 2019/37 art. 4) are the Pension Credit age
+        # conditions; the art. 4 saving is inferred from current receipt
+        # (has_mixed_age_couple_pension_credit_saving). Specified and
+        # temporary accommodation is supplied explicitly under reg 6A(2) (NI
+        # reg 4A(2)). The other savings described in the variable
+        # documentation have no inputs for their history and date conditions.
+        pension_age_saving = benunit("meets_pension_credit_age_conditions", period)
         protected_accommodation = benunit(
             "in_specified_or_temporary_accommodation", period
         )
-        return where(any_over_SP_age | protected_accommodation, 1, working_age_share)
+        return where(pension_age_saving | protected_accommodation, 1, working_age_share)
