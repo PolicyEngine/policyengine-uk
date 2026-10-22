@@ -121,3 +121,58 @@
         max_free_entitlement_hours_used: 20
   output:
     universal_childcare_entitlement: 3_351.6  # Capped at 15 hours * 38 weeks * £5.88 per hour
+
+# DfE's statutory guidance (April 2026, footnotes 7 and 17, paras A4.8 and
+# C.6): a child in a state-funded or council-funded reception class is "not
+# entitled to any additional free hours outside their school reception class
+# place", under either the universal or the working parent entitlement.
+- name: A 4-year-old in a reception class gets no free hours
+  period: 2026
+  absolute_error_margin: 0.05
+  input:
+    people:
+      parent1:
+        age: 35
+        employment_income: 40_000
+      parent2:
+        age: 35
+        employment_income: 30_000
+      child:
+        age: 4
+        current_education: PRIMARY
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+    households:
+      household:
+        members: [parent1, parent2, child]
+        country: ENGLAND
+  output:
+    universal_childcare_entitlement: [0, 0, 0]
+    extended_childcare_entitlement_per_child: [0, 0, 0]
+
+- name: A 4-year-old at nursery keeps the universal and working parent hours
+  period: 2026
+  absolute_error_margin: 0.05
+  input:
+    people:
+      parent1:
+        age: 35
+        employment_income: 40_000
+      parent2:
+        age: 35
+        employment_income: 30_000
+      child:
+        age: 4
+        current_education: PRE_PRIMARY
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+    households:
+      household:
+        members: [parent1, parent2, child]
+        country: ENGLAND
+  output:
+    # 570 universal hours and 570 working parent hours, at £6.61.
+    universal_childcare_entitlement: [0, 0, 3_767.70]
+    extended_childcare_entitlement_per_child: [0, 0, 3_767.70]

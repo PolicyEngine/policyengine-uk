@@ -49,6 +49,9 @@ randomly drawn families, each simulated twice (eligible and not):
    targeted floor is at most 15 hours a week.
 10. Outside England no child gets universal or working parent hours
     (Childcare Act 2006 s.7 and 2016 s.1(2)(b) are duties for England).
+11. A child in school (current_education primary, as in a reception class)
+    gets no universal or working parent hours: its school place meets both
+    duties (guidance footnotes 7 and 17, paras A4.8 and C.6).
 
 A further property runs the real eligibility test: raising the £100,000
 income limit never lowers childcare support or household net income, and the
@@ -92,11 +95,18 @@ def close(a, b):
     return abs(a - b) <= 0.02 + 1e-6 * abs(b)
 
 
+def in_school(c):
+    """Invariant 11: enrolled in primary education, as in a reception class."""
+    return c.get("education") == "PRIMARY"
+
+
 child = st.fixed_dictionaries(
     {
         "age": st.sampled_from([0, 0.5, 0.75, 1, 2, 2.5, 3, 4, 4.9, 5, 6]),
         "hours_used": st.sampled_from([0, 5, 10, 14.9, 15, 15.1, 20, 30, 45]),
         "looked_after": st.booleans(),
+        # None leaves current_education to its age default.
+        "education": st.sampled_from([None, None, "PRE_PRIMARY", "PRIMARY"]),
     }
 )
 family = st.fixed_dictionaries(
@@ -136,6 +146,10 @@ def simulate(families, year, eligible, cap_bump=0, hours_bump=0):
                     },
                     "is_looked_after_by_local_authority": {year: c["looked_after"]},
                 }
+                if c.get("education") is not None:
+                    situation["people"][name]["current_education"] = {
+                        year: c["education"]
+                    }
                 members.append(name)
             situation["benunits"][f"b{copy}_{i}"] = {
                 "members": members,
@@ -190,7 +204,7 @@ def reference(c, f, year, eligible):
     in_england = f["england"]
     universal_hours = (
         min(c["hours_used"] * weeks, p.universal_childcare_entitlement.hours)
-        if in_england and 3 <= age < 5
+        if in_england and 3 <= age < 5 and not in_school(c)
         else 0
     )
     targeted_hours = (
@@ -211,6 +225,7 @@ def reference(c, f, year, eligible):
         in_england
         and under_school_age
         and not c["looked_after"]
+        and not in_school(c)
         and age >= p.extended_childcare_entitlement.young_child_minimum_age
     )
     weekly = (
@@ -409,6 +424,29 @@ def test_working_parent_hours_schedule_at_rollout_boundaries(
         },
     ],
 )
+@example(
+    2026,
+    [
+        # A 4-year-old in a reception class and one at nursery, with a
+        # 2-year-old sibling.
+        {
+            "children": [
+                {
+                    "age": age,
+                    "hours_used": 30,
+                    "looked_after": False,
+                    "education": education,
+                }
+                for age, education in ((4, "PRIMARY"), (4, "PRE_PRIMARY"), (2, None))
+            ],
+            "cap": 30,
+            "claims_universal": True,
+            "claims_targeted": True,
+            "targeted": False,
+            "england": True,
+        },
+    ],
+)
 def test_becoming_eligible_never_lowers_childcare_support(year, families):
     values = simulate(families, year, eligible=[False, True])
     not_eligible, eligible = split(values, families, 2)
@@ -421,8 +459,17 @@ def test_becoming_eligible_never_lowers_childcare_support(year, families):
             assert close(copy[0]["family_extended"], per_child), (year, f, copy)
         for c, b, a in zip(f["children"], before, after):
             assert funded(a) >= funded(b) - 0.02, (year, f, c, b, a)
-            legal_universal = f["england"] and 3 <= c["age"] < 5
+            legal_universal = f["england"] and 3 <= c["age"] < 5 and not in_school(c)
             assert a["universal_eligible"] == b["universal_eligible"] == legal_universal
+            # 11. A school place, not funded hours.
+            if in_school(c):
+                for copy in (a, b):
+                    assert copy["universal_childcare_entitlement"] == 0, (year, f, c)
+                    assert copy["extended_childcare_entitlement_per_child"] == 0, (
+                        year,
+                        f,
+                        c,
+                    )
             # 8-10. Statutory maximum, no double floor, England only.
             assert_statutory_bounds(c, f, f"{year}-01-01", False, b)
             assert_statutory_bounds(c, f, f"{year}-01-01", True, a)

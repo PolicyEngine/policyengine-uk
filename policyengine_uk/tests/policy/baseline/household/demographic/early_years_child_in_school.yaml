@@ -1,0 +1,48 @@
+# A child has started school once current_education is primary or a later
+# stage; a 4- or 5-year-old in full-time education can be recorded at a later
+# stage than primary.
+- name: A 4-year-old is in school at primary or any later stage of education
+  period: 2026
+  input:
+    people:
+      not_in_education:
+        age: 4
+        current_education: NOT_IN_EDUCATION
+      nursery:
+        age: 4
+        current_education: PRE_PRIMARY
+      not_completed_primary:
+        age: 4
+        current_education: NOT_COMPLETED_PRIMARY
+      reception:
+        age: 4
+        current_education: PRIMARY
+      lower_secondary:
+        age: 4
+        current_education: LOWER_SECONDARY
+      upper_secondary:
+        age: 4
+        current_education: UPPER_SECONDARY
+      post_secondary:
+        age: 4
+        current_education: POST_SECONDARY
+      tertiary:
+        age: 4
+        current_education: TERTIARY
+  output:
+    early_years_child_in_school: [false, false, false, true, true, true, true, true]
+
+# The age default for current_education is pre-primary below 4 and "not
+# completed primary" from 4 to 6, so without an input no 3- or 4-year-old is
+# in school.
+- name: Without a current_education input no 3- or 4-year-old is in school
+  period: 2026
+  input:
+    people:
+      child_aged_3:
+        age: 3
+      child_aged_4:
+        age: 4
+  output:
+    current_education: [PRE_PRIMARY, NOT_COMPLETED_PRIMARY]
+    early_years_child_in_school: [false, false]

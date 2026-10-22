@@ -98,3 +98,40 @@
         region: SCOTLAND
   output:
     scottish_funded_early_learning_childcare_eligible: false
+
+# Children and Young People (Scotland) Act 2014 s.47(2)(b): an eligible
+# pre-school child "has not commenced attendance at a primary school (other
+# than at a nursery class in such a school)".
+- name: Scottish 4-year-old in primary 1 is not eligible
+  period: 2026
+  input:
+    people:
+      child:
+        age: 4
+        current_education: PRIMARY
+    benunits:
+      benunit:
+        members: [child]
+    households:
+      household:
+        members: [child]
+        region: SCOTLAND
+  output:
+    scottish_funded_early_learning_childcare_eligible: false
+
+- name: Scottish 4-year-old in a nursery class is eligible
+  period: 2026
+  input:
+    people:
+      child:
+        age: 4
+        current_education: PRE_PRIMARY
+    benunits:
+      benunit:
+        members: [child]
+    households:
+      household:
+        members: [child]
+        region: SCOTLAND
+  output:
+    scottish_funded_early_learning_childcare_eligible: true
