@@ -13,7 +13,9 @@
 # higher (para 30(3)-(4); Oxford para 44), except that Merton and Kingston
 # upon Thames deduct for each member of a couple with a Universal Credit
 # award. The benefit-receipt exemptions (para 30(8)) apply to the person on
-# the award: a family's award is its claimant's and partner's.
+# the award: Income Support, income-based JSA, income-related ESA and State
+# Pension Credit to the member they are payable to, and Universal Credit to
+# each joint claimant who has no earned income of their own.
 #
 # Weekly amounts for 2026-27 (52 weeks a year):
 # - Merton (para 30) and Westminster (Appendix A), Oxford (para 43): £5.20 not
@@ -214,7 +216,7 @@
     merton_council_tax_reduction_individual_non_dep_deduction: [0, 0, 691.60]
     merton_council_tax_reduction_non_dep_deductions: [691.60, 0]
 
-- name: Merton deducts for each member of a Universal Credit couple on their own hours
+- name: Merton deducts for each member of a Universal Credit couple on their own hours and earnings
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -248,12 +250,14 @@
         savings: 0
   output:
     # Para 30(3): no single deduction where there is a UC award. The worker
-    # pays £13.30 on the couple's joint £576.92; the partner, not in
-    # remunerative work, £5.20. The joint award has earned income, so
-    # neither is exempt under para 30(8)(c).
-    merton_council_tax_reduction_individual_non_dep_deduction: [0, 691.60, 270.40]
-    merton_council_tax_reduction_non_dep_deductions: [962, 0]
-    council_tax_reduction: 838
+    # pays £13.30 on the couple's joint £576.92. Para 30(8)(c) exempts one
+    # entitled to UC "calculated on the basis that the person does not have
+    # any earned income", read on each person's own earnings as in the
+    # national schemes: the partner has none, so pays nothing; the worker is
+    # not exempt.
+    merton_council_tax_reduction_individual_non_dep_deduction: [0, 691.60, 0]
+    merton_council_tax_reduction_non_dep_deductions: [691.60, 0]
+    council_tax_reduction: 1_108.40
 
 - name: Merton makes one deduction for a couple not on Universal Credit, on joint income
   period: 2026
@@ -496,9 +500,10 @@
         council_tax: 1_800
         savings: 0
   output:
-    # Para 30B(3) has no Universal Credit exception: the higher of £22.61
-    # and £7.54.
-    newham_council_tax_reduction_individual_non_dep_deduction: [0, 1_175.72, 392.08]
+    # Para 30B(3) has no Universal Credit exception: the higher of the two,
+    # the worker's £22.61. The partner, with no earned income of her own, is
+    # exempt under para 30B's Universal Credit exemption.
+    newham_council_tax_reduction_individual_non_dep_deduction: [0, 1_175.72, 0]
     newham_council_tax_reduction_non_dep_deductions: [1_175.72, 0]
     council_tax_reduction: 84.28
 
