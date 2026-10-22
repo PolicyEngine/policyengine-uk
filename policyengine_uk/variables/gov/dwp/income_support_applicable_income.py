@@ -50,6 +50,8 @@ class income_support_applicable_income(Variable):
         income += add_for_members(benunit, period, ["social_security_income"], members)
         # IS Regs 1987 Sch 9 para 16(h): £10 a week of widowed parent's
         # allowance is disregarded; social_security_income counts it in full.
+        # Not modelled: paras 36 and 37, which limit this and the war
+        # pension disregards together.
         wpa_disregard = (
             IS.means_test.widowed_parents_allowance_disregard * WEEKS_IN_YEAR
         )
