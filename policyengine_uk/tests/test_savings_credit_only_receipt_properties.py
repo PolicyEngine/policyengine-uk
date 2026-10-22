@@ -396,7 +396,8 @@ def test_known_families_detect_main():
         )
         assert not np.any(fix[FLAG])
         # Main keeps the Pension Credit assessment. The owner with capital is
-        # tested on 17,000 against the 16,000 limit and gets no council tax
+        # tested on 16,500 (12,000 of savings and 90% of the 5,000 property,
+        # SPC Regs 2002 reg. 19(a)) against the 16,000 limit and gets no council tax
         # reduction, where the scheme's own rules give 2,000 on savings of
         # 12,000. The tenant has no Housing Benefit tariff income, where
         # Housing Benefit's own rules count 4 a week on savings of 12,000
@@ -499,16 +500,18 @@ def test_stopping_pension_credit_payments_ends_savings_credit_only_receipt():
 
 def test_stopping_pension_credit_payments_ends_the_pension_credit_capital_test():
     # Savings of 12,000 and other property worth 5,000. The Pension Credit
-    # assessment of capital counts both (17,000), above the 16,000 limit, so
-    # the savings-credit-only award leaves no council tax reduction. Deemed
-    # income is 1 a week for each 500 over 10,000: 14 a week, so the savings
-    # credit is 0.6 x 29.93 - 0.4 x (254.00 - 238.00) = 11.558 a week (601.02).
+    # assessment of capital counts both, the property less 10% for the
+    # expenses of sale (SPC Regs 2002 reg. 19(a)): 12,000 + 4,500 = 16,500,
+    # above the 16,000 limit, so the savings-credit-only award leaves no
+    # council tax reduction. Deemed income is 1 a week for each 500 or part
+    # over 10,000: 13 a week, so the savings credit is 0.6 x 29.93 - 0.4 x
+    # (253.00 - 238.00) = 11.958 a week (621.82).
     data = single_pensioner(savings=12_000.0, other_property=5_000.0)
     unreformed = Simulation(situation=data)
-    assert abs(unreformed.calculate("savings_credit", YEAR)[0] - 601.02) < 0.01
+    assert abs(unreformed.calculate("savings_credit", YEAR)[0] - 621.82) < 0.01
     assert unreformed.calculate(FLAG, YEAR).tolist() == [True]
     capital = "council_tax_reduction_assessable_capital"
-    assert unreformed.calculate(capital, YEAR)[0] == 17_000
+    assert unreformed.calculate(capital, YEAR)[0] == 16_500
     assert unreformed.calculate("council_tax_reduction", YEAR)[0] == 0
 
     # With Pension Credit not paid the scheme's own capital rule applies, for
