@@ -12,7 +12,10 @@ import pandas as pd
 import pytest
 
 from policyengine_uk.data import UKSingleYearDataset
-from policyengine_uk.data.economic_assumptions import extend_single_year_dataset
+from policyengine_uk.data.economic_assumptions import (
+    extend_single_year_dataset,
+    uprate_student_loan_plans,
+)
 from policyengine_uk.system import system
 
 AGES = range(18, 51)
@@ -20,9 +23,15 @@ PEOPLE_PER_AGE = 600
 TAKE_UP = 0.4
 
 
-def mock_dataset(base_year: int) -> UKSingleYearDataset:
-    """MOCK data: tertiary-educated people in England, none with a loan."""
-    ages = np.repeat(list(AGES), PEOPLE_PER_AGE)
+def mock_dataset(
+    base_year: int,
+    *,
+    ages=AGES,
+    region="LONDON",
+    people_per_age=PEOPLE_PER_AGE,
+) -> UKSingleYearDataset:
+    """MOCK data: tertiary-educated people, none with a loan."""
+    ages = np.repeat(list(ages), people_per_age)
     ids = np.arange(1, len(ages) + 1)
     person = pd.DataFrame(
         {
@@ -39,7 +48,7 @@ def mock_dataset(base_year: int) -> UKSingleYearDataset:
         {
             "household_id": ids,
             "household_weight": 1.0,
-            "region": "LONDON",
+            "region": region,
             "tenure_type": "OWNED_OUTRIGHT",
             "rent": 0.0,
             "council_tax": 0.0,
@@ -126,3 +135,98 @@ def test_draws_do_not_depend_on_row_order(from_2024):
     pd.testing.assert_series_equal(
         plans.sort_index(), from_2024[2029].student_loan_plan.sort_index()
     )
+
+
+@pytest.fixture
+def all_graduates_take_up(monkeypatch):
+    """Make the funding-plan regressions independent of random take-up."""
+    monkeypatch.setattr(
+        "policyengine_uk.data.economic_assumptions.splitmix64_uniform",
+        lambda ids, salt: np.zeros(len(ids)),
+    )
+
+
+@pytest.mark.parametrize(
+    "region, expected_plan",
+    [
+        ("LONDON", "PLAN_2"),
+        ("WALES", "PLAN_2"),
+        ("SCOTLAND", "PLAN_4"),
+        ("NORTHERN_IRELAND", "PLAN_1"),
+        ("UNKNOWN", "NONE"),
+    ],
+)
+def test_extended_2012_intakes_follow_funding_nation(
+    all_graduates_take_up, region, expected_plan
+):
+    # GOV.UK: England/Wales 2012-2022 undergraduate intakes use Plan 2;
+    # SAAS uses Plan 4 and Student Finance NI uses Plan 1. Residence proxies
+    # for funding nation. In 2024 the 2012 intake was 30; projecting to 2029
+    # adds ages 31 (2016 intake) through 35 (2012 intake). Ages 30 and 36
+    # remain outside this new band. Unknown residence supplies no proxy.
+    dataset = mock_dataset(2024, ages=[30, 31, 35, 36], region=region, people_per_age=1)
+    projected = extend_single_year_dataset(dataset, system.parameters, end_year=2029)
+    assert projected.datasets[2029].person.student_loan_plan.tolist() == [
+        "NONE",
+        expected_plan,
+        expected_plan,
+        "NONE",
+    ]
+
+
+@pytest.mark.parametrize(
+    "region, expected_plan",
+    [
+        ("LONDON", "PLAN_1"),
+        ("WALES", "PLAN_1"),
+        ("SCOTLAND", "PLAN_4"),
+        ("NORTHERN_IRELAND", "PLAN_1"),
+    ],
+)
+def test_extended_pre_2012_intakes_follow_funding_nation(
+    all_graduates_take_up, region, expected_plan
+):
+    # The existing extension starts above age 44 (2024 - 1998 + 18).
+    # In 2029 ages 45/46 represent the 2002/2001 intakes: England/Wales
+    # use Plan 1 before September 2012; SAAS uses Plan 4; NI uses Plan 1.
+    previous = mock_dataset(2024, ages=[44, 45, 46], region=region, people_per_age=1)
+    current = previous.copy()
+    current.time_period = "2029"
+    projected = uprate_student_loan_plans(current, previous, system.parameters)
+    assert projected.person.student_loan_plan.tolist() == [
+        "NONE",
+        expected_plan,
+        expected_plan,
+    ]
+
+
+@pytest.mark.parametrize(
+    "region, plan_from_2023, plan_before_2023",
+    [
+        ("LONDON", "PLAN_5", "PLAN_2"),
+        ("WALES", "PLAN_2", "PLAN_2"),
+        ("SCOTLAND", "PLAN_4", "PLAN_4"),
+        ("NORTHERN_IRELAND", "PLAN_1", "PLAN_1"),
+        ("UNKNOWN", "NONE", "NONE"),
+    ],
+)
+def test_new_intakes_follow_funding_nation_and_entry_year(
+    all_graduates_take_up, region, plan_from_2023, plan_before_2023
+):
+    # https://www.gov.uk/repaying-your-student-loan/which-repayment-plan-you-are-on
+    # Only England switches to Plan 5 in 2023; Wales retains Plan 2.
+    # In 2029 age 24 represents entry in 2023, age 25 entry in 2022.
+    # A 2018 base's Plan 2 coverage ends at 24, so both are newly assigned.
+    # Age 21 (2026 entry) qualifies; age 20 has not finished a degree.
+    previous = mock_dataset(
+        2018, ages=[20, 21, 24, 25], region=region, people_per_age=1
+    )
+    current = previous.copy()
+    current.time_period = "2029"
+    projected = uprate_student_loan_plans(current, previous, system.parameters)
+    assert projected.person.student_loan_plan.tolist() == [
+        "NONE",
+        plan_from_2023,
+        plan_from_2023,
+        plan_before_2023,
+    ]
