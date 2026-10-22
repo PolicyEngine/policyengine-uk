@@ -52,10 +52,17 @@ def statutory_inputs(parameters):
 
 
 def test_april_2027_uses_published_may_july_2026_earnings():
-    """May-July 2026 total pay growth was 3.9% (first estimate), above
-    September 2026 CPI (3.5%, ONS 21 October 2026), so the new State Pension
-    rises from £241.30 to £250.71 (before rounding to 5p)."""
+    """ONS confirmed May-July 2026 total pay growth at 3.9% on 20 October,
+    unchanged from September. April 2027's triple lock is max(3.5% CPI,
+    3.9% earnings, 2.5%), so the new State Pension rises from £241.30 to
+    £250.71 (before rounding to 5p)."""
     parameters = system.parameters
+    inputs = statutory_inputs(parameters)
+    assert inputs.cpi_september("2026-09-01") == pytest.approx(0.035)
+    assert inputs.awe_total_pay_may_july("2026-07-01") == pytest.approx(0.039)
+    assert parameters.gov.dwp.state_pension.triple_lock.minimum_rate(
+        "2027-04-30"
+    ) == pytest.approx(0.025)
     assert uprating(parameters, 2027) == pytest.approx(0.039)
     assert new_state_pension_weekly(parameters, 2027) == pytest.approx(
         241.30 * 1.039, abs=0.005
