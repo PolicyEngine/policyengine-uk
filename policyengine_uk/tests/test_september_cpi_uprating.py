@@ -239,9 +239,10 @@ def test_hb_non_dependant_income_bands_keep_lagged_cpi_while_deductions_use_sept
 
 def test_amounts_not_raised_by_september_cpi_keep_their_lagged_calendar_projection():
     """Amounts that were on gov.benefit_uprating_cpi but are not raised by
-    September CPI (the Pension Credit standard minimum guarantee, the Housing
-    Benefit pension-age allowances, DfE funding rates and others) still rise
-    by the previous calendar year's CPI after their last value."""
+    September CPI, including DfE funding rates and HB non-dependant income
+    bands, still rise by the previous calendar year's CPI after their last
+    value. Pension Credit and pension-age HB allowances have their own
+    earnings projection."""
     parameters = system.parameters
     raw = load_parameter_file(str(COUNTRY_DIR / "parameters"), name="")
     calendar_cpi = (
@@ -263,8 +264,12 @@ def test_amounts_not_raised_by_september_cpi_keep_their_lagged_calendar_projecti
             assert after / before - 1 == pytest.approx(
                 calendar_cpi(f"{year - 1}-01-01"), abs=2e-5
             ), (parameter.name, year)
-    assert "gov.dwp.pension_credit.guarantee_credit.minimum_guarantee.SINGLE" in names
-    assert "gov.dwp.housing_benefit.allowances.single.aged" in names
+    assert names
+    assert any(name.startswith("gov.dfe.childcare_funding_rate") for name in names)
+    assert not any(name.startswith("gov.dwp.pension_credit.") for name in names)
+    assert not any(
+        name.startswith("gov.dwp.housing_benefit.allowances.") for name in names
+    )
 
 
 def test_the_triple_lock_reads_the_same_september_cpi():

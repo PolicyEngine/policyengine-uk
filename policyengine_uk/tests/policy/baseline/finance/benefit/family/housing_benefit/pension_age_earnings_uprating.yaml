@@ -1,0 +1,107 @@
+# April 2027 projections use May-July 2026 earnings growth of 3.9%.
+# Lower single/lone-parent: 238 * 1.039 * 52 = 12,858.664.
+# Lower couple: 363.25 * 1.039 * 52 = 19,625.671.
+# Higher single/lone-parent: 256 * 1.039 * 52 = 13,831.168.
+# Higher couple: 383.35 * 1.039 * 52 = 20,711.6338.
+# Regulation-set/cohort inputs isolate uprating from age-attainment logic.
+- name: April 2027 lower single pension-age HB allowance follows earnings
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    housing_benefit_attained_pension_age_before_cutoff: false
+    benefits_premiums: 0
+  output:
+    housing_benefit_applicable_amount: 12_858.664
+
+- name: April 2027 higher single pension-age HB allowance follows earnings
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    age: 80
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    housing_benefit_attained_pension_age_before_cutoff: true
+    benefits_premiums: 0
+  output:
+    housing_benefit_applicable_amount: 13_831.168
+
+- name: April 2027 lower couple pension-age HB allowance follows earnings
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      partner:
+        age: 68
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        housing_benefit_eligible: true
+        housing_benefit_pension_age_regulations_apply: true
+        housing_benefit_attained_pension_age_before_cutoff: false
+        benefits_premiums: 0
+  output:
+    housing_benefit_applicable_amount: 19_625.671
+
+- name: April 2027 higher couple pension-age HB allowance follows earnings
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 80
+      partner:
+        age: 70
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        housing_benefit_eligible: true
+        housing_benefit_pension_age_regulations_apply: true
+        housing_benefit_attained_pension_age_before_cutoff: true
+        benefits_premiums: 0
+  output:
+    housing_benefit_applicable_amount: 20_711.6338
+
+- name: April 2027 lower lone-parent pension-age HB allowance follows earnings
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      child:
+        age: 12
+    benunits:
+      benunit:
+        members: [claimant, child]
+        housing_benefit_eligible: true
+        housing_benefit_pension_age_regulations_apply: true
+        housing_benefit_attained_pension_age_before_cutoff: false
+        benefits_premiums: 0
+  output:
+    is_lone_parent: true
+    housing_benefit_applicable_amount: 12_858.664
+
+- name: April 2027 higher lone-parent pension-age HB allowance follows earnings
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 80
+      child:
+        age: 12
+    benunits:
+      benunit:
+        members: [claimant, child]
+        housing_benefit_eligible: true
+        housing_benefit_pension_age_regulations_apply: true
+        housing_benefit_attained_pension_age_before_cutoff: true
+        benefits_premiums: 0
+  output:
+    is_lone_parent: true
+    housing_benefit_applicable_amount: 13_831.168

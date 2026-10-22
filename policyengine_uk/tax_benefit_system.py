@@ -30,6 +30,9 @@ from policyengine_uk.parameters.gov.contrib.create_private_pension_uprating impo
 from policyengine_uk.parameters.gov.dwp.state_pension.triple_lock.create_triple_lock import (
     add_triple_lock,
 )
+from policyengine_uk.parameters.gov.dwp.pension_credit.savings_credit.create_savings_credit_threshold import (
+    project_savings_credit_threshold,
+)
 from policyengine_uk.parameters.gov.dwp.universal_credit.rebalancing.create_health_element_uprating import (
     add_uc_health_element_uprating,
 )
@@ -38,6 +41,9 @@ from policyengine_uk.parameters.gov.dwp.universal_credit.rebalancing.create_stan
 )
 from policyengine_uk.parameters.gov.economic_assumptions.create_september_cpi_uprating import (
     add_september_cpi_uprating,
+)
+from policyengine_uk.parameters.gov.economic_assumptions.create_earnings_uprating import (
+    add_earnings_uprating,
 )
 from policyengine_uk.parameters.gov.economic_assumptions.create_economic_assumption_indices import (
     create_economic_assumption_indices,
@@ -122,6 +128,7 @@ GENERATION_STEPS = (
     add_lagged_earnings,
     add_lagged_cpi,
     add_statutory_uprating_inputs,
+    add_earnings_uprating,
     add_triple_lock,
     add_september_cpi_uprating,
     create_economic_assumption_indices,
@@ -171,7 +178,7 @@ def process_parameter_tree(
     - lagged earnings and CPI indices
     - statutory uprating inputs (September CPI, May-July earnings)
     - triple lock calculations for state pensions
-    - September CPI uprating
+    - earnings and September CPI uprating
     - economic assumption indices
     - income tax and NICs threshold indexation after the freeze
     - Universal Credit standard allowance uprating (UC Act 2025 s. 1)
@@ -210,6 +217,9 @@ def process_parameter_tree(
         propagate_parameter_metadata(parameters)
         with canonical_ni_uprating_references(parameters):
             uprate_parameters(parameters)
+    project_savings_credit_threshold(parameters)
+    if annualise:
+        project_savings_credit_threshold(parameters.baseline)
     parameters = backdate_parameters(parameters, BACKDATED_FROM)
     # Prior law's projected path for every parameter a reform can change: the
     # gov tree, before annualisation, and the trees outside it (household),
