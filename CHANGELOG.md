@@ -1,3 +1,13 @@
+## [2.145.2] - 2026-10-22
+
+### Fixed
+
+- Preserve cohabiting-couple participation groups when calculating responses for an explicit year.
+- - Added Universal Credit benefit cap earnings exception regression tests (Universal Credit Regulations 2013 reg. 82), including the per-claimant earned income cases (tax on pension income, one partner's pension contributions, contributions after 75), and cited regs. 55 and 57 and Finance Act 2004 s. 188 on `is_uc_benefit_cap_exempt_earnings`.
+- Use the requested year and eligible-only spillover bins in participation dynamics, preserving seeded MT19937 draws without changing global NumPy state.
+- When Universal Credit rebalancing is inactive, uprate the LCWRA award from its pre-Act amount while preserving explicit inputs and refreshing cached awards after amount reforms. Preserve the benefit-cap claimant filter through the internal LCWRA amount wrapper while retaining explicit awards and external reforms. Anchored the inactive 2026-27 health-element counterfactual to September CPI with monthly-penny rounding, before projecting later years from that anchor.
+
+
 ## [2.145.1] - 2026-10-21
 
 ### Fixed
