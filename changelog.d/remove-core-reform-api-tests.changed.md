@@ -1,0 +1,1 @@
+- Removed the `core_reform_api` test cases, which called policyengine-core's `Reform.from_api` through a replaced `requests.get`, and added a test that fails if code here uses the policyengine-core functions that call the Public API.
