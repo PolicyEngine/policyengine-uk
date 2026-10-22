@@ -32,8 +32,8 @@ population of households:
    Oxford, each non-dependant's deduction and each claiming family's total
    equal an independent calculation from the council's scale: a claimant or
    partner banded on the couple's joint earnings and the couple deducted once
-   at the higher amount (each member in Merton and Kingston upon Thames
-   when the couple has Universal Credit), any other adult banded
+   at the higher amount (each member in Merton, Kingston upon Thames and
+   Westminster when the couple has Universal Credit), any other adult banded
    on their own earnings, each on their own hours; the benefit-receipt
    exemptions for the person on the award, Universal Credit's tested on their
    own earnings (none in Oxford); and the household's pool charged to each
@@ -598,7 +598,10 @@ def test_no_op_without_non_dependants_in_a_benefit_unit(population):
 # 5-6. The English working-age local schemes. Each council's weekly scale for
 # 2026-27 (the parameters' first values, which also apply in 2025): Merton
 # para 30, Kingston upon Thames para 30A, Newham para 30B, Westminster
-# Appendix A and Oxford para 43.
+# Appendix A and Oxford para 43. Westminster's working-age scheme is based on
+# the Default Scheme (SI 2012/2886), whose para 30(3) deducts for each member
+# of a couple with an award of Universal Credit, as Merton's and Kingston upon
+# Thames's texts do.
 LOCAL_SCHEMES = {
     "MERTON": dict(
         name="merton",
@@ -626,7 +629,7 @@ LOCAL_SCHEMES = {
         thresholds=[0, 279, 485, 605],
         amounts=[5.20, 10.60, 13.30, 15.95],
         benefit_exemptions=True,
-        each_uc_couple_member=False,
+        each_uc_couple_member=True,
     ),
     "OXFORD": dict(
         name="oxford",
@@ -790,9 +793,9 @@ def local_oracle(person_rows, family_rows, benefits, on_award, claims, ctr_share
                 on_award["universal_credit"][p] and row["earnings"] <= 0
             )
         individual[p] = 0 if exempt else weekly * 52
-    # One deduction for a couple, the higher, or each member's in Merton and
-    # Kingston upon Thames where the couple has Universal Credit; any other
-    # member separately.
+    # One deduction for a couple, the higher, or each member's in Merton,
+    # Kingston upon Thames and Westminster where the couple has Universal
+    # Credit; any other member separately.
     for f, family in enumerate(family_rows):
         members = [p for p, row in enumerate(person_rows) if row["family"] == f]
         couple = [p for p in members if person_rows[p]["claimant_or_partner"]]

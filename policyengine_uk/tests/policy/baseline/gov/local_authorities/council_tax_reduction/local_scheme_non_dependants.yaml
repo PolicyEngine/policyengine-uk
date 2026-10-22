@@ -10,9 +10,10 @@
 # Each non-dependant aged 18 or over is banded on their own normal gross weekly
 # income and is in remunerative work on their own hours (para 30(1)-(2) and
 # para 10); a couple's income is joint and the couple pays one deduction, the
-# higher (para 30(3)-(4); Oxford para 44), except that Merton and Kingston
-# upon Thames deduct for each member of a couple with a Universal Credit
-# award. The benefit-receipt exemptions (para 30(8)) apply to the person on
+# higher (para 30(3)-(4); Oxford para 44), except that Merton, Kingston upon
+# Thames and Westminster deduct for each member of a couple with a Universal
+# Credit award (the Default Scheme's para 30(3), on which Westminster's
+# working-age scheme is based). The benefit-receipt exemptions (para 30(8)) apply to the person on
 # the award: Income Support, income-based JSA, income-related ESA and State
 # Pension Credit to the member they are payable to, and Universal Credit to
 # each joint claimant who has no earned income of their own.
@@ -506,6 +507,50 @@
     newham_council_tax_reduction_individual_non_dep_deduction: [0, 1_175.72, 0]
     newham_council_tax_reduction_non_dep_deductions: [1_175.72, 0]
     council_tax_reduction: 84.28
+
+- name: Westminster deducts for each member of a Universal Credit couple, as the Default Scheme does
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 45
+        is_household_head: true
+        is_claimant_or_partner: true
+      worker:
+        age: 35
+        is_claimant_or_partner: true
+        employment_income: 30_000
+        weekly_hours: 37.5
+      partner:
+        age: 35
+        is_claimant_or_partner: true
+        employment_income: 2_600
+        weekly_hours: 10
+    benunits:
+      claimant_benunit:
+        members: [claimant]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+      couple:
+        members: [worker, partner]
+        universal_credit: 1_000
+    households:
+      household:
+        members: [claimant, worker, partner]
+        country: ENGLAND
+        local_authority: WESTMINSTER
+        council_tax: 1_800
+        savings: 0
+  output:
+    # Westminster's working-age scheme is based on the Default Scheme, whose
+    # para 30(3) makes no single deduction where there is an award of
+    # Universal Credit. The worker pays £15.95 on the couple's joint £626.92
+    # a week (Appendix A); the partner, earning but not in remunerative work,
+    # £5.20, and is not exempt, having earned income of her own.
+    westminster_council_tax_reduction_individual_non_dep_deduction: [0, 829.40, 270.40]
+    westminster_council_tax_reduction_non_dep_deductions: [1_099.80, 0]
+    council_tax_reduction: 700.20
 
 - name: Westminster charges the applicant's own non-dependant son
   period: 2026
