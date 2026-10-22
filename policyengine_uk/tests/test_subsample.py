@@ -14,7 +14,10 @@ Invariants, for every dataset, sample size ``n``, seed, sampling period and
    float32 precision, and so is the total of every other supplied weight over
    its own entity.
 3. Quantized weights: with ``quantize_weights`` (the default), a household's
-   weight is a whole multiple of total / ``n``, and the multiples sum to ``n``.
+   weight is its number of draws times the year's total over the draws of
+   households with a positive weight that year: a whole multiple of
+   total / ``n`` in the sampling year, and in any year where every drawn
+   household has a positive weight, with the multiples summing to ``n``.
    Without it, a household's weight is proportional to its old weight times a
    whole number of draws. Either way a zero weight stays zero, in every year.
 4. Links: a kept household or benefit unit has exactly the people it had, a
