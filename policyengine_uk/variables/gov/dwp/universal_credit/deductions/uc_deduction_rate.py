@@ -1,6 +1,7 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.dwp.universal_credit.deductions._deduction_amounts import (
     deduction_type_shares,
+    estimated_advance_repayment_amount,
 )
 
 
@@ -33,6 +34,13 @@ class uc_deduction_rate(Variable):
         latent = benunit("uc_latent_deduction_rate", period)
         other_rate = min_(latent, calibration_cap) * remaining_share
         advance = benunit("uc_advance_repayment_amount", period)
+        # A partially supplied input array contains -1 for omitted units.
+        # Resolve those units independently, retaining explicitly supplied zero.
+        advance = where(
+            advance >= 0,
+            advance,
+            estimated_advance_repayment_amount(benunit, period, parameters),
+        )
         if law.abolish.advance:
             advance = 0
         advance_rate = np.divide(
