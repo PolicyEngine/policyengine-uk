@@ -1,3 +1,11 @@
+## [2.147.2] - 2026-10-22
+
+### Fixed
+
+- - Start a child's working parent hours with the first 1 January, 1 April or 1 September after it reaches the minimum age (SI 2022/1134 reg 27(1)(a); SI 2016/1257 reg 35(3) before December 2022), each of the year's terms counting for a third of it. The new `extended_childcare_entitlement_term_share` reads the date of birth, so a child aged 0 in the middle of the year who was born from October to March now gets one or two terms' hours, where none did before, and a 1-year-old who reached nine months after 1 April loses the summer term. Universal and targeted hours meet the working parent hours term by term. From 2025, household simulations that give only whole ages are unchanged, since such a child is taken to be born on 6 April; in earlier years, at a minimum age of two or three, such a child now qualifies from September.
+- - Stop the universal and working parent free hours in England, and Scotland's funded early learning and childcare, from the term a child starts school. A council meets both English duties for a child in a state-funded or council-funded reception class through the school place (DfE statutory guidance, footnotes 7 and 17, paras A4.8 and C.6), and a child at primary school is not an eligible pre-school child in Scotland (Children and Young People (Scotland) Act 2014 s.47(2)(b)). The new `early_years_term_share_before_school` gives the share of the year's terms before the child starts school, from the date of birth. In England a child starts reception in the September following its fourth birthday (School Admissions Code 2021 para 2.17), so most 4-year-olds keep only the summer term; Scotland's primary 1 starts in August for children who turn five from March to February, and Northern Ireland's in September for children who are four by 1 July. A household simulation that gives only a whole age of 4 takes the child to be born on 6 April, so it now gets a third of the year's universal and working parent hours. Set the new `early_years_school_start_deferred` for a child whose start is deferred, or who takes funded hours in a council-funded independent reception class, to keep the year.
+
+
 ## [2.147.1] - 2026-10-22
 
 ### Fixed
