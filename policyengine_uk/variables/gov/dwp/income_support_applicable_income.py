@@ -7,17 +7,20 @@ class income_support_applicable_income(Variable):
     label = "Relevant income for Income Support means test"
     definition_period = YEAR
     unit = GBP
-    reference = "https://www.legislation.gov.uk/uksi/1987/1967/schedule/8"
+    reference = (
+        "https://www.legislation.gov.uk/uksi/1987/1967/schedule/8",
+        "https://www.legislation.gov.uk/uksi/1987/1967/regulation/36",
+        "https://www.legislation.gov.uk/uksi/1987/1967/regulation/38",
+    )
 
     def formula(benunit, period, parameters):
-        # Members whose income counts: the claimant and partner and, as the model did
-        # before, the programme's own children or young persons. The regulations count
-        # only the claimant's and partner's (IS Regs 1987 reg 23); dropping dependants'
-        # own income is a follow-up. Anyone else in the benefit unit does not count.
+        # Members whose income counts: the claimant and partner (IS Regs 1987
+        # reg 23(1)). The income of a child or young person in the claimant's
+        # family "shall not be treated as the income or capital of the
+        # claimant" (reg 23(2)). Anyone else in the benefit unit does not count
+        # either.
         person = benunit.members
-        members = person("is_claimant_or_partner", period) | person(
-            "is_child_or_young_person_for_legacy_benefits", period
-        )
+        members = person("is_claimant_or_partner", period)
         IS = parameters(period).gov.dwp.income_support
         INCOME_COMPONENTS = [
             "employment_income",
@@ -35,8 +38,10 @@ class income_support_applicable_income(Variable):
         income += add_for_members(benunit, period, ["social_security_income"], members)
         income += benunit("income_support_tariff_income", period)
         income -= tax
+        # IS Regs 1987 reg 36(3)(b) and reg 38(1)(b)(ii), (3)(c) and (9)(b).
         income -= (
-            add_for_members(benunit, period, ["pension_contributions"], members) * 0.5
+            add_for_members(benunit, period, ["pension_contributions"], members)
+            * IS.means_test.pension_contribution_deduction_rate
         )
         # Schedule 8 paras 5, 6 and 10 use mutually exclusive claimant types.
         mt = IS.means_test

@@ -22,32 +22,35 @@ FULL_TIME_WEEKLY_HOURS = 37.5
 def calculate_participation_elasticities(
     sim: Simulation,
     earnings_quintile: np.ndarray,
+    year: int = None,
 ) -> np.ndarray:
     """Calculate labour force participation elasticities by demographic group.
 
     Uses OBR elasticity estimates (Table A1) to assign participation elasticities
-    based on gender, marital status, presence/age of children, and earnings quintile.
+    based on gender, partnership status, presence/age of children, and earnings quintile.
 
     Args:
         sim: PolicyEngine simulation object
         earnings_quintile: Array indicating earnings quintile (1-5) for each person
+        year: Requested year, or the simulation default if omitted
 
     Returns:
         Array of participation elasticities for each person
     """
     # Get demographic characteristics
-    gender = sim.calculate("gender")
-    is_married = sim.calculate("is_married", map_to="person")
-    composition = benunit_age_18_composition(sim)
+    gender = sim.calculate("gender", year)
+    # OBR Tables A1/A2 include cohabiting couples; legal marriage is separate.
+    is_couple = sim.calculate("is_couple", year, map_to="person")
+    composition = benunit_age_18_composition(sim, year)
     has_children = composition["count_under_18"].values > 0
     youngest_child_age = composition["youngest_under_18_age"].values
-    is_single = ~is_married
+    is_single = ~is_couple
 
-    # Get partner employment status for married individuals
+    # Get partner employment status for individuals in couples
     benunit_count_adults = composition["count_aged_18_or_over"].values
-    employment_income = sim.calculate("employment_income")
-    benunit_id = sim.calculate("benunit_id", map_to="person")
-    adult_index = sim.calculate("adult_index")
+    employment_income = sim.calculate("employment_income", year)
+    benunit_id = sim.calculate("benunit_id", year, map_to="person")
+    adult_index = sim.calculate("adult_index", year)
 
     # Create DataFrame for efficient partner employment calculation
     df = pd.DataFrame(
@@ -125,7 +128,7 @@ def calculate_participation_elasticities(
     assign_elasticities(single_women_no_children, "single_women_no_children")
 
     # Women without children by partner employment status
-    women_no_children = (gender == "FEMALE") & ~has_children & is_married
+    women_no_children = (gender == "FEMALE") & ~has_children & is_couple
     assign_elasticities(
         women_no_children & ~partner_employed,
         "women_no_children_nonworking_partner",
@@ -151,7 +154,7 @@ def calculate_participation_elasticities(
     )
 
     # Women with children by partner employment status and youngest child age
-    women_with_children = (gender == "FEMALE") & has_children & is_married
+    women_with_children = (gender == "FEMALE") & has_children & is_couple
 
     # Non-working partner
     women_nonworking_partner = women_with_children & ~partner_employed
@@ -337,7 +340,7 @@ def calculate_gain_to_work(
     employment_income = sim.calculate("employment_income", year)
     hours_worked = sim.calculate("hours_worked", year)
     household_net_income = sim.calculate("household_net_income", year, map_to="person")
-    adult_index = sim.calculate("adult_index")
+    adult_index = sim.calculate("adult_index", year)
 
     # Impute wages for non-workers if requested
     if impute_nonworker_wages:
@@ -579,8 +582,8 @@ def apply_participation_responses(
     if sim.baseline is None:
         return pd.DataFrame()
 
-    # Set random seed for reproducibility
-    np.random.seed(random_seed)
+    # Preserve the legacy MT19937 stream without mutating process-global state.
+    rng = np.random.RandomState(random_seed)
 
     # Calculate excluded individuals
     from .labour_supply import calculate_excluded_from_labour_supply_responses
@@ -589,7 +592,7 @@ def apply_participation_responses(
 
     # Get employment status
     employment_income = sim.calculate("employment_income", year)
-    adult_index = sim.calculate("adult_index")
+    adult_index = sim.calculate("adult_index", year)
     eligible = ~excluded & (adult_index > 0) & (adult_index <= count_adults)
     currently_working = (employment_income > 0) & eligible
     currently_not_working = (employment_income == 0) & eligible
@@ -626,7 +629,7 @@ def apply_participation_responses(
         sim, year, hours_for_new_entrants, random_seed
     )
     elasticities_wrt_income = calculate_participation_elasticities(
-        sim, earnings_quintile
+        sim, earnings_quintile, year
     )
 
     # Transform elasticities from w.r.t. in-work income to w.r.t. gain-to-work
@@ -655,11 +658,17 @@ def apply_participation_responses(
     # When workers have worse incentives (negative GTW change), this creates a "deficit"
     # that pushes non-workers further away from employment
 
-    # Group people by elasticity group for surplus calculation
-    elasticity_groups = pd.cut(elasticities, bins=20, labels=False, duplicates="drop")
+    # Excluded records must not change the bin bounds for response candidates.
+    # Twenty equal-width bins remain an inherited spillover approximation.
+    elasticity_groups = np.full(elasticities.shape, np.nan)
+    if eligible.any():
+        elasticity_groups[eligible] = pd.cut(
+            elasticities[eligible], bins=20, labels=False, duplicates="drop"
+        )
 
     surplus_participation_change = np.zeros_like(direct_participation_change)
 
+    # NaN groups are safe: ineligible rows are in neither response-candidate mask.
     for group in np.unique(elasticity_groups[~np.isnan(elasticity_groups)]):
         group_mask = elasticity_groups == group
         workers_in_group = group_mask & currently_working
@@ -693,29 +702,29 @@ def apply_participation_responses(
     new_employment_income = employment_income.copy()
     participation_response = np.zeros_like(employment_income, dtype=bool)
 
-    # For currently working individuals: chance of leaving work
-    for i in np.where(currently_working)[0]:
-        # Negative participation change means lower probability of working
-        exit_probability = max(
-            0, -participation_change[i]
-        )  # Only consider negative changes
-        if np.random.random() < exit_probability:
-            new_employment_income[i] = 0
-            participation_response[i] = True  # Exited work
+    # Draw for every worker first, then every non-worker, in ascending row order.
+    # Keep zero-probability and nonpositive-wage candidates in the stream.
+    workers = np.flatnonzero(currently_working)
+    exited = workers[
+        rng.random_sample(len(workers)) < np.maximum(0, -participation_change[workers])
+    ]
+    new_employment_income[exited] = 0
+    participation_response[exited] = True
 
-    # For currently non-working individuals: chance of entering work
     imputed_wages = impute_wages_for_nonworkers(sim, year, hours_for_new_entrants)
-    for i in np.where(currently_not_working)[0]:
-        # Positive participation change means higher probability of working
-        entry_probability = max(
-            0, participation_change[i]
-        )  # Only consider positive changes
-        if np.random.random() < entry_probability and imputed_wages[i] > 0:
-            # Cast for the same reason as the in-work assignment above.
-            new_employment_income[i] = new_employment_income.dtype.type(
-                imputed_wages[i]
-            )
-            participation_response[i] = True  # Entered work
+    nonworkers = np.flatnonzero(currently_not_working)
+    entered = nonworkers[
+        (
+            rng.random_sample(len(nonworkers))
+            < np.maximum(0, participation_change[nonworkers])
+        )
+        & (imputed_wages[nonworkers] > 0)
+    ]
+    # Match the legacy scalar assignment's model-storage precision.
+    new_employment_income[entered] = imputed_wages[entered].astype(
+        new_employment_income.dtype
+    )
+    participation_response[entered] = True
 
     # Update simulation with new employment incomes
     sim.set_input("employment_income", year, new_employment_income)
