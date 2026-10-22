@@ -59,7 +59,12 @@ give SAAS borrowers Plan 4 and Student Finance Northern Ireland borrowers
 Plan 1. For undergraduate loans, England uses Plan 1 before the 2012 intake,
 Plan 2 for 2012–2022, and Plan 5 from 2023; Wales uses Plan 1 before 2012 and
 Plan 2 from 2012. New assignments follow these routes; an unknown region
-leaves the person without an assigned loan. Take-up remains a fixed 40%
+leaves the person without an assigned loan. New holders from the 2023 and
+later intakes are added only in England: Plan 5 is the only plan that did not
+exist in the base year, while the other nations' plans for those intakes are
+already in the data. Plan 1 loans first paid before September 2006 (the 2005
+and earlier intakes) are written off at 65, later ones about 29 years after
+the course started. Take-up remains a fixed 40%
 probability with a draw keyed on person ID. This funding-nation routing
 applies to newly assigned loans; the existing-holder relabelling and
 write-off approximations are unchanged.

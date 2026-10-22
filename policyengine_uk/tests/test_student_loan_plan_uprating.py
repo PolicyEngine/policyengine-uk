@@ -104,12 +104,35 @@ def test_the_base_year_comes_from_the_dataset(from_2024):
 def test_new_plan_1_holders_are_older_than_the_first_income_contingent_intake(
     from_2024,
 ):
-    # The 1998 intake was 44 in 2024; loans are written off 29 years after
-    # the intake, so from 47.
+    # The 1998 intake was 44 in 2024 and is 49 in 2029. Loans first paid
+    # before September 2006 are written off at 65, so the 1998 to 2002
+    # intakes (ages 45 to 49) are all still outstanding; age 50 is the 1997
+    # intake, before income-contingent loans.
     plans = from_2024[2029]
-    assert share(plans, "PLAN_1", range(45, 47)) == pytest.approx(TAKE_UP, abs=0.05)
+    assert share(plans, "PLAN_1", range(45, 50)) == pytest.approx(TAKE_UP, abs=0.03)
     assert share(plans, "PLAN_1", range(36, 45)) == 0
-    assert share(plans, "PLAN_1", range(47, 51)) == 0
+    assert share(plans, "PLAN_1", [50]) == 0
+
+
+def test_the_two_plan_1_write_off_rules(all_graduates_take_up):
+    # Projected from 2024 to 2040, ages 47 to 52 are the 2011 to 2006
+    # intakes, written off 29 years after the intake (by 2040 at the latest).
+    # Ages 53 to 60 are the 2005 to 1998 intakes, first paid before
+    # September 2006, so outstanding until 65. Age 61 is the 1997 intake,
+    # before income-contingent loans.
+    previous = mock_dataset(
+        2024, ages=[47, 52, 53, 60, 61], region="LONDON", people_per_age=1
+    )
+    current = previous.copy()
+    current.time_period = "2040"
+    projected = uprate_student_loan_plans(current, previous, system.parameters)
+    assert projected.person.student_loan_plan.tolist() == [
+        "NONE",
+        "NONE",
+        "PLAN_1",
+        "PLAN_1",
+        "NONE",
+    ]
 
 
 def test_a_persons_draw_is_the_same_in_every_year(from_2024):
@@ -204,9 +227,11 @@ def test_extended_pre_2012_intakes_follow_funding_nation(
     "region, plan_from_2023, plan_before_2023",
     [
         ("LONDON", "PLAN_5", "PLAN_2"),
-        ("WALES", "PLAN_2", "PLAN_2"),
-        ("SCOTLAND", "PLAN_4", "PLAN_4"),
-        ("NORTHERN_IRELAND", "PLAN_1", "PLAN_1"),
+        # Only England's Plan 5 is new since the base year: the other
+        # nations' 2023-and-later intakes are on plans the data already has.
+        ("WALES", "NONE", "PLAN_2"),
+        ("SCOTLAND", "NONE", "PLAN_4"),
+        ("NORTHERN_IRELAND", "NONE", "PLAN_1"),
         ("UNKNOWN", "NONE", "NONE"),
     ],
 )
