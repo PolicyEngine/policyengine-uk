@@ -1,1 +1,1 @@
-Fixed household wealth deciles to split equal wealth by original household order while retaining person weights.
+- Fixed household wealth deciles to split equal wealth by original household order while retaining person weights.
