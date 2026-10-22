@@ -16,6 +16,6 @@ class earned_taxable_income(Variable):
         exclusion_list = parameters(
             period
         ).gov.hmrc.income_tax.earned_taxable_income_exclusions
-        ani = person("adjusted_net_income", period)
+        ani = person("net_income", period)
         exclusions = add(person, period, exclusion_list)
         return max_(0, ani - exclusions)

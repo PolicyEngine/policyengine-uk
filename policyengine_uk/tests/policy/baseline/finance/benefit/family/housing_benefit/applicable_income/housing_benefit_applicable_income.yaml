@@ -128,6 +128,142 @@
   output:
     housing_benefit_applicable_income: 0
 
+- name: Continuing council tenant retains the default half-pension deduction
+  # SI 2006/213 reg 36(3)(c): half of the personal pension contribution.
+  # Earnings are below the tax and NI thresholds. Net earnings are
+  # 12,000 - 0.5 * 2,000 = 11,000; the single earnings disregard is 5 * 52.
+  # Applicable income is 10,740 and the allowance is 92.05 * 52 = 4,786.60.
+  # HB = 10,000 - 0.65 * (10,740 - 4,786.60) = 6,130.29.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 12_000
+        weekly_hours: 16
+        personal_pension_contributions: 2_000
+        housing_benefit_reported: 1_000  # continuing award, not calculated cash
+    benunits:
+      benunit:
+        members: [person]
+        would_claim_uc: false
+    households:
+      household:
+        members: [person]
+        tenure_type: RENT_FROM_COUNCIL
+        region: LONDON
+        num_bedrooms: 1
+        rent: 10_000
+  output:
+    housing_benefit: 6_130.29
+    housing_benefit_applicable_income: 10_740
+    housing_benefit_net_earnings: 11_000
+    housing_benefit_applicable_income_disregard: 260
+    housing_benefit_applicable_amount: 4_786.60
+    pension_contributions: 2_000
+    income_tax: 0
+    national_insurance: 0
+    housing_benefit_non_dep_deductions: 0
+    housing_benefit_benefit_cap_reduction: 0
+    housing_benefit_on_passporting_benefit: false
+    housing_benefit_eligible: true
+    would_claim_housing_benefit: true
+    legacy_benefits_closed: false
+    universal_credit: 0
+
+- name: Quarter-pension deduction reform reduces the continuing Housing Benefit award
+  # Model reform, not current law: 12,000 - 0.25 * 2,000 - 260 = 11,240.
+  # HB = 10,000 - 0.65 * (11,240 - 4,786.60) = 5,805.29.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.dwp.housing_benefit.means_test.pension_contribution_deduction_rate: 0.25
+    people:
+      person:
+        age: 40
+        employment_income: 12_000
+        weekly_hours: 16
+        personal_pension_contributions: 2_000
+        housing_benefit_reported: 1_000
+    benunits:
+      benunit:
+        members: [person]
+        would_claim_uc: false
+    households:
+      household:
+        members: [person]
+        tenure_type: RENT_FROM_COUNCIL
+        region: LONDON
+        num_bedrooms: 1
+        rent: 10_000
+  output:
+    housing_benefit: 5_805.29
+    housing_benefit_applicable_income: 11_240
+    housing_benefit_net_earnings: 11_500
+    housing_benefit_applicable_income_disregard: 260
+    housing_benefit_applicable_amount: 4_786.60
+
+- name: Zero pension deduction reform counts the full income
+  # Model reform: 12,000 - 0 * 2,000 - 260 = 11,740.
+  # HB = 10,000 - 0.65 * (11,740 - 4,786.60) = 5,480.29.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.dwp.housing_benefit.means_test.pension_contribution_deduction_rate: 0
+    people:
+      person:
+        age: 40
+        employment_income: 12_000
+        weekly_hours: 16
+        personal_pension_contributions: 2_000
+        housing_benefit_reported: 1_000
+    benunits:
+      benunit:
+        members: [person]
+        would_claim_uc: false
+    households:
+      household:
+        members: [person]
+        tenure_type: RENT_FROM_COUNCIL
+        region: LONDON
+        num_bedrooms: 1
+        rent: 10_000
+  output:
+    housing_benefit_applicable_income: 11_740
+    housing_benefit: 5_480.29
+    housing_benefit_net_earnings: 12_000
+
+- name: Full pension deduction reform increases the continuing Housing Benefit award
+  # Model reform: 12,000 - 1 * 2,000 - 260 = 9,740.
+  # HB = 10,000 - 0.65 * (9,740 - 4,786.60) = 6,780.29.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.dwp.housing_benefit.means_test.pension_contribution_deduction_rate: 1
+    people:
+      person:
+        age: 40
+        employment_income: 12_000
+        weekly_hours: 16
+        personal_pension_contributions: 2_000
+        housing_benefit_reported: 1_000
+    benunits:
+      benunit:
+        members: [person]
+        would_claim_uc: false
+    households:
+      household:
+        members: [person]
+        tenure_type: RENT_FROM_COUNCIL
+        region: LONDON
+        num_bedrooms: 1
+        rent: 10_000
+  output:
+    housing_benefit: 6_780.29
+    housing_benefit_applicable_income: 9_740
+    housing_benefit_net_earnings: 10_000
+
 - name: Statutory paternity pay counts as income and the income tax on it comes off
   # SI 2006/213 reg 35(1)(i): statutory paternity pay is earnings. ITEPA 2003
   # s. 660 taxes it, and reg 36(3) deducts the income tax and Class 1 NI on

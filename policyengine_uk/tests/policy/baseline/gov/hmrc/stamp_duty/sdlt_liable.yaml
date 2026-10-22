@@ -4,3 +4,10 @@
     country: [ENGLAND, WALES, SCOTLAND, NORTHERN_IRELAND]
   output:
     sdlt_liable: [true, false, false, true]
+- name: No household is liable once Stamp Duty is abolished
+  period: 2026
+  input:
+    gov.hmrc.stamp_duty.abolish: true
+    country: [ENGLAND, WALES, SCOTLAND, NORTHERN_IRELAND]
+  output:
+    sdlt_liable: [false, false, false, false]
