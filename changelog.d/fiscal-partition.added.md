@@ -1,1 +1,0 @@
-- Add `policyengine_uk/data/fiscal_partition.yaml`, a tax-head partition of `gov_tax`, `household_tax` and `pre_budget_change_household_tax` (one OBR receipts line per head, explicit exclusions and overlap guards), with tests that each total is the sum of its heads and counts each head once.

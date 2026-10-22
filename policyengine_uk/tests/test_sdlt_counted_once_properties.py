@@ -29,9 +29,10 @@ of the largest value compared, per household); "exactly" means bit-equal.
 3. Abolition removes all of it once: T(B) - T(A) equals
    ``stamp_duty_land_tax`` + ``corporate_sdlt`` in B, and T(Z) - T(A) equals
    ``stamp_duty_land_tax`` in B, so no corporate SDLT is left after abolition.
-4. Abolition zeroes both parts: ``expected_sdlt`` and ``corporate_sdlt`` are
-   exactly 0 in A, ``corporate_tax_incidence`` in A equals ``business_rates``,
-   and ``corporate_tax_incidence`` falls by ``corporate_sdlt`` in B.
+4. Abolition zeroes both parts: ``stamp_duty_land_tax``, ``expected_sdlt``
+   and ``corporate_sdlt`` are exactly 0 in A, ``corporate_tax_incidence`` in
+   A equals ``business_rates``, and ``corporate_tax_incidence`` falls by
+   ``corporate_sdlt`` in B.
 5. Weighted totals: when some household has corporate-sector wealth, the
    weighted sum of ``corporate_sdlt`` in B is the corporate SDLT revenue
    statistic (within a relative 1e-6), and weighted ``gov_tax`` falls under
@@ -163,6 +164,7 @@ def test_sdlt_is_counted_once_and_abolition_removes_it(households, year):
         )
 
     # 4. Abolition zeroes both parts and the corporate incidence they feed.
+    np.testing.assert_array_equal(a["stamp_duty_land_tax"], 0)
     np.testing.assert_array_equal(a["expected_sdlt"], 0)
     np.testing.assert_array_equal(a["corporate_sdlt"], 0)
     np.testing.assert_array_equal(a["corporate_tax_incidence"], a["business_rates"])
