@@ -27,20 +27,17 @@ class uc_deductions(Variable):
 
     def formula(benunit, period, parameters):
         p = parameters(period).gov.dwp.universal_credit.deductions
-        rate = benunit("uc_deduction_rate", period)
-        standard_allowance = benunit("uc_standard_allowance", period)
         # Shared with uc_benefit_cap_reduction_after_floor. Under current law
         # the cap reduces the award first and deductions leave a penny of
         # what is left. Where a protected minimum floor binds, deductions are met
         # first, up to the floor allowance, and the cap reduction absorbs the
-        # rest. The floor then also binds on the above-cap excess that
-        # current law exempts from the deductions cap (last resort and child
-        # maintenance deductions); JRF's briefing does not say whether their
-        # floor exempts those categories, so that is a modeling choice.
+        # rest. The floor also binds on last resort exceptions and maintenance
+        # above the administrative cap. JRF's briefing does not say whether
+        # their floor exempts those categories, so that is a modeling choice.
         deductions, _ = allocate_uc_reductions(
             benunit("universal_credit_pre_benefit_cap", period),
             benunit("uc_benefit_cap_reduction", period),
-            rate * standard_allowance,
+            benunit("uc_deduction_demand", period),
             benunit("uc_maximum_reduction", period),
             p.minimum_payable * MONTHS_IN_YEAR,
         )

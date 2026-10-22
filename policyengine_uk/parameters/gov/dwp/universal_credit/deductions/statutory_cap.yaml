@@ -1,0 +1,10 @@
+description: Universal Credit limits ordinary debt and child maintenance deductions together to this share of the standard allowance, except for the continuing needs, housing costs and rent deductions in Schedule 6 paragraph 4(3)-(4).
+values:
+  2013-04-29: 0.4
+metadata:
+  label: UC deductions statutory ceiling
+  unit: /1
+  period: year
+  reference:
+    - title: Social Security (Claims and Payments) Regulations 2013, Schedule 6 paragraph 4
+      href: https://www.legislation.gov.uk/uksi/2013/380/schedule/6/paragraph/4

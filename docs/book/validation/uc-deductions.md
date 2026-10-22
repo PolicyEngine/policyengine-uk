@@ -8,6 +8,57 @@ PolicyEngine UK models the money DWP takes off Universal Credit awards to repay 
 
 The implementation separates **latent demand** from the **statutory cap**. `uc_latent_deduction_rate` assigns deduction demand from the distribution DWP observed in March to May 2025 — the last full months under the 25% cap — and `gov.dwp.universal_credit.deductions.cap` applies the operational cap (40% to October 2019, 30%, 25%, then 15% under the Fair Repayment Rate from 30 April 2025) at runtime. Assigning observed post-cap rates directly would bake the cap into the data and make cap-raising reforms inexpressible.
 
+## Fixed cash and percentage deductions
+
+`uc_advance_repayment_amount` is annual cash demand before the deduction cap,
+abolition switches and available-award limits. Set the actual instalments when
+known; zero explicitly removes the advance estimate. An allowance reform does
+not increase that demand. Recovery can still rise when a higher allowance
+relaxes a binding percentage ceiling.
+
+For existing latent-rate and type-combination inputs, the fallback keeps the
+existing marginal-mean split and converts the advance share using the **same
+year's unreformed standard allowance** for the claimant category. The reference
+uses the unannualised baseline parameter tree at 30 April, consistently with
+fiscal-year sampling. This preserves the year's baseline estimate while
+isolating an allowance reform. It does **not** identify a repayment's cash-origin
+year or establish unchanged instalments across projected years or changes in
+family status. Each year remains a cross-sectional imputation. Supply cash
+amounts for the years concerned to describe a particular repayment schedule.
+
+The remaining third-party and government shares retain their estimated
+percentage response. Those aggregate types mix legal heads: rent arrears are
+10%–20% of the allowance, several other debts use 5%, continuing fuel/water
+costs are cash, and overpayment rates are ceilings rather than instructions to
+increase every agreed instalment. The coarse input cannot identify all those
+arrangements. This change does not impute new deduction categories or change
+dataset inputs.
+
+`uc_child_maintenance_deduction_amount` accepts known annual maintenance/fees or
+arrears cash demand. The arrears-only flat rate is £36.40/month from 4 July 2019;
+ongoing liability and fees depend on the amount due. No maintenance incidence
+is assigned. Supply it separately from any aggregate third-party amount to
+avoid counting it twice. Maintenance may exceed the **administrative cap**,
+but ordinary debt and maintenance together remain within the **40% statutory
+ceiling**. See [Schedule 7](https://www.legislation.gov.uk/uksi/2013/380/schedule/7)
+and [the 2025 explanatory memorandum, paragraphs 5.10–5.12](https://www.legislation.gov.uk/uksi/2025/387/pdfs/uksiem_20250387_en_001.pdf#page=3).
+
+`uc_last_resort_deduction_amount` accepts the cash demand for the continuing
+needs, housing-cost and rent exceptions in [Schedule 6 paragraph 4(3)–(4)](https://www.legislation.gov.uk/uksi/2013/380/schedule/6/paragraph/4).
+Only this component bypasses the statutory ceiling. Its legacy fallback treats
+the latent excess above the calibration cap as last resort cash at the same
+year's unreformed allowance. The observed excess mixes child maintenance and
+last resort heads, which the existing inputs cannot separate; that proxy is a
+remaining data limitation. Known maintenance belongs in its separate cash input,
+with the last-resort input set to its actual amount (including zero).
+
+`uc_deduction_demand` combines cash and percentage demand, applying the two caps.
+Both deduction and benefit-cap allocation read that cash amount, preserving the
+penny per assessment period and any contributed protected floor even if the
+standard allowance is zero. `uc_deduction_rate` is its reporting ratio to the
+current allowance, with zero returned when that denominator is zero; use cash
+demand rather than reconstructing it from the reporting ratio.
+
 ## Validation against DWP deductions statistics
 
 Enhanced FRS 2023/24 v1.40.3, against [DWP's Universal Credit deductions statistics](https://www.gov.uk/government/statistics/universal-credit-quarterly-statistics-29-april-2013-to-12-february-2026/universal-credit-deductions-statistics-march-2025-to-february-2026).
@@ -29,7 +80,7 @@ The pre-Fair-Repayment-Rate pileup at the cap and both regimes' mean amounts rep
 
 ## Limitations
 
-These bound what the module can support. They are stated rather than tuned away.
+These bound what the module can support. They are stated rather than tuned away. The historical validation below predates the separate fixed-cash inputs; population validation has not been rerun for this change.
 
 ### Aggregates scale with the UC caseload
 
@@ -53,7 +104,7 @@ The `protected_floor` lever limits combined deductions and benefit cap reduction
 
 JRF specifies the combined limit, not a priority between the two: their [September 2026 briefing](https://www.jrf.org.uk/social-security/a-protected-minimum-floor-in-universal-credit-to-cut-deep-child-poverty) proposes that "the sum of the 'capped amount' and any debt deductions is limited to the difference between a household's standard allowance and the level of the protected minimum floor". Debt first is the modeling choice, for three reasons. Under the Fair Repayment Rate the 15% deductions cap equals the allowance an 85% floor leaves, so cappable deductions never breach the floor on their own, and the policy JRF builds on (extending the Fair Repayment Rate "to all deductions, including the benefit cap") leaves deductions where that rate puts them. JRF's own example (standard allowance £98 a week, a £15 deduction, an £80 cap reduction, total limited to £15) is consistent with it. And it does not depend on how heavily the household is capped: if the deduction were limited by the gross cap reduction, a household capped down to a few pence would have its deduction squeezed to almost nothing even though the floor then removes most of that cap. The award is the same under either priority; only the split differs.
 
-Where deductions alone do exceed the allowance, the floor binds on the whole of `uc_deductions`, including the above-cap excess that current law exempts from the deductions cap (last resort and child maintenance deductions). JRF's briefing does not say whether their floor exempts those categories — its worked example involves only cappable deductions and the benefit cap — so this is a modeling choice.
+Where deductions alone do exceed the allowance, the floor binds on the whole of `uc_deductions`, including statutory last resort exceptions and maintenance allowed above the administrative cap. JRF's briefing does not say whether their floor exempts those categories — its worked example involves only cappable deductions and the benefit cap — so this is a modeling choice.
 
 Both components report what the award actually loses, so `uc_deductions` and `uc_benefit_cap_reduction_after_floor` sum to the entitlement forgone, and the applied cap reduction never exceeds the award (a £1,000 cap reduction on a £500 award applies £500). `uc_benefit_cap_reduction`, the regulation 81 amount, itself stays gross, and so does `benefit_cap_reduction`, which adds it to the Housing Benefit reduction. Read `uc_benefit_cap_reduction_after_floor` for the cap reduction applied to a UC award under a floor reform.
 

@@ -18,7 +18,7 @@ def allocate_uc_reductions(
     gross_cap_reduction: uc_benefit_cap_reduction, the regulation 81 amount
         of SI 2013/376. benefit_cap_reduction and uc_has_deduction read it
         too, so it is never floored.
-    deduction_demand: the deduction rate times the standard allowance,
+    deduction_demand: cash demand after the administrative/statutory caps,
         before the one-penny rule.
     max_reduction: uc_maximum_reduction, infinite when no protected floor is
         in force (current law).
