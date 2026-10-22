@@ -1106,6 +1106,88 @@
     is_uc_benefit_cap_exempt_specified_benefit: false
     is_housing_benefit_benefit_cap_exempt_specified_benefit: true
 
+- name: A dependent young person's AFIP does not lift the Universal Credit cap, so the award is capped
+  # For Universal Credit, AFIP is within "attendance allowance" (UC Regs
+  # 2013 reg 2), and reg 83(1)(c) excepts only where "a claimant is
+  # receiving" it. The 17-year-old is a qualifying young person, not a
+  # claimant, so the family's Universal Credit is capped at the London
+  # family rate of 25,323 a year. AFIP also earns no disabled child
+  # addition (reg 24(2) lists DLA, PIP and the Scottish equivalents, and
+  # blindness for the higher rate), so the maximum amount is the standard
+  # allowance, three child elements and the 30,000 housing costs element.
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 45
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+        armed_forces_independence_payment: 5_740
+      child1:
+        age: 10
+      child2:
+        age: 8
+    benunits:
+      benunit:
+        members: [parent, young_person, child1, child2]
+    households:
+      household:
+        members: [parent, young_person, child1, child2]
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 30_000
+  output:
+    is_qualifying_young_person_for_child_benefit: [false, true, false, false]
+    is_uc_assessed_claimant: [true, false, false, false]
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_uc_benefit_cap_exempt: false
+    uc_benefit_cap: 25_323
+    uc_disability_elements: 0
+    universal_credit_pre_benefit_cap: 46_615.92
+    uc_benefit_cap_reduction: 24_561.12
+    universal_credit: 22_054.80
+  absolute_error_margin: 1
+
+- name: A dependent young person's AFIP lifts the Housing Benefit cap, so the award is paid in full
+  # HB Regs 2006 reg 75F(1)(ea) names "the claimant, the claimant's partner
+  # or a young person for whom the claimant or the claimant's partner is
+  # responsible". The same family on legacy Housing Benefit (an existing
+  # award, no Universal Credit claim) is outside the cap, so its Housing
+  # Benefit is paid in full.
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 45
+        housing_benefit_reported: 10_000
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+        armed_forces_independence_payment: 5_740
+      child1:
+        age: 10
+      child2:
+        age: 8
+    benunits:
+      benunit:
+        members: [parent, young_person, child1, child2]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, young_person, child1, child2]
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 30_000
+  output:
+    universal_credit_pre_benefit_cap: 0
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt: true
+    housing_benefit_benefit_cap_reduction: 0
+    housing_benefit_pre_benefit_cap: 30_000
+    housing_benefit: 30_000
+  absolute_error_margin: 1
+
 - name: A 16-year-old out of education with armed forces independence payment does not lift the cap
   period: 2025
   input:

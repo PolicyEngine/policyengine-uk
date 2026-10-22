@@ -1,3 +1,190 @@
+## [2.146.2] - 2026-10-22
+
+### Fixed
+
+- Retain both the minimum-age and earnings conditions when combining Carer Support Payment fixes.
+- Applied the minimum ages to computed Carer's Allowance, Carer Support Payment and DLA mobility awards, preserving DLA care and explicit amount overrides.
+
+
+## [2.146.1] - 2026-10-22
+
+### Changed
+
+- - Store marginal National Insurance schedules as parameter scales while preserving contribution calculations and existing scalar reform paths.
+  - Reject unsupported changes to the fixed zero-rate, zero-threshold NI scale sentinel with a targeted error.
+  - Direct YAML readers must migrate the ten removed scalar files to the canonical scale files; parameter-tree readers retain the legacy compatibility paths.
+  - Retain incoming savings indexation, director and liability rules while migrating NI readers; hide legacy and fixed-zero discovery controls without removing their IDs or update contracts.
+- - Expanded Savings Credit regression coverage for protected mixed-age couples and clarified computed-amount metadata.
+
+### Fixed
+
+- Preserve age-conditioned National Insurance deductions when validating Carer Support Payment earnings after main integration.
+- Disregard already-allowable employment expenses in Universal Credit employed earnings before the minimum income floor.
+
+  Nonzero employment expenses supplied by a dataset can change Universal Credit microsimulation results. The aggregate effect has not been quantified.
+- - Applied the Carer Support Payment earnings limit, including its own dated thresholds and favorable fractional-penny rule.
+- Fix the default historical income-tax band thresholds and strict upper boundaries, including Marriage Allowance eligibility in 2016 and 2017.
+
+
+## [2.146.0] - 2026-10-22
+
+### Added
+
+- Add council_tax_band_d_amount and simulated_council_tax, computing gross council tax from local authority Band D amounts and statutory band ratios. Band D amounts cover all 350 April 2023 local authorities across England, Wales and Scotland for fiscal 2025 and 2026.
+
+### Fixed
+
+- Keep annual legacy-benefit closure scoped to the claimant and partner or a separate member's own award, so unrelated reports cannot close or shield each other's awards. Preserve the existing migration-date proxy and bounded work and capital tests.
+
+  Keep each person's legacy closure false alongside the family closure when the report-only benefit reform holds migration off.
+
+
+## [2.145.2] - 2026-10-22
+
+### Fixed
+
+- Preserve cohabiting-couple participation groups when calculating responses for an explicit year.
+- - Added Universal Credit benefit cap earnings exception regression tests (Universal Credit Regulations 2013 reg. 82), including the per-claimant earned income cases (tax on pension income, one partner's pension contributions, contributions after 75), and cited regs. 55 and 57 and Finance Act 2004 s. 188 on `is_uc_benefit_cap_exempt_earnings`.
+- Use the requested year and eligible-only spillover bins in participation dynamics, preserving seeded MT19937 draws without changing global NumPy state.
+- When Universal Credit rebalancing is inactive, uprate the LCWRA award from its pre-Act amount while preserving explicit inputs and refreshing cached awards after amount reforms. Preserve the benefit-cap claimant filter through the internal LCWRA amount wrapper while retaining explicit awards and external reforms. Anchored the inactive 2026-27 health-element counterfactual to September CPI with monthly-penny rounding, before projecting later years from that anchor.
+
+
+## [2.145.1] - 2026-10-21
+
+### Fixed
+
+- - Uprate additional State Pension and protected payments by September CPI, as the Up-rating Orders do (SI 2026/148 arts 4(3) and 6(3)(b)), not by the full rate's triple-lock rise; reforms to the full rates no longer move them.
+
+
+## [2.145.0] - 2026-10-21
+
+### Fixed
+
+- - Bus fares from journeys now follow DfT's published local bus fares index (BUS0415a) by area and fiscal year from the 2024-25 benchmark, and the OBR CPI after the last published quarter (March 2026), instead of holding the benchmark yield and adding a cap term against a fixed 2024 cap schedule. The 2025-26 yield per fare-paying boarding outside London rises 12.6% (the index) instead of 24.9%. Northern Ireland, which has no published index, follows CPI. Cap changes after the last published quarter (the £2 cap in 2027 and its end in 2028) enter the baseline through the cap term. The bus fare cap schedules now keep their calendar dates, so a cap change part-way through a year applies from its date.
+  - Cap changes are priced from a three-band table of uncapped single fares (`gov.dft.bus.uncapped_single_fares`), fitted to DfT's evaluation of the £2 cap, the 2023-24 fare cap grant, the January 2025 fares index step and the funding announced for the £3 cap in 2025 and the £2 cap in 2027, and uprated with CPI, instead of one £2.748 fare for every single ticket. A £3 cap now binds, and a full year at £2 against no cap saves about £0.36bn a year at 2024-25 boardings instead of £0.70bn. A supplied `local_bus_uncapped_single_fare` replaces the table for that person.
+
+### Removed
+
+- - Removed `gov.dft.bus.reference_year` and `gov.dft.bus.uncapped_single_fare`. The benchmark year of the published bus fare yield is `gov.dft.bus.benchmark_year`; the cap term reads `gov.dft.bus.fares.cap` and `gov.dft.bus.reference_fares.cap` in the same year; and cap changes are priced from `gov.dft.bus.uncapped_single_fares`. A reform naming a removed parameter fails with directions.
+
+
+## [2.144.0] - 2026-10-21
+
+### Added
+
+- Add `pip_dl_points` and `pip_m_points` person-level inputs and points-threshold parameters under `gov.dwp.pip.{daily_living,mobility}.points_thresholds`, and derive `pip_dl_category` and `pip_m_category` from each person's latest points when the category is not provided as input. A person's category supplied for an earlier year still carries forward unless that person has points for a later year.
+
+
+## [2.143.0] - 2026-10-21
+
+### Added
+
+- Added a PIP point system planning page (docs/book/programs/gov/dwp/pip-points-plan.md) setting out the SI 2013/377 scoring rules and a phased route to modelling them, starting from #1661.
+- Added a regional childcare planning page (docs/book/programs/gov/dfe/regional-childcare-plan.md) listing the Scottish, Welsh and Northern Ireland childcare schemes not yet modelled and how to add them.
+- Added a plan for modelling Cold Weather Payment and the Scottish Winter Heating Payment (#435) at `docs/book/programs/gov/dwp/cold-weather-payment-plan.md`.
+- Added a plan for a rule-based Bereavement Support Payment and historical Widowed Parent's Allowance (#466, #465) at `docs/book/programs/gov/dwp/bereavement-support-plan.md`.
+- Added a plan for modelling the Warm Home Discount (#502) at `docs/book/programs/gov/ofgem/warm-home-discount-plan.md`, reflecting the benefit-based eligibility in England and Wales from winter 2025-26 and the separate Scottish scheme.
+- Added a page (docs/book/policy/future-date-announcements.md) on encoding announced policy changes as date-keyed parameter values, and how those dates become model-year values.
+- Add a planning docs page for child maintenance (`docs/book/programs/gov/cms/child-maintenance.md`): how `maintenance_income` and `maintenance_expenses` are treated today, the gap for spousal maintenance in Universal Credit, and a route to modelling the Child Maintenance Service calculation.
+- Add a documentation page (`docs/book/programs/gov/hmrc/pensions-comparison-stbm.md`) comparing PolicyEngine UK's treatment of pension contributions in income tax with the Scottish Tax-Benefit Model's source code, including a gap both share: contributions do not reduce adjusted net income for the personal allowance taper.
+- Add a documentation page at `docs/book/programs/gov/hmrc/pension-tax-relief.md` explaining how PolicyEngine UK models personal pension tax relief (full marginal-rate reduction in taxable income via `pension_contributions_relief`, with separate annual-allowance excess charge via `personal_pension_contributions_tax`), and clarifying that the model correctly reports the *total* relief (both relief-at-source + higher-rate top-up combined) for the scenarios reported in #704.
+- Added a plan for a reform impacts dashboard (#806) at `docs/book/validation/reform-impacts-dashboard-plan.md`, tracking the regression fixtures in `reforms_config.yaml` over model and dataset versions.
+- Documented how capital gains are modelled and imputed (#818, #817) at `docs/book/assumptions/capital-gains-distribution-plan.md`, including the Microcosm UK stages that now fit gains jointly to HMRC Table 3 and what is left to do.
+- Add a planning docs page (`docs/book/assumptions/non-uk-benefit-receipt-plan.md`) on benefit spending that does not reach UK private households (payments abroad, institutions, fraud and error) and how calibration targets should exclude it.
+- Add a planning docs page (`docs/book/policy/indirect-tax-effects-plan.md`) on letting indirect tax revenue respond to direct tax reforms through a consumption elasticity, from a single household-level factor to per-category elasticities and a link to `consumer_incident_tax_revenue_change`.
+- Documented the Ubuntu vs macOS reproducibility issue (#1209) at `docs/book/validation/ubuntu-vs-macos.md`: the import-time uprating cause, how it was resolved, and the October 2026 check that the parameter tree is byte-identical across macOS and Linux.
+- Add a planning docs page for firm-level VAT (`docs/book/programs/gov/hmrc/firm-vat.md`): a proposed `Firm` entity, the registration threshold and supply split, output, input and net VAT, the data needed for a synthetic firm panel, and open questions.
+- Added an effective take-up analysis plan (docs/book/assumptions/takeup-analysis-plan.md) listing each programme's take-up flag, reference parameter and current handling, where the data builds' seed rates live, and how to measure drift from them.
+- Added a child poverty validation page (docs/book/validation/child-poverty-tcl.md) comparing the two-child limit removal on Microcosm UK 2024-25 (about 463,000 children lifted after housing costs, £3.26bn in 2029-30) with the DWP, Budget 2025 (OBR-certified) and Resolution Foundation estimates.
+- Added a UK pipeline alignment planning page (docs/book/assumptions/uk-pipeline-alignment-plan.md): the model-side take-up gap still open, and what Microcosm UK now covers (reported-anchored take-up, the SPI stage-2 fill).
+- Documented the policyengine.py household-impact zero-return diagnosis (docs/book/validation/policyengine-py-household-impact.md); the UK model returns the expected values, re-checked on 2.123.7.
+- Add a planning docs page (`docs/book/assumptions/mp30k-uk-switch-plan.md`) setting out the gates and rollback path for changing the default dataset. It was written for Microplex UK and now applies to its successor, Microcosm UK.
+
+### Fixed
+
+- Stack capital gains on top of taxable income when splitting them between the higher and additional CGT bands, so reforms to either rate no longer give every gainer the whole higher band, and set the annual exempt amount against the gains where each pound saves most tax.
+- - Northern Ireland Local Housing Allowance rates now follow new gov.dfc.LHA.freeze and gov.dfc.LHA.percentile parameters, so reforms to gov.dwp.LHA.freeze and gov.dwp.LHA.percentile change Great Britain rates only.
+
+
+## [2.142.0] - 2026-10-21
+
+### Added
+
+- - Add `defined_benefit_pension_share`, `defined_benefit_pension_contributions` and `defined_benefit_pension_input_amount`, so data can say which workplace pension contributions go to defined-benefit arrangements and supply their statutory pension input amount (Finance Act 2004 s. 234) for the annual allowance. Where the input amount is not supplied it is those contributions times `gov.simulation.pensions.defined_benefit_input_per_contribution`, set at 1 from the accrual and contribution rates of the main public service schemes.
+
+### Changed
+
+- - Estimate unused annual allowance carried forward (Finance Act 2004 s. 228A) from 2020-21 where none is supplied, instead of nil: each of the five previous years' pension input is this year's times `gov.simulation.pensions.prior_year_input_ratio` (1), with incomes and input deflated by average earnings growth, against that year's tapered allowance, used earliest first (s. 228A(7)).
+
+### Fixed
+
+- - Use one definition of relevant UK earnings (Finance Act 2004 s. 189(2)) for pension contribution relief, the annual allowance income tests and the pension deduction in adjusted total income: employment income after allowable expenses but before pension deductions, and trading profits after capital allowances and the trading allowance but before losses brought forward. Relief previously counted pay before expenses and trading profits before capital allowances and the trading allowance.
+- - Uprate water and sewerage charges by country when a dataset is projected: England and Wales by Ofwat's average bills, Scotland by a new Scottish Water series (8.8% in 2024-25, 9.9% in 2025-26 and 8.67% in 2026-27, then the CPI + 2% cap in WICS's draft 2027-33 determination), and Northern Ireland, which has no domestic water charges, not at all. The charges were previously held flat to 2030 and then grown by the England and Wales series everywhere.
+- - Derive the Universal Credit benefit cap's earnings exception threshold each year from the national living wage: the pay for 16 hours a week, times 52 and divided by 12, with any fraction of a pound disregarded (Universal Credit Regulations 2013 regs. 82(1)(a) and 6(1A)(za)), and a fixed £430 a month before April 2017. It was fixed at the 2025-26 figure of £10,152 a year for every year; it is now £9,516 in 2024-25 and £10,572 in 2026-27. The national living wage parameter ends at its April 2026 rate, so the threshold stays at £10,572 in later years until that parameter is projected.
+
+
+## [2.141.12] - 2026-10-21
+
+### Fixed
+
+- - Fixed the Carer's Allowance earnings-limit property test to count pence in the precision the model stores earnings in (float32), as the formula does, so a draw whose float32 arithmetic rounds across a penny boundary no longer fails at random.
+
+
+## [2.141.11] - 2026-10-21
+
+### Fixed
+
+- - Indexed the annual savings starting-rate limit by September CPI from 2031–32, with statutory £10 rounding after the freeze.
+
+
+## [2.141.10] - 2026-10-21
+
+### Changed
+
+- - Reuse Pension Credit earnings tax calculations when checking Universal Credit housing contribution exemptions.
+
+### Fixed
+
+- Apply the Pension Credit earnings disregards of SPC Regs 2002 Schedule VI: 20 pounds a week for lone parents, carers and claimants or partners on a listed disability benefit (including working tax credit with a disability element) or certified blind, otherwise 5 pounds (single) or 10 pounds (couple), capped at net earnings. Employed earnings are net of the income tax they add; self-employed earnings, in Pension Credit income too, are net of the notional tax and contributions of the Computation of Earnings Regulations 1996 reg. 14. The Housing Benefit savings-credit-only route now deducts only the higher Housing Benefit disregards.
+
+
+## [2.141.9] - 2026-10-21
+
+### Fixed
+
+- Council Tax Reduction income now counts the applicant's and partner's industrial injuries disablement benefit, severe disablement allowance and incapacity benefit in every scheme (SI 2012/2885 Sch 1 para 16; SI 2012/2886 Sch paras 39 and 54; WSI 2013/3029 Sch 1 para 10 and Sch 6 para 17; SSI 2012/319 reg 27; SSI 2021/249 reg 57).
+
+
+## [2.141.8] - 2026-10-21
+
+### Changed
+
+- Clarify domestic and overseas carbon flows and household incidence, including imported emissions in the consumption footprint and the chart's 2019 DEFRA fallback intensities.
+- Use public Core operations for UK parameter initialization and dated-cache clearing while preserving parameter and reform behavior.
+
+### Fixed
+
+- Updated recent residential SDLT purchase schedules and applied the inclusive first-time-buyer price maximum, retaining annual sampling and contract-protection limitations.
+- - Kept the pension salary-sacrifice cap in National Insurance earnings without inflating ordinary pay or member pension contributions, retained actual supplied ordinary returns in the annual-allowance calculations, and preserved the childcare income tests in #2173.
+
+
+## [2.141.7] - 2026-10-21
+
+### Fixed
+
+- - Added the 2022–23 annual employee National Insurance schedule for explicitly declared full-year category A directors in one employment, preserving ordinary employees and other years.
+- - Corrected the JSA, ESA and DLA program registry variable mappings, narrowed Benefit Cap's parameter prefix to its own subtree, removed Maternity Allowance's unrelated DWP parameter prefix, and added validation of all declared registry variables and parameter prefixes.
+- - Reject data-axis aggregate-impact comparisons when either measurement omits its Python version or machine identity.
+
+
+## [2.141.6] - 2026-10-20
+
+### Fixed
+
+- - Uprate `water_and_sewerage_charges`, `housing_service_charges` and `pension_contributions_via_salary_sacrifice`, which declared an uprating index but were absent from `uprating_indices.yaml` and so stayed flat through 2030. Also uprate twelve columns added since with the same gap, each by the index it declares: `cash_isa`, `stocks_and_shares_isa`, `mortgage_debt`, `consumer_debt`, `rent_paid_as_boarder`, `rent_paid_as_lodger`, `owned_company_capital`, `owned_company_holding_value` and `owned_company_trade_assets` (per-capita GDP) and `self_employment_gross_receipts` and `owned_company_income_share` (per-capita mixed income), plus `pension_contributions_via_salary_sacrifice_pre_2015` (average earnings). Adds a code-health test asserting that every variable declaring `uprating` appears in that file under the matching index, so the gap fails at the point it is introduced. `rail_usage` is excluded because its declared index is a cumulative level rather than a year-on-year rate, and the three energy columns because the data build already prices them (#1868). Updates Ofwat water bill growth to the published 27% for 2025-26 (was the 26% forecast) and 5.4% for 2026-27 (was a 5.5% projection), and documents the sources and vintage of the water bill and population growth series.
+- - Limited the ordinary income-tax loss-cap pension uplift above earnings to relief-at-source contributions.
+
+
 ## [2.141.5] - 2026-10-20
 
 ### Fixed
