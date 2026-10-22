@@ -16,7 +16,7 @@ Invariants, for every dataset, sample size ``n``, seed, sampling period and
 3. Quantized weights: with ``quantize_weights`` (the default), a household's
    weight is a whole multiple of total / ``n``, and the multiples sum to ``n``.
    Without it, a household's weight is proportional to its old weight times a
-   whole number of draws.
+   whole number of draws. Either way a zero weight stays zero, in every year.
 4. Links: a kept household or benefit unit has exactly the people it had, a
    kept person keeps their household and benefit unit, and no other record is
    kept. This holds for identifiers that 32-bit floats cannot tell apart, and
@@ -931,19 +931,40 @@ def test_a_total_that_cannot_be_kept_names_the_weight():
     assert ids(simulation, "household") == households
 
 
-def test_unquantized_weights_need_a_sampled_record_with_weight():
+@pytest.mark.parametrize("quantize", [True, False])
+def test_a_weight_held_only_by_records_not_drawn_is_refused(quantize):
     """The third household holds all of the original weight and is never
-    drawn, so scaling the old weights cannot keep that total; counting draws
-    can."""
+    drawn, and the drawn ones stand for no one, so no sample keeps that
+    total."""
     data = dataset([(100.0, [1]), (200.0, [2]), (0.0, [1])])
     data.household["original_weight"] = [0.0, 0.0, 9.0]
     simulation = Microsimulation(dataset=data)
 
     with pytest.raises(ValueError, match="original_weight for 2025.*no weight"):
-        simulation.subsample(n=2, quantize_weights=False)
+        simulation.subsample(n=2, quantize_weights=quantize)
 
-    simulation.subsample(n=2)
-    assert values(simulation, "original_weight", 2025).sum() == pytest.approx(9.0)
+
+def test_a_zero_weight_stays_zero_in_every_year():
+    """A household drawn by its positive weight in one year keeps a zero
+    weight in a year where it has one, and the year's total goes to the
+    drawn households that stand for someone that year."""
+    years = []
+    for year, weights in ((2025, [100.0, 200.0, 300.0]), (2026, [0.0, 200.0, 300.0])):
+        years.append(dataset([(weight, [1]) for weight in weights], year=year))
+    simulation = Microsimulation(dataset=UKMultiYearDataset(datasets=years))
+
+    simulation.subsample(n=6, seed=0, time_period=2025)
+
+    first = FIRST_HOUSEHOLD_ID
+    kept = ids(simulation, "household")
+    assert first in kept
+    weights_2026 = weights_by_id(simulation, 2026)
+    assert weights_2026[first] == 0
+    assert sum(weights_2026.values()) == pytest.approx(500.0)
+    assert sum(weights_by_id(simulation, 2025).values()) == pytest.approx(600.0)
+    assert rescale_weights(np.array([0.0, 100, 100]), np.array([1, 1, 0])).tolist() == (
+        [0.0, 200.0, 0.0]
+    )
 
 
 # Properties of the draw and the weights.
@@ -1017,7 +1038,7 @@ def test_a_second_weight_keeps_its_own_total(weights, counts, quantize):
             st.lists(st.integers(0, 5), min_size=len(weights), max_size=len(weights))
         )
     )
-    drawn_weight = (counts if quantize else weights * counts).sum()
+    drawn_weight = (counts * (weights > 0) if quantize else weights * counts).sum()
     if weights.sum() > 0 and drawn_weight == 0:
         with pytest.raises(ValueError, match="no weight"):
             rescale_weights(weights, counts, quantize)

@@ -60,7 +60,10 @@ if TYPE_CHECKING:
 
 # Variables that count how many units of the population a record stands for.
 # A subsample rescales each one that is supplied as an input, so that its
-# total over its own entity is unchanged.
+# total over its own entity is unchanged. Each is rescaled on its own, so a
+# person weight supplied alongside household weights need not equal the new
+# weight of the person's household, as the model's person_weight formula
+# makes it; the datasets supply neither person_weight nor benunit_weight.
 WEIGHT_VARIABLES = frozenset(
     {
         "household_weight",
@@ -131,7 +134,10 @@ def rescale_weights(
 
     A drawn record's new weight is proportional to the number of times its
     household was drawn (``counts``), and also to its old weight when
-    ``quantize_weights`` is false. A record that was not drawn gets zero.
+    ``quantize_weights`` is false. A record that was not drawn gets zero, and
+    so does a record whose weight is zero: it stands for no one, which a
+    subsample keeps. (A household drawn by its weight in one year can have a
+    zero weight in another, and a person or benefit unit weight can be zero.)
     """
     weights = np.asarray(weights, dtype=float)
     total = weights.sum()
@@ -141,12 +147,14 @@ def rescale_weights(
         raise ValueError("the weights include negative values")
     if total == 0:
         return np.zeros_like(weights)
-    drawn = counts.astype(float) if quantize_weights else weights * counts
+    drawn = (
+        (counts * (weights > 0)).astype(float) if quantize_weights else weights * counts
+    )
     drawn_total = drawn.sum()
     if drawn_total == 0:
         raise ValueError(
-            "the sampled records have no weight. Use quantize_weights=True or "
-            "a different sample"
+            "the sampled records have no weight. Draw a different sample, or "
+            "sample by this period's weights"
         )
     return drawn * (total / drawn_total)
 
