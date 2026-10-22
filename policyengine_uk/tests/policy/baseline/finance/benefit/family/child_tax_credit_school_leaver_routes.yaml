@@ -98,7 +98,7 @@
     is_qualifying_young_person_for_child_tax_credit: [false, true]
     CTC_child_element: 3_455
 
-- name: Case 5, a 16-year-old apprentice working 30 hours a week is not a qualifying young person.
+- name: Case 5, a 16-year-old apprentice still on a college course and working 30 hours a week is a qualifying young person.
   period: 2024
   absolute_error_margin: 0.01
   input:
@@ -117,11 +117,12 @@
       benunit:
         members: [parent, apprentice]
   output:
-    # Education "by virtue of his employment" is not the first condition
-    # (reg. 5(3)(a)(ii)), so the apprentice has left it and is in
-    # remunerative work.
-    is_qualifying_young_person_for_child_tax_credit: [false, false]
-    CTC_child_element: 0
+    # Education "by virtue of his employment" is left out of the first
+    # condition (reg. 5(3)(a)(ii)), which reg. 4(2) lifts. The apprentice has
+    # not "ceased to receive full-time education" (reg. 5(4)(a), 5(5)), so
+    # the remunerative work bar does not apply.
+    is_qualifying_young_person_for_child_tax_credit: [false, true]
+    CTC_child_element: 3_455
 
 - name: Case 6, born 15 September 2007, the period runs to 31 August 2024.
   period: 2024
@@ -351,5 +352,28 @@
       benunit:
         members: [parent, student]
   output:
+    is_qualifying_young_person_for_child_tax_credit: [false, false]
+    CTC_child_element: 0
+
+- name: Case 17, a 16-year-old apprentice no longer on any course and working 30 hours a week is not a qualifying young person.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      apprentice:
+        age: 16
+        current_education: NOT_IN_EDUCATION
+        is_apprentice: true
+        weekly_hours: 30
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, apprentice]
+  output:
+    # Ceased full-time education and in remunerative work (reg. 5(4)(a)).
     is_qualifying_young_person_for_child_tax_credit: [false, false]
     CTC_child_element: 0

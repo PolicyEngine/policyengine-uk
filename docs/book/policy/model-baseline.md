@@ -122,3 +122,9 @@ Notable exclusions:
 - **Some devolved tax policies**: Beyond property transaction taxes, other devolved policies may have limited coverage
 
 All parameter values include references to primary legislation and can be found in the [PolicyEngine UK parameters directory](https://github.com/PolicyEngine/policyengine-uk/tree/master/policyengine_uk/parameters).
+
+## Parameter cache ownership
+
+The UK tax-benefit system initializes Core state and installs parameter trees through Core's public operations. The existing `reset_parameter_caches()` method clears dated views on the system, the root and descendant parameter nodes without replacing the live tree or its leaves. Parameter processing retains its statutory timelines, baseline, structural reform nodes and rollback behavior; this change does not alter policy values or reform timing.
+
+The selected operations are available at the existing Core minimum version, 3.32.27, and in the locked 3.33.2 release, so this parameter-only migration does not change the dependency or lockfile. It implements part of [issue #2175](https://github.com/PolicyEngine/policyengine-uk/issues/2175). Supplied-input tracking, model-value provenance and clone, deletion and rebuild compatibility remain separate work. Those compatibility paths are retained, including the distinction between an amount supplied by a user and one stored by the model.

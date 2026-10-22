@@ -66,6 +66,17 @@ class housing_benefit_applicable_income(Variable):
             "statutory_sick_pay",
             "statutory_maternity_pay",
             "ssmg",
+            # Counted by both regimes: HB (SPC) Regs 2006 reg 29(1)(j), whose
+            # exceptions touching these are the IIDB increases under SSCBA
+            # ss.104-105 (head (iii)) and non-partner dependant increases (head
+            # (viii)); heads (iv) and (v) cover the Sch 8 schemes for old
+            # industrial injury cases. And HB Regs 2006 reg 40 with Sch 5,
+            # whose para 9 attendance allowance disregard covers the
+            # ss.104-105 increases (reg 2(1)). iidb is the whole reported
+            # payment and cannot separate those increases.
+            "iidb",
+            "sda",
+            "incapacity_benefit",
         ]
         INCOME_COMPONENTS = [
             "employment_income",
@@ -89,8 +100,10 @@ class housing_benefit_applicable_income(Variable):
                 benunit, period, ["basic_income"], members
             )
         # Reduce increased income by pension contributions and tax
+        p = parameters(period).gov.dwp.housing_benefit.means_test
         pension_contributions = (
-            add_for_members(benunit, period, ["pension_contributions"], members) * 0.5
+            add_for_members(benunit, period, ["pension_contributions"], members)
+            * p.pension_contribution_deduction_rate
         )
         TAX_COMPONENTS = ["income_tax", "national_insurance"]
         tax = add_for_members(benunit, period, TAX_COMPONENTS, members)
