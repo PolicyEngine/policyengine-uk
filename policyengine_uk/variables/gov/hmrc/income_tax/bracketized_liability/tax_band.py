@@ -33,10 +33,10 @@ class tax_band(Variable):
             for index, threshold in enumerate(rates.uk.thresholds)
         ]
         basic = allowances + limits[0]
-        higher = allowances + limits[-2]
-        add = allowances + limits[-1]
+        higher = allowances + limits[1]
+        add = allowances + limits[2]
         return select(
-            [ani >= add, ani >= higher, ani > basic],
+            [ani > add, ani > higher, ani > basic],
             [TaxBand.ADDITIONAL, TaxBand.HIGHER, TaxBand.BASIC],
             default=TaxBand.NONE,
         )
