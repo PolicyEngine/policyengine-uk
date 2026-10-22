@@ -384,7 +384,17 @@ def _apply(
     simulation.tracer = tracer
     simulation.build_from_ids(*subsample.ids)
     for name, period, values, model in subsample.inputs:
-        if model:
+        holder = simulation.get_holder(name)
+        if holder.variable.is_neutralized:
+            # These are canonical stored inputs, not new inputs. set_input
+            # rejects them while neutralised, but they must survive so the
+            # input record and a later restoration still see them.
+            holder._set(period, values, simulation.branch_name, is_input=True)
+            if model:
+                simulation._model_values[(name, simulation.branch_name, period)] = (
+                    np.array(values)
+                )
+        elif model:
             # Keep it the model's: formulas that ask whether a value was
             # supplied would otherwise read it as the user's.
             set_model_value(simulation, name, period, values)

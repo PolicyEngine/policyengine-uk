@@ -74,6 +74,7 @@ from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 from policyengine_core.data_storage import OnDiskStorage
 from policyengine_core.periods import period as period_
+from policyengine_core.reforms import Reform
 from policyengine_core.tracers import FullTracer
 
 from policyengine_uk import CountryTaxBenefitSystem, Microsimulation, Simulation
@@ -518,6 +519,78 @@ def test_a_model_value_stays_the_models():
             for name, period, values in supplied_input_arrays(held)
             if is_model_value(held, name, period, values)
         } >= model_periods - {"2026"}
+
+
+@pytest.mark.parametrize("model", [False, True], ids=["supplied", "model"])
+def test_neutralized_inputs_and_model_values_survive_subsampling(model):
+    """Neutralisation hides stored inputs without discarding them or their owner."""
+    data = dataset([(100.0, [1]), (100.0, [1])])
+    data.person["employment_income"] = 30_000.0
+    simulation = Microsimulation(dataset=data)
+    name = "adjusted_net_income"
+    period = period_(2025)
+    original_variable = simulation.tax_benefit_system.get_variable(name).__class__
+    original_values = np.array([10_000.0, 11_000.0])
+    if model:
+        set_model_value(simulation, name, period, original_values)
+    else:
+        simulation.set_input(name, period, original_values)
+    original_by_person = dict(zip(ids(simulation, "person"), original_values))
+
+    class NeutralizeIncome(Reform):
+        def apply(self):
+            self.neutralize_variable(name)
+
+    class RestoreIncome(Reform):
+        def apply(self):
+            self.replace_variable(original_variable)
+
+    simulation.apply_reform(NeutralizeIncome)
+    expected_results = {
+        variable: by_id(simulation, variable, period)
+        for variable in ("net_income", "income_tax")
+    }
+    if not model:
+        assert all(
+            value == 0
+            for result in expected_results.values()
+            for value in result.values()
+        )
+
+    simulation.subsample(n=1, seed=0, time_period=2025)
+
+    kept = ids(simulation, "person")
+    expected_input = [original_by_person[person] for person in kept]
+    assert (name, str(period)) in supplied(simulation)
+    stored = stored_supplied_value(
+        simulation.get_holder(name), period, simulation.branch_name
+    )
+    np.testing.assert_array_equal(stored, expected_input)
+    assert is_model_value(simulation, name, period, stored) is model
+    assert simulation.tax_benefit_system.get_variable(name).is_neutralized
+    np.testing.assert_array_equal(values(simulation, name, period), np.zeros(len(kept)))
+    person = simulation.populations["person"]
+    if model:
+        assert supplied_input(person, name, period) is None
+    else:
+        np.testing.assert_array_equal(
+            supplied_input(person, name, period), np.zeros(len(kept))
+        )
+    for variable, expected in expected_results.items():
+        assert by_id(simulation, variable, period) == {
+            person: expected[person] for person in kept
+        }
+
+    simulation.apply_reform(RestoreIncome)
+
+    np.testing.assert_array_equal(values(simulation, name, period), expected_input)
+    assert is_model_value(simulation, name, period, np.asarray(expected_input)) is model
+    if model:
+        assert supplied_input(person, name, period) is None
+    else:
+        np.testing.assert_array_equal(
+            supplied_input(person, name, period), expected_input
+        )
 
 
 def test_where_capital_gains_inputs_came_from_is_kept():
