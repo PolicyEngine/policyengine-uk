@@ -1,3 +1,4 @@
+import warnings
 import pandas as pd
 import numpy as np
 from typing import TYPE_CHECKING
@@ -21,7 +22,8 @@ class UKSingleYearDataset:
                 raise FileNotFoundError(f"File not found: {file_path}")
             return False
 
-        # Check if the file contains time_period, person, benunit, and household datasets
+        # Pandas stores each table as an annotated HDF5 group. A multi-year
+        # file has unannotated parent groups here, with tables below the years.
         with h5py.File(file_path, "r") as f:
             required_datasets = [
                 "time_period",
@@ -30,7 +32,11 @@ class UKSingleYearDataset:
                 "household",
             ]
             for dataset in required_datasets:
-                if dataset not in f:
+                if (
+                    dataset not in f
+                    or not isinstance(f[dataset], h5py.Group)
+                    or "pandas_type" not in f[dataset].attrs
+                ):
                     if raise_exception:
                         raise ValueError(
                             f"Dataset '{dataset}' not found in the file: {file_path}"
@@ -40,16 +46,28 @@ class UKSingleYearDataset:
 
         return True
 
+    # Used when a dataset is built from DataFrames without a fiscal year.
+    # Deprecated: pass fiscal_year explicitly, as this will become required.
+    DEFAULT_FISCAL_YEAR = 2025
+
     def __init__(
         self,
         file_path: str = None,
         person: pd.DataFrame = None,
         benunit: pd.DataFrame = None,
         household: pd.DataFrame = None,
-        fiscal_year: int = 2025,
+        fiscal_year: int = None,
     ):
         file_path = str(file_path) if file_path else None
         if file_path is not None:
+            if fiscal_year is not None:
+                warnings.warn(
+                    "fiscal_year is ignored when loading from a file: the "
+                    "time period is read from the file itself. Drop the "
+                    "argument, or use uprate_dataset to change the period.",
+                    UserWarning,
+                    stacklevel=2,
+                )
             self.validate_file_path(file_path)
             # Read-only: the file may be a cached download the cache manager
             # has made unwritable, and the default append mode would refuse it.
@@ -63,6 +81,17 @@ class UKSingleYearDataset:
                 raise ValueError(
                     "Must provide either a file path or all three DataFrames (person, benunit, household)."
                 )
+            if fiscal_year is None:
+                warnings.warn(
+                    "fiscal_year was not given, so this dataset is labelled "
+                    f"{self.DEFAULT_FISCAL_YEAR}. The label is the year the "
+                    "financial year starts, so FRS 2024/25 data is 2024. "
+                    "Pass fiscal_year explicitly; the default will be "
+                    "removed.",
+                    FutureWarning,
+                    stacklevel=2,
+                )
+                fiscal_year = self.DEFAULT_FISCAL_YEAR
             self._person = person
             self._benunit = benunit
             self._household = household
@@ -274,10 +303,11 @@ class UKMultiYearDataset:
             else:
                 return False
 
-        # Check if the file contains datasets for multiple years
+        # h5py lists only immediate children: the entity groups contain the
+        # year-named pandas tables written by save, even for a single year.
         with h5py.File(file_path, "r") as f:
             for required_dataset in ["person", "benunit", "household"]:
-                if not any(f"{required_dataset}" in key for key in f.keys()):
+                if required_dataset not in f:
                     if raise_exception:
                         raise ValueError(
                             f"Dataset '{required_dataset}' not found in the file: {file_path}"
@@ -285,15 +315,18 @@ class UKMultiYearDataset:
                     else:
                         return False
 
-                # Check that there is at least one dataset year in the folder (keys include e.g. person/2025)
-
-                # Check that there is at least one dataset year in the folder
-                years_found = False
-                for key in f.keys():
-                    parts = key.split("/")
-                    if len(parts) >= 2 and required_dataset == parts[0]:
-                        years_found = True
-                        break
+                group = f[required_dataset]
+                years_found = (
+                    isinstance(group, h5py.Group)
+                    and "pandas_type" not in group.attrs
+                    and any(
+                        len(year) == 4
+                        and year.isdigit()
+                        and isinstance(group[year], h5py.Group)
+                        and "pandas_type" in group[year].attrs
+                        for year in group
+                    )
+                )
 
                 if not years_found:
                     if raise_exception:

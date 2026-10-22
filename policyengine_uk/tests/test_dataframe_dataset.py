@@ -33,7 +33,7 @@ row order, whichever identifier columns name the groups:
    This holds for frames that name the identifiers and give values for
    different years, and for simulations given inputs for other years once
    built, as the Universal Credit rebalancing gives each benefit unit's
-   health element status for 2026 to 2029. The export gives every
+   health element status for each rebalancing year. The export gives every
    identifier for each whole year a column names, which is where a
    simulation built from it holds them, and person_id and the benefit unit
    and household identifiers exactly.
@@ -59,11 +59,6 @@ that may stand for more than one whole number
 group's own integer identifier is given beside it; and members of a group that
 give different values for one of its variables.
 
-Limit of the default export, which is not the loader's: ``to_input_dataframe()``
-leaves out values a dataset supplies for a variable that has a formula, such
-as ``state_pension_reported``. ``to_input_dataframe(include_computed_variables=
-True)`` exports them, and must be taken before the simulation calculates
-anything, since it also exports every calculated value.
 """
 
 import datetime
@@ -90,6 +85,7 @@ from policyengine_uk.data.input_dataframe import (
     with_identifiers_in_each_year,
 )
 from policyengine_uk.scenarios import no_economic_assumptions
+from policyengine_uk.scenarios.uc_reform import REBALANCING_YEARS
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
@@ -1210,11 +1206,12 @@ SIMULATION_SETTINGS = settings(
 )
 ROUND_TRIP_SETTINGS = settings(SIMULATION_SETTINGS, max_examples=15)
 # The smallest example of the round trip failing once the Universal Credit
-# rebalancing recorded each benefit unit's health element status for 2026 to
-# 2029 (#2251). The export gave that status for those years but the person
-# and their groups for 2025 alone. Loaded back, the frame was a dataset with a
-# year for each of 2025 to 2029, which holds the identifiers in each, so the
-# second export gave them for 2026 to 2029 as well: 38 columns, not 18.
+# rebalancing recorded each benefit unit's health element status for its
+# rebalancing years (2026 to 2029 when #2251 landed). The export gave that
+# status for those years but the person and their groups for 2025 alone.
+# Loaded back, the frame was a dataset with a year for each of 2025 to 2029,
+# which holds the identifiers in each, so the second export gave them for
+# those years as well: 38 columns, not 18.
 ONE_PERSON = Population(
     person_ids=np.array([1]),
     groups={"benunit": np.array([1]), "household": np.array([1])},
@@ -1286,16 +1283,18 @@ def columns_of(frame_: pd.DataFrame, variable: str) -> list:
 
 def test_an_export_names_the_people_in_each_year_the_rebalancing_records():
     # The rebalancing records the status of a simulation built from data for
-    # 2025 for 2026 to 2029, where it holds its people and groups by carrying
-    # them forward from 2025.
+    # 2025 for each rebalancing year, where it holds its people and groups by
+    # carrying them forward from 2025.
     exported = Simulation(dataset=frame(ONE_PERSON)).to_input_dataframe()
 
     status = "uc_receives_new_claimant_health_element"
-    years = range(YEAR, 2030)
-    assert columns_of(exported, status) == [f"{status}__{year}" for year in years[1:]]
+    identifier_years = range(YEAR, REBALANCING_YEARS[-1] + 1)
+    assert columns_of(exported, status) == [
+        f"{status}__{year}" for year in REBALANCING_YEARS
+    ]
     for identifier in IDENTIFIER_VARIABLES:
         columns = columns_of(exported, identifier)
-        assert columns == [f"{identifier}__{year}" for year in years]
+        assert columns == [f"{identifier}__{year}" for year in identifier_years]
         # Together, where the exporter puts an input set for each year.
         start = exported.columns.get_loc(columns[0])
         assert exported.columns[start : start + len(columns)].tolist() == columns

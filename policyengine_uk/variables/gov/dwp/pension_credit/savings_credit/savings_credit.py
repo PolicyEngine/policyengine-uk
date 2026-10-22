@@ -7,7 +7,21 @@ class savings_credit(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
-    reference = "https://www.legislation.gov.uk/ukpga/2002/16/section/3"
+    reference = (
+        "https://www.legislation.gov.uk/ukpga/2002/16/section/1",
+        "https://www.legislation.gov.uk/ukpga/2002/16/section/3",
+        "https://www.legislation.gov.uk/ukpga/2002/16/section/4",
+        "https://www.legislation.gov.uk/uksi/2019/37/article/4",
+    )
+    documentation = (
+        "The computed savings credit element of State Pension Credit, zero unless "
+        "the benefit unit meets the shared Pension Credit entitlement conditions. "
+        "An explicitly supplied input overrides the computed component. The "
+        "component is calculated before Pension Credit take-up, which applies "
+        "later to total Pension Credit entitlement; a positive component does "
+        "not by itself establish an award in payment."
+    )
+    defined_for = "is_pension_credit_eligible"
 
     def formula(benunit, period, parameters):
         income = benunit("savings_credit_income", period)
