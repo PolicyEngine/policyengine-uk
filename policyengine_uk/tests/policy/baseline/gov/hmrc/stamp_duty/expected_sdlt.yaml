@@ -51,7 +51,7 @@
     expected_sdlt: 15_000
     household_tax: 15_000
     gov_tax: 15_000
-- name: Abolishing SDLT zeroes expected SDLT but not the liability variable
+- name: Abolishing SDLT zeroes the liability and expected SDLT
   period: 2026
   absolute_error_margin: 0
   input:
@@ -62,7 +62,21 @@
     council_tax: 0
     household_owns_tv: false
   output:
+    sdlt_liable: false
+    stamp_duty_land_tax: 0
+    expected_sdlt: 0
+    household_tax: 0
+    gov_tax: 0
+- name: Abolishing SDLT zeroes expected SDLT even when the liability is entered directly
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    gov.hmrc.stamp_duty.abolish: true
+    region: LONDON
     stamp_duty_land_tax: 15_000
+    council_tax: 0
+    household_owns_tv: false
+  output:
     expected_sdlt: 0
     household_tax: 0
     gov_tax: 0

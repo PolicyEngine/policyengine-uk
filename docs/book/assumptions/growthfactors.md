@@ -20,7 +20,7 @@ We apply CPI to these variables:
 
 `domestic_energy_consumption`, `electricity_consumption` and `gas_consumption` are deliberately excluded. The data build calibrates them to NEED mean kWh and converts to pounds at Ofgem Q2 2026 unit rates, so the stored values already carry FY26/27 price levels; uprating them from the dataset's data year would re-apply price changes that are already included. See PolicyEngine/policyengine-uk#1867.
 
-- Other variables– `afcs_reported`, `bsp_reported`, `childcare_expenses`, `free_school_fruit_veg`, `free_school_meals`, `free_school_milk`, `maintenance_expenses`, `statutory_maternity_pay`, `statutory_paternity_pay`, `statutory_sick_pay`, `state_pension`
+- Other variables– `afcs_reported`, `bsp_reported`, `childcare_expenses`, `free_school_fruit_veg`, `free_school_meals`, `free_school_milk`, `maintenance_expenses`, `statutory_maternity_pay`, `statutory_paternity_pay`, `statutory_sick_pay`, `state_pension`, `war_widows_pension_reported`
 
 ## Road fuel volume
 
@@ -31,6 +31,8 @@ We use HMRC road-fuel clearances and OBR-implied forecast volumes for petrol and
 | Growth rate | 6.3% | -0.6% | -0.1% | -2.0% | -1.4% | -2.4% | -2.7% | -3.7% |
 
 We apply this to: `diesel_spending`, `petrol_spending`
+
+The pump prices that turn spending into litres (`household.consumption.fuel.prices.petrol` and `.diesel`) are DESNZ calendar-year averages (Quarterly Energy Prices tables 4.1.1 and 4.1.2), the same basis Microcosm UK uses to price household fuel spending. The spending growth rates (`petrol_spending_litre_proxy`, `diesel_spending_litre_proxy`) are derived from those prices, so that weighted litres follow the volume path above: (1 + growth) = (1 + volume growth) × price<sub>t</sub> / price<sub>t−1</sub> ÷ (1 + population growth). Whenever the prices change, re-derive the growth rates; a test checks that they match.
 
 ## Average earnings
 

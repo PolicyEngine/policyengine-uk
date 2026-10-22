@@ -30,6 +30,13 @@ row order, whichever identifier columns name the groups:
 5. Round trip: the frame a simulation exports loads back to the same people,
    groups and inputs, and exports the same frame again; so does that frame
    saved as CSV, which holds the exported 32-bit identifiers as 64-bit floats.
+   This holds for frames that name the identifiers and give values for
+   different years, and for simulations given inputs for other years once
+   built, as the Universal Credit rebalancing gives each benefit unit's
+   health element status for each rebalancing year. The export gives every
+   identifier for each whole year a column names, which is where a
+   simulation built from it holds them, and person_id and the benefit unit
+   and household identifiers exactly.
 6. Differential: a simulation built from a dataset and one built from the
    frame it exports give the same value for every variable of the model.
 7. Exact names: a column is read only if the part of its name before ``__``
@@ -52,11 +59,6 @@ that may stand for more than one whole number
 group's own integer identifier is given beside it; and members of a group that
 give different values for one of its variables.
 
-Limit of the default export, which is not the loader's: ``to_input_dataframe()``
-leaves out values a dataset supplies for a variable that has a formula, such
-as ``state_pension_reported``. ``to_input_dataframe(include_computed_variables=
-True)`` exports them, and must be taken before the simulation calculates
-anything, since it also exports every calculated value.
 """
 
 import io
@@ -67,7 +69,7 @@ from typing import Dict
 import numpy as np
 import pandas as pd
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import CountryTaxBenefitSystem, Microsimulation, Simulation
@@ -77,8 +79,10 @@ from policyengine_uk.data.input_dataframe import (
     IDENTIFIER_VARIABLES,
     dataset_from_input_dataframe,
     split_column,
+    with_identifiers_in_each_year,
 )
 from policyengine_uk.scenarios import no_economic_assumptions
+from policyengine_uk.scenarios.uc_reform import REBALANCING_YEARS
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
@@ -599,6 +603,64 @@ def test_a_frame_that_names_no_whole_year_is_held_in_the_default_input_year():
     assert calculated_by_id(
         simulation, "ebr_energy_bills_credit_eligible", "2025-01"
     ) == {1: True}
+
+
+def test_an_export_gives_its_identifiers_for_each_year_it_gives_values_for(
+    tax_benefit_system,
+):
+    # Values for 2024, 2025, 2027 and 2029 make those years of the dataset,
+    # which holds the identifiers in each, and the loader sets them all for
+    # 2028, which an identifier names. A month and a column that names no
+    # variable add no year. Each added column copies the identifier's latest
+    # earlier column, or else its earliest: here person_id__2028 is given as
+    # floats, so person_id__2029 is too.
+    frame_ = pd.DataFrame(
+        {
+            "benunit_id__2025": [7, 7],
+            "person_id__2025": [1, 2],
+            "person_id__2028": [1.0, 2.0],
+            "age__2024": [39, 37],
+            "age__2025": [40, 38],
+            "age__2027": [42, 40],
+            "ebr_energy_bills_credit_eligible__2026-01": [True, True],
+            "council_tax__2029": [1_500.0, 1_500.0],
+            "previous_household_id__2030": [5, 5],
+        }
+    )
+    before = frame_.copy()
+
+    exported = with_identifiers_in_each_year(frame_, tax_benefit_system)
+
+    assert exported.columns.tolist() == [
+        "benunit_id__2024",
+        "benunit_id__2025",
+        "benunit_id__2027",
+        "benunit_id__2028",
+        "benunit_id__2029",
+        "person_id__2024",
+        "person_id__2025",
+        "person_id__2027",
+        "person_id__2028",
+        "person_id__2029",
+        *frame_.columns[3:],
+    ]
+    for identifier, year, source in [
+        ("person_id", 2024, 2025),
+        ("person_id", 2027, 2025),
+        ("person_id", 2029, 2028),
+        ("benunit_id", 2028, 2025),
+    ]:
+        pd.testing.assert_series_equal(
+            exported[f"{identifier}__{year}"],
+            frame_[f"{identifier}__{source}"],
+            check_names=False,
+        )
+    pd.testing.assert_frame_equal(exported[frame_.columns], frame_)
+    pd.testing.assert_frame_equal(frame_, before)
+    # A frame that gives its identifiers for each such year gains nothing.
+    pd.testing.assert_frame_equal(
+        with_identifiers_in_each_year(exported, tax_benefit_system), exported
+    )
 
 
 # The dataset a frame-built simulation holds.
@@ -1140,6 +1202,30 @@ SIMULATION_SETTINGS = settings(
     suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large],
 )
 ROUND_TRIP_SETTINGS = settings(SIMULATION_SETTINGS, max_examples=15)
+# The smallest example of the round trip failing once the Universal Credit
+# rebalancing recorded each benefit unit's health element status for its
+# rebalancing years (2026 to 2029 when #2251 landed). The export gave that
+# status for those years but the person and their groups for 2025 alone.
+# Loaded back, the frame was a dataset with a year for each of 2025 to 2029,
+# which holds the identifiers in each, so the second export gave them for
+# those years as well: 38 columns, not 18.
+ONE_PERSON = Population(
+    person_ids=np.array([1]),
+    groups={"benunit": np.array([1]), "household": np.array([1])},
+    values={
+        "age": np.array([0]),
+        "hours_worked": np.array([0]),
+        "gender": np.array(["MALE"]),
+        "is_disabled_for_benefits": np.array([False]),
+        "benunit_reported_capital": np.array([0]),
+        "would_claim_uc": np.array([False]),
+        "council_tax": np.array([0]),
+        "household_weight": np.array([0]),
+        "region": np.array(["LONDON"]),
+    },
+)
+# Years around the data year, for frames and inputs that span several.
+YEARS = list(range(YEAR - 1, YEAR + 6))
 TABLE_SETTINGS = settings(
     max_examples=200,
     deadline=None,
@@ -1165,6 +1251,7 @@ def test_a_frame_builds_its_people_groups_and_values(population, id_columns):
 
 @ROUND_TRIP_SETTINGS
 @given(population=populations(), id_columns=id_columns)
+@example(population=ONE_PERSON, id_columns="both")
 def test_an_exported_frame_loads_back_and_exports_itself(population, id_columns):
     simulation = Simulation(dataset=frame(population, id_columns))
     exported = simulation.to_input_dataframe()
@@ -1185,6 +1272,135 @@ def test_an_exported_frame_loads_back_and_exports_itself(population, id_columns)
     # Saved as CSV, the rounded person_ columns come back as 64-bit floats.
     from_csv = pd.read_csv(io.StringIO(exported.to_csv(index=False)))
     assert_holds(Simulation(dataset=from_csv), population)
+
+
+def columns_of(frame_: pd.DataFrame, variable: str) -> list:
+    return [column for column in frame_ if split_column(column)[0] == variable]
+
+
+def test_an_export_names_the_people_in_each_year_the_rebalancing_records():
+    # The rebalancing records the status of a simulation built from data for
+    # 2025 for each rebalancing year, where it holds its people and groups by
+    # carrying them forward from 2025.
+    exported = Simulation(dataset=frame(ONE_PERSON)).to_input_dataframe()
+
+    status = "uc_receives_new_claimant_health_element"
+    identifier_years = range(YEAR, REBALANCING_YEARS[-1] + 1)
+    assert columns_of(exported, status) == [
+        f"{status}__{year}" for year in REBALANCING_YEARS
+    ]
+    for identifier in IDENTIFIER_VARIABLES:
+        columns = columns_of(exported, identifier)
+        assert columns == [f"{identifier}__{year}" for year in identifier_years]
+        # Together, where the exporter puts an input set for each year.
+        start = exported.columns.get_loc(columns[0])
+        assert exported.columns[start : start + len(columns)].tolist() == columns
+        for column in columns:
+            assert exported[column].tolist() == [1]
+    reloaded = Simulation(dataset=exported)
+    pd.testing.assert_frame_equal(reloaded.to_input_dataframe(), exported)
+
+
+@pytest.mark.parametrize(
+    "variable, year, value",
+    [
+        ("hours_worked", YEAR - 1, 1_000),
+        ("hours_worked", YEAR + 2, 1_000),
+        ("hours_worked", YEAR + 7, 1_000),
+        # One identifier for a year: the loader sets them all for it.
+        ("person_id", YEAR + 7, 1),
+    ],
+)
+def test_an_input_set_once_built_for_another_year_round_trips(variable, year, value):
+    # Not only the rebalancing: any input set for a year the data does not
+    # give, before it, among the rebalancing's years or after them.
+    simulation = Simulation(dataset=frame(ONE_PERSON))
+    simulation.set_input(variable, year, np.array([value]))
+    exported = simulation.to_input_dataframe()
+
+    for identifier in IDENTIFIER_VARIABLES:
+        assert exported[f"{identifier}__{year}"].tolist() == [1]
+    reloaded = Simulation(dataset=exported)
+    assert reloaded.calculate(variable, year).tolist() == [value]
+    pd.testing.assert_frame_equal(reloaded.to_input_dataframe(), exported)
+
+
+def multi_year_frame(
+    population: Population, id_columns: str, identifier_years, data_years
+) -> pd.DataFrame:
+    """The frame of ``population`` with its identifiers given for
+    ``identifier_years`` and its values for ``data_years``."""
+    columns = {}
+    for year in sorted(set(identifier_years) | set(data_years)):
+        for column, values in frame(population, id_columns, year).items():
+            identifier = split_column(column)[0] in IDENTIFIER_VARIABLES
+            if year in (identifier_years if identifier else data_years):
+                columns[column] = values
+    return pd.DataFrame(columns)
+
+
+@ROUND_TRIP_SETTINGS
+@given(
+    population=populations(),
+    id_columns=id_columns,
+    identifier_years=st.sets(st.sampled_from(YEARS), min_size=1, max_size=2),
+    data_years=st.sets(st.sampled_from(YEARS), min_size=1, max_size=3),
+    later_years=st.sets(st.sampled_from(YEARS), max_size=2),
+    later_identifier_years=st.sets(st.sampled_from(YEARS), max_size=1),
+)
+@example(
+    population=ONE_PERSON,
+    id_columns="both",
+    identifier_years={YEAR},
+    data_years={YEAR},
+    later_years=set(),
+    later_identifier_years=set(),
+)
+@example(
+    population=ONE_PERSON,
+    id_columns="own",
+    identifier_years={YEAR + 2},
+    data_years={YEAR - 1, YEAR + 3},
+    later_years={YEAR + 5},
+    later_identifier_years={YEAR + 4},
+)
+def test_a_frame_over_several_years_exports_the_same_frame_again(
+    population,
+    id_columns,
+    identifier_years,
+    data_years,
+    later_years,
+    later_identifier_years,
+):
+    # 5. Round trip, for frames that name the identifiers and give values
+    # for different years, and simulations given an input, or a person's
+    # identifier, for other years once built.
+    simulation = Simulation(
+        dataset=multi_year_frame(population, id_columns, identifier_years, data_years)
+    )
+    for year in sorted(later_years):
+        simulation.set_input(
+            "hours_worked", year, population.values["hours_worked"] + year
+        )
+    for year in sorted(later_identifier_years):
+        simulation.set_input("person_id", year, population.person_ids)
+    exported = simulation.to_input_dataframe()
+
+    reloaded = Simulation(dataset=exported)
+
+    pd.testing.assert_frame_equal(reloaded.to_input_dataframe(), exported)
+    # The export gives the exact identifiers in every whole year it names.
+    years = {
+        int(period)
+        for _, period in map(split_column, exported.columns)
+        if period.isdigit()
+    }
+    assert years >= set(data_years) | set(later_years) | set(identifier_years)
+    for year in years:
+        assert exported[f"person_id__{year}"].tolist() == population.person_ids.tolist()
+        for group in GROUPS:
+            exact = population.groups[group].tolist()
+            assert exported[f"{group}_id__{year}"].tolist() == exact
 
 
 @TABLE_SETTINGS
