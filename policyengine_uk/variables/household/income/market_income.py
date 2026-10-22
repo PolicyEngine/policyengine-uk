@@ -23,6 +23,7 @@ class market_income(Variable):
             "private_pension_income",
             "private_transfer_income",
             "maintenance_income",
+            "spousal_maintenance_income",
         ]
         income = add(person, period, INCOME_VARIABLES)
         return (
