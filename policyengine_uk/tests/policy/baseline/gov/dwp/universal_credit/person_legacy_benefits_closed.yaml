@@ -1,0 +1,147 @@
+[
+  {
+    "name": "Case 1, outside closed report leaves the couple open.",
+    "period": 2027,
+    "input": {
+      "people": {
+        "claimant": {
+          "age": 30,
+          "is_claimant_or_partner": true,
+          "esa_income_reported": 5000
+        },
+        "partner": {
+          "age": 30,
+          "is_claimant_or_partner": true
+        },
+        "outside": {
+          "age": 40,
+          "is_claimant_or_partner": false,
+          "income_support_reported": 1000
+        }
+      },
+      "benunits": {
+        "unit": {
+          "members": [
+            "claimant",
+            "partner",
+            "outside"
+          ]
+        }
+      },
+      "households": {
+        "household": {
+          "members": [
+            "claimant",
+            "partner",
+            "outside"
+          ]
+        }
+      }
+    },
+    "output": {
+      "person_legacy_benefits_closed": [
+        false,
+        false,
+        true
+      ],
+      "legacy_benefits_closed": false
+    }
+  },
+  {
+    "name": "Case 2, couple closure leaves the outside award open.",
+    "period": 2025,
+    "input": {
+      "people": {
+        "claimant": {
+          "age": 30,
+          "is_claimant_or_partner": true,
+          "child_tax_credit_reported": 2000
+        },
+        "partner": {
+          "age": 30,
+          "is_claimant_or_partner": true
+        },
+        "outside": {
+          "age": 40,
+          "is_claimant_or_partner": false,
+          "esa_income_reported": 5000
+        }
+      },
+      "benunits": {
+        "unit": {
+          "members": [
+            "claimant",
+            "partner",
+            "outside"
+          ]
+        }
+      },
+      "households": {
+        "household": {
+          "members": [
+            "claimant",
+            "partner",
+            "outside"
+          ]
+        }
+      }
+    },
+    "output": {
+      "person_legacy_benefits_closed": [
+        true,
+        true,
+        false
+      ],
+      "legacy_benefits_closed": true
+    }
+  },
+  {
+    "name": "Case 3, outside Pension Credit age exception uses their own input.",
+    "period": 2027,
+    "input": {
+      "people": {
+        "claimant": {
+          "age": 30,
+          "is_claimant_or_partner": true
+        },
+        "partner": {
+          "age": 30,
+          "is_claimant_or_partner": true
+        },
+        "outside": {
+          "age": 40,
+          "is_claimant_or_partner": false,
+          "income_support_reported": 1000,
+          "has_attained_state_pension_credit_qualifying_age": true,
+          "is_SP_age": false
+        }
+      },
+      "benunits": {
+        "unit": {
+          "members": [
+            "claimant",
+            "partner",
+            "outside"
+          ]
+        }
+      },
+      "households": {
+        "household": {
+          "members": [
+            "claimant",
+            "partner",
+            "outside"
+          ]
+        }
+      }
+    },
+    "output": {
+      "person_legacy_benefits_closed": [
+        false,
+        false,
+        false
+      ],
+      "legacy_benefits_closed": false
+    }
+  }
+]

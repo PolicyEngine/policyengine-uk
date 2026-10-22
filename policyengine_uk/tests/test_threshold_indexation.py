@@ -408,6 +408,9 @@ def synthetic_parameters(last_years, rates, horizon, bases):
                         }
                     },
                     "rates": {
+                        "savings_starter_rate": {
+                            "allowance": series(5_000, 2021, 2030)
+                        },
                         "uk": {
                             "brackets": [
                                 {
@@ -424,7 +427,7 @@ def synthetic_parameters(last_years, rates, horizon, bases):
                                     ),
                                 },
                             ]
-                        }
+                        },
                     },
                 },
                 "national_insurance": {
