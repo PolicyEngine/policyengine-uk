@@ -2,12 +2,14 @@
 
 Homes off the gas grid heat with oil, LPG, coal or wood: COICOP 04.5.3 and
 04.5.4. Their spending is part of housing_water_and_electricity_consumption,
-so the inputs default to zero, add nothing to consumption, and are projected
-as the other domestic energy inputs are.
+so the inputs default to zero and add nothing to consumption. Ofgem's price
+cap does not cover them, so dataset projection uprates them by CPI like other
+LCFS spending.
 """
 
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import pytest
 import yaml
@@ -22,6 +24,8 @@ from policyengine_uk.system import system
 
 FUELS = ("liquid_fuel_consumption", "solid_fuel_consumption")
 UPRATING_INDICES = Path(__file__).parents[1] / "data" / "uprating_indices.yaml"
+CPI_GROWTH = "gov.economic_assumptions.yoy_growth.obr.consumer_price_index"
+CPI = system.parameters.gov.economic_assumptions.yoy_growth.obr.consumer_price_index
 
 
 def household(**inputs):
@@ -49,11 +53,13 @@ def test_defaults_are_zero_and_add_nothing_to_consumption(fuel):
     )
 
 
-def test_fuels_are_projected_as_the_other_energy_inputs_are():
+def test_fuels_are_uprated_by_cpi_like_other_lcfs_spending():
+    # Ofgem's cap prices the electricity and gas inputs, which are held at
+    # their stored prices; it does not cover heating oil, LPG, coal or wood.
     listed = yaml.safe_load(UPRATING_INDICES.read_text())
     for fuel in FUELS:
-        assert fuel in DATASET_UPRATING_EXCLUSIONS
-        assert not any(fuel in variables for variables in listed.values())
+        assert fuel not in DATASET_UPRATING_EXCLUSIONS
+        assert [i for i, v in listed.items() if fuel in v] == [CPI_GROWTH]
     dataset = UKSingleYearDataset(
         person=pd.DataFrame(
             {
@@ -79,10 +85,11 @@ def test_fuels_are_projected_as_the_other_energy_inputs_are():
         ),
         fiscal_year=2024,
     )
-    projected = extend_single_year_dataset(dataset, system.parameters)
-    for year, single_year in projected.datasets.items():
-        for fuel, stored in (
-            ("liquid_fuel_consumption", 1_500.0),
-            ("solid_fuel_consumption", 300.0),
-        ):
-            assert single_year.household[fuel].iloc[0] == stored, (fuel, year)
+    projected = extend_single_year_dataset(dataset, system.parameters, end_year=2029)
+    growth = np.prod([1 + CPI(str(year)) for year in range(2025, 2030)])
+    household = projected.datasets[2029].household
+    assert household["liquid_fuel_consumption"].iloc[0] == pytest.approx(
+        1_500.0 * growth
+    )
+    assert household["solid_fuel_consumption"].iloc[0] == pytest.approx(300.0 * growth)
+    assert growth > 1

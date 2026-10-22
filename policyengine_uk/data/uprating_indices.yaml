@@ -20,12 +20,10 @@
 # Projecting them from the dataset's DATA year (2024) would therefore
 # re-apply 2024-2026 price changes the build has already priced in (#1867).
 # Other consumption variables come from the LCFS at data-year prices and do
-# need uprating, which is why only these three are excluded, with the two
-# inputs below.
-#
+# need uprating, which is why only these three are excluded. That includes
 # liquid_fuel_consumption and solid_fuel_consumption (heating oil, LPG, coal
-# and wood) are projected as the other energy inputs are, so they are absent
-# too (#2572).
+# and wood): Ofgem's price cap does not cover them, so they are uprated by
+# CPI from the data year like other LCFS spending.
 #
 # Northern Ireland domestic rates grow with the combined regional and district
 # poundage (#1990). Households outside Northern Ireland have none, so the index
@@ -79,6 +77,7 @@ gov.economic_assumptions.yoy_growth.obr.consumer_price_index:
 - income_support_reported
 - jsa_contrib_reported
 - jsa_income_reported
+- liquid_fuel_consumption
 - local_bus_uncapped_single_fare
 - maintenance_expenses
 - maternity_allowance_reported
@@ -87,6 +86,7 @@ gov.economic_assumptions.yoy_growth.obr.consumer_price_index:
 - recreation_consumption
 - restaurants_and_hotels_consumption
 - sda_reported
+- solid_fuel_consumption
 - state_pension
 - state_pension_reported
 - statutory_maternity_pay
