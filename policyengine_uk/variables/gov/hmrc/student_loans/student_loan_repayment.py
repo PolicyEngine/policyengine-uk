@@ -19,7 +19,7 @@ class student_loan_repayment(Variable):
 
     def formula(person, period, parameters):
         plan = person("student_loan_plan", period)
-        income = person("adjusted_net_income", period)
+        income = person("net_income", period)
         balance = max_(0, person("student_loan_balance", period))
         p = parameters(period).gov.hmrc.student_loans
 
