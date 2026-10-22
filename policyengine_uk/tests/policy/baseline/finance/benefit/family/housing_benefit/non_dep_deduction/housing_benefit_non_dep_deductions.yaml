@@ -97,3 +97,112 @@
   output:
     # Only person 3 is a non-dependant of the head's family: 3.
     housing_benefit_non_dep_deductions: [3, 0, 0]
+
+- name: A sharer of a nil rent is not a non-dependant
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person_1:
+        age: 40
+        is_household_head: true
+        household_benefits_individual_non_dep_deduction: 0
+      person_2:
+        age: 40
+        household_benefits_individual_non_dep_deduction: 2
+    benunits:
+      benunit_1:
+        members: [person_1]
+        housing_benefit_non_dep_deductions_claimant_exempt: false
+      benunit_2:
+        members: [person_2]
+        liable_for_share_of_household_rent: true
+        housing_benefit_non_dep_deductions_claimant_exempt: false
+    households:
+      household:
+        members: [person_1, person_2]
+        rent: 0
+  output:
+    # Both families are liable for the rent, so each bears half. With a nil
+    # rent neither has any, but the sharer is still a joint occupier, not a
+    # non-dependant (HB Regs 2006 reg 3(2)(d)): no deduction for either.
+    share_of_household_rent: [0.5, 0.5]
+    housing_benefit_non_dep_deductions: [0, 0]
+
+# The review case on #2184: an existing claimant in council housing with an
+# adult child whose only income is £28,912 of other investment income and who
+# does no paid work. The bands apply only in remunerative work (HB Regs 2006
+# reg 74(2)), so the adult child pays the reg 74(1)(b) amount, as one with no
+# income would.
+- name: A non-dependant's investment income does not raise the Housing Benefit deduction
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_household_head: true
+      adult_child:
+        age: 25
+        other_investment_income: 28_912 # 556 a week, no hours
+    benunits:
+      claimant_family:
+        members: [claimant]
+      adult_child_family:
+        members: [adult_child]
+    households:
+      household:
+        members: [claimant, adult_child]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 15_000
+  output:
+    # 19.65 * 52 = 1,021.80; banding the £556 would give 115.45 * 52 = 6,003.40.
+    housing_benefit_non_dep_deductions: [1_021.80, 0]
+
+- name: One deduction for a non-dependant couple, the higher amount
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        is_household_head: true
+        household_benefits_individual_non_dep_deduction: 0
+      non_dep_1:
+        household_benefits_individual_non_dep_deduction: 1_060.80
+      non_dep_2:
+        household_benefits_individual_non_dep_deduction: 5_470.40
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      couple:
+        members: [non_dep_1, non_dep_2]
+    households:
+      household:
+        members: [claimant, non_dep_1, non_dep_2]
+  output:
+    # HB Regs 2006 reg 74(3); the couple's own unit bears no deduction.
+    housing_benefit_non_dep_deductions: [5_470.40, 0]
+
+- name: No deductions where the claimant is exempt
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        is_household_head: true
+        household_benefits_individual_non_dep_deduction: 0
+      non_dep:
+        household_benefits_individual_non_dep_deduction: 1_060.80
+    benunits:
+      claimant_unit:
+        members: [claimant]
+        housing_benefit_non_dep_deductions_claimant_exempt: true
+      non_dep_unit:
+        members: [non_dep]
+        housing_benefit_non_dep_deductions_claimant_exempt: false
+    households:
+      household:
+        members: [claimant, non_dep]
+  output:
+    # HB Regs 2006 reg 74(6).
+    housing_benefit_non_dep_deductions: [0, 0]

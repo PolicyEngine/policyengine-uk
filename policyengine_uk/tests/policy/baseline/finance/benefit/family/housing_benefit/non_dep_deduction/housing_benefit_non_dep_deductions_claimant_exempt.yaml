@@ -1,0 +1,77 @@
+# HB Regs 2006 (SI 2006/213) reg 74(6); SI 2006/214 reg 55(6).
+
+- name: Blind claimant
+  period: 2026
+  input:
+    age: 40
+    is_blind: true
+  output:
+    housing_benefit_non_dep_deductions_claimant_exempt: true
+
+- name: Claimant on Attendance Allowance
+  period: 2026
+  input:
+    age: 70
+    aa_category: LOWER
+  output:
+    housing_benefit_non_dep_deductions_claimant_exempt: true
+
+- name: Partner on the DLA care component
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 40
+      partner:
+        age: 38
+        dla_sc_category: LOWER
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    housing_benefit_non_dep_deductions_claimant_exempt: true
+
+- name: Claimant on the PIP daily living component
+  period: 2026
+  input:
+    age: 40
+    pip_dl_category: STANDARD
+  output:
+    housing_benefit_non_dep_deductions_claimant_exempt: true
+
+- name: Claimant on Armed Forces Independence Payment
+  period: 2026
+  input:
+    age: 40
+    armed_forces_independence_payment: 1_000
+  output:
+    housing_benefit_non_dep_deductions_claimant_exempt: true
+
+- name: A child's DLA care component does not exempt the claimant
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 40
+      child:
+        age: 10
+        dla_sc_category: HIGHER
+    benunits:
+      benunit:
+        members: [claimant, child]
+    households:
+      household:
+        members: [claimant, child]
+  output:
+    housing_benefit_non_dep_deductions_claimant_exempt: false
+
+- name: DLA mobility only does not exempt the claimant
+  period: 2026
+  input:
+    age: 40
+    dla_m_category: HIGHER
+  output:
+    housing_benefit_non_dep_deductions_claimant_exempt: false

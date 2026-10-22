@@ -1,0 +1,249 @@
+# Jointly liable applicants under different national schemes. Each applicant's
+# scheme follows its own family (SI 2012/2885 reg 3; council_tax_reduction_
+# pensioner), and a non-dependant of two jointly liable people is apportioned
+# equally between them (Sch 1 para 8(5); WSI 2013/3029 Sch 1 para 3(5) and
+# Sch 6 para 5(5); SSI 2021/249 reg 90(5)). 2026-27 scales: England
+# pensioners 279 band 10.60; Wales 279 band 13.35; Scotland lowest 5.55, 286
+# band 10.95. Cases from the round-6 review of #2007.
+
+- name: England, working-age head and pension-age sharer, deduction from the sharer's pensioner claim
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 30
+        is_household_head: true
+        current_education: NOT_IN_EDUCATION
+      sharer:
+        age: 70
+        current_education: NOT_IN_EDUCATION
+      non_dependant:
+        age: 25
+        employment_income: 15_600 # 300 a week
+        hours_worked: 1_040 # 20 a week
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      head_family:
+        members: [head]
+        would_claim_uc: false
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        would_claim_uc: false
+      non_dependant_family:
+        members: [non_dependant]
+        would_claim_uc: false
+        universal_credit_pre_benefit_cap: 0
+    households:
+      home:
+        members: [head, sharer, non_dependant]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        rent: 12_000
+        tenure_type: RENT_PRIVATELY
+        council_tax: 2_000
+        savings: 0
+  output:
+    # The pension-age sharer's claim bears half of 10.60 * 52 = 551.20. The
+    # working-age head is in Maidstone's local scheme, so no national
+    # deduction; the person-level variable reports the head's scheme.
+    council_tax_reduction_non_dep_deductions: [0, 275.60, 0]
+    council_tax_reduction_individual_non_dep_deduction: [0, 0, 0]
+
+- name: Wales, pension-age head and working-age sharer with a non-dependant UC couple
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 70
+        is_household_head: true
+        current_education: NOT_IN_EDUCATION
+      first_partner:
+        age: 30
+        employment_income: 10_400
+        hours_worked: 832 # 16 a week
+        current_education: NOT_IN_EDUCATION
+      second_partner:
+        age: 30
+        employment_income: 5_200
+        hours_worked: 832
+        current_education: NOT_IN_EDUCATION
+      sharer:
+        age: 30
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      head_family:
+        members: [head]
+        would_claim_uc: false
+      couple_family:
+        members: [first_partner, second_partner]
+        universal_credit_pre_benefit_cap: 3_000
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        would_claim_uc: false
+    households:
+      home:
+        members: [head, first_partner, second_partner, sharer]
+        country: WALES
+        rent: 12_000
+        tenure_type: RENT_PRIVATELY
+        council_tax: 2_000
+        savings: 0
+  output:
+    # The couple's joint 357.69 a week is in the 279 band (13.35 * 52 =
+    # 694.20). The pension-age head's claim takes one deduction for the couple
+    # (Sch 1 para 3(3)); the working-age sharer's takes one for each member
+    # of a couple with a UC award (Sch 6 para 5(3)). Each bears half.
+    council_tax_reduction_non_dep_deductions: [347.10, 0, 694.20]
+
+- name: Wales, working-age head and pension-age sharer with a non-dependant UC couple
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 30
+        is_household_head: true
+        current_education: NOT_IN_EDUCATION
+      first_partner:
+        age: 30
+        employment_income: 10_400
+        hours_worked: 832
+        current_education: NOT_IN_EDUCATION
+      second_partner:
+        age: 30
+        employment_income: 5_200
+        hours_worked: 832
+        current_education: NOT_IN_EDUCATION
+      sharer:
+        age: 70
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      head_family:
+        members: [head]
+        would_claim_uc: false
+      couple_family:
+        members: [first_partner, second_partner]
+        universal_credit_pre_benefit_cap: 3_000
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        would_claim_uc: false
+    households:
+      home:
+        members: [head, first_partner, second_partner, sharer]
+        country: WALES
+        rent: 12_000
+        tenure_type: RENT_PRIVATELY
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_non_dep_deductions: [694.20, 0, 347.10]
+
+- name: Scotland, working-age head and pension-age sharer, the partner rule only for the working-age claim
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+        current_education: NOT_IN_EDUCATION
+      sharer:
+        age: 70
+        current_education: NOT_IN_EDUCATION
+      recipient:
+        age: 35
+        esa_income_reported: 5_200
+        current_education: NOT_IN_EDUCATION
+      worker:
+        age: 35
+        employment_income: 15_600
+        hours_worked: 1_560 # 30 a week
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      head_family:
+        members: [head]
+        would_claim_uc: false
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        would_claim_uc: false
+      couple_family:
+        members: [recipient, worker]
+        esa_income: 5_200
+        would_claim_uc: false
+        universal_credit_pre_benefit_cap: 0
+    households:
+      home:
+        members: [head, sharer, recipient, worker]
+        country: SCOTLAND
+        rent: 12_000
+        tenure_type: RENT_PRIVATELY
+        council_tax: 2_000
+        savings: 0
+  output:
+    # Working-age head (SSI 2021/249 reg 90(8)(a), reg 4(1)): the worker is
+    # the partner of an income-related ESA claimant not on UC, so no
+    # deduction. Pension-age sharer (SSI 2012/319 reg 48): only the recipient
+    # is exempt; the worker is banded on the couple's 400 a week, 10.95 * 52
+    # = 569.40, half each. The person-level flags report the head's scheme,
+    # so the worker is exempt there. The 70-year-old sharer is on Pension
+    # Credit, so their own flag is true too; it matters only for a
+    # non-dependant.
+    council_tax_reduction_non_dep_deductions: [0, 284.70, 0]
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, false, true, true]
+    council_tax_reduction_non_dep_deduction_exempt: [false, true, true, true]
+
+- name: Scotland, pension-age head and working-age sharer, the partner rule only for the working-age claim
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 70
+        is_household_head: true
+        current_education: NOT_IN_EDUCATION
+      sharer:
+        age: 40
+        current_education: NOT_IN_EDUCATION
+      recipient:
+        age: 35
+        esa_income_reported: 5_200
+        current_education: NOT_IN_EDUCATION
+      worker:
+        age: 35
+        employment_income: 15_600
+        hours_worked: 1_560
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      head_family:
+        members: [head]
+        would_claim_uc: false
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        would_claim_uc: false
+      couple_family:
+        members: [recipient, worker]
+        esa_income: 5_200
+        would_claim_uc: false
+        universal_credit_pre_benefit_cap: 0
+    households:
+      home:
+        members: [head, sharer, recipient, worker]
+        country: SCOTLAND
+        rent: 12_000
+        tenure_type: RENT_PRIVATELY
+        council_tax: 2_000
+        savings: 0
+  output:
+    # Under the pension-age head's scheme, only the ESA recipient is exempt;
+    # the 70-year-old head's own flag is true because they are on Pension
+    # Credit.
+    council_tax_reduction_non_dep_deductions: [284.70, 0, 0]
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, false, true, true]
+    council_tax_reduction_non_dep_deduction_exempt: [true, false, true, false]

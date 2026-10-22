@@ -1,0 +1,49 @@
+- name: A sacrifice within pay is kept in full
+  period: 2029
+  input:
+    employment_income_before_lsr: 40_000
+    pension_contributions_via_salary_sacrifice: 5_000
+  output:
+    pension_contributions_via_salary_sacrifice_from_pay: 5_000
+
+- name: A whole-bonus sacrifice above the remaining salary is kept in full
+  period: 2029
+  input:
+    # £40,000 salary kept, £50,000 bonus sacrificed (HMRC allows this while
+    # cash pay stays above the National Minimum Wage).
+    employment_income_before_lsr: 40_000
+    pension_contributions_via_salary_sacrifice: 50_000
+  output:
+    pension_contributions_via_salary_sacrifice_from_pay: 50_000
+
+- name: A person without pay sacrifices nothing
+  period: 2029
+  input:
+    pension_contributions_via_salary_sacrifice: 27_000
+  output:
+    pension_contributions_via_salary_sacrifice_from_pay: 0
+
+- name: Negative pay supports no sacrifice
+  period: 2029
+  input:
+    employment_income_before_lsr: -1_000
+    pension_contributions_via_salary_sacrifice: 27_000
+  output:
+    pension_contributions_via_salary_sacrifice_from_pay: 0
+
+- name: A negative sacrifice input counts as none
+  period: 2029
+  input:
+    employment_income_before_lsr: 40_000
+    pension_contributions_via_salary_sacrifice: -500
+  output:
+    pension_contributions_via_salary_sacrifice_from_pay: 0
+
+- name: The condition applies before the cap exists, 2028
+  period: 2028
+  input:
+    pension_contributions_via_salary_sacrifice: 27_000
+  output:
+    pension_contributions_via_salary_sacrifice_from_pay: 0
+    pension_contributions_via_salary_sacrifice_adjusted: 0
+    salary_sacrifice_returned_to_income: 0

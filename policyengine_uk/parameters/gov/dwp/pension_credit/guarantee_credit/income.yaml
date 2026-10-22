@@ -7,14 +7,35 @@ metadata:
     title: State Pension Credit Act 2002 s. 15(1)
   - href: https://www.legislation.gov.uk/uksi/2002/1792/regulation/15
     title: State Pension Credit Regulations 2002 reg. 15
+  - href: https://www.legislation.gov.uk/uksi/2026/246/article/17/made
+    title: SI 2026/246 art. 17 (Scottish Carer Supplement excepted from reg. 15(1))
   unit: list
 values:
   2002-01-01:
   - pension_credit_earnings
   - working_tax_credit
+  # War pensions (SPCA s.15(1)(g)) and AFCS guaranteed income payments
+  # (reg. 15(5)(aa)) of the claimant and partner, each payment less £10 a
+  # week (Sch. IV para. 1).
+  - pension_credit_war_pension_income
   - state_pension
   - private_pension_income
-  - property_income
+  - property_income_after_finance_costs
   - pension_credit_deemed_income
   - esa_contrib
   - jsa_contrib
+  # Reg. 15(1) prescribes all social security benefits except those it lists;
+  # neither of these is listed. carer_support_payment is the Carer Support
+  # Payment component only: reg. 15(1)(ri) excepts the Scottish Carer
+  # Supplement, which is a separate variable.
+  - carers_allowance
+  - carer_support_payment
+  # Reg. 15(1) does not list these either. Reg. 15(1)(c) excepts the constant
+  # attendance and exceptionally severe disablement increases of IIDB (SSCBA
+  # ss.104 and 105), but iidb is the whole reported payment and cannot
+  # separate them. Incapacity benefit's increases for a dependant other than
+  # a partner (reg. 15(1)(h)) are not separated either.
+  - iidb
+  - sda
+  - incapacity_benefit
+  - maternity_allowance

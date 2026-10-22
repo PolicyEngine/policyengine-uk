@@ -1,0 +1,12 @@
+description: A responsible child or qualifying young person must be born strictly before this YYYYMMDD date for the Child Tax Credit family element, when its birth date condition applies.
+values:
+  2017-04-06: 20170406
+metadata:
+  unit: date
+  period: year
+  label: Child Tax Credit family element cutoff date of birth
+  reference:
+    - title: The Child Tax Credit Regulations 2002, regulation 7(2)(a)
+      href: https://www.legislation.gov.uk/uksi/2002/2007/regulation/7
+    - title: Tax Credits Act 2002, section 9(2)(a)
+      href: https://www.legislation.gov.uk/ukpga/2002/21/section/9

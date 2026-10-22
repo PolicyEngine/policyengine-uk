@@ -1,0 +1,27 @@
+description: >-
+  Whether the amount for National Insurance that converts the Universal Credit
+  minimum income floor to a net amount is the Class 2 and Class 4 contributions
+  due on self-employed profits equal to the threshold, rather than the primary
+  Class 1 contributions due on pay equal to it. The regulations leave the amount
+  to the Secretary of State. DWP's 2017 guidance on applying the floor deducts
+  Class 2 and Class 4, and DWP's own figures match that basis (the ADM example of
+  946 a month in 2015-16, to the pound; a floor set on a claimant's award at
+  1,144.15 a month in 2019-20; and 1,642.72 a month that DWP supplied for
+  2025-26). DWP's quick guide describes the floor as what an employed person
+  would earn after tax and National Insurance, which false models instead.
+values:
+  2013-04-29: true
+metadata:
+  unit: bool
+  label: Universal Credit minimum income floor self-employed National Insurance
+  reference:
+    - title: The Universal Credit Regulations 2013 reg. 62(4)(b)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/62
+    - title: DWP, Applying the Minimum Income Floor, version 9 (3 April 2017, deposited paper DEP2017-0556)
+      href: https://data.parliament.uk/DepositedPapers/Files/DEP2017-0556/6_Applying_the_minimum_income_floor_V9.0.pdf
+    - title: DWP, Advice for Decision Making, chapter H4, H4079
+      href: https://www.gov.uk/government/publications/advice-for-decision-making-staff-guide
+    - title: "Griffiths and Wood, Going it alone: experiences of self-employed Universal Credit claimants, University of Bath IPR, July 2025, note 3 (a net floor of 1,642.72 supplied by DWP)"
+      href: https://www.bath.ac.uk/publications/going-it-alone-experiences-of-self-employed-universal-credit-claimants/attachments/going-it-alone-report.pdf
+    - title: "DWP, Universal Credit and self-employment: quick guide"
+      href: https://www.gov.uk/government/publications/universal-credit-for-the-self-employed/universal-credit-and-self-employment-quick-guide

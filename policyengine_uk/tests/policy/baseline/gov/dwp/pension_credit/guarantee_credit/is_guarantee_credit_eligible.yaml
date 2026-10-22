@@ -32,3 +32,20 @@
     pension_credit_deemed_income: 104
     pension_credit_income: 104
     is_guarantee_credit_eligible: false
+
+- name: Case 4, income equal to the minimum guarantee confers eligibility with no award.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 67
+    benunits:
+      benunit:
+        members: [person1]
+        pension_credit_income: 12_000
+        minimum_guarantee: 12_000
+  output:
+    is_guarantee_credit_eligible: true
+    is_pension_credit_eligible: true
+    guarantee_credit: 0
+    pension_credit_entitlement: 0

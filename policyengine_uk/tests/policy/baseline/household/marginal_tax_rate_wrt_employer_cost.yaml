@@ -14,3 +14,31 @@
         members: [adult]
   output:
     marginal_tax_rate_wrt_employer_cost: 0.457
+
+# Above £1m of earnings the step is 0.1% of employment income (issue #1979).
+# A marginal pound above the additional rate threshold costs the employer
+# £1.15 and leaves 53p: 1 - 0.53 / 1.15 = 0.539130.
+
+- name: Single employee at £100m of earnings, which the £1,000 step read as 53.8%.
+  period: 2026
+  absolute_error_margin: 0.0003
+  input:
+    employment_income: 100_000_000
+  output:
+    marginal_tax_rate_wrt_employer_cost: 0.539130
+
+- name: Single employee at £561m of earnings, which the £1,000 step read as 55.3%.
+  period: 2026
+  absolute_error_margin: 0.0003
+  input:
+    employment_income: 561_000_000
+  output:
+    marginal_tax_rate_wrt_employer_cost: 0.539130
+
+- name: Single employee at £1bn of earnings, which the £1,000 step read as 52.8%.
+  period: 2026
+  absolute_error_margin: 0.0003
+  input:
+    employment_income: 1_000_000_000
+  output:
+    marginal_tax_rate_wrt_employer_cost: 0.539130

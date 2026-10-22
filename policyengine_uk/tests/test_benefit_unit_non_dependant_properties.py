@@ -9,34 +9,41 @@ population of households:
 1. Oracle: each family's Universal Credit, Housing Benefit and Council Tax
    Reduction non-dependant deductions, and who is eligible for an individual
    deduction, equal an independent calculation from the generated household
-   structure: who is a non-dependant, of whom, and how a non-dependant of
-   several joint occupiers is apportioned (by rent or liability share,
-   whichever family the non-dependant is in).
-2. Conservation: every Housing Benefit non-dependant deduction is borne in
-   full across the joint occupiers, and once more by a boarder or lodger for
-   a non-dependant in its own benefit unit; each Council Tax Reduction
-   claiming family bears every non-dependant in proportion to its
-   joint-liability share; every Universal Credit contribution is borne by
-   exactly one family unless that family's renter is exempt.
-3. Exemptions: a family whose renter is exempt under Sch 4 para 15 has no
-   Universal Credit deductions; no deduction is charged for a non-dependant
-   under 21 (UC) or under 18 (HB, CTR), or for a qualifying young person.
+   structure: who is a non-dependant, of whom, how a non-dependant couple
+   pays one deduction (the higher), and how a non-dependant of several joint
+   occupiers is apportioned (by rent or liability share, whichever family
+   the non-dependant is in).
+2. Conservation: every Housing Benefit non-dependant deduction (a couple's
+   counted once) is borne in full across the joint occupiers, and once more
+   by a boarder or lodger for a non-dependant in its own benefit unit,
+   unless a claimant is exempt; each Council Tax Reduction claiming family
+   bears every non-dependant, under its own scheme, in proportion to its
+   joint-liability share
+   unless the applicant is exempt; every Universal Credit contribution is
+   borne by exactly one family unless that family's renter is exempt.
+3. Exemptions: a family whose renter is exempt (UC Sch 4 para 15; HB reg
+   74(6); CTR Sch 1 para 8(6)) has no deductions; no deduction is charged for
+   a non-dependant under 21 (UC) or under 18 (HB, CTR), or for a qualifying
+   young person.
 4. No-op: in households without non-dependants inside a benefit unit, the
    deductions equal the previous formulas, which charged only members of
    other families.
-5. Bedrooms: every Universal Credit non-dependant within a benefit unit has a
-   bedroom in the size criteria (para 10(1)(c)), so the deduction and the
-   bedroom use one definition.
-6. Local schemes: in Merton, Kingston upon Thames, Newham, Westminster and
+5. Local schemes: in Merton, Kingston upon Thames, Newham, Westminster and
    Oxford, each non-dependant's deduction and each claiming family's total
-   equal an independent calculation from the council's scale: a couple banded
-   on joint earnings and deducted once at the higher amount (each member in
-   Merton and Kingston upon Thames when the couple has Universal Credit), any
-   other adult banded on their own earnings and hours, the benefit-receipt
-   exemptions only for a claimant or partner on the award (none in Oxford),
-   and the pool charged to each claiming family by its share, less its own
-   claimant, partner and children. Every other council's variables are zero.
-7. Local independence: an adult in a benefit unit who is not its claimant or
+   equal an independent calculation from the council's scale: a claimant or
+   partner banded on the couple's joint earnings and the couple deducted once
+   at the higher amount (each member in Merton and Kingston upon Thames
+   when the couple has Universal Credit), any other adult banded
+   on their own earnings, each on their own hours; the benefit-receipt
+   exemptions for the person on the award, Universal Credit's tested on their
+   own earnings (none in Oxford); and the household's pool charged to each
+   claiming family by its share, less its own applicant, partner and
+   children, unless the applicant is exempt. Every other council's variables
+   are zero. Conservation: the claiming families together bear the pool
+   times the sum of their shares, which is the whole pool wherever the
+   shares sum to one (they follow the regulations' per-person wording, so a
+   couple jointly liable with others leaves its partner's share unborne).
+6. Local independence: an adult in a benefit unit who is not its claimant or
    partner changes no one else's local deduction through their earnings.
 """
 
@@ -44,7 +51,13 @@ import numpy as np
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
+from policyengine_core.periods import period as make_period
+
 from policyengine_uk import Simulation
+from policyengine_uk.variables.gov.local_authorities.council_tax_reduction._national_non_dependants import (
+    household_head_family_is_pensioner,
+    individual_non_dep_deduction,
+)
 
 # Situation inputs without a period key are set for 2025, so the properties
 # are checked in 2025, when the contribution was £93.02 a month.
@@ -89,6 +102,9 @@ def family(draw, role):
         extras=draw(st.lists(extra_member(), min_size=0, max_size=2)),
         child=draw(st.booleans()),
         renter_pip=draw(st.booleans()),
+        # Take-up: a family flagged not to claim Universal Credit passes its
+        # in-unit non-dependants to the claim that counts the household's.
+        would_claim_uc=draw(st.booleans()),
         payment=draw(st.floats(1_000, 10_000, allow_nan=False)),
     )
 
@@ -170,10 +186,13 @@ def build(population, convert=None):
                 )
             if fam["child"]:
                 pid = f"{name}_child"
+                # Inputs set for some members are inputs for all, so the
+                # child's Child Benefit status is stated, not left to default.
                 people[pid] = {
                     "age": 8,
                     "is_claimant_or_partner": False,
                     "is_household_head": False,
+                    "is_child_or_qualifying_young_person_for_child_benefit": True,
                 }
                 ids.append(pid)
                 person_rows.append(
@@ -185,7 +204,7 @@ def build(population, convert=None):
                         disability_benefit=False,
                     )
                 )
-            benunit = {"members": ids}
+            benunit = {"members": ids, "would_claim_uc": fam["would_claim_uc"]}
             if fam["role"] == "sharer":
                 benunit["liable_for_share_of_household_rent"] = True
             if fam["role"] == "lodger":
@@ -214,19 +233,60 @@ def calc(sim, variable, map_to=None):
     return np.asarray(sim.calculate(variable, YEAR, map_to=map_to), dtype=float)
 
 
-def oracle(person_rows, family_rows, uc, hb, ctr, pension_credit, claims, ctr_share):
+def counted_once_per_couple(person_rows, amounts):
+    """A couple pays one deduction, the higher (HB reg 74(3); CTR Sch 1 para
+    8(3)): keep the larger amount of each family's adults (its claimant and
+    partner) and zero the other; anyone else counts in full."""
+    counted = np.array(amounts, dtype=float)
+    adults = {}
+    for p, row in enumerate(person_rows):
+        if row["kind"] == "adult":
+            adults.setdefault(row["family"], []).append(p)
+    for members in adults.values():
+        keep = max(members, key=lambda p: (counted[p], -p))
+        for p in members:
+            if p != keep:
+                counted[p] = 0.0
+    return counted
+
+
+def oracle(
+    person_rows,
+    family_rows,
+    uc,
+    hb,
+    ctr,
+    pension_credit,
+    claims,
+    ctr_share,
+    uc_counted,
+    uc_own_claim,
+    ctr_other,
+    ctr_own_scheme_is_heads,
+):
     """Expected deductions per family from the generated structure.
 
     uc, hb and ctr are each person's individual deduction from the model;
-    the oracle decides independently who is whose non-dependant.
+    the oracle decides independently who is whose non-dependant. Which
+    Universal Credit claim counts the household's non-dependants
+    (uc_non_dependants_counted), whether a family makes its own claim, the
+    CTR claim flags and the joint-liability shares are read from the model.
+    ctr is each person's deduction under the scheme of the household head's
+    family; ctr_other under the other scheme, which a claiming family on that
+    scheme bears (SI 2012/2885 reg 3).
     """
     n = len(family_rows)
     exp_uc, exp_hb, exp_ctr = np.zeros(n), np.zeros(n), np.zeros(n)
     expected_uc_individual = np.zeros(len(person_rows))
+    hb = counted_once_per_couple(person_rows, hb)
+    ctr = counted_once_per_couple(person_rows, ctr)
+    ctr_other = counted_once_per_couple(person_rows, ctr_other)
     households = sorted({f["household"] for f in family_rows})
     for h in households:
         fams = [i for i, f in enumerate(family_rows) if f["household"] == h]
-        head = fams[0]
+        # Sch 4 para 9(2)(f): one claim counts the household's non-dependants.
+        counted = [i for i in fams if uc_counted[i]]
+        counted_family = counted[0] if counted else None
         # Families liable for the household's rent: the head's and sharers'.
         liable = [i for i in fams if family_rows[i]["role"] in ("head", "sharer")]
         total_liable = sum(family_rows[i]["n_liable"] for i in liable)
@@ -241,9 +301,10 @@ def oracle(person_rows, family_rows, uc, hb, ctr, pension_credit, claims, ctr_sh
             role = family_rows[f]["role"]
             other_family = role == "non_dependant"
             own_family = row["kind"] == "non_dependant"
-            # UC: a member of a family not liable for rent is the head's
-            # non-dependant; a non-QYP member aged 16+ of any other family is
-            # their own family's.
+            # UC: a member of a family not liable for rent counts in the
+            # claim that counts the household's non-dependants; a non-QYP
+            # member aged 16+ of any other family counts in their own family's
+            # claim if it makes one, otherwise in that same counted claim.
             # Para 16: Attendance Allowance or PIP daily living, or Pension
             # Credit, which only a claimant or partner receives.
             uc_exempt = row["disability_benefit"] or (
@@ -252,8 +313,13 @@ def oracle(person_rows, family_rows, uc, hb, ctr, pension_credit, claims, ctr_sh
             uc_non_dependant = other_family or own_family
             if uc_non_dependant and row["age"] >= 21 and not uc_exempt:
                 expected_uc_individual[p] = UC_CONTRIBUTION
-            bearer = head if other_family else f
-            if uc_non_dependant and not family_rows[bearer]["renter_pip"]:
+            own_claim = own_family and not other_family and uc_own_claim[f]
+            bearer = f if own_claim else counted_family
+            if (
+                uc_non_dependant
+                and bearer is not None
+                and not family_rows[bearer]["renter_pip"]
+            ):
                 exp_uc[bearer] += uc[p]
             # HB: every non-dependant, in any family, is pooled across the
             # joint occupiers by rent share; a boarder or lodger, who is not
@@ -270,8 +336,63 @@ def oracle(person_rows, family_rows, uc, hb, ctr, pension_credit, claims, ctr_sh
                 for i in fams:
                     if i == f and not own_family:
                         continue
-                    exp_ctr[i] += claims[i] * ctr_share[i] * ctr[p]
+                    amount = ctr[p] if ctr_own_scheme_is_heads[i] else ctr_other[p]
+                    exp_ctr[i] += claims[i] * ctr_share[i] * amount
+        # A claimant or partner on PIP daily living exempts their own family
+        # from all HB and CTR deductions (reg 74(6); Sch 1 para 8(6)).
+        for i in fams:
+            if family_rows[i]["renter_pip"]:
+                exp_hb[i] = 0.0
+                exp_ctr[i] = 0.0
     return exp_uc, exp_hb, exp_ctr, expected_uc_individual
+
+
+def ctr_by_scheme(sim, person_rows, family_rows):
+    """Each person's CTR deduction under the other scheme (pensioner or
+    working-age) from the household head's family, and whether each family is
+    on the head's scheme. Computed with the aggregator's own helper, since a
+    jointly liable applicant on the other scheme has its deductions
+    recomputed under that scheme."""
+    person = sim.populations["person"]
+    period = make_period(YEAR)
+    head_pensioner = np.asarray(household_head_family_is_pensioner(person, period))
+    eligible = (
+        calc(sim, "council_tax_reduction_individual_non_dep_deduction_eligible") > 0
+    )
+    other = np.asarray(
+        individual_non_dep_deduction(
+            person, period, sim.tax_benefit_system.parameters, ~head_pensioner
+        ),
+        dtype=float,
+    )
+    first_member = {}
+    for p, row in enumerate(person_rows):
+        first_member.setdefault(row["family"], p)
+    family_head_pensioner = np.array(
+        [head_pensioner[first_member[f]] for f in range(len(family_rows))]
+    )
+    family_pensioner = calc(sim, "council_tax_reduction_pensioner") > 0
+    return dict(
+        ctr_other=eligible * other,
+        ctr_own_scheme_is_heads=family_pensioner == family_head_pensioner,
+    )
+
+
+def pool_under_own_scheme(person_rows, family_rows, v, mask=None):
+    """For each family, the household's CTR deductions (a couple's once)
+    under that family's own scheme, over the members in mask (everyone by
+    default)."""
+    mask = np.ones(len(person_rows), dtype=bool) if mask is None else mask
+    person_household = np.array([row["household"] for row in person_rows])
+    family_household = np.array([row["household"] for row in family_rows])
+    pools = {}
+    for scheme, amounts in (("head", v["ctr"]), ("other", v["ctr_other"])):
+        counted = counted_once_per_couple(person_rows, amounts) * mask
+        by_household = np.bincount(
+            person_household, weights=counted, minlength=family_household.max() + 1
+        )
+        pools[scheme] = by_household[family_household]
+    return np.where(v["ctr_own_scheme_is_heads"], pools["head"], pools["other"])
 
 
 def run(population, convert=None):
@@ -284,6 +405,13 @@ def run(population, convert=None):
         pension_credit=calc(sim, "pension_credit"),
         claims=calc(sim, "council_tax_reduction_claimant_benunit"),
         ctr_share=calc(sim, "council_tax_reduction_joint_liability_share"),
+        uc_counted=calc(sim, "uc_non_dependants_counted") > 0,
+        **ctr_by_scheme(sim, person_rows, family_rows),
+        uc_own_claim=(
+            (calc(sim, "benunit_is_rent_liable") > 0)
+            & (calc(sim, "is_uc_eligible") > 0)
+            & (calc(sim, "claims_universal_credit") > 0)
+        ),
     )
     return sim, person_rows, family_rows, values
 
@@ -293,7 +421,17 @@ def run(population, convert=None):
 def test_deductions_match_the_oracle(population):
     sim, person_rows, family_rows, v = run(population)
     exp_uc, exp_hb, exp_ctr, exp_uc_individual = oracle(person_rows, family_rows, **v)
-    # 1. Oracle.
+    # 1. Oracle. The members each scheme classes as in-unit non-dependants
+    # are exactly the generated non-QYP members.
+    kinds = np.array([row["kind"] for row in person_rows])
+    for in_unit_variable in (
+        "is_benefit_unit_non_dependant_for_universal_credit",
+        "is_benefit_unit_non_dependant_for_legacy_benefits",
+        "is_benefit_unit_non_dependant_for_council_tax_reduction",
+    ):
+        assert np.array_equal(
+            calc(sim, in_unit_variable) > 0, kinds == "non_dependant"
+        ), in_unit_variable
     assert np.allclose(v["uc"], exp_uc_individual, atol=0.01)
     assert np.allclose(calc(sim, "uc_non_dep_deductions"), exp_uc, atol=0.01)
     assert np.allclose(
@@ -320,15 +458,19 @@ def test_deductions_match_the_oracle(population):
             ]
         )
 
-    # Any family's own non-dependants, a boarder's or lodger's included.
-    for variable in (
-        "housing_benefit_individual_non_dep_deduction_eligible",
-        "council_tax_reduction_individual_non_dep_deduction_eligible",
-    ):
-        assert np.array_equal(
-            calc(sim, variable) > 0,
-            eligible(("head", "sharer", "lodger", "non_dependant")),
-        )
+    # Any family's own non-dependants, a boarder's or lodger's included. HB
+    # eligibility also excludes an exempt non-dependant (reg 74(7)-(10)); CTR
+    # applies its exemptions in the amount.
+    everyone = eligible(("head", "sharer", "lodger", "non_dependant"))
+    hb_exempt = calc(sim, "housing_benefit_non_dep_deduction_exempt") > 0
+    assert np.array_equal(
+        calc(sim, "housing_benefit_individual_non_dep_deduction_eligible") > 0,
+        everyone & ~hb_exempt,
+    )
+    assert np.array_equal(
+        calc(sim, "council_tax_reduction_individual_non_dep_deduction_eligible") > 0,
+        everyone,
+    )
 
 
 @PROPERTY_SETTINGS
@@ -337,8 +479,10 @@ def test_conservation_and_exemptions(population):
     sim, person_rows, family_rows, v = run(population)
     ages = np.array([row["age"] for row in person_rows])
     kinds = np.array([row["kind"] for row in person_rows])
-    # 2. Conservation. HB: each deduction is borne in full across the joint
-    # occupiers, and a lodger's own non-dependant once more by the lodger.
+    # 2. Conservation. HB: each deduction, a couple's once, is borne in full
+    # across the joint occupiers, and a lodger's own non-dependant once more
+    # by the lodger, where no claimant is exempt.
+    hb_counted = counted_once_per_couple(person_rows, v["hb"])
     hb_families = sim.map_result(
         calc(sim, "housing_benefit_non_dep_deductions"), "benunit", "household"
     )
@@ -349,17 +493,32 @@ def test_conservation_and_exemptions(population):
             for row in person_rows
         ]
     )
-    hb_people = sim.map_result(v["hb"] * (1 + lodgers_own), "person", "household")
-    assert np.allclose(hb_families, hb_people, atol=0.01)
-    # CTR: every non-dependant is borne by the claiming families in
-    # proportion to their joint-liability shares (which follow the
-    # regulations' per-person wording, so they need not sum to one).
-    claim_shares = sim.map_result(v["claims"] * v["ctr_share"], "benunit", "household")
-    ctr_families = sim.map_result(
-        calc(sim, "council_tax_reduction_non_dep_deductions"), "benunit", "household"
+    hb_people = sim.map_result(hb_counted * (1 + lodgers_own), "person", "household")
+    hb_exempt = (
+        sim.map_result(
+            calc(sim, "housing_benefit_non_dep_deductions_claimant_exempt"),
+            "benunit",
+            "household",
+        )
+        > 0
     )
-    ctr_people = sim.map_result(v["ctr"], "person", "household")
-    assert np.allclose(ctr_families, claim_shares * ctr_people, atol=0.01)
+    assert np.allclose(hb_families[~hb_exempt], hb_people[~hb_exempt], atol=0.01)
+    assert np.all(hb_families <= hb_people + 0.01)
+    # CTR: every non-dependant is borne by each claiming family, under its
+    # own scheme, in proportion to its joint-liability share (which follows
+    # the regulations' per-person wording, so shares need not sum to one);
+    # none where the applicant is exempt. This holds on the generator's
+    # domain (rent > 0, claimants liable for it), where no claiming family's
+    # own claimant or partner has a deduction.
+    ctr_families = calc(sim, "council_tax_reduction_non_dep_deductions")
+    expected_ctr = (
+        v["claims"]
+        * v["ctr_share"]
+        * pool_under_own_scheme(person_rows, family_rows, v)
+    )
+    ctr_exempt = calc(sim, "council_tax_reduction_applicant_has_non_dep_exemption") > 0
+    assert np.allclose(ctr_families[~ctr_exempt], expected_ctr[~ctr_exempt], atol=0.01)
+    assert np.all(ctr_families[ctr_exempt] == 0)
     # UC: each contribution is borne once, except where the bearer is exempt.
     uc_families = sim.map_result(
         calc(sim, "uc_non_dep_deductions"), "benunit", "household"
@@ -369,6 +528,12 @@ def test_conservation_and_exemptions(population):
     # 3. Exemptions.
     renter_exempt = calc(sim, "uc_non_dep_deductions_renter_exempt") > 0
     assert np.all(calc(sim, "uc_non_dep_deductions")[renter_exempt] == 0)
+    hb_claimant_exempt = (
+        calc(sim, "housing_benefit_non_dep_deductions_claimant_exempt") > 0
+    )
+    assert np.all(
+        calc(sim, "housing_benefit_non_dep_deductions")[hb_claimant_exempt] == 0
+    )
     assert np.all(v["uc"][ages < 21] == 0)
     assert np.all(v["hb"][ages < 18] == 0)
     assert np.all(v["ctr"][ages < 18] == 0)
@@ -387,8 +552,9 @@ def test_conservation_and_exemptions(population):
 def test_no_op_without_non_dependants_in_a_benefit_unit(population):
     every_kind_dependant = {kind: "dependant" for kind in KINDS}
     sim, person_rows, family_rows, v = run(population, every_kind_dependant)
-    # 4. The previous formulas: only members of other families, charged to
-    # the head's family (UC), by rent share (HB) or by claim share (CTR).
+    # 4. The previous formulas: only members of other families (a couple's
+    # higher amount once), charged to the claim that counts them (UC), by rent share
+    # (HB) or by claim share (CTR), with the claimants' exemptions.
     person_household = np.array([row["household"] for row in person_rows])
     family_household = np.array([row["household"] for row in family_rows])
     other = calc(sim, "is_non_dependant_of_household_head") > 0
@@ -401,45 +567,35 @@ def test_no_op_without_non_dependants_in_a_benefit_unit(population):
         )
         return by_household[family_household]
 
-    head_family = np.array([row["role"] == "head" for row in family_rows])
     renter_exempt = calc(sim, "uc_non_dep_deductions_renter_exempt") > 0
     assert np.allclose(
         calc(sim, "uc_non_dep_deductions"),
-        np.where(renter_exempt, 0, head_family * other_families(v["uc"])),
+        np.where(renter_exempt, 0, v["uc_counted"] * other_families(v["uc"])),
         atol=0.01,
     )
+    hb_claimant_exempt = (
+        calc(sim, "housing_benefit_non_dep_deductions_claimant_exempt") > 0
+    )
+    hb_counted = counted_once_per_couple(person_rows, v["hb"])
     assert np.allclose(
         calc(sim, "housing_benefit_non_dep_deductions"),
-        calc(sim, "share_of_household_rent") * other_families(v["hb"]),
+        np.where(
+            hb_claimant_exempt,
+            0,
+            calc(sim, "share_of_household_rent") * other_families(hb_counted),
+        ),
         atol=0.01,
     )
+    ctr_exempt = calc(sim, "council_tax_reduction_applicant_has_non_dep_exemption") > 0
+    pool = pool_under_own_scheme(person_rows, family_rows, v, mask=other)
     assert np.allclose(
         calc(sim, "council_tax_reduction_non_dep_deductions"),
-        v["claims"] * v["ctr_share"] * other_families(v["ctr"]),
+        np.where(ctr_exempt, 0, v["claims"] * v["ctr_share"] * pool),
         atol=0.01,
     )
 
 
-@PROPERTY_SETTINGS
-@given(population)
-def test_every_non_dependant_in_a_benefit_unit_has_a_bedroom(population):
-    sim, person_rows, family_rows, v = run(population)
-    # 5. Para 10(1)(b)-(c): a bedroom for each responsible qualifying young
-    # person and each non-dependant within the unit; the rest of the count
-    # (renter, children, other families' non-dependants) is unchanged when
-    # those members are made dependants instead.
-    in_unit = calc(sim, "is_benefit_unit_non_dependant_for_universal_credit")
-    kinds = np.array([row["kind"] for row in person_rows])
-    assert np.array_equal(in_unit > 0, kinds == "non_dependant")
-    rooms = calc(sim, "LHA_allowed_bedrooms")
-    as_dependants, *_ = run(population, {"non_dependant": "dependant"})
-    rooms_as_dependants = calc(as_dependants, "LHA_allowed_bedrooms")
-    # A non-dependant has a bedroom as a responsible qualifying young person
-    # would, so the count is the same either way.
-    assert np.array_equal(rooms, rooms_as_dependants)
-
-
-# 6-7. The English working-age local schemes. Each council's weekly scale for
+# 5-6. The English working-age local schemes. Each council's weekly scale for
 # 2026-27 (the parameters' first values, which also apply in 2025): Merton
 # para 30, Kingston upon Thames para 30A, Newham para 30B, Westminster
 # Appendix A and Oxford para 43.
@@ -584,29 +740,23 @@ def weekly_scale(scheme, weekly_income):
     return amounts[-1]
 
 
-def local_oracle(person_rows, family_rows, benefits, claims, ctr_share):
+def local_oracle(person_rows, family_rows, benefits, on_award, claims, ctr_share):
     """Each person's deduction under their council's scheme and each family's
-    total, from the generated structure and the families' benefit awards."""
+    total, from the generated structure, the families' Universal Credit awards
+    and who is on each award (on_award, read from the model)."""
     n_people, n_families = len(person_rows), len(family_rows)
     individual = np.zeros(n_people)
     counted = np.zeros(n_people)
     for p, row in enumerate(person_rows):
         f = row["family"]
-        family = family_rows[f]
         scheme = LOCAL_SCHEMES[row["local_authority"]]
         # Reg 9: a member of a family not liable for the rent, or an adult in
-        # any family's benefit unit who is not its claimant, partner, child or
-        # young person; aged 18 or over.
+        # any family's benefit unit who is not its applicant, partner, child
+        # or young person; aged 18 or over.
         eligible = row["age"] >= 18 and (
-            family["role"] == "non_dependant" or row["kind"] == "non_dependant"
+            family_rows[f]["role"] == "non_dependant" or row["kind"] == "non_dependant"
         )
-        head = next(
-            i
-            for i, other in enumerate(family_rows)
-            if other["household"] == family["household"]
-        )
-        applicant_exempt = family_rows[head]["renter_pip"]
-        if not eligible or applicant_exempt or row["student"]:
+        if not eligible or row["student"]:
             continue
         couple = [
             other
@@ -623,20 +773,21 @@ def local_oracle(person_rows, family_rows, benefits, claims, ctr_share):
             else scheme["amounts"][0]
         )
         exempt = False
-        if scheme["benefit_exemptions"] and row["claimant_or_partner"]:
-            award = benefits[f]
+        if scheme["benefit_exemptions"]:
+            # Para 30(8)(a): the person the award is payable to. Para
+            # 30(8)(c): one entitled to Universal Credit, on their own
+            # earnings.
             on_income_related = any(
-                award[b] > 0
+                on_award[b][p]
                 for b in (
                     "income_support",
-                    "jsa_income",
-                    "esa_income",
+                    "income_based_jsa",
+                    "income_related_esa",
                     "pension_credit",
                 )
             )
-            couple_earned = sum(member["earnings"] for member in couple)
             exempt = on_income_related or (
-                award["universal_credit"] > 0 and couple_earned <= 0
+                on_award["universal_credit"][p] and row["earnings"] <= 0
             )
         individual[p] = 0 if exempt else weekly * 52
     # One deduction for a couple, the higher, or each member's in Merton and
@@ -653,6 +804,7 @@ def local_oracle(person_rows, family_rows, benefits, claims, ctr_share):
         if couple and not each:
             counted[couple[0]] = max(individual[p] for p in couple)
     totals = np.zeros(n_families)
+    pools = np.zeros(n_families)
     for f, family in enumerate(family_rows):
         in_household = [
             p
@@ -665,26 +817,34 @@ def local_oracle(person_rows, family_rows, benefits, claims, ctr_share):
             if person_rows[p]["family"] == f
             and person_rows[p]["kind"] != "non_dependant"
         ]
-        pool = sum(counted[p] for p in in_household) - sum(counted[p] for p in own)
-        totals[f] = claims[f] * ctr_share[f] * pool
-    return individual, totals
+        pools[f] = sum(counted[p] for p in in_household)
+        pool = pools[f] - sum(counted[p] for p in own)
+        # Para 30(6): no deduction from an applicant who, or whose partner,
+        # gets a qualifying disability benefit; another applicant in the
+        # household is not exempt by it.
+        if not family["renter_pip"]:
+            totals[f] = claims[f] * ctr_share[f] * pool
+    return individual, totals, pools
 
 
 def run_local(population, zero_extra_earnings=False):
     situation, person_rows, family_rows = build_local(population, zero_extra_earnings)
     sim = Simulation(situation=situation)
-    awards = {
-        b: calc(sim, b)
+    universal_credit = calc(sim, "universal_credit")
+    benefits = [
+        {"universal_credit": universal_credit[f]} for f in range(len(family_rows))
+    ]
+    on_award = {
+        b: calc(sim, f"is_on_{b}") > 0
         for b in (
             "income_support",
-            "jsa_income",
-            "esa_income",
+            "income_based_jsa",
+            "income_related_esa",
             "pension_credit",
             "universal_credit",
         )
     }
-    benefits = [{b: awards[b][f] for b in awards} for f in range(len(family_rows))]
-    return sim, person_rows, family_rows, benefits
+    return sim, person_rows, family_rows, benefits, on_award
 
 
 def legal_claims_and_shares(family_rows):
@@ -713,15 +873,15 @@ def legal_claims_and_shares(family_rows):
 @PROPERTY_SETTINGS
 @given(local_population)
 def test_local_scheme_deductions_match_the_oracle(population):
-    sim, person_rows, family_rows, benefits = run_local(population)
+    sim, person_rows, family_rows, benefits, on_award = run_local(population)
     claims, ctr_share = legal_claims_and_shares(family_rows)
     # The claims and shares the totals use are the scheme's, not the model's.
     assert np.array_equal(calc(sim, "council_tax_reduction_claimant_benunit"), claims)
     assert np.allclose(
         calc(sim, "council_tax_reduction_joint_liability_share"), ctr_share
     )
-    individual, totals = local_oracle(
-        person_rows, family_rows, benefits, claims, ctr_share
+    individual, totals, pools = local_oracle(
+        person_rows, family_rows, benefits, on_award, claims, ctr_share
     )
     person_council = np.array([row["local_authority"] for row in person_rows])
     family_council = np.array(
@@ -732,7 +892,7 @@ def test_local_scheme_deductions_match_the_oracle(population):
     )
     for council, scheme in LOCAL_SCHEMES.items():
         name = scheme["name"]
-        # 6. Each council's variables follow its own scheme and are zero
+        # 5. Each council's variables follow its own scheme and are zero
         # elsewhere.
         assert np.allclose(
             calc(sim, f"{name}_council_tax_reduction_individual_non_dep_deduction"),
@@ -744,6 +904,23 @@ def test_local_scheme_deductions_match_the_oracle(population):
             np.where(family_council == council, totals, 0),
             atol=0.01,
         ), name
+    # Conservation: no claiming family's own applicant, partner or child has a
+    # deduction, so where no applicant is exempt the claiming families of a
+    # household together bear its pool times the sum of their shares: the
+    # whole pool, each non-dependant once, where the shares sum to one.
+    family_totals = sum(
+        calc(sim, f"{scheme['name']}_council_tax_reduction_non_dep_deductions")
+        for scheme in LOCAL_SCHEMES.values()
+    )
+    for h in {family["household"] for family in family_rows}:
+        families = [i for i, f in enumerate(family_rows) if f["household"] == h]
+        if any(family_rows[i]["renter_pip"] for i in families):
+            continue
+        borne = sum(family_totals[i] for i in families)
+        shares = sum(claims[i] * ctr_share[i] for i in families)
+        assert np.isclose(borne, shares * pools[families[0]], atol=0.01)
+        if np.isclose(shares, 1):
+            assert np.isclose(borne, pools[families[0]], atol=0.01)
 
 
 def with_an_earning_adult_beside_its_claimant(population):
@@ -787,7 +964,7 @@ def test_local_scheme_in_unit_earnings_affect_only_their_own_deduction(populatio
     population = with_an_earning_adult_beside_its_claimant(population)
     sim, person_rows, *_ = run_local(population)
     without, *_ = run_local(population, zero_extra_earnings=True)
-    # 7. Zeroing the earnings of members who are not a claimant or partner
+    # 6. Zeroing the earnings of members who are not a claimant or partner
     # leaves every claimant's and partner's deduction unchanged.
     claimant_or_partner = np.array([row["claimant_or_partner"] for row in person_rows])
     for scheme in LOCAL_SCHEMES.values():
