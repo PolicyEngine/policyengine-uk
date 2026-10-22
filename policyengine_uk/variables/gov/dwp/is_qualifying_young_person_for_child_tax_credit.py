@@ -25,8 +25,9 @@ class is_qualifying_young_person_for_child_tax_credit(Variable):
         "education or approved training must not be in remunerative work, and "
         "no one may be receiving a benefit in their own right. Full-time "
         "education at any level counts (reg. 5(5)), so an advanced student "
-        "has not ceased it; an apprentice's education, received by virtue of "
-        "employment, is treated as having ceased. The own-right benefits "
+        "has not ceased it, nor has an apprentice still on a course; the "
+        "employment exclusion is part of the first condition only. The "
+        "own-right benefits "
         "input covers Universal Credit, Employment and Support Allowance and "
         "Jobseeker's Allowance, where reg. 5(4)(c) lists Universal Credit, "
         "Income Support and the income-related and income-based allowances. "
@@ -63,9 +64,12 @@ class is_qualifying_young_person_for_child_tax_credit(Variable):
         # Full-time education at a school or college counts at any level
         # (reg. 5(5)), so failing the non-advanced test of reg. 5(3)(a) does
         # not mean having ceased it.
+        # Education received by virtue of employment is left out of the first
+        # condition (reg. 5(3)(a)), which reg. 4(2) lifts, and not out of reg.
+        # 5(5): an apprentice still on a course has not ceased it.
         in_full_time_education = (
             person("current_education", period) != EducationType.NOT_IN_EDUCATION
-        ) & ~person("is_apprentice", period)
+        )
         ceased = ~in_full_time_education & ~person("is_in_approved_training", period)
         working = person("is_in_remunerative_work_for_child_tax_credit", period)
         # Reg. 4(2): the period needs no first condition, only the second.

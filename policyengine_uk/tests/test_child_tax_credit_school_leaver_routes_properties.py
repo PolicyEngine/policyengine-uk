@@ -13,8 +13,8 @@ Child Tax Credit Regulations 2002:
   full-time education or approved training must not be in remunerative work
   (24 hours a week or more, reg. 2(1)), and no one may be receiving a benefit
   in their own right. Full-time education at any level counts (reg. 5(5)), so
-  an advanced student has not ceased; an apprentice is treated as having
-  ceased.
+  an advanced student has not ceased, nor has an apprentice still on a
+  course: the employment exclusion belongs to the first condition.
 
 Invariants:
 
@@ -179,11 +179,9 @@ def receiving_education_or_training(p):
 
 
 def has_ceased_education_or_training(p):
-    # Reg. 5(4)(a), (5): full-time education at any level, not received by
-    # virtue of employment, or approved training, has not ceased.
-    in_full_time_education = (
-        p["current_education"] != "NOT_IN_EDUCATION" and not p["is_apprentice"]
-    )
+    # Reg. 5(4)(a), (5): full-time education at any level, an apprentice's
+    # course included, or approved training, has not ceased.
+    in_full_time_education = p["current_education"] != "NOT_IN_EDUCATION"
     return not (in_full_time_education or p["is_in_approved_training"])
 
 
