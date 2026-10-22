@@ -943,3 +943,94 @@ def test_an_element_is_entered_exactly_when_its_last_store_was_supplied(
         assert is_entered(simulation, year) == entered, operations
     for clone_source, was_entered in earlier:
         assert is_entered(clone_source, year) == was_entered, operations
+
+
+@pytest.mark.parametrize("year", [2025, 2026])
+@pytest.mark.parametrize("active", [False, True])
+@pytest.mark.parametrize("holder_role", ["claimant", "other"])
+def test_internal_lcwra_wrapper_keeps_the_model_claimant_filter(
+    year, active, holder_role
+):
+    """An internal amount wrapper does not turn nonclaimant circumstances into an award."""
+    from policyengine_uk.model_api import Scenario
+    from policyengine_uk.scenarios.uc_reform import add_universal_credit_reform
+
+    claimant, other = blank("claimant", 40), blank("other", 30)
+    (claimant if holder_role == "claimant" else other)[
+        "uc_limited_capability_for_WRA"
+    ] = True
+    sim = Simulation(
+        situation=situation([([claimant, other], {"working_tax_credit": 0})], year),
+        scenario=Scenario(
+            parameter_changes={"gov.dwp.universal_credit.rebalancing.active": active},
+            applied_before_data_load=True,
+        ),
+    )
+    assert sim.calculate("uc_LCWRA_element", year)[0] > 0
+    assert not is_entered(sim, year)
+    assert bool(sim.calculate(UC_SPECIFIED, year)[0]) == (holder_role == "claimant")
+    add_universal_credit_reform(sim)
+    sim.delete_arrays(UC_SPECIFIED, year)
+    assert bool(sim.calculate(UC_SPECIFIED, year)[0]) == (holder_role == "claimant")
+
+
+@pytest.mark.parametrize("active", [False, True])
+@pytest.mark.parametrize("amount", [0, 5_000])
+def test_internal_lcwra_wrapper_keeps_explicit_positive_and_nil_entries(active, amount):
+    from policyengine_uk.model_api import Scenario
+
+    sim = Simulation(
+        situation=element_situation(2026, amount),
+        scenario=Scenario(
+            parameter_changes={"gov.dwp.universal_credit.rebalancing.active": active},
+            applied_before_data_load=True,
+        ),
+    )
+    assert is_entered(sim, 2026)
+    assert bool(sim.calculate(UC_SPECIFIED, 2026)[0]) == (amount > 0)
+
+
+@pytest.mark.parametrize("year", [2025, 2026])
+@pytest.mark.parametrize("amount", [0, 6_000])
+@pytest.mark.parametrize("when", ["constructor", "after_internal_wrapper"])
+def test_internal_lcwra_wrapper_preserves_real_external_formula_origin(
+    year, amount, when
+):
+    from policyengine_uk.model_api import Scenario
+    from policyengine_uk.variables.gov.dwp.universal_credit.benefit_cap.is_uc_benefit_cap_exempt_specified_benefit import (
+        calculated_by,
+        uc_LCWRA_element as model_lcwra_element,
+    )
+    from policyengine_uk.scenarios.uc_reform import add_universal_credit_reform
+
+    reform = element_reform("uc_LCWRA_element", amount)
+    sim = Simulation(
+        situation=element_situation(year),
+        reform=reform if when == "constructor" else None,
+    )
+    if when == "after_internal_wrapper":
+        Scenario.from_reform(reform).apply(sim)
+    # Origin/formula unit precondition: discard the previously model-owned
+    # award. This does not certify structural-reform public cache invalidation.
+    sim.delete_arrays("uc_LCWRA_element", year)
+    assert sim.calculate("uc_LCWRA_element", year)[0] == amount
+    assert not calculated_by(
+        sim.populations["benunit"],
+        "uc_LCWRA_element",
+        period(year),
+        model_lcwra_element,
+    )
+    assert bool(sim.calculate(UC_SPECIFIED, year)[0]) == (amount > 0)
+    add_universal_credit_reform(sim)
+    sim.delete_arrays(UC_SPECIFIED, year)
+    # Origin/formula unit precondition: discard the previously model-owned
+    # award. This does not certify structural-reform public cache invalidation.
+    sim.delete_arrays("uc_LCWRA_element", year)
+    assert sim.calculate("uc_LCWRA_element", year)[0] == amount
+    assert not calculated_by(
+        sim.populations["benunit"],
+        "uc_LCWRA_element",
+        period(year),
+        model_lcwra_element,
+    )
+    assert bool(sim.calculate(UC_SPECIFIED, year)[0]) == (amount > 0)

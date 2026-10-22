@@ -28,6 +28,9 @@
 gov.economic_assumptions.yoy_growth.finance_ni.domestic_rates:
 - domestic_rates
 gov.economic_assumptions.yoy_growth.obr.average_earnings:
+# A formula of defined_benefit_pension_contributions; listed so a dataset that
+# stores a valued defined-benefit input amount grows it with pay.
+- defined_benefit_pension_input_amount
 - employee_pension_contributions
 - employer_pension_contributions
 - employment_income
@@ -68,6 +71,7 @@ gov.economic_assumptions.yoy_growth.obr.consumer_price_index:
 - income_support_reported
 - jsa_contrib_reported
 - jsa_income_reported
+- local_bus_uncapped_single_fare
 - maintenance_expenses
 - maternity_allowance_reported
 - miscellaneous_consumption
@@ -156,7 +160,5 @@ gov.economic_assumptions.yoy_growth.obr.private_pension_index:
 - private_pension_income
 gov.economic_assumptions.yoy_growth.obr.lagged_average_earnings:
 - housing_service_charges
-gov.economic_assumptions.yoy_growth.ofwat.water_bills:
-- water_and_sewerage_charges
 gov.economic_assumptions.yoy_growth.ons.population:
 - household_weight

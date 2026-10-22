@@ -67,3 +67,7 @@ revenue = (
 )
 f"Revenue: £{round(revenue / 1e9, 1)}bn"
 ```
+
+## Model reference
+
+- [National Insurance parameter scales](programs/gov/hmrc/national-insurance-scales.md)
