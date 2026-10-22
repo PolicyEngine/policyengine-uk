@@ -83,10 +83,9 @@ class is_housing_benefit_benefit_cap_exempt_specified_benefit(Variable):
 
         # A child under 16 or a Child Benefit qualifying young person the
         # claimant or partner is responsible for (HB Regs 2006 regs 2(1), 19).
-        # A 16-year-old in neither non-advanced education nor approved
-        # training is not one here, although the cap rate counts them for the
-        # year (has_sixteen_year_old_dependant); the model's qualifying young
-        # person has no school-leaver terminal date (#2287).
+        # A 16-year-old who has left education is one for the year (Child
+        # Benefit (General) Regulations 2006 reg. 4), as the cap rate counts
+        # them (has_sixteen_year_old_dependant).
         child_or_young_person = person(
             "is_child_or_young_person_for_legacy_benefits", period
         )
