@@ -80,8 +80,13 @@ def award_of_members(benunit, period, award, report, award_on_reports, members):
     reported = person(report, period)
     reported_total = benunit.sum(reported)
     members_reported = benunit.sum(reported * members)
-    award_on_all_reports = award_on_reports(benunit, period, reported_total)
-    award_on_members_reports = award_on_reports(benunit, period, members_reported)
+    # Formula awards omit reports whose own award has closed. Keep the raw
+    # totals above for disable_simulated_benefits and direct-value provenance.
+    open_reported = reported * ~person("person_legacy_benefits_closed", period)
+    award_on_all_reports = award_on_reports(benunit, period, benunit.sum(open_reported))
+    award_on_members_reports = award_on_reports(
+        benunit, period, benunit.sum(open_reported * members)
+    )
     # Compare in the precision the award is stored in (float32), so the
     # formula's own award always matches the award recomputed here.
     stored = stored_award.dtype

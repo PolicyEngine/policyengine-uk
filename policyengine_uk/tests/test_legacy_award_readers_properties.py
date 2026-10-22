@@ -61,9 +61,8 @@ adult) claims in their own right, so:
   (esa_income_eligible and jsa_income_eligible, read independently from the
   law in legacy_award_work_reference). The screens also end the award once
   the family's legacy benefits have closed (legacy_benefits_closed, #2119),
-  and the model then ends every member's status too; no family here reaches
-  that in 2025, when Income Support and income-based JSA are open and
-  nobody reports tax credits;
+  for their own award only; no family here reaches that in 2025, when
+  Income Support and income-based JSA are open and nobody reports tax credits;
 - a person is on an award exactly when they are the payee of their couple's
   positive award (the claimant or partner who reports it, or the claimant)
   or, for anyone else, when their own claim passes: they are not engaged in
