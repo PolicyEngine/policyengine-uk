@@ -22,7 +22,8 @@ class UKSingleYearDataset:
                 raise FileNotFoundError(f"File not found: {file_path}")
             return False
 
-        # Check if the file contains time_period, person, benunit, and household datasets
+        # Pandas stores each table as an annotated HDF5 group. A multi-year
+        # file has unannotated parent groups here, with tables below the years.
         with h5py.File(file_path, "r") as f:
             required_datasets = [
                 "time_period",
@@ -31,7 +32,11 @@ class UKSingleYearDataset:
                 "household",
             ]
             for dataset in required_datasets:
-                if dataset not in f:
+                if (
+                    dataset not in f
+                    or not isinstance(f[dataset], h5py.Group)
+                    or "pandas_type" not in f[dataset].attrs
+                ):
                     if raise_exception:
                         raise ValueError(
                             f"Dataset '{dataset}' not found in the file: {file_path}"
@@ -298,10 +303,11 @@ class UKMultiYearDataset:
             else:
                 return False
 
-        # Check if the file contains datasets for multiple years
+        # h5py lists only immediate children: the entity groups contain the
+        # year-named pandas tables written by save, even for a single year.
         with h5py.File(file_path, "r") as f:
             for required_dataset in ["person", "benunit", "household"]:
-                if not any(f"{required_dataset}" in key for key in f.keys()):
+                if required_dataset not in f:
                     if raise_exception:
                         raise ValueError(
                             f"Dataset '{required_dataset}' not found in the file: {file_path}"
@@ -309,15 +315,18 @@ class UKMultiYearDataset:
                     else:
                         return False
 
-                # Check that there is at least one dataset year in the folder (keys include e.g. person/2025)
-
-                # Check that there is at least one dataset year in the folder
-                years_found = False
-                for key in f.keys():
-                    parts = key.split("/")
-                    if len(parts) >= 2 and required_dataset == parts[0]:
-                        years_found = True
-                        break
+                group = f[required_dataset]
+                years_found = (
+                    isinstance(group, h5py.Group)
+                    and "pandas_type" not in group.attrs
+                    and any(
+                        len(year) == 4
+                        and year.isdigit()
+                        and isinstance(group[year], h5py.Group)
+                        and "pandas_type" in group[year].attrs
+                        for year in group
+                    )
+                )
 
                 if not years_found:
                     if raise_exception:

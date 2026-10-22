@@ -26,12 +26,6 @@ reason = "#1947"
 why = "Known bug #1947 (Marriage Allowance booked on the recipient), pinned by a strict xfail until it is fixed."
 
 [[allow]]
-nodeid = "policyengine_uk/tests/test_uc_income_from_capital_properties.py::test_tax_on_dividends_does_not_remove_the_benefit_cap_earnings_exception"
-outcome = "xfailed"
-reason = "#1986"
-why = "Known bug #1986 (the benefit cap earnings exception nets tax on all income), pinned by a strict xfail until it is fixed."
-
-[[allow]]
 nodeid = "policyengine_uk/tests/test_build_metadata.py::test_runtime_metadata_uses_bundle_contract_when_available"
 outcome = "skipped"
 reason = "policyengine_bundles"
@@ -43,6 +37,13 @@ outcome = "skipped"
 reason = "not running from a git checkout"
 modes = ["wheel"]
 why = "An installed wheel is not a git checkout, so there is no HEAD to compare with."
+
+[[allow]]
+nodeid = "policyengine_uk/tests/test_variable_code_sharing.py::test_a_simulation_leaves_coverage_no_new_code_objects"
+outcome = "skipped"
+reason = "coverage is not measuring with sys.monitoring"
+modes = ["wheel"]
+why = "The release workflow tests the installed wheel without coverage, so this check of coverage's code objects has nothing to measure there. It runs and passes against the source tree on every PR, where coverage measures with sys.monitoring."
 
 [[allow]]
 nodeid = "policyengine_uk/tests/code_health/*"
@@ -61,5 +62,12 @@ why = "Microsimulation tests need the private dataset. Runs without its credenti
 [[allow]]
 nodeid = "policyengine_uk/tests/test_dwp_published_rates.py::test_projection_continues_from_last_published_rate[[]*"
 outcome = "skipped"
-reason = '^(not uprated|series ends before 2026-27|Universal Credit Act 2025 ss\.1 and 3 depart from CPI uprating)$'
-why = "The test is parametrised over every DWP rate parameter and skips those it does not apply to: parameters with no uprating, series that end before 2026-27, and the five the Universal Credit Act 2025 ss.1 and 3 set apart from CPI uprating (the four UC standard allowances and the LCWRA element, #1925). 66 cases on 12 October 2026."
+reason = '^(not uprated|series ends before 2026-27|Universal Credit Act 2025 s\.1 departs from CPI uprating)$'
+why = "The test is parametrised over every DWP rate parameter and skips those it does not apply to: parameters with no uprating, series that end before 2026-27, and the four UC standard allowances, whose minimum the Universal Credit Act 2025 s.1 sets above CPI uprating (#1925). The LCWRA element, frozen by s.3, is checked against its own uprating index (#2284). 64 cases on 12 October 2026."
+
+[[allow]]
+nodeid = "policyengine_uk/tests/microsimulation/test_annual_allowance_against_hmrc.py::test_2024_annual_allowance_charge_and_payers_are_near_hmrc"
+outcome = "xfailed"
+reason = "policyengine-uk-data#606"
+data = ["present"]
+why = "Known data gaps, chiefly PolicyEngine/policyengine-uk-data#606: the certified Enhanced FRS imputes employer pension contributions as three times employee contributions, which puts the 2024 annual allowance count, charge and excess several times above HMRC's; with a third of those contributions all three fall within the band. Pinned by a strict xfail until the data is fixed (#2523)."

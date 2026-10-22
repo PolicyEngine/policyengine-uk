@@ -74,7 +74,10 @@
     universal_credit: 12_490.86
     housing_benefit: 0
     child_benefit: 2_251.60
-    household_net_income: 36_114.90
+    # The 3yo's 570 universal hours at the 2025 funding rate of £6.12
+    # are valued at £3,488.40, up £53.01 from £3,435.39.
+    universal_childcare_entitlement: [0, 0, 0, 3_488.40]
+    household_net_income: 36_167.91
 
 - name: "EntitledTo #3 - pensioner couple, low state pension, qualifies for Pension Credit"
   period: 2025

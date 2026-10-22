@@ -9,6 +9,9 @@ Invariants:
    UC eligibility, equal those under the original lists (corporate_wealth),
    exactly, annually and monthly.
 3. A household given only the components has them counted, down to a penny.
+4. A disregarded company holding (UC reg 77(2)) is budgeted against, and
+   leaves the UC financial pool from, share_like_capital, whether it was
+   entered within corporate_wealth or as an itemised component.
 """
 
 import numpy as np
@@ -44,11 +47,15 @@ SETTINGS = settings(
 system = CountryTaxBenefitSystem()
 
 
-def _parameter(path):
+def _node(path):
     node = system.parameters
     for part in path.split("."):
         node = getattr(node, part)
-    return node(f"{YEAR}-01-01")
+    return node
+
+
+def _parameter(path):
+    return _node(path)(f"{YEAR}-01-01")
 
 
 ORIGINAL_LISTS = {
@@ -107,6 +114,13 @@ def test_lists_name_share_like_capital_only(variable):
     assert "share_like_capital" in sources
     assert "corporate_wealth" not in sources
     assert not set(COMPONENTS) & set(sources)
+    # Where a programme lists the sources whose sale incurs expenses, it names
+    # the same share-like variable, or shares would silently lose the
+    # deduction.
+    node = _node(SOURCE_LISTS[variable].rsplit(".", 1)[0])
+    if "sale_expenses" in node.children:
+        sale = list(node.sale_expenses.sources(f"{YEAR}-01-01"))
+        assert not {"corporate_wealth", *COMPONENTS} & set(sale)
 
 
 @SETTINGS
@@ -231,3 +245,41 @@ def test_components_alone_are_counted():
     got = _results(households)
     assert got["share_like_capital"][0] == 12_000
     assert got["uc_assessable_capital"][0] == 13_000
+
+
+def test_a_disregarded_company_holding_leaves_the_capital_that_counts_it():
+    """UC reg 77(2): a holding entered as an itemised component leaves the
+    pool as one entered within corporate_wealth does. Two unreported adults
+    share £10,000 of savings once the owner's £30,000 holding is disregarded."""
+    from policyengine_uk.variables.gov.dwp.universal_credit.household_uc_company_holding_pool_scale import (
+        HOLDINGS_SOURCE,
+    )
+
+    assert HOLDINGS_SOURCE in _parameter(SOURCE_LISTS["uc_assessable_capital"])
+    for shares in ({"corporate_wealth": 30_000}, {"directly_held_shares": 30_000}):
+        situation = {
+            "people": {
+                "owner": {
+                    "age": {YEAR: 40},
+                    "stands_as_sole_owner_or_partner_of_company": {YEAR: True},
+                    "owned_company_carries_on_trade": {YEAR: True},
+                    "owned_company_holding_value": {YEAR: 30_000},
+                },
+                "lodger": {"age": {YEAR: 30}},
+            },
+            "benunits": {
+                "owner_unit": {"members": ["owner"]},
+                "lodger_unit": {"members": ["lodger"]},
+            },
+            "households": {
+                "household": {
+                    "members": ["owner", "lodger"],
+                    "savings": {YEAR: 10_000},
+                    **{name: {YEAR: value} for name, value in shares.items()},
+                }
+            },
+        }
+        sim = Simulation(situation=situation)
+        assert sim.calculate("household_uc_company_holding_pool_scale", YEAR)[0] == 1
+        assert sim.calculate("household_uc_pool_company_holdings", YEAR)[0] == 30_000
+        assert list(sim.calculate("uc_assessable_capital", YEAR)) == [5_000, 5_000]
