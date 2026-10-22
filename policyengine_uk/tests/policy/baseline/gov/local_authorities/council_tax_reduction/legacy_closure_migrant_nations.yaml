@@ -1,0 +1,257 @@
+# UC (Transitional Provisions) Regulations 2014 reg 60A waives the upper
+# age limit for a single or wholly pension-age couple migrated from WTC.
+# England disregards these awards for pensioner CTR from the 2025-26 scheme
+# year (SI 2025/39 regs 1(3), 4); Wales from 2026-27 (WSI 2026/13 regs
+# 1(3), 4). Scotland has no migrant disregard (SSI 2021/249 reg 3).
+
+- name: A Scottish pension-age WTC migrant uses working-age CTR in 2025
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 70
+        employment_income: 8_000
+        weekly_hours: 30
+        working_tax_credit_reported: 2_000
+    benunits:
+      family:
+        members: [claimant]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+    households:
+      household:
+        members: [claimant]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        council_tax: 2_000
+        savings: 0
+  output:
+    legacy_benefits_closed: true
+    claims_uc_at_legacy_closure: true
+    is_uc_eligible: true
+    is_uc_entitled: true
+    council_tax_reduction_pensioner: false
+    council_tax_reduction_pensioner_earnings_disregard: 0
+
+- name: A Scottish pension-age WTC migrant still uses working-age CTR in 2026
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 70
+        employment_income: 8_000
+        weekly_hours: 30
+        working_tax_credit_reported: 2_000
+    benunits:
+      family:
+        members: [claimant]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+    households:
+      household:
+        members: [claimant]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        council_tax: 2_000
+        savings: 0
+  output:
+    legacy_benefits_closed: true
+    claims_uc_at_legacy_closure: true
+    is_uc_eligible: true
+    is_uc_entitled: true
+    council_tax_reduction_pensioner: false
+    council_tax_reduction_pensioner_earnings_disregard: 0
+
+- name: A Welsh pension-age WTC migrant uses working-age CTR in 2025
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 70
+        employment_income: 8_000
+        weekly_hours: 30
+        working_tax_credit_reported: 2_000
+    benunits:
+      family:
+        members: [claimant]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+    households:
+      household:
+        members: [claimant]
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 2_000
+        savings: 0
+  output:
+    legacy_benefits_closed: true
+    claims_uc_at_legacy_closure: true
+    is_uc_eligible: true
+    is_uc_entitled: true
+    council_tax_reduction_pensioner: false
+    council_tax_reduction_pensioner_earnings_disregard: 0
+
+- name: A Welsh pension-age WTC migrant uses pensioner CTR from the 2026 scheme
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 70
+        employment_income: 8_000
+        weekly_hours: 30
+        working_tax_credit_reported: 2_000
+    benunits:
+      family:
+        members: [claimant]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+    households:
+      household:
+        members: [claimant]
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 2_000
+        savings: 0
+  output:
+    legacy_benefits_closed: true
+    claims_uc_at_legacy_closure: true
+    is_uc_eligible: true
+    is_uc_entitled: true
+    council_tax_reduction_pensioner: true
+
+- name: An English pension-age WTC migrant uses pensioner CTR from the 2025 scheme
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 70
+        employment_income: 8_000
+        weekly_hours: 30
+        working_tax_credit_reported: 2_000
+    benunits:
+      family:
+        members: [claimant]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    legacy_benefits_closed: true
+    claims_uc_at_legacy_closure: true
+    is_uc_eligible: true
+    is_uc_entitled: true
+    council_tax_reduction_pensioner: true
+
+- name: An English mixed-age WTC migrant has no reg 60A pensioner CTR exemption
+  period: 2025
+  input:
+    people:
+      older:
+        age: 70
+        employment_income: 8_000
+        weekly_hours: 30
+        working_tax_credit_reported: 2_000
+      younger:
+        age: 40
+    benunits:
+      family:
+        members: [older, younger]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+        has_mixed_age_couple_pension_credit_saving: true
+    households:
+      household:
+        members: [older, younger]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    legacy_benefits_closed: true
+    claims_uc_at_legacy_closure: true
+    is_uc_eligible: true
+    is_uc_entitled: true
+    council_tax_reduction_pensioner: false
+
+- name: A Welsh mixed-age WTC migrant has no reg 60A exemption in the 2026 scheme
+  period: 2026
+  input:
+    people:
+      older:
+        age: 70
+        employment_income: 8_000
+        weekly_hours: 30
+        working_tax_credit_reported: 2_000
+      younger:
+        age: 40
+    benunits:
+      family:
+        members: [older, younger]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+        has_mixed_age_couple_pension_credit_saving: true
+    households:
+      household:
+        members: [older, younger]
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 2_000
+        savings: 0
+  output:
+    legacy_benefits_closed: true
+    claims_uc_at_legacy_closure: true
+    is_uc_eligible: true
+    is_uc_entitled: true
+    council_tax_reduction_pensioner: false
+
+- name: A Scottish pensioner with a non-migrant UC run-on award keeps pensioner CTR
+  # An input award without a working-age claimant or reg 60A migration
+  # retains the existing approximation for an award awaiting termination,
+  # or awarded in error: SSI 2021/249 reg 3(2).
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 70
+    benunits:
+      family:
+        members: [claimant]
+        universal_credit_pre_benefit_cap: 4_000
+    households:
+      household:
+        members: [claimant]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        council_tax: 2_000
+        savings: 0
+  output:
+    claims_uc_at_legacy_closure: false
+    is_uc_entitled: true
+    council_tax_reduction_pensioner: true
+
+- name: A Welsh pensioner with a non-migrant UC input keeps the existing CTR classification
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 70
+    benunits:
+      family:
+        members: [claimant]
+        universal_credit_pre_benefit_cap: 4_000
+    households:
+      household:
+        members: [claimant]
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 2_000
+        savings: 0
+  output:
+    claims_uc_at_legacy_closure: false
+    is_uc_entitled: true
+    council_tax_reduction_pensioner: true

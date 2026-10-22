@@ -1,3 +1,5 @@
+import numpy as np
+
 from policyengine_uk.model_api import *
 
 
@@ -10,7 +12,9 @@ class high_value_council_tax_surcharge(Variable):
         "worth at least £2 million in 2026 prices. Owners, not occupiers, are "
         "liable, so the household is charged on its main residence only where it "
         "owns that home (owned outright or with a mortgage). Let property and "
-        "second homes are not modelled."
+        "second homes are not modelled. The annual OBR house-price index "
+        "provides a proxy for converting simulated values to the 2026 "
+        "valuation basis."
     )
     definition_period = YEAR
     unit = GBP
@@ -36,13 +40,16 @@ class high_value_council_tax_surcharge(Variable):
 
         p = parameters(period)
         property_value = household("main_residence_value", period)
-        current_index = p.gov.economic_assumptions.indices.obr.per_capita.gdp
+        current_index = p.gov.economic_assumptions.indices.obr.house_prices
         baseline_index = parameters(
             "2026"
-        ).gov.economic_assumptions.indices.obr.per_capita.gdp
-        value_2026_prices = property_value / (current_index / baseline_index)
-
-        surcharge = p.gov.hmrc.council_tax.high_value_surcharge.amount.calc(
-            value_2026_prices
-        )
+        ).gov.economic_assumptions.indices.obr.house_prices
+        charge_scale = p.gov.hmrc.council_tax.high_value_surcharge.amount.copy()
+        # Compare prices and fixed 2026 bands in the same stored precision;
+        # inverse division can put a projected exact boundary in a lower band.
+        charge_scale.thresholds = (
+            np.array(charge_scale.thresholds, dtype=property_value.dtype)
+            * (current_index / baseline_index)
+        ).tolist()
+        surcharge = charge_scale.calc(property_value)
         return where(in_england & owns_home, surcharge, 0)

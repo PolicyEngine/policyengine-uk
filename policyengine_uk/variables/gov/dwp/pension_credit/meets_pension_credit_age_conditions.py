@@ -11,7 +11,9 @@ class meets_pension_credit_age_conditions(Variable):
         "2019), so has any partner, unless the couple keeps Pension Credit "
         "under the SI 2019/37 article 4 saving. A family meeting these "
         "conditions is on the pension-age route (Pension Credit and pension-age "
-        "Housing Benefit) and is not eligible for Universal Credit."
+        "Housing Benefit) and is not eligible for Universal Credit unless "
+        "it claims it when DWP moves it off its legacy benefits "
+        "(claims_uc_at_legacy_closure)."
     )
     definition_period = YEAR
     reference = (
