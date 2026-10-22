@@ -18,7 +18,8 @@ class market_income(Variable):
             "savings_interest_income",
             "dividend_income",
             "miscellaneous_income",
-            "property_income",
+            # Landlords' profit after mortgage interest, as in HBAI income.
+            "property_income_after_finance_costs",
             "private_pension_income",
             "private_transfer_income",
             "maintenance_income",
