@@ -37,6 +37,11 @@ _ENGLAND_REGIONS = {
 }
 
 _PLAN1_WRITEOFF_YEARS = 29
+# Plan 1 loans first paid before 1 September 2006 (the 2005 and earlier
+# intakes) are written off at 65 instead (GOV.UK, "When your student loan
+# gets written off or cancelled").
+_PLAN1_LAST_AGE_65_WRITEOFF_UNI_START = 2005
+_PLAN1_WRITEOFF_AGE = 65
 
 # The first university intakes of income-contingent (Plan 1), Plan 2 and
 # Plan 5 loans. The oldest holder of a plan in the year the data describe
@@ -584,7 +589,7 @@ def uprate_student_loan_plans(
     As we project forward, we need to:
     1. Re-label existing holders to correct plan based on uni start year
     2. Add holders in age bands beyond the base year's coverage
-    3. Add holders from the 2023-and-later intakes
+    3. Add Plan 5 holders in England (new plan starting 2023)
 
     For (2) and (3), we use highest_education == TERTIARY as the signal
     for who is a graduate, then apply a flat take-up probability. Each
@@ -600,7 +605,7 @@ def uprate_student_loan_plans(
     """
     # Skip if required columns don't exist yet (e.g., during
     # initial dataset creation before imputation runs)
-    required = ("student_loan_plan", "highest_education")
+    required = ("student_loan_plan", "highest_education", "person_id")
     if any(col not in current_year.person.columns for col in required):
         return current_year
 
@@ -677,18 +682,25 @@ def uprate_student_loan_plans(
 
     # === Step 2: Add holders in the extended pre-2012 age bands ===
     # Income-contingent (Plan 1) loans began with the 1998 intake, aged 44 in
-    # 2024. With ages fixed, later years' Plan 1 intakes reach older ages, up
-    # to the write-off.
+    # 2024. With ages fixed, later years' 1998-and-later intakes reach older
+    # ages: in 2029, ages 45 to 49 (the 1998 to 2002 intakes).
     # Target: NONE people who are tertiary-educated, older than the base
-    # year's oldest Plan 1 holder, whose uni_start_year < 2012 and loan not
-    # written off.
+    # year's oldest Plan 1 holder, from the 1998 to 2011 intakes, whose loan
+    # is not written off: at 65 for the 2005 and earlier intakes, otherwise
+    # about 29 years after the course started.
     max_plan1_age_base = base_year - _PLAN1_FIRST_UNI_START + 18
+    plan1_written_off = np.where(
+        uni_start_year <= _PLAN1_LAST_AGE_65_WRITEOFF_UNI_START,
+        age >= _PLAN1_WRITEOFF_AGE,
+        uni_start_year + _PLAN1_WRITEOFF_YEARS <= year,
+    )
     plan1_new_cohort = (
         (new_plan == "NONE")
         & is_tertiary
         & (age > max_plan1_age_base)
+        & (uni_start_year >= _PLAN1_FIRST_UNI_START)
         & (uni_start_year < _PLAN2_FIRST_UNI_START)
-        & (uni_start_year + _PLAN1_WRITEOFF_YEARS > year)
+        & ~plan1_written_off
     )
     assign_with_probability(plan1_new_cohort)
 
@@ -707,17 +719,21 @@ def uprate_student_loan_plans(
     )
     assign_with_probability(plan2_new_cohort)
 
-    # === Step 4: Add holders from the 2023-and-later intakes ===
-    # Plan 5 is for England only. Other funding nations retain their plans.
-    # Eligible: tertiary-educated NONE people who would have started uni 2023+.
+    # === Step 4: Add Plan 5 holders (new plan from 2023) ===
+    # Plan 5 is England's, and did not exist in the base year. The other
+    # nations' 2023-and-later intakes are on plans (2, 4 and 1) the base year
+    # already holds at those ages, so no holders are added there.
+    # Eligible: tertiary-educated NONE people in England who would have
+    # started uni 2023+.
     # Age constraint: must be 21+ (finished 3-year degree) to be repaying.
-    new_intake_eligible = (
+    plan5_eligible = (
         (new_plan == "NONE")
         & is_tertiary
+        & is_england
         & (uni_start_year >= _PLAN5_FIRST_UNI_START)
         & (age >= 21)
     )
-    assign_with_probability(new_intake_eligible)
+    assign_with_probability(plan5_eligible)
 
     # Write back to the person table (without the merged region column).
     person_out = current_year.person.copy()
