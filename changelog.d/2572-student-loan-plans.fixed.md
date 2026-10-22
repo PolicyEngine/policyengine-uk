@@ -1,0 +1,1 @@
+- Fixed `uprate_student_loan_plans` in dataset projection: it takes the base year from the dataset instead of assuming 2023, compares the data's fixed ages with the base year's oldest holder of each plan (so new Plan 2 holders above the 2012 intake now appear), and keys each person's take-up draw on `person_id`, so the same people hold a loan in every year and in any row order.
