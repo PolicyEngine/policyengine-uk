@@ -23,7 +23,11 @@ Invariants:
 5. The formula gives true for everyone under 20 on 6 October, whether the
    date of birth or only the age is given, and true is each terminal-date
    variable's default. So a situation that sets one of them for some people
-   leaves everyone else's status as it would be with nothing set.
+   leaves everyone else's status as it would be with nothing set. That holds
+   for one variable at a time: a programme variable set for some people gives
+   everyone else its default, not their date fact, so a situation that also
+   sets the date fact must set the programme variable for every person whose
+   status matters (the crossed test).
 """
 
 from datetime import date, timedelta
@@ -309,3 +313,51 @@ def test_setting_one_person_leaves_the_others_status():
             assert not uc[1] and not pc[1]
         else:
             assert uc[1] and not pc[1]
+
+
+def test_crossed_settings_need_the_programme_variable_for_everyone():
+    # Invariant 5's qualification. Two 19-year-olds at school: the first has
+    # the date fact set false, the second the programme variable set false.
+    # Set for the second alone, the programme variable gives the first its
+    # default (true), so the first becomes eligible again for that
+    # programme; set for both, both are excluded, as the documentation says.
+    def household(programme_variable, both):
+        people = {
+            "pensioner": {"age": {YEAR: 70}, "is_claimant_or_partner": {YEAR: True}},
+            **{
+                name: {
+                    "age": {YEAR: 19},
+                    "current_education": {YEAR: "UPPER_SECONDARY"},
+                    "age_started_or_accepted_current_education_or_training": {YEAR: 17},
+                    "is_claimant_or_partner": {YEAR: False},
+                }
+                for name in ("first", "second")
+            },
+        }
+        people["first"][NINETEEN] = {YEAR: False}
+        people["second"][programme_variable] = {YEAR: False}
+        if both:
+            people["first"][programme_variable] = {YEAR: False}
+        situation = {
+            "people": people,
+            "benunits": {"b": {"members": list(people)}},
+            "households": {"h": {"members": list(people)}},
+        }
+        with patch(
+            "policyengine_uk.simulation.CountryTaxBenefitSystem",
+            side_effect=_PROPERTY_SYSTEM.clone,
+        ):
+            return Simulation(situation=situation)
+
+    for variable, status in (
+        (UC_TERMINAL, UC),
+        (
+            "meets_qualifying_young_person_terminal_date_condition_for_pension_credit",
+            PC,
+        ),
+    ):
+        partial = household(variable, both=False).calculate(status, YEAR)
+        # The documented hazard: the first student takes the default.
+        assert partial[1] and not partial[2], variable
+        full = household(variable, both=True).calculate(status, YEAR)
+        assert not full[1] and not full[2], variable
