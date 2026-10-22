@@ -403,6 +403,9 @@ def capped_family(scheme):
         **CAPPED_FAMILY,
         "universal_credit_pre_benefit_cap": 30_000 if scheme == "uc" else 0,
         "housing_benefit_pre_benefit_cap": 30_000 if scheme == "hb" else 0,
+        # This supplied award exercises the cap independently of take-up;
+        # another member's reports must not mask its final Housing Benefit.
+        "would_claim_housing_benefit": scheme == "hb",
     }
 
 
