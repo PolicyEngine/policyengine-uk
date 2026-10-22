@@ -286,7 +286,7 @@
   absolute_error_margin: 0.01
   input:
     age: 19
-    uc_has_limited_capability_for_work: true
+    uc_limited_capability_for_work: true
   output:
     # 10.85 x 16 x 52.
     uc_minimum_income_floor_gross: 9_027.20
@@ -296,7 +296,7 @@
   absolute_error_margin: 0.01
   input:
     age: 20
-    uc_has_limited_capability_for_work: true
+    uc_limited_capability_for_work: true
   output:
     # "Alison's individual earnings threshold is 5.30 X 16 = 84.80, converted
     # to a monthly amount - 84.80 x 52 / 12 = 367 per month": 367.47 before
