@@ -19,7 +19,9 @@ Counting the savings credit, Housing Benefit falls by 65% of the rise net of
 the savings credit withdrawn, or 39%, and the combined withdrawal is 91%.
 
 Invariants, for single people and couples aged 80 or over (so State Pension
-age was reached before April 2016 and savings credit is possible), who rent
+age was reached before April 2016 and savings credit is possible; a couple's
+members supply is_claimant_or_partner, since the age presumption would read a
+partner 20 or more years younger as the claimant's child), who rent
 from the council in England, Wales or Scotland and have no children, carers
 or earnings, with private pension on a £250 grid:
 
@@ -45,7 +47,7 @@ Carers are not drawn.
 """
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -127,6 +129,7 @@ def situation(families):
                 name = f"p{i}_{k}_{j}"
                 person = {
                     "age": {YEAR: a["age"]},
+                    "is_claimant_or_partner": {YEAR: True},
                     "state_pension": {YEAR: a["state_pension"]},
                     # All private pension goes to the first adult.
                     "private_pension_income": {YEAR: float(pension) * (j == 0)},
@@ -203,8 +206,25 @@ def describe(fam, g, i, k):
     )
 
 
+# Couples 20 years apart, the pension on the younger and then the elder.
+WIDE_GAP_COUPLES = [
+    dict(
+        adults=[
+            dict(age=first, disability={}, blind=False, state_pension=6_000.0),
+            dict(age=second, disability={}, blind=False, state_pension=6_000.0),
+        ],
+        country="ENGLAND",
+        rent=6_000.0,
+        council_tax=1_500.0,
+        savings=0.0,
+    )
+    for first, second in [(80, 100), (100, 80)]
+]
+
+
 @PROPERTY_SETTINGS
 @given(st.lists(family(), min_size=1, max_size=4))
+@example(WIDE_GAP_COUPLES)
 def test_net_income_rises_with_private_pension_on_savings_credit_only(families):
     g = grid(families)
     net = g["household_net_income"] + g["tv_licence"]
@@ -223,6 +243,7 @@ def test_net_income_rises_with_private_pension_on_savings_credit_only(families):
 
 @PROPERTY_SETTINGS
 @given(st.lists(family(), min_size=1, max_size=4))
+@example(WIDE_GAP_COUPLES)
 def test_net_income_does_not_fall_where_savings_credit_ends(families):
     g = grid(families)
     net = (
@@ -249,6 +270,7 @@ def deemed_income(capital):
 
 @PROPERTY_SETTINGS
 @given(st.lists(family(), min_size=1, max_size=4))
+@example(WIDE_GAP_COUPLES)
 def test_income_follows_the_route_for_the_award(families):
     g = grid(families)
     savings = np.array([fam["savings"] for fam in families])[:, None]

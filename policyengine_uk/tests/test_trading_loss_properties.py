@@ -402,9 +402,13 @@ def families(draw):
     adults = [head_age]
     if draw(st.booleans()):
         adults.append(draw(st.integers(18, 80)))
+    # The adults are the claimant and partner, however far apart their ages;
+    # the age presumption alone would read a partner 20 or more years younger
+    # as the head's child. Children, without the input, are neither.
     people = [
         {
             "age": age,
+            "is_claimant_or_partner": True,
             "employment_income": draw(money(60_000)),
             "self_employment_income": draw(money(30_000)),
             "private_pension_income": draw(money(20_000)),
@@ -456,6 +460,7 @@ def family_situation(units, overrides=None, benunit_overrides=None, year=YEAR):
 def adult(**inputs):
     base = {
         "age": 40,
+        "is_claimant_or_partner": True,
         "employment_income": 0.0,
         "self_employment_income": 0.0,
         "private_pension_income": 0.0,

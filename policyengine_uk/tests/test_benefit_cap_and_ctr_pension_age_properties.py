@@ -23,7 +23,10 @@ Regs 2013 reg 3(2)(a)). Claimant and partner are is_claimant_or_partner, which
 the families supply: the drawn adults are the claimant and partner, and the
 qualifying young person and children are not. Left to the age presumption, a
 partner 20 or more years younger would be read as the claimant's child, and
-a mixed-age couple as a single pensioner. "On Universal Credit"
+a mixed-age couple as a single pensioner. (So these draws no longer exercise
+the presumption that reads a pensioner's 18-year-old as a dependant, with or
+without is_parent; this change leaves that rule as it was, and
+benefit_unit_structure.yaml covers it.) "On Universal Credit"
 below means an award before the cap with a claimant or partner under State
 Pension age. Legacy income-related benefit is set as an input.
 
