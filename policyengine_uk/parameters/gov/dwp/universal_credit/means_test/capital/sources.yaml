@@ -1,32 +1,38 @@
 description: >
-  Household financial proxies for Universal Credit: savings and corporate
-  financial wealth. A nonnegative benunit_reported_capital replaces these
-  financial proxies and covered person-level sources, including a Lifetime ISA.
-  Each benefit unit's complete uc_reported_capital override, otherwise its
-  observed financial total, reduces this financial pool. Subtracting complete
-  overrides retains the inherited allocation convention. An override precedes
-  regulation 77 company substitution and includes its claimant's and partner's
-  holdings: consume at least their disregarded holdings after applying one
-  household corporate_wealth budget without removing them again from the pool.
-  First clip each person's holding to [0, max(0, corporate_wealth)], with
+  Household financial proxies for Universal Credit: savings and share-like
+  financial wealth, in two parts: `share_like_capital_with_sale_expenses`
+  (directly held shares, and all of an unitemised `corporate_wealth`) and
+  `share_like_capital_without_sale_expenses` (unit and investment trusts and
+  stocks and shares ISAs). Together they are `share_like_capital`:
+  `corporate_wealth` as supplied, or the sum of its itemised components
+  (`directly_held_shares`, `unit_and_investment_trusts`,
+  `stocks_and_shares_isa`) where they exceed it beyond float32 rounding. A
+  nonnegative benunit_reported_capital replaces these financial proxies and
+  covered person-level sources, including a Lifetime ISA. Each benefit unit's
+  complete uc_reported_capital override, otherwise its observed financial
+  total, reduces this financial pool. Subtracting complete overrides retains
+  the inherited allocation convention. An override precedes regulation 77
+  company substitution and includes its claimant's and partner's holdings:
+  consume at least their disregarded holdings after applying one household
+  share-like capital budget without removing them again from the pool. First
+  clip each person's holding to [0, max(0, the part with sale expenses)], with
   positive infinity mapped to the upper bound and negative infinity to zero.
-  If total bounded holdings exceed nonnegative corporate_wealth, scale each
+  If total bounded holdings exceed that nonnegative budget, scale each
   person's bounded holding proportionally before override floors and separate
-  pool deductions.
-  This is a defensive rule for inconsistent inputs, not a statutory determination;
-  regulation 77 substitution in the owner's own assessment is unchanged.
-  The residual is allocated by
-  claimant/partner counts to benefit units with neither a financial observation
-  nor a complete override,
-  including units that do not receive UC. This allocation is an assumption
-  about unobserved ownership, not a statutory rule. Countable property is
-  valued and shared independently through property_sources across ALL
-  claimant/partner adults, with complete-override units consuming their shares.
-  Main-home property and the named private_pension_wealth input are excluded
-  under Schedule 10 paragraphs 1 and 10. For missing-report households, the
-  legacy corporate_wealth proxy can still contain non-DB pension wealth that
-  is not separately identified and removed. Asset-specific Schedule 10 disregards
-  within these broad financial classes are not separately observed.
+  pool deductions. This is a defensive rule for inconsistent inputs, not a
+  statutory determination; regulation 77 substitution in the owner's own
+  assessment is unchanged. The residual is allocated by claimant/partner
+  counts to benefit units with neither a financial observation nor a complete
+  override, including units that do not receive UC. This allocation is an
+  assumption about unobserved ownership, not a statutory rule. Countable
+  property is valued and shared independently through property_sources across
+  ALL claimant/partner adults, with complete-override units consuming their
+  shares. Main-home property and the named private_pension_wealth input are
+  excluded under Schedule 10 paragraphs 1 and 10. For missing-report
+  households, the legacy corporate_wealth proxy can still contain non-DB
+  pension wealth that is not separately identified and removed. Asset-specific
+  Schedule 10 disregards within these broad financial classes are not
+  separately observed.
 metadata:
   label: Universal Credit financial capital proxy sources
   period: year
@@ -41,4 +47,5 @@ metadata:
 values:
   2013-04-29:
     - savings
-    - corporate_wealth
+    - share_like_capital_with_sale_expenses
+    - share_like_capital_without_sale_expenses

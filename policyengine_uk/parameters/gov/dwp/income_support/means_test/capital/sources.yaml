@@ -3,6 +3,11 @@ description: >
   `private_pension_wealth` is excluded because Schedule 10 paragraphs 23 and
   23A disregard the value of the right to receive an occupational or personal
   pension and the value of funds held under a personal pension scheme.
+  `share_like_capital_with_sale_expenses` and `share_like_capital_without_sale_expenses` split `share_like_capital`, which is `corporate_wealth` as supplied, or the sum of its
+  itemised components (`directly_held_shares`, `unit_and_investment_trusts`,
+  `stocks_and_shares_isa`) where they exceed it beyond float32 rounding (see
+  `share_like_capital`), so a household given only the components has them
+  counted and no holding counts twice.
 metadata:
   label: Income Support capital sources
   period: year
@@ -22,6 +27,7 @@ values:
   2010-01-01:
   - savings
   - owned_land
-  - corporate_wealth
+  - share_like_capital_with_sale_expenses
+  - share_like_capital_without_sale_expenses
   - other_residential_property_value
   - non_residential_property_value

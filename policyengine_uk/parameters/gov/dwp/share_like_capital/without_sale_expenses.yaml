@@ -1,0 +1,29 @@
+description: >
+  Itemised share-like holdings valued for every means test without the
+  deduction for expenses of sale. Unit trusts are valued at the bid price,
+  which the manager pays on withdrawal, with no costs of sale even when sold
+  through a broker (ADM H1673-H1674; DMG 29680-29681, 52680-52681,
+  84771-84772; HBGM W1.530-W1.531). The Wealth and Assets Survey asks about
+  unit and investment trusts in one question, so the whole bucket is listed;
+  investment trusts are quoted shares, which take the deduction (ADM H1665),
+  and were 8.2% of the pooled funds held in stocks and shares ISAs at 5 April
+  2022 and 6.9% at 5 April 2025 (HMRC ISA Table 9.6). An ISA is valued at
+  what the holder would get by withdrawing it, and no ISA paragraph applies
+  the deduction (ADM H1656-H1658; DMG 29662-29664, 52662, 84748-84750).
+  Everything else in share_like_capital takes the deduction: directly held
+  shares, and on datasets that do not itemise it, all of corporate_wealth.
+metadata:
+  label: Share-like holdings without expenses of sale
+  period: year
+  unit: list
+  reference:
+    - title: Advice for Decision Making chapter H1, paras. H1656-H1658
+      href: https://assets.publishing.service.gov.uk/media/6a5e0ac7a2662d4563fe39e0/adm-ch-h1.pdf#page=55
+    - title: Advice for Decision Making chapter H1, paras. H1673-H1674
+      href: https://assets.publishing.service.gov.uk/media/6a5e0ac7a2662d4563fe39e0/adm-ch-h1.pdf#page=59
+    - title: HMRC Annual savings statistics 2026, ISA Table 9.6
+      href: https://www.gov.uk/government/statistics/annual-savings-statistics-2026
+values:
+  1996-10-07:
+    - unit_and_investment_trusts
+    - stocks_and_shares_isa
