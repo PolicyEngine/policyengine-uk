@@ -18,9 +18,9 @@ class council_tax_reduction_individual_non_dep_deduction_eligible(Variable):
         "liable for the council tax with the applicant (a joint tenant or "
         "other sharer of the rent) and a boarder or lodger who pays the "
         "applicant are not non-dependants. Those exclusions belong to the "
-        "person, whatever family they are in: a person the model treats as "
-        "liable for the council tax (council_tax_reduction_liable_person), "
-        "and a person outside the household head's family who pays the "
+        "person, whatever family they are in: a joint tenant liable for the "
+        "rent who is not their benefit unit's claimant or partner, and a "
+        "person outside the household head's family who pays the "
         "householder for their own board or lodging, is nobody's "
         "non-dependant. A member of the household head's own family who pays "
         "board is taken to be a close relative of the head, so remains a "
@@ -47,9 +47,11 @@ class council_tax_reduction_individual_non_dep_deduction_eligible(Variable):
         in_unit = person(
             "is_benefit_unit_non_dependant_for_council_tax_reduction", period
         )
-        # Reg 9(2)(d)-(e) exclude the person, not only their family. Anyone
-        # treated as liable for the council tax (LGFA 1992 s.6) is jointly
-        # and severally liable with the applicant. Anyone who pays the
+        # Reg 9(2)(d)-(e) exclude the person, not only their family. A joint
+        # tenant (the same interest in the dwelling, LGFA 1992 s.6) is
+        # jointly and severally liable with the applicant, even one who is
+        # not their benefit unit's claimant or partner; the applicants and
+        # partners of liable families are never in_unit. Anyone who pays the
         # householder for their own board or lodging is liable to make
         # payments on a commercial basis, even where the rest of their family
         # pays nothing, unless they are a close relative of the applicant or
@@ -61,9 +63,10 @@ class council_tax_reduction_individual_non_dep_deduction_eligible(Variable):
             add(person, period, ["rent_paid_as_boarder", "rent_paid_as_lodger"]) > 0
         )
         in_head_family = person.benunit("benunit_contains_household_head", period)
-        personally_excluded = person("council_tax_reduction_liable_person", period) | (
-            pays_householder & ~in_head_family
+        joint_tenant = person("is_liable_for_household_rent", period) & ~person(
+            "is_claimant_or_partner", period
         )
+        personally_excluded = joint_tenant | (pays_householder & ~in_head_family)
         return (
             (person("age", period) >= 18)
             & (other_family | in_unit)
