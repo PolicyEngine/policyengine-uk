@@ -27,15 +27,24 @@ Invariants, for any generated population of single-adult households:
    of the household's unencumbered sources, and capital is never negative.
    (Isolation between two encumbered sources is pinned by the differential and
    by a YAML case.)
+6. Pennies: 90% of any whole-penny value stored as a float32 input is the
+   exact figure rounded down (the legacy benefits) or to the nearest penny
+   (Universal Credit and Housing Benefit), checked in integer pence up to
+   131,071.99, the largest value float32 holds to the penny.
+7. Never rounds the wrong way: for any stored value, whole penny or not, the
+   result is within a penny below 90% of the exact stored value when rounding
+   down, and within half a penny of it when rounding to the nearest penny.
 """
 
+from fractions import Fraction
 from functools import reduce
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
+from policyengine_uk.utils.capital_valuation import exact_amount, less_sale_expenses
 
 YEAR = 2026
 PROPERTY_SETTINGS = settings(
@@ -165,9 +174,21 @@ def applies(variable, unit, guarantee_credit=0.0, hb_passported=False):
     return (unit["age"] >= 67) == (variable in PENSION_AGE_ONLY)
 
 
-def expected_capital(unit, node):
+def expected_capital(unit, node, variable=None):
     """Reg. 49(1) applied source by source, independently of the model."""
     total = 0.0
+    if variable == "uc_assessable_capital":
+        # Universal Credit values countable property on its own path
+        # (property_sources), outside the financial sources.
+        for source in [
+            "other_residential_property_value",
+            "non_residential_property_value",
+        ]:
+            total += max(
+                0.0,
+                unit["assets"][source] * (1 - LEGAL_RATE)
+                - unit["debts"][DEBTS[source]],
+            )
     for source in node.sources:
         value = asset_value(unit, source)
         if source in SALE_EXPENSE_ASSETS:
@@ -206,7 +227,7 @@ def check_valuation(units):
             if hb and unit["age"] >= 67 and gc > 0:
                 assert valued[variable][i] == 0, unit
             if applies(variable, unit, gc, valued["hb_passported"][i]):
-                expected = expected_capital(unit, node)
+                expected = expected_capital(unit, node, variable)
                 assert close(valued[variable][i], expected), (variable, unit)
                 if hb and unit["age"] < 67 and expected > 0:
                     hb_checked["working_age_differential"] += 1
@@ -283,3 +304,60 @@ def test_capital_is_non_increasing_in_rate_and_secured_debt(units, r1, r2, scale
     for variable in PROGRAMMES:
         assert np.all(at_high[variable] <= at_low[variable] + 0.01), variable
         assert np.all(more_debt[variable] <= at_low[variable] + 0.01), variable
+
+
+@settings(max_examples=200, deadline=None, derandomize=True)
+@given(st.lists(st.integers(0, 13_107_199), min_size=1, max_size=1_000))
+# 16,001 is 14,400.8994 after a float32 multiplication; 1,000.10 is stored as
+# 1,000.0999756; 90% of 2.30 is 206.99999999999997 pence in float64; 90% of
+# 16,666.65 is 14,999.985, a half penny.
+@example([1_600_100, 100_010, 230, 1_666_665])
+def test_sale_expenses_round_to_the_penny(pence):
+    stored = np.asarray(pence, dtype=np.int64).astype(np.float32) / np.float32(100)
+    down = less_sale_expenses(stored, LEGAL_RATE, True)
+    nearest = less_sale_expenses(stored, LEGAL_RATE, False)
+    assert down.dtype == nearest.dtype == np.float64
+    assert np.round(down * 100).astype(np.int64).tolist() == [
+        9 * amount // 10 for amount in pence
+    ]
+    assert np.round(nearest * 100).astype(np.int64).tolist() == [
+        (9 * amount + 5) // 10 for amount in pence
+    ]
+
+
+def test_share_valuation_matches_the_adm_worked_example():
+    # ADM H1665 and DMG 84763: 250 shares at 4.1375 are 1,034.375, and less
+    # 10% for the expenses of sale that is 930.9375: 930.93 rounded down, as
+    # the legacy benefits do, or 930.94 to the nearest penny, as Universal
+    # Credit does (UC Regs 2013 reg. 6(1)).
+    for stored in (1034.375, np.float32(1034.375)):
+        assert less_sale_expenses(stored, LEGAL_RATE, True) == 930.93
+        assert less_sale_expenses(stored, LEGAL_RATE, False) == 930.94
+
+
+@settings(max_examples=200, deadline=None, derandomize=True)
+@given(
+    st.lists(
+        st.floats(0, 1_000_000, allow_nan=False, width=32), min_size=1, max_size=500
+    )
+)
+@example([1034.375, 10352.055, 0.005, 999_999.875])
+def test_sale_expenses_never_round_the_wrong_way(values):
+    stored = np.asarray(values, dtype=np.float32)
+    exact = exact_amount(stored)
+    # Storage error is removed only within half a unit of the stored value's
+    # own precision, so a value is never moved to a penny it was not stored
+    # from.
+    assert np.all(
+        np.abs(exact - stored.astype(np.float64))
+        <= np.spacing(np.abs(stored)).astype(np.float64) / 2
+    )
+    down = less_sale_expenses(stored, LEGAL_RATE, True)
+    nearest = less_sale_expenses(stored, LEGAL_RATE, False)
+    for value, low, near in zip(exact.tolist(), down.tolist(), nearest.tolist()):
+        # Exact rational arithmetic on the value the helper works from, with
+        # the helper's millionth-of-a-penny allowance for binary noise.
+        target = Fraction(value) * Fraction(9, 10)
+        noise = Fraction(1, 100_000_000)
+        assert target - Fraction(1, 100) - noise < Fraction(low) <= target + noise
+        assert abs(Fraction(near) - target) <= Fraction(1, 200) + noise

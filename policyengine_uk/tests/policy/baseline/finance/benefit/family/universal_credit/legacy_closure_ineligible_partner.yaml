@@ -45,5 +45,5 @@
     claims_universal_credit: [true, true]
     uc_member_of_couple_claims_as_single_person: [true, true]
     is_lha_shared_accommodation_rate_specified_renter: [true, true]
-    is_benefit_cap_single_claimant_rate: [true, true]
+    is_uc_benefit_cap_single_claimant_rate: [true, true]
     universal_credit: [10_139.64, 10_139.64]

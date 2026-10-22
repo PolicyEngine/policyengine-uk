@@ -2,7 +2,10 @@ description: >
   Share of the current market or surrender value deducted from Universal
   Credit capital where there would be expenses attributable to sale. It is a
   flat 10% whatever the actual costs, taken from the gross value before any
-  encumbrance secured on the asset is deducted.
+  encumbrance secured on the asset is deducted. It applies to the countable
+  property in property_sources (other residential and non-residential
+  property, assumed to have costs of sale) and to the financial sources listed
+  in sale_expenses.sources.
 values:
   2013-04-29: 0.1
 metadata:

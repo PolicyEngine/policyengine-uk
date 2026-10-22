@@ -1,5 +1,9 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.capital_valuation import valued_capital
+from policyengine_uk.utils.capital_valuation import (
+    exact_amount,
+    round_to_penny,
+    valued_capital,
+)
 
 
 class jsa_income_assessable_capital(Variable):
@@ -27,14 +31,12 @@ class jsa_income_assessable_capital(Variable):
 
     def formula(benunit, period, parameters):
         JSA = parameters(period).gov.dwp.JSA.income
-        sources = JSA.capital.sources
         person = benunit.members
         claiming_jsa_income = add(benunit, period, ["jsa_income_reported"]) > 0
 
         household_capital = valued_capital(
             lambda variable: benunit.max(person.household(variable, period)),
-            sources,
-            JSA.capital.sale_expenses,
+            JSA.capital,
         )
         # Regulation 88(2) excludes children's and young persons' capital.
         # The claimant/partner weights approximate otherwise unobserved ownership.
@@ -54,10 +56,11 @@ class jsa_income_assessable_capital(Variable):
         )
         claimant_or_partner = person("is_claimant_or_partner", period)
         person_capital = sum(
-            benunit.sum(person(source, period) * claimant_or_partner)
+            benunit.sum(exact_amount(person(source, period)) * claimant_or_partner)
             for source in JSA.capital.person_sources
         )
         household_share = where(
             household_reporting_claimants > 0, claiming_proxy, fallback_proxy
         )
-        return household_share + person_capital
+        # A fraction of a penny is disregarded at the last stage (reg. 92).
+        return round_to_penny(household_share + person_capital, JSA.capital.round_down)

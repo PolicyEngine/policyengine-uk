@@ -2,18 +2,23 @@ from policyengine_uk.model_api import *
 
 
 class non_residential_property_secured_debt(Variable):
-    label = "debt secured on non-residential property"
-    documentation = (
-        "Amount owed on mortgages and other charges secured on non-residential "
-        "property the household owns. Means tests deduct it from that "
-        "property's value after the 10% for sale expenses, flooring the "
-        "property at nil (UC Regs 2013 reg. 49(1)(b) and its legacy "
-        "equivalents). The value and the debt are household totals across all "
-        "such properties, so debt on one property offsets equity in another."
-    )
-    entity = Household
-    definition_period = YEAR
     value_type = float
+    entity = Household
+    label = "Debt secured on non-residential property"
+    documentation = (
+        "Outstanding encumbrances secured specifically on the household's "
+        "non-residential property. Excludes main-home mortgage debt and unsecured debt. "
+        "Deducted after the 10% for sale expenses in the capital valuation of "
+        "UC regulation 49(1) and its legacy equivalents (HB, IS, JSA, ESA and "
+        "Pension Credit), flooring the asset class at nil. The value and the "
+        "debt are household totals across the class, so debt on one asset "
+        "offsets equity in another. The survey lacks reliable property-specific "
+        "debt flags, so the default zero is a modelling approximation unless "
+        "supplied explicitly."
+    )
+    definition_period = YEAR
     unit = GBP
     quantity_type = STOCK
+    default_value = 0
     uprating = "gov.economic_assumptions.indices.obr.per_capita.gdp"
+    reference = "https://www.legislation.gov.uk/uksi/2013/376/regulation/49/1"

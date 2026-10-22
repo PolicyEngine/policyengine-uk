@@ -1,5 +1,9 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.capital_valuation import valued_capital
+from policyengine_uk.utils.capital_valuation import (
+    exact_amount,
+    round_to_penny,
+    valued_capital,
+)
 
 
 class income_support_assessable_capital(Variable):
@@ -26,7 +30,6 @@ class income_support_assessable_capital(Variable):
 
     def formula(benunit, period, parameters):
         IS = parameters(period).gov.dwp.income_support
-        sources = IS.means_test.capital.sources
         person = benunit.members
         would_claim_is = benunit("would_claim_IS", period)
 
@@ -38,8 +41,7 @@ class income_support_assessable_capital(Variable):
         # the household allocation itself is a modelling convention.
         household_capital = valued_capital(
             lambda variable: benunit.max(person.household(variable, period)),
-            sources,
-            IS.means_test.capital.sale_expenses,
+            IS.means_test.capital,
         )
         benunit_claimants_and_partners = add(
             benunit, period, ["is_claimant_or_partner"]
@@ -60,10 +62,13 @@ class income_support_assessable_capital(Variable):
         )
         claimant_or_partner = person("is_claimant_or_partner", period)
         person_capital = sum(
-            benunit.sum(person(source, period) * claimant_or_partner)
+            benunit.sum(exact_amount(person(source, period)) * claimant_or_partner)
             for source in IS.means_test.capital.person_sources
         )
         household_share = where(
             household_claiming_members > 0, claiming_proxy, fallback_proxy
         )
-        return household_share + person_capital
+        # A fraction of a penny is disregarded at the last stage (reg. 27).
+        return round_to_penny(
+            household_share + person_capital, IS.means_test.capital.round_down
+        )

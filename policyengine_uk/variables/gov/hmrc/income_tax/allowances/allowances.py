@@ -4,7 +4,7 @@ from policyengine_uk.model_api import *
 class allowances(Variable):
     value_type = float
     entity = Person
-    label = "Allowances applicable to adjusted net income"
+    label = "Allowances and reliefs deducted from the income tax base"
     definition_period = YEAR
     unit = GBP
 

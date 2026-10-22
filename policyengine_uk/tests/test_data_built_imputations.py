@@ -55,7 +55,7 @@ SITUATION = {
             "members": ["adult", "child"],
             "would_claim_uc": {YEAR: True},
             "universal_credit_pre_benefit_cap": {YEAR: 6_000},
-            "benefit_cap_reduction": {YEAR: 0},
+            "uc_benefit_cap_reduction": {YEAR: 0},
         }
     },
     "households": {
@@ -91,7 +91,7 @@ def tables(n: int = 400, weight_scale: float = 1.0) -> dict:
             "benunit_id": ids,
             "would_claim_uc": np.ones(n, dtype=bool),
             "universal_credit_pre_benefit_cap": np.full(n, 6_000.0),
-            "benefit_cap_reduction": np.zeros(n),
+            "uc_benefit_cap_reduction": np.zeros(n),
         }
     )
     household = pd.DataFrame(
