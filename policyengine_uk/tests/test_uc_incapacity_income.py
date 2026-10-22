@@ -18,6 +18,7 @@ ORIGINAL = [
     "state_pension",
     "uc_tariff_income",
     "spousal_maintenance_income",
+    "widowed_parents_allowance",
 ]
 
 

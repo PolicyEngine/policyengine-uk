@@ -11,6 +11,7 @@ class income_support_applicable_income(Variable):
         "https://www.legislation.gov.uk/uksi/1987/1967/schedule/8",
         "https://www.legislation.gov.uk/uksi/1987/1967/regulation/36",
         "https://www.legislation.gov.uk/uksi/1987/1967/regulation/38",
+        "https://www.legislation.gov.uk/uksi/1987/1967/schedule/9/paragraph/16",
     )
 
     def formula(benunit, period, parameters):
@@ -36,6 +37,14 @@ class income_support_applicable_income(Variable):
             benunit, period, ["income_tax", "national_insurance"], members
         )
         income += add_for_members(benunit, period, ["social_security_income"], members)
+        # IS Regs 1987 Sch 9 para 16(h): £10 a week of widowed parent's
+        # allowance is disregarded; social_security_income counts it in full.
+        wpa_disregard = (
+            IS.means_test.widowed_parents_allowance_disregard * WEEKS_IN_YEAR
+        )
+        income -= benunit.sum(
+            min_(person("widowed_parents_allowance", period), wpa_disregard) * members
+        )
         income += benunit("income_support_tariff_income", period)
         income -= tax
         # IS Regs 1987 reg 36(3)(b) and reg 38(1)(b)(ii), (3)(c) and (9)(b).

@@ -37,6 +37,7 @@ HBAI_HOUSEHOLD_NET_INCOME_ADDS = [
     "afcs",
     "bsp",
     "war_widows_pension",
+    "widowed_parents_allowance",
     "carers_allowance",
     "dla",
     "iidb",
