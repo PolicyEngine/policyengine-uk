@@ -27,6 +27,8 @@ the child's parent, or the person themselves:
   SI 2019/37 arts 2(3) and 4, through SI 2006/214 reg 5.
 - The extended childcare parent and partner conditions: SI 2022/1134 regs
   11A(1)(e), 14(4)(b) and 15(4).
+- The higher Pension Credit earnings disregard for a claimant or partner on
+  employment and support allowance: SPC Regs 2002 Sch VI para 4(1)(a)(vii).
 
 A member of the benefit unit who is neither the claimant, the partner nor a
 child or young person they are responsible for (for example a non-dependent
@@ -121,6 +123,7 @@ FAMILY_READERS = [
     "income_support_eligible",
     "housing_benefit_pension_age_regulations_apply",
     "has_mixed_age_couple_pension_credit_saving",
+    "pension_credit_earnings_disregard",
 ]
 MEMBER_READERS = [
     "is_scp_eligible",
@@ -486,19 +489,19 @@ def test_adult_non_dependant_ends_the_severe_disability_premium():
 
 # --- Further family shapes (begin) ---
 # Some readers only bite for a claimant over state pension age (the Housing
-# Benefit regulations that apply, the mixed-age couple saving), for a single
-# applicant under 25, or for parents of a young child of whom only one works
-# (the extended childcare partner condition). The families above rarely take
-# those shapes, so three more properties check every family and member reader
-# on them. The claimant and partner seldom report an award themselves, and on
-# the savings drawn below the £16,000 capital limit the added member's award
-# survives tariff income, so a reader that wrongly counts it changes (£20,000
-# of savings screens income-related ESA and income-based JSA to nil). The
-# shapes pay no rent, so Universal Credit stays far below the benefit cap.
-# The cap reads only the couple's own awards and the family's
-# (benefit_cap_reduction), not another member's; the first property checks
-# that on JSA_COUPLE_WITH_LODGER, a family that an added member's £3,000 of
-# JSA would take over the cap if it counted.
+# Benefit regulations that apply, the Pension Credit earnings disregard, the
+# mixed-age couple saving), for a single applicant under 25, or for parents of
+# a young child of whom only one works (the extended childcare partner
+# condition). The families above rarely take those shapes, so three more
+# properties check every family and member reader on them. The claimant and
+# partner seldom report an award themselves, and on the savings drawn below the
+# £16,000 capital limit the added member's award survives tariff income, so a
+# reader that wrongly counts it changes (£20,000 of savings screens
+# income-related ESA and income-based JSA to nil). The shapes pay no rent, so
+# Universal Credit stays far below the benefit cap. The cap reads only the
+# couple's own awards and the family's (benefit_cap_reduction), not another
+# member's; the first property checks that on JSA_COUPLE_WITH_LODGER, a family
+# that an added member's £3,000 of JSA would take over the cap if it counted.
 PENSION_AGE = 68
 # Whether the pension-age property enters is_mixed_age_couple, so that a
 # reader of the couple's award reports is tested on those reports alone.
