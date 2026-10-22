@@ -12,7 +12,15 @@ class spousal_maintenance_income(Variable):
         "Unlike child maintenance, this counts as income for Universal "
         "Credit, Pension Credit (but not as savings credit qualifying income), "
         "Income Support, Council Tax Reduction and Housing Benefit, and it is "
-        "market and HBAI income as maintenance_income is."
+        "market and HBAI income as maintenance_income is. Universal Credit "
+        "counts payments under a court order or an agreement for maintenance "
+        "(reg. 66(1)(d)); voluntary payments are counted too, since survey "
+        "data cannot separate them and an informal arrangement may be an "
+        "agreement. Maintenance from a former cohabiting partner who was not "
+        "a spouse or civil partner does not belong here: Universal Credit and "
+        "Pension Credit do not count it. Working-age Housing Benefit does "
+        '(HB Regs 2006 Sch 5 para 47, "former partner"), which the model '
+        "does not capture."
     )
     definition_period = YEAR
     unit = GBP
