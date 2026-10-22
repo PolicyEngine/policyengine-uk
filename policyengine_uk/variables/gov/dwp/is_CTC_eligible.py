@@ -9,8 +9,11 @@ class is_CTC_eligible(Variable):
     reference = "Tax Credits Act 2002 s. 8"
 
     def formula(benunit, period, parameters):
-        already_claiming = (add(benunit, period, ["child_tax_credit_reported"]) > 0) & (
-            ~add(benunit, period, ["would_claim_uc"]) > 0
+        already_claiming = (
+            add(benunit, period, ["child_tax_credit_reported"]) > 0
+        ) & ~(
+            benunit("claims_universal_credit", period)
+            | benunit("legacy_benefits_closed", period)
         )
         return (
             benunit.any(
