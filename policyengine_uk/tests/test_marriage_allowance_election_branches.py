@@ -23,6 +23,7 @@ from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
+from policyengine_uk.utils.aggregate_impact.guard import discard_formula_results
 from policyengine_uk.utils.scenario import Scenario
 
 PROPERTY_SETTINGS = settings(
@@ -242,3 +243,37 @@ def test_no_branch_is_left_after_any_year():
         elected.append(bool(simulation.calculate(ELECTION, year).any()))
         assert set(simulation.branches) == before, (year, list(simulation.branches))
     assert all(elected), elected
+
+
+def test_final_tax_input_does_not_change_the_election_or_capital_gains_tax():
+    # A final-tax override is an accounting perturbation, not an economic
+    # change. Private election counterfactuals must still compare formula tax,
+    # while the caller's supplied tax remains authoritative in the real sim.
+    units = [
+        dict(
+            adults=[
+                dict(age=40, employment_income=20_000.0, capital_gains=50_000.0),
+                dict(age=38, employment_income=20_000.0, capital_gains=50_000.0),
+            ],
+            married=True,
+            children=[],
+            tenure="OWNED_OUTRIGHT",
+            rent=0.0,
+            region="LONDON",
+        )
+    ]
+    year = 2026
+    simulation = Simulation(situation=situation(units, year))
+    variables = [ELECTION, "personal_allowance", "capital_gains_tax"]
+    before = {name: simulation.calculate(name, year).copy() for name in variables}
+    assert not before[ELECTION].any()
+    supplied_tax = simulation.calculate("income_tax", year).copy() + 1
+    branches = set(simulation.branches)
+    assert discard_formula_results(simulation)
+    simulation.set_input("income_tax", year, supplied_tax)
+    after = calculate(simulation, year, variables)
+    assert_identical(before, after, "only final income tax was overridden")
+    np.testing.assert_array_equal(
+        simulation.calculate("income_tax", year), supplied_tax
+    )
+    assert set(simulation.branches) == branches

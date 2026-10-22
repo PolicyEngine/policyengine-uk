@@ -89,8 +89,8 @@
     working_tax_credit: 0
   output:
     # 2025-26: income tax 20% x (15,000 - 12,570) = 486; Class 1 NI 8% x
-    # (15,000 - 12,570) = 194.40; earned income 14,319.60, above the model's
-    # 10,152 a year (846 a month).
+    # (15,000 - 12,570) = 194.40; earned income 14,319.60, above the 2025-26
+    # threshold of 10,152 a year (846 a month).
     is_uc_benefit_cap_exempt_earnings: true
     is_uc_benefit_cap_exempt: true
     is_housing_benefit_benefit_cap_exempt: false

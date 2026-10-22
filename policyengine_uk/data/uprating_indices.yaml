@@ -28,10 +28,16 @@
 gov.economic_assumptions.yoy_growth.finance_ni.domestic_rates:
 - domestic_rates
 gov.economic_assumptions.yoy_growth.obr.average_earnings:
+# A formula of defined_benefit_pension_contributions; listed so a dataset that
+# stores a valued defined-benefit input amount grows it with pay.
+- defined_benefit_pension_input_amount
 - employee_pension_contributions
 - employer_pension_contributions
 - employment_income
 - employment_income_before_lsr
+- pension_contributions_via_salary_sacrifice
+# The pre-9 July 2015 share of the line above (FA 2004 s. 228ZA(6)).
+- pension_contributions_via_salary_sacrifice_pre_2015
 - personal_pension_contributions
 - student_loan_repayments
 gov.economic_assumptions.yoy_growth.obr.consumer_price_index:
@@ -65,6 +71,7 @@ gov.economic_assumptions.yoy_growth.obr.consumer_price_index:
 - income_support_reported
 - jsa_contrib_reported
 - jsa_income_reported
+- local_bus_uncapped_single_fare
 - maintenance_expenses
 - maternity_allowance_reported
 - miscellaneous_consumption
@@ -104,7 +111,9 @@ gov.economic_assumptions.yoy_growth.capital_gains:
 - capital_gains_carried_interest
 gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 - benunit_reported_capital
+- cash_isa
 - corporate_wealth
+- directly_held_shares
 - dividend_income
 - gross_financial_wealth
 - household_lifetime_isa_balance
@@ -131,14 +140,29 @@ gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 - property_rental_income
 - savings
 - savings_interest_income
+- stocks_and_shares_isa
 - sublet_income
+- cash_isa
+- consumer_debt
+- mortgage_debt
+- rent_paid_as_boarder
+- rent_paid_as_lodger
+- stocks_and_shares_isa
+- owned_company_capital
+- owned_company_holding_value
+- owned_company_trade_assets
 # An explicit complete UC override stored in a dataset is uprated like the
 # financial input; its default no longer derives from that input.
 - uc_reported_capital
+- unit_and_investment_trusts
 gov.economic_assumptions.yoy_growth.obr.per_capita.mixed_income:
 - self_employment_income
+- self_employment_gross_receipts
 - trading_loss
+- owned_company_income_share
 gov.economic_assumptions.yoy_growth.obr.private_pension_index:
 - private_pension_income
+gov.economic_assumptions.yoy_growth.obr.lagged_average_earnings:
+- housing_service_charges
 gov.economic_assumptions.yoy_growth.ons.population:
 - household_weight

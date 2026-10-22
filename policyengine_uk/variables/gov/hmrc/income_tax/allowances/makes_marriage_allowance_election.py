@@ -56,6 +56,10 @@ def tax_position(simulation, name, period, relinquished, held):
         name += "_"
     branch = simulation.get_branch(name)
     try:
+        # A supplied final tax is authoritative in the real simulation, but
+        # these private counterfactuals must compare formula tax at each
+        # allowance cut. Deletion only changes the branch's private storage.
+        branch.delete_arrays("income_tax", period)
         branch.set_input(
             "makes_marriage_allowance_election",
             period,
