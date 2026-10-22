@@ -7,8 +7,8 @@
 #   2022/1027): 0% to £180,000; 3.5% to £250,000; 5% to £400,000; 7.5% to
 #   £750,000; 10% to £1,500,000; 12% above.
 #   https://www.legislation.gov.uk/wsi/2018/128/schedule/2022-01-01
-#   The model's main residential schedule still has these bands after 10
-#   October 2022 (issue 1796), so the residential cases are in 2022.
+#   These residential cases cover the historical 2022 schedule; current
+#   rates are covered in test_ltt_lbtt_expected_properties.py.
 # - Table 2, higher rates, as substituted by WSI 2020/1618 and in force on 30
 #   April 2022: 4% to £180,000; 7.5% to £250,000; 9% to £400,000; 11.5% to
 #   £750,000; 14% to £1,500,000; 16% above.

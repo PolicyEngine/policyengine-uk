@@ -441,8 +441,8 @@ tax_heads:
       (issue 2246). On policyengine-uk-data 1.58.0 (enhanced_frs_2024_25),
       £0.070bn in 2026, all on main-residence purchases: no Welsh record has
       an additional-dwelling or non-residential purchase or a rent charge.
-      Measured 2026-10-11. The main residential schedule predates the 10
-      October 2022 bands (issue 1796).
+      Measured 2026-10-11 on model 2.126.8, before the Welsh rate updates
+      (issue 1796); these are historical figures.
   - id: land_and_buildings_transaction_tax
     label: Land and buildings transaction tax (Scotland)
     variable: expected_lbtt

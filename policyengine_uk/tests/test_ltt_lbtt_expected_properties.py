@@ -36,11 +36,10 @@ largest value compared, per household); "exactly" means bit-equal.
    are exactly 0 in Z, and SDLT is unchanged, so with 3 nothing else in the
    totals moves.
 
-``test_lbtt_and_ltt_match_the_rate_tables`` is a differential test: it
-compares the model's expected LBTT and LTT with an independent marginal-band
-calculation from the statutory tables, for the schedules the model has up to
-date. ``test_stale_schedules_still_differ_from_the_rate_tables`` records, as
-strict expected failures, the schedules it does not (issues 1795 and 1796).
+``test_lbtt_and_ltt_match_the_rate_tables`` compares expected LBTT and LTT
+with an independent marginal-band calculation from the statutory tables.
+It covers both historical Welsh schedules and the current schedules,
+including the rate updates from issues 1795 and 1796.
 """
 
 import numpy as np
@@ -332,11 +331,7 @@ DIFFERENTIAL_CASES = {
         PRICES,
         bands(LTT_NON_RESIDENTIAL),
     ),
-}
-# Schedules the model has not caught up with. Strict, so fixing the issue
-# turns these into failures that prompt moving them to DIFFERENTIAL_CASES.
-STALE_CASES = {
-    "ltt_main_2026 (issue 1796)": (
+    "ltt_main_2026": (
         "WALES",
         2026,
         MAIN,
@@ -344,7 +339,7 @@ STALE_CASES = {
         PRICES,
         bands(LTT_MAIN_FROM_2022_10_10),
     ),
-    "ltt_higher_2026 (issue 1796)": (
+    "ltt_higher_2026": (
         "WALES",
         2026,
         ADDITIONAL,
@@ -352,7 +347,7 @@ STALE_CASES = {
         HIGHER_RATE_PRICES,
         bands(LTT_HIGHER_FROM_2024_12_11),
     ),
-    "lbtt_supplement_2026 (issue 1795)": (
+    "lbtt_supplement_2026": (
         "SCOTLAND",
         2026,
         ADDITIONAL,
@@ -372,11 +367,3 @@ def assert_matches_statute(region, year, price_input, first_home, prices, statut
 @pytest.mark.parametrize("case", sorted(DIFFERENTIAL_CASES))
 def test_lbtt_and_ltt_match_the_rate_tables(case):
     assert_matches_statute(*DIFFERENTIAL_CASES[case])
-
-
-@pytest.mark.xfail(
-    strict=True, raises=AssertionError, reason="stale schedule; see the case's issue"
-)
-@pytest.mark.parametrize("case", sorted(STALE_CASES))
-def test_stale_schedules_still_differ_from_the_rate_tables(case):
-    assert_matches_statute(*STALE_CASES[case])
