@@ -399,3 +399,65 @@ def test_a_family_claiming_at_the_abolition_moves_to_universal_credit(
         claiming["universal_credit"], anyway["universal_credit"], atol=0.01
     )
     assert np.all(staying["universal_credit"] == 0)
+
+
+@pytest.mark.parametrize("year", [2025, 2026, 2027])
+@pytest.mark.parametrize("claims", [True, False])
+def test_the_abolition_claim_ends_only_the_couples_legacy_awards(year, claims):
+    # A family that claims Universal Credit when its working-age Housing
+    # Benefit is abolished ends the claimant's and partner's income-related
+    # ESA by that claim. An adult claiming ESA in their own right is not part
+    # of that claim and keeps their award (#2395), and a family that does not
+    # claim keeps both. Before the abolition nothing changes.
+    members = {
+        "claimant": {
+            "age": 30,
+            "is_claimant_or_partner": True,
+            "housing_benefit_reported": 1,
+            "esa_income_reported": 5_000,
+        },
+        "partner": {"age": 30, "is_claimant_or_partner": True},
+        "outside": {
+            "age": 40,
+            "is_claimant_or_partner": False,
+            "current_education": "NOT_IN_EDUCATION",
+            "esa_income_reported": 5_000,
+        },
+    }
+    situation = {
+        "people": {
+            name: {key: {year: value} for key, value in inputs.items()}
+            for name, inputs in members.items()
+        },
+        "benunits": {
+            "unit": {
+                "members": list(members),
+                "would_claim_uc": {year: False},
+                "would_claim_uc_at_legacy_closure": {year: claims},
+                "esa_income_assessable_capital": {year: 0},
+            }
+        },
+        "households": {
+            "household": {
+                "members": list(members),
+                "region": {year: "LONDON"},
+                "tenure_type": {year: "RENT_FROM_COUNCIL"},
+                "rent": {year: 5_200},
+            }
+        },
+    }
+    sim = Simulation(situation=situation)
+    moved = claims and year >= 2026
+    assert not sim.calculate("legacy_benefits_closed", year)[0]
+    assert bool(sim.calculate("claims_uc_at_legacy_closure", year)[0]) == moved
+    assert sim.calculate("person_legacy_benefits_closed", year).tolist() == [
+        moved,
+        moved,
+        False,
+    ]
+    assert sim.calculate("claimant_or_partner_esa_income", year)[0] == (
+        0 if moved else 5_000
+    )
+    assert sim.calculate("is_on_income_related_esa", year).tolist()[2]
+    if moved:
+        assert sim.calculate("housing_benefit", year)[0] == 0
