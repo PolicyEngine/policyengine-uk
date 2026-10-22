@@ -67,21 +67,19 @@ class council_tax_reduction_applicable_income(Variable):
     ]
 
     def formula(benunit, period, parameters):
-        # Members whose income counts: the applicant and partner and, as the model
-        # did before, the programme's own children or young persons. The regulations
-        # count only the applicant's and partner's (CTR (Prescribed Requirements)
-        # (England) Regs 2012 Sch 1 para 11; SSI 2012/319 reg 21 and SSI 2021/249
-        # reg 36, which also exclude a child's); dropping dependants' own income is
-        # a follow-up. Anyone else in the benefit unit does not count. A household
-        # head who applies alone is the applicant, whatever else the benefit unit
-        # reads her as, and the benefit unit's children are its claimant's.
+        # Members whose income counts: the applicant and partner (CTR
+        # (Prescribed Requirements) (England) Regs 2012 Sch 1 para 11; WSI
+        # 2013/3029 Sch 1 para 5; SSI 2012/319 reg 21; SSI 2021/249 reg 36(1)).
+        # "The income and capital of a child or young person is not to be
+        # treated as the income and capital of the applicant" (SSI 2012/319 reg
+        # 21(3); SSI 2021/249 reg 36(2)); the other schemes count the
+        # applicant's and partner's alone. Anyone else in the benefit unit does
+        # not count either. A household head who applies alone is the
+        # applicant, whatever else the benefit unit reads her as.
         person = benunit.members
         head_applies_alone = benunit("council_tax_reduction_head_applies_alone", period)
         applicant_family = ~head_applies_alone
-        members = person("is_council_tax_reduction_applicant_or_partner", period) | (
-            person("is_child_or_young_person_for_council_tax_reduction", period)
-            & benunit.project(applicant_family)
-        )
+        members = person("is_council_tax_reduction_applicant_or_partner", period)
         # Only the claimant's and partner's income-related awards: the scheme
         # counts the applicant's and partner's income (Sch 1 para 11 above). A
         # member outside the family who has an award of their own claims in their
