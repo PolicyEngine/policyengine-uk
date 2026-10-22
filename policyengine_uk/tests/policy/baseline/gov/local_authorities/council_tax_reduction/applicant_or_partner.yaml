@@ -140,10 +140,8 @@
     simulated_council_tax_reduction_benunit: [759.60]
 
 - name: The young couple's income-based Jobseeker's Allowance does not passport the grandmother head
-  # Provisional until in-unit non-dependants land (#2017): the 19-year-old
-  # parents are her non-dependants (SI 2012/2885 reg 9(1); they are not in
-  # her family), but the model charges a deduction only for non-dependants
-  # in another benefit unit, so this case has none.
+  # The 19-year-old parents are her non-dependants (SI 2012/2885 reg 9(1);
+  # they are not in her family), and neither is in education.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -156,10 +154,12 @@
         age: 19
         is_parent: true
         is_household_head: false
+        current_education: NOT_IN_EDUCATION
       young_father:
         age: 19
         is_parent: true
         is_household_head: false
+        current_education: NOT_IN_EDUCATION
       baby:
         age: 0
         is_household_head: false
@@ -183,7 +183,12 @@
     council_tax_reduction_relevant_income_based_benefit: [false]
     # Neither the couple's JSA nor their Child Benefit is her income.
     council_tax_reduction_applicable_income: [18_514]
-    simulated_council_tax_reduction_benunit: [759.60]
+    # 759.60 before non-dependant deductions. The JSA is payable to one of
+    # the couple, who is exempt (Sch 1 para 8(8)); the other, not in
+    # remunerative work, pays the lowest amount, 5.20 a week, the couple's
+    # one deduction (para 8(3)): 270.40.
+    council_tax_reduction_non_dep_deductions: [270.40]
+    simulated_council_tax_reduction_benunit: [489.20]
 
 - name: A head who applies alone is a single person, with premiums on her own disability only
   period: 2026
@@ -323,10 +328,8 @@
     merton_council_tax_reduction: [1_800, 0]
 
 - name: The young couple's Universal Credit does not put a grandmother head on Newham's Universal Credit route
-  # Provisional until in-unit non-dependants land (#2017): the 19-year-old
-  # parents are her non-dependants (SI 2012/2885 reg 9(1); they are not in
-  # her family), but the model charges a deduction only for non-dependants
-  # in another benefit unit, so this case has none.
+  # The 19-year-old parents are her non-dependants (para 9(1); they are not
+  # in her family), and neither is in education.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -338,10 +341,13 @@
         age: 19
         is_parent: true
         is_household_head: false
+        current_education: NOT_IN_EDUCATION
       young_father:
         age: 19
         is_parent: true
         is_household_head: false
+        current_education: NOT_IN_EDUCATION
+        weekly_hours: 37.5
         employment_income: 30_000
       baby:
         age: 0
@@ -365,9 +371,13 @@
     council_tax_reduction_applicable_income: [0]
     # Single aged 25 or over: 95.55 * 52.
     council_tax_reduction_applicable_amount: [4_968.60]
-    # No excess income: 1,800 * 70%. On the Universal Credit route the
-    # couple's earnings and award would leave nothing.
-    newham_council_tax_reduction: [1_260]
+    # No excess income: 1,800 * 70% = 1,260. On the Universal Credit route
+    # the couple's earnings and award would leave nothing. The couple pay one
+    # deduction (para 30B(3)): the father's £22.61 a week on their joint
+    # £576.92, 1,175.72 a year; the mother, on Universal Credit with no
+    # earned income of her own, is exempt.
+    newham_council_tax_reduction_non_dep_deductions: [1_175.72]
+    newham_council_tax_reduction: [84.28]
 
 - name: A partner under 18 is not liable, but their income counts in the couple's means test
   period: 2026
@@ -495,10 +505,10 @@
     council_tax_reduction_applicable_amount: [7_807.80]
 
 - name: The young couple's Universal Credit does not remove a grandmother head's tariff income from capital in Kingston upon Thames
-  # Provisional until in-unit non-dependants land (#2017): the 19-year-old
-  # parents are her non-dependants (SI 2012/2885 reg 9(1); they are not in
-  # her family), but the model charges a deduction only for non-dependants
-  # in another benefit unit, so this case has none.
+  # The 19-year-old parents are her non-dependants (para 9(1); they are not
+  # in her family), and neither is in education. Both are on the couple's
+  # Universal Credit with no earned income, so both are exempt under para
+  # 30A's Universal Credit exemption, and there is no deduction.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -511,10 +521,12 @@
         age: 19
         is_parent: true
         is_household_head: false
+        current_education: NOT_IN_EDUCATION
       young_father:
         age: 19
         is_parent: true
         is_household_head: false
+        current_education: NOT_IN_EDUCATION
       baby:
         age: 0
         is_household_head: false
@@ -537,6 +549,7 @@
     council_tax_reduction_applicable_amount: [4_968.60]
     # Tariff income ceil((10,000 - 6,000) / 250) = £16 a week, 832 a year,
     # since she has no award. 1,800 - (5,000 + 832 - 4,968.60) * 20%.
+    kingston_upon_thames_council_tax_reduction_non_dep_deductions: [0]
     kingston_upon_thames_council_tax_reduction: [1_627.32]
 
 - name: A blind grandmother head's exemption does not exempt a sharer's claim from a non-dependant deduction in Merton
