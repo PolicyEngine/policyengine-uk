@@ -26,7 +26,7 @@
         country: SCOTLAND
   output:
     is_scp_eligible: [false, true]
-    scottish_child_payment: [0, 1523.61]
+    scottish_child_payment: [0, 1518.40]
 
 - name: PAWHP higher full amount projects to 327.80 in April 2027
   # 316.70 x 1.035 = 327.7845 -> 327.80.
