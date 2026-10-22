@@ -111,7 +111,9 @@ gov.economic_assumptions.yoy_growth.capital_gains:
 - capital_gains_carried_interest
 gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 - benunit_reported_capital
+- cash_isa
 - corporate_wealth
+- directly_held_shares
 - dividend_income
 - gross_financial_wealth
 - household_lifetime_isa_balance
@@ -138,6 +140,7 @@ gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 - property_rental_income
 - savings
 - savings_interest_income
+- stocks_and_shares_isa
 - sublet_income
 - cash_isa
 - consumer_debt
@@ -151,6 +154,7 @@ gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 # An explicit complete UC override stored in a dataset is uprated like the
 # financial input; its default no longer derives from that input.
 - uc_reported_capital
+- unit_and_investment_trusts
 gov.economic_assumptions.yoy_growth.obr.per_capita.mixed_income:
 - self_employment_income
 - self_employment_gross_receipts

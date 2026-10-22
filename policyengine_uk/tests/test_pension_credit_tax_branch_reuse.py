@@ -9,6 +9,16 @@ from policyengine_uk.tests.test_uc_non_dep_pension_credit import YEAR, mixed_fam
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
+# SPC Regs 2002 reg. 17A(2)(h) and (i) make statutory sick, maternity and
+# paternity pay earnings of an employed earner, so the tax on them is tax on
+# employed earnings and both counterfactuals remove them with wages.
+EMPLOYED_EARNINGS = (
+    "employment_income",
+    "statutory_sick_pay",
+    "statutory_maternity_pay",
+    "statutory_paternity_pay",
+)
+
 
 def earnings_families():
     situation = mixed_families()
@@ -22,6 +32,7 @@ def earnings_families():
     ):
         situation["people"][name]["employment_income"] = {YEAR: wages}
         situation["people"][name]["self_employment_income"] = {YEAR: profit}
+    situation["people"]["pc_older"]["statutory_sick_pay"] = {YEAR: 500}
     return situation
 
 
@@ -48,11 +59,12 @@ def test_full_calculation_reuses_two_earnings_tax_counterfactuals(monkeypatch, f
     sim.calculate(first, YEAR)
     sim.calculate("household_net_income", YEAR)
     sim.calculate("pension_credit", YEAR)
-    # Both employment and self-employment are present. The UC housing
-    # non-dependant check shares the two counterfactuals with ordinary PC.
+    # Employed earnings (wages and statutory sick pay) and self-employment
+    # are present. The UC housing non-dependant check shares the two
+    # counterfactuals with ordinary PC.
     assert calls == [
-        ("default", ("employment_income",)),
-        ("default", ("employment_income", "self_employment_income")),
+        ("default", EMPLOYED_EARNINGS),
+        ("default", EMPLOYED_EARNINGS + ("self_employment_income",)),
     ]
     assert sim.branches == {}
 
