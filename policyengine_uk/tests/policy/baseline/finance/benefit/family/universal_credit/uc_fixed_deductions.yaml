@@ -108,6 +108,41 @@
   output:
     uc_deductions: 0
 
+- name: An explicit zero leaves another benefit unit's advance estimate intact
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      zero_claimant:
+        age: 30
+      missing_claimant:
+        age: 30
+    benunits:
+      zero:
+        members: [zero_claimant]
+        would_claim_uc: true
+        universal_credit_pre_benefit_cap: 6_000
+        uc_benefit_cap_reduction: 0
+        uc_latent_deduction_rate: 0.1
+        uc_deduction_combination: ADVANCE_ONLY
+        uc_advance_repayment_amount: 0
+      missing:
+        members: [missing_claimant]
+        would_claim_uc: true
+        universal_credit_pre_benefit_cap: 6_000
+        uc_benefit_cap_reduction: 0
+        uc_latent_deduction_rate: 0.1
+        uc_deduction_combination: ADVANCE_ONLY
+    households:
+      zero_household:
+        members: [zero_claimant]
+      missing_household:
+        members: [missing_claimant]
+  output:
+    # Only the supplied zero removes the £40.014/month legacy advance.
+    uc_deductions: [0, 480.168]
+    universal_credit: [6_000, 5_519.832]
+
 - name: A capped family's fixed advance stays cash at the current allowance
   period: 2025
   absolute_error_margin: 0.01

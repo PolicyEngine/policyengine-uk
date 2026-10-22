@@ -60,3 +60,15 @@ def reference_standard_allowance(benunit, period, parameters):
     p = parameters(f"{period.start.year}-04-30").baseline.gov.dwp.universal_credit
     claimant_type = benunit("uc_standard_allowance_claimant_type", period)
     return p.standard_allowance.amount[claimant_type] * MONTHS_IN_YEAR
+
+
+def estimated_advance_repayment_amount(benunit, period, parameters):
+    """Convert the legacy advance share to same-year unreformed cash."""
+    p = parameters(period).gov.simulation.uc_deductions
+    advance_share, _, _ = deduction_type_shares(benunit, period, parameters)
+    latent = max_(benunit("uc_latent_deduction_rate", period), 0)
+    return (
+        min_(latent, p.calibration_cap)
+        * advance_share
+        * reference_standard_allowance(benunit, period, parameters)
+    )

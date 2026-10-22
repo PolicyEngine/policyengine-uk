@@ -12,7 +12,9 @@ The implementation separates **latent demand** from the **statutory cap**. `uc_l
 
 `uc_advance_repayment_amount` accepts annual cash instalments before the cap,
 abolition switch and available-award limits. Set the actual amount when known;
-zero explicitly removes the advance estimate. A change to the standard allowance
+zero explicitly removes the advance estimate. Negative values, including the
+default -1, mean no amount was supplied. Each omitted benefit unit uses the
+fallback even when other units supply cash. A change to the standard allowance
 does not increase this demand. Actual recovery can increase if a higher
 allowance releases a binding deduction cap.
 
