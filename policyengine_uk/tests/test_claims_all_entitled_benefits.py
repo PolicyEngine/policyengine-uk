@@ -17,7 +17,7 @@ Housing Benefit are reporters-only on data-built simulations in any case
 import numpy as np
 import pandas as pd
 import pytest
-from hypothesis import example, given, settings, strategies as st
+from hypothesis import HealthCheck, example, given, settings, strategies as st
 
 from policyengine_uk import Microsimulation, Simulation
 from policyengine_uk.data import UKMultiYearDataset, UKSingleYearDataset
@@ -282,6 +282,12 @@ CTR_FAMILIES = st.lists(
     max_size=4,
 )
 
+# The draws are cheap, but on a saturated host one stalled for 4.9 s (and
+# 11.8 s in the tax credit property below) between simulations, against the
+# speed check's 30 s for its first ten inputs. Suppress only that timing
+# check, keeping every example and every other check.
+TIMING_TOLERANT = dict(deadline=None, suppress_health_check=[HealthCheck.too_slow])
+
 
 @given(families=CTR_FAMILIES)
 @example(families=[(40, "SCOTLAND", 0, 0, True, 0)])
@@ -292,7 +298,7 @@ CTR_FAMILIES = st.lists(
         (70, "ENGLAND", 0, 0, False, 100),
     ]
 )
-@settings(max_examples=30, deadline=None)
+@settings(max_examples=30, **TIMING_TOLERANT)
 def test_ctr_is_zero_for_every_nonreporter_without_an_explicit_claim_flag(families):
     situation = {"people": {}, "benunits": {}, "households": {}}
     must_be_zero = []
@@ -526,7 +532,7 @@ NO_REPORTS = dict(age=30, children=1, earnings=12_000, hours=20, renter=True)
     ],
     year=TAX_CREDIT_YEAR,
 )
-@settings(max_examples=10, deadline=None)
+@settings(max_examples=10, **TIMING_TOLERANT)
 def test_data_built_takeup_equals_reported_only(families, year):
     """On data, every take-up flag that reads claims_all_entitled_benefits is
     the family's own report, and every downstream output equals the same data
