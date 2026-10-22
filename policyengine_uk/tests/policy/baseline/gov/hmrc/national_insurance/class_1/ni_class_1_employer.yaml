@@ -171,3 +171,49 @@
     ni_class_1_income: 8_100  # 52 x £155 = £8,060 would charge £5.52
   output:
     ni_class_1_employer: 0
+
+# 2022-23: the Health and Social Care Levy Act 2021 s.5(2)(b) made the
+# secondary percentage 15.05%, until the Health and Social Care Levy (Repeal)
+# Act 2022 s.2(1) restored 13.8% for earnings paid from 6 November 2022. Model
+# year 2022 takes the rate at 30 April, 15.05%, as the employee main rate takes
+# 13.25%. The annual secondary threshold is £175 x 52 = £9,100. HMRC, "Rates and
+# thresholds for employers 2022 to 2023": 15.05% from 6 April to 5 November
+# 2022, 13.8% from 6 November 2022 to 5 April 2023, £9,100 a year.
+
+- name: Employer NI on £30,000 in 2022-23 is at the 15.05% levy rate
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 30_000
+  output:
+    ni_class_1_employer: 3_145.45  # 0.1505 x (30,000 - 9,100)
+    ni_employer: 3_145.45
+
+- name: Employer NI on £30,000 in 2023-24 is back at 13.8%
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 30_000
+  output:
+    ni_class_1_employer: 2_884.20  # 0.138 x (30,000 - 9,100)
+    ni_employer: 2_884.20
+
+- name: Employer NI on £30,000 in 2021-22 is at 13.8%
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 30_000
+  output:
+    ni_class_1_employer: 2_920.08  # 0.138 x (30,000 - 170 x 52)
+
+- name: The 2022-23 levy rate applies above the upper earnings limit
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 100_000
+  output:
+    ni_class_1_employer: 13_680.45  # 0.1505 x (100,000 - 9,100)

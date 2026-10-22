@@ -1,0 +1,46 @@
+# Litres divide spending by the DESNZ calendar-year average pump price
+# (QEP table 4.1.2): 141.477665p ULSP and 148.328885p diesel in 2024,
+# 135.072210p and 142.548575p in 2025. Microcosm UK prices household
+# petrol and diesel spending on the same basis (PolicyEngine/policyengine-uk#2169).
+- name: 2024 petrol spending at the DESNZ ULSP price buys 1,000 litres
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult:
+        age: 40
+    benunits:
+      benunit:
+        members: [adult]
+    households:
+      household:
+        members: [adult]
+        petrol_spending: 1_414.77665
+        diesel_spending: 1_483.28885
+  output:
+    petrol_price: 1.41477665
+    diesel_price: 1.48328885
+    petrol_litres: 1_000
+    diesel_litres: 1_000
+
+- name: 2025 litres use the 2025 DESNZ prices, not the January 2024 RAC prices
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult:
+        age: 40
+    benunits:
+      benunit:
+        members: [adult]
+    households:
+      household:
+        members: [adult]
+        petrol_spending: 1_350.7221
+        diesel_spending: 1_425.48575
+  output:
+    petrol_price: 1.3507221
+    diesel_price: 1.42548575
+    # Under the old £1.44 / £1.52 divisors these would be 938.0 and 937.8.
+    petrol_litres: 1_000
+    diesel_litres: 1_000

@@ -1,0 +1,111 @@
+# A child's or young person's own income is never the claimant's: HB Regs
+# 2006 reg 25(3), HB (SPC) Regs 2006 reg 23(1), IS Regs 1987 reg 23(2), Tax
+# Credits (Definition and Calculation of Income) Regs 2002 reg 3(1), and the
+# applicant-and-partner rules of every Council Tax Reduction scheme (SSI
+# 2021/249 reg 36(2) says it in terms).
+#
+# The family in each case: a lone parent and a 17-year-old at school who earns
+# £8,000, below the income tax and National Insurance thresholds. Child
+# Benefit is not claimed, so it adds nothing to the income totals.
+
+- name: Case 1, a young person's earnings are not the parent's income in any of the four means tests.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      student:
+        age: 17
+        current_education: UPPER_SECONDARY
+        is_claimant_or_partner: false
+        employment_income: 8_000
+    benunits:
+      benunit:
+        members: [parent, student]
+        would_claim_child_benefit: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, student]
+        country: ENGLAND
+        rent: 6_000
+        council_tax: 1_800
+  output:
+    # The student is still the family's young person.
+    is_child_or_young_person_for_legacy_benefits: [false, true]
+    housing_benefit_applicable_income: 0
+    income_support_applicable_income: 0
+    tax_credits_applicable_income: 0
+    council_tax_reduction_applicable_income: 0
+
+- name: Case 2, the parent's own earnings still count.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+        employment_income: 5_000
+      student:
+        age: 17
+        current_education: UPPER_SECONDARY
+        is_claimant_or_partner: false
+        employment_income: 8_000
+    benunits:
+      benunit:
+        members: [parent, student]
+        would_claim_child_benefit: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, student]
+        country: ENGLAND
+        rent: 6_000
+        council_tax: 1_800
+  output:
+    # £5,000 less the lone parent earnings disregard of £25 a week.
+    housing_benefit_applicable_income: 3_700
+    # £5,000 less the lone parent disregard of £20 a week.
+    income_support_applicable_income: 3_960
+    tax_credits_applicable_income: 5_000
+    council_tax_reduction_applicable_income: 5_000
+
+- name: Case 3, a pension-age Housing Benefit claimant's grandchild's earnings are not the claimant's.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandparent:
+        age: 70
+        is_parent: true
+        is_claimant_or_partner: true
+        # Above the Pension Credit guarantee, so no passport zeroes the income.
+        private_pension_income: 20_000
+      student:
+        age: 17
+        current_education: UPPER_SECONDARY
+        is_claimant_or_partner: false
+        employment_income: 8_000
+    benunits:
+      benunit:
+        members: [grandparent, student]
+        would_claim_child_benefit: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [grandparent, student]
+        country: ENGLAND
+        rent: 6_000
+        council_tax: 1_800
+  output:
+    housing_benefit_pension_age_regulations_apply: true
+    pension_credit: 0
+    # The pension of £20,000 less income tax of 20% of (20,000 - 12,570),
+    # £1,486; not the student's £8,000.
+    housing_benefit_applicable_income: 18_514
+    council_tax_reduction_applicable_income: 18_514

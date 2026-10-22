@@ -1,0 +1,37 @@
+description: >-
+  While this parameter is true, Northern Ireland LHA rates are frozen in cash terms at the level determined in the most recent year in which it was false. It works as gov.dwp.LHA.freeze does for Great Britain, but follows the Northern Ireland Housing Executive's determinations under Northern Ireland regulations. Northern Ireland has so far made a matching regulation for each Great Britain Modification Order, so the values match the Great Britain parameter. A year here is the fiscal year from April. Values from 2027 onward reflect announced rather than enacted policy.
+values:
+  2015-01-01: false
+  2020-04-06:
+    value: false
+    metadata:
+      reference:
+        - title: The Social Security (Coronavirus) (Further Measures) Regulations (Northern Ireland) 2020, reg. 4
+          href: https://www.legislation.gov.uk/nisr/2020/53/regulation/4/made
+  2021-04-06:
+    value: true
+    metadata:
+      reference:
+        - title: The Housing Benefit and Universal Credit Housing Costs (Executive Determinations) (Modification) Regulations (Northern Ireland) 2021
+          href: https://www.legislation.gov.uk/nisr/2021/14/made
+        - title: The Housing Benefit and Universal Credit Housing Costs (Executive Determinations) (Amendment and Modification) Regulations (Northern Ireland) 2022
+          href: https://www.legislation.gov.uk/nisr/2022/15/made
+        - title: The Housing Benefit and Universal Credit Housing Costs (Executive Determinations) (Modification) Regulations (Northern Ireland) 2023
+          href: https://www.legislation.gov.uk/nisr/2023/4/made
+  2024-04-06:
+    value: false
+    metadata:
+      reference:
+        - title: The Housing Benefit and Universal Credit Housing Costs (Executive Determinations) (Amendment) Regulations (Northern Ireland) 2024
+          href: https://www.legislation.gov.uk/nisr/2024/3/made
+  2025-04-06:
+    value: true
+    metadata:
+      reference:
+        - title: The Housing Benefit and Universal Credit Housing Costs (Executive Determinations) (Modification) Regulations (Northern Ireland) 2025
+          href: https://www.legislation.gov.uk/nisr/2025/1/made
+        - title: The Housing Benefit and Universal Credit Housing Costs (Executive Determinations) (Modification) Regulations (Northern Ireland) 2026
+          href: https://www.legislation.gov.uk/nisr/2026/2/made
+metadata:
+  unit: bool
+  label: Northern Ireland LHA freeze
