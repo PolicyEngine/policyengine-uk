@@ -1,0 +1,11 @@
+description: The appropriate percentage for council tax discounts in England, applied where there is one resident who is not disregarded, and doubled where there is no such resident.
+metadata:
+  economy: false
+  unit: /1
+  period: year
+  label: England council tax appropriate percentage
+  reference:
+    - title: "Local Government Finance Act 1992, section 11(3)"
+      href: https://www.legislation.gov.uk/ukpga/1992/14/section/11
+values:
+  1993-04-01: 0.25

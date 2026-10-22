@@ -10,8 +10,9 @@ class targeted_childcare_entitlement(Variable):
     defined_for = "targeted_childcare_entitlement_eligible"
     documentation = (
         "Targeted hours claimed on their own, or allocated first from a "
-        "participating child's working parent hours when standalone take-up "
-        "is false, as required by DfE guidance A1.11."
+        "participating child's working parent hours, in the terms it gets "
+        "them, when standalone take-up is false, as required by DfE "
+        "guidance A1.11."
     )
     reference = (
         "https://www.legislation.gov.uk/uksi/2014/2147/regulation/3",
@@ -36,7 +37,10 @@ class targeted_childcare_entitlement(Variable):
         )
         # The first funded hours are targeted whenever legally eligible.
         # False standalone take-up funds only the hours actually supplied by
-        # working parent participation, preserving the combined award.
+        # working parent participation, in the terms the child gets them,
+        # preserving the combined award.
+        term_share = person("extended_childcare_entitlement_term_share", period)
+        participating_value = min_(term_share * base_value, working_parent_total)
         return min_(
-            base_value, where(standalone_claim, base_value, working_parent_total)
+            base_value, where(standalone_claim, base_value, participating_value)
         )
