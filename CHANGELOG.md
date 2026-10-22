@@ -1,3 +1,19 @@
+## [2.147.0] - 2026-10-22
+
+### Added
+
+- - Add `directly_held_shares` and `unit_and_investment_trusts` household inputs for the share-like components of `corporate_wealth`, count share-like capital in every means test as `corporate_wealth` or, where the components exceed it beyond float32 rounding, their sum (`share_like_capital`), and uprate the components and the ISA balances with per-capita GDP.
+
+### Changed
+
+- - Give corporate SDLT its own head in `policyengine_uk/data/fiscal_partition.yaml` now that the totals count it once, and empty `model_double_counts`. Each tax head now names its row of the OBR current receipts table (EFO November 2025, Table A.5) and, where the March 2026 EFO's Table 3.1 footnotes place it, that table's line. The file also lists the receipt rows the model does not cover, more exclusions (tax assessments, wage-change measures, income tax reductions) and more overlap guards. New tests check on simulated households that each tax total is the sum of its heads and counts each head once.
+
+### Fixed
+
+- - Count corporate SDLT once in `household_tax`, `gov_tax` and `pre_budget_change_household_tax`. `expected_sdlt` no longer adds `corporate_sdlt`, which those totals already list. `gov.hmrc.stamp_duty.abolish` now zeroes `corporate_sdlt` and the `stamp_duty_land_tax` liability (no household is `sdlt_liable` once the tax is abolished) as well as `expected_sdlt`, so abolishing SDLT removes all of it. `expected_sdlt` also no longer adds `property_sale_rate` (a 0.045 share) to every household as £0.045 of SDLT.
+- Housing Benefit, Income Support, tax credit and Council Tax Reduction means tests no longer count a child's or young person's own income, tax or personal benefits as the claimant's (HB Regs 2006 reg 25(3), IS Regs 1987 reg 23(2), Tax Credits (Definition and Calculation of Income) Regs 2002 reg 3(1), the Council Tax Reduction applicant-and-partner rules).
+
+
 ## [2.146.6] - 2026-10-22
 
 ### Fixed
