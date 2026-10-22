@@ -1,0 +1,104 @@
+# April 2027 projections, not enacted 2027 rates. Scottish Ministers' current
+# policy is the previous September's CPI, rounded to the nearest 5p:
+# https://www.gov.scot/publications/social-security-assistance-scotland-up-rating-inflation-2026-27/pages/3/
+# September 2026 CPI was 3.5%; these expectations are hand-computed from the
+# enacted 2026 amounts, independently of the model's generated index.
+# Annual model periods use the fiscal-year parameter amounts.
+
+- name: Scottish Child Payment projects to 29.20 a week in April 2027
+  # 28.20 x 1.035 = 29.187 -> 29.20, then 29.20 x 365.25 / 7 = 1523.614286.
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+      child:
+        age: 5
+        would_claim_scp: true
+    benunits:
+      family:
+        members: [parent, child]
+        universal_credit: 5000
+    households:
+      household:
+        members: [parent, child]
+        country: SCOTLAND
+  output:
+    is_scp_eligible: [false, true]
+    scottish_child_payment: [0, 1523.61]
+
+- name: PAWHP higher full amount projects to 327.80 in April 2027
+  # 316.70 x 1.035 = 327.7845 -> 327.80.
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    age: 82
+    country: SCOTLAND
+    pawhp_eligible: true
+    is_on_pawhp_relevant_benefit: true
+  output:
+    pension_age_winter_heating_payment: 327.80
+
+- name: PAWHP lower full amount projects to 218.55 in April 2027
+  # 211.15 x 1.035 = 218.54025 -> 218.55.
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    country: SCOTLAND
+    pawhp_eligible: true
+    is_on_pawhp_relevant_benefit: true
+  output:
+    pension_age_winter_heating_payment: 218.55
+
+- name: PAWHP shared amounts for mixed ages use September CPI in April 2027
+  # Under 80: 105.55 x 1.035 = 109.24425 -> 109.25.
+  # Over 80 beside under 80: 211.15 x 1.035 = 218.54025 -> 218.55.
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      younger:
+        age: 70
+        pawhp_eligible: true
+        is_on_pawhp_relevant_benefit: false
+      older:
+        age: 82
+        pawhp_eligible: true
+        is_on_pawhp_relevant_benefit: false
+    benunits:
+      couple:
+        members: [younger, older]
+    households:
+      household:
+        members: [younger, older]
+        country: SCOTLAND
+  output:
+    pension_age_winter_heating_payment: [109.25, 218.55]
+    pawhp: 327.80
+
+- name: PAWHP shared amount for both over 80 projects to 163.90 in April 2027
+  # 158.35 x 1.035 = 163.89225 -> 163.90 for each person.
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      first:
+        age: 82
+        pawhp_eligible: true
+        is_on_pawhp_relevant_benefit: false
+      second:
+        age: 85
+        pawhp_eligible: true
+        is_on_pawhp_relevant_benefit: false
+    benunits:
+      couple:
+        members: [first, second]
+    households:
+      household:
+        members: [first, second]
+        country: SCOTLAND
+  output:
+    pension_age_winter_heating_payment: [163.90, 163.90]
+    pawhp: 327.80
