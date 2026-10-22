@@ -759,10 +759,11 @@
     oxford_council_tax_reduction_individual_non_dep_deduction: [0, 270.40, 691.60]
     council_tax_reduction: 838
 
-# Para 9(2)(d)-(e) exclude the person, whatever family they are in: someone who
-# pays the householder as a boarder or lodger, someone jointly liable for the
-# council tax, and the liable person (the household head) are nobody's
-# non-dependants.
+# Para 9(2)(d)-(e) exclude the person, whatever family they are in: someone
+# outside the household head's family who pays the householder as a boarder
+# or lodger, and a joint tenant, are nobody's non-dependants. Para 9(3)(a)(i)
+# keeps as a non-dependant a close relative who pays; with no relationship
+# input, a member of the head's own family who pays board is taken to be one.
 
 - name: Merton makes no deduction for an adult son who himself pays as a lodger
   period: 2026
@@ -840,6 +841,40 @@
     # Para 9(2)(e) excludes only the person liable to pay the applicant.
     council_tax_reduction_individual_non_dep_deduction_eligible: [false, false, true]
     merton_council_tax_reduction_non_dep_deductions: [691.60, 0]
+    council_tax_reduction: 1_108.40
+
+- name: Merton charges the applicant's own son who pays her board, as a close relative
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 45
+        is_household_head: true
+        is_claimant_or_partner: true
+      son:
+        age: 25
+        is_claimant_or_partner: false
+        rent_paid_as_boarder: 2_600
+        employment_income: 30_000
+        weekly_hours: 37.5
+    benunits:
+      benunit:
+        members: [parent, son]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [parent, son]
+        country: ENGLAND
+        local_authority: MERTON
+        council_tax: 1_800
+        savings: 0
+  output:
+    # Para 30: £13.30 a week on £576.92 (para 9(3)(a)(i) keeps him a
+    # non-dependant although he pays).
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, true]
+    merton_council_tax_reduction_non_dep_deductions: 691.60
     council_tax_reduction: 1_108.40
 
 - name: Merton makes no deduction for an adult son who is himself a joint tenant

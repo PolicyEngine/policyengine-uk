@@ -1362,3 +1362,124 @@
   output:
     uc_non_dependants_counted: [false, true]
     uc_non_dep_deductions: [0, 1_158.60]
+
+# SI 2012/2885 reg 9(2)(e) excludes someone liable to pay the applicant on a
+# commercial basis, but reg 9(3)(a)(i) keeps as a non-dependant one who is a
+# close relative of the applicant or partner (#2559 checks the Welsh and
+# Scottish equivalents' wording). The model has no relationship
+# input: a member of the household head's own family who pays board is taken
+# to be a close relative, so stays a non-dependant. The son is not in
+# remunerative work, so pays each scheme's lowest amount for 2026-27.
+# England's pensioner scheme: 5.20 a week (SI 2012/2885 Sch 1 para 8(1)(b)).
+- name: CTR (England pensioners), a son who pays his mother board stays her non-dependant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      mother:
+        age: 70
+        is_household_head: true
+        is_claimant_or_partner: true
+      son:
+        age: 25
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        rent_paid_as_boarder: 2_600
+    benunits:
+      benunit:
+        members: [mother, son]
+    households:
+      household:
+        members: [mother, son]
+        country: ENGLAND
+  output:
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, true]
+    council_tax_reduction_non_dep_deductions: 270.40
+
+# Scotland's working-age scheme: 5.55 a week (SSI 2021/249 reg 90).
+- name: CTR (Scotland), a son who pays his mother board stays her non-dependant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      mother:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+      son:
+        age: 25
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        rent_paid_as_boarder: 2_600
+    benunits:
+      benunit:
+        members: [mother, son]
+    households:
+      household:
+        members: [mother, son]
+        country: SCOTLAND
+  output:
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, true]
+    council_tax_reduction_non_dep_deductions: 288.60
+
+# Wales's working-age scheme: 6.70 a week (WSI 2013/3029 Sch 6 para 5).
+- name: CTR (Wales), a son who pays his mother board stays her non-dependant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      mother:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+      son:
+        age: 25
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        rent_paid_as_boarder: 2_600
+    benunits:
+      benunit:
+        members: [mother, son]
+    households:
+      household:
+        members: [mother, son]
+        country: WALES
+  output:
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, true]
+    council_tax_reduction_non_dep_deductions: 348.40
+
+# Someone outside the household head's family who pays the householder is
+# excluded personally (reg 9(2)(e)), even where the rest of their family pays
+# nothing; the lodger's son who does not pay is still a non-dependant (see
+# "CTR, a lodger's adult son is the applicant's non-dependant").
+- name: CTR (Scotland), a lodger's adult son who pays the householder himself is not a non-dependant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+      lodger:
+        age: 45
+        is_claimant_or_partner: true
+        rent_paid_as_lodger: 5_200
+      lodger_son:
+        age: 21
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        rent_paid_as_lodger: 2_600
+    benunits:
+      benunit_1:
+        members: [head]
+      benunit_2:
+        members: [lodger, lodger_son]
+    households:
+      household:
+        members: [head, lodger, lodger_son]
+        rent: 9_000
+        country: SCOTLAND
+  output:
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, false, false]
+    council_tax_reduction_non_dep_deductions: [0, 0]
