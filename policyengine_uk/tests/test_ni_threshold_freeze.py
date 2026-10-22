@@ -26,7 +26,7 @@ Invariants:
 4. Alignment, in test_threshold_indexation.py: the UEL and UPL with the
    higher rate threshold in every year 2021-2040, and the PT and LPL with the
    personal allowance from 2023. The 2021-22 and 2022-23 lower thresholds
-   are intended exceptions, and the 2023-24 LPL is #1968.
+   are intended exceptions.
 5. No cash cuts: no threshold falls from one year to the next, 2026-2040.
 6. Differential: for any earnings or profits >= 0 in 2026-2030, primary and
    additional Class 1, secondary Class 1 and Class 4 equal an exact-rational
@@ -163,12 +163,26 @@ def test_no_threshold_falls_in_cash_terms(system, name):
 def test_frozen_year_values_cite_a_source():
     """Every value dated in 2026-27 to 2030-31 carries a titled reference."""
     for name, path in PATHS.items():
-        file = (
-            PARAMETER_DIR
-            / "gov/hmrc/national_insurance"
-            / (path.replace(".", "/") + ".yaml")
-        )
-        values = yaml.safe_load(file.read_text())["values"]
+        component_paths = {
+            "primary_threshold": ("class_1/employee_scale.yaml", 1),
+            "upper_earnings_limit": ("class_1/employee_scale.yaml", 2),
+            "secondary_threshold": ("class_1/employer_scale.yaml", 1),
+            "lower_profits_limit": ("class_4/contribution_scale.yaml", 1),
+            "upper_profits_limit": ("class_4/contribution_scale.yaml", 2),
+        }
+        if name in component_paths:
+            relative, index = component_paths[name]
+            data = yaml.safe_load(
+                (PARAMETER_DIR / "gov/hmrc/national_insurance" / relative).read_text()
+            )
+            values = data["brackets"][index]["threshold"]["values"]
+        else:
+            file = (
+                PARAMETER_DIR
+                / "gov/hmrc/national_insurance"
+                / (path.replace(".", "/") + ".yaml")
+            )
+            values = yaml.safe_load(file.read_text())["values"]
         dated = {str(instant): entry for instant, entry in values.items()}
         years = [2025, 2026] if name == "lower_earnings_limit" else FROZEN_YEARS
         for year in years:
