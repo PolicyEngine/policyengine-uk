@@ -1,0 +1,1 @@
+- Excluded Child Benefit, Sure Start Maternity Grants and dependent children's own income from the ordinary Housing Benefit income assessment.
