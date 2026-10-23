@@ -255,6 +255,14 @@ threshold by the same rises, up to the last year of
 The EFO refresh does not touch `finance_ni.domestic_rates`; OBR does not
 publish a Northern Ireland domestic rates bill series (see below).
 
+For `obr.council_tax`, take each country's growth in receipts from
+Expenditure Table 4.1, not its "council tax level" row: dataset projection
+divides the receipts growth by the growth in household weights itself
+(#2067). When a forecast year becomes an outturn, replace it with the growth
+in the published liability the comments in `yoy_growth.yaml` name, and add the
+figures to `PUBLISHED_OUTTURNS` in
+`policyengine_uk/tests/test_council_tax_uprating.py`.
+
 ## Northern Ireland domestic rates
 
 `finance_ni.domestic_rates` is the growth in the average Northern Ireland

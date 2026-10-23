@@ -4,6 +4,9 @@
 # An explicit energy_price_basis opts into the variables' existing annual OBR-CPI
 # assumption from the declared price year. This does not supply an energy-specific
 # forecast or automatically label existing private Microcosm artifacts.
+# liquid_fuel_consumption and solid_fuel_consumption (heating oil, LPG, coal
+# and wood) are not in that group: Ofgem's price cap does not cover them, so
+# they are uprated by CPI from the data year below, like other LCFS spending.
 #
 # This map governs dataset projection. Core's class-level variable uprating still
 # carries direct situation inputs forward independently of dataset declarations.
@@ -21,6 +24,7 @@ gov.economic_assumptions.yoy_growth.obr.average_earnings:
 - employer_pension_contributions
 - employment_income
 - employment_income_before_lsr
+- pension_contributions_via_bonus_sacrifice
 - pension_contributions_via_salary_sacrifice
 # The pre-9 July 2015 share of the line above (FA 2004 s. 228ZA(6)).
 - pension_contributions_via_salary_sacrifice_pre_2015
@@ -31,9 +35,11 @@ gov.economic_assumptions.yoy_growth.obr.consumer_price_index:
 - alcohol_and_tobacco_consumption
 - bus_fare_spending
 - bus_fare_spending_reported
-# bsp_reported still holds FRS code 9 (War Widow's Pension, CPI-uprated) as
-# well as Bereavement Support Payment, whose rates are frozen. It moves off
-# this index once datasets put code 9 in war_widows_pension_reported (#2381).
+# bsp_reported still holds FRS code 9 (War Widow's Pension, CPI-uprated) and
+# the Widowed Parent's Allowance in code 6 (CPI-uprated) as well as
+# Bereavement Support Payment, whose rates are frozen. It moves off this index
+# once datasets put code 9 in war_widows_pension_reported and Widowed
+# Parent's Allowance in widowed_parents_allowance_reported (#2381).
 - bsp_reported
 - carers_allowance_reported
 - child_benefit_reported
@@ -57,6 +63,7 @@ gov.economic_assumptions.yoy_growth.obr.consumer_price_index:
 - income_support_reported
 - jsa_contrib_reported
 - jsa_income_reported
+- liquid_fuel_consumption
 - local_bus_uncapped_single_fare
 - maintenance_expenses
 - maternity_allowance_reported
@@ -65,6 +72,7 @@ gov.economic_assumptions.yoy_growth.obr.consumer_price_index:
 - recreation_consumption
 - restaurants_and_hotels_consumption
 - sda_reported
+- solid_fuel_consumption
 - state_pension
 - state_pension_reported
 - statutory_maternity_pay
@@ -73,6 +81,7 @@ gov.economic_assumptions.yoy_growth.obr.consumer_price_index:
 - transport_consumption
 - universal_credit_reported
 - war_widows_pension_reported
+- widowed_parents_allowance_reported
 - winter_fuel_allowance_reported
 - working_tax_credit_reported
 gov.economic_assumptions.yoy_growth.obr.diesel_spending_litre_proxy:
@@ -126,6 +135,7 @@ gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 - property_rental_income
 - savings
 - savings_interest_income
+- spousal_maintenance_income
 - stocks_and_shares_isa
 - sublet_income
 - cash_isa
