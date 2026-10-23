@@ -452,6 +452,13 @@ class Simulation(CoreSimulation):
         add_capital_gains_projection(self.tax_benefit_system.parameters, projection)
         self.tax_benefit_system.reset_parameter_caches()
 
+    def _invalidate_all_caches(self) -> None:
+        # Core replaces variable definitions when a reform neutralises or
+        # restores them. Rebind existing holders, including those rebuilt
+        # by subsample, before preserving inputs and clearing formula caches.
+        self._bind_to_tax_benefit_system()
+        super()._invalidate_all_caches()
+
     def apply_reform(self, reform: dict | tuple | Type[Reform]) -> None:
         """Apply a runtime reform while keeping generated CGT assumptions coherent."""
         # Reforms that set inputs (disable_simulated_benefits, adjust_budgets)

@@ -1,2 +1,2 @@
 - Fixed `Simulation.subsample()` and `Microsimulation.subsample()`, which raised `TypeError: Simulation.build_from_dataset() missing 1 required positional argument: 'dataset'`. They now keep a weighted sample of households with every supplied weight total unchanged, and replace the baseline and `dataset` with copies holding the same households.
-- Preserved stored inputs and model-owned values for neutralised variables when subsampling, including their original values when the variables are restored.
+- Preserved stored inputs and model-owned values for neutralised variables when subsampling, and rebound holders to the current variable definitions so later reforms restore their original values.
