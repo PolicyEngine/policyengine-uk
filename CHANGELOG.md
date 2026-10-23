@@ -1,3 +1,37 @@
+## [2.148.3] - 2026-10-23
+
+### Fixed
+
+- - Fixed a simulation given an input for a year before its data holding no person, benefit unit or household identifiers in that year, so that formulas reading them, such as `months_since_last_birthday` and the Universal Credit deduction draws, gave different values there from the simulation its exported frame loads back to.
+
+
+## [2.148.2] - 2026-10-23
+
+### Changed
+
+- Uprate benefits each April by the previous September's CPI, the measure every Social Security Administration Act 1992 s150 review uses, instead of the previous calendar year's CPI (#2533). `gov.benefit_uprating_cpi` now follows `gov.economic_assumptions.indices.september_cpi_uprating`, so the Universal Credit standard allowance and health element indices built on it follow September CPI too, as the Universal Credit Act 2025 requires. Add September 2026 CPI (3.5%, ONS 21 October 2026), which sets the April 2027 rise. IIDB moves from same-year calendar CPI to the benefit index. Propagate the index to the Universal Credit childcare cap so it uprates after its last published value. Amounts not raised by September CPI in practice that were on the index (Pension Credit standard minimum guarantee and savings credit threshold, Housing Benefit pension-age allowances and non-dependant deduction income bands, DfE funding rates, council tax high value surcharge) keep their previous lagged calendar-year CPI projection. This remains a placeholder for the earnings-linked Pension Credit and Housing Benefit group; the savings credit threshold and pension-age allowances are within the s150 review.
+- - Cite mortgage interest growth for 2030 to the OBR November 2025 EFO, which it comes from, since the March 2026 EFO stops forecasting mortgage interest payments after 2030 Q1; and cite social rent forecasts to the England rent cap (September CPI plus 1 percentage point) instead of the OBR, marking 2027 as a placeholder until September 2026 CPI is published. No values change.
+
+### Fixed
+
+- Make `current_education` and the maintenance loan evidence checks independent of calculation order. A year with no `current_education` input now keeps the latest input for an earlier year (for datasets, the last projected data year) and imputes from age only when there is none; before, it copied last year's value only if last year had happened to be calculated, so eFRS 2034 differed between a fresh simulation and one that had calculated 2033 first. `maintenance_loan_in_higher_education`, `maintenance_loan_living_arrangement` and `maintenance_loan_household_income` now count only supplied inputs as evidence (current-year inputs first, then the latest earlier input), not any value already calculated, so the age-based enrolment and the default tenure no longer count when something else calculated them first.
+- - Correct the free TV licence discount so the over-75 person and Pension Credit recipient must belong to the same benefit unit.
+- - A change to the statutory Marriage Allowance rate (`gov.hmrc.income_tax.allowances.marriage_allowance.max`) no longer switches on the CPS expanded Marriage Allowance reform. That reform now switches on only from its own parameters: `remove_income_condition`, or an `ma_rate` other than its default. Before, setting the statutory rate to 0 kept a 10% allowance for basic-rate couples and gave it to higher- and additional-rate couples, so income tax fell; now it removes the allowance.
+
+
+## [2.148.1] - 2026-10-23
+
+### Changed
+
+- - Removed the `core_reform_api` test cases, which called policyengine-core's `Reform.from_api` through a replaced `requests.get`, and added a test that fails if code here uses the policyengine-core functions that call the Public API.
+
+### Fixed
+
+- - Targeted (two-year-old) childcare and the Kingston upon Thames, Merton, Newham and Westminster Council Tax Reduction schemes now read Universal Credit earned income before the work allowance (`uc_earned_income_before_work_allowance`), as SI 2014/2147 reg 1(3)(a) and the schemes require.
+- Added explicit energy price-period declarations for dataset projection using the existing annual CPI assumption, while preserving flat energy amounts in unlabelled inputs.
+- - Rederive CPI after housing costs growth (`consumer_price_index_ahc`). Outturn for 2022-2025 now comes from ONS ad hoc 3582 calendar-year averages, and 2026-2030 from `create_ahc_deflator.py` on the March 2026 OBR forecasts (2026: 1.58% to 2.17%). The method is documented in the parameter metadata instead of being cited to the OBR, which does not publish the series.
+
+
 ## [2.148.0] - 2026-10-22
 
 ### Added

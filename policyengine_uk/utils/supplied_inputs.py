@@ -42,6 +42,8 @@ SUPPLIED_INPUT_VARIABLES = frozenset(
         "adjusted_net_income",
         "bus_fare_spending",
         "bus_in_london_trips",
+        "current_education",
+        "in_HE",
         "other_local_bus_trips",
         "pip_dl_category",
         "pip_dl_points",
@@ -51,6 +53,7 @@ SUPPLIED_INPUT_VARIABLES = frozenset(
         "local_bus_uncapped_single_fare",
         "ni_class_4_losses_brought_forward",
         "ni_class_4_trading_loss",
+        "tenure_type",
         "trading_loss",
         "uc_carer_element",
         "uc_LCWRA_element",
@@ -120,6 +123,30 @@ def supplied_input_periods(population, variable_name: str) -> List[Period]:
             )
         },
         key=lambda period: period.start,
+    )
+
+
+def latest_supplied_input_period(
+    population, variable_name: str, before: Period
+) -> Optional[Period]:
+    """The latest period before ``before`` for which ``variable_name`` was
+    supplied as an input (see ``supplied_input_periods``), or None."""
+    earlier = [
+        period
+        for period in supplied_input_periods(population, variable_name)
+        if period.start < before.start
+    ]
+    return earlier[-1] if earlier else None
+
+
+def supplied_by(population, variable_name: str, period: Period) -> bool:
+    """Whether ``variable_name`` was supplied as an input for ``period`` or an
+    earlier period, so that the value read for ``period`` is supplied data
+    (carried forward from the latest earlier input if need be), not a
+    default."""
+    return any(
+        supplied_period.start <= period.start
+        for supplied_period in supplied_input_periods(population, variable_name)
     )
 
 
