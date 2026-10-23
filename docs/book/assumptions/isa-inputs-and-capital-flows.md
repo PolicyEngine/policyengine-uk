@@ -101,8 +101,11 @@ through the investor. The model separately requires:
   `main_residential_property_purchased_is_in_uk`;
 - qualifying secured finance, represented by
   `main_residential_property_purchased_with_mortgage`. This means an eligible
-  legal mortgage or regulated home-purchase plan, excludes buy-to-let, and
-  satisfies the connected-lender restriction when applicable.
+  legal mortgage or regulated home-purchase plan satisfying the applicable
+  connected-lender and buy-to-let restrictions. The qualifying-condition
+  input includes the prescribed exceptions for overseas Crown employees
+  and their spouses or civil partners, and permitted delayed main-home
+  occupation.
 
 Only the bounded qualifying home-payment portion is exempt. The residual
 gross withdrawal is charged at 25%, or 20% during the temporary coronavirus

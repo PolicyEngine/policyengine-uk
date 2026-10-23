@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from policyengine_core.data import Dataset
+from policyengine_core.simulations import SimulationBuilder
 
 import policyengine_uk.simulation as simulation_module
 from policyengine_uk import Simulation
@@ -493,3 +494,215 @@ def test_existing_isa_total_keeps_priority_over_its_same_period_of_which_detail(
     assert value(simulation, "tax_free_savings_income", 2033) == pytest.approx(
         expected_i, abs=0.01
     )
+
+
+# The reference below exercises Core's existing flow input protocol directly.
+# It deliberately bypasses the UK dataset/ISA adapter and reads gross savings,
+# rather than deriving expectations from the adapter being tested.
+def gross_core_reference(savings_entries, exemptions, isa_interest):
+    reference_system = system.clone()
+    reference_system.parameters = deepcopy(system.parameters)
+    reference_system.parameters.get_child(
+        "gov.economic_assumptions.indices.ons.household_interest_income"
+    ).update(period="year:2025:5", value=100)
+    person = {
+        "age": {2026: 35},
+        "individual_savings_account_interest_income": dict(isa_interest),
+    }
+    if exemptions:
+        person["tax_free_savings_income"] = dict(exemptions)
+    reference = SimulationBuilder().build_from_dict(
+        reference_system,
+        {
+            "people": {"person": person},
+            "benunits": {"benunit": {"members": ["person"]}},
+            "households": {"household": {"members": ["person"]}},
+        },
+    )
+    # The dataset producer replays columns in declared order. Builder's
+    # buffered input sorting would change Core's gross residual calculation.
+    for period, amount in savings_entries:
+        reference.set_input("savings_interest_income", period, [amount])
+    return reference
+
+
+def nonannual_frame(savings_entries, exemptions, isa_interest, contract=None):
+    # Keep every financial column in the producer's declared order. A YEAR
+    # variable may accept a MONTH input through Core's actual input handler.
+    frame = pd.DataFrame(
+        {
+            "person_id__2026": [1],
+            "person_benunit_id__2026": [1],
+            "person_household_id__2026": [1],
+            "age__2026": [35],
+            **{
+                f"individual_savings_account_interest_income__{period}": [amount]
+                for period, amount in isa_interest
+            },
+            **{
+                f"tax_free_savings_income__{period}": [amount]
+                for period, amount in exemptions
+            },
+            **{
+                f"savings_interest_income__{period}": [amount]
+                for period, amount in savings_entries
+            },
+        }
+    )
+    if contract is not None:
+        frame.attrs[KEY] = deepcopy(contract)
+    return frame
+
+
+@pytest.mark.parametrize(
+    "contract, rolling_t, expected_n, expected_cash",
+    [
+        (None, None, 100, 600),
+        (ADDITIVE, None, 600, 1_100),
+        (None, 0, 600, 600),
+        (None, 700, -100, 600),
+    ],
+    ids=["legacy", "additive-control", "explicit-zero-T", "explicit-T-differs-from-I"],
+)
+def test_nonannual_month_replay_normalizes_the_annual_period_core_stores(
+    contract, rolling_t, expected_n, expected_cash
+):
+    # Core stores the July declaration as YEAR July2026--June2027 with value
+    # 600. This is the accepted input protocol, not a new annualisation rule.
+    rolling_year = "year:2026-07:1"
+    entries = [("2026", 3_000), ("2026-07", 600)]
+    exemptions = [] if rolling_t is None else [(rolling_year, rolling_t)]
+    interest = [("2026", 500), ("2027", 500)]
+    reference = gross_core_reference(entries, exemptions, interest)
+    assert reference.get_array("savings_interest_income", rolling_year).tolist() == [
+        600
+    ]
+    assert value(reference, "tax_free_savings_income", rolling_year) == (
+        500 if rolling_t is None else rolling_t
+    )
+    simulation = Simulation(
+        dataset=nonannual_frame(entries, exemptions, interest, contract),
+        scenario=no_economic_assumptions,
+    )
+    assert value(simulation, "savings_interest_income", rolling_year) == pytest.approx(
+        expected_n, abs=0.01
+    )
+    assert value(simulation, "capital_income", rolling_year) == pytest.approx(
+        expected_cash, abs=0.01
+    )
+    assert value(
+        simulation, "taxable_savings_interest_income", rolling_year
+    ) == pytest.approx(max(expected_n, 0), abs=0.01)
+    # Carry to a later query must preserve the original gross cash amount too.
+    expected_later = value(reference, "savings_interest_income", 2027)
+    if contract == ADDITIVE:
+        expected_later += value(reference, "tax_free_savings_income", 2027)
+    assert value(simulation, "capital_income", 2027) == pytest.approx(
+        expected_later, abs=0.01
+    )
+
+
+@pytest.mark.parametrize(
+    "entries, contract, expected_gross",
+    [
+        ([("month:2026-01:24", 6_000)], None, [3_000, 3_000]),
+        ([("2026", 1_000), ("month:2026-01:24", 6_000)], None, [1_000, 5_000]),
+        ([("month:2026-01:24", 6_000), ("2026", 3_000)], None, [3_000, 3_000]),
+        ([("month:2026-01:24", 6_000)], ADDITIVE, [3_000, 3_000]),
+    ],
+    ids=["span-only", "prior-year-residual", "span-then-year", "additive-span-control"],
+)
+def test_long_month_span_replay_preserves_core_gross_order_before_year_specific_exemptions(
+    entries, contract, expected_gross
+):
+    # MONTH24 invokes Core's YEAR-flow handler: it keeps existing annual
+    # inputs and divides the gross residual over the remaining annual slots.
+    # A YEAR(size2) input has different direct-storage semantics; tested below.
+    exemptions = [("2026", 500), ("2027", 700)]
+    interest = [("2026", 500), ("2027", 500)]
+    reference = gross_core_reference(entries, exemptions, interest)
+    assert [
+        value(reference, "savings_interest_income", y) for y in (2026, 2027)
+    ] == expected_gross
+    simulation = Simulation(
+        dataset=nonannual_frame(entries, exemptions, interest, contract),
+        scenario=no_economic_assumptions,
+    )
+    for year, gross in zip((2026, 2027), expected_gross):
+        exemption = value(reference, "tax_free_savings_income", year)
+        expected_n = gross if contract == ADDITIVE else gross - exemption
+        expected_cash = gross + exemption if contract == ADDITIVE else gross
+        assert value(simulation, "savings_interest_income", year) == pytest.approx(
+            expected_n, abs=0.01
+        )
+        assert value(simulation, "capital_income", year) == pytest.approx(
+            expected_cash, abs=0.01
+        )
+        assert value(
+            simulation, "taxable_savings_interest_income", year
+        ) == pytest.approx(max(expected_n, 0), abs=0.01)
+
+
+def test_mixed_annual_additive_input_is_gross_equivalent_during_a_legacy_span_replay():
+    exemptions = [("2026", 500), ("2027", 700)]
+    interest = [("2026", 500), ("2027", 500)]
+    entries = [("2027", 2_000), ("month:2026-01:24", 6_000)]
+    contract = {"version": 1, "years": {"2026": LEGACY, "2027": ADDITIVE}}
+    # The known2027 ordinary2000 plus exemption700 consumes2700 of the
+    # 6000 gross span, leaving3300 gross for2026. Core computes the residual.
+    reference = gross_core_reference(
+        [("2027", 2_700), ("month:2026-01:24", 6_000)], exemptions, interest
+    )
+    assert [value(reference, "savings_interest_income", y) for y in (2026, 2027)] == [
+        3_300,
+        2_700,
+    ]
+    simulation = Simulation(
+        dataset=nonannual_frame(entries, exemptions, interest, contract),
+        scenario=no_economic_assumptions,
+    )
+    for year, expected_n, gross in ((2026, 2_800, 3_300), (2027, 2_000, 2_700)):
+        assert value(simulation, "savings_interest_income", year) == pytest.approx(
+            expected_n, abs=0.01
+        )
+        assert value(simulation, "capital_income", year) == pytest.approx(
+            gross, abs=0.01
+        )
+
+
+@pytest.mark.parametrize(
+    "prior_gross",
+    [None, 1_000],
+    ids=["same-start-carry", "strict-earlier-uprating-first"],
+)
+def test_larger_year_input_preserves_core_same_start_fallback_and_earlier_priority(
+    prior_gross,
+):
+    # Core stores YEAR(size2) directly, without dividing it into annual inputs.
+    # For a one-year query it first tries a strictly earlier uprating source;
+    # only absent that source does same-start carry apply. The gross control
+    # below executes that exact base protocol rather than inventing a split.
+    entries = [] if prior_gross is None else [("2025", prior_gross)]
+    entries += [("year:2026:2", 6_000)]
+    exemptions = [("2025", 400), ("2026", 500), ("2027", 700)]
+    interest = [("2025", 500), ("2026", 500), ("2027", 500)]
+    reference = gross_core_reference(entries, exemptions, interest)
+    assert reference.get_array("savings_interest_income", "year:2026:2").tolist() == [
+        6_000
+    ]
+    expected_gross = [6_000 if prior_gross is None else 1_000, 6_000]
+    assert [
+        value(reference, "savings_interest_income", y) for y in (2026, 2027)
+    ] == expected_gross
+    simulation = Simulation(
+        dataset=nonannual_frame(entries, exemptions, interest),
+        scenario=no_economic_assumptions,
+    )
+    for year, gross in zip((2026, 2027), expected_gross):
+        exemption = value(reference, "tax_free_savings_income", year)
+        assert value(simulation, "capital_income", year) == pytest.approx(
+            gross, abs=0.01
+        )
+        assert value(simulation, "savings_interest_income", year) == pytest.approx(
+            gross - exemption, abs=0.01
+        )
