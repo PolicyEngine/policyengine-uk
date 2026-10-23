@@ -73,7 +73,8 @@ model estimates it: it assumes that in each of the five previous years the
 pension input and the incomes tested for the taper were this year's (times
 `gov.simulation.pensions.prior_year_input_ratio`, 1, for the input), deflated
 by average earnings growth, and carries forward what the last three years'
-allowances leave unused, earliest first. The estimate is nil for someone with
+allowances leave unused, after each year's excess has used the unused
+allowance of the three years before it, earliest first (s. 228A(7)). The estimate is nil for someone with
 no pension input this year, and nil before 2020-21. The money purchase
 annual allowance, the £10,000 limit on money purchase savings after pensions
 are first flexibly accessed
@@ -86,13 +87,24 @@ separately attract the annual allowance charge,
 the excess at the basic, higher and additional rates on the slices that fall
 in each band when it is added on top of the person's income after allowances
 ([Finance Act 2004 s. 227](https://www.legislation.gov.uk/ukpga/2004/12/section/227)).
-Relief-at-source contributions are not deducted from that income; for people
-who would otherwise pay tax above the basic rate, they raise the rate limits
-instead (s. 192(4), s. 227(4C)). So an employee on £45,000 who pays £20,000
-into a personal pension, with £50,000 of employer contributions, pays a £2,946
-charge on the £10,000 excess in 2025-26: the excess sits on top of £32,430 of
-income after the personal allowance, so part of it falls in the higher rate
-band. Deducting the contributions first would have given £2,000.
+Relief-at-source contributions are not deducted from that income. Under
+s. 192(4) they raise the basic and higher rate limits instead, but only for
+someone whose income other than savings and dividends would otherwise be
+taxed at the higher or additional rate (for a Scottish taxpayer, at a
+Scottish rate above the basic rate); s. 227(4C) then applies the raised
+limits to the charge, and the excess itself does not count towards that test
+(s. 227(5)). So an employee on £45,000 who pays £20,000 gross into a personal
+pension, with £50,000 of employer contributions, pays a £2,946 charge on the
+£10,000 excess in 2025-26: the excess sits on top of £32,430 of income after
+the personal allowance, which is below the £37,700 basic rate limit, so the
+limits are not raised and £4,730 of the excess falls in the higher rate
+band. Paid through a net pay arrangement, the same contributions would be
+deducted first and the charge would be £2,000. HMRC's
+[PTM056120](https://www.gov.uk/hmrc-internal-manuals/pensions-tax-manual/ptm056120)
+describes the limits as raised by any relief-at-source contribution, without
+the s. 192(4) condition, and says the charge is the same whichever way the
+contribution is paid; on that reading this charge would also be £2,000. The
+model follows the statutory condition.
 The amount tested against the allowance is
 `pension_contributions_for_annual_allowance`, which counts member
 contributions made before age 75, employer contributions and salary
@@ -104,11 +116,16 @@ allowance for this person is nil, since the estimated input in each earlier
 year also exceeds that year's allowance; with £10,000 of unused allowance
 brought forward, there is no charge. By default the pension input amount is
 cash contributions: `defined_benefit_pension_share` defaults to nil, which
-treats every contribution as money purchase. Defined-benefit accrual counts
-when that share is supplied (the accrual is then
-`defined_benefit_pension_input_amount`, supplied or estimated from those
-contributions), or when `defined_benefit_pension_input_amount` or
-`pension_contributions_for_annual_allowance` is supplied.
+treats every contribution as money purchase. To count defined-benefit
+accrual, supply `defined_benefit_pension_input_amount` (for example from a
+pension savings statement) together with `defined_benefit_pension_share`, the
+share of workplace contributions it replaces; without the share it is added
+on top of contributions that still count as money purchase. A share supplied
+alone leaves the total unchanged before age 75, since the input amount is
+then estimated as those contributions times
+`gov.simulation.pensions.defined_benefit_input_per_contribution` (1).
+Supplying `pension_contributions_for_annual_allowance` overrides the whole
+total.
 
 Relieved contributions also reduce `adjusted_net_income`, so they restore
 personal allowance lost above £100,000, as in law
@@ -163,10 +180,14 @@ add up to the same total relief:
 
 PolicyEngine computes the **total** relief (both mechanisms together) as a
 reduction in income tax, because it operates on annual aggregates rather
-than walking the cash-flow steps. The exception is basic-rate relief at
-source on contributions above the person's taxable income, such as the £720
-on a non-taxpayer's £3,600 contribution: the provider still claims it, but
-the model has no tax to reduce. Otherwise this matches HMRC's published
+than walking the cash-flow steps. It gives less than the law where
+basic-rate relief at source is worth more than the tax the deduction saves:
+on contributions above the person's taxable income, such as the £720 on a
+non-taxpayer's £3,600 contribution, and on contributions that come off
+income taxed below 20%, such as dividends at the dividend ordinary rate or a
+Scottish taxpayer's starter rate band. The provider still claims 20% in those
+cases (s. 192(1)-(3)), but the model has less or no tax to reduce. Otherwise
+this matches HMRC's published
 statistics on the *fiscal cost of pension tax relief*, which also report the
 total across both mechanisms.
 
