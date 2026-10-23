@@ -751,7 +751,9 @@
     wales_childcare_offer: 7_003.50
 
 # Paragraph 69: gross income is before salary sacrifice. employment_income is
-# cash pay, so salary and bonus sacrifice are added back.
+# cash pay, so salary and bonus sacrifice are added back. The add-back counts
+# only people with pay (employment_income_before_lsr), which a Simulation fills
+# from employment_income but the YAML runner does not, so the cases set both.
 - name: Salary sacrifice counts towards the £100,000 gross income limit
   period: 2026
   absolute_error_margin: 0.01
@@ -760,6 +762,7 @@
       parent:
         age: 30
         employment_income: 99_000
+        employment_income_before_lsr: 99_000
         pension_contributions_via_salary_sacrifice: 2_000
       child:
         age: 3
@@ -771,6 +774,7 @@
         members: [parent, child]
         region: WALES
   output:
+    pension_contributions_via_salary_sacrifice_from_pay: [2_000, 0]
     # 99,000 + 2,000 = 101,000 > 100,000
     wales_childcare_offer: 0
 
@@ -782,6 +786,7 @@
       parent:
         age: 30
         employment_income: 99_000
+        employment_income_before_lsr: 99_000
         pension_contributions_via_bonus_sacrifice: 2_000
       child:
         age: 3
@@ -793,6 +798,7 @@
         members: [parent, child]
         region: WALES
   output:
+    pension_contributions_via_salary_sacrifice_from_pay: [2_000, 0]
     # 99,000 + 2,000 = 101,000 > 100,000
     wales_childcare_offer: 0
 
@@ -804,6 +810,7 @@
       parent:
         age: 30
         employment_income: 98_000
+        employment_income_before_lsr: 98_000
         pension_contributions_via_salary_sacrifice: 2_000
       child:
         age: 3
@@ -815,13 +822,13 @@
         members: [parent, child]
         region: WALES
   output:
+    pension_contributions_via_salary_sacrifice_from_pay: [2_000, 0]
     # 98,000 + 2,000 = 100,000
     wales_childcare_offer: 7_003.50
 
-# Untaxed benefits are not gross income here (see gross_income_sources): the
-# guidance frames the test around income from work and investments and aligns
-# it with Tax-Free Childcare's taxable-income test.
-- name: Personal Independence Payment does not count towards the £100,000 limit
+# Untaxed benefits are unearned income too (question 9 names Guardian's
+# Allowance, which is untaxed).
+- name: Personal Independence Payment counts towards the £100,000 gross income limit
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -840,8 +847,8 @@
         members: [parent, child]
         region: WALES
   output:
-    # 99,000 counted; PIP is untaxed
-    wales_childcare_offer: 7_003.50
+    # 99,000 + 2,000 = 101,000 > 100,000
+    wales_childcare_offer: 0
 
 # Review C3: guidance para 87 lists "Universal Credit where the individual has
 # been assessed as having limited capability for work", so the parent needs a
