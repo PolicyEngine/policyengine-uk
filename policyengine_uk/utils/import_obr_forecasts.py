@@ -1038,7 +1038,7 @@ def render_receipts_growth_yaml(
         new_values = render_receipts_values(
             old_values, entry_indent, series, tail, release, previous_release
         )
-        lines[values_start + 1 : values_end] = new_values
+        lines = [*lines[: values_start + 1], *new_values, *lines[values_end:]]
 
         start, end = _series_block(lines, ("obr", *path))
         metadata = _yaml_block(lines, "metadata", indent, start, end)
@@ -1046,7 +1046,7 @@ def render_receipts_growth_yaml(
             lines, "reference", indent + 2, metadata[0], metadata[1]
         )
         pad = " " * (indent + 2)
-        lines[ref_start:ref_end] = [f"{pad}reference:"] + [
+        new_references = [f"{pad}reference:"] + [
             text
             for reference in references
             for text in (
@@ -1054,6 +1054,7 @@ def render_receipts_growth_yaml(
                 f"{pad}    href: {reference['href']}",
             )
         ]
+        lines = [*lines[:ref_start], *new_references, *lines[ref_end:]]
 
         node = expected["obr"]
         for key in path:
