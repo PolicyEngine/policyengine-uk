@@ -1,0 +1,134 @@
+# Widowed Parent's Allowance (SSCBA 1992 s.39A) and Bereavement Support
+# Payment share FRS benefit code 6 but are treated differently. 2026-27 weekly
+# rates: Widowed Parent's Allowance 156.65 (SI 2026/148 art. 18), Carer's
+# Allowance 86.45.
+
+- name: Widowed Parent's Allowance is taxable and Universal Credit unearned income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    widowed_parents_allowance_reported: 156.65 * 52
+  output:
+    widowed_parents_allowance: 156.65 * 52
+    # ITEPA 2003 s.577(1).
+    social_security_income: 156.65 * 52
+    # UC Regs 2013 reg. 66(1)(b)(vi).
+    uc_unearned_income: 156.65 * 52
+
+- name: The same amount of Bereavement Support Payment is neither
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    bsp_reported: 156.65 * 52
+  output:
+    social_security_income: 0
+    uc_unearned_income: 0
+
+- name: Widowed Parent's Allowance is in the benefit totals that count Bereavement Support Payment
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        widowed_parents_allowance_reported: 156.65 * 52
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_uc: false
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    household_benefits: 156.65 * 52
+    hbai_benefits: 156.65 * 52
+    gov_spending: 156.65 * 52
+    pre_budget_change_household_benefits: 156.65 * 52
+    # 8,145.80 is below the personal allowance.
+    income_tax: 0
+
+- name: Working-age Housing Benefit counts Widowed Parent's Allowance less £15 a week
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        widowed_parents_allowance_reported: 156.65 * 52
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, child]
+        # A legacy Housing Benefit claim, so the means test itself applies.
+        claims_universal_credit: false
+        # Held at zero to isolate the allowance.
+        child_benefit: 0
+        tax_credits: 0
+    households:
+      household:
+        members: [parent, child]
+        country: ENGLAND
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_000
+  output:
+    # HB Regs 2006 Sch 5 para 16(b).
+    housing_benefit_widowed_parents_allowance_income: (156.65 - 15) * 52
+    housing_benefit_applicable_income: (156.65 - 15) * 52
+
+- name: Income Support disregards £10 a week of Widowed Parent's Allowance
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        widowed_parents_allowance_reported: 156.65 * 52
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        country: ENGLAND
+  output:
+    # IS Regs 1987 Sch 9 para 16(h), then the model's £20 lone parent
+    # disregard.
+    income_support_applicable_income: (156.65 - 10 - 20) * 52
+
+- name: Widowed Parent's Allowance overlaps with Carer's Allowance
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    care_hours: 35
+    country: ENGLAND
+    widowed_parents_allowance_reported: 156.65 * 52
+  output:
+    # SI 1979/597 reg. 12: the allowance exceeds Carer's Allowance, so none
+    # is paid.
+    carers_allowance_pre_overlap: 86.45 * 52
+    carers_allowance_overlapping_benefits: 156.65 * 52
+    carers_allowance: 0
+
+- name: The claimant's Widowed Parent's Allowance is in the capped total
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        widowed_parents_allowance_reported: 2_000
+    benunits:
+      family:
+        members: [claimant]
+        universal_credit_pre_benefit_cap: 18_000
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    # Welfare Reform Act 2012 s. 96(10)(n).
+    benefit_cap_welfare_benefits: 20_000

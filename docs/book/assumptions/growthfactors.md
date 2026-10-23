@@ -18,9 +18,9 @@ We apply CPI to these variables:
 - All reported benefits– `carers_allowance_reported`, `child_benefit_reported`, `child_tax_credit_reported`, `esa_contrib_reported`, `esa_income_reported`, `housing_benefit_reported`, `iidb_reported`, `incapacity_benefit_reported`, `income_support_reported`, `jsa_contrib_reported`, `jsa_income_reported`, `maternity_allowance_reported`, `pension_credit_reported`, `sda_reported`, `state_pension_reported`, `universal_credit_reported`, `winter_fuel_allowance_reported`, `working_tax_credit_reported`
 - All consumption categories EXCEPT energy– `alcohol_and_tobacco_consumption`, `clothing_and_footwear_consumption`, `communication_consumption`, `education_consumption`, `food_and_non_alcoholic_beverages_consumption`, `health_consumption`, `household_furnishings_consumption`, `housing_water_and_electricity_consumption`, `miscellaneous_consumption`, `recreation_consumption`, `restaurants_and_hotels_consumption`, `transport_consumption`
 
-`domestic_energy_consumption`, `electricity_consumption` and `gas_consumption` are deliberately excluded. The data build calibrates them to NEED mean kWh and converts to pounds at Ofgem Q2 2026 unit rates, so the stored values already carry FY26/27 price levels; uprating them from the dataset's data year would re-apply price changes that are already included. See PolicyEngine/policyengine-uk#1867.
+`domestic_energy_consumption`, `electricity_consumption` and `gas_consumption` are deliberately excluded. The data build calibrates them to NEED mean kWh and converts to pounds at Ofgem Q2 2026 unit rates, so the stored values already carry FY26/27 price levels; uprating them from the dataset's data year would re-apply price changes that are already included. See PolicyEngine/policyengine-uk#1867. `liquid_fuel_consumption` and `solid_fuel_consumption` (heating oil, LPG, coal and wood) are not covered by Ofgem's price cap, so they are CPI-uprated from the data year like other LCFS spending.
 
-- Other variables– `afcs_reported`, `bsp_reported`, `childcare_expenses`, `free_school_fruit_veg`, `free_school_meals`, `free_school_milk`, `maintenance_expenses`, `statutory_maternity_pay`, `statutory_paternity_pay`, `statutory_sick_pay`, `state_pension`, `war_widows_pension_reported`
+- Other variables– `afcs_reported`, `bsp_reported`, `childcare_expenses`, `free_school_fruit_veg`, `free_school_meals`, `free_school_milk`, `maintenance_expenses`, `statutory_maternity_pay`, `statutory_paternity_pay`, `statutory_sick_pay`, `state_pension`, `war_widows_pension_reported`, `widowed_parents_allowance_reported`
 
 ## Road fuel volume
 
@@ -58,6 +58,29 @@ We apply the OBR's wage growth forecasts to employment-related variables.
 
 We use average earnings for these variables: `employee_pension_contributions`, `employer_pension_contributions`, `employment_income`, `employment_income_before_lsr`, `personal_pension_contributions`, `student_loan_repayments`
 
+### Newly assigned student loan plans
+
+Dataset projection holds ages fixed, so a person of a given age represents a
+later university intake in each projected year. When projection adds a loan
+to a tertiary-educated person without one, it uses current household region
+as a proxy for the funding nation, because the dataset does not record the
+funding agency. This proxy cannot identify people who moved between nations.
+
+The [official repayment-plan rules](https://www.gov.uk/repaying-your-student-loan/which-repayment-plan-you-are-on)
+give SAAS borrowers Plan 4 and Student Finance Northern Ireland borrowers
+Plan 1. For undergraduate loans, England uses Plan 1 before the 2012 intake,
+Plan 2 for 2012–2022, and Plan 5 from 2023; Wales uses Plan 1 before 2012 and
+Plan 2 from 2012. New assignments follow these routes; an unknown region
+leaves the person without an assigned loan. New holders from the 2023 and
+later intakes are added only in England: Plan 5 is the only plan that did not
+exist in the base year, while the other nations' plans for those intakes are
+already in the data. Plan 1 loans first paid before September 2006 (the 2005
+and earlier intakes) are written off at 65, later ones about 29 years after
+the course started. Take-up remains a fixed 40%
+probability with a draw keyed on person ID. This funding-nation routing
+applies to newly assigned loans; the existing-holder relabelling and
+write-off approximations are unchanged.
+
 ## Lagged average earnings
 
 We lag earnings growth by one year and use that to uprate housing service charges (including ground rent).
@@ -74,7 +97,7 @@ We derive these rates as calendar-year nominal GDP growth from the OBR's March 2
 |-------------|------|------|------|------|------|------|------|------|
 | Growth rate | 10.0% | 5.2% | 3.9% | 4.7% | 2.9% | 3.3% | 3.2% | 3.1% |
 
-We use per capita GDP for these variables: `benunit_reported_capital`, `capital_gains`, `capital_gains_badr`, `capital_gains_before_response`, `capital_gains_carried_interest`, `capital_gains_residential_property`, `cash_isa`, `corporate_wealth`, `directly_held_shares`, `dividend_income`, `gross_financial_wealth`, `household_lifetime_isa_balance`, `lifetime_isa_balance`, `lump_sum_income`, `main_residence_value`, `maintenance_income`, `miscellaneous_income`, `mortgage_capital_repayment`, `net_financial_wealth`, `non_residential_property_value`, `other_investment_income`, `other_residential_property_value`, `owned_land`, `pension_credit_reported_capital`, `pension_income`, `private_pension_wealth`, `private_transfer_income`, `property_income`, `property_rental_income`, `savings`, `savings_interest_income`, `stocks_and_shares_isa`, `sublet_income`, `uc_reported_capital`, `unit_and_investment_trusts`
+We use per capita GDP for these variables: `benunit_reported_capital`, `capital_gains`, `capital_gains_badr`, `capital_gains_before_response`, `capital_gains_carried_interest`, `capital_gains_residential_property`, `cash_isa`, `corporate_wealth`, `directly_held_shares`, `dividend_income`, `gross_financial_wealth`, `household_lifetime_isa_balance`, `lifetime_isa_balance`, `lump_sum_income`, `main_residence_value`, `maintenance_income`, `miscellaneous_income`, `mortgage_capital_repayment`, `net_financial_wealth`, `non_residential_property_value`, `other_investment_income`, `other_residential_property_value`, `owned_land`, `pension_credit_reported_capital`, `pension_income`, `private_pension_wealth`, `private_transfer_income`, `property_income`, `property_rental_income`, `savings`, `savings_interest_income`, `spousal_maintenance_income`, `stocks_and_shares_isa`, `sublet_income`, `uc_reported_capital`, `unit_and_investment_trusts`
 
 ## Council tax
 

@@ -21,12 +21,14 @@ class housing_benefit_savings_credit_only_income(Variable):
         "or blind earner, otherwise 5 pounds single or 10 pounds couple), so "
         "Housing Benefit's own 5 and 10 pound amounts are not deducted again. "
         "Childcare charges are deducted as in the general "
-        "route, without the work condition or the cap at earnings. Housing "
+        "route, without the work condition or the cap at earnings. Pension "
+        "Credit counts spousal maintenance in full, so Housing Benefit's 15 "
+        "pound maintenance disregard (where the family includes a child or "
+        "young person) is deducted. Housing "
         "Benefit's own income and tariff income rules do not apply to the "
         "Secretary of State's figure, which already counts Pension Credit "
-        "deemed income from capital. Not modelled: the "
-        "maintenance disregards (neither income definition counts "
-        "maintenance), the exempt work disregard, the income and capital of a "
+        "deemed income from capital. Not modelled: "
+        "the exempt work disregard, the income and capital of a "
         "partner treated as a household member but not in the Pension Credit "
         "assessment, and income of a non-dependant treated as the claimant's. "
         "War pensions (Great Britain: local schemes under section 134(8) of "
@@ -41,6 +43,7 @@ class housing_benefit_savings_credit_only_income(Variable):
     reference = (
         "https://www.legislation.gov.uk/uksi/2006/214/regulation/27",
         "https://www.legislation.gov.uk/uksi/2006/214/schedule/4",
+        "https://www.legislation.gov.uk/uksi/2006/214/schedule/5/paragraph/20",
         "https://www.legislation.gov.uk/nisr/2006/406/regulation/25",
         "https://www.legislation.gov.uk/nisr/2006/406/schedule/5",
         "https://www.legislation.gov.uk/uksi/2002/1792/schedule/VI",
@@ -96,7 +99,11 @@ class housing_benefit_savings_credit_only_income(Variable):
             max_(0, standard - benunit("pension_credit_earnings_disregard", period)),
             0,
         )
-        disregard = higher_lone_parent + additional
+        # Reg 27(4)(c)(ii): Pension Credit counts spousal maintenance in full
+        # (SPC Regs 2002 reg 15(5)(d)), so the higher amount Housing Benefit
+        # disregards is all of its Sch 5 para 20 disregard.
+        maintenance = benunit("housing_benefit_maintenance_disregard", period)
+        disregard = higher_lone_parent + additional + maintenance
         return max_(
             0,
             pension_credit_income + savings_credit_payable - childcare - disregard,

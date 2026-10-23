@@ -1,3 +1,54 @@
+## [2.151.0] - 2026-10-23
+
+### Added
+
+- - Added seven input-driven gambling duty families from 2024/25 to household and government taxes, including a documented casino incidence proxy.
+
+
+## [2.150.1] - 2026-10-23
+
+### Fixed
+
+- Project Scottish Child Payment and Pension Age Winter Heating Payment by the previous September's CPI with annual nearest-5p rounding, replacing outdated Scottish Child Payment forecast anchors from 2027.
+
+
+## [2.150.0] - 2026-10-23
+
+### Fixed
+
+- - Stop discounting Land Transaction Tax and Land and Buildings Transaction Tax twice. `expected_ltt` and `expected_lbtt` multiplied `land_transaction_tax` and `land_and_buildings_transaction_tax` by `gov.hmrc.stamp_duty.property_sale_rate` (0.045), but those liabilities are already charged only on the year's purchases and rent increments. Each expected value now equals its liability, the convention `expected_sdlt` follows, so `gov_tax`, `household_tax` and `pre_budget_change_household_tax` count LTT and LBTT at their full value and LTT or LBTT reforms are scored at full value rather than 4.5% of it.
+
+### Removed
+
+- - Remove `gov.hmrc.stamp_duty.property_sale_rate`, a 2021 placeholder with no remaining reader once `expected_sdlt`, `expected_ltt` and `expected_lbtt` stopped scaling by it. A reform that sets it now raises an unknown-parameter error instead of silently doing nothing.
+
+
+## [2.149.1] - 2026-10-23
+
+### Fixed
+
+- - Corrected the ordinary pension-age Housing Benefit capital threshold history to £6,000 before 2 November 2009 and £10,000 thereafter.
+
+
+## [2.149.0] - 2026-10-23
+
+### Added
+
+- - Added `pension_contributions_via_bonus_sacrifice`, an input for employer pension contributions made in place of a bonus. It is read summed with `pension_contributions_via_salary_sacrifice`, so the £2,000 NICs exemption cap from April 2029 and the annual allowance threshold income cover both routes, and datasets can keep the two apart.
+- - Added `liquid_fuel_consumption` and `solid_fuel_consumption`, household spending on heating oil, LPG, coal and wood (COICOP 04.5.3 and 04.5.4). They default to zero, are already part of `housing_water_and_electricity_consumption` so add nothing to `consumption`, and dataset projection uprates them by CPI like other LCFS spending, since Ofgem's price cap does not cover them.
+- - Added `spousal_maintenance_income`, maintenance paid by a spouse, civil partner, former spouse or former civil partner. It is Universal Credit unearned income, Pension Credit income (but not savings credit qualifying income) and Housing Benefit income, less £15 a week where the family includes a child or young person, as well as market and HBAI income. `maintenance_income` is documented as child maintenance, which counts in none of the means tests.
+- - Added `widowed_parents_allowance_reported` (CPI-uprated) and `widowed_parents_allowance`, so datasets can separate Widowed Parent's Allowance from Bereavement Support Payment. Unlike Bereavement Support Payment, the allowance is taxable, Universal Credit unearned income, a welfare benefit for the benefit cap and an overlapping benefit for Carer's Allowance and Carer Support Payment. Housing Benefit counts it less £15 a week and Income Support less £10 a week.
+
+### Fixed
+
+- - Fixed `uprate_student_loan_plans` in dataset projection: it takes the base year from the dataset instead of assuming 2023, compares the data's fixed ages with the base year's oldest holder of each plan (so new Plan 2 holders above the 2012 intake now appear, and new Plan 1 holders come only from the 1998 and later intakes, with loans first paid before September 2006 written off at 65), and keys each person's take-up draw on `person_id`, so the same people hold a loan in every year and in any row order.
+- - Count claimant and partner spousal maintenance and Widowed Parent’s Allowance in Council Tax Reduction income across Great Britain, with the statutory £15 weekly disregards and Pension Credit routing.
+- - Count the claimant's and partner's spousal maintenance in Income Support while continuing to disregard child maintenance.
+- - Included spousal maintenance in Housing Benefit and Council Tax Reduction non-dependant income bands while preserving its income-tax exemption.
+- - Correct newly assigned projected student loan plans by funding nation, using household region as a proxy: Plan 4 for Scotland, Plan 1 for Northern Ireland, Plan 2 for Wales, and Plan 2 or 5 by entry cohort for England.
+- - Charged income tax on statutory paternity pay, which ITEPA 2003 s. 660 Table A lists as taxable with statutory sick and maternity pay, and counted it as earnings in Housing Benefit and Council Tax Reduction income, so the tax on it does not raise those awards.
+
+
 ## [2.148.5] - 2026-10-23
 
 ### Fixed
