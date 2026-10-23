@@ -1,1 +1,0 @@
-- Count the claimant's and partner's spousal maintenance in Income Support while continuing to disregard child maintenance.

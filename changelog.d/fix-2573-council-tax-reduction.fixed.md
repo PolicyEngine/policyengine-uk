@@ -1,1 +1,0 @@
-- Count claimant and partner spousal maintenance and Widowed Parent’s Allowance in Council Tax Reduction income across Great Britain, with the statutory £15 weekly disregards and Pension Credit routing.

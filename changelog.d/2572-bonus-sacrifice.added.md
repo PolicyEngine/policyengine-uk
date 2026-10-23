@@ -1,1 +1,0 @@
-- Added `pension_contributions_via_bonus_sacrifice`, an input for employer pension contributions made in place of a bonus. It is read summed with `pension_contributions_via_salary_sacrifice`, so the £2,000 NICs exemption cap from April 2029 and the annual allowance threshold income cover both routes, and datasets can keep the two apart.
