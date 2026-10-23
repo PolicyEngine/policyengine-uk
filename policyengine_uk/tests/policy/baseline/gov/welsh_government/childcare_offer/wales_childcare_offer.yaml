@@ -686,3 +686,37 @@
   output:
     receives_uc_with_limited_capability_for_work: [false, true, false]
     wales_childcare_offer: 7_003.50
+
+# Review C3, second round: a partner subject to immigration control is excluded
+# from Universal Credit, so the worker claims as a single person (UC Regulations
+# 2013 reg 3(3)(e)). The award is the worker's, not the excluded partner's, and
+# exclusion is not the overlapping-benefits nonpayment that para 87 treats as an
+# underlying entitlement, so the partner does not meet the exception.
+- name: A partner excluded from Universal Credit does not meet the exception through the other parent's single claim
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent1:
+        age: 30
+        employment_income: 20_000
+      parent2:
+        age: 30
+        is_disabled_for_benefits: true
+        uc_is_ineligible_partner: true
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+    households:
+      household:
+        members: [parent1, parent2, child]
+        rent: 6_000
+        tenure_type: RENT_FROM_COUNCIL
+        region: WALES
+  output:
+    is_uc_single_or_joint_claimant: [true, false, false]
+    universal_credit: 7_569.90
+    receives_uc_with_limited_capability_for_work: [false, false, false]
+    wales_childcare_offer: 0
