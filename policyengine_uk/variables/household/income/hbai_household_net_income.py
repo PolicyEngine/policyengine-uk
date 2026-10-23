@@ -56,6 +56,9 @@ HBAI_HOUSEHOLD_NET_INCOME_ADDS = [
     "scottish_child_payment",
     "carer_support_payment",
     "scottish_carer_supplement",
+    # HBAI classifies the Warm Home Discount as miscellaneous income:
+    # https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2025/households-below-average-income-background-information-and-methodology-report-fye-2025
+    "warm_home_discount",
     # Reference for tax-free-childcare: https://assets.publishing.service.gov.uk/media/5e7b191886650c744175d08b/households-below-average-income-1994-1995-2018-2019.pdf
 ]
 
