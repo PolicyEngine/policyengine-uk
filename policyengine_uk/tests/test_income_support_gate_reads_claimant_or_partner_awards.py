@@ -270,11 +270,14 @@ def simulation(families, entered=None):
             name = f"p{i}_{j}"
             people[name] = {k: {YEAR: v} for k, v in inputs.items()}
             names.append(name)
+        # Legacy claimants: a Universal Credit claim would end the couple's
+        # income-related ESA (esa_income_report_closed).
         benunits[f"b{i}"] = {
             "members": names,
             "income_support_assessable_capital": {YEAR: capital},
             "esa_income_assessable_capital": {YEAR: capital},
             "jsa_income_assessable_capital": {YEAR: capital},
+            "would_claim_uc": {YEAR: False},
         }
         for award, values in (entered or {}).items():
             benunits[f"b{i}"][award] = {YEAR: values[i]}
