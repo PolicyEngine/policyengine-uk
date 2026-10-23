@@ -17,6 +17,27 @@ from policyengine_uk.data.energy_price_basis import (
 )
 
 
+def _validate_integer_enum_positions(array, possible_values, column: str) -> None:
+    """Validate zero-based positions before narrowing or indexing enum arrays.
+
+    Integer positions are not survey source codes. Valid positions, including
+    a declared UNKNOWN member, retain their existing meaning.
+    """
+    if array.dtype.kind not in ("i", "u"):
+        return
+    invalid = (array < 0) | (array >= len(possible_values))
+    if np.any(invalid):
+        invalid_values = np.unique(array[invalid])
+        shown = invalid_values[:10].tolist()
+        remainder = len(invalid_values) - len(shown)
+        suffix = f" (and {remainder} other invalid positions)" if remainder else ""
+        raise ValueError(
+            f"Invalid integer position(s) {shown}{suffix} in column '{column}' "
+            f"for enum {possible_values.__name__}. Expected zero-based positions "
+            f"in [0, {len(possible_values)})."
+        )
+
+
 class UKSingleYearDataset:
     @staticmethod
     def validate_file_path(file_path: str, raise_exception: bool = True):
@@ -139,6 +160,7 @@ class UKSingleYearDataset:
             arr = out[col].values
             if arr.dtype.kind not in ("i", "u"):
                 continue
+            _validate_integer_enum_positions(arr, possible_values, col)
             names = np.array([m.name for m in possible_values], dtype=object)
             out[col] = names[arr.astype(int)]
         return out
