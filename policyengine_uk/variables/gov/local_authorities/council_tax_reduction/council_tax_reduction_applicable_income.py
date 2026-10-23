@@ -131,8 +131,17 @@ class council_tax_reduction_applicable_income(Variable):
             "jsa_contrib",
             "state_pension",
             "maternity_allowance",
+            # Statutory sick, maternity and paternity pay are earnings: SI
+            # 2012/2885 Sch 1 para 18(1)(h) to (j) and the default scheme, SI
+            # 2012/2886 Sch paras 41(1)(h) and (i) and 51(1)(j); WSI 2013/3029
+            # Sch 1 para 12(1)(h) and (i) and Sch 6 para 14(1)(j); SSI
+            # 2012/319 reg 32(1)(h) and (i); SSI 2021/249 regs 49(4)(a) to
+            # (c) and 50(2)(j). The income tax and National Insurance
+            # deducted below include the tax on them (employment_benefits,
+            # ni_class_1_income).
             "statutory_sick_pay",
             "statutory_maternity_pay",
+            "statutory_paternity_pay",
             "ssmg",
         ]
         # Every scheme the model runs counts these three benefits. At pension
