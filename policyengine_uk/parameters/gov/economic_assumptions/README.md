@@ -1,10 +1,20 @@
 # Economic assumptions
 
 Year-on-year growth series for the UK economy used to uprate parameters and
-calibrate the input dataset. The single source of truth is
+calibrate the input dataset. The source of the default economic series is
 [`yoy_growth.yaml`](./yoy_growth.yaml); downstream cumulative indices are
 generated from it by
 [`create_economic_assumption_indices.py`](./create_economic_assumption_indices.py).
+
+The dedicated `capital_gains` growth/index paths copy GDP per capita by
+default. A simulation can instead supply a versioned aggregate gains
+projection, converted to per-record factors using population growth after
+fiscal-year parameter processing. See the
+[capital gains projection guide](../../../../docs/capital-gains-projection.md)
+for its measurement contract, experimental scenario and remaining validation.
+Both generated paths are read-only to parameter reforms; supply a
+`CapitalGainsProjection` to change the gains path. Reforms to the underlying
+GDP and population assumptions remain supported.
 
 ## Series
 
@@ -12,7 +22,7 @@ generated from it by
 |-------------------------|----------------------------------------------------------|-------------------------|
 | `consumer_price_index`  | CPI year-on-year growth                                  | EFO Table 1.7           |
 | `cpih`                  | CPI including owner-occupiers' housing costs             | EFO Table 1.7           |
-| `consumer_price_index_ahc` | CPI excluding rents/maintenance/water (AHC measure)   | ONS adhoc 2863          |
+| `consumer_price_index_ahc` | CPI excluding rents/maintenance/water (AHC measure)   | ONS ad hoc 3582; forecast derived by `utils/create_ahc_deflator.py` |
 | `rpi`                   | Retail Price Index year-on-year growth                   | EFO Table 1.7           |
 | `average_earnings`      | Average weekly earnings growth                           | EFO Table 1.6           |
 | `non_labour_income`     | Non-labour household income growth                       | derived from EFO        |
@@ -46,6 +56,13 @@ times one plus the growth series
 rent, council tax and student loan plans have their own functions there. Keep
 `PROJECTION_END_YEAR` at or past the last year of the latest EFO, so that the
 last year of a five-year costing is a dataset year.
+
+For an explicitly finite CGT projection, the default extension ends at the
+earlier of this constant and the scenario's final year. The cap applies to
+the whole automatically extended dataset, not only its CGT columns.
+Explicit out-of-span CGT projection requests raise an error. Increasing the
+general horizon therefore does not extrapolate the experimental EOT series,
+whose published determinant ends in FY2030–31.
 
 CPI, CPIH, RPI, average earnings, road fuel and population run to 2073, but
 several series end in 2030. Of those the projection uses, per-capita GDP and
@@ -94,9 +111,26 @@ projection through 2030 retains its previous handling; correcting those
 earlier mapping omissions is a separate change.
 
 `domestic_energy_consumption`, `electricity_consumption` and `gas_consumption`
-are deliberately excluded from this fallback as well as the annual growth
-mapping. Their stored amounts already use FY2026-27 unit prices, so dataset
-projection holds them flat, as documented in `uprating_indices.yaml`.
+use a separate declaration-aware projector. Unlabelled datasets retain their
+stored amounts through the projection horizon, preserving legacy inputs that
+already use FY2026-27 prices. A dataset's explicit `energy_price_basis` opts
+into the variables' existing cumulative OBR-CPI index from its declared price
+year. They remain outside both the unconditional growth mapping and fallback,
+so no second index grows them after 2030.
+
+The declaration retains `calendar_year` or `fiscal_year` and its integer year.
+The model's annual convention uses the same index level for CY2024 and
+FY2024-25: `I[2024]`. It does not provide a precise fiscal/calendar price
+alignment or an energy-specific forecast. The projector applies
+`I[target year] / I[declared price year]` to the supplied observation.
+Consequently a 2026 basis gives a ratio of one in 2026 and can grow in 2027;
+there is no special 2026 rule. Each projected child records its effective
+fiscal-year basis, while the source observation keeps its original declaration.
+
+See [dataset sources](../../../../docs/engineering/skills/dataset-sources.md)
+for the declaration and migration contract. Existing metadata-free private
+Microcosm files stay flat until a producer or caller supplies a verified
+declaration; this consumer change does not label released artifacts.
 
 The additional indices have their own source limits:
 
@@ -110,6 +144,7 @@ The additional indices have their own source limits:
 The `indices.*` paths in this table are relative to
 `gov.economic_assumptions`. Source dates remain distinct from the later dates
 added by fiscal-year conversion.
+
 
 ## How the 2031+ values were constructed
 
@@ -169,6 +204,27 @@ rise. `create_economic_assumption_indices` compounds it into
 `indices.september_cpi_uprating`. The triple lock reads the same rounded
 September figure, so a scenario that edits calendar-year CPI or sets
 September CPI directly moves both.
+
+Most benefits rise each April by this measure: the Secretary of State's
+annual review under Social Security Administration Act 1992 s150 measures
+prices by the CPI 12-month rate for the previous September (every Up-rating
+Order Explanatory Memorandum since April 2011; 3.8% for April 2026, written
+statement HCWS1101). `gov.benefit_uprating_cpi`, which the benefit rate
+parameters name as their `uprating`, follows `indices.september_cpi_uprating`,
+and so do the Universal Credit standard allowance and health element indices
+built from it. Amounts not raised by September CPI in practice that sat on
+`gov.benefit_uprating_cpi` keep the lagged calendar-year CPI projection they
+had, through `indices.obr.lagged_cpi`. These include the earnings-linked
+Pension Credit standard minimum guarantee, savings credit threshold, Housing
+Benefit pension-age allowances and Housing Benefit non-dependant deduction
+income bands, as well as DfE funding rates and the council tax high value
+surcharge. Lagged calendar-year CPI remains a placeholder pending an
+appropriate earnings-linked model for the first group; deduction amounts
+continue to follow September CPI. The savings credit threshold and Housing
+Benefit pension-age allowances are within the s150 review, under
+[s150(1)(l) and (h)](https://www.legislation.gov.uk/ukpga/1992/5/section/150),
+even though their increases in practice are linked to earnings rather than
+September CPI.
 
 Income Tax Act 2007 ss21 and 57 index the basic rate limit and the personal
 allowance by this measure once no freeze applies.

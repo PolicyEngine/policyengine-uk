@@ -419,8 +419,11 @@ jobs:
           set -euo pipefail
           echo "$WHEEL_SHA256  dist/policyengine_uk-$VERSION-py3-none-any.whl" | sha256sum --check
           echo "$SDIST_SHA256  dist/policyengine_uk-$VERSION.tar.gz" | sha256sum --check
+          # The manifest records these files, so the PyPI checks below compare
+          # with them whatever the publish step adds to dist (attestations).
           python3 .github/release_artifacts.py check-dist --dist dist \
-            --version "$VERSION" --sha "$SHA"
+            --version "$VERSION" --sha "$SHA" \
+            --manifest-out "$RUNNER_TEMP/release-manifest.json"
       - name: Check what PyPI already has for this version
         id: pypi
         env:
@@ -430,7 +433,8 @@ jobs:
           # absent or partial: upload. complete: a re-run after a successful
           # upload; nothing to do. conflict (exit 3): PyPI has other bytes
           # under this version, so stop.
-          python3 .github/release_artifacts.py pypi-state --dist dist \
+          python3 .github/release_artifacts.py pypi-state \
+            --manifest "$RUNNER_TEMP/release-manifest.json" \
             --version "$VERSION" | tee "$RUNNER_TEMP/pypi-state.txt"
           echo "state=$(head -n 1 "$RUNNER_TEMP/pypi-state.txt")" >> "$GITHUB_OUTPUT"
       - name: Publish to PyPI
@@ -445,7 +449,8 @@ jobs:
         env:
           VERSION: ${{ needs.Versioning.outputs.version }}
         run: |
-          python3 .github/release_artifacts.py pypi-state --dist dist \
+          python3 .github/release_artifacts.py pypi-state \
+            --manifest "$RUNNER_TEMP/release-manifest.json" \
             --version "$VERSION" --require complete --wait 600
       # Tell policyengine.py (workstream W4's certify-uk-release.yaml) that
       # this version is on PyPI, so it qualifies the release. That workflow

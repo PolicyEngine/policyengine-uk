@@ -41,20 +41,17 @@ or without children, in which one member receives one of the three payments:
       82(1)(a) threshold, and the payments are earned income (reg. 55(4)). So
       a pound of pay can lift the cap and raise the final award. The award
       after the cap may therefore rise only where the family becomes exempt
-      (is_benefit_cap_exempt); otherwise it obeys the same bound. Today's
-      is_benefit_cap_exempt_earnings reads employment income without
-      statutory pay, so this exception does not yet arise in the model.
+      (is_uc_benefit_cap_exempt); otherwise it obeys the same bound. The
+      earnings exemption uses actual UC net earned income before the
+      minimum income floor, which reg. 82(4) excludes.
 
 2. Same as wages: statutory sick or maternity pay of s on top of wages of e
    gives the same income tax, National Insurance, earned income and award
-   before the benefit cap as wages of e + s. This holds for Marriage Allowance
+   before and after the benefit cap as wages of e + s. This holds for Marriage Allowance
    claimants too. Two differences in the model's income tax are left out
    (counts_as_wages): it charges no income tax on statutory paternity pay, and
    it caps pension contribution relief at employment and self-employment
-   income without statutory pay. The award after the benefit cap is not
-   compared, because the cap's earnings exception
-   (is_benefit_cap_exempt_earnings) reads employment income without statutory
-   pay.
+   income without statutory pay.
 
 3. Accounting: a person's earned income before the minimum income floor is
    their wages, statutory pay and trading profit (a loss counts as nil) less
@@ -81,7 +78,7 @@ input for anyone makes it an input for everyone.
 """
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import CountryTaxBenefitSystem, Simulation
@@ -265,7 +262,57 @@ class Results:
         return self.person(variable, i, version, self.population[i]["recipient"])
 
 
+# Release run 38366204407: explicit coverage is independent of Hypothesis's
+# local source-constant pool, which differs for source and site-packages.
+STATUTORY_SICK_PAY_CAP_REGRESSION = {
+    "adults": [
+        {
+            "age": 22,
+            "wages": 12_570.0,
+            "profit": 0.0,
+            "startup": False,
+            "pension_contributions": 0.0,
+            "pension_income": 6_000.0,
+            "dividends": 0.0,
+            "lcwra": False,
+            "claims_marriage_allowance": False,
+        }
+    ],
+    "child_ages": [1, 1],
+    "childcare": 0.0,
+    "region": "NORTH_EAST",
+    "tenure": "RENT_FROM_COUNCIL",
+    "rent": 0.0,
+    "recipient": 0,
+    "payment": "statutory_sick_pay",
+    "low": 0.0,
+    "high": 6_000.0,
+}
+
+
+def test_statutory_sick_pay_preserves_benefit_cap_earnings_exemption():
+    """Reg. 55(4) pay cannot end this family's reg. 82(1)(a) exception."""
+    results = Results([STATUTORY_SICK_PAY_CAP_REGRESSION])
+    for version, expected_earnings in [(LOW, 12_570), (HIGH, 16_890)]:
+        # The private pension absorbs the tax on unearned income. At HIGH,
+        # actual earnings are 12,570 + 6,000 - 1,200 tax - 480 Class 1 NI.
+        np.testing.assert_allclose(
+            results.recipient("uc_individual_earned_income_before_mif", 0, version),
+            expected_earnings,
+            atol=TOLERANCE,
+            rtol=0,
+        )
+        assert results.families("is_uc_benefit_cap_exempt_earnings", version)[0]
+        assert results.families("is_uc_benefit_cap_exempt", version)[0]
+        assert results.families("benefit_cap_reduction", version)[0] == 0
+    assert (
+        results.families("universal_credit", HIGH)[0]
+        <= results.families("universal_credit", LOW)[0] + TOLERANCE
+    )
+
+
 @PROPERTY_SETTINGS
+@example(population=[STATUTORY_SICK_PAY_CAP_REGRESSION])
 @given(population=populations())
 def test_award_never_rises_with_a_claimants_statutory_pay(population):
     results = Results(population)
@@ -276,7 +323,7 @@ def test_award_never_rises_with_a_claimants_statutory_pay(population):
     before_cap = both("universal_credit_pre_benefit_cap")
     award = both("universal_credit")
     childcare = both("uc_childcare_element")
-    exempt = both("is_benefit_cap_exempt")
+    exempt = both("is_uc_benefit_cap_exempt")
     earned = "uc_individual_earned_income_before_mif"
     for i, family in enumerate(population):
         if family["low"] > 0:
@@ -392,7 +439,12 @@ def test_statutory_pay_counts_as_wages_and_earned_income_adds_up(population):
                 atol=TOLERANCE,
                 err_msg=f"{variable}: {family}",
             )
-    for variable in ["uc_earned_income", "universal_credit_pre_benefit_cap"]:
+    for variable in [
+        "uc_earned_income",
+        "universal_credit_pre_benefit_cap",
+        "is_uc_benefit_cap_exempt_earnings",
+        "universal_credit",
+    ]:
         taxed = [counts_as_wages(family) for family in population]
         np.testing.assert_allclose(
             results.families(variable, HIGH)[taxed],
@@ -515,7 +567,7 @@ def test_award_falls_along_a_path_of_rising_statutory_pay():
     variables = [
         "universal_credit_pre_benefit_cap",
         "universal_credit",
-        "is_benefit_cap_exempt",
+        "is_uc_benefit_cap_exempt",
     ]
     paths = along_paths(list(ARCHETYPES.values()), PAYMENTS, variables)
     for i, name in enumerate(ARCHETYPES):
@@ -528,7 +580,7 @@ def test_award_falls_along_a_path_of_rising_statutory_pay():
             # After the cap, the award rises only at a step that makes the
             # family exempt (reg. 82(1)(a)).
             final = paths["universal_credit"][HIGH][i, j]
-            newly_exempt = np.diff(paths["is_benefit_cap_exempt"][HIGH][i, j]) > 0
+            newly_exempt = np.diff(paths["is_uc_benefit_cap_exempt"][HIGH][i, j]) > 0
             rises = np.diff(final) > TOLERANCE
             assert not (rises & ~newly_exempt).any(), (name, payment, final)
 
