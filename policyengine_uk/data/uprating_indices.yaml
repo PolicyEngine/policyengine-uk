@@ -4,6 +4,9 @@
 # An explicit energy_price_basis opts into the variables' existing annual OBR-CPI
 # assumption from the declared price year. This does not supply an energy-specific
 # forecast or automatically label existing private Microcosm artifacts.
+# liquid_fuel_consumption and solid_fuel_consumption (heating oil, LPG, coal
+# and wood) are not in that group: Ofgem's price cap does not cover them, so
+# they are uprated by CPI from the data year below, like other LCFS spending.
 #
 # This map governs dataset projection. Core's class-level variable uprating still
 # carries direct situation inputs forward independently of dataset declarations.
@@ -60,6 +63,7 @@ gov.economic_assumptions.yoy_growth.obr.consumer_price_index:
 - income_support_reported
 - jsa_contrib_reported
 - jsa_income_reported
+- liquid_fuel_consumption
 - local_bus_uncapped_single_fare
 - maintenance_expenses
 - maternity_allowance_reported
@@ -68,6 +72,7 @@ gov.economic_assumptions.yoy_growth.obr.consumer_price_index:
 - recreation_consumption
 - restaurants_and_hotels_consumption
 - sda_reported
+- solid_fuel_consumption
 - state_pension
 - state_pension_reported
 - statutory_maternity_pay
