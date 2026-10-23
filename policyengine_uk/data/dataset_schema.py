@@ -1,3 +1,4 @@
+import warnings
 import pandas as pd
 import numpy as np
 from typing import TYPE_CHECKING
@@ -7,6 +8,13 @@ if TYPE_CHECKING:
 
 from pathlib import Path
 import h5py
+from policyengine_uk.data.energy_price_basis import (
+    EnergyPriceBasis,
+    merge_energy_price_basis,
+    parse_energy_price_basis,
+    read_energy_price_basis,
+    write_energy_price_basis,
+)
 
 
 class UKSingleYearDataset:
@@ -21,7 +29,8 @@ class UKSingleYearDataset:
                 raise FileNotFoundError(f"File not found: {file_path}")
             return False
 
-        # Check if the file contains time_period, person, benunit, and household datasets
+        # Pandas stores each table as an annotated HDF5 group. A multi-year
+        # file has unannotated parent groups here, with tables below the years.
         with h5py.File(file_path, "r") as f:
             required_datasets = [
                 "time_period",
@@ -30,7 +39,11 @@ class UKSingleYearDataset:
                 "household",
             ]
             for dataset in required_datasets:
-                if dataset not in f:
+                if (
+                    dataset not in f
+                    or not isinstance(f[dataset], h5py.Group)
+                    or "pandas_type" not in f[dataset].attrs
+                ):
                     if raise_exception:
                         raise ValueError(
                             f"Dataset '{dataset}' not found in the file: {file_path}"
@@ -40,16 +53,30 @@ class UKSingleYearDataset:
 
         return True
 
+    # Used when a dataset is built from DataFrames without a fiscal year.
+    # Deprecated: pass fiscal_year explicitly, as this will become required.
+    DEFAULT_FISCAL_YEAR = 2025
+
     def __init__(
         self,
         file_path: str = None,
         person: pd.DataFrame = None,
         benunit: pd.DataFrame = None,
         household: pd.DataFrame = None,
-        fiscal_year: int = 2025,
+        fiscal_year: int = None,
+        energy_price_basis: dict[str, str | int] | EnergyPriceBasis | None = None,
     ):
+        basis = parse_energy_price_basis(energy_price_basis)
         file_path = str(file_path) if file_path else None
         if file_path is not None:
+            if fiscal_year is not None:
+                warnings.warn(
+                    "fiscal_year is ignored when loading from a file: the "
+                    "time period is read from the file itself. Drop the "
+                    "argument, or use uprate_dataset to change the period.",
+                    UserWarning,
+                    stacklevel=2,
+                )
             self.validate_file_path(file_path)
             # Read-only: the file may be a cached download the cache manager
             # has made unwritable, and the default append mode would refuse it.
@@ -58,16 +85,29 @@ class UKSingleYearDataset:
                 self._benunit = f["benunit"]
                 self._household = f["household"]
                 self.time_period = str(f["time_period"].iloc[0])
+            basis = merge_energy_price_basis(basis, read_energy_price_basis(file_path))
         else:
             if person is None or benunit is None or household is None:
                 raise ValueError(
                     "Must provide either a file path or all three DataFrames (person, benunit, household)."
                 )
+            if fiscal_year is None:
+                warnings.warn(
+                    "fiscal_year was not given, so this dataset is labelled "
+                    f"{self.DEFAULT_FISCAL_YEAR}. The label is the year the "
+                    "financial year starts, so FRS 2024/25 data is 2024. "
+                    "Pass fiscal_year explicitly; the default will be "
+                    "removed.",
+                    FutureWarning,
+                    stacklevel=2,
+                )
+                fiscal_year = self.DEFAULT_FISCAL_YEAR
             self._person = person
             self._benunit = benunit
             self._household = household
             self.time_period = str(fiscal_year)
 
+        self._energy_price_basis = basis
         self.data_format = "arrays"
         # tables tuple points at the raw (int16) DataFrames used by the
         # simulation engine internals - do not decode these.
@@ -76,6 +116,15 @@ class UKSingleYearDataset:
         # Populated by _pre_encode_enum_columns in simulation.py after the
         # dataset is loaded and enum columns have been converted to int16.
         self._enum_columns: dict = {}
+
+    @property
+    def energy_price_basis(self) -> dict[str, str | int] | None:
+        """A defensive copy of the stored amounts' declared price period."""
+        return self._energy_price_basis.as_dict() if self._energy_price_basis else None
+
+    @energy_price_basis.setter
+    def energy_price_basis(self, value: object) -> None:
+        self._energy_price_basis = parse_energy_price_basis(value)
 
     def _decode_enum_df(self, df: pd.DataFrame) -> pd.DataFrame:
         """Return a copy of *df* with int16 enum columns decoded to strings."""
@@ -127,6 +176,7 @@ class UKSingleYearDataset:
             f.put("benunit", self.benunit, format="table", data_columns=True)
             f.put("household", self.household, format="table", data_columns=True)
             f.put("time_period", pd.Series([self.time_period]), format="table")
+        write_energy_price_basis(file_path, self._energy_price_basis)
 
     def load(self):
         data = {}
@@ -142,6 +192,7 @@ class UKSingleYearDataset:
             benunit=self.benunit.copy(),
             household=self.household.copy(),
             fiscal_year=self.time_period,
+            energy_price_basis=self._energy_price_basis,
         )
 
     def validate(self):
@@ -152,7 +203,11 @@ class UKSingleYearDataset:
                     raise ValueError(f"Column '{col}' contains NaN values.")
 
     @staticmethod
-    def from_simulation(simulation: "Microsimulation", fiscal_year: int = 2025):
+    def from_simulation(
+        simulation: "Microsimulation",
+        fiscal_year: int = 2025,
+        energy_price_basis: dict[str, str | int] | EnergyPriceBasis | None = None,
+    ):
         entity_dfs = {}
 
         for entity in ["person", "benunit", "household"]:
@@ -174,6 +229,7 @@ class UKSingleYearDataset:
             benunit=entity_dfs["benunit"],
             household=entity_dfs["household"],
             fiscal_year=fiscal_year,
+            energy_price_basis=energy_price_basis,
         )
 
 
@@ -183,6 +239,7 @@ class UKMultiYearDataset:
         file_path: str = None,
         datasets: list[UKSingleYearDataset] | None = None,
     ):
+        file_path = str(file_path) if file_path else None
         if datasets is not None:
             self.datasets = {}
             for dataset in datasets:
@@ -209,6 +266,10 @@ class UKMultiYearDataset:
                             household=household_df,
                             fiscal_year=fiscal_year,
                         )
+            for year, dataset in self.datasets.items():
+                dataset.energy_price_basis = read_energy_price_basis(
+                    file_path, f"/time_period/{year}"
+                )
 
         self.data_format = "time_period_arrays"
         self.time_period = list(sorted(self.datasets.keys()))[0]
@@ -254,6 +315,10 @@ class UKMultiYearDataset:
                     format="table",
                     data_columns=True,
                 )
+        for year, dataset in self.datasets.items():
+            write_energy_price_basis(
+                file_path, dataset.energy_price_basis, f"/time_period/{year}"
+            )
 
     def copy(self):
         new_datasets = {year: dataset.copy() for year, dataset in self.datasets.items()}
@@ -274,10 +339,11 @@ class UKMultiYearDataset:
             else:
                 return False
 
-        # Check if the file contains datasets for multiple years
+        # h5py lists only immediate children: the entity groups contain the
+        # year-named pandas tables written by save, even for a single year.
         with h5py.File(file_path, "r") as f:
             for required_dataset in ["person", "benunit", "household"]:
-                if not any(f"{required_dataset}" in key for key in f.keys()):
+                if required_dataset not in f:
                     if raise_exception:
                         raise ValueError(
                             f"Dataset '{required_dataset}' not found in the file: {file_path}"
@@ -285,15 +351,18 @@ class UKMultiYearDataset:
                     else:
                         return False
 
-                # Check that there is at least one dataset year in the folder (keys include e.g. person/2025)
-
-                # Check that there is at least one dataset year in the folder
-                years_found = False
-                for key in f.keys():
-                    parts = key.split("/")
-                    if len(parts) >= 2 and required_dataset == parts[0]:
-                        years_found = True
-                        break
+                group = f[required_dataset]
+                years_found = (
+                    isinstance(group, h5py.Group)
+                    and "pandas_type" not in group.attrs
+                    and any(
+                        len(year) == 4
+                        and year.isdigit()
+                        and isinstance(group[year], h5py.Group)
+                        and "pandas_type" in group[year].attrs
+                        for year in group
+                    )
+                )
 
                 if not years_found:
                     if raise_exception:

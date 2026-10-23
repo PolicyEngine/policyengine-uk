@@ -8,7 +8,7 @@
       benunit:
         members: [person]
         child_tax_credit: 1
-        tax_credits_applicable_income: 16_190
+        tax_credits_current_year_income: 16_190
   output:
     meets_child_tax_credit_criteria_for_targeted_childcare_entitlement: true
 
@@ -23,7 +23,7 @@
         members: [person]
         child_tax_credit: 1
         working_tax_credit: 1
-        tax_credits_applicable_income: 16_190
+        tax_credits_current_year_income: 16_190
   output:
     meets_child_tax_credit_criteria_for_targeted_childcare_entitlement: false
 
@@ -37,6 +37,6 @@
       benunit:
         members: [person]
         child_tax_credit: 1
-        tax_credits_applicable_income: 16_191
+        tax_credits_current_year_income: 16_191
   output:
     meets_child_tax_credit_criteria_for_targeted_childcare_entitlement: false
