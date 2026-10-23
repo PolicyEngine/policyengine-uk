@@ -1,0 +1,1 @@
+Corrected the future-dated announcements page (docs/book/policy/future-date-announcements.md): the Class 1 employee rate now lives in employee_scale.yaml, the levy and repeal wording, the 30 April caveat for mid-year NI changes, the preserve_calendar_dates wording, and a link to the dated-changes guide.
