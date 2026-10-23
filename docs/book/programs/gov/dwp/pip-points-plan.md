@@ -1,4 +1,4 @@
-# PIP point system (partly planned)
+# PIP point system (partly modelled)
 
 ```{warning}
 **Partly modelled.** PolicyEngine UK sets the PIP daily-living and
@@ -18,9 +18,12 @@ A first step merged on 21 October 2026 as
 [#1661](https://github.com/PolicyEngine/policyengine-uk/pull/1661): total
 points inputs (`pip_dl_points`, `pip_m_points`) and the 8- and 12-point
 thresholds under `gov.dwp.pip.{daily_living,mobility}.points_thresholds`.
-The category is derived from the person's latest points only when no
-category is given as an input for the year; a category given for an
-earlier year carries forward unless the person has points for a later year
+The category is derived from points only when no category is given as an
+input for the year. A category given for a year is stored for everyone in
+the simulation, with NONE for anyone not given one. Otherwise the person's
+latest points for that year or an earlier one set the category, except that
+a category given for an earlier year carries forward unless those points are
+for a later year than it; with neither, the category is NONE
 (`policyengine_uk/utils/pip.py`). That is a simpler form of Phase 1 below:
 no per-activity scores and no `use_point_system` switch, since a category
 input already takes precedence over the formula.
@@ -71,8 +74,10 @@ For population-aggregate simulation, the categorical bands are
 sufficient because:
 
 - the FRS doesn't capture activity-level point scores at all,
-- DWP's published caseload reports band counts (standard / enhanced)
-  rather than activity scores,
+- DWP's regular PIP statistics report the caseload by award level
+  (standard / enhanced) rather than activity scores; per-activity figures
+  appear only in one-off publications such as the evidence-pack tables
+  cited under Phase 3,
 - the data (both Microcosm UK, the certified default since October 2026,
   and the Enhanced FRS from policyengine-uk-data, which it replaced) sets
   `pip_dl_category` and `pip_m_category` by comparing the weekly PIP daily-living and mobility
@@ -142,12 +147,13 @@ machinery (for reform analysis) get the activity-level surface.
 - The FRS provides PIP payment amounts but not descriptor selections.
   The data (Microcosm UK, as the replacement dataset) would need to
   impute descriptor selections per claimant that are consistent with the observed band. The plausible
-  approach is to draw uniformly across descriptor combinations that
-  sum to the observed band, weighted by the point-score distributions for
+  approach is to draw descriptor combinations whose total falls in the
+  observed band, weighted by the point-score distributions for
   each daily-living activity that DWP published in the
   [Pathways to Work evidence pack](https://www.gov.uk/government/consultations/pathways-to-work-reforming-benefits-and-support-to-get-britain-working-green-paper/pathways-to-work-evidence-pack-chapter-2-reforming-the-structure)
-  (chapter 2, Tables 2.27 and 2.28, January 2025 caseload; daily living
-  only).
+  (chapter 2, Tables 2.27 and 2.28: working-age, normal-rules claimants
+  awarded the daily living component in England, Wales and abroad, January
+  2025 caseload; there is no mobility equivalent).
 - This phase is the heaviest and is only required to make Phase 2
   reforms work on the calibrated microsim. For the household
   calculator, users can input activity scores directly.
@@ -156,7 +162,8 @@ machinery (for reform analysis) get the activity-level surface.
 
 - Should the score inputs default to `None` (sentinel) or 0? Sentinel
   is cleaner when the points machinery is opt-in via the
-  `use_point_system` flag.
+  `use_point_system` flag. (#1661's total points inputs use -1 for "not
+  assessed".)
 - DWP's PIP review process distinguishes "ongoing" vs "fixed-term"
   awards. Should the model expose the award duration, or treat all
   current awards as ongoing? (Current model assumes ongoing.)
