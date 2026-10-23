@@ -20,9 +20,9 @@ rate, with the exemption at current law, restored or removed:
 - monotone: private_school_vat never falls when the reform rate or the
   standard rate rises;
 - receipt partition: school-specific rate and exemption reforms leave the
-  residual vat head unchanged, and private_school_vat is independent of
-  recorded consumption. General VAT nets out the baseline school tax base
-  before the school head is counted (test_private_school_vat_receipts.py);
+  general vat head unchanged, and private_school_vat is independent of
+  recorded consumption. General VAT is gross VAT less school-fee VAT's
+  share of receipts (test_private_school_vat_receipts.py);
 - level and change: private_school_vat_change equals private_school_vat
   minus baseline_private_school_vat; baseline_private_school_vat equals
   private_school_vat under baseline policy with this simulation's mean fee

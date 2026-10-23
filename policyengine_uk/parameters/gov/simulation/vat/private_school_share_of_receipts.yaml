@@ -1,0 +1,30 @@
+description: VAT on private school fees as a share of total VAT receipts. Household VAT grossed up to total receipts is reduced by this share, because private school VAT is counted separately.
+metadata:
+  unit: /1
+  period: year
+  economy: false
+  label: Private school fees' share of VAT receipts
+  derivation: >-
+    HMRC's OBR-certified costing of VAT on private school fees divided by OBR
+    cash-basis VAT receipts for the same fiscal year: 1,505 / 180,169 in
+    2025-26, 1,560 / 187,704 in 2026-27, 1,610 / 195,923 in 2027-28, 1,665 /
+    204,591 in 2028-29 and 1,725 / 213,118 in 2029-30 (£m). Each value starts
+    on 1 April, so a model year reads its fiscal year's share. The 2024-25
+    part-year receipt (£460m from 1 January 2025, 0.27% of £170,994m) is left
+    in general VAT, as private_school_vat is zero in model year 2024. The
+    survey consumption coverage is fitted to total receipts, so the grossed-up
+    amount includes this share. vat and baseline_vat both read it from the
+    simulation's own parameters, so that the baseline reads each fiscal
+    year's value; docs/engineering/vat-coverage.md sets out the allocation.
+  reference:
+    - title: HMRC, Applying VAT to private school fees (updated 15 November 2024), Exchequer impact (Autumn Budget 2024 Table 5.1, certified by the OBR)
+      href: https://www.gov.uk/government/publications/vat-on-private-school-fees/applying-vat-to-private-school-fees
+    - title: OBR, Economic and fiscal outlook March 2026, detailed forecast tables, receipts, table 3.8 (Value added tax, cash basis)
+      href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
+values:
+  2010-01-01: 0
+  2025-04-01: 0.008353
+  2026-04-01: 0.008311
+  2027-04-01: 0.008218
+  2028-04-01: 0.008138
+  2029-04-01: 0.008094
