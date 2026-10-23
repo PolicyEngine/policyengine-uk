@@ -40,6 +40,7 @@ from policyengine_uk.data.dataset_sources import materialize_gcs_dataset_url
 from policyengine_uk.data.energy_price_basis import core_dataset_energy_price_basis
 from policyengine_uk.data.input_dataframe import (
     dataset_from_input_dataframe,
+    hold_identifiers_in,
     with_identifiers_in_each_year,
 )
 from policyengine_uk.data.capital_gains_projection import (
@@ -571,6 +572,10 @@ class Simulation(CoreSimulation):
             super().set_input(variable_name, period, value)
         finally:
             forget_replaced_model_values(self, variable_name, records)
+        # Inputs do not carry back, so give the simulation its identifiers
+        # for the year the input starts in if it holds them only for later
+        # years. See ``policyengine_uk.data.input_dataframe.hold_identifiers_in``.
+        hold_identifiers_in(self, variable_name, period)
         if variable_name in CGT_DATASET_INPUTS:
             self._capture_cgt_supplied_inputs(variable_name, replace_period=period)
 
@@ -1057,8 +1062,9 @@ class Simulation(CoreSimulation):
         for the periods they were set for. Calculated caches and values stored
         by the model itself are not supplied inputs.
         The identifiers are also given for every whole year a column names,
-        where a simulation built from the frame holds them, so that the frame
-        loads back to a simulation that exports the same frame. See
+        where a simulation built from the frame holds them, so that the
+        default export loads back to a simulation that exports the same
+        frame. See
         ``policyengine_uk.data.input_dataframe.with_identifiers_in_each_year``.
 
         Args:
