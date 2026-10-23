@@ -56,7 +56,7 @@
   input:
     would_claim_uc: true
     universal_credit_pre_benefit_cap: 2_000
-    benefit_cap_reduction: 2_000
+    uc_benefit_cap_reduction: 2_000
     income_support: 0
     jsa_income: 0
     esa_income: 0

@@ -1,0 +1,332 @@
+description: Class 4 marginal contribution schedule.
+metadata:
+  label: Class 4 marginal contribution schedule
+  threshold_unit: currency-GBP
+  rate_unit: /1
+brackets:
+  - threshold:
+      values:
+        0001-01-01: 0
+      metadata:
+        household: false
+        economy: false
+        unit: currency-GBP
+        period: year
+    rate:
+      values:
+        0001-01-01: 0
+      metadata:
+        household: false
+        economy: false
+        unit: /1
+  - threshold:
+      description: The Lower Profits Limit is the threshold at which self-employed earners pay the main Class 4 National Insurance rate.
+      # Legal status: £12,570 is the standing figure in SSCBA 1992 s.15(3)(a), which
+      # stays until altered by order under SSAA 1992 s.141. Budget 2025 commits to
+      # keeping it until April 2031. From 2031-32 (the tax year after the last value
+      # below) the model keeps the limit equal to the personal allowance
+      # (policyengine_uk/parameters/gov/hmrc/create_threshold_indexation.py). The
+      # government has kept the LPL aligned with the personal allowance, which
+      # Income Tax Act 2007 s57 indexes by September CPI from 2031-32, and says the
+      # LPL will be uprated by September CPI after 2030-31 (Explanatory Memorandum
+      # to SI 2026/231 para 5.1). That is announced policy, not law; keeping it
+      # equal to the allowance, round-up included, is a modelling assumption
+      # consistent with it. The file has no uprating.
+      values:
+        2015-04-06:
+          value: 8_060
+          metadata:
+            reference:
+              - title: The Social Security (Contributions) (Re-rating and National Insurance Funds Payments) Order 2015 art 3(a)
+                href: https://www.legislation.gov.uk/uksi/2015/588/article/3/made
+              - title: Social Security Contributions and Benefits Act 1992 s 15(3)(a) (as at 6 April 2016, unchanged for 2016-17)
+                href: https://www.legislation.gov.uk/ukpga/1992/4/section/15/2016-04-06
+        2017-04-06:
+          value: 8_164
+          metadata:
+            reference:
+              - title: The Social Security (Contributions) (Rates, Limits and Thresholds Amendments and National Insurance Funds Payments) Regulations 2017 reg 5(a)
+                href: https://www.legislation.gov.uk/uksi/2017/415/regulation/5/made
+        2018-04-06:
+          value: 8_424
+          metadata:
+            reference:
+              - title: The Social Security (Contributions) (Rates, Limits and Thresholds Amendments and National Insurance Funds Payments) Regulations 2018 reg 5(a)
+                href: https://www.legislation.gov.uk/uksi/2018/337/regulation/5/made
+        2019-04-06:
+          value: 8_632
+          metadata:
+            reference:
+              - title: The Social Security (Contributions) (Rates, Limits and Thresholds Amendments and National Insurance Funds Payments) Regulations 2019 reg 5(a)
+                href: https://www.legislation.gov.uk/uksi/2019/262/regulation/5/made
+        2020-04-06:
+          value: 9_500
+          metadata:
+            reference:
+              - title: The Social Security (Contributions) (Rates, Limits and Thresholds Amendments and National Insurance Funds Payments) Regulations 2020 reg 5
+                href: https://www.legislation.gov.uk/uksi/2020/299/regulation/5/made
+        2021-04-06:
+          value: 9_568
+          metadata:
+            reference:
+              - title: The Social Security (Contributions) (Rates, Limits and Thresholds Amendments and National Insurance Funds Payments) Regulations 2021 reg 5(1)
+                href: https://www.legislation.gov.uk/uksi/2021/157/regulation/5/made
+        # SI 2022/232 reg 5 first set £9,880 for 2022-23; the 2022 Act replaced it
+        # with £11,908 for the whole year.
+        2022-04-06:
+          value: 11_908
+          metadata:
+            reference:
+              - title: National Insurance Contributions (Increase of Thresholds) Act 2022 s 2(1) and (2)
+                href: https://www.legislation.gov.uk/ukpga/2022/16/section/2/enacted
+        2023-04-06:
+          value: 12_570
+          metadata:
+            reference:
+              - title: National Insurance Contributions (Increase of Thresholds) Act 2022 s 2(3) and (4)
+                href: https://www.legislation.gov.uk/ukpga/2022/16/section/2/enacted
+              - title: Social Security Contributions and Benefits Act 1992 s 15(3)(a) (as at 6 April 2023)
+                href: https://www.legislation.gov.uk/ukpga/1992/4/section/15/2023-04-06
+        2026-04-06:
+          value: 12_570
+          metadata:
+            reference:
+              - title: Social Security Contributions and Benefits Act 1992 s.15(3)(a)
+                href: https://www.legislation.gov.uk/ukpga/1992/4/section/15
+        2027-04-06:
+          value: 12_570
+          metadata:
+            reference:
+              - title: Social Security Contributions and Benefits Act 1992 s.15(3)(a)
+                href: https://www.legislation.gov.uk/ukpga/1992/4/section/15
+              - title: "HMRC: Income Tax Personal Allowance and the basic rate limit, and certain National Insurance contributions thresholds from 6 April 2026 to 5 April 2028 (Autumn Statement 2022)"
+                href: https://www.gov.uk/government/publications/the-personal-allowance-and-basic-rate-limit-for-income-tax-and-certain-national-insurance-contributions-nics-thresholds-from-6-april-2026-to-5-apr/income-tax-personal-allowance-and-the-basic-rate-limit-and-certain-national-insurance-contributions-thresholds-from-6-april-2026-to-5-april-2028
+        2028-04-06:
+          value: 12_570
+          metadata:
+            reference:
+              - title: Social Security Contributions and Benefits Act 1992 s.15(3)(a)
+                href: https://www.legislation.gov.uk/ukpga/1992/4/section/15
+              - title: Budget 2025 (HC 1492) para 4.111
+                href: https://assets.publishing.service.gov.uk/media/6929b353345e31ab14ecf735/E03444720_Budget_2025_Web_Accessible.pdf#page=113
+              - title: "HMRC: Maintaining Income Tax and equivalent National Insurance contributions thresholds until 5 April 2031"
+                href: https://www.gov.uk/government/publications/maintaining-income-tax-and-equivalent-national-insurance-contributions-thresholds-until-5-april-2031/income-tax-maintaining-the-personal-allowance-and-the-basic-rate-limit-for-income-tax-and-equivalent-national-insurance-contributions-thresholds-unt
+              - title: Explanatory Memorandum to SI 2026/231 para 5.25
+                href: https://www.legislation.gov.uk/uksi/2026/231/pdfs/uksiem_20260231_en_001.pdf
+        2029-04-06:
+          value: 12_570
+          metadata:
+            reference:
+              - title: Social Security Contributions and Benefits Act 1992 s.15(3)(a)
+                href: https://www.legislation.gov.uk/ukpga/1992/4/section/15
+              - title: Budget 2025 (HC 1492) para 4.111
+                href: https://assets.publishing.service.gov.uk/media/6929b353345e31ab14ecf735/E03444720_Budget_2025_Web_Accessible.pdf#page=113
+              - title: "HMRC: Maintaining Income Tax and equivalent National Insurance contributions thresholds until 5 April 2031"
+                href: https://www.gov.uk/government/publications/maintaining-income-tax-and-equivalent-national-insurance-contributions-thresholds-until-5-april-2031/income-tax-maintaining-the-personal-allowance-and-the-basic-rate-limit-for-income-tax-and-equivalent-national-insurance-contributions-thresholds-unt
+              - title: Explanatory Memorandum to SI 2026/231 para 5.25
+                href: https://www.legislation.gov.uk/uksi/2026/231/pdfs/uksiem_20260231_en_001.pdf
+        2030-04-06:
+          value: 12_570
+          metadata:
+            reference:
+              - title: Social Security Contributions and Benefits Act 1992 s.15(3)(a)
+                href: https://www.legislation.gov.uk/ukpga/1992/4/section/15
+              - title: Budget 2025 (HC 1492) para 4.111
+                href: https://assets.publishing.service.gov.uk/media/6929b353345e31ab14ecf735/E03444720_Budget_2025_Web_Accessible.pdf#page=113
+              - title: "HMRC: Maintaining Income Tax and equivalent National Insurance contributions thresholds until 5 April 2031"
+                href: https://www.gov.uk/government/publications/maintaining-income-tax-and-equivalent-national-insurance-contributions-thresholds-until-5-april-2031/income-tax-maintaining-the-personal-allowance-and-the-basic-rate-limit-for-income-tax-and-equivalent-national-insurance-contributions-thresholds-unt
+              - title: Explanatory Memorandum to SI 2026/231 para 5.25
+                href: https://www.legislation.gov.uk/uksi/2026/231/pdfs/uksiem_20260231_en_001.pdf
+      metadata:
+        label: NI lower profits limit
+        unit: currency-GBP
+        period: year
+        reference:
+          - https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf
+          - https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions
+    rate:
+      description: The main National Insurance rate paid between the Lower and Upper Profits Limits for self-employed profits.
+      values:
+        2015-04-06:
+          value: 0.09
+          metadata:
+            reference:
+              - title: National Insurance Contributions Act 2011 s 2(1)(a) (main Class 4 percentage of 9% from 6 April 2011)
+                href: https://www.legislation.gov.uk/ukpga/2011/3/section/2/enacted
+              - title: Social Security Contributions and Benefits Act 1992 s 15(3ZA)(a) (as at 6 April 2015)
+                href: https://www.legislation.gov.uk/ukpga/1992/4/section/15/2015-04-06
+        # Class 4 is charged on the year's profits, so 2022-23 has one rate for the
+        # whole tax year. The Health and Social Care Levy (Repeal) Act 2022 replaced
+        # the 10.25% that the Health and Social Care Levy Act 2021 s 5(2) had set.
+        2022-04-06:
+          value: 0.0973
+          metadata:
+            reference:
+              - title: Health and Social Care Levy (Repeal) Act 2022 s 2(2)(a) (main Class 4 percentage of 9.73% for the tax year 2022-23)
+                href: https://www.legislation.gov.uk/ukpga/2022/43/section/2
+        2023-04-06:
+          value: 0.09
+          metadata:
+            reference:
+              - title: Social Security Contributions and Benefits Act 1992 s 15(3ZA)(a) (as at 6 April 2023)
+                href: https://www.legislation.gov.uk/ukpga/1992/4/section/15/2023-04-06
+        2024-04-06:
+          value: 0.06
+          metadata:
+            reference:
+              - title: National Insurance Contributions (Reduction in Rates) Act 2024 ss 1(3)(a) and 3(1)
+                href: https://www.legislation.gov.uk/ukpga/2024/5/section/1/enacted
+              - title: Social Security Contributions and Benefits Act 1992 s 15(3ZA)(a) (as at 6 April 2024)
+                href: https://www.legislation.gov.uk/ukpga/1992/4/section/15/2024-04-06
+      metadata:
+        label: NI class 4 main rate
+        unit: /1
+        reference:
+          - title: Social Security Contributions and Benefits Act 1992 s 15(3ZA)
+            href: https://www.legislation.gov.uk/ukpga/1992/4/section/15
+          - title: "GOV.UK | Rates and allowances: National Insurance contributions"
+            href: https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions
+  - threshold:
+      description: The Upper Profits Limit is the threshold at which self-employed earners pay the additional Class 4 National Insurance rate.
+      # Legal status: £50,270 is the standing figure in SSCBA 1992 s.15(3)(b), which
+      # stays until altered by order under SSAA 1992 s.141. Budget 2025 commits to
+      # keeping it until April 2031. From 2031-32 (the tax year after the last value
+      # below) the model keeps the limit equal to the higher rate threshold
+      # (personal allowance plus basic rate limit)
+      # (policyengine_uk/parameters/gov/hmrc/create_threshold_indexation.py). The
+      # government has kept the UPL in line with the higher rate threshold, which
+      # Income Tax Act 2007 ss21 and 57 index by September CPI from 2031-32, and
+      # says the UPL will be uprated by September CPI after 2030-31 (Explanatory
+      # Memorandum to SI 2026/231 paras 5.1 and 5.25). That is announced policy, not
+      # law; keeping it equal to the higher rate threshold, round-ups included, is a
+      # modelling assumption consistent with it. The file has no uprating.
+      values:
+        2015-04-06:
+          value: 42_385
+          metadata:
+            reference:
+              - title: The Social Security (Contributions) (Re-rating and National Insurance Funds Payments) Order 2015 art 3(b)
+                href: https://www.legislation.gov.uk/uksi/2015/588/article/3/made
+        2016-04-06:
+          value: 43_000
+          metadata:
+            reference:
+              - title: The Social Security (Contributions) (Limits and Thresholds Amendments and National Insurance Funds Payments) Regulations 2016 reg 2
+                href: https://www.legislation.gov.uk/uksi/2016/343/regulation/2/made
+        2017-04-06:
+          value: 45_000
+          metadata:
+            reference:
+              - title: The Social Security (Contributions) (Rates, Limits and Thresholds Amendments and National Insurance Funds Payments) Regulations 2017 reg 5(b)
+                href: https://www.legislation.gov.uk/uksi/2017/415/regulation/5/made
+        2018-04-06:
+          value: 46_350
+          metadata:
+            reference:
+              - title: The Social Security (Contributions) (Rates, Limits and Thresholds Amendments and National Insurance Funds Payments) Regulations 2018 reg 5(b)
+                href: https://www.legislation.gov.uk/uksi/2018/337/regulation/5/made
+        2019-04-06:
+          value: 50_000
+          metadata:
+            reference:
+              - title: The Social Security (Contributions) (Rates, Limits and Thresholds Amendments and National Insurance Funds Payments) Regulations 2019 reg 5(b)
+                href: https://www.legislation.gov.uk/uksi/2019/262/regulation/5/made
+              - title: Social Security Contributions and Benefits Act 1992 s 15(3) (as at 6 April 2020, unchanged for 2020-21)
+                href: https://www.legislation.gov.uk/ukpga/1992/4/section/15/2020-04-06
+        2021-04-06:
+          value: 50_270
+          metadata:
+            reference:
+              - title: The Social Security (Contributions) (Rates, Limits and Thresholds Amendments and National Insurance Funds Payments) Regulations 2021 reg 5(2)
+                href: https://www.legislation.gov.uk/uksi/2021/157/regulation/5/made
+        2026-04-06:
+          value: 50_270
+          metadata:
+            reference:
+              - title: Social Security Contributions and Benefits Act 1992 s.15(3)(b)
+                href: https://www.legislation.gov.uk/ukpga/1992/4/section/15
+        2027-04-06:
+          value: 50_270
+          metadata:
+            reference:
+              - title: Social Security Contributions and Benefits Act 1992 s.15(3)(b)
+                href: https://www.legislation.gov.uk/ukpga/1992/4/section/15
+              - title: "HMRC: Income Tax Personal Allowance and the basic rate limit, and certain National Insurance contributions thresholds from 6 April 2026 to 5 April 2028 (Autumn Statement 2022)"
+                href: https://www.gov.uk/government/publications/the-personal-allowance-and-basic-rate-limit-for-income-tax-and-certain-national-insurance-contributions-nics-thresholds-from-6-april-2026-to-5-apr/income-tax-personal-allowance-and-the-basic-rate-limit-and-certain-national-insurance-contributions-thresholds-from-6-april-2026-to-5-april-2028
+        2028-04-06:
+          value: 50_270
+          metadata:
+            reference:
+              - title: Social Security Contributions and Benefits Act 1992 s.15(3)(b)
+                href: https://www.legislation.gov.uk/ukpga/1992/4/section/15
+              - title: Budget 2025 (HC 1492) para 4.111
+                href: https://assets.publishing.service.gov.uk/media/6929b353345e31ab14ecf735/E03444720_Budget_2025_Web_Accessible.pdf#page=113
+              - title: "HMRC: Maintaining Income Tax and equivalent National Insurance contributions thresholds until 5 April 2031"
+                href: https://www.gov.uk/government/publications/maintaining-income-tax-and-equivalent-national-insurance-contributions-thresholds-until-5-april-2031/income-tax-maintaining-the-personal-allowance-and-the-basic-rate-limit-for-income-tax-and-equivalent-national-insurance-contributions-thresholds-unt
+              - title: Explanatory Memorandum to SI 2026/231 para 5.25
+                href: https://www.legislation.gov.uk/uksi/2026/231/pdfs/uksiem_20260231_en_001.pdf
+        2029-04-06:
+          value: 50_270
+          metadata:
+            reference:
+              - title: Social Security Contributions and Benefits Act 1992 s.15(3)(b)
+                href: https://www.legislation.gov.uk/ukpga/1992/4/section/15
+              - title: Budget 2025 (HC 1492) para 4.111
+                href: https://assets.publishing.service.gov.uk/media/6929b353345e31ab14ecf735/E03444720_Budget_2025_Web_Accessible.pdf#page=113
+              - title: "HMRC: Maintaining Income Tax and equivalent National Insurance contributions thresholds until 5 April 2031"
+                href: https://www.gov.uk/government/publications/maintaining-income-tax-and-equivalent-national-insurance-contributions-thresholds-until-5-april-2031/income-tax-maintaining-the-personal-allowance-and-the-basic-rate-limit-for-income-tax-and-equivalent-national-insurance-contributions-thresholds-unt
+              - title: Explanatory Memorandum to SI 2026/231 para 5.25
+                href: https://www.legislation.gov.uk/uksi/2026/231/pdfs/uksiem_20260231_en_001.pdf
+        2030-04-06:
+          value: 50_270
+          metadata:
+            reference:
+              - title: Social Security Contributions and Benefits Act 1992 s.15(3)(b)
+                href: https://www.legislation.gov.uk/ukpga/1992/4/section/15
+              - title: Budget 2025 (HC 1492) para 4.111
+                href: https://assets.publishing.service.gov.uk/media/6929b353345e31ab14ecf735/E03444720_Budget_2025_Web_Accessible.pdf#page=113
+              - title: "HMRC: Maintaining Income Tax and equivalent National Insurance contributions thresholds until 5 April 2031"
+                href: https://www.gov.uk/government/publications/maintaining-income-tax-and-equivalent-national-insurance-contributions-thresholds-until-5-april-2031/income-tax-maintaining-the-personal-allowance-and-the-basic-rate-limit-for-income-tax-and-equivalent-national-insurance-contributions-thresholds-unt
+              - title: Explanatory Memorandum to SI 2026/231 para 5.25
+                href: https://www.legislation.gov.uk/uksi/2026/231/pdfs/uksiem_20260231_en_001.pdf
+      metadata:
+        label: NI upper profits limit
+        unit: currency-GBP
+        period: year
+        reference:
+          - https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf
+          - https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions
+    rate:
+      description: The additional National Insurance rate paid above the Upper Profits Limit for self-employed profits.
+      values:
+        2015-04-06:
+          value: 0.02
+          metadata:
+            reference:
+              - title: National Insurance Contributions Act 2011 s 2(1)(b) (additional Class 4 percentage of 2% from 6 April 2011)
+                href: https://www.legislation.gov.uk/ukpga/2011/3/section/2/enacted
+              - title: Social Security Contributions and Benefits Act 1992 s 15(3ZA)(b) (as at 6 April 2015)
+                href: https://www.legislation.gov.uk/ukpga/1992/4/section/15/2015-04-06
+        # Class 4 is charged on the year's profits, so 2022-23 has one rate for the
+        # whole tax year. The Health and Social Care Levy (Repeal) Act 2022 replaced
+        # the 3.25% that the Health and Social Care Levy Act 2021 s 5(2) had set.
+        2022-04-06:
+          value: 0.0273
+          metadata:
+            reference:
+              - title: Health and Social Care Levy (Repeal) Act 2022 s 2(2)(b) (additional Class 4 percentage of 2.73% for the tax year 2022-23)
+                href: https://www.legislation.gov.uk/ukpga/2022/43/section/2
+        2023-04-06:
+          value: 0.02
+          metadata:
+            reference:
+              - title: Social Security Contributions and Benefits Act 1992 s 15(3ZA)(b) (as at 6 April 2023)
+                href: https://www.legislation.gov.uk/ukpga/1992/4/section/15/2023-04-06
+      metadata:
+        label: NI class 4 additional rate
+        unit: /1
+        reference:
+          - title: Social Security Contributions and Benefits Act 1992 s 15(3ZA)
+            href: https://www.legislation.gov.uk/ukpga/1992/4/section/15
+          - title: "GOV.UK | Rates and allowances: National Insurance contributions"
+            href: https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions

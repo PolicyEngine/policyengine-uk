@@ -44,6 +44,14 @@ That means:
   [source notes](https://github.com/PolicyEngine/microcosm/blob/d1fda720/packages/microcosm-build/src/microcosm/build/uk/spec/sources.yaml#L1870)
   say code 6 mixes benefits and code 9 is tax-free War Widow's Pension. So the reported "BSP" also carries legacy
   widow's benefits and War Widow's Pension.
+- Since [#2382](https://github.com/PolicyEngine/policyengine-uk/pull/2382)
+  (2.135.7), War Widow's Pension has its own variables,
+  `war_widows_pension_reported` and `war_widows_pension`. `bsp_reported`
+  keeps CPI uprating only until the datasets move FRS code 9 out of it
+  ([policyengine-uk-data#578](https://github.com/PolicyEngine/policyengine-uk-data/issues/578),
+  [microcosm#1222](https://github.com/PolicyEngine/microcosm/issues/1222));
+  [#2381](https://github.com/PolicyEngine/policyengine-uk/issues/2381)
+  tracks freezing it after that.
 
 ## Proposed scope
 
@@ -69,24 +77,38 @@ children, with effect back to 30 August 2018, after the Supreme Court's
 
 To model this we need:
 
-- `is_bereaved_recently` (Person, YEAR): a new input flagging
-  whether the person has been bereaved in the last 18 months.
+- `bsp_initial_payment_due` (Person, YEAR): a new input that is true
+  only in the year the BSP claim is made after the partner's death, so
+  the [single initial payment](https://www.gov.uk/bereavement-support-payment/what-youll-get)
+  is paid once. A flag for "bereaved in the last 18 months" would stay
+  true across two consecutive annual periods and pay the lump sum twice.
 - `bsp_higher_rate_eligible` (Person, YEAR): whether they have a
   dependent child.
 - `bsp_months_remaining` (Person, YEAR): how many of the 18 monthly
-  instalments fall within the simulation year.
+  instalments fall within the simulation year (0 to 12). This is where
+  the 18-month window belongs.
 
 The BSP formula then becomes:
 
 ```
 bsp = (
-    lump_sum_amount * is_bereaved_recently
+    lump_sum_amount * bsp_initial_payment_due
     + monthly_amount * bsp_months_remaining
 )
 ```
 
+An alternative is a single date-of-death (or claim-date) input from
+which both the initial-payment year and the months in each year are
+derived. Either way the lump sum is tied to one year only.
+
 Both `lump_sum_amount` and `monthly_amount` parameter trees split on
 `bsp_higher_rate_eligible` (£3,500 / £350 vs £2,500 / £100).
+
+These parameters should be held flat, with no `uprating` key. BSP is
+not uprated: the four amounts in [SI 2017/410 reg 3][bsp-reg-3] have
+been £350, £3,500, £100 and £2,500 since April 2017, and the
+[Social Security Benefits Up-rating Order 2026][uprating-2026]
+(SI 2026/148), art 19, says each of them "remains unchanged".
 
 ### Phase 2: historical WPA under the same formula
 
@@ -113,11 +135,11 @@ the current data they sit inside `bsp_reported` (see above), so they
 are already counted in income; the gap is that they can't be told
 apart from BSP or reformed separately.
 
-### Phase 3: data-side bereavement flag
+### Phase 3: data-side bereavement inputs
 
-`is_bereaved_recently` doesn't exist in the FRS. The FRS is a
-cross-section, not a panel, and doesn't record when a partner died, so
-the flag would need imputing in the data (Microcosm UK, as the
+Neither `bsp_initial_payment_due` nor `bsp_months_remaining` exists in
+the FRS. The FRS is a cross-section, not a panel, and doesn't record
+when a partner died, so these inputs would need imputing in the data (Microcosm UK, as the
 replacement dataset):
 
 - start from FRS respondents who report BSP (once it is separated from
@@ -126,19 +148,11 @@ replacement dataset):
   and region.
 
 This is the heaviest of the three phases; without it the new
-variables work for the household calculator (which can input the flag
+variables work for the household calculator (which can input them
 directly) but not for microsim aggregates.
 
 ## Open questions
 
-- BSP isn't uprated each year. The rates have been £2,500/£3,500 and
-  £100/£350 since 2017. The model's `bsp_reported` is nonetheless
-  uprated with CPI, which suits the War Widow's Pension and legacy
-  widow's benefits it also contains but not BSP itself. Should the new
-  parameter tree carry an explicit
-  `uprating: gov.economic_assumptions.indices.obr.consumer_price_index`
-  to mirror what other DWP rates do, or hold flat to match the
-  historical reality?
 - WPA recipients who would have been on BSP under the new rules: do we
   want a reform-side parameter "treat all WPA receipts as if they were
   BSP" for counterfactual analysis?
@@ -151,6 +165,7 @@ directly) but not for microsim aggregates.
 
 - [Pensions Act 2014, Part 5](https://www.legislation.gov.uk/ukpga/2014/19/part/5): primary statute for BSP.
 - [Bereavement Support Payment Regulations 2017 (SI 2017/410)][bsp-regs].
+- [Social Security Benefits Up-rating Order 2026 (SI 2026/148), art 19][uprating-2026]: holds the four BSP amounts unchanged.
 - [Bereavement Benefits (Remedial) Order 2023 (SI 2023/134)](https://www.legislation.gov.uk/uksi/2023/134/contents): cohabiting-parent extension, effective from 30 August 2018.
 - [SSCBA 1992 s. 39A][sscba-39a]: legacy WPA basis.
 - gov.uk, [Bereavement Support Payment](https://www.gov.uk/bereavement-support-payment) and [Widowed Parent's Allowance](https://www.gov.uk/widowed-parents-allowance).
@@ -159,4 +174,6 @@ directly) but not for microsim aggregates.
 
 [pa-2014-5]: https://www.legislation.gov.uk/ukpga/2014/19/part/5
 [bsp-regs]: https://www.legislation.gov.uk/uksi/2017/410/contents
+[bsp-reg-3]: https://www.legislation.gov.uk/uksi/2017/410/regulation/3
+[uprating-2026]: https://www.legislation.gov.uk/uksi/2026/148/article/19
 [sscba-39a]: https://www.legislation.gov.uk/ukpga/1992/4/section/39A
