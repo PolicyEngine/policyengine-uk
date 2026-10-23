@@ -3,21 +3,26 @@ description: >
   Support Allowance capital. The Employment and Support Allowance Regulations
   2008 treat capital as assessable unless it is disregarded under Schedule 9.
   The current mappings are `savings` for liquid capital, `owned_land` for land
-  held directly, `corporate_wealth` as the broad available proxy for share-like
-  financial assets, `other_residential_property_value` for residential
-  property other than the home, and `non_residential_property_value` for other
-  land and premises. `main_residence_value` is excluded because Schedule 9
-  paragraph 1 disregards premises occupied as the claimant's home.
-  `private_pension_wealth` is excluded because Schedule 9 paragraphs 28 and 29
-  disregard the value of the right to receive an occupational or personal
-  pension and the value of funds held under a personal pension scheme. Other
-  Schedule 9 disregards and the higher residential-care capital disregard are
-  not yet modeled because the current dataset does not isolate those states or
-  asset holdings. Because the dataset only provides household-level capital
-  stocks, the model allocates the full household total to benunits with a
-  reported income-related ESA award and only falls back to an adult-share
-  proxy when nobody in the household is on that reported claim path. That
-  allocation is a data approximation, not a legislated ownership rule.
+  held directly, the share-like sources, `other_residential_property_value`
+  for residential property other than the home, and
+  `non_residential_property_value` for other land and premises.
+  `share_like_capital` is `corporate_wealth` as supplied, or the sum of its
+  itemised components (`directly_held_shares`, `unit_and_investment_trusts`,
+  `stocks_and_shares_isa`) where they exceed it beyond float32 rounding (see
+  `share_like_capital`), so a household given only the components has them
+  counted and no holding counts twice. `main_residence_value` is excluded
+  because Schedule 9 paragraph 1 disregards premises occupied as the
+  claimant's home. `private_pension_wealth` is excluded because Schedule 9
+  paragraphs 28 and 29 disregard the value of the right to receive an
+  occupational or personal pension and the value of funds held under a
+  personal pension scheme. Other Schedule 9 disregards and the higher
+  residential-care capital disregard are not yet modeled because the current
+  dataset does not isolate those states or asset holdings. Because the dataset
+  only provides household-level capital stocks, the model allocates the full
+  household total to benunits with a reported income-related ESA award and
+  only falls back to an adult-share proxy when nobody in the household is on
+  that reported claim path. That allocation is a data approximation, not a
+  legislated ownership rule.
 metadata:
   label: Income-related ESA countable capital sources
   period: year
@@ -33,6 +38,6 @@ values:
   2008-10-27:
     - savings
     - owned_land
-    - corporate_wealth
+    - share_like_capital
     - other_residential_property_value
     - non_residential_property_value

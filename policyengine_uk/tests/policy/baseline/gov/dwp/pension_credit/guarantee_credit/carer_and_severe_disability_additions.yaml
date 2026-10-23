@@ -39,7 +39,7 @@
         country: ENGLAND
   output:
     is_carer_for_benefits: true
-    carer_minimum_guarantee_addition: 46.37 * 52
+    carer_minimum_guarantee_addition: 46.40 * 52
 
 - name: No carer addition for a claimant who neither receives nor is entitled
   period: 2025

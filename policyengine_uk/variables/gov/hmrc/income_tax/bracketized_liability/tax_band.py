@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.income_tax import first_extended_scottish_threshold
 
 
 class TaxBand(Enum):
@@ -24,30 +25,44 @@ class tax_band(Variable):
 
     def formula(person, period, parameters):
         allowances = person("allowances", period)
-        ani = person("adjusted_net_income", period)
+        ani = person("net_income", period)
         rates = parameters(period).gov.hmrc.income_tax.rates
-        basic = allowances + rates.uk.thresholds[0]
-        higher = allowances + rates.uk.thresholds[-2]
-        add = allowances + rates.uk.thresholds[-1]
+        gross_gift = person("gift_aid_grossed_up", period)
+        limits = [
+            threshold + (gross_gift if index in (1, 2) else 0)
+            for index, threshold in enumerate(rates.uk.thresholds)
+        ]
+        basic = allowances + limits[0]
+        higher = allowances + limits[1]
+        add = allowances + limits[2]
         return select(
-            [ani >= add, ani >= higher, ani > basic],
+            [ani > add, ani > higher, ani > basic],
             [TaxBand.ADDITIONAL, TaxBand.HIGHER, TaxBand.BASIC],
             default=TaxBand.NONE,
         )
 
     def formula_2017_04_06(person, period, parameters):
         allowances = person("allowances", period)
-        ani = person("adjusted_net_income", period)
+        ani = person("net_income", period)
         rates = parameters(period).gov.hmrc.income_tax.rates
         scot = person("pays_scottish_income_tax", period)
         income = ani - allowances
+        gross_gift = person("gift_aid_grossed_up", period)
+        # s.414(2)(b) extends the limits used to determine the tax band.
         uk_band = select(
-            [income < threshold for threshold in rates.uk.thresholds[:3]],
+            [
+                income < threshold + (gross_gift if index > 0 else 0)
+                for index, threshold in enumerate(rates.uk.thresholds[:3])
+            ],
             [TaxBand.NONE, TaxBand.BASIC, TaxBand.HIGHER],
             default=TaxBand.ADDITIONAL,
         )
+        first_extended = first_extended_scottish_threshold(rates.scotland.rates)
         scottish_band = select(
-            [income < threshold for threshold in rates.scotland.rates.thresholds[:3]],
+            [
+                income < threshold + (gross_gift if index >= first_extended else 0)
+                for index, threshold in enumerate(rates.scotland.rates.thresholds[:3])
+            ],
             [TaxBand.NONE, TaxBand.BASIC, TaxBand.HIGHER],
             default=TaxBand.ADDITIONAL,
         )
@@ -55,17 +70,25 @@ class tax_band(Variable):
 
     def formula_2018_06_01(person, period, parameters):
         allowances = person("allowances", period)
-        ani = person("adjusted_net_income", period)
+        ani = person("net_income", period)
         rates = parameters(period).gov.hmrc.income_tax.rates
         scot = person("pays_scottish_income_tax", period)
         income = ani - allowances
+        gross_gift = person("gift_aid_grossed_up", period)
+        # s.414(2)(b) extends the limits used to determine the tax band.
         uk_band = select(
-            [income < threshold for threshold in rates.uk.thresholds[:3]],
+            [
+                income < threshold + (gross_gift if index > 0 else 0)
+                for index, threshold in enumerate(rates.uk.thresholds[:3])
+            ],
             [TaxBand.NONE, TaxBand.BASIC, TaxBand.HIGHER],
             default=TaxBand.ADDITIONAL,
         )
         scottish_band = select(
-            [income < threshold for threshold in rates.scotland.rates.thresholds[:5]],
+            [
+                income < threshold + (gross_gift if index >= 2 else 0)
+                for index, threshold in enumerate(rates.scotland.rates.thresholds[:5])
+            ],
             [
                 TaxBand.NONE,
                 TaxBand.STARTER,

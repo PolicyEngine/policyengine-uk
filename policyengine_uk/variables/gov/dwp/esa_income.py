@@ -15,12 +15,17 @@ class esa_income(Variable):
     entity = BenUnit
     label = "ESA (income-based)"
     documentation = (
-        "Reported income-related ESA screened through a bounded capital test. "
+        "Reported income-related ESA screened through bounded capital and "
+        "remunerative work tests (esa_income_eligible). "
         "This is not a full entitlement model."
     )
     definition_period = YEAR
     unit = GBP
 
     def formula(benunit, period, parameters):
-        reported_award = add(benunit, period, ["esa_income_reported"])
+        person = benunit.members
+        reported_award = benunit.sum(
+            person("esa_income_reported", period)
+            * ~person("person_legacy_benefits_closed", period)
+        )
         return income_related_esa_award(benunit, period, reported_award)
