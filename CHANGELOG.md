@@ -1,3 +1,10 @@
+## [2.151.0] - 2026-10-23
+
+### Added
+
+- - Added seven input-driven gambling duty families from 2024/25 to household and government taxes, including a documented casino incidence proxy.
+
+
 ## [2.150.1] - 2026-10-23
 
 ### Fixed
