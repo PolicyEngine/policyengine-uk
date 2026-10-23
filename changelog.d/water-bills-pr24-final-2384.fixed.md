@@ -1,0 +1,1 @@
+- Rebuild the 2027-2029 England and Wales water bill growth (`yoy_growth.ofwat.water_bills`) from Ofwat's PR24 final determinations and the OBR CPIH forecast, with the source table committed so the values can be reproduced, and rederive the after housing costs CPI from it (#2384).
