@@ -52,17 +52,32 @@ In hand-entered situations each is `claims_all_entitled_benefits | (foo_reported
 `claims_all_entitled_benefits` is false for every benefit unit, and Housing
 Benefit and Council Tax Reduction ignore it, so a reform expanding
 eligibility only reaches existing `_reported > 0` claimants. Setting
-`claims_all_entitled_benefits` to true does not change this for Child Tax
-Credit, Working Tax Credit, Income Support or working-age Housing Benefit,
-because their eligibility tests (`is_CTC_eligible`, `is_WTC_eligible`,
-`income_support_eligible`, `housing_benefit_eligible`) also require a
-reported award.
+`claims_all_entitled_benefits` to true on a data-built simulation does not
+change this: Housing Benefit and Council Tax Reduction ignore it there, and
+the eligibility tests for Child Tax Credit, Working Tax Credit, Income
+Support and working-age Housing Benefit (`is_CTC_eligible`,
+`is_WTC_eligible`, `income_support_eligible`, `housing_benefit_eligible`)
+also require a reported award. In years when tax credits are active it does
+turn on `would_claim_CTC` for families that report no Child Tax Credit;
+their `tax_credits` then includes the Child Tax Credit child element, which
+`CTC_child_element` computes without checking `is_CTC_eligible`, and that
+amount enters their Housing Benefit and Council Tax Reduction means tests.
+In hand-entered situations the flag is already true for families that
+report none of the seven benefits, and the same eligibility tests mean that,
+of these five benefits, such a family can receive only Council Tax
+Reduction and pension-age Housing Benefit.
 
 **Fix**: convert each to input-only `default_value = True` (matching
 `would_claim_uc`), and add each to Microcosm UK's reported-anchored
-take-up stages. Because of those eligibility tests, this changes take-up for
-non-reporters only for Council Tax Reduction and pension-age Housing
-Benefit. Tax credits stopped paying ongoing awards on 5 April
+take-up stages. Because of those eligibility tests, the only new awards
+this gives families that report none of these benefits are Council Tax
+Reduction and pension-age Housing Benefit (the model's pension-age route,
+which includes mixed-age couples that can still claim on it). For years when
+tax credits are active, `CTC_child_element` would first need an
+`is_CTC_eligible` gate: without one, a non-reporting family with children
+drawn as a Child Tax Credit claimant gets `tax_credits` but no Child Tax
+Credit, and that amount cuts its Housing Benefit and Council Tax Reduction.
+Tax credits stopped paying ongoing awards on 5 April
 2025, and `gov.dwp.tax_credits.active` is false from 2025-04-06 (see
 [tax-credits.md](../programs/gov/dwp/tax-credits.md)), so the WTC and CTC
 fix matters only for simulations of earlier years.
@@ -75,7 +90,9 @@ receipt as a claimant and draw the rest to the target rate
 ([`source_stages.json` at `75167a6`](https://github.com/PolicyEngine/microcosm/blob/75167a68/packages/microcosm-build/src/microcosm/build/uk/source_stages.json)).
 The description below is the Enhanced FRS behaviour before
 [policyengine-uk-data#359](https://github.com/PolicyEngine/policyengine-uk-data/pull/359)
-(April 2026), which anchored the same three flags on reported receipt.
+(April 2026), which anchored `would_claim_uc`, `would_claim_pc` and
+`would_claim_child_benefit` on reported receipt, the same three flags
+Microcosm UK anchors.
 
 Until then the Enhanced FRS take-up assignment was a pure random draw:
 
@@ -97,10 +114,10 @@ without changing the target rates.
 ### 3. Second-stage imputation gap on SPI donors
 
 **Done in Microcosm UK.** `hmrc_spi_income_spine` draws `gift_aid` and
-`charitable_investment_gifts` from the SPI with the new incomes, and trains
-an FRS-only second stage on FRS rows that it predicts from those incomes
-(pension contributions, tax-free savings income and the `*_reported`
-benefits), `spi_housing_shell` redraws tenure,
+`charitable_investment_gifts` from the SPI jointly with the new incomes, and
+an FRS-only second stage, trained on the FRS rows, predicts pension
+contributions, tax-free savings income and the `*_reported` benefits for the
+SPI rows from those incomes. `spi_housing_shell` redraws tenure,
 dwelling and council tax band for the SPI households, and the wealth,
 spending and VAT stages now run after the SPI block, so they are drawn
 for the new incomes rather than inherited from the FRS parent. The
@@ -136,7 +153,8 @@ predictors = demographics + 6 income vars, outputs = a wide set of
 total wealth components, `capital_allowances`, `deficiency_relief`,
 and the full list of `*_reported` benefits. policyengine-uk-data#362 (April
 2026) added this stage with a narrower output list: pension contributions,
-tax-free savings income and the `*_reported` benefits.
+tax-free savings income and the `*_reported` benefits. Microcosm UK's second
+stage has the same outputs.
 
 ## Specific aggregate residuals
 
@@ -146,7 +164,8 @@ new State Pension pro-rating + Protected Payment in
 [PR #1634](https://github.com/PolicyEngine/policyengine-uk/pull/1634)),
 the residual benefit-aggregate gaps against OBR on the Enhanced FRS
 (for the rows other than State Pension, the figures #1621 reported for 2025
-on Enhanced FRS 1.50.3 in April 2026; the State Pension row is taken from
+on Enhanced FRS 1.50.3 in April 2026, which predates policyengine-uk-data#347,
+#359 and #362; the State Pension row is taken from
 the State Pension page; none re-measured on Microcosm UK) were:
 
 | Variable | Model | Target | Gap | Likely cause |
@@ -160,7 +179,7 @@ the State Pension page; none re-measured on Microcosm UK) were:
 Each warrants a scoped PR pair (model + data) once the architectural
 fixes above land.
 
-## Items already fixed since #1621 was filed
+## Small items from #1621
 
 The issue body flagged three small items; two are resolved:
 
@@ -183,8 +202,10 @@ already-fixed items.
 2. ~~Port `assign_takeup_with_reported_anchors`~~: done in
    policyengine-uk-data#359 and in Microcosm UK (gap 2).
 3. ~~Add second-stage QRF for FRS-only variables on SPI donors~~: done
-   in policyengine-uk-data#362 (narrower outputs) and in Microcosm UK
-   (gap 3).
+   in policyengine-uk-data#362 and in Microcosm UK (gap 3), both with a
+   narrower output list than proposed above; Microcosm UK also redraws
+   housing and runs the wealth, spending and VAT stages after the SPI
+   block.
 4. ~~Add `gift_aid` to `IMPUTATIONS`~~: done in policyengine-uk-data#347
    and in Microcosm UK, where `gift_aid` is a stage-1 SPI output.
 5. **Residual benefit-aggregate follow-ups**: re-measure on the
