@@ -20,28 +20,33 @@ more detail on the PolicyEngine side.
 
 | | PolicyEngine UK | STBM |
 |---|---|---|
-| How relief is given | Reduces taxable income by the contribution (`pension_contributions_relief`) | Treats contributions as paid net of basic rate: grosses them up by 1/(1 − basic rate) and raises the basic-rate limit and every higher rate limit by the gross amount, as under relief at source |
+| How relief is given | Reduces taxable income by the contribution (`pension_contributions_relief`) | Treats contributions as paid net of basic rate: grosses them up by 1/(1 − basic rate) and raises the basic-rate limit and every rate limit above it by the gross amount, as under relief at source. For savings and dividend income it raises every limit, including the starting-rate limit for savings and its 0% dividend band (the dividend allowance), which relief at source does not |
 | Contributions that get relief | The person's own contributions | Employee contributions, additional voluntary contributions **and employer contributions** |
 | Basic-rate relief added to the pot | Not shown separately | Recorded separately (`pension_relief_at_source`) |
 | Earnings limit | Relief capped at relevant UK earnings (employment income, employer-paid Statutory Sick Pay and Statutory Maternity Pay, and self-employment profit), or £3,600 for relief-at-source contributions if earnings are lower | No earnings cap; when total income is below a basic-amount parameter the limit is that amount (£10,000 in its 2023-24 to 2026-27 systems, £3,600 before) |
 | Annual allowance | £60,000 (`pension_annual_allowance`), tapered only when adjusted income is above £260,000 and threshold income is above £200,000, as in FA 2004 s. 228ZA | Tapered on total income above a threshold-income parameter |
 | Contributions above the allowance | Annual allowance charge on the excess, taxed as the top slice of income (`personal_pension_contributions_tax`) | Relief stops at the allowance; no separate charge |
-| Employer contributions in the data | An input (`employer_pension_contributions`). Microcosm UK draws it from the ONS ASHE employer-contribution bands (Table P10); the Enhanced FRS sets it to three times employee contributions | Imputed when missing from the FRS, using the ONS ASHE employer-contribution bands (`src/Pensions.jl`) |
+| Employer contributions in the data | An input (`employer_pension_contributions`). Microcosm UK draws it from the ONS ASHE employer-contribution bands (Table P10); the Enhanced FRS sets it to three times employee contributions for survey respondents and imputes it with a quantile regression forest on the high-income records whose incomes it imputes from the SPI | Imputed when missing from the FRS, using the ONS ASHE employer-contribution bands (`src/Pensions.jl`) |
 | Carry-forward of unused allowance | `unused_pension_annual_allowance` (FA 2004 s. 228A) adds to the allowance. As the survey data has no past pension input amounts, from 2020-21 the default estimates it from an assumed five-year history (this year's input and taper incomes deflated by average earnings growth); before 2020-21 it is nil | Not modelled |
 
 The STBM column describes its Scottish systems, its default. In its
 rest-of-UK systems from 2023-24, `non_savings_basic_rate` points at the 40%
-rate (`params/sys_2023_24_ruk.jl` onwards, marked `FIXME`), so there the
-gross-up uses 40% and only the additional-rate limit rises.
+rate (`params/sys_2023_24_ruk.jl` onwards), so there the gross-up uses 40%
+and, for non-savings income, only the higher rate limit (£125,140, where the
+additional rate starts) rises, not the basic-rate limit. In every system all
+savings and dividend limits rise.
 
 ## Where the two models differ
 
 ### 1. Reducing taxable income versus widening the bands
 
-For an income-tax payer whose contribution stays inside one band above the
-Scottish starter rate, the two methods give the same total relief. They can differ when the person pays
-little or no income tax: STBM still records the basic-rate addition to the
-pot, which PolicyEngine UK does not show.
+For an income-tax payer with only non-savings income whose contribution
+stays inside one band above the Scottish starter rate, the two methods give
+the same total relief. They can differ when the person pays little or no
+income tax: STBM still records the basic-rate addition to the pot, which
+PolicyEngine UK does not show. They also differ for dividend income, and for
+savings income in the starting-rate band, because STBM raises those 0% band
+limits too.
 
 **The personal allowance taper.** In law, gross pension contributions
 reduce adjusted net income
@@ -88,8 +93,9 @@ accessed
 ([FA 2004 s. 227ZA](https://www.legislation.gov.uk/ukpga/2004/12/section/227ZA)).
 Its annual allowance charge is always on the default chargeable amount,
 the pension input amount above the annual allowance (s. 227ZA(3)), never the
-alternative chargeable amount that applies once the money purchase annual
-allowance is exceeded.
+alternative chargeable amount (s. 227B), which replaces it when the money
+purchase annual allowance is exceeded and the alternative amount is the
+larger (s. 227ZA(1)).
 
 ### 4. Lifetime and lump sum allowances
 
