@@ -538,6 +538,27 @@
     housing_benefit_specified_or_temporary_accommodation_disregard: 4_041.96
     housing_benefit_applicable_income_disregard: 4_301.96 # (£5 + £77.73) × 52
 
+- name: Statutory paternity pay alone makes the claimant an employed earner
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        statutory_paternity_pay: 388.64 # earnings under reg 35(1)(i)
+    benunits:
+      benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
+        members: [person]
+        in_specified_or_temporary_accommodation: true
+  output:
+    housing_benefit_net_earnings: 388.64
+    # Para 18(1)(b) is met, so the full amount applies...
+    housing_benefit_specified_or_temporary_accommodation_disregard: 4_041.96
+    # ...but the disregards, (£5 + £77.73) x 52 = 4,301.96, come off net
+    # earnings of 388.64.
+    housing_benefit_applicable_income_disregard: 388.64
+
 - name: A self-employment loss is still self-employment, but leaves no earnings to disregard
   period: 2027
   absolute_error_margin: 0.01

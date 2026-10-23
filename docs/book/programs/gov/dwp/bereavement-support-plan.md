@@ -37,7 +37,7 @@ That means:
 - Reform analyses changing BSP rates have no household-level surface.
 - Anyone bereaved after the FRS reference week never appears as a BSP
   recipient even if eligible.
-- The legacy WPA has no variable of its own. The Enhanced FRS
+- Both the Enhanced FRS
   ([`frs.py`](https://github.com/PolicyEngine/policyengine-uk-data/blob/main/policyengine_uk_data/datasets/frs.py))
   fills `bsp_reported` from FRS benefit codes 6 and 9, and so did
   Microcosm UK up to its certified 19 October 2026 build
@@ -55,23 +55,40 @@ That means:
 - Since [#2382](https://github.com/PolicyEngine/policyengine-uk/pull/2382)
   (2.135.7), War Widow's Pension has its own variables,
   `war_widows_pension_reported` and `war_widows_pension`. `bsp_reported`
-  keeps CPI uprating only until the datasets move FRS code 9 out of it
-  (done on Microcosm's main branch in microcosm#1333; still open for the
-  Enhanced FRS in
+  keeps CPI uprating until the datasets both move FRS code 9 out of it and
+  move Widowed Parent's Allowance out of code 6 into
+  `widowed_parents_allowance_reported`, since both are CPI-uprated
+  ([`bsp_reported.py`](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/variables/gov/dwp/bsp_reported.py)).
+  Moving code 9 is done on Microcosm's main branch in microcosm#1333, and
+  still open for the Enhanced FRS in
   [policyengine-uk-data#578](https://github.com/PolicyEngine/policyengine-uk-data/issues/578),
   and [microcosm#1222](https://github.com/PolicyEngine/microcosm/issues/1222)
   is still open);
   [#2381](https://github.com/PolicyEngine/policyengine-uk/issues/2381)
   tracks freezing it after that.
+- Since [#2572](https://github.com/PolicyEngine/policyengine-uk/issues/2572),
+  WPA also has its own variables, `widowed_parents_allowance_reported`
+  (CPI-uprated) and `widowed_parents_allowance`. Unlike BSP, WPA is taxable
+  ([ITEPA 2003 s. 577](https://www.legislation.gov.uk/ukpga/2003/1/section/577)),
+  Universal Credit unearned income
+  ([UC Regulations 2013 reg. 66(1)(b)(vi)](https://www.legislation.gov.uk/uksi/2013/376/regulation/66)),
+  Housing Benefit income less £15 a week, a welfare benefit for the benefit
+  cap and an overlapping benefit for Carer's Allowance and Carer Support
+  Payment. It ends at State Pension age and while the recipient lives with a
+  partner ([SSCBA 1992 s. 39A(4) and (5)][sscba-39a]), so it never reaches
+  Pension Credit. The datasets still put it in `bsp_reported` until they
+  split FRS code 6.
 
 ## Proposed scope
 
 [PR #2573](https://github.com/PolicyEngine/policyengine-uk/pull/2573),
 implementing [#2572](https://github.com/PolicyEngine/policyengine-uk/issues/2572),
-proposes `widowed_parents_allowance_reported` and
-`widowed_parents_allowance`, with the appropriate tax and benefit-income
-treatment. This reported-input implementation is pending; the eligibility
-and rule-based amount described in Phase 2 would still be needed for reforms.
+added `widowed_parents_allowance_reported` and `widowed_parents_allowance`,
+with the tax and benefit-income treatment above
+([`widowed_parents_allowance.py`](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/variables/gov/dwp/widowed_parents_allowance.py);
+tests in `tests/policy/baseline/gov/dwp/widowed_parents_allowance.yaml`).
+`widowed_parents_allowance` adds up the reported amount; the eligibility
+test and rule-based amount in Phase 2 are still needed for reforms.
 
 ### Phase 1: rule-based BSP formula
 
@@ -162,8 +179,8 @@ For historical analyses the model should:
   age, has not remarried or formed a new partnership, and is entitled to
   Child Benefit for a qualifying child or is pregnant (SSCBA 1992
   s. 39A).
-- Add `widowed_parents_allowance` (Person, YEAR) as a derived
-  formula reading the WPA rate parameter (which would need
+- Replace the `adds` of `widowed_parents_allowance` (Person, YEAR) with
+  a formula reading the WPA rate parameter (which would need
   backfilling under `gov/dwp/wpa/rate.yaml`).
 
 WPA is closed to deaths from 6 April 2017, but claims for earlier
@@ -174,8 +191,9 @@ November 2024
 Existing awards continue while the surviving parent is entitled to Child
 Benefit and under State Pension age, so some recipients remain. In
 the current data they sit inside `bsp_reported` (see above), so they
-are already counted in income; the gap is that they can't be told
-apart from BSP or reformed separately.
+are already counted in income. Once datasets fill
+`widowed_parents_allowance_reported`, they are told apart from BSP; the
+gap left is a rule-based amount for reforms.
 
 ### Phase 3: data-side bereavement inputs
 
