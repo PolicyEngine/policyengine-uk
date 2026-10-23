@@ -26,7 +26,7 @@ The table below shows how the HBAI income components map to PolicyEngine variabl
 | Income received from dividends (from FYE 2022) |`dividend_income`|
 | State support - all benefits and tax credits |`hbai_benefits`|
 | Income from occupational and private pensions |`private_pension_income` (includes occupational pension income)|
-| Investment income |`dividend_income`, `savings_interest_income`, `property_income`|
+| Investment income |`dividend_income`, `savings_interest_income`, `property_income_after_finance_costs`|
 | Maintenance payments |`maintenance_income`|
 | Income from educational grants and scholarships (including, for students, student loans and parental contributions) |`student_payments`|
 | The cash value of certain forms of income in kind (free school meals, free school breakfast, free school milk, free school fruit and vegetables, Healthy Start vouchers and free TV licences for those aged 75 and over who receive Pension Credit) |`free_school_meals`, `free_school_fruit_veg`, `free_school_milk`, `healthy_start_vouchers`, `free_tv_licence_value`|
@@ -44,6 +44,10 @@ The table below shows how the HBAI income components map to PolicyEngine variabl
 | Mortgage interest payments | `mortgage_interest_repayment`|
 | Structural insurance premiums (for owner occupiers) | `structural_insurance_payments` |
 | Ground rent and service charges |`housing_service_charges`|
+
+## Property income
+
+HBAI income counts a landlord's profit after mortgage interest. The Family Resources Survey asks for rent from property "AFTER paying for any of the things on this card", and show card K6 lists mortgage payments and interest on a loan to buy the property ([FRS 2023–24 question instructions](https://doc.ukdataservice.ac.uk/doc/9367/mrdoc/pdf/9367_frs_2023-24_question_instructions_final.pdf), question PropRent, page 302). PolicyEngine's `property_income` is the profit before those finance costs, because income tax no longer deducts them (ITTOIA 2005 s. 272A(4)) and relieves them with a tax reduction instead (s. 274A). So `hbai_household_net_income`, `market_income` and `household_market_income` count `property_income_after_finance_costs`: `property_income` less `property_finance_costs`, and nil where the costs exceed a positive profit. The tax reduction itself is in `income_tax`. Interest on a let property is not a housing cost; only the household's own `mortgage_interest_repayment` is deducted after housing costs.
 
 ## Negative incomes
 

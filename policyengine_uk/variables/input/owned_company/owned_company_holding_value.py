@@ -8,8 +8,9 @@ class owned_company_holding_value(Variable):
     documentation = (
         "The value of the person's holding (their shares) in the company in "
         "which they stand as sole owner or partner, to the extent that it is "
-        "already counted in the household's capital (for example within "
-        "corporate_wealth) or in uc_reported_capital."
+        "already counted in the household's capital (within its share-like "
+        "capital: corporate_wealth or its itemised components) or in "
+        "uc_reported_capital."
     )
     definition_period = YEAR
     unit = GBP

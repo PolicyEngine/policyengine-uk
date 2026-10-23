@@ -205,9 +205,9 @@ def test_the_published_result_holds_aggregates_only(measured):
 
 
 def test_geographic_guards_hold_once_declared_double_counts_are_netted(measured):
-    """Council tax and domestic rates never meet; nor do SDLT, LTT and LBTT
-    once corporate SDLT, which expected_sdlt carries while #2159 is open, is
-    netted out of it as a declared double count."""
+    """Council tax and domestic rates never meet; nor do SDLT, LTT and LBTT.
+    Since #2159 expected_sdlt carries no corporate SDLT, so nothing needs
+    netting here; a declared double count would be netted out of its head."""
     result, _, _, _ = measured
     status = {c["id"]: c["status"] for c in result["checks"]}
     assert status["overlap_guard:local_tax_geography"] == "pass"
