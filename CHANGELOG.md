@@ -1,3 +1,16 @@
+## [2.148.1] - 2026-10-23
+
+### Changed
+
+- - Removed the `core_reform_api` test cases, which called policyengine-core's `Reform.from_api` through a replaced `requests.get`, and added a test that fails if code here uses the policyengine-core functions that call the Public API.
+
+### Fixed
+
+- - Targeted (two-year-old) childcare and the Kingston upon Thames, Merton, Newham and Westminster Council Tax Reduction schemes now read Universal Credit earned income before the work allowance (`uc_earned_income_before_work_allowance`), as SI 2014/2147 reg 1(3)(a) and the schemes require.
+- Added explicit energy price-period declarations for dataset projection using the existing annual CPI assumption, while preserving flat energy amounts in unlabelled inputs.
+- - Rederive CPI after housing costs growth (`consumer_price_index_ahc`). Outturn for 2022-2025 now comes from ONS ad hoc 3582 calendar-year averages, and 2026-2030 from `create_ahc_deflator.py` on the March 2026 OBR forecasts (2026: 1.58% to 2.17%). The method is documented in the parameter metadata instead of being cited to the OBR, which does not publish the series.
+
+
 ## [2.148.0] - 2026-10-22
 
 ### Added
