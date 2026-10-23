@@ -212,19 +212,54 @@ Order Explanatory Memorandum since April 2011; 3.8% for April 2026, written
 statement HCWS1101). `gov.benefit_uprating_cpi`, which the benefit rate
 parameters name as their `uprating`, follows `indices.september_cpi_uprating`,
 and so do the Universal Credit standard allowance and health element indices
-built from it. Amounts not raised by September CPI in practice that sat on
-`gov.benefit_uprating_cpi` keep the lagged calendar-year CPI projection they
-had, through `indices.obr.lagged_cpi`. These include the earnings-linked
-Pension Credit standard minimum guarantee, savings credit threshold, Housing
-Benefit pension-age allowances and Housing Benefit non-dependant deduction
-income bands, as well as DfE funding rates and the council tax high value
-surcharge. Lagged calendar-year CPI remains a placeholder pending an
-appropriate earnings-linked model for the first group; deduction amounts
-continue to follow September CPI. The savings credit threshold and Housing
+built from it. Housing Benefit non-dependant deduction income bands, DfE
+funding rates and the council tax high value surcharge retain their lagged
+calendar-year CPI projection through `indices.obr.lagged_cpi`, pending their
+own uprating models. The deduction amounts continue to follow September CPI.
+The savings credit threshold and Housing
 Benefit pension-age allowances are within the s150 review, under
 [s150(1)(l) and (h)](https://www.legislation.gov.uk/ukpga/1992/5/section/150),
 even though their increases in practice are linked to earnings rather than
 September CPI.
+
+## Pension Credit earnings uprating
+
+[`create_earnings_uprating.py`](./create_earnings_uprating.py) builds
+`yoy_growth.earnings_uprating` from the previous May-July total-pay AWE input
+used by the triple lock, rounded to the published 0.1 percentage points.
+`indices.earnings_uprating` compounds it without rounding the index levels,
+so rounding cannot push the increase below earnings. When earnings fall,
+the projection holds amounts unchanged.
+
+The Pension Credit standard minimum guarantee and the three lower Housing
+Benefit pension-age personal allowances, which equal it, use this index after
+their last published amounts. [SSAA 1992 s150A(1)(d) and (2)](https://www.legislation.gov.uk/ukpga/1992/5/section/150A)
+require the guarantee to rise at least with earnings; they impose no CPI or
+2.5% floor. This projection uses that earnings minimum, allowing published
+amounts to reflect discretionary increases. For April 2027, May-July 2026
+earnings growth of 3.9% gives £238 × 1.039 = £247.282 a week for a single
+person and £363.25 × 1.039 = £377.41675 for a couple, before benefit rounding.
+
+The Savings Credit maximum rises by September CPI, as stated in
+[HCWS1101](https://questions-statements.parliament.uk/written-statements/detail/2025-11-26/hcws1101).
+After general uprating, the projected threshold is derived as the standard
+minimum guarantee minus the maximum divided by the phase-in rate (60%).
+Published thresholds keep their own rounding. The 2026-27 maxima are £17.96
+and £20.10, from the [DWP rates table](https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027#pension-credit).
+A zero phase-in rate pays no Savings Credit, so that year keeps the threshold
+in force before it.
+
+The three higher Housing Benefit pension-age personal allowances, for those
+who reached State Pension age before April 2021, are the standard minimum
+guarantee plus the maximum Savings Credit
+([HB A3/2021](https://www.gov.uk/government/publications/housing-benefit-adjudication-circulars-2021/a32021-housing-benefit-person-who-have-attained-the-qualifying-age-for-state-pension-credit-amendment-regulations-2021),
+paragraphs 3-5); each published amount from 2019-20 to 2026-27 is that sum
+rounded up to the next 5p.
+[`../dwp/housing_benefit/allowances/create_pension_age_allowances.py`](../dwp/housing_benefit/allowances/create_pension_age_allowances.py)
+derives the years after the published amounts as that sum, after general
+uprating, so each part keeps its own index. For April 2027 that is
+£247.282 + £17.96 × 1.035 = £265.8706 a week for a single person or lone
+parent and £377.41675 + £20.10 × 1.035 = £398.22025 for a couple.
 
 Income Tax Act 2007 ss21 and 57 index the basic rate limit and the personal
 allowance by this measure once no freeze applies.
