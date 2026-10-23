@@ -30,7 +30,8 @@ Each file the pull request adds or changes in the fragment directory must:
 
 Files towncrier ignores (.gitkeep, README and the configured ``ignore``) are
 not fragments and pass. Every name this accepts is one towncrier consumes,
-with the type the name shows. Deleting a fragment always passes.
+with the type the name shows. Deleted fragments need no content validation;
+the release-trigger checks below still apply.
 
 A change to a release-triggering file (pyproject.toml or the fragment
 directory) also needs a typed fragment, except for changes limited to

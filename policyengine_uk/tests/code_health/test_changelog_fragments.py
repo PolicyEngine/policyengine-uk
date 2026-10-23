@@ -760,15 +760,24 @@ def released_dependency_repo(repo):
 
 def dependency_manifest(repo, field="runtime"):
     """Change one real dependency declaration without rewriting other TOML."""
-    before, after = {
-        "runtime": ('"pydantic>=2.11.7"', '"pydantic>=2.11.8"'),
-        "optional": ('"coverage"', '"coverage>=7"'),
-        "build": ('requires = ["hatchling"]', 'requires = ["hatchling>=1.28"]'),
-        "group": ('"packaging>=24"', '"packaging>=25"'),
+    key = {
+        "runtime": "dependencies",
+        "optional": "dev",
+        "build": "requires",
+        "group": "audit",
     }[field]
     project = (repo / "pyproject.toml").read_text()
-    assert project.count(before) == 1
-    return project.replace(before, after)
+    # Add a valid declaration, independent of the versions an actual future
+    # dependency update puts in this repository's manifest.
+    updated, count = re.subn(
+        rf"(?m)^{key}\s*=\s*\[",
+        lambda match: match.group(0) + '"fixture-dependency>=1", ',
+        project,
+        count=1,
+    )
+    assert count == 1
+    assert tomllib.loads(project) != tomllib.loads(updated)
+    return updated
 
 
 @pytest.mark.parametrize(
