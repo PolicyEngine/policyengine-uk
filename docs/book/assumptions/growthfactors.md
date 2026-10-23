@@ -34,6 +34,18 @@ We apply this to: `diesel_spending`, `petrol_spending`
 
 The pump prices that turn spending into litres (`household.consumption.fuel.prices.petrol` and `.diesel`) are DESNZ calendar-year averages (Quarterly Energy Prices tables 4.1.1 and 4.1.2), the same basis Microcosm UK uses to price household fuel spending. The spending growth rates (`petrol_spending_litre_proxy`, `diesel_spending_litre_proxy`) are derived from those prices, so that weighted litres follow the volume path above: (1 + growth) = (1 + volume growth) × price<sub>t</sub> / price<sub>t−1</sub> ÷ (1 + population growth). Whenever the prices change, re-derive the growth rates; a test checks that they match.
 
+## Benefit uprating (September CPI)
+
+Most benefit rates rise each April by the CPI 12-month rate for the
+September before, as in the annual review under Social Security
+Administration Act 1992 s150 ([written statement HCWS1101](https://questions-statements.parliament.uk/written-statements/detail/2025-11-26/hcws1101):
+3.8% for April 2026). Published September figures come from ONS series D7G7
+(3.5% for September 2026, which sets April 2027); later years use the OBR's
+September CPI forecast and, after the EFO horizon, calendar-year CPI. Each
+figure is rounded to 0.1 percentage points, and a fall in prices leaves rates
+unchanged. Parameters with `uprating: gov.benefit_uprating_cpi` rise by these
+rates after their last published value.
+
 ## Average earnings
 
 ```{note}
