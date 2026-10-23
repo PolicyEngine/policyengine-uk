@@ -12,8 +12,10 @@ class bsp_reported(Variable):
         "this from Family Resources Survey benefit codes 6 (Bereavement "
         "Support Payment or Widowed Parent's Allowance) and 9 (War Widow's or "
         "Widower's Pension). Code 9 is most of the value and is uprated by "
-        "CPI, so this variable keeps CPI uprating until datasets move code 9 "
-        "into war_widows_pension_reported. It should then be frozen (#2381)."
+        "CPI, as is Widowed Parent's Allowance, so this variable keeps CPI "
+        "uprating until datasets move code 9 into war_widows_pension_reported "
+        "and Widowed Parent's Allowance into "
+        "widowed_parents_allowance_reported. It should then be frozen (#2381)."
     )
     definition_period = YEAR
     unit = GBP
