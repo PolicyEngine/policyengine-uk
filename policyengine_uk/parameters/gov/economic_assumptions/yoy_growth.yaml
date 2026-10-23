@@ -617,13 +617,32 @@ obr:
         - title: OBR EFO March 2026 (detailed forecast tables, economy, Table 1.12)
           href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
 
+  # Growth in each country's council tax receipts, net of council tax
+  # reduction. Receipts are the Band D level times the tax base (Band D
+  # equivalent dwellings), so they grow with the number of homes as well as
+  # with bills. Dataset projection grows household weights separately, so it
+  # grows each household's bill by this series net of the weights' growth
+  # (uprate_council_tax, #2067). The fiscal year starting in year t is stored
+  # at t-01-01, as growth over the year before, rounded to 4 decimals.
+  #
+  # 2025-2030 are OBR's receipts forecasts. 2023 and 2024 are outturns of the
+  # liability behind each country's OBR line, net of council tax reduction,
+  # from the official statistics named below
+  # (policyengine_uk/tests/test_council_tax_uprating.py recomputes them). They
+  # are amounts due, not cash collected, so changes in in-year collection
+  # rates do not move them. Before #2067 these two years held Band D level
+  # growth instead.
   council_tax:
     england:
-      description: Growth in the level of council tax receipts in England.
+      description: Growth in council tax receipts in England.
       values:
-        # Outturn (2023-2024)
-        2023-01-01: 0.051
-        2024-01-01: 0.051
+        # Outturn (2023-2024): growth in the council tax requirement including
+        # adult social care and parish precepts (MHCLG, 2025-26 release, Table
+        # 1): £36,313.2m in 2022-23, £38,718.3m in 2023-24, £41,222.4m in
+        # 2024-25. OBR's England line is this requirement: its 2024-25 outturn
+        # is £41.2225bn.
+        2023-01-01: 0.0662
+        2024-01-01: 0.0647
         # Forecast (2025-2030) from OBR EFO March 2026, Expenditure Table 4.1
         2025-01-01: 0.0702
         2026-01-01: 0.0545
@@ -634,14 +653,21 @@ obr:
       metadata:
         unit: /1
         reference:
+          - title: MHCLG, Council Tax levels set by local authorities in England 2025 to 2026, Table 1 (2023 and 2024)
+            href: https://www.gov.uk/government/statistics/council-tax-levels-set-by-local-authorities-in-england-2025-to-2026
           - title: OBR EFO March 2026 (detailed forecast tables, expenditure, Table 4.1)
             href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
     scotland:
-      description: Growth in the level of council tax receipts in Scotland.
+      description: Growth in council tax receipts in Scotland.
       values:
-        # Outturn (2023-2024)
-        2023-01-01: 0.052
-        2024-01-01: 0.001
+        # Outturn (2023-2024): growth in the net amount of council tax billed,
+        # after council tax reduction and excluding water and sewerage charges
+        # (Scottish Government, Council Tax Collection Statistics 2024-25,
+        # Figure 1): £2,825.6m in 2022-23, £3,005.8m in 2023-24, £3,076.8m in
+        # 2024-25. OBR's 2024-25 outturn, £2.9384bn, is the amount of that
+        # year's bills received by 31 March 2025.
+        2023-01-01: 0.0638
+        2024-01-01: 0.0236
         # Forecast (2025-2030) from OBR EFO March 2026, Expenditure Table 4.1
         2025-01-01: 0.0384
         2026-01-01: 0.0384
@@ -652,14 +678,21 @@ obr:
       metadata:
         unit: /1
         reference:
+          - title: Scottish Government, Council Tax Collection Statistics 2024-25, Figure 1 (2023 and 2024)
+            href: https://www.gov.scot/publications/council-tax-collection-statistics-2024-25/pages/3/
           - title: OBR EFO March 2026 (detailed forecast tables, expenditure, Table 4.1)
             href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
     wales:
-      description: Growth in the level of council tax receipts in Wales.
+      description: Growth in council tax receipts in Wales.
       values:
-        # Outturn (2023-2024)
-        2023-01-01: 0.058
-        2024-01-01: 0.077
+        # Outturn (2023-2024): growth in the net collectable council tax debit,
+        # net of the council tax reduction scheme (Welsh Government, Council
+        # tax collection rates, Table 2 total debits of each year's release):
+        # £1,981.6m in 2022-23, £2,122.1m in 2023-24, £2,331.6m in 2024-25.
+        # OBR's 2024-25 outturn, £2.2284bn, is the amount of that year's bills
+        # collected in the year.
+        2023-01-01: 0.0709
+        2024-01-01: 0.0987
         # Forecast (2025-2030) from OBR EFO March 2026, Expenditure Table 4.1
         2025-01-01: 0.0773
         2026-01-01: 0.0743
@@ -670,6 +703,12 @@ obr:
       metadata:
         unit: /1
         reference:
+          - title: Welsh Government, Council tax collection rates April 2022 to March 2023 (2023)
+            href: https://www.gov.wales/council-tax-collection-rates-april-2022-march-2023
+          - title: Welsh Government, Council tax collection rates April 2023 to March 2024 (2023 and 2024)
+            href: https://www.gov.wales/council-tax-collection-rates-april-2023-march-2024
+          - title: Welsh Government, Council tax collection rates April 2024 to March 2025 (2024)
+            href: https://www.gov.wales/council-tax-collection-rates-april-2024-march-2025
           - title: OBR EFO March 2026 (detailed forecast tables, expenditure, Table 4.1)
             href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
 

@@ -1,3 +1,48 @@
+## [2.149.0] - 2026-10-23
+
+### Added
+
+- - Added `pension_contributions_via_bonus_sacrifice`, an input for employer pension contributions made in place of a bonus. It is read summed with `pension_contributions_via_salary_sacrifice`, so the £2,000 NICs exemption cap from April 2029 and the annual allowance threshold income cover both routes, and datasets can keep the two apart.
+- - Added `liquid_fuel_consumption` and `solid_fuel_consumption`, household spending on heating oil, LPG, coal and wood (COICOP 04.5.3 and 04.5.4). They default to zero, are already part of `housing_water_and_electricity_consumption` so add nothing to `consumption`, and dataset projection uprates them by CPI like other LCFS spending, since Ofgem's price cap does not cover them.
+- - Added `spousal_maintenance_income`, maintenance paid by a spouse, civil partner, former spouse or former civil partner. It is Universal Credit unearned income, Pension Credit income (but not savings credit qualifying income) and Housing Benefit income, less £15 a week where the family includes a child or young person, as well as market and HBAI income. `maintenance_income` is documented as child maintenance, which counts in none of the means tests.
+- - Added `widowed_parents_allowance_reported` (CPI-uprated) and `widowed_parents_allowance`, so datasets can separate Widowed Parent's Allowance from Bereavement Support Payment. Unlike Bereavement Support Payment, the allowance is taxable, Universal Credit unearned income, a welfare benefit for the benefit cap and an overlapping benefit for Carer's Allowance and Carer Support Payment. Housing Benefit counts it less £15 a week and Income Support less £10 a week.
+
+### Fixed
+
+- - Fixed `uprate_student_loan_plans` in dataset projection: it takes the base year from the dataset instead of assuming 2023, compares the data's fixed ages with the base year's oldest holder of each plan (so new Plan 2 holders above the 2012 intake now appear, and new Plan 1 holders come only from the 1998 and later intakes, with loans first paid before September 2006 written off at 65), and keys each person's take-up draw on `person_id`, so the same people hold a loan in every year and in any row order.
+- - Count claimant and partner spousal maintenance and Widowed Parent’s Allowance in Council Tax Reduction income across Great Britain, with the statutory £15 weekly disregards and Pension Credit routing.
+- - Count the claimant's and partner's spousal maintenance in Income Support while continuing to disregard child maintenance.
+- - Included spousal maintenance in Housing Benefit and Council Tax Reduction non-dependant income bands while preserving its income-tax exemption.
+- - Correct newly assigned projected student loan plans by funding nation, using household region as a proxy: Plan 4 for Scotland, Plan 1 for Northern Ireland, Plan 2 for Wales, and Plan 2 or 5 by entry cohort for England.
+- - Charged income tax on statutory paternity pay, which ITEPA 2003 s. 660 Table A lists as taxable with statutory sick and maternity pay, and counted it as earnings in Housing Benefit and Council Tax Reduction income, so the tax on it does not raise those awards.
+
+
+## [2.148.5] - 2026-10-23
+
+### Fixed
+
+- Stop projected council tax counting the growth in households twice (#2067). Each country's council tax series is the growth in its receipts, which already includes growth in the number of Band D equivalent dwellings, while household weights grow with population as well. Each household's bill now grows by its country's receipts growth divided by the growth in household weights, so each country's weighted total grows with its receipts; before, totals outgrew receipts by population growth, 0.4% to 0.7% a year from 2025-26 (2.8% by 2030-31). The 2023-24 and 2024-25 values, which held Band D level growth, now hold receipts outturns: MHCLG's council tax requirement for England, the Scottish Government's net amount billed and the Welsh Government's net collectable debit.
+- - Corrected Housing Benefit allowance age-threshold citations and added precise age-boundary regressions.
+- - The release version commit now moves uv.lock's entry for policyengine-uk with pyproject.toml, and its guard refuses any other change to uv.lock.
+- - Fixed the absolute poverty line for 2011-2020 (FYE 2012 to FYE 2021): each year is now 60% of DWP's published FYE 2011 median in that year's prices, deflated as HBAI does. Previously 2011-2019 stayed at the FYE 2011 cash value and 2020 used headline CPI.
+- - Charge Scottish LBTT on lease rent at 2% over £2 million from 7 February 2020 (SSI 2020/24), not 5% from January 2019, and stop charging LBTT and Welsh LTT on residential lease rent, which the law exempts.
+
+
+## [2.148.4] - 2026-10-23
+
+### Fixed
+
+- - Added the working-age Housing Benefit residential capital threshold using one separately pre-assessed qualification input.
+- Income-related ESA ends for the claimant and partner of a family that claims Universal Credit, as the claim brings its abolition into force (Welfare Reform Act 2012 s.33(1)(b); SI 2013/983 art. 4), so it is no longer paid alongside Universal Credit (#1914).
+
+
+## [2.148.3] - 2026-10-23
+
+### Fixed
+
+- - Fixed a simulation given an input for a year before its data holding no person, benefit unit or household identifiers in that year, so that formulas reading them, such as `months_since_last_birthday` and the Universal Credit deduction draws, gave different values there from the simulation its exported frame loads back to.
+
+
 ## [2.148.2] - 2026-10-23
 
 ### Changed
