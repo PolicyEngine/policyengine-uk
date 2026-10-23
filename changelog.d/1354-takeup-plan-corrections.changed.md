@@ -1,0 +1,1 @@
+Corrected the effective take-up analysis plan (docs/book/assumptions/takeup-analysis-plan.md): Microcosm UK as the certified default dataset, the SPI-before-reweighting order, the size of seed-to-effective drift, the Council Tax Reduction, Carer's Allowance, State Pension and disability rows, new legacy-closure and JSA/ESA rows, and two broken gov.uk links.
