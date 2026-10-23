@@ -29,6 +29,10 @@ devolved programs, use the appropriate devolved agency path, such as
 - Parameter labels should be concise, lowercase, and stable.
 - Add or update focused tests alongside variables and parameters.
 
+For description metadata, follow the
+[parameter description guide](../parameter-descriptions.md). It distinguishes
+the automatic checks from the semantic review a contributor must perform.
+
 ## Program Registry
 
 `policyengine_uk/programs.yaml` is the single source of truth for UK program

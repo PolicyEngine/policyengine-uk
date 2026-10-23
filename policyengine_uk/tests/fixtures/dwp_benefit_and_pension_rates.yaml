@@ -1,15 +1,15 @@
 # DWP "Benefit and pension rates" (and HMRC tax credit rates), by fiscal year
-# (2025 = 2025-26), in each parameter's own unit and period. Each year's rate
-# appears in that year's publication and as the previous-year column of the
-# next year's, and the two agree, except UC's 2021-22 amounts: the temporary
+# (2025 = 2025-26), in each parameter's own unit and period. Each year's rate to
+# 2025-26 appears in that year's publication and as the previous-year column of
+# the next year's, and the two agree, except UC's 2021-22 amounts: the temporary
 # uplift ended in October 2021, and the 2022-23 edition's previous-year column
 # gives the later amounts. The fixture holds the April 2021 amounts from the
-# 2021-22 edition, which PolicyEngine reads at 30 April. For 2025-26 and
-# 2026-27 the amounts match the
-# Social Security Benefits Up-rating Orders 2025 (SI 2025/295) and 2026 (SI
-# 2026/148), except the 2026-27 income-related ESA personal allowances, which
-# are set under the Universal Credit Act 2025 s.5. Rows marked `derived` are
-# computed from published rows as stated. Read by test_dwp_published_rates.py.
+# 2021-22 edition, which PolicyEngine reads at 30 April. 2026-27 has only its
+# own edition so far. For 2025-26 and 2026-27 the amounts match the Social
+# Security Benefits Up-rating Orders 2025 (SI 2025/295) and 2026 (SI 2026/148),
+# except the 2026-27 income-related ESA personal allowances, which are set under
+# the Universal Credit Act 2025 s.5. Rows marked `derived` are computed from
+# published rows as stated. Read by test_dwp_published_rates.py.
 
 sources:
   2015: https://www.gov.uk/government/publications/proposed-benefit-and-pension-rates-2015-to-2016
