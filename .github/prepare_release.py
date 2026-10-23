@@ -9,9 +9,9 @@ release, one run at a time:
 Each attempt fetches main and starts from its tip. If that tip is already a
 version commit, or ``changelog.d`` has no fragments, there is nothing to
 release. Otherwise it bumps the version
-(.github/bump_version.py), builds the changelog (towncrier), commits that as
-"Update package version", checks the commit changes nothing else, and pushes
-it to main. If main moved in the meantime the push is rejected; the next
+(.github/bump_version.py, which also moves uv.lock's entry for this package),
+builds the changelog (towncrier), commits that as "Update package version",
+checks the commit changes nothing else, and pushes it to main. If main moved in the meantime the push is rejected; the next
 attempt starts again from the new tip, so the version and changelog always
 describe the commit they sit on. It never force-pushes.
 
@@ -40,6 +40,7 @@ COMMIT_MESSAGE = "Update package version"
 BOT_NAME = "github-actions[bot]"
 BOT_EMAIL = "41898282+github-actions[bot]@users.noreply.github.com"
 VERSION_LINE = re.compile(r'^version\s*=\s*"[0-9]+\.[0-9]+\.[0-9]+"$')
+LOCK = "uv.lock"
 
 
 class ReleaseError(Exception):
@@ -128,11 +129,63 @@ def version_text(version: tuple[int, int, int]) -> str:
     return ".".join(map(str, version))
 
 
+def project_lock_key(pyproject_text: str) -> tuple[str, dict]:
+    """The name and source uv.lock gives this package's own entry."""
+    name = tomllib.loads(pyproject_text)["project"]["name"]
+    return re.sub(r"[-_.]+", "-", name).lower(), {"editable": "."}
+
+
+def lock_problems(git: Git, base: str, head: str, version: str) -> list[str]:
+    """Problems with ``head``'s uv.lock, which may only move this package.
+
+    The only change allowed is the version of this package's own entry (the
+    editable project), and only to ``version``. Everything else in the parsed
+    lock must be identical, so the commit cannot change a dependency.
+    """
+    name, source = project_lock_key(git.out("show", f"{head}:pyproject.toml"))
+    try:
+        old = tomllib.loads(git.out("show", f"{base}:{LOCK}"))
+        new = tomllib.loads(git.out("show", f"{head}:{LOCK}"))
+    except tomllib.TOMLDecodeError as error:
+        return [f"{LOCK} is not valid TOML: {error}"]
+    own = [
+        package
+        for package in new.get("package", [])
+        if package.get("name") == name and package.get("source") == source
+    ]
+    if len(own) != 1:
+        return [f"{LOCK} has {len(own)} entries for {name}, not one"]
+    problems = []
+    if own[0].get("version") != version:
+        problems.append(f"{LOCK} gives {name} {own[0].get('version')}, not {version}")
+    own[0]["version"] = next(
+        (
+            package.get("version")
+            for package in old.get("package", [])
+            if package.get("name") == name and package.get("source") == source
+        ),
+        None,
+    )
+    if new != old:
+        problems.append(f"{LOCK} changes more than {name}'s version")
+    changed = [
+        line[1:]
+        for line in git.out("diff", "--unified=0", base, head, "--", LOCK).splitlines()
+        if line[:1] in "+-" and not line.startswith(("+++", "---"))
+    ]
+    if len(changed) != 2 or not all(VERSION_LINE.match(line) for line in changed):
+        problems.append(f"{LOCK} changes more than one version line: {changed}")
+    return problems
+
+
 def check_release_diff(git: Git, base: str, head: str) -> None:
     """Fail unless ``head`` only versions ``base``.
 
-    The commit may change only the version line of pyproject.toml and
-    CHANGELOG.md, and delete changelog fragments; and the version must rise.
+    The commit may change only the version line of pyproject.toml,
+    CHANGELOG.md, and the version of this package's own entry in uv.lock
+    (to the new version), and delete changelog fragments; and the version
+    must rise. Version commits made before uv.lock moved with the version
+    leave it unchanged, and still pass.
     """
     problems = []
     for line in git.out(
@@ -140,6 +193,14 @@ def check_release_diff(git: Git, base: str, head: str) -> None:
     ).splitlines():
         status, _, path = line.partition("\t")
         if (status, path) in {("M", "pyproject.toml"), ("M", "CHANGELOG.md")}:
+            continue
+        if (status, path) == ("M", LOCK):
+            problems += lock_problems(
+                git,
+                base,
+                head,
+                version_text(parse_version(git.out("show", f"{head}:pyproject.toml"))),
+            )
             continue
         if status == "D" and path.startswith("changelog.d/") and path.count("/") == 1:
             continue
@@ -174,7 +235,10 @@ def make_version_commit(git: Git, python: str, towncrier: list[str]) -> str:
         [*towncrier, "build", "--yes", "--version", version], cwd=git.repo, check=True
     )
     # Only what versioning changes; the guard below checks nothing else did.
-    git.run("add", "--all", "--", "pyproject.toml", "CHANGELOG.md", "changelog.d")
+    paths = ["pyproject.toml", "CHANGELOG.md", "changelog.d"]
+    if (git.repo / LOCK).exists():
+        paths.append(LOCK)
+    git.run("add", "--all", "--", *paths)
     git.run("commit", "--no-verify", "-m", COMMIT_MESSAGE)
     return version
 
