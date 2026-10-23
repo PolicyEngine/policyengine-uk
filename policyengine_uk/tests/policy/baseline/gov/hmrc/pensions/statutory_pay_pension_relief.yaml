@@ -1,0 +1,243 @@
+# Actual employer-paid annual SSP/SMP, occupational net-pay member contributions,
+# and an already-awarded defined-benefit pension where specified.
+# FA 2004 s. 189 and HMRC PTM044100: statutory employment pay is relevant earnings.
+
+- name: SSP final ordinary tax
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    region: LONDON
+    age: 60
+    employment_income: 20000
+    statutory_sick_pay: 2000
+    statutory_maternity_pay: 0
+    self_employment_income: 0
+    private_pension_income: 20000
+    employee_pension_contributions_reported: 22000
+    personal_pension_contributions: 0
+  output:
+    employment_benefits: 2000
+    employee_pension_contributions: 22000
+    pension_contributions_relief: 22000
+    personal_pension_contributions_tax: 0
+    income_tax: 1486.0
+
+- name: SMP relief cap
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    region: LONDON
+    age: 35
+    employment_income: 20000
+    statutory_sick_pay: 0
+    statutory_maternity_pay: 2000
+    self_employment_income: 0
+    private_pension_income: 0
+    employee_pension_contributions_reported: 22000
+    personal_pension_contributions: 0
+  output:
+    employment_benefits: 2000
+    employee_pension_contributions: 22000
+    pension_contributions_relief: 22000
+    personal_pension_contributions_tax: 0
+    income_tax: 0.0
+
+- name: Still capped at all relevant earnings
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    region: LONDON
+    age: 60
+    employment_income: 20000
+    statutory_sick_pay: 2000
+    statutory_maternity_pay: 0
+    self_employment_income: 0
+    private_pension_income: 20000
+    employee_pension_contributions_reported: 25000
+    personal_pension_contributions: 0
+  output:
+    employment_benefits: 2000
+    employee_pension_contributions: 25000
+    pension_contributions_relief: 22000
+    personal_pension_contributions_tax: 0
+    income_tax: 1486.0
+
+- name: Contributions already covered
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    region: LONDON
+    age: 60
+    employment_income: 20000
+    statutory_sick_pay: 2000
+    statutory_maternity_pay: 0
+    self_employment_income: 0
+    private_pension_income: 20000
+    employee_pension_contributions_reported: 12000
+    personal_pension_contributions: 0
+  output:
+    employment_benefits: 2000
+    employee_pension_contributions: 12000
+    pension_contributions_relief: 12000
+    personal_pension_contributions_tax: 0
+    income_tax: 3486.0
+
+- name: Equal amount as wages
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    region: LONDON
+    age: 60
+    employment_income: 22000
+    statutory_sick_pay: 0
+    statutory_maternity_pay: 0
+    self_employment_income: 0
+    private_pension_income: 20000
+    employee_pension_contributions_reported: 22000
+    personal_pension_contributions: 0
+  output:
+    employment_benefits: 0
+    employee_pension_contributions: 22000
+    pension_contributions_relief: 22000
+    personal_pension_contributions_tax: 0
+    income_tax: 1486.0
+
+- name: Pension is not relevant earnings
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    region: LONDON
+    age: 60
+    employment_income: 20000
+    statutory_sick_pay: 0
+    statutory_maternity_pay: 0
+    self_employment_income: 0
+    private_pension_income: 20000
+    employee_pension_contributions_reported: 22000
+    personal_pension_contributions: 0
+  output:
+    employment_benefits: 0
+    employee_pension_contributions: 22000
+    pension_contributions_relief: 20000
+    personal_pension_contributions_tax: 0
+    income_tax: 1486.0
+
+- name: Age75 exclusion retained
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    region: LONDON
+    age: 75
+    employment_income: 20000
+    statutory_sick_pay: 2000
+    statutory_maternity_pay: 0
+    self_employment_income: 0
+    private_pension_income: 20000
+    employee_pension_contributions_reported: 22000
+    personal_pension_contributions: 0
+  output:
+    employment_benefits: 2000
+    employee_pension_contributions: 22000
+    pension_contributions_relief: 0
+    personal_pension_contributions_tax: 0
+    income_tax: 5886.0
+
+- name: RAS basic amount retained
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    region: LONDON
+    age: 40
+    employment_income: 1000
+    statutory_sick_pay: 0
+    statutory_maternity_pay: 1000
+    self_employment_income: 0
+    private_pension_income: 0
+    employee_pension_contributions_reported: 0
+    personal_pension_contributions: 3600
+  output:
+    employment_benefits: 1000
+    employee_pension_contributions: 0
+    pension_contributions_relief: 3600
+    personal_pension_contributions_tax: 0
+    income_tax: 0.0
+
+- name: Positive trading profit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    region: LONDON
+    age: 60
+    employment_income: 20000
+    statutory_sick_pay: 2000
+    statutory_maternity_pay: 0
+    self_employment_income: 5000
+    private_pension_income: 20000
+    employee_pension_contributions_reported: 27000
+    personal_pension_contributions: 0
+  output:
+    employment_benefits: 2000
+    employee_pension_contributions: 27000
+    pension_contributions_relief: 27000
+    personal_pension_contributions_tax: 0
+    income_tax: 1486.0
+
+- name: Trading losses do not offset statutory employment pay for relief
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 60
+    employment_income: 20000
+    statutory_sick_pay: 2000
+    self_employment_income: -5000
+    employee_pension_contributions_reported: 25000
+  output:
+    pension_contributions_relief: 22000
+
+# Supplied ANI is an explicit input contract. Restore the same actual pension
+# relief for equal total relevant earnings, regardless of the SSP wage split.
+- name: Supplied ANI all-wages annual allowance control
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    region: LONDON
+    age: 50
+    employment_income: 22000
+    statutory_sick_pay: 0
+    statutory_maternity_pay: 0
+    self_employment_income: 0
+    employee_pension_contributions_reported: 22000
+    personal_pension_contributions: 0
+    employer_pension_contributions: 0
+    pension_contributions_via_salary_sacrifice: 0
+    adjusted_net_income: 5000
+  output:
+    employment_benefits: 0
+    pension_contributions_relief: 22000
+    net_income: 27000
+    pension_contributions_for_annual_allowance: 22000
+    pension_annual_allowance_threshold_income: 5000
+    pension_annual_allowance_adjusted_income: 27000
+
+- name: Supplied ANI SSP preserves annual allowance earnings base
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    region: LONDON
+    age: 50
+    employment_income: 20000
+    statutory_sick_pay: 2000
+    statutory_maternity_pay: 0
+    self_employment_income: 0
+    employee_pension_contributions_reported: 22000
+    personal_pension_contributions: 0
+    employer_pension_contributions: 0
+    pension_contributions_via_salary_sacrifice: 0
+    adjusted_net_income: 5000
+  output:
+    employment_benefits: 2000
+    pension_contributions_relief: 22000
+    net_income: 27000
+    pension_contributions_for_annual_allowance: 22000
+    pension_annual_allowance_threshold_income: 5000
+    pension_annual_allowance_adjusted_income: 27000

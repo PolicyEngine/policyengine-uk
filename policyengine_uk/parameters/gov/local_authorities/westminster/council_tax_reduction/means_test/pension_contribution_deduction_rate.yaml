@@ -1,0 +1,15 @@
+description: The Westminster Council Tax Support scheme deducts this share of pension contributions when it calculates the net earnings and self-employed net profit of a working-age applicant. The council's published scheme says the default scheme forms the basis of its working-age scheme and does not restate this rule, so the default scheme's one-half is used.
+values:
+  2026-04-01: 0.5
+metadata:
+  period: year
+  unit: /1
+  label: Westminster Council Tax Support pension contribution deduction rate
+  economy: false
+  reference:
+    - title: Council Tax Support scheme for 2026/27, section 4 (the Default Scheme Regulations 2012 form the basis of the working-age scheme)
+      href: https://www.westminster.gov.uk/sites/default/files/media/documents/council-tax-support-scheme-for-2026-27.pdf
+    - title: The Council Tax Reduction Schemes (Default Scheme) (England) Regulations 2012 Sch. para. 52(3)(b) and (c) and (6)(c)
+      href: https://www.legislation.gov.uk/uksi/2012/2886/schedule/paragraph/52
+    - title: The Council Tax Reduction Schemes (Default Scheme) (England) Regulations 2012 Sch. para. 61
+      href: https://www.legislation.gov.uk/uksi/2012/2886/schedule/paragraph/61
