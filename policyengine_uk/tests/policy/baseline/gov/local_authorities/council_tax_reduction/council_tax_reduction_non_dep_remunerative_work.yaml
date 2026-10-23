@@ -1,0 +1,212 @@
+# England SI 2012/2885 Sch 1 para 8 and reg 10; Scotland SSI 2021/249
+# reg 90 and reg 10, SSI 2012/319 reg 48 and reg 6; Wales WSI 2013/3029
+# Sch 1 para 3, Sch 6 para 5 and reg 10: income banding requires remunerative
+# work. This scoped fix retains the consumer's inherited HB scale: the
+# 2026-27 flat amount is 20.40/week and 403.85/week of income gives 105.20.
+# Actual national CTR flat amounts are England 5.20, Scotland 5.55, Wales
+# 6.70; their scales remain for #2007. These are work-gate regressions.
+
+- name: ENGLAND council_tax_reduction bands IIDB only from 16 weekly hours
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    country: ENGLAND
+    council_tax_reduction_individual_non_dep_deduction_eligible: true
+    # No work, 15 hours, 16 hours, and 37.5 hours each week.
+    hours_worked: [0, 780, 832, 1_950]
+    employment_income: [0, 9_000, 9_000, 9_000]
+    iidb: 12_000
+    social_security_income: 0
+    is_on_income_support: false
+    is_on_income_based_jsa: false
+    is_on_income_related_esa: false
+  output:
+    weekly_hours: [0, 15, 16, 37.5]
+    council_tax_reduction_non_dep_gross_income: [12_000, 21_000, 21_000, 21_000]
+    council_tax_reduction_individual_non_dep_deduction: [1_060.80, 1_060.80, 5_470.40, 5_470.40]
+
+- name: ENGLAND council_tax_reduction bands child maintenance only from 16 weekly hours
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    country: ENGLAND
+    council_tax_reduction_individual_non_dep_deduction_eligible: true
+    # No work, 15 hours, 16 hours, and 37.5 hours each week.
+    hours_worked: [0, 780, 832, 1_950]
+    employment_income: [0, 9_000, 9_000, 9_000]
+    maintenance_income: 12_000
+    social_security_income: 0
+    is_on_income_support: false
+    is_on_income_based_jsa: false
+    is_on_income_related_esa: false
+  output:
+    weekly_hours: [0, 15, 16, 37.5]
+    council_tax_reduction_non_dep_gross_income: [12_000, 21_000, 21_000, 21_000]
+    council_tax_reduction_individual_non_dep_deduction: [1_060.80, 1_060.80, 5_470.40, 5_470.40]
+
+- name: SCOTLAND council_tax_reduction bands IIDB only from 16 weekly hours
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    country: SCOTLAND
+    council_tax_reduction_individual_non_dep_deduction_eligible: true
+    # No work, 15 hours, 16 hours, and 37.5 hours each week.
+    hours_worked: [0, 780, 832, 1_950]
+    employment_income: [0, 9_000, 9_000, 9_000]
+    iidb: 12_000
+    social_security_income: 0
+    is_on_income_support: false
+    is_on_income_based_jsa: false
+    is_on_income_related_esa: false
+  output:
+    weekly_hours: [0, 15, 16, 37.5]
+    council_tax_reduction_non_dep_gross_income: [12_000, 21_000, 21_000, 21_000]
+    council_tax_reduction_individual_non_dep_deduction: [1_060.80, 1_060.80, 5_470.40, 5_470.40]
+
+- name: SCOTLAND council_tax_reduction bands child maintenance only from 16 weekly hours
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    country: SCOTLAND
+    council_tax_reduction_individual_non_dep_deduction_eligible: true
+    # No work, 15 hours, 16 hours, and 37.5 hours each week.
+    hours_worked: [0, 780, 832, 1_950]
+    employment_income: [0, 9_000, 9_000, 9_000]
+    maintenance_income: 12_000
+    social_security_income: 0
+    is_on_income_support: false
+    is_on_income_based_jsa: false
+    is_on_income_related_esa: false
+  output:
+    weekly_hours: [0, 15, 16, 37.5]
+    council_tax_reduction_non_dep_gross_income: [12_000, 21_000, 21_000, 21_000]
+    council_tax_reduction_individual_non_dep_deduction: [1_060.80, 1_060.80, 5_470.40, 5_470.40]
+
+- name: WALES council_tax_reduction bands IIDB only from 16 weekly hours
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    country: WALES
+    council_tax_reduction_individual_non_dep_deduction_eligible: true
+    # No work, 15 hours, 16 hours, and 37.5 hours each week.
+    hours_worked: [0, 780, 832, 1_950]
+    employment_income: [0, 9_000, 9_000, 9_000]
+    iidb: 12_000
+    social_security_income: 0
+    is_on_income_support: false
+    is_on_income_based_jsa: false
+    is_on_income_related_esa: false
+  output:
+    weekly_hours: [0, 15, 16, 37.5]
+    council_tax_reduction_non_dep_gross_income: [12_000, 21_000, 21_000, 21_000]
+    council_tax_reduction_individual_non_dep_deduction: [1_060.80, 1_060.80, 5_470.40, 5_470.40]
+
+- name: WALES council_tax_reduction bands child maintenance only from 16 weekly hours
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    country: WALES
+    council_tax_reduction_individual_non_dep_deduction_eligible: true
+    # No work, 15 hours, 16 hours, and 37.5 hours each week.
+    hours_worked: [0, 780, 832, 1_950]
+    employment_income: [0, 9_000, 9_000, 9_000]
+    maintenance_income: 12_000
+    social_security_income: 0
+    is_on_income_support: false
+    is_on_income_based_jsa: false
+    is_on_income_related_esa: false
+  output:
+    weekly_hours: [0, 15, 16, 37.5]
+    council_tax_reduction_non_dep_gross_income: [12_000, 21_000, 21_000, 21_000]
+    council_tax_reduction_individual_non_dep_deduction: [1_060.80, 1_060.80, 5_470.40, 5_470.40]
+
+- name: council_tax_reduction charges the flat amount on a non-worker's pension or nil income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    council_tax_reduction_individual_non_dep_deduction_eligible: true
+    hours_worked: 0
+    private_pension_income: [28_912, 0]
+    social_security_income: 0
+    is_on_income_support: false
+    is_on_income_based_jsa: false
+    is_on_income_related_esa: false
+  output:
+    council_tax_reduction_individual_non_dep_deduction: [1_060.80, 1_060.80]
+
+- name: council_tax_reduction excludes each income-related benefit recipient from remunerative work
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    council_tax_reduction_individual_non_dep_deduction_eligible: true
+    hours_worked: 832
+    employment_income: 9_000
+    iidb: 12_000
+    social_security_income: 0
+    is_on_income_support: [true, false, false, false]
+    is_on_income_based_jsa: [false, true, false, false]
+    is_on_income_related_esa: [false, false, true, false]
+  output:
+    council_tax_reduction_individual_non_dep_deduction: [1_060.80, 1_060.80, 1_060.80, 5_470.40]
+
+- name: ENGLAND council_tax_reduction reads its remunerative work hours parameter
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.local_authorities.england.council_tax_reduction.pensioners.non_dep_deduction.remunerative_work_hours: 20
+    age: 30
+    country: ENGLAND
+    council_tax_reduction_individual_non_dep_deduction_eligible: true
+    hours_worked: [832, 1_040]
+    employment_income: 9_000
+    maintenance_income: 12_000
+    social_security_income: 0
+    is_on_income_support: false
+    is_on_income_based_jsa: false
+    is_on_income_related_esa: false
+  output:
+    council_tax_reduction_individual_non_dep_deduction: [1_060.80, 5_470.40]
+
+- name: SCOTLAND council_tax_reduction reads its remunerative work hours parameter
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.local_authorities.scotland.council_tax_reduction.non_dep_deduction.remunerative_work_hours: 20
+    age: 30
+    country: SCOTLAND
+    council_tax_reduction_individual_non_dep_deduction_eligible: true
+    hours_worked: [832, 1_040]
+    employment_income: 9_000
+    maintenance_income: 12_000
+    social_security_income: 0
+    is_on_income_support: false
+    is_on_income_based_jsa: false
+    is_on_income_related_esa: false
+  output:
+    council_tax_reduction_individual_non_dep_deduction: [1_060.80, 5_470.40]
+
+- name: WALES council_tax_reduction reads its remunerative work hours parameter
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.local_authorities.wales.council_tax_reduction.non_dep_deduction.remunerative_work_hours: 20
+    age: 30
+    country: WALES
+    council_tax_reduction_individual_non_dep_deduction_eligible: true
+    hours_worked: [832, 1_040]
+    employment_income: 9_000
+    maintenance_income: 12_000
+    social_security_income: 0
+    is_on_income_support: false
+    is_on_income_based_jsa: false
+    is_on_income_related_esa: false
+  output:
+    council_tax_reduction_individual_non_dep_deduction: [1_060.80, 5_470.40]

@@ -1,9 +1,7 @@
-# The national Council Tax Reduction non-dependant deduction bands on gross
-# income, but SI 2012/2885 Sch 1 para 8(2) applies the bands only to a
-# non-dependant in remunerative work, which this formula does not yet test
-# (#2007). Other investment income, now in total_income, is left out of the
-# band until it does, so a non-worker whose only income is investment income
-# is not banded on it.
+# Income bands apply only in remunerative work (SI 2012/2885 Sch 1 para
+# 8(1)-(2)). This scoped gate retains the existing HB scale and the exclusion
+# of other investment income from gross income; national CTR rates and any
+# extension of the income base remain for #2007.
 
 - name: Other investment income does not band a non-worker for CTR
   period: 2025
@@ -13,7 +11,7 @@
   output:
     # The same as a non-dependant with no income. Banding the £556 would give
     # 115.45 * 52 = 6,003.40.
-    council_tax_reduction_individual_non_dep_deduction: 0
+    council_tax_reduction_individual_non_dep_deduction: 19.65 * 52
 
 - name: Other investment income does not move a worker's CTR band
   period: 2025
@@ -26,7 +24,7 @@
     # Banded on the £183 of earnings: 45.15 * 52 = 2,347.80.
     council_tax_reduction_individual_non_dep_deduction: 45.15 * 52
 
-- name: A pensioner's CTR is not cut for a non-dependant's investment income
+- name: A pensioner's non-working non-dependant pays the flat CTR deduction
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -51,4 +49,4 @@
         country: ENGLAND
   output:
     # Banding the £556 would give 115.45 * 52 = 6,003.40.
-    council_tax_reduction_non_dep_deductions: [0, 0]
+    council_tax_reduction_non_dep_deductions: [1_021.80, 0]

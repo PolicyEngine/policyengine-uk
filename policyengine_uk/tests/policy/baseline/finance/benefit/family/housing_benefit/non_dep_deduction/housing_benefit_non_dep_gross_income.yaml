@@ -5,7 +5,7 @@
 # maintenance; the listed disability payments are disregarded.
 # Hand arithmetic: wages 9,000 + statutory pay 520 = 9,520, just above
 # 183/week. The existing national consumers use the HB scale (45.15/week
-# at this income in 2025); correcting CTR rates/worker gates is separate.
+# at this income in 2025); correcting CTR rates is separate (#2007).
 # Annual wages and statutory pay can relate to different parts of the year;
 # leave days themselves are not remunerative work (HB reg 6(7)).
 
@@ -23,6 +23,7 @@
         age: 30
         social_security_income: 0
         employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
         statutory_sick_pay: 520
         housing_benefit_individual_non_dep_deduction_eligible: true
     benunits:
@@ -53,6 +54,7 @@
         age: 30
         social_security_income: 0
         employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
         statutory_maternity_pay: 520
         housing_benefit_individual_non_dep_deduction_eligible: true
     benunits:
@@ -83,6 +85,7 @@
         age: 30
         social_security_income: 0
         employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
         statutory_paternity_pay: 520
         housing_benefit_individual_non_dep_deduction_eligible: true
     benunits:
@@ -113,6 +116,7 @@
         age: 30
         social_security_income: 0
         employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
         statutory_sick_pay: 520
         housing_benefit_individual_non_dep_deduction_eligible: true
     benunits:
@@ -143,6 +147,7 @@
         age: 30
         social_security_income: 0
         employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
         statutory_maternity_pay: 520
         housing_benefit_individual_non_dep_deduction_eligible: true
     benunits:
@@ -173,6 +178,7 @@
         age: 30
         social_security_income: 0
         employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
         statutory_paternity_pay: 520
         housing_benefit_individual_non_dep_deduction_eligible: true
     benunits:
@@ -203,6 +209,7 @@
         age: 30
         social_security_income: 0
         employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
         statutory_sick_pay: 520
         housing_benefit_individual_non_dep_deduction_eligible: true
     benunits:
@@ -233,6 +240,7 @@
         age: 30
         social_security_income: 0
         employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
         statutory_maternity_pay: 520
         housing_benefit_individual_non_dep_deduction_eligible: true
     benunits:
@@ -263,6 +271,7 @@
         age: 30
         social_security_income: 0
         employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
         statutory_paternity_pay: 520
         housing_benefit_individual_non_dep_deduction_eligible: true
     benunits:
@@ -293,6 +302,7 @@
         age: 30
         social_security_income: 0
         employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
         statutory_sick_pay: 520
         housing_benefit_individual_non_dep_deduction_eligible: true
     benunits:
@@ -323,6 +333,7 @@
         age: 30
         social_security_income: 0
         employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
         statutory_maternity_pay: 520
         housing_benefit_individual_non_dep_deduction_eligible: true
     benunits:
@@ -353,6 +364,7 @@
         age: 30
         social_security_income: 0
         employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
         statutory_paternity_pay: 520
         housing_benefit_individual_non_dep_deduction_eligible: true
     benunits:
@@ -383,6 +395,7 @@
         age: 30
         social_security_income: 0
         employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
         statutory_sick_pay: 520
         housing_benefit_individual_non_dep_deduction_eligible: true
     benunits:
@@ -413,6 +426,7 @@
         age: 30
         social_security_income: 0
         employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
         statutory_maternity_pay: 520
         housing_benefit_individual_non_dep_deduction_eligible: true
     benunits:
@@ -443,6 +457,7 @@
         age: 30
         social_security_income: 0
         employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
         statutory_paternity_pay: 520
         housing_benefit_individual_non_dep_deduction_eligible: true
     benunits:
@@ -473,6 +488,7 @@
         age: 30
         social_security_income: 0
         employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
         statutory_sick_pay: 520
         housing_benefit_individual_non_dep_deduction_eligible: true
     benunits:
@@ -503,6 +519,7 @@
         age: 30
         social_security_income: 0
         employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
         statutory_maternity_pay: 520
         housing_benefit_individual_non_dep_deduction_eligible: true
     benunits:
@@ -533,6 +550,7 @@
         age: 30
         social_security_income: 0
         employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
         statutory_paternity_pay: 520
         housing_benefit_individual_non_dep_deduction_eligible: true
     benunits:

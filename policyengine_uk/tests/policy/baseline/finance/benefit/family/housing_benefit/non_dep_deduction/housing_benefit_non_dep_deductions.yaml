@@ -101,7 +101,7 @@
 # The review case on #2184: an existing claimant in council housing with an
 # adult child whose only income is £28,912 of other investment income and who
 # does no paid work. The deduction is the same as for an adult child with no
-# income; reg 74(1)(b) minimum for non-workers comes with #2007.
+# income: reg 74(1)(b) requires the flat amount for non-workers.
 - name: A non-dependant's investment income does not raise the Housing Benefit deduction
   period: 2025
   absolute_error_margin: 0.01
@@ -125,4 +125,4 @@
         rent: 15_000
   output:
     # Banding the £556 would give 115.45 * 52 = 6,003.40.
-    housing_benefit_non_dep_deductions: [0, 0]
+    housing_benefit_non_dep_deductions: [1_021.80, 0]

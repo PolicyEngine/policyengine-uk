@@ -37,8 +37,8 @@ class council_tax_reduction_non_dep_gross_income(Variable):
         "UC would also create a cycle through the benefit cap and HB. "
         "BSP and AFCS inputs do not separate periodic income from capital "
         "payments, so they are not added. Other investment income remains "
-        "excluded pending the remunerative-work test in #2007: the current "
-        "deduction formula would otherwise band non-workers on it. The "
+        "excluded to preserve this income base; extending it remains for "
+        "#2007. The deduction formula applies the remunerative-work gate. The "
         "gross-income variable itself does not decide whether someone is "
         "in remunerative work or whether a deduction is due."
     )

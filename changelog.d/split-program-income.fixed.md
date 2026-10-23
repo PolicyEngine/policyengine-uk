@@ -1,1 +1,2 @@
 - Defined total income as Income Tax Step 1 income, introduced programme-specific gross income for Housing Benefit and Council Tax Reduction non-dependant deductions including statutory pay, and preserved the historical household income and basic income phase-out bases explicitly.
+- Apply income bands to Housing Benefit and Council Tax Reduction non-dependants only in remunerative work (at least 16 hours a week and not receiving Income Support, income-based JSA or income-related ESA); other eligible non-dependants pay the flat deduction, including those with pension income.

@@ -249,12 +249,13 @@
   output:
     council_tax_reduction_claimant_benunit: [true, false]
     # The adult child's own scheme (Maidstone's working-age one) is not
-    # simulated, but the household's bill is: the head's pensioner claim
-    # covers all of it. The child's report cannot be added on top.
+    # simulated. The head's pensioner claim deducts the non-worker's flat
+    # 20.40 x 52 = 1,060.80 on the inherited HB scale. The child's report
+    # cannot be added on top.
     council_tax_reduction_scheme_supported: [true, false]
     council_tax_reduction_household_has_simulated_claim: true
-    council_tax_benefit: [1_800, 0]
-    council_tax_reduction: 1_800
+    council_tax_benefit: [739.20, 0]
+    council_tax_reduction: 739.20
 
 - name: Where no claim is simulated, every family keeps its reported reduction
   period: 2026
