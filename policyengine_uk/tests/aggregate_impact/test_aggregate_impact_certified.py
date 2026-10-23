@@ -9,7 +9,10 @@ import dataclasses
 import numpy as np
 import pytest
 
-from policyengine_uk.utils.aggregate_impact.measure import measure
+from policyengine_uk.utils.aggregate_impact.measure import (
+    component_guard_diagnostic,
+    measure,
+)
 from policyengine_uk.utils.aggregate_impact.partition import (
     default_partition_path,
     load_partition,
@@ -86,7 +89,7 @@ def test_every_tax_component_is_counted_exactly_once(measured):
     rows = {r["variable"]: r for r in guard["components"]}
     for head in partition.tax_heads:
         row = rows[head.variable]
-        assert row["status"] == "pass", row
+        assert row["status"] == "pass", component_guard_diagnostic(row, partition)
         for total, k in row["coefficients"].items():
             assert k == pytest.approx(1, abs=1e-3), (head.id, total)
 

@@ -219,6 +219,10 @@ tax_heads:
     payer: household
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
     sign: nonnegative
+    reads:
+      - head: income_tax
+        route: capital_gains_tax -> allowances -> personal_allowance -> marriage_allowance_relinquished -> makes_marriage_allowance_election -> (private counterfactual) income_tax
+        why: the election determines personal allowance and the income occupying CGT rate bands; income tax is compared to choose the election, not included in capital gains tax
   - id: student_loan_repayments
     label: Student loan repayments
     variable: student_loan_repayments
@@ -714,7 +718,7 @@ overlap_guards:
       here as well.
   - id: eligibility_reads
     kind: read_not_inclusion
-    heads: [tv_licence, private_school_vat]
+    heads: [tv_licence, private_school_vat, capital_gains_tax]
     property: >-
       These heads reach other heads of the same total only through
       eligibility or imputation (see each head's reads). Raising the other

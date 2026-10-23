@@ -46,7 +46,9 @@ class uses_property_allowance(Variable):
         "two cannot be combined. Full relief applies to receipts within the "
         "allowance unless the person elects out of it, and partial relief "
         "only if they elect for it; each election is made only if it lowers "
-        "the person's own income tax, with everyone else's route held fixed. "
+        "the income tax of the person's benefit unit, with everyone else's "
+        "route held fixed. That is the person's own tax plus their spouse's, "
+        "which the route can move through the Marriage Allowance election. "
         "Ties keep the default, so a person with receipts within the "
         "allowance keeps full relief even where electing out would carry "
         "finance costs forward. Without finance costs to relieve, the "
@@ -119,9 +121,14 @@ class uses_property_allowance(Variable):
                     period,
                     route & ~deciding,
                 )
-                # Tax is computed to the penny; smaller differences are
-                # rounding.
-                saving = np.round(tax_not_using - tax_using, 2)
+                # Weigh the benefit unit's tax: a route can change whether a
+                # spouse elects for the Marriage Allowance, which moves the
+                # other spouse's tax (#1947). Tax is computed to the penny;
+                # smaller differences are rounding.
+                saving = np.round(
+                    person.benunit.sum(tax_not_using) - person.benunit.sum(tax_using),
+                    2,
+                )
                 prefers_allowance = where(full_relief, saving >= 0, saving > 0)
                 decided = where(deciding, prefers_allowance, route)
                 changed = changed or bool((decided != route).any())

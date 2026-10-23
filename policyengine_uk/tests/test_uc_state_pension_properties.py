@@ -25,12 +25,15 @@ Invariants, for any generated population of families:
    the pre-cap award by min(x, award), whatever the partner earns. Any tariff
    income from capital remains the same in all three cases.
 
-Marriage Allowance is switched off for invariants 2, 3 and 4. The model gives
-the recipient min(partner's unused personal allowance, 10% of the personal
-allowance) instead of the fixed transferable amount in ITA 2007 s. 55B(4)-(6),
-so State Pension or property income that uses up the pensioner's unused
-allowance raises the earning partner's tax on earnings. The strict xfail at
-the end pins that deviation (PolicyEngine/policyengine-uk#1947).
+Marriage Allowance is claimed throughout. Once a couple has elected, the
+gaining partner's reduction is fixed (ITA 2007 s. 55B(1), (4)-(6)), so the
+pensioner's income cannot move the earning partner's tax on earnings. The
+couple's election itself responds to the pensioner's income: the couple
+stops electing once it no longer lowers their tax (from 12,570 of State
+Pension in 2026-27), which raises the earner's tax and so the award. So the
+invariants that compare runs hold each couple's election at its choice in
+the first run; test_couple_stops_electing_when_it_no_longer_saves_tax pins
+the change in election (PolicyEngine/policyengine-uk#1947).
 """
 
 import numpy as np
@@ -73,6 +76,7 @@ UC_VARIABLES = [
     "uc_income_reduction",
     "uc_maximum_amount",
 ]
+ELECTION = "makes_marriage_allowance_election"
 
 
 @st.composite
@@ -98,7 +102,7 @@ def situation(
     year,
     income_variable="state_pension",
     pension_bump=0.0,
-    marriage_allowance=True,
+    election=None,
 ):
     """Build one simulation holding every family.
 
@@ -106,8 +110,8 @@ def situation(
     ``pension_bump``) under ``income_variable``; when that is not
     ``state_pension``, their State Pension is set to zero so the same amount
     arrives as the other income instead. A working-age partner receives the
-    family's earnings. With ``marriage_allowance=False`` no one claims
-    Marriage Allowance.
+    family's earnings. ``election``, one value per person in order, fixes
+    who makes a Marriage Allowance election.
     """
     people, benunits, households = {}, {}, {}
     for i, unit in enumerate(units):
@@ -123,8 +127,6 @@ def situation(
                 "state_pension": {year: 0.0},
                 "is_claimant_or_partner": {year: True},
             }
-            if not marriage_allowance:
-                person["would_claim_marriage_allowance"] = {year: False}
             if j == 0:
                 amount = unit["state_pension"] + pension_bump
                 person[income_variable] = {year: amount}
@@ -136,19 +138,27 @@ def situation(
             name = f"c{i}_{k}"
             people[name] = {"age": {year: age}, "is_claimant_or_partner": {year: False}}
             names.append(name)
-        benunits[f"b{i}"] = {"members": names}
+        benunits[f"b{i}"] = {
+            "members": names,
+            # Marriage Allowance needs a marriage or civil partnership
+            # (ITA 2007 s. 55C(1)(a)).
+            "is_married": {year: len(unit["ages"]) == 2},
+        }
         households[f"h{i}"] = {
             "members": names,
             "rent": {year: unit["rent"]},
             "tenure_type": {year: unit["tenure"]},
             "savings": {year: unit["savings"]},
         }
+    if election is not None:
+        for person, elects in zip(people.values(), election):
+            person[ELECTION] = {year: bool(elects)}
     return {"people": people, "benunits": benunits, "households": households}
 
 
 def calculate(units, year, **kwargs):
     sim = Simulation(situation=situation(units, year, **kwargs))
-    return {v: np.asarray(sim.calculate(v, year)) for v in UC_VARIABLES}
+    return {v: np.asarray(sim.calculate(v, year)) for v in UC_VARIABLES + [ELECTION]}
 
 
 def assert_same(a, b, message):
@@ -166,7 +176,7 @@ def assert_same(a, b, message):
 )
 def test_uc_is_non_increasing_in_state_pension(units, bump, year):
     low = calculate(units, year)
-    high = calculate(units, year, pension_bump=bump)
+    high = calculate(units, year, pension_bump=bump, election=low[ELECTION])
     for variable in ["universal_credit", "universal_credit_pre_benefit_cap"]:
         assert np.all(high[variable] <= low[variable] + 0.01), (variable, units)
     # State Pension changes nothing in the maximum amount, and all of it is
@@ -212,9 +222,10 @@ def test_uc_is_non_increasing_in_state_pension(units, bump, year):
 )
 def test_uc_falls_pound_for_pound_in_state_pension(units, bump, year):
     # Earnings in the family change nothing: tax on State Pension is never
-    # deducted from anyone's earnings (reg. 55(5)(b), reg. 57(2) step 3).
-    low = calculate(units, year, marriage_allowance=False)
-    high = calculate(units, year, pension_bump=bump, marriage_allowance=False)
+    # deducted from anyone's earnings (reg. 55(5)(b), reg. 57(2) step 3), and
+    # an election already made fixes the earner's Marriage Allowance.
+    low = calculate(units, year)
+    high = calculate(units, year, pension_bump=bump, election=low[ELECTION])
     award = low["universal_credit_pre_benefit_cap"]
     np.testing.assert_allclose(
         high["universal_credit_pre_benefit_cap"],
@@ -258,9 +269,11 @@ def test_state_pension_counts_like_private_pension(units, year):
 )
 def test_property_income_is_excluded_while_state_pension_counts(units, year):
     # Neither income's tax comes off the partner's earnings (reg. 55(5)(b)),
-    # so this holds with earnings in the family too.
-    kwargs = dict(marriage_allowance=False)
-    pension = calculate(units, year, **kwargs)
+    # so this holds with earnings in the family too. The pensioner's income
+    # can change whether the couple elects, so hold the election at the
+    # State Pension run's choice.
+    pension = calculate(units, year)
+    kwargs = dict(election=pension[ELECTION])
     property_income = calculate(
         units, year, income_variable="property_income", **kwargs
     )
@@ -286,8 +299,9 @@ def test_property_income_is_excluded_while_state_pension_counts(units, year):
 def test_tax_on_state_pension_does_not_reduce_partners_earned_income():
     # 2026: pensioner aged 70 with State Pension 16,000 pays income tax of
     # (16,000 - 12,570) x 20% = 686. The partner aged 45 earns 13,000 and pays
-    # income tax of 86 and NI of 34.40 (above the personal allowance, so no
-    # marriage allowance). Council rent 20,000.
+    # income tax of 86 and NI of 34.40. Either spouse electing for Marriage
+    # Allowance would cost them 252 and save the other 252, so the couple
+    # does not elect. Council rent 20,000.
     # Earned income = 13,000 - 86 - 34.40 = 12,879.60 (reg. 55(5)(b)).
     # Maximum amount = 12 x 666.97 + 20,000 = 28,003.64.
     # UC = 28,003.64 - (0.55 x 12,879.60 + 16,000) = 4,919.86.
@@ -305,14 +319,6 @@ def test_tax_on_state_pension_does_not_reduce_partners_earned_income():
     assert values["universal_credit"][0] == pytest.approx(4_919.86, abs=0.01)
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "PolicyEngine/policyengine-uk#1947: Marriage Allowance is booked on "
-        "the recipient as the transferor's unused personal allowance, so the "
-        "transferor's State Pension raises the recipient's tax on earnings"
-    ),
-)
 def test_state_pension_does_not_change_partners_marriage_allowance():
     # 2026: pensioner aged 70, partner aged 45 earning 20,000, council rent
     # 20,000. Once the pensioner elects, ITA 2007 s. 55B gives the partner a
@@ -321,7 +327,8 @@ def test_state_pension_does_not_change_partners_marriage_allowance():
     # keeps them within the basic rate, so they can elect (s. 55C(1)(c)).
     # Partner's tax on earnings = (20,000 - 12,570) x 20% - 252 = 1,234 and
     # NI (20,000 - 12,569.96) x 8% = 594.40, so earned income = 18,171.60
-    # at any State Pension up to the pensioner's election limit.
+    # at any State Pension while the election saves the couple tax (below
+    # 12,570).
     # UC = 8,003.64 + 20,000 - (0.55 x 18,171.60 + 12,000) = 6,009.26.
     unit = dict(
         ages=[70, 45],
@@ -335,3 +342,34 @@ def test_state_pension_does_not_change_partners_marriage_allowance():
     values = calculate([unit], 2026)
     assert values["uc_earned_income"][0] == pytest.approx(18_171.60, abs=0.01)
     assert values["universal_credit"][0] == pytest.approx(6_009.26, abs=0.01)
+
+
+def test_couple_stops_electing_when_it_no_longer_saves_tax():
+    # 2026, the couple above with State Pension of 12,500 and 12,600. At
+    # 12,500 electing costs the pensioner (12,500 - 11,310) x 20% = 238 and
+    # saves the partner 252, so the couple elects and the partner's earned
+    # income is 18,171.60 as above:
+    # UC = 28,003.64 - (0.55 x 18,171.60 + 12,500) = 5,509.26.
+    # At 12,600 it would cost 252, the same as it saves, so the couple does not
+    # elect. The partner's tax on earnings is 1,486, earned income
+    # 20,000 - 1,486 - 594.40 = 17,919.60, and
+    # UC = 28,003.64 - (0.55 x 17,919.60 + 12,600) = 5,547.86.
+    # The election weighs only the couple's income tax, not their UC, so 100
+    # more State Pension raises UC by 38.60 here.
+    unit = dict(
+        ages=[70, 45],
+        children=[],
+        tenure="RENT_FROM_COUNCIL",
+        rent=20_000.0,
+        savings=0.0,
+        earnings=20_000.0,
+        state_pension=12_500.0,
+    )
+    low = calculate([unit], 2026)
+    high = calculate([unit], 2026, pension_bump=100.0)
+    assert low[ELECTION].tolist() == [True, False]
+    assert high[ELECTION].tolist() == [False, False]
+    assert low["uc_earned_income"][0] == pytest.approx(18_171.60, abs=0.01)
+    assert high["uc_earned_income"][0] == pytest.approx(17_919.60, abs=0.01)
+    assert low["universal_credit"][0] == pytest.approx(5_509.26, abs=0.01)
+    assert high["universal_credit"][0] == pytest.approx(5_547.86, abs=0.01)

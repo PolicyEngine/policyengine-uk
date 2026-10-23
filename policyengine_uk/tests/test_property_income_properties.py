@@ -342,7 +342,7 @@ def set_couple_inputs(sim, drawn, uses_allowance=None):
 
 @SETTINGS
 @given(couples)
-def test_no_one_lowers_their_tax_by_switching_route_alone(couple_sim, drawn):
+def test_no_one_lowers_their_benunit_tax_by_switching_route_alone(couple_sim, drawn):
     set_couple_inputs(couple_sim, drawn)
     routes = couple_sim.calculate("uses_property_allowance", YEAR)
     income_tax = couple_sim.calculate("income_tax", YEAR).astype(float)
@@ -359,5 +359,56 @@ def test_no_one_lowers_their_tax_by_switching_route_alone(couple_sim, drawn):
             continue
         set_couple_inputs(couple_sim, drawn, routes ^ switching)
         switched_tax = couple_sim.calculate("income_tax", YEAR).astype(float)
-        margin = tolerance(income_tax, switched_tax)
-        assert (switched_tax[switching] >= (income_tax - margin)[switching]).all()
+        # The production choice minimises benefit-unit tax: a person's
+        # route can move the spouse's Marriage Allowance reduction.
+        benunit_tax = income_tax.reshape(COUPLES, 2).sum(axis=1)
+        switched_benunit_tax = switched_tax.reshape(COUPLES, 2).sum(axis=1)
+        affected = switching.reshape(COUPLES, 2).any(axis=1)
+        margin = tolerance(benunit_tax, switched_benunit_tax)
+        assert (
+            switched_benunit_tax[affected] >= (benunit_tax - margin)[affected]
+        ).all()
+
+
+def test_couple_property_choice_can_raise_own_tax_to_lower_joint_tax():
+    # The exact first failing CI couple: the second spouse's own-tax-only
+    # switch is cheaper for that spouse, but loses the partner's Marriage
+    # Allowance reduction. The model explicitly chooses combined tax.
+    members = [
+        dict(
+            employment_income=20_000.0,
+            property_income=9619.550558962575,
+            property_rental_income=9619.550558962575 + 3.453341175027317,
+            property_finance_costs=996.5466588249727,
+        ),
+        dict(
+            employment_income=12424.10181963531,
+            property_income=248.0230841751589,
+            property_rental_income=248.0230841751589,
+            property_finance_costs=51.0,
+        ),
+    ]
+    people = {
+        f"person_{i}": {
+            "age": {YEAR: 40},
+            "is_claimant_or_partner": {YEAR: True},
+            **{name: {YEAR: value} for name, value in values.items()},
+        }
+        for i, values in enumerate(members)
+    }
+    situation = {
+        "people": people,
+        "benunits": {"couple": {"members": list(people), "is_married": {YEAR: True}}},
+        "households": {"household": {"members": list(people)}},
+    }
+    simulation = Simulation(situation=situation)
+    routes = simulation.calculate("uses_property_allowance", YEAR).copy()
+    baseline = simulation.calculate("income_tax", YEAR).astype(float)
+    assert routes[1]
+    alternative = Simulation(situation=situation)
+    alternative.set_input(
+        "uses_property_allowance", YEAR, routes ^ np.array([False, True])
+    )
+    switched = alternative.calculate("income_tax", YEAR).astype(float)
+    assert switched[1] < baseline[1] - 1
+    assert switched.sum() > baseline.sum() + 1

@@ -1205,6 +1205,47 @@ def publishable_guard(guard: dict) -> dict:
     return out
 
 
+def component_guard_diagnostic(row: Mapping, partition: Partition) -> dict:
+    """A failed component's public identifiers and suppressed aggregate counts.
+
+    This is an assertion message, not a change to the guard's verdict. Only
+    plain strings from the trusted partition and fixed enums may be printed;
+    values from unrecognised types are never coerced or represented.
+    """
+    components = set(partition.component_variables())
+    totals = set(partition.totals)
+    heads = {head.variable for head in partition.heads} | totals
+
+    def public_identifier(value, allowed):
+        return value if type(value) is str and value in allowed else "unknown"
+
+    def public_count(value):
+        # counted_once creates built-in integer counts; reject booleans,
+        # subclasses and other objects without invoking their conversions.
+        if type(value) is not int or value < 0 or small(value):
+            return None
+        return value
+
+    row = row if type(row) is dict else {}
+    problems = row.get("problems")
+    problems = problems if type(problems) in (list, tuple) else ()
+    kinds = {"own_head", "contains", "moves", "rises", "model_total"}
+    return {
+        "variable": public_identifier(row.get("variable"), components),
+        "status": public_identifier(row.get("status"), {"pass", "fail", "skipped"}),
+        "problems": [
+            {
+                "total": public_identifier(problem.get("total"), totals),
+                "head": public_identifier(problem.get("head"), heads),
+                "kind": public_identifier(problem.get("kind"), kinds),
+                "households": public_count(problem.get("households")),
+            }
+            for problem in problems
+            if type(problem) is dict
+        ],
+    }
+
+
 def _finite_metrics_check(rec: Recorder):
     bad = [
         f"{m['id']} {fiscal_year_label(int(year))}"

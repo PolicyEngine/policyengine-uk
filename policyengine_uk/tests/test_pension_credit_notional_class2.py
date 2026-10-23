@@ -49,9 +49,13 @@ def test_other_trade_loss_keeps_protected_couple_notional_class2():
                     "claimant": {
                         "age": {2023: 70},
                         "attendance_allowance": {2023: 3_000},
+                        "marital_status": {2023: "MARRIED"},
+                        "would_claim_marriage_allowance": {2023: False},
                     },
                     "partner": {
                         "age": {2023: 60},
+                        "marital_status": {2023: "MARRIED"},
+                        "would_claim_marriage_allowance": {2023: False},
                         "dla_sc_category": {2023: "MIDDLE"},
                         "self_employment_income": {2023: 20_000},
                         "trading_loss": {2023: loss},
@@ -60,6 +64,7 @@ def test_other_trade_loss_keeps_protected_couple_notional_class2():
                 "benunits": {
                     "couple": {
                         "members": ["claimant", "partner"],
+                        "is_married": {2023: True},
                         "has_mixed_age_couple_pension_credit_saving": {2023: True},
                         "would_claim_pc": {2023: True},
                     }
@@ -72,12 +77,13 @@ def test_other_trade_loss_keeps_protected_couple_notional_class2():
         assert actual_class2 == pytest.approx(0 if loss else 179.40, abs=0.01)
         # CER 13(12) prohibits another employment's loss reducing the
         # £20,000 positive profit. Notional deductions are therefore
-        # (£20,000 - £12,570 PA - £1,260 marriage allowance) * 20% =
-        # £1,234 tax; plus £668.70 Class 4 and £179.40 Class 2 = £2,082.10.
+        # (£20,000 - £12,570 PA) * 20% = £1,486 tax, with Marriage Allowance
+        # takeup explicitly off to isolate the notional-Class-2 property;
+        # plus £668.70 Class 4 and £179.40 Class 2 = £2,334.10.
         deductions = simulation.calculate(
             "pension_credit_self_employment_deductions", 2023
         )[1]
-        assert deductions == pytest.approx(2_082.10, abs=0.01)
+        assert deductions == pytest.approx(2_334.10, abs=0.01)
         results.append(
             (
                 deductions,
@@ -88,9 +94,9 @@ def test_other_trade_loss_keeps_protected_couple_notional_class2():
     # SI 2023/316 art.30(2)(a), (d): the couple guarantee plus the higher
     # severe-disability addition is (£306.85 + £152.80) * 52 = £23,901.80.
     # https://www.legislation.gov.uk/uksi/2023/316/article/30/made
-    # PC income = £20,000 - £2,082.10 deductions - £1,040 disregard =
-    # £16,877.90; the award is £23,901.80 - £16,877.90 = £7,023.90.
-    assert results[0] == pytest.approx((2_082.10, 16_877.90, 7_023.90), abs=0.01)
+    # PC income = £20,000 - £2,334.10 deductions - £1,040 disregard =
+    # £16,625.90; the award is £23,901.80 - £16,625.90 = £7,275.90.
+    assert results[0] == pytest.approx((2_334.10, 16_625.90, 7_275.90), abs=0.01)
     assert results[1] == pytest.approx(results[0], abs=0.01)
 
 

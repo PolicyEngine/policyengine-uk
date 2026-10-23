@@ -337,12 +337,23 @@
         members: [claimant, partner]
         country: SCOTLAND
   output:
-    # The 1,040 of earnings add 210.89 of income tax (they cross into the
-    # Scottish intermediate band), so net earnings are 829.11 and the 20 pound
-    # disregard of 1,040 is capped there; income is as with no earnings (next).
-    income_tax: [3_016.62, 0]
-    pension_credit_earnings_disregard: 829.11
-    pension_credit_income: 25_194.27
+    # FY 2025-26: Scottish resolution S6M-16531 and HMRC's personal allowance.
+    # Tax before Marriage Allowance is 2,827 * 19% + 12,094 * 20% +
+    # 1,549 * 21% = 3,281.22. The s.55B credit is 1,260 * 20% = 252.
+    # Earnings add 218.40 of tax, leaving 821.60 net earnings; the 20 pound
+    # weekly disregard (SPC Regs Sch VI) is capped there. Countable income
+    # is 29,040 - 3,029.22 - 821.60 = 25,189.18, as without earnings below.
+    income_tax: [3_029.22, 0]
+    pension_credit_employment_income_tax: 218.40
+    pension_credit_earnings_disregard: 821.60
+    pension_credit_income: 25_189.18
+    # Both partners receive AA, with no other resident or carer. The 2025-26
+    # DWP rates give a couple minimum of (346.60 + 165.80) * 52 = 26,644.80.
+    severe_disability_minimum_guarantee_addition: 165.80 * 52
+    minimum_guarantee: (346.60 + 165.80) * 52
+    is_pension_credit_eligible: true
+    guarantee_credit: 1_455.62
+    pension_credit: 1_455.62
 
 - name: The same Scottish couple with no earnings has the same Pension Credit income.
   period: 2025
@@ -365,9 +376,18 @@
         members: [claimant, partner]
         country: SCOTLAND
   output:
-    income_tax: [2_805.73, 0]
+    # The same Scottish bands give 3,062.82 before the 252 Marriage
+    # Allowance credit. Income is 28,000 - 2,810.82 = 25,189.18, leaving
+    # 1,455.62 below the same 26,644.80 minimum guarantee.
+    income_tax: [2_810.82, 0]
+    pension_credit_employment_income_tax: 0
     pension_credit_earnings_disregard: 0
-    pension_credit_income: 25_194.27
+    pension_credit_income: 25_189.18
+    severe_disability_minimum_guarantee_addition: 165.80 * 52
+    minimum_guarantee: (346.60 + 165.80) * 52
+    is_pension_credit_eligible: true
+    guarantee_credit: 1_455.62
+    pension_credit: 1_455.62
 
 - name: Caring hours without entitlement to carer's allowance do not qualify for the 20 pound disregard (Sch VI para 3 needs Sch I para 4).
   period: 2025

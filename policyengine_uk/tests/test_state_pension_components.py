@@ -839,3 +839,99 @@ def test_dated_reform_after_the_data_year_is_unchanged_by_the_baseline_split():
     assert calculate(sim, "state_pension", 2027)[0] == approx(
         expected["flat"] + expected["additional"]
     )
+
+
+@pytest.mark.parametrize("composition", ["singletons", "married_pairs"])
+@pytest.mark.parametrize("cap", [2.261527994036541e-210, 0.0], ids=["tiny", "zero"])
+def test_tiny_new_cap_constructor_preserves_public_components(cap, composition):
+    """A finite cap must stay finite through public counterfactual construction.
+
+    These are the original finite records from the rate-reform property failure,
+    also paired into lawful married benefit units. All are below State Pension
+    age; changing the flat rate must leave the seven-year add-on oracle intact.
+    """
+    people = [
+        {"age": 55, "weekly": 200.0, "male": True, "months": 1.5848689724912486e-117},
+        {"age": 58, "weekly": 0.0, "male": True, "months": 0.0},
+        {"age": 55, "weekly": 0.0, "male": False, "months": 0.0},
+        {"age": 55, "weekly": 0.0, "male": False, "months": 0.0},
+    ]
+
+    def dataset():
+        person = person_table(people)
+        ids = np.arange(len(people))
+        if composition == "married_pairs":
+            person["person_benunit_id"] = [0, 0, 1, 1]
+            person["person_household_id"] = [0, 0, 1, 1]
+            person["marital_status"] = "MARRIED"
+            ids = np.arange(2)
+        benunit = pd.DataFrame({"benunit_id": ids})
+        if composition == "married_pairs":
+            benunit["is_married"] = True
+        household = pd.DataFrame(
+            {
+                "household_id": ids,
+                "household_weight": np.ones(len(ids)),
+                "region": "LONDON",
+                "tenure_type": "OWNED_OUTRIGHT",
+                "rent": 0.0,
+                "council_tax": 0.0,
+            }
+        )
+        return UKSingleYearDataset(
+            person=person, benunit=benunit, household=household, fiscal_year=DATA_YEAR
+        )
+
+    baseline = Microsimulation(dataset=dataset())
+    reform = {
+        BSP: {"2000-01-01.2100-12-31": 0.0},
+        NSP: {"2000-01-01.2100-12-31": cap},
+    }
+    reformed = Microsimulation(dataset=dataset(), reform=reform)
+    for year in YEARS:
+        assert np.allclose(
+            calculate(reformed, "additional_state_pension", year),
+            calculate(baseline, "additional_state_pension", year),
+            rtol=1e-12,
+            atol=1e-9,
+        ), year
+        for variable in COMPONENTS + ["state_pension", "net_income"]:
+            assert np.all(np.isfinite(calculate(reformed, variable, year))), variable
+        assert np.all(calculate(reformed, "state_pension", year) == 0)
+        spouses = calculate(reformed, "is_marriage_allowance_spouse", year)
+        assert np.all(spouses == (composition == "married_pairs"))
+
+
+@pytest.mark.parametrize("cap", [2.261527994036541e-210, 0.0], ids=["tiny", "zero"])
+def test_tiny_basic_cap_constructor_preserves_positive_add_on(cap):
+    """A BASIC pensioner's positive add-on survives a tiny or zero flat rate.
+
+    The £80.50 a week above the legislated 2024 basic rate follows September
+    CPI, including when a finite reform cap is below float32's range.
+    """
+    person = {"age": 90, "male": True, "months": 3, "weekly": 250}
+    baseline = projected_simulation([person])
+    reformed = Microsimulation(
+        dataset=year_dataset([person], DATA_YEAR),
+        reform={BSP: {"2000-01-01.2100-12-31": cap}},
+    )
+    for year in YEARS:
+        additional = calculate(reformed, "additional_state_pension", year)
+        assert np.all(additional > 0)
+        assert np.allclose(
+            additional,
+            calculate(baseline, "additional_state_pension", year),
+            rtol=1e-12,
+            atol=1e-9,
+        ), year
+        assert additional[0] == approx(
+            (250 - LEGISLATED[(DATA_YEAR, "BASIC")])
+            * WEEKS_IN_YEAR
+            * add_on_uprating(reformed, year)
+        )
+        for variable in COMPONENTS + ["state_pension", "net_income"]:
+            assert np.all(np.isfinite(calculate(reformed, variable, year))), variable
+        assert calculate(reformed, "new_state_pension", year)[0] == 0
+        assert calculate(reformed, "basic_state_pension", year)[0] == pytest.approx(
+            cap * WEEKS_IN_YEAR, abs=0.01
+        )

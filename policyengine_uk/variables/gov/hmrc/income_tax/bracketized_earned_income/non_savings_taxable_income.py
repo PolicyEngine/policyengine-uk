@@ -12,10 +12,10 @@ class non_savings_taxable_income(Variable):
         "earned_taxable_income leaves property income out because "
         "property_income_tax taxes it separately, but property income still "
         "fills the bands before savings and dividends do (from 2027-28, "
-        "s. 16A places it immediately below savings income). With no Marriage "
-        "Allowance it equals non_savings_income_after_allowances; "
-        "earned_taxable_income also subtracts Marriage Allowance, which the "
-        "law gives as a tax reduction (#1947)."
+        "s. 16A places it immediately below savings income). It equals "
+        "non_savings_income_after_allowances. The Marriage Allowance does not "
+        "come off it: the law gives it as a tax reduction "
+        "(marriage_allowance_tax_reduction)."
     )
     definition_period = YEAR
     reference = [
