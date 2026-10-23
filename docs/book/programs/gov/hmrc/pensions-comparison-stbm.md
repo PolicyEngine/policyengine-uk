@@ -20,7 +20,7 @@ more detail on the PolicyEngine side.
 
 | | PolicyEngine UK | STBM |
 |---|---|---|
-| How relief is given | Reduces taxable income by the contribution (`pension_contributions_relief`) | Treats contributions as paid net of basic rate: grosses them up by 1/(1 − basic rate) and raises the basic-rate limit and every rate limit above it by the gross amount, as under relief at source. For savings and dividend income it raises every limit, including the starting-rate limit for savings and its 0% dividend band (the dividend allowance), which relief at source does not |
+| How relief is given | Reduces taxable income by the contribution (`pension_contributions_relief`) | Treats contributions as paid net of basic rate: grosses them up by 1/(1 − basic rate) and raises the basic-rate limit and every rate limit above it by the gross amount, as under relief at source. For savings and dividend income it raises every limit, including the starting-rate limit for savings and the top of the 0% dividend band (the dividend allowance), neither of which relief at source raises |
 | Contributions that get relief | The person's own contributions | Employee contributions, additional voluntary contributions **and employer contributions** |
 | Basic-rate relief added to the pot | Not shown separately | Recorded separately (`pension_relief_at_source`) |
 | Earnings limit | Relief capped at relevant UK earnings (employment income, employer-paid Statutory Sick Pay and Statutory Maternity Pay, and self-employment profit), or £3,600 for relief-at-source contributions if earnings are lower | No earnings cap; when total income is below a basic-amount parameter the limit is that amount (£10,000 in its 2023-24 to 2026-27 systems, £3,600 before) |
@@ -40,13 +40,16 @@ savings and dividend limits rise.
 
 ### 1. Reducing taxable income versus widening the bands
 
-For an income-tax payer with only non-savings income whose contribution
-stays inside one band above the Scottish starter rate, the two methods give
-the same total relief. They can differ when the person pays little or no
-income tax: STBM still records the basic-rate addition to the pot, which
-PolicyEngine UK does not show. They also differ for dividend income, and for
-savings income in the starting-rate band, because STBM raises those 0% band
-limits too.
+In STBM's Scottish systems, for an income-tax payer with only non-savings
+income whose contribution stays inside one band above the Scottish starter
+rate, the two methods give the same total relief. They can differ when the
+person pays little or no income tax: STBM still records the basic-rate
+addition to the pot, which PolicyEngine UK does not show. They also differ
+when dividends exceed the dividend allowance, because STBM widens the 0%
+dividend band by the gross contribution and PolicyEngine UK does not.
+Savings income in the starting-rate band does not make them differ: that
+band shrinks as taxable non-savings income rises, so PolicyEngine UK's
+deduction frees as much of it as STBM's higher starting-rate limit.
 
 **The personal allowance taper.** In law, gross pension contributions
 reduce adjusted net income
