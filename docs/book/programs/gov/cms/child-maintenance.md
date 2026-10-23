@@ -3,7 +3,7 @@
 ```{warning}
 **Not yet modelled in detail.** PolicyEngine UK has two generic person-level
 inputs, `maintenance_income` and `maintenance_expenses`. They do not tell
-child maintenance apart from maintenance between former partners, and the
+child maintenance apart from spousal maintenance, and the
 model does not calculate a Child Maintenance Service (CMS) award. This page
 sets out the scope for doing that, tracked in
 [#669](https://github.com/PolicyEngine/policyengine-uk/issues/669) (still
@@ -56,8 +56,8 @@ overstated.
 - New input `child_maintenance_received` (Person, GBP, annual).
 - New input `child_maintenance_paid` (Person, GBP, annual).
 - Keep `maintenance_income` and `maintenance_expenses` for spousal
-  maintenance (from a spouse, civil partner or former one), and say so in
-  their documentation.
+  maintenance (received from, or paid to, a spouse, civil partner, former
+  spouse or former civil partner), and say so in their documentation.
 - In the data pipeline
   ([Microcosm UK](https://github.com/PolicyEngine/microcosm)), route the FRS
   child-maintenance items to the new inputs and the spousal items to the
@@ -90,11 +90,15 @@ parent's gross weekly income
 
 Then:
 
-- **Shared care:** for each child, the amount falls by 1/7 for 52 to 103
-  nights a year, 2/7 for 104 to 155, 3/7 for 156 to 174, and by half plus a
-  further £7 a week for 175 or more, but not below £7 a week in total
-  (Sch. 1 para. 7). Where the flat rate applies because the paying parent
-  gets benefits, 52 or more nights reduces it to nil (para. 8).
+- **Shared care:** the amount falls by 1/7 where a child spends 52 to 103
+  nights a year with the paying parent, 2/7 for 104 to 155, 3/7 for 156 to
+  174 and 1/2 for 175 or more; with more than one qualifying child, the
+  fractions are added and divided by the number of children. It then falls
+  by a further £7 a week for each child with 175 or more nights, but not
+  below £7 a week in total (Sch. 1 para. 7). Where the flat rate applies
+  because the paying parent or their partner gets a prescribed benefit
+  (para. 4(1)(b) or (c) or 4(2)), 52 or more nights with a child makes the
+  amount payable to that child's carer nil (para. 8).
 - **Other children:** an adjustment applies for other children living with
   the paying parent.
 
