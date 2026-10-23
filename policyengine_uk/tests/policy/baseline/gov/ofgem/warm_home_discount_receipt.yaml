@@ -1,0 +1,172 @@
+# Warm Home Discount receipt. DESNZ's 2026 impact assessment (para. 40) says
+# around 85% of Pension Credit recipients and around 70% of recipients of
+# other means-tested benefits become rebate recipients. A household receives
+# the rebate when its receipt draw is below its group's rate. Each case sets
+# every qualifying benefit explicitly so that only the named one is received.
+
+- name: Pension Credit household with a receipt draw of 0.84 receives the rebate (0.84 < 85% Pension Credit receipt rate)
+  period: 2026
+  input:
+    people:
+      person:
+        age: 70
+    benunits:
+      benunit:
+        members: [person]
+        pension_credit: 1000
+        universal_credit: 0
+        housing_benefit: 0
+        esa_income: 0
+        jsa_income: 0
+        income_support: 0
+    households:
+      household:
+        members: [person]
+        region: LONDON
+        warm_home_discount_random_draw: 0.84
+  output:
+    would_receive_warm_home_discount: true
+    warm_home_discount: 150
+
+- name: Pension Credit household with a receipt draw of 0.86 doesn't receive the rebate (0.86 >= 85%)
+  period: 2026
+  input:
+    people:
+      person:
+        age: 70
+    benunits:
+      benunit:
+        members: [person]
+        pension_credit: 1000
+        universal_credit: 0
+        housing_benefit: 0
+        esa_income: 0
+        jsa_income: 0
+        income_support: 0
+    households:
+      household:
+        members: [person]
+        region: LONDON
+        warm_home_discount_random_draw: 0.86
+  output:
+    would_receive_warm_home_discount: false
+    warm_home_discount: 0
+
+- name: Universal Credit household with a receipt draw of 0.69 receives the rebate (0.69 < 70% receipt rate for other benefits)
+  period: 2026
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        pension_credit: 0
+        universal_credit: 1000
+        housing_benefit: 0
+        esa_income: 0
+        jsa_income: 0
+        income_support: 0
+    households:
+      household:
+        members: [person]
+        region: LONDON
+        warm_home_discount_random_draw: 0.69
+  output:
+    would_receive_warm_home_discount: true
+    warm_home_discount: 150
+
+- name: Universal Credit household with a receipt draw of 0.71 doesn't receive the rebate (0.71 >= 70%)
+  period: 2026
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        pension_credit: 0
+        universal_credit: 1000
+        housing_benefit: 0
+        esa_income: 0
+        jsa_income: 0
+        income_support: 0
+    households:
+      household:
+        members: [person]
+        region: LONDON
+        warm_home_discount_random_draw: 0.71
+  output:
+    would_receive_warm_home_discount: false
+    warm_home_discount: 0
+
+- name: Universal Credit household with a receipt draw of 0.8 doesn't receive the rebate, though a Pension Credit household would (0.70 <= 0.8 < 0.85)
+  period: 2026
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        pension_credit: 0
+        universal_credit: 1000
+        housing_benefit: 0
+        esa_income: 0
+        jsa_income: 0
+        income_support: 0
+    households:
+      household:
+        members: [person]
+        region: LONDON
+        warm_home_discount_random_draw: 0.8
+  output:
+    would_receive_warm_home_discount: false
+    warm_home_discount: 0
+
+- name: Pension Credit household with a receipt draw of 0.8 receives the rebate (0.8 < 0.85)
+  period: 2026
+  input:
+    people:
+      person:
+        age: 70
+    benunits:
+      benunit:
+        members: [person]
+        pension_credit: 1000
+        universal_credit: 0
+        housing_benefit: 0
+        esa_income: 0
+        jsa_income: 0
+        income_support: 0
+    households:
+      household:
+        members: [person]
+        region: LONDON
+        warm_home_discount_random_draw: 0.8
+  output:
+    would_receive_warm_home_discount: true
+    warm_home_discount: 150
+
+- name: Universal Credit household with no receipt draw set receives the rebate (draw defaults to 0 outside representative data)
+  period: 2026
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        pension_credit: 0
+        universal_credit: 1000
+        housing_benefit: 0
+        esa_income: 0
+        jsa_income: 0
+        income_support: 0
+    households:
+      household:
+        members: [person]
+        region: LONDON
+  output:
+    would_receive_warm_home_discount: true
+    warm_home_discount: 150
