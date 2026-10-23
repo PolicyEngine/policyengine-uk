@@ -316,6 +316,7 @@
     benunits:
       benunit:
         members: [parent1, parent2, child]
+        child_benefit: 0  # Child Benefit also counts; zero isolates the £100,000 boundary
     households:
       household:
         members: [parent1, parent2, child]
@@ -628,6 +629,7 @@
     benunits:
       benunit:
         members: [parent, child]
+        child_benefit: 0  # Child Benefit also counts; zero isolates the £100,000 boundary
     households:
       household:
         members: [parent, child]
@@ -676,6 +678,7 @@
     benunits:
       benunit:
         members: [parent, child]
+        child_benefit: 0  # Child Benefit also counts; zero isolates the £100,000 boundary
     households:
       household:
         members: [parent, child]
@@ -742,6 +745,7 @@
     benunits:
       benunit:
         members: [parent, child]
+        child_benefit: 0  # Child Benefit also counts; zero isolates the £100,000 boundary
     households:
       household:
         members: [parent, child]
@@ -817,6 +821,7 @@
     benunits:
       benunit:
         members: [parent, child]
+        child_benefit: 0  # Child Benefit also counts; zero isolates the £100,000 boundary
     households:
       household:
         members: [parent, child]
