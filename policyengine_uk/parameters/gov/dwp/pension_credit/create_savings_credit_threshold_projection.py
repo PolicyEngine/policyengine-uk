@@ -6,21 +6,23 @@ uprates the guarantee with earnings and the maximum with CPI. The threshold is
 therefore a derived residual; applying CPI to it directly, or freezing it,
 does not preserve the statutory relationship. Each generated index is applied
 by the standard parameter-uprating operation, so explicit threshold values and
-reforms remain authoritative anchors.
+reforms remain authoritative anchors. The indices start from the last year
+with enacted rates (pension_age_projection_base.py).
 """
 
 from decimal import ROUND_HALF_UP, Decimal
 
 from policyengine_core.parameters import Parameter, ParameterNode
 
+from policyengine_uk.parameters.gov.dwp.pension_credit.pension_age_projection_base import (
+    projection_base_year,
+)
 from policyengine_uk.parameters.gov.economic_assumptions.create_statutory_uprating_inputs import (
     CPI_OBSERVATION_MONTH_DAY,
     last_input_year,
 )
 
 
-BASE_YEAR = 2026
-BASE_INSTANT = f"{BASE_YEAR}-04-01"
 CURRENCY_PRECISION = Decimal("0.01")
 
 
@@ -62,14 +64,20 @@ def threshold_index_values(
     earnings_index: Parameter,
     cpi_september: Parameter,
     final_observation_year: int,
+    *,
+    base_year: int,
 ) -> dict[str, float]:
     """Build a forecast index from the last enacted threshold."""
-    base_phase_in_rate = float(phase_in_rate(projection_instant(BASE_YEAR)))
+    base_instant = f"{base_year}-04-01"
+    if base_threshold <= 0:
+        # The index scales the base, so a reform's zero threshold stays zero.
+        return {base_instant: 1.0}
+    base_phase_in_rate = float(phase_in_rate(projection_instant(base_year)))
     maximum = round_currency(base_phase_in_rate * (base_guarantee - base_threshold))
-    base_earnings_index = float(earnings_index(BASE_INSTANT))
-    values = {BASE_INSTANT: 1.0}
+    base_earnings_index = float(earnings_index(base_instant))
+    values = {base_instant: 1.0}
 
-    for year in range(BASE_YEAR + 1, final_observation_year + 2):
+    for year in range(base_year + 1, final_observation_year + 2):
         observation_year = year - 1
         maximum = project_maximum_savings_credit(
             maximum,
@@ -96,6 +104,7 @@ def _projection_parameter(
     earnings_index: Parameter,
     cpi_september: Parameter,
     final_observation_year: int,
+    base_year: int,
 ) -> Parameter:
     relationship_label = relationship.lower()
     return Parameter(
@@ -116,6 +125,7 @@ def _projection_parameter(
                 earnings_index,
                 cpi_september,
                 final_observation_year,
+                base_year=base_year,
             ),
             "metadata": {
                 "unit": "/1",
@@ -205,14 +215,19 @@ def add_savings_credit_threshold_projection(
 ) -> ParameterNode:
     """Add forecast indices for each Savings Credit threshold.
 
-    The separately set threshold is not re-derived by a guarantee reform,
-    including a reform to the projection's base year. Use the unreformed
-    guarantee unless the corresponding threshold base changes, in which case
-    use the reformed pair. Other inputs come from the reform's tree.
+    The separately set threshold is not re-derived by a guarantee or
+    phase-in reform, including a reform to the projection's base year. Use
+    the unreformed guarantee unless the corresponding threshold base changes,
+    in which case use the reformed pair, and the enacted phase-in rate, so a
+    phase-in reform (to zero, say) changes the Savings Credit paid and not the
+    threshold. Earnings and CPI inputs come from the reform's tree.
     """
     savings_credit = parameters.gov.dwp.pension_credit.savings_credit
     projection_base = parameters if unreformed is None else unreformed
-    base_thresholds = projection_base.gov.dwp.pension_credit.savings_credit.threshold
+    base_year = projection_base_year(projection_base)
+    base_instant = projection_instant(base_year)
+    enacted_savings_credit = projection_base.gov.dwp.pension_credit.savings_credit
+    base_thresholds = enacted_savings_credit.threshold
     guarantees = (
         projection_base.gov.dwp.pension_credit.guarantee_credit.minimum_guarantee
     )
@@ -239,7 +254,6 @@ def add_savings_credit_threshold_projection(
         guarantee_parameter,
         threshold_parameter,
     ) in relationship_parameters.items():
-        base_instant = projection_instant(BASE_YEAR)
         reformed_threshold = getattr(savings_credit.threshold, relationship)
         if reformed_threshold(base_instant) != threshold_parameter(base_instant):
             threshold_parameter = reformed_threshold
@@ -248,12 +262,13 @@ def add_savings_credit_threshold_projection(
             relationship,
             _projection_parameter(
                 relationship,
-                float(guarantee_parameter(projection_instant(BASE_YEAR))),
-                float(threshold_parameter(projection_instant(BASE_YEAR))),
-                savings_credit.rate.phase_in,
+                float(guarantee_parameter(base_instant)),
+                float(threshold_parameter(base_instant)),
+                enacted_savings_credit.rate.phase_in,
                 earnings_index,
                 cpi_september,
                 final_observation_year,
+                base_year,
             ),
         )
     return parameters

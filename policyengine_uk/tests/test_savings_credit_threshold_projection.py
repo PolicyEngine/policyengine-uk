@@ -8,6 +8,9 @@ from policyengine_uk.parameters.gov.dwp.pension_credit.create_savings_credit_thr
     round_currency,
     savings_credit_threshold,
 )
+from policyengine_uk.parameters.gov.dwp.pension_credit.pension_age_projection_base import (
+    projection_base_year,
+)
 from policyengine_uk.tax_benefit_system import CountryTaxBenefitSystem
 
 
@@ -22,11 +25,17 @@ def _parameters():
     return system.parameters
 
 
+def _raw_parameters():
+    tax_benefit_system = CountryTaxBenefitSystem()
+    tax_benefit_system.reset_parameters()
+    return tax_benefit_system.parameters
+
+
 @pytest.mark.parametrize(
     ("relationship", "base_maximum", "expected_2027_maximum"),
     [
-        ("SINGLE", 17.96, 18.3400336),
-        ("COUPLE", 20.10, 20.525316),
+        ("SINGLE", 17.96, 18.5886),
+        ("COUPLE", 20.10, 20.8035),
     ],
 )
 def test_2027_threshold_preserves_the_cpi_projected_maximum(
@@ -36,7 +45,7 @@ def test_2027_threshold_preserves_the_cpi_projected_maximum(
 ):
     """DWP A14/2025 sets £17.96/£20.10 and a 3.8% enacted CPI rise.
 
-    The first forecast uses the repository's 2.116% September 2026 CPI input.
+    The first forecast uses September 2026 CPI, 3.5% (ONS, 21 October 2026).
     """
     parameters = _parameters()
     savings_credit = parameters.gov.dwp.pension_credit.savings_credit
@@ -48,7 +57,7 @@ def test_2027_threshold_preserves_the_cpi_projected_maximum(
     )
     projected_maximum = phase_in_rate * (projected_guarantee - projected_threshold)
 
-    assert base_maximum * 1.02116 == pytest.approx(expected_2027_maximum)
+    assert base_maximum * 1.035 == pytest.approx(expected_2027_maximum)
     assert projected_maximum == pytest.approx(expected_2027_maximum)
 
 
@@ -123,26 +132,76 @@ def test_postprocessing_threshold_reform_is_not_replaced_by_projection():
     assert threshold("2027-06-01") == 100
 
 
-def test_future_explicit_threshold_is_the_uprating_anchor():
-    """A later source value remains exact and anchors subsequent forecasts."""
+# A next year's rates update, entered for every parameter the pension-age
+# projections start from (illustrative amounts, not enacted rates).
+NEXT_YEAR_RATES = {
+    "gov.dwp.pension_credit.guarantee_credit.minimum_guarantee.SINGLE": 250,
+    "gov.dwp.pension_credit.guarantee_credit.minimum_guarantee.COUPLE": 380,
+    "gov.dwp.pension_credit.savings_credit.threshold.SINGLE": 220,
+    "gov.dwp.pension_credit.savings_credit.threshold.COUPLE": 350,
+    "gov.dwp.housing_benefit.allowances.single.aged": 270,
+    "gov.dwp.housing_benefit.allowances.lone_parent.aged": 270,
+    "gov.dwp.housing_benefit.allowances.couple.aged": 405,
+}
+
+
+def _system_with_rates(rates, year=2027):
     tax_benefit_system = CountryTaxBenefitSystem()
     tax_benefit_system.reset_parameters()
-    savings_credit = tax_benefit_system.parameters.gov.dwp.pension_credit.savings_credit
-    savings_credit.threshold.SINGLE.update(
-        start=instant("2027-04-01"),
-        stop=None,
-        value=100,
-    )
-
+    for path, value in rates.items():
+        tax_benefit_system.parameters.get_child(path).update(
+            start=instant(f"{year}-04-01"), stop=None, value=value
+        )
     tax_benefit_system.process_parameters()
-    savings_credit = tax_benefit_system.parameters.gov.dwp.pension_credit.savings_credit
-    threshold = savings_credit.threshold.SINGLE
-    index = savings_credit.threshold_uprating.SINGLE
+    return tax_benefit_system
 
-    assert threshold("2027-06-01") == 100
-    assert threshold("2028-06-01") == pytest.approx(
-        100 * index("2028-06-01") / index("2027-06-01")
+
+def test_projection_base_year_is_the_last_enacted_year():
+    assert projection_base_year(_raw_parameters()) == 2026
+
+
+def test_next_year_rates_move_the_projection_base():
+    """Once 2027-28 rates are entered, the projections start from them: the
+    maximum Savings Credit follows CPI from the enacted 2027 maximum, and each
+    entered value is exact and anchors later years."""
+    parameters = _system_with_rates(NEXT_YEAR_RATES).parameters
+    savings_credit = parameters.gov.dwp.pension_credit.savings_credit
+    guarantee = parameters.gov.dwp.pension_credit.guarantee_credit.minimum_guarantee
+    cpi = parameters.gov.economic_assumptions.statutory_uprating_inputs.cpi_september
+    for path, value in NEXT_YEAR_RATES.items():
+        assert parameters.get_child(path)("2027-06-01") == value, path
+
+    for relationship, maximum in (("SINGLE", 18.0), ("COUPLE", 18.0)):
+        # 0.6 x (250 - 220) and 0.6 x (380 - 350).
+        threshold = getattr(savings_credit.threshold, relationship)
+        index = getattr(savings_credit.threshold_uprating, relationship)
+        assert index("2027-04-30") == 1
+        projected_maximum = maximum * (1 + max(float(cpi("2027-09-01")), 0))
+        phase_in = float(savings_credit.rate.phase_in("2028-04-30"))
+        assert phase_in * (
+            float(getattr(guarantee, relationship)("2028-04-30"))
+            - float(threshold("2028-04-30"))
+        ) == pytest.approx(projected_maximum)
+    protected = (
+        parameters.gov.dwp.housing_benefit.allowances.protected_pension_age_uprating
     )
+    for name in ("single", "lone_parent", "couple"):
+        assert getattr(protected, name)("2027-04-30") == 1
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "gov.dwp.pension_credit.guarantee_credit.minimum_guarantee.SINGLE",
+        "gov.dwp.pension_credit.savings_credit.threshold.SINGLE",
+        "gov.dwp.housing_benefit.allowances.lone_parent.aged",
+    ],
+)
+def test_rates_update_that_misses_a_parameter_raises(path):
+    """A 2027 rate for some of the base parameters and not others would build
+    the indices from a projected amount, so the update must be completed."""
+    with pytest.raises(ValueError, match="enacted to the same year"):
+        _system_with_rates({path: NEXT_YEAR_RATES[path]})
 
 
 @pytest.mark.parametrize("relationship", ["SINGLE", "COUPLE"])

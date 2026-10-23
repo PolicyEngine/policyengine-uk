@@ -67,8 +67,9 @@
     minimum_guarantee: 20_000
   output:
     is_pension_credit_eligible: true
-    # 0.6 * (12,000 - 216.7146545 * 52).
-    savings_credit: 438.5028
+    # 0.6 * (12,000 - 216.3003772 * 52); the threshold's maximum Savings Credit
+    # rises by September 2026 CPI, 3.5%.
+    savings_credit: 451.4282
 
 # Explicit SI 2019/37 art.4 saving INPUT CONTRACT, not an inference from current
 # receipt or proof of the separate 2016 Savings Credit continuity conditions.

@@ -144,15 +144,14 @@ def _add_generated_parameters(
     parameters: ParameterNode,
     generated: Optional[List[ParameterAssignment]] = None,
     unreformed: Optional[ParameterNode] = None,
-    intermediate_projection: bool = False,
 ) -> ParameterNode:
     """Run the generation steps, writing changes to generated parameters.
 
     Each change in ``generated`` is written onto its parameter just after
     the step that generates it, so the later steps, and uprating, read it.
-    ``unreformed`` supplies the guarantee base for the separately set Savings
-    Credit threshold and protected Housing Benefit allowance forecast indices.
-    A changed threshold or allowance base uses the reformed pair instead.
+    ``unreformed`` supplies the base year, guarantee and phase-in rate for the
+    separately set Savings Credit threshold and protected Housing Benefit
+    allowance forecast indices.
     """
     pending = list(generated or [])
     for step in GENERATION_STEPS:
@@ -160,10 +159,7 @@ def _add_generated_parameters(
             add_savings_credit_threshold_projection,
             add_protected_pension_age_uprating,
         ):
-            options = {"unreformed": unreformed}
-            if step is add_protected_pension_age_uprating:
-                options["intermediate_projection"] = intermediate_projection
-            parameters = step(parameters, **options)
+            parameters = step(parameters, unreformed=unreformed)
         else:
             parameters = step(parameters)
         if pending:
@@ -185,7 +181,6 @@ def process_parameter_tree(
     unreformed: Optional[ParameterNode] = None,
     annualise: bool = True,
     generated: Optional[List[ParameterAssignment]] = None,
-    intermediate_projection: bool = False,
 ) -> Tuple[ParameterNode, Dict[str, Timeline]]:
     """Project and annualise a statutory parameter tree.
 
@@ -214,22 +209,15 @@ def process_parameter_tree(
     tree carrying dated reform changes passes ``unreformed``, the same tree
     without them, which the copy is taken from instead (#2188).
     ``annualise=False`` stops after the projection and adds no copy.
-    ``unreformed`` also keeps the guarantee component of the threshold and
-    protected HB indices independent of guarantee-only reforms, including
-    during intermediate projections with ``annualise=False``. Explicit changes
-    to a threshold or allowance base instead use the corresponding reformed
-    guarantee, keeping the pair consistent. ``intermediate_projection`` permits
-    a transient invalid reformed HB pair to use the enacted pair while prior
-    law is rebuilt with one reform assignment omitted. It does not disable
-    validation of enacted bases or the completed reform.
+    ``unreformed`` also keeps the Savings Credit threshold and protected HB
+    indices independent of reforms to the guarantee or phase-in rate,
+    including during intermediate projections with ``annualise=False``.
     ``generated`` holds the reform's changes to generated parameters, each
     written just after the step that generates it (see
     ``_add_generated_parameters``).
     """
     validate_ni_scale_compatibility(parameters)
-    parameters = _add_generated_parameters(
-        parameters, generated, unreformed, intermediate_projection
-    )
+    parameters = _add_generated_parameters(parameters, generated, unreformed)
 
     # Create baseline parameters for reform comparisons
     if annualise:
@@ -766,7 +754,6 @@ def prior_law_projection(
                 unreformed=unreformed,
                 annualise=False,
                 generated=generated,
-                intermediate_projection=True,
             )[1].get(path)
         if _same_timelines(updated, environment):
             return lookup

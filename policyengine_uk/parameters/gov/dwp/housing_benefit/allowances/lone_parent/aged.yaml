@@ -32,7 +32,7 @@ metadata:
   # guarantee plus a retained Savings Credit amount, projected by component
   # (create_protected_pension_age_uprating.py): the guarantee by the
   # statutory earnings floor, the retained amount by September CPI.
-  uprating: gov.dwp.housing_benefit.allowances.protected_pension_age_uprating.single
+  uprating: gov.dwp.housing_benefit.allowances.protected_pension_age_uprating.lone_parent
   reference:
     - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006 (SI 2006/214), Schedule 3, paragraph 1(1)(b)
       href: https://www.legislation.gov.uk/uksi/2006/214/schedule/3

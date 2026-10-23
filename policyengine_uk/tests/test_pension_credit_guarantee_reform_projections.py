@@ -1,4 +1,17 @@
-"""Guarantee reforms leave independently enacted pension-age projections intact."""
+"""Reforms leave independently enacted pension-age projections intact.
+
+Invariants, for the Savings Credit threshold and protected pension-age Housing
+Benefit allowance forecast indices:
+
+1. A reform to the standard minimum guarantee or the Savings Credit phase-in
+   rate leaves every index, and the projected thresholds and allowances, as
+   enacted.
+2. No reform to a base-year allowance or threshold stops the parameter tree
+   being built; only an enacted allowance below its guarantee raises.
+3. A reformed allowance below its guarantee is projected whole by the
+   guarantee's earnings path, continuously with an allowance equal to it.
+4. Each allowance has its own index: a reform to one leaves the others.
+"""
 
 import pytest
 from hypothesis import HealthCheck, example, given, settings
@@ -8,6 +21,7 @@ from policyengine_core.periods import instant
 from policyengine_uk import Simulation, system
 from policyengine_uk.model_api import Scenario
 from policyengine_uk.parameters.gov.dwp.housing_benefit.allowances.create_protected_pension_age_uprating import (
+    ALLOWANCE_GUARANTEES,
     protected_allowance_index_values,
 )
 from policyengine_uk.tax_benefit_system import (
@@ -24,7 +38,7 @@ PROJECTION_PATHS = (
     *(f"{HB_ALLOWANCES}.{name}.aged" for name in ("single", "lone_parent", "couple")),
     *(
         f"{HB_ALLOWANCES}.protected_pension_age_uprating.{name}"
-        for name in ("single", "couple")
+        for name in ALLOWANCE_GUARANTEES
     ),
     *(
         f"{SAVINGS_CREDIT}.{name}.{relationship}"
@@ -146,14 +160,14 @@ def test_joint_guarantee_and_hb_cuts_use_consistent_reformed_components(
         allowance = parameters.get_child(f"{HB_ALLOWANCES}.{name}.aged")
         assert allowance("2026-04-30") == pytest.approx(amount)
 
-    for name in ("single", "couple"):
+    for name, relationship in ALLOWANCE_GUARANTEES.items():
         path = f"{HB_ALLOWANCES}.protected_pension_age_uprating.{name}"
         index = parameters.get_child(path)
         assumptions = parameters.gov.economic_assumptions
         earnings = assumptions.indices.statutory_earnings_floor
         earnings_growth = earnings("2027-04-30") / earnings("2026-04-30")
         cpi_growth = assumptions.statutory_uprating_inputs.cpi_september("2026-09-01")
-        guarantee = guarantees[name.upper()]
+        guarantee = guarantees[relationship]
         base = allowances[name]
         expected = (
             guarantee * earnings_growth + (base - guarantee) * (1 + cpi_growth)
@@ -283,6 +297,7 @@ def test_invalid_enacted_protected_allowance_still_raises(relationship):
             assumptions.indices.statutory_earnings_floor,
             assumptions.statutory_uprating_inputs.cpi_september,
             2026,
+            base_year=2026,
         )
 
 
@@ -301,16 +316,110 @@ def test_invalid_statutory_allowance_still_raises_during_projection(
         process_parameter_tree(parameters, annualise=False)
 
 
+def _index_growth(parameters, name, year=2027):
+    index = parameters.get_child(
+        f"{HB_ALLOWANCES}.protected_pension_age_uprating.{name}"
+    )
+    return index(f"{year}-04-30") / index(f"{year - 1}-04-30")
+
+
+def _earnings_growth(parameters, year=2027):
+    earnings = parameters.gov.economic_assumptions.indices.statutory_earnings_floor
+    return earnings(f"{year}-04-30") / earnings(f"{year - 1}-04-30")
+
+
 @pytest.mark.parametrize("route", ["reform", "scenario"])
 @pytest.mark.parametrize(
     "relationship,allowance_name", [("SINGLE", "single"), ("COUPLE", "couple")]
 )
-def test_invalid_completed_joint_reform_still_raises(
+def test_completed_joint_reform_below_the_guarantee_projects_with_the_guarantee(
     route, relationship, allowance_name
 ):
+    """An allowance cut below a cut guarantee no longer stops the build: with
+    no retained Savings Credit, it follows the guarantee's earnings path."""
     changes = {
         f"{GUARANTEE}.{relationship}": {"year:2026-01-01:1": 230},
         f"{HB_ALLOWANCES}.{allowance_name}.aged": {"year:2026-01-01:1": 220},
     }
-    with pytest.raises(ValueError, match="cannot be lower than"):
-        _simulation(relationship == "COUPLE", changes, [2026], route)
+    simulation = _simulation(relationship == "COUPLE", changes, [2026], route)
+    parameters = simulation.tax_benefit_system.parameters
+
+    allowance = parameters.get_child(f"{HB_ALLOWANCES}.{allowance_name}.aged")
+    assert allowance("2026-04-30") == pytest.approx(220)
+    assert _index_growth(parameters, allowance_name) == pytest.approx(
+        _earnings_growth(parameters)
+    )
+
+
+@pytest.mark.parametrize("offset", [-100, -0.01, 0, 0.01])
+def test_allowance_reform_at_the_guarantee_boundary_is_continuous(offset):
+    """Below, at and just above the enacted £238 guarantee, a 2026 cut to the
+    single allowance projects within a millionth of the guarantee's earnings
+    growth, exactly so at or below it, and leaves the other indices. Just
+    above, the penny of retained Savings Credit grows by CPI, so the growth
+    lies between the two."""
+    guarantee = float(system.parameters.get_child(f"{GUARANTEE}.SINGLE")("2026-04-30"))
+    changes = {
+        f"{HB_ALLOWANCES}.single.aged": {"year:2026-01-01:1": guarantee + offset}
+    }
+    parameters = _simulation(False, changes, [2026]).tax_benefit_system.parameters
+
+    growth = _index_growth(parameters, "single")
+    earnings_growth = _earnings_growth(parameters)
+    if offset <= 0:
+        assert growth == pytest.approx(earnings_growth, rel=1e-12)
+    else:
+        assert growth == pytest.approx(earnings_growth, rel=1e-6)
+        cpi = parameters.gov.economic_assumptions.statutory_uprating_inputs
+        cpi_growth = 1 + max(float(cpi.cpi_september("2026-09-01")), 0)
+        assert min(earnings_growth, cpi_growth) <= growth
+        assert growth <= max(earnings_growth, cpi_growth)
+    for name in ("lone_parent", "couple"):
+        assert _index_growth(parameters, name) == pytest.approx(
+            _index_growth(system.parameters, name)
+        )
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        f"{HB_ALLOWANCES}.single.aged",
+        f"{HB_ALLOWANCES}.couple.aged",
+        f"{SAVINGS_CREDIT}.threshold.SINGLE",
+        f"{SAVINGS_CREDIT}.threshold.COUPLE",
+    ],
+)
+def test_zero_base_reform_builds_and_keeps_the_zero(path):
+    """Zeroing a base-year allowance or threshold used to raise or divide by
+    zero while the tree was built; the zero now holds."""
+    simulation = _simulation(False, {path: {"year:2026-01-01:1": 0}}, [2026])
+    parameter = simulation.tax_benefit_system.parameters.get_child(path)
+    assert parameter("2026-04-30") == 0
+
+
+@pytest.mark.parametrize("route", ["reform", "scenario"])
+def test_phase_in_reform_changes_savings_credit_not_the_projections(route):
+    """A zero phase-in rate used to stop the build. The threshold is set
+    separately, so the reform leaves every projection and pays no Savings
+    Credit."""
+    situation = _situation(False, [2027])
+    # Savings Credit needs State Pension age before 6 April 2016. About £231 a
+    # week is above the projected threshold and below the guarantee.
+    situation["people"]["claimant"]["age"] = {2027: 85}
+    situation["people"]["claimant"]["state_pension"] = {2027: 12_000}
+    baseline = Simulation(situation=situation)
+    changes = {f"{SAVINGS_CREDIT}.rate.phase_in": 0}
+    options = (
+        {"reform": changes}
+        if route == "reform"
+        else {
+            "scenario": Scenario(
+                parameter_changes=changes, applied_before_data_load=True
+            )
+        }
+    )
+    simulation = Simulation(situation=situation, **options)
+
+    assert baseline.calculate("savings_credit", 2027)[0] > 0
+    assert simulation.calculate("savings_credit", 2027)[0] == 0
+    _assert_projections_unchanged(simulation)

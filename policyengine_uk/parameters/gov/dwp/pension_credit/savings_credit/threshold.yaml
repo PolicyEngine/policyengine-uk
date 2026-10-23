@@ -2,7 +2,9 @@ description: >-
   Income threshold at which Savings Credit is eligible. Values after the last
   enacted rate are derived so that the earnings-projected standard minimum
   guarantee and the CPI-projected maximum Savings Credit remain consistent
-  with the statutory 60% formula; they are not enacted future rates.
+  with the statutory 60% formula; they are not enacted future rates. A reform
+  to the guarantee or the phase-in rate does not re-derive the threshold or the
+  protected pension-age Housing Benefit allowances.
 SINGLE:
   values:
     2015-04-06: 126.5

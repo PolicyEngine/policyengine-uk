@@ -406,7 +406,7 @@ def test_generated_parameters_are_the_series_processing_builds():
             continue
         built = path.startswith(generated_prefixes) and not statutory(path)
         assert generates(path) is built, path
-    for relationship in ("single", "couple"):
+    for relationship in ("single", "lone_parent", "couple"):
         assert generates(f"{protected_allowance_index}.{relationship}")
         assert not generates(f"gov.dwp.housing_benefit.allowances.{relationship}.aged")
     for relationship in ("SINGLE", "COUPLE"):

@@ -264,7 +264,11 @@ derives the Savings Credit threshold so that this earnings-projected guarantee
 and a non-negative September CPI projection of maximum Savings Credit preserve
 the statutory 60% relationship. Protected pension-age Housing Benefit uses
 the same earnings and CPI components. These are forecast conventions after
-the last enacted rates, not announced future benefit amounts.
+the last enacted rates, not announced future benefit amounts. They start from
+the last year with enacted rates for the guarantee, the threshold and the
+allowances, which must all reach the same year. A reform to the guarantee or
+the Savings Credit phase-in rate does not re-derive the threshold or the
+allowances.
 
 After the EFO horizon the gap is zero, so the inputs follow calendar-year
 growth. Smooth forecasts pay the higher of earnings, CPI and 2.5% each year,

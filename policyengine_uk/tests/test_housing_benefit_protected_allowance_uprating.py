@@ -18,9 +18,9 @@ def _parameters():
         "expected_2027_allowance",
     ),
     [
-        ("single", "single", 256.0, 265.6622572049),
-        ("lone_parent", "single", 256.0, 265.6622572049),
-        ("couple", "couple", 383.35, 397.9411154524),
+        ("single", "single", 256.0, 265.9113772049),
+        ("lone_parent", "lone_parent", 256.0, 265.9113772049),
+        ("couple", "couple", 383.35, 398.2192994524),
     ],
 )
 def test_protected_allowances_use_relationship_specific_component_projections(
@@ -29,7 +29,11 @@ def test_protected_allowances_use_relationship_specific_component_projections(
     base_allowance,
     expected_2027_allowance,
 ):
-    """The 2026 bases are guarantee plus retained Savings Credit uplift."""
+    """The 2026 bases are guarantee plus retained Savings Credit uplift.
+
+    The retained uplift rises by September 2026 CPI, 3.5% (ONS, 21 October
+    2026); the guarantee by the statutory earnings floor.
+    """
     allowances = _parameters().gov.dwp.housing_benefit.allowances
     index = getattr(allowances.protected_pension_age_uprating, index_name)
     allowance = getattr(allowances, allowance_name).aged
