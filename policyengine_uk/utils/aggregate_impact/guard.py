@@ -134,15 +134,25 @@ def _head_arrays(sim, year, variables) -> dict:
     }
 
 
-# A household's change counts as "no change", or as "exactly what was added",
-# within this many pounds plus this share of the head's own value: the model
-# stores values as float32.
+# Level comparisons allow this many pounds plus this share of the head's
+# own value: the model stores values as float32. Containment compares the
+# response with the perturbation instead (see ``_response_slack``).
 ABSOLUTE_SLACK_GBP = 0.02
 RELATIVE_SLACK = 2e-6
 
 
 def _slack(scale: np.ndarray) -> np.ndarray:
     return ABSOLUTE_SLACK_GBP + RELATIVE_SLACK * np.abs(scale)
+
+
+def _response_slack(response: np.ndarray, expected: np.ndarray) -> np.ndarray:
+    """Scale the £1 response allowance by the amount added, not the head level.
+
+    A flat reader must never be close to one for one, even for a small
+    perturbation or a large baseline. The relative term allows rounding in
+    the response itself; two-point differences use twice this allowance.
+    """
+    return ABSOLUTE_SLACK_GBP * np.abs(expected) + RELATIVE_SLACK * np.abs(response)
 
 
 def _problem(total, head, kind, where, text, weights, perturbed):
@@ -238,17 +248,22 @@ def judge_total(
                 # the component, 0 for a step such as a passport, whatever
                 # else moved the head at the first point.
                 slope = second_changes[variable] - change
-                containing = perturbed & (np.abs(slope - expected) <= 2 * slack)
+                response_slack = _response_slack(slope, expected)
+                containing = perturbed & (
+                    np.abs(slope - expected) <= 2 * response_slack
+                )
                 # Another head's response can add to a containing head's
                 # slope, so any other linear response is measured again with
                 # the other heads held.
-                linear = perturbed & (np.abs(slope) > 2 * slack) & ~containing
+                linear = perturbed & (np.abs(slope) > 2 * response_slack) & ~containing
                 if linear.any():
                     screens.append(
                         problem(variable, "contains", linear, containment(variable))
                     )
             else:
-                containing = perturbed & (np.abs(change - expected) <= slack)
+                containing = perturbed & (
+                    np.abs(change - expected) <= _response_slack(change, expected)
+                )
             if containing.any():
                 problems.append(
                     problem(variable, "contains", containing, containment(variable))
@@ -344,7 +359,9 @@ def breaks_on_slope(kind, where, expected, slack, slope):
     """Households of ``where`` whose head's slope, with the other heads held at
     their values after the first point, breaks ``kind``."""
     if kind == "contains":
-        return where & (np.abs(slope - expected) <= 2 * slack)
+        return where & (
+            np.abs(slope - expected) <= 2 * _response_slack(slope, expected)
+        )
     if kind == "rises":
         return where & (slope > 2 * slack)
     if kind == "moves":
@@ -361,8 +378,11 @@ def still_breaks(kind, where, expected, slack, first, second=None):
     """
     if kind == "contains":
         if second is not None:
-            return where & (np.abs(second - first - expected) <= 2 * slack)
-        return where & (np.abs(first - expected) <= slack)
+            slope = second - first
+            return where & (
+                np.abs(slope - expected) <= 2 * _response_slack(slope, expected)
+            )
+        return where & (np.abs(first - expected) <= _response_slack(first, expected))
     if kind == "rises":
         return where & (first > slack)
     if kind == "moves":
