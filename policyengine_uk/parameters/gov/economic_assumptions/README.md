@@ -22,7 +22,7 @@ GDP and population assumptions remain supported.
 |-------------------------|----------------------------------------------------------|-------------------------|
 | `consumer_price_index`  | CPI year-on-year growth                                  | EFO Table 1.7           |
 | `cpih`                  | CPI including owner-occupiers' housing costs             | EFO Table 1.7           |
-| `consumer_price_index_ahc` | CPI excluding rents/maintenance/water (AHC measure)   | ONS adhoc 2863          |
+| `consumer_price_index_ahc` | CPI excluding rents/maintenance/water (AHC measure)   | ONS ad hoc 3582; forecast derived by `utils/create_ahc_deflator.py` |
 | `rpi`                   | Retail Price Index year-on-year growth                   | EFO Table 1.7           |
 | `average_earnings`      | Average weekly earnings growth                           | EFO Table 1.6           |
 | `non_labour_income`     | Non-labour household income growth                       | derived from EFO        |
@@ -111,9 +111,26 @@ projection through 2030 retains its previous handling; correcting those
 earlier mapping omissions is a separate change.
 
 `domestic_energy_consumption`, `electricity_consumption` and `gas_consumption`
-are deliberately excluded from this fallback as well as the annual growth
-mapping. Their stored amounts already use FY2026-27 unit prices, so dataset
-projection holds them flat, as documented in `uprating_indices.yaml`.
+use a separate declaration-aware projector. Unlabelled datasets retain their
+stored amounts through the projection horizon, preserving legacy inputs that
+already use FY2026-27 prices. A dataset's explicit `energy_price_basis` opts
+into the variables' existing cumulative OBR-CPI index from its declared price
+year. They remain outside both the unconditional growth mapping and fallback,
+so no second index grows them after 2030.
+
+The declaration retains `calendar_year` or `fiscal_year` and its integer year.
+The model's annual convention uses the same index level for CY2024 and
+FY2024-25: `I[2024]`. It does not provide a precise fiscal/calendar price
+alignment or an energy-specific forecast. The projector applies
+`I[target year] / I[declared price year]` to the supplied observation.
+Consequently a 2026 basis gives a ratio of one in 2026 and can grow in 2027;
+there is no special 2026 rule. Each projected child records its effective
+fiscal-year basis, while the source observation keeps its original declaration.
+
+See [dataset sources](../../../../docs/engineering/skills/dataset-sources.md)
+for the declaration and migration contract. Existing metadata-free private
+Microcosm files stay flat until a producer or caller supplies a verified
+declaration; this consumer change does not label released artifacts.
 
 The additional indices have their own source limits:
 
