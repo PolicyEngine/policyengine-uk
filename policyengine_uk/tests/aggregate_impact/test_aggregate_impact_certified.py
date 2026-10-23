@@ -142,7 +142,12 @@ def test_head_totals_agree_with_the_model_weighted_sums(measured):
         for d in partition.double_counts
         if "gov_tax" in d.totals
     )
-    assert receipts + double_counted == pytest.approx(model, rel=1e-9)
+    # Float32 model variables, summed per household then weighted, differ
+    # from the sum of the weighted head totals by a few parts per billion
+    # (2.8e-9, GBP 2,646 of GBP 935bn, after #2611's population change), so
+    # 1e-9 failed on rounding alone. 1e-8 still catches any missed or
+    # double-counted head above about GBP 9,000.
+    assert receipts + double_counted == pytest.approx(model, rel=1e-8)
 
 
 def test_household_detail_is_complete(measured):
