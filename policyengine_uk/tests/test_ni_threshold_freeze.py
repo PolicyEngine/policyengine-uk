@@ -163,12 +163,26 @@ def test_no_threshold_falls_in_cash_terms(system, name):
 def test_frozen_year_values_cite_a_source():
     """Every value dated in 2026-27 to 2030-31 carries a titled reference."""
     for name, path in PATHS.items():
-        file = (
-            PARAMETER_DIR
-            / "gov/hmrc/national_insurance"
-            / (path.replace(".", "/") + ".yaml")
-        )
-        values = yaml.safe_load(file.read_text())["values"]
+        component_paths = {
+            "primary_threshold": ("class_1/employee_scale.yaml", 1),
+            "upper_earnings_limit": ("class_1/employee_scale.yaml", 2),
+            "secondary_threshold": ("class_1/employer_scale.yaml", 1),
+            "lower_profits_limit": ("class_4/contribution_scale.yaml", 1),
+            "upper_profits_limit": ("class_4/contribution_scale.yaml", 2),
+        }
+        if name in component_paths:
+            relative, index = component_paths[name]
+            data = yaml.safe_load(
+                (PARAMETER_DIR / "gov/hmrc/national_insurance" / relative).read_text()
+            )
+            values = data["brackets"][index]["threshold"]["values"]
+        else:
+            file = (
+                PARAMETER_DIR
+                / "gov/hmrc/national_insurance"
+                / (path.replace(".", "/") + ".yaml")
+            )
+            values = yaml.safe_load(file.read_text())["values"]
         dated = {str(instant): entry for instant, entry in values.items()}
         years = [2025, 2026] if name == "lower_earnings_limit" else FROZEN_YEARS
         for year in years:
