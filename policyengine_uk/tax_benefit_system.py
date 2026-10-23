@@ -30,6 +30,9 @@ from policyengine_uk.parameters.gov.contrib.create_private_pension_uprating impo
 from policyengine_uk.parameters.gov.dwp.state_pension.triple_lock.create_triple_lock import (
     add_triple_lock,
 )
+from policyengine_uk.parameters.gov.dwp.housing_benefit.allowances.create_pension_age_allowances import (
+    project_pension_age_allowances,
+)
 from policyengine_uk.parameters.gov.dwp.pension_credit.savings_credit.create_savings_credit_threshold import (
     project_savings_credit_threshold,
 )
@@ -218,8 +221,10 @@ def process_parameter_tree(
         with canonical_ni_uprating_references(parameters):
             uprate_parameters(parameters)
     project_savings_credit_threshold(parameters)
+    project_pension_age_allowances(parameters)
     if annualise:
         project_savings_credit_threshold(parameters.baseline)
+        project_pension_age_allowances(parameters.baseline)
     parameters = backdate_parameters(parameters, BACKDATED_FROM)
     # Prior law's projected path for every parameter a reform can change: the
     # gov tree, before annualisation, and the trees outside it (household),

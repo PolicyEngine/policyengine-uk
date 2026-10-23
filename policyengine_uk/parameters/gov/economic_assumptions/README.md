@@ -214,9 +214,9 @@ used by the triple lock, rounded to the published 0.1 percentage points.
 so rounding cannot push the increase below earnings. When earnings fall,
 the projection holds amounts unchanged.
 
-The Pension Credit standard minimum guarantee and six Housing Benefit
-pension-age personal allowances use this index after their last published
-amounts. [SSAA 1992 s150A(1)(d) and (2)](https://www.legislation.gov.uk/ukpga/1992/5/section/150A)
+The Pension Credit standard minimum guarantee and the three lower Housing
+Benefit pension-age personal allowances, which equal it, use this index after
+their last published amounts. [SSAA 1992 s150A(1)(d) and (2)](https://www.legislation.gov.uk/ukpga/1992/5/section/150A)
 require the guarantee to rise at least with earnings; they impose no CPI or
 2.5% floor. This projection uses that earnings minimum, allowing published
 amounts to reflect discretionary increases. For April 2027, May-July 2026
@@ -229,6 +229,20 @@ After general uprating, the projected threshold is derived as the standard
 minimum guarantee minus the maximum divided by the phase-in rate (60%).
 Published thresholds keep their own rounding. The 2026-27 maxima are £17.96
 and £20.10, from the [DWP rates table](https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027#pension-credit).
+A zero phase-in rate pays no Savings Credit, so that year keeps the threshold
+in force before it.
+
+The three higher Housing Benefit pension-age personal allowances, for those
+who reached State Pension age before April 2021, are the standard minimum
+guarantee plus the maximum Savings Credit
+([HB A3/2021](https://www.gov.uk/government/publications/housing-benefit-adjudication-circulars-2021/a32021-housing-benefit-person-who-have-attained-the-qualifying-age-for-state-pension-credit-amendment-regulations-2021),
+paragraphs 3-5); each published amount from 2019-20 to 2026-27 is that sum
+rounded up to the next 5p.
+[`../dwp/housing_benefit/allowances/create_pension_age_allowances.py`](../dwp/housing_benefit/allowances/create_pension_age_allowances.py)
+derives the years after the published amounts as that sum, after general
+uprating, so each part keeps its own index. For April 2027 that is
+£247.282 + £17.96 × 1.035 = £265.8706 a week for a single person or lone
+parent and £377.41675 + £20.10 × 1.035 = £398.22025 for a couple.
 
 Income Tax Act 2007 ss21 and 57 index the basic rate limit and the personal
 allowance by this measure once no freeze applies.

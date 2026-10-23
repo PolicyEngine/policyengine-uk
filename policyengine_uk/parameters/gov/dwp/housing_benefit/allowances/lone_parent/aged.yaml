@@ -16,13 +16,15 @@ metadata:
   period: week
   unit: currency-GBP
   label: Housing Benefit lone parent pension-age personal allowance
-  # Project pension-age allowances at the earnings rate used for the
-  # Pension Credit standard minimum guarantee (SSAA 1992 s150A(2)); published
-  # allowances are set in Schedule 3 below.
-  uprating: gov.economic_assumptions.indices.earnings_uprating
+  # Not uprated as a whole: the allowance is the Pension Credit standard
+  # minimum guarantee plus the maximum Savings Credit (HB A3/2021), which
+  # rise by earnings and September CPI. create_pension_age_allowances.py
+  # derives the years after the published amounts as that sum.
   reference:
     - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006 (SI 2006/214), Schedule 3, paragraph 1(1)(b)
       href: https://www.legislation.gov.uk/uksi/2006/214/schedule/3
+    - title: DWP Housing Benefit circular A3/2021, paragraphs 3-5 (the allowance is the standard minimum guarantee plus the maximum Savings Credit)
+      href: https://www.gov.uk/government/publications/housing-benefit-adjudication-circulars-2021/a32021-housing-benefit-person-who-have-attained-the-qualifying-age-for-state-pension-credit-amendment-regulations-2021
     - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations (Northern Ireland) 2006 (SR 2006/406), Schedule 4, paragraph 1 (the same amounts)
       href: https://www.legislation.gov.uk/nisr/2006/406/schedule/4
     - title: Benefit and pension rates 2024 to 2025 - Policy paper

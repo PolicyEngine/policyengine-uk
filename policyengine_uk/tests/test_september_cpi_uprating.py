@@ -241,8 +241,8 @@ def test_amounts_not_raised_by_september_cpi_keep_their_lagged_calendar_projecti
     """Amounts that were on gov.benefit_uprating_cpi but are not raised by
     September CPI, including DfE funding rates and HB non-dependant income
     bands, still rise by the previous calendar year's CPI after their last
-    value. Pension Credit and pension-age HB allowances have their own
-    earnings projection."""
+    value. Pension Credit amounts and pension-age HB allowances have their
+    own projections."""
     parameters = system.parameters
     raw = load_parameter_file(str(COUNTRY_DIR / "parameters"), name="")
     calendar_cpi = (
