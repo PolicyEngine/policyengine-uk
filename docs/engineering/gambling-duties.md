@@ -194,6 +194,16 @@ registered-premises, normal six-month schedule: 15% on the first £2,686,000,
 alternative accounting-period adjustments. Household annual losses never
 enter those bands.
 
+The bands have not changed since 1 April 2022:
+[HMRC's rates page](https://www.gov.uk/government/publications/rates-and-allowance-excise-duty-gambling-duty/excise-duty-gambling-duty-rates)
+gives the same bands for accounting periods beginning on or after 1 April
+2026. The government froze them for 2026-27, "with the usual RPI uprating
+thereafter" ([OBR November 2025 Economic and Fiscal Outlook, paragraph 3.39](https://obr.uk/docs/dlm_uploads/OBR_Economic_and_fiscal_outlook_November_2025.pdf#page=85)).
+Bands for accounting periods from 1 April 2027 are therefore expected to
+change but are not yet law, and the catalogue does not anticipate them. The
+programme registry's `verified_end_year: 2027` is deliberate: household
+outputs use the proxy, not the bands.
+
 Changing the operator catalogue alone leaves the household proxy unchanged.
 Scoring a casino band reform requires operator yield distributions and an
 incidence mapping, or an explicitly supplied alternative effective fraction.
