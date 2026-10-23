@@ -158,6 +158,105 @@ def test_salary_sacrifice_excess_is_zero_rated(case, pension):
         assert extra_ni == pytest.approx(0.15 * 3_000, abs=0.01)
 
 
+# The fixed-cost equations must charge the sacrifice above the cap as NIC
+# earnings, and count returned pay and the broad-base haircut as pay, as
+# ni_class_1_employer and employer_cost do. baseline_employer_cost must equal
+# the baseline simulation's employer_cost, and adjusted_employer_cost the
+# reformed simulation's.
+RATE_RISE_2029 = {
+    "gov.hmrc.national_insurance.class_1.employer_scale[1].rate": {"2029": 0.16}
+}
+NO_HAIRCUT_2029 = {
+    "gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate": {
+        "2029": 0
+    }
+}
+
+
+def assert_costs_match_employer_cost(simulation, year):
+    baseline_cost = values(simulation, "baseline_employer_cost", year)
+    adjusted_cost = values(simulation, "adjusted_employer_cost", year)
+    np.testing.assert_allclose(
+        baseline_cost, values(simulation.baseline, "employer_cost", year), atol=0.01
+    )
+    np.testing.assert_allclose(
+        adjusted_cost, values(simulation, "employer_cost", year), atol=0.01
+    )
+    # Fixed employer cost: the reformed cost equals the baseline cost.
+    np.testing.assert_allclose(adjusted_cost, baseline_cost, atol=0.01)
+
+
+def test_rate_rise_charges_the_sacrifice_excess_at_fixed_cost():
+    # María's 2029 case: aged 20, £49,000 pay, a £5,000 sacrifice against the
+    # £2,000 cap and £2,000 of employer pension, no haircut. NIC earnings are
+    # 49,000 + 3,000 = £52,000, above the UST, so the baseline cost is
+    # 51,000 + 0.15 x (52,000 - 50,269.96) = £51,259.51. At 16% the charge
+    # starts where pay plus pension reaches k = 2,000 + 50,269.96 - 3,000, so
+    # pay plus pension is (51,259.51 + 0.16 x k) / 1.16 = 50,985.09 and pay
+    # falls to £48,985.09, holding cost at £51,259.51.
+    inputs = {
+        "employment_income": {2029: 49_000},
+        "pension_contributions_via_salary_sacrifice": {2029: 5_000},
+        "employer_pension_contributions": {2029: 2_000},
+    }
+    people = {"person": (20, False, inputs)}
+    simulation = Simulation(
+        situation=situation(people, 2029), reform={**RATE_RISE_2029, **NO_HAIRCUT_2029}
+    )
+
+    assert values(simulation, "salary_sacrifice_pension_ni_excess", 2029)[
+        0
+    ] == pytest.approx(3_000, abs=0.01)
+    baseline_cost = values(simulation, "baseline_employer_cost", 2029)[0]
+    assert baseline_cost == pytest.approx(
+        51_000 + 0.15 * (52_000 - RELIEF_THRESHOLD), abs=0.01
+    )
+    assert baseline_cost == pytest.approx(51_259.51, abs=0.01)
+    k = 2_000 + RELIEF_THRESHOLD - 3_000
+    new_pay = (baseline_cost + 0.16 * k) / 1.16 - 2_000
+    assert new_pay == pytest.approx(48_985.09, abs=0.01)
+    assert values(simulation, "employment_income", 2029)[0] == pytest.approx(
+        new_pay, abs=0.01
+    )
+    assert values(simulation, "employer_ni_fixed_employer_cost_change", 2029)[
+        0
+    ] == pytest.approx(new_pay - 49_000, abs=0.01)
+    assert_costs_match_employer_cost(simulation, 2029)
+
+
+@pytest.mark.parametrize("case", CASES)
+def test_rate_rise_with_sacrifice_excess_above_the_threshold(case):
+    # The control above every threshold: £60,000 pay with the same sacrifice
+    # and pension. The excess bears employer NI in both schedules.
+    age, apprentice, _ = CASES[case]
+    inputs = {
+        "employment_income": {2029: 60_000},
+        "pension_contributions_via_salary_sacrifice": {2029: 5_000},
+        "employer_pension_contributions": {2029: 2_000},
+    }
+    people = {"person": (age, apprentice, inputs)}
+    simulation = Simulation(
+        situation=situation(people, 2029), reform={**RATE_RISE_2029, **NO_HAIRCUT_2029}
+    )
+    assert values(simulation, "employment_income", 2029)[0] < 60_000
+    assert_costs_match_employer_cost(simulation, 2029)
+
+
+@pytest.mark.parametrize("case", CASES)
+def test_rate_rise_with_the_broad_base_haircut(case):
+    # 2029 with the default haircut: pay before the reform is
+    # 40,000 x (1 - 0.0016) = £39,936, and the cost equations must use it.
+    age, apprentice, _ = CASES[case]
+    inputs = {"employment_income": {2029: 40_000}}
+    people = {"person": (age, apprentice, inputs)}
+    baseline = Simulation(situation=situation(people, 2029))
+    assert values(baseline, "employment_income", 2029)[0] == pytest.approx(
+        39_936, abs=0.01
+    )
+    simulation = Simulation(situation=situation(people, 2029), reform=RATE_RISE_2029)
+    assert_costs_match_employer_cost(simulation, 2029)
+
+
 # The fixed-cost pay change must solve the employer cost equation on NIC
 # earnings (pay plus statutory pay), piecewise around the reformed threshold,
 # for earners whose pay alone is below their baseline threshold.

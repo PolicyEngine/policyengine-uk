@@ -26,6 +26,9 @@ class adjusted_employer_cost(Variable):
         ni_class_1_income = (
             employment_income + benefits + employer_pension_contributions
         )
+        # The sacrifice above the cap bears employer NI but is not cash pay or
+        # an actual pension payment.
+        ni_only_earnings = person("salary_sacrifice_pension_ni_excess", period)
 
         # Calculate employer cost
         parameters = parameters(period)
@@ -40,5 +43,7 @@ class adjusted_employer_cost(Variable):
         else:
             pen_con_subtracted_r = 0
 
-        employer_ni = r_r * max_(0, ni_class_1_income - pen_con_subtracted_r - t_r)
+        employer_ni = r_r * max_(
+            0, ni_class_1_income - pen_con_subtracted_r + ni_only_earnings - t_r
+        )
         return ni_class_1_income + employer_ni

@@ -1,5 +1,8 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.employer_ni import secondary_class_1_threshold
+from policyengine_uk.utils.employer_ni import (
+    salary_sacrifice_cost_terms,
+    secondary_class_1_threshold,
+)
 
 
 class baseline_employer_cost(Variable):
@@ -10,6 +13,8 @@ class baseline_employer_cost(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
+        if person.simulation.baseline is None:
+            return 0
         prior_employment_income = person("employment_income_before_lsr", period)
         employment_income_behavioral_response = person(
             "employment_income_behavioral_response", period
@@ -26,16 +31,22 @@ class baseline_employer_cost(Variable):
         employer_pension_contributions = person(
             "employer_pension_contributions", period
         )
+        # The baseline's salary sacrifice terms: returned pay and the
+        # broad-base haircut are pay; the excess over the cap is NIC earnings
+        # only.
+        baseline_person = person.simulation.baseline.populations["person"]
+        sacrifice_pay, ni_only_earnings = salary_sacrifice_cost_terms(
+            baseline_person, period
+        )
         ni_class_1_income = (
             prior_employment_income
             + employment_income_behavioral_response
+            + sacrifice_pay
             + benefits
             + employer_pension_contributions
         )
 
         # Calculate baseline employer cost
-        if person.simulation.baseline is None:
-            return 0
         baseline_parameters = person.simulation.baseline.tax_benefit_system.parameters(
             period
         )
@@ -51,6 +62,6 @@ class baseline_employer_cost(Variable):
             pen_con_subtracted_b = 0
 
         baseline_employer_ni = r_b * max_(
-            0, ni_class_1_income - pen_con_subtracted_b - t_b
+            0, ni_class_1_income - pen_con_subtracted_b + ni_only_earnings - t_b
         )
         return ni_class_1_income + baseline_employer_ni

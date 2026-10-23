@@ -3,26 +3,31 @@ reform.
 
 With full employee incidence (the default), employer_ni_fixed_employer_cost_change
 moves pay so that the employer's cost is unchanged by the reform. For a person
-with pay P, statutory pay S and employer pension contributions E, the cost under
-a schedule with employer rate r and secondary threshold T (the secondary
-threshold, or the UST or AUST where SSCBA 1992 s.9A or s.9B zero-rates the
-earner) is
+with pay P (including the salary sacrifice cap's broad-base haircut), statutory
+pay S, employer pension contributions E and salary sacrifice above the cap X
+(NIC earnings only, from 2029), the cost under a schedule with employer rate r
+and secondary threshold T (the secondary threshold, or the UST or AUST where
+SSCBA 1992 s.9A or s.9B zero-rates the earner) is
 
-    cost = P + S + E + r * max(P + S + E - E_exempt - T, 0)
+    cost = P + S + E + r * max(P + S + X + E - E_exempt - T, 0)
 
 with E_exempt = E when employer pension contributions are NI-exempt. The cost is
 continuous and increasing in P, so for any reform of r, T or the zero-rate
 thresholds, and any person with pay before the reform:
 
-1. Conservation: if the reformed pay is positive, adjusted_employer_cost equals
+1. Agreement: baseline_employer_cost equals the baseline simulation's
+   employer_cost, and adjusted_employer_cost the reformed simulation's.
+2. Conservation: if the reformed pay is positive, adjusted_employer_cost equals
    baseline_employer_cost.
-2. The zero-pay floor: if holding cost fixed would need negative pay, because
-   statutory pay and pension contributions alone cost more under the reform,
-   reformed pay is zero, so the reformed cost is at least the baseline cost.
+3. The zero-pay floor: if holding cost fixed would need negative pay, because
+   statutory pay, pension contributions and the excess alone cost more under
+   the reform, reformed pay is zero, so the reformed cost is at least the
+   baseline cost.
 
 The population mixes earners under 21, relevant apprentices under 25 and other
 earners, each with statutory pay that can carry NIC earnings over a threshold
-that pay alone is below.
+that pay alone is below, and a salary sacrifice that the 2029 cap can make
+partly NIC-able.
 
 Comparisons allow float32 rounding: the model stores values as float32.
 """
@@ -34,7 +39,7 @@ from hypothesis import strategies as st
 from policyengine_uk import Simulation
 
 CLASS_1 = "gov.hmrc.national_insurance.class_1"
-YEARS = [2026, 2027, 2028]
+YEARS = [2026, 2027, 2028, 2029, 2030]
 # (age, is_apprentice): zero-rated under 21 (s.9A), zero-rated relevant
 # apprentices under 25 (s.9B), and earners with the ordinary threshold.
 AGE_GROUPS = [
@@ -93,6 +98,7 @@ def populations(draw):
                 st.sampled_from(STATUTORY_PAY),
                 st.floats(0, 10_000, allow_nan=False),
                 st.floats(0, 10_000, allow_nan=False),
+                st.floats(0, 10_000, allow_nan=False),
             ),
             min_size=1,
             max_size=12,
@@ -103,9 +109,14 @@ def populations(draw):
 
 def simulate(year, reform, people):
     situation = {"people": {}, "benunits": {}, "households": {}}
-    for i, ((age, apprentice), pay, statutory, statutory_pay, pension) in enumerate(
-        people
-    ):
+    for i, (
+        (age, apprentice),
+        pay,
+        statutory,
+        statutory_pay,
+        pension,
+        sacrifice,
+    ) in enumerate(people):
         name = f"person_{i}"
         situation["people"][name] = {
             "age": {year: age},
@@ -113,6 +124,7 @@ def simulate(year, reform, people):
             "employment_income": {year: pay},
             statutory: {year: statutory_pay},
             "employer_pension_contributions": {year: pension},
+            "pension_contributions_via_salary_sacrifice": {year: sacrifice},
         }
         situation["benunits"][f"benunit_{i}"] = {"members": [name]}
         situation["households"][f"household_{i}"] = {"members": [name]}
@@ -131,8 +143,24 @@ def test_fixed_employer_cost_is_conserved_or_pay_is_floored(population):
     adjusted_cost = np.asarray(
         simulation.calculate("adjusted_employer_cost", year), dtype=float
     )
+    actual_baseline_cost = np.asarray(
+        simulation.baseline.calculate("employer_cost", year), dtype=float
+    )
+    actual_cost = np.asarray(simulation.calculate("employer_cost", year), dtype=float)
     for i in range(len(people)):
         tol = tolerance(baseline_cost[i], adjusted_cost[i])
+        assert abs(baseline_cost[i] - actual_baseline_cost[i]) <= tol, (
+            people[i],
+            reform,
+            baseline_cost[i],
+            actual_baseline_cost[i],
+        )
+        assert abs(adjusted_cost[i] - actual_cost[i]) <= tol, (
+            people[i],
+            reform,
+            adjusted_cost[i],
+            actual_cost[i],
+        )
         assert pay[i] >= -tol
         if pay[i] > tol:
             assert abs(adjusted_cost[i] - baseline_cost[i]) <= tol, (
