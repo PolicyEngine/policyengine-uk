@@ -63,13 +63,6 @@ from typing import Iterable, Mapping, Optional
 
 import numpy as np
 
-from policyengine_uk.utils.supplied_inputs import (
-    SUPPLIED_INPUT_VARIABLES,
-    drop_missing_model_values,
-    drop_missing_supplied_inputs,
-    set_model_value,
-)
-
 from .partition import Partition
 from .privacy import count_text
 
@@ -114,6 +107,8 @@ def _visible_branches(sim):
 
 def _capture_input_origins(sim, variables):
     """Copy actual registered input slots before any synthetic write."""
+    from policyengine_uk.utils.supplied_inputs import SUPPLIED_INPUT_VARIABLES
+
     names = set(variables) & SUPPLIED_INPUT_VARIABLES
     if not names:
         return {}
@@ -171,6 +166,8 @@ def _guard_snapshot(sim, snapshot, variables):
         if snapshot.owner is not sim:
             raise ValueError("Input snapshot belongs to a different simulation")
         return snapshot
+    from policyengine_uk.utils.supplied_inputs import SUPPLIED_INPUT_VARIABLES
+
     origins = _capture_input_origins(sim, variables)
     # Plain mappings remain supported when their registered values agree with
     # actual original storage. Never infer origin from a post-probe cache.
@@ -186,6 +183,11 @@ def _guard_snapshot(sim, snapshot, variables):
 
 def _set_guard_value(sim, variable, period, value, touched=None):
     """A synthetic value is not a new user declaration of a legacy input."""
+    from policyengine_uk.utils.supplied_inputs import (
+        SUPPLIED_INPUT_VARIABLES,
+        set_model_value,
+    )
+
     if touched is not None:
         touched.add(variable)
     if variable in SUPPLIED_INPUT_VARIABLES:
@@ -196,6 +198,13 @@ def _set_guard_value(sim, variable, period, value, touched=None):
 
 
 def _restore(sim, variable, snapshot):
+    from policyengine_uk.utils.supplied_inputs import (
+        SUPPLIED_INPUT_VARIABLES,
+        drop_missing_model_values,
+        drop_missing_supplied_inputs,
+        set_model_value,
+    )
+
     if variable not in SUPPLIED_INPUT_VARIABLES:
         sim.delete_arrays(variable)
         for period, values in snapshot.get(variable, []):
