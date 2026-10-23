@@ -252,7 +252,10 @@ threshold by the same rises, up to the last year of
 1. Replace the 2025-2030 block in each series with values from the new EFO
    detailed forecast tables (note the EFO release month in the header comment).
 2. Recompute the 2031-2073 convergence path so the first long-run year
-   continues smoothly from the new last forecast year (no jump).
+   continues smoothly from the new last forecast year (no jump). If the new
+   EFO forecasts a year that a series has no entry for, add that entry first:
+   the importer only replaces existing entries, and stops naming the series
+   and year it cannot update.
 3. Nothing needs regenerating: `create_economic_assumption_indices` rebuilds
    the cumulative `indices` parameters from these series whenever the
    tax-benefit system processes its parameters (`tax_benefit_system.py`).
@@ -268,8 +271,10 @@ threshold by the same rises, up to the last year of
    (March 2025 for March 2026), with `--previous-receipts-file` or
    `--previous-receipts-url`; their outturn is the base for the outturn
    year's growth. It finds each line by table title and row label, so table
-   renumbering does not matter, and it refuses receipts tables from another
-   EFO. Then update the published levels in
+   renumbering does not matter, and reads only that table's rows. It takes
+   each workbook's release from its contents sheet, or else its file name or
+   URL, and refuses receipts tables from another EFO or of unknown release.
+   Then update the published levels in
    `policyengine_uk/tests/test_corporate_receipts_statistics.py`
    (`OBR_RECEIPTS_BN`), which pin the series to the OBR's tables. Pass
    `--skip-receipts-growth` only to leave them on the previous EFO.

@@ -10,6 +10,7 @@ from datetime import date
 from decimal import Decimal
 from io import BytesIO
 from pathlib import Path
+from urllib.parse import unquote
 from urllib.request import Request, urlopen
 from zipfile import BadZipFile, ZipFile
 import xml.etree.ElementTree as ET
@@ -675,15 +676,33 @@ def read_workbook_sheets(xlsx_bytes: bytes) -> dict[str, list[dict[str, str | No
     return {sheet: read_sheet_rows(xlsx_bytes, sheet) for sheet in sheet_names}
 
 
-def table_title(rows: list[dict[str, str | None]]) -> tuple[str, str] | None:
-    """The number and normalised title of a table, e.g. ("3.8", "current
-    receipts (on a cash basis)"), from the first title cell in its top rows."""
-    for row in rows[:3]:
-        for column in sorted(row, key=column_index):
-            match = TABLE_TITLE_RE.match(" ".join(str(row[column] or "").split()))
-            if match:
-                return match.group(1), receipts_label(match.group(2))
+def row_title(row: dict[str, str | None]) -> tuple[str, str] | None:
+    """The number and normalised title of the table a row heads, e.g. ("3.8",
+    "current receipts (on a cash basis)"), if its first non-empty cell is a
+    table title."""
+    for column in sorted(row, key=column_index):
+        text = " ".join(str(row[column] or "").split())
+        if text:
+            match = TABLE_TITLE_RE.match(text)
+            return (match.group(1), receipts_label(match.group(2))) if match else None
     return None
+
+
+def sheet_tables(
+    rows: list[dict[str, str | None]],
+) -> list[tuple[str, str, list[dict[str, str | None]]]]:
+    """Each table on a sheet: its number, normalised title and rows, from
+    the row below its title to the row above the next title. Rows above the
+    first title, such as a contents link or publication notes, are in no
+    table."""
+    tables = []
+    for row in rows:
+        title = row_title(row)
+        if title is not None:
+            tables.append((*title, []))
+        elif tables:
+            tables[-1][2].append(row)
+    return tables
 
 
 def _fiscal_year_columns(row: dict[str, str | None]) -> dict[str, int]:
@@ -718,39 +737,50 @@ def _outturn_years(
 def find_receipts_line(
     sheets: dict[str, list[dict[str, str | None]]], spec: ReceiptsSeriesSpec
 ) -> ReceiptsLine:
-    """The one row labelled ``spec.row`` in the table titled ``spec.title``."""
+    """The one row labelled ``spec.row`` in a table titled ``spec.title``.
+
+    Only that table's rows are read: its year headers and its "Outturn" and
+    "Forecast" markers, which may sit on one row or several.
+    """
     matches = []
     for sheet, rows in sheets.items():
-        title = table_title(rows)
-        if title is None or title[1] != spec.title:
-            continue
-        years: dict[str, int] = {}
-        markers: dict[str, int] = {}
-        for row in rows:
-            row_years = _fiscal_year_columns(row)
-            if row_years:
-                years = row_years
+        for table, title, table_rows in sheet_tables(rows):
+            if title != spec.title:
                 continue
-            row_markers = {
-                normalise_label(value): column_index(column)
-                for column, value in row.items()
-                if normalise_label(value) in ("outturn", "forecast")
-            }
-            if row_markers:
-                markers = row_markers
-                continue
-            if not years:
-                continue
-            first_year_column = min(column_index(column) for column in years)
-            labels = [
-                value
-                for column, value in sorted(
-                    row.items(), key=lambda item: column_index(item[0])
-                )
-                if column_index(column) < first_year_column and normalise_label(value)
-            ]
-            if labels and receipts_label(labels[0]) == spec.row:
-                matches.append((title[0], sheet, labels[0], row, years, markers))
+            where = f"Table {table} (sheet {sheet})"
+            years: dict[str, int] = {}
+            markers: dict[str, int] = {}
+            for row in table_rows:
+                row_years = _fiscal_year_columns(row)
+                if row_years:
+                    years = row_years
+                    continue
+                row_markers = [
+                    (normalise_label(value), column_index(column))
+                    for column, value in row.items()
+                    if normalise_label(value) in ("outturn", "forecast")
+                ]
+                for marker, column in row_markers:
+                    if markers.setdefault(marker, column) != column:
+                        raise ValueError(
+                            f'{where} marks "{marker.capitalize()}" in two '
+                            "different columns"
+                        )
+                if row_markers:
+                    continue
+                if not years:
+                    continue
+                first_year_column = min(column_index(column) for column in years)
+                labels = [
+                    value
+                    for column, value in sorted(
+                        row.items(), key=lambda item: column_index(item[0])
+                    )
+                    if column_index(column) < first_year_column
+                    and normalise_label(value)
+                ]
+                if labels and receipts_label(labels[0]) == spec.row:
+                    matches.append((table, sheet, labels[0], row, years, markers))
 
     name = ".".join(spec.path)
     if len(matches) != 1:
@@ -761,6 +791,12 @@ def find_receipts_line(
         )
     table, sheet, label, row, years, markers = matches[0]
     where = f"Table {table} (sheet {sheet})"
+    repeated = sorted({y for y in years.values() if list(years.values()).count(y) > 1})
+    if repeated:
+        raise ValueError(
+            f"{where} heads more than one column "
+            + ", ".join(fiscal_year_label(y) for y in repeated)
+        )
     levels = {}
     for column, year in years.items():
         text = row.get(column)
@@ -812,14 +848,18 @@ def compute_receipts_growth(
                 f"outturn year is {fiscal_year_label(base_year)}"
             )
         levels = {base_year: previous.levels[base_year], **line.levels}
-        values = {}
-        for year in sorted(line.levels):
-            if levels[year - 1] <= 0:
+        # Growth to or from a level at or below zero means nothing, and a
+        # zero last level would zero the series' index from then on.
+        for year, level in sorted(levels.items()):
+            if level <= 0:
                 raise ValueError(
-                    f"{name}: cannot grow from {fiscal_year_label(year - 1)} "
-                    f"receipts of {levels[year - 1]}"
+                    f"{name}: {fiscal_year_label(year)} receipts of {level} are "
+                    "not positive, so there is no growth to or from them"
                 )
-            values[year] = round(levels[year] / levels[year - 1] - 1, 6) + 0.0
+        values = {
+            year: round(levels[year] / levels[year - 1] - 1, 6) + 0.0
+            for year in sorted(line.levels)
+        }
         result[spec.path] = ReceiptsGrowth(values, line, previous)
     return result
 
@@ -857,7 +897,11 @@ def _yaml_block(
     lines: list[str], key: str, indent: int, start: int, end: int
 ) -> tuple[int, int]:
     """Lines [first, last) of the mapping entry ``key`` at ``indent`` within
-    lines[start:end], from its key through its last non-blank child line."""
+    lines[start:end], from its key through its last non-blank child line.
+
+    A comment indented no deeper than the key does not end the entry, as it
+    does not in YAML; it is kept where it is, outside the entry's lines if it
+    follows them."""
     pattern = re.compile(rf"^ {{{indent}}}{re.escape(key)}:(\s|$)")
     for first in range(start, end):
         if not pattern.match(lines[first]):
@@ -867,6 +911,8 @@ def _yaml_block(
             if not lines[index].strip():
                 continue
             if _indent(lines[index]) <= indent:
+                if lines[index].lstrip().startswith("#"):
+                    continue
                 break
             last = index + 1
         return first, last
@@ -1070,7 +1116,9 @@ def release_order(release: tuple[str, int]) -> tuple[int, int]:
 
 
 def infer_release(source_name: str) -> tuple[str, int]:
-    match = MONTH_RE.search(source_name)
+    """The release a file name or URL names, e.g. "receipts_march_2026.xlsx"
+    or ".../March%202026%20EFO.xlsx"."""
+    match = MONTH_RE.search(unquote(source_name))
     if not match:
         raise ValueError(
             "Could not infer the OBR release month/year from the source name. "
@@ -1185,9 +1233,19 @@ def render_yoy_growth_yaml(
             )
 
         for target_year in available_years:
-            section = replace_year_value(
-                section, target_year, series_values[spec.key][target_year]
-            )
+            try:
+                section = replace_year_value(
+                    section, target_year, series_values[spec.key][target_year]
+                )
+            except ValueError:
+                # Only existing entries are replaced: an entry added here
+                # would also move every later year up to the next entry.
+                raise ValueError(
+                    f"{spec.key} has no {target_year}-01-01 entry for this EFO's "
+                    f"{target_year} forecast. Add one, with the long-run path "
+                    "after it recomputed (see the README's steps for a new EFO), "
+                    "then rerun"
+                ) from None
 
         section = replace_first_reference(
             section,
@@ -1383,6 +1441,9 @@ def main(argv: list[str] | None = None) -> int:
     )
     series_values = extract_annual_series_from_xlsx(workbook_bytes)
 
+    # The economy tables' contents sheet names their release; the file name
+    # or URL is the fallback, and --release-month/--release-year must agree.
+    economy_release = infer_workbook_release(workbook_bytes)
     if args.release_month and args.release_year:
         if args.release_month.lower() not in MONTHS:
             raise ValueError(
@@ -1390,10 +1451,16 @@ def main(argv: list[str] | None = None) -> int:
             )
         month = args.release_month.capitalize()
         year = args.release_year
+        if economy_release not in (None, (month, year)):
+            raise ValueError(
+                f"The economy tables are from {economy_release[0]} "
+                f"{economy_release[1]}, not {month} {year} as "
+                "--release-month and --release-year say"
+            )
     elif args.release_month or args.release_year:
         raise ValueError("Pass both --release-month and --release-year together")
     else:
-        month, year = infer_release(f"{source_name} {workbook_name}")
+        month, year = economy_release or infer_release(f"{source_name} {workbook_name}")
 
     forecast_start_year = args.forecast_start_year or infer_forecast_start_year(
         month, year
@@ -1441,7 +1508,14 @@ def main(argv: list[str] | None = None) -> int:
             args.receipts_url, args.receipts_file
         )
         receipts_release = resolve_release(receipts_bytes, receipts_name)
-        if receipts_release not in (None, (month, year)):
+        # Both the receipts growth series and the September CPI gap read
+        # these tables, so they must be identifiably this EFO's.
+        if receipts_release is None:
+            raise ValueError(
+                "Could not tell which EFO the receipts tables are from; name the "
+                "file with its release, e.g. receipts_march_2026.xlsx"
+            )
+        if receipts_release != (month, year):
             raise ValueError(
                 "The receipts tables are from "
                 f"{receipts_release[0]} {receipts_release[1]} but the economy "
@@ -1469,12 +1543,18 @@ def main(argv: list[str] | None = None) -> int:
     calendar_values = (
         read_calendar_values(source_yaml_path) if args.gaps_only else series_values
     )
-    statutory_gaps = compute_statutory_forecast_gaps(
-        workbook_bytes,
-        forecast_start_year,
-        args.forecast_years,
-        receipts_bytes,
-        calendar_values,
+    # Gaps are only built when they are written, so a growth-only run
+    # (--output or --skip-statutory-gaps) never needs September CPI.
+    statutory_gaps = (
+        compute_statutory_forecast_gaps(
+            workbook_bytes,
+            forecast_start_year,
+            args.forecast_years,
+            receipts_bytes,
+            calendar_values,
+        )
+        if write_gaps
+        else {}
     )
     for key, gaps in statutory_gaps.items():
         window = ", ".join(

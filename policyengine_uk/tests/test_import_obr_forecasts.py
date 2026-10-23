@@ -13,7 +13,9 @@ from policyengine_uk.utils import import_obr_forecasts
 
 from policyengine_uk.utils.import_obr_forecasts import (
     RECEIPTS_SERIES_SPECS,
+    SERIES_SPECS,
     STATUTORY_GAP_SPECS,
+    _sheet_paths,
     ForecastGap,
     average_earnings_path,
     compute_receipts_growth,
@@ -27,6 +29,7 @@ from policyengine_uk.utils.import_obr_forecasts import (
     read_workbook_sheets,
     render_forecast_gap_yaml,
     render_receipts_growth_yaml,
+    render_yoy_growth_yaml,
     build_efo_href,
     compute_statutory_forecast_gaps,
     extract_annual_series_from_xlsx,
@@ -1075,8 +1078,23 @@ def test_receipts_growth_rejects_a_missing_or_non_positive_level():
             ("SDLT from non-residential property", (4.0, 5.0, 4.5)),
         ]
     )
-    with pytest.raises(ValueError, match="cannot grow from 2025-26"):
+    with pytest.raises(ValueError, match="2025-26 receipts of 0.0 are not positive"):
         compute_receipts_growth(zero, make_previous_receipts_xlsx())
+
+
+@pytest.mark.parametrize("last", [0.0, -1.0])
+def test_a_last_level_at_or_below_zero_is_refused(last):
+    # Growth of -100% or less would zero (or flip) the index from then on.
+    levels = make_receipts_xlsx(
+        sdlt_rows=[
+            ("SDLT from residential property", (10.0, 11.0, last)),
+            ("SDLT from non-residential property", (4.0, 5.0, 4.5)),
+        ]
+    )
+    with pytest.raises(
+        ValueError, match=f"2026-27 receipts of {last} are not positive"
+    ):
+        compute_receipts_growth(levels, make_previous_receipts_xlsx())
 
 
 def test_receipts_labels_lose_footnote_markers_only():
@@ -1103,6 +1121,71 @@ def test_a_non_numeric_level_is_refused():
     )
     with pytest.raises(ValueError, match="no numeric 2025-26 .* value: '\\[x\\]'"):
         compute_receipts_growth(text, make_previous_receipts_xlsx())
+
+
+CASH_TITLE = "3.8 Current receipts (on a cash basis)"
+GREAT_BRITAIN = next(
+    spec for spec in RECEIPTS_SERIES_SPECS if spec.path[-1] == "great_britain"
+)
+
+
+def cash_table_rows(*, markers=None, years=None, label="Business rates"):
+    """Rows of a cash-basis receipts table as read_workbook_sheets returns
+    them: title, markers, fiscal years, then one line."""
+    return [
+        {"B": CASH_TITLE},
+        *(markers or [{"D": "Outturn", "E": "Forecast"}]),
+        years or {"D": "2024-25", "E": "2025-26", "F": "2026-27"},
+        {"B": label, "D": "30", "E": "31.5", "F": "33.075"},
+    ]
+
+
+def test_a_line_is_read_only_from_its_own_table():
+    # A cash-basis table without the line, then an accrued-basis table with
+    # one, on the same sheet: the accrued line must not stand in for it.
+    rows = [
+        {"B": CASH_TITLE},
+        {"D": "Outturn", "E": "Forecast"},
+        {"D": "2024-25", "E": "2025-26", "F": "2026-27"},
+        {"B": "Council tax", "D": "46", "E": "47", "F": "48"},
+        {"B": "3.5 Current receipts (on an accrued basis)"},
+        {"D": "Outturn", "E": "Forecast"},
+        {"D": "2024-25", "E": "2025-26", "F": "2026-27"},
+        {"B": "Business rates", "D": "99", "E": "100", "F": "101"},
+    ]
+    with pytest.raises(ValueError, match="found none"):
+        find_receipts_line({"3.8": rows}, GREAT_BRITAIN)
+
+
+def test_a_table_title_below_publication_notes_is_found():
+    rows = [
+        {"A": "Publication note"},
+        {"A": "Another note"},
+        {"A": "Back to contents"},
+        *cash_table_rows(),
+    ]
+    line = find_receipts_line({"3.8": rows}, GREAT_BRITAIN)
+    assert (line.table, line.levels) == ("3.8", {2024: 30, 2025: 31.5, 2026: 33.075})
+
+
+def test_outturn_and_forecast_markers_may_sit_on_separate_rows():
+    rows = cash_table_rows(markers=[{"E": "Forecast"}, {"D": "Outturn"}])
+    line = find_receipts_line({"3.8": rows}, GREAT_BRITAIN)
+    assert line.outturn_years == {2024}
+
+
+def test_a_marker_in_two_columns_is_refused():
+    rows = cash_table_rows(
+        markers=[{"D": "Outturn", "E": "Forecast"}, {"E": "Outturn"}]
+    )
+    with pytest.raises(ValueError, match='marks "Outturn" in two different columns'):
+        find_receipts_line({"3.8": rows}, GREAT_BRITAIN)
+
+
+def test_a_fiscal_year_heading_two_columns_is_refused():
+    rows = cash_table_rows(years={"D": "2024-25", "E": "2025-26", "F": "2025-26"})
+    with pytest.raises(ValueError, match="heads more than one column 2025-26"):
+        find_receipts_line({"3.8": rows}, GREAT_BRITAIN)
 
 
 def test_render_rewrites_values_and_references():
@@ -1158,6 +1241,20 @@ def test_render_changes_only_the_receipts_values_and_references():
         "# Receipts growth; this comment and the blank lines around it stay."
         in rendered
     )
+
+
+@pytest.mark.parametrize("indent", [0, 2, 4, 6, 8])
+def test_a_comment_at_any_indent_ends_no_yaml_block(indent):
+    comment = " " * indent + "# A comment before the values"
+    anchor = "    residential:\n      description: residential receipts growth.\n"
+    assert YOY_GROWTH_FIXTURE.count(anchor) == 1
+    content = YOY_GROWTH_FIXTURE.replace(anchor, anchor + comment + "\n")
+    assert yaml.safe_load(content) == yaml.safe_load(YOY_GROWTH_FIXTURE)
+
+    rendered = render(content)
+
+    assert anchor + comment + "\n      values:\n" in rendered
+    assert rendered.replace(comment + "\n", "", 1) == render()
 
 
 def test_render_is_idempotent():
@@ -1425,6 +1522,19 @@ def test_main_dry_run_without_previous_receipts_only_warns(tmp_path, capsys):
             make_previous_receipts_xlsx(release=None),
             "Could not tell which EFO the previous receipts tables are from",
         ),
+        # No contents sheet and a file name without a release: the growth
+        # would otherwise be written from tables of an unknown EFO.
+        (
+            make_receipts_xlsx(release=None),
+            None,
+            "Could not tell which EFO the receipts tables are from",
+        ),
+    ],
+    ids=[
+        "receipts_from_another_efo",
+        "previous_not_earlier",
+        "previous_unidentified",
+        "receipts_unidentified",
     ],
 )
 def test_main_refuses_tables_from_the_wrong_efo(
@@ -1442,6 +1552,128 @@ def test_main_refuses_tables_from_the_wrong_efo(
             previous_receipts=previous_receipts,
         )
     assert {path: path.read_text() for path in before} == before
+
+
+def rebuild_workbook(xlsx_bytes, *, drop=(), first=None):
+    """The workbook without the ``drop`` sheets, with ``first`` sheets
+    (name to sheet XML) in front."""
+    with ZipFile(BytesIO(xlsx_bytes)) as archive:
+        sheets = {
+            name: archive.read(path)
+            for name, path in _sheet_paths(archive).items()
+            if name not in drop
+        }
+    return make_workbook({**(first or {}), **sheets})
+
+
+def economy_with_contents(release):
+    return rebuild_workbook(
+        make_test_xlsx(),
+        first={
+            "Contents": make_sheet(
+                {
+                    2: [
+                        make_inline_cell(
+                            "B2",
+                            f"{release} Economic and fiscal outlook – detailed "
+                            "forecast tables: economy",
+                        )
+                    ]
+                }
+            )
+        },
+    )
+
+
+def test_main_refuses_release_flags_the_economy_tables_contradict(tmp_path):
+    yoy, gap_dir = write_tree(tmp_path)
+    before = {path: path.read_text() for path in [yoy, *gap_dir.iterdir()]}
+    # The file is named March 2026 and the flags say March 2026, but the
+    # workbook's contents sheet says November 2025.
+    with pytest.raises(
+        ValueError,
+        match="economy tables are from November 2025, not March 2026",
+    ):
+        run_main(
+            tmp_path,
+            economy_with_contents("November 2025"),
+            "--yaml-path",
+            str(yoy),
+        )
+    assert {path: path.read_text() for path in before} == before
+
+
+def test_main_takes_the_release_from_the_economy_contents_sheet(tmp_path):
+    yoy, _ = write_tree(tmp_path)
+    economy = tmp_path / "economy.xlsx"
+    economy.write_bytes(economy_with_contents("March 2026"))
+    receipts = tmp_path / "receipts.xlsx"
+    receipts.write_bytes(make_receipts_xlsx())
+    previous = tmp_path / "previous_receipts.xlsx"
+    previous.write_bytes(make_previous_receipts_xlsx())
+    assert (
+        main(
+            [
+                "--file",
+                str(economy),
+                "--forecast-start-year",
+                "2025",
+                "--forecast-years",
+                "2",
+                "--receipts-file",
+                str(receipts),
+                "--previous-receipts-file",
+                str(previous),
+                "--yaml-path",
+                str(yoy),
+            ]
+        )
+        == 0
+    )
+    assert "OBR EFO March 2026" in yoy.read_text()
+
+
+def test_release_is_read_from_a_url_encoded_name():
+    url = "https://obr.uk/docs/March%202026%20Economic%20and%20fiscal%20outlook.xlsx"
+    assert infer_release(url) == ("March", 2026)
+
+
+@pytest.mark.parametrize(
+    "flags", [["--skip-statutory-gaps"], [], ["--skip-statutory-gaps", "--dry-run"]]
+)
+def test_a_growth_only_run_does_not_need_september_cpi(tmp_path, flags):
+    yoy, _ = write_tree(tmp_path)
+    output = tmp_path / "out.yaml"
+    # Receipts tables whose September CPI memo (sheet 3.19) is missing.
+    no_cpi = rebuild_workbook(make_receipts_xlsx(), drop={"3.19"})
+    with pytest.raises(ValueError, match="Could not find September CPI"):
+        extract_september_cpi_from_receipts(no_cpi)
+    assert (
+        run_main(
+            tmp_path,
+            make_test_xlsx(),
+            "--yaml-path",
+            str(yoy),
+            "--output",
+            str(output),
+            *flags,
+            receipts=no_cpi,
+        )
+        == 0
+    )
+    assert yoy.read_text() == YOY_GROWTH_FIXTURE
+    if "--dry-run" not in flags:
+        assert _values(output.read_text(), RECEIPTS_PATHS["residential"])[2024] == 0.25
+
+
+def test_a_forecast_year_a_series_lacks_is_named():
+    # The fixture's series hold 2024-2026 and 2031, so a forecast reaching
+    # 2027 has no entry to replace.
+    values = {spec.key: {2025: 0.01, 2026: 0.02, 2027: 0.03} for spec in SERIES_SPECS}
+    with pytest.raises(
+        ValueError, match=f"{SERIES_SPECS[0].key} has no 2027-01-01 entry"
+    ):
+        render_yoy_growth_yaml(YOY_GROWTH_FIXTURE, values, "March", 2026, 2025, 3)
 
 
 def test_gaps_only_refuses_the_previous_receipts_tables(tmp_path):
