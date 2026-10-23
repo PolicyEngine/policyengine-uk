@@ -96,9 +96,10 @@ def run(extra, full_take_up=False):
         n = len(sim.calculate("benunit_weight", YEAR))
         sim.set_input("would_claim_uc", YEAR, np.ones(n, dtype=bool))
     child = sim.calculate("is_hbai_dependent_child", YEAR)
-    benefits = sim.calculate("universal_credit", YEAR).sum() + sim.calculate(
-        "child_tax_credit", YEAR
-    ).sum()
+    benefits = (
+        sim.calculate("universal_credit", YEAR).sum()
+        + sim.calculate("child_tax_credit", YEAR).sum()
+    )
     poor = {
         m: (sim.calculate(m, YEAR, map_to="person") * child).sum()
         for m in ["in_poverty_ahc", "in_poverty_bhc"]
@@ -159,7 +160,7 @@ receiving the child element for at least one child, with 1.61 million children.
   Microcosm release has about 10% fewer children in families with three or more
   children than HBAI (4.20 million against 4.64 million, HBAI table 4.5db), and
   about 21% fewer of those children in relative low income after housing costs
-  (1.64 million against 2.07 million). See PolicyEngine/microcosm#ISSUE.
+  (1.64 million against 2.07 million). See [PolicyEngine/microcosm#1371](https://github.com/PolicyEngine/microcosm/issues/1371).
 - **Data year and method.** The IFS used TAXBEN on FRS 2022-23 and 2023-24,
   additionally reweighting 2022-23 by number of children, and FRS data as
   published before HBAI's March 2026 administrative-data linking. PolicyEngine
