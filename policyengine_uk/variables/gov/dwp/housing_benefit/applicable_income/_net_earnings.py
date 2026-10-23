@@ -5,7 +5,8 @@ def person_net_earnings(person, period, pension_contribution_deduction_rate):
     """A person's net earnings under the legacy means tests' earnings rules.
 
     Employment income plus self-employment profit (each floored at zero) plus
-    statutory sick, maternity and paternity pay, less the income tax attributed to them,
+    statutory sick, maternity and paternity pay, less the income tax attributed to them
+    (before the winter fuel payment charge),
     Class 1, 2 and 4 National Insurance and the scheme's share of pension
     contributions, floored at zero. Housing Benefit
     (housing_benefit_net_earnings) and the Council Tax Reduction pensioner
@@ -36,7 +37,10 @@ def person_net_earnings(person, period, pension_contribution_deduction_rate):
         out=np.zeros_like(earnings),
         where=income_before_losses > 0,
     )
-    income_tax = person("income_tax", period) * min_(earnings_share, 1)
+    # Tax before the winter fuel payment charge: the charge recovers a
+    # payment and is not deducted from earnings.
+    tax = person("income_tax_before_winter_fuel_payment_charge", period)
+    income_tax = tax * min_(earnings_share, 1)
     national_insurance = add(
         person, period, ["ni_class_1_employee", "ni_class_2", "ni_class_4"]
     )

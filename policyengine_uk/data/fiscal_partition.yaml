@@ -161,6 +161,10 @@ tax_heads:
     payer: household
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
     sign: nonnegative
+    reads:
+      - head: nics_individual
+        route: income_tax -> winter_fuel_payment_charge -> is_on_pension_credit -> pension_credit -> pension_credit_income -> national_insurance
+        why: Pension Credit receipt exempts a person from the charge, and its means test deducts National Insurance
   - id: nics_individual
     label: National Insurance (employee and self-employed)
     variable: national_insurance
@@ -349,12 +353,9 @@ tax_heads:
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
     sign: nonnegative
     reads:
-      - head: income_tax
-        route: tv_licence -> tv_licence_discount -> pension_credit -> pension_credit_income -> income_tax
-        why: the over-75 discount depends on Pension Credit receipt, a means test on net income
       - head: nics_individual
         route: tv_licence -> tv_licence_discount -> pension_credit -> pension_credit_income -> national_insurance
-        why: as above
+        why: the over-75 discount depends on Pension Credit receipt, a means test on net income
 
   # Property
   - id: council_tax
