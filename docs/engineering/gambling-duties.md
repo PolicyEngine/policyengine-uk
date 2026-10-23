@@ -237,6 +237,29 @@ totals with HMRC receipts using compatible periods and population coverage.
 The formulas make no allocation from `recreation_consumption`. Default-zero
 inputs do not demonstrate upstream data adoption or population coverage.
 
+The reconciliation target is HMRC's UK receipts for April 2024 to March 2025,
+the year of the casino proxy:
+
+| Duty | 2024-25 receipts | Cell |
+| --- | ---: | --- |
+| General Betting Duty | £713.858 million | `B45` |
+| Pool Betting Duty | £8.125 million | `C45` |
+| Remote Gaming Duty | £1,162.539 million | `F45` |
+| Machine Games Duty | £609.245 million | `I45` |
+| Gaming Duty | £165.397 million | `E45` |
+| Bingo Duty | £25.233 million | `H45` |
+| Lottery Duty | £931.887 million | `J45` |
+| Total | £3,616.284 million | `K45` |
+
+The cells are in `Table_1_BG_receipts` of the
+[HMRC July 2026 tables](https://assets.publishing.service.gov.uk/media/6ab54fd9fe72ed1e2b02f06b/2026_Jul_Bet_and_Gam_Tab.ods),
+the file the casino proxy cites, reported in £000. The commentary on HMRC's
+[statistics page](https://www.gov.uk/government/statistics/uk-betting-and-gaming-statistics)
+gives the same General Betting Duty, Pool Betting Duty and Lottery Duty
+figures, rounded. These are cash receipts for a 1 April to 31 March year, so a
+reconciliation must handle the timing, period and coverage differences
+described for the casino proxy.
+
 The three machine tax-class bases cannot score a betting-shop-only reform
 without joint tax-class-by-premises yield data. Premises shares alone do not
 identify that allocation, and machine counts do not provide yield weights.
