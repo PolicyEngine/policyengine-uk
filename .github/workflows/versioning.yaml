@@ -58,6 +58,7 @@ on:
       - .github/actions/**
       - .github/prepare_release.py
       - .github/release_artifacts.py
+      - .github/check_release_build.py
       - .github/publish-git-tag.sh
       - .github/bump_version.py
       - .github/check_test_shards.py
