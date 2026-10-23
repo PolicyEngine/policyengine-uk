@@ -251,6 +251,14 @@ threshold by the same rises, up to the last year of
 
 1. Replace the 2025-2030 block in each series with values from the new EFO
    detailed forecast tables (note the EFO release month in the header comment).
+   The importer converts annual economy growth percentages to decimal rates
+   and rounds them to four decimal places. Review the economy-series diff
+   deliberately when running a full CLI import: with the real March 2026
+   economy workbook, the existing extraction changes cumulative 2030 indices
+   relative to the stored series by RPI −0.0880%, CPI −0.0584%, average
+   earnings −0.0585% and house prices +0.0194%. Receipts-only rendering can
+   reproduce the committed YAML byte for byte; a full import also refreshes
+   these economy series.
 2. Recompute the 2031-2073 convergence path so the first long-run year
    continues smoothly from the new last forecast year (no jump). If the new
    EFO forecasts a year that a series has no entry for, add that entry first:
@@ -274,6 +282,11 @@ threshold by the same rises, up to the last year of
    renumbering does not matter, and reads only that table's rows. It takes
    each workbook's release from its contents sheet, or else its file name or
    URL, and refuses receipts tables from another EFO or of unknown release.
+   Every selected table in both releases must declare `£ billion` in its
+   header (`£bn` and `£ bn` are also accepted, ignoring case and whitespace).
+   Other units, including `£m`, and missing or ambiguous declarations stop
+   the import before any file is written, so different cash magnitudes
+   cannot be combined across releases.
    Then update the published levels in
    `policyengine_uk/tests/test_corporate_receipts_statistics.py`
    (`OBR_RECEIPTS_BN`), which pin the series to the OBR's tables. Pass

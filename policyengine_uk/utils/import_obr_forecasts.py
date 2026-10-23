@@ -734,13 +734,41 @@ def _outturn_years(
     )
 
 
+def validate_receipts_unit(
+    header_rows: list[dict[str, str | None]], where: str
+) -> None:
+    """Require one explicit pound-billion declaration in this table's header.
+
+    Only spelling, case and whitespace aliases of £ billion are supported.
+    Requiring this same cash unit in every selected table in both releases
+    prevents mixing magnitudes when their outturn levels are combined. A new
+    magnitude, currency or real-terms measure needs deliberate importer support.
+    """
+    units = [
+        normalise_label(value)
+        for row in header_rows
+        for value in row.values()
+        if normalise_label(value) not in ("", "outturn", "forecast")
+    ]
+    if len(units) != 1:
+        raise ValueError(
+            f"{where} must declare exactly one receipts unit before its "
+            f"fiscal-year header; found {units}"
+        )
+    if units[0] not in ("£ billion", "£bn", "£ bn"):
+        raise ValueError(
+            f"{where} has unsupported receipts unit {units[0]!r}; only "
+            "£ billion (£bn or £ bn) is supported in both releases"
+        )
+
+
 def find_receipts_line(
     sheets: dict[str, list[dict[str, str | None]]], spec: ReceiptsSeriesSpec
 ) -> ReceiptsLine:
     """The one row labelled ``spec.row`` in a table titled ``spec.title``.
 
-    Only that table's rows are read: its year headers and its "Outturn" and
-    "Forecast" markers, which may sit on one row or several.
+    Only that table's rows are read: its cash unit, year headers and its
+    "Outturn" and "Forecast" markers, which may sit on one row or several.
     """
     matches = []
     for sheet, rows in sheets.items():
@@ -750,11 +778,14 @@ def find_receipts_line(
             where = f"Table {table} (sheet {sheet})"
             years: dict[str, int] = {}
             markers: dict[str, int] = {}
+            header_rows = []
             for row in table_rows:
                 row_years = _fiscal_year_columns(row)
                 if row_years:
                     years = row_years
                     continue
+                if not years:
+                    header_rows.append(row)
                 row_markers = [
                     (normalise_label(value), column_index(column))
                     for column, value in row.items()
@@ -780,7 +811,9 @@ def find_receipts_line(
                     and normalise_label(value)
                 ]
                 if labels and receipts_label(labels[0]) == spec.row:
-                    matches.append((table, sheet, labels[0], row, years, markers))
+                    matches.append(
+                        (table, sheet, labels[0], row, years, markers, header_rows)
+                    )
 
     name = ".".join(spec.path)
     if len(matches) != 1:
@@ -789,7 +822,7 @@ def find_receipts_line(
             f'Expected one "{spec.row}" row in the "{spec.title}" table for '
             f"{name}; found {found}"
         )
-    table, sheet, label, row, years, markers = matches[0]
+    table, sheet, label, row, years, markers, header_rows = matches[0]
     where = f"Table {table} (sheet {sheet})"
     repeated = sorted({y for y in years.values() if list(years.values()).count(y) > 1})
     if repeated:
@@ -797,6 +830,7 @@ def find_receipts_line(
             f"{where} heads more than one column "
             + ", ".join(fiscal_year_label(y) for y in repeated)
         )
+    validate_receipts_unit(header_rows, where)
     levels = {}
     for column, year in years.items():
         text = row.get(column)

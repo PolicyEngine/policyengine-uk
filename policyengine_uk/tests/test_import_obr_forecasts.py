@@ -1513,7 +1513,7 @@ def test_real_receipts_units_are_refused_before_any_write(
     tmp_path, year, tables, unit, scale
 ):
     for table in tables:
-        yoy, gap_dir = write_tree(tmp_path)
+        yoy, gap_dir = write_tree(tmp_path / table)
         before = {path: path.read_bytes() for path in [yoy, *gap_dir.iterdir()]}
         receipts = dict(REAL_RECEIPTS)
         receipts[year] = mutate_real_receipts(receipts[year], table, unit, scale)
