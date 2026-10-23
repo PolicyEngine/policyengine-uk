@@ -69,8 +69,11 @@ read. This already happens on `main` in tax-credit years with nothing
 overridden. In hand-entered situations the flag is true for every family
 that reports none of the seven benefits, so each such family with children
 claims Child Tax Credit. In both kinds of simulation, a family that reports
-Child Tax Credit but claims Universal Credit, or whose legacy benefits have
-closed, still claims it although ineligible. Otherwise, the same eligibility
+Child Tax Credit but claims Universal Credit still claims it although
+ineligible. So does a family whose legacy benefits have closed, but on
+`main` that happens only once tax credits are no longer active, so its
+`tax_credits` is zero unless a reform leaves tax credits active after a
+legacy benefit has closed. Otherwise, the same eligibility
 tests mean that a hand-entered family reporting none of the seven benefits
 can receive, of these five benefits, only Council Tax Reduction and
 pension-age Housing Benefit.
@@ -82,10 +85,11 @@ this gives families that report none of these benefits are Council Tax
 Reduction and pension-age Housing Benefit (the model's pension-age route,
 which includes mixed-age couples that can still claim on it). For years when
 tax credits are active, `CTC_child_element` needs an `is_CTC_eligible` gate.
-The fix would make the gap wider but does not create it: without the gate,
-every family with children drawn as a Child Tax Credit claimant without a
-report gets `tax_credits` but no Child Tax Credit, and that amount cuts its
-Council Tax Reduction and any Housing Benefit.
+The fix would spread the problem but does not create it: without the gate,
+a family with children drawn as a Child Tax Credit claimant without a report
+gets the child element, less the income taper, as `tax_credits` but no Child
+Tax Credit, and that amount counts as income in its Council Tax Reduction
+and any Housing Benefit means test.
 Tax credits stopped paying ongoing awards on 5 April
 2025, and `gov.dwp.tax_credits.active` is false from 2025-04-06 (see
 [tax-credits.md](../programs/gov/dwp/tax-credits.md)), so the WTC and CTC
@@ -163,8 +167,11 @@ total wealth components, `capital_allowances`, `deficiency_relief`,
 and the full list of `*_reported` benefits. policyengine-uk-data#362 (April
 2026) added this stage with a narrower output list: pension contributions,
 tax-free savings income and the `*_reported` benefits. Microcosm UK's second
-stage has the same outputs, less the incapacity benefit and maternity
-allowance reports, which its base data lacks.
+stage had the same outputs at `75167a6`, less the incapacity benefit and
+maternity allowance reports, which its base data lacks; it has since added
+trading losses, six owner-manager company variables and the War Widow's
+Pension report
+([`source_stages.json` at `54b514f`](https://github.com/PolicyEngine/microcosm/blob/54b514f9/packages/microcosm-build/src/microcosm/build/uk/source_stages.json)).
 
 ## Specific aggregate residuals
 
