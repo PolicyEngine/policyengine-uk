@@ -146,8 +146,14 @@ def _rent_growth(region, tenure, year):
 
 
 def _council_tax_growth(region, year):
+    # Bills grow by their country's receipts growth net of the growth in
+    # household weights, so each country's total tracks its receipts (#2067).
     series = COUNCIL_TAX_SERIES.get(region)
-    return 0.0 if series is None else GROWTH.obr.council_tax.get_child(series)(year)
+    if series is None:
+        return 0.0
+    receipts = GROWTH.obr.council_tax.get_child(series)(year)
+    weights = parameters.get_child(INDEX_OF["household_weight"])(year)
+    return (1 + receipts) / (1 + weights) - 1
 
 
 RESIDENTIAL_STOCKS = (

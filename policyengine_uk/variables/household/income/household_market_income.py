@@ -14,6 +14,7 @@ HOUSEHOLD_MARKET_INCOME_VARIABLES = [
     "private_pension_income",
     "private_transfer_income",
     "maintenance_income",
+    "spousal_maintenance_income",
     "capital_gains",
 ]
 
