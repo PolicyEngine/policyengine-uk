@@ -5,6 +5,18 @@
 separately. UKSimulation preserves this existing input convention; the model
 does not deduct that sacrifice a second time from cash pay.
 
+`pension_contributions_via_bonus_sacrifice` supplies employer contributions
+made in place of a bonus, under the same convention: cash pay is net of the
+sacrificed bonus. The rules treat bonus sacrifice as salary sacrifice, and the
+cap applies to the sum of the two, so
+`pension_contributions_via_salary_sacrifice_from_pay` adds both inputs and the
+cap, the NICs excess and the annual-allowance readers follow it. The inputs are
+separate because sources measure the routes apart: HMRC's salary sacrifice
+estimates come from ASHE, which does not cover bonus sacrifice, and the OBR
+costs the bonus route on its own base
+([costing note](https://obr.uk/docs/dlm_uploads/Supplementary-forecast-information-salary-sacrifice-costing-1.pdf),
+paragraphs 1.4, 1.5 and 1.9).
+
 The cap limits NIC exemption, rather than returning ordinary pay or creating a
 member pension payment. `salary_sacrifice_pension_ni_excess` adds the excess once
 to `ni_class_1_income`. Full actual sacrifice still counts once in the current

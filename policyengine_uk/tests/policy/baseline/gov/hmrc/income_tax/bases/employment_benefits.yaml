@@ -1,0 +1,59 @@
+# ITEPA 2003 s. 660(1) Table A lists statutory sick pay, statutory maternity
+# pay and statutory paternity pay as taxable UK benefits. 2026-27: statutory
+# paternity pay £194.32 a week (SI 2002/2818 reg 2(a), as substituted by SI
+# 2026/148 art 10(1)(a)), so two weeks is £388.64. Personal allowance
+# £12,570, basic rate 20% to £50,270 and higher rate 40% above it
+# (gov.uk/income-tax-rates). No region is set, so the rest of UK rates apply.
+
+- name: Statutory sick, maternity and paternity pay are employment benefits
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    statutory_sick_pay: 1_232.50 # 10 weeks at £123.25
+    statutory_maternity_pay: 3_000
+    statutory_paternity_pay: 388.64
+  output:
+    employment_benefits: 4_621.14 # 1,232.50 + 3,000 + 388.64
+
+- name: Two weeks of statutory paternity pay are taxed with wages
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 30_000
+    statutory_paternity_pay: 388.64
+  output:
+    taxable_employment_income: 30_388.64
+    # 0.2 x (30,388.64 - 12,570) = 3,563.728: 3,486 on the wages and 77.728,
+    # 20% of 388.64, on the statutory paternity pay.
+    income_tax: 3_563.73
+
+- name: Statutory paternity pay above the basic rate limit is taxed at the higher rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 60_000
+    statutory_paternity_pay: 388.64
+  output:
+    # 0.2 x (50,270 - 12,570) + 0.4 x (60,388.64 - 50,270)
+    # = 7,540 + 4,047.456 = 11,587.456.
+    income_tax: 11_587.46
+
+- name: Statutory paternity pay within the personal allowance bears no income tax
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    statutory_paternity_pay: 388.64
+  output:
+    taxable_employment_income: 388.64
+    income_tax: 0
+
+- name: Statutory paternity pay is taxed as the same amount of statutory sick pay is
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 30_000
+    statutory_sick_pay: 388.64
+  output:
+    # The same as two weeks of statutory paternity pay on these wages.
+    taxable_employment_income: 30_388.64
+    income_tax: 3_563.73
