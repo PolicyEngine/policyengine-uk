@@ -11,6 +11,10 @@ class income_support_applicable_income(Variable):
         "https://www.legislation.gov.uk/uksi/1987/1967/schedule/8",
         "https://www.legislation.gov.uk/uksi/1987/1967/regulation/36",
         "https://www.legislation.gov.uk/uksi/1987/1967/regulation/38",
+        "https://www.legislation.gov.uk/uksi/1987/1967/regulation/35",
+        "https://www.legislation.gov.uk/uksi/1987/1967/regulation/40",
+        "https://www.legislation.gov.uk/uksi/1987/1967/schedule/9/paragraph/1",
+        "https://www.legislation.gov.uk/uksi/1987/1967/schedule/9/paragraph/4",
     )
 
     def formula(benunit, period, parameters):
@@ -27,6 +31,10 @@ class income_support_applicable_income(Variable):
             "self_employment_income",
             "property_income_after_finance_costs",
             "private_pension_income",
+            # Employer statutory pay counts as other income (reg 40(4)(a)).
+            "statutory_sick_pay",
+            "statutory_maternity_pay",
+            "statutory_paternity_pay",
         ]
         bi = parameters(period).gov.contrib.ubi_center.basic_income
         if bi.interactions.include_in_means_tests:
