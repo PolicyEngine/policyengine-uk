@@ -19,6 +19,13 @@ hold it to:
 4. The manifest and SHA256SUMS hold the files' real sha256 digests.
 5. ``pypi-state --require complete --wait`` waits for the index to serve our
    files, stops at once on a conflict, and gives up at the deadline.
+6. ``pypi-state --manifest`` compares the index with the files the manifest
+   lists, whatever else ``dist`` holds: it gives the state ``--dist`` gives
+   for a directory of exactly those files (differential). It still refuses a
+   manifest that lists any other file, and still finds a conflict when the
+   index serves another file or other bytes.
+7. The release workflow's PyPI checks read the manifest written before the
+   publish step, which adds attestation files to ``dist`` (pe-uk#2461).
 """
 
 import hashlib
@@ -380,11 +387,12 @@ def test_a_different_commit_fails(commit, tmp_path):
 # Invariant 5: pypi-state.
 
 
-def state_args(dist, require=None, wait=0):
+def state_args(dist, require=None, wait=0, manifest=None):
     import argparse
 
     return argparse.Namespace(
         dist=dist,
+        manifest=manifest,
         version=VERSION,
         project="policyengine-uk",
         index_url="https://index.invalid/pypi",
@@ -475,3 +483,291 @@ def test_pypi_state_reports_without_waiting(tmp_path, capsys):
     partial = dict(list(ours(dist).items())[:1])
     assert release.pypi_state(state_args(dist), fetch=lambda *a: partial) == 0
     assert capsys.readouterr().out.splitlines()[0] == "partial"
+
+
+# Invariant 6: pypi-state against the manifest.
+
+ATTESTATIONS = (
+    f"policyengine_uk-{VERSION}-py3-none-any.whl.publish.attestation",
+    f"policyengine_uk-{VERSION}.tar.gz.publish.attestation",
+)
+
+
+def write_manifest(dist, path):
+    record = release.manifest(release.dist_files(dist, VERSION), VERSION, "0" * 40)
+    path.write_text(json.dumps(record), encoding="utf-8")
+    return path
+
+
+def test_the_check_after_publishing_ignores_what_publishing_adds_to_dist(tmp_path):
+    dist = build(tmp_path / "dist")
+    manifest = write_manifest(dist, tmp_path / "manifest.json")
+    served = ours(dist)
+    # Trusted publishing writes these beside the files it uploads.
+    for name in ATTESTATIONS:
+        (dist / name).write_text("{}")
+    assert (
+        release.pypi_state(
+            state_args(None, "complete", manifest=manifest), fetch=lambda *a: served
+        )
+        == 0
+    )
+    # Reading dist itself, as the workflow did, cannot check (pe-uk#2461).
+    with pytest.raises(release.InputError, match="must hold exactly"):
+        release.pypi_state(state_args(dist, "complete"), fetch=lambda *a: served)
+
+
+@SETTINGS
+@given(
+    extra=st.sets(
+        st.text(alphabet="abcdefghijklmnopqrstuvwxyz0123456789._-", min_size=1),
+        max_size=3,
+    ),
+    served=st.sampled_from(["absent", "partial", "complete", "other", "extra"]),
+)
+def test_the_manifest_gives_the_state_a_clean_dist_gives(
+    tmp_path_factory, extra, served
+):
+    root = tmp_path_factory.mktemp("state")
+    clean = build(root / "clean")
+    manifest = write_manifest(clean, root / "manifest.json")
+    cluttered = build(root / "cluttered")
+    for name in extra - set(ours(clean)) - {".", ".."}:
+        (cluttered / name).write_text("x")
+    files = ours(clean)
+    remote = {
+        "absent": None,
+        "partial": dict(list(files.items())[:1]),
+        "complete": files,
+        "other": {name: "f" * 64 for name in files},
+        "extra": {**files, f"policyengine_uk-{VERSION}-cp313-none-any.whl": "0" * 64},
+    }[served]
+    with_manifest = release.pypi_state(
+        state_args(cluttered, manifest=manifest), fetch=lambda *a: remote
+    )
+    with_clean_dist = release.pypi_state(state_args(clean), fetch=lambda *a: remote)
+    assert with_manifest == with_clean_dist
+    assert with_manifest == (3 if served in ("other", "extra") else 0)
+
+
+@pytest.mark.parametrize(
+    "change",
+    ["extra package file", "other version", "other name", "no digest", "other project"],
+)
+def test_a_manifest_listing_anything_but_the_two_files_is_refused(tmp_path, change):
+    dist = build(tmp_path / "dist")
+    record = release.manifest(release.dist_files(dist, VERSION), VERSION, "0" * 40)
+    if change == "extra package file":
+        record["files"].append(
+            {
+                "filename": f"policyengine_uk-{VERSION}-cp313-none-any.whl",
+                "sha256": "0" * 64,
+                "size": 1,
+            }
+        )
+    elif change == "other version":
+        record["version"] = "2.126.9"
+    elif change == "other name":
+        record["files"][0]["filename"] = "policyengine_uk-2.126.9-py3-none-any.whl"
+    elif change == "no digest":
+        record["files"][0]["sha256"] = "not a digest"
+    else:
+        record["package"] = "policyengine-us"
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(json.dumps(record), encoding="utf-8")
+    with pytest.raises(release.InputError):
+        release.pypi_state(
+            state_args(None, manifest=manifest), fetch=lambda *a: ours(dist)
+        )
+
+
+def test_a_dist_with_another_package_file_is_still_refused(tmp_path):
+    dist = build(tmp_path / "dist")
+    (dist / f"policyengine_uk-{VERSION}-cp313-none-any.whl").write_bytes(b"x")
+    with pytest.raises(release.InputError, match="must hold exactly"):
+        release.pypi_state(state_args(dist), fetch=lambda *a: None)
+
+
+def test_pypi_state_takes_a_manifest_or_a_dist_not_both(tmp_path):
+    with pytest.raises(SystemExit):
+        release.main(["pypi-state", "--version", VERSION])
+    with pytest.raises(SystemExit):
+        release.main(
+            [
+                "pypi-state",
+                "--version",
+                VERSION,
+                "--manifest",
+                str(tmp_path / "m.json"),
+                "--dist",
+                str(tmp_path),
+            ]
+        )
+    # An unreadable manifest is input that cannot be checked, before any fetch.
+    missing = ["pypi-state", "--version", VERSION, "--manifest", str(tmp_path / "m")]
+    assert release.main(missing) == 2
+
+
+def manifest_record(dist):
+    return release.manifest(release.dist_files(dist, VERSION), VERSION, "0" * 40)
+
+
+def write_json(path, content):
+    path.write_text(
+        content if isinstance(content, str) else json.dumps(content), encoding="utf-8"
+    )
+    return path
+
+
+@pytest.mark.parametrize("keep", [0, 1])
+def test_a_manifest_missing_a_file_is_refused(tmp_path, keep):
+    dist = build(tmp_path / "dist")
+    record = manifest_record(dist)
+    record["files"] = [record["files"][keep]]
+    manifest = write_json(tmp_path / "m.json", record)
+    with pytest.raises(release.InputError, match="must list exactly"):
+        release.pypi_state(
+            state_args(None, "complete", manifest=manifest),
+            # PyPI serving only the one listed file would otherwise read as complete.
+            fetch=lambda *a: {
+                record["files"][0]["filename"]: record["files"][0]["sha256"]
+            },
+        )
+
+
+def test_a_manifest_listing_a_file_twice_is_refused(tmp_path):
+    dist = build(tmp_path / "dist")
+    record = manifest_record(dist)
+    record["files"].append({**record["files"][0], "sha256": "e" * 64})
+    manifest = write_json(tmp_path / "m.json", record)
+    with pytest.raises(release.InputError):
+        release.pypi_state(state_args(None, manifest=manifest), fetch=lambda *a: None)
+
+
+@pytest.mark.parametrize(
+    "content",
+    [
+        "{not json",
+        "[]",
+        '"a string"',
+        '{"package": "policyengine-uk"}',
+        json.dumps({"package": "policyengine-uk", "version": VERSION}),
+        json.dumps({"package": "policyengine-uk", "version": VERSION, "files": {}}),
+        json.dumps({"package": "policyengine-uk", "version": VERSION, "files": [1, 2]}),
+        "",
+    ],
+    ids=[
+        "invalid json",
+        "list",
+        "string",
+        "no version",
+        "no files",
+        "files a dict",
+        "files not objects",
+        "empty file",
+    ],
+)
+def test_an_unreadable_manifest_is_unusable_input_not_a_traceback(tmp_path, content):
+    manifest = write_json(tmp_path / "m.json", content)
+    command = ["pypi-state", "--version", VERSION, "--manifest", str(manifest)]
+    assert release.main(command) == 2
+
+
+@pytest.mark.parametrize(
+    "digest", ["e" * 63, "e" * 65, "E" * 64, "z" * 64, "0x" + "e" * 62]
+)
+def test_a_manifest_digest_that_is_not_64_lowercase_hex_is_refused(tmp_path, digest):
+    dist = build(tmp_path / "dist")
+    record = manifest_record(dist)
+    record["files"][0]["sha256"] = digest
+    manifest = write_json(tmp_path / "m.json", record)
+    with pytest.raises(release.InputError, match="no sha256"):
+        release.pypi_state(state_args(None, manifest=manifest), fetch=lambda *a: None)
+
+
+def test_the_manifest_check_dist_writes_is_the_one_pypi_state_reads(
+    commit, tmp_path, capsys
+):
+    """check-dist --manifest-out, as the workflow runs it, then pypi-state --manifest."""
+    repo, sha = commit
+    dist = build(tmp_path / "dist")
+    manifest = tmp_path / "runner_temp" / "release-manifest.json"
+    manifest.parent.mkdir()
+    assert check_dist(dist, repo, sha, VERSION, "--manifest-out", str(manifest)) == 0
+    served = ours(dist)
+    for name in ATTESTATIONS:
+        (dist / name).write_text("{}")
+    capsys.readouterr()
+    assert (
+        release.pypi_state(
+            state_args(None, "complete", manifest=manifest), fetch=lambda *a: served
+        )
+        == 0
+    )
+    assert capsys.readouterr().out.splitlines()[0] == "complete"
+
+
+@SETTINGS
+@given(
+    served=st.sampled_from(["absent", "partial", "complete", "other", "extra"]),
+    require=st.sampled_from([None, "absent", "partial", "complete"]),
+)
+def test_the_manifest_and_a_clean_dist_agree_under_require(
+    tmp_path_factory, served, require
+):
+    root = tmp_path_factory.mktemp("require")
+    clean = build(root / "clean")
+    manifest = write_json(root / "m.json", manifest_record(clean))
+    cluttered = build(root / "cluttered")
+    for name in ATTESTATIONS:
+        (cluttered / name).write_text("{}")
+    files = ours(clean)
+    remote = {
+        "absent": None,
+        "partial": dict(list(files.items())[:1]),
+        "complete": files,
+        "other": {name: "f" * 64 for name in files},
+        "extra": {**files, f"policyengine_uk-{VERSION}.zip": "0" * 64},
+    }[served]
+
+    def run(args):
+        # The exit code and how long it waited for the index (--wait).
+        clock = FakeClock()
+        code = release.pypi_state(
+            args, fetch=lambda *a: remote, sleep=clock.sleep, clock=clock
+        )
+        return code, clock.now
+
+    with_manifest = run(state_args(cluttered, require, wait=30, manifest=manifest))
+    with_clean_dist = run(state_args(clean, require, wait=30))
+    assert with_manifest == with_clean_dist
+
+
+# Invariant 7: the release workflow.
+
+
+def test_the_release_workflow_checks_pypi_against_the_manifest():
+    import yaml
+
+    workflow = yaml.safe_load(
+        (REPO_ROOT / ".github" / "workflows" / "versioning.yaml").read_text(
+            encoding="utf-8"
+        )
+    )
+    steps = workflow["jobs"]["Publish"]["steps"]
+    names = [step.get("name") for step in steps]
+    manifest = '"$RUNNER_TEMP/release-manifest.json"'
+
+    def run(name):
+        return steps[names.index(name)]["run"]
+
+    written = "Check these are the files that were built and tested"
+    assert f"--manifest-out {manifest}" in run(written)
+    for name in (
+        "Check what PyPI already has for this version",
+        "Check PyPI serves exactly these files",
+    ):
+        assert f"--manifest {manifest}" in run(name), name
+        assert "--dist" not in run(name), name
+    # Written before the publish step adds anything to dist.
+    assert names.index(written) < names.index("Publish to PyPI")

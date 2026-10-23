@@ -6,8 +6,9 @@ class salary_sacrifice_pension_ni_employer(Variable):
     documentation = (
         "Additional employer National Insurance contributions due to "
         "salary sacrifice pension contributions exceeding the cap. "
-        "The full excess is redirected to regular pension contributions "
-        "and subject to employer NI."
+        "The excess remains an employer pension contribution and is included "
+        "only in NIC earnings. This reporting measure is separate from "
+        "the actual Class 1 contribution curve and liability flags."
     )
     entity = Person
     definition_period = YEAR
@@ -16,12 +17,11 @@ class salary_sacrifice_pension_ni_employer(Variable):
     reference = "https://policyengine.org/uk/research/uk-salary-sacrifice-cap"
 
     def formula(person, period, parameters):
-        # Get the excess that's redirected to regular pension
-        # This is the amount subject to employer NI
-        excess = person("salary_sacrifice_returned_to_income", period)
+        # NIC-only earnings; this does not become an actual member payment.
+        excess = person("salary_sacrifice_pension_ni_excess", period)
 
         # Use existing NI Class 1 employer rate parameter
         ni_params = parameters(period).gov.hmrc.national_insurance.class_1
-        employer_rate = ni_params.rates.employer
+        employer_rate = ni_params.employer_scale.components[1].rate
 
         return excess * employer_rate

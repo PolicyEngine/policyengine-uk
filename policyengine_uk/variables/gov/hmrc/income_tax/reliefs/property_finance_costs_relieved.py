@@ -46,7 +46,7 @@ class property_finance_costs_relieved(Variable):
         )
         adjusted_total_income = max_(
             0,
-            person("adjusted_net_income", period)
+            person("net_income", period)
             - person("taxable_savings_interest_income", period)
             - person("taxable_dividend_income", period)
             - step_2_reliefs
