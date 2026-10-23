@@ -450,12 +450,34 @@ def uprate_residential_property(
     return current_year
 
 
+def household_weight_growth_path(uprating: dict | None = None) -> str:
+    """The growth series that projects household weights.
+
+    The one ``uprating_indices.yaml`` lists ``household_weight`` under.
+    """
+    uprating = _uprating_index_map() if uprating is None else uprating
+    paths = [path for path, names in uprating.items() if "household_weight" in names]
+    if len(paths) != 1:
+        raise ValueError(
+            "uprating_indices.yaml must list household_weight under exactly one "
+            f"growth series, not {paths}"
+        )
+    return paths[0]
+
+
 def uprate_council_tax(
     current_year: UKSingleYearDataset,
     previous_year: UKSingleYearDataset,
     parameters: ParameterNode,
 ):
     # Uprate council tax for a single year dataset.
+    #
+    # Each country's series is the growth in its council tax receipts: the
+    # Band D level times the tax base, the number of Band D equivalent
+    # dwellings. Household weights grow too, by their own series, so each bill
+    # grows by receipts growth net of the weights' growth. A country's
+    # weighted total then grows by its receipts growth. Growing the bills by
+    # receipts growth counted the growth in households twice (#2067).
 
     council_tax = parameters.gov.economic_assumptions.yoy_growth.obr.council_tax
     region = pd.Series(np.asarray(current_year.household["region"]).astype(str))
@@ -465,16 +487,20 @@ def uprate_council_tax(
             "Cannot uprate council tax for unrecognised regions: "
             f"{sorted(unrecognised)}"
         )
-    growth_by_region = {
-        name: 0.0
+    weight_growth = parameters.get_child(household_weight_growth_path())(
+        current_year.time_period
+    )
+    factor_by_region = {
+        name: 1.0
         if series is None
-        else council_tax.get_child(series)(current_year.time_period)
+        else (1 + council_tax.get_child(series)(current_year.time_period))
+        / (1 + weight_growth)
         for name, series in _COUNCIL_TAX_GROWTH_SERIES.items()
     }
-    growth_rates = region.map(growth_by_region).to_numpy()
+    factors = region.map(factor_by_region).to_numpy()
 
-    current_year.household["council_tax"] = previous_year.household["council_tax"] * (
-        1 + growth_rates
+    current_year.household["council_tax"] = (
+        previous_year.household["council_tax"] * factors
     )
     return current_year
 

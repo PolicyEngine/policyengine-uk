@@ -78,13 +78,15 @@ We use per capita GDP for these variables: `benunit_reported_capital`, `capital_
 
 ## Council tax
 
-We use the OBR's Council Tax receipts and projections.
+We project each country's council tax receipts, net of council tax reduction, with the OBR's forecasts (March 2026 EFO, Expenditure Table 4.1) from 2025-26, and official outturns before then: MHCLG's council tax requirement for England, the Scottish Government's net amount billed and the Welsh Government's net collectable debit.
 
-| Fiscal year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 |
+| Fiscal year | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 | 2030 |
 |-------------|------|------|------|------|------|------|------|------|
-| Growth rate | 5.3% | 5.6% | 6.4% | 4.6% | 4.5% | 4.6% | 4.5% | 4.5% |
+| England | 6.6% | 6.5% | 7.0% | 5.5% | 6.1% | 6.2% | 5.6% | 5.5% |
+| Scotland | 6.4% | 2.4% | 3.8% | 3.8% | 3.8% | 3.8% | 3.8% | 3.8% |
+| Wales | 7.1% | 9.9% | 7.7% | 7.4% | 7.4% | 7.4% | 7.4% | 7.4% |
 
-We apply this to: `council_tax`
+Receipts are the Band D level times the tax base, the number of Band D equivalent dwellings, so they grow with the number of homes as well as with bills. Household weights grow with population, so each household's `council_tax` grows by its country's receipts growth divided by population growth: (1 + receipts growth) / (1 + population growth) − 1. Each country's weighted total then grows with its receipts. Northern Ireland has no council tax (it has domestic rates), so any `council_tax` a dataset gives its households is held flat.
 
 ## Mortgage interest
 
