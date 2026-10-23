@@ -1,7 +1,6 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.utils.uc_work_related_requirements import (
-    other_member_of_single_claim_in_shared_rules,
-    single_claim_in_rules_shared_with_legacy_benefits,
+    other_member_of_single_claim,
 )
 
 
@@ -10,31 +9,27 @@ class is_lha_shared_accommodation_rate_specified_renter(Variable):
     entity = BenUnit
     label = "LHA renter restricted to the shared accommodation rate"
     documentation = (
-        "The modelled specified-renter conditions: no partner, or a member of "
-        "a couple who claims Universal Credit as a single person (UC "
-        "regulation 3(3); Schedule 4 paragraph 28(2)), below the shared "
-        "accommodation age threshold, not responsible for a child or young "
-        "person under the UC or Housing Benefit rules, no non-dependant under "
-        "the household composition proxy, and not excepted by a disability "
-        "benefit (UC Schedule 4 paragraph 29(5)). The age and the exception "
-        "are the renter's own: the other member of a couple claiming as a "
-        "single person is neither a renter nor a non-dependant (paragraph "
-        "9(2)(b)). Other paragraph 29 exceptions are not modelled. The same "
-        "category serves Housing Benefit, whose young-individual definition "
-        "(HB regulation 2(1)) has neither the disability exception nor a "
-        "single claim by a member of a couple. The model applies the "
-        "disability exception to Housing Benefit too, and the single-claim "
-        "rule unless the family stays on legacy benefits (reports one and "
-        "would not claim Universal Credit)."
+        "The Universal Credit specified-renter conditions (UC Regs 2013 Sch 4 "
+        "paras 27 and 28): a single person, or a member of a couple claiming "
+        "as a single person (reg. 3(3)), who is under the shared "
+        "accommodation age threshold and not excepted by a disability benefit "
+        "(para 29(5); armed forces independence payment counts as attendance "
+        "allowance, reg. 2); not responsible for a child or qualifying young "
+        "person; and with no non-dependant under the household composition "
+        "proxy. The age and the exception are the renter's own: the other "
+        "member of a couple claiming as a single person is neither the "
+        "renter nor a non-dependant (para 9(2)(b)). Other paragraph 29 "
+        "exceptions are not modelled. Housing Benefit has its own test: see "
+        "is_housing_benefit_young_individual and housing_benefit_LHA_category."
     )
     definition_period = YEAR
     reference = (
         "https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/27",
         "https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/28",
         "https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/29",
-        "https://www.legislation.gov.uk/uksi/2006/213/regulation/2",
-        "https://www.legislation.gov.uk/uksi/2006/213/regulation/13D",
-        "https://www.legislation.gov.uk/uksi/2006/213/regulation/19",
+        "https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/9",
+        "https://www.legislation.gov.uk/uksi/2013/376/regulation/2",
+        "https://www.legislation.gov.uk/uksi/2013/376/regulation/3",
     )
 
     def formula(benunit, period, parameters):
@@ -45,10 +40,10 @@ class is_lha_shared_accommodation_rate_specified_renter(Variable):
         # and (b) is not an excepted person". Where a member of a couple
         # claims as a single person (reg. 3(3)), the renter is that member:
         # the other member's age and benefits do not count.
-        claims_as_single_person = single_claim_in_rules_shared_with_legacy_benefits(
-            benunit, period
+        claims_as_single_person = benunit(
+            "uc_member_of_couple_claims_as_single_person", period
         )
-        other_member = other_member_of_single_claim_in_shared_rules(person, period)
+        other_member = other_member_of_single_claim(person, period)
         renter = person("is_claimant_or_partner", period) & ~other_member
         renter_age = benunit.max(where(renter, person("age", period), -np.inf))
         # UC Sch 4 para 29(5): a renter under 35 receiving
@@ -63,6 +58,10 @@ class is_lha_shared_accommodation_rate_specified_renter(Variable):
         return (
             (~benunit("is_couple", period) | claims_as_single_person)
             & (renter_age < p.shared_accommodation_age_threshold)
+            # Para 28(3)-(4). A Housing Benefit young person who is not a
+            # Universal Credit qualifying young person is a non-dependant
+            # (para 9), which the household composition proxy does not
+            # identify; either way the renter is not a specified renter.
             & ~benunit(
                 "is_responsible_for_child_or_young_person_for_uc_or_housing_benefit",
                 period,
