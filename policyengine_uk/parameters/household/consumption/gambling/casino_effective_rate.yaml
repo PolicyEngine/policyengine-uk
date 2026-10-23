@@ -1,0 +1,14 @@
+description: The model attributes household casino Gaming Duty at this empirical fraction of supplied dutiable casino yield. It divides HMRC UK cash Gaming Duty receipts of GBP 165.397 million by provisional Gambling Commission GB casino game yield of GBP 702.36095883367 million for April 2024 to March 2025, rounded to six fractional decimals and held constant after model year 2024. Geography, receipt timing and model-year differences remain unresolved; review and refresh are tracked at https://github.com/PolicyEngine/policyengine-uk/issues/2587.
+values:
+  '2024-01-01': 0.235487
+metadata:
+  unit: /1
+  period: year
+  label: casino gaming duty household incidence fraction
+  reference:
+  - title: HMRC July 2026 Betting and Gaming tables, Table_1_BG_receipts E45, GBP 000
+    href: https://assets.publishing.service.gov.uk/media/6ab54fd9fe72ed1e2b02f06b/2026_Jul_Bet_and_Gam_Tab.ods
+  - title: Gambling Commission April 2024 to March 2025 industry statistics, casino game yield, sheet 8a B94
+    href: https://www.gamblingcommission.gov.uk/statistics-and-research/publication/industry-statistics-annual-report-financial-year-april-2024-to-march-2025
+  - title: Review and refresh the household casino-duty incidence proxy
+    href: https://github.com/PolicyEngine/policyengine-uk/issues/2587

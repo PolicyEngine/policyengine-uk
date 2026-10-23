@@ -1,0 +1,19 @@
+- name: Case 1, National Lottery duty uses gross chargeable ticket consideration.
+  period: 2024
+  input:
+    national_lottery_ticket_spending: 1_000
+  output:
+    lottery_duty: 120 # FA 1993 section 25(1): 12% without winnings deductions.
+
+- name: Case 2, the same lottery rate applies in FY2027.
+  period: 2027
+  input:
+    national_lottery_ticket_spending: 1_000
+  output:
+    lottery_duty: 120
+
+- name: Case 3, missing National Lottery spending defaults to zero.
+  period: 2024
+  input: {}
+  output:
+    lottery_duty: 0

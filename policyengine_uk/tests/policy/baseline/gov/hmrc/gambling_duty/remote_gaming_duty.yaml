@@ -1,0 +1,21 @@
+- name: Case 1, remote gaming profits use twenty-one percent in FY2024.
+  period: 2024
+  input:
+    remote_gaming_net_losses: 36_500
+  output:
+    remote_gaming_duty: 7_665 # HMRC historic rates: 36,500 * 21%.
+
+- name: Case 2, remote gaming changes on 1 April within FY2025.
+  period: 2025
+  input:
+    remote_gaming_net_losses: 36_500
+  output:
+    # FA 2026 section 86: 360 days at 21% and five at 40%.
+    remote_gaming_duty: 7_760 # 100 * (360 * .21 + 5 * .40).
+
+- name: Case 3, remote gaming uses forty percent throughout FY2026.
+  period: 2026
+  input:
+    remote_gaming_net_losses: 36_500
+  output:
+    remote_gaming_duty: 14_600

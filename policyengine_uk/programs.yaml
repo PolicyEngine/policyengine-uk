@@ -125,6 +125,19 @@ programs:
     verified_end_year: 2026
     notes: One car per person with supplied vehicle characteristics. Excludes vans, motorcycles, eVED and population imputation.
 
+  - id: gambling_duty
+    name: Gambling duties
+    full_name: Betting and gaming duties
+    category: Taxes
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: gambling_duty
+    parameter_prefix: gov.hmrc.gambling_duty
+    verified_start_year: 2024
+    verified_end_year: 2027
+    notes: Seven duty families on supplied attributed bases. Casino incidence uses a fixed FY2024/25 UK receipts/GB game yield proxy under household.consumption.gambling; review issue 2587. Excludes population imputation, verified machine-class-by-premises allocation and VAT-base repair.
+
   - id: student_loans
     name: Student loan repayments
     full_name: Student Loan Repayments

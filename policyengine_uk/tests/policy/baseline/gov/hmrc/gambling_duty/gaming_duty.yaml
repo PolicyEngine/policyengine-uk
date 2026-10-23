@@ -1,0 +1,29 @@
+- name: Case 1, household casino incidence uses the approved empirical fraction.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    land_based_casino_net_losses: 1_000
+  output:
+    gaming_duty: 235.487 # 1,000 * .235487; HMRC/GC FY2024/25 ratio, issue 2587.
+
+- name: Case 2, household casino incidence scales linearly with the supplied base.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    land_based_casino_net_losses: 10_000
+  output:
+    gaming_duty: 2_354.87 # Annual household bases never use operator brackets.
+
+- name: Case 3, the empirical casino fraction stays constant after its source year.
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    land_based_casino_net_losses: 1_000
+  output:
+    gaming_duty: 235.487
+
+- name: Case 4, missing casino input defaults to zero.
+  period: 2024
+  input: {}
+  output:
+    gaming_duty: 0

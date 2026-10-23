@@ -1,0 +1,29 @@
+- name: Case 1, lower-rate machine net takings use five percent.
+  period: 2024
+  input:
+    machine_games_lower_rate_net_takings: 1_000
+  output:
+    machine_games_duty: 50 # FA 2012 Schedule 24 paragraph 9.
+
+- name: Case 2, standard-rate machine net takings use twenty percent.
+  period: 2024
+  input:
+    machine_games_standard_rate_net_takings: 1_000
+  output:
+    machine_games_duty: 200
+
+- name: Case 3, higher-rate machine net takings use twenty-five percent.
+  period: 2024
+  input:
+    machine_games_higher_rate_net_takings: 1_000
+  output:
+    machine_games_duty: 250
+
+- name: Case 4, machine classes supply their own bases without a mix assumption.
+  period: 2024
+  input:
+    machine_games_lower_rate_net_takings: 1_000
+    machine_games_standard_rate_net_takings: 2_000
+    machine_games_higher_rate_net_takings: 3_000
+  output:
+    machine_games_duty: 1_200 # 50 + 400 + 750.
