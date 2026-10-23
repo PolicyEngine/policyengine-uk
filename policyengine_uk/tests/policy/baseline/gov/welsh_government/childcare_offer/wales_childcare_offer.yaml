@@ -636,6 +636,76 @@
     # 95,000 + 5,000 = 100,000
     wales_childcare_offer: 7_003.50
 
+# Statutory sick, maternity and paternity pay are earned income for the
+# £100,000 test (income guidance questions 8 and 9). total_income counts only
+# wages, so employment_benefits adds them once. The same total gives the same
+# result whether it is paid as wages or as statutory pay.
+- name: Statutory sick pay counts towards the £100,000 gross income limit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 99_000
+        statutory_sick_pay: 2_000
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        region: WALES
+  output:
+    # 99,000 + 2,000 = 101,000 > 100,000
+    wales_childcare_offer: 0
+
+- name: Pay plus statutory maternity pay of exactly £100,000 still qualifies
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 95_000
+        statutory_maternity_pay: 5_000
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        region: WALES
+  output:
+    # 95,000 + 5,000 = 100,000
+    wales_childcare_offer: 7_003.50
+
+- name: £100,000 of wages plus £1 of statutory paternity pay is over the limit, like £100,001 of wages
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 100_000
+        statutory_paternity_pay: 1
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        region: WALES
+  output:
+    # 100,000 + 1 = 100,001 > 100,000
+    wales_childcare_offer: 0
+
 # Review C3: guidance para 87 lists "Universal Credit where the individual has
 # been assessed as having limited capability for work", so the parent needs a
 # Universal Credit award, not only a disability.

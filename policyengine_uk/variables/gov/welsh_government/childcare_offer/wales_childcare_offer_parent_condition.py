@@ -24,8 +24,8 @@ class wales_childcare_offer_parent_condition(Variable):
         p = parameters(period).gov.welsh_government.childcare_offer
 
         # Paras 57 and 69: gross income of no more than £100,000, counting
-        # all income, from work or investments, including maintenance (July
-        # 2020 income guidance, questions 8 and 9).
+        # all income, from work or investments, including statutory pay and
+        # maintenance (July 2020 income guidance, questions 8 and 9).
         gross_income = add(person, period, p.income.gross_income_sources)
         within_income_limit = gross_income <= p.income.limit
 

@@ -12,6 +12,10 @@ values:
   # and unearned income such as dividends, rental income, maintenance
   # allowance and interest. total_income covers earnings, pensions, benefits,
   # property, savings and dividend income; maintenance is not part of it.
+  # Statutory sick, maternity and paternity pay are earned income paid
+  # through payroll, but total_income counts only wages (employment_income),
+  # so they are added once through employment_benefits.
   2019-08-01:
     - total_income
+    - employment_benefits
     - maintenance_income
