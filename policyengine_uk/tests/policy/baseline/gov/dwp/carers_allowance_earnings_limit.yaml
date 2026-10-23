@@ -255,3 +255,69 @@
     carers_allowance_earnings: 6_146.60
     is_gainfully_employed_for_carers_allowance: false
     carers_allowance: 64.60 * 52
+
+- name: Case 18, a pension-age trader has no notional Class 2 deduction in 2018.
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    self_employment_income: 7_000
+    personal_pension_contributions: 1_400
+    state_pension: 6_000
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # SSCBA 1992 s. 11(7)(b): no Class 2 after the week of State Pension
+    # age. 7,000 - 700 = 6,300, or £121.15 a week, above the £120 limit.
+    # State Pension already prevents a cash CA award, but the earnings
+    # limit also removes underlying entitlement and the PC carer addition.
+    ni_liable: false
+    carers_allowance_earnings: 6_300
+    is_gainfully_employed_for_carers_allowance: true
+    carers_allowance_pre_overlap: 0
+    carers_allowance: 0
+    is_entitled_to_carer_benefit: false
+    carer_minimum_guarantee_addition: 0
+
+- name: Case 19, a pension-age trader has no notional Class 4 deduction in 2026.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    self_employment_income: 15_000
+    capital_allowances: 5_000
+    personal_pension_contributions: 7_700
+    state_pension: 10_000
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # Contributions Regulations 2001 reg. 91(a): over State Pension age
+    # at the start of the tax year. 15,000 - 486 tax - 3,850 pension
+    # = 10,664, or £205.08 a week, above £204. Deducting Class 4 wrongly
+    # gives £202.27. Capital allowances still do not reduce reg. 14 profit.
+    ni_class_4_liable: false
+    carers_allowance_earnings: 10_664
+    is_gainfully_employed_for_carers_allowance: true
+    carers_allowance_pre_overlap: 0
+    carers_allowance: 0
+    is_entitled_to_carer_benefit: false
+    carer_minimum_guarantee_addition: 0
+
+- name: Case 20, Class 4 remains deductible in the tax year State Pension age is reached.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    # Born 6 June 1960, reaching SPA on 6 September 2026, after 6 April.
+    age: 66
+    months_since_last_birthday: 4
+    self_employment_income: 15_000
+    personal_pension_contributions: 7_700
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # Class 4's tax-year exception differs from the general NI age flag.
+    ni_liable: false
+    ni_class_4_liable: true
+    carers_allowance_earnings: 10_518.20
+    is_gainfully_employed_for_carers_allowance: false
+    carers_allowance_pre_overlap: 86.45 * 52
