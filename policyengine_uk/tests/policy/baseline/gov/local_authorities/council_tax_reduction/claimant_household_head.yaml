@@ -532,10 +532,10 @@
     # rent.)
     council_tax_reduction_claimant_benunit: [true, false, true]
     council_tax_reduction_joint_liability_share: [0.5, 1, 0.5]
-    # The non-working younger member pays 20.40 x 52 = 1,060.80 on the
-    # inherited HB scale, shared equally between the two claims.
-    simulated_council_tax_reduction_benunit: [369.60, 0, 369.60]
-    council_tax_reduction: 739.20
+    # The non-working younger member has no banding income, so the work
+    # gate leaves the scale's zero.
+    simulated_council_tax_reduction_benunit: [900, 0, 900]
+    council_tax_reduction: 1_800
 
 - name: A sharer family with no adult does not claim, so the head's family claims the whole council tax
   period: 2026
@@ -719,10 +719,10 @@
     # liable (LGFA 1992 s.75(4)), so the co-tenant claims on the whole bill
     # and the head is the co-tenant's non-dependant. No deduction is made for
     # a full-time student non-dependant (reg 90(7)(c)). That exemption
-    # remains for #2007: this scoped work gate charges the inherited HB
-    # flat amount, 20.40 x 52 = 1,060.80, despite the head's nil income.
+    # remains for #2007; the model's national deduction is nil here because
+    # the head has no banding income, which the work gate leaves at zero.
     council_tax_reduction_liable_person: [true, true]
     council_tax_reduction_claimant_benunit: [false, true]
     council_tax_reduction_joint_liability_share: [0.5, 1]
     council_tax_reduction_individual_non_dep_deduction_eligible: [true, false]
-    simulated_council_tax_reduction_benunit: [0, 739.20]
+    simulated_council_tax_reduction_benunit: [0, 1_800]

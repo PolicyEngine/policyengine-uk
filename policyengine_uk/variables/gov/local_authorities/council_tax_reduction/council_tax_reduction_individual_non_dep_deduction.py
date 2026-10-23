@@ -40,11 +40,20 @@ class council_tax_reduction_individual_non_dep_deduction(Variable):
         in_remunerative_work = (
             person("weekly_hours", period) >= remunerative_work_hours
         ) & ~on_income_related_benefit
-        # The national provisions' paragraph (1)(b) applies outside
-        # remunerative work. Retain the existing HB scale pending #2007.
+        banded = p.amount.calc(weekly_total_income, right=True)
+        # The national provisions' paragraph (1)(b) gives a non-dependant
+        # outside remunerative work the flat amount instead of an income
+        # band; the existing HB scale is retained pending #2007. The gate
+        # only lowers a deduction: a non-worker with no banding income keeps
+        # the scale's zero, because the exemptions in paragraphs (6) to (8)
+        # (a claimant on Attendance Allowance, a non-dependant on Income
+        # Support, income-based JSA, income-related ESA, Pension Credit or
+        # Universal Credit without earnings, a full-time student) are not
+        # modelled, and the income-related benefits are not banding income,
+        # so many such non-dependants have none.
         deduction = where(
             in_remunerative_work,
-            p.amount.calc(weekly_total_income, right=True),
-            p.amount.amounts[0],
+            banded,
+            min_(banded, p.amount.amounts[0]),
         )
         return deduction * WEEKS_IN_YEAR

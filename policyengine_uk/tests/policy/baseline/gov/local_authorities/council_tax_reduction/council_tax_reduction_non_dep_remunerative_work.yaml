@@ -4,7 +4,10 @@
 # work. This scoped fix retains the consumer's inherited HB scale: the
 # 2026-27 flat amount is 20.40/week and 403.85/week of income gives 105.20.
 # Actual national CTR flat amounts are England 5.20, Scotland 5.55, Wales
-# 6.70; their scales remain for #2007. These are work-gate regressions.
+# 6.70; their scales remain for #2007. These are work-gate regressions. A
+# non-worker with no banding income keeps the scale's zero: the gate only
+# lowers a deduction until #2007 models the exemptions in paragraphs (6) to
+# (8) with the flat charge.
 
 
 - name: ENGLAND council_tax_reduction bands IIDB only from 16 weekly hours (0 weekly hours)
@@ -478,7 +481,7 @@
   output:
     council_tax_reduction_individual_non_dep_deduction: 1060.8
 
-- name: council_tax_reduction charges the flat amount on a non-worker's pension or nil income (nil income)
+- name: council_tax_reduction keeps a non-worker with no banding income at zero (nil income)
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -491,9 +494,41 @@
     is_on_income_based_jsa: false
     is_on_income_related_esa: false
   output:
-    council_tax_reduction_individual_non_dep_deduction: 1060.8
+    # Paragraph (1)(b) gives a non-exempt non-worker the flat amount, but the
+    # zero is kept until #2007 models the exemptions alongside the flat charge.
+    council_tax_reduction_individual_non_dep_deduction: 0
+
+- name: council_tax_reduction charges no new deduction to a non-dependant on Universal Credit without earnings
+  # SI 2012/2885 Sch 1 para 8(8)(c): no deduction for a non-dependant
+  # entitled to Universal Credit with no earned income. Universal Credit is
+  # not banding income, so the gate leaves the zero.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      non_dependant:
+        age: 30
+        council_tax_reduction_individual_non_dep_deduction_eligible: true
+        hours_worked: 0
+        social_security_income: 0
+        is_on_income_support: false
+        is_on_income_based_jsa: false
+        is_on_income_related_esa: false
+    benunits:
+      non_dependant_unit:
+        members: [non_dependant]
+        universal_credit: 6_000
+    households:
+      household:
+        members: [non_dependant]
+        country: ENGLAND
+  output:
+    council_tax_reduction_individual_non_dep_deduction: [0]
 
 - name: council_tax_reduction excludes each income-related benefit recipient from remunerative work (Income Support)
+  # The recipient is not in remunerative work, so the flat amount applies
+  # rather than a band. SI 2012/2885 Sch 1 para 8(8)(a) exempts this
+  # non-dependant altogether; that exemption remains for #2007.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -510,6 +545,9 @@
     council_tax_reduction_individual_non_dep_deduction: 1060.8
 
 - name: council_tax_reduction excludes each income-related benefit recipient from remunerative work (income-based JSA)
+  # The recipient is not in remunerative work, so the flat amount applies
+  # rather than a band. SI 2012/2885 Sch 1 para 8(8)(a) exempts this
+  # non-dependant altogether; that exemption remains for #2007.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -526,6 +564,9 @@
     council_tax_reduction_individual_non_dep_deduction: 1060.8
 
 - name: council_tax_reduction excludes each income-related benefit recipient from remunerative work (income-related ESA)
+  # The recipient is not in remunerative work, so the flat amount applies
+  # rather than a band. SI 2012/2885 Sch 1 para 8(8)(a) exempts this
+  # non-dependant altogether; that exemption remains for #2007.
   period: 2026
   absolute_error_margin: 0.01
   input:

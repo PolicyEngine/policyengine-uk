@@ -1,6 +1,9 @@
 # HB Regs 2006 reg 74(1)(b), (2) and reg 6(1), (6); pension-age
 # HB Regs 2006 reg 55(1)(b), (2) and reg 6(1), (6).
-# A non-worker or 15-hour worker pays 20.40 * 52 = 1,060.80 in 2026-27.
+# A non-worker or 15-hour worker with banding income pays 20.40 * 52 =
+# 1,060.80 in 2026-27. One with no banding income keeps the scale's zero:
+# the gate only lowers a deduction until #2007 models the exemptions in
+# reg 74(6)-(10) and reg 55(6)-(9) with the flat charge.
 # A 16-hour worker's wages of 9,000 alone are below 192/week; adding
 # IIDB or child maintenance of 12,000 gives 403.85/week, so 105.20 * 52.
 
@@ -172,7 +175,7 @@
   output:
     household_benefits_individual_non_dep_deduction: 1060.8
 
-- name: housing_benefit charges the flat amount on a non-worker's pension or nil income (nil income)
+- name: housing_benefit keeps a non-worker with no banding income at zero (nil income)
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -185,7 +188,25 @@
     is_on_income_based_jsa: false
     is_on_income_related_esa: false
   output:
-    household_benefits_individual_non_dep_deduction: 1060.8
+    # Reg 74(1)(b) gives a non-exempt non-worker 1,060.80, but the zero is
+    # kept until #2007 models the exemptions alongside the flat charge.
+    household_benefits_individual_non_dep_deduction: 0
+
+- name: housing_benefit charges no new deduction to a non-dependant under 25 on Income Support
+  # Reg 74(8)(a): no deduction for a non-dependant under 25 on Income Support.
+  # Income Support is not banding income, so the gate leaves the zero.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 22
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    hours_worked: 0
+    social_security_income: 0
+    is_on_income_support: true
+    is_on_income_based_jsa: false
+    is_on_income_related_esa: false
+  output:
+    household_benefits_individual_non_dep_deduction: 0
 
 - name: housing_benefit excludes each income-related benefit recipient from remunerative work (Income Support)
   period: 2026

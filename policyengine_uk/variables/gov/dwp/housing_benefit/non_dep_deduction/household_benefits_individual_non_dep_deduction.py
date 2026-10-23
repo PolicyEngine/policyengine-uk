@@ -27,11 +27,21 @@ class household_benefits_individual_non_dep_deduction(Variable):
         in_remunerative_work = (
             person("weekly_hours", period) >= p.remunerative_work_hours
         ) & ~on_income_related_benefit
-        # Reg 74(1)(b), or pension-age reg 55(1)(b), applies outside
-        # remunerative work. Reg 6(6) excludes income-related recipients.
+        banded = p.amount.calc(weekly_income, right=True)
+        # Reg 74(1)(b), or pension-age reg 55(1)(b), gives a non-dependant
+        # outside remunerative work the flat amount, the scale's first,
+        # instead of an income band. Reg 6(6) excludes income-related
+        # recipients from remunerative work. The gate only lowers a
+        # deduction: a non-worker with no banding income keeps the scale's
+        # zero, because the exemptions in reg 74(6)-(10) and reg 55(6)-(9)
+        # (a claimant on Attendance Allowance; a non-dependant on Pension
+        # Credit, or under 25 on Income Support; a full-time student) are not
+        # modelled, and the income-related benefits are not banding income,
+        # so many such non-dependants have none.
+        # #2007 adds the exemptions and the flat charge together.
         deduction = where(
             in_remunerative_work,
-            p.amount.calc(weekly_income, right=True),
-            p.amount.amounts[0],
+            banded,
+            min_(banded, p.amount.amounts[0]),
         )
         return deduction * WEEKS_IN_YEAR
