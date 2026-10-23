@@ -1,0 +1,10 @@
+description: Minimum age for computed Carer Support Payment entitlement.
+values:
+  2023-11-19: 16
+metadata:
+  unit: year
+  period: year
+  label: Carer Support Payment minimum age
+  reference:
+    - title: The Carer's Assistance (Carer Support Payment) (Scotland) Regulations 2023, regulation 4(1)
+      href: https://www.legislation.gov.uk/ssi/2023/302/regulation/4

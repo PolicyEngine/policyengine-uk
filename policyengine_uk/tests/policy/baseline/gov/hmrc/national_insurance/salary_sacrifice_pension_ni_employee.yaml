@@ -91,7 +91,7 @@
     # £100 excess * 8% = £8
     salary_sacrifice_pension_ni_employee: 100 * 0.08
 
-- name: Employee NI on full redirected excess
+- name: Employee NI on full NIC-only excess
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -103,8 +103,9 @@
   output:
     # £1,000 excess * 8% = £80
     salary_sacrifice_pension_ni_employee: (3_000 - 2_000) * 0.08
-    # Full excess is redirected (no targeted haircut)
-    salary_sacrifice_returned_to_income: 1_000
+    # Full excess enters NIC earnings (no targeted haircut)
+    salary_sacrifice_pension_ni_excess: 1_000
+    salary_sacrifice_returned_to_income: 0
 
 - name: Broad-base haircut reduces all workers employment income
   period: 2025

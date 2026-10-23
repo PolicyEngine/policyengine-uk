@@ -1,5 +1,4 @@
 from policyengine_uk.model_api import *
-import warnings
 
 
 class bi_individual_phaseout(Variable):

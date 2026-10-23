@@ -11,9 +11,9 @@ class pension_contributions_via_salary_sacrifice_from_pay(Variable):
         "from an employment_income input) has nothing to sacrifice. The "
         "sacrifice is not limited to the pay that remains: an employee may "
         "sacrifice, for example, a whole bonus, as long as their cash pay stays "
-        "above the National Minimum Wage. The cap on salary sacrifice returns "
-        "the excess over the cap to employment income, so without this "
-        "condition an input sacrifice with no pay behind it would create pay."
+        "above the National Minimum Wage. The cap includes excess sacrifice "
+        "only in NIC earnings. Without this pay condition a sacrifice "
+        "input with no pay behind it would create a NIC earnings base."
     )
     entity = Person
     definition_period = YEAR
