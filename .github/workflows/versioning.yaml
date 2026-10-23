@@ -259,7 +259,7 @@ jobs:
     name: Release lint
     needs: Versioning
     if: needs.Versioning.outputs.release == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER_X64 != '' && (vars.CI_RUNNER_EVENTS == '' || contains(format(',{0},', vars.CI_RUNNER_EVENTS), format(',{0},', github.event_name))) && vars.CI_RUNNER_X64 || 'ubuntu-latest' }}
     timeout-minutes: 10
     steps:
       - name: Checkout the version commit
@@ -286,7 +286,7 @@ jobs:
     # on each supported Python.
     needs: Build
     name: Release install (py${{ matrix.python-version }})
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER_X64 != '' && (vars.CI_RUNNER_EVENTS == '' || contains(format(',{0},', vars.CI_RUNNER_EVENTS), format(',{0},', github.event_name))) && vars.CI_RUNNER_X64 || 'ubuntu-latest' }}
     timeout-minutes: 15
     strategy:
       fail-fast: false
@@ -321,7 +321,7 @@ jobs:
     # build backend pinned as Build pins it.
     name: Release install (sdist)
     needs: [Versioning, Build]
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER_X64 != '' && (vars.CI_RUNNER_EVENTS == '' || contains(format(',{0},', vars.CI_RUNNER_EVENTS), format(',{0},', github.event_name))) && vars.CI_RUNNER_X64 || 'ubuntu-latest' }}
     timeout-minutes: 15
     steps:
       - name: Checkout the version commit

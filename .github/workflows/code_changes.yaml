@@ -36,7 +36,7 @@ jobs:
     # publishes. Version commits only trigger this workflow when the GitHub
     # App pushes them (see versioning.yaml); skip them.
     if: github.event.head_commit.message != 'Update package version'
-    runs-on: ubuntu-24.04-arm
+    runs-on: ${{ vars.CI_RUNNER_ARM != '' && (vars.CI_RUNNER_EVENTS == '' || contains(format(',{0},', vars.CI_RUNNER_EVENTS), format(',{0},', github.event_name))) && vars.CI_RUNNER_ARM || 'ubuntu-24.04-arm' }}
     timeout-minutes: 5
     permissions:
       actions: read
@@ -73,7 +73,9 @@ jobs:
   Lint:
     needs: Tested
     if: needs.Tested.outputs.tested != 'true'
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER_X64 != '' && (vars.CI_RUNNER_EVENTS == '' || contains(format(',{0},', vars.CI_RUNNER_EVENTS), format(',{0},', github.event_name))) && vars.CI_RUNNER_X64 || 'ubuntu-latest' }}
+    permissions:
+      contents: read
     timeout-minutes: 10
     steps:
         - uses: actions/checkout@v6
