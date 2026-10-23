@@ -1,0 +1,1 @@
+Updated the capital gains distribution page (docs/book/assumptions/capital-gains-distribution-plan.md) for Microcosm UK becoming the certified default dataset, the default retention-rate elasticity of 1, policyengine-uk-data's donor bands, the 27 August 2026 HMRC release and the Microcosm stage details.
