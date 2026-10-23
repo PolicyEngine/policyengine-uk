@@ -14,7 +14,9 @@ makes working tax credit, IB, SDA, MA, contribution-based JSA and contributory
 ESA non-qualifying income for Savings Credit; IIDB stays qualifying income.
 
 Draws: single people and couples over State Pension age in England, Wales or
-Scotland, renting from the council in 2026, with State Pension, a private
+Scotland (the drawn adults supply is_claimant_or_partner, since the age
+presumption would read a partner 20 or more years younger as the claimant's
+child), renting from the council in 2026, with State Pension, a private
 pension and any of the four benefits (each on a drawn member, at a drawn
 amount). Some families also have a carer receiving Carer's Allowance or, in
 Scotland, Carer Support Payment, so the sources #1952 added are covered
@@ -65,7 +67,7 @@ Invariants:
 """
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -141,6 +143,7 @@ def situation(rows):
             name = f"p{r}_{j}"
             person = {
                 "age": {YEAR: a["age"]},
+                "is_claimant_or_partner": {YEAR: True},
                 "state_pension": {YEAR: a["state_pension"]},
                 # All private pension goes to the first adult.
                 "private_pension_income": {YEAR: float(pension) * (j == 0)},
@@ -229,8 +232,24 @@ def test_pension_credit_and_housing_benefit_assess_the_same_prescribed_benefits(
     )
 
 
+# A couple 23 years apart, the IIDB on the younger partner: their benefit is
+# the couple's income.
+WIDE_GAP_COUPLE = dict(
+    adults=[dict(age=90, state_pension=4_000.0), dict(age=67, state_pension=4_000.0)],
+    benefits={benefit: (1, 0.0) for benefit in PRESCRIBED_BENEFITS}
+    | {"iidb": (1, 2_000.0)},
+    carer=None,
+    by_hours=False,
+    country="ENGLAND",
+    rent=6_000.0,
+    council_tax=1_500.0,
+    savings=0.0,
+)
+
+
 @PROPERTY_SETTINGS
 @given(st.lists(family(state_pension=8_000), min_size=1, max_size=4))
+@example([WIDE_GAP_COUPLE])
 def test_guarantee_credit_falls_pound_for_pound_with_each_prescribed_benefit(
     families,
 ):

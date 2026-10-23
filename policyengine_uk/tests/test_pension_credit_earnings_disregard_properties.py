@@ -110,6 +110,10 @@ def simulate(case):
         name: {k: {str(YEAR): v} for k, v in person.items()}
         for name, person in people.items()
     }
+    # The claimant and partner say so: the age presumption would read a
+    # partner 20 or more years younger (85 and 64) as the claimant's child.
+    for name, person in dated.items():
+        person["is_claimant_or_partner"] = {str(YEAR): name != "child"}
     return Simulation(
         situation={
             "people": dated,

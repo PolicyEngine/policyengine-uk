@@ -96,6 +96,9 @@ def situation(units, afcs=None, afip=None):
                     values["armed_forces_independence_payment"] = afip(
                         name, values["armed_forces_independence_payment"]
                     )
+                # The adults are the claimant and partner, however far apart
+                # their ages (25 and 60 are drawn); dependants are neither.
+                values["is_claimant_or_partner"] = role == "a"
                 if role == "a":
                     values["is_parent"] = bool(unit["dependants"])
                 elif values["age"] >= 16:
