@@ -131,7 +131,8 @@
     pension_age_severe_disability_premium: [0, 0]
     # The resident pays the inherited non-worker flat deduction: 1,060.80.
     housing_benefit: [2_837.90, 0]
-    council_tax_benefit: [1_279.60, 0]
+    # CTR also retains the flat non-worker deduction pending #2007.
+    council_tax_benefit: [218.80, 0]
 
 - name: An 18-year-old of another family blocks HB and CTR although Pension Credit ignores him
   # The daughter is ignored under para 6(6)(a); her son is not part of
@@ -176,7 +177,8 @@
     # The existing per-person rule deducts 1,060.80 for each of the two
     # non-working residents; claimant exemptions remain for #2007.
     housing_benefit: [1_186.60, 0]
-    council_tax_benefit: [1_097.91, 0]
+    # Two flat CTR deductions exhaust the remaining award.
+    council_tax_benefit: [0, 0]
 
 - name: A qualifying-benefit resident in another benefit unit can still be the pensioner's paid carer
   # The carer's disability benefit exempts her from the residence test;

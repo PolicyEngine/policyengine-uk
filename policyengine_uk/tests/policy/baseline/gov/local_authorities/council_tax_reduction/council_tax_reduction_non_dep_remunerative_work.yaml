@@ -10,7 +10,7 @@
   period: 2026
   absolute_error_margin: 0.01
   input:
-    age: 30
+    age: [30, 30, 30, 30]
     country: ENGLAND
     council_tax_reduction_individual_non_dep_deduction_eligible: true
     # No work, 15 hours, 16 hours, and 37.5 hours each week.
@@ -30,7 +30,7 @@
   period: 2026
   absolute_error_margin: 0.01
   input:
-    age: 30
+    age: [30, 30, 30, 30]
     country: ENGLAND
     council_tax_reduction_individual_non_dep_deduction_eligible: true
     # No work, 15 hours, 16 hours, and 37.5 hours each week.
@@ -50,7 +50,7 @@
   period: 2026
   absolute_error_margin: 0.01
   input:
-    age: 30
+    age: [30, 30, 30, 30]
     country: SCOTLAND
     council_tax_reduction_individual_non_dep_deduction_eligible: true
     # No work, 15 hours, 16 hours, and 37.5 hours each week.
@@ -70,7 +70,7 @@
   period: 2026
   absolute_error_margin: 0.01
   input:
-    age: 30
+    age: [30, 30, 30, 30]
     country: SCOTLAND
     council_tax_reduction_individual_non_dep_deduction_eligible: true
     # No work, 15 hours, 16 hours, and 37.5 hours each week.
@@ -90,7 +90,7 @@
   period: 2026
   absolute_error_margin: 0.01
   input:
-    age: 30
+    age: [30, 30, 30, 30]
     country: WALES
     council_tax_reduction_individual_non_dep_deduction_eligible: true
     # No work, 15 hours, 16 hours, and 37.5 hours each week.
@@ -110,7 +110,7 @@
   period: 2026
   absolute_error_margin: 0.01
   input:
-    age: 30
+    age: [30, 30, 30, 30]
     country: WALES
     council_tax_reduction_individual_non_dep_deduction_eligible: true
     # No work, 15 hours, 16 hours, and 37.5 hours each week.
@@ -130,7 +130,7 @@
   period: 2026
   absolute_error_margin: 0.01
   input:
-    age: 70
+    age: [70, 70]
     council_tax_reduction_individual_non_dep_deduction_eligible: true
     hours_worked: 0
     private_pension_income: [28_912, 0]
@@ -145,7 +145,7 @@
   period: 2026
   absolute_error_margin: 0.01
   input:
-    age: 30
+    age: [30, 30, 30, 30]
     council_tax_reduction_individual_non_dep_deduction_eligible: true
     hours_worked: 832
     employment_income: 9_000
@@ -162,7 +162,7 @@
   absolute_error_margin: 0.01
   input:
     gov.local_authorities.england.council_tax_reduction.pensioners.non_dep_deduction.remunerative_work_hours: 20
-    age: 30
+    age: [30, 30]
     country: ENGLAND
     council_tax_reduction_individual_non_dep_deduction_eligible: true
     hours_worked: [832, 1_040]
@@ -180,7 +180,7 @@
   absolute_error_margin: 0.01
   input:
     gov.local_authorities.scotland.council_tax_reduction.non_dep_deduction.remunerative_work_hours: 20
-    age: 30
+    age: [30, 30]
     country: SCOTLAND
     council_tax_reduction_individual_non_dep_deduction_eligible: true
     hours_worked: [832, 1_040]
@@ -198,7 +198,7 @@
   absolute_error_margin: 0.01
   input:
     gov.local_authorities.wales.council_tax_reduction.non_dep_deduction.remunerative_work_hours: 20
-    age: 30
+    age: [30, 30]
     country: WALES
     council_tax_reduction_individual_non_dep_deduction_eligible: true
     hours_worked: [832, 1_040]

@@ -8,7 +8,7 @@
   period: 2026
   absolute_error_margin: 0.01
   input:
-    age: 30
+    age: [30, 30, 30, 30]
     country: ENGLAND
     housing_benefit_individual_non_dep_deduction_eligible: true
     # No work, 15 hours, 16 hours, and 37.5 hours each week.
@@ -28,7 +28,7 @@
   period: 2026
   absolute_error_margin: 0.01
   input:
-    age: 30
+    age: [30, 30, 30, 30]
     country: ENGLAND
     housing_benefit_individual_non_dep_deduction_eligible: true
     # No work, 15 hours, 16 hours, and 37.5 hours each week.
@@ -48,7 +48,7 @@
   period: 2026
   absolute_error_margin: 0.01
   input:
-    age: 70
+    age: [70, 70]
     housing_benefit_individual_non_dep_deduction_eligible: true
     hours_worked: 0
     private_pension_income: [28_912, 0]
@@ -63,7 +63,7 @@
   period: 2026
   absolute_error_margin: 0.01
   input:
-    age: 30
+    age: [30, 30, 30, 30]
     housing_benefit_individual_non_dep_deduction_eligible: true
     hours_worked: 832
     employment_income: 9_000
@@ -80,7 +80,7 @@
   absolute_error_margin: 0.01
   input:
     gov.dwp.housing_benefit.non_dep_deduction.remunerative_work_hours: 20
-    age: 30
+    age: [30, 30]
     country: ENGLAND
     housing_benefit_individual_non_dep_deduction_eligible: true
     hours_worked: [832, 1_040]
