@@ -61,6 +61,13 @@ def gambling_simulation(year, changes, inputs):
             "machine_games_duty",
             18_250,
         ),
+        (
+            2026,
+            "lottery.rate",
+            {"national_lottery_ticket_spending": 36_500},
+            "lottery_duty",
+            18_250,
+        ),
     ],
 )
 def test_annual_gambling_reform_replaces_the_whole_fiscal_year(
@@ -71,6 +78,37 @@ def test_annual_gambling_reform_replaces_the_whole_fiscal_year(
         year, {f"gov.hmrc.gambling_duty.{path}": {str(year): 0.5}}, inputs
     )
     assert sim.calculate(variable, year).values[0] == pytest.approx(expected)
+
+
+@pytest.mark.parametrize(
+    "path,value,inputs,variable,expected",
+    [
+        (
+            "lottery.rate",
+            0.2,
+            {"national_lottery_ticket_spending": 1_000},
+            "lottery_duty",
+            1_000 * (270 * 0.12 + 95 * 0.2) / 365,  # 140.82, not 120.
+        ),
+        (
+            "remote_gaming.rate",
+            0.5,
+            {"remote_gaming_net_losses": 10_000},
+            "remote_gaming_duty",
+            10_000 * (270 * 0.4 + 95 * 0.5) / 365,  # 4,260.27.
+        ),
+    ],
+)
+def test_dated_reform_within_the_fiscal_year_splits_by_day(
+    path, value, inputs, variable, expected
+):
+    """A reform from 1 January to 5 April 2027 covers 95 of FY2026's 365 days."""
+    sim = gambling_simulation(
+        2026,
+        {f"gov.hmrc.gambling_duty.{path}": {"2027-01-01.2027-04-05": value}},
+        inputs,
+    )
+    assert sim.calculate(variable, 2026).values[0] == pytest.approx(expected, abs=0.01)
 
 
 def test_explicit_date_reform_keeps_its_dates_and_adjacent_fiscal_year():
