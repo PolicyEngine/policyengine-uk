@@ -1,0 +1,1499 @@
+- name: ENGLAND pension regime false no qualifying award
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: ENGLAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 0
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: false
+    eldest_claimant_or_partner_age: 40
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 0 * 52
+    housing_benefit_applicable_amount: 5068.599999999999
+
+- name: ENGLAND pension regime false generic disability only
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: ENGLAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: true
+    is_blind: false
+    dla_sc: 0
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: false
+    eldest_claimant_or_partner_age: 40
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 0 * 52
+    housing_benefit_applicable_amount: 5068.599999999999
+
+- name: ENGLAND pension regime false DLA mobility only
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: ENGLAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 0
+    dla_m: 100
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: false
+    eldest_claimant_or_partner_age: 40
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 84.46 * 52
+    housing_benefit_applicable_amount: 9460.52
+
+- name: ENGLAND pension regime false DLA care middle
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: ENGLAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 100
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: false
+    eldest_claimant_or_partner_age: 40
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 84.46 * 52
+    housing_benefit_applicable_amount: 9460.52
+
+- name: ENGLAND pension regime false highest DLA care
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: ENGLAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 100
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: true
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: false
+    eldest_claimant_or_partner_age: 40
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 118.45 * 52
+    housing_benefit_applicable_amount: 11228
+
+- name: ENGLAND pension regime false highest category without receipt
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: ENGLAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 0
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: true
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: false
+    eldest_claimant_or_partner_age: 40
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 0 * 52
+    housing_benefit_applicable_amount: 5068.599999999999
+
+- name: ENGLAND pension regime false PIP mobility only
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: ENGLAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 0
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 100
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: false
+    eldest_claimant_or_partner_age: 40
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 84.46 * 52
+    housing_benefit_applicable_amount: 9460.52
+
+- name: ENGLAND pension regime false PIP daily standard
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: ENGLAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 0
+    dla_m: 0
+    pip_dl: 100
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: false
+    eldest_claimant_or_partner_age: 40
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 84.46 * 52
+    housing_benefit_applicable_amount: 9460.52
+
+- name: ENGLAND pension regime false PIP daily enhanced
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: ENGLAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 0
+    dla_m: 0
+    pip_dl: 100
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: true
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: false
+    eldest_claimant_or_partner_age: 40
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 118.45 * 52
+    housing_benefit_applicable_amount: 11228
+
+- name: ENGLAND pension regime false AFIP
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: ENGLAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 0
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 100
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: false
+    eldest_claimant_or_partner_age: 40
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 118.45 * 52
+    housing_benefit_applicable_amount: 11228
+
+- name: ENGLAND pension regime false blindness
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: ENGLAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: true
+    dla_sc: 0
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: false
+    eldest_claimant_or_partner_age: 40
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 84.46 * 52
+    housing_benefit_applicable_amount: 9460.52
+
+- name: ENGLAND pension regime false adult claimant not a child
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: ENGLAND
+    age: 40
+    is_child_or_young_person_for_legacy_benefits: false
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 100
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: true
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: false
+    eldest_claimant_or_partner_age: 40
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 0 * 52
+    housing_benefit_applicable_amount: 5068.599999999999
+
+- name: ENGLAND pension regime true no qualifying award
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: ENGLAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 0
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 75
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 0 * 52
+    housing_benefit_applicable_amount: 13412
+
+- name: ENGLAND pension regime true generic disability only
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: ENGLAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: true
+    is_blind: false
+    dla_sc: 0
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 75
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 0 * 52
+    housing_benefit_applicable_amount: 13412
+
+- name: ENGLAND pension regime true DLA mobility only
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: ENGLAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 0
+    dla_m: 100
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 75
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 84.46 * 52
+    housing_benefit_applicable_amount: 17803.92
+
+- name: ENGLAND pension regime true DLA care middle
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: ENGLAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 100
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 75
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 84.46 * 52
+    housing_benefit_applicable_amount: 17803.92
+
+- name: ENGLAND pension regime true highest DLA care
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: ENGLAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 100
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: true
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 75
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 118.45 * 52
+    housing_benefit_applicable_amount: 19571.399999999998
+
+- name: ENGLAND pension regime true highest category without receipt
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: ENGLAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 0
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: true
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 75
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 0 * 52
+    housing_benefit_applicable_amount: 13412
+
+- name: ENGLAND pension regime true PIP mobility only
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: ENGLAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 0
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 100
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 75
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 84.46 * 52
+    housing_benefit_applicable_amount: 17803.92
+
+- name: ENGLAND pension regime true PIP daily standard
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: ENGLAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 0
+    dla_m: 0
+    pip_dl: 100
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 75
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 84.46 * 52
+    housing_benefit_applicable_amount: 17803.92
+
+- name: ENGLAND pension regime true PIP daily enhanced
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: ENGLAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 0
+    dla_m: 0
+    pip_dl: 100
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: true
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 75
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 118.45 * 52
+    housing_benefit_applicable_amount: 19571.399999999998
+
+- name: ENGLAND pension regime true AFIP
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: ENGLAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 0
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 100
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 75
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 118.45 * 52
+    housing_benefit_applicable_amount: 19571.399999999998
+
+- name: ENGLAND pension regime true blindness
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: ENGLAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: true
+    dla_sc: 0
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 75
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 84.46 * 52
+    housing_benefit_applicable_amount: 17803.92
+
+- name: ENGLAND pension regime true adult claimant not a child
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: ENGLAND
+    age: 40
+    is_child_or_young_person_for_legacy_benefits: false
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 100
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: true
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 75
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 0 * 52
+    housing_benefit_applicable_amount: 13412
+
+- name: NORTHERN_IRELAND pension regime false no qualifying award
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: NORTHERN_IRELAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 0
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: false
+    eldest_claimant_or_partner_age: 40
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 0 * 52
+    housing_benefit_applicable_amount: 5068.599999999999
+
+- name: NORTHERN_IRELAND pension regime false generic disability only
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: NORTHERN_IRELAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: true
+    is_blind: false
+    dla_sc: 0
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: false
+    eldest_claimant_or_partner_age: 40
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 0 * 52
+    housing_benefit_applicable_amount: 5068.599999999999
+
+- name: NORTHERN_IRELAND pension regime false DLA mobility only
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: NORTHERN_IRELAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 0
+    dla_m: 100
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: false
+    eldest_claimant_or_partner_age: 40
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 84.46 * 52
+    housing_benefit_applicable_amount: 9460.52
+
+- name: NORTHERN_IRELAND pension regime false DLA care middle
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: NORTHERN_IRELAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 100
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: false
+    eldest_claimant_or_partner_age: 40
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 84.46 * 52
+    housing_benefit_applicable_amount: 9460.52
+
+- name: NORTHERN_IRELAND pension regime false highest DLA care
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: NORTHERN_IRELAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 100
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: true
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: false
+    eldest_claimant_or_partner_age: 40
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 118.45 * 52
+    housing_benefit_applicable_amount: 11228
+
+- name: NORTHERN_IRELAND pension regime false highest category without receipt
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: NORTHERN_IRELAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 0
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: true
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: false
+    eldest_claimant_or_partner_age: 40
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 0 * 52
+    housing_benefit_applicable_amount: 5068.599999999999
+
+- name: NORTHERN_IRELAND pension regime false PIP mobility only
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: NORTHERN_IRELAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 0
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 100
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: false
+    eldest_claimant_or_partner_age: 40
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 84.46 * 52
+    housing_benefit_applicable_amount: 9460.52
+
+- name: NORTHERN_IRELAND pension regime false PIP daily standard
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: NORTHERN_IRELAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 0
+    dla_m: 0
+    pip_dl: 100
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: false
+    eldest_claimant_or_partner_age: 40
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 84.46 * 52
+    housing_benefit_applicable_amount: 9460.52
+
+- name: NORTHERN_IRELAND pension regime false PIP daily enhanced
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: NORTHERN_IRELAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 0
+    dla_m: 0
+    pip_dl: 100
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: true
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: false
+    eldest_claimant_or_partner_age: 40
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 118.45 * 52
+    housing_benefit_applicable_amount: 11228
+
+- name: NORTHERN_IRELAND pension regime false AFIP
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: NORTHERN_IRELAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 0
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 100
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: false
+    eldest_claimant_or_partner_age: 40
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 118.45 * 52
+    housing_benefit_applicable_amount: 11228
+
+- name: NORTHERN_IRELAND pension regime false blindness
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: NORTHERN_IRELAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: true
+    dla_sc: 0
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: false
+    eldest_claimant_or_partner_age: 40
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 84.46 * 52
+    housing_benefit_applicable_amount: 9460.52
+
+- name: NORTHERN_IRELAND pension regime false adult claimant not a child
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: NORTHERN_IRELAND
+    age: 40
+    is_child_or_young_person_for_legacy_benefits: false
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 100
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: true
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: false
+    eldest_claimant_or_partner_age: 40
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 0 * 52
+    housing_benefit_applicable_amount: 5068.599999999999
+
+- name: NORTHERN_IRELAND pension regime true no qualifying award
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: NORTHERN_IRELAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 0
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 75
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 0 * 52
+    housing_benefit_applicable_amount: 13412
+
+- name: NORTHERN_IRELAND pension regime true generic disability only
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: NORTHERN_IRELAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: true
+    is_blind: false
+    dla_sc: 0
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 75
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 0 * 52
+    housing_benefit_applicable_amount: 13412
+
+- name: NORTHERN_IRELAND pension regime true DLA mobility only
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: NORTHERN_IRELAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 0
+    dla_m: 100
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 75
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 84.46 * 52
+    housing_benefit_applicable_amount: 17803.92
+
+- name: NORTHERN_IRELAND pension regime true DLA care middle
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: NORTHERN_IRELAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 100
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 75
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 84.46 * 52
+    housing_benefit_applicable_amount: 17803.92
+
+- name: NORTHERN_IRELAND pension regime true highest DLA care
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: NORTHERN_IRELAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 100
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: true
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 75
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 118.45 * 52
+    housing_benefit_applicable_amount: 19571.399999999998
+
+- name: NORTHERN_IRELAND pension regime true highest category without receipt
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: NORTHERN_IRELAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 0
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: true
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 75
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 0 * 52
+    housing_benefit_applicable_amount: 13412
+
+- name: NORTHERN_IRELAND pension regime true PIP mobility only
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: NORTHERN_IRELAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 0
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 100
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 75
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 84.46 * 52
+    housing_benefit_applicable_amount: 17803.92
+
+- name: NORTHERN_IRELAND pension regime true PIP daily standard
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: NORTHERN_IRELAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 0
+    dla_m: 0
+    pip_dl: 100
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 75
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 84.46 * 52
+    housing_benefit_applicable_amount: 17803.92
+
+- name: NORTHERN_IRELAND pension regime true PIP daily enhanced
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: NORTHERN_IRELAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 0
+    dla_m: 0
+    pip_dl: 100
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: true
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 75
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 118.45 * 52
+    housing_benefit_applicable_amount: 19571.399999999998
+
+- name: NORTHERN_IRELAND pension regime true AFIP
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: NORTHERN_IRELAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 0
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 100
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 75
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 118.45 * 52
+    housing_benefit_applicable_amount: 19571.399999999998
+
+- name: NORTHERN_IRELAND pension regime true blindness
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: NORTHERN_IRELAND
+    age: 17
+    is_child_or_young_person_for_legacy_benefits: true
+    is_disabled_for_benefits: false
+    is_blind: true
+    dla_sc: 0
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: false
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 75
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 84.46 * 52
+    housing_benefit_applicable_amount: 17803.92
+
+- name: NORTHERN_IRELAND pension regime true adult claimant not a child
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: NORTHERN_IRELAND
+    age: 40
+    is_child_or_young_person_for_legacy_benefits: false
+    is_disabled_for_benefits: false
+    is_blind: false
+    dla_sc: 100
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    receives_highest_dla_sc: true
+    receives_enhanced_pip_dl: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 75
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 100
+  output:
+    housing_benefit_child_disability_premiums: 0 * 52
+    housing_benefit_applicable_amount: 13412
+
+- name: Published child premium rates 2015
+  period: 2015
+  absolute_error_margin: 0.02
+  input:
+    is_child_or_young_person_for_legacy_benefits: true
+    dla_sc: 100
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    is_blind: false
+    receives_highest_dla_sc: true
+    receives_enhanced_pip_dl: false
+  output:
+    housing_benefit_child_disability_premiums: 84.49000000000001 * 52
+
+- name: Published child premium rates 2017
+  period: 2017
+  absolute_error_margin: 0.02
+  input:
+    is_child_or_young_person_for_legacy_benefits: true
+    dla_sc: 100
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    is_blind: false
+    receives_highest_dla_sc: true
+    receives_enhanced_pip_dl: false
+  output:
+    housing_benefit_child_disability_premiums: 85.68 * 52
+
+- name: Published child premium rates 2018
+  period: 2018
+  absolute_error_margin: 0.02
+  input:
+    is_child_or_young_person_for_legacy_benefits: true
+    dla_sc: 100
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    is_blind: false
+    receives_highest_dla_sc: true
+    receives_enhanced_pip_dl: false
+  output:
+    housing_benefit_child_disability_premiums: 88.34 * 52
+
+- name: Published child premium rates 2019
+  period: 2019
+  absolute_error_margin: 0.02
+  input:
+    is_child_or_young_person_for_legacy_benefits: true
+    dla_sc: 100
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    is_blind: false
+    receives_highest_dla_sc: true
+    receives_enhanced_pip_dl: false
+  output:
+    housing_benefit_child_disability_premiums: 90.22999999999999 * 52
+
+- name: Published child premium rates 2020
+  period: 2020
+  absolute_error_margin: 0.02
+  input:
+    is_child_or_young_person_for_legacy_benefits: true
+    dla_sc: 100
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    is_blind: false
+    receives_highest_dla_sc: true
+    receives_enhanced_pip_dl: false
+  output:
+    housing_benefit_child_disability_premiums: 92.12 * 52
+
+- name: Published child premium rates 2021
+  period: 2021
+  absolute_error_margin: 0.02
+  input:
+    is_child_or_young_person_for_legacy_benefits: true
+    dla_sc: 100
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    is_blind: false
+    receives_highest_dla_sc: true
+    receives_enhanced_pip_dl: false
+  output:
+    housing_benefit_child_disability_premiums: 92.61 * 52
+
+- name: Published child premium rates 2022
+  period: 2022
+  absolute_error_margin: 0.02
+  input:
+    is_child_or_young_person_for_legacy_benefits: true
+    dla_sc: 100
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    is_blind: false
+    receives_highest_dla_sc: true
+    receives_enhanced_pip_dl: false
+  output:
+    housing_benefit_child_disability_premiums: 95.48 * 52
+
+- name: Published child premium rates 2023
+  period: 2023
+  absolute_error_margin: 0.02
+  input:
+    is_child_or_young_person_for_legacy_benefits: true
+    dla_sc: 100
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    is_blind: false
+    receives_highest_dla_sc: true
+    receives_enhanced_pip_dl: false
+  output:
+    housing_benefit_child_disability_premiums: 104.86 * 52
+
+- name: Published child premium rates 2024
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    is_child_or_young_person_for_legacy_benefits: true
+    dla_sc: 100
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    is_blind: false
+    receives_highest_dla_sc: true
+    receives_enhanced_pip_dl: false
+  output:
+    housing_benefit_child_disability_premiums: 112.21000000000001 * 52
+
+- name: Published child premium rates 2025
+  period: 2025
+  absolute_error_margin: 0.02
+  input:
+    is_child_or_young_person_for_legacy_benefits: true
+    dla_sc: 100
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    is_blind: false
+    receives_highest_dla_sc: true
+    receives_enhanced_pip_dl: false
+  output:
+    housing_benefit_child_disability_premiums: 114.12 * 52
+
+- name: Published child premium rates 2026
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    is_child_or_young_person_for_legacy_benefits: true
+    dla_sc: 100
+    dla_m: 0
+    pip_dl: 0
+    pip_m: 0
+    armed_forces_independence_payment: 0
+    is_blind: false
+    receives_highest_dla_sc: true
+    receives_enhanced_pip_dl: false
+  output:
+    housing_benefit_child_disability_premiums: 118.44999999999999 * 52
+
+- name: Child premiums apply to every qualifying child and respect parameter reforms
+  period: 2026
+  input:
+    gov.dwp.housing_benefit.premiums.disabled_child: 10
+    gov.dwp.housing_benefit.premiums.enhanced_disabled_child: 0
+    people:
+      parent:
+        age: 40
+        is_claimant_or_partner: true
+        is_blind: true
+      child1:
+        age: 8
+        is_blind: true
+      child2:
+        age: 10
+        is_blind: true
+      child3:
+        age: 12
+        is_blind: true
+      non_dependant:
+        age: 30
+        is_blind: true
+    benunits:
+      family:
+        members: [parent, child1, child2, child3, non_dependant]
+  output:
+    housing_benefit_child_disability_premiums: 30 * 52
