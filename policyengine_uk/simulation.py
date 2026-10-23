@@ -629,6 +629,13 @@ class Simulation(CoreSimulation):
         """
         return has_isa_interest_detail_input(self, period)
 
+    def _isa_stored_exemption(self, period):
+        # Core can store a rolling year or a longer YEAR input as given. The
+        # latter carries its whole amount into a queried year; it is not a
+        # sum of calendar-year flows. Use the same first definition-year
+        # anchor when translating that stored amount in either direction.
+        return self.calculate(TAX_FREE_INTEREST, period_(period).start.period("year"))
+
     def _run_formula(self, variable, population, period):
         result = super()._run_formula(variable, population, period)
         if (
@@ -653,6 +660,10 @@ class Simulation(CoreSimulation):
 
             history().record_derived(variable.name, next_sequence_number())
         source = self._isa_latest_input(variable.name, period, earlier=True)
+        if source is None:
+            # Core first uprates strictly earlier annual inputs, then carries
+            # an input starting on the query date if there was none earlier.
+            source = self._isa_latest_input(variable.name, period)
         holder = self.get_holder(variable.name)
         if source is None:
             gross = holder.default_array()
@@ -662,7 +673,7 @@ class Simulation(CoreSimulation):
                 simulation_contract(self, source.start.year)["representation"]
                 == "additive"
             ):
-                gross = gross + self.calculate(TAX_FREE_INTEREST, source)
+                gross = gross + self._isa_stored_exemption(source)
             if variable.uprating is not None:
                 index = self.tax_benefit_system.parameters.get_child(variable.uprating)
                 source_index = _uprating_index_value(index, source.start)
@@ -1138,9 +1149,25 @@ class Simulation(CoreSimulation):
             if variable == SAVINGS_INTEREST:
                 continue
             self.set_input(variable, time_period, values)
-        # Finish the other supplied components before translating a legacy
-        # nonannual savings override. Preserve its original within-variable
-        # ordering, as the DataFrame replay contract requires.
+
+        # Replay savings in the incoming entry's representation. Core decides
+        # which annual slots a month/span stores and what remains after prior
+        # entries. Never subtract an exemption from the requested month or
+        # mix a prior ordinary input into a gross residual calculation.
+        def translate_stored_savings(to_gross):
+            holder = self.get_holder(SAVINGS_INTEREST)
+            translated = [
+                (
+                    stored,
+                    np.array(holder.get_array(stored, self.branch_name))
+                    + (1 if to_gross else -1) * self._isa_stored_exemption(stored),
+                )
+                for stored in holder.get_input_periods(self.branch_name)
+            ]
+            for stored, amount in translated:
+                self.set_input(SAVINGS_INTEREST, stored, amount)
+
+        gross_mode = None
         for variable, time_period, values in replayed:
             if variable != SAVINGS_INTEREST:
                 continue
@@ -1148,11 +1175,13 @@ class Simulation(CoreSimulation):
             contract = contracts_for_years(
                 df.attrs.get(ISA_INCOME_CONTRACT_KEY, MISSING_CONTRACT), [year]
             )[year]
-            if contract["representation"] == "legacy_gross":
-                values = np.asarray(values) - self.calculate(
-                    TAX_FREE_INTEREST, time_period
-                )
+            incoming_gross = contract["representation"] == "legacy_gross"
+            if gross_mode is not None and gross_mode != incoming_gross:
+                translate_stored_savings(to_gross=incoming_gross)
             self.set_input(variable, time_period, values)
+            gross_mode = incoming_gross
+        if gross_mode:
+            translate_stored_savings(to_gross=False)
 
     def to_input_dataframe(
         self, include_computed_variables: bool = False
