@@ -17,7 +17,8 @@ requirements.
 
 ## Required Changelog Fragment
 
-Every PR must include a Towncrier changelog fragment under `changelog.d/`.
+Every PR must include a Towncrier changelog fragment under `changelog.d/`,
+except for a dependency-only update as defined below.
 
 Use a stable issue number or branch slug before the configured Towncrier type:
 
@@ -51,9 +52,20 @@ in `changelog.d/` that is not named `<slug>.<type>.md`, is empty, is not UTF-8,
 is a symbolic link, sits in a subdirectory, or shares towncrier's key with
 another fragment (such as `7.fixed.md` and `007.fixed.md`, which stops the
 release). It also fails a PR that changes `pyproject.toml` or `changelog.d/`
-when its merge would leave no typed fragment: those changes start the release
-workflow, which would have nothing to release. It warns when a PR adds no
-fragment or a fragment starts with a list marker.
+when its merge would leave no typed fragment, except for dependency-only
+updates. It warns when a PR adds no fragment or a fragment starts with a list
+marker.
+
+A dependency-only update may omit a fragment when its entire diff changes only
+`uv.lock` and/or dependency declarations in `pyproject.toml`: `project.dependencies`,
+`project.optional-dependencies`, `build-system.requires` or `dependency-groups`.
+Every other parsed TOML value must stay the same, and a manifest edit must change
+an actual dependency value. Deletions, renames, file mode/type changes, mixed code
+changes and version/build-backend/Towncrier changes do not qualify. The check
+uses the same semantic diff for every author and for merge queue groups, without
+skipping validation of any added fragment. When no typed fragments remain,
+`prepare_release.py` safely skips versioning; dependency updates do not cause an
+empty release.
 
 Write the fragment as a short sentence describing the user-visible or
 maintainer-visible change. towncrier adds the bullet itself, so do not start

@@ -6,7 +6,9 @@
 # adds or changes such a file, or an empty fragment
 # (.github/check_changelog_fragments.py). It has no path filter, so it
 # reports on every pull request and can be a required check. It also runs for
-# merge queue groups, so a queue never waits on it.
+# merge queue groups, so a queue never waits on it. Dependency-only updates
+# are recognized by the checker's full semantic diff on both event types;
+# the job still validates every added/changed fragment, including bot PRs.
 
 name: Changelog
 on:

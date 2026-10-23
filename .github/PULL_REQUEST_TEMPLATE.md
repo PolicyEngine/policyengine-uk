@@ -6,7 +6,7 @@ Fixes #
 
 - [ ] For policy changes: YAML tests whose expected values come from an external source (legislation, official guidance, official calculator); otherwise mark not applicable.
 - [ ] `make format`
-- [ ] Changelog fragment `changelog.d/<slug>.<type>.md` (see docs/engineering/skills/github-prs.md)
+- [ ] Changelog fragment `changelog.d/<slug>.<type>.md` or dependency-only exception (see docs/engineering/skills/github-prs.md)
 
 ## Reproducer
 

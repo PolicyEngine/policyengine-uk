@@ -742,6 +742,211 @@ def test_starting_a_release_with_nothing_to_release_fails(repo):
     assert "pyproject.toml" in error and "changelog.d/" in error
 
 
+@pytest.fixture
+def released_dependency_repo(repo):
+    """A release consumed the last typed fragment before this PR began."""
+    project = (
+        PYPROJECT
+        + '\n[dependency-groups]\naudit = ["packaging>=24"]\n'
+        + "\n[tool.dependency-regression]\nsetting = 1\n"
+    )
+    commit(
+        repo,
+        files={"pyproject.toml": project, "uv.lock": "version = 1\n"},
+        delete=["changelog.d/kept.fixed.md"],
+    )
+    return repo
+
+
+def dependency_manifest(repo, field="runtime"):
+    """Change one real dependency declaration without rewriting other TOML."""
+    before, after = {
+        "runtime": ('"pydantic>=2.11.7"', '"pydantic>=2.11.8"'),
+        "optional": ('"coverage"', '"coverage>=7"'),
+        "build": ('requires = ["hatchling"]', 'requires = ["hatchling>=1.28"]'),
+        "group": ('"packaging>=24"', '"packaging>=25"'),
+    }[field]
+    project = (repo / "pyproject.toml").read_text()
+    assert project.count(before) == 1
+    return project.replace(before, after)
+
+
+@pytest.mark.parametrize(
+    "change",
+    ["runtime", "optional", "build", "group", "runtime-new-lock", "lock", "new-lock"],
+)
+def test_dependency_only_updates_pass_after_a_release(released_dependency_repo, change):
+    repo = released_dependency_repo
+    if change in {"runtime-new-lock", "new-lock"}:
+        # The independent review's reproducer adds a previously absent lockfile.
+        commit(repo, delete=["uv.lock"])
+    files = {}
+    if change in {"runtime", "optional", "build", "group", "runtime-new-lock"}:
+        field = "runtime" if change == "runtime-new-lock" else change
+        files["pyproject.toml"] = dependency_manifest(repo, field)
+    if change in {"runtime-new-lock", "lock", "new-lock"}:
+        files["uv.lock"] = "version = 1\nrevision = 2\n"
+    base, head = commit(repo, files=files)
+
+    assert not check.dependency_only_change(repo, base, base)
+    assert check.dependency_only_change(repo, base, head)
+    code, found = run_check(repo, base, head)
+
+    assert code == 0
+    assert found["error"] == set()
+    assert not any(line.startswith("::error") for line in found["unlocated"])
+    assert any("Dependency-only change" in line for line in found["unlocated"])
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        "comments-and-lock",
+        "version",
+        "build-backend",
+        "towncrier",
+        "requires-python",
+        "extra-config",
+        "config-type",
+        "source",
+        "workflow",
+        "deleted-lock",
+        "renamed-lock",
+        "deleted-manifest",
+    ],
+)
+def test_other_changes_still_need_a_fragment_after_a_release(
+    released_dependency_repo, change
+):
+    repo = released_dependency_repo
+    project = dependency_manifest(repo)
+    files, delete, moves = {}, [], []
+    if change == "comments-and-lock":
+        project = (
+            repo / "pyproject.toml"
+        ).read_text() + "\n# Dependencies refreshed.\n"
+        files["uv.lock"] = "version = 1\nrevision = 2\n"
+    elif change == "version":
+        version = tomllib.loads(project)["project"]["version"]
+        project = project.replace(f'version = "{version}"', 'version = "999.0.0"')
+    elif change == "build-backend":
+        project = project.replace(
+            'build-backend = "hatchling.build"', 'build-backend = "other.build"'
+        )
+    elif change == "towncrier":
+        project = project.replace('filename = "CHANGELOG.md"', 'filename = "NEWS.md"')
+    elif change == "requires-python":
+        project = project.replace(
+            'requires-python = ">=3.11"', 'requires-python = ">=3.12"'
+        )
+    elif change == "extra-config":
+        project += "\n[tool.new-config]\nenabled = true\n"
+    elif change == "config-type":
+        # Python's equality treats 1 and True as equal; TOML configuration does not.
+        project = project.replace("setting = 1", "setting = true")
+    elif change == "source":
+        files["code.py"] = "x = 2\n"
+    elif change == "workflow":
+        files[".github/workflows/extra.yaml"] = "name: extra\n"
+    elif change == "deleted-lock":
+        delete.append("uv.lock")
+    elif change == "renamed-lock":
+        moves.append(("uv.lock", "uv-renamed.lock"))
+    elif change == "deleted-manifest":
+        delete.append("pyproject.toml")
+    if change != "deleted-manifest":
+        files["pyproject.toml"] = project
+    base, head = commit(repo, files=files, delete=delete, moves=moves)
+
+    assert not check.dependency_only_change(repo, base, head)
+    code, found = run_check(repo, base, head)
+
+    assert code == (2 if change == "deleted-manifest" else 1)
+    assert any(line.startswith("::error") for line in found["unlocated"])
+
+
+@pytest.mark.parametrize(
+    "change",
+    ["manifest-executable", "lock-executable", "was-executable", "lock-symlink"],
+)
+def test_dependency_exception_rejects_mode_and_type_changes(
+    released_dependency_repo, change
+):
+    repo = released_dependency_repo
+    lock = repo / "uv.lock"
+    if change == "was-executable":
+        lock.chmod(0o755)
+        commit(repo)
+        lock.chmod(0o644)
+    elif change == "lock-executable":
+        lock.chmod(0o755)
+    elif change == "manifest-executable":
+        (repo / "pyproject.toml").chmod(0o755)
+    elif change == "lock-symlink":
+        lock.unlink()
+        lock.symlink_to("code.py")
+    base, head = commit(repo, files={"pyproject.toml": dependency_manifest(repo)})
+
+    assert not check.dependency_only_change(repo, base, head)
+    code, found = run_check(repo, base, head)
+
+    assert code == 1
+    assert any(line.startswith("::error") for line in found["unlocated"])
+
+
+def test_dependency_exception_rejects_a_malformed_manifest(released_dependency_repo):
+    repo = released_dependency_repo
+    base, head = commit(
+        repo, files={"pyproject.toml": dependency_manifest(repo) + "\n[broken\n"}
+    )
+
+    assert not check.dependency_only_change(repo, base, head)
+    code, _ = run_check(repo, base, head)
+
+    assert code == 2
+
+
+def test_dependency_update_still_validates_added_fragments(released_dependency_repo):
+    repo = released_dependency_repo
+    base, head = commit(
+        repo,
+        files={
+            "pyproject.toml": dependency_manifest(repo),
+            "changelog.d/dependency.md": "Updated dependencies.\n",
+        },
+    )
+
+    assert not check.dependency_only_change(repo, base, head)
+    code, found = run_check(repo, base, head)
+
+    assert code == 1
+    assert found["error"] == {"changelog.d/dependency.md"}
+    assert "has no towncrier type" in found["text"]["changelog.d/dependency.md"]
+
+
+def test_changelog_checks_every_author_on_pull_requests_and_merge_groups():
+    import yaml
+
+    workflow = yaml.safe_load(
+        (GITHUB_DIR / "workflows" / "pr_changelog.yaml").read_text(encoding="utf-8")
+    )
+    triggers = workflow.get("on", workflow.get(True))
+    assert triggers["pull_request"] == {"branches": ["main"]}
+    assert "merge_group" in triggers
+    job = workflow["jobs"]["Fragments"]
+    assert "if" not in job
+    step = next(
+        step for step in job["steps"] if step["name"] == "Check changelog fragments"
+    )
+    assert "if" not in step
+    assert step["env"]["EVENT"] == "${{ github.event_name }}"
+    assert '"$EVENT" = merge_group' in step["run"]
+    assert (
+        'python .github/check_changelog_fragments.py --base "$base" --head HEAD'
+        in step["run"]
+    )
+
+
 def test_changing_pyproject_with_a_fragment_waiting_only_warns(repo):
     base, head = commit(
         repo, files={"pyproject.toml": PYPROJECT + "\n# A dependency change.\n"}

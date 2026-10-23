@@ -32,11 +32,12 @@ Files towncrier ignores (.gitkeep, README and the configured ``ignore``) are
 not fragments and pass. Every name this accepts is one towncrier consumes,
 with the type the name shows. Deleting a fragment always passes.
 
-A pull request that changes a file the release workflow runs on
-(pyproject.toml or the fragment directory; ``on.push.paths`` in
-.github/workflows/versioning.yaml) also fails when its merge would leave no
-typed fragment: .github/bump_version.py then has nothing to release and
-exits 1.
+A change to a release-triggering file (pyproject.toml or the fragment
+directory) also needs a typed fragment, except for changes limited to
+dependency declarations and uv.lock. This exception uses the complete
+semantic diff, for both pull requests and merge queue groups. Versioning
+safely skips a tree with no typed fragments; it does not create an empty
+release for a dependency update.
 
 It warns, without failing, when the pull request adds no fragment, when a
 fragment starts with a list marker (towncrier adds the bullet, so it renders
@@ -50,6 +51,7 @@ import argparse
 import re
 import subprocess
 import sys
+import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -69,6 +71,12 @@ SYMLINK_MODE = "120000"
 # Files, besides the fragment directory, whose changes start the release
 # workflow: on.push.paths in .github/workflows/versioning.yaml.
 RELEASE_TRIGGER_FILES = ("pyproject.toml",)
+DEPENDENCY_FIELDS = (
+    ("project", "dependencies"),
+    ("project", "optional-dependencies"),
+    ("build-system", "requires"),
+    ("dependency-groups",),
+)
 
 
 @dataclass
@@ -241,6 +249,66 @@ def tree_entries(repo: Path, head: str, directory: str) -> list[tuple[str, str]]
     return entries
 
 
+def same_toml(left, right) -> bool:
+    """Compare parsed values without conflating TOML booleans and numbers."""
+    if type(left) is not type(right):
+        return False
+    if isinstance(left, dict):
+        return left.keys() == right.keys() and all(
+            same_toml(left[key], right[key]) for key in left
+        )
+    if isinstance(left, list):
+        return len(left) == len(right) and all(
+            same_toml(a, b) for a, b in zip(left, right)
+        )
+    return left == right
+
+
+def dependency_only_change(repo: Path, base: str, head: str) -> bool:
+    """Whether the entire change only updates declarations and/or uv.lock.
+
+    Inspect every path, including paths outside the release trigger. A
+    manifest edit must change dependency values, with every other parsed
+    TOML value unchanged. No deletion, rename, type or mode change qualifies.
+    Identity is unnecessary, so this also works on a merge queue's diff.
+    """
+    changed = changes(repo, base, head)
+    if not changed:
+        return False
+    for path, status, mode in changed:
+        if path not in {"pyproject.toml", "uv.lock"} or mode != "100644":
+            return False
+        if status == "A" and path == "uv.lock":
+            continue
+        if status != "M":
+            return False
+        # A chmod still has status M. Both versions must be ordinary,
+        # non-executable files, not merely regular at the head.
+        if git(repo, "ls-tree", base, "--", path).split()[0] != b"100644":
+            return False
+    if not any(path == "pyproject.toml" for path, _, _ in changed):
+        return True
+    try:
+        before, after = (
+            tomllib.loads(git(repo, "show", f"{ref}:pyproject.toml").decode("utf-8"))
+            for ref in (base, head)
+        )
+    except (UnicodeDecodeError, tomllib.TOMLDecodeError):
+        return False
+    if same_toml(before, after):
+        # A comment/formatting-only manifest edit is not a dependency bump.
+        return False
+    for config in (before, after):
+        for *parents, key in DEPENDENCY_FIELDS:
+            table = config
+            for parent in parents:
+                table = table.get(parent, {})
+                if not isinstance(table, dict):
+                    return False
+            table.pop(key, None)
+    return same_toml(before, after)
+
+
 def check(repo: Path, base: str, head: str) -> Report:
     if exists(repo, head, "towncrier.toml"):
         raise ValueError(
@@ -309,7 +377,8 @@ def check(repo: Path, base: str, head: str) -> Report:
         and parse_fragment_name(name, config.types) is not None
         for name, kind in entries
     )
-    if changed and not has_typed_fragment and not report.errors:
+    dependency_only = dependency_only_change(repo, base, head)
+    if changed and not has_typed_fragment and not report.errors and not dependency_only:
         triggers = sorted(
             {
                 path if path in RELEASE_TRIGGER_FILES else f"{directory}/"
@@ -319,11 +388,18 @@ def check(repo: Path, base: str, head: str) -> Report:
         report.errors.append(
             (
                 None,
-                f"This pull request changes {' and '.join(triggers)}, so the "
-                "release workflow (.github/workflows/versioning.yaml) runs when "
-                "it merges, but the merged tree has no changelog fragment with "
-                "a towncrier type. .github/bump_version.py then has nothing to "
-                f"release and exits 1. Add {directory}/<slug>.<type>.md.",
+                f"This pull request changes {' and '.join(triggers)}, but the "
+                "merged tree has no changelog fragment with a towncrier type. "
+                "Only dependency-only changes may omit a release note for "
+                f"these paths. Add {directory}/<slug>.<type>.md.",
+            )
+        )
+    elif dependency_only and not touched_fragment:
+        report.warnings.append(
+            (
+                None,
+                "Dependency-only change: no changelog fragment is required. "
+                "Versioning skips the release when no typed fragments remain.",
             )
         )
     elif not touched_fragment:
