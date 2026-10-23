@@ -610,27 +610,74 @@
   output:
     housing_benefit_applicable_income: 22400
 
-- name: Counted disability benefits remain income under both age regimes
-  # HB Regs 2006 reg 40 and HB (SPC) Regs 2006 reg 29(1)(j):
-  # the reported IIDB, SDA and Incapacity Benefit payments count in full.
-  # Child Benefit and Social Fund grants remain excluded: 1000 + 2000 + 3000.
+- name: Counted disability benefits remain income under the working-age regime
   period: 2025
   input:
-    age: [40, 75]
-    iidb: 1000
-    sda: 2000
-    incapacity_benefit: 3000
-    child_benefit: 1500
-    ssmg: 500
-    income_tax: 0
-    national_insurance: 0
-    pension_contributions: 0
-    housing_benefit_pension_age_regulations_apply: [false, true]
-    in_receipt_of_guarantee_credit: false
-    in_receipt_of_savings_credit_only: false
-    housing_benefit_on_passporting_benefit: false
-    housing_benefit_tariff_income: 0
-    housing_benefit_applicable_income_disregard: 0
-    housing_benefit_applicable_income_childcare_element: 0
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        iidb: 1000
+        sda: 2000
+        incapacity_benefit: 3000
+        ssmg: 500
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+    benunits:
+      family:
+        members: [claimant]
+        child_benefit: 1500
+        income_support: 0
+        esa_income: 0
+        jsa_income: 0
+        tax_credits: 0
+        housing_benefit_pension_age_regulations_apply: false
+        in_receipt_of_guarantee_credit: false
+        in_receipt_of_savings_credit_only: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_tariff_income: 0
+        housing_benefit_applicable_income_disregard: 0
+        housing_benefit_applicable_income_childcare_element: 0
+    households:
+      home:
+        members: [claimant]
+        country: ENGLAND
   output:
-    housing_benefit_applicable_income: [6000, 6000]
+    housing_benefit_applicable_income: 6000
+
+- name: Counted disability benefits remain income under the pension-age regime
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 75
+        is_claimant_or_partner: true
+        iidb: 1000
+        sda: 2000
+        incapacity_benefit: 3000
+        ssmg: 500
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+    benunits:
+      family:
+        members: [claimant]
+        child_benefit: 1500
+        income_support: 0
+        esa_income: 0
+        jsa_income: 0
+        tax_credits: 0
+        housing_benefit_pension_age_regulations_apply: true
+        in_receipt_of_guarantee_credit: false
+        in_receipt_of_savings_credit_only: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_tariff_income: 0
+        housing_benefit_applicable_income_disregard: 0
+        housing_benefit_applicable_income_childcare_element: 0
+    households:
+      home:
+        members: [claimant]
+        country: ENGLAND
+  output:
+    housing_benefit_applicable_income: 6000
