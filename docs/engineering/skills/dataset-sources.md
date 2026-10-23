@@ -43,6 +43,63 @@ When debugging dataset failures, distinguish these stages:
 
 Errors at those stages require different fixes.
 
+## ISA income input contracts
+
+Calculator situations use additive savings inputs: `savings_interest_income`
+is ordinary interest, while `tax_free_savings_income` is a separate cash-income
+component. Its default is `individual_savings_account_interest_income`; an
+explicit aggregate override, including zero, remains authoritative.
+
+Existing unmarked datasets use the legacy contract: their savings-interest
+column already includes the tax-free component. UK loads those records as
+signed ordinary interest `N = G - T`, preserving explicit ISA and aggregate
+inputs. There is no floor: `G < T` remains an override whose taxable result is
+`max(0, N + other_investment_income)`, exactly as before. The adapter does not
+infer an ISA amount from a tax-free aggregate.
+
+`UKSingleYearDataset` accepts an optional `isa_income_contract` argument and
+exposes a detached dictionary with exactly these fields:
+
+```json
+{"version": 1, "representation": "additive", "projection": "additive"}
+```
+
+The other valid pairs are `legacy_gross`/`legacy_gross` for raw legacy data
+and `additive`/`legacy_gross` for normalized legacy data. Representation and
+projection origin are separate: legacy projection grows the original gross
+amount before subtracting the effective exemption. It must not grow the
+already-normalized ordinary amount instead. New additive dataset projections
+grow ISA interest alongside ordinary interest by the dataset's GDP-per-capita
+rule; outside the stored horizon new inputs use their variable's own index.
+Legacy-origin fallback retains the old gross-index calculation and unindexed
+ISA carry-over, while explicit inputs and applicable ISA detail formulas take
+priority. Legacy files containing only an aggregate exemption still have that
+old exemption treatment; no ISA detail is invented during migration.
+
+DataFrames carry this declaration in
+`frame.attrs["policyengine_uk.isa_income_contract"]`. H5 files store UTF-8 JSON
+under the same namespaced **root attribute**, never as an extra table or model
+variable. Multi-year datasets and input-frame exports use per-year envelopes:
+
+```json
+{"version": 1, "years": {"2025": {"version": 1, "representation": "additive", "projection": "legacy_gross"}}}
+```
+
+A uniform single contract is also accepted when importing multiple years.
+Every materialized year must be covered. Unknown versions, malformed metadata
+and conflicting explicit object/file declarations fail with an `ISA income
+contract` error. Omitted metadata means legacy data; the presence or relative
+size of financial columns never chooses the representation.
+
+UK copy, clone, household extraction, `from_simulation`, input-frame export and
+single-/multi-year H5 round trips retain the projection origin and mark
+normalized values as additive so they cannot be subtracted twice. Core Dataset
+objects can carry the same `isa_income_contract` attribute; UK reads H5 root
+metadata before Core's value loader discards it. External writers which
+discard H5 attributes must explicitly preserve this declaration before their
+output can be reloaded safely. Test routing and migration on synthetic frames
+and small H5 fixtures, without downloading private datasets.
+
 ## Defaults
 
 `policyengine_uk` does not silently choose a default dataset when no situation is

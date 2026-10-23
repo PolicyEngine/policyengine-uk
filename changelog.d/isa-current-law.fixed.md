@@ -1,0 +1,1 @@
+Correct ISA income and cash-ISA capital treatment, with a versioned adapter for legacy gross-interest datasets. Add qualifying Lifetime ISA bonuses and withdrawal charges, and the final charge on cash interest in non-cash ISAs from fiscal 2027–28, with separate capital-flow accounting.

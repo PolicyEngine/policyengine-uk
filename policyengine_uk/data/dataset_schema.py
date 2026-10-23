@@ -8,6 +8,18 @@ if TYPE_CHECKING:
 
 from pathlib import Path
 import h5py
+import json
+
+from policyengine_uk.data.isa_income import (
+    ISA_INCOME_CONTRACT_KEY,
+    MISSING_CONTRACT,
+    contract_envelope,
+    contracts_for_years,
+    read_h5_contract,
+    resolve_contracts,
+    simulation_contract,
+    validate_contract,
+)
 
 
 class UKSingleYearDataset:
@@ -57,6 +69,7 @@ class UKSingleYearDataset:
         benunit: pd.DataFrame = None,
         household: pd.DataFrame = None,
         fiscal_year: int = None,
+        isa_income_contract: dict | None = None,
     ):
         file_path = str(file_path) if file_path else None
         if file_path is not None:
@@ -96,6 +109,12 @@ class UKSingleYearDataset:
             self._benunit = benunit
             self._household = household
             self.time_period = str(fiscal_year)
+
+        self.isa_income_contract = resolve_contracts(
+            MISSING_CONTRACT if isa_income_contract is None else isa_income_contract,
+            read_h5_contract(file_path),
+            [int(self.time_period[:4])],
+        )[int(self.time_period[:4])]
 
         self.data_format = "arrays"
         # tables tuple points at the raw (int16) DataFrames used by the
@@ -151,11 +170,14 @@ class UKSingleYearDataset:
         self.tables = (self._person, self._benunit, self._household)
 
     def save(self, file_path: str):
+        contract = validate_contract(self.isa_income_contract)
         with pd.HDFStore(file_path) as f:
             f.put("person", self.person, format="table", data_columns=True)
             f.put("benunit", self.benunit, format="table", data_columns=True)
             f.put("household", self.household, format="table", data_columns=True)
             f.put("time_period", pd.Series([self.time_period]), format="table")
+        with h5py.File(file_path, "a") as f:
+            f.attrs[ISA_INCOME_CONTRACT_KEY] = json.dumps(contract)
 
     def load(self):
         data = {}
@@ -171,6 +193,7 @@ class UKSingleYearDataset:
             benunit=self.benunit.copy(),
             household=self.household.copy(),
             fiscal_year=self.time_period,
+            isa_income_contract=validate_contract(self.isa_income_contract),
         )
 
     def validate(self):
@@ -203,6 +226,7 @@ class UKSingleYearDataset:
             benunit=entity_dfs["benunit"],
             household=entity_dfs["household"],
             fiscal_year=fiscal_year,
+            isa_income_contract=simulation_contract(simulation, fiscal_year),
         )
 
 
@@ -224,8 +248,15 @@ class UKMultiYearDataset:
 
         if file_path is not None:
             UKMultiYearDataset.validate_file_path(file_path)
+            stored_contract = read_h5_contract(file_path)
             with pd.HDFStore(file_path, mode="r") as f:
                 self.datasets = {}
+                years = [
+                    int(key.split("/")[2])
+                    for key in f.keys()
+                    if key.startswith("/person/")
+                ]
+                contracts = contracts_for_years(stored_contract, years)
                 for year in f.keys():
                     if year.startswith("/person/"):
                         fiscal_year = int(year.split("/")[2])
@@ -237,6 +268,7 @@ class UKMultiYearDataset:
                             benunit=benunit_df,
                             household=household_df,
                             fiscal_year=fiscal_year,
+                            isa_income_contract=contracts[fiscal_year],
                         )
 
         self.data_format = "time_period_arrays"
@@ -252,10 +284,20 @@ class UKMultiYearDataset:
     def years(self):
         return list(self.datasets.keys())
 
+    @property
+    def isa_income_contract(self):
+        return contract_envelope(
+            {
+                year: dataset.isa_income_contract
+                for year, dataset in self.datasets.items()
+            }
+        )
+
     def __getitem__(self, fiscal_year: int):
         return self.get_year(fiscal_year)
 
     def save(self, file_path: str):
+        contracts = self.isa_income_contract
         Path(file_path).unlink(missing_ok=True)  # Remove existing file if it exists
         with pd.HDFStore(file_path) as f:
             for year, dataset in self.datasets.items():
@@ -265,6 +307,7 @@ class UKMultiYearDataset:
                     format="table",
                     data_columns=True,
                 )
+
                 f.put(
                     f"benunit/{year}",
                     dataset.benunit,
@@ -283,6 +326,9 @@ class UKMultiYearDataset:
                     format="table",
                     data_columns=True,
                 )
+
+        with h5py.File(file_path, "a") as f:
+            f.attrs[ISA_INCOME_CONTRACT_KEY] = json.dumps(contracts)
 
     def copy(self):
         new_datasets = {year: dataset.copy() for year, dataset in self.datasets.items()}

@@ -1,0 +1,101 @@
+# Ordinary cash ISAs have no wrapper-specific capital disregard.
+# Source oracle: issue-2584-evidence/source-brief.md section2; UC reg72.
+# Reported capital remains a total, including explicit zero, not an add-on.
+
+- name: Ordinary savings and cash ISA balances enter working-age capital pools once
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    would_claim_uc: false
+    savings: 5_000
+    cash_isa: 3_000
+  output:
+    uc_assessable_capital: 8_000
+    housing_benefit_assessable_capital: 8_000
+    income_support_assessable_capital: 8_000
+    jsa_income_assessable_capital: 8_000
+    esa_income_assessable_capital: 8_000
+
+- name: Pension Credit counts ordinary cash ISA capital with ordinary savings
+  period: 2026
+  input:
+    age: 70
+    savings: 5_000
+    cash_isa: 3_000
+  output:
+    pension_credit_assessable_capital: 8_000
+
+- name: Cash ISA capital reaches the actual Universal Credit award through tariff income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    savings: 5_000
+    cash_isa: 3_000
+  output:
+    uc_assessable_capital: 8_000
+    # Eight GBP250 steps above6000, times GBP4.35/month and12 months.
+    uc_tariff_income: 417.60
+    uc_unearned_income: 417.60
+    universal_credit: 4_681.20
+
+- name: An observed zero financial report replaces cash ISA and personal LISA but preserves property
+  period: 2026
+  input:
+    age: 30
+    savings: 5_000
+    cash_isa: 3_000
+    lifetime_isa_balance: 4_000
+    other_residential_property_value: 10_000
+    benunit_reported_capital: 0
+  output:
+    uc_assessable_capital: 9_000
+
+- name: An observed zero complete UC override replaces cash ISA and property and LISA
+  period: 2026
+  input:
+    age: 30
+    savings: 5_000
+    cash_isa: 3_000
+    lifetime_isa_balance: 4_000
+    other_residential_property_value: 10_000
+    uc_reported_capital: 0
+  output:
+    uc_assessable_capital: 0
+
+- name: A reported financial total consumes the ISA pool once and leaves the other unit its residual
+  period: 2026
+  input:
+    people:
+      reported_person:
+        age: 30
+        is_benunit_head: true
+        lifetime_isa_balance: 4_000
+      unreported_person:
+        age: 35
+        is_benunit_head: true
+    benunits:
+      reported:
+        members: [reported_person]
+        benunit_reported_capital: 3_000
+      unreported:
+        members: [unreported_person]
+    households:
+      household:
+        members: [reported_person, unreported_person]
+        savings: 5_000
+        cash_isa: 3_000
+  output:
+    uc_assessable_capital: [3_000, 5_000]
+
+- name: Pension Credit reports replace cash ISA and personal LISA including observed zero
+  period: 2026
+  input:
+    age: [70, 70]
+    savings: [5_000, 5_000]
+    cash_isa: [3_000, 3_000]
+    lifetime_isa_balance: [4_000, 4_000]
+    pension_credit_reported_capital: [0, 5_000]
+  output:
+    pension_credit_assessable_capital: [0, 5_000]

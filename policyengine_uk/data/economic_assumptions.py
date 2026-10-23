@@ -3,6 +3,14 @@ from policyengine_uk.data.capital_gains_projection import (
     CGT_DATASET_INPUTS,
     CGT_INDEX_PATH,
 )
+from policyengine_uk.data.isa_income import (
+    ISA_INTEREST,
+    SAVINGS_INTEREST,
+    effective_tax_free,
+    gross_interest,
+    legacy_projection_source,
+    ordinary_interest,
+)
 
 import hashlib
 
@@ -219,6 +227,8 @@ def extend_single_year_dataset(
     end_year: int | None = None,
 ) -> UKMultiYearDataset:
     """Project a supplied year to the shared default within any finite CGT span."""
+    # A normalized legacy export still projects the original gross amount.
+    dataset = legacy_projection_source(dataset)
     # Extend years and uprate
     start_year = int(dataset.time_period)
     if end_year is None:
@@ -318,6 +328,31 @@ def apply_single_year_uprating(
                     current_year_value = prev_year_value * (1 + index_rel_change)
                     getattr(current_year, table_name)[variable] = current_year_value
 
+    if (
+        current_year.isa_income_contract["projection"] == "legacy_gross"
+        and SAVINGS_INTEREST in current_year.person
+    ):
+        growth = parameters.get_child(
+            "gov.economic_assumptions.yoy_growth.obr.per_capita.gdp"
+        )(current_year.time_period)
+        values = gross_interest(previous_year) * (1 + growth)
+        if current_year.isa_income_contract["representation"] == "additive":
+            values = values - effective_tax_free(current_year.person)
+        current_year.person[SAVINGS_INTEREST] = values
+
+    # New additive ISA receipts use the same dataset GDP rule as ordinary
+    # interest. Legacy receipts retain their former unindexed treatment.
+    if (
+        current_year.isa_income_contract["projection"] == "additive"
+        and ISA_INTEREST in current_year.person
+    ):
+        growth = parameters.get_child(
+            "gov.economic_assumptions.yoy_growth.obr.per_capita.gdp"
+        )(current_year.time_period)
+        current_year.person[ISA_INTEREST] = previous_year.person[ISA_INTEREST] * (
+            1 + growth
+        )
+
     # Next, apply custom uprating.
 
     # apply_uprating replaces these chained stocks from the original observation.
@@ -344,6 +379,10 @@ def apply_single_year_uprating(
     # inputs missing from the projection map (for example salary sacrifice).
     if int(current_year.time_period) > LEGACY_PROJECTION_END_YEAR:
         for variable, index_name in _unmapped_uprating_indices(uprating).items():
+            # Handled above for new additive data; deliberately unchanged for
+            # legacy gross data, whose exemption never had this new index.
+            if variable == ISA_INTEREST:
+                continue
             for table_name in current_year.table_names:
                 table = getattr(current_year, table_name)
                 if variable in table.columns:
@@ -663,7 +702,7 @@ def reset_growthfactor_uprating(
     growthfactor_uprated_variables = {
         variable for variables in uprating.values() for variable in variables
     }
-    growthfactor_uprated_variables.update({"council_tax", "rent"})
+    growthfactor_uprated_variables.update({"council_tax", "rent", ISA_INTEREST})
     growthfactor_uprated_variables.update(COUNTRY_UPRATED_INPUTS)
     growthfactor_uprated_variables.update(_unmapped_uprating_indices(uprating))
 
@@ -679,6 +718,29 @@ def reset_growthfactor_uprating(
             current_table = getattr(current_year_dataset, table_name)
             for variable in growthfactor_uprated_variables:
                 if variable in current_table.columns and variable in base_table.columns:
-                    current_table[variable] = base_table[variable].values
+                    if (
+                        variable == ISA_INTEREST
+                        and current_year_dataset.isa_income_contract["projection"]
+                        == "legacy_gross"
+                    ):
+                        continue
+                    if variable == SAVINGS_INTEREST:
+                        if (
+                            current_year_dataset.isa_income_contract["projection"]
+                            == "legacy_gross"
+                        ):
+                            values = gross_interest(base_year_dataset)
+                            if (
+                                current_year_dataset.isa_income_contract[
+                                    "representation"
+                                ]
+                                == "additive"
+                            ):
+                                values = values - effective_tax_free(current_table)
+                        else:
+                            values = ordinary_interest(base_year_dataset)
+                        current_table[variable] = values
+                    else:
+                        current_table[variable] = base_table[variable].values
 
     return dataset

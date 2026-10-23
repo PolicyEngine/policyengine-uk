@@ -69,4 +69,5 @@ def filter_dataset(
         household=new_dataset.household,
         benunit=new_dataset.benunit,
         fiscal_year=year,
+        isa_income_contract=new_dataset.isa_income_contract,
     )

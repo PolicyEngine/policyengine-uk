@@ -16,6 +16,9 @@ from policyengine_core.periods import Period, period as period_
 from policyengine_core.parameters import Parameter
 from policyengine_core.reforms import Reform
 from policyengine_core.simulations import Simulation as CoreSimulation
+from policyengine_core.simulations.simulation import (
+    _uprating_index_value,
+)
 from policyengine_core.tools.hugging_face import download_huggingface_dataset
 from policyengine_core.tracers import FullTracer, SimpleTracer
 
@@ -40,6 +43,22 @@ from policyengine_uk.data.dataset_sources import materialize_gcs_dataset_url
 from policyengine_uk.data.input_dataframe import (
     dataset_from_input_dataframe,
     with_identifiers_in_each_year,
+)
+from policyengine_uk.data.isa_income import (
+    ISA_INCOME_CONTRACT_KEY,
+    MISSING_CONTRACT,
+    ISA_INTEREST,
+    SAVINGS_INTEREST,
+    TAX_FREE_INTEREST,
+    contract_envelope,
+    contracts_for_years,
+    has_isa_interest_detail_input,
+    latest_input,
+    normalized_dataset,
+    read_h5_contract,
+    read_object_contract,
+    resolve_contracts,
+    simulation_contract,
 )
 from policyengine_uk.data.capital_gains_projection import (
     CapitalGainsProjection,
@@ -585,7 +604,67 @@ class Simulation(CoreSimulation):
         clone._cgt_calculation_depth = 0
         clone._cgt_operation_inputs = set()
         clone._cgt_defaulted_periods = set(getattr(self, "_cgt_defaulted_periods", ()))
+        clone._isa_income_contracts = copy.deepcopy(
+            getattr(self, "_isa_income_contracts", {})
+        )
         return clone
+
+    def _isa_latest_input(self, name, period, *, earlier=False):
+        return latest_input(self, name, period, earlier=earlier)
+
+    def has_isa_interest_detail_input(self, period) -> bool:
+        """Whether this branch supplies an applicable ISA cash-interest detail.
+
+        Computed caches are excluded, as in Core's carry-over input rule. A
+        future detail cannot change an earlier year's aggregate.
+        """
+        return has_isa_interest_detail_input(self, period)
+
+    def _run_formula(self, variable, population, period):
+        result = super()._run_formula(variable, population, period)
+        if (
+            result is not None
+            or variable.name != SAVINGS_INTEREST
+            or period.unit != "year"
+            or simulation_contract(self, period.start.year)["projection"]
+            != "legacy_gross"
+        ):
+            return result
+
+        # This is fallback, after Core's explicit input/abolition checks and
+        # policy formulas. Preserve the old gross history even past the last
+        # materialized dataset year; new additive records use Core normally.
+        history = getattr(self, "_get_store_history", None)
+        if callable(history):
+            # Store-history tracking is available in newer Core releases;
+            # the declared minimum already caches formula results without it.
+            from policyengine_core.data_storage.store_history import (
+                next_sequence_number,
+            )
+
+            history().record_derived(variable.name, next_sequence_number())
+        source = self._isa_latest_input(variable.name, period, earlier=True)
+        holder = self.get_holder(variable.name)
+        if source is None:
+            gross = holder.default_array()
+        else:
+            gross = holder.get_array(source, self.branch_name)
+            if (
+                simulation_contract(self, source.start.year)["representation"]
+                == "additive"
+            ):
+                gross = gross + self.calculate(TAX_FREE_INTEREST, source)
+            if variable.uprating is not None:
+                index = self.tax_benefit_system.parameters.get_child(variable.uprating)
+                source_index = _uprating_index_value(index, source.start)
+                target_index = _uprating_index_value(index, period.start)
+                factor = (
+                    target_index / source_index
+                    if source_index not in (None, 0) and target_index is not None
+                    else 1
+                )
+                gross = gross * factor
+        return gross - self.calculate(TAX_FREE_INTEREST, period)
 
     @staticmethod
     def _cgt_supplied_record() -> dict:
@@ -930,9 +1009,9 @@ class Simulation(CoreSimulation):
             cache_key = self._dataset_cache_key(dataset_source)
             if cache_key is not None and cache_key in _url_dataset_cache:
                 multi_year_dataset = _url_dataset_cache[cache_key]
+                self.dataset = multi_year_dataset
                 self.build_from_multi_year_dataset(multi_year_dataset)
                 self._restore_cgt_extension_provenance(multi_year_dataset)
-                self.dataset = multi_year_dataset
                 return
             dataset_file = materialize_gcs_dataset_url(dataset_source)
             self.build_from_file(dataset_file, cache_key=dataset_source)
@@ -964,6 +1043,9 @@ class Simulation(CoreSimulation):
             self.build_from_dataset(dataset)
             return
 
+        # Convert a detached source once, then cache only the canonical object.
+        # Callers holding an old gross dataset retain their original values.
+        multi_year_dataset = normalized_dataset(multi_year_dataset)
         # Pre-encode string enum columns to int16 once before caching so
         # subsequent loads skip the expensive astype(str) + searchsorted path.
         _pre_encode_enum_columns(multi_year_dataset, self.tax_benefit_system)
@@ -973,7 +1055,6 @@ class Simulation(CoreSimulation):
 
         self.build_from_multi_year_dataset(multi_year_dataset)
         self._restore_cgt_extension_provenance(multi_year_dataset)
-        self.dataset = multi_year_dataset
 
     def build_from_url(self, url: str) -> None:
         """Build simulation from a HuggingFace dataset URL.
@@ -992,9 +1073,9 @@ class Simulation(CoreSimulation):
         cache_key = self._dataset_cache_key(url)
         if cache_key is not None and cache_key in _url_dataset_cache:
             multi_year_dataset = _url_dataset_cache[cache_key]
+            self.dataset = multi_year_dataset
             self.build_from_multi_year_dataset(multi_year_dataset)
             self._restore_cgt_extension_provenance(multi_year_dataset)
-            self.dataset = multi_year_dataset
             return
 
         # Parse HuggingFace URL components
@@ -1044,6 +1125,23 @@ class Simulation(CoreSimulation):
         for variable in dict.fromkeys(name for name, _, _ in replayed):
             self.delete_arrays(variable)
         for variable, time_period, values in replayed:
+            if variable == SAVINGS_INTEREST:
+                continue
+            self.set_input(variable, time_period, values)
+        # Finish the other supplied components before translating a legacy
+        # nonannual savings override. Preserve its original within-variable
+        # ordering, as the DataFrame replay contract requires.
+        for variable, time_period, values in replayed:
+            if variable != SAVINGS_INTEREST:
+                continue
+            year = period_(time_period).start.year
+            contract = contracts_for_years(
+                df.attrs.get(ISA_INCOME_CONTRACT_KEY, MISSING_CONTRACT), [year]
+            )[year]
+            if contract["representation"] == "legacy_gross":
+                values = np.asarray(values) - self.calculate(
+                    TAX_FREE_INTEREST, time_period
+                )
             self.set_input(variable, time_period, values)
 
     def to_input_dataframe(
@@ -1069,7 +1167,16 @@ class Simulation(CoreSimulation):
             if include_computed_variables
             else input_dataframe(self)
         )
-        return with_identifiers_in_each_year(frame, self.tax_benefit_system)
+        frame = with_identifiers_in_each_year(frame, self.tax_benefit_system)
+        years = {
+            period_(str(column).split("__", 1)[1]).start.year
+            for column in frame.columns
+            if "__" in str(column)
+        }
+        frame.attrs[ISA_INCOME_CONTRACT_KEY] = contract_envelope(
+            {year: simulation_contract(self, year) for year in years}
+        )
+        return frame
 
     def build_from_dataset(self, dataset: Dataset) -> None:
         """Build simulation from a Dataset object.
@@ -1099,6 +1206,12 @@ class Simulation(CoreSimulation):
                     "household_id",
                 ],
             )
+        )
+
+        self._isa_income_contracts = resolve_contracts(
+            read_object_contract(dataset),
+            read_h5_contract(getattr(dataset, "file_path", None)),
+            [period_(first_time_period).start.year],
         )
 
         # Populations use sorted group IDs; arrays in a Core dataset follow
@@ -1137,7 +1250,6 @@ class Simulation(CoreSimulation):
 
         self.build_from_multi_year_dataset(multi_year_dataset)
         self._restore_cgt_extension_provenance(multi_year_dataset)
-        self.dataset = multi_year_dataset
 
     def build_from_single_year_dataset(self, dataset: UKSingleYearDataset) -> None:
         """Build simulation from a single-year UK dataset.
@@ -1150,7 +1262,6 @@ class Simulation(CoreSimulation):
         _pre_encode_enum_columns(dataset, self.tax_benefit_system)
         self.build_from_multi_year_dataset(dataset)
         self._restore_cgt_extension_provenance(dataset)
-        self.dataset = dataset
 
     def build_from_multi_year_dataset(self, dataset: UKMultiYearDataset) -> None:
         """Build simulation from a multi-year UK dataset.
@@ -1169,6 +1280,10 @@ class Simulation(CoreSimulation):
                     setattr(dataset[year], entity, table.iloc[order])
             reset_growthfactor_uprating(dataset)
 
+        # The legacy gross projection/reset must finish before conversion.
+        # Work on detached tables: a cached or caller-owned source is reusable.
+        dataset = normalized_dataset(dataset)
+
         # Ensure enum columns are encoded and _enum_columns is populated so
         # that .person/.benunit/.household properties can decode back to strings.
         if not any(dataset[y]._enum_columns for y in dataset.years):
@@ -1182,6 +1297,10 @@ class Simulation(CoreSimulation):
             first_year.benunit.benunit_id,
             first_year.household.household_id,
         )
+        self._isa_income_contracts = {
+            year: copy.deepcopy(dataset[year].isa_income_contract)
+            for year in dataset.years
+        }
 
         # Load variable values for all years
         for year in dataset.years:
@@ -1227,6 +1346,7 @@ class Simulation(CoreSimulation):
         self._cgt_defaulted_periods = set()
         self._cgt_operation_inputs = set()
         self._cgt_warned_unused = False
+        self._isa_income_contracts = {}
 
     def build_from_ids(
         self,
