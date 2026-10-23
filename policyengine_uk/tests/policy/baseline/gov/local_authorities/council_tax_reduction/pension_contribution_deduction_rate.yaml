@@ -1,0 +1,808 @@
+# Each Council Tax Reduction scheme deducts its own share of pension
+# contributions from earnings, one-half in every scheme modelled:
+# - England pensioners: SI 2012/2885 Sch 1 paras 19(2)(b)-(c) and 29;
+# - England default scheme: SI 2012/2886 Sch paras 42, 52 and 61;
+# - Wales: WSI 2013/3029 Sch 1 paras 13 and 23 and Sch 6 paras 15 and 24;
+# - Scotland: SSI 2012/319 regs 33 and 36 and SSI 2021/249 regs 50 and 51(9);
+# - Merton, Kingston upon Thames and Newham: their schemes' paras 52 and 61;
+# - Oxford: its scheme's para 18 and Annex 5;
+# - Westminster: the default scheme, which its scheme says it is based on.
+# None refers to Housing Benefit's share, so a reform of one scheme's share
+# moves that scheme's families only, and a reform of Housing Benefit's moves
+# none of them. The rates below 0.5 are model reforms, not current law.
+#
+# Every person earns 10,000 a year, below the personal allowance and the
+# primary threshold, so no income tax or National Insurance is due, and pays
+# 2,000 into a personal pension. Universal Credit and Pension Credit are not
+# claimed. Applicable income is 10,000 - rate x 2,000, less the single
+# pensioner's 5 a week (260 a year) earnings disregard (SI 2012/2885 Sch 4
+# para 8(a)) for the 70-year-old. Net earnings are 10,000 - rate x 2,000.
+
+- name: At current law every scheme deducts half of pension contributions
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      scotland:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+      wales:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+      england_pensioner:
+        age: 70
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+      england_default:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+      merton:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+      kingston:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+      newham:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+      westminster:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+      oxford:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+    benunits:
+      scotland_family:
+        members: [scotland]
+        would_claim_uc: false
+        would_claim_pc: false
+      wales_family:
+        members: [wales]
+        would_claim_uc: false
+        would_claim_pc: false
+      england_pensioner_family:
+        members: [england_pensioner]
+        would_claim_uc: false
+        would_claim_pc: false
+      england_default_family:
+        members: [england_default]
+        would_claim_uc: false
+        would_claim_pc: false
+      merton_family:
+        members: [merton]
+        would_claim_uc: false
+        would_claim_pc: false
+      kingston_family:
+        members: [kingston]
+        would_claim_uc: false
+        would_claim_pc: false
+      newham_family:
+        members: [newham]
+        would_claim_uc: false
+        would_claim_pc: false
+      westminster_family:
+        members: [westminster]
+        would_claim_uc: false
+        would_claim_pc: false
+      oxford_family:
+        members: [oxford]
+        would_claim_uc: false
+        would_claim_pc: false
+    households:
+      scotland_household:
+        members: [scotland]
+        country: SCOTLAND
+      wales_household:
+        members: [wales]
+        country: WALES
+      england_pensioner_household:
+        members: [england_pensioner]
+        country: ENGLAND
+      england_default_household:
+        members: [england_default]
+        country: ENGLAND
+      merton_household:
+        members: [merton]
+        country: ENGLAND
+        local_authority: MERTON
+      kingston_household:
+        members: [kingston]
+        country: ENGLAND
+        local_authority: KINGSTON_UPON_THAMES
+      newham_household:
+        members: [newham]
+        country: ENGLAND
+        local_authority: NEWHAM
+      westminster_household:
+        members: [westminster]
+        country: ENGLAND
+        local_authority: WESTMINSTER
+      oxford_household:
+        members: [oxford]
+        country: ENGLAND
+        local_authority: OXFORD
+  output:
+    # In order: Scotland and Wales at working age, the England pensioner,
+    # England working age outside the modelled councils, and working age in
+    # Merton, Kingston upon Thames, Newham, Westminster and Oxford.
+    pension_contributions: [2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000]
+    income_tax: [0, 0, 0, 0, 0, 0, 0, 0, 0]
+    national_insurance: [0, 0, 0, 0, 0, 0, 0, 0, 0]
+    council_tax_reduction_pensioner: [false, false, true, false, false, false, false, false, false]
+    council_tax_reduction_pension_contribution_deduction_rate: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
+    # 10,000 - 0.5 x 2,000, less 260 for the pensioner.
+    council_tax_reduction_applicable_income: [9000, 9000, 8740, 9000, 9000, 9000, 9000, 9000, 9000]
+    council_tax_reduction_net_earnings: [9000, 9000, 9000, 9000, 9000, 9000, 9000, 9000, 9000]
+    housing_benefit_net_earnings: [9000, 9000, 9000, 9000, 9000, 9000, 9000, 9000, 9000]
+    council_tax_reduction_pensioner_earnings_disregard: [0, 0, 260, 0, 0, 0, 0, 0, 0]
+
+- name: A reform of the Scotland share moves only that scheme's applicable income
+  # Model reform, not current law.
+  # Scotland, working age: 10,000 - 0.25 x 2,000 = 9,500.
+  # Control, England working age outside the modelled councils: 10,000 - 0.5 x 2,000 = 9,000.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.local_authorities.scotland.council_tax_reduction.means_test.pension_contribution_deduction_rate: 0.25
+    people:
+      scotland:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+      england_default:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+    benunits:
+      scotland_family:
+        members: [scotland]
+        would_claim_uc: false
+        would_claim_pc: false
+      england_default_family:
+        members: [england_default]
+        would_claim_uc: false
+        would_claim_pc: false
+    households:
+      scotland_household:
+        members: [scotland]
+        country: SCOTLAND
+      england_default_household:
+        members: [england_default]
+        country: ENGLAND
+  output:
+    council_tax_reduction_pension_contribution_deduction_rate: [0.25, 0.5]
+    council_tax_reduction_applicable_income: [9500, 9000]
+    council_tax_reduction_net_earnings: [9500, 9000]
+    council_tax_reduction_pensioner_earnings_disregard: [0, 0]
+    housing_benefit_net_earnings: [9000, 9000]
+
+- name: A reform of the Wales share moves only that scheme's applicable income
+  # Model reform, not current law.
+  # Wales, working age: 10,000 - 0.25 x 2,000 = 9,500.
+  # Control, England working age outside the modelled councils: 10,000 - 0.5 x 2,000 = 9,000.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.local_authorities.wales.council_tax_reduction.means_test.pension_contribution_deduction_rate: 0.25
+    people:
+      wales:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+      england_default:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+    benunits:
+      wales_family:
+        members: [wales]
+        would_claim_uc: false
+        would_claim_pc: false
+      england_default_family:
+        members: [england_default]
+        would_claim_uc: false
+        would_claim_pc: false
+    households:
+      wales_household:
+        members: [wales]
+        country: WALES
+      england_default_household:
+        members: [england_default]
+        country: ENGLAND
+  output:
+    council_tax_reduction_pension_contribution_deduction_rate: [0.25, 0.5]
+    council_tax_reduction_applicable_income: [9500, 9000]
+    council_tax_reduction_net_earnings: [9500, 9000]
+    council_tax_reduction_pensioner_earnings_disregard: [0, 0]
+    housing_benefit_net_earnings: [9000, 9000]
+
+- name: A reform of the England pensioner share moves only that scheme's applicable income
+  # Model reform, not current law.
+  # England pensioner scheme: 10,000 - 0.25 x 2,000 - 260 = 9,240.
+  # Control, Scotland, working age: 10,000 - 0.5 x 2,000 = 9,000.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.local_authorities.england.council_tax_reduction.pensioners.means_test.pension_contribution_deduction_rate: 0.25
+    people:
+      england_pensioner:
+        age: 70
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+      scotland:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+    benunits:
+      england_pensioner_family:
+        members: [england_pensioner]
+        would_claim_uc: false
+        would_claim_pc: false
+      scotland_family:
+        members: [scotland]
+        would_claim_uc: false
+        would_claim_pc: false
+    households:
+      england_pensioner_household:
+        members: [england_pensioner]
+        country: ENGLAND
+      scotland_household:
+        members: [scotland]
+        country: SCOTLAND
+  output:
+    council_tax_reduction_pension_contribution_deduction_rate: [0.25, 0.5]
+    council_tax_reduction_applicable_income: [9240, 9000]
+    council_tax_reduction_net_earnings: [9500, 9000]
+    council_tax_reduction_pensioner_earnings_disregard: [260, 0]
+    housing_benefit_net_earnings: [9000, 9000]
+
+- name: A reform of the England default scheme share moves only that scheme's applicable income
+  # Model reform, not current law.
+  # England working age outside the modelled councils: 10,000 - 0.25 x 2,000 = 9,500.
+  # Control, Scotland, working age: 10,000 - 0.5 x 2,000 = 9,000.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.local_authorities.england.council_tax_reduction.default_scheme.means_test.pension_contribution_deduction_rate: 0.25
+    people:
+      england_default:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+      scotland:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+    benunits:
+      england_default_family:
+        members: [england_default]
+        would_claim_uc: false
+        would_claim_pc: false
+      scotland_family:
+        members: [scotland]
+        would_claim_uc: false
+        would_claim_pc: false
+    households:
+      england_default_household:
+        members: [england_default]
+        country: ENGLAND
+      scotland_household:
+        members: [scotland]
+        country: SCOTLAND
+  output:
+    council_tax_reduction_pension_contribution_deduction_rate: [0.25, 0.5]
+    council_tax_reduction_applicable_income: [9500, 9000]
+    council_tax_reduction_net_earnings: [9500, 9000]
+    council_tax_reduction_pensioner_earnings_disregard: [0, 0]
+    housing_benefit_net_earnings: [9000, 9000]
+
+- name: A reform of the Merton share moves only that scheme's applicable income
+  # Model reform, not current law.
+  # Merton, working age: 10,000 - 0.25 x 2,000 = 9,500.
+  # Control, Scotland, working age: 10,000 - 0.5 x 2,000 = 9,000.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.local_authorities.merton.council_tax_reduction.means_test.pension_contribution_deduction_rate: 0.25
+    people:
+      merton:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+      scotland:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+    benunits:
+      merton_family:
+        members: [merton]
+        would_claim_uc: false
+        would_claim_pc: false
+      scotland_family:
+        members: [scotland]
+        would_claim_uc: false
+        would_claim_pc: false
+    households:
+      merton_household:
+        members: [merton]
+        country: ENGLAND
+        local_authority: MERTON
+      scotland_household:
+        members: [scotland]
+        country: SCOTLAND
+  output:
+    council_tax_reduction_pension_contribution_deduction_rate: [0.25, 0.5]
+    council_tax_reduction_applicable_income: [9500, 9000]
+    council_tax_reduction_net_earnings: [9500, 9000]
+    council_tax_reduction_pensioner_earnings_disregard: [0, 0]
+    housing_benefit_net_earnings: [9000, 9000]
+
+- name: A reform of the Kingston upon Thames share moves only that scheme's applicable income
+  # Model reform, not current law.
+  # Kingston upon Thames, working age: 10,000 - 0.25 x 2,000 = 9,500.
+  # Control, Scotland, working age: 10,000 - 0.5 x 2,000 = 9,000.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.local_authorities.kingston_upon_thames.council_tax_reduction.means_test.pension_contribution_deduction_rate: 0.25
+    people:
+      kingston:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+      scotland:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+    benunits:
+      kingston_family:
+        members: [kingston]
+        would_claim_uc: false
+        would_claim_pc: false
+      scotland_family:
+        members: [scotland]
+        would_claim_uc: false
+        would_claim_pc: false
+    households:
+      kingston_household:
+        members: [kingston]
+        country: ENGLAND
+        local_authority: KINGSTON_UPON_THAMES
+      scotland_household:
+        members: [scotland]
+        country: SCOTLAND
+  output:
+    council_tax_reduction_pension_contribution_deduction_rate: [0.25, 0.5]
+    council_tax_reduction_applicable_income: [9500, 9000]
+    council_tax_reduction_net_earnings: [9500, 9000]
+    council_tax_reduction_pensioner_earnings_disregard: [0, 0]
+    housing_benefit_net_earnings: [9000, 9000]
+
+- name: A reform of the Newham share moves only that scheme's applicable income
+  # Model reform, not current law.
+  # Newham, working age: 10,000 - 0.25 x 2,000 = 9,500.
+  # Control, Scotland, working age: 10,000 - 0.5 x 2,000 = 9,000.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.local_authorities.newham.council_tax_reduction.means_test.pension_contribution_deduction_rate: 0.25
+    people:
+      newham:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+      scotland:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+    benunits:
+      newham_family:
+        members: [newham]
+        would_claim_uc: false
+        would_claim_pc: false
+      scotland_family:
+        members: [scotland]
+        would_claim_uc: false
+        would_claim_pc: false
+    households:
+      newham_household:
+        members: [newham]
+        country: ENGLAND
+        local_authority: NEWHAM
+      scotland_household:
+        members: [scotland]
+        country: SCOTLAND
+  output:
+    council_tax_reduction_pension_contribution_deduction_rate: [0.25, 0.5]
+    council_tax_reduction_applicable_income: [9500, 9000]
+    council_tax_reduction_net_earnings: [9500, 9000]
+    council_tax_reduction_pensioner_earnings_disregard: [0, 0]
+    housing_benefit_net_earnings: [9000, 9000]
+
+- name: A reform of the Westminster share moves only that scheme's applicable income
+  # Model reform, not current law.
+  # Westminster, working age: 10,000 - 0.25 x 2,000 = 9,500.
+  # Control, Scotland, working age: 10,000 - 0.5 x 2,000 = 9,000.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.local_authorities.westminster.council_tax_reduction.means_test.pension_contribution_deduction_rate: 0.25
+    people:
+      westminster:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+      scotland:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+    benunits:
+      westminster_family:
+        members: [westminster]
+        would_claim_uc: false
+        would_claim_pc: false
+      scotland_family:
+        members: [scotland]
+        would_claim_uc: false
+        would_claim_pc: false
+    households:
+      westminster_household:
+        members: [westminster]
+        country: ENGLAND
+        local_authority: WESTMINSTER
+      scotland_household:
+        members: [scotland]
+        country: SCOTLAND
+  output:
+    council_tax_reduction_pension_contribution_deduction_rate: [0.25, 0.5]
+    council_tax_reduction_applicable_income: [9500, 9000]
+    council_tax_reduction_net_earnings: [9500, 9000]
+    council_tax_reduction_pensioner_earnings_disregard: [0, 0]
+    housing_benefit_net_earnings: [9000, 9000]
+
+- name: A reform of the Oxford share moves only that scheme's applicable income
+  # Model reform, not current law.
+  # Oxford, working age: 10,000 - 0.25 x 2,000 = 9,500.
+  # Control, Scotland, working age: 10,000 - 0.5 x 2,000 = 9,000.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.local_authorities.oxford.council_tax_reduction.means_test.pension_contribution_deduction_rate: 0.25
+    people:
+      oxford:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+      scotland:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+    benunits:
+      oxford_family:
+        members: [oxford]
+        would_claim_uc: false
+        would_claim_pc: false
+      scotland_family:
+        members: [scotland]
+        would_claim_uc: false
+        would_claim_pc: false
+    households:
+      oxford_household:
+        members: [oxford]
+        country: ENGLAND
+        local_authority: OXFORD
+      scotland_household:
+        members: [scotland]
+        country: SCOTLAND
+  output:
+    council_tax_reduction_pension_contribution_deduction_rate: [0.25, 0.5]
+    council_tax_reduction_applicable_income: [9500, 9000]
+    council_tax_reduction_net_earnings: [9500, 9000]
+    council_tax_reduction_pensioner_earnings_disregard: [0, 0]
+    housing_benefit_net_earnings: [9000, 9000]
+
+- name: A reform of the Housing Benefit share moves no Council Tax Reduction scheme
+  # Model reform, not current law. Housing Benefit net earnings become
+  # 10,000 - 0.25 x 2,000 = 9,500; every scheme's figures stay as at current law.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.dwp.housing_benefit.means_test.pension_contribution_deduction_rate: 0.25
+    people:
+      scotland:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+      wales:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+      england_pensioner:
+        age: 70
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+      england_default:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+      merton:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+      kingston:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+      newham:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+      westminster:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+      oxford:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+    benunits:
+      scotland_family:
+        members: [scotland]
+        would_claim_uc: false
+        would_claim_pc: false
+      wales_family:
+        members: [wales]
+        would_claim_uc: false
+        would_claim_pc: false
+      england_pensioner_family:
+        members: [england_pensioner]
+        would_claim_uc: false
+        would_claim_pc: false
+      england_default_family:
+        members: [england_default]
+        would_claim_uc: false
+        would_claim_pc: false
+      merton_family:
+        members: [merton]
+        would_claim_uc: false
+        would_claim_pc: false
+      kingston_family:
+        members: [kingston]
+        would_claim_uc: false
+        would_claim_pc: false
+      newham_family:
+        members: [newham]
+        would_claim_uc: false
+        would_claim_pc: false
+      westminster_family:
+        members: [westminster]
+        would_claim_uc: false
+        would_claim_pc: false
+      oxford_family:
+        members: [oxford]
+        would_claim_uc: false
+        would_claim_pc: false
+    households:
+      scotland_household:
+        members: [scotland]
+        country: SCOTLAND
+      wales_household:
+        members: [wales]
+        country: WALES
+      england_pensioner_household:
+        members: [england_pensioner]
+        country: ENGLAND
+      england_default_household:
+        members: [england_default]
+        country: ENGLAND
+      merton_household:
+        members: [merton]
+        country: ENGLAND
+        local_authority: MERTON
+      kingston_household:
+        members: [kingston]
+        country: ENGLAND
+        local_authority: KINGSTON_UPON_THAMES
+      newham_household:
+        members: [newham]
+        country: ENGLAND
+        local_authority: NEWHAM
+      westminster_household:
+        members: [westminster]
+        country: ENGLAND
+        local_authority: WESTMINSTER
+      oxford_household:
+        members: [oxford]
+        country: ENGLAND
+        local_authority: OXFORD
+  output:
+    housing_benefit_net_earnings: [9500, 9500, 9500, 9500, 9500, 9500, 9500, 9500, 9500]
+    council_tax_reduction_pension_contribution_deduction_rate: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
+    council_tax_reduction_applicable_income: [9000, 9000, 8740, 9000, 9000, 9000, 9000, 9000, 9000]
+    council_tax_reduction_net_earnings: [9000, 9000, 9000, 9000, 9000, 9000, 9000, 9000, 9000]
+    council_tax_reduction_pensioner_earnings_disregard: [0, 0, 260, 0, 0, 0, 0, 0, 0]
+
+- name: A pensioner's net earnings below the disregard are all disregarded at current law
+  # Net earnings are 300 - 0.5 x 200 = 200, below the single pensioner's 260, so
+  # the disregard is 200 (SI 2012/2885 Sch 4 para 8(a), capped at net earnings).
+  # Applicable income is the State Pension and earnings, 5,300, less 0.5 x 200
+  # and the 200 disregard: 5,000. Income tax is nil (5,300 is below the
+  # personal allowance).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        employment_income: 300
+        personal_pension_contributions: 200
+        state_pension: 5_000
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_uc: false
+        would_claim_pc: false
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    income_tax: 0
+    council_tax_reduction_pension_contribution_deduction_rate: 0.5
+    housing_benefit_net_earnings: 200
+    council_tax_reduction_net_earnings: 200
+    council_tax_reduction_pensioner_earnings_disregard: 200
+    council_tax_reduction_applicable_income: 5_000
+
+- name: A reform of the England pensioner share moves the disregard cap with the deduction
+  # Model reform, not current law. Net earnings for Council Tax Reduction are
+  # 300 - 0.25 x 200 = 250, still below 260, so 250 is disregarded. Applicable
+  # income is 5,300 - 0.25 x 200 - 250 = 5,000: earnings wholly disregarded
+  # deduct nothing, whatever the share. Housing Benefit net earnings stay 200.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.local_authorities.england.council_tax_reduction.pensioners.means_test.pension_contribution_deduction_rate: 0.25
+    people:
+      pensioner:
+        age: 70
+        employment_income: 300
+        personal_pension_contributions: 200
+        state_pension: 5_000
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_uc: false
+        would_claim_pc: false
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    council_tax_reduction_pension_contribution_deduction_rate: 0.25
+    housing_benefit_net_earnings: 200
+    council_tax_reduction_net_earnings: 250
+    council_tax_reduction_pensioner_earnings_disregard: 250
+    council_tax_reduction_applicable_income: 5_000
+
+- name: A reform of the Housing Benefit share leaves the Council Tax Reduction disregard cap
+  # Model reform, not current law. Housing Benefit net earnings become
+  # 300 - 0.25 x 200 = 250, but the Council Tax Reduction cap stays at its own
+  # 300 - 0.5 x 200 = 200, so the disregard stays 200 and applicable income
+  # 5,000. Reading Housing Benefit's net earnings, the disregard was 250 and
+  # applicable income 5,300 - 0.5 x 200 - 250 = 4,950. The outputs use only
+  # variables that exist before this change, so the case fails there by value.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.dwp.housing_benefit.means_test.pension_contribution_deduction_rate: 0.25
+    people:
+      pensioner:
+        age: 70
+        employment_income: 300
+        personal_pension_contributions: 200
+        state_pension: 5_000
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_uc: false
+        would_claim_pc: false
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    housing_benefit_net_earnings: 250
+    council_tax_reduction_pensioner_earnings_disregard: 200
+    council_tax_reduction_applicable_income: 5_000
+
+- name: Under a reform of the Housing Benefit share Council Tax Reduction net earnings keep the scheme's share
+  # Model reform, not current law. The same pensioner: the England pensioner
+  # scheme's share stays 0.5, so its net earnings stay 300 - 0.5 x 200 = 200.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.dwp.housing_benefit.means_test.pension_contribution_deduction_rate: 0.25
+    people:
+      pensioner:
+        age: 70
+        employment_income: 300
+        personal_pension_contributions: 200
+        state_pension: 5_000
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_uc: false
+        would_claim_pc: false
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    council_tax_reduction_pension_contribution_deduction_rate: 0.5
+    council_tax_reduction_net_earnings: 200
+
+- name: A couple's contributions are summed at the scheme's share
+  # Scotland, working age. Each partner earns 10,000 and they contribute 2,000
+  # and 1,000. Applicable income is 20,000 - 0.5 x 3,000 = 18,500.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+      partner:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 1_000
+    benunits:
+      benunit:
+        members: [head, partner]
+        would_claim_uc: false
+        would_claim_pc: false
+    households:
+      household:
+        members: [head, partner]
+        country: SCOTLAND
+  output:
+    council_tax_reduction_applicable_income: 18_500
+    council_tax_reduction_net_earnings: 18_500
+
+- name: A couple's applicable income falls by their contributions times the change in share
+  # Model reform, not current law. At a quarter, 20,000 - 0.25 x 3,000 = 19,250:
+  # 750 more than at half, which is 3,000 x (0.5 - 0.25).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.local_authorities.scotland.council_tax_reduction.means_test.pension_contribution_deduction_rate: 0.25
+    people:
+      head:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 2_000
+      partner:
+        age: 40
+        employment_income: 10_000
+        personal_pension_contributions: 1_000
+    benunits:
+      benunit:
+        members: [head, partner]
+        would_claim_uc: false
+        would_claim_pc: false
+    households:
+      household:
+        members: [head, partner]
+        country: SCOTLAND
+  output:
+    council_tax_reduction_applicable_income: 19_250
+    council_tax_reduction_net_earnings: 19_250

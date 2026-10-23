@@ -34,7 +34,11 @@ COUPLE:
 metadata:
   unit: currency-GBP
   period: week
-  uprating: gov.benefit_uprating_cpi
+  # Not uprated by September CPI: the threshold rose 4.9% in April 2026, when
+  # September CPI was 3.8% (Benefit and pension rates 2026 to 2027). Keeps the
+  # lagged calendar-year CPI projection it had through gov.benefit_uprating_cpi
+  # until its own basis is modelled.
+  uprating: gov.economic_assumptions.indices.obr.lagged_cpi
   propagate_metadata_to_children: true
   reference:
     - title: The State Pension Credit Regulations 2002 reg. 7

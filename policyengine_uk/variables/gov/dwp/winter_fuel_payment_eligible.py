@@ -54,10 +54,12 @@ class winter_fuel_payment_eligible(Variable):
             "is_on_winter_fuel_payment_relevant_benefit", period
         )
         income_test = p.taxable_income_test
+        # ITEPA 2003 s.681I(1)(b): the charge applies only where total income
+        # "exceeds £35,000", so a person with exactly £35,000 keeps the payment.
         meets_income_test = (
             person.household.any(
                 age_eligible
-                & (person("total_income", period) < income_test.maximum_taxable_income)
+                & (person("total_income", period) <= income_test.maximum_taxable_income)
             )
             & np.isin(country, ["ENGLAND", "WALES"])
             & income_test.use_maximum_taxable_income

@@ -4,11 +4,11 @@ Test suite for salary sacrifice pension cap reform fiscal impacts.
 This tests the £2,000 salary sacrifice cap policy announced in Autumn Budget 2025,
 which takes effect from April 2029.
 
-Methodology (matching blog at https://policyengine.org/uk/research/uk-salary-sacrifice-cap):
-- Employees redirect excess above £2,000 to regular pension contributions
-- Regular pension contributions get income tax relief but NOT NI relief
+Current NI-only model routing (historical population benchmarks below):
+- Excess above £2,000 is NIC-only earnings; pension contributions stay employer payments
+- Ordinary income-tax treatment is unchanged; only NIC exemption is capped
 - Broad-base haircut: employers spread NI costs across ALL workers (~0.16% of employment income)
-- Revenue comes from NI on the redirected excess
+- Revenue comes from NI on the excess included in NI earnings
 
 Expected revenue: ~£3.3 billion in 2029-30
 
@@ -60,10 +60,10 @@ def test_salary_sacrifice_cap_revenue_impact(baseline_simulation, reform_simulat
     """
     Test that the £2,000 salary sacrifice cap raises ~£3.3 billion.
 
-    This matches the PolicyEngine blog methodology:
-    - Employees redirect excess to regular pension contributions
-    - Full excess subject to NI (broad-base haircut reduces all workers' income)
-    - Income tax relief preserved via regular pension contributions
+    The current NI-only model routing is:
+    - Excess is included only in NI earnings
+    - Broad-base haircut reduces all workers' income as a separate assumption
+    - Employer pension contributions retain their income-tax treatment
     """
     baseline_gov_balance = baseline_simulation.calculate(
         "gov_balance", POLICY_YEAR
@@ -95,7 +95,7 @@ def test_ni_increases_with_reform(baseline_simulation, reform_simulation):
     """
     Test that total NI increases when the cap is applied.
 
-    The reform adds excess salary sacrifice back to employment income,
+    The reform adds excess salary sacrifice only to NIC earnings,
     which is then subject to NI through the normal Class 1 calculation.
     """
     baseline_ni = baseline_simulation.calculate(
@@ -127,9 +127,8 @@ def test_income_tax_impact(baseline_simulation, reform_simulation):
     """
     Test the income tax impact of the reform.
 
-    The excess is added to employment income and to employee pension
-    contributions for relief. Due to pension relief caps, some people
-    don't get full relief, resulting in a small positive income tax impact.
+    The excess is NIC-only and creates no member payment or ordinary tax.
+    The separate broad-base haircut can still affect ordinary tax.
     """
     baseline_tax = baseline_simulation.calculate("income_tax", POLICY_YEAR).sum()
     reform_tax = reform_simulation.calculate("income_tax", POLICY_YEAR).sum()
@@ -141,25 +140,22 @@ def test_income_tax_impact(baseline_simulation, reform_simulation):
     print(f"Income tax change: £{tax_change / 1e9:.3f}bn")
 
     # Income tax change should be small and approximately neutral.
-    # The reform redirects excess salary sacrifice to employee pension
-    # contributions (which get income tax relief), while the total pension
-    # input for Annual Allowance purposes stays the same (no AA charge
-    # difference). Net effect is a small income tax decrease.
+    # NIC reclassification preserves actual pension input and ordinary pay.
+    # The unchanged broad-base haircut remains a separate economic effect.
     assert abs(tax_change) < 1e9, (
         f"Income tax change should be small (<£1bn), got £{tax_change / 1e9:.3f}bn"
     )
 
 
 @pytest.mark.microsimulation
-def test_excess_redirected_to_pension(reform_simulation):
+def test_excess_included_in_ni_earnings(reform_simulation):
     """
-    Test that full excess is redirected to employee pension contributions.
+    Test that full excess is included in NIC earnings.
 
-    The blog assumes employees maintain their total pension contributions
-    by redirecting the full excess to regular pension contributions.
+    Physical sacrifice remains an employer pension contribution.
     """
     redirected = reform_simulation.calculate(
-        "salary_sacrifice_returned_to_income", POLICY_YEAR
+        "salary_sacrifice_pension_ni_excess", POLICY_YEAR
     ).sum()
 
     # Should be significant (blog says £13.8bn excess - updated to current model)
@@ -215,12 +211,11 @@ def test_affected_population(reform_simulation):
 
 
 @pytest.mark.microsimulation
-def test_full_excess_redirected(reform_simulation):
+def test_full_excess_included_in_ni_earnings(reform_simulation):
     """
-    Test that the full excess is redirected (no targeted haircut).
+    Test that the full excess is included in NIC earnings (no targeted haircut).
 
-    The broad-base haircut reduces ALL workers' employment income,
-    but the full excess above cap is redirected to regular pension contributions.
+    The separate broad-base haircut still reduces ALL workers' employment income.
     """
     # Get weighted totals using map_to for proper aggregation. Only people
     # with pay have a salary sacrifice, so the excess is measured on that.
@@ -231,7 +226,7 @@ def test_full_excess_redirected(reform_simulation):
     )
     weights = reform_simulation.calculate("person_weight", POLICY_YEAR)
     redirected = reform_simulation.calculate(
-        "salary_sacrifice_returned_to_income", POLICY_YEAR, map_to="person"
+        "salary_sacrifice_pension_ni_excess", POLICY_YEAR, map_to="person"
     )
 
     cap = 2000
