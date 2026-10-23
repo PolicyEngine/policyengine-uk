@@ -1,34 +1,39 @@
-# PIP point system (planned)
+# PIP point system (partly planned)
 
 ```{warning}
-**Not yet modelled.** PolicyEngine UK currently takes the PIP daily-living
-and mobility **band** as a categorical input (`pip_dl_category` and
-`pip_m_category`, each `STANDARD | ENHANCED | NONE`) and multiplies by
-the published weekly rate. The **points-system** logic that determines
-which band a claimant falls into (ten daily-living activities and two
-mobility activities, with descriptors worth 0 to 12 points under the
-legislation) is **not** modelled.
+**Partly modelled.** PolicyEngine UK sets the PIP daily-living and
+mobility **band** in `pip_dl_category` and `pip_m_category` (each
+`STANDARD | ENHANCED | NONE`) and multiplies by the published weekly rate.
+A band can be given as an input or derived from total points
+(`pip_dl_points`, `pip_m_points`) against the 8- and 12-point thresholds.
+The activity-level logic (ten daily-living activities and two mobility
+activities, with descriptors worth 0 to 12 points under the legislation)
+is **not** modelled.
 This page captures the proposed scope, tracked under
 [#1069](https://github.com/PolicyEngine/policyengine-uk/issues/1069).
 ```
 
 ```{admonition} Status, October 2026
-A first step is open as
+A first step merged on 21 October 2026 as
 [#1661](https://github.com/PolicyEngine/policyengine-uk/pull/1661): total
 points inputs (`pip_dl_points`, `pip_m_points`) and the 8- and 12-point
-thresholds under `gov.dwp.pip.{daily_living,mobility}.points_thresholds`,
-with the category derived from points only when it is not given as an
-input. That is a simpler form of Phase 1 below: no per-activity scores
-and no `use_point_system` switch, since a category input already takes
-precedence over the formula.
+thresholds under `gov.dwp.pip.{daily_living,mobility}.points_thresholds`.
+The category is derived from the person's latest points only when no
+category is given as an input for the year; a category given for an
+earlier year carries forward unless the person has points for a later year
+(`policyengine_uk/utils/pip.py`). That is a simpler form of Phase 1 below:
+no per-activity scores and no `use_point_system` switch, since a category
+input already takes precedence over the formula.
 
-PR #1661 is waiting on a data-side path. Its companion,
+No data path supplies points yet. The datasets store categories, not
+points, so points play no part in microsimulation. The companion PR,
 [policyengine-uk-data #408](https://github.com/PolicyEngine/policyengine-uk-data/pull/408)
 (points imputed from the observed categories), was closed in June 2026
 in the uk-data archive clean-up, with PIP points derivation to move into
 Microcosm UK's source stages
 ([microcosm #145](https://github.com/PolicyEngine/microcosm/issues/145))
-once the input variables exist here.
+once the input variables existed here. Microcosm #145 closed on 16 October
+2026 with that item dropped, because the variables did not exist yet.
 ```
 
 ## What PIP scoring actually is
@@ -40,7 +45,7 @@ Security (Personal Independence Payment) Regulations 2013):
 - **Part 2: Daily living activities**: ten activities (preparing food,
   taking nutrition, managing therapy, washing and bathing, managing
   toilet needs, dressing and undressing, communicating verbally,
-  reading and understanding signs and symbols, engaging with other
+  reading and understanding signs, symbols and words, engaging with other
   people face-to-face, making budgeting decisions). Each activity has
   a set of descriptors with point values from 0 up to 12; the top
   value varies by activity.
@@ -68,8 +73,8 @@ sufficient because:
 - the FRS doesn't capture activity-level point scores at all,
 - DWP's published caseload reports band counts (standard / enhanced)
   rather than activity scores,
-- the data (both the certified Enhanced FRS from policyengine-uk-data
-  and Microcosm UK, which is being built to replace it) sets
+- the data (both Microcosm UK, the certified default since October 2026,
+  and the Enhanced FRS from policyengine-uk-data, which it replaced) sets
   `pip_dl_category` and `pip_m_category` by comparing the weekly PIP daily-living and mobility
   amounts respondents report in the FRS with the standard and enhanced
   rates.
@@ -90,7 +95,9 @@ Three reform scenarios that the categorical model can't answer:
    this; the categorical band wouldn't shift unless an analyst manually
    re-bands a synthetic distribution.
 2. **Threshold reform**: changing the band thresholds (for example raising
-   the standard-rate floor from 8 to 10 points). Same limitation.
+   the standard-rate floor from 8 to 10 points). The thresholds are now
+   parameters, so this works for households entered with points, but not in
+   microsimulation, where the data supply bands rather than points.
 3. **Targeted analysis by descriptor**: distributional questions like
    "how does the enhanced cohort split between mobility activities" need
    the underlying activity scores.
@@ -99,11 +106,9 @@ Three reform scenarios that the categorical model can't answer:
 
 ### Phase 1: points-to-category mapping
 
-- Add the threshold parameters under `gov/dwp/pip/`:
-  - `daily_living/standard_threshold.yaml` (8)
-  - `daily_living/enhanced_threshold.yaml` (12)
-  - `mobility/standard_threshold.yaml` (8)
-  - `mobility/enhanced_threshold.yaml` (12)
+- Threshold parameters: done in #1661 as
+  `gov.dwp.pip.{daily_living,mobility}.points_thresholds.{standard,enhanced}`
+  (8 and 12).
 - Add per-activity score inputs as `pip_dl_activity_1_score` ...
   `pip_dl_activity_10_score`, `pip_m_activity_1_score`,
   `pip_m_activity_2_score`. Type: integer (Person, YEAR), default 0.
@@ -138,8 +143,11 @@ machinery (for reform analysis) get the activity-level surface.
   The data (Microcosm UK, as the replacement dataset) would need to
   impute descriptor selections per claimant that are consistent with the observed band. The plausible
   approach is to draw uniformly across descriptor combinations that
-  sum to the observed band, weighted by DWP-published "activities most
-  commonly scoring above zero" tables.
+  sum to the observed band, weighted by the point-score distributions for
+  each daily-living activity that DWP published in the
+  [Pathways to Work evidence pack](https://www.gov.uk/government/consultations/pathways-to-work-reforming-benefits-and-support-to-get-britain-working-green-paper/pathways-to-work-evidence-pack-chapter-2-reforming-the-structure)
+  (chapter 2, Tables 2.27 and 2.28, January 2025 caseload; daily living
+  only).
 - This phase is the heaviest and is only required to make Phase 2
   reforms work on the calibrated microsim. For the household
   calculator, users can input activity scores directly.
@@ -164,7 +172,7 @@ machinery (for reform analysis) get the activity-level surface.
 - DWP, [Modernising support for independent living: the health and disability green paper (April 2024)][green-paper]: proposals on the descriptors.
 - DWP, [Pathways to Work: Reforming Benefits and Support to Get Britain Working (March 2025)](https://www.gov.uk/government/consultations/pathways-to-work-reforming-benefits-and-support-to-get-britain-working-green-paper): the four-point proposal.
 - Issue: [#1069](https://github.com/PolicyEngine/policyengine-uk/issues/1069).
-- Existing model: `pip_dl_category`, `pip_m_category`, `pip_dl`, `pip_m`.
+- Existing model: `pip_dl_category`, `pip_m_category`, `pip_dl_points`, `pip_m_points`, `pip_dl`, `pip_m`, and the thresholds under `gov.dwp.pip.{daily_living,mobility}.points_thresholds`.
 
 [si-377]: https://www.legislation.gov.uk/uksi/2013/377
 [assess-guide]: https://www.gov.uk/government/publications/personal-independence-payment-assessment-guide-for-assessment-providers
