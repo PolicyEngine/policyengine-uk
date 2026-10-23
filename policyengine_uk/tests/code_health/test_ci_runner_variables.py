@@ -27,6 +27,12 @@ import pytest
 import yaml
 
 WORKFLOWS = Path(__file__).resolve().parents[3] / ".github" / "workflows"
+if not WORKFLOWS.is_dir():
+    # The release workflow tests the installed wheel, which has no .github.
+    pytest.skip(
+        "the .github folder is not part of an installed package",
+        allow_module_level=True,
+    )
 
 ARM, X64 = "ubuntu-24.04-arm", "ubuntu-latest"
 
