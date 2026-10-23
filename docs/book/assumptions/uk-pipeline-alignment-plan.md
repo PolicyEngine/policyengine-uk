@@ -58,14 +58,22 @@ the eligibility tests for Child Tax Credit, Working Tax Credit, Income
 Support and working-age Housing Benefit (`is_CTC_eligible`,
 `is_WTC_eligible`, `income_support_eligible`, `housing_benefit_eligible`)
 also require a reported award. In years when tax credits are active it does
-turn on `would_claim_CTC` for families that report no Child Tax Credit;
-their `tax_credits` then includes the Child Tax Credit child element, which
-`CTC_child_element` computes without checking `is_CTC_eligible`, and that
-amount enters their Housing Benefit and Council Tax Reduction means tests.
-In hand-entered situations the flag is already true for families that
-report none of the seven benefits, and the same eligibility tests mean that,
-of these five benefits, such a family can receive only Council Tax
-Reduction and pension-age Housing Benefit.
+turn on `would_claim_CTC` for families that report no Child Tax Credit.
+Unlike the family and disabled child elements, `CTC_child_element` does not
+check `is_CTC_eligible`, so a family with children that claims Child Tax
+Credit without being eligible has `tax_credits` (the child element, less the
+income taper) but no `child_tax_credit`. That amount enters its Housing
+Benefit and Council Tax Reduction means tests, and the tax credit award that
+the 2024 Winter Fuel Payment and Pension Age Winter Heating Payment tests
+read. This already happens on `main` in tax-credit years with nothing
+overridden. In hand-entered situations the flag is true for every family
+that reports none of the seven benefits, so each such family with children
+claims Child Tax Credit. In both kinds of simulation, a family that reports
+Child Tax Credit but claims Universal Credit, or whose legacy benefits have
+closed, still claims it although ineligible. Otherwise, the same eligibility
+tests mean that a hand-entered family reporting none of the seven benefits
+can receive, of these five benefits, only Council Tax Reduction and
+pension-age Housing Benefit.
 
 **Fix**: convert each to input-only `default_value = True` (matching
 `would_claim_uc`), and add each to Microcosm UK's reported-anchored
@@ -73,10 +81,11 @@ take-up stages. Because of those eligibility tests, the only new awards
 this gives families that report none of these benefits are Council Tax
 Reduction and pension-age Housing Benefit (the model's pension-age route,
 which includes mixed-age couples that can still claim on it). For years when
-tax credits are active, `CTC_child_element` would first need an
-`is_CTC_eligible` gate: without one, a non-reporting family with children
-drawn as a Child Tax Credit claimant gets `tax_credits` but no Child Tax
-Credit, and that amount cuts its Housing Benefit and Council Tax Reduction.
+tax credits are active, `CTC_child_element` needs an `is_CTC_eligible` gate.
+The fix would make the gap wider but does not create it: without the gate,
+every family with children drawn as a Child Tax Credit claimant without a
+report gets `tax_credits` but no Child Tax Credit, and that amount cuts its
+Council Tax Reduction and any Housing Benefit.
 Tax credits stopped paying ongoing awards on 5 April
 2025, and `gov.dwp.tax_credits.active` is false from 2025-04-06 (see
 [tax-credits.md](../programs/gov/dwp/tax-credits.md)), so the WTC and CTC
@@ -154,7 +163,8 @@ total wealth components, `capital_allowances`, `deficiency_relief`,
 and the full list of `*_reported` benefits. policyengine-uk-data#362 (April
 2026) added this stage with a narrower output list: pension contributions,
 tax-free savings income and the `*_reported` benefits. Microcosm UK's second
-stage has the same outputs.
+stage has the same outputs, less the incapacity benefit and maternity
+allowance reports, which its base data lacks.
 
 ## Specific aggregate residuals
 
