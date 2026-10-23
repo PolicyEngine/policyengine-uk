@@ -3,6 +3,7 @@ from datetime import date
 from pathlib import Path
 from io import BytesIO
 from zipfile import ZipFile
+import xml.etree.ElementTree as ET
 
 import pytest
 import yaml
@@ -1134,6 +1135,7 @@ def cash_table_rows(*, markers=None, years=None, label="Business rates"):
     them: title, markers, fiscal years, then one line."""
     return [
         {"B": CASH_TITLE},
+        {"D": "£ billion"},
         *(markers or [{"D": "Outturn", "E": "Forecast"}]),
         years or {"D": "2024-25", "E": "2025-26", "F": "2026-27"},
         {"B": label, "D": "30", "E": "31.5", "F": "33.075"},
@@ -1436,6 +1438,199 @@ def test_march_2026_tables_reproduce_the_committed_series():
         previous=make_previous_receipts_xlsx(levels=MARCH_2025_RECEIPTS),
     )
     assert rendered == committed
+
+
+REAL_RECEIPTS_DIR = Path(__file__).parent / "fixtures" / "obr_receipts"
+REAL_RECEIPTS = {
+    year: (REAL_RECEIPTS_DIR / f"obr_efo_march_{year}_receipts.xlsx").read_bytes()
+    for year in (2025, 2026)
+}
+XLSX_MAIN = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+XLSX_NS = {"m": XLSX_MAIN}
+
+
+def mutate_real_receipts(workbook, table, unit, scale=1):
+    """Change the real table's unit cell and scale its selected receipts rows.
+
+    Keep all other archive entries, including the shared strings, unchanged.
+    """
+    output = BytesIO()
+    with ZipFile(BytesIO(workbook)) as source, ZipFile(output, "w") as dest:
+        path = _sheet_paths(source)[table]
+        strings = [
+            "".join(node.itertext())
+            for node in ET.fromstring(source.read("xl/sharedStrings.xml"))
+        ]
+        sheet = ET.fromstring(source.read(path))
+        first_column = "D" if table in ("3.8", "3.9") else "C"
+        cell = sheet.find(f"m:sheetData/m:row/m:c[@r='{first_column}3']", XLSX_NS)
+        cell.clear()
+        cell.attrib.update(r=f"{first_column}3", t="inlineStr")
+        ET.SubElement(
+            ET.SubElement(cell, f"{{{XLSX_MAIN}}}is"), f"{{{XLSX_MAIN}}}t"
+        ).text = unit
+        labels = {spec.row for spec in RECEIPTS_SERIES_SPECS}
+        for row in sheet.findall("m:sheetData/m:row", XLSX_NS):
+            label = row.find("m:c[@t='s']/m:v", XLSX_NS)
+            if label is None or strings[int(label.text)].lower() not in labels:
+                continue
+            for number in row.findall("m:c", XLSX_NS):
+                value = number.find("m:v", XLSX_NS)
+                if value is not None and number.attrib.get("t") != "s":
+                    value.text = repr(float(value.text) * scale)
+        for entry in source.infolist():
+            dest.writestr(
+                entry,
+                ET.tostring(sheet) if entry.filename == path else source.read(entry),
+            )
+    return output.getvalue()
+
+
+def test_real_receipts_workbooks_reproduce_committed_yaml_byte_for_byte():
+    committed = get_yoy_growth_path().read_bytes()
+    rendered = render(
+        committed.decode(), current=REAL_RECEIPTS[2026], previous=REAL_RECEIPTS[2025]
+    )
+    assert rendered.encode() == committed
+
+
+@pytest.mark.parametrize(
+    "year, tables", [(2026, ("3.2", "3.7", "3.8")), (2025, ("3.2", "3.7", "3.9"))]
+)
+@pytest.mark.parametrize(
+    "unit, scale",
+    [
+        ("£ million", 1000),
+        ("£m", 1000),
+        ("% of GDP", 1),
+        ("£ billion (real terms)", 1),
+        ("£ billion per cent", 1),
+        ("€ billion", 1),
+        ("", 1),
+    ],
+)
+def test_real_receipts_units_are_refused_before_any_write(
+    tmp_path, year, tables, unit, scale
+):
+    for table in tables:
+        yoy, gap_dir = write_tree(tmp_path)
+        before = {path: path.read_bytes() for path in [yoy, *gap_dir.iterdir()]}
+        receipts = dict(REAL_RECEIPTS)
+        receipts[year] = mutate_real_receipts(receipts[year], table, unit, scale)
+        with pytest.raises(ValueError, match=rf"Table {table} .*receipts unit"):
+            run_main(
+                tmp_path,
+                make_test_xlsx(),
+                "--yaml-path",
+                str(yoy),
+                receipts=receipts[2026],
+                previous_receipts=receipts[2025],
+            )
+        assert {path: path.read_bytes() for path in before} == before
+        assert not list(yoy.parent.rglob("*.staged"))
+
+
+SUPPORTED_BILLION_LABELS = (
+    "£ billion",
+    "£bn",
+    "£ bn",
+    "  £ BILLION  ",
+    "£\u00a0billion",
+)
+
+
+@pytest.mark.parametrize("unit", SUPPORTED_BILLION_LABELS)
+def test_explicit_billion_unit_aliases_preserve_the_real_workbook_output(unit):
+    assert (
+        render(
+            get_yoy_growth_path().read_text(),
+            current=mutate_real_receipts(REAL_RECEIPTS[2026], "3.8", unit),
+            previous=mutate_real_receipts(REAL_RECEIPTS[2025], "3.9", unit),
+        ).encode()
+        == get_yoy_growth_path().read_bytes()
+    )
+
+
+@pytest.mark.parametrize(
+    "declarations",
+    [[], [{"D": "£ billion"}, {"D": "£ million"}], [{"D": "£ billion", "E": "% GDP"}]],
+)
+def test_receipts_units_must_be_unambiguous_and_belong_to_the_selected_table(
+    declarations,
+):
+    rows = cash_table_rows()
+    rows[1:2] = declarations
+    # A valid unit in another table must not supply a missing cash-table unit.
+    rows += [{"B": "3.5 Current receipts (on an accrued basis)"}, {"D": "£ billion"}]
+    with pytest.raises(ValueError, match="receipts unit"):
+        find_receipts_line({"3.8": rows}, GREAT_BRITAIN)
+
+
+@settings(max_examples=50, deadline=None, derandomize=True)
+@given(
+    current_unit=st.one_of(
+        st.sampled_from(SUPPORTED_BILLION_LABELS),
+        st.sampled_from(
+            ("£m", "£ million", "£ billion per cent", "% GDP", "USD billion", "")
+        ),
+        st.text(
+            alphabet="£€$%abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789./()-_",
+            max_size=30,
+        ),
+    ),
+    previous_unit=st.sampled_from((*SUPPORTED_BILLION_LABELS, "£m", "€ billion", "")),
+    scale=st.floats(
+        min_value=0.001, max_value=1000, allow_nan=False, allow_infinity=False
+    ),
+)
+def test_real_receipts_unit_labels_and_scale_factors(
+    current_unit, previous_unit, scale
+):
+    """A common scale cannot change ratios; unsupported declarations always fail."""
+    current = mutate_real_receipts(REAL_RECEIPTS[2026], "3.8", current_unit, scale)
+    previous = mutate_real_receipts(REAL_RECEIPTS[2025], "3.9", previous_unit, scale)
+    supported = {"£ billion", "£bn", "£ bn"}
+    if any(
+        " ".join(unit.lower().split()) not in supported
+        for unit in (current_unit, previous_unit)
+    ):
+        with pytest.raises(ValueError, match="receipts unit"):
+            compute_receipts_growth(current, previous)
+    else:
+        expected = compute_receipts_growth(REAL_RECEIPTS[2026], REAL_RECEIPTS[2025])
+        actual = compute_receipts_growth(current, previous)
+        assert {path: series.values for path, series in actual.items()} == {
+            path: series.values for path, series in expected.items()
+        }
+
+
+def test_next_release_real_receipts_refuse_a_thousandfold_unit_change():
+    """The review's next-EFO attack must never turn zero growth into 999."""
+    output = BytesIO()
+    with ZipFile(BytesIO(REAL_RECEIPTS[2026])) as source, ZipFile(output, "w") as dest:
+        # Shift only the release and year labels in the original shared strings,
+        # retaining every numeric cell and the worksheets' original layout.
+        path = "xl/sharedStrings.xml"
+        strings = ET.fromstring(source.read(path))
+        for text in strings.iter(f"{{{XLSX_MAIN}}}t"):
+            if text.text and import_obr_forecasts.FISCAL_YEAR_RE.fullmatch(text.text):
+                text.text = import_obr_forecasts.fiscal_year_label(
+                    int(text.text[:4]) + 1
+                )
+            elif text.text:
+                text.text = text.text.replace("March 2026", "March 2027")
+        for entry in source.infolist():
+            dest.writestr(
+                entry,
+                ET.tostring(strings) if entry.filename == path else source.read(entry),
+            )
+    advanced = output.getvalue()
+    assert infer_workbook_release(advanced) == ("March", 2027)
+    control = compute_receipts_growth(advanced, REAL_RECEIPTS[2026])
+    assert control[RECEIPTS_PATHS["great_britain"]].values[2025] == 0.0
+    attacked = mutate_real_receipts(advanced, "3.8", "£m", 1000)
+    with pytest.raises(ValueError, match="receipts unit"):
+        compute_receipts_growth(attacked, REAL_RECEIPTS[2026])
 
 
 def test_workbook_release_comes_from_the_contents_sheet():
