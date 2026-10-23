@@ -25,6 +25,22 @@ Use this skill whenever adding, moving, or reviewing tests.
   private H5 files in unit-style tests. Mock those seams or skip cleanly when the
   external artifact is unavailable.
 
+## Microsimulation Data
+
+Microsimulation tests run on one certified dataset, pinned by Hugging Face
+commit and SHA-256 in `policyengine_uk/tests/certified_dataset.yaml`. With
+`HUGGING_FACE_TOKEN` set, `conftest.py` selects that dataset and verifies its
+bytes before the first data test runs. Without a token, data tests skip.
+
+Set `POLICYENGINE_UK_REQUIRE_TEST_DATA=1` in jobs that must run the data tests.
+Each data test then fails at setup when the dataset is unavailable, instead of
+skipping, and runs only on the pinned dataset. Credential-free tests are
+unaffected.
+
+The reform fixtures in `microsimulation/reforms_config.yaml` record the dataset
+they were computed on. When the pin moves, recompute them on the new dataset,
+and add each new value under `receipts` rather than overwriting the old ones.
+
 ## Commands
 
 Run lint and formatting before committing:
@@ -70,10 +86,10 @@ the same suite,
 tree; a release tests the wheel it is about to publish, installed on its own.
 
 The suite runs the YAML policy tests in one job and splits the Python tests
-over four runners. Each runner runs one shard:
+over five runners. Each runner runs one shard:
 
 ```bash
-pytest policyengine_uk/tests -n 4 --dist worksteal --shard K/4 -o xfail_strict=true
+pytest policyengine_uk/tests -n 4 --dist worksteal --shard K/5 -o xfail_strict=true
 ```
 
 `--shard K/N` is defined in `policyengine_uk/tests/conftest.py`. It keeps the

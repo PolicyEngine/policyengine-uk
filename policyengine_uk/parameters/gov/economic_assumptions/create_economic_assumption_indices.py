@@ -10,9 +10,11 @@ def create_economic_assumption_indices(
 ) -> ParameterNode:
     econ_assumptions: ParameterNode = parameters.gov.economic_assumptions
     yoy_growth: ParameterNode = econ_assumptions.yoy_growth
+    # Index levels dated 1 January, one per calendar year, so a bare-year
+    # reform key names the calendar year (policyengine_uk.utils.dated_reforms).
     indices = ParameterNode(
         name="gov.economic_assumptions.indices",
-        data={},
+        data={"metadata": {"calendar_year_series": True}},
     )
     econ_assumptions.add_child(
         "indices",

@@ -10,12 +10,13 @@ Invariants, for every generated case:
 1. Differential: ni_class_4_profits_before_losses, ni_class_4_loss_relief,
    ni_class_4_losses_brought_forward, ni_class_4_losses_carried_forward and
    ni_class_4_profits equal an independent exact-rational reference: the
-   better of actual deductions and the allowance where receipts are known,
-   and losses set against each year's profits, earliest first, with the
-   rest carried forward without limit.
-2. Accounting: trading_loss + losses brought forward = loss relief + losses
-   carried forward; losses brought forward equal last year's losses carried
-   forward; 0 <= loss relief <= profits before losses.
+   better of ordinary expenses with current loss relief and the allowance
+   where receipts are known, and eligible losses set against each year's
+   profits, earliest first, with the rest carried forward without limit.
+2. Accounting: eligible current loss + losses brought forward = loss relief
+   + losses carried forward; supplied losses excluded by allowance treatment
+   receive no Class 4 relief; losses brought forward equal last year's losses
+   carried forward; 0 <= loss relief <= profits before losses.
 3. Bound: 0 <= ni_class_4 <= the s. 15(3) amount on the reference Class 4
    profits <= the s. 15(3) amount on the unrelieved profit. Where regulation
    100 cannot apply (no Class 1 and, from April 2024, Class 2 irrelevant),
@@ -31,7 +32,8 @@ Invariants, for every generated case:
    model matches a reference in which a year without an entry makes no new
    loss, though the engine carries the last entry into it. Total relief
    never exceeds the losses entered (relief plus the final carry-forward
-   equals them), Class 4 profits are never negative, and a year with no
+   plus losses excluded by allowance treatment equals them), Class 4 profits
+   are never negative, and a year with no
    loss entered and none brought forward has no relief. Calculating income
    tax's loss relief or the carried-over trading_loss first, or calculating
    on a branch, changes none of this.
@@ -116,23 +118,58 @@ def reference_allowance(simulation, year):
     )
 
 
-def reference_profits_before_losses(profit, receipts, capital_allowances, allowance):
-    """ITTOIA 2005 Part 2 Chapter 2 profits, after capital allowances and
-    the trading allowance, before loss relief."""
+def reference_trade(profit, receipts, capital_allowances, allowance, current_loss):
+    """Independent profits and eligible annual Class 4 loss.
+
+    Compare ordinary-expense profit less the current loss with allowance
+    profit, which excludes that loss (ITTOIA ss. 783AF and 783AI). Ties use
+    the allowance. Only a loss supplied for this year affects the allowance
+    election or enters the separate Class 4 balance, even if the engine
+    fills in a current Income Tax loss from an earlier input.
+    """
+    ordinary_profit = max(Fraction(0), profit - capital_allowances)
     if receipts > 0 and receipts >= profit:
         if receipts <= allowance:
             # s. 783AF: the trade's profits are nil.
-            return Fraction(0)
-        # The better of actual deductions and the allowance (s. 783AI);
-        # capital allowances are a deduction (CAA 2001 s. 247) that the
-        # allowance replaces, so the two never stack.
-        actual_deductions = receipts - profit + capital_allowances
-        return max(Fraction(0), receipts - max(actual_deductions, allowance))
-    # Receipts unknown: a profit within the allowance is taken to come from
-    # receipts within it; a larger one already reflects the better deduction.
-    if profit <= allowance:
-        return Fraction(0)
-    return max(Fraction(0), profit - capital_allowances)
+            allowance_profit = Fraction(0)
+        else:
+            # Capital allowances are expenses (CAA 2001 s. 247), replaced
+            # rather than added to by the trading allowance.
+            actual_deductions = receipts - profit + capital_allowances
+            allowance_profit = max(
+                Fraction(0), receipts - max(actual_deductions, allowance)
+            )
+    else:
+        # With unknown receipts, the model uses full relief only for a
+        # profit within the allowance; larger profits are reported net.
+        allowance_profit = Fraction(0) if profit <= allowance else ordinary_profit
+    annual_loss = max(current_loss, Fraction(0))
+    if current_loss > ordinary_profit - allowance_profit:
+        return ordinary_profit, annual_loss
+    if allowance_profit < ordinary_profit:
+        return allowance_profit, Fraction(0)
+    # No allowance deduction was available, so ordinary losses remain.
+    return ordinary_profit, annual_loss
+
+
+def reference_uprated_loss(simulation, amount, input_year, target_year):
+    """An income input uprates; an unrelieved Class 4 balance stays nominal."""
+    parameters = simulation.tax_benefit_system.parameters
+
+    def index(year):
+        return exact(
+            parameters(
+                f"{year}-01-01"
+            ).gov.economic_assumptions.indices.obr.per_capita.mixed_income
+        )
+
+    return exact(np.float32(amount)) * index(target_year) / index(input_year)
+
+
+def assert_uprated_loss_cache(simulation, target_year):
+    expected = reference_uprated_loss(simulation, 10_000, 2025, target_year)
+    actual = float(simulation.calculate("trading_loss", target_year)[0])
+    assert abs(actual - float(expected)) <= tolerance(actual, expected)
 
 
 def reference_losses(years, supplied=None):
@@ -255,6 +292,7 @@ def run(simulation, drawn, vary):
             receipts=calculate("self_employment_gross_receipts", period),
             capital_allowances=calculate("capital_allowances", period),
             trading_loss=calculate("trading_loss", period),
+            effective_trading_loss=calculate("ni_class_4_trading_loss", period),
             **{
                 name: calculate(f"ni_class_4_{name}", period)
                 for name in [
@@ -275,19 +313,21 @@ def run(simulation, drawn, vary):
 
 def reference(values, i):
     years = [values[period] for period in sorted(values)]
-    profits = [
-        reference_profits_before_losses(
+    trades = [
+        reference_trade(
             exact(v["profit"][i]),
             exact(v["receipts"][i]),
             exact(v["capital_allowances"][i]),
             v["allowance"],
+            exact(v["trading_loss"][i]),
         )
         for v in years
     ]
-    losses = reference_losses(
-        [(p, exact(v["trading_loss"][i])) for p, v in zip(profits, years)]
-    )
-    return [dict(profits_before_losses=p, **l) for p, l in zip(profits, losses)]
+    losses = reference_losses(trades)
+    return [
+        dict(profits_before_losses=p, effective_trading_loss=loss, **l)
+        for (p, loss), l in zip(trades, losses)
+    ]
 
 
 def unchanged(profit, expenses, allowances, loss, mode, share, variation):
@@ -325,7 +365,7 @@ def test_class_4_profits_match_statutory_reference(sim, drawn):
             )
             assert (
                 abs(
-                    max(model["trading_loss"][i], 0)
+                    model["effective_trading_loss"][i]
                     + model["losses_brought_forward"][i]
                     - model["loss_relief"][i]
                     - model["losses_carried_forward"][i]
@@ -401,6 +441,22 @@ def test_class_4_is_non_decreasing_in_profit(sim, drawn):
 
 @PROPERTY_SETTINGS
 @given(cases, st.sampled_from([more_capital_allowances, more_trading_loss]))
+@example(
+    drawn=[
+        (
+            (0.0, 0.0, 0.0, 0.0, "unknown", 0.5),
+            # Trade A: receipts 20,200, expenses 200, profit 20,000.
+            # Trade B: receipts 100, expenses 799, loss 699. Combined
+            # receipts are 20,300; increasing B's expenses by 2 makes
+            # ordinary treatment beat the allowance's 700 saving.
+            (20_000.0, 300.0, 0.0, 699.0, "consistent", 0.5),
+            0.0,
+            2.0,
+        )
+    ]
+    * CASES,
+    vary=more_trading_loss,
+)
 def test_class_4_is_non_increasing_in_reliefs(sim, drawn, vary):
     values = run(sim, drawn, vary)
     current = values[sim[1]]
@@ -464,13 +520,11 @@ def test_losses_carry_forward_over_many_years(years, opening_balance, random):
     )
     expected = reference_losses(
         [
-            (
-                reference_profits_before_losses(
-                    exact(sim.calculate("self_employment_income", period)[0]),
-                    Fraction(0),
-                    Fraction(0),
-                    reference_allowance(sim, period),
-                ),
+            reference_trade(
+                exact(sim.calculate("self_employment_income", period)[0]),
+                Fraction(0),
+                Fraction(0),
+                reference_allowance(sim, period),
                 exact(sim.calculate("trading_loss", period)[0]),
             )
             for period in periods
@@ -544,12 +598,13 @@ def test_pre_allowance_profits_exhaust_the_loss_in_the_historical_reference():
     )
     periods = (2015, 2016)
     profits = [
-        reference_profits_before_losses(
+        reference_trade(
             Fraction(500),
             Fraction(0),
             Fraction(0),
             reference_allowance(sim, period),
-        )
+            Fraction(1_000 if period == 2015 else 0),
+        )[0]
         for period in periods
     ]
     assert profits == [500, 500]
@@ -616,21 +671,20 @@ def test_a_loss_entered_for_some_years_is_relieved_once(years, random):
     stored_losses = {
         period: exact(np.float32(loss)) for period, loss in entered.items()
     }
-    expected = reference_losses(
-        [
-            (
-                reference_profits_before_losses(
-                    exact(np.float32(profit)),
-                    Fraction(0),
-                    Fraction(0),
-                    reference_allowance(sim, period),
-                ),
+    trades = []
+    for period, (profit, _, _) in zip(periods, years):
+        trades.append(
+            reference_trade(
+                exact(np.float32(profit)),
+                Fraction(0),
+                Fraction(0),
+                reference_allowance(sim, period),
                 stored_losses.get(period, Fraction(0)),
             )
-            for period, (profit, _, _) in zip(periods, years)
-        ]
-    )
+        )
+    expected = reference_losses(trades)
     names = [
+        "trading_loss",
         "losses_brought_forward",
         "loss_relief",
         "losses_carried_forward",
@@ -644,10 +698,15 @@ def test_a_loss_entered_for_some_years_is_relieved_once(years, random):
         model[period][name] = float(sim.calculate(f"ni_class_4_{name}", period)[0])
 
     total_entered = float(sum(stored_losses.values()))
+    total_eligible = float(sum(loss for _, loss in trades))
+    excluded_by_allowance = total_entered - total_eligible
     tol = tolerance(total_entered, *(profit for profit, _, _ in years))
     for period in periods:
         reference_year = expected[period - first_year]
+        reference_profit, reference_loss = trades[period - first_year]
         values = model[period]
+        assert abs(values["trading_loss"] - float(reference_loss)) <= tol
+        assert abs(values["profits_before_losses"] - float(reference_profit)) <= tol
         for name, reference_name in [
             ("losses_brought_forward", "brought_forward"),
             ("loss_relief", "relief"),
@@ -666,12 +725,18 @@ def test_a_loss_entered_for_some_years_is_relieved_once(years, random):
         # No relief without a loss entered for the year or brought forward.
         if stored_losses.get(period, 0) == 0 and values["losses_brought_forward"] == 0:
             assert values["loss_relief"] == 0, (period, values)
-    # Conservation: each loss entered is relieved at most once, and what is
-    # not relieved is still being carried forward at the end.
+    # Conservation: each eligible loss is relieved at most once. The rest
+    # is carried forward; current losses excluded by the allowance receive
+    # neither relief nor a carried balance.
     total_relief = sum(model[period]["loss_relief"] for period in periods)
     assert total_relief <= total_entered + tol
     assert (
-        abs(total_relief + model[last_year]["losses_carried_forward"] - total_entered)
+        abs(
+            total_relief
+            + model[last_year]["losses_carried_forward"]
+            + excluded_by_allowance
+            - total_entered
+        )
         <= tol
     )
 
@@ -689,8 +754,9 @@ def test_class_4_counts_only_supplied_losses_on_branches():
     )
     branch = sim.get_branch("extra_2026_loss")
     branch.set_input("trading_loss", 2026, np.array([5_000.0]))
-    # The engine carries the 2025 loss into 2027, but it is not a new loss.
-    assert sim.calculate("trading_loss", 2027)[0] == 10_000
+    # The engine uprates the 2025 income input into 2027, but it is not a
+    # new loss. The separate Class 4 balance stays at its nominal amount.
+    assert_uprated_loss_cache(sim, 2027)
     assert sim.calculate("ni_class_4_profits", 2026)[0] == 30_000
     assert sim.calculate("ni_class_4_profits", 2027)[0] == 40_000
     # On the branch, 2026 relieves its own 5,000 and the 10,000 from 2025.
@@ -712,8 +778,8 @@ def test_class_4_counts_only_supplied_losses_on_plain_clones():
     clone = sim.clone()
     clone.set_input("trading_loss", 2026, np.array([5_000.0]))
     # Warm the original's carry-over cache after the clone records its input.
-    # A shared provenance set would count this cached 10,000 as a new loss.
-    assert sim.calculate("trading_loss", 2026)[0] == 10_000
+    # A shared provenance set would count this uprated cache as a new loss.
+    assert_uprated_loss_cache(sim, 2026)
     observed = (
         float(sim.calculate("ni_class_4_profits", 2026)[0]),
         round(float(sim.calculate("ni_class_4", 2026)[0]), 2),
@@ -740,7 +806,7 @@ def test_class_4_does_not_count_a_deleted_loss_after_recalculation(on_branch):
     sim.delete_arrays("trading_loss", 2026)
     # Deletion leaves the earlier loss available for engine carry-over, but
     # that replacement cache must not retain the deleted input's provenance.
-    assert sim.calculate("trading_loss", 2026)[0] == 10_000
+    assert_uprated_loss_cache(sim, 2026)
     observed = (
         float(sim.calculate("ni_class_4_profits", 2026)[0]),
         round(float(sim.calculate("ni_class_4", 2026)[0]), 2),
@@ -782,7 +848,7 @@ def test_class_4_does_not_count_a_loss_deleted_from_its_holder(on_branch, delete
     # as a second loss (profits of 20,000 and contributions of 445.80), also
     # when the deleted loss was 10,000 too.
     sim.get_holder("trading_loss").delete_arrays(period_(2026), sim.branch_name)
-    assert sim.calculate("trading_loss", 2026)[0] == 10_000
+    assert_uprated_loss_cache(sim, 2026)
     population = sim.get_variable_population("trading_loss")
     assert supplied_input(population, "trading_loss", period_(2026)) is None
     assert supplied_input_periods(population, "trading_loss") == [period_(2025)]
@@ -815,7 +881,7 @@ def test_class_4_does_not_count_a_loss_a_rebuild_drops():
     # 2025 loss into 2026; with the stale record that 10,000 would count as a
     # second loss (profits of 20,000 and contributions of 445.80).
     sim.build_from_situation(situation({2025: 10_000}))
-    assert sim.calculate("trading_loss", 2026)[0] == 10_000
+    assert_uprated_loss_cache(sim, 2026)
     population = sim.get_variable_population("trading_loss")
     assert supplied_input(population, "trading_loss", period_(2026)) is None
     assert supplied_input_periods(population, "trading_loss") == [period_(2025)]

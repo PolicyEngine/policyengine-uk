@@ -240,12 +240,19 @@ def test_statutory_percentile_positions():
 def reformed_parameters(
     freeze: dict, percentile: float, maximum_scale: float, minimum: bool
 ):
-    """Copies of the LHA parameters with reforms applied by year."""
+    """Copies of the LHA parameters with reforms applied by year.
+
+    The freeze and percentile reforms apply in Great Britain and, through
+    gov.dfc.LHA, in Northern Ireland alike.
+    """
     lha = SYSTEM.parameters.gov.dwp.LHA.clone()
+    ni_lha = SYSTEM.parameters.gov.dfc.LHA.clone()
     for year, frozen in freeze.items():
-        lha.freeze.update(period=str(year), value=frozen)
+        for node in (lha, ni_lha):
+            node.freeze.update(period=str(year), value=frozen)
     for year in range(2020, 2041):
-        lha.percentile.update(period=str(year), value=percentile)
+        for node in (lha, ni_lha):
+            node.percentile.update(period=str(year), value=percentile)
         lha.march_2020_minimum.update(period=str(year), value=minimum)
         for node in (lha.maximum, lha.maximum_monthly):
             for category in CATEGORIES:
@@ -257,6 +264,7 @@ def reformed_parameters(
     return SimpleNamespace(
         gov=SimpleNamespace(
             dwp=SimpleNamespace(LHA=lha),
+            dfc=SimpleNamespace(LHA=ni_lha),
             indices=SYSTEM.parameters.gov.indices,
         )
     )

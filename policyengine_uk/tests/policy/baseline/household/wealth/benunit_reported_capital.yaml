@@ -1,12 +1,14 @@
 # benunit_reported_capital records the benefit unit's savings and investments
 # (-1 when nothing is recorded). Universal Credit (WRA 2012 s.5; UC Regulations
 # 2013 reg.18) and Pension Credit (SPCA 2002 s.5) assess the claimant's and
-# partner's capital together, so both programmes take the recorded figure in
-# place of the household capital proxy unless their own variable is set.
+# partner's capital together. UC replaces financial proxies with this
+# observation and counts property separately; uc_reported_capital remains a
+# separate complete override. Pension Credit continues to use the observation
+# in place of its whole capital proxy unless its own variable is set.
 # Tariff income: UC Regulations 2013 reg.72, 4.35 pounds a month for each 250
 # pounds or part above 6,000.
 
-- name: Recorded capital replaces the household proxy for both programmes.
+- name: Recorded financial capital replaces financial proxies for both programmes.
   period: 2025
   input:
     people:
@@ -21,7 +23,7 @@
         members: [claimant]
         savings: 50_000
   output:
-    uc_reported_capital: 2_000
+    uc_reported_capital: -1
     pension_credit_reported_capital: 2_000
     uc_assessable_capital: 2_000
     is_uc_eligible: true
