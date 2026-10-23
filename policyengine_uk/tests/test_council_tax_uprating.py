@@ -37,6 +37,14 @@ def _country_of_each_region():
     return dict(zip(REGIONS, countries))
 
 
+@pytest.fixture(scope="module", autouse=True)
+def release_region_mapping():
+    # Drop the cached mapping once this module's tests are done, instead of
+    # keeping it for the rest of the test process.
+    yield
+    _country_of_each_region.cache_clear()
+
+
 def _expected_growth(region, year):
     # Council tax exists in England, Scotland and Wales; OBR forecasts it for
     # each. Northern Ireland levies domestic rates instead, so its council tax
