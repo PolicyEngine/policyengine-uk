@@ -23,8 +23,8 @@ by their pension contributions, up to the annual limit for relief in
   [PTM044100](https://www.gov.uk/hmrc-internal-manuals/pensions-tax-manual/ptm044100)),
   less allowable employment expenses; plus trading profit after capital
   allowances and the trading allowance but before losses (a trading loss
-  counts as zero, and does not reduce employment earnings). Statutory Paternity Pay is not yet counted;
-  open pull request
+  counts as zero, and does not reduce employment earnings). Statutory
+  Paternity Pay is not yet counted; open pull request
   [#2368](https://github.com/PolicyEngine/policyengine-uk/pull/2368) would
   add it to taxable employment pay;
 - raised towards `gov.hmrc.income_tax.reliefs.pension_contribution.basic_amount`
@@ -74,8 +74,9 @@ pension input and the incomes tested for the taper were this year's (times
 `gov.simulation.pensions.prior_year_input_ratio`, 1, for the input), deflated
 by average earnings growth, and carries forward what the last three years'
 allowances leave unused, after each year's excess has used the unused
-allowance of the three years before it, earliest first (s. 228A(7)). The estimate is nil for someone with
-no pension input this year, and nil before 2020-21. The money purchase
+allowance of the three years before it, earliest first (s. 228A(7)). The
+estimate is nil for someone with no pension input this year, and nil before
+2020-21. The money purchase
 annual allowance, the £10,000 limit on money purchase savings after pensions
 are first flexibly accessed
 ([s. 227ZA](https://www.legislation.gov.uk/ukpga/2004/12/section/227ZA)),
@@ -89,12 +90,15 @@ in each band when it is added on top of the person's income after allowances
 ([Finance Act 2004 s. 227](https://www.legislation.gov.uk/ukpga/2004/12/section/227)).
 Relief-at-source contributions are not deducted from that income. Under
 s. 192(4) they raise the basic and higher rate limits instead, but only for
-someone whose income other than savings and dividends would otherwise be
-taxed at the higher or additional rate (for a Scottish taxpayer, at a
-Scottish rate above the basic rate); s. 227(4C) then applies the raised
-limits to the charge, and the excess itself does not count towards that test
-(s. 227(5)). So an employee on £45,000 who pays £20,000 gross into a personal
-pension, with £50,000 of employer contributions, pays a £2,946 charge on the
+someone with income that would otherwise be taxed at the higher or additional
+rate. Savings from 2017-18, dividends and, from 2027-28, property income have
+their own rates and do not count. For a Scottish taxpayer, s. 192(4A) raises
+the Scottish basic rate limit and the limits above it where non-savings income
+would otherwise be taxed at a Scottish rate above the basic rate.
+Section 227(4C) then applies the raised limits to the charge, and the excess
+itself does not count towards that test (s. 227(5)). So an employee on
+£45,000 who pays £20,000 gross into a personal pension, with £50,000 of
+employer contributions, pays a £2,946 charge on the
 £10,000 excess in 2025-26: the excess sits on top of £32,430 of income after
 the personal allowance, which is below the £37,700 basic rate limit, so the
 limits are not raised and £4,730 of the excess falls in the higher rate
@@ -186,8 +190,15 @@ on contributions above the person's taxable income, such as the £720 on a
 non-taxpayer's £3,600 contribution, and on contributions that come off
 income taxed below 20%, such as dividends at the dividend ordinary rate or a
 Scottish taxpayer's starter rate band. The provider still claims 20% in those
-cases (s. 192(1)-(3)), but the model has less or no tax to reduce. Otherwise
-this matches HMRC's published
+cases (s. 192(1)-(3)), but the model has less or no tax to reduce. It gives
+more than the law where only savings or dividends would be taxed above the
+basic rate limit: s. 192(4) then raises no limits, so the relief is the 20%
+the provider claims, while the model's deduction saves tax at the savings or
+dividend rates. An employee on £15,000 with £60,000 of dividends who pays
+£10,000 gross into a personal pension saves £3,648 of income tax in the model
+in 2025-26, against £2,000 of relief at source in law (raising the limits
+regardless of the condition would give £4,500). Otherwise this matches
+HMRC's published
 statistics on the *fiscal cost of pension tax relief*, which also report the
 total across both mechanisms.
 
