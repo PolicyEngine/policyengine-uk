@@ -706,6 +706,50 @@
     # 100,000 + 1 = 100,001 > 100,000
     wales_childcare_offer: 0
 
+- name: Spousal maintenance counts towards the £100,000 gross income limit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 99_000
+        spousal_maintenance_income: 2_000
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        region: WALES
+  output:
+    # 99,000 + 2,000 = 101,000 > 100,000
+    wales_childcare_offer: 0
+
+- name: Pay plus spousal maintenance of exactly £100,000 still qualifies
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 95_000
+        spousal_maintenance_income: 5_000
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        region: WALES
+  output:
+    # 95,000 + 5,000 = 100,000
+    wales_childcare_offer: 7_003.50
+
 # Review C3: guidance para 87 lists "Universal Credit where the individual has
 # been assessed as having limited capability for work", so the parent needs a
 # Universal Credit award, not only a disability.

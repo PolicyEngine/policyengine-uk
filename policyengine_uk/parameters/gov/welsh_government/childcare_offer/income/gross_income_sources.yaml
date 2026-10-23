@@ -14,8 +14,11 @@ values:
   # property, savings and dividend income; maintenance is not part of it.
   # Statutory sick, maternity and paternity pay are earned income paid
   # through payroll, but total_income counts only wages (employment_income),
-  # so they are added once through employment_benefits.
+  # so they are added once through employment_benefits. Maintenance is in two
+  # inputs: maintenance_income (child maintenance) and spousal_maintenance_income
+  # (from a spouse, civil partner or former partner).
   2019-08-01:
     - total_income
     - employment_benefits
     - maintenance_income
+    - spousal_maintenance_income
