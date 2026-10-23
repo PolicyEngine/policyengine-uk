@@ -97,8 +97,12 @@ The `containing_entities` set deliberately does *not* include
 sole traders is via an explicit `firm_owning_household_id` input
 variable rather than entity nesting. (The existing `Household` and
 `BenUnit` entities list a `"state"` containing entity, but PolicyEngine UK
-has no `state` entity, so the firm should not copy it.) Only people can be
-members of a group entity, so the owner role holds people.
+has no `state` entity, so the firm should not copy it.) In policyengine-core
+only people can be members of a group entity, so the owner role holds people.
+Core also places each person in exactly one instance of every group entity: a
+person cannot own two firms, and anyone not listed in a firm is given a
+one-person firm of their own, so the design needs a way to represent people
+who own no firm and incorporated firms with no owner in the data.
 
 ### Variables
 
@@ -198,7 +202,7 @@ VAT analysis files linked from #1333.
 - HMRC, [VAT rates](https://www.gov.uk/vat-rates) and [VAT thresholds](https://www.gov.uk/how-vat-works/vat-thresholds).
 - [Value Added Tax Act 1994](https://www.legislation.gov.uk/ukpga/1994/23/contents): primary statute.
 - HMRC, [VAT statistics](https://www.gov.uk/government/statistics/value-added-tax-vat-annual-statistics): annual outturn used for calibration.
-- ONS, [UK business: activity, size and location](https://www.ons.gov.uk/businessindustryandtrade/business/activitysizeandlocation/datasets/ukbusinessactivitysizeandlocation): enterprise counts by industry (SIC) and turnover band from the Inter-Departmental Business Register (IDBR).
+- ONS, [UK business: activity, size and location](https://www.ons.gov.uk/businessindustryandtrade/business/activitysizeandlocation/datasets/ukbusinessactivitysizeandlocation): counts of VAT- and/or PAYE-based enterprises by industry (SIC) and turnover band from the Inter-Departmental Business Register (IDBR).
 - ONS, [Supply and Use tables](https://www.ons.gov.uk/economy/nationalaccounts/supplyandusetables): intermediate consumption shares.
 - Companion analysis repo: [`policyengine/uk-vatlab`][vatlab] (#1333).
 
