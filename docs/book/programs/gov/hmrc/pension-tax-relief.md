@@ -94,7 +94,7 @@ someone with income that would otherwise be taxed at the higher or additional
 rate. Savings from 2017-18, dividends and, from 2027-28, property income have
 their own rates and do not count. For a Scottish taxpayer, s. 192(4A) raises
 the Scottish basic rate limit and the limits above it where non-savings income
-would otherwise be taxed at a Scottish rate above the basic rate.
+would otherwise be taxed at a Scottish rate above the Scottish basic rate.
 Section 227(4C) then applies the raised limits to the charge, and the excess
 itself does not count towards that test (s. 227(5)). So an employee on
 £45,000 who pays £20,000 gross into a personal pension, with £50,000 of
@@ -138,9 +138,10 @@ An employee on £110,000 has a £7,570 personal allowance in 2025-26, and the
 full £12,570 if they pay £10,000 gross into a personal pension.
 
 So the headline behaviour is: **up to the relief limit, pension
-contributions reduce taxable income £1-for-£1**. The income-tax saving
-that the model reports is the contribution × the person's marginal
-rate, plus any personal allowance restored.
+contributions reduce taxable income £1-for-£1**. Where the deduction comes
+off one kind of income taxed at one rate, as in the worked examples below,
+the income-tax saving that the model reports is the contribution × the
+person's marginal rate, plus any personal allowance restored.
 
 ## Worked examples
 
@@ -158,24 +159,27 @@ column was re-run in October 2026 on policyengine-uk 2.148.2:
 
 This is exactly the behaviour reported. The user's expectation that
 higher-rate cases should only see -£1,200 (£6k × 20%) corresponds to a
-misunderstanding of how UK pension tax relief works in aggregate: the
-total tax relief is full marginal rate, even though it is paid in two
+misunderstanding of how UK pension tax relief works in aggregate: for
+someone like this, whose taxable income is at least the contribution and is
+all taxed at the basic, higher or additional rate, the total tax relief is
+the full marginal rate, even though it is paid in two
 parts in the real world (relief at source plus higher-rate top-up via
 Self Assessment).
 
 ## Relief at source vs marginal-rate relief
 
 The user-facing UK pension framework has two parallel mechanisms that
-add up to the same total relief:
+together make up the total relief:
 
 1. **Relief at source (RAS)**: the pension provider claims the
    basic-rate portion (20%) directly from HMRC. The contributor pays
    from net income and the pension grows by the gross amount. For a
    basic-rate taxpayer, this is the *entire* relief.
-2. **Higher-rate top-up**: for taxpayers at higher or additional
-   rates, the extra relief (in England, Wales and Northern Ireland, 20%
-   for higher rate and 25% for additional rate) is claimed through Self
-   Assessment or directly from HMRC. The mechanism is technically a
+2. **Higher-rate top-up**: for taxpayers with income taxed at the higher
+   or additional rate itself (not at the savings, dividend or property
+   rates; see above), the extra relief (in England, Wales and Northern
+   Ireland, 20% for higher rate and 25% for additional rate) is claimed
+   through Self Assessment or directly from HMRC. The mechanism is technically a
    **rate-band extension**: the basic rate limit and the higher rate
    limit are both raised by the gross contribution
    ([Finance Act 2004 s. 192(4)](https://www.legislation.gov.uk/ukpga/2004/12/section/192)),
@@ -190,23 +194,28 @@ on contributions above the person's taxable income, such as the £720 on a
 non-taxpayer's £3,600 contribution, and on contributions that come off
 income taxed below 20%, such as dividends at the dividend ordinary rate or a
 Scottish taxpayer's starter rate band. The provider still claims 20% in those
-cases (s. 192(1)-(3)), but the model has less or no tax to reduce. It gives
-more than the law where only savings or dividends would be taxed above the
-basic rate limit: s. 192(4) then raises no limits, so the relief is the 20%
-the provider claims, while the model's deduction saves tax at the savings or
-dividend rates. An employee on £15,000 with £60,000 of dividends who pays
-£10,000 gross into a personal pension saves £3,648 of income tax in the model
-in 2025-26, against £2,000 of relief at source in law (raising the limits
-regardless of the condition would give £4,500). Otherwise this matches
-HMRC's published
+cases (s. 192(1)-(3)), but the model has less or no tax to reduce. Where
+the only income that would be taxed above the basic rate limit is savings
+(from 2017-18), dividends or (from 2027-28) property income, s. 192(4) raises
+no limits, so the relief in law is the 20% the provider claims, while the
+model's deduction saves tax at the rates of the income it removes. The model
+can then give more or less than the law. An employee on £15,000 with £60,000
+of dividends who pays £10,000 gross into a personal pension saves £3,648 of
+income tax in the model in 2025-26, against £2,000 of relief at source in law
+(raising the limits regardless of the condition would give £4,500: the
+£2,000 plus £2,500 less tax on dividends moved from the 33.75% upper rate to
+the 8.75% ordinary rate). With £12,000 of earnings and £40,000 of dividends,
+the same contribution saves £1,308 in the model, below the £2,000 in law.
+Otherwise this matches HMRC's published
 statistics on the *fiscal cost of pension tax relief*, which also report the
 total across both mechanisms.
 
 If you want to see the user-visible tax bill reduction separately from
 the pension-provider's RAS claim, you'd need to split the existing
 relief into two output variables (a basic-rate-portion and a
-higher-rate-top-up portion). This is a presentation question rather
-than a calculation question: the totals are unchanged.
+higher-rate-top-up portion). Outside the cases above where the model's
+total differs from the law, this is a presentation question rather than a
+calculation question: the totals are unchanged.
 
 ## Marginal tax rate display
 
