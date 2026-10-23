@@ -31,7 +31,7 @@ Resolution Foundation figures.
 
 On absolute low income the same run lifts ~549,000 children after housing
 costs and ~325,000 before, against DWP's 250,000 on both measures (Tables 3
-and 4). These are not like for like either: PolicyEngine's absolute line is
+and 4). These are not like for like: PolicyEngine's absolute line is
 60% of the FYE 2025 median held constant in real terms, the reference year
 HBAI adopted in March 2026, while DWP's note predates that change and cites
 the FYE 2024 HBAI methodology, whose line is 60% of the FYE 2011 median.
@@ -106,9 +106,11 @@ Three plausible drivers of the remaining differences:
    for where PolicyEngine's nowcasting differs from RF's.
 2. **Take-up assumptions**. PolicyEngine decides Universal Credit claims
    with flags set in the data, which do not respond to the reform: a family
-   claims if `would_claim_uc` is true, or if it reports a legacy benefit
-   that has closed (tax credits, Income Support or income-based
-   Jobseeker's Allowance) and `would_claim_uc_at_legacy_closure` is true.
+   claims if `would_claim_uc` is true, or if DWP has moved it off a closed
+   legacy benefit it reports (tax credits, Income Support or income-based
+   Jobseeker's Allowance; `legacy_benefits_closed`, which leaves out
+   families sent to Pension Credit instead) and
+   `would_claim_uc_at_legacy_closure` is true.
    The data set `would_claim_uc` for every family that reports Universal
    Credit and draw it at a residual rate for the rest, so newly entitled
    families claim at that residual rate unless they reported a closed
