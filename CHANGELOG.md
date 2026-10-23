@@ -1,3 +1,14 @@
+## [2.150.0] - 2026-10-23
+
+### Fixed
+
+- - Stop discounting Land Transaction Tax and Land and Buildings Transaction Tax twice. `expected_ltt` and `expected_lbtt` multiplied `land_transaction_tax` and `land_and_buildings_transaction_tax` by `gov.hmrc.stamp_duty.property_sale_rate` (0.045), but those liabilities are already charged only on the year's purchases and rent increments. Each expected value now equals its liability, the convention `expected_sdlt` follows, so `gov_tax`, `household_tax` and `pre_budget_change_household_tax` count LTT and LBTT at their full value and LTT or LBTT reforms are scored at full value rather than 4.5% of it.
+
+### Removed
+
+- - Remove `gov.hmrc.stamp_duty.property_sale_rate`, a 2021 placeholder with no remaining reader once `expected_sdlt`, `expected_ltt` and `expected_lbtt` stopped scaling by it. A reform that sets it now raises an unknown-parameter error instead of silently doing nothing.
+
+
 ## [2.149.1] - 2026-10-23
 
 ### Fixed
