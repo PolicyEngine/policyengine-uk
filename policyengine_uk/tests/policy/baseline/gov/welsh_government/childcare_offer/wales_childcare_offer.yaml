@@ -750,6 +750,99 @@
     # 95,000 + 5,000 = 100,000
     wales_childcare_offer: 7_003.50
 
+# Paragraph 69: gross income is before salary sacrifice. employment_income is
+# cash pay, so salary and bonus sacrifice are added back.
+- name: Salary sacrifice counts towards the £100,000 gross income limit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 99_000
+        pension_contributions_via_salary_sacrifice: 2_000
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        region: WALES
+  output:
+    # 99,000 + 2,000 = 101,000 > 100,000
+    wales_childcare_offer: 0
+
+- name: Bonus sacrifice counts towards the £100,000 gross income limit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 99_000
+        pension_contributions_via_bonus_sacrifice: 2_000
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        region: WALES
+  output:
+    # 99,000 + 2,000 = 101,000 > 100,000
+    wales_childcare_offer: 0
+
+- name: Pay plus salary sacrifice of exactly £100,000 still qualifies
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 98_000
+        pension_contributions_via_salary_sacrifice: 2_000
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        region: WALES
+  output:
+    # 98,000 + 2,000 = 100,000
+    wales_childcare_offer: 7_003.50
+
+# Untaxed benefits are not gross income here (see gross_income_sources): the
+# guidance frames the test around income from work and investments and aligns
+# it with Tax-Free Childcare's taxable-income test.
+- name: Personal Independence Payment does not count towards the £100,000 limit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 99_000
+        pip: 2_000
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        region: WALES
+  output:
+    # 99,000 counted; PIP is untaxed
+    wales_childcare_offer: 7_003.50
+
 # Review C3: guidance para 87 lists "Universal Credit where the individual has
 # been assessed as having limited capability for work", so the parent needs a
 # Universal Credit award, not only a disability.

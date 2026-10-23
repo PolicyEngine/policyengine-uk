@@ -6,19 +6,41 @@ metadata:
   reference:
     - title: Welsh Government, The Childcare Offer for Wales, Assessing parents' income to determine eligibility for the Offer, version 1 (July 2020), questions 8 and 9
       href: https://www.gov.wales/sites/default/files/publications/2023-04/atisn17333doc1.pdf#page=7
+    - title: Welsh Government, Childcare Offer for Wales guidance for local authorities, version 8.3 (April 2026), paragraph 69
+      href: https://www.gov.wales/sites/default/files/publications/2026-04/childcare-offer-for-wales-guidance-for-local-authorities-april-2026-english_0.pdf#page=18
 values:
-  # Question 8: the test takes all income into account, from work or
-  # investments. Question 9: earned income before tax and payslip deductions,
-  # and unearned income such as dividends, rental income, maintenance
-  # allowance and interest. total_income covers earnings, pensions, benefits,
-  # property, savings and dividend income; maintenance is not part of it.
-  # Statutory sick, maternity and paternity pay are earned income paid
-  # through payroll, but total_income counts only wages (employment_income),
-  # so they are added once through employment_benefits. Maintenance is in two
-  # inputs: maintenance_income (child maintenance) and spousal_maintenance_income
-  # (from a spouse, civil partner or former partner).
+  # Question 8: the test "takes all income into account, whether from work or
+  # from investments held", and the per-person limit aligns with Tax-Free
+  # Childcare's. Question 9: earned income before tax and payslip deductions,
+  # and unearned income such as dividends, rental income, maintenance allowance,
+  # guardianship allowance and interest. Paragraph 69: gross income is before
+  # any deductions, including pension contributions and salary sacrifice
+  # schemes.
+  #
+  # The sources are listed one by one rather than through total_income, an
+  # income tax aggregate, so each counts exactly once:
+  # - employment_income is cash pay, so statutory sick, maternity and paternity
+  #   pay (employment_benefits) and salary and bonus sacrifice
+  #   (pension_contributions_via_salary_sacrifice_from_pay) are added back;
+  # - maintenance is in two inputs, child (maintenance_income) and spousal
+  #   (spousal_maintenance_income);
+  # - benefits count where they are taxable (social_security_income). Untaxed
+  #   benefits such as Personal Independence Payment, Child Benefit and
+  #   Universal Credit are left out: the guidance frames the test around income
+  #   from work and investments and aligns it with Tax-Free Childcare, whose
+  #   test is taxable income. Guardian's Allowance, which question 9 names, is
+  #   not modelled.
   2019-08-01:
-    - total_income
+    - employment_income
     - employment_benefits
+    - pension_contributions_via_salary_sacrifice_from_pay
+    - self_employment_income
+    - private_pension_income
+    - social_security_income
+    - property_income
+    - savings_interest_income
+    - other_investment_income
+    - dividend_income
+    - taxable_miscellaneous_income
     - maintenance_income
     - spousal_maintenance_income
