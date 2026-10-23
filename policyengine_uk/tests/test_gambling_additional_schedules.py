@@ -60,6 +60,20 @@ def test_explicit_casino_incidence_reform_changes_household_duty():
     assert sim.calculate("gaming_duty", 2024).iloc[0] == pytest.approx(300)
 
 
+def test_casino_proxy_takes_one_value_per_model_year():
+    """FY2026 reads the proxy at 1 January 2026, before a change from 2027."""
+    sim = gambling_simulation(
+        2026,
+        {
+            "household.consumption.gambling.casino_effective_rate": {
+                "2027-01-01.2027-04-05": 0.3
+            }
+        },
+        {"land_based_casino_net_losses": 1_000},
+    )
+    assert sim.calculate("gaming_duty", 2026).iloc[0] == pytest.approx(235.487)
+
+
 def test_operator_band_reform_does_not_automatically_change_household_proxy():
     """The empirical household proxy does not model casino band responses."""
     sim = gambling_simulation(

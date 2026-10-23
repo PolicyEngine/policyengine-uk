@@ -11,12 +11,14 @@ repair existing survey data.
 ## Periods and attribution
 
 Coverage starts in 2024/25. Model period `2024` covers 6 April 2024 to 5 April
-2025. The formulas apply dated rates within each interval of that fiscal year
-and weight each interval by its share of the year, using
+2025. The six statutory duty formulas apply dated rates within each interval
+of that fiscal year and weight each interval by its share of the year, using
 `utils.excise.fiscal_year_segments`. They assume each supplied annual base
 accrues uniformly. For example, Finance Act 2026 raises Remote Gaming Duty on
 1 April 2026: FY2025 contains 360 days at 21% and five at 40%. The remote
-betting change on 1 April 2027 similarly affects five days of FY2026.
+betting change on 1 April 2027 similarly affects five days of FY2026. A reform
+dated within a fiscal year is split the same way. The casino incidence proxy
+takes one value per model year instead, as described below.
 
 Each input supplies a nonnegative, already-attributed dutiable base in pounds.
 All inputs default to zero. A data provider must allocate operator liabilities
@@ -149,6 +151,14 @@ charges, machine games and gaming taxed or exempt under the other duties.
 The household formula multiplies this base by the empirical assumption
 `household.consumption.gambling.casino_effective_rate`, initially **0.235487**
 (23.5487%). It holds that fraction constant from model year 2024 onwards.
+Like the other household consumption assumptions, the proxy takes one value
+per model year: the value in force on 1 January of the year in which the model
+year starts. Unlike a change to a statutory rate, a change to the proxy dated
+within a fiscal year is not split by day; it applies to a whole model year
+when it is in force on that 1 January. The proxy sits outside `gov`, where the
+reform routes read a bare year such as `"2027"` as a calendar year, so a day
+split would spread such a reform over two model years.
+
 The approved proxy divides these official observations:
 
 | Observation, April 2024 to March 2025 | Amount | Source location |
