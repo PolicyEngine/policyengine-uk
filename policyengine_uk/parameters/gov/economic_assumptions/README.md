@@ -114,18 +114,27 @@ earlier mapping omissions is a separate change.
 use a separate declaration-aware projector. Unlabelled datasets retain their
 stored amounts through the projection horizon, preserving legacy inputs that
 already use FY2026-27 prices. A dataset's explicit `energy_price_basis` opts
-into the variables' existing cumulative OBR-CPI index from its declared price
-year. They remain outside both the unconditional growth mapping and fallback,
-so no second index grows them after 2030.
+into the variables' existing cumulative annual OBR-CPI index as an interim
+price proxy from its declared price year. The declaration covers only these
+three inputs, independently of any other generic uprating exclusions. They
+remain outside both the unconditional growth mapping and fallback, so no
+second index grows them after 2030.
 
 The declaration retains `calendar_year` or `fiscal_year` and its integer year.
-The model's annual convention uses the same index level for CY2024 and
-FY2024-25: `I[2024]`. It does not provide a precise fiscal/calendar price
-alignment or an energy-specific forecast. The projector applies
-`I[target year] / I[declared price year]` to the supplied observation.
-Consequently a 2026 basis gives a ratio of one in 2026 and can grow in 2027;
-there is no special 2026 rule. Each projected child records its effective
-fiscal-year basis, while the source observation keeps its original declaration.
+The model uses the January 1 index level for the declared starting year for
+both calendar and fiscal price periods. This shared start-year convention is
+an approximation, rather than precise fiscal/calendar price alignment. The
+projector applies `I[target year] / I[declared price year]` to the supplied
+observation. A requested declared projection raises an error if either
+January 1 precedes the selected index's earliest non-null value, including a
+midyear start, or if the index has no usable history. Unlabelled inputs and
+declarations with no stored energy inputs do not require index history. Each
+projected child records its effective fiscal-year basis, while the source
+observation keeps its original declaration.
+
+Generic CPI does not establish constant-consumption energy-price outturns or
+an energy-specific forecast. Open [issue #2526](https://github.com/PolicyEngine/policyengine-uk/issues/2526)
+tracks energy-specific index alignment and a sourced future assumption.
 
 See [dataset sources](../../../../docs/engineering/skills/dataset-sources.md)
 for the declaration and migration contract. Existing metadata-free private
