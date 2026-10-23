@@ -1,0 +1,1 @@
+Corrected the bereavement support plan (docs/book/programs/gov/dwp/bereavement-support-plan.md): Microcosm UK as the certified default and its split of FRS code 9, the BSP claim-time limits and higher-rate test, the cohabitee rules after the 2023 Remedial Order, and the WPA dates, continuation, uprating and new claims.
