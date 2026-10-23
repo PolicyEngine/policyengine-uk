@@ -207,6 +207,12 @@ print(sim.calculate("council_tax", 2025))  # One value per household
   simulation was given inputs for years outside its data, such as the
   Universal Credit health element status the rebalancing records for 2026 to
   2029.
+- Inputs carry forward to later years but not back to earlier ones. So when
+  `set_input` gives a simulation an input for a year before every year it
+  holds the identifiers for, it also gives the identifiers for that year.
+  Formulas that read identifiers, such as the draws that place each person in
+  their year of age, then read the same people and groups there as in the
+  simulation its exported frame loads back to.
 
 ```{important}
 The model stores `person_household_id` and `person_benunit_id` as 32-bit
@@ -270,6 +276,11 @@ Each table should contain the ID columns needed to link entities together:
 - `person`: `person_id`, `person_benunit_id`, `person_household_id`, plus any person-level variables
 - `benunit`: `benunit_id`, plus any benefit-unit variables
 - `household`: `household_id`, plus any household-level variables
+
+Benefit-unit and household rows can be in any order. The loader aligns each
+year's group inputs by its ID column to the simulation's sorted group IDs;
+person rows keep their supplied order. This alignment does not reorder the
+caller's tables. Multi-year tables must still describe the same population.
 
 Use `UKSingleYearDataset` when you have one cross-section and want PolicyEngine
 UK to extend it forward using its standard uprating assumptions.

@@ -22,7 +22,7 @@ GDP and population assumptions remain supported.
 |-------------------------|----------------------------------------------------------|-------------------------|
 | `consumer_price_index`  | CPI year-on-year growth                                  | EFO Table 1.7           |
 | `cpih`                  | CPI including owner-occupiers' housing costs             | EFO Table 1.7           |
-| `consumer_price_index_ahc` | CPI excluding rents/maintenance/water (AHC measure)   | ONS adhoc 2863          |
+| `consumer_price_index_ahc` | CPI excluding rents/maintenance/water (AHC measure)   | ONS ad hoc 3582; forecast derived by `utils/create_ahc_deflator.py` |
 | `rpi`                   | Retail Price Index year-on-year growth                   | EFO Table 1.7           |
 | `average_earnings`      | Average weekly earnings growth                           | EFO Table 1.6           |
 | `non_labour_income`     | Non-labour household income growth                       | derived from EFO        |
@@ -111,9 +111,26 @@ projection through 2030 retains its previous handling; correcting those
 earlier mapping omissions is a separate change.
 
 `domestic_energy_consumption`, `electricity_consumption` and `gas_consumption`
-are deliberately excluded from this fallback as well as the annual growth
-mapping. Their stored amounts already use FY2026-27 unit prices, so dataset
-projection holds them flat, as documented in `uprating_indices.yaml`.
+use a separate declaration-aware projector. Unlabelled datasets retain their
+stored amounts through the projection horizon, preserving legacy inputs that
+already use FY2026-27 prices. A dataset's explicit `energy_price_basis` opts
+into the variables' existing cumulative OBR-CPI index from its declared price
+year. They remain outside both the unconditional growth mapping and fallback,
+so no second index grows them after 2030.
+
+The declaration retains `calendar_year` or `fiscal_year` and its integer year.
+The model's annual convention uses the same index level for CY2024 and
+FY2024-25: `I[2024]`. It does not provide a precise fiscal/calendar price
+alignment or an energy-specific forecast. The projector applies
+`I[target year] / I[declared price year]` to the supplied observation.
+Consequently a 2026 basis gives a ratio of one in 2026 and can grow in 2027;
+there is no special 2026 rule. Each projected child records its effective
+fiscal-year basis, while the source observation keeps its original declaration.
+
+See [dataset sources](../../../../docs/engineering/skills/dataset-sources.md)
+for the declaration and migration contract. Existing metadata-free private
+Microcosm files stay flat until a producer or caller supplies a verified
+declaration; this consumer change does not label released artifacts.
 
 The additional indices have their own source limits:
 
@@ -188,6 +205,27 @@ rise. `create_economic_assumption_indices` compounds it into
 September figure, so a scenario that edits calendar-year CPI or sets
 September CPI directly moves both.
 
+Most benefits rise each April by this measure: the Secretary of State's
+annual review under Social Security Administration Act 1992 s150 measures
+prices by the CPI 12-month rate for the previous September (every Up-rating
+Order Explanatory Memorandum since April 2011; 3.8% for April 2026, written
+statement HCWS1101). `gov.benefit_uprating_cpi`, which the benefit rate
+parameters name as their `uprating`, follows `indices.september_cpi_uprating`,
+and so do the Universal Credit standard allowance and health element indices
+built from it. Amounts not raised by September CPI in practice that sat on
+`gov.benefit_uprating_cpi` keep the lagged calendar-year CPI projection they
+had, through `indices.obr.lagged_cpi`. These include the earnings-linked
+Pension Credit standard minimum guarantee, savings credit threshold, Housing
+Benefit pension-age allowances and Housing Benefit non-dependant deduction
+income bands, as well as DfE funding rates and the council tax high value
+surcharge. Lagged calendar-year CPI remains a placeholder pending an
+appropriate earnings-linked model for the first group; deduction amounts
+continue to follow September CPI. The savings credit threshold and Housing
+Benefit pension-age allowances are within the s150 review, under
+[s150(1)(l) and (h)](https://www.legislation.gov.uk/ukpga/1992/5/section/150),
+even though their increases in practice are linked to earnings rather than
+September CPI.
+
 Income Tax Act 2007 ss21 and 57 index the basic rate limit and the personal
 allowance by this measure once no freeze applies.
 [`../hmrc/create_threshold_indexation.py`](../hmrc/create_threshold_indexation.py)
@@ -216,6 +254,14 @@ threshold by the same rises, up to the last year of
 
 The EFO refresh does not touch `finance_ni.domestic_rates`; OBR does not
 publish a Northern Ireland domestic rates bill series (see below).
+
+For `obr.council_tax`, take each country's growth in receipts from
+Expenditure Table 4.1, not its "council tax level" row: dataset projection
+divides the receipts growth by the growth in household weights itself
+(#2067). When a forecast year becomes an outturn, replace it with the growth
+in the published liability the comments in `yoy_growth.yaml` name, and add the
+figures to `PUBLISHED_OUTTURNS` in
+`policyengine_uk/tests/test_council_tax_uprating.py`.
 
 ## Northern Ireland domestic rates
 

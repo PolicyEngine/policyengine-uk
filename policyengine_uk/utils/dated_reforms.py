@@ -185,6 +185,12 @@ from policyengine_uk.parameters.gov.hmrc.create_threshold_indexation import (
     last_stated_tax_year,
 )
 
+from policyengine_uk.utils.ni_parameter_scales import (
+    LegacyNIParameter,
+    canonical_descendants,
+    canonicalize_ni_parameter_path,
+)
+
 from policyengine_uk.utils.parameters import (
     BACKDATED_VALUE,
     check_parameter_not_removed,
@@ -348,6 +354,7 @@ def read_reform_dict(
     legacy: List[LegacyOverride] = []
     order = order_start
     for path, spec in reform.items():
+        path = canonicalize_ni_parameter_path(path)
         _check_path(path)
         statutory = defines(path)
         if not isinstance(spec, Mapping):
@@ -428,6 +435,7 @@ def read_parameter_changes(
     assignments: List[ParameterAssignment] = []
     order = order_start
     for path, spec in changes.items():
+        path = canonicalize_ni_parameter_path(path)
         _check_path(path)
         if not isinstance(spec, Mapping):
             start, stop = period_bounds(CORE_SCALAR_PERIOD)
@@ -463,6 +471,7 @@ def read_reform_from_dict(
     legacy: List[LegacyOverride] = []
     order = order_start
     for path, spec in parameter_values.items():
+        path = canonicalize_ni_parameter_path(path)
         _check_path(path)
         if not defines(path):
             if isinstance(spec, Mapping):
@@ -616,6 +625,7 @@ def read_override_reform(changes, reading, defines, calendar_years=None, warn=Fa
     except (ValueError, TypeError, KeyError) as original:
         errors = []
         for path, spec in changes.items():
+            path = canonicalize_ni_parameter_path(path)
             entries = spec.items() if isinstance(spec, Mapping) else [(None, spec)]
             for key, value in entries:
                 try:
@@ -805,6 +815,7 @@ def unwritten_reform_overrides(
         return pending, bool(pending)
     overrides = []
     for path, spec in changes.items():
+        path = canonicalize_ni_parameter_path(path)
         change = {path: spec}
         assignments, legacy = read(change, defines)
         if _reform_writes_are_effective(assignments, legacy, system, written):
@@ -986,7 +997,7 @@ def snapshot_timelines(node: ParameterNode) -> Dict[str, Timeline]:
     """
     return {
         parameter.name: parameter.values_list
-        for parameter in node.get_descendants()
+        for parameter in canonical_descendants(node)
         if isinstance(parameter, Parameter)
     }
 
@@ -1014,6 +1025,8 @@ def graft_missing_nodes(
     """
     added = []
     for key, child in source.children.items():
+        if isinstance(child, LegacyNIParameter):
+            continue
         if root and key == "baseline":
             continue
         existing = target.children.get(key)

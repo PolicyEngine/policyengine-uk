@@ -2,7 +2,6 @@
 
 import copy
 import sys
-from types import SimpleNamespace
 
 import pytest
 from policyengine_core.parameters import ParameterNode, get_parameter
@@ -96,7 +95,6 @@ ENTRY_POINTS = [
     "core_set_parameter",
     "core_set_parameter_modifier",
     "system_imported_reform",
-    "core_reform_api",
     "api_parameter_normalization",
     "api_legacy_policy_normalization",
 ]
@@ -167,20 +165,6 @@ def test_removed_parameter_entry_points_name_the_replacement(
                 sys.modules[__name__], "ImportedReform", reform, raising=False
             )
             system.apply_reform(f"{__name__}.ImportedReform")
-        elif entry_point == "core_reform_api":
-            response = SimpleNamespace(
-                json=lambda: {
-                    "result": {
-                        "policy_json": {path: {"2028-01-01.2028-12-31": 67}},
-                        "label": "saved obsolete age reform",
-                    }
-                }
-            )
-            monkeypatch.setattr(
-                "policyengine_core.reforms.reform.requests.get",
-                lambda *a, **k: response,
-            )
-            Reform.from_api("obsolete-age", country_id="uk")(system)
         elif entry_point == "api_parameter_normalization":
             # policyengine-api/country.py::_normalize_reform_values reads the
             # final value to infer a type before it calls Parameter.update.

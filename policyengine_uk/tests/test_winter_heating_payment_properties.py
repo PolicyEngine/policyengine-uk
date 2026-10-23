@@ -50,7 +50,9 @@ COUNTRIES = ["ENGLAND", "WALES", "SCOTLAND", "NORTHERN_IRELAND"]
 # Ages either side of pensionable age (66 to 67 over these years) and of 80.
 PENSION_AGES = [67, 70, 79, 80, 85]
 AGES = [40, 60, *PENSION_AGES]
-INCOMES = [5_000, 20_000, 50_000]
+# 35,000 is the charge limit itself: ITEPA 2003 s.681I(1)(b) charges only
+# total income that "exceeds £35,000".
+INCOMES = [5_000, 20_000, 35_000, 50_000]
 AWARD = 1_000
 # The benefit-unit award a couple can be on, and the input that carries it.
 AWARD_INPUTS = {
@@ -206,6 +208,10 @@ def situation(drawn, year):
                     variable: {year: AWARD if unit["award"] == key else 0}
                     for key, variable in AWARD_INPUTS.items()
                 },
+                # The family claims Universal Credit only when it is on it: a
+                # claim would end the couple's income-related ESA
+                # (esa_income_report_closed).
+                "would_claim_uc": {year: unit["award"] == "UC"},
             }
             benunits[f"h{h}_b{u}"] = benunit
         hh[f"h{h}"] = {"members": names, "country": {year: household["country"]}}
@@ -336,7 +342,7 @@ def reference_payments(household, year):
         else:
             # The model's stand-in for the winter fuel payment charge.
             wfp_means = country in ("ENGLAND", "WALES") and any(
-                p[0]["age"] >= 67 and p[0]["total_income"] < INCOME_LIMIT
+                p[0]["age"] >= 67 and p[0]["total_income"] <= INCOME_LIMIT
                 for p in people
             )
     # Only SI 2024/869 (reg 2(5)) counts the other member's benefit.
