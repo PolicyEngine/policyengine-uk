@@ -58,6 +58,14 @@ This repository's tests remain on the eFRS.
   unknown name raises a `ValueError` when the dataset is encoded
   (policyengine-core's `Enum.encode`); integer-coded columns are not
   checked.
+- This package's `hf://` loader (policyengine-core's
+  `download_huggingface_dataset`) and the test pin's downloader (`materialise`
+  in `policyengine_uk/utils/aggregate_impact/dataset.py`) both request Hugging
+  Face model repositories (`repo_type="model"`), and the pin file has no
+  repository-type field. Microcosm UK files sit in a dataset repository
+  (`policyengine/populace-uk-private`), so pinning one for the tests
+  (criterion 4) needs both to accept dataset repositories first, and loading
+  one by `hf://` needs the loader to.
 
 ### Variables
 
@@ -94,10 +102,12 @@ A documented gate must pass before any environment's default changes:
 4. **Tests:** the suite passes with the new dataset pinned in
    `policyengine_uk/tests/certified_dataset.yaml`, with the reform
    regression fixtures in `policyengine_uk/tests/microsimulation/reforms_config.yaml`
-   moved to the same dataset. `test_latest_data_smoke.py` loads a fixed
-   `enhanced_frs_2023_24.h5`, and `test_deterministic_variables.py` and
-   `test_no_economic_assumptions.py` use built-in situations, so none of
-   those three tests the new default as written.
+   moved to the same dataset. `test_latest_data_smoke.py` loads a
+   hard-coded, unpinned `enhanced_frs_2023_24.h5`;
+   `test_deterministic_variables.py` uses inline situations and
+   `test_no_economic_assumptions.py` an inline situation and a hand-built
+   one-person dataset, so none of those three tests the new default as
+   written.
 5. **Documentation:** the `assumptions/` section records the switch and any
    remaining aggregate gaps.
 
