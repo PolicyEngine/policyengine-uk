@@ -116,6 +116,11 @@
   output:
     housing_benefit_applicable_amount: 108.3 * 52
 
+# Each case states that the claimant or partner attained State Pension age
+# before the April 2021 cutoff, as everyone at pension age before then had.
+# Parameter processing backdates the cutoff, like every parameter, to 2015,
+# so a unit given no person ages would otherwise read as the later cohort.
+
 - name: "Historical 2015 lower/higher pensioner allowances in GB and NI"
   period: 2015
   absolute_error_margin: 0.02
@@ -123,6 +128,7 @@
     country: ["ENGLAND","ENGLAND","ENGLAND","ENGLAND","ENGLAND","ENGLAND","NORTHERN_IRELAND","NORTHERN_IRELAND","NORTHERN_IRELAND","NORTHERN_IRELAND","NORTHERN_IRELAND","NORTHERN_IRELAND"]
     housing_benefit_eligible: [true,true,true,true,true,true,true,true,true,true,true,true]
     housing_benefit_pension_age_regulations_apply: [true,true,true,true,true,true,true,true,true,true,true,true]
+    housing_benefit_attained_pension_age_before_cutoff: [true,true,true,true,true,true,true,true,true,true,true,true]
     eldest_claimant_or_partner_age: [64,65,64,65,64,65,64,65,64,65,64,65]
     is_single_person: [true,true,false,false,false,false,true,true,false,false,false,false]
     is_lone_parent: [false,false,true,true,false,false,false,false,true,true,false,false]
@@ -138,6 +144,7 @@
     country: ["ENGLAND","ENGLAND","ENGLAND","ENGLAND","ENGLAND","ENGLAND","NORTHERN_IRELAND","NORTHERN_IRELAND","NORTHERN_IRELAND","NORTHERN_IRELAND","NORTHERN_IRELAND","NORTHERN_IRELAND"]
     housing_benefit_eligible: [true,true,true,true,true,true,true,true,true,true,true,true]
     housing_benefit_pension_age_regulations_apply: [true,true,true,true,true,true,true,true,true,true,true,true]
+    housing_benefit_attained_pension_age_before_cutoff: [true,true,true,true,true,true,true,true,true,true,true,true]
     eldest_claimant_or_partner_age: [64,65,64,65,64,65,64,65,64,65,64,65]
     is_single_person: [true,true,false,false,false,false,true,true,false,false,false,false]
     is_lone_parent: [false,false,true,true,false,false,false,false,true,true,false,false]
@@ -153,6 +160,7 @@
     country: ["ENGLAND","ENGLAND","ENGLAND","ENGLAND","ENGLAND","ENGLAND","NORTHERN_IRELAND","NORTHERN_IRELAND","NORTHERN_IRELAND","NORTHERN_IRELAND","NORTHERN_IRELAND","NORTHERN_IRELAND"]
     housing_benefit_eligible: [true,true,true,true,true,true,true,true,true,true,true,true]
     housing_benefit_pension_age_regulations_apply: [true,true,true,true,true,true,true,true,true,true,true,true]
+    housing_benefit_attained_pension_age_before_cutoff: [true,true,true,true,true,true,true,true,true,true,true,true]
     eldest_claimant_or_partner_age: [64,65,64,65,64,65,64,65,64,65,64,65]
     is_single_person: [true,true,false,false,false,false,true,true,false,false,false,false]
     is_lone_parent: [false,false,true,true,false,false,false,false,true,true,false,false]
@@ -168,6 +176,7 @@
     country: ["ENGLAND","ENGLAND","ENGLAND","ENGLAND","ENGLAND","ENGLAND","NORTHERN_IRELAND","NORTHERN_IRELAND","NORTHERN_IRELAND","NORTHERN_IRELAND","NORTHERN_IRELAND","NORTHERN_IRELAND"]
     housing_benefit_eligible: [true,true,true,true,true,true,true,true,true,true,true,true]
     housing_benefit_pension_age_regulations_apply: [true,true,true,true,true,true,true,true,true,true,true,true]
+    housing_benefit_attained_pension_age_before_cutoff: [true,true,true,true,true,true,true,true,true,true,true,true]
     eldest_claimant_or_partner_age: [64,65,64,65,64,65,64,65,64,65,64,65]
     is_single_person: [true,true,false,false,false,false,true,true,false,false,false,false]
     is_lone_parent: [false,false,true,true,false,false,false,false,true,true,false,false]
@@ -183,6 +192,7 @@
     country: ["ENGLAND","NORTHERN_IRELAND"]
     housing_benefit_eligible: [true,true]
     housing_benefit_pension_age_regulations_apply: [true,true]
+    housing_benefit_attained_pension_age_before_cutoff: [true,true]
     eldest_claimant_or_partner_age: [64,64]
     is_single_person: [true,true]
     is_lone_parent: [false,false]
@@ -196,6 +206,7 @@
   input:
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
+    housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 64
     is_single_person: true
     is_lone_parent: false

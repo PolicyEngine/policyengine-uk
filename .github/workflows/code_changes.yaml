@@ -6,23 +6,73 @@ on:
     branches:
       - main
 
+    # The same paths as the pull request workflow: a dependency, lockfile
+    # or Makefile change alters what the tests run against.
     paths:
       - policyengine_uk/**
       - tests/**
       - .github/**
+      - pyproject.toml
+      - uv.lock
+      - Makefile
+      - conftest.py
+      - .gitignore
+      - README.md
   workflow_dispatch:
 
-# This workflow only lints and tests (versioning, publishing and the docs
-# deploy are separate workflows), so when a newer commit lands on main the
-# older run's result is superseded. Cancel it instead of letting a 50-minute
-# Test job hold a shared runner. From 2026-10-06 to 10-08, 8 of 17 push runs
-# were superseded mid-run and finishing them used 357 runner-minutes.
-concurrency:
-  group: code-changes-push-${{ github.ref }}
-  cancel-in-progress: true
+# No concurrency group: every commit that lands on main finishes its run. The
+# runs used to be cancelled when a newer commit landed, so 83001d51 and
+# cfa0c556 never finished a Test on 11 October 2026, and a conflict between
+# #2251 and #2270, each green alone, showed only at 7343f948.
+#
+# With a merge queue, main moves only to a commit the queue already tested
+# with this suite (pr_code_changes.yaml on merge_group), so the Tested job
+# skips the tests for such a commit rather than run them twice. Main's own
+# runs must have the dataset (require-data).
 
 jobs:
+  Tested:
+    # The release workflow tests each version commit itself, on the wheel it
+    # publishes. Version commits only trigger this workflow when the GitHub
+    # App pushes them (see versioning.yaml); skip them.
+    if: github.event.head_commit.message != 'Update package version'
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 5
+    permissions:
+      actions: read
+    outputs:
+      tested: ${{ steps.check.outputs.tested }}
+    steps:
+      - name: Did the merge queue already test this commit?
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+        run: |
+          # A manual dispatch always tests: it is how to re-check main.
+          if [ "$GITHUB_EVENT_NAME" != push ]; then
+            echo "tested=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # Only a successful merge_group run of the pull request workflow
+          # counts: a merge group always runs the whole suite, with the
+          # dataset (pr_code_changes.yaml). A check named "Test / Result" on
+          # this commit could also come from a pull request run on the same
+          # head commit, which may have skipped tests. If the lookup fails,
+          # run the tests.
+          runs=$(gh api "repos/$REPO/actions/workflows/pr_code_changes.yaml/runs?head_sha=$SHA&event=merge_group&status=success&per_page=1" \
+            --jq '.total_count') || runs=0
+          [[ "$runs" =~ ^[0-9]+$ ]] || runs=0
+          if [ "$runs" -gt 0 ]; then
+            echo "The merge queue already tested $SHA; not running the suite again."
+            echo "tested=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "tested=false" >> "$GITHUB_OUTPUT"
+          fi
   Lint:
+    needs: Tested
+    if: needs.Tested.outputs.tested != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -31,57 +81,25 @@ jobs:
           uses: astral-sh/setup-uv@v8.1.0
         - name: Check formatting
           run: uvx ruff format --check .
+        - name: Lint
+          # The ruff rules pyproject.toml selects, then two pyflakes rules it
+          # ignores, checked in the package: F811, a definition that a later
+          # one of the same name silently replaces (two PRs that each add a
+          # Simulation.set_input merge cleanly, and the second wins; uk hub
+          # notice 16), and F821, an undefined name. Neither has a finding
+          # in the package today.
+          run: |
+            uvx ruff check .
+            uvx ruff check --select F811,F821 policyengine_uk
+  # The same suite as pull requests (test-suite.yaml), on the merged commit.
   Test:
-      # Linux arm64 keeps the CPU architecture of the macOS runners this job
-      # used to run on. GitHub-hosted macOS runners are scarce, so PR runs
-      # queued for hours; the parameter tree and every test result are
-      # identical on both.
-      runs-on: ubuntu-24.04-arm
-      # The whole job takes about 18 minutes (YAML tests 2, pytest 15, the
-      # rest under 1). More than three times that means a run is hung or
-      # the suite needs attention, so fail it rather than wait for the
-      # 6-hour GitHub limit.
-      timeout-minutes: 60
-      permissions:
-        contents: "read"
-        id-token: "write"
-      steps:
-          - name: Checkout repo
-            uses: actions/checkout@v6
-          - name: Install uv
-            uses: astral-sh/setup-uv@v8.1.0
-
-          - name: Set up Python
-            uses: actions/setup-python@v6
-            with:
-                python-version: '3.13'
-          - uses: "google-github-actions/auth@v3"
-            with:
-              workload_identity_provider: "projects/322898545428/locations/global/workloadIdentityPools/policyengine-research-id-pool/providers/prod-github-provider"
-              service_account: "policyengine-research@policyengine-research.iam.gserviceaccount.com"
-              
-          - name: Install package
-            run: uv pip install -e .[dev] --system
-          - name: Install policyengine
-            run: uv pip install policyengine --system
-          - name: Install JB
-            run: uv pip install "jupyter-book>=2.0.0a0" --system
-          - name: UV sync
-            run: uv sync --extra dev
-          - name: Run tests with coverage
-            run: |
-              # Only export token if non-empty (defensive against missing secrets)
-              if [ -n "$HF_TOKEN_VALUE" ]; then
-                export HUGGING_FACE_TOKEN="$HF_TOKEN_VALUE"
-              fi
-              # Four pytest-xdist workers, one per core; together they peak at
-              # about 9 GB of the runner's 16 GB.
-              make test PYTEST_ARGS="-n 4 --dist worksteal"
-            env:
-              HF_TOKEN_VALUE: ${{ secrets.HUGGING_FACE_TOKEN }}
-          - name: Upload coverage to Codecov
-            uses: codecov/codecov-action@v6
-            with:
-              files: ./coverage.xml
-              fail_ci_if_error: false
-              verbose: true
+    needs: Tested
+    if: needs.Tested.outputs.tested != 'true'
+    uses: ./.github/workflows/test-suite.yaml
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      require-data: true
+    secrets:
+      HUGGING_FACE_TOKEN: ${{ secrets.HUGGING_FACE_TOKEN }}
