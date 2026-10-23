@@ -1,0 +1,1 @@
+Corrected the regional childcare planning page (docs/book/programs/gov/dfe/regional-childcare-plan.md) against current law, data and main: the Scottish two-year-old, SAAS, Childcare Offer, Flying Start and PSEP descriptions, the Childcare Grant calibration claim and the Microcosm UK geography.
