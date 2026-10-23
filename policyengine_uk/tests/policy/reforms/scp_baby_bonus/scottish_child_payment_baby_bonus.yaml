@@ -51,9 +51,9 @@
         members: [parent, toddler]
         region: SCOTLAND
   output:
-    # Standard rate only: £29.45/week * 52 = £1,531.40
+    # Standard rate only: £29.80/week * 52 = £1,549.60
     # [parent, toddler]
-    scottish_child_payment: [0, 1531]
+    scottish_child_payment: [0, 1549.60]
 
 - name: SCP baby bonus - mixed ages (2028)
   period: 2028
@@ -79,9 +79,9 @@
         region: SCOTLAND
   output:
     # Baby (age 0): £40.80/week total * 52 = £2,121.60
-    # Older child (age 5): £29.45/week * 52 = £1,531.40
+    # Older child (age 5): £29.80/week * 52 = £1,549.60
     # [parent, baby, older_child]
-    scottish_child_payment: [0, 2122, 1531]
+    scottish_child_payment: [0, 2122, 1549.60]
 
 - name: SCP baby bonus - not in Scotland (2028)
   period: 2028
