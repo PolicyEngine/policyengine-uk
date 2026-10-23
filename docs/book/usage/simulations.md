@@ -277,6 +277,13 @@ Each table should contain the ID columns needed to link entities together:
 - `benunit`: `benunit_id`, plus any benefit-unit variables
 - `household`: `household_id`, plus any household-level variables
 
+Whatever the data source, keep identifiers to whole numbers from
+-2,147,483,648 to 2,147,483,647. A simulation stores them as 32-bit integers,
+so within that range the identifiers it returns (for example
+`sim.calculate("person_household_id", 2025)`) are the ones in your tables.
+Outside it, the simulation gives an `EntityIdWarning`: the identifiers it
+returns differ from yours, and so may anything rebuilt from them.
+
 Benefit-unit and household rows can be in any order. The loader aligns each
 year's group inputs by its ID column to the simulation's sorted group IDs;
 person rows keep their supplied order. This alignment does not reorder the
