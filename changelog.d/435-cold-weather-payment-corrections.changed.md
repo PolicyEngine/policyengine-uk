@@ -1,0 +1,1 @@
+Corrected the Cold Weather Payment plan (docs/book/programs/gov/dwp/cold-weather-payment-plan.md): the full regulation 1A conditions (care homes, England and Wales, Income Support and JSA premiums, mortgage-interest loans with Pension Credit), the winter 2022-23 Scottish replacement, the Winter Heating Payment rule and the weather data source.
