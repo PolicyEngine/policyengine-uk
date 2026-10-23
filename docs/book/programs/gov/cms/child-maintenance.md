@@ -90,10 +90,12 @@ parent's gross weekly income
 
 Then:
 
-- **Shared care:** the amount falls by 1/7 where a child spends 52 to 103
-  nights a year with the paying parent, 2/7 for 104 to 155, 3/7 for 156 to
-  174 and 1/2 for 175 or more; with more than one qualifying child, the
-  fractions are added and divided by the number of children. It then falls
+- **Shared care:** for the basic and reduced rates, the amount payable to
+  each carer falls by 1/7 where a child spends 52 to 103 nights a year with
+  the paying parent, 2/7 for 104 to 155, 3/7 for 156 to 174 and 1/2 for 175
+  or more; where one carer looks after more than one qualifying child, the
+  fractions for those children are added and divided by the number of them
+  (para. 7(5)). It then falls
   by a further £7 a week for each child with 175 or more nights, but not
   below £7 a week in total (Sch. 1 para. 7). Where the flat rate applies
   because the paying parent or their partner gets a prescribed benefit
