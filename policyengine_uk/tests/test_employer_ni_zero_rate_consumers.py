@@ -144,3 +144,78 @@ def test_salary_sacrifice_excess_is_zero_rated(case):
         assert adjusted_cost == pytest.approx(32_000, abs=0.01)
     else:
         assert extra_ni == pytest.approx(0.15 * 3_000, abs=0.01)
+
+
+# The fixed-cost pay change must solve the employer cost equation on NIC
+# earnings (pay plus statutory pay), piecewise around the reformed threshold,
+# for earners whose pay alone is below their baseline threshold.
+ZERO_RATED = {case: CASES[case] for case in CASES if CASES[case][2]}
+
+
+@pytest.mark.parametrize("case", ZERO_RATED)
+def test_rate_rise_with_statutory_pay_over_the_threshold(case):
+    # 2026: £49,000 pay plus £2,000 statutory sick pay. Pay alone is below the
+    # UST/AUST (£50,270), but NIC earnings of £51,000 are above it, so the 15%
+    # to 16% rise raises employer NI and pay must fall to hold cost fixed.
+    age, apprentice, _ = ZERO_RATED[case]
+    inputs = {"employment_income": {2026: 49_000}, "statutory_sick_pay": {2026: 2_000}}
+    people = {"person": (age, apprentice, inputs)}
+    simulation = Simulation(situation=situation(people, 2026), reform=RATE_RISE)
+
+    threshold = 50_270
+    baseline_cost = values(simulation, "baseline_employer_cost", 2026)[0]
+    assert baseline_cost == pytest.approx(51_000 + 0.15 * (51_000 - threshold), abs=0.1)
+    # Solve W + 2,000 + 0.16 x (W + 2,000 - T) = baseline cost for pay W.
+    new_pay = (baseline_cost + 0.16 * threshold) / 1.16 - 2_000
+    assert new_pay == pytest.approx(48_993.71, abs=0.1)
+    pay = values(simulation, "employment_income", 2026)[0]
+    assert pay == pytest.approx(new_pay, abs=0.1)
+    adjusted_cost = values(simulation, "adjusted_employer_cost", 2026)[0]
+    assert adjusted_cost == pytest.approx(baseline_cost, abs=0.1)
+
+
+LOWER_RELIEF_THRESHOLDS = {
+    f"gov.hmrc.national_insurance.class_1.thresholds.{name}": {"2026": 20_000 / 52}
+    for name in ["upper_secondary_threshold", "apprentice_upper_secondary_threshold"]
+}
+
+
+@pytest.mark.parametrize("case", ZERO_RATED)
+def test_lowered_relief_threshold_below_pay(case):
+    # 2026: a reform lowers the UST and AUST to £20,000. Pay of £30,000 was
+    # zero-rated (employer cost £30,000) and now crosses the reformed
+    # threshold: P + 0.15 x (P - 20,000) = 30,000, so P = 33,000 / 1.15.
+    age, apprentice, _ = ZERO_RATED[case]
+    people = {"person": (age, apprentice, {"employment_income": {2026: PAY}})}
+    simulation = Simulation(
+        situation=situation(people, 2026), reform=LOWER_RELIEF_THRESHOLDS
+    )
+
+    pay = values(simulation, "employment_income", 2026)[0]
+    assert pay == pytest.approx(33_000 / 1.15, abs=0.01)
+    assert pay == pytest.approx(28_695.65, abs=0.01)
+    assert values(simulation, "baseline_employer_cost", 2026)[0] == pytest.approx(
+        PAY, abs=0.01
+    )
+    assert values(simulation, "adjusted_employer_cost", 2026)[0] == pytest.approx(
+        PAY, abs=0.01
+    )
+
+
+@pytest.mark.parametrize("case", ZERO_RATED)
+def test_raised_relief_threshold_above_pay(case):
+    # The reverse crossing: pay of £60,000 bears 0.15 x (60,000 - 50,270) in
+    # the baseline. Raising the UST and AUST to £70,000 removes the charge, so
+    # pay rises by the whole saving to hold employer cost fixed.
+    age, apprentice, _ = ZERO_RATED[case]
+    people = {"person": (age, apprentice, {"employment_income": {2026: 60_000}})}
+    reform = {name: {"2026": 70_000 / 52} for name in LOWER_RELIEF_THRESHOLDS}
+    simulation = Simulation(situation=situation(people, 2026), reform=reform)
+
+    baseline_cost = values(simulation, "baseline_employer_cost", 2026)[0]
+    assert baseline_cost == pytest.approx(60_000 + 0.15 * 9_730, abs=0.1)
+    pay = values(simulation, "employment_income", 2026)[0]
+    assert pay == pytest.approx(baseline_cost, abs=0.1)
+    assert values(simulation, "adjusted_employer_cost", 2026)[0] == pytest.approx(
+        baseline_cost, abs=0.1
+    )
