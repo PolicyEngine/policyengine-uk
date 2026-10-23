@@ -3,7 +3,7 @@
 ```{warning}
 **Not yet modelled in detail.** PolicyEngine UK has two generic person-level
 inputs, `maintenance_income` and `maintenance_expenses`. They do not tell
-child maintenance apart from maintenance between former partners, and the
+child maintenance apart from spousal maintenance, and the
 model does not calculate a Child Maintenance Service (CMS) award. This page
 sets out the scope for doing that, tracked in
 [#669](https://github.com/PolicyEngine/policyengine-uk/issues/669) (still
@@ -33,24 +33,38 @@ For **child** maintenance that is the right answer for UC:
 - **Paying parent:** maintenance paid is not deducted, so the paying parent is
   means-tested on their full earnings.
 
-This asymmetry is the work-incentive problem described by the Centre for Social
-Justice in [*The Hidden Parent Poverty Trap: Child Maintenance and Universal
-Credit*][csj]. The model already reproduces it, because neither input reaches
-UC.
+The paying-parent side of this asymmetry is the work-incentive problem
+described by the Centre for Social Justice in [*The Hidden Parent Poverty Trap:
+Child Maintenance and Universal Credit*][csj]. The model reproduces UC's side
+of it, because neither input reaches UC. It does not reproduce the combined
+marginal rates, because `maintenance_expenses` is a fixed input that does not
+rise with earnings.
 
-The gap is **maintenance between former spouses or civil partners**.
-Reg. 66(1)(d) counts it as unearned income in UC, but the model cannot see it,
-because it shares `maintenance_income` with child maintenance. Those
-recipients' UC is overstated.
+The gap is **maintenance from a spouse, civil partner, former spouse or former
+civil partner** under a court order or a maintenance agreement.
+Reg. 66(1)(d) counts it as unearned income in UC, but the model cannot see it:
+no maintenance input reaches UC, and `maintenance_income` does not tell it
+apart from child maintenance
+([policyengine-uk-data#627](https://github.com/PolicyEngine/policyengine-uk-data/issues/627)
+discusses where FRS-based datasets record it). Those recipients' UC is
+overstated.
 
 ## Scope
+
+[PR #2573](https://github.com/PolicyEngine/policyengine-uk/pull/2573),
+implementing [#2572](https://github.com/PolicyEngine/policyengine-uk/issues/2572),
+proposes keeping `maintenance_income` for child maintenance received and
+adding `spousal_maintenance_income` for spousal maintenance. That
+implementation is pending; it would replace the input split proposed in
+Phases 1 and 2 below while leaving the CMS calculation in Phase 3 unmodelled.
 
 ### Phase 1: separate the inputs
 
 - New input `child_maintenance_received` (Person, GBP, annual).
 - New input `child_maintenance_paid` (Person, GBP, annual).
-- Keep `maintenance_income` and `maintenance_expenses` for maintenance
-  between former partners, and say so in their documentation.
+- Keep `maintenance_income` and `maintenance_expenses` for spousal
+  maintenance (received from, or paid to, a spouse, civil partner, former
+  spouse or former civil partner), and say so in their documentation.
 - In the data pipeline
   ([Microcosm UK](https://github.com/PolicyEngine/microcosm)), route the FRS
   child-maintenance items to the new inputs and the spousal items to the
@@ -79,13 +93,21 @@ parent's gross weekly income
 | £100.01 to £199.99 | Reduced | Formula |
 | £200 to £3,000 | Basic | 12% / 16% / 19% of income up to £800 for 1 / 2 / 3+ children, then 9% / 12% / 15% of income from £800 to £3,000 |
 | Above £3,000 | Basic, capped | Income above £3,000 is ignored; the receiving parent can apply to the courts |
-| Not enough information | Default | £38 / £51 / £64 |
+| Not enough information | Default | £39 / £51 / £64 ([SI 2012/2677 reg. 49](https://www.legislation.gov.uk/uksi/2012/2677/regulation/49); GOV.UK's guide shows £38 for one child) |
 
 Then:
 
-- **Shared care:** the amount falls by 1/7 for 52 to 103 nights a year, 2/7
-  for 104 to 155, 3/7 for 156 to 174, and by half plus £7 a week for 175 or
-  more.
+- **Shared care:** for the basic and reduced rates, the amount payable to
+  each carer falls by 1/7 where a child spends 52 to 103 nights a year with
+  the paying parent, 2/7 for 104 to 155, 3/7 for 156 to 174 and 1/2 for 175
+  or more; where one carer looks after more than one qualifying child, the
+  fractions for those children are added and divided by the number of them
+  (para. 7(5)). It then falls
+  by a further £7 a week for each child with 175 or more nights, but not
+  below £7 a week in total (Sch. 1 para. 7). Where the flat rate applies
+  because the paying parent or their partner gets a prescribed benefit
+  (para. 4(1)(b) or (c) or 4(2)), 52 or more nights with a child makes the
+  amount payable to that child's carer nil (para. 8).
 - **Other children:** an adjustment applies for other children living with
   the paying parent.
 
