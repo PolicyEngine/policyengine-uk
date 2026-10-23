@@ -13,6 +13,7 @@ class housing_benefit_applicable_amount(Variable):
         "https://www.legislation.gov.uk/uksi/2006/214/schedule/3",
         "https://www.legislation.gov.uk/uksi/2017/1187/regulation/7",
         "https://www.legislation.gov.uk/nisr/2019/58/schedule/4/made",
+        "https://www.legislation.gov.uk/nisr/2017/242/regulation/7/made",
     )
 
     def formula(benunit, period, parameters):
@@ -37,10 +38,10 @@ class housing_benefit_applicable_amount(Variable):
         northern_ireland = country == country.possible_values.NORTHERN_IRELAND
 
         def higher_allowance(category):
-            # Until 6 December 2018 (GB, SI 2017/1187 reg 7(7)) and 1 April
-            # 2019 (NI, SR 2019/58 Sch 4), units where the claimant and any
-            # partner were under 65 got the lower para 1(1)(a) and (2)(a)
-            # rates. Read at the existing 30-April fiscal-year convention, with
+            # Until 6 December 2018 (GB, SI 2017/1187 regs 1(2)(b) and 7(7);
+            # NI, SR 2017/242 regs 1(2)(b) and 7(7)), units where the claimant
+            # and any partner were under 65 got the lower para 1(1)(a) and
+            # (2)(a) rates. Read at the existing 30-April fiscal-year convention, with
             # no new claimant-history input. A zero reform of the lower amount
             # stays zero rather than falling back to the higher rate.
             lower = category.aged_under_65

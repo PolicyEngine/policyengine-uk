@@ -47,14 +47,18 @@ age_limit_great_britain:
     unit: year
     label: Historical lower GB pensioner allowance age limit
 age_limit_northern_ireland:
-  description: Upper age boundary for the former NI pensioner allowance category; zero in the April 2019 replacement table.
+  description: Upper age boundary for the former NI pensioner allowance category; zero after its removal.
   values:
     2015-04-01: 65
-    2019-04-01:
+    # SR 2017/242 reg 7(7) omits paragraph (a) of entries (1) and (2), and entry
+    # (3), from the Schedule 4 para 1 table, from 6 December 2018 (reg 1(2)(b)),
+    # as SI 2017/1187 does in Great Britain. The 2019 up-rating table (SR 2019/58)
+    # no longer has the category.
+    2018-12-06:
       value: 0
       reference:
-        - title: NI Social Security Benefits Up-rating Order 2019, articles 1 and 24 and Schedule 4
-          href: https://www.legislation.gov.uk/nisr/2019/58/made
+        - title: Social Security (Miscellaneous Amendments No. 3) Regulations (Northern Ireland) 2017, regulations 1(2)(b) and 7(7)
+          href: https://www.legislation.gov.uk/nisr/2017/242/made
   metadata:
     unit: year
     label: Historical lower NI pensioner allowance age limit
