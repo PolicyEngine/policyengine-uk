@@ -437,9 +437,12 @@ tax_heads:
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
     sign: nonnegative
     data_note: >-
-      expected_ltt multiplies an already purchase-drawn liability by
-      property_sale_rate, discounting it twice (issue 2246). The independent
-      specification chose land_transaction_tax for that reason.
+      Equal to land_transaction_tax, with no property sale rate scaling
+      (issue 2246). On policyengine-uk-data 1.58.0 (enhanced_frs_2024_25),
+      £0.070bn in 2026, all on main-residence purchases: no Welsh record has
+      an additional-dwelling or non-residential purchase or a rent charge.
+      Measured 2026-10-11 on model 2.126.8, before the Welsh rate updates
+      (issue 1796); these are historical figures.
   - id: land_and_buildings_transaction_tax
     label: Land and buildings transaction tax (Scotland)
     variable: expected_lbtt
@@ -451,9 +454,12 @@ tax_heads:
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
     sign: nonnegative
     data_note: >-
-      expected_lbtt multiplies an already purchase-drawn liability by
-      property_sale_rate, discounting it twice (issue 2246). The independent
-      specification chose land_and_buildings_transaction_tax for that reason.
+      Equal to land_and_buildings_transaction_tax, with no property sale rate
+      scaling (issue 2246). On policyengine-uk-data 1.58.0
+      (enhanced_frs_2024_25) in 2026, £0.385bn on main-residence purchases.
+      Before PR 2241 (issue 2238) it is £2.310bn: the main-residence purchase
+      flag also charges £15.2bn of other residential property as
+      additional-dwelling purchases. Measured 2026-10-11.
 
   # Reform-only heads
   - id: corporate_incident_tax_change
@@ -538,14 +544,14 @@ exclusions:
   - {variable: sdlt_on_non_residential_property_transactions, kind: component, head: sdlt_household}
   - {variable: sdlt_on_residential_property_rent, kind: component, head: sdlt_household}
   - {variable: sdlt_on_non_residential_property_rent, kind: component, head: sdlt_household}
-  - {variable: land_transaction_tax, kind: component, head: land_transaction_tax, note: "The liability before the property_sale_rate scaling (issue 2246)."}
+  - {variable: land_transaction_tax, kind: component, head: land_transaction_tax, note: "Equal to expected_ltt (issue 2246); report the head, not this."}
   - {variable: ltt_on_transactions, kind: component, head: land_transaction_tax}
   - {variable: ltt_on_rent, kind: component, head: land_transaction_tax}
   - {variable: ltt_on_residential_property_transactions, kind: component, head: land_transaction_tax}
   - {variable: ltt_on_non_residential_property_transactions, kind: component, head: land_transaction_tax}
   - {variable: ltt_on_residential_property_rent, kind: component, head: land_transaction_tax}
   - {variable: ltt_on_non_residential_property_rent, kind: component, head: land_transaction_tax}
-  - {variable: land_and_buildings_transaction_tax, kind: component, head: land_and_buildings_transaction_tax, note: "The liability before the property_sale_rate scaling (issue 2246)."}
+  - {variable: land_and_buildings_transaction_tax, kind: component, head: land_and_buildings_transaction_tax, note: "Equal to expected_lbtt (issue 2246); report the head, not this."}
   - {variable: lbtt_on_transactions, kind: component, head: land_and_buildings_transaction_tax}
   - {variable: lbtt_on_rent, kind: component, head: land_and_buildings_transaction_tax}
   - {variable: lbtt_on_residential_property_transactions, kind: component, head: land_and_buildings_transaction_tax}
@@ -949,6 +955,13 @@ spending_heads:
   - id: bsp
     label: Bereavement Support Payment
     variable: bsp
+    entity: person
+    report_group: child_and_family_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: widowed_parents_allowance
+    label: Widowed Parent's Allowance
+    variable: widowed_parents_allowance
     entity: person
     report_group: child_and_family_benefits
     totals: [gov_spending, household_benefits]

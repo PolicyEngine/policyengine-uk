@@ -144,6 +144,9 @@ def normal_gross_income_non_dep_deduction(
         "savings_interest_income",
         "dividend_income",
         "state_pension",
+        # Normal gross income includes maintenance, although it is exempt
+        # from income tax (Default Scheme Sch para 30(2), (9)).
+        "spousal_maintenance_income",
     ]
     earned_income_components = [
         "employment_income",
