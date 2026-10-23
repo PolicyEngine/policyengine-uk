@@ -5,7 +5,7 @@ pension contributions and addresses the confusion reported in
 [#704](https://github.com/PolicyEngine/policyengine-uk/issues/704)
 about whether higher-rate taxpayers receive the right amount of
 relief. #704 is still open (October 2026); the figures below were re-run
-on policyengine-uk 2.140.0.
+on policyengine-uk 2.148.2.
 
 ## What the model does
 
@@ -17,12 +17,13 @@ by their pension contributions, up to the annual limit for relief in
 
 - the person's relevant UK earnings
   ([s. 189(2)](https://www.legislation.gov.uk/ukpga/2004/12/section/189)),
-  which the model takes as employment income, plus employer-paid Statutory
-  Sick Pay and Statutory Maternity Pay (`employment_benefits`, listed as
-  relevant UK earnings in HMRC's
+  which the model takes as taxable employment income: employment income
+  plus employer-paid Statutory Sick Pay and Statutory Maternity Pay
+  (`employment_benefits`, listed as relevant UK earnings in HMRC's
   [PTM044100](https://www.gov.uk/hmrc-internal-manuals/pensions-tax-manual/ptm044100)),
-  plus self-employment profit (a trading loss counts as zero, and does not
-  reduce employment earnings). Statutory Paternity Pay is not yet counted;
+  less allowable employment expenses; plus trading profit after capital
+  allowances and the trading allowance but before losses (a trading loss
+  counts as zero, and does not reduce employment earnings). Statutory Paternity Pay is not yet counted;
   open pull request
   [#2368](https://github.com/PolicyEngine/policyengine-uk/pull/2368) would
   add it to taxable employment pay;
@@ -46,10 +47,10 @@ PolicyEngine does not represent the £720 claim as a payment, and with no
 taxable income the deduction saves no income tax. Statutory Sick Pay and
 Statutory Maternity Pay were added to relevant earnings by
 [#2464](https://github.com/PolicyEngine/policyengine-uk/pull/2464), merged on
-19 October 2026. One open pull request would change this section once merged:
-[#2488](https://github.com/PolicyEngine/policyengine-uk/pull/2488) would apply
-the same relief-at-source-only rule to the pension uplift in adjusted total
-income.
+19 October 2026.
+[#2488](https://github.com/PolicyEngine/policyengine-uk/pull/2488), merged on
+20 October 2026, applied the same relief-at-source-only rule to the pension
+uplift in adjusted total income.
 
 The annual allowance does not limit the relief. `pension_annual_allowance`
 is the standard annual allowance (£60,000 from 6 April 2023). From 2016-17 it
@@ -58,17 +59,24 @@ is tapered only when both the statutory adjusted income
 threshold income (`pension_annual_allowance_threshold_income`, above the
 taper level less the standard allowance, £200,000 from 2023-24) are over
 their limits, by £1 for every £2 of adjusted income above the taper level,
-rounded down to whole pounds, to a minimum of £10,000
+rounded down to whole pounds, to a minimum of £10,000 (£4,000 from 2020-21
+to 2022-23)
 ([Finance Act 2004 s. 228ZA](https://www.legislation.gov.uk/ukpga/2004/12/section/228ZA);
 parameters under `gov.hmrc.income_tax.allowances.annual_allowance`). See
 `docs/engineering/pension-annual-allowance.md` for the income conventions.
 Unused allowance carried forward from the previous three tax years
 ([s. 228A](https://www.legislation.gov.uk/ukpga/2004/12/section/228A)) is
-the input `unused_pension_annual_allowance`, which is added to the allowance
-when the charge is worked out. It defaults to nil, because survey data does
-not record past pension input amounts, and the model does not derive it from
-earlier years. The money purchase annual allowance, the £10,000 limit on
-money purchase savings after pensions are first flexibly accessed
+`unused_pension_annual_allowance`, which is added to the allowance when the
+charge is worked out. It can be supplied for a year. Otherwise, because
+survey data does not record past pension input amounts, from 2020-21 the
+model estimates it: it assumes that in each of the five previous years the
+pension input and the incomes tested for the taper were this year's (times
+`gov.simulation.pensions.prior_year_input_ratio`, 1, for the input), deflated
+by average earnings growth, and carries forward what the last three years'
+allowances leave unused, earliest first. The estimate is nil for someone with
+no pension input this year, and nil before 2020-21. The money purchase
+annual allowance, the £10,000 limit on money purchase savings after pensions
+are first flexibly accessed
 ([s. 227ZA](https://www.legislation.gov.uk/ukpga/2004/12/section/227ZA)),
 is not modelled.
 
@@ -78,16 +86,29 @@ separately attract the annual allowance charge,
 the excess at the basic, higher and additional rates on the slices that fall
 in each band when it is added on top of the person's income after allowances
 ([Finance Act 2004 s. 227](https://www.legislation.gov.uk/ukpga/2004/12/section/227)).
+Relief-at-source contributions are not deducted from that income; for people
+who would otherwise pay tax above the basic rate, they raise the rate limits
+instead (s. 192(4), s. 227(4C)). So an employee on £45,000 who pays £20,000
+into a personal pension, with £50,000 of employer contributions, pays a £2,946
+charge on the £10,000 excess in 2025-26: the excess sits on top of £32,430 of
+income after the personal allowance, so part of it falls in the higher rate
+band. Deducting the contributions first would have given £2,000.
 The amount tested against the allowance is
 `pension_contributions_for_annual_allowance`, which counts member
 contributions made before age 75, employer contributions and salary
 sacrifice ([Finance Act 2004 s. 233](https://www.legislation.gov.uk/ukpga/2004/12/section/233)).
 For example, an employee on £100,000 who pays £70,000 into a personal pension
 in 2025-26 gets £70,000 of relief and a £2,000 charge on the £10,000 excess,
-which falls in the basic rate band. With £10,000 of unused allowance
+which falls in the basic rate band. The model's default estimate of unused
+allowance for this person is nil, since the estimated input in each earlier
+year also exceeds that year's allowance; with £10,000 of unused allowance
 brought forward, there is no charge. By default the pension input amount is
-cash contributions: defined-benefit accrual counts only if supplied through
-`pension_contributions_for_annual_allowance`.
+cash contributions: `defined_benefit_pension_share` defaults to nil, which
+treats every contribution as money purchase. Defined-benefit accrual counts
+when that share is supplied (the accrual is then
+`defined_benefit_pension_input_amount`, supplied or estimated from those
+contributions), or when `defined_benefit_pension_input_amount` or
+`pension_contributions_for_annual_allowance` is supplied.
 
 Relieved contributions also reduce `adjusted_net_income`, so they restore
 personal allowance lost above £100,000, as in law
@@ -102,12 +123,12 @@ rate, plus any personal allowance restored.
 
 ## Worked examples
 
-The four scenarios reported in #704 (all 2025-26, all self-employed,
-single person aged 40, no other income, contributions entered as
-`personal_pension_contributions`). The "model" column was re-run in
-October 2026 on policyengine-uk 2.140.0:
+The four scenarios reported in #704 (all self-employed, no other income),
+re-run for 2025-26 for a single person aged 40 with contributions entered as
+`personal_pension_contributions`; #704 gives no year or age. The "model"
+column was re-run in October 2026 on policyengine-uk 2.148.2:
 
-| ID    | Self-employed income | Pension contribution | Expected income-tax change | What the model returns | Why |
+| ID    | Self-employed income | Pension contribution | Total relief as an income-tax change | What the model returns | Why |
 |-------|---------------------|----------------------|-----------------------------|------------------------|-----|
 | 11800 | £30,000             | £0                   | baseline                    | baseline               | – |
 | 11799 | £30,000             | £3,000               | -£600                       | -£600                  | £3k contribution × 20% basic rate |
@@ -131,17 +152,23 @@ add up to the same total relief:
    from net income and the pension grows by the gross amount. For a
    basic-rate taxpayer, this is the *entire* relief.
 2. **Higher-rate top-up**: for taxpayers at higher or additional
-   rates, the extra band difference (20% for higher rate, 25% for
-   additional) is reclaimed via Self Assessment. The mechanism is
-   technically a **basic-rate-band extension**: HMRC widens the basic
-   rate band by the gross contribution, pushing income that would
-   otherwise be taxed at the higher rate down into the basic band.
+   rates, the extra relief (in England, Wales and Northern Ireland, 20%
+   for higher rate and 25% for additional rate) is claimed through Self
+   Assessment or directly from HMRC. The mechanism is technically a
+   **rate-band extension**: the basic rate limit and the higher rate
+   limit are both raised by the gross contribution
+   ([Finance Act 2004 s. 192(4)](https://www.legislation.gov.uk/ukpga/2004/12/section/192)),
+   pushing income that would otherwise be taxed at the higher or
+   additional rate down a band.
 
-PolicyEngine computes the **total** relief (both mechanisms together)
-because it operates on annual aggregates rather than walking the
-cash-flow steps. That matches HMRC's published statistics on the
-*fiscal cost of pension tax relief*, which also report the total
-across both mechanisms.
+PolicyEngine computes the **total** relief (both mechanisms together) as a
+reduction in income tax, because it operates on annual aggregates rather
+than walking the cash-flow steps. The exception is basic-rate relief at
+source on contributions above the person's taxable income, such as the £720
+on a non-taxpayer's £3,600 contribution: the provider still claims it, but
+the model has no tax to reduce. Otherwise this matches HMRC's published
+statistics on the *fiscal cost of pension tax relief*, which also report the
+total across both mechanisms.
 
 If you want to see the user-visible tax bill reduction separately from
 the pension-provider's RAS claim, you'd need to split the existing
@@ -154,7 +181,8 @@ than a calculation question: the totals are unchanged.
 #704 also reported a 0% marginal tax rate where 20% or 40% was
 expected. The model's `marginal_tax_rate` variable
 ([`variables/household/marginal_tax_rate.py`](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/variables/household/marginal_tax_rate.py))
-raises each adult's `employment_income` by
+raises the `employment_income` of each of the household's two eldest adults
+in turn (`gov.simulation.marginal_tax_rate_adults`) by
 `gov.simulation.marginal_tax_rate_delta` (£1,000, or 0.1% of employment
 income where that is larger) and measures the share of the rise that
 does not reach `household_net_income`. Re-run in October 2026, it returns
