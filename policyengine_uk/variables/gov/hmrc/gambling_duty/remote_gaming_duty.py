@@ -14,7 +14,7 @@ class remote_gaming_duty(Variable):
     )
 
     def formula_2024(household, period, parameters):
-        losses = household("remote_gaming_net_losses", period)
+        losses = max_(household("remote_gaming_net_losses", period), 0)
         total = 0
         for rates, share in fiscal_year_segments(
             parameters.gov.hmrc.gambling_duty.remote_gaming, period.start.year

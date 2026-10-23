@@ -27,3 +27,10 @@
   input: {}
   output:
     gaming_duty: 0
+
+- name: Case 5, a negative casino base gives no duty.
+  period: 2024
+  input:
+    land_based_casino_net_losses: -1_000
+  output:
+    gaming_duty: 0

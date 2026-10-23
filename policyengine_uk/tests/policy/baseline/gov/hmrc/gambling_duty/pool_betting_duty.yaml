@@ -15,3 +15,10 @@
     general_betting_duty: 300
     pool_betting_duty: 150
     gambling_duty: 450
+
+- name: Case 3, a negative pool betting base gives no duty.
+  period: 2024
+  input:
+    pool_betting_net_receipts: -1_000
+  output:
+    pool_betting_duty: 0

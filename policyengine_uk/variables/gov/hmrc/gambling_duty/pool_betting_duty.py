@@ -11,7 +11,7 @@ class pool_betting_duty(Variable):
     reference = "https://www.legislation.gov.uk/ukpga/2014/26/section/144"
 
     def formula_2024(household, period, parameters):
-        receipts = household("pool_betting_net_receipts", period)
+        receipts = max_(household("pool_betting_net_receipts", period), 0)
         total = 0
         for rates, share in fiscal_year_segments(
             parameters.gov.hmrc.gambling_duty.pool_betting, period.start.year

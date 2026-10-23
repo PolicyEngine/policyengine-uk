@@ -27,3 +27,12 @@
     machine_games_higher_rate_net_takings: 3_000
   output:
     machine_games_duty: 1_200 # 50 + 400 + 750.
+
+- name: Case 5, negative machine bases give no duty and do not offset another class.
+  period: 2024
+  input:
+    machine_games_lower_rate_net_takings: -1_000
+    machine_games_standard_rate_net_takings: -1_000
+    machine_games_higher_rate_net_takings: 1_000
+  output:
+    machine_games_duty: 250 # Only the higher-rate base: 1,000 * 25%.

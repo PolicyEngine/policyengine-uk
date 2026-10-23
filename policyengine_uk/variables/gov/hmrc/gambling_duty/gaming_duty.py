@@ -14,4 +14,5 @@ class gaming_duty(Variable):
 
     def formula_2024(household, period, parameters):
         rate = parameters(period).household.consumption.gambling.casino_effective_rate
-        return household("land_based_casino_net_losses", period) * rate
+        losses = max_(household("land_based_casino_net_losses", period), 0)
+        return losses * rate

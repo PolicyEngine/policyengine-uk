@@ -19,3 +19,10 @@
     remote_gaming_net_losses: 36_500
   output:
     remote_gaming_duty: 14_600
+
+- name: Case 4, a negative remote gaming base gives no duty.
+  period: 2026
+  input:
+    remote_gaming_net_losses: -1_000
+  output:
+    remote_gaming_duty: 0 # Each base is floored at zero, not charged at -40%.

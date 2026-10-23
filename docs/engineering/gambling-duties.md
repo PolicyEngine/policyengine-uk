@@ -25,7 +25,8 @@ All inputs default to zero. A data provider must allocate operator liabilities
 to households, preserving statutory netting, adjustments and exemptions before
 supplying these bases. A household's raw signed stakes minus winnings do not
 satisfy this contract. The formulas do not reproduce operator accounting
-periods or loss carry-forward and do not validate negative input values.
+periods or loss carry-forward. They floor each input at zero, so a negative
+input gives no duty and does not offset another base.
 Positive inputs before 2024 produce default zero because those model years
 remain outside the implemented coverage.
 

@@ -68,3 +68,16 @@
     horse_and_dog_pool_betting_net_losses: 36_500
   output:
     general_betting_duty: 25_550 # 9,125 + 3 * 5,475.
+
+- name: Case 10, negative bases give no duty and do not offset another base.
+  period: 2027
+  input:
+    remote_uk_horseracing_betting_net_losses: -1_000
+    remote_other_betting_net_losses: -1_000
+    land_based_fixed_odds_betting_net_losses: 1_000
+    horse_and_dog_pool_betting_net_losses: -1_000
+    financial_spread_betting_net_losses: -1_000
+    other_spread_betting_net_losses: -1_000
+    betting_exchange_commission: -1_000
+  output:
+    general_betting_duty: 150 # Only the land-based base: 1,000 * 15%.

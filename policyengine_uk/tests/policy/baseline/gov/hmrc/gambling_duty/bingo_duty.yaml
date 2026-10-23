@@ -24,3 +24,10 @@
   input: {}
   output:
     bingo_duty: 0
+
+- name: Case 5, a negative bingo base gives no duty.
+  period: 2024
+  input:
+    bingo_net_receipts: -1_000
+  output:
+    bingo_duty: 0

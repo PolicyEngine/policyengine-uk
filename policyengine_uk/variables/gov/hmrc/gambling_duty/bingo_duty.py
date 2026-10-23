@@ -14,7 +14,7 @@ class bingo_duty(Variable):
     )
 
     def formula_2024(household, period, parameters):
-        receipts = household("bingo_net_receipts", period)
+        receipts = max_(household("bingo_net_receipts", period), 0)
         total = 0
         for rates, share in fiscal_year_segments(
             parameters.gov.hmrc.gambling_duty.bingo, period.start.year

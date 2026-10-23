@@ -14,19 +14,17 @@ class general_betting_duty(Variable):
     )
 
     def formula_2024(household, period, parameters):
-        fixed_odds = add(
-            household,
-            period,
-            [
-                "remote_uk_horseracing_betting_net_losses",
-                "land_based_fixed_odds_betting_net_losses",
-                "horse_and_dog_pool_betting_net_losses",
-            ],
+        fixed_odds = (
+            max_(household("remote_uk_horseracing_betting_net_losses", period), 0)
+            + max_(household("land_based_fixed_odds_betting_net_losses", period), 0)
+            + max_(household("horse_and_dog_pool_betting_net_losses", period), 0)
         )
-        remote = household("remote_other_betting_net_losses", period)
-        financial_spread = household("financial_spread_betting_net_losses", period)
-        other_spread = household("other_spread_betting_net_losses", period)
-        exchange = household("betting_exchange_commission", period)
+        remote = max_(household("remote_other_betting_net_losses", period), 0)
+        financial_spread = max_(
+            household("financial_spread_betting_net_losses", period), 0
+        )
+        other_spread = max_(household("other_spread_betting_net_losses", period), 0)
+        exchange = max_(household("betting_exchange_commission", period), 0)
         total = 0
         for rates, share in fiscal_year_segments(
             parameters.gov.hmrc.gambling_duty.general_betting.rates, period.start.year

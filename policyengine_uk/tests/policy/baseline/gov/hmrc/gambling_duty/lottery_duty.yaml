@@ -17,3 +17,10 @@
   input: {}
   output:
     lottery_duty: 0
+
+- name: Case 4, negative National Lottery spending gives no duty.
+  period: 2024
+  input:
+    national_lottery_ticket_spending: -1_000
+  output:
+    lottery_duty: 0
