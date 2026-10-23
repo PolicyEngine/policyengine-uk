@@ -21,7 +21,8 @@ thresholds under `gov.dwp.pip.{daily_living,mobility}.points_thresholds`.
 The category is derived from points only when no category is given as an
 input for the year. A category given for a year is stored for everyone in
 the simulation, with NONE for anyone not given one. Otherwise the person's
-latest points for that year or an earlier one set the category, except that
+latest assessed points (not -1) for that year or an earlier one set the
+category, except that
 a category given for an earlier year carries forward unless those points are
 for a later year than it; with neither, the category is NONE
 (`policyengine_uk/utils/pip.py`). That is a simpler form of Phase 1 below:
@@ -153,7 +154,7 @@ machinery (for reform analysis) get the activity-level surface.
   [Pathways to Work evidence pack](https://www.gov.uk/government/consultations/pathways-to-work-reforming-benefits-and-support-to-get-britain-working-green-paper/pathways-to-work-evidence-pack-chapter-2-reforming-the-structure)
   (chapter 2, Tables 2.27 and 2.28: working-age, normal-rules claimants
   awarded the daily living component in England, Wales and abroad, January
-  2025 caseload; there is no mobility equivalent).
+  2025 caseload; the pack has no per-activity mobility table).
 - This phase is the heaviest and is only required to make Phase 2
   reforms work on the calibrated microsim. For the household
   calculator, users can input activity scores directly.
