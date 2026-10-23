@@ -1096,3 +1096,158 @@ def test_the_published_guard_strips_a_few_unit_double_count_coefficient():
         assert shown in text and "NO LONGER contained" in text
         if units == 3:
             assert "0.43" not in text
+
+
+def test_certified_guard_failure_message_excludes_private_fields():
+    """A failed invariant stays failed, with no raw survey detail in its message."""
+    from policyengine_uk.tests.aggregate_impact import test_aggregate_impact_certified
+    from policyengine_uk.utils.aggregate_impact.partition import (
+        default_partition_path,
+        load_partition,
+    )
+
+    partition = load_partition(default_partition_path())
+    row = {
+        "variable": partition.tax_heads[0].variable,
+        "status": "fail",
+        "problems": [
+            {
+                "total": "gov_tax",
+                "head": "income_tax",
+                "kind": "own_head",
+                "households": 3,
+                "where": np.array([True, False]),
+                "share": 0.123456,
+            }
+        ],
+        "detail": "SECRET_C4_household_amount",
+        "household_id": "SECRET_C4_household_id",
+        "responses": {"SECRET_C4_response": 1_234.5},
+    }
+    measured = (
+        {
+            "guard": {
+                "status": "ran",
+                "reset_reproduces_baseline": True,
+                "components": [row],
+            }
+        },
+        None,
+        partition,
+        None,
+    )
+    with pytest.raises(AssertionError) as error:
+        test_aggregate_impact_certified.test_every_tax_component_is_counted_exactly_once(
+            measured
+        )
+    message = str(error.value)
+    assert "SECRET_C4" not in message
+    assert "income_tax" in message and "own_head" in message
+    assert "where" not in message and "share" not in message
+
+
+@pytest.mark.parametrize(
+    "slot", ["variable", "status", "total", "head", "kind", "households"]
+)
+def test_guard_component_diagnostic_rejects_untrusted_slot_values(slot):
+    """An allowed key cannot smuggle an object or an arbitrary private string."""
+    import json
+
+    from policyengine_uk.utils.aggregate_impact.measure import (
+        component_guard_diagnostic,
+    )
+    from policyengine_uk.utils.aggregate_impact.partition import (
+        default_partition_path,
+        load_partition,
+    )
+
+    class Unprintable:
+        def __str__(self):
+            raise AssertionError("SECRET_C4_str_was_called")
+
+        __repr__ = __str__
+        __hash__ = __str__
+
+        def __eq__(self, other):
+            raise AssertionError("SECRET_C4_eq_was_called")
+
+        def __int__(self):
+            raise AssertionError("SECRET_C4_int_was_called")
+
+    class UntrustedString(str):
+        def __str__(self):
+            raise AssertionError("SECRET_C4_subclass_was_printed")
+
+    partition = load_partition(default_partition_path())
+    for value in ("SECRET_C4", Unprintable(), UntrustedString("income_tax")):
+        problem = {
+            "total": "gov_tax",
+            "head": "income_tax",
+            "kind": "own_head",
+            "households": 10,
+        }
+        row = {"variable": "income_tax", "status": "fail", "problems": [problem]}
+        if slot in ("variable", "status"):
+            row[slot] = value
+        else:
+            problem[slot] = value
+        diagnostic = component_guard_diagnostic(row, partition)
+        rendered = json.dumps(diagnostic)
+        assert "SECRET_C4" not in rendered
+        field = (
+            diagnostic[slot]
+            if slot in ("variable", "status")
+            else diagnostic["problems"][0][slot]
+        )
+        assert field == (None if slot == "households" else "unknown")
+
+
+@pytest.mark.parametrize(
+    "count,shown",
+    [
+        (0, 0),
+        (3, None),
+        (9, None),
+        (10, 10),
+        (100, 100),
+        (None, None),
+        (True, None),
+        (3.5, None),
+    ],
+)
+def test_guard_component_diagnostic_preserves_suppressed_counts(count, shown):
+    from policyengine_uk.utils.aggregate_impact.measure import (
+        component_guard_diagnostic,
+    )
+    from policyengine_uk.utils.aggregate_impact.partition import (
+        default_partition_path,
+        load_partition,
+    )
+
+    partition = load_partition(default_partition_path())
+    row = {
+        "variable": "income_tax",
+        "status": "fail",
+        "units": 100,
+        "problems": [
+            {
+                "total": "gov_tax",
+                "head": "income_tax",
+                "kind": "own_head",
+                "households": count,
+            }
+        ],
+    }
+    diagnostic = component_guard_diagnostic(row, partition)
+    assert diagnostic == {
+        "variable": "income_tax",
+        "status": "fail",
+        "problems": [
+            {
+                "total": "gov_tax",
+                "head": "income_tax",
+                "kind": "own_head",
+                "households": shown,
+            }
+        ],
+    }

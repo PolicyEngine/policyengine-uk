@@ -888,3 +888,39 @@ def test_the_release_tells_policyengine_py_only_after_pypi_has_it():
     assert "repos/PolicyEngine/policyengine.py/dispatches" in run
     assert "event_type=policyengine-uk-release" in run
     assert "client_payload[version]=$VERSION" in run
+
+
+@pytest.mark.parametrize("dist_artifact", ["", "release-dist"])
+def test_configured_source_and_wheel_shards_account_for_every_node(
+    conftest, dist_artifact
+):
+    """The two configured runner budgets retain the same strict coverage audit."""
+    import yaml
+
+    workflow = yaml.safe_load(
+        (GITHUB_DIR / "workflows" / "test-suite.yaml").read_text()
+    )
+    matrix = workflow["jobs"]["Python"]["strategy"]["matrix"]["shard"]
+
+    # The shared matrix is the runner set for both source and wheel; N is
+    # derived from the actual configured jobs, never a second fixed count.
+    selected = matrix
+    assert isinstance(selected, list) and selected
+    assert selected == list(range(1, len(selected) + 1))
+    collected = [f"tests/public_synthetic.py::test_case[{i}]" for i in range(200)]
+    shards = [
+        [
+            checker.Record(nodeid, "passed")
+            for nodeid in collected
+            if conftest.shard_of(nodeid, len(selected)) == number
+        ]
+        for number in selected
+    ]
+    mode = "wheel" if dist_artifact else "source"
+    assert checker.check(collected, shards, mode=mode, data="present").problems == []
+    populated = next(cases for cases in shards if cases)
+    missing = [cases for cases in shards if cases is not populated]
+    assert checker.check(collected, missing, mode=mode, data="present").problems
+    assert checker.check(
+        collected, [*shards, populated], mode=mode, data="present"
+    ).problems

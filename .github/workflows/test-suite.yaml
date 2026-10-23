@@ -4,10 +4,10 @@
 # publish. All three run the same jobs in the same locked environment.
 #
 # Jobs: the YAML policy tests (which also list every Python test), the Python
-# tests split over five runners, and Result, which fails unless every listed
+# tests split over eight runners, and Result, which fails unless every listed
 # Python test ran in exactly one shard and passed, apart from the outcomes
 # accepted in .github/test_outcome_allowlist.toml. A caller that names its job
-# Test gets the checks "Test / YAML", "Test / Python K/5" and "Test / Result";
+# Test gets the checks "Test / YAML", "Test / Python K/8" and "Test / Result";
 # "Test / Result" is the one to require.
 
 name: Test suite
@@ -133,12 +133,14 @@ jobs:
     runs-on: ubuntu-24.04-arm
     # The shards took 15, 20 and 15 minutes on 10 October (run
     # 38085920460), and up to 52 minutes with four shards on 21 October.
+    # Eight, not five: both source and wheel jobs on #1963 exceeded an hour
+    # with five shards. Keep the same limit and every-ID coverage audit.
     # 60 minutes leaves room for a slow runner and still stops a hung shard.
     timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4, 5]
+        shard: [1, 2, 3, 4, 5, 6, 7, 8]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
