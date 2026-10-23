@@ -22,10 +22,11 @@
 # Delete a variable to go back to today's label for the next run. The jobs
 # that make the version commit, build and publish a release, the
 # fix-evidence check (pull_request_target) and aggregate impact always keep
-# GitHub-hosted runners. These jobs read the licensed dataset, so point the
-# variables only at runners where that data may be processed, such as the
-# organisation's GitHub-hosted larger runners.
-# test_ci_runner_variables.py holds the workflows to this.
+# GitHub-hosted runners. Each job that can move has a read-only
+# GITHUB_TOKEN, since the organisation's default token can write. These jobs
+# read the licensed dataset, so point the variables only at runners where
+# that data may be processed, such as the organisation's GitHub-hosted
+# larger runners. test_ci_runner_variables.py holds the workflows to this.
 
 name: Test suite
 

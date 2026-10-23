@@ -14,6 +14,10 @@ the workflows to that:
 3. The expression picks the variable's runner exactly when the variable is
    set and CI_RUNNER_EVENTS is empty or lists the run's event, matched as a
    whole name: "pull_request" never matches "pull_request_target".
+4. Every job that can move has a GITHUB_TOKEN that can only read: the
+   organisation's default token can write, and a moved job takes its token
+   to the other runner. ``id-token: write`` stays allowed: it only lets a
+   job ask GitHub for an OIDC token, which the tests use for GCP.
 """
 
 from itertools import product
@@ -60,12 +64,16 @@ def runner_expression(variable, label):
     )
 
 
-def jobs():
+def documents():
     for path in sorted(WORKFLOWS.glob("*.y*ml")):
-        document = yaml.safe_load(path.read_text(encoding="utf-8"))
-        for name, job in document["jobs"].items():
+        yield path.name, yaml.safe_load(path.read_text(encoding="utf-8"))
+
+
+def jobs():
+    for name, document in documents():
+        for job_name, job in document["jobs"].items():
             if "runs-on" in job:
-                yield (path.name, name), job["runs-on"]
+                yield (name, job_name), job["runs-on"]
 
 
 # Invariant 1.
@@ -132,3 +140,24 @@ def test_the_variable_applies_only_to_the_listed_events(
         assert chosen == variable_value
     else:
         assert chosen == ARM
+
+
+# Invariant 4.
+
+
+def test_jobs_that_can_move_hold_a_read_only_token():
+    workflows = dict(documents())
+    for workflow, job_name in COVERED:
+        document = workflows[workflow]
+        job = document["jobs"][job_name]
+        # A job's own permissions replace the workflow's; with neither, the
+        # job gets the organisation's default token, which can write.
+        permissions = job.get("permissions", document.get("permissions"))
+        assert isinstance(permissions, dict), (workflow, job_name)
+        for scope, level in permissions.items():
+            assert level in ("read", "none") or scope == "id-token", (
+                workflow,
+                job_name,
+                scope,
+                level,
+            )

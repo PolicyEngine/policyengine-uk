@@ -34,6 +34,8 @@ concurrency:
 jobs:
   Changes:
     runs-on: ${{ vars.CI_RUNNER_ARM != '' && (vars.CI_RUNNER_EVENTS == '' || contains(format(',{0},', vars.CI_RUNNER_EVENTS), format(',{0},', github.event_name))) && vars.CI_RUNNER_ARM || 'ubuntu-24.04-arm' }}
+    permissions:
+      contents: read
     timeout-minutes: 5
     outputs:
       code: ${{ steps.diff.outputs.code }}
@@ -81,6 +83,8 @@ jobs:
     needs: Changes
     if: needs.Changes.outputs.code == 'true'
     runs-on: ${{ vars.CI_RUNNER_X64 != '' && (vars.CI_RUNNER_EVENTS == '' || contains(format(',{0},', vars.CI_RUNNER_EVENTS), format(',{0},', github.event_name))) && vars.CI_RUNNER_X64 || 'ubuntu-latest' }}
+    permissions:
+      contents: read
     timeout-minutes: 15
     strategy:
       fail-fast: false
@@ -104,6 +108,8 @@ jobs:
     # can break Lint for every later pull request (#1696 landed a notebook
     # that failed the format check; #1743 fixed it).
     runs-on: ${{ vars.CI_RUNNER_X64 != '' && (vars.CI_RUNNER_EVENTS == '' || contains(format(',{0},', vars.CI_RUNNER_EVENTS), format(',{0},', github.event_name))) && vars.CI_RUNNER_X64 || 'ubuntu-latest' }}
+    permissions:
+      contents: read
     timeout-minutes: 10
     steps:
         - uses: actions/checkout@v6
@@ -146,6 +152,8 @@ jobs:
     needs: Changes
     if: needs.Changes.outputs.code == 'true'
     runs-on: ${{ vars.CI_RUNNER_X64 != '' && (vars.CI_RUNNER_EVENTS == '' || contains(format(',{0},', vars.CI_RUNNER_EVENTS), format(',{0},', github.event_name))) && vars.CI_RUNNER_X64 || 'ubuntu-latest' }}
+    permissions:
+      contents: read
     timeout-minutes: 30
     steps:
       - name: Checkout repo
