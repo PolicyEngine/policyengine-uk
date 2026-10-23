@@ -7,7 +7,9 @@ from the OBR classification and the variables' formulas, not from the
 model's lists, so these tests compare two specifications:
 
 1. Schema: ids and variables are unique, every reference resolves, and no
-   variable is both a head and an exclusion.
+   variable is both a head and an exclusion. Every tax row of the OBR's
+   current receipts table (EFO November 2025, Table A.5) is either a head's
+   ``obr_line`` or listed under ``uncovered_receipts``, never both.
 2. Differential: for each total, the heads the partition assigns to it are
    exactly the variables the model sums (``GOV_TAX_VARIABLES``,
    ``HOUSEHOLD_TAX_VARIABLES``, ``PRE_BUDGET_CHANGE_HOUSEHOLD_TAX_VARIABLES``),
@@ -17,7 +19,8 @@ model's lists, so these tests compare two specifications:
    eligibility or imputation route) under the head's ``reads``; every
    declared read occurs. Component and baseline-measure exclusions are reached
    from their head; composite, duplicate and measure-within exclusions are
-   reached from no head.
+   reached from no head. (Assessment and change-measure exclusions may be
+   read by means tests and incomes, so only the differential test binds them.)
 4. Coefficient one (perturbation): raising one head by delta, with every
    other input unchanged, raises each total that includes it by exactly
    delta per member and leaves every other head of those totals unchanged.
@@ -67,6 +70,41 @@ EXCLUSION_KINDS = {
     "composite",
     "duplicate",
     "baseline_measure",
+    "assessment",
+    "change_measure",
+}
+# The tax rows of OBR EFO November 2025 Table A.5, "Current receipts".
+OBR_TABLE_A5_TAX_ROWS = {
+    "Income tax",
+    "National insurance contributions",
+    "Value added tax",
+    "Corporation tax",
+    "Petroleum revenue tax",
+    "Fuel duties",
+    "Business rates",
+    "Council tax",
+    "VAT refunds",
+    "Capital gains tax",
+    "Inheritance tax",
+    "Property transaction taxes",
+    "Stamp taxes on shares",
+    "Tobacco duties",
+    "Alcohol duties",
+    "Air passenger duty",
+    "Insurance premium tax",
+    "Climate change levy",
+    "Bank levy",
+    "Bank surcharge",
+    "Apprenticeship levy",
+    "Digital services tax",
+    "Other HMRC taxes",
+    "Vehicle excise duties",
+    "Licence fee receipts",
+    "Environmental levies",
+    "Emissions Trading Scheme",
+    "Energy profits levy",
+    "Electricity generator levy",
+    "Other taxes",
 }
 OBR_TABLE_3_1_LINES = {
     "Income tax",
@@ -114,23 +152,31 @@ def tolerance(*arrays) -> np.ndarray:
 def test_partition_schema():
     p = partition()
     assert p["schema_version"] == 1
-    totals = set(p["totals"])
-    assert totals == set(MODEL_LISTS)
+    # The tax totals are this file's subject; the spending totals and
+    # spending_heads (the aggregate impact report's) share the file and must
+    # not borrow tax heads or variables.
+    assert set(MODEL_LISTS) <= set(p["totals"])
+    spending_heads = p.get("spending_heads", [])
+    spending_totals = {t for head in spending_heads for t in head["totals"]}
+    assert not spending_totals & set(MODEL_LISTS)
     ids = [head["id"] for head in heads()]
     variables = [head["variable"] for head in heads()]
     assert len(ids) == len(set(ids)), "duplicate head id"
     assert len(variables) == len(set(variables)), "a variable is in two heads"
+    assert not set(variables) & {h["variable"] for h in spending_heads}
+    assert not set(ids) & {h["id"] for h in spending_heads}
     for head in heads():
         variable = system.variables[head["variable"]]
         assert head["entity"] == variable.entity.key, head["id"]
-        assert set(head["totals"]) <= totals, head["id"]
+        assert set(head["totals"]) <= set(MODEL_LISTS), head["id"]
         assert head["sign"] in {"nonnegative", "any"}, head["id"]
         assert head.get("zero_at_baseline", "expected") == "expected", head["id"]
-        assert head["obr_line"], head["id"]
         table_line = head["obr_table_3_1"]
         assert table_line is None or table_line in OBR_TABLE_3_1_LINES, head["id"]
         if head["obr_line"] == "not_an_obr_current_receipt":
             assert table_line is None and head["obr_line_note"], head["id"]
+        else:
+            assert head["obr_line"] in OBR_TABLE_A5_TAX_ROWS, head["id"]
         assert head["report_group"], head["id"]
         for read in head.get("reads", []):
             assert read["head"] in head_by_id(), (head["id"], read)
@@ -144,13 +190,20 @@ def test_partition_schema():
             assert set(x["spans"]) <= set(ids), x
         else:
             assert x["head"] in ids, x
-    for total, spec in p["totals"].items():
-        for switch, dropped in spec.get("dropped_when", {}).items():
+    for total in MODEL_LISTS:
+        for switch, dropped in p["totals"][total].get("dropped_when", {}).items():
             system.parameters.get_child(switch)
             assert set(dropped) <= {h["variable"] for h in heads_of(total)}
     for guard in p["overlap_guards"]:
         assert set(guard["heads"]) <= set(ids), guard["id"]
     assert p["model_double_counts"] == []
+    # Every tax row of Table A.5 is either measured by a head or declared
+    # uncovered, never both.
+    covered = {head["obr_line"] for head in heads()} - {"not_an_obr_current_receipt"}
+    uncovered = [row["obr_line"] for row in p["uncovered_receipts"]]
+    assert len(uncovered) == len(set(uncovered))
+    assert not covered & set(uncovered)
+    assert covered | set(uncovered) == OBR_TABLE_A5_TAX_ROWS
 
 
 # 2. Differential against the model's lists
@@ -279,13 +332,13 @@ def household_values(sim: Simulation, variable: str, year: int) -> np.ndarray:
 
 @lru_cache(maxsize=None)
 def traced_reads() -> dict:
-    """Variable name -> names of the variables it reads, at current law."""
-    sim = Simulation(situation=fixed_situation())
-    sim.trace = True
-    for head in heads():
-        sim.calculate(head["variable"], YEAR)
-    for total in MODEL_LISTS:
-        sim.calculate(total, YEAR)
+    """Variable name -> names of the variables it reads, at current law.
+
+    The union of two traces of the same households: as a situation, and as
+    if built from data. Some formulas read further only in a data-built
+    simulation (private school attendance is imputed from net income only
+    there, since #1905), and the guards cover both.
+    """
     children = defaultdict(set)
 
     def walk(node):
@@ -293,8 +346,17 @@ def traced_reads() -> dict:
             children[node.name].add(child.name)
             walk(child)
 
-    for tree in sim.tracer.trees:
-        walk(tree)
+    for built_from_dataset in (False, True):
+        sim = Simulation(situation=fixed_situation())
+        # The flag utils.data_source.built_from_data reads.
+        sim.built_from_dataset = built_from_dataset
+        sim.trace = True
+        for head in heads():
+            sim.calculate(head["variable"], YEAR)
+        for total in MODEL_LISTS:
+            sim.calculate(total, YEAR)
+        for tree in sim.tracer.trees:
+            walk(tree)
     return dict(children)
 
 
@@ -341,7 +403,7 @@ def test_exclusions_sit_where_the_partition_says():
         if x["kind"] in ("component", "baseline_measure"):
             owner = head_by_id()[x["head"]]["variable"]
             assert owner in readers, f"{x['variable']} is not inside {owner}"
-        else:
+        elif x["kind"] in ("composite", "duplicate", "measure_within"):
             assert not readers, (
                 f"{x['variable']} ({x['kind']}) is read by heads {sorted(readers)}"
             )
@@ -488,7 +550,8 @@ def test_each_total_is_the_sum_of_its_heads(drawn, year):
     for scenario, reform in SCENARIOS.items():
         sim = Simulation(situation=random_situation(drawn, year), reform=reform)
         values = {h["id"]: household_values(sim, h["variable"], year) for h in heads()}
-        for total, spec in partition()["totals"].items():
+        for total in MODEL_LISTS:
+            spec = partition()["totals"][total]
             dropped = set()
             for switch, names in spec.get("dropped_when", {}).items():
                 if reform and switch in reform:

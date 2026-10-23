@@ -53,10 +53,9 @@ RATES = (
     / "hmrc"
     / "national_insurance"
     / "class_1"
-    / "rates"
 )
-EMPLOYER_FILE = RATES / "employer.yaml"
-EMPLOYEE_MAIN_FILE = RATES / "employee" / "main.yaml"
+EMPLOYER_FILE = RATES / "employer_scale.yaml"
+EMPLOYEE_MAIN_FILE = RATES / "employee_scale.yaml"
 
 LEVY_START = datetime.date(2022, 4, 6)  # HSCL Act 2021 s.5(1): tax year 2022-23
 LEVY_END = datetime.date(2022, 11, 6)  # Repeal Act 2022 s.2(1)
@@ -72,12 +71,12 @@ EMPLOYEE_DIRECTORS_RATE = Fraction("12.73")
 
 @pytest.fixture(scope="module")
 def employer():
-    return load_parameter_file(str(EMPLOYER_FILE), "employer")
+    return load_parameter_file(str(EMPLOYER_FILE), "employer").brackets[1].rate
 
 
 @pytest.fixture(scope="module")
 def employee_main():
-    return load_parameter_file(str(EMPLOYEE_MAIN_FILE), "main")
+    return load_parameter_file(str(EMPLOYEE_MAIN_FILE), "main").brackets[1].rate
 
 
 @pytest.fixture(scope="module")

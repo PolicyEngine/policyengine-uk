@@ -11,11 +11,17 @@ metadata:
 #   or the Welsh Government instead.
 # - Scotland: the contributable amount councils pay into the national pool.
 # - Northern Ireland: non-domestic rates paid to Land & Property Services.
+# business_rates allocates all of it by shareholding, a modelling convention
+# that applies to every ratepayer on the lists, including, on the Welsh
+# central list in 2024-25, Network Rail (£10.5m) and Dwr Cymru (£17.0m) of
+# £104.7m.
 # Dates are the first calendar year of each fiscal year (2025-01-01 =
 # 2025-26). The latest year of each series is provisional where the source
-# says so. In 2024-25 the England, Scotland and Wales series sum to £32.69bn,
+# says so. The England, Scotland and Wales series sum to £32.69bn in 2024-25,
 # against £32.38bn on the OBR's Business rates line (cash basis, March 2026
-# EFO, receipts Table 3.8).
+# EFO, receipts Table 3.8), and to £31.06bn in 2023-24, against £29.60bn
+# (March 2025 EFO): England's local-list income is an accounting measure,
+# the OBR line cash.
 #
 # After its latest outturn year each series is projected by uprating with the
 # OBR's receipts forecast: England, Scotland and Wales with the OBR's

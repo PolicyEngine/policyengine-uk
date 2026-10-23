@@ -4,7 +4,7 @@
   period: 2025
   absolute_error_margin: 0.01
   input:
-    gov.dft.bus.reference_year: 2025
+    gov.dft.bus.benchmark_year: 2025
     gov.dft.bus.reference_fares.cap: 2
     region: SOUTH_EAST
     other_local_bus_trips: 100
@@ -23,7 +23,7 @@
 - name: Case 2, pass holders pay nothing even when they make journeys.
   period: 2025
   input:
-    gov.dft.bus.reference_year: 2025
+    gov.dft.bus.benchmark_year: 2025
     gov.dft.bus.reference_fares.cap: 2
     region: SOUTH_EAST
     other_local_bus_trips: 100
@@ -36,7 +36,7 @@
   period: 2025
   absolute_error_margin: 0.01
   input:
-    gov.dft.bus.reference_year: 2025
+    gov.dft.bus.benchmark_year: 2025
     gov.dft.bus.reference_fares.cap: 2
     region: SOUTH_EAST
     bus_in_london_trips: 100
@@ -51,7 +51,7 @@
   period: 2025
   absolute_error_margin: 0.01
   input:
-    gov.dft.bus.reference_year: 2025
+    gov.dft.bus.benchmark_year: 2025
     gov.dft.bus.reference_fares.cap: 2
     region: SOUTH_EAST
     local_bus_trips: 100
@@ -66,7 +66,7 @@
   period: 2025
   absolute_error_margin: 0.01
   input:
-    gov.dft.bus.reference_year: 2025
+    gov.dft.bus.benchmark_year: 2025
     gov.dft.bus.reference_fares.cap: 2
     gov.dft.bus.boardings_per_trip.ENGLAND_OUTSIDE_LONDON: 1
     gov.dft.bus.yield_per_boarding.ENGLAND_OUTSIDE_LONDON: 2
@@ -85,7 +85,7 @@
   period: 2025
   absolute_error_margin: 0.01
   input:
-    gov.dft.bus.reference_year: 2025
+    gov.dft.bus.benchmark_year: 2025
     gov.dft.bus.reference_fares.cap: 2
     region: SOUTH_EAST
     other_local_bus_trips: 100
@@ -101,7 +101,7 @@
   period: 2025
   absolute_error_margin: 0.01
   input:
-    gov.dft.bus.reference_year: 2025
+    gov.dft.bus.benchmark_year: 2025
     gov.dft.bus.reference_fares.cap: 2
     region: SOUTH_EAST
     other_local_bus_trips: 100
@@ -116,7 +116,7 @@
   period: 2025
   absolute_error_margin: 0.01
   input:
-    gov.dft.bus.reference_year: 2025
+    gov.dft.bus.benchmark_year: 2025
     gov.dft.bus.reference_fares.cap: 2
     region: SCOTLAND
     other_local_bus_trips: 100
@@ -126,3 +126,105 @@
     gov.dft.bus.fares.cap: 0
   output:
     person_bus_fare_spending: 200
+
+# Default parameters. The yield moves from the FY2024-25 benchmark with DfT's
+# BUS0415a fares index, day-weighted over 6 April to 5 April. Quarter-end
+# values date from the start of their quarter: FY2024-25 for England outside
+# London is (86 * 181.6 + 92 * 185.7 + 92 * 185.9 + 90 * 206.4 + 5 * 210.5)
+# / 365 = 190.2282 and FY2025-26 is (86 * 210.5 + 92 * 213.6 + 92 * 214.3 +
+# 95 * 217.9557) / 365 = 214.1797. Benchmarks: docs/engineering/bus-fares.md.
+- name: Case 9, the 2024-25 benchmark prices journeys at the published yield.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    region: SOUTH_EAST
+    other_local_bus_trips: 100
+    bus_pass_eligible: false
+    local_bus_single_fare_share: 0.7
+  output:
+    # 100 trips * 1.12466920264 boardings * GBP 1.554716967657.
+    person_bus_fare_spending: 174.85
+
+- name: Case 10, the 2025-26 yield follows the fares index, not a cap term.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    region: SOUTH_EAST
+    other_local_bus_trips: 100
+    bus_pass_eligible: false
+    local_bus_single_fare_share: 0.7
+  output:
+    # 174.8542 * 214.1797 / 190.2282 (+12.6%). The cap is GBP 3 all year
+    # both in the index and in the cap schedule, so nothing is added.
+    person_bus_fare_spending: 196.87
+
+- name: Case 11, London fares follow the flat London index.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    region: LONDON
+    bus_in_london_trips: 100
+    bus_pass_eligible: false
+  output:
+    # 100 * 2.369144880275 * GBP 1.017729905895 * 196.1017 / 196.1.
+    person_bus_fare_spending: 241.12
+
+- name: Case 12, Scottish fares follow the Scottish index.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    region: SCOTLAND
+    other_local_bus_trips: 100
+    bus_pass_eligible: false
+  output:
+    # FY2024-25 (86 * 207.7 + 92 * 210.9 + 92 * 211.3 + 90 * 211.5 + 5 * 228)
+    # / 365 = 210.6290; FY2025-26 (86 * 228 + 92 * 228.4 + 92 * 228.4 + 95 *
+    # 234.6833) / 365 = 229.9411. 100 * 2.145240985363 * GBP 2.599723222144
+    # * 229.9411 / 210.6290.
+    person_bus_fare_spending: 608.84
+
+- name: Case 13, Northern Ireland has no fares index, so its yield follows CPI.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    region: NORTHERN_IRELAND
+    other_local_bus_trips: 100
+    bus_pass_eligible: false
+  output:
+    # 100 * 1.252853758464 * GBP 2.550929922065 * 1.034 (OBR CPI, 2025 over
+    # 2024, as the engine's index rounds it: 1.61059 / 1.55763).
+    person_bus_fare_spending: 330.46
+
+# Cap changes use the table of uncapped single fares in
+# gov.dft.bus.uncapped_single_fares: 55% of singles at GBP 1.65, 30% at
+# GBP 2.21 and 15% at GBP 3.87 at FY2024-25 prices, uprated with OBR CPI
+# (FY2025-26 x 1.61059 / 1.55763 = 1.0340). Case 10's passenger has 100 trips
+# * 1.12466920264 boardings * 0.7 single share = 78.7268 single boardings, at
+# a GBP 196.87 baseline.
+- name: Case 14, without a cap in 2025-26 the singles above GBP 3 pay in full.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    region: SOUTH_EAST
+    other_local_bus_trips: 100
+    bus_pass_eligible: false
+    local_bus_single_fare_share: 0.7
+    gov.dft.bus.fares.cap: .inf
+  output:
+    # Only the high band (3.87 * 1.0340 = 4.0016) is above GBP 3:
+    # 196.87 + 78.7268 * 0.15 * 1.0016.
+    person_bus_fare_spending: 208.70
+
+- name: Case 15, a GBP 2 cap in 2025-26 saves the middle and high bands.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    region: SOUTH_EAST
+    other_local_bus_trips: 100
+    bus_pass_eligible: false
+    local_bus_single_fare_share: 0.7
+    gov.dft.bus.fares.cap: 2
+  output:
+    # Middle band 2.21 * 1.0340 = 2.2851 falls to 2; the high band falls
+    # from 3 to 2: 196.87 - 78.7268 * (0.30 * 0.2851 + 0.15 * 1).
+    person_bus_fare_spending: 178.33
