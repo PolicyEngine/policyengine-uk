@@ -27,6 +27,8 @@ the child's parent, or the person themselves:
   SI 2019/37 arts 2(3) and 4, through SI 2006/214 reg 5.
 - The extended childcare parent and partner conditions: SI 2022/1134 regs
   11A(1)(e), 14(4)(b) and 15(4).
+- The higher Pension Credit earnings disregard for a claimant or partner on
+  employment and support allowance: SPC Regs 2002 Sch VI para 4(1)(a)(vii).
 
 A member of the benefit unit who is neither the claimant, the partner nor a
 child or young person they are responsible for (for example a non-dependent
@@ -36,8 +38,12 @@ adult) claims in their own right, so:
   member reports never changes any of these readers for the claimant's family
   or for its existing members;
 - adding such a member changes a reader only by ending the family's severe
-  disability premium, which a non-dependant aged 18 or over does (IS Regs
-  1987 Sch 2 para 13(2)(a)(ii); HB Regs 2006 Sch 3 para 14(2)(a)(ii)). That
+  disability premium, or, for the two Council Tax Reduction readers, by
+  becoming the household head (these families flag none, so the eldest
+  member is the head) who is liable and applies alone, so that the applicant
+  changes (CTR_APPLICANT_READERS). A non-dependant aged 18 or over ends the
+  premium (IS Regs 1987 Sch 2 para 13(2)(a)(ii); HB Regs 2006 Sch 3 para
+  14(2)(a)(ii)). That
   rule is subject to para 13(3), which ignores a non-dependant on a
   qualifying disability benefit, a blind one and some carers; the added
   members here are none of those. The family's Income Support then falls by
@@ -57,9 +63,8 @@ adult) claims in their own right, so:
   (esa_income_eligible and jsa_income_eligible, read independently from the
   law in legacy_award_work_reference). The screens also end the award once
   the family's legacy benefits have closed (legacy_benefits_closed, #2119),
-  and the model then ends every member's status too; no family here reaches
-  that in 2025, when Income Support and income-based JSA are open and
-  nobody reports tax credits;
+  for their own award only; no family here reaches that in 2025, when
+  Income Support and income-based JSA are open and nobody reports tax credits;
 - a person is on an award exactly when they are the payee of their couple's
   positive award (the claimant or partner who reports it, or the claimant)
   or, for anyone else, when their own claim passes: they are not engaged in
@@ -118,6 +123,7 @@ FAMILY_READERS = [
     "income_support_eligible",
     "housing_benefit_pension_age_regulations_apply",
     "has_mixed_age_couple_pension_credit_saving",
+    "pension_credit_earnings_disregard",
 ]
 MEMBER_READERS = [
     "is_scp_eligible",
@@ -244,6 +250,40 @@ def other_members(draw):
     }
 
 
+# Council Tax Reduction reads the applicant and partner, and the applicant is
+# the person liable for the council tax, whom the model takes to be the
+# household head (is_resolved_household_head; PolicyEngine/policyengine-uk#2009
+# and #2078). These families flag no head, so the head is the eldest member: an
+# added member older than the claimant and partner becomes the liable head,
+# who then applies alone (council_tax_reduction_head_applies_alone). Their
+# presence then changes the applicant, which is intended, so those families
+# are left out of the comparison with the family on its own for these two
+# readers. What the added member reports still never changes them: the first
+# property compares a silent added member with the member as drawn for every
+# family.
+CTR_APPLICANT_READERS = [
+    "council_tax_reduction_applicable_income",
+    "council_tax_reduction_relevant_income_based_benefit",
+]
+
+
+def became_ctr_applicant(sim, k, starts, sizes):
+    """For each of the first k units, whether the member added in unit k + i
+    made it a family whose household head applies alone, and checks that this
+    happens only where that member is the resolved household head."""
+    head_alone = sim.calculate("council_tax_reduction_head_applies_alone", YEAR)
+    head = sim.calculate("is_resolved_household_head", YEAR)
+    changed = []
+    for i in range(k):
+        became = bool(head_alone[k + i]) and not bool(head_alone[i])
+        if became:
+            added = starts[k + i] + sizes[k + i] - 1
+            assert head[added], i
+            event("added member became the Council Tax Reduction applicant")
+        changed.append(became)
+    return changed
+
+
 def situation(units, year=YEAR, benunit_inputs=None):
     people, benunits, households = {}, {}, {}
     for i, (adults, non_couple, household, other) in enumerate(units):
@@ -258,10 +298,13 @@ def situation(units, year=YEAR, benunit_inputs=None):
             names.append(name)
         # claims_all_entitled_benefits sums reports across the whole
         # simulation, so fix the take-up mode per benefit unit: the variants
-        # must not share it.
+        # must not share it. The families are on legacy awards and do not
+        # claim Universal Credit, which would end the couple's income-related
+        # ESA (esa_income_report_closed).
         benunits[f"b{i}"] = {
             "members": names,
             "claims_all_entitled_benefits": {year: False},
+            "would_claim_uc": {year: False},
             **{k: {year: v} for k, v in (benunit_inputs or {}).items()},
         }
         households[f"h{i}"] = {
@@ -387,6 +430,7 @@ def test_other_members_awards_never_change_the_readers(drawn):
         fall = income_support[i] - income_support[k + i]
         lost = premium[i] - premium[k + i]
         assert -0.01 <= fall <= lost + 0.01, drawn[i]
+    new_applicant = became_ctr_applicant(sim, k, starts, sizes)
     for variable in FAMILY_READERS:
         values = sim.calculate(variable, YEAR)
         for i in range(k):
@@ -395,6 +439,8 @@ def test_other_members_awards_never_change_the_readers(drawn):
                 variable,
                 drawn[i],
             )
+            if variable in CTR_APPLICANT_READERS and new_applicant[i]:
+                continue
             # Their presence changes one only by ending the premium, and
             # never the awards the family's own members report.
             if not premium_ended[i] or variable in PREMIUM_FREE_READERS:
@@ -589,9 +635,12 @@ def _family_readers_never_change(drawn, enter_is_mixed_age_couple=False):
     k = len(drawn)
     for i in range(k):
         assert not flags[starts[k + i] + sizes[k + i] - 1], drawn[i]
+    new_applicant = became_ctr_applicant(sim, k, starts, sizes)
     for variable in FAMILY_READERS:
         values = sim.calculate(variable, YEAR)
         for i in range(k):
+            if variable in CTR_APPLICANT_READERS and new_applicant[i]:
+                continue
             assert np.isclose(values[i], values[k + i], atol=0.01), (
                 variable,
                 drawn[i],
@@ -914,6 +963,7 @@ def test_other_members_esa_never_changes_non_dependant_exemption(drawn):
             benunits[f"nondep_unit_{tag}"] = {
                 "members": unit,
                 "universal_credit": {year: 0},
+                "would_claim_uc": {year: False},
             }
             households[f"h_{tag}"] = {
                 "members": names + unit,
@@ -977,7 +1027,7 @@ def test_claimant_and_partner_awards_count_in_full_as_their_ctr_income():
     award adds exactly its amount.
     """
     ctr = "council_tax_reduction_applicable_income"
-    no_uc = {"universal_credit": 0}
+    no_uc = {"universal_credit": 0, "would_claim_uc": False}
     claimant_esa = {"claimant": {**CLAIMANT, "esa_income_reported": 5_000}}
     assert np.isclose(
         _difference(ctr, {"claimant": CLAIMANT}, claimant_esa, no_uc), 5_000
@@ -1056,7 +1106,7 @@ def _claimant_and_other(other_report):
     }
     return {
         "people": people,
-        "benunits": {"b": {"members": list(people)}},
+        "benunits": {"b": {"members": list(people), "would_claim_uc": {YEAR: False}}},
         "households": {"h": {"members": list(people)}},
     }
 
@@ -1112,12 +1162,14 @@ def test_late_zero_entry_overrides_the_claimants_reports():
 
 
 def _situation(people, year=YEAR):
+    # Not claiming Universal Credit, which would end the claimant's
+    # income-related ESA (esa_income_report_closed).
     names = list(people)
     return {
         "people": {
             n: {k: {year: v} for k, v in inputs.items()} for n, inputs in people.items()
         },
-        "benunits": {"b": {"members": names}},
+        "benunits": {"b": {"members": names, "would_claim_uc": {year: False}}},
         "households": {"h": {"members": names}},
     }
 
@@ -1243,6 +1295,7 @@ def test_an_outside_adults_work_keeps_their_non_dependant_deduction():
                     "non_dependant_unit": {
                         "members": ["claimant", "other"],
                         "universal_credit": {year: 0},
+                        "would_claim_uc": {year: False},
                     },
                 },
                 "households": {

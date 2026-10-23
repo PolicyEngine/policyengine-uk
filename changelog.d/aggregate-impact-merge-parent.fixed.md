@@ -1,1 +1,0 @@
-- The Aggregate impact report now compares a pull request's merge commit with that commit's first parent, the tip of the branch it merges into. It used the event's `pull_request.base.sha`, which lags that branch once it moves on, so newer merges to `main` were counted as the pull request's impact.
