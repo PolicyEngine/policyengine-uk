@@ -18,6 +18,7 @@ GOV_SPENDING_VARIABLES = [
     "afcs",
     "bsp",
     "war_widows_pension",
+    "widowed_parents_allowance",
     "carers_allowance",
     "dla",
     "iidb",

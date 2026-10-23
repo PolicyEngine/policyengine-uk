@@ -19,6 +19,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -41,6 +42,7 @@
     benunits:
       benunit:
         members: [claimant, partner]
+        would_claim_uc: false
     households:
       household:
         members: [claimant, partner]
@@ -89,6 +91,7 @@
     benunits:
       benunit:
         members: [claimant, other]
+        would_claim_uc: false
     households:
       household:
         members: [claimant, other]
@@ -111,6 +114,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -155,6 +159,7 @@
       benunit:
         members: [claimant]
         esa_income: 0
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -362,6 +367,7 @@
       benunit:
         members: [claimant]
         esa_income: 200
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -385,6 +391,7 @@
       benunit:
         members: [claimant]
         esa_income: 0
+        would_claim_uc: false
     households:
       household:
         members: [claimant]

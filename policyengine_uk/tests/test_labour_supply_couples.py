@@ -204,7 +204,7 @@ def test_cohabiting_participation_reaches_employment_income(monkeypatch):
     monkeypatch.setattr(
         participation, "impute_wages_for_nonworkers", lambda *args: np.zeros(3)
     )
-    monkeypatch.setattr(np.random, "random", lambda: 0.02)
+    # Seed1751 gives local MT19937 draws0.018622/0.108093, below both exit thresholds.
     outcomes = []
     for married in [True, False]:
         sim = Microsimulation(
@@ -230,7 +230,9 @@ def test_cohabiting_participation_reaches_employment_income(monkeypatch):
         monkeypatch.setattr(
             participation, "calculate_gain_to_work", controlled_gain_to_work
         )
-        response = participation.apply_participation_responses(sim, YEAR)
+        response = participation.apply_participation_responses(
+            sim, YEAR, random_seed=1751
+        )
         np.testing.assert_allclose(
             response["direct_participation_change"], [-0.034, -0.11325]
         )
