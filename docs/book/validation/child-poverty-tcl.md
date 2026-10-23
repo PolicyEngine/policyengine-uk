@@ -23,22 +23,28 @@ Tracks [#1398](https://github.com/PolicyEngine/policyengine-uk/issues/1398).
 All the figures are relative low income: below 60% of the contemporary
 median. The PolicyEngine rows count HBAI dependent children
 (`is_hbai_dependent_child`), as DWP does, and were run on 23 October 2026
-on policyengine-uk 2.148.2 with the certified Microcosm UK 2024-25 national
-release (`microcosm-uk-2024-25-national-20261019T083323Z-6cba5d71`, SHA-256
+on policyengine-uk 2.148.3 (main at `c65bced64`) with the certified
+Microcosm UK 2024-25 national release (`microcosm-uk-2024-25-national-20261019T083323Z-6cba5d71`, SHA-256
 `810ba980…`). On that run PolicyEngine's headcounts are above DWP's and the
 Resolution Foundation's, and its cost sits between the Budget 2025 and
 Resolution Foundation figures.
 
-On absolute low income (below 60% of the FYE 2025 median held constant in
-real terms) the same run lifts ~549,000 children after housing costs and
-~325,000 before, against DWP's 250,000 on both measures (Tables 3 and 4).
+On absolute low income the same run lifts ~549,000 children after housing
+costs and ~325,000 before, against DWP's 250,000 on both measures (Tables 3
+and 4). These are not like for like either: PolicyEngine's absolute line is
+60% of the FYE 2025 median held constant in real terms, the reference year
+HBAI adopted in March 2026, while DWP's note predates that change and cites
+the FYE 2024 HBAI methodology, whose line is 60% of the FYE 2011 median.
 
 Earlier versions of this page reported ~463,000 (AHC) and ~336,000 (BHC)
 children and £3.26 bn on an earlier Microcosm UK release (SHA-256
 `aa31bdf6…`, policyengine-uk 2.123.7), and ~501,000, ~415,000 and £3.40 bn
-on the Enhanced FRS 2022-23 in May 2026. The snippet behind them used
-`in_poverty_ahc`, which is the absolute measure, and counted children with
-`is_child`, so they are not comparable with the relative benchmarks above.
+on the Enhanced FRS 2022-23 in May 2026. The snippet those versions showed
+computed only the after-housing-costs figure, using `in_poverty_ahc`
+(absolute low income) and counting children with `is_child` (everyone under
+18), so at least those figures are not comparable with the relative
+benchmarks above; the code for the before-housing-costs figures was not
+shown.
 
 ## How the estimate was produced
 
@@ -90,17 +96,23 @@ Treasury cost is positive (the baseline pays more Universal Credit, so its
 
 Three plausible drivers of the remaining differences:
 
-1. **Nowcasting methodology**. RF projected with the OBR's March 2025
-   earnings forecast and the Bank of England's August 2025 inflation
-   forecast; DWP and the OBR used the OBR's November 2025 forecast. See the
+1. **Nowcasting methodology**. RF projects incomes with its own nowcast,
+   with private rents rising in line with average earnings after a
+   12-month lag and its own after-housing-costs deflator; DWP uses its
+   static Policy Simulation Model on the FRS for FYE 2022 to 2024 with its
+   caseload forecasts. See the
    [PolicyEngine vs RF comparison](../assumptions/nowcasting-comparison.md)
    and the [RF methodology detail](../assumptions/rf-nowcasting-methodology.md)
    for where PolicyEngine's nowcasting differs from RF's.
 2. **Take-up assumptions**. PolicyEngine decides Universal Credit claims
-   with take-up flags set in the data (`would_claim_uc`), which do not
-   respond to the reform. The data set the flag for every family that
-   reports Universal Credit and draw it at a residual rate for the rest, so
-   families newly entitled by the removal claim at that residual rate. A
+   with flags set in the data, which do not respond to the reform: a family
+   claims if `would_claim_uc` is true, or if it reports a legacy benefit
+   that has closed (tax credits, Income Support or income-based
+   Jobseeker's Allowance) and `would_claim_uc_at_legacy_closure` is true.
+   The data set `would_claim_uc` for every family that reports Universal
+   Credit and draw it at a residual rate for the rest, so newly entitled
+   families claim at that residual rate unless they reported a closed
+   legacy benefit. A
    source that assumes lower take-up among newly entitled families would
    show a smaller headcount and cost.
 3. **Data and calibration vintage**. The DWP and OBR estimates were
