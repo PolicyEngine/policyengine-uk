@@ -6,16 +6,17 @@ household benefit totals match published **DWP/HMRC/OBR totals**.
 Some of that outturn doesn't go to **UK private households**. It
 goes to people living abroad (exported pensions) and to people in
 institutional accommodation outside the FRS sampling frame (care homes,
-hostels). A further part is fraud and error overpayments, which claimants
-receive but aren't entitled to. This page
+hostels). Fraud and error overpayments are a separate issue: claimants
+receive them but aren't entitled to them. This page
 sets out the proposed treatment, tracked in
 [#842](https://github.com/PolicyEngine/policyengine-uk/issues/842) (still
-open, October 2026). Calibration targets for Microcosm UK, the dataset in
-policyengine.py's certified UK bundle, are set in
-[Microcosm UK](https://github.com/PolicyEngine/microcosm), so most of the
-work below belongs there. policyengine-uk-data's Enhanced FRS, which this
-repository's tests still run on, keeps its own target set, which still
-includes the OBR State Pension line.
+open, October 2026). Microcosm UK, the dataset in policyengine.py's
+certified UK bundle, sets its calibration targets in
+[Microcosm](https://github.com/PolicyEngine/microcosm), so most of the work
+below belongs there. policyengine-uk-data's Enhanced FRS, which this
+repository's microsimulation test jobs and aggregate-impact report still run
+on, keeps its own target set, which still includes the OBR State Pension
+line.
 ```
 
 ## Why this matters
@@ -28,7 +29,7 @@ on a household the FRS samples. It doesn't:
   State Pension they built up. DWP's benefit expenditure tables report
   the amount paid to recipients abroad, and Stat-Xplore gives the
   caseload by country. None of these people are in the FRS.
-- **Disability benefits paid abroad**: limited cases. The DLA care
+- **Disability and carer benefits paid abroad**: limited cases. The DLA care
   component, the PIP daily living part, Attendance Allowance and Carer's
   Allowance can be paid to people living in an EEA country or Switzerland
   who are covered by the Withdrawal Agreement; the mobility parts can't be
@@ -39,13 +40,15 @@ on a household the FRS samples. It doesn't:
   care homes. Their entitlements
   feed into the DWP outturn but not into PolicyEngine's `state_pension`
   totals.
-- **Fraud and error**: overpayments that DWP counts as benefit spending
-  but that go beyond what claimants are entitled to (3.2% of benefit
-  spending in DWP's FYE 2026 estimates). They reach households, so they
-  matter where the model simulates entitlement rather than receipt.
 
 Where a target includes these groups, calibration pushes their spending
 onto FRS households and **overstates** what UK private households receive.
+
+**Fraud and error** is a different case. DWP counts overpayments as benefit
+spending although they go beyond what claimants are entitled to: 3.2% of
+benefit spending in its FYE 2026 estimates, against 0.4% underpaid. That
+money does reach households, so it doesn't overstate what they receive, but
+it matters where the model simulates entitlement rather than receipt.
 
 **Already done for State Pension paid abroad.** Microcosm no longer binds the OBR State
 Pension line. State Pension is now bound to resident figures from DWP
@@ -71,19 +74,24 @@ publish enough data to assemble a first-pass table:
 | State Pension | published | DWP "paid outside UK" line | care-home residents | F&E published |
 | Pension Credit | published | small (Great Britain residence required) | care-home residents (unquantified) | F&E published |
 | Universal Credit | published | minimal | small | F&E published |
-| Housing Benefit | published | -- | hostels (no Housing Benefit in a care home) | F&E published |
-| Child Benefit | published | EEA, Switzerland and agreement-country residue | -- | -- |
-| Disability Living Allowance / PIP | published | DWP "outside UK" lines | care-home residue (self-funders; PIP mobility) | F&E published |
+| Housing Benefit | published | -- | hostels (Housing Benefit doesn't pay for a care-home place) | F&E published |
+| Child Benefit | published | EEA, Switzerland and agreement-country residue | -- | F&E published (HMRC annual report and accounts) |
+| Disability Living Allowance / PIP | published | DWP "outside UK" lines | care-home residue (self-funders; both mobility parts) | F&E published |
 | Attendance Allowance | published | DWP "outside UK" line | care-home residue (self-funders) | F&E published |
-| Winter Fuel Payment | published | none since winter 2025-26 (claimants must usually live in England, Wales or Northern Ireland) | care-home residents | -- |
+| Winter Fuel Payment | published | none since winter 2025-26 (recipients must be ordinarily resident in England, Wales or Northern Ireland) | care-home residents | -- |
 
 Sources: DWP *Benefit expenditure and caseload tables* and Stat-Xplore
 (payments abroad), the DWP *Fraud and Error in the Benefit System* annual
 release, programme-specific breakdowns, and the rules on care homes
-([Housing Benefit Regulations 2006 reg. 9(1)(k) and (4)](https://www.legislation.gov.uk/uksi/2006/213/regulation/9);
-[PIP Regulations 2013 reg. 28](https://www.legislation.gov.uk/uksi/2013/377/regulation/28))
+([Housing Benefit Regulations 2006 reg. 9(1)(k) and (4)](https://www.legislation.gov.uk/uksi/2006/213/regulation/9)
+and the [pension-age equivalent](https://www.legislation.gov.uk/uksi/2006/214/regulation/9);
+[PIP Regulations 2013 reg. 28](https://www.legislation.gov.uk/uksi/2013/377/regulation/28);
+[DLA Regulations 1991 reg. 9](https://www.legislation.gov.uk/uksi/1991/2890/regulation/9))
 and on Winter Fuel Payment residence
-([SI 2025/969 reg. 2](https://www.legislation.gov.uk/uksi/2025/969/regulation/2)).
+([SI 2025/969 reg. 2](https://www.legislation.gov.uk/uksi/2025/969/regulation/2)
+for England and Wales;
+[SR 2025/142 reg. 2](https://www.legislation.gov.uk/nisr/2025/142/regulation/2)
+for Northern Ireland).
 
 ### Phase 2: subtract from calibration targets
 
@@ -140,7 +148,7 @@ changes in this repo are small:
 ## References
 
 - DWP, [Benefit expenditure and caseload tables](https://www.gov.uk/government/collections/benefit-expenditure-and-caseload-tables): spending by benefit, including payments abroad.
-- DWP, [Fraud and Error in the Benefit System](https://www.gov.uk/government/collections/fraud-and-error-in-the-benefit-system): administrative leakage estimates.
+- DWP, [Fraud and Error in the Benefit System](https://www.gov.uk/government/collections/fraud-and-error-in-the-benefit-system): estimates of overpayments and underpayments from fraud and error.
 - DWP, [Stat-Xplore](https://stat-xplore.dwp.gov.uk/): caseloads by benefit, including State Pension recipients by country of residence.
 - GOV.UK, [Child Benefit if you leave the UK](https://www.gov.uk/child-benefit-abroad): when Child Benefit is paid for families abroad (EEA, Switzerland and social security agreement countries).
 - Issue: [#842](https://github.com/PolicyEngine/policyengine-uk/issues/842). Related: [#1621](https://github.com/PolicyEngine/policyengine-uk/issues/1621) (UK pipeline alignment) and [microcosm#1069](https://github.com/PolicyEngine/microcosm/issues/1069) (UK pensions follow-ups after #1084).
