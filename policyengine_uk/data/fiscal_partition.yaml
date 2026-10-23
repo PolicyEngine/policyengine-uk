@@ -593,6 +593,8 @@ exclusions:
   - {variable: savings_income_tax, kind: component, head: income_tax}
   - {variable: dividend_income_tax, kind: component, head: income_tax}
   - {variable: property_income_tax, kind: component, head: income_tax}
+  - {variable: income_tax_reductions, kind: component, head: income_tax, note: "Step 6 tax reductions, subtracted inside income_tax."}
+  - {variable: income_tax_charges, kind: component, head: income_tax, note: "Step 7 charges (CB_HITC and the annual allowance charge), added inside income_tax."}
   - {variable: CB_HITC, kind: component, head: income_tax}
   - {variable: personal_pension_contributions_tax, kind: component, head: income_tax}
   - {variable: capped_mcad, kind: component, head: income_tax, note: "A tax reduction, subtracted inside income_tax."}

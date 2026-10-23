@@ -91,7 +91,7 @@ def uc_income_tax_on_earnings_slice(person, period, parameters, include_trade=Tr
         period,
         [
             variable
-            for variable in income_tax.income_tax_subtractions
+            for variable in income_tax.step_6_tax_reductions
             if variable != "property_finance_cost_relief"
         ],
     )
