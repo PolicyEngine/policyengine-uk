@@ -44,11 +44,14 @@ def simulation(people, benunit=None):
     return Simulation(
         situation={
             "people": people,
+            # Legacy claimants: a Universal Credit claim would end the
+            # carer's income-related ESA (esa_income_report_closed).
             "benunits": {
                 "b": {
                     "members": names,
                     "income_support_assessable_capital": {YEAR: 0},
                     "esa_income_assessable_capital": {YEAR: 0},
+                    "would_claim_uc": {YEAR: False},
                     **(benunit or {}),
                 }
             },

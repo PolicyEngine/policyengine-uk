@@ -102,8 +102,8 @@ PROJECTION_END_YEAR = 2032
 # Before this horizon was extended, Core uprated unmapped inputs from 2030.
 # Preserve that behavior in the newly materialized years without changing
 # projections for earlier years. Correcting historical mapping omissions is
-# a separate change. Energy values already have FY26/27 prices (#1868), as
-# documented in uprating_indices.yaml, and must remain flat in the dataset.
+# a separate change. Energy has its own declaration-aware projection below,
+# so it must not also grow through the generic variable-index fallback.
 LEGACY_PROJECTION_END_YEAR = 2030
 DATASET_UPRATING_EXCLUSIONS = frozenset(
     {
@@ -137,6 +137,7 @@ COUNCIL_TAX_GROWTH = "gov.economic_assumptions.yoy_growth.obr.council_tax"
 SOCIAL_RENT_GROWTH = "gov.economic_assumptions.yoy_growth.obr.social_rent"
 PRIVATE_RENT_GROWTH = "gov.economic_assumptions.yoy_growth.ons.private_rental_prices"
 RESIDENTIAL_PROPERTY_INDEX = "gov.economic_assumptions.indices.obr.house_prices"
+ENERGY_PRICE_INDEX = "gov.economic_assumptions.indices.obr.consumer_price_index"
 RESIDENTIAL_PROPERTY_INPUTS = (
     "main_residence_value",
     "other_residential_property_value",
@@ -154,7 +155,7 @@ def uprating_input_paths() -> list:
     ``apply_single_year_uprating`` and the functions it calls read these, and
     no other parameters: the growth rates in ``uprating_indices.yaml``, the
     council tax and rent series, the cumulative residential property index,
-    the indices of the input variables that
+    the conditional energy CPI index, the indices of the input variables that
     file leaves out (after ``LEGACY_PROJECTION_END_YEAR``) and the capital
     gains projection's metadata (``CGT_INDEX_PATH``). A path may name a node
     (the regional private rent series), which covers its parameters.
@@ -171,6 +172,7 @@ def uprating_input_paths() -> list:
             PRIVATE_RENT_GROWTH,
             CGT_INDEX_PATH,
             RESIDENTIAL_PROPERTY_INDEX,
+            ENERGY_PRICE_INDEX,
         }
         | set(_unmapped_uprating_indices(uprating).values())
     )
@@ -270,6 +272,9 @@ def apply_uprating(
         uprate_residential_property(
             current_year, dataset.datasets[first_year], tax_benefit_system_parameters
         )
+        uprate_energy(
+            current_year, dataset.datasets[first_year], tax_benefit_system_parameters
+        )
 
     return dataset
 
@@ -319,6 +324,8 @@ def apply_single_year_uprating(
                     getattr(current_year, table_name)[variable] = current_year_value
 
     # Next, apply custom uprating.
+
+    current_year = uprate_energy(current_year, previous_year, parameters)
 
     # apply_uprating replaces these chained stocks from the original observation.
     current_year = uprate_residential_property(current_year, previous_year, parameters)
@@ -370,6 +377,42 @@ def apply_single_year_uprating(
     return current_year
 
 
+def uprate_energy(
+    current_year: UKSingleYearDataset,
+    observed_year: UKSingleYearDataset,
+    parameters: ParameterNode,
+) -> UKSingleYearDataset:
+    """Project declared energy prices with the existing annual CPI assumption."""
+    basis = observed_year.energy_price_basis
+    variables = [
+        name
+        for name in DATASET_UPRATING_EXCLUSIONS
+        if name in observed_year.household.columns
+        and name in current_year.household.columns
+    ]
+    ratio = 1
+    projected = False
+    if basis is not None and variables:
+        index = parameters.get_child(ENERGY_PRICE_INDEX)
+        source_index = _uprating_index_value(
+            index, f"{basis['period_value']:04d}-01-01"
+        )
+        target_index = _uprating_index_value(index, f"{current_year.time_period}-01-01")
+        projected = source_index not in (None, 0) and target_index is not None
+        if projected:
+            ratio = target_index / source_index
+    for variable in variables:
+        current_year.household[variable] = (
+            observed_year.household[variable].to_numpy() * ratio
+        )
+    current_year.energy_price_basis = (
+        {"period_type": "fiscal_year", "period_value": int(current_year.time_period)}
+        if projected
+        else basis
+    )
+    return current_year
+
+
 def uprate_residential_property(
     current_year: UKSingleYearDataset,
     previous_year: UKSingleYearDataset,
@@ -407,12 +450,34 @@ def uprate_residential_property(
     return current_year
 
 
+def household_weight_growth_path(uprating: dict | None = None) -> str:
+    """The growth series that projects household weights.
+
+    The one ``uprating_indices.yaml`` lists ``household_weight`` under.
+    """
+    uprating = _uprating_index_map() if uprating is None else uprating
+    paths = [path for path, names in uprating.items() if "household_weight" in names]
+    if len(paths) != 1:
+        raise ValueError(
+            "uprating_indices.yaml must list household_weight under exactly one "
+            f"growth series, not {paths}"
+        )
+    return paths[0]
+
+
 def uprate_council_tax(
     current_year: UKSingleYearDataset,
     previous_year: UKSingleYearDataset,
     parameters: ParameterNode,
 ):
     # Uprate council tax for a single year dataset.
+    #
+    # Each country's series is the growth in its council tax receipts: the
+    # Band D level times the tax base, the number of Band D equivalent
+    # dwellings. Household weights grow too, by their own series, so each bill
+    # grows by receipts growth net of the weights' growth. A country's
+    # weighted total then grows by its receipts growth. Growing the bills by
+    # receipts growth counted the growth in households twice (#2067).
 
     council_tax = parameters.gov.economic_assumptions.yoy_growth.obr.council_tax
     region = pd.Series(np.asarray(current_year.household["region"]).astype(str))
@@ -422,16 +487,20 @@ def uprate_council_tax(
             "Cannot uprate council tax for unrecognised regions: "
             f"{sorted(unrecognised)}"
         )
-    growth_by_region = {
-        name: 0.0
+    weight_growth = parameters.get_child(household_weight_growth_path())(
+        current_year.time_period
+    )
+    factor_by_region = {
+        name: 1.0
         if series is None
-        else council_tax.get_child(series)(current_year.time_period)
+        else (1 + council_tax.get_child(series)(current_year.time_period))
+        / (1 + weight_growth)
         for name, series in _COUNCIL_TAX_GROWTH_SERIES.items()
     }
-    growth_rates = region.map(growth_by_region).to_numpy()
+    factors = region.map(factor_by_region).to_numpy()
 
-    current_year.household["council_tax"] = previous_year.household["council_tax"] * (
-        1 + growth_rates
+    current_year.household["council_tax"] = (
+        previous_year.household["council_tax"] * factors
     )
     return current_year
 
@@ -666,19 +735,44 @@ def reset_growthfactor_uprating(
     growthfactor_uprated_variables.update({"council_tax", "rent"})
     growthfactor_uprated_variables.update(COUNTRY_UPRATED_INPUTS)
     growthfactor_uprated_variables.update(_unmapped_uprating_indices(uprating))
+    growthfactor_uprated_variables.difference_update(DATASET_UPRATING_EXCLUSIONS)
 
     first_year = min(dataset.datasets.keys())
     base_year_dataset = dataset.datasets[first_year]
+    base_energy = DATASET_UPRATING_EXCLUSIONS.intersection(
+        base_year_dataset.household.columns
+    )
 
     for year in dataset.datasets:
         if year == first_year:
             continue
         current_year_dataset = dataset.datasets[year]
+        current_energy = DATASET_UPRATING_EXCLUSIONS.intersection(
+            current_year_dataset.household.columns
+        )
+        shared_energy = current_energy.intersection(base_energy)
+        replace_energy_group = bool(current_energy) and current_energy <= base_energy
+        reset_energy = replace_energy_group or (
+            current_year_dataset.energy_price_basis
+            == base_year_dataset.energy_price_basis
+        )
+
+        # One declaration describes every stored energy amount. Keep the
+        # later group intact if a partial reset would mix different bases.
         for table_name in current_year_dataset.table_names:
             base_table = getattr(base_year_dataset, table_name)
             current_table = getattr(current_year_dataset, table_name)
             for variable in growthfactor_uprated_variables:
                 if variable in current_table.columns and variable in base_table.columns:
                     current_table[variable] = base_table[variable].values
+        if reset_energy:
+            for variable in shared_energy:
+                current_year_dataset.household[variable] = base_year_dataset.household[
+                    variable
+                ].values
+        if replace_energy_group:
+            current_year_dataset.energy_price_basis = (
+                base_year_dataset.energy_price_basis
+            )
 
     return dataset
