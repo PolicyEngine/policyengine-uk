@@ -27,12 +27,10 @@ values:
   # - benefits count as unearned income, taxed or not: question 9 names
   #   Guardian's Allowance, which is untaxed (and not modelled). Taxable ones
   #   are in social_security_income; the untaxed non-means-tested person-level
-  #   ones are listed below. Means-tested benefits (Universal Credit, tax
-  #   credits, Housing Benefit and the legacy income-related benefits) are left
-  #   out: they are nil for a parent near £100,000, and counting them would
-  #   make the test depend on childcare support. Child Benefit is paid to the
-  #   benefit unit, not a parent, and is clawed back through the High Income
-  #   Child Benefit Charge at this income, so it is left out too.
+  #   ones are listed below. Benefits paid to the benefit unit (Child Benefit,
+  #   Universal Credit, tax credits, Housing Benefit and the legacy
+  #   income-related benefits) are in benunit_gross_income_sources, shared
+  #   between the parents.
   2019-08-01:
     - employment_income
     - employment_benefits

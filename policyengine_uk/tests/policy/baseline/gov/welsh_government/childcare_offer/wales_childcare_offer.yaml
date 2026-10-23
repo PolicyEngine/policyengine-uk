@@ -850,6 +850,106 @@
     # 99,000 + 2,000 = 101,000 > 100,000
     wales_childcare_offer: 0
 
+# Benefits paid to the benefit unit count too, shared equally between the
+# claimant and any partner. Child Benefit escapes the HICBC when relieved
+# pension contributions bring adjusted net income down, and Universal Credit can
+# be paid near £100,000 when most income is child maintenance, which UC ignores.
+- name: A lone parent's Child Benefit counts towards the £100,000 gross income limit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 99_000
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, child]
+        child_benefit: 1_406.60
+    households:
+      household:
+        members: [parent, child]
+        region: WALES
+  output:
+    # 99,000 + 1,406.60 = 100,406.60 > 100,000
+    wales_childcare_offer: 0
+
+- name: A lone parent's Universal Credit counts towards the £100,000 gross income limit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 14_000
+        maintenance_income: 85_000
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, child]
+        universal_credit: 5_732.08
+    households:
+      household:
+        members: [parent, child]
+        region: WALES
+  output:
+    # 14,000 + 85,000 + 5,732.08 = 104,732.08 > 100,000
+    wales_childcare_offer: 0
+
+- name: A couple's Child Benefit is shared between them for the limit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent1:
+        age: 30
+        employment_income: 99_000
+      parent2:
+        age: 30
+        employment_income: 20_000
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+        child_benefit: 1_406.60
+    households:
+      household:
+        members: [parent1, parent2, child]
+        region: WALES
+  output:
+    # parent1: 99,000 + 1,406.60 / 2 = 99,703.30, within the limit
+    wales_childcare_offer: 7_003.50
+
+- name: Half a couple's Child Benefit can take one parent over the limit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent1:
+        age: 30
+        employment_income: 99_500
+      parent2:
+        age: 30
+        employment_income: 20_000
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+        child_benefit: 1_406.60
+    households:
+      household:
+        members: [parent1, parent2, child]
+        region: WALES
+  output:
+    # parent1: 99,500 + 703.30 = 100,203.30 > 100,000
+    wales_childcare_offer: 0
+    wales_childcare_offer_parent_condition: [false, true, false]
+
 # Review C3: guidance para 87 lists "Universal Credit where the individual has
 # been assessed as having limited capability for work", so the parent needs a
 # Universal Credit award, not only a disability.

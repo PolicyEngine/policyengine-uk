@@ -26,7 +26,17 @@ class wales_childcare_offer_parent_condition(Variable):
         # Paras 57 and 69: gross income of no more than £100,000, counting
         # all income, from work or investments, including statutory pay and
         # maintenance (July 2020 income guidance, questions 8 and 9).
-        gross_income = add(person, period, p.income.gross_income_sources)
+        # Benefits paid to the benefit unit count too, shared equally between
+        # the claimant and any partner (a lone parent counts all of it).
+        claimant_or_partner = person("is_claimant_or_partner", period)
+        benunit_income = add(
+            person.benunit, period, p.income.benunit_gross_income_sources
+        )
+        parents = person.benunit.sum(claimant_or_partner)
+        benunit_share = where(claimant_or_partner, benunit_income / max_(parents, 1), 0)
+        gross_income = (
+            add(person, period, p.income.gross_income_sources) + benunit_share
+        )
         within_income_limit = gross_income <= p.income.limit
 
         # Paras 62 to 64: employed or self-employed and earning on average at
@@ -47,7 +57,6 @@ class wales_childcare_offer_parent_condition(Variable):
             education.decode_to_str(), np.array(list(p.education_stages))
         )
 
-        claimant_or_partner = person("is_claimant_or_partner", period)
         works_or_studies = (
             claimant_or_partner & (working | studying) & within_income_limit
         )
