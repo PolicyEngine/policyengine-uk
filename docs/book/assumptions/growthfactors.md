@@ -68,11 +68,11 @@ We lag earnings growth by one year and use that to uprate housing service charge
 
 ## Per capita GDP
 
-We derive these rates from OBR GDP growth and ONS population projections.
+We derive these rates as calendar-year nominal GDP growth from the OBR's March 2026 EFO divided by population growth: (1 + GDP growth) / (1 + population growth) − 1.
 
-| Fiscal year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 |
+| Year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 |
 |-------------|------|------|------|------|------|------|------|------|
-| Growth rate | 9.2% | 5.0% | 3.8% | 2.8% | 2.8% | 3.1% | 3.3% | 3.3% |
+| Growth rate | 10.0% | 5.2% | 3.9% | 4.7% | 2.9% | 3.3% | 3.2% | 3.1% |
 
 We use per capita GDP for these variables: `benunit_reported_capital`, `capital_gains`, `capital_gains_badr`, `capital_gains_before_response`, `capital_gains_carried_interest`, `capital_gains_residential_property`, `cash_isa`, `corporate_wealth`, `directly_held_shares`, `dividend_income`, `gross_financial_wealth`, `household_lifetime_isa_balance`, `lifetime_isa_balance`, `lump_sum_income`, `main_residence_value`, `maintenance_income`, `miscellaneous_income`, `mortgage_capital_repayment`, `net_financial_wealth`, `non_residential_property_value`, `other_investment_income`, `other_residential_property_value`, `owned_land`, `pension_credit_reported_capital`, `pension_income`, `private_pension_wealth`, `private_transfer_income`, `property_income`, `property_rental_income`, `savings`, `savings_interest_income`, `stocks_and_shares_isa`, `sublet_income`, `uc_reported_capital`, `unit_and_investment_trusts`
 
@@ -120,20 +120,20 @@ We apply this to: `rent`
 
 ## Per capita mixed income
 
-We derive these rates from OBR mixed income growth and ONS population projections.
+We derive these rates as calendar-year mixed income growth from the OBR's March 2026 EFO (Table 1.12) divided by population growth, in the same way.
 
-| Fiscal year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 |
+| Year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 |
 |-------------|------|------|------|------|------|------|------|------|
-| Growth rate | 6.3% | 2.4% | 4.8% | 4.7% | 3.1% | 3.1% | 3.6% | 3.8% |
+| Growth rate | 2.9% | -0.6% | 2.7% | 1.1% | 3.1% | 3.8% | 3.7% | 3.6% |
 
 We apply this to: `self_employment_income`
 
 ## Population
 
-We use ONS population [projections](https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationprojections/bulletins/nationalpopulationprojections/2022based).
+We use the population growth in the OBR's [long-term economic determinants for the March 2026 EFO](https://obr.uk/supplementary-forecast-information-release-long-term-economic-determinants-march-2026/): the OBR's forecast to 2030-31, then the principal projection of the [ONS 2024-based national population projections](https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationprojections/bulletins/nationalpopulationprojections/2024based). 2021-22 and 2022-23 are the same OBR series, read from the March 2026 EFO economy tables.
 
 | Fiscal year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 |
 |-------------|------|------|------|------|------|------|------|------|
-| Growth rate | 0.3% | 1.4% | 1.0% | 1.1% | 0.7% | 0.8% | 0.4% | 0.5% |
+| Growth rate | 1.0% | 1.3% | 1.1% | 0.3% | 0.4% | 0.3% | 0.3% | 0.3% |
 
 We apply this to: `household_weight`
