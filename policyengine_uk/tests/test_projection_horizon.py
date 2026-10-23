@@ -423,6 +423,11 @@ def test_tax_free_savings_formula_takes_over_after_the_horizon():
     """
     dataset = _dataset()
     dataset.person["tax_free_savings_income"] = 1_000.0
+    # The generic fixture now includes I because it has a declared index.
+    # This case specifically represents a legacy file without that source.
+    dataset.person = dataset.person.drop(
+        columns="individual_savings_account_interest_income", errors="ignore"
+    )
     # Enhanced FRS 2024-25 does not store the formula's ISA-interest source.
     simulation = Microsimulation(dataset=dataset)
     assert simulation.calculate(

@@ -7,6 +7,8 @@ HOUSEHOLD_MARKET_INCOME_VARIABLES = [
     "employment_income",
     "self_employment_income",
     "savings_interest_income",
+    "tax_free_savings_income",
+    "individual_savings_account_dividend_income",
     "dividend_income",
     "miscellaneous_income",
     # Landlords' profit after mortgage interest, as in HBAI income.
