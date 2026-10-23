@@ -24,11 +24,12 @@ also with a dependent young person aged 16 to 19 in non-advanced education:
 1. Qualifying age: no benefit unit whose adults are all below the qualifying
    age qualifies through the Guarantee Credit route, however low its income.
    Fails for filed; holds for main and fix.
-2. Route identity: targeted childcare eligibility equals claiming it, living
-   in England, not being eligible for the extended entitlement, and having at
-   least one route open: Income Support, income-based JSA, income-related
-   ESA, receipt of a guarantee credit, or a qualifying criterion (Universal
-   Credit, and tax credits while they qualify).
+2. Route identity: targeted childcare eligibility equals living in England
+   and having at least one route open: Income Support, income-based JSA,
+   income-related ESA, receipt of a guarantee credit, or a qualifying
+   criterion (Universal Credit, and tax credits while they qualify). It is
+   legal eligibility (#2177): neither standalone take-up nor eligibility for
+   the working parent entitlement removes it.
 3. Receipt: in the unreformed model the Guarantee Credit route is open
    exactly when pension_credit and guarantee_credit are both positive. It
    implies would_claim_pc and that the claimant and any partner are over
@@ -41,7 +42,9 @@ also with a dependent young person aged 16 to 19 in non-advanced education:
    and no other route is open (intended: the eligible non-claimant).
 5. Metamorphic: not claiming Pension Credit closes the route and never makes
    a family eligible. Fails for filed and main; holds for fix.
-6. Not claiming targeted childcare never leaves a family eligible.
+6. Universal Credit criterion: met exactly when Universal Credit is paid
+   and earned income before the work allowance is within the limit (SI
+   2014/2147 reg 1(3)(a), #2552).
 7. Payment: a reform that stops Pension Credit being paid closes the route,
    with or without the Pension Credit freeze (fixed examples).
 8. Under the Pension Credit freeze the route follows the baseline receipt,
@@ -148,6 +151,8 @@ KNOWN_FAMILIES = [
     family([40], legacy_benefit="esa_income_reported"),
     family([68], state_pension=10_000.0, young_person=18),
     family([68], state_pension=10_000.0, would_claim_targeted_childcare=False),
+    family([30], earnings=12_000.0, would_claim_uc=True),
+    family([30], earnings=20_000.0, would_claim_uc=True),
 ]
 BELOW_AGE_FAMILIES = [0, 1, 2]  # No other route open, income below the MG.
 NON_CLAIMANT = 5
@@ -235,7 +240,6 @@ ROUTES = {
 
 VARIABLES = [
     "targeted_childcare_entitlement_eligible",
-    "would_claim_targeted_childcare",
     "extended_childcare_entitlement_eligible",
     "in_receipt_of_guarantee_credit",
     "guarantee_credit",
@@ -245,14 +249,18 @@ VARIABLES = [
     "income_support",
     "claimant_or_partner_jsa_income",
     "claimant_or_partner_esa_income",
+    "universal_credit",
+    "uc_earned_income_before_work_allowance",
+    "uc_earned_income",
+    "meets_universal_credit_criteria_for_targeted_childcare_entitlement",
 ]
 BOOLEANS = [
     "targeted_childcare_entitlement_eligible",
-    "would_claim_targeted_childcare",
     "extended_childcare_entitlement_eligible",
     "in_receipt_of_guarantee_credit",
     "is_pension_credit_eligible",
     "would_claim_pc",
+    "meets_universal_credit_criteria_for_targeted_childcare_entitlement",
 ]
 
 
@@ -264,9 +272,20 @@ def calculate(year, units, version="fix", reform=None, scenario=None, **kwargs):
         sim.tax_benefit_system.update_variable(ROUTES[version])
     values = {v: np.asarray(sim.calculate(v, year)) for v in VARIABLES}
     parameters = sim.tax_benefit_system.parameters(str(year))
-    criteria = parameters.gov.dfe.targeted_childcare_entitlement.qualifying_criteria
+    p = parameters.gov.dfe.targeted_childcare_entitlement
     values["criteria"] = (
-        sum(np.asarray(sim.calculate(v, year)).astype(int) for v in criteria) > 0
+        sum(
+            np.asarray(sim.calculate(v, year)).astype(int)
+            for v in p.qualifying_criteria
+        )
+        > 0
+    )
+    # Reg 1(3)(a): earned income for Chapter 2 of Part 6 of the UC
+    # Regulations 2013, before the work allowance, which is a step in the
+    # award (reg 22).
+    values["uc_route"] = (values["universal_credit"] > 0) & (
+        values["uc_earned_income_before_work_allowance"]
+        <= p.income_limit.universal_credit
     )
     values["legacy"] = (
         values["income_support"]
@@ -342,17 +361,13 @@ def test_eligibility_is_the_union_of_the_routes(population):
     for i, unit in enumerate(units):
         if receipt[i]:
             assert claimant_and_partner_over_sp_age(unit), unit
-    expected = (
-        values["would_claim_targeted_childcare"]
-        & values["in_england"]
-        & ~values["extended_childcare_entitlement_eligible"]
-        & (values["legacy"] | values["criteria"] | receipt)
-    )
+    # Legal eligibility (#2177): standalone take-up and eligibility for the
+    # working parent entitlement do not enter it.
+    expected = values["in_england"] & (values["legacy"] | values["criteria"] | receipt)
     assert np.array_equal(values["targeted_childcare_entitlement_eligible"], expected)
-    # Not claiming targeted childcare never leaves a family eligible.
-    assert not np.any(
-        values["targeted_childcare_entitlement_eligible"]
-        & ~values["would_claim_targeted_childcare"]
+    assert np.array_equal(
+        values["meets_universal_credit_criteria_for_targeted_childcare_entitlement"],
+        values["uc_route"],
     )
     if units is KNOWN_FAMILIES:
         assert receipt.tolist() == [
@@ -368,6 +383,8 @@ def test_eligibility_is_the_union_of_the_routes(population):
             False,
             True,  # An 18-year-old dependant is not a partner.
             True,
+            False,
+            False,
         ]
         assert values["targeted_childcare_entitlement_eligible"].tolist() == [
             False,
@@ -381,8 +398,18 @@ def test_eligibility_is_the_union_of_the_routes(population):
             False,  # Paid a guarantee credit, but in Wales.
             True,  # Income-related ESA.
             True,  # Paid a guarantee credit, with an 18-year-old dependant.
-            False,  # Paid a guarantee credit, but not claiming childcare.
+            True,  # Paid a guarantee credit, not claiming childcare on its own.
+            True,  # Universal Credit, and eligible for working parent hours.
+            False,  # Universal Credit, £17,920 earned before the work allowance.
         ]
+        assert values["extended_childcare_entitlement_eligible"][-2:].tolist() == [
+            True,
+            True,
+        ]
+        # The £20,000 earner is over the £15,400 limit only before the work
+        # allowance, so the case fails if the criterion deducts it again.
+        assert values["uc_earned_income_before_work_allowance"][-1] > 15_400
+        assert values["uc_earned_income"][-1] <= 15_400
 
 
 @PROPERTY_SETTINGS
@@ -399,11 +426,9 @@ def test_fix_only_removes_the_unpaid_guarantee_credit_route(population):
     for name in ["guarantee_credit", "pension_credit", "legacy", "criteria"]:
         assert np.array_equal(new[name], old[name]), name
     assert not np.any(new_eligible & ~old_eligible)
-    base = (
-        new["would_claim_targeted_childcare"]
-        & new["in_england"]
-        & ~new["extended_childcare_entitlement_eligible"]
-    )
+    # Standalone take-up and the working parent entitlement do not enter
+    # eligibility (#2177), so only the nation and the other routes matter.
+    base = new["in_england"]
     computed_not_paid = (new["guarantee_credit"] > 0) & ~(new["pension_credit"] > 0)
     removed = base & computed_not_paid & ~new["legacy"] & ~new["criteria"]
     assert np.array_equal(old_eligible & ~new_eligible, removed)
