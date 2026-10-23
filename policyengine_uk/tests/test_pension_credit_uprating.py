@@ -421,3 +421,38 @@ def test_zero_phase_in_reform_builds_and_pays_no_savings_credit():
     current = baseline.tax_benefit_system.parameters.gov.dwp.pension_credit.savings_credit.threshold.SINGLE
     assert threshold("2027-04-30") == pytest.approx(208.07)
     assert threshold("2028-04-30") == pytest.approx(current("2028-04-30"))
+
+
+def test_reforms_keep_their_own_allowance_and_move_the_derived_one():
+    """A dated change to a higher allowance is kept, and prior law resumes.
+
+    A change to the guarantee moves the allowance derived from it in that
+    year, as it moves the Savings Credit threshold; the lower allowance has
+    its own earnings projection and does not follow.
+    """
+    reform = {
+        f"{HB_NAME}.single.aged": {"2028": 300},
+        f"{SMG_NAME}.COUPLE": {"2029": 400},
+    }
+    situation = {
+        "people": {"claimant": {"age": {"2028": 81}}},
+        "households": {"household": {"members": ["claimant"]}},
+    }
+    current = system.parameters
+    reformed = Simulation(situation=situation, reform=reform).tax_benefit_system
+    allowances = reformed.parameters.gov.dwp.housing_benefit.allowances
+    now = current.gov.dwp.housing_benefit.allowances
+    sc_max = reformed.parameters.gov.dwp.pension_credit.savings_credit.maximum
+    for year in (2027, 2029, 2030):
+        at = f"{year}-04-30"
+        assert allowances.single.aged(at) == pytest.approx(now.single.aged(at))
+    assert allowances.single.aged("2028-04-30") == 300
+    assert allowances.couple.aged("2029-04-30") == pytest.approx(
+        400 + sc_max.COUPLE("2029-04-30")
+    )
+    for year in (2028, 2030):
+        at = f"{year}-04-30"
+        assert allowances.couple.aged(at) == pytest.approx(now.couple.aged(at))
+    assert allowances.couple.aged_from_cutoff("2029-04-30") == pytest.approx(
+        now.couple.aged_from_cutoff("2029-04-30")
+    )
