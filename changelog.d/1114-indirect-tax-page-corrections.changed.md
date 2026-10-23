@@ -1,0 +1,1 @@
+Corrected the indirect tax effects planning page (`docs/book/policy/indirect-tax-effects-plan.md`): UKMOD's TCO technical note does not give the 0.8 consumption elasticity reported in #1114, labour supply responses run through two separate routes, fuel duty also reads LPG and natural gas inputs, and a formula on a consumption input would not change values supplied by a dataset.
