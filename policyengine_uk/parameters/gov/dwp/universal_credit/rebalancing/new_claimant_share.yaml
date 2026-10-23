@@ -1,0 +1,14 @@
+description: >-
+  Share of benefit units with the Universal Credit LCWRA element that are new claimants, paid the new-claimant amount rather than the protected (pre-2026) amount. The rebalancing scenario uses it to assign the status by a seeded draw when the data do not supply it; a household situation without the status gets the protected amount. The shares for 2026-27 to 2029-30 are WPI Economics' estimates for the Trussell Trust from administrative Personal Independence Payment data (2025). Later years hold the 2029-30 share. That is an assumption, not a source: the share keeps rising as the caseload turns over, so holding it understates new claimants and overstates protected amounts from 2030-31.
+values:
+  2025-04-06: 0
+  2026-04-06: 0.11
+  2027-04-06: 0.13
+  2028-04-06: 0.16
+  2029-04-06: 0.22
+metadata:
+  unit: /1
+  label: Universal Credit LCWRA new-claimant share
+  reference:
+    - title: Universal Credit Act 2025 s. 2 (new-claimant and protected LCWRA amounts)
+      href: https://www.legislation.gov.uk/ukpga/2025/22/section/2
