@@ -1,3 +1,14 @@
+## [2.148.5] - 2026-10-23
+
+### Fixed
+
+- Stop projected council tax counting the growth in households twice (#2067). Each country's council tax series is the growth in its receipts, which already includes growth in the number of Band D equivalent dwellings, while household weights grow with population as well. Each household's bill now grows by its country's receipts growth divided by the growth in household weights, so each country's weighted total grows with its receipts; before, totals outgrew receipts by population growth, 0.4% to 0.7% a year from 2025-26 (2.8% by 2030-31). The 2023-24 and 2024-25 values, which held Band D level growth, now hold receipts outturns: MHCLG's council tax requirement for England, the Scottish Government's net amount billed and the Welsh Government's net collectable debit.
+- - Corrected Housing Benefit allowance age-threshold citations and added precise age-boundary regressions.
+- - The release version commit now moves uv.lock's entry for policyengine-uk with pyproject.toml, and its guard refuses any other change to uv.lock.
+- - Fixed the absolute poverty line for 2011-2020 (FYE 2012 to FYE 2021): each year is now 60% of DWP's published FYE 2011 median in that year's prices, deflated as HBAI does. Previously 2011-2019 stayed at the FYE 2011 cash value and 2020 used headline CPI.
+- - Charge Scottish LBTT on lease rent at 2% over £2 million from 7 February 2020 (SSI 2020/24), not 5% from January 2019, and stop charging LBTT and Welsh LTT on residential lease rent, which the law exempts.
+
+
 ## [2.148.4] - 2026-10-23
 
 ### Fixed
