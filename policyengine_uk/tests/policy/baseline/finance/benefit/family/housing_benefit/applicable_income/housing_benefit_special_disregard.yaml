@@ -1,0 +1,104 @@
+# Cases: working disability/severe; working carer-only; pension carer;
+# pension generic disability premium; pension/working DLA; non-dependant DLA;
+# pension/working blindness.
+- name: ENGLAND statutory regime distinguishes automatic qualifying routes
+  period: 2024
+  input:
+    country: [ENGLAND, ENGLAND, ENGLAND, ENGLAND, ENGLAND, ENGLAND, ENGLAND, ENGLAND, ENGLAND, ENGLAND]
+    housing_benefit_pension_age_regulations_apply: [false, false, false, true, true, true, false, true, true, false]
+    disability_premium: [100, 0, 0, 0, 100, 0, 0, 0, 0, 0]
+    severe_disability_premium: [0, 100, 0, 0, 0, 0, 0, 0, 0, 0]
+    carer_premium: [0, 0, 100, 100, 0, 0, 0, 0, 0, 0]
+    dla_sc: [0, 0, 0, 0, 0, 100, 100, 100, 0, 0]
+    dla_m: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    pip_dl: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    pip_m: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    attendance_allowance: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    armed_forces_independence_payment: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    is_blind: [false, false, false, false, false, false, false, false, true, true]
+    is_claimant_or_partner: [true, true, true, true, true, true, true, false, true, true]
+    housing_benefit_net_earnings: [5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000]
+    is_lone_parent: [false, false, false, false, false, false, false, false, false, false]
+    is_couple: [false, false, false, false, false, false, false, false, false, false]
+  output:
+    housing_benefit_special_earnings_disregard_eligible: [true, true, false, true, false, true, false, false, true, false]
+    housing_benefit_special_earnings_disregard: [1040, 1040, 260, 1040, 260, 1040, 260, 260, 1040, 260]
+
+# Cases: working disability/severe; working carer-only; pension carer;
+# pension generic disability premium; pension/working DLA; non-dependant DLA;
+# pension/working blindness.
+- name: NORTHERN_IRELAND statutory regime distinguishes automatic qualifying routes
+  period: 2024
+  input:
+    country: [NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND]
+    housing_benefit_pension_age_regulations_apply: [false, false, false, true, true, true, false, true, true, false]
+    disability_premium: [100, 0, 0, 0, 100, 0, 0, 0, 0, 0]
+    severe_disability_premium: [0, 100, 0, 0, 0, 0, 0, 0, 0, 0]
+    carer_premium: [0, 0, 100, 100, 0, 0, 0, 0, 0, 0]
+    dla_sc: [0, 0, 0, 0, 0, 100, 100, 100, 0, 0]
+    dla_m: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    pip_dl: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    pip_m: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    attendance_allowance: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    armed_forces_independence_payment: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    is_blind: [false, false, false, false, false, false, false, false, true, true]
+    is_claimant_or_partner: [true, true, true, true, true, true, true, false, true, true]
+    housing_benefit_net_earnings: [5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000]
+    is_lone_parent: [false, false, false, false, false, false, false, false, false, false]
+    is_couple: [false, false, false, false, false, false, false, false, false, false]
+  output:
+    housing_benefit_special_earnings_disregard_eligible: [true, true, false, true, false, true, false, false, true, false]
+    housing_benefit_special_earnings_disregard: [1040, 1040, 260, 1040, 260, 1040, 260, 260, 1040, 260]
+
+- name: Standard replacement, lone-parent precedence and earnings cap
+  period: 2024
+  input:
+    housing_benefit_special_earnings_disregard_eligible: [true, true, true, true, false, false]
+    housing_benefit_net_earnings: [5000, 5000, 5000, 500, 5000, 5000]
+    is_couple: [false, true, false, true, false, true]
+    is_lone_parent: [false, false, true, false, false, false]
+    housing_benefit_specified_or_temporary_accommodation_disregard: [0, 0, 0, 0, 0, 0]
+    housing_benefit_applicable_income_childcare_element: [0, 0, 0, 0, 0, 0]
+    meets_housing_benefit_additional_earnings_disregard_conditions: [false, false, false, false, false, false]
+    housing_benefit_on_passporting_benefit: [false, false, false, false, false, false]
+  output:
+    housing_benefit_applicable_income_disregard: [1040, 1040, 1300, 500, 260, 520]
+
+- name: Special standard amount participates in additional-disregard threshold
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_special_earnings_disregard_eligible: [true, true, true]
+    housing_benefit_net_earnings: [1929.19, 1929.20, 5000]
+    is_couple: [false, true, false]
+    is_lone_parent: [false, false, false]
+    housing_benefit_specified_or_temporary_accommodation_disregard: [0, 0, 0]
+    housing_benefit_applicable_income_childcare_element: [0, 0, 0]
+    meets_housing_benefit_additional_earnings_disregard_conditions: [true, true, true]
+    housing_benefit_on_passporting_benefit: [false, false, true]
+  output:
+    housing_benefit_applicable_income_disregard: [1040, 1929.20, 5000]
+
+- name: A zero special-amount reform is not replaced with the ordinary amount
+  period: 2024
+  input:
+    gov.dwp.housing_benefit.means_test.income_disregard.special: 0
+    housing_benefit_special_earnings_disregard_eligible: true
+    housing_benefit_net_earnings: 5000
+    is_lone_parent: false
+    is_couple: true
+  output:
+    housing_benefit_special_earnings_disregard: 0
+
+- name: Missing residual qualification preserves ordinary treatment
+  period: 2024
+  input:
+    disability_premium: 0
+    severe_disability_premium: 0
+    housing_benefit_pension_age_regulations_apply: false
+    housing_benefit_net_earnings: 5000
+    is_lone_parent: false
+    is_couple: false
+  output:
+    housing_benefit_special_earnings_disregard_eligible: false
+    housing_benefit_special_earnings_disregard: 260

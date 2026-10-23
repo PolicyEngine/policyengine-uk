@@ -430,7 +430,7 @@
     # One member must work 30 hours; hours are not added across the couple.
     housing_benefit_applicable_income_disregard: 520 # £10 × 52
 
-- name: Disabled single person working 20 hours gets £5 plus the additional disregard (model limitation; the law gives £20 plus it)
+- name: Disabled single person working 20 hours gets £20 plus the additional disregard
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -448,15 +448,13 @@
     # Para 17(2)(b)(iv)(aa): a single claimant with the disability premium
     # working 16 hours or more meets the condition.
     meets_housing_benefit_additional_earnings_disregard_conditions: true
-    # KNOWN LIMITATION: the law gives £1,929.20. Intended model limitation.
-    # In law the same disability premium brings in
-    # the £20 disregard in place of £5: Sch 4 para 3(2), "This paragraph
-    # applies where the claimant's applicable amount includes an amount by
-    # way of the disability premium". The law gives (£20 + £17.10) × 52 =
-    # £1,929.20 (£8,000 ≥ £1,040 + £889.20). The £20 disregards are out of
-    # scope for this change and tracked as a follow-up; until then the model
-    # gives (£5 + £17.10) × 52.
-    housing_benefit_applicable_income_disregard: 1_149.20
+    # The disability premium gives the £20 standard disregard under Sch 4
+    # para 3(2), replacing £5. Net earnings cover that amount and the
+    # additional disregard: £8,000 ≥ £1,040 + £889.20.
+    # (£20 + £17.10) × 52 = £1,929.20.
+    # https://www.legislation.gov.uk/uksi/2006/213/schedule/4/paragraph/3
+    # https://www.legislation.gov.uk/uksi/2006/213/schedule/4/paragraph/17
+    housing_benefit_applicable_income_disregard: 1_929.20
 
 - name: Working-age claimant on Income Support has all earnings disregarded
   period: 2026
