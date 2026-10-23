@@ -34,6 +34,11 @@ from policyengine_uk.data.dataset_schema import (
     UKMultiYearDataset,
     UKSingleYearDataset,
 )
+from policyengine_uk.data.isa_income import (
+    ISA_INCOME_CONTRACT_KEY,
+    MISSING_CONTRACT,
+    contracts_for_years,
+)
 
 if TYPE_CHECKING:
     from policyengine_core.taxbenefitsystems import TaxBenefitSystem
@@ -424,6 +429,9 @@ def dataset_from_input_dataframe(
         for year in sorted(identifier_years - set(years))
         for variable, values in {**person_identifiers, **group_identifiers}.items()
     ]
+    contracts = contracts_for_years(
+        df.attrs.get(ISA_INCOME_CONTRACT_KEY, MISSING_CONTRACT), years
+    )
     datasets = [
         UKSingleYearDataset(
             person=pd.DataFrame({**person_identifiers, **tables["person"]}),
@@ -434,6 +442,7 @@ def dataset_from_input_dataframe(
                 {"household_id": group_ids["household"], **tables["household"]}
             ),
             fiscal_year=fiscal_year,
+            isa_income_contract=contracts[fiscal_year],
         )
         for fiscal_year, tables in sorted(years.items())
     ]

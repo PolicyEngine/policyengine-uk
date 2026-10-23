@@ -131,7 +131,11 @@ def normal_gross_income_non_dep_deduction(
         "property_income_after_finance_costs",
         "private_pension_income",
         "savings_interest_income",
+        # Normal gross income includes exempt returns. Dataset normalization
+        # separates these from ordinary interest without changing that gross.
+        "tax_free_savings_income",
         "dividend_income",
+        "individual_savings_account_dividend_income",
         "state_pension",
     ]
     earned_income_components = [
