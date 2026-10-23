@@ -3,7 +3,15 @@ from policyengine_uk.model_api import *
 
 class household_wealth_decile(Variable):
     label = "household wealth decile"
-    documentation = "Decile of wealth income (person-weighted)"
+    documentation = (
+        "Person-weighted decile of gross total_wealth, before debt deductions. "
+        "Each household's weight is household_weight * household_count_people. "
+        "Equal wealth values are ranked in original household/entity order. "
+        "Changing this order, including when rebuilding a dataset, can change "
+        "tied households' decile assignments. Negative total_wealth participates "
+        "in the ranking before its output is set to -1. Household weights are "
+        "indivisible, so decile bins can still be empty."
+    )
     entity = Household
     definition_period = YEAR
     value_type = int
