@@ -8,7 +8,10 @@ than the unadjusted allowance. Additional pension and graduated retirement
 benefit paid with an old State Pension are left out (regs 4(2)(f) and 12). The
 Carer Support Payment Regulations (SSI 2023/302) reg 16(2)-(3) reduce Carer
 Support Payment in the same way, to £0 where the overlapping benefit is at
-least as much.
+least as much, with one difference: reg 16(6) leaves only additional pension
+and graduated retirement benefit out of an old State Pension, so the 25p age
+addition at 80 overlaps Carer Support Payment, while it never overlaps Carer's
+Allowance (SI 1979/597 reg 4(3)).
 
 Invariants, for carers in England, Wales and Scotland in 2026, who qualify by
 hours or by a reported award, with State Pension supplied directly, by
@@ -215,6 +218,9 @@ def rates(sim):
         * WEEKS,
         "basic": float(parameters.gov.dwp.state_pension.basic_state_pension.amount)
         * WEEKS,
+        "age_addition": float(parameters.gov.dwp.state_pension.age_addition.amount)
+        * WEEKS,
+        "age_addition_age": float(parameters.gov.dwp.state_pension.age_addition.age),
         "min_hours": float(parameters.gov.dwp.carers_allowance.min_hours),
         "carer_addition": float(
             parameters.gov.dwp.pension_credit.guarantee_credit.carer.addition
@@ -224,10 +230,11 @@ def rates(sim):
 
 
 def reference(people, sim, extra=None):
-    """Unadjusted and overlapping amounts rebuilt from the drawn inputs."""
+    """Unadjusted amounts, and the overlapping amounts for Carer's Allowance
+    and for Carer Support Payment, rebuilt from the drawn inputs."""
     extra = extra or [0.0] * len(people)
     r = rates(sim)
-    unadjusted_ca, unadjusted_csp, overlapping = [], [], []
+    unadjusted_ca, unadjusted_csp, overlapping, overlapping_csp = [], [], [], []
     for i, person in enumerate(people):
         qualifies = (
             person["care_hours"] >= r["min_hours"]
@@ -239,6 +246,10 @@ def reference(people, sim, extra=None):
         pension_type = pension_type_for(person)
         pension = person["pension"] + extra[i]
         mode = person["mode"]
+        # The 25p age addition (SSCBA 1992 s.79): an old State Pension from 80.
+        # It overlaps Carer Support Payment (SSI 2023/302 reg 16(6)) but not
+        # Carer's Allowance (SI 1979/597 reg 4(3)).
+        age_addition = 0.0
         if mode == "direct":
             # The model's convention: with no components, all of it overlaps.
             state_pension = pension
@@ -246,9 +257,18 @@ def reference(people, sim, extra=None):
             # The model's split of a reported amount: an old State Pension
             # above the full basic rate is additional pension, which does not
             # overlap. A new State Pension overlaps in full, protected payment
-            # included, and there is none before pensionable age.
+            # included, and there is none before pensionable age. From 80 an
+            # old State Pension is taken to include the 25p age addition,
+            # which overlaps Carer Support Payment only.
+            with_age_addition = (
+                pension_type == "BASIC"
+                and person["age"] >= r["age_addition_age"]
+                and pension > 0
+            )
+            age_addition = r["age_addition"] * with_age_addition
+            basic_reported = max(pension - age_addition, 0)
             state_pension = {
-                "BASIC": min(pension, r["basic"]),
+                "BASIC": min(basic_reported, r["basic"]),
                 "NEW": pension,
                 "NONE": 0,
             }[pension_type]
@@ -258,15 +278,25 @@ def reference(people, sim, extra=None):
                 "NEW": pension + person["additional"],
                 "NONE": 0,
             }[pension_type]
+            # Components given directly bring the addition whenever there is
+            # a basic or additional State Pension.
+            age_addition = r["age_addition"] * (
+                pension_type == "BASIC"
+                and person["age"] >= r["age_addition_age"]
+                and (pension > 0 or person["additional"] > 0)
+            )
         else:
             state_pension = 0
         # sda is not drawn, so the other overlapping benefits are the four
         # reported contributory benefits.
-        overlapping.append(state_pension + sum(person["other"].values()))
+        other = sum(person["other"].values())
+        overlapping.append(state_pension + other)
+        overlapping_csp.append(state_pension + age_addition + other)
     return (
         np.array(unadjusted_ca),
         np.array(unadjusted_csp),
         np.array(overlapping),
+        np.array(overlapping_csp),
     )
 
 
@@ -314,7 +344,7 @@ def test_overlap_bounds_and_reference(people):
     ca, csp = calc(sim, "carers_allowance"), calc(sim, "carer_support_payment")
     ca_pre = calc(sim, "carers_allowance_pre_overlap")
     csp_pre = calc(sim, "carer_support_payment_pre_overlap")
-    ref_ca_pre, ref_csp_pre, ref_overlap = reference(people, sim)
+    ref_ca_pre, ref_csp_pre, ref_overlap, ref_overlap_csp = reference(people, sim)
 
     # Components are assigned using age and gender, independently of the
     # model's calculated type. Check the default-birthday reference as well.
@@ -338,12 +368,12 @@ def test_overlap_bounds_and_reference(people):
     np.testing.assert_allclose(ca_pre, ref_ca_pre, atol=TOLERANCE)
     np.testing.assert_allclose(csp_pre, ref_csp_pre, atol=TOLERANCE)
     np.testing.assert_allclose(ca_overlap, ref_overlap, atol=TOLERANCE)
-    np.testing.assert_allclose(csp_overlap, ref_overlap, atol=TOLERANCE)
+    np.testing.assert_allclose(csp_overlap, ref_overlap_csp, atol=TOLERANCE)
     np.testing.assert_allclose(
         ca, np.maximum(ref_ca_pre - ref_overlap, 0), atol=TOLERANCE
     )
     np.testing.assert_allclose(
-        csp, np.maximum(ref_csp_pre - ref_overlap, 0), atol=TOLERANCE
+        csp, np.maximum(ref_csp_pre - ref_overlap_csp, 0), atol=TOLERANCE
     )
 
     # 5. Scottish Carer Supplement only, and in full, with a payable CSP.
