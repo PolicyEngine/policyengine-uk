@@ -681,3 +681,77 @@
         country: ENGLAND
   output:
     housing_benefit_applicable_income: 6000
+
+- name: Statutory paternity pay counts as income and the income tax on it comes off
+  # SI 2006/213 reg 35(1)(i): statutory paternity pay is earnings. ITEPA 2003
+  # s. 660 taxes it, and reg 36(3) deducts the income tax and Class 1 NI on
+  # the earnings. 2026: two weeks at £194.32 is 388.64.
+  # Income tax 0.2 x (20,388.64 - 12,570) = 1,563.728.
+  # NI 0.08 x (20,388.64 - 12,569.96) = 625.4944.
+  # Sch 4 para 10 disregards £5 a week of a single claimant's earnings: 260.
+  # 20,388.64 - 1,563.728 - 625.4944 - 260 = 17,939.4176.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        employment_income: 20_000
+        statutory_paternity_pay: 388.64
+    benunits:
+      benunit:
+        members: [person]
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
+  output:
+    housing_benefit_applicable_income_disregard: 260
+    housing_benefit_applicable_income: 17_939.42
+
+- name: Taxable statutory paternity pay counts while disregarded family income and tax stay excluded
+  # Combine the SPP earnings rule with the Child Benefit, Social Fund and
+  # dependent-income exclusions. Both people have taxable earnings, but only
+  # the claimant's earnings and deductions enter the ordinary means test.
+  # With disregards pinned to zero: 20,388.64 - 1,563.728 - 625.4944
+  # = 18,199.4176. Child Benefit (1,500), SSMG (500), and the child's wages,
+  # SPP and tax do not enter that calculation.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        employment_income: 20_000
+        statutory_paternity_pay: 388.64
+        pension_contributions: 0
+        ssmg: 500
+      child:
+        age: 17
+        is_claimant_or_partner: false
+        is_child_or_young_person_for_legacy_benefits: true
+        employment_income: 20_000
+        statutory_paternity_pay: 388.64
+        pension_contributions: 0
+    benunits:
+      family:
+        members: [claimant, child]
+        child_benefit: 1_500
+        income_support: 0
+        esa_income: 0
+        jsa_income: 0
+        tax_credits: 0
+        housing_benefit_pension_age_regulations_apply: false
+        in_receipt_of_guarantee_credit: false
+        in_receipt_of_savings_credit_only: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_tariff_income: 0
+        housing_benefit_applicable_income_disregard: 0
+        housing_benefit_applicable_income_childcare_element: 0
+    households:
+      home:
+        members: [claimant, child]
+        country: ENGLAND
+  output:
+    income_tax: [1_563.73, 1_563.73]
+    national_insurance: [625.49, 625.49]
+    housing_benefit_net_earnings: 18_199.42
+    housing_benefit_applicable_income: 18_199.42

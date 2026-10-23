@@ -36,8 +36,14 @@ def hb_income_before_deductions(benunit, period, parameters):
         "jsa_contrib",
         "state_pension",
         "maternity_allowance",
+        # Statutory sick, maternity and paternity pay are earnings: SI
+        # 2006/213 reg 35(1)(i); SI 2006/214 reg 35(1)(h) and (i); NI SR
+        # 2006/405 reg 32(1)(i); NI SR 2006/406 reg 33(1)(h) and (i). The
+        # income tax and National Insurance deducted below include the
+        # tax on them (employment_benefits, ni_class_1_income).
         "statutory_sick_pay",
         "statutory_maternity_pay",
+        "statutory_paternity_pay",
         # Counted by both regimes: HB (SPC) Regs 2006 reg 29(1)(j), whose
         # exceptions touching these are the IIDB increases under SSCBA
         # ss.104-105 (head (iii)) and non-partner dependant increases (head
