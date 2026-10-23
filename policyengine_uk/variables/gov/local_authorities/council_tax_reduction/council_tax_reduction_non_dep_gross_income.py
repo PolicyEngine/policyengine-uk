@@ -22,7 +22,10 @@ class council_tax_reduction_non_dep_gross_income(Variable):
     documentation = (
         "Annual gross income represented by the model for non-dependant "
         "bands, before tax, National Insurance, employment deductions and "
-        "pension contributions. It includes statutory sick, maternity and "
+        "pension contributions. Signed trading/property inputs are retained; "
+        "a separate cross-source loss-offset rule is not modelled. Claimant "
+        "war-pension and supplementary-pension disregards do not apply to "
+        "these non-dependant bands. It includes statutory sick, maternity and "
         "paternity pay once through employment_benefits, child and spousal "
         "maintenance, the tax-purpose social security income sources, and "
         "the separately represented non-taxable periodic benefits. "

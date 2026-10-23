@@ -16,7 +16,8 @@ class total_income(Variable):
     documentation = (
         "Income Tax Act 2007 s.23 Step 1 total income, before Step 2 reliefs "
         "and personal allowances. Delegates to total_income_charged_to_tax, "
-        "which sums adjusted_net_income_components, restores the carried-"
+        "which sums adjusted_net_income_components (plus basic income when "
+        "a reform taxes it), restores the carried-"
         "forward trading loss relief deducted inside those components, and "
         "deducts net-pay pension relief held separately by the tax model. "
         "The component definitions and their documented limitations apply; "
