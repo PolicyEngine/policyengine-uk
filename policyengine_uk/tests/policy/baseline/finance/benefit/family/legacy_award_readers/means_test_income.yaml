@@ -118,6 +118,7 @@
       benunit:
         members: [claimant, other]
         universal_credit: 0
+        would_claim_uc: false
     households:
       household:
         members: [claimant, other]

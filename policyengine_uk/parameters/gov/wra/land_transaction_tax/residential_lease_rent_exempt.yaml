@@ -1,0 +1,12 @@
+description: Wales charges no Land Transaction Tax on the rent paid under a residential
+  lease.
+values:
+  2018-04-01: true
+metadata:
+  unit: bool
+  economy: false
+  label: LTT residential lease rent exemption
+  reference:
+  - title: Land Transaction Tax and Anti-avoidance of Devolved Taxes (Wales) Act 2017
+      schedule 6 paragraph 27(1)
+    href: https://www.legislation.gov.uk/anaw/2017/1/schedule/6/paragraph/27
