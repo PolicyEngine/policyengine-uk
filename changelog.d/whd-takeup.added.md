@@ -1,0 +1,1 @@
+Warm Home Discount receipt rates by group (85% for Pension Credit households, 70% for other qualifying benefits), from DESNZ's 2026 impact assessment, so the rebate no longer goes to every household modelled as receiving a qualifying benefit.
