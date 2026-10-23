@@ -158,7 +158,8 @@ def test_outside_england_retains_zero_entitlements():
 def test_existing_cpi_projection_starts_from_the_2026_funding_anchor():
     # This verifies the retained projection rule, not an official 2027 rate.
     p = system.parameters
-    factor = p("2027").gov.benefit_uprating_cpi / p("2026").gov.benefit_uprating_cpi
+    index = p.gov.economic_assumptions.indices.obr.lagged_cpi
+    factor = index("2027") / index("2026")
     expected = np.array([12.04, 8.90, 6.61]) * factor
     np.testing.assert_allclose(
         p("2027").gov.dfe.childcare_funding_rate.calc(AGES), expected, rtol=0, atol=1e-8
