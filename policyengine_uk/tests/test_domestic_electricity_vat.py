@@ -153,6 +153,19 @@ def test_extending_the_zero_rate_to_fy2027():
     assert sim.calculate("vat_change", 2027)[0] == pytest.approx(-50)
 
 
+def test_zero_rate_for_half_of_fy2027_is_day_weighted():
+    # A reform dated part-way through a model year (#2167, fixed by #2305) is
+    # day-weighted on the blended electricity rate. Model year 2027 has 366
+    # days (6 April 2027 to 5 April 2028); a zero rate for the first 183
+    # leaves half the year at 5%: 1,000 x 0.05 x 183 / 366 = £25.
+    reform = Reform.from_dict(
+        {GB_RATE: {"2027-04-06.2027-10-05": 0.0}}, country_id="uk"
+    )
+    sim = Simulation(situation=household(year=2027), reform=reform)
+    assert sim.calculate("domestic_energy_vat", 2027)[0] == pytest.approx(25)
+    assert sim.calculate("vat_change", 2027)[0] == pytest.approx(-25)
+
+
 def test_reduced_rate_reform_reaches_gas_not_electricity():
     scenario = Scenario(parameter_changes={"gov.hmrc.vat.reduced_rate": {"2025": 0.0}})
     assert calc(
