@@ -46,7 +46,8 @@ onto FRS households and **overstates** what UK private households receive.
 
 **Fraud and error** is a different case. DWP counts overpayments as benefit
 spending although they go beyond what claimants are entitled to: 3.2% of
-benefit spending in its FYE 2026 estimates, against 0.4% underpaid. That
+benefit spending in its FYE 2026 estimates, against 0.4% underpaid through
+official error. That
 money does reach households, so it doesn't overstate what they receive, but
 it matters where the model simulates entitlement rather than receipt.
 
@@ -67,7 +68,9 @@ residents. The same question is open for other programmes.
 
 For each benefit programme the calibration targets, identify the share
 of the published total that goes outside UK private households. DWP and HMRC
-publish enough data to assemble a first-pass table:
+publish enough data to assemble a first-pass table. The fraud and error
+column is recorded separately: that money reaches households, so it isn't
+part of the gap.
 
 | Programme | Published total | Overseas | Institutional | Fraud and error |
 |-----------|-----------------|----------|---------------|-----------------|
@@ -82,7 +85,8 @@ publish enough data to assemble a first-pass table:
 
 Sources: DWP *Benefit expenditure and caseload tables* and Stat-Xplore
 (payments abroad), the DWP *Fraud and Error in the Benefit System* annual
-release, programme-specific breakdowns, and the rules on care homes
+release, HMRC's annual report and accounts (Child Benefit fraud and error),
+programme-specific breakdowns, and the rules on care homes
 ([Housing Benefit Regulations 2006 reg. 9(1)(k) and (4)](https://www.legislation.gov.uk/uksi/2006/213/regulation/9)
 and the [pension-age equivalent](https://www.legislation.gov.uk/uksi/2006/214/regulation/9);
 [PIP Regulations 2013 reg. 28](https://www.legislation.gov.uk/uksi/2013/377/regulation/28);
@@ -148,7 +152,8 @@ changes in this repo are small:
 ## References
 
 - DWP, [Benefit expenditure and caseload tables](https://www.gov.uk/government/collections/benefit-expenditure-and-caseload-tables): spending by benefit, including payments abroad.
-- DWP, [Fraud and Error in the Benefit System](https://www.gov.uk/government/collections/fraud-and-error-in-the-benefit-system): estimates of overpayments and underpayments from fraud and error.
+- DWP, [Fraud and Error in the Benefit System](https://www.gov.uk/government/collections/fraud-and-error-in-the-benefit-system): estimates of benefit overpaid through fraud and error and underpaid through official error.
 - DWP, [Stat-Xplore](https://stat-xplore.dwp.gov.uk/): caseloads by benefit, including State Pension recipients by country of residence.
+- HMRC, [Annual reports and accounts](https://www.gov.uk/government/collections/hmrcs-annual-report-and-accounts): Child Benefit error and fraud estimates.
 - GOV.UK, [Child Benefit if you leave the UK](https://www.gov.uk/child-benefit-abroad): when Child Benefit is paid for families abroad (EEA, Switzerland and social security agreement countries).
 - Issue: [#842](https://github.com/PolicyEngine/policyengine-uk/issues/842). Related: [#1621](https://github.com/PolicyEngine/policyengine-uk/issues/1621) (UK pipeline alignment) and [microcosm#1069](https://github.com/PolicyEngine/microcosm/issues/1069) (UK pensions follow-ups after #1084).
