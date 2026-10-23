@@ -1,3 +1,10 @@
+## [2.151.1] - 2026-10-23
+
+### Fixed
+
+- Uprate the Pension Credit standard minimum guarantee and the lower Housing Benefit pension-age personal allowances by the previous May-July earnings increase, meeting the SSAA 1992 s150A earnings floor after the last published rates. Derive projected Savings Credit thresholds from the guarantee and a September-CPI-uprated maximum award, keeping the threshold in force when a reform sets a zero phase-in rate, and the higher pension-age allowances as the guarantee plus that maximum. April 2027's single guarantee rises from £238 to £247.282 before rounding, rather than £243.47.
+
+
 ## [2.151.0] - 2026-10-23
 
 ### Added
