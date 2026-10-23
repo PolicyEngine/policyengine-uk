@@ -23,8 +23,9 @@ metadata:
     already include private school VAT. The vat formula therefore removes
     school-fee VAT's share of the grossed-up amount before gov_tax adds
     private_school_vat. On data, at current law, the two heads sum to the
-    original receipt-calibrated VAT in aggregate, so no extra school receipts
-    are added to this denominator. See the receipt-partition derivation in
+    receipt-calibrated VAT to within the share's accuracy (at most 0.07% below
+    it on Enhanced FRS 2024-25, policyengine-uk-data 1.58.1), so no extra
+    school receipts are added to this denominator. See the receipt-partition derivation in
     that document.
   reference:
     - title: OBR, Economic and fiscal outlook March 2026, detailed forecast tables, receipts, table 3.8

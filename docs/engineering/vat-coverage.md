@@ -71,8 +71,12 @@ survey coverage = product / household share (0.7)
 ```
 
 Dividing each household's statutory VAT by the product gives the gross
-amount. At current law, total `vat + private_school_vat` equals this amount,
-and equals receipts when the product matches the dataset.
+amount. At current law, total `vat + private_school_vat` is close to this
+amount but not equal to it: combined receipts are
+`(1 - s) * sum(w * G) + sum(w * P0)` (see the receipt-partition derivation
+below), so they differ from the gross amount by `sum(w * P0) - s * sum(w * G)`.
+On the certified Enhanced FRS (policyengine-uk-data 1.58.1) that difference
+is -£36m to -£173m a year from 2025-26 to 2031-32, at most 0.07% of VAT.
 
 ### Results
 
@@ -91,7 +95,7 @@ and equals receipts when the product matches the dataset.
 The parameter takes the Microcosm 2024-25 value, 0.67 (product 0.469), the
 latest outturn year.
 
-With that product, total current-law `vat + private_school_vat` against receipts is:
+With that product, the gross amount against receipts is as below. Current-law `vat + private_school_vat` matches it to within 0.07% (see above):
 
 | Dataset | 2024-25 | 2025-26 | 2026-27 |
 |---|---|---|---|

@@ -37,8 +37,9 @@ FEES = "gov.simulation.private_school_vat.private_school_fees"
 BASIS = "gov.simulation.private_school_vat.private_school_vat_basis"
 FACTOR = 0.67 * 0.7
 # HMRC's OBR-certified costing of VAT on private school fees (Autumn Budget
-# 2024 Table 5.1, £m) and OBR cash-basis VAT receipts (March 2026 EFO table
-# 3.8, £m), by the model year of each fiscal year.
+# 2024 Table 5.1, £m) and OBR cash-basis VAT receipts (March 2026 EFO detailed
+# forecast tables, receipts, sheet 3.8, row 13, cells E13:I13, £m), by the
+# model year of each fiscal year.
 COSTING = {2025: 1_505, 2026: 1_560, 2027: 1_610, 2028: 1_665, 2029: 1_725}
 RECEIPTS = {
     2025: 180_168.94,
