@@ -37,6 +37,7 @@ from policyengine_uk.data.economic_assumptions import (
     uprating_input_fingerprint,
 )
 from policyengine_uk.data.dataset_sources import materialize_gcs_dataset_url
+from policyengine_uk.data.energy_price_basis import core_dataset_energy_price_basis
 from policyengine_uk.data.input_dataframe import (
     dataset_from_input_dataframe,
     with_identifiers_in_each_year,
@@ -930,9 +931,9 @@ class Simulation(CoreSimulation):
             cache_key = self._dataset_cache_key(dataset_source)
             if cache_key is not None and cache_key in _url_dataset_cache:
                 multi_year_dataset = _url_dataset_cache[cache_key]
+                self.dataset = multi_year_dataset
                 self.build_from_multi_year_dataset(multi_year_dataset)
                 self._restore_cgt_extension_provenance(multi_year_dataset)
-                self.dataset = multi_year_dataset
                 return
             dataset_file = materialize_gcs_dataset_url(dataset_source)
             self.build_from_file(dataset_file, cache_key=dataset_source)
@@ -971,9 +972,9 @@ class Simulation(CoreSimulation):
         if key is not None:
             _url_dataset_cache[key] = multi_year_dataset
 
+        self.dataset = multi_year_dataset
         self.build_from_multi_year_dataset(multi_year_dataset)
         self._restore_cgt_extension_provenance(multi_year_dataset)
-        self.dataset = multi_year_dataset
 
     def build_from_url(self, url: str) -> None:
         """Build simulation from a HuggingFace dataset URL.
@@ -992,9 +993,9 @@ class Simulation(CoreSimulation):
         cache_key = self._dataset_cache_key(url)
         if cache_key is not None and cache_key in _url_dataset_cache:
             multi_year_dataset = _url_dataset_cache[cache_key]
+            self.dataset = multi_year_dataset
             self.build_from_multi_year_dataset(multi_year_dataset)
             self._restore_cgt_extension_provenance(multi_year_dataset)
-            self.dataset = multi_year_dataset
             return
 
         # Parse HuggingFace URL components
@@ -1077,6 +1078,7 @@ class Simulation(CoreSimulation):
         Args:
             dataset: PolicyEngine Dataset object containing simulation data
         """
+        energy_price_basis = core_dataset_energy_price_basis(dataset)
         data: Dict[str, Dict[str, Union[float, int, str]]] = dataset.load_dataset()
 
         first_variable = data[list(data.keys())[0]]
@@ -1131,13 +1133,13 @@ class Simulation(CoreSimulation):
         self.dataset = dataset
 
         dataset = UKSingleYearDataset.from_simulation(
-            self, fiscal_year=first_time_period
+            self, fiscal_year=first_time_period, energy_price_basis=energy_price_basis
         )
         multi_year_dataset = self._extend_dataset_with_cgt_provenance(dataset)
 
+        self.dataset = multi_year_dataset
         self.build_from_multi_year_dataset(multi_year_dataset)
         self._restore_cgt_extension_provenance(multi_year_dataset)
-        self.dataset = multi_year_dataset
 
     def build_from_single_year_dataset(self, dataset: UKSingleYearDataset) -> None:
         """Build simulation from a single-year UK dataset.
@@ -1148,9 +1150,9 @@ class Simulation(CoreSimulation):
 
         dataset = self._extend_dataset_with_cgt_provenance(dataset)
         _pre_encode_enum_columns(dataset, self.tax_benefit_system)
+        self.dataset = dataset
         self.build_from_multi_year_dataset(dataset)
         self._restore_cgt_extension_provenance(dataset)
-        self.dataset = dataset
 
     def build_from_multi_year_dataset(self, dataset: UKMultiYearDataset) -> None:
         """Build simulation from a multi-year UK dataset.
@@ -1195,6 +1197,8 @@ class Simulation(CoreSimulation):
                         continue
                     self.set_input(variable, year, table[variable])
 
+        # Retain the dataset actually loaded, including the copied base amounts
+        # and price declaration when economic assumptions were disabled.
         self.dataset = dataset
         if self.disable_economic_assumptions:
             # The loader changed these future amounts even for an external

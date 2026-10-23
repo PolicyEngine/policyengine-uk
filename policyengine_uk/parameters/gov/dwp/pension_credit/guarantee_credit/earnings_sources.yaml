@@ -1,10 +1,10 @@
-description: The DWP considers these sources of income as income for Pension Credit.
+description: Pension Credit counts these sources as earnings of the claimant and partner, together with the statutory payments in gov.dwp.pension_credit.guarantee_credit.statutory_payments.
 metadata:
   label: Pension Credit earnings sources
   reference:
-  - title: State Pension Credit Act 2002
+  - title: The State Pension Credit Regulations 2002 reg. 17A (earnings of an employed earner)
     href: https://www.legislation.gov.uk/uksi/2002/1792/regulation/17A
-  - title: State Pension Credit Act 2002
+  - title: The State Pension Credit Regulations 2002 reg. 17B (earnings of a self-employed earner)
     href: https://www.legislation.gov.uk/uksi/2002/1792/regulation/17B
   unit: list
 values:
