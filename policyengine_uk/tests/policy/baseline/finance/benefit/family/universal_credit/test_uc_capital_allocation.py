@@ -1,4 +1,4 @@
-"""The household capital proxy conserves residual capital within each household."""
+"""The financial proxy conserves residual capital after financial observations."""
 
 import numpy as np
 import pytest
@@ -59,7 +59,9 @@ def household_capital_situations(draw):
                 unreported_indices.append(len(benunits))
             benunits[unit_id] = {
                 "members": members,
-                "uc_reported_capital": {2025: reported_capital if has_reported else -1},
+                "benunit_reported_capital": {
+                    2025: reported_capital if has_reported else -1
+                },
             }
             household_members.extend(members)
         households[f"household_{household_index}"] = {

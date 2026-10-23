@@ -1,0 +1,256 @@
+# These are annual model-year anchors, not exact academic-year start dates.
+# The inherited annual formula caps costs at 52 times the weekly maximum.
+# Old rates: EFA 2014-15 p4 and ESFA 2022-23; new rates: ESFA 2023-24 s1.
+- name: 2015 Care to Learn annual history EAST_OF_ENGLAND
+  period: 2015
+  input:
+    people:
+      parent:
+        age: 18
+        is_parent: true
+        current_education: UPPER_SECONDARY
+        is_apprentice: false
+      child:
+        age: 1
+        childcare_expenses: 12_000
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        country: ENGLAND
+        region: EAST_OF_ENGLAND
+  output:
+    care_to_learn: [8_320, 0]
+
+- name: 2015 Care to Learn annual history LONDON
+  period: 2015
+  input:
+    people:
+      parent:
+        age: 18
+        is_parent: true
+        current_education: UPPER_SECONDARY
+        is_apprentice: false
+      child:
+        age: 1
+        childcare_expenses: 12_000
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        country: ENGLAND
+        region: LONDON
+  output:
+    care_to_learn: [9_100, 0]
+
+- name: 2023 Care to Learn annual history EAST_OF_ENGLAND
+  period: 2023
+  input:
+    people:
+      parent:
+        age: 18
+        is_parent: true
+        current_education: UPPER_SECONDARY
+        is_apprentice: false
+      child:
+        age: 1
+        childcare_expenses: 12_000
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        country: ENGLAND
+        region: EAST_OF_ENGLAND
+  output:
+    care_to_learn: [8_320, 0]
+
+- name: 2023 Care to Learn annual history LONDON
+  period: 2023
+  input:
+    people:
+      parent:
+        age: 18
+        is_parent: true
+        current_education: UPPER_SECONDARY
+        is_apprentice: false
+      child:
+        age: 1
+        childcare_expenses: 12_000
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        country: ENGLAND
+        region: LONDON
+  output:
+    care_to_learn: [9_100, 0]
+
+- name: 2024 Care to Learn annual history EAST_OF_ENGLAND
+  period: 2024
+  input:
+    people:
+      parent:
+        age: 18
+        is_parent: true
+        current_education: UPPER_SECONDARY
+        is_apprentice: false
+      child:
+        age: 1
+        childcare_expenses: 12_000
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        country: ENGLAND
+        region: EAST_OF_ENGLAND
+  output:
+    care_to_learn: [9_360, 0]
+
+- name: 2024 Care to Learn annual history LONDON
+  period: 2024
+  input:
+    people:
+      parent:
+        age: 18
+        is_parent: true
+        current_education: UPPER_SECONDARY
+        is_apprentice: false
+      child:
+        age: 1
+        childcare_expenses: 12_000
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        country: ENGLAND
+        region: LONDON
+  output:
+    care_to_learn: [10_140, 0]
+
+- name: 2026 Care to Learn annual history EAST_OF_ENGLAND
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 18
+        is_parent: true
+        current_education: UPPER_SECONDARY
+        is_apprentice: false
+      child:
+        age: 1
+        childcare_expenses: 12_000
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        country: ENGLAND
+        region: EAST_OF_ENGLAND
+  output:
+    care_to_learn: [9_360, 0]
+
+- name: 2026 Care to Learn annual history LONDON
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 18
+        is_parent: true
+        current_education: UPPER_SECONDARY
+        is_apprentice: false
+      child:
+        age: 1
+        childcare_expenses: 12_000
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        country: ENGLAND
+        region: LONDON
+  output:
+    care_to_learn: [10_140, 0]
+
+- name: 2015 Care to Learn annual history LOW_COST
+  period: 2015
+  input:
+    people:
+      parent:
+        age: 18
+        is_parent: true
+        current_education: UPPER_SECONDARY
+        is_apprentice: false
+      child:
+        age: 1
+        childcare_expenses: 3_000
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        country: ENGLAND
+        region: EAST_OF_ENGLAND
+  output:
+    care_to_learn: [3_000, 0]
+
+- name: 2023 Care to Learn annual history SCOTLAND
+  period: 2023
+  input:
+    people:
+      parent:
+        age: 18
+        is_parent: true
+        current_education: UPPER_SECONDARY
+        is_apprentice: false
+      child:
+        age: 1
+        childcare_expenses: 12_000
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        country: SCOTLAND
+        region: SCOTLAND
+  output:
+    care_to_learn: [0, 0]
+
+- name: 2015 Care to Learn annual history NOT_IN_EDUCATION
+  period: 2015
+  input:
+    people:
+      parent:
+        age: 18
+        is_parent: true
+        current_education: NOT_IN_EDUCATION
+        is_apprentice: false
+      child:
+        age: 1
+        childcare_expenses: 12_000
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        country: ENGLAND
+        region: EAST_OF_ENGLAND
+  output:
+    care_to_learn: [0, 0]
+

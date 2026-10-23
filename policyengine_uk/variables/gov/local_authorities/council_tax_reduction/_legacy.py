@@ -10,6 +10,15 @@ def is_full_time_student_non_dep(person, period):
     )
 
 
+def applicant_has_universal_credit(benunit, period):
+    """Whether the Council Tax Reduction applicant has the benefit unit's
+    Universal Credit award. The award belongs to the benefit unit's claimant
+    and partner, so not to a household head who applies alone."""
+    return (benunit("universal_credit", period) > 0) & ~benunit(
+        "council_tax_reduction_head_applies_alone", period
+    )
+
+
 def legacy_council_tax_reduction(
     benunit,
     period,
@@ -25,10 +34,21 @@ def legacy_council_tax_reduction(
     applicable_amount = benunit("council_tax_reduction_applicable_amount", period)
     applicable_income = benunit("council_tax_reduction_applicable_income", period)
     universal_credit = benunit("universal_credit", period)
-    has_uc_award = universal_credit > 0
+    has_uc_award = applicant_has_universal_credit(benunit, period)
     uc_applicable_amount = benunit("uc_maximum_amount", period)
+    # The schemes use "the calculation or estimate of the amount of the
+    # income of the applicant ... made by the Secretary of State for the
+    # purpose of determining the award of universal credit", plus the award
+    # (Council Tax Reduction Schemes (Default Scheme) (England) Regulations
+    # 2012, Sch. para. 37(1) and (3)(a); Kingston upon Thames and Merton
+    # reproduce it, Newham refers to the same calculation, and Westminster's
+    # scheme is based on the Default Scheme). That income is
+    # earned income after tax, National Insurance and pension contributions
+    # and unearned income. The work allowance and taper are steps in the
+    # award (UC Regs 2013 reg. 22), not in the income, so the work allowance
+    # is not deducted here.
     uc_applicable_income = (
-        benunit("uc_earned_income", period)
+        benunit("uc_earned_income_before_work_allowance", period)
         + benunit("uc_unearned_income", period)
         + universal_credit
     )
