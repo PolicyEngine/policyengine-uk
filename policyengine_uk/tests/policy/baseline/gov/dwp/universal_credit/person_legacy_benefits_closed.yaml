@@ -25,7 +25,8 @@
             "claimant",
             "partner",
             "outside"
-          ]
+          ],
+          "would_claim_uc": false
         }
       },
       "households": {

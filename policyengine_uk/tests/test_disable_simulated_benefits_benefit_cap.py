@@ -234,7 +234,11 @@ def test_a_couple_that_is_not_the_claimant_and_partner_reads_the_stored_award():
                 "claimant": {"age": 40, "esa_income_reported": 3_000},
                 "partner": {"age": 38, "esa_income_reported": 2_000},
             },
-            "benunits": {"couple": {"members": ["claimant", "partner"]}},
+            # Not claiming Universal Credit, which would end the couple's
+            # income-related ESA (esa_income_report_closed).
+            "benunits": {
+                "couple": {"members": ["claimant", "partner"], "would_claim_uc": False}
+            },
             "households": {"home": {"members": ["claimant", "partner"]}},
         }
     )
