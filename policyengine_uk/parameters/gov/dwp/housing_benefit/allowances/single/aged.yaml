@@ -27,6 +27,10 @@ metadata:
   period: week
   unit: currency-GBP
   label: Housing Benefit single pension-age personal allowance
+  # Not uprated by September CPI: the allowance is the Pension Credit
+  # guarantee plus a retained Savings Credit amount, projected by component
+  # (create_protected_pension_age_uprating.py): the guarantee by the
+  # statutory earnings floor, the retained amount by September CPI.
   uprating: gov.dwp.housing_benefit.allowances.protected_pension_age_uprating.single
   reference:
     - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006 (SI 2006/214), Schedule 3, paragraph 1(1)(b)

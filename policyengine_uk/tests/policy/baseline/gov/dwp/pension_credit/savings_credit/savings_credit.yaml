@@ -69,3 +69,42 @@
     is_pension_credit_eligible: true
     # 0.6 * (12,000 - 216.7146545 * 52).
     savings_credit: 438.5028
+
+# Explicit SI 2019/37 art.4 saving INPUT CONTRACT, not an inference from current
+# receipt or proof of the separate 2016 Savings Credit continuity conditions.
+# Current 2026 model-rate premises: married couple/default Marriage Allowance
+# of 1,260 gives tax (20,000-12,570-1,260)*0.2=1,234 and income 18,766.
+# Guarantee: 363.25*52=18,889; threshold: 329.75*52=17,147.
+# SC=min(0.6*(18,889-17,147),0.6*(18,766-17,147))=971.40; GC=123.
+# This hand control is not a new external audit of 2026 tax or uprating rates.
+- name: Protected mixed-age couple keeps the computed Savings Credit component
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 80
+        is_claimant_or_partner: true
+        state_pension: 20_000
+      person2:
+        age: 60
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [person1, person2]
+        has_mixed_age_couple_pension_credit_saving: true
+        would_claim_pc: true
+    households:
+      household:
+        members: [person1, person2]
+        country: ENGLAND
+        savings: 0
+  output:
+    income_tax: [1_234, 0]
+    pension_credit_income: 18_766
+    savings_credit_income: 18_766
+    standard_minimum_guarantee: 18_889
+    savings_credit: 971.40
+    guarantee_credit: 123
+    pension_credit_entitlement: 1_094.40
+    pension_credit: 1_094.40

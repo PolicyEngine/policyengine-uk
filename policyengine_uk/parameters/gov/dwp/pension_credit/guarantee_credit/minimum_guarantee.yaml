@@ -27,6 +27,10 @@ SINGLE:
             href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2025-to-2026/benefit-and-pension-rates-2025-to-2026
     2026-04-01: 238
   metadata:
+    # Not uprated by September CPI: the standard minimum guarantee is reviewed
+    # against earnings under Social Security Administration Act 1992 s150A(1)(d)
+    # (4.8% in April 2026, written statement HCWS1101), so it is projected by
+    # the non-negative statutory earnings floor.
     uprating: gov.economic_assumptions.indices.statutory_earnings_floor
 COUPLE:
   values:
@@ -52,6 +56,10 @@ COUPLE:
             href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2025-to-2026/benefit-and-pension-rates-2025-to-2026
     2026-04-01: 363.25
   metadata:
+    # Not uprated by September CPI: the standard minimum guarantee is reviewed
+    # against earnings under Social Security Administration Act 1992 s150A(1)(d)
+    # (4.8% in April 2026, written statement HCWS1101), so it is projected by
+    # the non-negative statutory earnings floor.
     uprating: gov.economic_assumptions.indices.statutory_earnings_floor
 metadata:
   period: week

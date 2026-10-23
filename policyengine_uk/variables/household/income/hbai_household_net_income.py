@@ -9,7 +9,10 @@ HBAI_HOUSEHOLD_NET_INCOME_ADDS = [
     "savings_interest_income",
     "dividend_income",
     "miscellaneous_income",
-    "property_income",
+    # Landlords' profit after mortgage interest: HBAI uses FRS rent from
+    # property, reported after the mortgage payments and loan interest on
+    # show card K6. property_income is before those finance costs.
+    "property_income_after_finance_costs",
     "private_pension_income",
     "private_transfer_income",
     "maintenance_income",

@@ -4,7 +4,7 @@ import logging
 from collections import OrderedDict
 from dataclasses import replace
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 
 # PolicyEngine core imports
 from policyengine_core.parameters import Parameter, ParameterNode
@@ -85,7 +85,24 @@ from policyengine_uk.utils.parameters import (
     convert_to_fiscal_year_parameters,
 )
 
+from policyengine_uk.utils.ni_parameter_scales import (
+    LegacyNIParameter,
+    canonical_descendants,
+    canonical_ni_processing,
+    validate_ni_scale_compatibility,
+    canonical_ni_uprating_references,
+    canonicalize_ni_parameter_path,
+)
+
 logger = logging.getLogger(__name__)
+
+
+def _install_parameters(system, parameters: ParameterNode) -> None:
+    # A Core Reform delegates unknown instance methods to its baseline. Keep
+    # this orchestration local and call the public base operation explicitly:
+    # Reform.modify_parameters would also start from the baseline's tree.
+    TaxBenefitSystem.modify_parameters(system, lambda _: parameters)
+
 
 # Module constants
 COUNTRY_DIR = Path(__file__).parent
@@ -209,6 +226,7 @@ def process_parameter_tree(
     written just after the step that generates it (see
     ``_add_generated_parameters``).
     """
+    validate_ni_scale_compatibility(parameters)
     parameters = _add_generated_parameters(
         parameters, generated, unreformed, intermediate_projection
     )
@@ -223,8 +241,10 @@ def process_parameter_tree(
         parameters.add_child("baseline", baseline)
 
     # Apply general parameter operations
-    parameters = propagate_parameter_metadata(parameters)
-    parameters = uprate_parameters(parameters)
+    with canonical_ni_processing(parameters):
+        propagate_parameter_metadata(parameters)
+        with canonical_ni_uprating_references(parameters):
+            uprate_parameters(parameters)
     parameters = backdate_parameters(parameters, BACKDATED_FROM)
     # Prior law's projected path for every parameter a reform can change: the
     # gov tree, before annualisation, and the trees outside it (household),
@@ -274,11 +294,14 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
             super().neutralize_variable(part)
 
     def reset_parameter_caches(self):
-        """Reset all caches in the tax-benefit system."""
-        self._parameters_at_instant_cache = {}
-        for parameter in self.parameters.get_descendants():
-            parameter._at_instant_cache = {}
-        self.parameters._at_instant_cache = {}
+        """Clear dated views through their Core owners, retaining the tree."""
+        validate_ni_scale_compatibility(self.parameters)
+        for node in [self.parameters, *canonical_descendants(self.parameters)]:
+            if isinstance(node, ParameterNode):
+                # The public operation clears this node and its ancestors;
+                # root-only clearing would leave cached descendants behind.
+                node.clear_parent_cache()
+        _install_parameters(self, self.parameters)
 
     def reset_parameters(self) -> None:
         """Reset parameters by reloading from the parameters directory.
@@ -288,7 +311,6 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         them survive the reload. Only a processed tree is kept, and a second
         reset before processing keeps the first one.
         """
-        self._parameters_at_instant_cache = {}
         current = getattr(self, "parameters", None)
         if (
             getattr(self, "_parameters_before_reset", None) is None
@@ -297,7 +319,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         ):
             self._parameters_before_reset = current
         self.load_parameters(self.parameters_dir)
-        self.parameters = add_removed_parameter_aliases(self.parameters)
+        _install_parameters(self, add_removed_parameter_aliases(self.parameters))
 
     def process_parameters(self) -> None:
         """Process and transform parameters with UK-specific adjustments.
@@ -319,7 +341,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         """
         previous = (self.parameters, self._projected_timelines, self._raw_parameters)
         before_reset = getattr(self, "_parameters_before_reset", None)
-        self._parameters_at_instant_cache = {}
+        self.reset_parameter_caches()
         try:
             # Processing changes the tree it is given, so it gets a copy: if
             # it fails, the system keeps the tree it had.
@@ -378,12 +400,12 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
                     sorted(assignments, key=lambda assignment: assignment.order)
                 )
             ]
-            self._parameters_at_instant_cache = {}
+            self.reset_parameter_caches()
             statutory = self._raw_parameters is None
             key = _assignments_key(self.dated_assignments) if statutory else None
             cached = _rebuilt_parameters_cache.get(key) if key is not None else None
             if cached is not None:
-                self.parameters = cached[0].clone()
+                _install_parameters(self, cached[0].clone())
                 # Shared with the memo: read only through the copying
                 # ``projected_timelines`` property.
                 self._projected_timelines = cached[1]
@@ -427,7 +449,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         returned is never this system's own.
         """
         probe = copy.copy(self)
-        probe.parameters = self.parameters.clone()
+        _install_parameters(probe, self.parameters.clone())
         probe.apply_parameter_assignments(assignments)
         return probe.parameters
 
@@ -487,7 +509,8 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
             # reloaded parameters are part of it.
             self._raw_parameters = raw.clone()
         if not assignments:
-            self.parameters, self._projected_timelines = process_parameter_tree(raw)
+            parameters, self._projected_timelines = process_parameter_tree(raw)
+            _install_parameters(self, parameters)
             return
         # Changes to parameters processing generates are written as each is
         # generated; the rest go on the statutory timeline first.
@@ -503,9 +526,10 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         projected = prior_law_projection(on_timeline, unreformed, statutory, generated)
         for assignment in on_timeline:
             write_assignment(raw.get_child(assignment.path), assignment, projected)
-        self.parameters, self._projected_timelines = process_parameter_tree(
+        parameters, self._projected_timelines = process_parameter_tree(
             raw, unreformed, generated=generated
         )
+        _install_parameters(self, parameters)
 
     def _apply_legacy_overrides(self) -> None:
         if self.legacy_overrides:
@@ -513,28 +537,8 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
 
     def __init__(self, capital_gains_projection: CapitalGainsProjection | None = None):
         """Initialize the UK tax-benefit system with entities and parameters."""
-        self._parameters_at_instant_cache: Dict[str, Any] = {}
-        self.variables = {}
+        super().__init__(entities=[Person, BenUnit, Household])
         self.capital_gains_projection = capital_gains_projection
-
-        # Create copies of entity classes to avoid modifying originals
-        person, benunit, household = (
-            copy.copy(Person),
-            copy.copy(BenUnit),
-            copy.copy(Household),
-        )
-
-        # Set up entities
-        self.entities = [person, benunit, household]
-        self.person_entity = person
-        self.group_entities = [benunit, household]
-        self.group_entity_keys = [entity.key for entity in self.group_entities]
-
-        # Link entities to this tax-benefit system
-        for entity in self.entities:
-            entity.set_tax_benefit_system(self)
-
-        self.variable_module_metadata = {}
 
         # Load all variables from the variables directory
         self.add_variables_from_directory(COUNTRY_DIR / "variables")
@@ -563,8 +567,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
             # the full pipeline (saves ~0.5s from convert_to_fiscal_year_parameters).
             # Reforms rebuild the parameters from the statutory tree through
             # apply_parameter_assignments, so they still get the full pipeline.
-            self._parameters_at_instant_cache = {}
-            self.parameters = _processed_parameters_cache.clone()
+            _install_parameters(self, _processed_parameters_cache.clone())
         else:
             self.reset_parameters()
             _statutory_parameters_cache = self.parameters.clone()
@@ -614,6 +617,8 @@ def _leaf_paths(node: ParameterNode, prefix: str = "") -> List[str]:
     paths = []
     for key, child in node.children.items():
         path = f"{prefix}.{key}" if prefix else key
+        if isinstance(child, LegacyNIParameter):
+            continue
         if isinstance(child, Parameter):
             paths.append(path)
         elif isinstance(child, ParameterNode):
@@ -638,7 +643,9 @@ def generated_parameter_defines() -> Callable[[str], bool]:
         _generated_paths_cache = frozenset(
             path
             for path in _leaf_paths(generated)
-            if not statutory(path) and canonicalize_lsr_parameter_path(path) == path
+            if not statutory(path)
+            and canonicalize_ni_parameter_path(canonicalize_lsr_parameter_path(path))
+            == path
         )
     return _generated_paths_cache.__contains__
 

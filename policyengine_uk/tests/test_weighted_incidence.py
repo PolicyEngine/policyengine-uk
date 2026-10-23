@@ -21,8 +21,9 @@ REFORM = {
     "gov.hmrc.business_rates.statistics.revenue.NORTHERN_IRELAND": {YEAR: 0},
     "gov.hmrc.stamp_duty.statistics.residential.corporate.revenue": {YEAR: 20},
     "gov.hmrc.stamp_duty.statistics.non_residential.corporate.revenue": {YEAR: 30},
-    # Isolate incidence from the separate expected property-purchase charge.
-    "gov.hmrc.stamp_duty.abolish": {YEAR: True},
+    # No household buys property, so expected_sdlt is zero and household_tax
+    # holds corporate SDLT once, through corporate_sdlt. Abolishing SDLT would
+    # zero corporate SDLT too (#2159).
     "gov.contrib.policyengine.budget.consumer_incident_tax_change": {YEAR: 0.000007},
 }
 

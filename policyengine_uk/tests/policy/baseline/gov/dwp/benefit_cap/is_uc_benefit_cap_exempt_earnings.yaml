@@ -1,0 +1,229 @@
+# Universal Credit benefit cap earnings exception, Universal Credit
+# Regulations 2013 reg. 82.
+# https://www.legislation.gov.uk/uksi/2013/376/regulation/82
+# https://www.gov.uk/benefit-cap/when-youre-not-affected
+
+# --- Earnings exception: only tax on the earnings is deducted (reg. 55(5)) ---
+
+- name: Unearned income does not reduce net earnings for the earnings exception
+  # Regulation 55(5) deducts the income tax paid "in respect of the
+  # employment", not the claimant's whole income tax liability. Property
+  # income of 40,000 pushes total income tax to over 8,000, but the tax
+  # attributable to the 13,000 of earnings is under 100, so net earnings stay
+  # well above the 846/month threshold and the exception applies.
+  period: 2025
+  input:
+    people:
+      person:
+        age: 35
+        employment_income: 13_000
+        property_income: 40_000
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    is_uc_benefit_cap_exempt_earnings: true
+    is_uc_benefit_cap_exempt: true
+
+- name: Earnings below the threshold do not except, even with large unearned income
+  # The same unearned income with earnings of 8,000 leaves net earnings below
+  # 846 x 12 = 10,152, so the exception does not apply.
+  period: 2025
+  input:
+    people:
+      person:
+        age: 35
+        employment_income: 8_000
+        property_income: 40_000
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    is_uc_benefit_cap_exempt_earnings: false
+
+- name: A couple's earnings are combined for the earnings exception
+  # Reg. 82(1)(a) applies to "the claimant's and their partner's combined
+  # earned income". Neither partner alone reaches 10,152; together they do.
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 35
+        employment_income: 6_000
+      person2:
+        age: 35
+        employment_income: 6_000
+    benunits:
+      benunit:
+        members: [person1, person2]
+  output:
+    is_uc_benefit_cap_exempt_earnings: true
+
+- name: Relievable pension contributions reduce earned income
+  # Reg. 55(5)(a) deducts relievable pension contributions from employed
+  # earnings, so a contribution that takes net earnings below the threshold
+  # removes the exception.
+  period: 2025
+  input:
+    people:
+      person:
+        age: 35
+        employment_income: 11_000
+        employee_pension_contributions: 1_500
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    is_uc_benefit_cap_exempt_earnings: false
+
+- name: Tax on private pension income does not reduce earned income for the earnings exception
+  # Reg. 55(5)(b) deducts only income tax paid "in respect of the
+  # employment". The 5,000 private pension uses up the personal allowance,
+  # so earned_income_tax (tax on non-savings, non-dividend income) is 546,
+  # but none of it is in respect of the 10,300 of wages. Earned income is
+  # 10,300, which clears 846 x 12 = 10,152, so the cap does not reduce the
+  # family's Universal Credit.
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 35
+        employment_income: 10_300
+        private_pension_income: 5_000
+      child1:
+        age: 5
+      child2:
+        age: 8
+    benunits:
+      benunit:
+        members: [parent, child1, child2]
+    households:
+      household:
+        members: [parent, child1, child2]
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 30_000
+  output:
+    earned_income_tax: [546, 0, 0]
+    uc_income_tax_on_earnings: [0, 0, 0]
+    is_uc_benefit_cap_exempt_earnings: true
+    benefit_cap_reduction: 0
+    universal_credit: 33_876.72
+  absolute_error_margin: 1
+
+- name: One partner's pension contributions do not reduce the other partner's earnings
+  # Reg. 82(1)(a) adds the couple's earned income, and each person's earned
+  # income is their own earnings less their own deductions. The
+  # self-employed partner's 100 of profit less 3,000 of relievable pension
+  # contributions is nil, not minus 2,900 (reg. 57(2), steps 3 and 4).
+  # Combined earned income is 10,600, which clears 881 x 12 = 10,572.
+  period: 2026
+  input:
+    people:
+      employee:
+        age: 35
+        employment_income: 10_600
+      self_employed:
+        age: 35
+        self_employment_income: 100
+        personal_pension_contributions: 3_000
+      child1:
+        age: 5
+      child2:
+        age: 8
+    benunits:
+      benunit:
+        members: [employee, self_employed, child1, child2]
+    households:
+      household:
+        members: [employee, self_employed, child1, child2]
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 30_000
+  output:
+    uc_individual_earned_income_before_mif: [10_600, 0, 0, 0]
+    is_uc_benefit_cap_exempt_earnings: true
+    benefit_cap_reduction: 0
+    universal_credit: 31_074.08
+  absolute_error_margin: 1
+
+- name: Pension contributions after 75 are not deducted from earned income
+  # Contributions paid after the individual reaches 75 are not relievable
+  # (Finance Act 2004 s. 188(3)(a)), so reg. 55(5)(a) does not deduct them.
+  # The mixed-age couple's Universal Credit award is capped like any other
+  # (reg. 3(2)(a); no age exception reaches it), and the older partner's
+  # 11,000 of earnings clears 881 x 12 = 10,572 before and after the
+  # 1,000 contribution.
+  period: 2026
+  input:
+    people:
+      older_partner:
+        age: 76
+        employment_income: 11_000
+        employee_pension_contributions: 1_000
+      younger_partner:
+        age: 40
+      child1:
+        age: 5
+      child2:
+        age: 8
+    benunits:
+      benunit:
+        members: [older_partner, younger_partner, child1, child2]
+    households:
+      household:
+        members: [older_partner, younger_partner, child1, child2]
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 30_000
+  output:
+    is_uc_assessed_claimant: [true, true, false, false]
+    housing_benefit_pension_age_regulations_apply: false
+    uc_individual_earned_income_before_mif: [11_000, 0, 0, 0]
+    is_uc_benefit_cap_exempt_earnings: true
+    benefit_cap_reduction: 0
+    universal_credit: 42_066.40
+  absolute_error_margin: 1
+
+# --- Earnings threshold follows the national living wage, not a fixed 10,152 ---
+
+- name: The 2025-26 earnings threshold is 846 a month
+  period: 2025
+  input:
+    people:
+      person:
+        age: 35
+        employment_income: 10_300
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    # 10,300 clears 846 x 12 = 10,152.
+    is_uc_benefit_cap_exempt_earnings: true
+
+- name: The 2026-27 earnings threshold rises to 881 a month
+  period: 2026
+  input:
+    people:
+      person:
+        age: 35
+        employment_income: 10_300
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    # The same earnings fall short of 881 x 12 = 10,572.
+    is_uc_benefit_cap_exempt_earnings: false
+
+- name: Earnings above the 2026-27 threshold except from the cap
+  period: 2026
+  input:
+    people:
+      person:
+        age: 35
+        employment_income: 10_600
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    is_uc_benefit_cap_exempt_earnings: true
