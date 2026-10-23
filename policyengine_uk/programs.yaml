@@ -566,6 +566,18 @@ programs:
     verified_end_year: 2024
     notes: Temporary program, ended 31 March 2024
 
+  - id: warm_home_discount
+    name: Warm Home Discount
+    full_name: Warm Home Discount (England and Wales)
+    category: Benefits
+    agency: Ofgem
+    status: partial
+    coverage: England and Wales
+    variable: warm_home_discount
+    parameter_prefix: gov.ofgem.warm_home_discount
+    verified_start_year: 2025
+    notes: Supplier-funded bill rebate, outside household_net_income and gov_spending. Benefit-receipt rule from winter 2025-26; Scottish scheme not modelled
+
   # --- Scotland programs ---
   - id: scottish_income_tax
     name: Scottish income tax
