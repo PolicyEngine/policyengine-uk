@@ -99,10 +99,13 @@ variable rather than entity nesting. (The existing `Household` and
 `BenUnit` entities list a `"state"` containing entity, but PolicyEngine UK
 has no `state` entity, so the firm should not copy it.) In policyengine-core
 only people can be members of a group entity, so the owner role holds people.
-Core also places each person in exactly one instance of every group entity: a
-person cannot own two firms, and anyone not listed in a firm is given a
-one-person firm of their own, so the design needs a way to represent people
-who own no firm and incorporated firms with no owner in the data.
+Core also places each person in exactly one instance of every group entity,
+so a person cannot own two firms and everyone belongs to some firm: a
+situation that lists firms gives anyone it leaves out a one-person firm, one
+that lists households but no firms puts all its people in a single firm, and
+a dataset build must assign every person a firm. The design therefore needs
+a way to represent people who own no firm and incorporated firms with no
+owner in the data.
 
 ### Variables
 
