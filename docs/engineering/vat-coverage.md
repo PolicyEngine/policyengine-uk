@@ -56,8 +56,8 @@ the calculation below, whenever the dataset it should match changes.
 | Statutory rates | 20% standard, 5% reduced | `gov.hmrc.vat` |
 
 Model year 2024 is the 2024-25 fiscal year. All dataset totals are weighted
-sums from `Microsimulation`, computed with policyengine-uk at this branch and
-policyengine-core 3.33.2.
+sums from `Microsimulation`, computed with policyengine-uk as of #2187 (before
+energy bills were split out, see below) and policyengine-core 3.33.2.
 
 ### Formula
 
@@ -146,11 +146,54 @@ For Enhanced FRS, download `enhanced_frs_2024_25.h5` from the model repository
 `policyengine/policyengine-uk-data-private` at the release tag (for example
 `revision="1.58.0"`).
 
-## Interaction with an explicit energy VAT base
+## Energy bills are not grossed up
 
-A domestic fuel and power VAT base built from `electricity_consumption` and
-`gas_consumption` (PolicyEngine/policyengine-uk#2166) changes what the survey
-coverage applies to. If those energy inputs are already calibrated to an
-aggregate, they should not be divided by the survey coverage again, and the
-reconciled energy part of `reduced_rate_vat_consumption` should come out of the
-base used to derive it.
+VAT on domestic electricity and gas is charged on each household's own bills
+(`domestic_energy_vat`, PolicyEngine/policyengine-uk#2166), and the ONS domestic
+fuel and power share of spending comes out of the generic reduced-rate share.
+Those bills are calibrated to national energy use (NEED), and households bear
+VAT on them in full, so neither factor applies to them:
+
+```
+vat = (standard rate x full_rate_vat_consumption
+       + reduced rate x reduced_rate_vat_consumption)
+      / (survey_consumption_coverage x household_share_of_receipts)
+      + domestic_energy_vat
+```
+
+The electricity and gas inputs are priced including 5% VAT by the data build
+(Microcosm UK at DESNZ Quarterly Energy Prices average prices paid; the legacy
+Enhanced FRS at Ofgem price cap unit rates), so `domestic_energy_vat` charges the statutory rates on the
+input divided by 1.05. The divisor is the fixed price-basis parameter
+`gov.simulation.vat.energy_input_price_basis_rate`, not the statutory reduced
+rate, so a reform to a VAT rate leaves the VAT-exclusive base unchanged.
+
+Dividing energy VAT by the household share as well would put part of
+government, charity and exempt-business VAT on electricity bills, and a zero
+rate on domestic electricity would then cost 1/0.7 times the VAT households
+actually pay on it.
+
+With energy split out, the coverage is derived against receipts net of energy
+VAT: coverage = pre-scaling non-energy VAT / (0.7 x (receipts - energy VAT)).
+
+On the same inputs as the derivation above:
+
+| Dataset | Year | Pre-scaling non-energy VAT | Energy-bill VAT | OBR VAT receipts | Survey coverage |
+|---|---|---|---|---|---|
+| Microcosm UK 2024-25 (`f9d1922c`) | 2024-25 | £79.23bn | £1.99bn | £171.0bn (outturn) | 0.670 |
+| Microcosm UK 2024-25 (`f9d1922c`) | 2025-26 | £82.51bn | £2.01bn | £180.2bn | 0.662 |
+| Microcosm UK 2024-25 (`f9d1922c`) | 2026-27 | £84.73bn | £1.40bn | £187.7bn | 0.650 |
+| Enhanced FRS 2024-25, uk-data 1.56.16 | 2024-25 | £109.39bn | £2.35bn | £171.0bn (outturn) | 0.927 |
+| Enhanced FRS 2024-25, uk-data 1.58.0 | 2024-25 | £114.06bn | £2.44bn | £171.0bn (outturn) | 0.967 |
+
+The pre-scaling non-energy VAT is the standard-rated part alone, since the
+generic reduced-rate base is empty once domestic fuel and power is taken out.
+The Microcosm 2024-25 value rounds to the same 0.67 as the derivation above,
+so the parameter is unchanged, and the bound above still holds (0.650 to 0.670
+by receipts, 0.688 by the ready reckoner). With it, total `vat` on Microcosm
+is within 0.1% of 2024-25 receipts and 3.0% below in 2026-27; on Enhanced FRS
+it is 38% (1.56.16) or 44% (1.58.0) above 2024-25 receipts.
+
+To reproduce, run the snippet above on this version and subtract
+`sim.calculate("domestic_energy_vat", year).sum()` from the receipts before
+dividing.
