@@ -95,7 +95,7 @@ is -£36m to -£173m a year from 2025-26 to 2031-32, at most 0.07% of VAT.
 The parameter takes the Microcosm 2024-25 value, 0.67 (product 0.469), the
 latest outturn year.
 
-With that product, the gross amount against receipts is as below. Current-law `vat + private_school_vat` matches it to within 0.07% (see above):
+With that product, the gross amount against receipts is as below. On the certified Enhanced FRS (policyengine-uk-data 1.58.1), current-law `vat + private_school_vat` matches it to within 0.07% (see above); the other rows weren't checked against that bound:
 
 | Dataset | 2024-25 | 2025-26 | 2026-27 |
 |---|---|---|---|
