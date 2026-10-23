@@ -63,6 +63,13 @@ from typing import Iterable, Mapping, Optional
 
 import numpy as np
 
+from policyengine_uk.utils.supplied_inputs import (
+    SUPPLIED_INPUT_VARIABLES,
+    drop_missing_model_values,
+    drop_missing_supplied_inputs,
+    set_model_value,
+)
+
 from .partition import Partition
 from .privacy import count_text
 
@@ -84,15 +91,66 @@ def discard_formula_results(sim) -> bool:
     return True
 
 
-def snapshot_inputs(sim, variables) -> dict:
-    """Copy the supplied input arrays of ``variables``.
+class _InputSnapshot(dict):
+    """Original arrays with guard-private provenance; mapping entries stay arrays."""
 
-    Formula results are discarded first: a holder's known periods include
-    calculated values, and restoring one of those as an input would freeze
-    it for every later perturbation.
+    def __init__(self, values, *, owner, origins):
+        super().__init__(values)
+        self.owner = owner
+        self.origins = origins
+
+
+def _visible_branches(sim):
+    branches = []
+    branch = sim
+    while branch is not None:
+        if branch.branch_name not in branches:
+            branches.append(branch.branch_name)
+        branch = getattr(branch, "parent_branch", None)
+    if "default" not in branches:
+        branches.append("default")
+    return branches
+
+
+def _capture_input_origins(sim, variables):
+    """Copy actual registered input slots before any synthetic write."""
+    names = set(variables) & SUPPLIED_INPUT_VARIABLES
+    if not names:
+        return {}
+    branches = set(_visible_branches(sim))
+    keys = set(getattr(sim, "_user_input_keys", None) or ())
+    model = getattr(sim, "_model_values", None) or {}
+    origins = {}
+    for name in names:
+        if name not in sim.tax_benefit_system.variables:
+            continue
+        holder = sim.get_holder(name)
+        slots = []
+        for key in keys | set(model):
+            variable, branch, period = key
+            if variable != name or branch not in branches:
+                continue
+            value = holder._get_array_from_storage(period, branch)
+            if value is None:
+                continue
+            marker = model.get(key)
+            is_model = marker is not None and np.array_equal(marker, value)
+            if key in keys or is_model:
+                slots.append((branch, period, np.array(value, copy=True), is_model))
+        origins[name] = tuple(slots)
+    return origins
+
+
+def snapshot_inputs(sim, variables) -> dict:
+    """Copy original input arrays and registered origin/branch placement.
+
+    Formula caches are discarded first. The provenance sidecar is an attribute,
+    not a mapping entry, so existing callers still receive variable/array pairs.
     """
+    variables = tuple(variables)
     discard_formula_results(sim)
-    snapshot = {}
+    origins = _capture_input_origins(sim, variables)
+    snapshot = _InputSnapshot({}, owner=sim, origins=origins)
     for variable in variables:
         if variable not in sim.tax_benefit_system.variables:
             continue
@@ -106,10 +164,59 @@ def snapshot_inputs(sim, variables) -> dict:
     return snapshot
 
 
+def _guard_snapshot(sim, snapshot, variables):
+    if snapshot is None:
+        return snapshot_inputs(sim, variables)
+    if isinstance(snapshot, _InputSnapshot):
+        if snapshot.owner is not sim:
+            raise ValueError("Input snapshot belongs to a different simulation")
+        return snapshot
+    origins = _capture_input_origins(sim, variables)
+    # Plain mappings remain supported when their registered values agree with
+    # actual original storage. Never infer origin from a post-probe cache.
+    for name in set(snapshot) & SUPPLIED_INPUT_VARIABLES:
+        for period, value in snapshot[name]:
+            if not any(
+                saved_period == period and np.array_equal(saved_value, value)
+                for _, saved_period, saved_value, _ in origins.get(name, ())
+            ):
+                raise ValueError("Plain input snapshot has no matching original slot")
+    return _InputSnapshot(snapshot, owner=sim, origins=origins)
+
+
+def _set_guard_value(sim, variable, period, value, touched=None):
+    """A synthetic value is not a new user declaration of a legacy input."""
+    if touched is not None:
+        touched.add(variable)
+    if variable in SUPPLIED_INPUT_VARIABLES:
+        set_model_value(sim, variable, period, value)
+    else:
+        # Keep other UK provenance hooks, including CGT, on their existing path.
+        sim.set_input(variable, period, value)
+
+
 def _restore(sim, variable, snapshot):
-    sim.delete_arrays(variable)
-    for period, values in snapshot.get(variable, []):
-        sim.set_input(variable, period, values)
+    if variable not in SUPPLIED_INPUT_VARIABLES:
+        sim.delete_arrays(variable)
+        for period, values in snapshot.get(variable, []):
+            sim.set_input(variable, period, values)
+        return
+    if not isinstance(snapshot, _InputSnapshot) or snapshot.owner is not sim:
+        raise ValueError("Registered restoration needs its original input snapshot")
+    if variable not in snapshot.origins:
+        raise ValueError("Registered variable is absent from original origin capture")
+    holder = sim.get_holder(variable)
+    # Simulation.delete_arrays would purge visible ancestor/default branches in
+    # this holder too. Only remove the current branch's synthetic slots here.
+    holder.delete_arrays(branch_name=sim.branch_name)
+    drop_missing_supplied_inputs(sim, variable)
+    drop_missing_model_values(sim, variable)
+    for branch, period, value, is_model in snapshot.origins[variable]:
+        if branch == sim.branch_name:
+            if is_model:
+                set_model_value(sim, variable, period, value)
+            else:
+                sim.set_input(variable, period, value)
 
 
 def _months(year):
@@ -304,7 +411,9 @@ def judge_total(
     }
 
 
-def _perturb(sim, variable, year, baseline, added, monthly, hold=(), held_at=None):
+def _perturb(
+    sim, variable, year, baseline, added, monthly, hold=(), held_at=None, touched=None
+):
     """Add ``added`` to ``variable``, holding each of ``hold`` fixed.
 
     Held variables keep their values in ``held_at`` (by default the
@@ -314,16 +423,18 @@ def _perturb(sim, variable, year, baseline, added, monthly, hold=(), held_at=Non
     discard_formula_results(sim)
     if monthly:
         for month, values in baseline[variable]:
-            sim.set_input(variable, month, values + added / 12)
+            _set_guard_value(sim, variable, month, values + added / 12, touched=touched)
     else:
-        sim.set_input(variable, year, baseline[variable] + added)
+        _set_guard_value(
+            sim, variable, year, baseline[variable] + added, touched=touched
+        )
     held_at = baseline if held_at is None else held_at
     for held in hold:
         if isinstance(held_at[held], list):
             for month, values in held_at[held]:
-                sim.set_input(held, month, values)
+                _set_guard_value(sim, held, month, values, touched=touched)
         else:
-            sim.set_input(held, year, held_at[held])
+            _set_guard_value(sim, held, year, held_at[held], touched=touched)
 
 
 def _capture(sim, variables, year, layout) -> dict:
@@ -392,7 +503,7 @@ def counted_once(
             "status": "skipped",
             "reason": "this policyengine-core has no way to discard formula results",
         }
-    snapshot = snapshot or {}
+    snapshot = _guard_snapshot(sim, snapshot, partition.component_variables())
     active = set(active)
     definitions = sim.tax_benefit_system.variables
     totals = [t for t in partition.totals if partition.heads_in(t, active)]
@@ -417,274 +528,309 @@ def counted_once(
     head_by_variable = {h.variable: h for h in partition.heads}
     selected = None if variables_to_check is None else set(variables_to_check)
     results, double_count_results = [], []
-    for variable in partition.component_variables():
-        if selected is not None and variable not in selected:
-            continue
-        definition = definitions[variable]
-        entity = definition.entity.key
-        in_totals = [t for t in totals if variable in partition.components(t, active)]
-        record = {
-            "variable": variable,
-            "totals": in_totals,
-            "coefficients": {},
-            "model_coefficients": {},
-            "responses": {},
-            "problems": [],
-            "mediated": [],
-            "units": 0,
-            "status": "pass",
-            "detail": "",
-        }
-        if definition.value_type is not float:
-            record.update(status="skipped", detail="not a money variable")
-            results.append(record)
-            continue
-        monthly = definition.definition_period == "month"
-        year_values = (
-            sum(values for _, values in baseline[variable])
-            if monthly
-            else baseline[variable]
-        )
-        nonzero = year_values != 0
-        zero_baseline = not bool(nonzero.any())
-        mask = np.ones_like(nonzero) if zero_baseline else nonzero
-        added = mask.astype(np.float64)
-        expected = _household(sim, added, entity)
-        # Perturbed units in households with weight: a zero-weight record
-        # adds nothing to any published figure.
-        record["units"] = int(round(float(np.sum(expected[hw > 0]))))
-        if not float(np.sum(hw * expected)) > 0:
-            record.update(
-                status="skipped",
-                detail="non-zero only in households with no weight",
-            )
-            results.append(record)
-            continue
-        own = declared[variable].contained_in if variable in declared else variable
-        own_head = head_by_variable[own]
-        needed = list(dict.fromkeys(v for t in in_totals for v in heads_of[t]))
-        readers_of = {
-            total: [
-                v for v in heads_of[total] if own_head.id in head_by_variable[v].reads
+    touched = set()
+    try:
+        for variable in partition.component_variables():
+            if selected is not None and variable not in selected:
+                continue
+            definition = definitions[variable]
+            entity = definition.entity.key
+            in_totals = [
+                t for t in totals if variable in partition.components(t, active)
             ]
-            for total in in_totals
-        }
-
-        _perturb(sim, variable, year, baseline, added, monthly)
-        heads1 = _head_arrays(sim, year, needed)
-        model1 = {
-            t: _raw(sim, t, year).astype(np.float64) for t in in_totals if t in model0
-        }
-        # A head that may respond (a declared reader, or any benefit when the
-        # component was zero for everyone) is checked for containment at a
-        # second point, which tells a slope of 1 from a step.
-        may_respond = {
-            v
-            for total in in_totals
-            for v in heads_of[total]
-            if v != own
-            and (
-                v in readers_of[total]
-                or (zero_baseline and not partition.is_tax_total(total))
-            )
-        }
-        heads2 = None
-        if may_respond:
-            _perturb(sim, variable, year, baseline, 2 * added, monthly)
-            heads2 = _head_arrays(sim, year, sorted(may_respond))
-        problems, screens = [], []
-        for total in in_totals:
-            verdict = judge_total(
-                total=total,
-                is_tax=partition.is_tax_total(total),
-                component=variable,
-                own_variable=own,
-                declared_double_count=variable in declared
-                and total in declared[variable].totals,
-                zero_baseline=zero_baseline,
-                weights=hw,
-                expected=expected,
-                head_changes={v: heads1[v] - heads0[v] for v in heads_of[total]},
-                head_scales={v: heads0[v] for v in heads_of[total]},
-                model_change=(
-                    model1[total] - model0[total] if total in model1 else None
-                ),
-                model_scale=model0.get(total),
-                allowed_readers=readers_of[total],
-                second_changes=None
-                if heads2 is None
-                else {v: heads2[v] - heads0[v] for v in heads2},
-            )
-            record["coefficients"][total] = verdict["coefficient"]
-            if verdict["model_coefficient"] is not None:
-                record["model_coefficients"][total] = verdict["model_coefficient"]
-            record["responses"][total] = {
-                v: r for v, r in verdict["responses"].items() if abs(r) > tolerance
+            record = {
+                "variable": variable,
+                "totals": in_totals,
+                "coefficients": {},
+                "model_coefficients": {},
+                "responses": {},
+                "problems": [],
+                "mediated": [],
+                "units": 0,
+                "status": "pass",
+                "detail": "",
             }
-            problems += verdict["problems"]
-            screens += verdict["screens"]
-            # A declared double count whose container no longer moves is
-            # reported once, as a stale declaration, below.
-            if verdict["own_problem"] and variable not in declared:
-                problems.append(verdict["own_problem"])
-        # Measure each head that broke a rule again with every other head
-        # held at its baseline value: a response carried by another head
-        # (the head reading that head's change) is not containment.
-        mediated = []
-        perturbed_units = expected > 0
-        for head in dict.fromkeys(
-            [p["head"] for p in problems if p["kind"] in DIRECT_KINDS]
-            + [screen["head"] for screen in screens]
-        ):
-            held = [v for v in all_heads if v not in (variable, own, head)]
-            _perturb(sim, variable, year, baseline, added, monthly, hold=held)
-            first = _head_arrays(sim, year, [head])[head] - heads0[head]
-            second = None
-            if any(
-                p["head"] == head and p["kind"] == "contains"
-                for p in problems + screens
-            ):
-                _perturb(sim, variable, year, baseline, 2 * added, monthly, hold=held)
-                second = _head_arrays(sim, year, [head])[head] - heads0[head]
-            for v in held:
-                _restore(sim, v, snapshot)
-            # Second test: hold the other heads at their values after the
-            # first point, and move the component on to the second. A head
-            # gated by another head (h = c * (b > 0), with b a passport on c)
-            # keeps its own slope here, though holding b at its baseline
-            # switched it off above.
-            _perturb(sim, variable, year, baseline, added, monthly)
-            at_first = _capture(sim, held, year, baseline)
-            head_first = _head_arrays(sim, year, [head])[head]
-            _perturb(
-                sim,
-                variable,
-                year,
-                baseline,
-                2 * added,
-                monthly,
-                hold=held,
-                held_at=at_first,
+            if definition.value_type is not float:
+                record.update(status="skipped", detail="not a money variable")
+                results.append(record)
+                continue
+            monthly = definition.definition_period == "month"
+            year_values = (
+                sum(values for _, values in baseline[variable])
+                if monthly
+                else baseline[variable]
             )
-            slope_held = _head_arrays(sim, year, [head])[head] - head_first
-            for v in held:
-                _restore(sim, v, snapshot)
-            slack = _slack(heads0[head])
-            kept = []
-            for p in problems:
-                if p["head"] != head or p["kind"] not in DIRECT_KINDS:
-                    kept.append(p)
-                    continue
-                direct = still_breaks(
-                    p["kind"], p["where"], expected, slack, first, second
-                ) | breaks_on_slope(p["kind"], p["where"], expected, slack, slope_held)
-                cleared = p["where"] & ~direct
-                if cleared.any():
-                    # The other heads that moved there: candidates for the
-                    # route, not each shown to carry it.
-                    via = [
-                        v
-                        for v in needed
-                        if v not in (variable, own, head)
-                        and bool(
-                            (
-                                np.abs(heads1[v] - heads0[v])[cleared]
-                                > _slack(heads0[v])[cleared]
-                            ).any()
-                        )
-                    ]
-                    mediated.append(
-                        {
-                            "total": p["total"],
-                            "head": head,
-                            "kind": p["kind"],
-                            "households": int(np.count_nonzero(cleared & (hw > 0))),
-                            "via": via,
-                        }
+            nonzero = year_values != 0
+            zero_baseline = not bool(nonzero.any())
+            mask = np.ones_like(nonzero) if zero_baseline else nonzero
+            added = mask.astype(np.float64)
+            expected = _household(sim, added, entity)
+            # Perturbed units in households with weight: a zero-weight record
+            # adds nothing to any published figure.
+            record["units"] = int(round(float(np.sum(expected[hw > 0]))))
+            if not float(np.sum(hw * expected)) > 0:
+                record.update(
+                    status="skipped",
+                    detail="non-zero only in households with no weight",
+                )
+                results.append(record)
+                continue
+            own = declared[variable].contained_in if variable in declared else variable
+            own_head = head_by_variable[own]
+            needed = list(dict.fromkeys(v for t in in_totals for v in heads_of[t]))
+            readers_of = {
+                total: [
+                    v
+                    for v in heads_of[total]
+                    if own_head.id in head_by_variable[v].reads
+                ]
+                for total in in_totals
+            }
+
+            _perturb(sim, variable, year, baseline, added, monthly, touched=touched)
+            heads1 = _head_arrays(sim, year, needed)
+            model1 = {
+                t: _raw(sim, t, year).astype(np.float64)
+                for t in in_totals
+                if t in model0
+            }
+            # A head that may respond (a declared reader, or any benefit when the
+            # component was zero for everyone) is checked for containment at a
+            # second point, which tells a slope of 1 from a step.
+            may_respond = {
+                v
+                for total in in_totals
+                for v in heads_of[total]
+                if v != own
+                and (
+                    v in readers_of[total]
+                    or (zero_baseline and not partition.is_tax_total(total))
+                )
+            }
+            heads2 = None
+            if may_respond:
+                _perturb(
+                    sim, variable, year, baseline, 2 * added, monthly, touched=touched
+                )
+                heads2 = _head_arrays(sim, year, sorted(may_respond))
+            problems, screens = [], []
+            for total in in_totals:
+                verdict = judge_total(
+                    total=total,
+                    is_tax=partition.is_tax_total(total),
+                    component=variable,
+                    own_variable=own,
+                    declared_double_count=variable in declared
+                    and total in declared[variable].totals,
+                    zero_baseline=zero_baseline,
+                    weights=hw,
+                    expected=expected,
+                    head_changes={v: heads1[v] - heads0[v] for v in heads_of[total]},
+                    head_scales={v: heads0[v] for v in heads_of[total]},
+                    model_change=(
+                        model1[total] - model0[total] if total in model1 else None
+                    ),
+                    model_scale=model0.get(total),
+                    allowed_readers=readers_of[total],
+                    second_changes=None
+                    if heads2 is None
+                    else {v: heads2[v] - heads0[v] for v in heads2},
+                )
+                record["coefficients"][total] = verdict["coefficient"]
+                if verdict["model_coefficient"] is not None:
+                    record["model_coefficients"][total] = verdict["model_coefficient"]
+                record["responses"][total] = {
+                    v: r for v, r in verdict["responses"].items() if abs(r) > tolerance
+                }
+                problems += verdict["problems"]
+                screens += verdict["screens"]
+                # A declared double count whose container no longer moves is
+                # reported once, as a stale declaration, below.
+                if verdict["own_problem"] and variable not in declared:
+                    problems.append(verdict["own_problem"])
+            # Measure each head that broke a rule again with every other head
+            # held at its baseline value: a response carried by another head
+            # (the head reading that head's change) is not containment.
+            mediated = []
+            perturbed_units = expected > 0
+            for head in dict.fromkeys(
+                [p["head"] for p in problems if p["kind"] in DIRECT_KINDS]
+                + [screen["head"] for screen in screens]
+            ):
+                held = [v for v in all_heads if v not in (variable, own, head)]
+                _perturb(
+                    sim,
+                    variable,
+                    year,
+                    baseline,
+                    added,
+                    monthly,
+                    hold=held,
+                    touched=touched,
+                )
+                first = _head_arrays(sim, year, [head])[head] - heads0[head]
+                second = None
+                if any(
+                    p["head"] == head and p["kind"] == "contains"
+                    for p in problems + screens
+                ):
+                    _perturb(
+                        sim,
+                        variable,
+                        year,
+                        baseline,
+                        2 * added,
+                        monthly,
+                        hold=held,
+                        touched=touched,
                     )
-                if direct.any():
+                    second = _head_arrays(sim, year, [head])[head] - heads0[head]
+                for v in held:
+                    _restore(sim, v, snapshot)
+                # Second test: hold the other heads at their values after the
+                # first point, and move the component on to the second. A head
+                # gated by another head (h = c * (b > 0), with b a passport on c)
+                # keeps its own slope here, though holding b at its baseline
+                # switched it off above.
+                _perturb(sim, variable, year, baseline, added, monthly, touched=touched)
+                at_first = _capture(sim, held, year, baseline)
+                head_first = _head_arrays(sim, year, [head])[head]
+                _perturb(
+                    sim,
+                    variable,
+                    year,
+                    baseline,
+                    2 * added,
+                    monthly,
+                    hold=held,
+                    held_at=at_first,
+                    touched=touched,
+                )
+                slope_held = _head_arrays(sim, year, [head])[head] - head_first
+                for v in held:
+                    _restore(sim, v, snapshot)
+                slack = _slack(heads0[head])
+                kept = []
+                for p in problems:
+                    if p["head"] != head or p["kind"] not in DIRECT_KINDS:
+                        kept.append(p)
+                        continue
+                    direct = still_breaks(
+                        p["kind"], p["where"], expected, slack, first, second
+                    ) | breaks_on_slope(
+                        p["kind"], p["where"], expected, slack, slope_held
+                    )
+                    cleared = p["where"] & ~direct
+                    if cleared.any():
+                        # The other heads that moved there: candidates for the
+                        # route, not each shown to carry it.
+                        via = [
+                            v
+                            for v in needed
+                            if v not in (variable, own, head)
+                            and bool(
+                                (
+                                    np.abs(heads1[v] - heads0[v])[cleared]
+                                    > _slack(heads0[v])[cleared]
+                                ).any()
+                            )
+                        ]
+                        mediated.append(
+                            {
+                                "total": p["total"],
+                                "head": head,
+                                "kind": p["kind"],
+                                "households": int(np.count_nonzero(cleared & (hw > 0))),
+                                "via": via,
+                            }
+                        )
+                    if direct.any():
+                        kept.append(
+                            _problem(
+                                p["total"],
+                                head,
+                                p["kind"],
+                                direct,
+                                p["text"],
+                                hw,
+                                perturbed_units,
+                            )
+                        )
+                # A linear response that was not one for one may hide a
+                # containment that another head's response added to.
+                for screen in screens:
+                    if screen["head"] != head:
+                        continue
+                    direct = still_breaks(
+                        "contains", screen["where"], expected, slack, first, second
+                    ) | breaks_on_slope(
+                        "contains", screen["where"], expected, slack, slope_held
+                    )
+                    if not direct.any():
+                        continue
+                    same = next(
+                        (
+                            k
+                            for k in kept
+                            if (k["total"], k["head"], k["kind"])
+                            == (screen["total"], head, "contains")
+                        ),
+                        None,
+                    )
+                    if same is not None:
+                        kept.remove(same)
+                        direct = direct | same["where"]
                     kept.append(
                         _problem(
-                            p["total"],
+                            screen["total"],
                             head,
-                            p["kind"],
+                            "contains",
                             direct,
-                            p["text"],
+                            screen["text"],
                             hw,
                             perturbed_units,
                         )
                     )
-            # A linear response that was not one for one may hide a
-            # containment that another head's response added to.
-            for screen in screens:
-                if screen["head"] != head:
-                    continue
-                direct = still_breaks(
-                    "contains", screen["where"], expected, slack, first, second
-                ) | breaks_on_slope(
-                    "contains", screen["where"], expected, slack, slope_held
+                problems = kept
+            problems = [
+                {k: v for k, v in p.items() if k not in ("where", "text")}
+                for p in problems
+            ]
+            record["mediated"] = mediated
+            if variable in declared:
+                dc = declared[variable]
+                container_change = heads1[own] - heads0[own]
+                k = float(np.sum(hw * container_change)) / float(np.sum(hw * expected))
+                present = not bool(
+                    (np.abs(container_change - expected) > _slack(heads0[own])).any()
                 )
-                if not direct.any():
-                    continue
-                same = next(
-                    (
-                        k
-                        for k in kept
-                        if (k["total"], k["head"], k["kind"])
-                        == (screen["total"], head, "contains")
-                    ),
-                    None,
+                double_count_results.append(
+                    {
+                        "variable": variable,
+                        "contained_in": dc.contained_in,
+                        "coefficient": k,
+                        "issue": dc.issue,
+                        "status": "pass" if present else "fail",
+                        "detail": ""
+                        if present
+                        else (
+                            f"{dc.contained_in} moves by {k:.4f} per unit of {variable}: "
+                            "the model no longer counts it twice, so remove the "
+                            "declaration and give it its own head"
+                        ),
+                    }
                 )
-                if same is not None:
-                    kept.remove(same)
-                    direct = direct | same["where"]
-                kept.append(
-                    _problem(
-                        screen["total"],
-                        head,
-                        "contains",
-                        direct,
-                        screen["text"],
-                        hw,
-                        perturbed_units,
-                    )
+            if problems:
+                record.update(
+                    status="fail",
+                    problems=problems,
+                    detail="; ".join(p["message"] for p in problems),
                 )
-            problems = kept
-        problems = [
-            {k: v for k, v in p.items() if k not in ("where", "text")} for p in problems
-        ]
-        record["mediated"] = mediated
-        if variable in declared:
-            dc = declared[variable]
-            container_change = heads1[own] - heads0[own]
-            k = float(np.sum(hw * container_change)) / float(np.sum(hw * expected))
-            present = not bool(
-                (np.abs(container_change - expected) > _slack(heads0[own])).any()
-            )
-            double_count_results.append(
-                {
-                    "variable": variable,
-                    "contained_in": dc.contained_in,
-                    "coefficient": k,
-                    "issue": dc.issue,
-                    "status": "pass" if present else "fail",
-                    "detail": ""
-                    if present
-                    else (
-                        f"{dc.contained_in} moves by {k:.4f} per unit of {variable}: "
-                        "the model no longer counts it twice, so remove the "
-                        "declaration and give it its own head"
-                    ),
-                }
-            )
-        if problems:
-            record.update(
-                status="fail",
-                problems=problems,
-                detail="; ".join(p["message"] for p in problems),
-            )
-        results.append(record)
-        _restore(sim, variable, snapshot)
+            results.append(record)
+            _restore(sim, variable, snapshot)
+    finally:
+        for variable in sorted(touched):
+            _restore(sim, variable, snapshot)
 
     discard_formula_results(sim)
     heads_again = _head_arrays(sim, year, all_heads)
