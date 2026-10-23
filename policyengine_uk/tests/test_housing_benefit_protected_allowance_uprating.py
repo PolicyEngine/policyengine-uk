@@ -185,3 +185,27 @@ def test_protected_allowances_match_enacted_2025_amounts(allowance_name, weekly_
         _parameters().gov.dwp.housing_benefit.allowances, allowance_name
     ).aged
     assert allowance("2025-04-30") == weekly_amount
+
+
+@pytest.mark.parametrize(
+    ("allowance_name", "relationship"),
+    [("single", "SINGLE"), ("lone_parent", "SINGLE"), ("couple", "COUPLE")],
+)
+def test_later_cohort_allowances_equal_the_guarantee_in_every_year(
+    allowance_name, relationship
+):
+    """The allowances for those reaching State Pension age from April 2021
+    equal the standard minimum guarantee in every enacted year (SI 2006/214
+    Sch 3 para 1(1)(c) and (2)(c)), and project by the same earnings index,
+    so they stay equal."""
+    parameters = _parameters()
+    allowance = getattr(
+        parameters.gov.dwp.housing_benefit.allowances, allowance_name
+    ).aged_from_cutoff
+    guarantee = getattr(
+        parameters.gov.dwp.pension_credit.guarantee_credit.minimum_guarantee,
+        relationship,
+    )
+    for year in range(2021, 2041):
+        instant = f"{year}-04-30"
+        assert allowance(instant) == pytest.approx(guarantee(instant)), year
