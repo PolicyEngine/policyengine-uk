@@ -1,8 +1,5 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.income_tax import (
-    calc_income_tax_with_gift_aid,
-    first_extended_scottish_threshold,
-)
+from policyengine_uk.utils.uc_income_tax import uc_income_tax_on_earnings_slice
 
 
 class uc_income_tax_on_earnings(Variable):
@@ -34,92 +31,4 @@ class uc_income_tax_on_earnings(Variable):
     ]
 
     def formula(person, period, parameters):
-        # Reg. 55(5)(b) deducts income tax paid by the person "in respect of
-        # the employment" and reg. 57(2) step 3 income tax paid "in respect
-        # of any trade". Neither says how to split a person's tax when they
-        # also have other income. Earnings are taken as the lowest slice of
-        # their non-savings income, after the allowances they actually have:
-        # savings and dividends sit above earnings and other non-savings
-        # income (as in ITA 2007 s. 16), property income above the rest of
-        # it (as in s. 16A from 2027-28), and other non-savings income
-        # (private pensions, State Pension, taxable benefits) above
-        # earnings. So tax on other income never comes off earnings. Under RTI, DWP deducts the PAYE
-        # actually taken on the job, which can include tax on a State
-        # Pension coded against it; that is not modelled.
-        p = parameters(period)
-        income_tax = p.gov.hmrc.income_tax
-        # earned_taxable_income is net income less the incomes and
-        # allowances on the exclusions list. Read that list, so a reform
-        # that changes it (for example one that exempts pensions) is
-        # followed here.
-        exclusions = list(income_tax.earned_taxable_income_exclusions)
-        excluded_incomes = [
-            variable
-            for variable in exclusions
-            if variable in income_tax.adjusted_net_income_components
-        ]
-        earnings_components = [
-            "taxable_employment_income",
-            "taxable_self_employment_income",
-            "taxable_miscellaneous_income",
-        ]
-        # Match the gross earnings in uc_individual_earned_income_before_mif.
-        bi = p.gov.contrib.ubi_center.basic_income.interactions
-        if bi.include_in_means_tests and bi.include_in_taxable_income:
-            earnings_components.append("basic_income")
-        earnings = add(
-            person,
-            period,
-            [
-                variable
-                for variable in earnings_components
-                if variable not in exclusions
-            ],
-        )
-        # The income left in earned_taxable_income before allowances. The
-        # part of it above earnings is the person's other non-savings income.
-        income_in_base = person("net_income", period) - add(
-            person, period, excluded_incomes
-        )
-        other_income = max_(0, income_in_base - earnings)
-        taxable_earnings = max_(
-            0, person("earned_taxable_income", period) - other_income
-        )
-        rates = income_tax.rates
-        gross_gift = person("gift_aid_grossed_up", period)
-        tax = where(
-            person("pays_scottish_income_tax", period),
-            calc_income_tax_with_gift_aid(
-                rates.scotland.rates,
-                taxable_earnings,
-                gross_gift,
-                first_extended_scottish_threshold(rates.scotland.rates),
-                len(rates.scotland.rates.thresholds),
-            ),
-            calc_income_tax_with_gift_aid(rates.uk, taxable_earnings, gross_gift),
-        )
-        # Tax reductions (for example the married couple's allowance) come
-        # off the tax on earnings first, as allowances do. So the deduction
-        # never exceeds the income tax the person pays, never includes a
-        # charge such as the High Income Child Benefit Charge, and does not
-        # move when other income absorbs more or less of a reduction. The
-        # exception is the finance-cost reduction, which is given on property
-        # profits and limited by them (ITTOIA 2005 s. 274AA), so it comes off
-        # the tax on property income first. Only a part larger than that tax
-        # (possible where Scottish rates on property income are below the
-        # reduction's rate) comes off the tax on earnings.
-        reductions = add(
-            person,
-            period,
-            [
-                variable
-                for variable in income_tax.income_tax_subtractions
-                if variable != "property_finance_cost_relief"
-            ],
-        )
-        reductions += max_(
-            0,
-            person("property_finance_cost_relief", period)
-            - person("property_income_tax", period),
-        )
-        return max_(0, tax - reductions)
+        return uc_income_tax_on_earnings_slice(person, period, parameters)

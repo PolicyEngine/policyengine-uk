@@ -25,31 +25,69 @@ Outside ``[start, stop]`` a change leaves prior law in force:
 
 - where the timeline states values, they apply on their dates, and the
   value in force at ``stop`` resumes the day after it;
-- where it states none (the parameter's future is projected by uprating or
-  indexation), prior law's projected path applies: the values the parameter
-  takes with every other change in the reform but without its own. That
-  covers both the years between the last stated value and a change that
-  starts after it, and the years after a bounded change.
+- where it states none, what prior law is depends on how the parameter's
+  future is made:
+
+  - a threshold indexed from its own previous year by statute (the
+    personal allowance under Income Tax Act 2007 s57 and the basic rate
+    limit under s21; the NICs secondary threshold, which the model raises by
+    CPI from its own previous amount) resumes indexation from the changed
+    amount, and the years between two changes are indexed from the first.
+    s57(3) Step 1 multiplies "the allowance ... for the previous tax year"
+    and s21(3) Step 1 increases "the basic rate limit for the previous tax
+    year", and freezes are legislated by fixing the amount and disapplying
+    the indexation for named years (Finance Act 2021 s5; earlier, Finance
+    Act 2019 s5), so after a freeze the frozen amount is indexed. Returning
+    to the path the threshold would have taken without the change has no
+    statutory basis. This is the call the Budget CI workstream took under
+    cos d1344 (2026-10-15), with independent review;
+  - the NICs thresholds the model aligns with those (primary threshold and
+    upper earnings limit, lower and upper profits limits) follow them: after
+    a change to the income tax thresholds they align with the resumed path,
+    and after a change to one of them alone they are aligned again. No
+    statute indexes them; the model keeps them aligned, as government policy
+    says they will remain. Uprating such a threshold by CPI from its changed
+    amount instead (the Explanatory Memorandum to SI 2026/231 para 5.1 says
+    they "will be uprated by the September Consumer Prices Index" after
+    2030-31) is the other defensible reading, left with #2430;
+  - an amount uprated from an index (``uprating`` metadata: benefit and
+    pension rates and the like) takes prior law's projected path: the values
+    it takes with every other change in the reform but without its own. That
+    covers both the years between the last stated value and a change that
+    starts after it, and the years after a bounded change. Whether this
+    should instead resume from the changed amount is open (#2430): freezes of
+    uprated amounts were legislated like threshold freezes and uprating then
+    resumed from the frozen amount (Welfare Reform and Work Act 2016 s11),
+    while a period-limited modification reverts to the underlying amount
+    (the 2020 Universal Credit uplift, SI 2020/371 reg 3).
+
+  Each entry a change to an indexed threshold writes carries
+  ``DATED_CHANGE_UNTIL``, so the threshold indexation counts the tax years it
+  covers as stated and indexes or aligns the rest
+  (``policyengine_uk.parameters.gov.hmrc.create_threshold_indexation``).
+
+A change open to the end of 2100 states its value for every year to then,
+so an indexed threshold is held flat under it rather than indexed: that is a
+convention (the key's literal reading), not something ss21 or 57 require. To
+let indexation resume, give the change's last tax year.
 
 ``Parameter.update`` instead restores the last stated value as a new stated
 value, so a one-year change to an uprated parameter froze the next year at
 that value (a UC standard allowance change for 2027-28 gave £424.90 in
 2028-29 instead of the uprated amount) and every later year was uprated from
-it. Whether a statutory amount changed for some years should instead let
-indexation resume from the changed amount, as Income Tax Act 2007 s57 does
-from "the previous tax year", is a separate contract choice; see
-``policyengine_uk.reform_contract``.
+it.
 
 How each route reads its period keys
 ------------------------------------
 
-The routes keep the readings they documented before:
+The routes keep the readings they documented before, except on the
+calendar-year series (starred, and below):
 
 =====================  ========================  =========================  ==========================
 Key                    reform dict               ``parameter_changes``      ``Reform.from_dict``
 =====================  ========================  =========================  ==========================
 ``"start.stop"``       ``[start, stop]``         ``[start, stop]``          ``[start, stop]``
-``"2027"`` or 2027     fiscal year 2027 only     fiscal year 2027 only      from 1 January 2027 on
+``"2027"`` or 2027     fiscal year 2027 only*    fiscal year 2027 only*     from 1 January 2027 on
 ``"2027-04-06"``       one day of the            that one day               from that day on
                        annualised parameter
 ``"year:2027:2"``      calendar years 2027-28    calendar years 2027-28     calendar years 2027-28
@@ -57,18 +95,57 @@ Key                    reform dict               ``parameter_changes``      ``Re
 scalar                 from 1 January 2023 on    2000 to 2099               2000 to 2099
 =====================  ========================  =========================  ==========================
 
+Starred: calendar year 2027 on a calendar-year series (below), where a
+``"2027-01-01"`` key also names calendar year 2027.
+
 "From ... on" holds the value flat to 31 December 2100, as editing the
 annualised parameters did; uprating and indexation do not apply to it.
+
+Calendar-year series
+--------------------
+
+Some parameters hold one value per calendar year, dated 1 January, and are
+read there: the parameters outside ``gov``, which are never annualised and
+which formulas read at 1 January, and the parameters carrying
+``calendar_year_series`` metadata, on themselves or an ancestor node (the
+growth rates in ``gov.economic_assumptions.yoy_growth`` and the indices
+processing builds from them). Processing reads the growth rates at
+1 January: the indices, the forecasts of the statutory uprating inputs, the
+lagged series and the dataset uprating all do. On these parameters the
+reform dict and ``parameter_changes`` read a bare year, and a key naming
+its 1 January (``"2027-01-01"``), as that calendar year, 1 January to
+31 December. The fiscal year from 6 April would reach the next year's value
+instead: a 2027 earnings growth rate keyed ``"2027"`` showed as 2027's but
+moved the 2028 index, the May to July 2028 earnings input and the April
+2029 triple lock.
+
+Generated series
+----------------
+
+Processing generates some parameters from others: the triple lock rate
+(``gov.economic_assumptions.yoy_growth.triple_lock``), the lagged and
+private pension series, the September CPI uprating rate and every index
+under ``gov.economic_assumptions.indices``. A change to one is written onto
+its timeline just after the step that generates it, so the steps after it,
+and uprating, use it: a triple lock rate set for April 2028 uprates the
+State Pension, and a changed index uprates whatever is uprated by it.
+Each route reads its keys as for the statutory parameters. The deprecated
+labour supply aliases (``gov.simulation.labor_supply_responses.*``) are
+copies of ``gov.simulation.labour_supply_responses.*``; a change to one is
+made to the parameter it copies.
+
+Legacy overrides
+----------------
 
 A reform-dict key naming a single day or month keeps its legacy meaning: it
 overrides the annualised parameter on that day or month only, after
 processing. Formulas read an annual parameter at 1 January, so a
 ``"2027-01-01"`` key sets fiscal year 2027 and a ``"2027-04-06"`` key changes
 nothing; ``ReformPeriodWarning`` says so. Use ``"2027-04-06.2100-12-31"``
-for a change from 6 April 2027. A reform-dict path the statutory tree does
-not define (one added by a structural reform, or a generated series such as
-``gov.economic_assumptions.indices.*``) is also applied to the annualised
-parameters, after the structural reforms that come before it. Changes to the
+for a change from 6 April 2027. A reform-dict path that is neither in the
+statutory tree nor generated by processing (one added by a structural
+reform) is also applied to the annualised parameters, after the structural
+reforms that come before it. Changes to the
 annualised parameters always follow the statutory-timeline changes, so a
 reform-dict parameter that mixes single-day keys with other keys gets the
 single-day keys last, whatever their order (``ReformPeriodWarning`` says
@@ -92,7 +169,6 @@ legacy override and dated keys are not annualised again.
 from __future__ import annotations
 
 import datetime
-import logging
 import warnings
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Tuple
@@ -101,7 +177,24 @@ from policyengine_core.parameters import Parameter, ParameterNode, ParameterScal
 from policyengine_core.parameters.parameter_at_instant import ParameterAtInstant
 from policyengine_core.periods import Instant, Period, instant, period
 
-from policyengine_uk.utils.parameters import check_parameter_not_removed
+from policyengine_uk.parameters.gov.hmrc.create_threshold_indexation import (
+    DATED_CHANGE_UNTIL,
+    FILES_LAST_TAX_YEAR,
+    INDEXED_THRESHOLDS,
+    first_tax_year,
+    last_stated_tax_year,
+)
+
+from policyengine_uk.utils.ni_parameter_scales import (
+    LegacyNIParameter,
+    canonical_descendants,
+    canonicalize_ni_parameter_path,
+)
+
+from policyengine_uk.utils.parameters import (
+    BACKDATED_VALUE,
+    check_parameter_not_removed,
+)
 
 # A change "from a date on" holds to the end of this day, as editing the
 # annualised parameters held it indefinitely within the model's horizon.
@@ -114,7 +207,8 @@ EARLIEST = Instant((1, 1, 1))
 # Where process_parameter_tree backdates each parameter's first value to.
 BACKDATED_FROM = "2015-01-01"
 
-logger = logging.getLogger(__name__)
+# Metadata marking a node or parameter whose values are for calendar years.
+CALENDAR_YEAR_SERIES = "calendar_year_series"
 
 REFORM_DICT = "reform_dict"
 PARAMETER_CHANGES = "parameter_changes"
@@ -162,6 +256,43 @@ def uk_fiscal_year_bounds(year: int) -> Tuple[Instant, Instant]:
     return instant(f"{year}-04-06"), instant(f"{year + 1}-04-05")
 
 
+def calendar_year_bounds(year: int) -> Tuple[Instant, Instant]:
+    """1 January to 31 December of ``year``."""
+    return instant(f"{year}-01-01"), instant(f"{year}-12-31")
+
+
+def new_year_day(key: str) -> Optional[int]:
+    """The year of a key naming 1 January of one year (``"2027-01-01"``)."""
+    try:
+        parsed: Period = period(key)
+    except Exception:
+        return None
+    if parsed.unit != "day" or parsed.size != 1:
+        return None
+    start = parsed.start
+    return start.year if (start.month, start.day) == (1, 1) else None
+
+
+def named_year(
+    key: Any, path: str, calendar_years: Optional[Callable[[str], bool]]
+) -> Optional[Tuple[Instant, Instant]]:
+    """The year a key names, as the bounds a change keyed by it covers.
+
+    A bare year names the UK fiscal year from 6 April, except on a
+    parameter whose values are for calendar years (``calendar_years(path)``):
+    there it, or a key naming its 1 January, names that calendar year.
+    """
+    calendar = calendar_years is not None and calendar_years(path)
+    year = bare_year(key)
+    if year is not None:
+        return calendar_year_bounds(year) if calendar else uk_fiscal_year_bounds(year)
+    if calendar and isinstance(key, str):
+        year = new_year_day(key)
+        if year is not None:
+            return calendar_year_bounds(year)
+    return None
+
+
 def bare_year(key: Any) -> Optional[int]:
     """The year a bare-year key names, or None."""
     if isinstance(key, bool):
@@ -205,18 +336,25 @@ def read_reform_dict(
     defines: Callable[[str], bool],
     order_start: int = 0,
     warn: bool = False,
+    calendar_years: Optional[Callable[[str], bool]] = None,
 ) -> Tuple[List[ParameterAssignment], List[LegacyOverride]]:
     """Read a ``Simulation(reform=dict)`` / ``Scenario.from_reform`` dict.
 
-    ``defines(path)`` says whether the statutory parameter tree defines a
-    path. Changes to paths it does not define, and single-day or single-month
-    keys, are returned as legacy overrides of the annualised parameters;
-    ``warn`` warns about single-day keys that change no annual value.
+    ``defines(path)`` says whether a path is written on the statutory
+    timeline: the statutory parameter tree defines it, or processing
+    generates it (then the change is written just after it is generated).
+    Changes to other paths, and single-day or single-month keys, are
+    returned as legacy overrides of the annualised parameters; ``warn``
+    warns about single-day keys that change no annual value.
+    ``calendar_years(path)`` says whether a parameter's values are for
+    calendar years, so that a bare year, or a key naming its 1 January,
+    names that calendar year (see ``named_year``).
     """
     assignments: List[ParameterAssignment] = []
     legacy: List[LegacyOverride] = []
     order = order_start
     for path, spec in reform.items():
+        path = canonicalize_ni_parameter_path(path)
         _check_path(path)
         statutory = defines(path)
         if not isinstance(spec, Mapping):
@@ -232,14 +370,18 @@ def read_reform_dict(
             continue
         for key, value in spec.items():
             text = str(key)
-            year = bare_year(key)
+            year = named_year(key, path, calendar_years if statutory else None)
             if "." in text:
                 start, stop = interval_bounds(text)
             elif year is not None:
-                start, stop = uk_fiscal_year_bounds(year)
+                start, stop = year
             elif is_sub_year(text):
                 if warn:
-                    _warn_sub_year_key(path, text)
+                    _warn_sub_year_key(
+                        path,
+                        text,
+                        calendar_years is not None and calendar_years(path),
+                    )
                 legacy.append(LegacyOverride(path, text, value))
                 continue
             else:
@@ -264,31 +406,36 @@ def read_reform_dict(
 
 
 def _warn(message: str) -> None:
-    # Logged as well: some variable modules switch warnings off when loaded.
-    logger.warning(message)
     warnings.warn(message, ReformPeriodWarning, stacklevel=4)
 
 
-def _warn_sub_year_key(path: str, key: str) -> None:
+def _warn_sub_year_key(path: str, key: str, calendar: bool = False) -> None:
     parsed = period(key)
     if parsed.unit == "day" and str(parsed.start)[5:] == "01-01":
         return
+    kind = "calendar" if calendar else "fiscal"
     _warn(
         f"Reform key '{key}' for {path} overrides the annualised parameter on "
         f"that {parsed.unit} only, and formulas read annual parameters at "
         f"1 January, so it may change nothing. For a change from that date "
-        f"use '{parsed.start}.{FLAT_STOP}'; for one fiscal year use the bare "
+        f"use '{parsed.start}.{FLAT_STOP}'; for one {kind} year use the bare "
         "year."
     )
 
 
 def read_parameter_changes(
-    changes: Mapping[str, Any], order_start: int = 0
+    changes: Mapping[str, Any],
+    order_start: int = 0,
+    calendar_years: Optional[Callable[[str], bool]] = None,
 ) -> List[ParameterAssignment]:
-    """Read ``Scenario(parameter_changes=...)``."""
+    """Read ``Scenario(parameter_changes=...)``.
+
+    ``calendar_years`` is as for ``read_reform_dict``.
+    """
     assignments: List[ParameterAssignment] = []
     order = order_start
     for path, spec in changes.items():
+        path = canonicalize_ni_parameter_path(path)
         _check_path(path)
         if not isinstance(spec, Mapping):
             start, stop = period_bounds(CORE_SCALAR_PERIOD)
@@ -297,11 +444,11 @@ def read_parameter_changes(
             continue
         for key, value in spec.items():
             text = str(key)
-            year = bare_year(key)
+            year = named_year(key, path, calendar_years)
             if "." in text:
                 start, stop = interval_bounds(text)
             elif year is not None:
-                start, stop = uk_fiscal_year_bounds(year)
+                start, stop = year
             else:
                 start, stop = period_bounds(text)
             assignments.append(ParameterAssignment(path, start, stop, value, order))
@@ -324,6 +471,7 @@ def read_reform_from_dict(
     legacy: List[LegacyOverride] = []
     order = order_start
     for path, spec in parameter_values.items():
+        path = canonicalize_ni_parameter_path(path)
         _check_path(path)
         if not defines(path):
             if isinstance(spec, Mapping):
@@ -392,11 +540,307 @@ def apply_legacy_overrides(
             )
 
 
+def legacy_override_update_kwargs(override: LegacyOverride, parameters) -> dict:
+    """The existing annualised-override reading, without changing the tree."""
+    from policyengine_core.reforms.reform import _period_key_update_kwargs
+
+    from policyengine_uk.utils.parameters import uk_fiscal_year_period
+
+    if override.reading == ALL_PERIODS:
+        return {"period": None, "value": override.value}
+    if override.reading == REFORM_FROM_DICT:
+        if override.key is None:
+            return {"period": CORE_SCALAR_PERIOD, "value": override.value}
+        return _period_key_update_kwargs(override.key, override.value)
+    if override.key is None:
+        return {"start": REFORM_DICT_SCALAR_START, "value": override.value}
+    if "." in override.key:
+        start, stop = interval_bounds(override.key)
+        return {"start": start, "stop": stop, "value": override.value}
+    target = parameters.get_child(override.path)
+    return {
+        "period": (
+            uk_fiscal_year_period(override.key)
+            if target.metadata.get("preserve_calendar_dates")
+            else period(override.key)
+        ),
+        "value": override.value,
+    }
+
+
+def legacy_override_bounds(override: LegacyOverride, parameters):
+    """Inclusive dates the annualised override edits (not statutory dates)."""
+    kwargs = legacy_override_update_kwargs(override, parameters)
+    if "period" in kwargs:
+        if kwargs["period"] is None:
+            return EARLIEST, FLAT_STOP
+        parsed = period(kwargs["period"])
+        return parsed.start, parsed.stop
+    return instant(kwargs.get("start") or EARLIEST), instant(
+        kwargs.get("stop") or FLAT_STOP
+    )
+
+
+def validate_annualised_overrides(
+    parameters, overrides, require_annual_value=True, defer_invalid_keys=False
+) -> None:
+    """Validate overrides, optionally deferring Core key errors to rollback."""
+    errors = []
+    for override in overrides:
+        try:
+            target = parameters.get_child(override.path)
+            try:
+                start, stop = legacy_override_bounds(override, parameters)
+            except (ValueError, TypeError, KeyError):
+                # Core leaves from_dict keys unparsed until the atomic
+                # override batch. Keep that rollback path, then report all
+                # bad keys after the batch restores the system.
+                if defer_invalid_keys and override.reading == REFORM_FROM_DICT:
+                    continue
+                raise
+            first_year = start.year + ((start.month, start.day) > (1, 1))
+            if require_annual_value and instant(f"{first_year:04d}-01-01") > stop:
+                raise ValueError("the key contains no 1 January annual value")
+            probe = target.clone()
+            probe.parent = ParameterNode("override_validation", data={})
+            probe.update(**legacy_override_update_kwargs(override, parameters))
+        except Exception as error:
+            errors.append(f"{override.path} (key {override.key!r}): {error}")
+    if errors:
+        raise ValueError("Cannot apply annualised overrides: " + "; ".join(errors))
+
+
+def read_override_reform(changes, reading, defines, calendar_years=None, warn=False):
+    """Read a modifier's reform, naming every path with an invalid key."""
+
+    def read(spec):
+        if reading == REFORM_DICT:
+            return read_reform_dict(
+                spec, defines, warn=warn, calendar_years=calendar_years
+            )
+        return read_reform_from_dict(spec, defines)
+
+    try:
+        return read(changes)
+    except (ValueError, TypeError, KeyError) as original:
+        errors = []
+        for path, spec in changes.items():
+            path = canonicalize_ni_parameter_path(path)
+            entries = spec.items() if isinstance(spec, Mapping) else [(None, spec)]
+            for key, value in entries:
+                try:
+                    read({path: {key: value} if isinstance(spec, Mapping) else value})
+                except (ValueError, TypeError, KeyError) as error:
+                    errors.append(f"{path} (key {key!r}): {error}")
+        raise ValueError(
+            "Cannot read reform overrides: " + "; ".join(errors)
+        ) from original
+
+
+def _assignment_boundaries(assignments):
+    """Instants at which the effective value of a write sequence can change."""
+    return {
+        boundary
+        for entry in assignments
+        for boundary in (entry.start, entry.stop.offset(1, "day"))
+    }
+
+
+def _assignment_sequence_matches(expected, written):
+    """The latest writes on the affected paths are this exact sequence."""
+    paths = {entry.path for entry in expected}
+    history = sorted(
+        (entry for entry in written if entry.path in paths),
+        key=lambda entry: entry.order,
+    )
+
+    def contents(entries):
+        return [(entry.path, entry.start, entry.stop, entry.value) for entry in entries]
+
+    return len(history) >= len(expected) and contents(history[-len(expected) :]) == (
+        contents(expected)
+    )
+
+
+def _overrides_are_effective(overrides, parameters):
+    """Check final values at every boundary, including intervening writes."""
+    assignments = [
+        ParameterAssignment(
+            change.path, *legacy_override_bounds(change, parameters), change.value
+        )
+        for change in overrides
+    ]
+    for path in {entry.path for entry in assignments}:
+        target = parameters.get_child(path)
+        wanted = [entry for entry in assignments if entry.path == path]
+        points = _assignment_boundaries(wanted) | {
+            instant(entry.instant_str) for entry in target.values_list
+        }
+        for point in points:
+            change = next(
+                (
+                    entry
+                    for entry in reversed(wanted)
+                    if entry.start <= point <= entry.stop
+                ),
+                None,
+            )
+            if change is not None and target(point) != change.value:
+                return False
+    return True
+
+
+def _statutory_values_are_current(assignments, system):
+    """Detect later edits without rebuilding the simulation or its system.
+
+    Annualise only the affected leaf's stored projected timeline, using the
+    construction rule. This also detects edits made directly by a modifier,
+    which need not have an entry in the system's override log.
+    """
+    from policyengine_uk.utils.parameters import convert_to_fiscal_year_parameters
+
+    timelines = getattr(system, "_projected_timelines", None) or {}
+    for path in {entry.path for entry in assignments}:
+        if path not in timelines:
+            return False
+        target = system.parameters.get_child(path)
+        expected = target.clone()
+        expected.values_list = list(timelines[path])
+        probe = ParameterNode("effective_reform_probe", data={})
+        probe.add_child("value", expected)
+        annualised = path.startswith("gov.") and not expected.metadata.get(
+            "preserve_calendar_dates", False
+        )
+        if annualised:
+            convert_to_fiscal_year_parameters(probe)
+        wanted = [entry for entry in assignments if entry.path == path]
+        windows = [(entry.start, entry.stop) for entry in wanted]
+        if annualised:
+            for year in range(2015, 2041):
+                sample = instant(f"{year}-04-30")
+                start, stop = uk_fiscal_year_bounds(year)
+                if any(
+                    (entry.start <= stop and start <= entry.stop)
+                    if expected.metadata.get("fiscal_year_blend", False)
+                    else entry.start <= sample <= entry.stop
+                    for entry in wanted
+                ):
+                    windows.append(calendar_year_bounds(year))
+        points = _assignment_boundaries(wanted) | {
+            instant(entry.instant_str)
+            for entry in target.values_list + expected.values_list
+        }
+        if any(
+            target(point) != expected(point)
+            for point in points
+            if any(start <= point <= stop for start, stop in windows)
+        ):
+            return False
+    return True
+
+
+def _reform_writes_are_effective(assignments, legacy, system, written=None):
+    # The two logs do not retain their joint write order. Never infer a
+    # mixed reform's result by replaying one log after the other.
+    if assignments and legacy:
+        return False
+    if written is None:
+        written = getattr(system, "dated_assignments", ())
+    overrides = getattr(system, "legacy_overrides", ())
+    if assignments:
+        paths = {entry.path for entry in assignments}
+        return (
+            not any(entry.path in paths for entry in overrides)
+            and _assignment_sequence_matches(assignments, written)
+            and _statutory_values_are_current(assignments, system)
+        )
+    if legacy:
+        paths = {entry.path for entry in legacy}
+        history = [entry for entry in overrides if entry.path in paths]
+        return (
+            not any(entry.path in paths for entry in written)
+            and len(history) >= len(legacy)
+            and history[-len(legacy) :] == legacy
+            and _overrides_are_effective(legacy, system.parameters)
+        )
+    return True
+
+
+def reform_modifiers_are_effective(dated_reforms, system):
+    """Skip only an exact latest sequence from one write log, still current.
+
+    Mixed statutory/legacy reforms always replay: separate logs cannot prove
+    their joint order. A pure sequence must be the suffix of its log on the
+    affected paths, have no writes in the other log on those paths, and pass
+    the current-value check (including direct parameter edits).
+    """
+    from policyengine_uk.tax_benefit_system import (
+        parameter_reads_calendar_years,
+        reform_parameter_defines,
+    )
+
+    assignments, legacy = [], []
+    try:
+        for dated in dated_reforms:
+            selected, leftovers = read_override_reform(
+                dated.changes,
+                dated.reading,
+                reform_parameter_defines(),
+                parameter_reads_calendar_years(),
+            )
+            assignments.extend(selected)
+            legacy.extend(leftovers)
+        return _reform_writes_are_effective(assignments, legacy, system)
+    except (ValueError, TypeError, KeyError, AttributeError):
+        # Validation on the applying route reports all invalid paths/keys.
+        return False
+
+
+def unwritten_reform_overrides(
+    changes, reading, defines, written, calendar_years, system
+):
+    """Keep legacy changes and statutory writes that are no longer effective.
+
+    Construction handles its own statutory writes before running modifiers.
+    On a built simulation only effective final writes count, including later
+    annualised overrides. Comparing contents survives copied scenario parts.
+    """
+
+    def read(spec, predicate, warn=False):
+        return read_override_reform(spec, reading, predicate, calendar_years, warn)
+
+    assignments, legacy = read(changes, defines, warn=True)
+    if assignments and legacy:
+        _, pending = read(changes, lambda path: False)
+        return pending, bool(pending)
+    overrides = []
+    for path, spec in changes.items():
+        path = canonicalize_ni_parameter_path(path)
+        change = {path: spec}
+        assignments, legacy = read(change, defines)
+        if _reform_writes_are_effective(assignments, legacy, system, written):
+            continue
+        # Replay this path's keys together in their own order: an earlier
+        # outstanding write may supersede a later key that is effective now.
+        _, pending = read(change, lambda path: False)
+        overrides.extend(pending)
+    return overrides, bool(overrides)
+
+
 Timeline = List[ParameterAtInstant]
 
 
-def _entry(name: str, instant_str: str, value: Any) -> ParameterAtInstant:
-    return ParameterAtInstant(name, instant_str, data={"value": value})
+def _entry(
+    name: str, instant_str: str, value: Any, metadata: Optional[dict] = None
+) -> ParameterAtInstant:
+    data = {"value": value}
+    if metadata:
+        data["metadata"] = dict(metadata)
+    return ParameterAtInstant(name, instant_str, data=data)
+
+
+def _dated_change_until(entry: ParameterAtInstant) -> Optional[str]:
+    return (entry.metadata or {}).get(DATED_CHANGE_UNTIL)
 
 
 def _value_in_force(values: Timeline, instant_str: str) -> Any:
@@ -416,8 +860,12 @@ def requires_projection(parameter: Parameter, assignment: ParameterAssignment) -
 
     That is a change starting after the parameter's last stated value, whose
     prior law before it is projected, or a bounded change with no stated
-    value after it, whose prior law after it is projected.
+    value after it, whose prior law after it is projected. Never for an
+    indexed threshold, whose unstated years the threshold indexation fills
+    from the year before.
     """
+    if parameter.name in INDEXED_THRESHOLDS:
+        return False
     last = _last_stated(parameter.values_list)
     if last is None:
         return False
@@ -433,32 +881,51 @@ def write_assignment(
 ) -> None:
     """Write a change onto a parameter's statutory timeline.
 
-    A change starting before the parameter's first stated value first gets
-    that value written at ``BACKDATED_FROM``, as processing would backdate
-    it. Where the change reaches past the parameter's last stated value (see
-    ``requires_projection``), ``projected(name)`` supplies prior law's
+    A change starting on or before the parameter's first stated value
+    records that value (``BACKDATED_VALUE``) for processing to backdate to
+    ``BACKDATED_FROM`` instead of the change's. Where the change reaches past
+    the parameter's last stated value (see ``requires_projection``),
+    ``projected(name)`` supplies prior law's
     projected timeline, whose values after the last stated one are first
     written in as stated values: uprating and indexation extend a timeline
     only from its last stated value, so without them the years between that
     value and the change, or after a bounded change, would lose their
     projection. Then, as ``Parameter.update`` does, entries within the
     change are replaced by its value and the value in force at ``stop`` is
-    restored on the next day unless an entry already starts then.
+    restored on the next day unless an entry already starts then. A change
+    that ends before the first stated value resumes with that value, as
+    processing would backdate it.
+
+    For an indexed threshold the change's entry carries
+    ``DATED_CHANGE_UNTIL`` (its stop), and the value in force at ``stop`` is
+    restored only where a later year is stated: by the parameter files, or by
+    an earlier change that runs past ``stop``. Otherwise the threshold
+    indexation indexes the years after it from the changed amount.
     """
     name = parameter.name
+    indexed = name in INDEXED_THRESHOLDS
+    if indexed and parameter.values_list:
+        # Recorded before the change can replace the files' last value.
+        parameter.metadata.setdefault(
+            FILES_LAST_TAX_YEAR, last_stated_tax_year(parameter)
+        )
     start_str = str(assignment.start)
     stop_str = str(assignment.stop)
     next_str = str(assignment.stop.offset(1, "day"))
     old: Timeline = list(parameter.values_list)
     first = min((entry.instant_str for entry in old), default=None)
-    if first is not None and start_str < first and BACKDATED_FROM < first:
-        # Processing backdates a parameter's first stated value to
-        # BACKDATED_FROM. Written here, it stays prior law for the years
-        # before a change that starts before that first value; otherwise the
-        # change's own value would be backdated, or the years after an early
-        # change left empty.
+    if first is not None and start_str <= first and BACKDATED_FROM < first:
+        # Processing backdates a parameter's earliest value to
+        # BACKDATED_FROM, after the generation steps. A change starting on or
+        # before the first stated value becomes the earliest, so prior law's
+        # first value is recorded for processing to backdate instead; kept
+        # from the first such change, it stays prior law's when another
+        # starts earlier. Writing it at BACKDATED_FROM here would move the
+        # first year the generation steps read (an index's base year).
         earliest = min(old, key=lambda entry: entry.instant_str)
-        old.append(_entry(name, BACKDATED_FROM, earliest.value))
+        if parameter.metadata is None:
+            parameter.metadata = {}
+        parameter.metadata.setdefault(BACKDATED_VALUE, earliest.value)
     path = projected(name) if projected is not None else None
     if path is not None and requires_projection(parameter, assignment):
         last = _last_stated(old)
@@ -472,8 +939,48 @@ def write_assignment(
     earlier = [entry for entry in old if entry.instant_str < start_str]
     resumed: Timeline = []
     if not later or later[-1].instant_str != next_str:
-        resumed.append(_entry(name, next_str, _value_in_force(old, stop_str)))
-    values = later + resumed + [_entry(name, start_str, assignment.value)] + earlier
+        in_force = [entry for entry in old if entry.instant_str <= stop_str]
+        # Before its first stated value a parameter takes that value, as
+        # processing backdates it; resuming with nothing would leave the
+        # years up to that value empty. Where an earlier change starting on
+        # or before it recorded prior law's first value, that is the value
+        # (the first entry is now that change's). A stated null stays null.
+        recorded = parameter.metadata or {}
+        if in_force:
+            resumed_value = in_force[0].value
+        elif BACKDATED_VALUE in recorded:
+            resumed_value = recorded[BACKDATED_VALUE]
+        else:
+            resumed_value = later[-1].value if later else None
+        # An indexed threshold resumes with a stated value only where one
+        # is stated after the change: a later value in the files, a tax
+        # year the files state (their recorded last year, whose value a
+        # change may have replaced), or an earlier change in force at stop
+        # that runs past it.
+        running_until = _dated_change_until(in_force[0]) if in_force else None
+        files_last = (parameter.metadata or {}).get(FILES_LAST_TAX_YEAR)
+        stated_after = (
+            any(
+                entry.instant_str > stop_str and _dated_change_until(entry) is None
+                for entry in later
+            )
+            or (files_last is not None and first_tax_year(next_str) <= files_last)
+            or (running_until is not None and running_until > stop_str)
+        )
+        if not indexed or stated_after:
+            marker = (
+                {DATED_CHANGE_UNTIL: running_until}
+                if indexed and running_until is not None
+                else None
+            )
+            resumed.append(_entry(name, next_str, resumed_value, marker))
+    change_marker = {DATED_CHANGE_UNTIL: stop_str} if indexed else None
+    values = (
+        later
+        + resumed
+        + [_entry(name, start_str, assignment.value, change_marker)]
+        + earlier
+    )
     values.sort(key=lambda entry: entry.instant_str, reverse=True)
     parameter.values_list = values
     if parameter.parent is not None:
@@ -490,7 +997,7 @@ def snapshot_timelines(node: ParameterNode) -> Dict[str, Timeline]:
     """
     return {
         parameter.name: parameter.values_list
-        for parameter in node.get_descendants()
+        for parameter in canonical_descendants(node)
         if isinstance(parameter, Parameter)
     }
 
@@ -518,6 +1025,8 @@ def graft_missing_nodes(
     """
     added = []
     for key, child in source.children.items():
+        if isinstance(child, LegacyNIParameter):
+            continue
         if root and key == "baseline":
             continue
         existing = target.children.get(key)

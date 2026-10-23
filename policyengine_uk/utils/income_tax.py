@@ -1,6 +1,15 @@
 import numpy as np
 
 
+def net_income_from_adjusted_net_income(person, period, adjusted_net_income):
+    """Restore the model's pre-allowance base from supplied s.58 ANI."""
+    return (
+        adjusted_net_income
+        + person("gift_aid_grossed_up", period)
+        + person("pension_contributions_relief", period)
+    )
+
+
 def calc_income_tax_with_gift_aid(
     scale, income, gross_gift, first_extended_threshold=1, last_extended_threshold=3
 ):
