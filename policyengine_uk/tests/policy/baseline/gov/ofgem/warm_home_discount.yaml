@@ -343,3 +343,47 @@
     warm_home_discount: 0
     hbai_household_net_income: 1000
     hbai_household_net_income_ahc: 1000
+
+- name: Universal Credit recipient in England, 2030-31, the last scheme year
+  period: 2030
+  input:
+    people:
+      person:
+        age: 35
+    benunits:
+      benunit:
+        members: [person]
+        pension_credit: 0
+        universal_credit: 1000
+        housing_benefit: 0
+        esa_income: 0
+        jsa_income: 0
+        income_support: 0
+    households:
+      household:
+        members: [person]
+        region: LONDON
+  output:
+    warm_home_discount: 150
+
+- name: No rebate in 2031-32, after the scheme period ends on 31 March 2031
+  period: 2031
+  input:
+    people:
+      person:
+        age: 35
+    benunits:
+      benunit:
+        members: [person]
+        pension_credit: 0
+        universal_credit: 1000
+        housing_benefit: 0
+        esa_income: 0
+        jsa_income: 0
+        income_support: 0
+    households:
+      household:
+        members: [person]
+        region: LONDON
+  output:
+    warm_home_discount: 0
