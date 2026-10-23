@@ -12,11 +12,11 @@ def is_full_time_student_non_dep(person, period):
 
 def applicant_has_universal_credit(benunit, period):
     """Whether the Council Tax Reduction applicant has the benefit unit's
-    Universal Credit award. The award belongs to the benefit unit's claimant
-    and partner, so not to a household head who applies alone."""
-    return (benunit("universal_credit", period) > 0) & ~benunit(
-        "council_tax_reduction_head_applies_alone", period
-    )
+    Universal Credit award (council_tax_reduction_universal_credit_award),
+    including one the benefit cap or deductions reduce to nil. The award
+    belongs to the benefit unit's claimant and partner, so not to a household
+    head who applies alone."""
+    return benunit("council_tax_reduction_universal_credit_award", period)
 
 
 def legacy_council_tax_reduction(
@@ -73,10 +73,20 @@ def legacy_council_tax_reduction(
         - excess_income * ctr.means_test.withdrawal_rate
         - non_dep_deductions,
     )
+    # council_tax_reduction_assessable_capital takes the Universal Credit
+    # assessment for an award of Universal Credit (the default scheme's
+    # para 37(6)), including one the benefit cap or deductions reduce to nil.
+    # Most councils keep the default scheme's disregard of the whole capital of
+    # an applicant on Income Support, income-based JSA or income-related ESA
+    # (its Schedule 10 para 8); each scheme says whether it does.
+    passported_capital_disregarded = (
+        relevant_income_based_benefit
+        & ctr.means_test.disregards_passported_applicants_capital
+    )
     capital = where(
-        has_uc_award,
-        benunit("uc_assessable_capital", period),
-        benunit.household("savings", period),
+        passported_capital_disregarded,
+        0,
+        benunit("council_tax_reduction_assessable_capital", period),
     )
     capital_eligible = capital <= ctr.means_test.capital_limit
     return (

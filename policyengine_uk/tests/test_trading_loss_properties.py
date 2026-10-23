@@ -771,6 +771,13 @@ def test_means_tests_see_the_loss_only_through_tax(units):
         "blind_persons_allowance",
         "marriage_allowance",
         "married_couples_allowance_deduction",
+        # The legacy means tests deduct only the tax on income they count,
+        # and Pension Credit leaves out the tax on uncounted income due
+        # without earnings. Both are recomputed from the tax components, so a
+        # loss that moves interest or dividends between bands would move them
+        # with income_tax held. Hold them as the tax the tests deduct.
+        "legacy_means_test_income_tax",
+        "pension_credit_uncounted_income_tax_without_earnings",
     ]
     tax = {v: values(with_loss, v) for v in deductions}
     # SPC Regs reg 17(11) substitutes CER notional deductions for the tax

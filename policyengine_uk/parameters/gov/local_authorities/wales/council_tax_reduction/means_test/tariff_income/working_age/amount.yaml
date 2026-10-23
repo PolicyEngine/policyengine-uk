@@ -1,0 +1,10 @@
+description: Weekly tariff income the Wales Council Tax Reduction working-age scheme counts for each step of capital, or part of one, above the threshold.
+values:
+  2013-04-01: 1
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Wales Council Tax Reduction working-age weekly tariff income per capital step
+  reference:
+    - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Schedule 6 para. 33
+      href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/33

@@ -430,12 +430,16 @@
     # (12,000 - 4,530 - 1,000 PSA) x 20% = 1,294, giving total tax 1,388.
     # Without wages tax is 1,086 (next case), so employment tax is 302 and
     # net earnings/disregard are 1,040 - 302 = 738, below the 1,040 cap.
-    # PC counts deemed capital income, not interest: 12,000 + 1,040 - 1,388
-    # - 738 = 10,914. HMRC: /apply-tax-free-interest-on-savings/how-much-is-tax-free.
+    # PC counts deemed capital income, not interest, and does not deduct the
+    # 1,086 of tax on the interest that is due without earnings (reg 17(10)(a),
+    # Sch IV para 18); the 302 the wages add stays tax on earnings. So the tax
+    # deducted is 1,388 - 1,086 = 302, and income is 12,000 + 1,040 - 302 -
+    # 738 = 12,000. HMRC: /apply-tax-free-interest-on-savings/how-much-is-tax-free.
     income_tax: 1_388
     pension_credit_employment_income_tax: 302
+    pension_credit_uncounted_income_tax_without_earnings: 1_086
     pension_credit_earnings_disregard: 738
-    pension_credit_income: 10_914
+    pension_credit_income: 12_000
 
 - name: The same claimant with savings and no earnings has the same Pension Credit income.
   period: 2024
@@ -455,8 +459,10 @@
   output:
     income_tax: 1_086
     pension_credit_earnings_disregard: 0
-    # 12,000 - 1,086.
-    pension_credit_income: 10_914
+    # The 1,086 is all tax on the interest, which Pension Credit does not
+    # count, so none of it is deducted: 12,000.
+    pension_credit_uncounted_income_tax_without_earnings: 1_086
+    pension_credit_income: 12_000
 
 - name: Pension contribution relief already available without earnings does not reduce tax attributed to earnings.
   period: 2024

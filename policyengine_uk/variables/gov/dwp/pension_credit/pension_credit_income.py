@@ -65,6 +65,15 @@ class pension_credit_income(Variable):
             )
             * is_claimant_or_partner
         ) - benunit("pension_credit_self_employment_income_tax", period)
+        # Reg 17(10)(a) disregards tax only on income taken into account, and
+        # Schedule IV paragraph 18 disregards actual income from capital. The
+        # tax on earnings is the extra tax the earnings cause, so the tax not
+        # deducted is the tax on uncounted income, and the Step 7 charges,
+        # that the claimant and partner would pay without earnings.
+        tax -= benunit.sum(
+            person("pension_credit_uncounted_income_tax_without_earnings", period)
+            * is_claimant_or_partner
+        )
         pen_con_deduction_rate = pc.income.pension_contributions_deduction
         deductions = tax + pension_contributions * pen_con_deduction_rate
         # Schedule VI earnings disregards (reg. 17(9)).

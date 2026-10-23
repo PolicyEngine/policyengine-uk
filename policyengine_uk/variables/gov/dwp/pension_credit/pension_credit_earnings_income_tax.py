@@ -12,6 +12,14 @@ DECISION = (
 def income_tax_with_inputs_zeroed(simulation, period, variables):
     """Each person's income tax with every person's value of each of
     ``variables`` set to nil, on a branch that is dropped afterwards."""
+    return person_variable_with_inputs_zeroed(
+        simulation, period, variables, "income_tax"
+    )
+
+
+def person_variable_with_inputs_zeroed(simulation, period, variables, output):
+    """Each person's ``output`` with every person's value of each of
+    ``variables`` set to nil, on a branch that is dropped afterwards."""
     name = "pension_credit_without_" + "_and_".join(variables)
     while name in simulation.branches or name == simulation.branch_name:
         name += "_"
@@ -23,7 +31,7 @@ def income_tax_with_inputs_zeroed(simulation, period, variables):
         people = branch.populations["person"]
         for variable in variables:
             branch.set_input(variable, period, np.zeros(people.count))
-        return people("income_tax", period)
+        return people(output, period)
     finally:
         del simulation.branches[name]
 
@@ -129,3 +137,46 @@ class pension_credit_self_employment_income_tax(Variable):
         ) - person("pension_credit_income_tax_without_earnings", period)
         claimant_or_partner = person("is_claimant_or_partner", period)
         return max_(0, benunit.sum(added * claimant_or_partner))
+
+
+class pension_credit_uncounted_income_tax_without_earnings(Variable):
+    value_type = float
+    entity = Person
+    label = "Income tax on income Pension Credit does not count, without earnings"
+    documentation = (
+        "The part of the person's income tax, if nobody in the simulation had "
+        "employment or self-employment income, that is not tax on income "
+        "Pension Credit takes into account: the tax on rent from property, "
+        "interest and dividends, and the Step 7 charges "
+        "(legacy_means_test_income_tax). SPC Regs 2002 reg. 17(10)(a) "
+        "disregards tax only on income taken into account, and Schedule IV "
+        "paragraph 18 disregards actual income from capital, so Pension "
+        "Credit income does not deduct this tax. It is measured without "
+        "earnings because the tax on earnings is the extra tax the earnings "
+        "cause, including on savings and dividends "
+        "(pension_credit_employment_income_tax and "
+        "pension_credit_self_employment_income_tax), which Pension Credit "
+        "income does deduct. " + DECISION
+    )
+    definition_period = YEAR
+    unit = GBP
+    reference = (
+        "https://www.legislation.gov.uk/uksi/2002/1792/regulation/17",
+        "https://www.legislation.gov.uk/uksi/2002/1792/schedule/IV",
+    )
+
+    def formula(person, period, parameters):
+        income_tax = person("pension_credit_income_tax_without_earnings", period)
+        has_earnings = (person("employment_income", period) != 0) | (
+            person("self_employment_income", period) != 0
+        )
+        if not has_earnings.any():
+            counted = person("legacy_means_test_income_tax", period)
+        else:
+            counted = person_variable_with_inputs_zeroed(
+                person.simulation,
+                period,
+                ["employment_income", "self_employment_income"],
+                "legacy_means_test_income_tax",
+            )
+        return max_(0, income_tax - counted)

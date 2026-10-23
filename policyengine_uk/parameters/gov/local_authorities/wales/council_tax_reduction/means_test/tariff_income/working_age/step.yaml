@@ -1,0 +1,10 @@
+description: Step of capital above the threshold, or part of one, that the Wales Council Tax Reduction working-age scheme treats as yielding one amount of weekly tariff income.
+values:
+  2013-04-01: 250
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Wales Council Tax Reduction working-age tariff income capital step
+  reference:
+    - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Schedule 6 para. 33
+      href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/33

@@ -204,9 +204,23 @@ def test_statute_bounds_differential_and_monotonicity(case):
     no_employment = person_values(
         simulate(without(case, ["employment_income"])), "income_tax"
     )
-    no_earnings = person_values(
-        simulate(without(case, ["employment_income", "self_employment_income"])),
-        "income_tax",
+    no_earnings_sim = simulate(
+        without(case, ["employment_income", "self_employment_income"])
+    )
+    no_earnings = person_values(no_earnings_sim, "income_tax")
+    # Pension Credit income does not deduct the tax on income it does not
+    # count (interest here) or the Step 7 charges, measured without earnings
+    # (SPC Regs 2002 reg 17(10)(a), Sch IV para 18): the extra tax the
+    # earnings cause stays in the tax on earnings. A separate simulation, so
+    # this also checks the branch the model computes it on.
+    uncounted_without_earnings = np.maximum(
+        0,
+        no_earnings - person_values(no_earnings_sim, "legacy_means_test_income_tax"),
+    )
+    assert np.allclose(
+        person_values(sim, "pension_credit_uncounted_income_tax_without_earnings"),
+        uncounted_without_earnings,
+        atol=0.01,
     )
     employment_tax = max(0.0, float((income_tax - no_employment)[adult].sum()))
     self_employment_tax = max(0.0, float((no_employment - no_earnings)[adult].sum()))
@@ -233,6 +247,7 @@ def test_statute_bounds_differential_and_monotonicity(case):
         - actual_self_employment
         + float(notional[adult].sum())
         + float(contributions[adult].sum())
+        - float(uncounted_without_earnings[adult].sum())
     )
     before = max(0.0, total - deductions)
     assert np.isclose(
