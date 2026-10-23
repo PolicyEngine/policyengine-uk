@@ -297,8 +297,13 @@
     housing_benefit_has_main_phase_esa: false
 
 - name: ESA status does not alter the pension-age allowance
+  # A single claimant aged 75 attained State Pension age before 1 April 2021,
+  # so gets the higher pension-age allowance, £235.20 a week in 2024-25 (SI
+  # 2006/214 Sch 3 para 1(1)(b), as amended by SI 2021/188). The claimant's
+  # own age sets that cohort (housing_benefit_attained_pension_age_before_cutoff).
   period: 2024
   input:
+    age: 75
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
     housing_benefit_has_main_phase_esa: true
@@ -308,5 +313,6 @@
     is_lone_parent: false
     benefits_premiums: 0
   output:
+    housing_benefit_attained_pension_age_before_cutoff: true
     housing_benefit_main_phase_esa_allowance_adjustment: 0
     housing_benefit_applicable_amount: 235.20 * 52
