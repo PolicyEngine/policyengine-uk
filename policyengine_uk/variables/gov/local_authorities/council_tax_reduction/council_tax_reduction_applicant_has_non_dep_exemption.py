@@ -13,8 +13,8 @@ class council_tax_reduction_applicant_has_non_dep_exemption(Variable):
         "of Personal Independence Payment or Armed Forces Independence Payment. "
         "The exemption belongs to each applicant: where families share the "
         "rent and each claims, one family's disability does not exempt "
-        "another's claim. The model applies it in the English working-age "
-        "local schemes."
+        "another's claim. The model applies it in the national schemes and the "
+        "English working-age local schemes."
     )
     definition_period = YEAR
     reference = (

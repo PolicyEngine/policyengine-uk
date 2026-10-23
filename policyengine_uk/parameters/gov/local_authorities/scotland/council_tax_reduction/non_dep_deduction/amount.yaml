@@ -1,0 +1,160 @@
+description: Scotland Council Tax Reduction deducts this weekly amount for each non-dependant aged 18 or over, by the non-dependant's normal gross weekly income if they are in remunerative work; a non-dependant not in remunerative work pays the lowest amount.
+
+# Sums from regulation 48 of the Council Tax Reduction (State Pension Credit)
+# (Scotland) Regulations 2012 (SSI 2012/319) and, for people under pension
+# age, regulation 67 of SSI 2012/303 to 2021-22 and regulation 90 of the
+# Council Tax Reduction (Scotland) Regulations 2021 (SSI 2021/249) from
+# 2022-23, as substituted for each financial year by the amending instruments
+# in the references. Each year's sums apply from 1 April.
+brackets:
+- threshold:
+    2013-04-01: 0
+  amount:
+    2013-04-01: 3.65
+    2014-04-01: 3.75
+    2015-04-01: 3.85
+    2016-04-01: 3.9
+    2017-04-01: 3.95
+    2018-04-01: 4.05
+    2019-04-01: 4.15
+    2020-04-01: 4.25
+    2021-04-01: 4.3
+    2022-04-01: 4.45
+    2023-04-01: 4.9
+    2024-04-01: 5.25
+    2025-04-01: 5.35
+    2026-04-01: 5.55
+- threshold:
+    2013-04-01: 186
+    2014-04-01: 188
+    2015-04-01: 189
+    2016-04-01: 195
+    2017-04-01: 200
+    2018-04-01: 204
+    2019-04-01: 209
+    2020-04-01: 213
+    2021-04-01: 213
+    2022-04-01: 228
+    2023-04-01: 241
+    2024-04-01: 260
+    2025-04-01: 273
+    2026-04-01: 286
+  amount:
+    2013-04-01: 7.25
+    2014-04-01: 7.5
+    2015-04-01: 7.7
+    2016-04-01: 7.75
+    2017-04-01: 7.85
+    2018-04-01: 8.1
+    2019-04-01: 8.3
+    2020-04-01: 8.45
+    2021-04-01: 8.5
+    2022-04-01: 8.8
+    2023-04-01: 9.7
+    2024-04-01: 10.35
+    2025-04-01: 10.55
+    2026-04-01: 10.95
+- threshold:
+    2013-04-01: 322
+    2014-04-01: 326
+    2015-04-01: 328
+    2016-04-01: 338
+    2017-04-01: 346
+    2018-04-01: 354
+    2019-04-01: 363
+    2020-04-01: 370
+    2021-04-01: 370
+    2022-04-01: 396
+    2023-04-01: 418
+    2024-04-01: 451
+    2025-04-01: 474
+    2026-04-01: 497
+  amount:
+    2013-04-01: 9.15
+    2014-04-01: 9.5
+    2015-04-01: 9.8
+    2016-04-01: 9.85
+    2017-04-01: 9.95
+    2018-04-01: 10.25
+    2019-04-01: 10.5
+    2020-04-01: 10.7
+    2021-04-01: 10.8
+    2022-04-01: 11.15
+    2023-04-01: 12.3
+    2024-04-01: 13.15
+    2025-04-01: 13.4
+    2026-04-01: 13.9
+- threshold:
+    2013-04-01: 401
+    2014-04-01: 406
+    2015-04-01: 408
+    2016-04-01: 420
+    2017-04-01: 430
+    2018-04-01: 439
+    2019-04-01: 451
+    2020-04-01: 458
+    2021-04-01: 458
+    2022-04-01: 490
+    2023-04-01: 517
+    2024-04-01: 558
+    2025-04-01: 586
+    2026-04-01: 614
+  amount:
+    2013-04-01: 10.95
+    2014-04-01: 11.35
+    2015-04-01: 11.7
+    2016-04-01: 11.8
+    2017-04-01: 11.9
+    2018-04-01: 12.25
+    2019-04-01: 12.55
+    2020-04-01: 12.8
+    2021-04-01: 12.9
+    2022-04-01: 13.3
+    2023-04-01: 14.65
+    2024-04-01: 15.65
+    2025-04-01: 15.95
+    2026-04-01: 16.55
+metadata:
+  label: Scotland CTR non-dependant deduction
+  amount_unit: currency-GBP
+  threshold_unit: currency-GBP
+  period: week
+  type: single_amount
+  economy: false
+  propagate_metadata_to_children: true
+  uprating: gov.benefit_uprating_cpi
+  reference:
+    - title: Council Tax Reduction (State Pension Credit) (Scotland) Regulations 2012, reg. 48
+      href: https://www.legislation.gov.uk/ssi/2012/319/regulation/48
+    - title: Council Tax Reduction (Scotland) Regulations 2012, reg. 67 (to 31 March 2022)
+      href: https://www.legislation.gov.uk/ssi/2012/303/regulation/67
+    - title: Council Tax Reduction (Scotland) Regulations 2021, reg. 90
+      href: https://www.legislation.gov.uk/ssi/2021/249/regulation/90
+    - title: SSI 2013/49, sums for 2013-14
+      href: https://www.legislation.gov.uk/ssi/2013/49/made
+    - title: SSI 2014/35, sums for 2014-15
+      href: https://www.legislation.gov.uk/ssi/2014/35/made
+    - title: SSI 2015/46, sums for 2015-16
+      href: https://www.legislation.gov.uk/ssi/2015/46/made
+    - title: SSI 2016/81, sums for 2016-17
+      href: https://www.legislation.gov.uk/ssi/2016/81/made
+    - title: SSI 2017/41, sums for 2017-18
+      href: https://www.legislation.gov.uk/ssi/2017/41/made
+    - title: SSI 2018/69, sums for 2018-19
+      href: https://www.legislation.gov.uk/ssi/2018/69/made
+    - title: SSI 2019/29, sums for 2019-20
+      href: https://www.legislation.gov.uk/ssi/2019/29/made
+    - title: SSI 2020/25, sums for 2020-21
+      href: https://www.legislation.gov.uk/ssi/2020/25/made
+    - title: SSI 2021/51, sums for 2021-22
+      href: https://www.legislation.gov.uk/ssi/2021/51/made
+    - title: SSI 2022/52, sums for 2022-23
+      href: https://www.legislation.gov.uk/ssi/2022/52/made
+    - title: SSI 2023/38, sums for 2023-24
+      href: https://www.legislation.gov.uk/ssi/2023/38/made
+    - title: SSI 2024/35, sums for 2024-25
+      href: https://www.legislation.gov.uk/ssi/2024/35/made
+    - title: SSI 2025/24, sums for 2025-26
+      href: https://www.legislation.gov.uk/ssi/2025/24/made
+    - title: SSI 2026/56, sums for 2026-27
+      href: https://www.legislation.gov.uk/ssi/2026/56/made
