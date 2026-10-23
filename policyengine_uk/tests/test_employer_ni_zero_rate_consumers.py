@@ -23,7 +23,8 @@ pay stays £30,000), and a £2,000 employer pension contribution. For an
 earner aged 20 or an apprentice aged 24 all of it is below the UST and AUST,
 so the excess bears no employer NI and employer cost is 30,000 + 2,000 =
 £32,000. At age 21 the £3,000 excess sits above the secondary threshold and
-bears 0.15 x 3,000 = £450.
+bears 0.15 x 3,000 = £450. The same holds with £5,000 of total employer pension
+contributions (employer cost £35,000).
 """
 
 import numpy as np
@@ -33,6 +34,9 @@ from policyengine_uk import Simulation
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
+# The 2026 upper secondary and apprentice upper secondary thresholds as
+# stored: £966.73 a week, £50,269.96 a year.
+RELIEF_THRESHOLD = 966.73 * 52
 RATE_RISE = {
     "gov.hmrc.national_insurance.class_1.employer_scale[1].rate": {"2026": 0.16}
 }
@@ -107,13 +111,21 @@ def test_rate_rise_with_mixed_ages_in_one_simulation():
     np.testing.assert_allclose(change, expected, atol=0.01)
 
 
+# Total employer pension contributions with the £5,000 sacrifice: £2,000, and
+# María's original case of £5,000 (the whole sacrifice). Employer cost is pay
+# plus employer pension for a zero-rated earner: £32,000 or £35,000.
+EMPLOYER_PENSIONS = {"£2,000 employer pension": 2_000, "£5,000 employer pension": 5_000}
+
+
+@pytest.mark.parametrize("pension", EMPLOYER_PENSIONS)
 @pytest.mark.parametrize("case", CASES)
-def test_salary_sacrifice_excess_is_zero_rated(case):
+def test_salary_sacrifice_excess_is_zero_rated(case, pension):
     age, apprentice, zero_rated = CASES[case]
+    employer_pension = EMPLOYER_PENSIONS[pension]
     inputs = {
         "employment_income": {2029: PAY},
         "pension_contributions_via_salary_sacrifice": {2029: 5_000},
-        "employer_pension_contributions": {2029: 2_000},
+        "employer_pension_contributions": {2029: employer_pension},
     }
     people = {"person": (age, apprentice, inputs)}
     simulation = Simulation(
@@ -141,7 +153,7 @@ def test_salary_sacrifice_excess_is_zero_rated(case):
     if zero_rated:
         assert extra_ni == pytest.approx(0, abs=0.01)
         assert employer_ni == pytest.approx(0, abs=0.01)
-        assert adjusted_cost == pytest.approx(32_000, abs=0.01)
+        assert adjusted_cost == pytest.approx(PAY + employer_pension, abs=0.01)
     else:
         assert extra_ni == pytest.approx(0.15 * 3_000, abs=0.01)
 
@@ -162,16 +174,20 @@ def test_rate_rise_with_statutory_pay_over_the_threshold(case):
     people = {"person": (age, apprentice, inputs)}
     simulation = Simulation(situation=situation(people, 2026), reform=RATE_RISE)
 
-    threshold = 50_270
+    threshold = RELIEF_THRESHOLD
     baseline_cost = values(simulation, "baseline_employer_cost", 2026)[0]
-    assert baseline_cost == pytest.approx(51_000 + 0.15 * (51_000 - threshold), abs=0.1)
+    # 51,000 + 0.15 x (51,000 - 50,269.96) = 51,109.51
+    assert baseline_cost == pytest.approx(
+        51_000 + 0.15 * (51_000 - threshold), abs=0.01
+    )
+    assert baseline_cost == pytest.approx(51_109.51, abs=0.01)
     # Solve W + 2,000 + 0.16 x (W + 2,000 - T) = baseline cost for pay W.
     new_pay = (baseline_cost + 0.16 * threshold) / 1.16 - 2_000
-    assert new_pay == pytest.approx(48_993.71, abs=0.1)
+    assert new_pay == pytest.approx(48_993.71, abs=0.01)
     pay = values(simulation, "employment_income", 2026)[0]
-    assert pay == pytest.approx(new_pay, abs=0.1)
+    assert pay == pytest.approx(new_pay, abs=0.01)
     adjusted_cost = values(simulation, "adjusted_employer_cost", 2026)[0]
-    assert adjusted_cost == pytest.approx(baseline_cost, abs=0.1)
+    assert adjusted_cost == pytest.approx(baseline_cost, abs=0.01)
 
 
 LOWER_RELIEF_THRESHOLDS = {
@@ -213,9 +229,13 @@ def test_raised_relief_threshold_above_pay(case):
     simulation = Simulation(situation=situation(people, 2026), reform=reform)
 
     baseline_cost = values(simulation, "baseline_employer_cost", 2026)[0]
-    assert baseline_cost == pytest.approx(60_000 + 0.15 * 9_730, abs=0.1)
+    # 60,000 + 0.15 x (60,000 - 50,269.96) = 61,459.51
+    assert baseline_cost == pytest.approx(
+        60_000 + 0.15 * (60_000 - RELIEF_THRESHOLD), abs=0.01
+    )
+    assert baseline_cost == pytest.approx(61_459.51, abs=0.01)
     pay = values(simulation, "employment_income", 2026)[0]
-    assert pay == pytest.approx(baseline_cost, abs=0.1)
+    assert pay == pytest.approx(baseline_cost, abs=0.01)
     assert values(simulation, "adjusted_employer_cost", 2026)[0] == pytest.approx(
-        baseline_cost, abs=0.1
+        baseline_cost, abs=0.01
     )
