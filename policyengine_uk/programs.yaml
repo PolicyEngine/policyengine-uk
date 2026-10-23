@@ -429,7 +429,7 @@ programs:
     variable: childcare_grant
     parameter_prefix: gov.dfe.childcare_grant
     verified_start_year: 2025
-    notes: First-pass full-time undergraduate England model using explicit full-time, SEN, and childcare-support inputs plus maintenance-loan proxies; childcare_expenses are treated as out-of-pocket spend net of free hours
+    notes: First-pass full-time undergraduate England model using explicit full-time, SEN, and childcare-support inputs plus maintenance-loan proxies; eligible children's childcare_expenses are out-of-pocket spend net of free hours, aggregated and capped once per benefit unit. The model allocates the family award to the eldest eligible student parent; actual student partners can share it.
 
   - id: parents_learning_allowance
     name: Parents' Learning Allowance
