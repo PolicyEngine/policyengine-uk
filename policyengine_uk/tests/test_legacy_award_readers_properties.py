@@ -27,6 +27,8 @@ the child's parent, or the person themselves:
   SI 2019/37 arts 2(3) and 4, through SI 2006/214 reg 5.
 - The extended childcare parent and partner conditions: SI 2022/1134 regs
   11A(1)(e), 14(4)(b) and 15(4).
+- The higher Pension Credit earnings disregard for a claimant or partner on
+  employment and support allowance: SPC Regs 2002 Sch VI para 4(1)(a)(vii).
 
 A member of the benefit unit who is neither the claimant, the partner nor a
 child or young person they are responsible for (for example a non-dependent
@@ -121,6 +123,7 @@ FAMILY_READERS = [
     "income_support_eligible",
     "housing_benefit_pension_age_regulations_apply",
     "has_mixed_age_couple_pension_credit_saving",
+    "pension_credit_earnings_disregard",
 ]
 MEMBER_READERS = [
     "is_scp_eligible",
