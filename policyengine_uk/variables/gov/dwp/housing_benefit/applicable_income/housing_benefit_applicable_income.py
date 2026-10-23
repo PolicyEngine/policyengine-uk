@@ -22,6 +22,10 @@ class housing_benefit_applicable_income(Variable):
         "https://www.legislation.gov.uk/nisr/2006/405/schedule/6/paragraph/4",
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/2",
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/5",
+        "https://www.legislation.gov.uk/uksi/2006/213/regulation/40",
+        "https://www.legislation.gov.uk/uksi/2006/213/schedule/5/paragraph/16",
+        "https://www.legislation.gov.uk/uksi/2006/213/schedule/5/paragraph/47",
+        "https://www.legislation.gov.uk/uksi/2006/214/regulation/29",
         "https://www.legislation.gov.uk/uksi/2006/214/regulation/26",
         "https://www.legislation.gov.uk/uksi/2006/214/regulation/27",
         "https://www.legislation.gov.uk/nisr/2006/406/regulation/24",
@@ -92,7 +96,30 @@ class housing_benefit_applicable_income(Variable):
         income = add_for_members(benunit, period, INCOME_COMPONENTS, members)
         personal_benefits = add_for_members(benunit, period, PERSONAL_BENEFITS, members)
         credits = add_for_members(benunit, period, ["tax_credits"], members)
-        increased_income = income + personal_benefits + credits + benefits
+        # Maintenance paid to the claimant or partner by a spouse, civil
+        # partner or former partner is income other than earnings (HB Regs
+        # 2006 reg 40(1); HB (SPC) Regs 2006 reg 29(1)(o)), less £15 a week
+        # where the family includes a child or young person. Child
+        # maintenance is disregarded in full (HB Regs 2006 Sch 5 para 47A) or
+        # is not listed as income (reg 29(1)), so maintenance_income is not
+        # counted.
+        spousal_maintenance = benunit.sum(
+            max_(0, person("spousal_maintenance_income", period))
+            * person("is_claimant_or_partner", period)
+        ) - benunit("housing_benefit_maintenance_disregard", period)
+        # Widowed parent's allowance less £15 a week (HB Regs 2006 Sch 5
+        # para 16(b); HB (SPC) Regs 2006 Sch 5 para 7).
+        widowed_parents_allowance = benunit(
+            "housing_benefit_widowed_parents_allowance_income", period
+        )
+        increased_income = (
+            income
+            + personal_benefits
+            + credits
+            + benefits
+            + spousal_maintenance
+            + widowed_parents_allowance
+        )
 
         if not bi.interactions.include_in_means_tests:
             # Basic income is already in personal benefits, deduct if needed

@@ -1,0 +1,1 @@
+- Included spousal maintenance in Housing Benefit and Council Tax Reduction non-dependant income bands while preserving its income-tax exemption.
