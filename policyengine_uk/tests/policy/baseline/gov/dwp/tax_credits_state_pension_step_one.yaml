@@ -195,6 +195,9 @@
   # The case with no consistent passport state (see
   # tax_credits_pension_credit_passport.yaml), with no savings interest.
   # Tax credit income: (6,600 - 300) + 2,600 = £8,900.
+  # Employment income is entered gross. Pension Credit counts it less the
+  # SPC Regs 2002 Sch VI para 5 disregard of £5 a week, which the model
+  # deducts once: 2,600 - 260 = £2,340.
   # Passport: with the test lifted WTC is £2,435, and Pension Credit income
   # 2,340 + 6,600 + 2,435 = £11,375 is above the £11,343.80 guarantee, so the
   # income test stays.
@@ -202,8 +205,6 @@
   # 11,343.80 - (2,340 + 6,600 + 2,047.55) = £356.25.
   # With State Pension in step two, income is £9,200, WTC £1,924.55 and
   # Pension Credit £479.25: the £123 more WTC is £123 less Guarantee Credit.
-  # Pension Credit earnings are entered net of the SPC Regs Sch VI para 5
-  # disregard (£5 a week), which the model does not apply.
   period: 2024
   absolute_error_margin: 0.01
   input:
@@ -218,7 +219,6 @@
     benunits:
       benunit:
         members: [pensioner]
-        pension_credit_earnings: 2_340
     households:
       household:
         members: [pensioner]
@@ -226,6 +226,8 @@
     tax_credits_current_year_income: 8_900
     tax_credits_applicable_income: 8_900
     working_tax_credit: 2_047.55
+    pension_credit_earnings_disregard: 260
+    pension_credit_income: 10_987.55
     pension_credit: 356.25
 
 - name: The State Pension disregard can bring a family within the childcare tax credit income limit
