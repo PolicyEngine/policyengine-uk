@@ -57,7 +57,7 @@
     council_tax: 0
     household_owns_tv: false
   output:
-    stamp_duty_land_tax: 15_000
+    stamp_duty_land_tax: 0
     expected_sdlt: 0
     corporate_sdlt: 0
     corporate_tax_incidence: 0
