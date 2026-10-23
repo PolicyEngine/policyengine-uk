@@ -12,7 +12,7 @@ from datetime import date, timedelta
 import numpy as np
 import pandas as pd
 import pytest
-from hypothesis import example, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -81,7 +81,10 @@ def test_household_situations_match_the_birth_year_rule():
         assert np.array_equal(birth_year, [year - age for age in ages]), year
 
 
-@settings(max_examples=30, deadline=None)
+# Bounded primitive draws can include scheduling/GC stalls after expensive
+# model runs. Reproduced generation-timing failures gave no model counterexample;
+# suppress only that timing check, preserving examples and all other checks.
+@settings(max_examples=30, deadline=None, suppress_health_check=[HealthCheck.too_slow])
 @given(
     cases=st.lists(
         st.tuples(
@@ -122,7 +125,7 @@ def test_cutoffs_follow_the_date_of_birth(cases, year):
         assert ctc[i] == (expected < CUTOFF), (year, age, months)
 
 
-@settings(max_examples=25, deadline=None)
+@settings(max_examples=25, deadline=None, suppress_health_check=[HealthCheck.too_slow])
 @given(
     children=st.lists(
         st.tuples(
@@ -262,7 +265,7 @@ def births_and_year(draw):
     return births, year
 
 
-@settings(max_examples=25, deadline=None)
+@settings(max_examples=25, deadline=None, suppress_health_check=[HealthCheck.too_slow])
 @given(case=births_and_year())
 # Transitional cohorts in the year they reach the qualifying age, where a
 # wrong birth instant changes has_attained_state_pension_credit_qualifying_age
