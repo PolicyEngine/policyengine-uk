@@ -8,4 +8,4 @@ class betting_exchange_commission(Variable):
     default_value = 0
     unit = GBP
     label = "Chargeable betting exchange commission attributed to the household"
-    reference = "https://www.legislation.gov.uk/ukpga/2014/26/section/140"
+    reference = "https://www.legislation.gov.uk/ukpga/2014/26/section/141"

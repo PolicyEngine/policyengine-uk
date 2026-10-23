@@ -8,4 +8,4 @@ class horse_and_dog_pool_betting_net_losses(Variable):
     default_value = 0
     unit = GBP
     label = "Attributed dutiable horse and dog racing pool losses"
-    reference = "https://www.legislation.gov.uk/ukpga/2014/26/section/126"
+    reference = "https://www.legislation.gov.uk/ukpga/2014/26/section/134"

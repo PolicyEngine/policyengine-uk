@@ -32,21 +32,21 @@
   input:
     financial_spread_betting_net_losses: 1_000
   output:
-    general_betting_duty: 30 # FA 2014 section 128.
+    general_betting_duty: 30 # FA 2014 section 129(2).
 
 - name: Case 6, other spread betting has a separate ten percent base.
   period: 2024
   input:
     other_spread_betting_net_losses: 1_000
   output:
-    general_betting_duty: 100 # FA 2014 section 129.
+    general_betting_duty: 100 # FA 2014 section 130(2).
 
 - name: Case 7, betting exchanges pay duty on commission.
   period: 2024
   input:
     betting_exchange_commission: 1_000
   output:
-    general_betting_duty: 150 # FA 2014 section 140, commission rather than stakes.
+    general_betting_duty: 150 # FA 2014 section 141(2) to (4), commission rather than stakes.
 
 - name: Case 8, remote fixed odds change during FY2026 with exclusions retained.
   period: 2026
