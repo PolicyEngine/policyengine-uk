@@ -239,6 +239,7 @@
     benunits:
       benunit:
         members: ["student"]
+        would_claim_uc: false
     households:
       household:
         members: ["student"]
