@@ -876,6 +876,31 @@ def test_zero_profit_trade_loss_cannot_raise_tax_or_reduce_programme_award(
         ),
     ]
 )
+@example(
+    [
+        # Removing the loss must preserve UC's Housing Benefit passport:
+        # holding only final UC changed HB income from £0 to £45,976.93.
+        (
+            [
+                adult(
+                    age=63,
+                    employment_income=28_997.520933585933,
+                    self_employment_income=17_292.726071844652,
+                    trading_loss=33_528.10659809126,
+                    hours_worked=35.0,
+                ),
+                {"age": 7, "trading_loss": 0.0},
+                {"age": 9, "trading_loss": 3_911.068241394866},
+            ],
+            {
+                "rent": 0.0,
+                "council_tax": 0.0,
+                "tenure_type": "RENT_FROM_COUNCIL",
+                "region": "SCOTLAND",
+            },
+        ),
+    ]
+)
 @given(st.lists(families(), min_size=4, max_size=10))
 def test_means_tests_see_the_loss_only_through_tax(units):
     with_loss = Simulation(situation=family_situation(units))
@@ -924,6 +949,7 @@ def test_means_tests_see_the_loss_only_through_tax(units):
     profits = values(with_loss, "self_employment_income")
     mif = np.asarray(with_loss.calculate("uc_mif_applies", YEAR))
     uc = values(with_loss, "universal_credit")
+    uc_pre_cap = values(with_loss, "universal_credit_pre_benefit_cap")
     hb = values(with_loss, "housing_benefit")
 
     def held(k, **extra):
@@ -934,6 +960,8 @@ def test_means_tests_see_the_loss_only_through_tax(units):
         }
 
     # Every means test but UC: the loss reaches them only through the tax.
+    # Housing Benefit's UC passport reads entitlement before the benefit
+    # cap, so preserve that amount alongside the final award.
     no_loss = Simulation(
         situation=family_situation(
             units,
@@ -941,6 +969,7 @@ def test_means_tests_see_the_loss_only_through_tax(units):
             {
                 b: {
                     "universal_credit": float(uc[k]),
+                    "universal_credit_pre_benefit_cap": float(uc_pre_cap[k]),
                     **{v: float(pc_tax[v][k]) for v in pc_tax},
                 }
                 for k, b in enumerate(benunits)
