@@ -11,25 +11,31 @@ same switch and rollback path to Microcosm UK.
 
 ## Current state
 
-PolicyEngine UK has no built-in default dataset. `Simulation()` uses, in order:
+PolicyEngine UK has no built-in default dataset. An inline `situation`, if
+passed, is used on its own. Otherwise `Simulation()` uses, in order:
 
 1. an explicit `dataset=` argument;
 2. the `POLICYENGINE_UK_DEFAULT_DATASET` environment variable
    (`DEFAULT_DATASET_ENV_VAR` in `tax_benefit_system.py`);
-3. otherwise, unless an inline `situation` is passed, it raises a `ValueError`
-   (`get_default_dataset_url` in `simulation.py`).
+3. otherwise it raises a `ValueError` (`get_default_dataset_url` in
+   `simulation.py`).
 
-The test suite sets the variable to the private
-`hf://policyengine/policyengine-uk-data-private/enhanced_frs_2023_24.h5@1.40.3`
-when a Hugging Face token is available (`policyengine_uk/tests/conftest.py`).
-So the eFRS is still the dataset the model is tested against, and the
-default in downstream tools such as policyengine.py.
+When a Hugging Face token is available, the test suite sets the variable to
+the certified dataset pinned by commit and SHA-256 in
+`policyengine_uk/tests/certified_dataset.yaml` (read by
+`policyengine_uk/tests/conftest.py`): `enhanced_frs_2024_25.h5` from
+policyengine-uk-data 1.58.1, in the private
+`policyengine/policyengine-uk-data-private` repository. So the eFRS is still
+the dataset this repository's tests run on.
 
 Direct microsimulation through `Microsimulation()` in this package is
 deprecated in favour of [policyengine.py](https://github.com/PolicyEngine/policyengine.py),
 whose managed bundle pins certified datasets (see the repository README). The
 default most users meet is therefore the one that bundle pins, so a switch has
-to be made there as well as in this repository's tests.
+to be made there as well as in this repository's tests. policyengine.py made
+that switch in release 6.10.0 (21 October 2026): its UK default is now
+Microcosm UK 2024-25 (`microcosm_uk_2024_25`), and the Enhanced FRS 2024-25
+stays loadable by name. Only this repository's tests remain on the eFRS.
 
 ## What the switch needs
 
@@ -41,14 +47,20 @@ to be made there as well as in this repository's tests.
   because `_pre_encode_enum_columns` (in `simulation.py`) walks each year's
   tables.
 - The dataset's `years` drive uprating. Microcosm's base year is 2024-25,
-  one year later than the eFRS file used in tests, so uprating paths from the
-  earlier base year need checking.
-- Enum columns must use the labels in this repo's variable definitions.
-  Unknown labels do not encode correctly.
+  the same as the eFRS file now used in tests (`enhanced_frs_2024_25`).
+- String enum columns must use the member names in this repo's variable
+  definitions (for example `OWNED_OUTRIGHT`, not "Owned outright"). An
+  unknown name raises a `ValueError` when the dataset is encoded
+  (policyengine-core's `Enum.encode`); integer-coded columns are not
+  checked.
 
 ### Variables
 
-- `policyengine_uk/variables/input/` is the data contract. A switch should
+- `policyengine_uk/variables/input/` holds most of the inputs, but the
+  loader (`build_from_multi_year_dataset` in `simulation.py`) sets every
+  dataset column named after any model variable as an input and skips the
+  rest, and several dataset inputs are defined elsewhere (for example
+  `tenure_type`, `household_weight` and `would_claim_uc`). A switch should
   report the input columns present in one dataset but not the other, and
   decide for each whether a missing column is acceptable.
 - Take-up and other reported-versus-simulated inputs have to come from the
@@ -81,19 +93,26 @@ A documented gate must pass before any environment's default changes:
 
 ## Rollback path
 
-1. Dataset choice stays a runtime setting: no code in this repo depends on
-   which dataset is loaded.
+1. Dataset choice stays a runtime setting: no code in this repo branches on
+   which dataset is loaded. One parameter is tied to the dataset, though:
+   `gov.simulation.vat.survey_consumption_coverage` is calibrated to the
+   Microcosm UK 2024-25 release only, puts VAT 38% to 44% above 2024-25
+   receipts on the Enhanced FRS 2024-25, and has to be re-derived when the
+   default dataset changes (`docs/engineering/vat-coverage.md`).
 2. While both are in use, CI runs the dataset-dependent tests on both.
 3. The default is set per environment through
-   `POLICYENGINE_UK_DEFAULT_DATASET`, with the eFRS file kept available.
-4. Rolling back is changing that variable and redeploying, with no code
-   change here. This assumes the eFRS file stays published while the switch
-   beds in.
+   `POLICYENGINE_UK_DEFAULT_DATASET` (in policyengine.py, through its bundle
+   manifest), with the eFRS file kept available.
+4. Rolling back is changing that setting and redeploying. The only change
+   needed here is re-deriving dataset-calibrated parameters such as the VAT
+   coverage above. This assumes the eFRS file stays published while the
+   switch beds in.
 
 ## Acceptance
 
 PolicyEngine UK switches its default only after the gates above pass, with a
-rollback that needs no code change in this repo. Until then either dataset can
+rollback that needs no code change in this repo beyond dataset-calibrated
+parameters. Until then either dataset can
 be used by passing `dataset=` or setting the environment variable.
 
 ## References
