@@ -607,6 +607,7 @@
     benunits:
       benunit:
         members: [parent, child]
+        child_benefit: 0  # Child Benefit also counts; zero leaves this source to decide the result
     households:
       household:
         members: [parent, child]
@@ -656,6 +657,7 @@
     benunits:
       benunit:
         members: [parent, child]
+        child_benefit: 0  # Child Benefit also counts; zero leaves this source to decide the result
     households:
       household:
         members: [parent, child]
@@ -701,6 +703,7 @@
     benunits:
       benunit:
         members: [parent, child]
+        child_benefit: 0  # Child Benefit also counts; zero leaves this source to decide the result
     households:
       household:
         members: [parent, child]
@@ -723,6 +726,7 @@
     benunits:
       benunit:
         members: [parent, child]
+        child_benefit: 0  # Child Benefit also counts; zero leaves this source to decide the result
     households:
       household:
         members: [parent, child]
@@ -773,6 +777,7 @@
     benunits:
       benunit:
         members: [parent, child]
+        child_benefit: 0  # Child Benefit also counts; zero leaves this source to decide the result
     households:
       household:
         members: [parent, child]
@@ -797,6 +802,7 @@
     benunits:
       benunit:
         members: [parent, child]
+        child_benefit: 0  # Child Benefit also counts; zero leaves this source to decide the result
     households:
       household:
         members: [parent, child]
@@ -847,6 +853,7 @@
     benunits:
       benunit:
         members: [parent, child]
+        child_benefit: 0  # Child Benefit also counts; zero leaves this source to decide the result
     households:
       household:
         members: [parent, child]
@@ -895,6 +902,7 @@
     benunits:
       benunit:
         members: [parent, child]
+        child_benefit: 0  # Child Benefit also counts; zero leaves this source to decide the result
         universal_credit: 5_732.08
     households:
       household:

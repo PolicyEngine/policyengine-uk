@@ -7,10 +7,13 @@ metadata:
     - title: Welsh Government, The Childcare Offer for Wales, Assessing parents' income to determine eligibility for the Offer, version 1 (July 2020), questions 8 and 9
       href: https://www.gov.wales/sites/default/files/publications/2023-04/atisn17333doc1.pdf#page=7
 values:
-  # Question 9 counts all unearned income. These benefits are paid to the
-  # benefit unit, not to one parent, while the limit applies per parent; the
-  # model shares each equally between the claimant and any partner, so a lone
-  # parent counts all of it. None of them reads the Childcare Offer, so
+  # Question 9 counts all unearned income. The model holds these benefits at
+  # benefit-unit level, while the limit applies per parent. Universal Credit
+  # is a joint award, and the model has no payee rule for Child Benefit, tax
+  # credits or Housing Benefit, so as a modelling convention (not a legal
+  # reading) each is shared equally between the claimant and any partner; the
+  # legacy income-related benefits are shared the same way for consistency.
+  # A lone parent counts all of it. None of them reads the Childcare Offer, so
   # counting them creates no dependency cycle.
   2019-08-01:
     - child_benefit

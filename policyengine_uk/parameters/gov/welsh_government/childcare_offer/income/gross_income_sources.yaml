@@ -32,15 +32,28 @@ values:
   #   Credit, tax credits, Housing Benefit and the legacy income-related
   #   benefits) are in benunit_gross_income_sources, shared between the
   #   parents;
+  # - rental income (question 9) includes subletting (sublet_income);
   # - other cash a parent receives counts: private transfers, and student and
   #   further-education support paid as income (Adult EMA, Access Fund,
-  #   education grants, Parents' Learning Allowance, Adult Dependants' Grant,
-  #   16 to 19 Bursary).
+  #   education grants). Parents' Learning Allowance and Adult Dependants'
+  #   Grant are listed for completeness but are England-only in the model, so
+  #   they are always zero for a family in Wales.
   #
   # Not counted: support that reimburses a specific cost or is given in kind
   # (Childcare Grant, Care to Learn, Travel Grant, Disabled Students'
-  # Allowance, Healthy Start, the childcare entitlements and Tax-Free
-  # Childcare), and household-level one-off payments and bill credits.
+  # Allowance, the 16 to 19 Bursary, which the model pays as participation
+  # costs, Healthy Start, the childcare entitlements and Tax-Free Childcare);
+  # one-off grants and lump sums, whether paid to a person (Sure Start
+  # Maternity Grant, lump_sum_income) or to the household (cost of living
+  # payments, the energy rebate, bill credits); and loans, which are repaid
+  # (student_loans).
+  #
+  # Data limits, immaterial near £100,000: for a Welsh student the FRS
+  # education_grants residual can still hold Childcare Grant and Disabled
+  # Students' Allowance, because the dataset moves those out only through
+  # England-only formulas; and the FRS allpay2 amount reaches both
+  # taxable_miscellaneous_income and private_transfer_income
+  # (policyengine-uk-data#627).
   2019-08-01:
     - employment_income
     - employment_benefits
@@ -65,8 +78,8 @@ values:
     - education_grants
     - parents_learning_allowance
     - adult_dependants_grant
-    - bursary_fund_16_to_19
     - property_income
+    - sublet_income
     - savings_interest_income
     - other_investment_income
     - dividend_income
