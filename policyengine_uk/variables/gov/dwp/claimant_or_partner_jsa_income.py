@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.benefit_unit import claimant_or_partner_award
 from policyengine_uk.variables.gov.dwp.jsa_income import income_related_jsa_award
 
 
@@ -12,20 +13,24 @@ class claimant_or_partner_jsa_income(Variable):
         "Anyone else in the benefit unit claims in their own right, so their "
         "award is left out here: a non-dependent adult, or a young person "
         "with an award of their own, which is payable to them. It still "
-        "counts in jsa_income and so in household income. Which awards "
-        "jsa_income holds is decided by value: "
+        "counts in jsa_income and so in household income. Income Support's "
+        "gate (income_support_eligible) reads this too (s.124(1)(f)). "
+        "Which awards jsa_income holds is decided by value: "
         "when it holds the award its formula gives on all reported awards, "
         "this is the same award on the claimant's and partner's reports; "
-        "when it holds the plain total of the reports (the "
-        "disable_simulated_benefits reform), this is the plain total of the "
-        "claimant's and partner's reports; when it holds anything else (an "
-        "award entered directly, or a reform that replaces it), that value "
-        "is taken to be the claimant's or partner's. Values are compared to "
-        "within half a penny after rounding to the precision jsa_income is stored "
-        "in. A stored zero is zero. "
-        "An entered jsa_income equal to either reported amount is read through "
-        "the reports, so to enter the claimant's or partner's award whatever "
-        "other members report, enter this variable directly."
+        "when it holds the plain total of the reports, this is the plain "
+        "total of the claimant's and partner's reports; when it holds "
+        "anything else (an award entered directly, or a reform that replaces "
+        "it), that value is taken to be the claimant's or partner's. Values "
+        "are compared to within half a penny after rounding to the precision "
+        "jsa_income is stored in, and an award within half a penny of zero, "
+        "stored or worked out, is no award: a stored zero is zero, and so is "
+        "the float residual left by reports that exactly match the tariff "
+        "income. An entered jsa_income equal to either reported amount is read "
+        "through the reports, so to enter the claimant's or partner's award "
+        "whatever other members report, enter this variable directly. The "
+        "disable_simulated_benefits reform does that for each year, from the "
+        "claimant's and partner's reports in the dataset year."
     )
     definition_period = YEAR
     unit = GBP
@@ -36,29 +41,10 @@ class claimant_or_partner_jsa_income(Variable):
     )
 
     def formula(benunit, period, parameters):
-        person = benunit.members
-        jsa_income = benunit("jsa_income", period)
-        reported = person("jsa_income_reported", period)
-        reported_total = benunit.sum(reported)
-        claimant_or_partner_reported = benunit.sum(
-            reported * person("is_claimant_or_partner", period)
+        return claimant_or_partner_award(
+            benunit,
+            period,
+            "jsa_income",
+            "jsa_income_reported",
+            income_related_jsa_award,
         )
-        award_on_all_reports = income_related_jsa_award(benunit, period, reported_total)
-        award_on_claimant_or_partner_reports = income_related_jsa_award(
-            benunit, period, claimant_or_partner_reported
-        )
-        # Compare in the precision jsa_income is stored in (float32), so the
-        # formula's own award always matches the award recomputed here.
-        stored = jsa_income.dtype
-        as_formula = np.isclose(
-            jsa_income, award_on_all_reports.astype(stored), rtol=0, atol=0.005
-        )
-        as_reported_total = np.isclose(
-            jsa_income, reported_total.astype(stored), rtol=0, atol=0.005
-        )
-        scoped = where(
-            as_formula,
-            award_on_claimant_or_partner_reports,
-            where(as_reported_total, claimant_or_partner_reported, jsa_income),
-        )
-        return where(jsa_income > 0, scoped, 0)

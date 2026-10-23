@@ -451,6 +451,9 @@
       benunit:
         members: [person]
         in_specified_or_temporary_accommodation: true
+        # By 2030 this person would be entitled to a little Universal Credit,
+        # which passports the means test (all earnings disregarded).
+        would_claim_uc: false
   output:
     housing_benefit_specified_or_temporary_accommodation_disregard: 4_041.96
     housing_benefit_applicable_income_disregard: 4_301.96
