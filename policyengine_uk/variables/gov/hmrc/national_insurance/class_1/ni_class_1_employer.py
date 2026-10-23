@@ -22,9 +22,11 @@ class ni_class_1_employer(Variable):
             taxed_earnings = earnings + added_pension_contributions
         else:
             taxed_earnings = earnings
-        secondary_threshold = class_1.thresholds.secondary_threshold * WEEKS_IN_YEAR
+        secondary_threshold = (
+            class_1.employer_scale.components[1].threshold * WEEKS_IN_YEAR
+        )
         main_earnings = max_(
             taxed_earnings - secondary_threshold,
             0,
         )
-        return class_1.rates.employer * main_earnings
+        return class_1.employer_scale.components[1].rate * main_earnings

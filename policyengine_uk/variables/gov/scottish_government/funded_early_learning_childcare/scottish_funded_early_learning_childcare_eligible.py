@@ -11,11 +11,16 @@ class scottish_funded_early_learning_childcare_eligible(Variable):
         "not yet model the eligible-two-year-old strand (vulnerable / low-income "
         "children aged 2 also qualify under Part 2 of the 2014 Order). "
         "Three-year-olds qualify only once they have reached the statutory "
-        "start date."
+        "start date. Eligible for at least one of the year's terms: a child "
+        "stops qualifying when it starts primary 1, so one starting in "
+        "August qualifies for the summer term only "
+        "(early_years_term_share_before_school)."
     )
     definition_period = YEAR
     reference = [
+        "https://www.legislation.gov.uk/asp/2014/8/section/47",
         "https://www.legislation.gov.uk/asp/2014/8/section/48",
+        "https://www.legislation.gov.uk/ukpga/1980/44/section/32",
         "https://www.gov.scot/publications/early-learning-childcare-statutory-guidance-july-2021/pages/8/",
     ]
 
@@ -35,4 +40,13 @@ class scottish_funded_early_learning_childcare_eligible(Variable):
         )
         eligible_older_child = (age >= p.age.min + 1) & (age < p.age.max)
 
-        return in_scotland & (eligible_three_year_old | eligible_older_child)
+        # Children and Young People (Scotland) Act 2014 s.47(2)(b): an
+        # eligible pre-school child "has not commenced attendance at a
+        # primary school (other than at a nursery class in such a school)".
+        before_school = person("early_years_term_share_before_school", period)
+
+        return (
+            in_scotland
+            & (eligible_three_year_old | eligible_older_child)
+            & (before_school > 0)
+        )

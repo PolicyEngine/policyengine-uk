@@ -1,0 +1,105 @@
+# Reg4 age16 AND reg14 earnings; Sch2para4 favourable penny.
+# Natural pay and annual-constant-earnings approximation; no eligibility/award overrides.
+- name: Combined underage low earnings
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 15
+    employment_income: 8000
+    care_hours: 40
+    carers_allowance_reported: 0
+    country: SCOTLAND
+  output:
+    carer_support_payment_pre_overlap: 0
+    carer_support_payment: 0
+- name: Combined fractional underage reported CA route
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 15.999
+    employment_income: 8000
+    care_hours: 0
+    carers_allowance_reported: 4000
+    country: SCOTLAND
+  output:
+    carer_support_payment_pre_overlap: 0
+    carer_support_payment: 0
+- name: Combined age16 first excluded whole weekly penny
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 16
+    employment_income: 10608.52
+    care_hours: 40
+    carers_allowance_reported: 0
+    country: SCOTLAND
+  output:
+    carer_support_payment_pre_overlap: 0
+    carer_support_payment: 0
+- name: Combined age16 exact annual cap
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 16
+    employment_income: 10608
+    care_hours: 40
+    carers_allowance_reported: 0
+    country: SCOTLAND
+  output:
+    carer_support_payment_pre_overlap: 4495.4
+    carer_support_payment: 4495.4
+- name: Combined age16 favourable fractional weekly penny
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 16
+    employment_income: 10608.26
+    care_hours: 40
+    carers_allowance_reported: 0
+    country: SCOTLAND
+  output:
+    carer_support_payment_pre_overlap: 4495.4
+    carer_support_payment: 4495.4
+- name: Combined age16 ordinary below cap
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 16
+    employment_income: 8000
+    care_hours: 40
+    carers_allowance_reported: 0
+    country: SCOTLAND
+  output:
+    carer_support_payment_pre_overlap: 4495.4
+    carer_support_payment: 4495.4
+- name: Combined personal age and earnings gates do not leak between people
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      young:
+        age: 15
+        employment_income: 8000
+        care_hours: 40
+      high:
+        age: 16
+        employment_income: 10608.52
+        care_hours: 40
+      low:
+        age: 16
+        employment_income: 8000
+        care_hours: 40
+    benunits:
+      b1:
+        members: [young]
+      b2:
+        members: [high]
+      b3:
+        members: [low]
+    households:
+      home:
+        members: [young, high, low]
+        country: SCOTLAND
+  output:
+    carer_support_payment_pre_overlap: [0, 0, 4495.4]
+    carer_support_payment: [0, 0, 4495.4]

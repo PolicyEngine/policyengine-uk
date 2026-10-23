@@ -129,8 +129,9 @@ def test_issue_2255_reproducers():
     )
     # 20,000 less income tax of 20% of (20,000 - 12,570).
     assert property_loss == (pytest.approx(18_514, abs=1), 0)
-    # 238 x 52 = 12,376, less wages of 10,000.
+    # Wages of 10,000 less the 5 pound a week earnings disregard (SPC Regs
+    # 2002 Sch VI para 5), 260; 238 x 52 = 12,376, less 9,740.
     assert trading_loss == (
-        pytest.approx(10_000, abs=1),
-        pytest.approx(2_376, abs=1),
+        pytest.approx(9_740, abs=1),
+        pytest.approx(2_636, abs=1),
     )

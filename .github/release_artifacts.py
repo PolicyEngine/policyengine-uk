@@ -12,10 +12,14 @@ every file under ``policyengine_uk/`` and nothing else, byte for byte, with the
 right version in their metadata. A wheel built from a dirty or different tree
 fails it.
 
-    python3 .github/release_artifacts.py pypi-state --dist dist --version 2.126.8 \\
+    python3 .github/release_artifacts.py pypi-state --manifest m.json --version 2.126.8 \\
         [--require complete --wait 600]
 
-compares those files with what PyPI serves for that version:
+compares those files with what PyPI serves for that version. ``--manifest``
+names the manifest ``check-dist`` wrote, so the comparison is with the files
+that were checked and tested, whatever else lands in ``dist`` later (the
+publish step writes attestation files there); ``--dist dist`` reads the
+files from a directory that must hold exactly the wheel and sdist.
 
 - ``absent``: PyPI has no files for the version.
 - ``partial``: every file PyPI has is one of ours, byte for byte, and some of
@@ -288,6 +292,37 @@ def manifest(files: dict[str, Path], version: str, sha: str) -> dict:
     }
 
 
+def manifest_files(path: Path, version: str) -> dict[str, str]:
+    """Filename -> sha256 of the wheel and sdist a ``check-dist`` manifest lists."""
+    try:
+        record = json.loads(Path(path).read_text(encoding="utf-8"))
+    except (OSError, ValueError) as error:
+        raise InputError(f"cannot read the manifest {path}: {error}") from None
+    if not isinstance(record, dict):
+        raise InputError(f"the manifest {path} is not an object")
+    if record.get("package") != PROJECT or record.get("version") != version:
+        raise InputError(
+            f"the manifest {path} is for {record.get('package')!r} "
+            f"{record.get('version')!r}, not {PROJECT!r} {version!r}"
+        )
+    entries = record.get("files")
+    if not isinstance(entries, list) or not all(
+        isinstance(entry, dict) for entry in entries
+    ):
+        raise InputError(f"the manifest {path} has no list of files")
+    files = {entry.get("filename"): entry.get("sha256") for entry in entries}
+    wheel, sdist = expected_names(version)
+    if len(entries) != 2 or set(files) != {wheel, sdist}:
+        raise InputError(
+            f"the manifest {path} must list exactly {wheel} and {sdist}; it lists "
+            f"{sorted(map(str, files)) or 'nothing'}"
+        )
+    for name, digest in files.items():
+        if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
+            raise InputError(f"the manifest {path} has no sha256 for {name}")
+    return files
+
+
 def check_dist(args) -> int:
     if not VERSION.match(args.version):
         raise InputError(f"version {args.version!r} is not X.Y.Z")
@@ -354,10 +389,13 @@ def fetch_remote(index_url: str, project: str, version: str) -> dict[str, str] |
 def pypi_state(args, fetch=fetch_remote, sleep=time.sleep, clock=time.monotonic) -> int:
     if not VERSION.match(args.version):
         raise InputError(f"version {args.version!r} is not X.Y.Z")
-    local = {
-        name: sha256(path.read_bytes())
-        for name, path in dist_files(args.dist, args.version).items()
-    }
+    if args.manifest is not None:
+        local = manifest_files(args.manifest, args.version)
+    else:
+        local = {
+            name: sha256(path.read_bytes())
+            for name, path in dist_files(args.dist, args.version).items()
+        }
     deadline = clock() + args.wait
     while True:
         try:
@@ -406,7 +444,9 @@ def main(argv=None) -> int:
     check.add_argument("--sums-out", type=Path)
 
     state = commands.add_parser("pypi-state", help="compare files with the index")
-    state.add_argument("--dist", required=True, type=Path)
+    ours = state.add_mutually_exclusive_group(required=True)
+    ours.add_argument("--manifest", type=Path, help="the manifest check-dist wrote")
+    ours.add_argument("--dist", type=Path, help="a directory of exactly the files")
     state.add_argument("--version", required=True)
     state.add_argument("--project", default=PROJECT)
     state.add_argument("--index-url", default="https://pypi.org/pypi")
