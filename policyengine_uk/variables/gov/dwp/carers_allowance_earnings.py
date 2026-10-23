@@ -9,8 +9,10 @@ class carers_allowance_earnings(Variable):
     documentation = (
         "Net earnings from employment and self-employment, as the Carer's "
         "Allowance gainful-employment test counts them (Computation of "
-        "Earnings Regulations 1996), less half of the person's pension "
-        "contributions. A trading loss counts as nil.\n\n"
+        "Earnings Regulations 1996), less a share of the person's pension "
+        "contributions: one half in law (regs. 10(4)(b) and 13(4)(c)), read "
+        "from gov.dwp.carers_allowance.pension_contribution_deduction_rate. "
+        "A trading loss counts as nil.\n\n"
         "Employment (reg. 10(4)): gross pay less the income tax and primary "
         "Class 1 contributions deducted from it. The law deducts the tax "
         "actually withheld; the model approximates it as the tax PAYE would "
@@ -22,14 +24,17 @@ class carers_allowance_earnings(Variable):
         "Self-employment (regs. 13(4) and 14): trading profit less a notional "
         "income tax at the basic rate (the Scottish basic rate for a Scottish "
         "taxpayer) on the profit above the full personal allowance, and Class 4 "
-        "contributions at the main rate on the profit between the lower and "
-        "upper profits limits. Regulation 14(1) deducts the personal reliefs "
+        "contributions, where payable, at the main rate on the profit between "
+        "the lower and upper profits limits. Regulation 14(1) deducts the personal reliefs "
         "the claimant is entitled to, with no reduction for any allowance the "
         "pay uses, and capital expenditure is not deducted (reg. 13(6)(a)). "
         "Until 6 April 2024 reg. 14(2)(a) also deducted the Class 2 "
         "contributions payable on the chargeable profit; that paragraph was "
         "omitted with compulsory Class 2, whose flat rate is nil from "
-        "2024-25.\n\n"
+        "2024-25. Class 2 uses ni_liable's annual approximation of the "
+        "exemption after the week State Pension age is reached. Class 4 uses "
+        "ni_class_4_liable: reaching State Pension age during the tax year "
+        "leaves that year's contributions payable.\n\n"
         "Not modelled: the deduction for care charges (Schedule 3, up to half "
         "of net earnings) and the Schedule 1 disregards, so this can overstate "
         "earnings for a carer who pays for care while at work."
@@ -48,6 +53,14 @@ class carers_allowance_earnings(Variable):
         dict(
             title="Social Security Benefit (Computation of Earnings) Regulations 1996 reg. 14",
             href="https://www.legislation.gov.uk/uksi/1996/2745/regulation/14",
+        ),
+        dict(
+            title="Social Security Contributions and Benefits Act 1992 s. 11(7)",
+            href="https://www.legislation.gov.uk/ukpga/1992/4/section/11",
+        ),
+        dict(
+            title="Social Security (Contributions) Regulations 2001 reg. 91(a)",
+            href="https://www.legislation.gov.uk/uksi/2001/1004/regulation/91",
         ),
     ]
 
@@ -87,10 +100,14 @@ class carers_allowance_earnings(Variable):
             income_tax.rates.uk.rates[0],
         )
         trading_tax = basic_rate * max_(0, profit - personal_allowance)
-        trading_class_4 = class_4.rates.main * max_(
-            0,
-            min_(profit, class_4.thresholds.upper_profits_limit)
-            - class_4.thresholds.lower_profits_limit,
+        trading_class_4 = (
+            person("ni_class_4_liable", period)
+            * class_4.contribution_scale.components[1].rate
+            * max_(
+                0,
+                min_(profit, class_4.contribution_scale.components[2].threshold)
+                - class_4.contribution_scale.components[1].threshold,
+            )
         )
         # Reg. 14(2)(a), omitted from 6 April 2024: the Class 2 contributions
         # payable on the chargeable profit (SSCBA 1992 s. 11), on the
@@ -98,12 +115,18 @@ class carers_allowance_earnings(Variable):
         # allowances. The flat rate is nil from 2024-25.
         class_2 = p.national_insurance.class_2
         trading_class_2 = (
-            class_2_liable(profit, class_2)
+            person("ni_liable", period)
+            * class_2_liable(profit, class_2)
             * class_2.flat_rate
             * class_2_contribution_weeks(period.start.year)
         )
 
-        half_pension_contributions = 0.5 * person("pension_contributions", period)
+        # Regs. 10(4)(b) and 13(1)(b)(ii), (4)(c) and (10)(b): one half of
+        # pension contributions and premiums.
+        pension_share = parameters(
+            period
+        ).gov.dwp.carers_allowance.pension_contribution_deduction_rate
+        pension_deduction = pension_share * person("pension_contributions", period)
         return max_(
             0,
             pay
@@ -113,5 +136,5 @@ class carers_allowance_earnings(Variable):
             - trading_tax
             - trading_class_4
             - trading_class_2
-            - half_pension_contributions,
+            - pension_deduction,
         )

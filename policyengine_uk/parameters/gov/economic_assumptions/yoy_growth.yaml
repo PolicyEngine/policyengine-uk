@@ -5,6 +5,10 @@
 # - 2025-2030: OBR forecast from the latest Economic and Fiscal Outlook
 #   (EFO, March 2026). Values come from the EFO economy supplementary
 #   tables — RPI/CPI/CPIH from Table 1.7, average earnings from Table 1.6.
+#   Exceptions are documented on each series: mortgage_interest 2030 is
+#   carried over from the November 2025 EFO, consumer_price_index_ahc is
+#   derived rather than published by the OBR, and social_rent forecasts
+#   apply the England social rent cap.
 # - 2031-2073: OBR long-run equilibrium assumptions, taken from the OBR
 #   Fiscal Risks and Sustainability report and the long-run RPI-CPI wedge
 #   methodology. Steady-state values:
@@ -17,12 +21,12 @@
 #
 # How the 2031+ series are constructed:
 # - CPI hits its 2% target on 2031-01-01 and is held flat.
-# - RPI, CPIH and average earnings ramp linearly from the final EFO value
-#   (2030-01-01) to the steady-state value, converging by 2035-2036. After
-#   convergence the series are held flat through 2073-01-01.
-# - This convergence path is consistent with the OBR's Fiscal Risks and
-#   Sustainability long-run assumptions and is regenerated when a new EFO
-#   is released; the helper module
+# - RPI, CPIH and average earnings use the checked-in convergence rates;
+#   their annual steps are not uniform. RPI/CPIH reach steady state in 2035,
+#   earnings in 2036; the rates then hold flat through 2073-01-01.
+# - These intermediate rates are model assumptions beyond the EFO horizon.
+#   Review them when a new EFO is released. The helper module below creates
+#   cumulative indices from these rates, not the convergence paths themselves:
 #   `policyengine_uk/parameters/gov/economic_assumptions/create_economic_assumption_indices.py`
 #   refreshes downstream indices from these growth rates.
 #
@@ -32,6 +36,12 @@
 #                                                          long-term projections)
 #   https://obr.uk/box/the-long-run-difference-between-rpi-and-cpi-inflation/
 #   https://www.bankofengland.co.uk/monetary-policy/inflation
+
+metadata:
+  # Each value is the growth over a calendar year, dated 1 January, and
+  # processing reads it there, so a bare-year reform key names the calendar
+  # year (policyengine_uk/utils/dated_reforms.py).
+  calendar_year_series: true
 
 obr:
   rpi:
@@ -481,25 +491,42 @@ obr:
   consumer_price_index_ahc:
     description: Consumer price index year-on-year growth, modified to remove housing costs.
     values:
-      2022-01-01: 0.107
-      2023-01-01: 0.057
-      2024-01-01: 0.018
-      2025-01-01: 0.0266
-      2026-01-01: 0.0158
-      2027-01-01: 0.0190
-      2028-01-01: 0.0190
-      2029-01-01: 0.0190
-      2030-01-01: 0.0190
+      # Outturn (2022-2025): ONS ad hoc 3582, calendar-year average of CPI
+      # excluding rents, maintenance and repairs, and water charges.
+      2022-01-01: 0.0927
+      2023-01-01: 0.0826
+      2024-01-01: 0.0327
+      2025-01-01: 0.0265
+      # Forecast (2026-2030): derived by policyengine_uk/utils/create_ahc_deflator.py
+      # from OBR CPI and rent forecasts and Ofwat water bills (see documentation).
+      2026-01-01: 0.0217
+      2027-01-01: 0.0188
+      2028-01-01: 0.0194
+      2029-01-01: 0.0194
+      2030-01-01: 0.0192
     metadata:
       unit: /1
       label: After housing costs consumer price index growth
+      documentation: |
+        CPI excluding rents, maintenance and repairs, and water charges, the
+        price index DWP uses to deflate after-housing-costs incomes in HBAI.
+        The OBR does not publish it. Outturn is the ONS ad hoc series. Forecast
+        growth is OBR calendar-year CPI growth with rents (OBR actual rents
+        growth), water (Ofwat average bills) and maintenance and repair
+        (assumed to grow with CPI) removed using ONS CPI item weights:
+        other = (CPI - w_rent x rent - w_water x water - w_repair x CPI) / w_other,
+        with weights rolled forward each year by relative price growth.
+        policyengine_uk/utils/create_ahc_deflator.py computes it, and
+        policyengine_uk/tests/test_ahc_deflator.py checks the stored values
+        against it. Rerun the script after changing CPI, rent or water bill
+        growth.
       reference:
-        - title: OBR EFO March 2026
+        - title: ONS ad hoc 3582, CPI series excluding rents, maintenance repairs and water charges, February 2007 to June 2026
+          href: https://www.ons.gov.uk/economy/inflationandpriceindices/adhocs/3582consumerpriceindicesseriesexcludingrentsmaintenancerepairsandwaterchargesfebruary2007tojune2026
+        - title: OBR EFO March 2026 (detailed forecast tables, economy, Table 1.7), CPI and actual rents inputs
           href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
         - title: ONS CPI weights
           href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/consumerpriceinflationupdatingweightsannexatablesw1tow3
-        - title: ONS CPI series excluding housing costs
-          href: https://www.ons.gov.uk/economy/inflationandpriceindices/adhocs/2863consumerpriceindicesseriesexcludingrentsmaintenancerepairsandwaterchargesfortheperiodjanuary1996toapril2025
 
   cpih:
     description: Consumer price index including owner occupiers' housing costs year-on-year growth.
@@ -655,7 +682,9 @@ obr:
         2022-01-01: 0.1019
         2023-01-01: 0.0532
         2024-01-01: 0.0372
-        # Forecast (2025-2030) from OBR EFO March 2026, Table A.1 nominal GDP minus population growth
+        # Forecast (2025-2030) from OBR EFO March 2026, Table A.1 nominal GDP minus population growth.
+        # Population growth here is ons.population (March 2025 vintage), not the
+        # lower growth implied by the March 2026 EFO; see ons.population.
         2025-01-01: 0.0438
         2026-01-01: 0.0292
         2027-01-01: 0.0323
@@ -678,6 +707,7 @@ obr:
         2023-01-01: -0.0060
         2024-01-01: 0.0273
         # Forecast (2025-2030) from OBR EFO March 2026, Table 1.12 minus population growth
+        # (ons.population, March 2025 vintage; see ons.population).
         2025-01-01: 0.0069
         2026-01-01: 0.0306
         2027-01-01: 0.0371
@@ -700,6 +730,7 @@ obr:
         2023-01-01: 0.1084
         2024-01-01: 0.0385
         # Forecast (2025-2030) from OBR EFO March 2026, Table 1.12 minus population growth
+        # (ons.population, March 2025 vintage; see ons.population).
         2025-01-01: 0.0275
         2026-01-01: 0.0358
         2027-01-01: 0.0474
@@ -749,6 +780,10 @@ obr:
       2027-01-01: 0.1040
       2028-01-01: 0.0476
       2029-01-01: 0.0468
+      # 2030: the OBR November 2025 EFO calendar-2030 forecast (5.535%),
+      # carried over. The March 2026 EFO stops forecasting mortgage interest
+      # payments after 2030 Q1 (Table 1.7 note), so it has no calendar-2030
+      # figure; its 2030 Q1 rate is 5.40% and its 2029-30 rate 5.05%.
       2030-01-01: 0.0553
     metadata:
       unit: /1
@@ -756,13 +791,18 @@ obr:
       reference:
         - title: OBR EFO March 2026 (detailed forecast tables, economy, Table 1.7)
           href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
+        - title: OBR EFO November 2025 (detailed forecast tables, economy, Table 1.7), 2030 value only
+          href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
 
   social_rent:
     description: >
       Average social rent year-on-year growth across the stock. Historical
       values use observed Regulator of Social Housing stock-average general
       needs social rent growth in England. Forecast values use the England
-      social rent policy cap with no additional composition multiplier.
+      social rent policy cap with no additional composition multiplier: the
+      April increase in year Y is CPI inflation in the previous September
+      plus 1 percentage point. The OBR does not publish a social rent
+      forecast.
     values:
       # Observed RSH stock-average growth (2022-2025)
       2022-01-01: 0.016
@@ -770,8 +810,15 @@ obr:
       2024-01-01: 0.072
       2025-01-01: 0.080
       # Forecast (2026-2030): policy cap with composition multiplier set to 1.
+      # 2026: ONS September 2025 CPI 3.8% + 1pp.
       2026-01-01: 0.048
+      # 2027: placeholder. The cap needs September 2026 CPI (ONS, due
+      # 21 October 2026) + 1pp; 3.3% is calendar-2026 CPI (2.3%) + 1pp.
+      # The OBR March 2026 forecast of September 2026 CPI is 2.1%, which
+      # would give 3.1%, but August 2026 CPI outturn was already 3.1%.
       2027-01-01: 0.033
+      # 2028-2030: OBR March 2026 Q3 CPI forecasts for 2027-2029 (Table 1.7:
+      # 2.01%, 2.02%, 2.00%) + 1pp, to 0.1pp.
       2028-01-01: 0.030
       2029-01-01: 0.030
       2030-01-01: 0.030
@@ -789,8 +836,9 @@ obr:
           href: https://www.gov.uk/government/statistics/registered-provider-social-housing-stock-and-rents-in-england-2024-to-2025
         - title: Policy statement on rents for social housing
           href: https://www.gov.uk/government/publications/direction-on-the-rent-standard-2026/policy-statement-on-rents-for-social-housing
-        - title: OBR EFO March 2026 (detailed forecast tables, economy, Table 1.7)
-          href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
+        - title: ONS D7G7, CPI annual rate, all items (September CPI input to the cap)
+          href: https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/d7g7/mm23
+
   rent:
     description: Rent year-on-year growth, private and social (ONS series D7GQ).
     values:
@@ -816,6 +864,19 @@ obr:
 ons:
   population:
     description: Population year-on-year growth.
+    # 2022-2073 is the population growth row of the OBR's long-term economic
+    # determinants for the March 2025 EFO, published 19 June 2025 (#1305).
+    # The fiscal year starting in year t is stored at t-01-01, rounded to
+    # four decimals (2025-26's 0.7230% is 2025-01-01: 0.0072). The OBR notes
+    # that readings are at the start of the fiscal year or mid-year. To
+    # 2029-30 the series is the OBR's March 2025 forecast; from 2030-31 it is
+    # the migration category variant of the ONS 2022-based national
+    # population projections. The 2021 value predates #1305 and has no
+    # recorded source. This series is a March 2025 vintage. Calendar-year
+    # population growth implied by the March 2026 EFO economy tables (real GDP
+    # in Table 1.1 over real GDP per person in Table 1.5) is lower: 0.37% in
+    # 2025, against 0.72% here, and 0.30% to 0.36% a year in 2026-2030. The
+    # ONS has since published 2024-based projections (28 April 2026).
     values:
       2021-01-01: 0.004
       2022-01-01: 0.0093
@@ -874,8 +935,10 @@ ons:
       unit: /1
       label: Population growth
       reference:
-        - title: ONS Population Projections
-          href: https://www.ons.gov.uk/
+        - title: OBR, "Long-term economic determinants - March 2025 Economic and fiscal outlook" (19 June 2025), population growth row
+          href: https://obr.uk/supplementary-forecast-information-on-long-term-economic-determinants-and-personal-independence-payment-policy-costing/
+        - title: ONS, "National population projections - 2022-based" (migration category variant, used by the OBR from 2030-31)
+          href: https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationprojections/bulletins/nationalpopulationprojections/2022based
   household_interest_income:
     description: Household interest income year-on-year growth from ONS National Accounts D.41g.
     values:
@@ -1191,12 +1254,27 @@ ons:
 ofwat:
   water_bills:
     description: Water and sewerage bills year-on-year growth.
+    # Growth in the average household water and sewerage bill in England and
+    # Wales. Each value is the charging year starting in April, so 2025-01-01
+    # holds 2025-26.
+    # - 2022-2024: nominal growth in Ofwat's average bill, from the real
+    #   bills and CPIH in policyengine_uk/utils/water/forecast_water_bills.py.
+    # - 2025 (2025-26): 27%, the increase Ofwat reports for 2025-26 in its
+    #   29 January 2026 statement. It replaces the 26% forecast in Ofwat's
+    #   30 January 2025 statement.
+    # - 2026 (2026-27): 5.4%, the national average from Water UK's 28 January
+    #   2026 company charges (GBP 639, up GBP 33), confirmed by Ofwat the next day.
+    # - 2027-2029: projections from forecast_water_bills.py (#1239). They are
+    #   the customer-weighted mean of per-company bills before inflation, from
+    #   the CCW table of Ofwat's PR24 draft determinations, plus a hardcoded
+    #   CPIH path. The weights were in ofwat_increases.csv, which was never
+    #   committed, so these three values cannot be reproduced from the repo.
     values:
       2022-01-01: 0.052
       2023-01-01: 0.092
       2024-01-01: 0.044
-      2025-01-01: 0.26
-      2026-01-01: 0.055
+      2025-01-01: 0.27
+      2026-01-01: 0.054
       2027-01-01: 0.046
       2028-01-01: 0.045
       2029-01-01: 0.045
@@ -1204,10 +1282,59 @@ ofwat:
       unit: /1
       label: Water bills growth
       reference:
-        - title: Ofwat (and custom projections)
-          href: https://www.ofwat.gov.uk/price-review/
-        - title: Ofwat 2025-26 media statement
+        - title: Ofwat, "Ofwat responds to water sector average bill figures" (29 January 2026)
+          href: https://www.ofwat.gov.uk/ofwat-responds-to-water-sector-average-bill-figures/
+        - title: Water UK, "Record investment as average household water bills rise £33 a year from April" (28 January 2026)
+          href: https://www.water.org.uk/news-views-publications/news/record-investment-average-household-water-bills-rise-ps33-year-april
+        - title: Ofwat, "Average bills 2025/26 press statement" (30 January 2025)
           href: https://www.ofwat.gov.uk/average-bills-2025-26-press-statement/
+        - title: CCW, "Breakdown of water companies' bill increases 2025-30" (Ofwat PR24 draft determinations)
+          href: https://www.ccw.org.uk/our-work/price-review/how-much-will-my-water-and-sewerage-bills-increase-by-2030/breakdown-of-water-companies-bill-increases-2025-30/
+scottish_water:
+  water_bills:
+    description: Year-on-year growth in Scottish Water's household water and sewerage charges.
+    # Scottish Water sets Scotland's household charges within limits from the
+    # Water Industry Commission for Scotland (WICS); Ofwat's series covers
+    # England and Wales only. Each value is the charging year starting in
+    # April, so 2025-01-01 holds 2025-26.
+    # - 2022-2026: the increase in household charges that Scottish Water
+    #   announced and WICS approved for each year. Every council tax band's
+    #   charge is a fixed fraction of Band D, so each band rises by the same
+    #   percentage.
+    # - 2027-2029: the core cap in WICS's Draft Determination for 2027-33
+    #   (consultation 30 June to 1 September 2026), CPI + 2% in each of the
+    #   first three years (para. 9.1.3), with CPI from WICS's forecast of
+    #   October CPI in the previous year, 1.9%, 1.9% and 2.1% (Table 68, from
+    #   OBR's March 2026 forecast). WICS publishes the Final Determination on
+    #   29 October 2026; replace these with it.
+    # Later years hold the 2029-30 rate.
+    values:
+      2022-01-01: 0.042
+      2023-01-01: 0.05
+      2024-01-01: 0.088
+      2025-01-01: 0.099
+      2026-01-01: 0.0867
+      2027-01-01: 0.039
+      2028-01-01: 0.039
+      2029-01-01: 0.041
+    metadata:
+      unit: /1
+      label: Scottish Water household charges growth
+      reference:
+        - title: WICS, Scottish Water's charges scheme 2022-23 (4.2%)
+          href: https://wics.scot/publications/price-setting/strategic-review-charges-2021-27/scottish-waters-charges-scheme/charges-scheme-2022-23
+        - title: WICS, Scottish Water's charges scheme 2023-24 (5%)
+          href: https://wics.scot/publications/price-setting/strategic-review-charges-2021-27/scottish-waters-charges-scheme/charges-scheme-2023-24
+        - title: WICS, Scottish Water's charges scheme 2024-25 (8.8%, letter of 30 January 2024)
+          href: https://wics.scot/publications/price-setting/strategic-review-charges-2021-27/scottish-waters-charges-scheme/charges-scheme-2024-25
+        - title: Scottish Water, "Charges 2025 to 2026" (28 January 2025; 9.9%)
+          href: https://www.scottishwater.co.uk/About-Us/News-and-Views/2025/01/Charges-2025-to-2026-Announcement
+        - title: Scottish Water, "Average water bills to rise £42 in 2026" (22 January 2026; 8.67%)
+          href: https://www.scottishwater.co.uk/about-us/news-and-views/2026/01/230126-charges-2026
+        - title: WICS, Strategic Review of Charges 2027-33 Draft Determination (June 2026), para. 9.1.3 (CPI + 2% core cap) and Table 68 (CPI forecast, p. 258)
+          href: https://wics.scot/system/files/2026-06/Draft-Determination-2027-33.pdf
+        - title: WICS, "WICS publishes 2027-33 Draft Determination" (Final Determination 29 October 2026)
+          href: https://wics.scot/latest/wics-publishes-2027-33-draft-determination
 finance_ni:
   domestic_rates:
     description: Growth in the average Northern Ireland domestic rates bill (regional rate plus district rate), used to project the domestic_rates dataset input.

@@ -15,8 +15,9 @@ class savings_allowance(Variable):
         "Welsh taxpayer, so the bands are the rest-of-UK ones for everyone. "
         "tax_band follows the Scottish bands for a Scottish taxpayer, as the "
         "Marriage Allowance conditions need, so it is not read here. Taxable "
-        "income is taken, as in tax_band, as adjusted net income less "
-        "allowances."
+        "income is taken, as in tax_band, as net income less allowances, and "
+        "a Gift Aid gift raises the basic and higher rate limits by its "
+        "grossed-up amount (ITA 2007 s. 414(2)(b))."
     )
     definition_period = YEAR
     reference = "https://www.legislation.gov.uk/ukpga/2007/3/section/12B"
@@ -26,15 +27,18 @@ class savings_allowance(Variable):
         income_tax = parameters(period).gov.hmrc.income_tax
         amounts = income_tax.allowances.personal_savings_allowance
         thresholds = income_tax.rates.uk.thresholds
-        taxable_income = person("adjusted_net_income", period) - person(
-            "allowances", period
-        )
-        # thresholds[1] is the basic rate limit and thresholds[2] the higher
-        # rate limit. Income up to a limit is charged at the lower rate and
-        # only income above it at the higher one (ITA 2007 s. 10(2)-(3)), so
-        # taxable income exactly at a limit has none in the band above.
+        # Net income, not adjusted net income: adjusted net income deducts
+        # the grossed-up Gift Aid gift (s. 58), which instead raises the rate
+        # limits (s. 414(2)(b)) that decide the band.
+        taxable_income = person("net_income", period) - person("allowances", period)
+        gross_gift = person("gift_aid_grossed_up", period)
+        basic_rate_limit = thresholds[1] + gross_gift
+        higher_rate_limit = thresholds[2] + gross_gift
+        # Income up to a limit is charged at the lower rate and only income
+        # above it at the higher one (ITA 2007 s. 10(2)-(3)), so taxable
+        # income exactly at a limit has none in the band above.
         return select(
-            [taxable_income > thresholds[2], taxable_income > thresholds[1]],
+            [taxable_income > higher_rate_limit, taxable_income > basic_rate_limit],
             [amounts.additional, amounts.higher],
             default=amounts.basic,
         )

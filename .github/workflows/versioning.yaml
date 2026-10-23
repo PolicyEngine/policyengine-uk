@@ -375,10 +375,9 @@ jobs:
     if: needs.Versioning.outputs.publish == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    # The environment the PyPI credential should live in. Today PYPI is an
-    # organisation secret that every repository's workflows can read. Once it
-    # is a secret of this environment instead, limited to main (admin
-    # settings, not set here), only this job on main can read it.
+    # PyPI trusts only this workflow in this environment (trusted publishing),
+    # and the environment is limited to main (admin settings, not set here),
+    # so only this job on main can publish. There is no stored PyPI token.
     environment: pypi
     # One Publish per version at a time: two runs releasing the same version
     # commit (a re-run beside the original) upload and tag in turn, and the
@@ -388,6 +387,8 @@ jobs:
       cancel-in-progress: false
     permissions:
       contents: write
+      # Lets this job request the OIDC token PyPI exchanges for an upload token.
+      id-token: write
     steps:
       - name: Checkout the version commit
         uses: actions/checkout@v6
@@ -408,8 +409,11 @@ jobs:
           set -euo pipefail
           echo "$WHEEL_SHA256  dist/policyengine_uk-$VERSION-py3-none-any.whl" | sha256sum --check
           echo "$SDIST_SHA256  dist/policyengine_uk-$VERSION.tar.gz" | sha256sum --check
+          # The manifest records these files, so the PyPI checks below compare
+          # with them whatever the publish step adds to dist (attestations).
           python3 .github/release_artifacts.py check-dist --dist dist \
-            --version "$VERSION" --sha "$SHA"
+            --version "$VERSION" --sha "$SHA" \
+            --manifest-out "$RUNNER_TEMP/release-manifest.json"
       - name: Check what PyPI already has for this version
         id: pypi
         env:
@@ -419,15 +423,14 @@ jobs:
           # absent or partial: upload. complete: a re-run after a successful
           # upload; nothing to do. conflict (exit 3): PyPI has other bytes
           # under this version, so stop.
-          python3 .github/release_artifacts.py pypi-state --dist dist \
+          python3 .github/release_artifacts.py pypi-state \
+            --manifest "$RUNNER_TEMP/release-manifest.json" \
             --version "$VERSION" | tee "$RUNNER_TEMP/pypi-state.txt"
           echo "state=$(head -n 1 "$RUNNER_TEMP/pypi-state.txt")" >> "$GITHUB_OUTPUT"
       - name: Publish to PyPI
         if: steps.pypi.outputs.state != 'complete'
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          user: __token__
-          password: ${{ secrets.PYPI }}
           packages-dir: dist/
           # Safe only because the step above found no different file under
           # this version: it skips a file a failed earlier attempt uploaded.
@@ -436,7 +439,8 @@ jobs:
         env:
           VERSION: ${{ needs.Versioning.outputs.version }}
         run: |
-          python3 .github/release_artifacts.py pypi-state --dist dist \
+          python3 .github/release_artifacts.py pypi-state \
+            --manifest "$RUNNER_TEMP/release-manifest.json" \
             --version "$VERSION" --require complete --wait 600
       # Tell policyengine.py (workstream W4's certify-uk-release.yaml) that
       # this version is on PyPI, so it qualifies the release. That workflow
