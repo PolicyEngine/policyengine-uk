@@ -2,7 +2,8 @@
 
 SI 2006/213 Sch 4 (working age) and SI 2006/214 Sch 4 (pension age) disregard
 £25 a week of a lone parent's net earnings, £10 of a couple's and £5 of anyone
-else's, plus the £17.10 additional earnings disregard where a work condition
+else's, or £20 in place of the £5 or £10 for a family that qualifies for the
+special disregard (housing_benefit_special_earnings_disregard_eligible), plus the £17.10 additional earnings disregard where a work condition
 is met and net earnings at least equal the other disregards, the deductible
 childcare charges and £17.10. A claimant who, or whose partner, is on
 Universal Credit, Income Support, income-based JSA or income-related ESA has
@@ -28,11 +29,19 @@ Invariants, for any generated population of families not on those benefits
    over, where nothing age-dependent (para 12, the age-25 test, National
    Insurance above State Pension age) can differ between the two groups, so
    it pins the current behaviour rather than independently testing the two
-   schedules.
+   schedules. Intended difference: the £20 special disregard has different
+   conditions at each age. At working age it follows the disability premium,
+   which the model grants on the disability flag the draws set; at pension age
+   it needs receipt of a listed benefit, blindness or the carer premium (SI
+   2006/214 Sch 4 paras 4 and 5), none of which the draws supply. The
+   comparison therefore covers families whose special eligibility is the same
+   at both ages, which includes every family without a disabled adult.
 7. Differential against the old flat formula (£5/£10/£25 by family type, plus
    £37.10 for summed hours over 30, or 16 for lone parents), read without
    CPI uprating. They agree for families whose net earnings cover the flat
-   amount and to whom neither formula gives the additional disregard. They
+   amount and to whom neither formula gives the additional disregard or the
+   special disregard; a couple or single person who qualifies for the special
+   disregard, and whose net earnings cover £20, gets £20 instead. They
    must differ where net earnings fall below the flat amount (the new
    disregard is the net earnings) and for families without earnings (the new
    disregard is zero).
@@ -159,6 +168,7 @@ VARIABLES = [
     "housing_benefit_applicable_income",
     "housing_benefit_applicable_income_childcare_element",
     "meets_housing_benefit_additional_earnings_disregard_conditions",
+    "housing_benefit_special_earnings_disregard_eligible",
 ]
 
 
@@ -246,8 +256,13 @@ def test_pension_age_and_working_age_schedules_agree(units):
     # Map 25-60 onto 67-90, keeping everyone at or over 25.
     pension_age = calculate(units, age_map=lambda age: 67 + (age - 25) * 23 // 35)
     key = "housing_benefit_applicable_income_disregard"
+    special = "housing_benefit_special_earnings_disregard_eligible"
     for i, unit in enumerate(units):
-        assert abs(working_age[key][i] - pension_age[key][i]) < 0.01, unit
+        if not any(adult["disabled"] for adult in unit["adults"]):
+            # Nothing else in the draws can make the two routes differ.
+            assert working_age[special][i] == pension_age[special][i], unit
+        if working_age[special][i] == pension_age[special][i]:
+            assert abs(working_age[key][i] - pension_age[key][i]) < 0.01, unit
 
 
 @PROPERTY_SETTINGS
@@ -259,6 +274,7 @@ def test_differential_against_the_old_flat_formula(units):
     additional = values[
         "meets_housing_benefit_additional_earnings_disregard_conditions"
     ].astype(bool)
+    special = values["housing_benefit_special_earnings_disregard_eligible"].astype(bool)
     for i, unit in enumerate(units):
         old = old_flat_formula(unit)
         flat = OLD_FLAT[unit["shape"]] * WEEKS
@@ -272,8 +288,13 @@ def test_differential_against_the_old_flat_formula(units):
             assert abs(disregard[i] - net[i]) < 0.01, unit
             assert disregard[i] < old, unit
         elif not old_worker and not additional[i]:
-            # Agree: the flat amount, without CPI uprating.
-            assert abs(disregard[i] - old) < 0.01, unit
+            if special[i] and unit["shape"] != "lone_parent":
+                # Must differ: £20 replaces the flat £5 or £10 (lone parents
+                # keep £25, which takes precedence).
+                assert abs(disregard[i] - min(20 * WEEKS, net[i])) < 0.01, unit
+            else:
+                # Agree: the flat amount, without CPI uprating.
+                assert abs(disregard[i] - old) < 0.01, unit
 
 
 @PROPERTY_SETTINGS
