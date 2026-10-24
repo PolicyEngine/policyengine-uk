@@ -1,25 +1,33 @@
 # Child maintenance (planned)
 
 ```{warning}
-**Not yet modelled in detail.** PolicyEngine UK has two generic person-level
-inputs, `maintenance_income` and `maintenance_expenses`. They do not tell
-child maintenance apart from maintenance between former partners, and the
-model does not calculate a Child Maintenance Service (CMS) award. This page
-sets out the scope for doing that, tracked in
-[#669](https://github.com/PolicyEngine/policyengine-uk/issues/669) (still
-open, October 2026).
+**Not yet modelled in detail.** The model does not calculate a Child
+Maintenance Service (CMS) award. This page sets out the scope for doing that,
+tracked in [#669](https://github.com/PolicyEngine/policyengine-uk/issues/669)
+(still open, October 2026).
 ```
 
 ## What the model does today
 
-- `maintenance_income` is added to `market_income`, `household_market_income`
-  and `hbai_household_net_income`.
-- `maintenance_expenses` is subtracted in `market_income` and
-  `hbai_household_net_income`.
-- Neither variable feeds any means test. Universal Credit unearned income is
-  the list in `gov.dwp.universal_credit.means_test.income_definitions.unearned`,
-  which contains no maintenance, and UC earned income does not net off
-  maintenance paid.
+- `maintenance_income` holds child maintenance received. Datasets fill it
+  from the Family Resources Survey child maintenance module.
+- `spousal_maintenance_income` holds maintenance paid by a spouse, civil
+  partner, former spouse or former civil partner
+  ([#2572](https://github.com/PolicyEngine/policyengine-uk/issues/2572)).
+- Both are added to `market_income`, `household_market_income` and
+  `hbai_household_net_income`. `maintenance_expenses` (maintenance paid) is
+  subtracted in `market_income` and `hbai_household_net_income`.
+- Only `spousal_maintenance_income` feeds the means tests:
+  - Universal Credit unearned income
+    ([UC Regulations 2013 reg. 66(1)(d)](https://www.legislation.gov.uk/uksi/2013/376/regulation/66));
+  - Pension Credit income
+    ([State Pension Credit Regulations 2002 reg. 15(5)(d)](https://www.legislation.gov.uk/uksi/2002/1792/regulation/15)),
+    but not savings credit qualifying income (reg. 9(f));
+  - Housing Benefit income, less £15 a week where the family includes a child
+    or young person
+    ([HB Regulations 2006 Sch. 5 para. 47](https://www.legislation.gov.uk/uksi/2006/213/schedule/5/paragraph/47);
+    [HB (SPC) Regulations 2006 reg. 29(1)(o) and Sch. 5 para. 20](https://www.legislation.gov.uk/uksi/2006/214/regulation/29)).
+- UC earned income does not net off maintenance paid.
 - `uc_deductions` does cover child maintenance collected from a paying
   parent's UC award, but only in aggregate: it sits in the above-cap excess
   of `uc_deduction_rate` with last resort deductions, estimated from DWP
@@ -35,35 +43,19 @@ For **child** maintenance that is the right answer for UC:
 
 This asymmetry is the work-incentive problem described by the Centre for Social
 Justice in [*The Hidden Parent Poverty Trap: Child Maintenance and Universal
-Credit*][csj]. The model already reproduces it, because neither input reaches
-UC.
-
-The gap is **maintenance between former spouses or civil partners**.
-Reg. 66(1)(d) counts it as unearned income in UC, but the model cannot see it,
-because it shares `maintenance_income` with child maintenance. Those
-recipients' UC is overstated.
+Credit*][csj]. The model reproduces it, because neither child maintenance
+variable reaches UC.
 
 ## Scope
 
-### Phase 1: separate the inputs
+### Phases 1 and 2: separate the inputs and count spousal maintenance
 
-- New input `child_maintenance_received` (Person, GBP, annual).
-- New input `child_maintenance_paid` (Person, GBP, annual).
-- Keep `maintenance_income` and `maintenance_expenses` for maintenance
-  between former partners, and say so in their documentation.
-- In the data pipeline
-  ([Microcosm UK](https://github.com/PolicyEngine/microcosm)), route the FRS
-  child-maintenance items to the new inputs and the spousal items to the
-  existing ones.
-- HBAI income keeps both kinds, received and paid.
-
-### Phase 2: count spousal maintenance in UC
-
-- Add `maintenance_income` (now spousal only) to the UC unearned income list
-  from 2013-04-29, citing reg. 66(1)(d).
-- Leave `child_maintenance_received` and `child_maintenance_paid` out of UC.
-- Check the legacy benefits and Pension Credit the same way before adding
-  either input to their income definitions.
+Done in the engine by #2572. What remains is in the data: datasets that put
+the FRS payments from an absent partner in `private_transfer_income` should
+move them to `spousal_maintenance_income`
+([policyengine-uk-data#627](https://github.com/PolicyEngine/policyengine-uk-data/issues/627);
+[Microcosm UK](https://github.com/PolicyEngine/microcosm)). Datasets that do
+not supply it keep today's results.
 
 ### Phase 3: model the CMS calculation
 

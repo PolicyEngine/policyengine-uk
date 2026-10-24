@@ -27,7 +27,7 @@ The table below shows how the HBAI income components map to PolicyEngine variabl
 | State support - all benefits and tax credits |`hbai_benefits`|
 | Income from occupational and private pensions |`private_pension_income` (includes occupational pension income)|
 | Investment income |`dividend_income`, `savings_interest_income`, `property_income_after_finance_costs`|
-| Maintenance payments |`maintenance_income`|
+| Maintenance payments |`maintenance_income`, `spousal_maintenance_income`|
 | Income from educational grants and scholarships (including, for students, student loans and parental contributions) |`student_payments`|
 | The cash value of certain forms of income in kind (free school meals, free school breakfast, free school milk, free school fruit and vegetables, Healthy Start vouchers and free TV licences for those aged 75 and over who receive Pension Credit) |`free_school_meals`, `free_school_fruit_veg`, `free_school_milk`, `healthy_start_vouchers`, `free_tv_licence_value`|
 | **Subtractions** | |
@@ -98,6 +98,7 @@ Each of the variables above is either derived from other variables, or is a dire
 | `savings_interest_income` | gov.economic_assumptions.indices.obr.per_capita.gdp | Uprated based on OBR per capita GDP projections |
 | `property_income` | gov.economic_assumptions.indices.obr.per_capita.gdp | Uprated based on OBR per capita GDP projections |
 | `maintenance_income` | gov.economic_assumptions.indices.obr.per_capita.gdp | Uprated based on OBR per capita GDP projections |
+| `spousal_maintenance_income` | gov.economic_assumptions.indices.obr.per_capita.gdp | Uprated based on OBR per capita GDP projections |
 | `student_payments` | Not uprated directly | Currently no specific uprating for student payments |
 | `free_school_meals` |gov.obr.consumer_price_index | Uprated based on CPI inflation |
 | `free_school_fruit_veg` | gov.obr.consumer_price_index | Uprated based on CPI inflation |

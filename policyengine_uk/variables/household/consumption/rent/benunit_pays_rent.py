@@ -6,7 +6,6 @@ class benunit_is_rent_liable(Variable):
     entity = BenUnit
     label = "Whether the benefit unit is liable to pay rent"
     definition_period = YEAR
-    unit = GBP
 
     def formula(benunit, period, parameters):
         rent = benunit("benunit_rent", period)

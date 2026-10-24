@@ -1,48 +1,249 @@
-description: Stamp Duty Land Tax statistics.
+description: Stamp Duty Land Tax statistics (England and Northern Ireland).
 metadata:
   economy: false
   propagate_metadata_to_children: true
-  reference:
-  - href: https://www.gov.uk/government/statistics/uk-stamp-tax-statistics
-    title: UK Stamp Tax statistics
-  unit: currency-GBP
+# HMRC's buyer-type tables split SDLT transactions at £40,000 or above between
+# individuals (household) and other buyers (corporate): non-natural persons
+# such as companies, partnerships and collective investment schemes. Receipts
+# and values are in £ (published in £m, rounded to the nearest £5m); 2024-25
+# figures are from the edition published in December 2025 and corrected in
+# March 2026 (the correction does not touch Tables 8a or 8b). Dates are the
+# first calendar year of each fiscal year (2024-01-01 = 2024-25).
+#
+# Revenue after 2024-25 is projected by uprating: each revenue series grows
+# with the OBR's receipts for its property type
+# (gov.economic_assumptions.yoy_growth.obr.stamp_duty_land_tax), holding each
+# buyer type's 2024-25 share of that property type's receipts. The OBR's
+# 2024-25 outturn equals HMRC's all-buyer totals here (£10,380m residential,
+# £3,505m non-residential), so the projection is that share times the OBR
+# forecast. Holding the 2024-25 shares means the projection ignores later
+# policy or market changes that fall unevenly on buyer types. Transactions
+# and values are outturn only. corporate_sdlt allocates the corporate receipts
+# to UK households by shareholding, a modelling convention: HMRC's "other
+# buyers" are all non-natural persons, including partnerships and collective
+# investment schemes as well as companies.
 non_residential:
   corporate:
     revenue:
-      2019-01-01: 2965000000
-      2020-01-01: 2425000000
+      values:
+        2019-01-01: 2_965_000_000
+        2020-01-01: 2_425_000_000
+        2021-01-01: 3_620_000_000
+        2022-01-01: 3_380_000_000
+        2023-01-01: 2_810_000_000
+        2024-01-01: 3_260_000_000
+      metadata:
+        unit: currency-GBP
+        label: Non-residential SDLT receipts from non-natural persons
+        uprating: gov.economic_assumptions.indices.obr.stamp_duty_land_tax.non_residential
+        reference:
+          - title: HMRC Annual Stamp Tax Statistics 2024 to 2025 (corrected March 2026), Table 8b (2023-24, 2024-25)
+            href: https://www.gov.uk/government/statistics/uk-stamp-tax-statistics
+          - title: HMRC Annual Stamp Tax Statistics 2023 to 2024 (archived copy), Table 6b (2021-22, 2022-23)
+            href: https://web.archive.org/web/20250503054620/https://assets.publishing.service.gov.uk/media/674db4ec07045bdb881ee241/Annual_Stamps_2023_24.ods
+          - title: HMRC Annual Stamp Tax Statistics historic tables 2023 to 2024 (archived copy), Table 6b (2019-20, 2020-21)
+            href: https://web.archive.org/web/20250503051845/https://assets.publishing.service.gov.uk/media/674db6c42e91c6fb83fb51be/ASTP_Historic_Tables_2023_24.ods
     transaction_values:
-      2019-01-01: 103395000000
-      2020-01-01: 77080000000
+      values:
+        2019-01-01: 103_395_000_000
+        2020-01-01: 77_080_000_000
+        2021-01-01: 107_120_000_000
+        2022-01-01: 100_370_000_000
+        2023-01-01: 85_920_000_000
+        2024-01-01: 93_930_000_000
+      metadata:
+        unit: currency-GBP
+        label: Non-residential SDLT transaction values for non-natural persons
+        reference:
+          - title: HMRC Annual Stamp Tax Statistics 2024 to 2025 (corrected March 2026), Table 8b (2023-24, 2024-25)
+            href: https://www.gov.uk/government/statistics/uk-stamp-tax-statistics
+          - title: HMRC Annual Stamp Tax Statistics 2023 to 2024 (archived copy), Table 6b (2021-22, 2022-23)
+            href: https://web.archive.org/web/20250503054620/https://assets.publishing.service.gov.uk/media/674db4ec07045bdb881ee241/Annual_Stamps_2023_24.ods
+          - title: HMRC Annual Stamp Tax Statistics historic tables 2023 to 2024 (archived copy), Table 6b (2019-20, 2020-21)
+            href: https://web.archive.org/web/20250503051845/https://assets.publishing.service.gov.uk/media/674db6c42e91c6fb83fb51be/ASTP_Historic_Tables_2023_24.ods
     transactions:
-      2019-01-01: 78800
-      2020-01-01: 65300
+      values:
+        2019-01-01: 78_800
+        2020-01-01: 65_300
+        2021-01-01: 83_100
+        2022-01-01: 81_500
+        2023-01-01: 80_300
+        2024-01-01: 87_300
+      metadata:
+        label: Non-residential SDLT transactions by non-natural persons
+        reference:
+          - title: HMRC Annual Stamp Tax Statistics 2024 to 2025 (corrected March 2026), Table 8b (2023-24, 2024-25)
+            href: https://www.gov.uk/government/statistics/uk-stamp-tax-statistics
+          - title: HMRC Annual Stamp Tax Statistics 2023 to 2024 (archived copy), Table 6b (2021-22, 2022-23)
+            href: https://web.archive.org/web/20250503054620/https://assets.publishing.service.gov.uk/media/674db4ec07045bdb881ee241/Annual_Stamps_2023_24.ods
+          - title: HMRC Annual Stamp Tax Statistics historic tables 2023 to 2024 (archived copy), Table 6b (2019-20, 2020-21)
+            href: https://web.archive.org/web/20250503051845/https://assets.publishing.service.gov.uk/media/674db6c42e91c6fb83fb51be/ASTP_Historic_Tables_2023_24.ods
   household:
     revenue:
-      2019-01-01: 210000000
-      2020-01-01: 230000000
+      values:
+        2019-01-01: 210_000_000
+        2020-01-01: 230_000_000
+        2021-01-01: 310_000_000
+        2022-01-01: 260_000_000
+        2023-01-01: 230_000_000
+        2024-01-01: 245_000_000
+      metadata:
+        unit: currency-GBP
+        label: Non-residential SDLT receipts from individuals
+        uprating: gov.economic_assumptions.indices.obr.stamp_duty_land_tax.non_residential
+        reference:
+          - title: HMRC Annual Stamp Tax Statistics 2024 to 2025 (corrected March 2026), Table 8b (2023-24, 2024-25)
+            href: https://www.gov.uk/government/statistics/uk-stamp-tax-statistics
+          - title: HMRC Annual Stamp Tax Statistics 2023 to 2024 (archived copy), Table 6b (2021-22, 2022-23)
+            href: https://web.archive.org/web/20250503054620/https://assets.publishing.service.gov.uk/media/674db4ec07045bdb881ee241/Annual_Stamps_2023_24.ods
+          - title: HMRC Annual Stamp Tax Statistics historic tables 2023 to 2024 (archived copy), Table 6b (2019-20, 2020-21)
+            href: https://web.archive.org/web/20250503051845/https://assets.publishing.service.gov.uk/media/674db6c42e91c6fb83fb51be/ASTP_Historic_Tables_2023_24.ods
     transaction_values:
-      2019-01-01: 7025000000
-      2020-01-01: 7150000000
+      values:
+        2019-01-01: 7_025_000_000
+        2020-01-01: 7_150_000_000
+        2021-01-01: 9_025_000_000
+        2022-01-01: 7_985_000_000
+        2023-01-01: 6_955_000_000
+        2024-01-01: 7_640_000_000
+      metadata:
+        unit: currency-GBP
+        label: Non-residential SDLT transaction values for individuals
+        reference:
+          - title: HMRC Annual Stamp Tax Statistics 2024 to 2025 (corrected March 2026), Table 8b (2023-24, 2024-25)
+            href: https://www.gov.uk/government/statistics/uk-stamp-tax-statistics
+          - title: HMRC Annual Stamp Tax Statistics 2023 to 2024 (archived copy), Table 6b (2021-22, 2022-23)
+            href: https://web.archive.org/web/20250503054620/https://assets.publishing.service.gov.uk/media/674db4ec07045bdb881ee241/Annual_Stamps_2023_24.ods
+          - title: HMRC Annual Stamp Tax Statistics historic tables 2023 to 2024 (archived copy), Table 6b (2019-20, 2020-21)
+            href: https://web.archive.org/web/20250503051845/https://assets.publishing.service.gov.uk/media/674db6c42e91c6fb83fb51be/ASTP_Historic_Tables_2023_24.ods
     transactions:
-      2019-01-01: 27800
-      2020-01-01: 24500
-  metadata:
-    reference:
-    - href: https://www.gov.uk/government/statistics/uk-stamp-tax-statistics
-      title: UK Stamp Tax statistics (Table 6b)
+      values:
+        2019-01-01: 27_800
+        2020-01-01: 24_500
+        2021-01-01: 28_800
+        2022-01-01: 26_200
+        2023-01-01: 24_800
+        2024-01-01: 25_000
+      metadata:
+        label: Non-residential SDLT transactions by individuals
+        reference:
+          - title: HMRC Annual Stamp Tax Statistics 2024 to 2025 (corrected March 2026), Table 8b (2023-24, 2024-25)
+            href: https://www.gov.uk/government/statistics/uk-stamp-tax-statistics
+          - title: HMRC Annual Stamp Tax Statistics 2023 to 2024 (archived copy), Table 6b (2021-22, 2022-23)
+            href: https://web.archive.org/web/20250503054620/https://assets.publishing.service.gov.uk/media/674db4ec07045bdb881ee241/Annual_Stamps_2023_24.ods
+          - title: HMRC Annual Stamp Tax Statistics historic tables 2023 to 2024 (archived copy), Table 6b (2019-20, 2020-21)
+            href: https://web.archive.org/web/20250503051845/https://assets.publishing.service.gov.uk/media/674db6c42e91c6fb83fb51be/ASTP_Historic_Tables_2023_24.ods
 residential:
   corporate:
     revenue:
-      2019-01-01: 885000000
-      2020-01-01: 705000000
+      values:
+        2019-01-01: 885_000_000
+        2020-01-01: 705_000_000
+        2021-01-01: 1_100_000_000
+        2022-01-01: 1_215_000_000
+        2023-01-01: 975_000_000
+        2024-01-01: 1_230_000_000
+      metadata:
+        unit: currency-GBP
+        label: Residential SDLT receipts from non-natural persons
+        uprating: gov.economic_assumptions.indices.obr.stamp_duty_land_tax.residential
+        reference:
+          - title: HMRC Annual Stamp Tax Statistics 2024 to 2025 (corrected March 2026), Table 8a (2023-24, 2024-25)
+            href: https://www.gov.uk/government/statistics/uk-stamp-tax-statistics
+          - title: HMRC Annual Stamp Tax Statistics 2023 to 2024 (archived copy), Table 6a (2021-22, 2022-23)
+            href: https://web.archive.org/web/20250503054620/https://assets.publishing.service.gov.uk/media/674db4ec07045bdb881ee241/Annual_Stamps_2023_24.ods
+          - title: HMRC Annual Stamp Tax Statistics historic tables 2023 to 2024 (archived copy), Table 6a (2019-20, 2020-21)
+            href: https://web.archive.org/web/20250503051845/https://assets.publishing.service.gov.uk/media/674db6c42e91c6fb83fb51be/ASTP_Historic_Tables_2023_24.ods
     transaction_values:
-      2019-01-01: 31640000000
-      2020-01-01: 30460000000
+      values:
+        2019-01-01: 31_640_000_000
+        2020-01-01: 30_460_000_000
+        2021-01-01: 41_910_000_000
+        2022-01-01: 38_355_000_000
+        2023-01-01: 35_010_000_000
+        2024-01-01: 44_690_000_000
+      metadata:
+        unit: currency-GBP
+        label: Residential SDLT transaction values for non-natural persons
+        reference:
+          - title: HMRC Annual Stamp Tax Statistics 2024 to 2025 (corrected March 2026), Table 8a (2023-24, 2024-25)
+            href: https://www.gov.uk/government/statistics/uk-stamp-tax-statistics
+          - title: HMRC Annual Stamp Tax Statistics 2023 to 2024 (archived copy), Table 6a (2021-22, 2022-23)
+            href: https://web.archive.org/web/20250503054620/https://assets.publishing.service.gov.uk/media/674db4ec07045bdb881ee241/Annual_Stamps_2023_24.ods
+          - title: HMRC Annual Stamp Tax Statistics historic tables 2023 to 2024 (archived copy), Table 6a (2019-20, 2020-21)
+            href: https://web.archive.org/web/20250503051845/https://assets.publishing.service.gov.uk/media/674db6c42e91c6fb83fb51be/ASTP_Historic_Tables_2023_24.ods
     transactions:
-      2019-01-01: 104200
-      2020-01-01: 91600
+      values:
+        2019-01-01: 104_200
+        2020-01-01: 91_600
+        2021-01-01: 117_100
+        2022-01-01: 113_800
+        2023-01-01: 106_900
+        2024-01-01: 124_500
+      metadata:
+        label: Residential SDLT transactions by non-natural persons
+        reference:
+          - title: HMRC Annual Stamp Tax Statistics 2024 to 2025 (corrected March 2026), Table 8a (2023-24, 2024-25)
+            href: https://www.gov.uk/government/statistics/uk-stamp-tax-statistics
+          - title: HMRC Annual Stamp Tax Statistics 2023 to 2024 (archived copy), Table 6a (2021-22, 2022-23)
+            href: https://web.archive.org/web/20250503054620/https://assets.publishing.service.gov.uk/media/674db4ec07045bdb881ee241/Annual_Stamps_2023_24.ods
+          - title: HMRC Annual Stamp Tax Statistics historic tables 2023 to 2024 (archived copy), Table 6a (2019-20, 2020-21)
+            href: https://web.archive.org/web/20250503051845/https://assets.publishing.service.gov.uk/media/674db6c42e91c6fb83fb51be/ASTP_Historic_Tables_2023_24.ods
   household:
+    revenue:
+      values:
+        2019-01-01: 7_540_000_000
+        2020-01-01: 5_310_000_000
+        2021-01-01: 9_070_000_000
+        2022-01-01: 10_505_000_000
+        2023-01-01: 7_595_000_000
+        2024-01-01: 9_145_000_000
+      metadata:
+        unit: currency-GBP
+        label: Residential SDLT receipts from individuals
+        uprating: gov.economic_assumptions.indices.obr.stamp_duty_land_tax.residential
+        reference:
+          - title: HMRC Annual Stamp Tax Statistics 2024 to 2025 (corrected March 2026), Table 8a (2023-24, 2024-25)
+            href: https://www.gov.uk/government/statistics/uk-stamp-tax-statistics
+          - title: HMRC Annual Stamp Tax Statistics 2023 to 2024 (archived copy), Table 6a (2021-22, 2022-23)
+            href: https://web.archive.org/web/20250503054620/https://assets.publishing.service.gov.uk/media/674db4ec07045bdb881ee241/Annual_Stamps_2023_24.ods
+          - title: HMRC Annual Stamp Tax Statistics historic tables 2023 to 2024 (archived copy), Table 6a (2019-20, 2020-21)
+            href: https://web.archive.org/web/20250503051845/https://assets.publishing.service.gov.uk/media/674db6c42e91c6fb83fb51be/ASTP_Historic_Tables_2023_24.ods
+    transaction_values:
+      values:
+        2019-01-01: 269_690_000_000
+        2020-01-01: 310_380_000_000
+        2021-01-01: 374_495_000_000
+        2022-01-01: 341_420_000_000
+        2023-01-01: 270_220_000_000
+        2024-01-01: 335_515_000_000
+      metadata:
+        unit: currency-GBP
+        label: Residential SDLT transaction values for individuals
+        reference:
+          - title: HMRC Annual Stamp Tax Statistics 2024 to 2025 (corrected March 2026), Table 8a (2023-24, 2024-25)
+            href: https://www.gov.uk/government/statistics/uk-stamp-tax-statistics
+          - title: HMRC Annual Stamp Tax Statistics 2023 to 2024 (archived copy), Table 6a (2021-22, 2022-23)
+            href: https://web.archive.org/web/20250503054620/https://assets.publishing.service.gov.uk/media/674db4ec07045bdb881ee241/Annual_Stamps_2023_24.ods
+          - title: HMRC Annual Stamp Tax Statistics historic tables 2023 to 2024 (archived copy), Table 6a (2019-20, 2020-21)
+            href: https://web.archive.org/web/20250503051845/https://assets.publishing.service.gov.uk/media/674db6c42e91c6fb83fb51be/ASTP_Historic_Tables_2023_24.ods
+    transactions:
+      values:
+        2019-01-01: 918_600
+        2020-01-01: 933_700
+        2021-01-01: 1_091_300
+        2022-01-01: 951_800
+        2023-01-01: 764_800
+        2024-01-01: 925_100
+      metadata:
+        label: Residential SDLT transactions by individuals
+        reference:
+          - title: HMRC Annual Stamp Tax Statistics 2024 to 2025 (corrected March 2026), Table 8a (2023-24, 2024-25)
+            href: https://www.gov.uk/government/statistics/uk-stamp-tax-statistics
+          - title: HMRC Annual Stamp Tax Statistics 2023 to 2024 (archived copy), Table 6a (2021-22, 2022-23)
+            href: https://web.archive.org/web/20250503054620/https://assets.publishing.service.gov.uk/media/674db4ec07045bdb881ee241/Annual_Stamps_2023_24.ods
+          - title: HMRC Annual Stamp Tax Statistics historic tables 2023 to 2024 (archived copy), Table 6a (2019-20, 2020-21)
+            href: https://web.archive.org/web/20250503051845/https://assets.publishing.service.gov.uk/media/674db6c42e91c6fb83fb51be/ASTP_Historic_Tables_2023_24.ods
     first_time_buyers_relief:
       brackets:
       - amount:
@@ -106,15 +307,6 @@ residential:
         reference:
         - href: https://www.gov.uk/government/statistics/uk-stamp-tax-statistics
           title: UK Stamp Tax statistics (Table 6a) (Experimental)
-    revenue:
-      2019-01-01: 7540000000
-      2020-01-01: 5310000000
-    transaction_values:
-      2019-01-01: 269690000000
-      2020-01-01: 310380000000
-    transactions:
-      2019-01-01: 918600
-      2020-01-01: 933700
     transactions_by_age:
       brackets:
       - amount:
@@ -178,7 +370,3 @@ residential:
         reference:
         - href: https://www.gov.uk/government/statistics/uk-stamp-tax-statistics
           title: UK Stamp Tax statistics (Table 6c) (Experimental)
-  metadata:
-    reference:
-    - href: https://www.gov.uk/government/statistics/uk-stamp-tax-statistics
-      title: UK Stamp Tax statistics (Table 6a)
