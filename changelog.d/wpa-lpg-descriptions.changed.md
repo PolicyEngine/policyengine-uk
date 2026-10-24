@@ -1,1 +1,1 @@
-Corrected two descriptions: Widowed Parent's Allowance is closed for deaths on or after 6 April 2017, not to new claims, and liquid_fuel_consumption (COICOP 04.5.3) excludes bottled LPG, which COICOP classes as gas (04.5.2).
+Corrected the Widowed Parent's Allowance description: it is closed for deaths on or after 6 April 2017, not to new claims.
