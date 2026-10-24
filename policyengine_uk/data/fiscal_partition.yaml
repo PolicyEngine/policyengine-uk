@@ -100,6 +100,12 @@ sources:
     the employer NI response incidence and the two unallocated tax changes)
     as exclusions from a total of levels; here they are heads of the totals
     that use them, zero at current law.
+  gambling_duties: >-
+    OBR, Economic and fiscal outlook, November 2025, Table A.5, footnote 5,
+    includes betting and gaming duties within Other HMRC taxes. This head
+    measures only supplied household gambling bases; the other components
+    of that receipts row remain unmodelled. No Table 3.1 allocation is
+    claimed. https://obr.uk/docs/dlm_uploads/OBR_Economic_and_fiscal_outlook_November_2025.pdf#page=195
 
 totals:
   gov_tax:
@@ -338,6 +344,26 @@ tax_heads:
       Zero for every household on policyengine-uk-data 1.58.0
       (enhanced_frs_2024_25) in every year from 2025 to 2030, measured
       2026-10-11. Issue 1874.
+  - id: gambling_duty
+    label: Betting and gaming duties
+    variable: gambling_duty
+    entity: household
+    obr_line: Other HMRC taxes
+    obr_line_note: >-
+      Betting and gaming duties belong to this row under November 2025 Table
+      A.5 footnote 5. This head provides partial row coverage only; other
+      Other HMRC taxes remain unmodelled.
+    obr_table_3_1: null
+    report_group: excise_duties
+    payer: household
+    totals: [gov_tax, household_tax]
+    sign: nonnegative
+    data_note: >-
+      Calculated from supplied nonnegative attributed dutiable bases only.
+      Missing inputs default to zero; this does not establish population
+      data adoption or calibrated receipts. Casino incidence uses a fixed
+      UK cash receipts/GB game yield proxy reviewed under issue 2587.
+      This head does not measure the residual Other HMRC taxes components.
   - id: tv_licence
     label: TV licence fee
     variable: tv_licence
@@ -406,6 +432,15 @@ tax_heads:
     payer: corporate incidence
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
     sign: nonnegative
+    data_note: >-
+      Allocates each nation's published non-domestic rates outturn (England
+      and Wales local and central rating lists, Scotland, Northern Ireland),
+      projected with OBR receipts (gov.hmrc.business_rates.statistics). In
+      2026-27 the England, Scotland and Wales series total £37.26bn against
+      £37.41bn on the OBR's Business rates line (receipts Table 3.8).
+      Northern Ireland's £0.78bn (LPS non-domestic rates paid) compares with
+      £0.40bn on the OBR's "Northern Ireland business rates" line, which the
+      OBR records under other taxes (Table 3.2). Measured 2026-10-11.
   - id: sdlt_household
     label: Stamp duty land tax on the household's own purchases
     variable: expected_sdlt
@@ -416,6 +451,12 @@ tax_heads:
     payer: household
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
     sign: nonnegative
+    data_note: >-
+      policyengine-uk-data 1.58.0 calibrates stamp_duty_land_tax to the OBR's
+      total SDLT, which includes the companies' share that sdlt_corporate
+      allocates by shareholding (policyengine-uk-data issue 564). In 2026-27
+      the two heads total £23.29bn against the OBR's £18.15bn, measured
+      2026-10-11.
   - id: sdlt_corporate
     label: Stamp duty land tax paid by companies
     variable: corporate_sdlt
@@ -610,6 +651,13 @@ exclusions:
   - {variable: wine_duty, kind: component, head: alcohol_duty}
   - {variable: spirits_duty, kind: component, head: alcohol_duty}
   - {variable: other_fermented_duty, kind: component, head: alcohol_duty}
+  - {variable: general_betting_duty, kind: component, head: gambling_duty}
+  - {variable: pool_betting_duty, kind: component, head: gambling_duty}
+  - {variable: remote_gaming_duty, kind: component, head: gambling_duty}
+  - {variable: machine_games_duty, kind: component, head: gambling_duty}
+  - {variable: gaming_duty, kind: component, head: gambling_duty}
+  - {variable: bingo_duty, kind: component, head: gambling_duty}
+  - {variable: lottery_duty, kind: component, head: gambling_duty}
   - {variable: car_vehicle_excise_duty, kind: component, head: vehicle_excise_duty}
   # Council tax net of a benefit
   - {variable: council_tax_less_benefit, kind: composite, spans: [council_tax], note: "Council tax net of Council Tax Reduction (the OBR's basis). The totals count gross council tax and credit the reduction as spending, so adding this would count council tax twice."}
@@ -701,7 +749,6 @@ uncovered_receipts:
   - {obr_line: Bank surcharge}
   - {obr_line: Apprenticeship levy}
   - {obr_line: Digital services tax}
-  - {obr_line: Other HMRC taxes}
   - {obr_line: Environmental levies}
   - {obr_line: Emissions Trading Scheme}
   - {obr_line: Energy profits levy}

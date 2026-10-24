@@ -41,10 +41,12 @@ For **child** maintenance that is the right answer for UC:
 - **Paying parent:** maintenance paid is not deducted, so the paying parent is
   means-tested on their full earnings.
 
-This asymmetry is the work-incentive problem described by the Centre for Social
-Justice in [*The Hidden Parent Poverty Trap: Child Maintenance and Universal
-Credit*][csj]. The model reproduces it, because neither child maintenance
-variable reaches UC.
+The paying-parent side of this asymmetry is the work-incentive problem
+described by the Centre for Social Justice in [*The Hidden Parent Poverty Trap:
+Child Maintenance and Universal Credit*][csj]. The model reproduces UC's side
+of it, because neither child maintenance variable reaches UC. It does not
+reproduce the combined marginal rates, because `maintenance_expenses` is a
+fixed input that does not rise with earnings.
 
 ## Scope
 
@@ -71,13 +73,21 @@ parent's gross weekly income
 | £100.01 to £199.99 | Reduced | Formula |
 | £200 to £3,000 | Basic | 12% / 16% / 19% of income up to £800 for 1 / 2 / 3+ children, then 9% / 12% / 15% of income from £800 to £3,000 |
 | Above £3,000 | Basic, capped | Income above £3,000 is ignored; the receiving parent can apply to the courts |
-| Not enough information | Default | £38 / £51 / £64 |
+| Not enough information | Default | £39 / £51 / £64 ([SI 2012/2677 reg. 49](https://www.legislation.gov.uk/uksi/2012/2677/regulation/49); GOV.UK's guide shows £38 for one child) |
 
 Then:
 
-- **Shared care:** the amount falls by 1/7 for 52 to 103 nights a year, 2/7
-  for 104 to 155, 3/7 for 156 to 174, and by half plus £7 a week for 175 or
-  more.
+- **Shared care:** for the basic and reduced rates, the amount payable to
+  each carer falls by 1/7 where a child spends 52 to 103 nights a year with
+  the paying parent, 2/7 for 104 to 155, 3/7 for 156 to 174 and 1/2 for 175
+  or more; where one carer looks after more than one qualifying child, the
+  fractions for those children are added and divided by the number of them
+  (para. 7(5)). It then falls
+  by a further £7 a week for each child with 175 or more nights, but not
+  below £7 a week in total (Sch. 1 para. 7). Where the flat rate applies
+  because the paying parent or their partner gets a prescribed benefit
+  (para. 4(1)(b) or (c) or 4(2)), 52 or more nights with a child makes the
+  amount payable to that child's carer nil (para. 8).
 - **Other children:** an adjustment applies for other children living with
   the paying parent.
 

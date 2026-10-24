@@ -67,6 +67,6 @@ def test_baby_bonus_applies_when_switched_on():
     )
     _, baby, child = scp(2027, scenario)
 
-    # £40.00/week * 52 weeks vs the £28.85/week ordinary rate * 52 weeks.
+    # £40.00/week vs the September-CPI projected ordinary rate £29.20/week.
     assert baby == pytest.approx(2_080, abs=10)
-    assert child == pytest.approx(1_500, abs=10)
+    assert child == pytest.approx(1_518.40, abs=0.01)

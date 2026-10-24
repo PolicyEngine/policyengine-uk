@@ -336,6 +336,14 @@ def base():
     return Simulation(situation=SITUATION)
 
 
+@pytest.fixture(scope="module", autouse=True)
+def release_cached_simulation():
+    # Drop the cached simulation, and the system it built, once this module's
+    # tests are done, instead of for the rest of the test process.
+    yield
+    base.cache_clear()
+
+
 def write(simulation, route, variable, year, value):
     if route == "simulation":
         simulation.set_input(variable, year, [value])

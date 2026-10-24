@@ -170,8 +170,8 @@ def test_uc_childcare_caps_rise_by_september_cpi_in_april_2027(children, expecte
 
 def test_every_parameter_on_the_index_rises_by_september_cpi_after_its_last_value():
     """After its last published value, each parameter uprated by the index
-    rises by exactly the April rise: 0% in April 2016, 3.5% in April 2027,
-    and 2.1% in April 2028."""
+    rises by the April rise: 0% in April 2016, 3.5% in April 2027,
+    and 2.1% in April 2028, with any configured benefit-specific rounding."""
     parameters = system.parameters
     # The processed tree, including its baseline copy, is uprated, so read
     # the YAML files for the last published dates.
@@ -185,9 +185,24 @@ def test_every_parameter_on_the_index_rises_by_september_cpi_after_its_last_valu
             after = parameter(f"{year}-04-30")
             if not before:
                 continue
-            assert after / before - 1 == pytest.approx(
-                rise(parameters, year), abs=2e-5
-            ), (parameter.name, year)
+            uprating = parameter.metadata.get("uprating")
+            rounding = uprating.get("rounding") if isinstance(uprating, dict) else None
+            if rounding:
+                # Scottish benefits round each annual increase to the nearest
+                # 5p. Check the rounded amount rather than an exact growth rate.
+                assert rounding["type"] == "nearest"
+                interval = rounding["interval"]
+                index = parameters.gov.benefit_uprating_cpi
+                factor = index(f"{year}-04-30") / index(f"{year - 1}-04-30")
+                expected = round(before * factor / interval) * interval
+                assert after == pytest.approx(expected, abs=PENNY_TENTH), (
+                    parameter.name,
+                    year,
+                )
+            else:
+                assert after / before - 1 == pytest.approx(
+                    rise(parameters, year), abs=2e-5
+                ), (parameter.name, year)
         checked += len(years) > 0
     assert checked >= 50
 
@@ -239,9 +254,10 @@ def test_hb_non_dependant_income_bands_keep_lagged_cpi_while_deductions_use_sept
 
 def test_amounts_not_raised_by_september_cpi_keep_their_lagged_calendar_projection():
     """Amounts that were on gov.benefit_uprating_cpi but are not raised by
-    September CPI (the Pension Credit standard minimum guarantee, the Housing
-    Benefit pension-age allowances, DfE funding rates and others) still rise
-    by the previous calendar year's CPI after their last value."""
+    September CPI, including DfE funding rates and HB non-dependant income
+    bands, still rise by the previous calendar year's CPI after their last
+    value. Pension Credit amounts and pension-age HB allowances have their
+    own projections."""
     parameters = system.parameters
     raw = load_parameter_file(str(COUNTRY_DIR / "parameters"), name="")
     calendar_cpi = (
@@ -263,8 +279,12 @@ def test_amounts_not_raised_by_september_cpi_keep_their_lagged_calendar_projecti
             assert after / before - 1 == pytest.approx(
                 calendar_cpi(f"{year - 1}-01-01"), abs=2e-5
             ), (parameter.name, year)
-    assert "gov.dwp.pension_credit.guarantee_credit.minimum_guarantee.SINGLE" in names
-    assert "gov.dwp.housing_benefit.allowances.single.aged" in names
+    assert names
+    assert any(name.startswith("gov.dfe.childcare_funding_rate") for name in names)
+    assert not any(name.startswith("gov.dwp.pension_credit.") for name in names)
+    assert not any(
+        name.startswith("gov.dwp.housing_benefit.allowances.") for name in names
+    )
 
 
 def test_the_triple_lock_reads_the_same_september_cpi():

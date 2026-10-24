@@ -7,9 +7,10 @@ consumption*: the `vat` variable applies `gov.hmrc.vat.standard_rate` and
 spending (`full_rate_vat_consumption`, `reduced_rate_vat_consumption`), then
 grosses the result up to VAT receipts. There is no business side. This page
 sets out the scope for adding firm-level VAT and a `Firm` entity, tracked in
-[#1320](https://github.com/PolicyEngine/policyengine-uk/issues/1320) and
-[#1333](https://github.com/PolicyEngine/policyengine-uk/issues/1333). Both
-issues are still open (October 2026).
+[#1320](https://github.com/PolicyEngine/policyengine-uk/issues/1320), which is
+still open (October 2026). The companion analysis issue,
+[#1333](https://github.com/PolicyEngine/policyengine-uk/issues/1333), was
+closed on 20 October 2026 as a duplicate of #1320.
 ```
 
 ## Why firm-level VAT?
@@ -84,17 +85,27 @@ Firm = build_entity(
             "key": "owner",
             "plural": "owners",
             "label": "Owner",
-            "doc": "Person or household that owns the firm.",
+            "doc": "Person who owns the firm.",
         }
     ],
-    containing_entities=["state"],
+    containing_entities=[],
 )
 ```
 
 The `containing_entities` set deliberately does *not* include
 `household` because incorporated firms have no household; the link for
 sole traders is via an explicit `firm_owning_household_id` input
-variable rather than entity nesting.
+variable rather than entity nesting. (The existing `Household` and
+`BenUnit` entities list a `"state"` containing entity, but PolicyEngine UK
+has no `state` entity, so the firm should not copy it.) In policyengine-core
+only people can be members of a group entity, so the owner role holds people.
+Core also places each person in exactly one instance of every group entity,
+so a person cannot own two firms and everyone belongs to some firm: a
+situation that lists firms gives anyone it leaves out a one-person firm, one
+that lists households but no firms puts all its people in a single firm, and
+a dataset build must assign every person a firm. The design therefore needs
+a way to represent people who own no firm and incorporated firms with no
+owner in the data.
 
 ### Variables
 
@@ -144,27 +155,25 @@ component sits against our current data:
 
 | Component | Public source | FRS coverage | Datalab source |
 |-----------|---------------|--------------|----------------|
-| Firm turnover distribution | ONS *Business Demography* | sole-trader / partnership turnover via FRS self-employment income | HMRC Datalab: anonymised VAT returns |
-| Industry sector | SIC codes from ONS *Inter-Departmental Business Register (IDBR)* | not in FRS | HMRC Datalab |
+| Firm turnover distribution | ONS *UK business: activity, size and location* | sole-trader / partnership profit (not turnover) via FRS self-employment income | HMRC Datalab: anonymised VAT returns |
+| Industry sector | SIC codes from ONS *Inter-Departmental Business Register (IDBR)* | main-job SIC 2007 division only (`sic_industry_division`); no firm-level sector | HMRC Datalab |
 | VAT registration share | HMRC *VAT statistics* (annual) | not in FRS | HMRC Datalab |
 | Input VAT shares | ONS *Supply and Use tables* | not applicable | HMRC Datalab |
 
 ### Proposed imputation approach
 
-1. Build a **synthetic firm panel** weighted to ONS Business Demography
-   counts by SIC sector and turnover band.
+1. Build a **synthetic firm panel** weighted to ONS *UK business:
+   activity, size and location* counts by SIC sector and turnover band.
 2. Attach to each firm a registration status, supply split, and
    intermediate-consumption ratio drawn from HMRC VAT statistics and
    ONS Supply and Use tables.
 3. Calibrate the panel so that summed `firm_net_vat_liability` matches
-   the HMRC VAT receipts outturn for the year. This mirrors the
-   second-stage imputation pattern discussed in
-   [#1621](https://github.com/PolicyEngine/policyengine-uk/issues/1621).
+   the HMRC VAT receipts outturn for the year.
 4. For sole traders and partnerships, link the synthetic firm row back
    to the FRS household that owns it via self-employment income.
 
-The companion repo [`policyengine/uk-vatlab`][vatlab] hosts the analysis
-files (#1333) used to size each step before they are productionised.
+The companion repo [`policyengine/uk-vatlab`][vatlab] hosts the firm-level
+VAT analysis files linked from #1333.
 
 ## Effort estimate
 
@@ -193,10 +202,10 @@ files (#1333) used to size each step before they are productionised.
 
 ## References
 
-- HMRC, [VAT rates](https://www.gov.uk/vat-rates) and [VAT registration thresholds](https://www.gov.uk/vat-registration-thresholds).
+- HMRC, [VAT rates](https://www.gov.uk/vat-rates) and [VAT thresholds](https://www.gov.uk/how-vat-works/vat-thresholds).
 - [Value Added Tax Act 1994](https://www.legislation.gov.uk/ukpga/1994/23/contents): primary statute.
 - HMRC, [VAT statistics](https://www.gov.uk/government/statistics/value-added-tax-vat-annual-statistics): annual outturn used for calibration.
-- ONS, [UK Business: Activity, Size and Location](https://www.ons.gov.uk/businessindustryandtrade/business/activitysizeandlocation) (the IDBR-based business demography release).
+- ONS, [UK business: activity, size and location](https://www.ons.gov.uk/businessindustryandtrade/business/activitysizeandlocation/datasets/ukbusinessactivitysizeandlocation): counts of VAT- and/or PAYE-based enterprises by industry (SIC) and turnover band from the Inter-Departmental Business Register (IDBR).
 - ONS, [Supply and Use tables](https://www.ons.gov.uk/economy/nationalaccounts/supplyandusetables): intermediate consumption shares.
 - Companion analysis repo: [`policyengine/uk-vatlab`][vatlab] (#1333).
 
