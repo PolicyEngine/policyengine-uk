@@ -1,3 +1,15 @@
+## [2.152.0] - 2026-10-24
+
+### Added
+
+- - Added the higher Housing Benefit personal allowance for pre-assessed main-phase ESA claimants without double counting the ordinary allowance.
+
+### Fixed
+
+- Update the corporate SDLT and business rates statistics behind `corporate_sdlt` and `business_rates` to the latest official outturn (HMRC stamp tax statistics to 2024-25; England, Scotland and Northern Ireland non-domestic rates to 2025-26; Wales to 2024-25) and project them with the OBR's March 2026 receipts forecasts instead of holding 2018-2021 values flat. Northern Ireland business rates no longer include domestic rates.
+- - Targeted (2-year-old) childcare now qualifies through Pension Credit only when the family receives a guarantee credit, so pensioners who do not claim Pension Credit no longer qualify through a computed guarantee credit. Receipt of a guarantee credit now also requires a Pension Credit payment, so a reform that stops Pension Credit being paid closes the routes that read it.
+
+
 ## [2.151.3] - 2026-10-24
 
 ### Changed
