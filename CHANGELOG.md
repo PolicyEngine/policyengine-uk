@@ -1,3 +1,10 @@
+## [2.153.2] - 2026-10-24
+
+### Fixed
+
+- Pull requests now fail a Changelog fragments check when they add a `changelog.d` file without a towncrier type, or an empty fragment; towncrier silently left these out of CHANGELOG.md. `.github/bump_version.py` now counts only typed fragments and warns about the rest. Dependency-only manifest/lock updates can omit a fragment after a release without bypassing fragment checks.
+
+
 ## [2.153.1] - 2026-10-24
 
 ### Fixed
