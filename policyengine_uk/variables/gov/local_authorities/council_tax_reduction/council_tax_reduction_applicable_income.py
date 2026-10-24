@@ -286,7 +286,10 @@ class council_tax_reduction_applicable_income(Variable):
             benunit, period, ["pension_contributions"], members
         ) * benunit("council_tax_reduction_pension_contribution_deduction_rate", period)
         tax = add_for_members(
-            benunit, period, ["income_tax", "national_insurance"], members
+            benunit,
+            period,
+            ["income_tax_before_winter_fuel_payment_charge", "national_insurance"],
+            members,
         )
         # SI 2012/2885 Sch 1 para 17(9) and Sch 4; WSI 2013/3029 Sch 1 para
         # 11(9) and Sch 3; SSI 2012/319 reg 31(8) and Sch 2: the pensioner

@@ -199,7 +199,7 @@ def grid(families, reform=None):
         "carers_allowance",
         "carer_support_payment",
         "scottish_carer_supplement",
-        "income_tax",
+        "income_tax_before_winter_fuel_payment_charge",
     ]:
         g[variable] = by_benunit(variable)
     return g
@@ -274,8 +274,13 @@ def test_scottish_carer_supplement_is_not_means_tested_income(families):
             without["carer_support_payment"][i],
         ), fam
         for variable in ["pension_credit_income", "housing_benefit_applicable_income"]:
-            with_supplement = g[variable][i] + g["income_tax"][i]
-            without_supplement = without[variable][i] + without["income_tax"][i]
+            with_supplement = (
+                g[variable][i] + g["income_tax_before_winter_fuel_payment_charge"][i]
+            )
+            without_supplement = (
+                without[variable][i]
+                + without["income_tax_before_winter_fuel_payment_charge"][i]
+            )
             if variable == "housing_benefit_applicable_income":
                 # Reg 27(4)(a) adds a savings-credit-only award's savings
                 # credit, which moves with the tax on the supplement.

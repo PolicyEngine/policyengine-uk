@@ -2,7 +2,6 @@ from policyengine_uk.model_api import *
 from policyengine_uk.utils.pensions import (
     pension_contributions_relief_amount,
     relevant_uk_earnings,
-    trading_profits_before_losses,
 )
 
 
@@ -12,17 +11,18 @@ class adjusted_total_income(Variable):
     label = "Adjusted total income"
     documentation = (
         "The base of the cap on reliefs against general income (ITA 2007 "
-        "s.24A(8)). Step 1 is total income (s.23 Step 1): the taxable income "
-        "components, with losses brought forward (loss_relief, a Step 2 "
-        "relief the model deducts from trading profits) added back. Steps 3 "
-        "and 4 deduct the pension contributions given relief (FA 2004 "
-        "ss.192-194): the person's own contributions up to relevant UK "
-        "earnings (s.189(2): employment income, including statutory pay, "
-        "less allowable expenses but before pension deductions, and trading "
-        "profits before losses). The basic amount can "
-        "increase that limit only through relief at source (ss.190(3), "
+        "s.24A(8)). Step 1 is total income (s.23 Step 1, "
+        "total_income_charged_to_tax), which is already after employee "
+        "contributions under a net pay arrangement (FA 2004 s.193(2)). "
+        "Steps 3 and 4 deduct the other pension contributions given relief "
+        "(ss.192-194). Together these are the person's own contributions "
+        "up to relevant UK earnings (s.189(2): employment income, including "
+        "statutory pay, less allowable expenses but before pension "
+        "deductions, and trading profits before losses). The basic amount "
+        "can increase that limit only through relief at source (ss.190(3), "
         "191(7)), which the model represents with gross personal pension "
-        "contributions; employee contributions represent net pay. None is relieved from "
+        "contributions; employee contributions represent net pay. "
+        "None is relieved from "
         "age 75 (s.188(3)(a)). The annual allowance limits tax-relieved "
         "saving through a charge, not the relief itself, so it is not applied "
         "here. Step 2 adds back payroll giving, which the model does not have."
@@ -46,13 +46,7 @@ class adjusted_total_income(Variable):
 
     def formula(person, period, parameters):
         hmrc = parameters(period).gov.hmrc
-        losses_brought_forward_deducted = trading_profits_before_losses(
-            person, period, hmrc
-        ) - person("taxable_self_employment_income", period)
-        total_income = (
-            person("net_income_before_trade_loss_relief", period)
-            + losses_brought_forward_deducted
-        )
+        total_income = person("total_income_charged_to_tax", period)
         # The same relief as pension_contributions_relief, on the same
         # relevant UK earnings (FA 2004 ss.189-191).
         relieved_contributions = pension_contributions_relief_amount(
@@ -62,4 +56,14 @@ class adjusted_total_income(Variable):
             person("age", period),
             hmrc,
         )
-        return max_(0, total_income - relieved_contributions)
+        # Net pay contributions already came off total income at Step 1. With
+        # contributions of zero or more they never exceed the contributions
+        # relieved here (employee contributions up to taxable employment
+        # income, which is part of relevant earnings). Either way the add-back
+        # cancels the deduction: this is total income before them less every
+        # relieved contribution, up to float32 rounding of a few pence on
+        # incomes near £1m.
+        not_yet_deducted = relieved_contributions - person(
+            "net_pay_pension_relief", period
+        )
+        return max_(0, total_income - not_yet_deducted)
