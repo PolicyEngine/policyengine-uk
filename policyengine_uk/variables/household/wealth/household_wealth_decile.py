@@ -20,7 +20,8 @@ class household_wealth_decile(Variable):
         "by row order, so tied households keep their deciles when a dataset "
         "is rebuilt in another order. Negative total_wealth participates in "
         "the ranking before its output is set to -1. Every other household "
-        "gets a decile from 1 to 10, also one with zero weight. Household "
+        "gets a decile from 1 to 10, also one with zero weight. If every "
+        "household has zero weight, each person counts equally. Household "
         "weights are indivisible, so decile bins can still be empty."
     )
     entity = Household
@@ -37,9 +38,12 @@ class household_wealth_decile(Variable):
         order = np.lexsort((np.arange(len(wealth)), tie_key, wealth))
         wealth_rank = np.empty(len(wealth), dtype=int)
         wealth_rank[order] = np.arange(len(wealth))
-        weighted_wealth = MicroSeries(
-            wealth_rank, weights=household_weight * count_people
-        )
+        person_weight = household_weight * count_people
+        if person_weight.sum() == 0:
+            # A frame with no weight at all (a test or an unweighted input)
+            # still gets deciles: each person counts equally.
+            person_weight = count_people
+        weighted_wealth = MicroSeries(wealth_rank, weights=person_weight)
         # A zero-weight household at the start of the order would get 0.
         decile = np.clip(weighted_wealth.decile_rank().values, 1, 10)
         # Set negatives to -1.

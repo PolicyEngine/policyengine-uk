@@ -79,11 +79,14 @@ def test_person_weighted_wealth_ranks(wealth, weights, sizes, expected):
         np.testing.assert_array_equal(household.values["total_wealth"], wealth)
 
 
-def test_zero_total_weight_still_raises():
-    household = FakeHousehold([0, 0], [0, 0], [1, 1])
+def test_zero_total_weight_counts_each_person_equally():
+    # With no weight at all, the ranking falls back to one per person, so
+    # a household of four people takes four tenths of an eight-person frame.
+    household = FakeHousehold([0, 5, 10], [0, 0, 0], [2, 2, 4])
 
-    with pytest.raises(ZeroDivisionError, match="zero total weight"):
-        household_wealth_decile.formula(household, 2026, None)
+    result = household_wealth_decile.formula(household, 2026, None)
+
+    np.testing.assert_array_equal(result, [3, 5, 10])
 
 
 def test_tied_households_keep_their_decile_when_rows_are_shuffled():
