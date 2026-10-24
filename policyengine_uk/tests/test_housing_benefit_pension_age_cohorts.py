@@ -309,3 +309,174 @@ def test_other_members_do_not_change_the_cohort(units, others, year):
             plain.calculate(variable, year),
             atol=0.005,
         )
+
+
+# SI 2021/188 reg 1(2), NI SR 2021/70 reg 1(2), and SI 2021/29 reg 1(2)
+# introduce the cohort split for FY2021-22. Annual 2021 represents that fiscal
+# year; it does not claim that these provisions commenced on 1 January 2021.
+COHORT_VARIABLES = (
+    "housing_benefit_attained_pension_age_before_cutoff",
+    "council_tax_reduction_attained_pension_age_before_cutoff",
+)
+
+
+def cutoff_situation(year, people=None, region="LONDON", component=False):
+    """Build public situations; component flags isolate allowances, not eligibility."""
+    if people is None:
+        people = {"person1": {"age": {year: 40}, "is_male": {year: True}}}
+    benunit = {"members": list(people)}
+    if component:
+        benunit.update(
+            {
+                "housing_benefit_eligible": {year: True},
+                "housing_benefit_pension_age_regulations_apply": {year: True},
+                "council_tax_reduction_pensioner": {year: True},
+                "benefits_premiums": {year: 0},
+                "council_tax_reduction_premiums": {year: 0},
+            }
+        )
+    return {
+        "people": people,
+        "benunits": {"benunit": benunit},
+        "households": {
+            "household": {"members": list(people), "region": {year: region}}
+        },
+    }
+
+
+@pytest.mark.parametrize("variable", COHORT_VARIABLES, ids=["hb", "ctr"])
+@pytest.mark.parametrize("year", [2015, 2020, 2021])
+def test_pre2021_cutoff_is_neutral_without_entitlement_overrides(variable, year):
+    """A neutral historical cohort flag does not award pensioner eligibility."""
+    sim = Simulation(situation=cutoff_situation(year))
+    assert sim.calculate("state_pension_age_date", year)[0] > 20210401
+    assert bool(sim.calculate(variable, year)[0]) is (year < 2021)
+
+
+@pytest.mark.parametrize("region", ["LONDON", "SCOTLAND", "WALES", "NORTHERN_IRELAND"])
+@pytest.mark.parametrize("year", [2015, 2020])
+def test_pre2021_neutral_cohort_does_not_depend_on_region(year, region):
+    """The CTR helper is neutral; this does not extend English monetary rules."""
+    sim = Simulation(situation=cutoff_situation(year, region=region))
+    for variable in COHORT_VARIABLES:
+        assert bool(sim.calculate(variable, year)[0]) is True
+
+
+@pytest.mark.parametrize("year", [2021, 2025])
+@pytest.mark.parametrize(
+    "birth, attainment, expected",
+    [
+        (19550331, 20210331, True),
+        (19550401, 20210401, False),
+        (19550402, 20210402, False),
+    ],
+)
+def test_post2021_exact_attainment_boundary_is_preserved(
+    year, birth, attainment, expected
+):
+    """These men attain 66 on their actual 1955 birth-date anniversary."""
+    people = {
+        "person1": {
+            "age": {year: year - 1955},
+            "date_of_birth": {year: birth},
+            "is_male": {year: True},
+        }
+    }
+    sim = Simulation(situation=cutoff_situation(year, people))
+    assert sim.calculate("state_pension_age_date", year)[0] == attainment
+    for variable in COHORT_VARIABLES:
+        assert bool(sim.calculate(variable, year)[0]) is expected
+
+
+@pytest.mark.parametrize("year", [2021, 2025])
+@pytest.mark.parametrize("qualifying_role", ["partner", "other"])
+def test_post2021_only_claimant_or_partner_can_supply_earlier_attainment(
+    year, qualifying_role
+):
+    """An earlier-attaining partner counts; an unrelated member does not."""
+    people = {}
+    for name, birth, role in [
+        ("person1", 19550402, True),
+        ("person2", 19550331, qualifying_role == "partner"),
+    ]:
+        people[name] = {
+            "age": {year: year - 1955},
+            "date_of_birth": {year: birth},
+            "is_male": {year: True},
+            "is_claimant_or_partner": {year: role},
+            "is_council_tax_reduction_applicant_or_partner": {year: role},
+        }
+    sim = Simulation(situation=cutoff_situation(year, people))
+    for variable in COHORT_VARIABLES:
+        assert bool(sim.calculate(variable, year)[0]) is (qualifying_role == "partner")
+
+
+@pytest.mark.parametrize("year", [2021, 2025])
+def test_post2021_cutoff_parameter_remains_reformable(year):
+    """Moving the cutoff one day includes an otherwise identical 1 April cohort."""
+    from policyengine_uk.model_api import Scenario
+
+    people = {
+        "person1": {
+            "age": {year: year - 1955},
+            "date_of_birth": {year: 19550401},
+            "is_male": {year: True},
+        }
+    }
+    situation = cutoff_situation(year, people)
+    baseline = Simulation(situation=situation)
+    reformed = Simulation(
+        situation=situation,
+        scenario=Scenario(
+            parameter_changes={
+                "gov.dwp.housing_benefit.allowances.pension_age_cutoff": {
+                    str(year): 20210402
+                }
+            }
+        ),
+    )
+    for variable in COHORT_VARIABLES:
+        assert bool(reformed.calculate(variable, year)[0]) is True
+        assert bool(baseline.calculate(variable, year)[0]) is False
+
+
+@pytest.mark.parametrize("year", [2015, 2020])
+def test_omitted_age_component_keeps_existing_higher_allowance(year):
+    """No age/DOB inputs: isolate the component, not natural pensioner entitlement."""
+    sim = Simulation(
+        situation=cutoff_situation(year, people={"person1": {}}, component=True)
+    )
+    for variable in COHORT_VARIABLES:
+        assert bool(sim.calculate(variable, year)[0]) is True
+    higher = sim.tax_benefit_system.parameters(
+        str(year)
+    ).gov.dwp.housing_benefit.allowances.single.aged
+    # 2015 uses the existing model rate symbolically; historical rate repair is #2207.
+    for variable in [
+        "housing_benefit_applicable_amount",
+        "council_tax_reduction_applicable_amount",
+    ]:
+        assert sim.calculate(variable, year)[0] == pytest.approx(higher * 52, abs=0.01)
+
+
+@pytest.mark.parametrize("region", ["SCOTLAND", "WALES", "NORTHERN_IRELAND"])
+def test_nonenglish_ctr_component_keeps_existing_higher_route(region):
+    """England's cutoff does not introduce a new monetary gate elsewhere."""
+    year = 2021
+    sim = Simulation(situation=cutoff_situation(year, region=region, component=True))
+    assert bool(sim.calculate(COHORT_VARIABLES[1], year)[0]) is False
+    higher = sim.tax_benefit_system.parameters(
+        str(year)
+    ).gov.dwp.housing_benefit.allowances.single.aged
+    assert sim.calculate("council_tax_reduction_applicable_amount", year)[
+        0
+    ] == pytest.approx(higher * 52, abs=0.01)
+
+
+@pytest.mark.parametrize("variable", COHORT_VARIABLES, ids=["hb", "ctr"])
+def test_explicit_historical_cohort_input_remains_authoritative(variable):
+    year = 2020
+    situation = cutoff_situation(year)
+    situation["benunits"]["benunit"][variable] = {year: False}
+    sim = Simulation(situation=situation)
+    assert bool(sim.calculate(variable, year)[0]) is False
