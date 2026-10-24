@@ -116,7 +116,8 @@
   output:
     # For child_3 and for child_4, all but one of the other three children
     # are adopted. 4 x 3,455 = 13,820.
-    is_CTC_child_limit_exception: [false, true, true, true, true]
+    # The adopted children are first and second, so reg 9(1)(b) covers them.
+    is_CTC_child_limit_exception: [false, false, false, true, true]
     CTC_child_element: 13_820
 
 - name: Adoption (reg 9(1)(a)(ii)) - with one adopted child among four, the third birth child gets no element

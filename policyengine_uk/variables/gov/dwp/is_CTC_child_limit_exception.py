@@ -7,9 +7,8 @@ class is_CTC_child_limit_exception(Variable):
     label = "Child Tax Credit child limit exception for a third or later child"
     documentation = (
         "Whether an exception to the Child Tax Credit child limit applies to "
-        "this child or qualifying young person if they are the third or a "
-        "later child: the multiple births, adoption, non-parental caring "
-        "arrangements, non-consensual conception or continuation exception, "
+        "this third or later child or qualifying young person: the multiple "
+        "births, adoption, non-parental caring arrangements, non-consensual conception or continuation exception, "
         "or all, or all but one, of the other children being adopted or "
         "cared for under a non-parental caring arrangement."
     )
@@ -45,4 +44,12 @@ class is_CTC_child_limit_exception(Variable):
             is_ctc_child & adopted_or_cared_for
         ) - (is_ctc_child & adopted_or_cared_for)
         others_adopted_or_cared_for = other_adopted_or_cared_for >= other_children - 1
-        return is_ctc_child & (own_exception | others_adopted_or_cared_for)
+        # Reg 9(1)(a) is for a third or later child in the reg 9(5) order;
+        # reg 9(1)(b) covers the first and second.
+        child_limit = parameters(
+            period
+        ).gov.dwp.tax_credits.child_tax_credit.limit.child_count
+        beyond_limit = person("ctc_child_limit_position", period) > child_limit
+        return (
+            is_ctc_child & beyond_limit & (own_exception | others_adopted_or_cared_for)
+        )
