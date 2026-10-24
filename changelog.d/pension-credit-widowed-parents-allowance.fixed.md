@@ -1,0 +1,1 @@
+- Counted widowed parent's allowance as Pension Credit income (State Pension Credit Regulations 2002 reg. 15(1)), so an award that displaces Carer's Allowance or Carer Support Payment no longer raises Guarantee Credit by the amount displaced.

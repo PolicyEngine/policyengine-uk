@@ -42,3 +42,12 @@ values:
   - sda
   - incapacity_benefit
   - maternity_allowance
+  # Reg. 15(1) does not list widowed parent's allowance either (it excepts
+  # bereavement support payment, at (n)), and Sch. IV disregards none of it.
+  # SSCBA 1992 s.39A(4) and (5) end the allowance at pensionable age and
+  # suspend it while the recipient lives with a partner, so a lawful award
+  # should not meet a Pension Credit assessment; a reported one counts in
+  # full. It overlaps with Carer's Allowance and Carer Support Payment, so
+  # leaving it out let an award raise Guarantee Credit by the carer's benefit
+  # it displaced.
+  - widowed_parents_allowance
