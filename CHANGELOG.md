@@ -1,3 +1,10 @@
+## [2.153.4] - 2026-10-24
+
+### Fixed
+
+- - Excluded Child Benefit, Sure Start Maternity Grants and dependent children's own income from the ordinary Housing Benefit income assessment.
+
+
 ## [2.153.3] - 2026-10-24
 
 ### Fixed
