@@ -221,6 +221,10 @@ def situation(drawn, year):
                     variable: {year: AWARD if unit["award"] == key else 0}
                     for key, variable in AWARD_INPUTS.items()
                 },
+                # The family claims Universal Credit only when it is on it: a
+                # claim would end the couple's income-related ESA
+                # (esa_income_report_closed).
+                "would_claim_uc": {year: unit["award"] == "UC"},
             }
             benunits[f"h{h}_b{u}"] = benunit
         hh[f"h{h}"] = {"members": names, "country": {year: household["country"]}}

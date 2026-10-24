@@ -16,12 +16,18 @@ class council_tax_reduction_applicable_income(Variable):
         "pensioner earnings disregards. Great Britain's pensioner schemes "
         "also exclude Child Benefit from general-rule income; statutory sick "
         "and maternity pay remain counted as earnings. The other adjustments those "
-        "provisions allow (childcare charges, the £20 earnings disregards, "
-        "maintenance disregards and the rest) are not modelled. "
+        "provisions allow (childcare charges, the £20 earnings disregards "
+        "and the rest) are not modelled. Spousal maintenance counts less one "
+        "£15 weekly disregard where the applicant's family includes a child "
+        "or young person (the statutory family-premium condition in England's "
+        "default and Welsh schemes). "
+        "Widowed Parent's Allowance counts less £15 weekly per recipient. "
+        "Child maintenance is excluded. Scotland's working-age maintenance "
+        "rule, like Universal Credit, requires a court order or agreement; "
+        "the input is assumed to meet that condition. "
         "The income counted is the Council Tax Reduction applicant's and "
-        "partner's (is_council_tax_reduction_applicant_or_partner), with, as "
-        "the model did before, the income of the family's children or young "
-        "persons. Where the household head applies alone "
+        "partner's (is_council_tax_reduction_applicant_or_partner). "
+        "Where the household head applies alone "
         "(council_tax_reduction_head_applies_alone), the benefit unit's own "
         "awards (Child Benefit, Income Support, income-based JSA, "
         "income-related ESA, Universal Credit, tax credits, Pension Credit) "
@@ -47,6 +53,18 @@ class council_tax_reduction_applicable_income(Variable):
         "https://www.legislation.gov.uk/ssi/2012/319/regulation/25",
         "https://www.legislation.gov.uk/ssi/2012/319/regulation/27",
         "https://www.legislation.gov.uk/ssi/2021/249/regulation/57",
+        "https://www.legislation.gov.uk/uksi/2012/2885/schedule/5/paragraph/7",
+        "https://www.legislation.gov.uk/uksi/2012/2885/schedule/5/paragraph/20",
+        "https://www.legislation.gov.uk/uksi/2012/2886/appendix/8/paragraph/21",
+        "https://www.legislation.gov.uk/uksi/2012/2886/appendix/8/paragraph/49",
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/4/paragraph/7",
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/4/paragraph/20",
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/9/paragraph/21",
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/9/paragraph/49",
+        "https://www.legislation.gov.uk/wsi/2013/3035/schedule/5/paragraph/20",
+        "https://www.legislation.gov.uk/wsi/2013/3035/schedule/7/paragraph/49",
+        "https://www.legislation.gov.uk/ssi/2012/319/schedule/3/paragraph/6",
+        "https://www.legislation.gov.uk/ssi/2012/319/schedule/3/paragraph/19",
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/4",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/3",
         "https://www.legislation.gov.uk/ssi/2012/319/schedule/2",
@@ -113,8 +131,17 @@ class council_tax_reduction_applicable_income(Variable):
             "jsa_contrib",
             "state_pension",
             "maternity_allowance",
+            # Statutory sick, maternity and paternity pay are earnings: SI
+            # 2012/2885 Sch 1 para 18(1)(h) to (j) and the default scheme, SI
+            # 2012/2886 Sch paras 41(1)(h) and (i) and 51(1)(j); WSI 2013/3029
+            # Sch 1 para 12(1)(h) and (i) and Sch 6 para 14(1)(j); SSI
+            # 2012/319 reg 32(1)(h) and (i); SSI 2021/249 regs 49(4)(a) to
+            # (c) and 50(2)(j). The income tax and National Insurance
+            # deducted below include the tax on them (employment_benefits,
+            # ni_class_1_income).
             "statutory_sick_pay",
             "statutory_maternity_pay",
+            "statutory_paternity_pay",
             "ssmg",
         ]
         # Every scheme the model runs counts these three benefits. At pension
@@ -205,7 +232,46 @@ class council_tax_reduction_applicable_income(Variable):
             benunit, period, applicant_and_partner_benefits, applicant_and_partner
         )
         credits = applicant_family * add(benunit, period, ["tax_credits"])
-        increased_income = income + personal_benefit_income + credits + benefits
+        disregards = parameters(
+            period
+        ).gov.local_authorities.council_tax_reduction.income_disregards
+        # England's default working-age scheme Sch 8 paras 21 and 49;
+        # pensioners SI 2012/2885 Sch 5 paras 7 and 20. Wales WSI 2013/3029
+        # Sch 9 paras 21/49 and Sch 4 paras 7/20 (default WSI 2013/3035 Schs
+        # 7 and 5). Scotland SSI 2021/249 reg 57(4), (6) and SSI 2012/319
+        # Sch 3 paras 6/19. All aggregate the family's maintenance for one
+        # £15 disregard. The default English and Welsh family premiums are for families
+        # with a child or young person (SI 2012/2886 Sch para 26(1)(c);
+        # WSI 2013/3029 Sch 1 para 1(1)(c), Sch 6 para 1(1)(c)).
+        maintenance = in_great_britain * benunit.sum(
+            max_(0, person("spousal_maintenance_income", period))
+            * applicant_and_partner
+        )
+        has_child = applicant_family & benunit(
+            "is_responsible_for_child_or_young_person_for_council_tax_reduction", period
+        )
+        maintenance_disregard = where(
+            has_child,
+            min_(maintenance, disregards.maintenance * WEEKS_IN_YEAR),
+            0,
+        )
+        widowed_parents_allowance = in_great_britain * benunit.sum(
+            max_(
+                0,
+                person("widowed_parents_allowance", period)
+                - disregards.widowed_parents_allowance * WEEKS_IN_YEAR,
+            )
+            * applicant_and_partner
+        )
+        increased_income = (
+            income
+            + personal_benefit_income
+            + credits
+            + benefits
+            + maintenance
+            - maintenance_disregard
+            + widowed_parents_allowance
+        )
 
         if not bi.interactions.include_in_means_tests:
             increased_income -= add_for_members(
@@ -255,7 +321,11 @@ class council_tax_reduction_applicable_income(Variable):
         savings_credit_only_income = max_(
             0,
             benunit("pension_credit_income", period)
-            - benunit("pension_credit_war_pension_income", period),
+            - benunit("pension_credit_war_pension_income", period)
+            # PC already counts maintenance in full: apply only CTR's
+            # extra disregard (England Sch 1 para 14(2)(c)(ii); Wales Sch 1
+            # para 8(2)(c)(ii); Scotland reg 25(2)(c)(ii)).
+            - maintenance_disregard,
         ) + benunit("pension_credit", period)
         return select(
             [in_receipt_of_guarantee_credit, has_savings_credit_only_award],

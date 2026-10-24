@@ -5,7 +5,7 @@ def person_net_earnings(person, period, pension_contribution_deduction_rate):
     """A person's net earnings under the legacy means tests' earnings rules.
 
     Employment income plus self-employment profit (each floored at zero) plus
-    statutory sick and maternity pay, less the income tax attributed to them
+    statutory sick, maternity and paternity pay, less the income tax attributed to them
     (before the winter fuel payment charge),
     Class 1, 2 and 4 National Insurance and the scheme's share of pension
     contributions, floored at zero. Housing Benefit
@@ -16,8 +16,8 @@ def person_net_earnings(person, period, pension_contribution_deduction_rate):
     """
     employment_income = person("employment_income", period)
     self_employment_income = person("self_employment_income", period)
-    # Statutory sick and maternity pay are earnings (HB Regs 2006 reg
-    # 35(1)(i); pension age reg 35(1)(h)). The model taxes them as employment income
+    # Statutory sick, maternity and paternity pay are earnings (HB Regs 2006 reg
+    # 35(1)(i); pension age reg 35(1)(h) and (i)). The model taxes them as employment income
     # (employment_benefits) but leaves them out of total_income.
     statutory_pay = person("employment_benefits", period)
     earnings = (

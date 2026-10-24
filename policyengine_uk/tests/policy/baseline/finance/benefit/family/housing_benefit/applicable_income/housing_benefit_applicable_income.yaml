@@ -263,3 +263,27 @@
     housing_benefit: 6_780.29
     housing_benefit_applicable_income: 9_740
     housing_benefit_net_earnings: 10_000
+
+- name: Statutory paternity pay counts as income and the income tax on it comes off
+  # SI 2006/213 reg 35(1)(i): statutory paternity pay is earnings. ITEPA 2003
+  # s. 660 taxes it, and reg 36(3) deducts the income tax and Class 1 NI on
+  # the earnings. 2026: two weeks at £194.32 is 388.64.
+  # Income tax 0.2 x (20,388.64 - 12,570) = 1,563.728.
+  # NI 0.08 x (20,388.64 - 12,569.96) = 625.4944.
+  # Sch 4 para 10 disregards £5 a week of a single claimant's earnings: 260.
+  # 20,388.64 - 1,563.728 - 625.4944 - 260 = 17,939.4176.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        employment_income: 20_000
+        statutory_paternity_pay: 388.64
+    benunits:
+      benunit:
+        members: [person]
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
+  output:
+    housing_benefit_applicable_income_disregard: 260
+    housing_benefit_applicable_income: 17_939.42

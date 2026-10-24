@@ -298,10 +298,13 @@ def situation(units, year=YEAR, benunit_inputs=None):
             names.append(name)
         # claims_all_entitled_benefits sums reports across the whole
         # simulation, so fix the take-up mode per benefit unit: the variants
-        # must not share it.
+        # must not share it. The families are on legacy awards and do not
+        # claim Universal Credit, which would end the couple's income-related
+        # ESA (esa_income_report_closed).
         benunits[f"b{i}"] = {
             "members": names,
             "claims_all_entitled_benefits": {year: False},
+            "would_claim_uc": {year: False},
             **{k: {year: v} for k, v in (benunit_inputs or {}).items()},
         }
         households[f"h{i}"] = {
@@ -960,6 +963,7 @@ def test_other_members_esa_never_changes_non_dependant_exemption(drawn):
             benunits[f"nondep_unit_{tag}"] = {
                 "members": unit,
                 "universal_credit": {year: 0},
+                "would_claim_uc": {year: False},
             }
             households[f"h_{tag}"] = {
                 "members": names + unit,
@@ -1023,7 +1027,7 @@ def test_claimant_and_partner_awards_count_in_full_as_their_ctr_income():
     award adds exactly its amount.
     """
     ctr = "council_tax_reduction_applicable_income"
-    no_uc = {"universal_credit": 0}
+    no_uc = {"universal_credit": 0, "would_claim_uc": False}
     claimant_esa = {"claimant": {**CLAIMANT, "esa_income_reported": 5_000}}
     assert np.isclose(
         _difference(ctr, {"claimant": CLAIMANT}, claimant_esa, no_uc), 5_000
@@ -1102,7 +1106,7 @@ def _claimant_and_other(other_report):
     }
     return {
         "people": people,
-        "benunits": {"b": {"members": list(people)}},
+        "benunits": {"b": {"members": list(people), "would_claim_uc": {YEAR: False}}},
         "households": {"h": {"members": list(people)}},
     }
 
@@ -1158,12 +1162,14 @@ def test_late_zero_entry_overrides_the_claimants_reports():
 
 
 def _situation(people, year=YEAR):
+    # Not claiming Universal Credit, which would end the claimant's
+    # income-related ESA (esa_income_report_closed).
     names = list(people)
     return {
         "people": {
             n: {k: {year: v} for k, v in inputs.items()} for n, inputs in people.items()
         },
-        "benunits": {"b": {"members": names}},
+        "benunits": {"b": {"members": names, "would_claim_uc": {year: False}}},
         "households": {"h": {"members": names}},
     }
 
@@ -1289,6 +1295,7 @@ def test_an_outside_adults_work_keeps_their_non_dependant_deduction():
                     "non_dependant_unit": {
                         "members": ["claimant", "other"],
                         "universal_credit": {year: 0},
+                        "would_claim_uc": {year: False},
                     },
                 },
                 "households": {

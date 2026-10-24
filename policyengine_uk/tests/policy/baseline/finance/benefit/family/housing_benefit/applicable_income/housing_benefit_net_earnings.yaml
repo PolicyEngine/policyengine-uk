@@ -205,6 +205,41 @@
     # 10,000 - 743 = 9,257. (Dividing by 15,000 would attribute 990.67.)
     housing_benefit_net_earnings: 9_257
 
+- name: Statutory paternity pay is earnings, and the income tax on it is deducted
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        employment_income: 20_000
+        statutory_paternity_pay: 388.64 # two weeks at £194.32
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    # SI 2006/213 reg 35(1)(i). ITEPA 2003 s. 660 taxes the payment.
+    # Income tax 0.2 x (20,388.64 - 12,570) = 1,563.728.
+    # NI 0.08 x (20,388.64 - 12,569.96) = 625.4944.
+    # 20,388.64 - 1,563.728 - 625.4944 = 18,199.4176.
+    housing_benefit_net_earnings: 18_199.42
+
+- name: Statutory paternity pay is earnings at pension age
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 70
+        statutory_paternity_pay: 388.64
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    # SI 2006/214 reg 35(1)(i). Within the personal allowance, and no NI
+    # above State Pension age.
+    housing_benefit_net_earnings: 388.64
+
 - name: The winter fuel payment charge does not come off earnings
   period: 2025
   absolute_error_margin: 0.01

@@ -1186,6 +1186,7 @@
         jsa_income: 0
         income_support: 0
         universal_credit: 0
+        would_claim_uc: false
     households:
       household:
         members: [pension_credit_payee, partner]
