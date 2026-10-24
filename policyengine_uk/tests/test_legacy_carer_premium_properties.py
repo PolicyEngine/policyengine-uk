@@ -200,13 +200,32 @@ def test_dependants_caring_never_changes_premium_or_is_eligibility(drawn):
             )
             for member in units[i][:n]
         ]
-        assert list(entitled[adult_slice]) == claims, units[i]
         awards = sum(
             claim and member["carers_allowance_reported"] > 0
             for claim, member in zip(claims, units[i][:n])
         )
-        assert same_person[i] == (awards < 2), units[i]
-        qualifying = sum(claims)
+        expected_same = awards < 2
+        assert same_person[i] == expected_same, units[i]
+        # The statutory same-person restriction permits only one couple
+        # entitlement. Election/discretion is unobserved: this model uses an
+        # eligible reported award, then the head (the elder in these generated
+        # families, with the first member winning an age tie). This oracle
+        # derives the recipient from the fixture inputs, not model outputs.
+        expected_entitlement = claims.copy()
+        if n == 2 and expected_same and all(claims):
+            reported = [
+                j
+                for j, member in enumerate(units[i][:n])
+                if member["carers_allowance_reported"] > 0
+            ]
+            recipient = (
+                reported[0]
+                if reported
+                else max(range(n), key=lambda j: units[i][j]["age"])
+            )
+            expected_entitlement = [j == recipient for j in range(n)]
+        assert list(entitled[adult_slice]) == expected_entitlement, units[i]
+        qualifying = sum(expected_entitlement)
         if same_person[i]:
             qualifying = min(qualifying, 1)
         assert abs(premium[i] - qualifying * amount * WEEKS) < 0.01, units[i]
