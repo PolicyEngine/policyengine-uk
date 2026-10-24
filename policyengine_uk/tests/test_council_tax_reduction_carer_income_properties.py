@@ -191,6 +191,11 @@ def situation(families):
                     name = f"p{i}_{k}_{c}_{j}"
                     person = {
                         "age": {YEAR: a["age"]},
+                        # The drawn adults are the claimant and partner,
+                        # however far apart their ages; the age presumption
+                        # alone would read a partner 20 or more years younger
+                        # as the claimant's child.
+                        "is_claimant_or_partner": {YEAR: True},
                         "state_pension": {YEAR: a.get("state_pension", 0.0)},
                         "employment_income": {YEAR: a.get("employment_income", 0.0)},
                         # All private pension goes to the first adult.

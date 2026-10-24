@@ -65,7 +65,9 @@ def build(units: list, year: int, region: str = "LONDON") -> Simulation:
     member over State Pension age is under the pension-age Housing Benefit
     regulations and is a Council Tax Reduction pensioner. That leaves the
     cohort rule as the only thing under test (a mixed-age couple on Universal
-    Credit would otherwise be in the working-age tables)."""
+    Credit would otherwise be in the working-age tables). Every member is the
+    claimant or partner, and says so: the age presumption would read a
+    partner 20 or more years younger as the claimant's child."""
     people, benunits = {}, {}
     mid_year = grid_months(date(year, 10, 6))
     for u, members in enumerate(units):
@@ -78,6 +80,7 @@ def build(units: list, year: int, region: str = "LONDON") -> Simulation:
                 "age": {year: age},
                 "months_since_last_birthday": {year: age_in_months - 12 * age},
                 "is_male": {year: male},
+                "is_claimant_or_partner": {year: True},
             }
             names.append(name)
         pension_age = at_pension_age(members, year)
