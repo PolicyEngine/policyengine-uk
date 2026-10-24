@@ -8,9 +8,10 @@ class is_CTC_child_limit_exception(Variable):
     documentation = (
         "Whether an exception to the Child Tax Credit child limit applies to "
         "this third or later child or qualifying young person: the multiple "
-        "births, adoption, non-parental caring arrangements, non-consensual conception or continuation exception, "
-        "or all, or all but one, of the other children being adopted or "
-        "cared for under a non-parental caring arrangement."
+        "births, adoption, non-parental caring arrangements, non-consensual "
+        "conception or continuation exception, or all, or all but one, of "
+        "the other children being adopted or cared for under a non-parental "
+        "caring arrangement."
     )
     definition_period = YEAR
     reference = (
