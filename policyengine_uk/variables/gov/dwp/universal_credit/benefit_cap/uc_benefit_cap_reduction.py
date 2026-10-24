@@ -14,8 +14,9 @@ class uc_benefit_cap_reduction(Variable):
         "welfare benefits (reg. 80(2A)). The cap reduces an award of Universal "
         "Credit (reg. 78(1)), so there is no reduction without one. This is the "
         "amount reg. 81 takes off, which can exceed the award before the cap; "
-        "universal_credit floors the award at nil, so the amount actually "
-        "removed is the smaller of the two."
+        "the award goes no lower than nil, so the amount actually removed, "
+        "uc_benefit_cap_reduction_after_floor, is the smaller of the two, and "
+        "that is the Universal Credit part of benefit_cap_reduction."
     )
     definition_period = YEAR
     unit = GBP

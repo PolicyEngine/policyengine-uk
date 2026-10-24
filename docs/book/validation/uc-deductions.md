@@ -55,7 +55,7 @@ JRF specifies the combined limit, not a priority between the two: their [Septemb
 
 Where deductions alone do exceed the allowance, the floor binds on the whole of `uc_deductions`, including the above-cap excess that current law exempts from the deductions cap (last resort and child maintenance deductions). JRF's briefing does not say whether their floor exempts those categories — its worked example involves only cappable deductions and the benefit cap — so this is a modeling choice.
 
-Both components report what the award actually loses, so `uc_deductions` and `uc_benefit_cap_reduction_after_floor` sum to the entitlement forgone, and the applied cap reduction never exceeds the award (a £1,000 cap reduction on a £500 award applies £500). `uc_benefit_cap_reduction`, the regulation 81 amount, itself stays gross, and so does `benefit_cap_reduction`, which adds it to the Housing Benefit reduction. Read `uc_benefit_cap_reduction_after_floor` for the cap reduction applied to a UC award under a floor reform.
+Both components report what the award actually loses, so `uc_deductions` and `uc_benefit_cap_reduction_after_floor` sum to the entitlement forgone, and the applied cap reduction never exceeds the award (a £1,000 cap reduction on a £500 award applies £500). `uc_benefit_cap_reduction`, the regulation 81 amount, itself stays gross. `benefit_cap_reduction` adds the applied amount, `uc_benefit_cap_reduction_after_floor`, to the Housing Benefit reduction, so under a floor reform it reports the cap reduction the floor leaves.
 
 ### Other assumptions
 
