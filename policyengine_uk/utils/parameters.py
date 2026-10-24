@@ -97,48 +97,77 @@ def uk_fiscal_year_period(time_period):
     return periods.Period(("day", start, days))
 
 
+def _fiscal_year_conversion_years(param):
+    """Finite annual steps needed by this leaf's stated timeline.
+
+    Keep the legacy26 annual records and the first following boundary. A
+    stated change then adds the annual labels it can affect, without filling
+    an arbitrary projection horizon. Raw pre2015 keys, including year0000,
+    remain opaque and are retained by Parameter.update.
+    """
+    years = set(range(2015, 2042))
+    blend = (param.metadata or {}).get("fiscal_year_blend", False)
+    for point in param.values_list:
+        year = int(point.instant_str[:4])
+        if year < 2015:
+            continue
+        month_day = point.instant_str[5:]
+        if blend:
+            fiscal_year = year if month_day >= "04-06" else year - 1
+            years.update((fiscal_year, fiscal_year + 1))
+        else:
+            years.add(year if month_day <= "04-30" else year + 1)
+    last_representable = 9998 if blend else 9999
+    if max(years) > last_representable:
+        raise ValueError(
+            f"Cannot annualise {param.name}: its fiscal conversion needs a "
+            "date beyond the supported Gregorian year9999"
+        )
+    return sorted(year for year in years if year >= 2015)
+
+
 def convert_to_fiscal_year_parameters(parameters):
+    """Give each calendar-labelled year its UK fiscal parameter value.
+
+    Ordinary leaves take their30April value. Opt-in ``fiscal_year_blend``
+    leaves retain the existing day-weighted6April-to5April average and its
+    single-date fallback. ``preserve_calendar_dates`` leaves are untouched.
+
+    Ordinary Parameter histories retain all2015–2040 annual records, an
+    explicit2041 boundary and finite later steps induced by stated changes.
+    Dates within a calendar label therefore read the same annual value even
+    beyond2040. This annualises known values; it does not project new values.
+
+    Domain checks and snapshot sampling finish before any live write.
+    Start-only writes remove intervening raw dates and retain the original
+    pre2015 entries.
     """
-    Convert parameters to use UK fiscal year values.
-
-    The UK fiscal year runs April 6 to April 5. When querying a parameter
-    for a year (e.g., param("2026")), we want the value at April 30 of
-    that year (which represents the fiscal year starting April 6).
-
-    This function samples each parameter at April 30 of each year and
-    sets that as the value for the entire year period.
-
-    Sampling a single date drops any change taking effect later in the fiscal
-    year. Parameters carrying `fiscal_year_blend: true` in their metadata are
-    day-weighted across the year instead, which is the right annualisation for
-    a rate or threshold that applies to a flow spread over the year. Leave the
-    flag off where the value at a point in time is what applies, as for a tax
-    charged on a transaction at the rate in force on its date.
-
-    Parameters with ``preserve_calendar_dates: true`` retain statutory dates.
-    Their formulas must explicitly annualise the underlying transactions.
-
-    Values are computed for every year before any are written, so that
-    rewriting one year cannot affect the reading of another.
-    """
-    # Cover years from 2015 through 2040 for long-term projections
-    YEARS = list(range(2015, 2041))
+    planned = []
     for param in canonical_descendants(parameters):
-        if isinstance(param, Parameter):
-            if (param.metadata or {}).get("preserve_calendar_dates", False):
-                continue
-            blend = (param.metadata or {}).get("fiscal_year_blend", False)
-            values = {}
-            for year in YEARS:
-                value = fiscal_year_average(param, year) if blend else None
-                if value is None:
-                    value = param(f"{year}-04-30")
-                values[year] = value
-            for year, value in values.items():
-                param.update(
-                    period=f"{year}",
-                    value=value,
-                )
+        if not isinstance(param, Parameter):
+            continue
+        if (param.metadata or {}).get("preserve_calendar_dates", False):
+            continue
+        planned.append((param, _fiscal_year_conversion_years(param)))
+
+    # No live Parameter, list or root cache is changed during preflight or
+    # snapshot sampling. In particular a late invalid leaf cannot follow an
+    # already-rewritten earlier one.
+    sampled = []
+    for param, years in planned:
+        snapshot = param.clone()
+        blend = (snapshot.metadata or {}).get("fiscal_year_blend", False)
+        values = []
+        for year in years:
+            value = fiscal_year_average(snapshot, year) if blend else None
+            if value is None:
+                value = snapshot(f"{year}-04-30")
+            values.append((year, value))
+        sampled.append((param, values))
+
+    for param, values in sampled:
+        for year, value in values:
+            param.update(start=f"{year}-01-01", value=value)
     return parameters
 
 

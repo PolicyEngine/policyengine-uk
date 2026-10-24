@@ -716,16 +716,23 @@ def _statutory_values_are_current(assignments, system):
         wanted = [entry for entry in assignments if entry.path == path]
         windows = [(entry.start, entry.stop) for entry in wanted]
         if annualised:
-            for year in range(2015, 2041):
-                sample = instant(f"{year}-04-30")
-                start, stop = uk_fiscal_year_bounds(year)
-                if any(
-                    (entry.start <= stop and start <= entry.stop)
-                    if expected.metadata.get("fiscal_year_blend", False)
-                    else entry.start <= sample <= entry.stop
-                    for entry in wanted
-                ):
-                    windows.append(calendar_year_bounds(year))
+            # Cover every calendar label affected by these finite writes,
+            # including January prefixes beyond the old2040 window. This
+            # follows the same sampling/intersection rule without imposing
+            # another fixed last year or inspecting unrelated parameters.
+            years = set()
+            blend = expected.metadata.get("fiscal_year_blend", False)
+            for entry in wanted:
+                first_day = (entry.start.month, entry.start.day)
+                last_day = (entry.stop.month, entry.stop.day)
+                if blend:
+                    first = entry.start.year - (first_day < (4, 6))
+                    last = entry.stop.year - (last_day < (4, 6))
+                else:
+                    first = entry.start.year + (first_day > (4, 30))
+                    last = entry.stop.year - (last_day < (4, 30))
+                years.update(range(max(2015, first), last + 1))
+            windows.extend(calendar_year_bounds(year) for year in sorted(years))
         points = _assignment_boundaries(wanted) | {
             instant(entry.instant_str)
             for entry in target.values_list + expected.values_list
