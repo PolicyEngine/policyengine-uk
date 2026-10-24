@@ -45,9 +45,13 @@ should match changes.
 The first derivation (#2187, 0.67) used the Microcosm release `f9d1922c`.
 That release was replaced by the `6cba5d71` and `a133f37a` cuts, which record
 about 10% more standard-rated consumption. With 0.67, total `vat` on
-`a133f37a` ran 7.5% to 10.3% above receipts in 2024-25 to 2026-27, and on
-`6cba5d71` a reform run of one point on the standard rate cost £9.94bn in
-2026-27, 12.9% above HMRC's ready reckoner. This derivation repeats the same calculation on `a133f37a`
+`a133f37a` ran 7.5% to 10.3% above receipts in 2024-25 to 2026-27. On
+`6cba5d71` (revision `bb225848`), a reform run that raises the standard rate
+from 20% to 21% changed total `vat` by £9.94bn in 2026-27 (£9.68bn in
+2025-26), 12.9% above HMRC's ready reckoner. That is the reform run minus the
+baseline run, with policyengine-uk 2.135.7 and again with 2.152.6, which give
+the same figure; `gov_balance` changed by the same amount. This derivation
+repeats the same calculation on `a133f37a`
 (PolicyEngine/policyengine-uk#2633).
 
 ### Inputs
@@ -64,9 +68,12 @@ about 10% more standard-rated consumption. With 0.67, total `vat` on
 | Statutory rates | 20% standard, 5% reduced | `gov.hmrc.vat` |
 
 Model year 2024 is the 2024-25 fiscal year. All dataset totals are weighted
-sums from `Microsimulation`. The `a133f37a` and `6cba5d71` rows were computed
-with policyengine-uk at this branch's base (main `c0252415a`) and
-policyengine-core 3.33.2; the other rows come from the first derivation.
+sums from `Microsimulation`. The `a133f37a` rows were computed with
+policyengine-uk 2.152.7 (this branch's base, main `c0252415a`) and
+policyengine-core 3.33.2, and again with policyengine-uk 2.147.2 and
+policyengine-core 3.33.3, which give the same totals. The `6cba5d71` rows were
+computed with policyengine-uk 2.147.2 and policyengine-core 3.33.3. The other
+rows come from the first derivation.
 
 ### Formula
 

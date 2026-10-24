@@ -9,7 +9,7 @@ case that value is used.
 from types import SimpleNamespace
 
 import pytest
-from hypothesis import given, settings
+from hypothesis import assume, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -18,6 +18,9 @@ from policyengine_uk.utils.vat import LEGACY_COVERAGE_DEFAULT, vat_grossing_fact
 
 SHARE = st.floats(min_value=0.01, max_value=1, allow_nan=False)
 SPEND = st.floats(min_value=0, max_value=1e6, allow_nan=False)
+# A legacy value counts as untouched when it is within NumPy's default
+# closeness of the declared default: 1e-8 plus 1e-5 times the default.
+BAND = 1e-8 + 1e-5 * abs(LEGACY_COVERAGE_DEFAULT)
 
 
 def params(legacy, coverage, share):
@@ -30,19 +33,42 @@ def params(legacy, coverage, share):
     )
 
 
+# The helper properties check algebra and routing, not speed, so they have no
+# deadline: a slow first example on a loaded host is not a failure.
+@settings(deadline=None)
 @given(coverage=SHARE, share=SHARE)
 def test_untouched_legacy_factor_uses_the_product_of_the_two(coverage, share):
     factor = vat_grossing_factor(params(LEGACY_COVERAGE_DEFAULT, coverage, share))
     assert factor == pytest.approx(coverage * share)
 
 
+@settings(deadline=None)
+@given(
+    offset=st.floats(min_value=-0.99, max_value=0.99),
+    coverage=SHARE,
+    share=SHARE,
+)
+def test_legacy_factor_within_the_band_counts_as_untouched(offset, coverage, share):
+    legacy = LEGACY_COVERAGE_DEFAULT + offset * BAND
+    factor = vat_grossing_factor(params(legacy, coverage, share))
+    assert factor == pytest.approx(coverage * share)
+
+
+@settings(deadline=None)
 @given(legacy=SHARE, coverage=SHARE, share=SHARE)
 def test_moved_legacy_factor_overrides_the_two(legacy, coverage, share):
+    assume(abs(legacy - LEGACY_COVERAGE_DEFAULT) > 1.01 * BAND)
     factor = vat_grossing_factor(params(legacy, coverage, share))
-    if legacy == pytest.approx(LEGACY_COVERAGE_DEFAULT, rel=1e-5, abs=1e-8):
-        assert factor == pytest.approx(coverage * share)
-    else:
-        assert factor == legacy
+    assert factor == legacy
+
+
+@pytest.mark.parametrize(
+    "multiple, moved", [(-1.01, True), (-0.99, False), (0.99, False), (1.01, True)]
+)
+def test_legacy_factor_either_side_of_the_band(multiple, moved):
+    legacy = LEGACY_COVERAGE_DEFAULT + multiple * BAND
+    factor = vat_grossing_factor(params(legacy, 0.5, 0.7))
+    assert factor == (legacy if moved else pytest.approx(0.35))
 
 
 @settings(max_examples=5, deadline=None)

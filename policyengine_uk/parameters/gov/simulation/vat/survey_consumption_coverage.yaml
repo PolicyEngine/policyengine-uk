@@ -19,7 +19,7 @@ metadata:
     and 0.756. The cut it replaces (tag
     microcosm-uk-2024-25-national-20261002T230158Z-5c6b3f68) recorded about 10%
     less standard-rated consumption and gave 0.67; the 6cba5d71 cut gives the
-    same value as a133f37a to three decimal places. Enhanced FRS 2024-25
+    same 2024-25 coverage, 0.739. Enhanced FRS 2024-25
     records more consumption (implied coverage 0.90 to 0.97), so this value
     puts VAT on that dataset above receipts. Re-derive when the dataset it
     should match changes, with docs/engineering/vat-coverage.md, which lists
