@@ -155,12 +155,24 @@ receiving the child element for at least one child, with 1.61 million children.
 - **Take-up.** With full roll-out and full take-up, the cost (£3.58bn) and the
   number of families gaining (778,000 benefit units, against the IFS's "over
   800,000 households") match the IFS closely.
-- **Who is near the poverty line.** The remaining gap in children lifted, about
-  a quarter to 30%, comes from the data rather than the reform. At FYE 2025 the
-  Microcosm release has about 10% fewer children in families with three or more
-  children than HBAI (4.20 million against 4.64 million, HBAI table 4.5db), and
-  about 21% fewer of those children in relative low income after housing costs
-  (1.64 million against 2.07 million). See [PolicyEngine/microcosm#1371](https://github.com/PolicyEngine/microcosm/issues/1371).
+- **The remaining gap.** Children lifted stay about a quarter to 30% short
+  of the IFS figures. These checks do not isolate the cause. Plausible
+  contributors, none of them ruled out:
+  - *Family size in the data.* At FYE 2025 the Microcosm release has about 10%
+    fewer children in families with three or more children than HBAI (4.20
+    million against 4.64 million, HBAI table 4.5db), and about 21% fewer of
+    those children in relative low income after housing costs (1.64 million
+    against 2.07 million). See [PolicyEngine/microcosm#1371](https://github.com/PolicyEngine/microcosm/issues/1371).
+    A shortfall in relative low income does not show how many children cross
+    an absolute line after the reform, so this alone cannot size the gap.
+  - *The poverty line.* The snippet approximates the FYE 2011-based line (see
+    above), so it is not exactly the IFS line.
+  - *Exceptions.* The snippet does not apply the statutory exceptions.
+  - *Take-up.* Full take-up here sets `would_claim_uc` to true for everyone,
+    which is not the IFS adjustment to reported take-up ([IFS, 2024][ifs-2024],
+    Appendix 6B), and this page has not matched that adjustment.
+
+  Attributing the gap to any one of these would need a controlled comparison.
 - **Data year and method.** The IFS used TAXBEN on FRS 2022-23 and 2023-24,
   additionally reweighting 2022-23 by number of children, and FRS data as
   published before HBAI's March 2026 administrative-data linking. PolicyEngine
