@@ -26,9 +26,10 @@ class esa_income_eligible(Variable):
         "in it, so when the claimant or partner reports, another member's "
         "report is paid or not with their claim. Whether that member is on "
         "the award themselves (is_on_income_related_esa) is tested on their "
-        "own claim. Reports whose owner has closed legacy benefits are left "
-        "out before choosing candidates (person_legacy_benefits_closed). "
-        "This is not a full "
+        "own claim. Reports whose award has ended are left out before "
+        "choosing candidates (esa_income_report_closed): the owner's legacy "
+        "benefits have closed, or the owner is the claimant or partner of a "
+        "family that claims Universal Credit. This is not a full "
         "entitlement model."
     )
     definition_period = YEAR
@@ -45,7 +46,7 @@ class esa_income_eligible(Variable):
         person = benunit.members
         capital = benunit("esa_income_assessable_capital", period)
         reports_award = (person("esa_income_reported", period) > 0) & ~person(
-            "person_legacy_benefits_closed", period
+            "esa_income_report_closed", period
         )
         claimant_or_partner = person("is_claimant_or_partner", period)
         # The candidate claimants: the claimant or partner who reports the

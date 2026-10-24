@@ -1,0 +1,137 @@
+# expected_ltt is the household's own LTT, with no further scaling (issue 2246).
+#
+# Rates: The Land Transaction Tax (Tax Bands and Tax Rates) (Wales) Regulations
+# 2018 (WSI 2018/128) schedule.
+# - Table 1, main residential rates, as at 1 January 2022 (the model samples
+#   2022 at 30 April 2022, before the 10 October 2022 substitution by WSI
+#   2022/1027): 0% to £180,000; 3.5% to £250,000; 5% to £400,000; 7.5% to
+#   £750,000; 10% to £1,500,000; 12% above.
+#   https://www.legislation.gov.uk/wsi/2018/128/schedule/2022-01-01
+#   These residential cases cover the historical 2022 schedule; current
+#   rates are covered in test_ltt_lbtt_expected_properties.py.
+# - Table 2, higher rates, as substituted by WSI 2020/1618 and in force on 30
+#   April 2022: 4% to £180,000; 7.5% to £250,000; 9% to £400,000; 11.5% to
+#   £750,000; 14% to £1,500,000; 16% above.
+# - Table 3, non-residential rates, as substituted by WSI 2020/1618 and still
+#   in force: 0% to £225,000; 1% to £250,000; 5% to £1,000,000; 6% above.
+#   https://www.legislation.gov.uk/wsi/2018/128/schedule
+- name: No purchase means no LTT in the tax totals (Wales)
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    region: WALES
+    council_tax: 0
+    household_owns_tv: false
+  output:
+    land_transaction_tax: 0
+    expected_ltt: 0
+    household_tax: 0
+    gov_tax: 0
+- name: Expected LTT on a main-residence purchase equals the LTT liability
+  # £300,000 in 2022:
+  # 3.5% x (250,000 - 180,000) = 2,450
+  # 5% x (300,000 - 250,000) = 2,500
+  # Total 4,950.
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    region: WALES
+    main_residential_property_purchased: 300_000
+    council_tax: 0
+    household_owns_tv: false
+  output:
+    ltt_on_residential_property_transactions: 4_950
+    land_transaction_tax: 4_950
+    expected_ltt: 4_950
+    household_tax: 4_950
+    gov_tax: 4_950
+    pre_budget_change_household_tax: 4_950
+- name: Expected LTT on a main-residence purchase above £1.5m includes the 12% band
+  # £2,000,000 in 2022:
+  # 2,450 + 5% x (400,000 - 250,000) = 7,500
+  # + 7.5% x (750,000 - 400,000) = 26,250
+  # + 10% x (1,500,000 - 750,000) = 75,000
+  # + 12% x (2,000,000 - 1,500,000) = 60,000
+  # Total 171,200.
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    region: WALES
+    main_residential_property_purchased: 2_000_000
+    council_tax: 0
+    household_owns_tv: false
+  output:
+    land_transaction_tax: 171_200
+    expected_ltt: 171_200
+    gov_tax: 171_200
+- name: A purchase at the top of the zero rate band pays no LTT
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    region: WALES
+    main_residential_property_purchased: 180_000
+    council_tax: 0
+    household_owns_tv: false
+  output:
+    land_transaction_tax: 0
+    expected_ltt: 0
+    gov_tax: 0
+- name: Expected LTT on an additional-dwelling purchase equals the higher-rates liability
+  # £200,000 in 2022 at the higher rates:
+  # 4% x 180,000 = 7,200
+  # 7.5% x (200,000 - 180,000) = 1,500
+  # Total 8,700.
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    region: WALES
+    additional_residential_property_purchased: 200_000
+    council_tax: 0
+    household_owns_tv: false
+  output:
+    ltt_on_residential_property_transactions: 8_700
+    land_transaction_tax: 8_700
+    expected_ltt: 8_700
+    household_tax: 8_700
+    gov_tax: 8_700
+- name: Expected LTT on a non-residential purchase equals the LTT liability
+  # £1,200,000 in 2026:
+  # 1% x (250,000 - 225,000) = 250
+  # 5% x (1,000,000 - 250,000) = 37,500
+  # 6% x (1,200,000 - 1,000,000) = 12,000
+  # Total 49,750.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    region: WALES
+    non_residential_property_purchased: 1_200_000
+    council_tax: 0
+    household_owns_tv: false
+  output:
+    ltt_on_non_residential_property_transactions: 49_750
+    land_transaction_tax: 49_750
+    expected_ltt: 49_750
+    household_tax: 49_750
+    gov_tax: 49_750
+- name: No LTT outside Wales, even on a purchase (Scotland)
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    region: SCOTLAND
+    non_residential_property_purchased: 1_200_000
+    council_tax: 0
+    household_owns_tv: false
+  output:
+    land_transaction_tax: 0
+    expected_ltt: 0
+- name: No LTT outside Wales, even on a purchase (England)
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    region: LONDON
+    non_residential_property_purchased: 1_200_000
+    council_tax: 0
+    household_owns_tv: false
+  output:
+    land_transaction_tax: 0
+    expected_ltt: 0

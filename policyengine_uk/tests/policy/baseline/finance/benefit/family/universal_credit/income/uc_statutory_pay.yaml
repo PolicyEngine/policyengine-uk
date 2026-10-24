@@ -8,7 +8,7 @@
 #
 # Before this was fixed the payments were left out of earned income while the
 # National Insurance on them, and the income tax on sick and maternity pay,
-# were still deducted (the model charges no income tax on paternity pay). Each
+# were still deducted (before the paternity-pay income-tax fix). Each
 # pound of sick or maternity pay above the thresholds then raised the award by
 # 0.55 x (20% + 8%) = 15.4p; each pound of paternity pay by 0.55 x 8% = 4.4p.
 #
@@ -252,3 +252,35 @@
     household_net_income: 5_278.80
     hbai_household_net_income: 5_278.80
     gov_spending: 5_278.80
+
+- name: Taxable statutory paternity pay reduces Universal Credit like wages
+  # UC Regs 2013 reg. 55(4)(c) and (5): count SPP before deducting its tax.
+  # Without SPP this family gets 11,308.50, so the award falls by 792.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 20_000
+        statutory_paternity_pay: 2_000
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 9_600
+  output:
+    # 22,000 - 1,886 income tax - 754.40 Class 1 NI = 19,359.60.
+    income_tax: [1_886, 0]
+    uc_income_tax_on_earnings: [1_886, 0]
+    uc_national_insurance_on_earnings: [754.40, 0]
+    uc_individual_earned_income: [19_359.60, 0]
+    # Work allowance 427 x 12 = 5,124; taper 55%.
+    uc_earned_income: 14_235.60
+    uc_maximum_amount: 18_346.08
+    universal_credit: 10_516.50

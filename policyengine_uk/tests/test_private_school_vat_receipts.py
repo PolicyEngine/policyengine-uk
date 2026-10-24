@@ -1,9 +1,11 @@
 """School VAT is a share of receipt-calibrated VAT, not extra receipts.
 
-Let G be household VAT grossed up to total VAT receipts, P0 the baseline
-school charge (baseline_private_school_vat) and s private school fees'
-official share of VAT receipts (gov.simulation.vat.private_school_share_of_receipts).
-General VAT is G x (1 - s); private_school_vat counts the school charge.
+Let G be household VAT on recorded consumption other than energy bills,
+grossed up to VAT receipts net of energy-bill VAT, E VAT on energy bills
+(domestic_energy_vat, not grossed up), P0 the baseline school charge
+(baseline_private_school_vat) and s private school fees' official share of
+VAT receipts (gov.simulation.vat.private_school_share_of_receipts). General
+VAT is G x (1 - s) + E; private_school_vat counts the school charge.
 
 Invariants, for any population and year, with the exemption at current law
 or restored:
@@ -12,9 +14,9 @@ or restored:
   negative, so vat and vat + private_school_vat are non-negative wherever
   recorded consumption is;
 - national identity: weighted vat + private_school_vat is weighted G, less s
-  times weighted G, plus weighted P0. It equals weighted G when the
-  population's school charge is s of its gross VAT, and restoring the
-  exemption lowers it by exactly weighted P0;
+  times weighted G, plus weighted E and weighted P0. It equals weighted G + E
+  when the population's school charge is s of its gross VAT, and restoring
+  the exemption lowers it by exactly weighted P0;
 - once: vat reads neither attendance nor fees, so school-specific reforms
   leave it unchanged household by household, and vat_change is zero at
   baseline.
@@ -70,7 +72,9 @@ def test_official_share_is_the_costing_over_receipts(year):
     assert share(year) == pytest.approx(OFFICIAL_SHARE[year], abs=SHARE_ATOL)
 
 
-def simulation(year=2025, full=10_000, reduced=1_000, reforms=None, pupils=1):
+def simulation(
+    year=2025, full=10_000, reduced=1_000, reforms=None, pupils=1, energy_vat=None
+):
     changes = {
         FEES: {ALWAYS: 10_000},
         BASIS: {ALWAYS: 1},
@@ -82,17 +86,19 @@ def simulation(year=2025, full=10_000, reduced=1_000, reforms=None, pupils=1):
             "age": {year: 10},
             "attends_private_school": {year: True},
         }
+    household = {
+        "members": list(people),
+        "full_rate_vat_consumption": {year: full},
+        "reduced_rate_vat_consumption": {year: reduced},
+    }
+    if energy_vat is not None:
+        household["domestic_energy_vat"] = {year: energy_vat}
+        household["baseline_domestic_energy_vat"] = {year: energy_vat}
     return Simulation(
         situation={
             "people": people,
             "benunits": {"family": {"members": list(people)}},
-            "households": {
-                "household": {
-                    "members": list(people),
-                    "full_rate_vat_consumption": {year: full},
-                    "reduced_rate_vat_consumption": {year: reduced},
-                }
-            },
+            "households": {"household": household},
         },
         reform=changes,
     )
@@ -159,6 +165,22 @@ def test_a_pupil_with_no_recorded_consumption_has_no_negative_vat(exempt):
     assert amount(sim, "vat") + amount(sim, "private_school_vat") >= 0
 
 
+@pytest.mark.parametrize("year", [2024, 2025, 2031])
+@pytest.mark.parametrize("exempt", [False, True])
+def test_energy_bill_vat_bears_no_school_share(year, exempt):
+    # VAT on energy bills is added after grossing and is not a share of
+    # receipts, so the school allocation comes out of the grossed-up amount
+    # only, and a school reform leaves vat unchanged with energy VAT present.
+    sim = simulation(year, reforms={EXEMPT: exempt}, energy_vat=300)
+    keep = 1 - share(year)
+    gross = (10_000 * 0.2 + 1_000 * 0.05) / FACTOR
+    assert amount(sim, "vat", year) == pytest.approx(gross * keep + 300, abs=0.01)
+    assert amount(sim, "baseline_vat", year) == pytest.approx(
+        gross * keep + 300, abs=0.01
+    )
+    assert amount(sim, "vat_change", year) == pytest.approx(0, abs=0.01)
+
+
 def test_vat_reads_neither_attendance_nor_fees():
     without = simulation(pupils=0)
     for pupils, fees in ((1, 10_000), (3, 5_000.10)):
@@ -168,11 +190,13 @@ def test_vat_reads_neither_attendance_nor_fees():
 
 
 def test_published_microcosm_receipts_check_is_unchanged():
-    # Rounded aggregate inputs published in docs/engineering/vat-coverage.md.
-    # Model year 2024 has no school charge and no share to reallocate.
-    sim = simulation(year=2024, full=396.15e9, reduced=25.02e9)
+    # Rounded aggregate inputs published in docs/engineering/vat-coverage.md,
+    # with energy bills split out: the standard-rated base and the energy-bill
+    # VAT, which is added after grossing. Model year 2024 has no school charge
+    # and no share to reallocate.
+    sim = simulation(year=2024, full=396.15e9, reduced=0, energy_vat=1.99e9)
     combined = amount(sim, "vat", 2024) + amount(sim, "private_school_vat", 2024)
-    expected = (0.2 * 396.15e9 + 0.05 * 25.02e9) / FACTOR
+    expected = 0.2 * 396.15e9 / FACTOR + 1.99e9
     assert combined == pytest.approx(expected)
     assert combined / 170.994e9 == pytest.approx(1, rel=0.004)
 

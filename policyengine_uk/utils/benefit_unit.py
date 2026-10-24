@@ -6,6 +6,15 @@ import numpy as np
 # each other are the same, and an award within half a penny of zero is none.
 HALF_PENNY = 0.005
 
+# For each award award_of_members reads, the person-level variable saying the
+# award on a member's report has ended. Its formula leaves those reports out:
+# income-related ESA also ends for the claimant and partner of a family that
+# claims Universal Credit (esa_income_report_closed).
+REPORT_CLOSED = {
+    "esa_income": "esa_income_report_closed",
+    "jsa_income": "person_legacy_benefits_closed",
+}
+
 
 def add_for_members(benunit, period, variables, members):
     """Sum variables over the benefit-unit members a means test counts.
@@ -82,7 +91,7 @@ def award_of_members(benunit, period, award, report, award_on_reports, members):
     members_reported = benunit.sum(reported * members)
     # Formula awards omit reports whose own award has closed. Keep the raw
     # totals above for disable_simulated_benefits and direct-value provenance.
-    open_reported = reported * ~person("person_legacy_benefits_closed", period)
+    open_reported = reported * ~person(REPORT_CLOSED[award], period)
     award_on_all_reports = award_on_reports(benunit, period, benunit.sum(open_reported))
     award_on_members_reports = award_on_reports(
         benunit, period, benunit.sum(open_reported * members)
