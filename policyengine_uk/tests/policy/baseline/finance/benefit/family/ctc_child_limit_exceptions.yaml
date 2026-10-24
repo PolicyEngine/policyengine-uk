@@ -7,8 +7,9 @@
 # under a non-parental caring arrangement. Unlike Universal Credit, a child
 # with an exception keeps their place in the order.
 #
-# Each benefit unit claims tax credits rather than Universal Credit, so the
-# element is not cut to zero by Child Tax Credit eligibility.
+# Each benefit unit has a continuing tax credit claim (reported Child Tax
+# Credit above zero, and no Universal Credit claim), so it is eligible for
+# Child Tax Credit.
 
 - name: Without an exception, the CTC individual element is limited to two children
   period: 2024
@@ -17,6 +18,7 @@
     people:
       parent:
         age: 35
+        child_tax_credit_reported: 1_000
       child_1:
         age: 6
         date_of_birth: 20180501
@@ -47,6 +49,7 @@
     people:
       parent:
         age: 35
+        child_tax_credit_reported: 1_000
       child_1:
         age: 6
         date_of_birth: 20180501
@@ -80,6 +83,7 @@
     people:
       parent:
         age: 35
+        child_tax_credit_reported: 1_000
       child_1:
         age: 6
         date_of_birth: 20180501
@@ -105,6 +109,7 @@
     people:
       parent:
         age: 35
+        child_tax_credit_reported: 1_000
       adopted_1:
         age: 6
         date_of_birth: 20180101
@@ -138,6 +143,7 @@
     people:
       parent:
         age: 35
+        child_tax_credit_reported: 1_000
       child_1:
         age: 6
         date_of_birth: 20180501
@@ -169,6 +175,7 @@
     people:
       parent:
         age: 35
+        child_tax_credit_reported: 1_000
       child_1:
         age: 6
         date_of_birth: 20180501
@@ -194,6 +201,7 @@
     people:
       parent:
         age: 35
+        child_tax_credit_reported: 1_000
       child_1:
         age: 6
         date_of_birth: 20180501
@@ -223,6 +231,7 @@
     people:
       parent:
         age: 35
+        child_tax_credit_reported: 1_000
       child_1:
         age: 6
         date_of_birth: 20180501
@@ -253,6 +262,7 @@
     people:
       parent:
         age: 35
+        child_tax_credit_reported: 1_000
       adopted_1:
         age: 6
         date_of_birth: 20110301
@@ -282,6 +292,7 @@
     people:
       parent:
         age: 37
+        child_tax_credit_reported: 1_000
       adopted_1:
         age: 8
         date_of_birth: 20110301
@@ -315,6 +326,7 @@
     people:
       parent:
         age: 35
+        child_tax_credit_reported: 1_000
       child_1:
         age: 6
         date_of_birth: 20180501
@@ -342,6 +354,7 @@
     people:
       parent:
         age: 35
+        child_tax_credit_reported: 1_000
       child_1:
         age: 6
         date_of_birth: 20180501
