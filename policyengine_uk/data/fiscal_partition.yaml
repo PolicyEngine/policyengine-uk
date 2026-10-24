@@ -252,11 +252,12 @@ tax_heads:
       official share of VAT receipts, which the separate school head counts,
       plus VAT on energy bills. The share is below one, so the allocation
       keeps the sign of the grossed-up amount. Negative for 76 households on
-      policyengine-uk-data 1.58.0 (enhanced_frs_2024_25) in every year from
-      2025 to 2030, -£72m weighted in 2026: full_rate_vat_consumption is
-      negative there because the dataset's consumption (44 households) or
-      full_rate_vat_expenditure_rate (32 households) is negative.
-      policyengine-uk-data issue 565. Measured 2026-10-11.
+      policyengine-uk-data 1.58.1 (enhanced_frs_2024_25) in every year from
+      2025 to 2031, -£55.7m weighted in 2026 (Aggregate impact run
+      40116746457, 2026-10-24). On 1.58.0 (measured 2026-10-11) it was also
+      76: full_rate_vat_consumption is negative there because the dataset's
+      consumption (44 households) or full_rate_vat_expenditure_rate (32
+      households) is negative. policyengine-uk-data issue 565.
   - id: vat_change
     label: Change in VAT from its baseline
     variable: vat_change
