@@ -1,0 +1,22 @@
+# Real OBR receipts table fixtures
+
+These parser fixtures retain the original worksheet XML for Contents, Other
+taxes (3.2), Property transactions taxes: receipts by sector (3.7), and Current
+receipts (on a cash basis: 3.9 in 2025, 3.8 in 2026), plus the original shared
+strings. Only the workbook's sheet list and relationships were reduced to those
+entries. The published unit cells, fiscal-year headers, markers, row labels and
+numeric cells are unchanged. These are minimal archives for the importer's XLSX
+reader, rather than complete Excel documents with styles and charts.
+
+Sources: OBR [March 2025 EFO](https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/)
+and [March 2026 EFO](https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/),
+receipts detailed forecast tables. The original files used for extraction are
+`obr_efo_march_2025_receipts.xlsx` and `obr_efo_march_2026_receipts.xlsx`.
+Their SHA-256 hashes are:
+
+- March 2025: `6b20e05e93c50e3ccae1d3111fd84b8fa326b75c38c8ab055fad694648c75905`
+- March 2026: `f65b6cb7f96931d4abd85940794eb60f6f65afca8bbf16c74a4548bf92766a28`
+
+Tests mutate the unit cell and selected receipt levels inside these real tables;
+the unchanged control must reproduce the committed YAML byte for byte. No test
+downloads a workbook or depends on a developer's local source directory.
