@@ -1,3 +1,10 @@
+## [2.155.1] - 2026-10-24
+
+### Fixed
+
+- - Restored neutral pre-2021 Housing Benefit and Council Tax Reduction cohort flags while retaining the existing FY2021-22 annual split.
+
+
 ## [2.155.0] - 2026-10-24
 
 ### Added
