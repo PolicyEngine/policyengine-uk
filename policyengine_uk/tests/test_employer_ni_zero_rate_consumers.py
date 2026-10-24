@@ -166,11 +166,11 @@ def test_salary_sacrifice_excess_is_zero_rated(case, pension):
 RATE_RISE_2029 = {
     "gov.hmrc.national_insurance.class_1.employer_scale[1].rate": {"2029": 0.16}
 }
-NO_HAIRCUT_2029 = {
-    "gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate": {
-        "2029": 0
-    }
-}
+# No broad-base haircut in either population. A reform's baseline simulation
+# is built from the situation under current law, so a reform setting the
+# haircut rate to zero would remove it from the reformed population only. The
+# haircut is an input here instead, which both populations share.
+NO_HAIRCUT_2029 = {"salary_sacrifice_broad_base_haircut": {2029: 0}}
 
 
 def assert_costs_match_employer_cost(simulation, year):
@@ -188,9 +188,11 @@ def assert_costs_match_employer_cost(simulation, year):
 
 def test_rate_rise_charges_the_sacrifice_excess_at_fixed_cost():
     # María's 2029 case: aged 20, £49,000 pay, a £5,000 sacrifice against the
-    # £2,000 cap and £2,000 of employer pension, no haircut. NIC earnings are
-    # 49,000 + 3,000 = £52,000, above the UST, so the baseline cost is
-    # 51,000 + 0.15 x (52,000 - 50,269.96) = £51,259.51. At 16% the charge
+    # £2,000 cap and £2,000 of employer pension, no haircut in the baseline or
+    # the reform. NIC earnings are 49,000 + 3,000 = £52,000, above the UST, so
+    # the baseline cost is 51,000 + 0.15 x (52,000 - 50,269.96) = £51,259.51.
+    # (With the 0.16% haircut in the baseline alone, pay there would be
+    # £48,921.60 and the cost £51,169.35.) At 16% the charge
     # starts where pay plus pension reaches k = 2,000 + 50,269.96 - 3,000, so
     # pay plus pension is (51,259.51 + 0.16 x k) / 1.16 = 50,985.09 and pay
     # falls to £48,985.09, holding cost at £51,259.51.
@@ -198,15 +200,17 @@ def test_rate_rise_charges_the_sacrifice_excess_at_fixed_cost():
         "employment_income": {2029: 49_000},
         "pension_contributions_via_salary_sacrifice": {2029: 5_000},
         "employer_pension_contributions": {2029: 2_000},
+        **NO_HAIRCUT_2029,
     }
     people = {"person": (20, False, inputs)}
-    simulation = Simulation(
-        situation=situation(people, 2029), reform={**RATE_RISE_2029, **NO_HAIRCUT_2029}
-    )
+    simulation = Simulation(situation=situation(people, 2029), reform=RATE_RISE_2029)
 
     assert values(simulation, "salary_sacrifice_pension_ni_excess", 2029)[
         0
     ] == pytest.approx(3_000, abs=0.01)
+    assert values(simulation.baseline, "employment_income", 2029)[0] == pytest.approx(
+        49_000, abs=0.01
+    )
     baseline_cost = values(simulation, "baseline_employer_cost", 2029)[0]
     assert baseline_cost == pytest.approx(
         51_000 + 0.15 * (52_000 - RELIEF_THRESHOLD), abs=0.01
@@ -233,11 +237,10 @@ def test_rate_rise_with_sacrifice_excess_above_the_threshold(case):
         "employment_income": {2029: 60_000},
         "pension_contributions_via_salary_sacrifice": {2029: 5_000},
         "employer_pension_contributions": {2029: 2_000},
+        **NO_HAIRCUT_2029,
     }
     people = {"person": (age, apprentice, inputs)}
-    simulation = Simulation(
-        situation=situation(people, 2029), reform={**RATE_RISE_2029, **NO_HAIRCUT_2029}
-    )
+    simulation = Simulation(situation=situation(people, 2029), reform=RATE_RISE_2029)
     assert values(simulation, "employment_income", 2029)[0] < 60_000
     assert_costs_match_employer_cost(simulation, 2029)
 

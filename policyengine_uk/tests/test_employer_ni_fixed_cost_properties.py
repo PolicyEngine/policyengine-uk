@@ -3,11 +3,12 @@ reform.
 
 With full employee incidence (the default), employer_ni_fixed_employer_cost_change
 moves pay so that the employer's cost is unchanged by the reform. For a person
-with pay P (including the salary sacrifice cap's broad-base haircut), statutory
-pay S, employer pension contributions E and salary sacrifice above the cap X
-(NIC earnings only, from 2029), the cost under a schedule with employer rate r
-and secondary threshold T (the secondary threshold, or the UST or AUST where
-SSCBA 1992 s.9A or s.9B zero-rates the earner) is
+with pay P (including salary sacrifice returned to ordinary pay and the salary
+sacrifice cap's broad-base haircut), statutory pay S, employer pension
+contributions E and salary sacrifice above the cap X (NIC earnings only, from
+2029), the cost under a schedule with employer rate r and secondary threshold T
+(the secondary threshold, or the UST or AUST where SSCBA 1992 s.9A or s.9B
+zero-rates the earner) is
 
     cost = P + S + E + r * max(P + S + X + E - E_exempt - T, 0)
 
@@ -26,14 +27,16 @@ thresholds, and any person with pay before the reform:
 
 The population mixes earners under 21, relevant apprentices under 25 and other
 earners, each with statutory pay that can carry NIC earnings over a threshold
-that pay alone is below, and a salary sacrifice that the 2029 cap can make
-partly NIC-able.
+that pay alone is below, a salary sacrifice that the 2029 cap can make partly
+NIC-able, and pay returned from salary sacrifice. Explicit examples make sure
+every run covers a sacrifice above the cap in 2029 and 2030, returned pay and
+the zero-pay floor, which 25 drawn examples need not reach.
 
 Comparisons allow float32 rounding: the model stores values as float32.
 """
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -61,6 +64,89 @@ PROPERTY_SETTINGS = settings(
     derandomize=True,
     suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large],
 )
+
+
+def rate_reform(year, rate, secondary=None):
+    period = f"{year}-01-01.2100-12-31"
+    reform = {f"{CLASS_1}.employer_scale[1].rate": {period: rate}}
+    if secondary is not None:
+        reform[f"{CLASS_1}.employer_scale[1].threshold"] = {period: secondary}
+    return reform
+
+
+# Each person: (age, is_apprentice), pay, statutory pay variable and amount,
+# employer pension contributions, salary sacrifice, returned pay.
+EXAMPLES = [
+    # A sacrifice above the £2,000 cap in 2029: María's case (aged 20,
+    # zero-rated up to the UST) and an earner aged 40.
+    (
+        2029,
+        rate_reform(2029, 0.16),
+        [
+            ((20, False), 49_000.0, "statutory_sick_pay", 0.0, 2_000.0, 5_000.0, 0.0),
+            ((40, False), 60_000.0, "statutory_sick_pay", 0.0, 2_000.0, 8_000.0, 0.0),
+        ],
+    ),
+    # 2030, with returned pay and a new secondary threshold of £100 a week.
+    (
+        2030,
+        rate_reform(2030, 0.2, 100.0),
+        [
+            (
+                (24, True),
+                45_000.0,
+                "statutory_paternity_pay",
+                1_000.0,
+                3_000.0,
+                6_000.0,
+                1_500.0,
+            ),
+            (
+                (21, False),
+                30_000.0,
+                "statutory_sick_pay",
+                0.0,
+                0.0,
+                4_000.0,
+                2_500.0,
+            ),
+        ],
+    ),
+    # The zero-pay floor: £1 of pay with £10,000 each of statutory maternity
+    # pay and employer pension, at 30% from a zero threshold. In 2026 the
+    # baseline cost is 20,001 + 0.15 x (10,001 - 5,000) = £20,751.15, and at
+    # zero pay the reformed cost is 20,000 + 0.3 x 10,000 = £23,000. In 2029 a
+    # £10,000 sacrifice adds an £8,000 excess, and returned pay is floored too.
+    (
+        2026,
+        rate_reform(2026, 0.3, 0.0),
+        [((40, False), 1.0, "statutory_maternity_pay", 10_000.0, 10_000.0, 0.0, 0.0)],
+    ),
+    (
+        2029,
+        rate_reform(2029, 0.3, 0.0),
+        [
+            (
+                (40, False),
+                1.0,
+                "statutory_maternity_pay",
+                10_000.0,
+                10_000.0,
+                10_000.0,
+                0.0,
+            ),
+            (
+                (40, False),
+                1.0,
+                "statutory_maternity_pay",
+                10_000.0,
+                10_000.0,
+                10_000.0,
+                500.0,
+            ),
+        ],
+    ),
+]
 
 
 def tolerance(*amounts):
@@ -99,6 +185,7 @@ def populations(draw):
                 st.floats(0, 10_000, allow_nan=False),
                 st.floats(0, 10_000, allow_nan=False),
                 st.floats(0, 10_000, allow_nan=False),
+                st.one_of(st.just(0.0), st.floats(0, 10_000, allow_nan=False)),
             ),
             min_size=1,
             max_size=12,
@@ -116,6 +203,7 @@ def simulate(year, reform, people):
         statutory_pay,
         pension,
         sacrifice,
+        returned,
     ) in enumerate(people):
         name = f"person_{i}"
         situation["people"][name] = {
@@ -125,6 +213,7 @@ def simulate(year, reform, people):
             statutory: {year: statutory_pay},
             "employer_pension_contributions": {year: pension},
             "pension_contributions_via_salary_sacrifice": {year: sacrifice},
+            "salary_sacrifice_returned_to_income": {year: returned},
         }
         situation["benunits"][f"benunit_{i}"] = {"members": [name]}
         situation["households"][f"household_{i}"] = {"members": [name]}
@@ -133,6 +222,10 @@ def simulate(year, reform, people):
 
 @PROPERTY_SETTINGS
 @given(populations())
+@example(population=EXAMPLES[0])
+@example(population=EXAMPLES[1])
+@example(population=EXAMPLES[2])
+@example(population=EXAMPLES[3])
 def test_fixed_employer_cost_is_conserved_or_pay_is_floored(population):
     year, reform, people = population
     simulation = simulate(year, reform, people)
