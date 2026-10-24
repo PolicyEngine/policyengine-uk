@@ -213,14 +213,12 @@ def test_unmapped_inputs_preserve_legacy_years_and_grow_after_2030(projected):
     """Previously unmapped columns keep their old values through 2030, then
     grow by the same cumulative-index ratio Core used beyond that year.
     Columns uprating_indices.yaml now lists (the debts, ISAs, lodger and
-    boarder rent, gross receipts, salary sacrifice and service charges), and
-    water bills, which grow by country, grow every year instead, so they are
-    no longer fallbacks.
+    boarder rent, gross receipts, salary sacrifice, service charges and rail
+    usage), and water bills, which grow by country, grow every year instead,
+    so they are no longer fallbacks.
     """
-    assert {
-        "rail_usage",
-        "employee_pension_contributions_reported",
-    } <= set(FALLBACK_INDEX_OF)
+    assert "employee_pension_contributions_reported" in FALLBACK_INDEX_OF
+    assert "rail_usage" not in FALLBACK_INDEX_OF
     for year in range(BASE_YEAR + 1, PROJECTION_END_YEAR + 1):
         for variable, index_name in FALLBACK_INDEX_OF.items():
             previous = _table(projected[year - 1], variable)[variable].to_numpy()

@@ -1570,6 +1570,35 @@ finance_ni:
         - title: ONS, Country and regional public sector finances methodology guide, sections 29 and 30
           href: https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance/methodologies/countryandregionalpublicsectorfinancesmethodologyguide
 
+orr:
+  per_capita:
+    rail_passenger_journeys:
+      description: Growth in rail passenger journeys per person.
+      # Growth in gov.dft.rail.ridership_index (ORR Table 1220 passenger
+      # journeys, Great Britain) net of ons.population growth:
+      # (index_t / index_t-1) / (1 + population_t) - 1, rounded to 4
+      # decimals. Household weights grow by ons.population, so growing each
+      # household's rail_usage by this keeps the weighted total on ORR's
+      # journeys (#1862). The financial year starting in April of year t is
+      # stored at t-01-01. From 2026 journeys are held flat (no official
+      # forecast), so this is minus population growth.
+      values:
+        2021-01-01: 1.5423  # 2.5525 / 1.0040 - 1
+        2022-01-01: 0.3857  # (3.5700 / 2.5525) / 1.0093 - 1
+        2023-01-01: 0.1491  # (4.1559 / 3.5700) / 1.0131 - 1
+        2024-01-01: 0.0610  # (4.4567 / 4.1559) / 1.0107 - 1
+        2025-01-01: 0.0507  # (4.7165 / 4.4567) / 1.0072 - 1
+        2026-01-01: -0.0038  # 1 / 1.0038 - 1
+        2027-01-01: -0.0037  # 1 / 1.0037 - 1
+        2028-01-01: -0.0040  # 1 / 1.0040 - 1
+        2029-01-01: -0.0044  # 1 / 1.0044 - 1
+        2030-01-01: -0.0045  # 1 / 1.0045 - 1
+      metadata:
+        unit: /1
+        label: Rail passenger journeys growth per person
+        reference:
+          - title: ORR, Table 1220 Passenger journeys, Great Britain, January 1872 to March 2026 (18 June 2026)
+            href: https://dataportal.orr.gov.uk/statistics/usage/passenger-rail-usage/table-1220-passenger-journeys/
 carbon_intensity:
   description: Carbon intensity year-over-year growth (decline).
   values:
