@@ -1098,31 +1098,69 @@ ons:
           href: https://obr.uk/supplementary-forecast-information-on-long-term-economic-determinants-and-personal-independence-payment-policy-costing/
         - title: ONS, "National population projections - 2022-based" (migration category variant, used by the OBR from 2030-31)
           href: https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationprojections/bulletins/nationalpopulationprojections/2022based
+  # Households' (S.14) interest received, D.41 resources, ONS series HAXV
+  # (UK Economic Accounts, release of 30 September 2026), calendar years in
+  # £m. D.41 is interest after the FISIM adjustment, not the unadjusted
+  # D.41g. Each value is growth over the year before, rounded to 4 decimals.
+  #
+  # The OBR does not forecast household interest received. From 2026 the
+  # series is interest = stock x rate: (1 + growth in household financial
+  # assets) x (this year's deposit rate / last year's) - 1, both from the OBR
+  # March 2026 EFO economy tables, calendar-year rows. Financial assets
+  # (Table 1.11, ONS NNML) are the only household asset stock the OBR
+  # forecasts; they include pensions and equities, so they stand in for
+  # deposits. The deposit rate is Table 1.9's, in per cent.
+  #
+  # This is an aggregate. Dataset projection grows household weights by
+  # ons.population, so each person's interest grows by
+  # per_capita.household_interest_income instead (#1862).
   household_interest_income:
-    description: Household interest income year-on-year growth from ONS National Accounts D.41g.
+    description: Growth in households' total interest received (ONS HAXV, D.41).
     values:
-      # Outturn from ONS HAXV - Total household interest received (D.41)
-      # https://www.ons.gov.uk/economy/grossdomesticproductgdp/timeseries/haxv/ukea
-      2020-01-01: 0.000
-      2021-01-01: 0.225  # 19.6/16.0 - 1
-      2022-01-01: 1.210  # 43.3/19.6 - 1
-      2023-01-01: 0.987  # 86.0/43.3 - 1
-      2024-01-01: 0.142  # 98.2/86.0 - 1
-      # Forecast: use OBR non-labour income growth as proxy (Table 1.12)
-      2025-01-01: 0.0349
-      2026-01-01: 0.0397
-      2027-01-01: 0.0513
-      2028-01-01: 0.0350
-      2029-01-01: 0.0301
-      2030-01-01: 0.0317
+      # Outturn (2020-2025), HAXV £m
+      2020-01-01: -0.3025  # 15,988 / 22,923 - 1
+      2021-01-01: 0.2238  # 19,566 / 15,988 - 1
+      2022-01-01: 1.2121  # 43,282 / 19,566 - 1
+      2023-01-01: 0.9891  # 86,092 / 43,282 - 1
+      2024-01-01: 0.1405  # 98,189 / 86,092 - 1
+      2025-01-01: -0.0276  # 95,477 / 98,189 - 1
+      # Forecast (2026-2030): (assets_t / assets_t-1) x (rate_t / rate_t-1) - 1
+      2026-01-01: -0.0937  # (7,109.48 / 6,858.72) x (1.9997 / 2.2870) - 1
+      2027-01-01: 0.0653  # (7,287.74 / 7,109.48) x (2.0782 / 1.9997) - 1
+      2028-01-01: 0.1123  # (7,460.84 / 7,287.74) x (2.2579 / 2.0782) - 1
+      2029-01-01: 0.0933  # (7,619.20 / 7,460.84) x (2.4172 / 2.2579) - 1
+      2030-01-01: 0.0843  # (7,768.51 / 7,619.20) x (2.5706 / 2.4172) - 1
     metadata:
       unit: /1
       label: Household interest income growth
       reference:
-        - title: ONS National Accounts D.41g - Households interest received (HAXV series)
+        - title: ONS, Households (S.14) interest (D.41) resources, current prices, £m, NSA (HAXV), UK Economic Accounts, 30 September 2026
           href: https://www.ons.gov.uk/economy/grossdomesticproductgdp/timeseries/haxv/ukea
-        - title: OBR EFO March 2026 - Non-labour income growth used as proxy for 2025+ (Table 1.12)
+        - title: OBR EFO March 2026, detailed forecast tables, economy, Table 1.9 (deposit rate) and Table 1.11 (household financial assets)
           href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
+  per_capita:
+    household_interest_income:
+      description: Growth in households' interest received per person.
+      values:
+        # (1 + household_interest_income) / (1 + population) - 1, both above
+        2021-01-01: 0.2189  # 1.2238 / 1.0040 - 1
+        2022-01-01: 1.1917  # 2.2121 / 1.0093 - 1
+        2023-01-01: 0.9634  # 1.9891 / 1.0131 - 1
+        2024-01-01: 0.1284  # 1.1405 / 1.0107 - 1
+        2025-01-01: -0.0346  # 0.9724 / 1.0072 - 1
+        2026-01-01: -0.0971  # 0.9063 / 1.0038 - 1
+        2027-01-01: 0.0614  # 1.0653 / 1.0037 - 1
+        2028-01-01: 0.1079  # 1.1123 / 1.0040 - 1
+        2029-01-01: 0.0885  # 1.0933 / 1.0044 - 1
+        2030-01-01: 0.0794  # 1.0843 / 1.0045 - 1
+      metadata:
+        unit: /1
+        label: Household interest income growth per person
+        reference:
+          - title: ONS, Households (S.14) interest (D.41) resources, current prices, £m, NSA (HAXV), UK Economic Accounts, 30 September 2026
+            href: https://www.ons.gov.uk/economy/grossdomesticproductgdp/timeseries/haxv/ukea
+          - title: OBR EFO March 2026, detailed forecast tables, economy, Table 1.9 (deposit rate) and Table 1.11 (household financial assets)
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
   private_rental_prices:
     # Historical values are calendar-year averages from ONS PIPR. Forecast
     # values back out private-rent growth from the OBR aggregate rent forecast

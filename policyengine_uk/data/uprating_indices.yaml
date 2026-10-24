@@ -134,7 +134,6 @@ gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 - property_income
 - property_rental_income
 - savings
-- savings_interest_income
 - spousal_maintenance_income
 - stocks_and_shares_isa
 - sublet_income
@@ -160,5 +159,9 @@ gov.economic_assumptions.yoy_growth.obr.private_pension_index:
 - private_pension_income
 gov.economic_assumptions.yoy_growth.obr.lagged_average_earnings:
 - housing_service_charges
+# Interest received per person, as household weights grow by population
+# (#1862).
+gov.economic_assumptions.yoy_growth.ons.per_capita.household_interest_income:
+- savings_interest_income
 gov.economic_assumptions.yoy_growth.ons.population:
 - household_weight

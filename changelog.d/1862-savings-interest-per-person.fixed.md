@@ -1,0 +1,1 @@
+Project `savings_interest_income` by households' interest received per person: ONS HAXV outturn to 2025 (-2.76% in 2025, not the +3.49% non-labour income proxy), then OBR household financial assets growth times the Table 1.9 deposit rate ratio, net of `ons.population` growth so that growing household weights do not count population twice.

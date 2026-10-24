@@ -46,11 +46,7 @@ KNOWN_UNUPRATED = {
 
 # Variables the YAML deliberately uprates by an index other than the one they
 # declare, with the reason.
-KNOWN_INDEX_OVERRIDES = {
-    # Declares ons.household_interest_income; the YAML applies per_capita.gdp.
-    # Flagged in #1862 for someone with the context to say which is intended.
-    "savings_interest_income",
-}
+KNOWN_INDEX_OVERRIDES: set[str] = set()
 
 
 def _listed_indices():
