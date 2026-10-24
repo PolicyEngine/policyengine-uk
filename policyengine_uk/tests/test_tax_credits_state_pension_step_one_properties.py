@@ -11,17 +11,19 @@ it out of social security income, which is step two.
 Properties, for any family:
 
 1. Law oracle: tax_credits_current_year_income is the claimants' step-one
-   income (State Pension, private pension, savings interest, dividends and
-   property income) less £300, floored at nil, plus their step-two income
+   income (State Pension, Widowed Parent's Allowance, private pension, savings
+   interest, dividends and property income) less £300, floored at nil, plus
+   their step-two income
    (earnings, trading income, Carer's Allowance, Carer Support Payment,
    contribution-based JSA and ESA, Incapacity Benefit and miscellaneous
    income), computed here directly from the inputs.
-2. Against the previous formula, which put the State Pension in step two
-   (applied below as a reform): income never rises, and falls by exactly
-   min(State Pension, max(0, £300 - other step-one income)), so by at most
-   £300. It is unchanged where other step-one income is £300 or more.
-3. State Pension is treated exactly as private pension income: moving an
-   amount from one to the other never changes the income.
+2. Against the previous formula, which put the State Pension and Widowed
+   Parent's Allowance in step two (applied below as a reform): income never
+   rises, and falls by exactly min(State Pension + WPA, max(0, £300 - other
+   step-one income)), so by at most £300. It is unchanged where other step-one
+   income is £300 or more.
+3. The State Pension and WPA are treated exactly as private pension income:
+   moving an amount from either to private pension never changes the income.
 4. Awards in 2024-25: WTC and CTC never fall, and together rise by at most
    41% of £300 plus the £26 minimum award. Guarantee Credit, which counts
    working tax credit as income, never rises, and falls by no more than the
@@ -45,6 +47,11 @@ from policyengine_uk.variables.gov.hmrc.income_tax.social_security_income import
     social_security_income,
 )
 
+# The components of social_security_income to which ITEPA 2003 s.577(1)
+# applies: pension income by reg 5(1)(a), so not social security income (reg
+# 7(2)). The second list is the inputs the generated adults supply for them.
+ITEPA_S577_PENSIONS = {"state_pension", "widowed_parents_allowance"}
+S577_PENSION_INPUTS = ["state_pension", "widowed_parents_allowance_reported"]
 ACTIVE_YEAR = 2024  # 2024-25, the last year of tax credit awards
 INACTIVE_YEAR = 2025
 DISREGARD = 300
@@ -72,9 +79,9 @@ PENSION_CREDIT = ["guarantee_credit", "savings_credit", "pension_credit"]
 
 
 class previous_tax_credits_current_year_income(tc.tax_credits_current_year_income):
-    # The formula before this change: the State Pension in step two, through
-    # social_security_income. Keep main's claimant scope, net property income
-    # and trading losses, so only the State Pension classification differs.
+    # The formula before this change: the State Pension and WPA in step two,
+    # through social_security_income. Keep main's claimant scope, net property
+    # income and trading losses, so only their classification differs.
     def formula(benunit, period, parameters):
         person = benunit.members
         members = person("is_claimant_or_partner", period)
@@ -124,8 +131,12 @@ def adults(draw):
     earnings = draw(st.sampled_from([0, 0, 2_600, 6_000, 12_000, 25_000]))
     # Half the adults have no other step-one income, where the change bites.
     other_step_one = draw(st.booleans())
+    age = draw(st.integers(25, 90))
     return {
-        "age": draw(st.integers(25, 90)),
+        "age": age,
+        # Widowed Parent's Allowance stops at State Pension age (SSCBA 1992
+        # s.39A(4)); the model takes the reported amount as given.
+        "widowed_parents_allowance_reported": draw(sometimes(7_000)) if age < 66 else 0,
         "state_pension": draw(
             st.one_of(
                 st.sampled_from([0, 0, 200, 4_000, 6_600, 9_500, 11_500]),
@@ -196,12 +207,12 @@ def law(members):
     their property income is already the amount counted by the means test.
     The separate preservation regression covers those deductions.
     """
-    state_pension = sum(m["state_pension"] for m in members)
+    pensions = sum(m[s] for m in members for s in S577_PENSION_INPUTS)
     other_step_one = sum(m[s] for m in members for s in OTHER_STEP_ONE)
     step_two = sum(m[s] for m in members for s in STEP_TWO)
-    income = max(state_pension + other_step_one - DISREGARD, 0) + step_two
-    # The previous formula's loss of the disregard on State Pension.
-    change = min(state_pension, max(0, DISREGARD - other_step_one))
+    income = max(pensions + other_step_one - DISREGARD, 0) + step_two
+    # The previous formula's loss of the disregard on these pensions.
+    change = min(pensions, max(0, DISREGARD - other_step_one))
     return income, change
 
 
@@ -210,8 +221,9 @@ def moved_to_private_pension(unit):
     moved = [
         {
             **m,
-            "state_pension": 0,
-            "private_pension_income": m["private_pension_income"] + m["state_pension"],
+            **{s: 0 for s in S577_PENSION_INPUTS},
+            "private_pension_income": m["private_pension_income"]
+            + sum(m[s] for s in S577_PENSION_INPUTS),
         }
         for m in members
     ]
@@ -233,7 +245,7 @@ SETTINGS = settings(
 # examples: State Pension wholly, partly and not at all within the £300, and
 # the case where Pension Credit is paid without the passport.
 PENSIONER = {
-    **{k: 0 for k in ["state_pension", *OTHER_STEP_ONE, *STEP_TWO]},
+    **{k: 0 for k in [*S577_PENSION_INPUTS, *OTHER_STEP_ONE, *STEP_TWO]},
     "age": 70,
     "employment_income": 2_600,
     "weekly_hours": 20,
@@ -318,7 +330,7 @@ def test_state_pension_is_step_one_income(units):
             context
         )
         assert 0 <= change <= DISREGARD
-        # 3. State Pension is treated as private pension income.
+        # 3. The s.577 pensions are treated as private pension income.
         assert abs(new_values[income][n + i] - new_values[income][i]) < TOL, context
         # 5. No awards from 2025-26: only the income figure can differ.
         for v in [*AWARDS, *PENSION_CREDIT]:
@@ -340,17 +352,13 @@ def test_state_pension_is_step_one_income(units):
             "income change: "
             + ("none" if change == 0 else "£300" if change == DISREGARD else "partial")
         )
+        if any(m["widowed_parents_allowance_reported"] for m in members):
+            event("widowed parent's allowance")
         for v in ["working_tax_credit", "child_tax_credit"]:
             if gain(v)[i] > TOL:
                 event(f"{v} raised")
         if gain("guarantee_credit")[i] < -TOL:
             event("guarantee_credit lowered")
-
-
-# The components of social_security_income to which ITEPA 2003 s.577(1)
-# applies: pension income by reg 5(1)(a), so not social security income (reg
-# 7(2)).
-ITEPA_S577_PENSIONS = {"state_pension", "widowed_parents_allowance"}
 
 
 def test_social_security_income_is_counted_once():
