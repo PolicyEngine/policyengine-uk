@@ -208,10 +208,10 @@ def test_loaded_total_does_not_mask_journeys_or_cap_reforms():
         dataset=bus_dataset(),
         scenario=Scenario(parameter_changes={"gov.dft.bus.fares.cap": {2024: np.inf}}),
     )
-    # Published 2024-25 receipts / fare-paying boardings, translated from trips.
+    # Published 2024-25 receipts / priced boardings, translated from trips.
     k = 1_850_509_887.26131 / (28.0685543170643 * 58_620_101)
-    fare_paying = 1_850_509_887.26131 - 402_846_350.14539
-    benchmark = 2_069_953_713.42079 / fare_paying
+    priced_boardings = 1_850_509_887.26131 - 402_846_350.14539
+    benchmark = 2_069_953_713.42079 / priced_boardings
     # In 2024-25 the cap was GBP 2 for 270 days and GBP 3 for 95. Without it,
     # the 31% of singles at GBP 2.21 and the 13% at GBP 3.96 pay in full.
     saving = 0.31 * 0.21 * 270 / 365 + 0.13 * (1.96 * 270 / 365 + 0.96 * 95 / 365)

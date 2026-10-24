@@ -47,7 +47,7 @@ The model uses FY2024–25 published facts. For each area, receipts `R`,
 boardings `B`, concessionary boardings `C`, annual trips per resident `T` and
 population `P` give:
 
-- Fare-paying yield per boarding: `y = R / (B - C)`.
+- Yield per priced boarding: `y = R / (B - C)`.
 - Boardings per resident trip: `k = B / (T * P)`.
 
 | Area | R (£) | B | C | T | P | y (£) | k |
@@ -71,12 +71,19 @@ boardings and resident trips; they are not counts of legs for a known trip.
 
 Outside London, `C` uses BUS01c's older-and-disabled concessionary journeys.
 The other concessions remain in the priced denominator, so the yield absorbs
-their discounts. BUS01c's total would also remove 116.3 million other
-concessionary journeys that the dataset's `bus_pass_eligible` flag does not
+their discounts. BUS01c's total would also remove 116.3 million youth-scheme
+journeys (BUS01c note 4) that the dataset's `bus_pass_eligible` flag does not
 generally make free. The older-and-disabled count approximates that flag:
 Microcosm flags older-person eligibility and under-5s outside London, but does
 not flag disabled pass holders. London uses total concessionary journeys;
 Scotland and Northern Ireland retain their own counts.
+
+Charging disabled pass holders raises modelled spending; making under-5s free
+lowers it. [Microcosm issue 1385](https://github.com/PolicyEngine/microcosm/issues/1385)
+reports that this denominator change moves outside-London fares from 6.8%
+above BUS05ai to about 1.8% below it on the certified build
+`microcosm-uk-2024-25-national-20261019T083323Z-6cba5d71`, using its existing
+weights and model year 2024.
 
 Microcosm's fact selectors and model lock must use the same concessionary
 definition as this benchmark. The companion update follows the model release
@@ -225,15 +232,15 @@ December 2026, and the £2 scheme replaces it. Read as £2 against a continued
 £3 cap, the table gives £252.5m, 37% below. The script prints both.
 
 The 2024–25 grant, for the benchmark year itself, is reported and not fitted;
-the table puts it at about half. Grant per fare-paying boarding rose 77.5% on
-2023–24, while the outside-London index rose 6.7%, receipts per fare-paying
+the table puts it at about half. Grant per priced boarding rose 77.5% on
+2023–24, while the outside-London index rose 6.7%, receipts per priced
 boarding rose 2.6%, and the cap rose only for the last quarter. The figure may
 therefore hold more than that year's forgone fares (timing or coverage of
 payments, not checked). The 2023–24 grant and the two announced figures all
 put a full year at £2 near £0.3bn, not £0.6bn. The single £2.748 fare this
 table replaced was calibrated to the 2024–25 grant.
 
-The costs use the 0.70 default single share and fare-paying boardings outside
+The costs use the 0.70 default single share and priced boardings outside
 London (BUS01a journeys less BUS01c older-and-disabled concessionary journeys:
 1,390m in 2023–24 and 1,448m in 2024–25, which also stands for 2025 and 2027),
 with fares moved to each year by CPI. Table 6 compares January to October 2022

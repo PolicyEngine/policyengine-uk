@@ -1,6 +1,7 @@
 """Bus fare parameters agree with each other and with the facts they encode."""
 
 import datetime
+import runpy
 from pathlib import Path
 
 import pytest
@@ -56,8 +57,8 @@ SINGLE_SHARE = 0.70
 # London. Other concessions remain in priced boardings, with their discounts
 # reflected in the average yield.
 # https://assets.publishing.service.gov.uk/media/69c11f97cfa346b9d4704a50/bus01.ods
-FARE_PAYING_2023_24 = 1_780_912_900.01636 - 391_017_149.37439
-FARE_PAYING_2024_25 = 1_850_509_887.26131 - 402_846_350.14539
+PRICED_BOARDINGS_2023_24 = 1_780_912_900.01636 - 391_017_149.37439
+PRICED_BOARDINGS_2024_25 = 1_850_509_887.26131 - 402_846_350.14539
 
 
 def test_outside_london_yield_uses_older_disabled_concessions():
@@ -66,7 +67,7 @@ def test_outside_london_yield_uses_older_disabled_concessions():
     # also excludes other concessions and inflates this yield.
     yield_per_boarding = system.parameters.gov.dft.bus.yield_per_boarding
     assert yield_per_boarding.ENGLAND_OUTSIDE_LONDON("2024-01-01") == pytest.approx(
-        2_069_953_713.42079 / FARE_PAYING_2024_25, abs=1e-12
+        2_069_953_713.42079 / PRICED_BOARDINGS_2024_25, abs=1e-12
     )
 
 
@@ -146,7 +147,7 @@ def test_table_matches_2023_24_fare_cap_grant():
     # over 1,390m priced boardings. Fares at 2023-24 prices.
     grant = (
         SINGLE_SHARE
-        * FARE_PAYING_2023_24
+        * PRICED_BOARDINGS_2023_24
         * saving(2, price_ratio=cpi(2023) / cpi(2024))
     )
     assert grant == pytest.approx(278_951_028, rel=0.15)
@@ -155,9 +156,9 @@ def test_table_matches_2023_24_fare_cap_grant():
 def test_table_matches_announced_cap_funding():
     # Over GBP 150m for the GBP 3 cap in 2025 (DfT written statement, 29
     # October 2024) and GBP 400m for the GBP 2 cap in 2027 (DfT, 22 July 2026),
-    # at the 2024-25 number of fare-paying boardings.
-    cap_3 = SINGLE_SHARE * FARE_PAYING_2024_25 * saving(3, year=2025)
-    cap_2 = SINGLE_SHARE * FARE_PAYING_2024_25 * saving(2, year=2027)
+    # at the 2024-25 number of priced boardings.
+    cap_3 = SINGLE_SHARE * PRICED_BOARDINGS_2024_25 * saving(3, year=2025)
+    cap_2 = SINGLE_SHARE * PRICED_BOARDINGS_2024_25 * saving(2, year=2027)
     assert cap_3 == pytest.approx(150e6, rel=0.20)
     assert cap_2 == pytest.approx(400e6, rel=0.20)
 
@@ -188,3 +189,15 @@ def test_removed_uncapped_single_fare_gives_directions():
     assert "gov.dft.bus.uncapped_single_fare has been removed" in message
     assert "gov.dft.bus.uncapped_single_fares" in message
     assert "local_bus_uncapped_single_fare" in message
+
+
+def test_uncapped_table_matches_fit(pytestconfig):
+    # The fit uses published DfT facts and the current OBR CPI path. Changes
+    # to those inputs require refitting both shares and fares.
+    # CI tests installed wheels from the checkout's pyproject.toml too.
+    script = pytestconfig.inipath.parent / "scripts" / "fit_bus_cap_savings.py"
+    fit = runpy.run_path(str(script))["fit"]
+    _, (shares, fares) = fit()
+    for (share, fare), fitted_share, fitted_fare in zip(bands(), shares, fares):
+        assert share == pytest.approx(fitted_share, abs=1e-12)
+        assert fare == pytest.approx(fitted_fare, abs=1e-12)

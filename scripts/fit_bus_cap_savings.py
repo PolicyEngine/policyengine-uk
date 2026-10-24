@@ -17,8 +17,8 @@ SINGLE_SHARE = 0.70  # gov.dft.bus.default_single_fare_share
 # DfT BUS01a journeys less BUS01c older and disabled concessionary journeys,
 # England outside London: the same concession definition as the benchmark yield.
 # https://assets.publishing.service.gov.uk/media/69c11f97cfa346b9d4704a50/bus01.ods
-FARE_PAYING_2023_24 = 1_780_912_900.01636 - 391_017_149.37439
-FARE_PAYING_2024_25 = 1_850_509_887.26131 - 402_846_350.14539
+PRICED_BOARDINGS_2023_24 = 1_780_912_900.01636 - 391_017_149.37439
+PRICED_BOARDINGS_2024_25 = 1_850_509_887.26131 - 402_846_350.14539
 # The benchmark yield at the December 2024 BUS0415a level, just before the
 # January 2025 step. Read the model's benchmark so the fit uses the same yield.
 BENCHMARK = system.parameters.gov.dft.bus("2024-01-01")
@@ -56,7 +56,7 @@ FACTS = {
 # Published figures the fit reports but does not target (GBP m).
 UNFITTED = {
     # BUS05bi fare cap support for 2024-25, the benchmark year: GBP 2 for 270
-    # days, then GBP 3. Grant per fare-paying boarding rose 77.5% on 2023-24
+    # days, then GBP 3. Grant per priced boarding rose 77.5% on 2023-24
     # while fares rose 3% to 7% and the cap rose for the last quarter, so the
     # figure may hold more than that year's forgone fares (timing or coverage
     # of payments, not checked). The 2023-24 grant and the two announced
@@ -79,9 +79,12 @@ def unfitted(shares, fares, ratios):
         for s, f in zip(shares, fares)
     )
     return {
-        "grant_2024_25": SINGLE_SHARE * FARE_PAYING_2024_25 / 1e6 * in_force_2024_25,
+        "grant_2024_25": SINGLE_SHARE
+        * PRICED_BOARDINGS_2024_25
+        / 1e6
+        * in_force_2024_25,
         "cap_2_against_3_in_2027": SINGLE_SHARE
-        * FARE_PAYING_2024_25
+        * PRICED_BOARDINGS_2024_25
         / 1e6
         * (
             saving(shares, fares, 2, ratios[2027])
@@ -100,18 +103,18 @@ def facts(shares, fares, ratios):
     above = middle + high
     return {
         "grant_2023_24": SINGLE_SHARE
-        * FARE_PAYING_2023_24
+        * PRICED_BOARDINGS_2023_24
         / 1e6
         * saving(shares, fares, 2, ratios[2023]),
         "january_2025_step": SINGLE_SHARE
         * (saving(shares, fares, 2) - saving(shares, fares, 3))
         / YIELD_DECEMBER_2024,
         "cap_3_in_2025": SINGLE_SHARE
-        * FARE_PAYING_2024_25
+        * PRICED_BOARDINGS_2024_25
         / 1e6
         * saving(shares, fares, 3, ratios[2025]),
         "cap_2_in_2027": SINGLE_SHARE
-        * FARE_PAYING_2024_25
+        * PRICED_BOARDINGS_2024_25
         / 1e6
         * saving(shares, fares, 2, ratios[2027]),
         "mean_single_fare": sum(s * f for s, f in zip(shares, fares)),
