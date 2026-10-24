@@ -19,7 +19,14 @@ metadata:
     0.927 (policyengine-uk-data 1.56.16) or 0.967 (1.58.0), so this value puts
     VAT on that dataset 38% or 44% above 2024-25 receipts. Re-derive when the
     dataset it should match changes, with docs/engineering/vat-coverage.md,
-    which lists the inputs, file hashes and per-dataset results.
+    which lists the inputs, file hashes and per-dataset results. These receipts
+    already include private school VAT. The vat formula therefore removes
+    school-fee VAT's share of the grossed-up amount before gov_tax adds
+    private_school_vat. On data, at current law, the two heads sum to the
+    receipt-calibrated VAT to within the share's accuracy (at most 0.07% below
+    it on Enhanced FRS 2024-25, policyengine-uk-data 1.58.1), so no extra
+    school receipts are added to this denominator. See the receipt-partition derivation in
+    that document.
   reference:
     - title: OBR, Economic and fiscal outlook March 2026, detailed forecast tables, receipts, table 3.8
       href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/

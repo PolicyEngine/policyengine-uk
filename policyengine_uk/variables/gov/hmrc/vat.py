@@ -3,7 +3,11 @@ from policyengine_uk.utils.vat import vat_grossing_factor
 
 
 class vat(Variable):
-    label = "VAT"
+    label = "VAT excluding private school fees"
+    documentation = (
+        "Receipt-calibrated VAT less private school fees' share of VAT "
+        "receipts, which private_school_vat counts separately."
+    )
     entity = Household
     definition_period = YEAR
     value_type = float
@@ -19,5 +23,9 @@ class vat(Variable):
         )
         # Survey consumption under-records spending, and households bear only
         # part of VAT liabilities, so household VAT is grossed up to receipts.
-        coverage = vat_grossing_factor(p.simulation)
-        return raw_vat / coverage
+        gross_vat = raw_vat / vat_grossing_factor(p.simulation)
+        # Those receipts include VAT on private school fees, which
+        # private_school_vat counts. Every household's VAT gives up the fees'
+        # share of receipts, so the allocation never makes it negative and
+        # school-specific reforms change only private_school_vat.
+        return gross_vat * (1 - p.simulation.vat.private_school_share_of_receipts)
