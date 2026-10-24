@@ -8,6 +8,40 @@ PolicyEngine UK models the money DWP takes off Universal Credit awards to repay 
 
 The implementation separates **latent demand** from the **statutory cap**. `uc_latent_deduction_rate` assigns deduction demand from the distribution DWP observed in March to May 2025 — the last full months under the 25% cap — and `gov.dwp.universal_credit.deductions.cap` applies the operational cap (40% to October 2019, 30%, 25%, then 15% under the Fair Repayment Rate from 30 April 2025) at runtime. Assigning observed post-cap rates directly would bake the cap into the data and make cap-raising reforms inexpressible.
 
+## Advance repayments under allowance reforms
+
+`uc_advance_repayment_amount` accepts annual cash instalments before the cap,
+abolition switch and available-award limits. Set the actual amount when known;
+zero explicitly removes the advance estimate. A change to the standard allowance
+does not increase this demand. Actual recovery can increase if a higher
+allowance releases a binding deduction cap.
+
+For existing latent-rate and type-combination inputs, the fallback keeps the
+existing marginal-mean split and converts its advance share using the **same
+year's unreformed standard allowance** for the claimant category. The reference
+reads the projected baseline parameter tree at 30 April, consistently with
+fiscal-year sampling. For example, the 2025 single 25+ allowance of £400.14/month
+converts a 10% advance share to £40.014/month. Reforming the allowance to £440
+keeps that cash demand unchanged, subject to the current 15% cap and penny floor.
+[SI 2013/383 regulation 10](https://www.legislation.gov.uk/uksi/2013/383/regulation/10)
+provides for recovery by offset/deduction; it does not set an allowance-indexed
+instalment.
+
+The final award and protected-floor allocation continue to consume
+`uc_deduction_rate` times the standard allowance. An explicitly supplied rate
+retains its existing effect and overrides the rate formula, including its cash
+advance calculation. The usual advance, third-party and government abolition
+switches retain their existing behavior.
+
+This change isolates allowance reforms within each annual cross-section. The
+legacy inputs do not identify the cash-origin year, repayment duration or cohort
+schedule. They cannot establish unchanged instalments across projected years or
+family-status changes. Supply cash for the relevant years to describe a known
+advance schedule. Government/third-party percentage proxies and the aggregate
+above-cap excess are unchanged; their legal classification, maintenance priority
+and annual projection remain separate work under #2410. No maintenance or last
+resort cash interface or new category incidence is introduced.
+
 ## Validation against DWP deductions statistics
 
 Enhanced FRS 2023/24 v1.40.3, against [DWP's Universal Credit deductions statistics](https://www.gov.uk/government/statistics/universal-credit-quarterly-statistics-29-april-2013-to-12-february-2026/universal-credit-deductions-statistics-march-2025-to-february-2026).

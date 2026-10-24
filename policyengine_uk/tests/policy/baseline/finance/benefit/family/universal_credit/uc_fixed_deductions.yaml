@@ -1,0 +1,190 @@
+# SI 2013/383 reg 10: advances are cash instalments, not a percentage.
+# SI 2013/380 Sch 6 paras 3-4: penny floor, ceiling and exceptions.
+- name: An allowance increase leaves an affordable fixed advance unchanged
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    would_claim_uc: true
+    universal_credit_pre_benefit_cap: 6_000
+    uc_advance_repayment_amount: 360
+    gov.dwp.universal_credit.standard_allowance.amount.SINGLE_OLD: 440
+  output:
+    uc_deductions: 360
+    universal_credit: 5_640
+
+- name: A binding administrative cap can limit a fixed advance
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    would_claim_uc: true
+    universal_credit_pre_benefit_cap: 6_000
+    uc_advance_repayment_amount: 1_200
+    gov.dwp.universal_credit.standard_allowance.amount.SINGLE_OLD: 440
+  output:
+    # Cash demand is £100/month, capped at 15% x £440 = £66/month.
+    uc_deductions: 792
+
+- name: A five percent deduction scales with the allowance
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    would_claim_uc: true
+    universal_credit_pre_benefit_cap: 6_000
+    uc_latent_deduction_rate: 0.05
+    uc_deduction_combination: THIRD_PARTY_ONLY
+    gov.dwp.universal_credit.standard_allowance.amount.SINGLE_OLD: 440
+  output:
+    uc_deductions: 264
+
+- name: Mixed fixed and percentage demands share the administrative cap
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    would_claim_uc: true
+    universal_credit_pre_benefit_cap: 6_000
+    uc_advance_repayment_amount: 600
+    uc_latent_deduction_rate: 0.05
+    uc_deduction_combination: THIRD_PARTY_ONLY
+    gov.dwp.universal_credit.standard_allowance.amount.SINGLE_OLD: 440
+  output:
+    # £50 cash + 5% x £440 = £72; administrative cap £66/month.
+    uc_deductions: 792
+
+- name: Fixed deductions still leave a penny per assessment period
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    would_claim_uc: true
+    universal_credit_pre_benefit_cap: 120
+    uc_advance_repayment_amount: 360
+  output:
+    uc_deductions: 119.88
+    universal_credit: 0.12
+
+- name: Abolishing advances removes an explicitly supplied cash instalment
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    would_claim_uc: true
+    universal_credit_pre_benefit_cap: 6_000
+    uc_advance_repayment_amount: 360
+    gov.dwp.universal_credit.deductions.abolish.advance: true
+  output:
+    uc_deductions: 0
+
+- name: A legacy advance rate uses the same year's unreformed allowance
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    would_claim_uc: true
+    universal_credit_pre_benefit_cap: 6_000
+    uc_latent_deduction_rate: 0.1
+    uc_deduction_combination: ADVANCE_ONLY
+    gov.dwp.universal_credit.standard_allowance.amount.SINGLE_OLD: 440
+  output:
+    # The legacy 10% represented £40.014/month at the unreformed £400.14.
+    # It does not become £44 when only the allowance is reformed.
+    uc_advance_repayment_amount: 480.168
+    uc_deductions: 480.168
+    universal_credit: 5_519.832
+
+- name: An explicit zero replaces the legacy advance estimate
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    would_claim_uc: true
+    universal_credit_pre_benefit_cap: 6_000
+    uc_latent_deduction_rate: 0.1
+    uc_deduction_combination: ADVANCE_ONLY
+    uc_advance_repayment_amount: 0
+  output:
+    uc_deductions: 0
+
+- name: A capped family's fixed advance stays cash at the current allowance
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent1:
+        age: 35
+        is_claimant_or_partner: true
+        child_tax_credit_reported: 3_000
+      parent2:
+        age: 33
+        is_claimant_or_partner: true
+      child1:
+        age: 13
+      child2:
+        age: 11
+      child3:
+        age: 9
+      child4:
+        age: 7
+    benunits:
+      family:
+        members: [parent1, parent2, child1, child2, child3, child4]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+        uc_advance_repayment_amount: 600
+    households:
+      household:
+        members: [parent1, parent2, child1, child2, child3, child4]
+        rent: 30_000
+        tenure_type: RENT_FROM_COUNCIL
+        region: LONDON
+  output:
+    # SI 2013/376 reg 81: the extra allowance is offset by the benefit cap.
+    # Actual family inputs produce £21,277.40 before £600 fixed recovery.
+    claims_universal_credit: true
+    uc_advance_repayment_amount: 600
+    uc_deductions: 600
+    universal_credit: 20_677.4
+
+- name: A capped family's fixed advance stays cash after an allowance uplift
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.dwp.universal_credit.standard_allowance.amount.COUPLE_OLD: 690.91
+    people:
+      parent1:
+        age: 35
+        is_claimant_or_partner: true
+        child_tax_credit_reported: 3_000
+      parent2:
+        age: 33
+        is_claimant_or_partner: true
+      child1:
+        age: 13
+      child2:
+        age: 11
+      child3:
+        age: 9
+      child4:
+        age: 7
+    benunits:
+      family:
+        members: [parent1, parent2, child1, child2, child3, child4]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+        uc_advance_repayment_amount: 600
+    households:
+      household:
+        members: [parent1, parent2, child1, child2, child3, child4]
+        rent: 30_000
+        tenure_type: RENT_FROM_COUNCIL
+        region: LONDON
+  output:
+    # SI 2013/376 reg 81: the extra allowance is offset by the benefit cap.
+    # Actual family inputs produce £21,277.40 before £600 fixed recovery.
+    claims_universal_credit: true
+    uc_advance_repayment_amount: 600
+    uc_deductions: 600
+    universal_credit: 20_677.4
