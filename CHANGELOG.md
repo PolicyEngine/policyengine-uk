@@ -1,3 +1,12 @@
+## [2.156.1] - 2026-10-24
+
+### Fixed
+
+- - Start England’s universal and targeted childcare provision in the term after the qualifying birthday, allocating base and working-parent hours once in common terms while preserving supplied annual inputs.
+  - Preserve genuine and model-owned input provenance when aggregate checks perturb childcare awards.
+  - Keep the standalone aggregate-impact tool's model fingerprint ahead of model construction by loading input-provenance helpers only during simulation operations.
+
+
 ## [2.156.0] - 2026-10-24
 
 ### Added
