@@ -1,3 +1,11 @@
+## [2.152.3] - 2026-10-24
+
+### Changed
+
+- - Used explicit Boolean conjunctions for basic-income eligibility and unreported Universal Credit claimant masks.
+- - Clarified that the non-primary-residence wealth tax uses gross wealth and deducts no debt.
+
+
 ## [2.152.2] - 2026-10-24
 
 ### Changed
