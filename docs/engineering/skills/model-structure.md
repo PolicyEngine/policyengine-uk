@@ -29,9 +29,11 @@ devolved programs, use the appropriate devolved agency path, such as
 - Parameter labels should be concise, lowercase, and stable.
 - Add or update focused tests alongside variables and parameters.
 
-For description metadata, follow the
-[parameter description guide](../parameter-descriptions.md). It distinguishes
-the automatic checks from the semantic review a contributor must perform.
+Use a concise, lowercase noun phrase for a parameter label and explain the
+quantity's purpose and programme in its description. Follow the
+[parameter description guide](../parameter-descriptions.md#labels-and-descriptions)
+for wording examples, punctuation and the distinction between automatic checks
+and semantic review.
 
 ## Program Registry
 
