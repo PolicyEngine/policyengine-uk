@@ -100,6 +100,12 @@ sources:
     the employer NI response incidence and the two unallocated tax changes)
     as exclusions from a total of levels; here they are heads of the totals
     that use them, zero at current law.
+  gambling_duties: >-
+    OBR, Economic and fiscal outlook, November 2025, Table A.5, footnote 5,
+    includes betting and gaming duties within Other HMRC taxes. This head
+    measures only supplied household gambling bases; the other components
+    of that receipts row remain unmodelled. No Table 3.1 allocation is
+    claimed. https://obr.uk/docs/dlm_uploads/OBR_Economic_and_fiscal_outlook_November_2025.pdf#page=195
 
 totals:
   gov_tax:
@@ -338,6 +344,26 @@ tax_heads:
       Zero for every household on policyengine-uk-data 1.58.0
       (enhanced_frs_2024_25) in every year from 2025 to 2030, measured
       2026-10-11. Issue 1874.
+  - id: gambling_duty
+    label: Betting and gaming duties
+    variable: gambling_duty
+    entity: household
+    obr_line: Other HMRC taxes
+    obr_line_note: >-
+      Betting and gaming duties belong to this row under November 2025 Table
+      A.5 footnote 5. This head provides partial row coverage only; other
+      Other HMRC taxes remain unmodelled.
+    obr_table_3_1: null
+    report_group: excise_duties
+    payer: household
+    totals: [gov_tax, household_tax]
+    sign: nonnegative
+    data_note: >-
+      Calculated from supplied nonnegative attributed dutiable bases only.
+      Missing inputs default to zero; this does not establish population
+      data adoption or calibrated receipts. Casino incidence uses a fixed
+      UK cash receipts/GB game yield proxy reviewed under issue 2587.
+      This head does not measure the residual Other HMRC taxes components.
   - id: tv_licence
     label: TV licence fee
     variable: tv_licence
@@ -452,9 +478,12 @@ tax_heads:
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
     sign: nonnegative
     data_note: >-
-      expected_ltt multiplies an already purchase-drawn liability by
-      property_sale_rate, discounting it twice (issue 2246). The independent
-      specification chose land_transaction_tax for that reason.
+      Equal to land_transaction_tax, with no property sale rate scaling
+      (issue 2246). On policyengine-uk-data 1.58.0 (enhanced_frs_2024_25),
+      £0.070bn in 2026, all on main-residence purchases: no Welsh record has
+      an additional-dwelling or non-residential purchase or a rent charge.
+      Measured 2026-10-11 on model 2.126.8, before the Welsh rate updates
+      (issue 1796); these are historical figures.
   - id: land_and_buildings_transaction_tax
     label: Land and buildings transaction tax (Scotland)
     variable: expected_lbtt
@@ -466,9 +495,12 @@ tax_heads:
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
     sign: nonnegative
     data_note: >-
-      expected_lbtt multiplies an already purchase-drawn liability by
-      property_sale_rate, discounting it twice (issue 2246). The independent
-      specification chose land_and_buildings_transaction_tax for that reason.
+      Equal to land_and_buildings_transaction_tax, with no property sale rate
+      scaling (issue 2246). On policyengine-uk-data 1.58.0
+      (enhanced_frs_2024_25) in 2026, £0.385bn on main-residence purchases.
+      Before PR 2241 (issue 2238) it is £2.310bn: the main-residence purchase
+      flag also charges £15.2bn of other residential property as
+      additional-dwelling purchases. Measured 2026-10-11.
 
   # Reform-only heads
   - id: corporate_incident_tax_change
@@ -553,14 +585,14 @@ exclusions:
   - {variable: sdlt_on_non_residential_property_transactions, kind: component, head: sdlt_household}
   - {variable: sdlt_on_residential_property_rent, kind: component, head: sdlt_household}
   - {variable: sdlt_on_non_residential_property_rent, kind: component, head: sdlt_household}
-  - {variable: land_transaction_tax, kind: component, head: land_transaction_tax, note: "The liability before the property_sale_rate scaling (issue 2246)."}
+  - {variable: land_transaction_tax, kind: component, head: land_transaction_tax, note: "Equal to expected_ltt (issue 2246); report the head, not this."}
   - {variable: ltt_on_transactions, kind: component, head: land_transaction_tax}
   - {variable: ltt_on_rent, kind: component, head: land_transaction_tax}
   - {variable: ltt_on_residential_property_transactions, kind: component, head: land_transaction_tax}
   - {variable: ltt_on_non_residential_property_transactions, kind: component, head: land_transaction_tax}
   - {variable: ltt_on_residential_property_rent, kind: component, head: land_transaction_tax}
   - {variable: ltt_on_non_residential_property_rent, kind: component, head: land_transaction_tax}
-  - {variable: land_and_buildings_transaction_tax, kind: component, head: land_and_buildings_transaction_tax, note: "The liability before the property_sale_rate scaling (issue 2246)."}
+  - {variable: land_and_buildings_transaction_tax, kind: component, head: land_and_buildings_transaction_tax, note: "Equal to expected_lbtt (issue 2246); report the head, not this."}
   - {variable: lbtt_on_transactions, kind: component, head: land_and_buildings_transaction_tax}
   - {variable: lbtt_on_rent, kind: component, head: land_and_buildings_transaction_tax}
   - {variable: lbtt_on_residential_property_transactions, kind: component, head: land_and_buildings_transaction_tax}
@@ -619,6 +651,13 @@ exclusions:
   - {variable: wine_duty, kind: component, head: alcohol_duty}
   - {variable: spirits_duty, kind: component, head: alcohol_duty}
   - {variable: other_fermented_duty, kind: component, head: alcohol_duty}
+  - {variable: general_betting_duty, kind: component, head: gambling_duty}
+  - {variable: pool_betting_duty, kind: component, head: gambling_duty}
+  - {variable: remote_gaming_duty, kind: component, head: gambling_duty}
+  - {variable: machine_games_duty, kind: component, head: gambling_duty}
+  - {variable: gaming_duty, kind: component, head: gambling_duty}
+  - {variable: bingo_duty, kind: component, head: gambling_duty}
+  - {variable: lottery_duty, kind: component, head: gambling_duty}
   - {variable: car_vehicle_excise_duty, kind: component, head: vehicle_excise_duty}
   # Council tax net of a benefit
   - {variable: council_tax_less_benefit, kind: composite, spans: [council_tax], note: "Council tax net of Council Tax Reduction (the OBR's basis). The totals count gross council tax and credit the reduction as spending, so adding this would count council tax twice."}
@@ -710,7 +749,6 @@ uncovered_receipts:
   - {obr_line: Bank surcharge}
   - {obr_line: Apprenticeship levy}
   - {obr_line: Digital services tax}
-  - {obr_line: Other HMRC taxes}
   - {obr_line: Environmental levies}
   - {obr_line: Emissions Trading Scheme}
   - {obr_line: Energy profits levy}
@@ -964,6 +1002,13 @@ spending_heads:
   - id: bsp
     label: Bereavement Support Payment
     variable: bsp
+    entity: person
+    report_group: child_and_family_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: widowed_parents_allowance
+    label: Widowed Parent's Allowance
+    variable: widowed_parents_allowance
     entity: person
     report_group: child_and_family_benefits
     totals: [gov_spending, household_benefits]

@@ -6,7 +6,6 @@ class is_savings_credit_eligible(Variable):
     entity = BenUnit
     definition_period = YEAR
     value_type = bool
-    unit = GBP
     reference = "https://www.legislation.gov.uk/ukpga/2002/16/section/3"
 
     def formula(benunit, period, parameters):

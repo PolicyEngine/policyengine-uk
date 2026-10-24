@@ -14,8 +14,8 @@ brackets:
       unit: currency-GBP
     values:
       2000-01-01: 0
-description: Annual tax on total wealth (includes all property and corporate wealth
-  except primary residences).
+description: Annual tax on gross household wealth excluding the primary residence,
+  without deducting mortgage or other debt.
 metadata:
   label: Wealth tax excluding primary residences
   type: marginal_rate

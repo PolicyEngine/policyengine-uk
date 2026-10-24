@@ -40,6 +40,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -63,6 +64,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -88,6 +90,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -112,6 +115,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -135,6 +139,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -159,6 +164,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -181,6 +187,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -205,6 +212,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -226,6 +234,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -248,6 +257,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -275,6 +285,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -299,6 +310,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -320,6 +332,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -348,6 +361,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -383,6 +397,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -410,6 +425,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -433,6 +449,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -458,6 +475,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -483,6 +501,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -514,6 +533,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -540,6 +560,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -571,6 +592,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -596,6 +618,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -620,6 +643,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -646,6 +670,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -678,6 +703,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -703,6 +729,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -734,6 +761,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -760,6 +788,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -791,6 +820,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -818,6 +848,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -843,6 +874,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -868,6 +900,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -899,6 +932,7 @@
     benunits:
       couple:
         members: [claimant, partner]
+        would_claim_uc: false
     households:
       household:
         members: [claimant, partner]
@@ -924,6 +958,7 @@
     benunits:
       couple:
         members: [claimant, partner]
+        would_claim_uc: false
     households:
       household:
         members: [claimant, partner]
@@ -949,6 +984,7 @@
     benunits:
       couple:
         members: [claimant, partner]
+        would_claim_uc: false
     households:
       household:
         members: [claimant, partner]
@@ -975,6 +1011,7 @@
     benunits:
       couple:
         members: [claimant, partner]
+        would_claim_uc: false
     households:
       household:
         members: [claimant, partner]
@@ -1000,6 +1037,7 @@
     benunits:
       couple:
         members: [claimant, partner]
+        would_claim_uc: false
     households:
       household:
         members: [claimant, partner]
@@ -1027,6 +1065,7 @@
     benunits:
       couple:
         members: [first, second]
+        would_claim_uc: false
     households:
       household:
         members: [first, second]
@@ -1053,6 +1092,7 @@
     benunits:
       couple:
         members: [first, second]
+        would_claim_uc: false
     households:
       household:
         members: [first, second]
@@ -1107,6 +1147,7 @@
     benunits:
       benunit:
         members: [claimant, lodger]
+        would_claim_uc: false
     households:
       household:
         members: [claimant, lodger]
@@ -1134,6 +1175,7 @@
     benunits:
       benunit:
         members: [claimant, lodger]
+        would_claim_uc: false
     households:
       household:
         members: [claimant, lodger]
@@ -1167,6 +1209,7 @@
     benunits:
       benunit:
         members: [claimant, lodger]
+        would_claim_uc: false
     households:
       household:
         members: [claimant, lodger]
@@ -1237,6 +1280,7 @@
       couple:
         members: [carer, partner]
         income_support_assessable_capital: 0
+        would_claim_uc: false
     households:
       household:
         members: [carer, partner]
@@ -1268,6 +1312,7 @@
       unit:
         members: [claimant, partner, outside]
         esa_income_assessable_capital: 0
+        would_claim_uc: false
     households:
       household:
         members: [claimant, partner, outside]

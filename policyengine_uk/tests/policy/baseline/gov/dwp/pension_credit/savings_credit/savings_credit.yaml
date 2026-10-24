@@ -65,3 +65,70 @@
     guarantee_credit: 123
     pension_credit_entitlement: 1_094.40
     pension_credit: 1_094.40
+
+# April 2027 hand controls (unrounded projections):
+# SMG single 238 * 1.039 = 247.282; couple 363.25 * 1.039 = 377.41675.
+# Maximum single 17.96 * 1.035 = 18.5886; couple 20.10 * 1.035 = 20.8035.
+# Threshold = SMG - maximum / 0.6: single 216.301; couple 342.74425.
+# Historical published thresholds remain in use through April 2026.
+- name: April 2027 single savings credit maximum rises by September CPI
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    age: 81
+    is_savings_credit_eligible: true
+    relation_type: SINGLE
+    savings_credit_income: 20_000
+    pension_credit_income: 12_858.664
+  output:
+    standard_minimum_guarantee: 12_858.664
+    savings_credit: 966.6072  # 18.5886 * 52
+
+- name: April 2027 couple savings credit maximum rises by September CPI
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 81
+      partner:
+        age: 79
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        is_savings_credit_eligible: true
+        savings_credit_income: 25_000
+        pension_credit_income: 19_625.671
+  output:
+    standard_minimum_guarantee: 19_625.671
+    savings_credit: 1_081.782  # 20.8035 * 52
+
+- name: April 2027 single savings credit phases in above the derived threshold
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    age: 81
+    is_savings_credit_eligible: true
+    relation_type: SINGLE
+    savings_credit_income: 12_000
+    pension_credit_income: 12_000
+  output:
+    savings_credit: 451.4088  # 0.6 * (12_000 - 216.301 * 52)
+
+- name: April 2027 couple savings credit phases in above the derived threshold
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 81
+      partner:
+        age: 79
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        is_savings_credit_eligible: true
+        savings_credit_income: 19_000
+        pension_credit_income: 19_000
+  output:
+    savings_credit: 706.3794  # 0.6 * (19_000 - 342.74425 * 52)

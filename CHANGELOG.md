@@ -1,3 +1,153 @@
+## [2.152.4] - 2026-10-24
+
+### Changed
+
+- Corrected the default-dataset switch plan (`docs/book/assumptions/mp30k-uk-switch-plan.md`): the tests now pin Enhanced FRS 2024-25 from policyengine-uk-data 1.58.1, policyengine.py 6.10.0 already switched its UK default to Microcosm UK, an inline situation takes precedence over any dataset, unknown enum names raise an error, and the VAT survey-coverage parameter is calibrated to Microcosm UK and must be re-derived on a switch or rollback.
+- Corrected the firm-level VAT planning page (`docs/book/programs/gov/hmrc/firm-vat.md`): #1333 is closed as a duplicate of #1320, the proposed `Firm` entity no longer names a non-existent `state` containing entity, the data table now says FRS self-employment income is profit rather than turnover and that the FRS carries a main-job SIC division, and turnover-band counts come from ONS *UK business: activity, size and location* rather than Business demography.
+
+### Fixed
+
+- - Northern Ireland Local Housing Allowance rates now follow new gov.dfc.LHA.maximum, gov.dfc.LHA.maximum_monthly and gov.dfc.LHA.march_2020_minimum parameters, so reforms to the Great Britain maxima and minimum change Great Britain rates only.
+
+
+## [2.152.3] - 2026-10-24
+
+### Changed
+
+- - Used explicit Boolean conjunctions for basic-income eligibility and unreported Universal Credit claimant masks.
+- - Clarified that the non-primary-residence wealth tax uses gross wealth and deducts no debt.
+
+
+## [2.152.2] - 2026-10-24
+
+### Changed
+
+- - Updated certifi from 2026.7.22 to 2026.10.19 in `uv.lock`, which removed the "emSign ECC Root CA - G3" root certificate from the CA bundle that the locked environment trusts.
+
+### Fixed
+
+- - Kept declared energy projection and reset limited to the three energy inputs, rejected projections before the selected index's supported history, and documented generic CPI as an interim price proxy.
+
+
+## [2.152.1] - 2026-10-24
+
+### Fixed
+
+- - Lint and the documentation build now install from uv.lock, as the tests already do, so a new release of ruff, jupyter-book or another dependency cannot change what pull requests are checked against.
+
+
+## [2.152.0] - 2026-10-24
+
+### Added
+
+- - Added the higher Housing Benefit personal allowance for pre-assessed main-phase ESA claimants without double counting the ordinary allowance.
+
+### Fixed
+
+- Update the corporate SDLT and business rates statistics behind `corporate_sdlt` and `business_rates` to the latest official outturn (HMRC stamp tax statistics to 2024-25; England, Scotland and Northern Ireland non-domestic rates to 2025-26; Wales to 2024-25) and project them with the OBR's March 2026 receipts forecasts instead of holding 2018-2021 values flat. Northern Ireland business rates no longer include domestic rates.
+- - Targeted (2-year-old) childcare now qualifies through Pension Credit only when the family receives a guarantee credit, so pensioners who do not claim Pension Credit no longer qualify through a computed guarantee credit. Receipt of a guarantee credit now also requires a Pension Credit payment, so a reform that stops Pension Credit being paid closes the routes that read it.
+
+
+## [2.151.3] - 2026-10-24
+
+### Changed
+
+- Corrected the two-child limit child poverty validation page (`docs/book/validation/child-poverty-tcl.md`): its snippet counted absolute low income (`in_poverty_ahc`) against DWP and Resolution Foundation benchmarks that measure relative low income. Re-run on policyengine-uk 2.148.3 with the certified Microcosm UK 2024-25 release, using relative low income and HBAI dependent children, removing the limit lifts about 548,000 children after housing costs and 460,000 before in 2029-30, at a cost of £3.21bn: above both benchmarks on headcount. The page also corrects the Resolution Foundation report's title and forecast vintage and the reason for the cost's sign.
+- Give each Python test shard 75 minutes, not 60, so a slow runner no longer times out a merge-queue run; five shards now take 45 to 60 minutes.
+
+
+## [2.151.2] - 2026-10-24
+
+### Fixed
+
+- - The salary sacrifice National Insurance measures (`salary_sacrifice_pension_ni_employee` and `salary_sacrifice_pension_ni_employer`) now equal the change in the Class 1 liability from the NIC-only salary sacrifice pension excess: an amount crossing the upper earnings limit is split between the main and additional rates, and the thresholds and age conditions apply. No tax total changes.
+- - Corrected units: `shareholding` and `consumption_shareholding` are shares (`/1`, so a month's value is no longer a twelfth of the share), `free_tv_licence_value` is in pounds, and seven true/false variables (`sdlt_liable`, `lbtt_liable`, `benunit_is_rent_liable`, the three Pension Credit eligibility flags and `car_is_ved_exempt`) no longer declare a unit. No yearly value changes.
+
+
+## [2.151.1] - 2026-10-23
+
+### Fixed
+
+- Uprate the Pension Credit standard minimum guarantee and the lower Housing Benefit pension-age personal allowances by the previous May-July earnings increase, meeting the SSAA 1992 s150A earnings floor after the last published rates. Derive projected Savings Credit thresholds from the guarantee and a September-CPI-uprated maximum award, keeping the threshold in force when a reform sets a zero phase-in rate, and the higher pension-age allowances as the guarantee plus that maximum. April 2027's single guarantee rises from £238 to £247.282 before rounding, rather than £243.47.
+
+
+## [2.151.0] - 2026-10-23
+
+### Added
+
+- - Added seven input-driven gambling duty families from 2024/25 to household and government taxes, including a documented casino incidence proxy.
+
+
+## [2.150.1] - 2026-10-23
+
+### Fixed
+
+- Project Scottish Child Payment and Pension Age Winter Heating Payment by the previous September's CPI with annual nearest-5p rounding, replacing outdated Scottish Child Payment forecast anchors from 2027.
+
+
+## [2.150.0] - 2026-10-23
+
+### Fixed
+
+- - Stop discounting Land Transaction Tax and Land and Buildings Transaction Tax twice. `expected_ltt` and `expected_lbtt` multiplied `land_transaction_tax` and `land_and_buildings_transaction_tax` by `gov.hmrc.stamp_duty.property_sale_rate` (0.045), but those liabilities are already charged only on the year's purchases and rent increments. Each expected value now equals its liability, the convention `expected_sdlt` follows, so `gov_tax`, `household_tax` and `pre_budget_change_household_tax` count LTT and LBTT at their full value and LTT or LBTT reforms are scored at full value rather than 4.5% of it.
+
+### Removed
+
+- - Remove `gov.hmrc.stamp_duty.property_sale_rate`, a 2021 placeholder with no remaining reader once `expected_sdlt`, `expected_ltt` and `expected_lbtt` stopped scaling by it. A reform that sets it now raises an unknown-parameter error instead of silently doing nothing.
+
+
+## [2.149.1] - 2026-10-23
+
+### Fixed
+
+- - Corrected the ordinary pension-age Housing Benefit capital threshold history to £6,000 before 2 November 2009 and £10,000 thereafter.
+
+
+## [2.149.0] - 2026-10-23
+
+### Added
+
+- - Added `pension_contributions_via_bonus_sacrifice`, an input for employer pension contributions made in place of a bonus. It is read summed with `pension_contributions_via_salary_sacrifice`, so the £2,000 NICs exemption cap from April 2029 and the annual allowance threshold income cover both routes, and datasets can keep the two apart.
+- - Added `liquid_fuel_consumption` and `solid_fuel_consumption`, household spending on heating oil, LPG, coal and wood (COICOP 04.5.3 and 04.5.4). They default to zero, are already part of `housing_water_and_electricity_consumption` so add nothing to `consumption`, and dataset projection uprates them by CPI like other LCFS spending, since Ofgem's price cap does not cover them.
+- - Added `spousal_maintenance_income`, maintenance paid by a spouse, civil partner, former spouse or former civil partner. It is Universal Credit unearned income, Pension Credit income (but not savings credit qualifying income) and Housing Benefit income, less £15 a week where the family includes a child or young person, as well as market and HBAI income. `maintenance_income` is documented as child maintenance, which counts in none of the means tests.
+- - Added `widowed_parents_allowance_reported` (CPI-uprated) and `widowed_parents_allowance`, so datasets can separate Widowed Parent's Allowance from Bereavement Support Payment. Unlike Bereavement Support Payment, the allowance is taxable, Universal Credit unearned income, a welfare benefit for the benefit cap and an overlapping benefit for Carer's Allowance and Carer Support Payment. Housing Benefit counts it less £15 a week and Income Support less £10 a week.
+
+### Fixed
+
+- - Fixed `uprate_student_loan_plans` in dataset projection: it takes the base year from the dataset instead of assuming 2023, compares the data's fixed ages with the base year's oldest holder of each plan (so new Plan 2 holders above the 2012 intake now appear, and new Plan 1 holders come only from the 1998 and later intakes, with loans first paid before September 2006 written off at 65), and keys each person's take-up draw on `person_id`, so the same people hold a loan in every year and in any row order.
+- - Count claimant and partner spousal maintenance and Widowed Parent’s Allowance in Council Tax Reduction income across Great Britain, with the statutory £15 weekly disregards and Pension Credit routing.
+- - Count the claimant's and partner's spousal maintenance in Income Support while continuing to disregard child maintenance.
+- - Included spousal maintenance in Housing Benefit and Council Tax Reduction non-dependant income bands while preserving its income-tax exemption.
+- - Correct newly assigned projected student loan plans by funding nation, using household region as a proxy: Plan 4 for Scotland, Plan 1 for Northern Ireland, Plan 2 for Wales, and Plan 2 or 5 by entry cohort for England.
+- - Charged income tax on statutory paternity pay, which ITEPA 2003 s. 660 Table A lists as taxable with statutory sick and maternity pay, and counted it as earnings in Housing Benefit and Council Tax Reduction income, so the tax on it does not raise those awards.
+
+
+## [2.148.5] - 2026-10-23
+
+### Fixed
+
+- Stop projected council tax counting the growth in households twice (#2067). Each country's council tax series is the growth in its receipts, which already includes growth in the number of Band D equivalent dwellings, while household weights grow with population as well. Each household's bill now grows by its country's receipts growth divided by the growth in household weights, so each country's weighted total grows with its receipts; before, totals outgrew receipts by population growth, 0.4% to 0.7% a year from 2025-26 (2.8% by 2030-31). The 2023-24 and 2024-25 values, which held Band D level growth, now hold receipts outturns: MHCLG's council tax requirement for England, the Scottish Government's net amount billed and the Welsh Government's net collectable debit.
+- - Corrected Housing Benefit allowance age-threshold citations and added precise age-boundary regressions.
+- - The release version commit now moves uv.lock's entry for policyengine-uk with pyproject.toml, and its guard refuses any other change to uv.lock.
+- - Fixed the absolute poverty line for 2011-2020 (FYE 2012 to FYE 2021): each year is now 60% of DWP's published FYE 2011 median in that year's prices, deflated as HBAI does. Previously 2011-2019 stayed at the FYE 2011 cash value and 2020 used headline CPI.
+- - Charge Scottish LBTT on lease rent at 2% over £2 million from 7 February 2020 (SSI 2020/24), not 5% from January 2019, and stop charging LBTT and Welsh LTT on residential lease rent, which the law exempts.
+
+
+## [2.148.4] - 2026-10-23
+
+### Fixed
+
+- - Added the working-age Housing Benefit residential capital threshold using one separately pre-assessed qualification input.
+- Income-related ESA ends for the claimant and partner of a family that claims Universal Credit, as the claim brings its abolition into force (Welfare Reform Act 2012 s.33(1)(b); SI 2013/983 art. 4), so it is no longer paid alongside Universal Credit (#1914).
+
+
+## [2.148.3] - 2026-10-23
+
+### Fixed
+
+- - Fixed a simulation given an input for a year before its data holding no person, benefit unit or household identifiers in that year, so that formulas reading them, such as `months_since_last_birthday` and the Universal Credit deduction draws, gave different values there from the simulation its exported frame loads back to.
+
+
 ## [2.148.2] - 2026-10-23
 
 ### Changed

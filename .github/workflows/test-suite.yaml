@@ -133,8 +133,13 @@ jobs:
     runs-on: ubuntu-24.04-arm
     # The shards took 15, 20 and 15 minutes on 10 October (run
     # 38085920460), and up to 52 minutes with four shards on 21 October.
-    # 60 minutes leaves room for a slow runner and still stops a hung shard.
-    timeout-minutes: 60
+    # With five shards they took 45 to 59 minutes on 23 October (runs
+    # 40027855419, 40027962439, 40029283977, 40032765600, 40034704845).
+    # In merge-queue run 40034703741, shard 4/5's tests all passed in
+    # 59m32s and the 60-minute limit then cancelled the job during its
+    # Codecov upload, which took that pull request out of the queue.
+    # 75 minutes leaves room for a slow runner and still stops a hung shard.
+    timeout-minutes: 75
     strategy:
       fail-fast: false
       matrix:
