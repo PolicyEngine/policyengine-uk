@@ -111,5 +111,3 @@ jobs:
       id-token: write
     with:
       require-data: true
-    secrets:
-      HUGGING_FACE_TOKEN: ${{ secrets.HUGGING_FACE_TOKEN }}

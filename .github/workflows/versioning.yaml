@@ -375,8 +375,6 @@ jobs:
       wheel-sha256: ${{ needs.Build.outputs.wheel-sha256 }}
       # A release never publishes with its microsimulation tests skipped.
       require-data: true
-    secrets:
-      HUGGING_FACE_TOKEN: ${{ secrets.HUGGING_FACE_TOKEN }}
 
   Publish:
     # Runs only when every check above passed, and never for a pull request.
