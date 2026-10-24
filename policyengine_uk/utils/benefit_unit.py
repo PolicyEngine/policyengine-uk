@@ -52,8 +52,8 @@ def has_sixteen_year_old_dependant(benunit, period):
     those dates, so the benefit cap rates, which turn on responsibility for a
     child or young person, count such a member for the year. The Housing
     Benefit cap exceptions read the model's Child Benefit qualifying young
-    person instead, which leaves out a 16-year-old in neither non-advanced
-    education nor approved training (#2287).
+    person, which counts a 16-year-old for the year too, whatever their
+    education (Child Benefit (General) Regulations 2006 reg. 4).
     """
     person = benunit.members
     age = person("age", period)
