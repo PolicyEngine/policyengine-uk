@@ -1,2 +1,0 @@
-- Fixed household wealth deciles to split equal wealth by original household order while retaining person weights.
-- Clarified gross wealth, person weights, order-sensitive ties, negative outputs and indivisible-weight limits in the wealth-decile documentation.

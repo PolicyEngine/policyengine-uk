@@ -1,3 +1,21 @@
+## [2.153.0] - 2026-10-24
+
+### Added
+
+- - Wheels record the commit they were built from in `.dist-info/extra_metadata/build_info.json`, and `build_metadata` reports it as `git_sha` for installs that have no other record, such as wheels from PyPI. The release build now builds the wheel from the checkout instead of from the sdist so that the commit is available.
+
+### Changed
+
+- Corrected the bereavement support plan (docs/book/programs/gov/dwp/bereavement-support-plan.md): Microcosm UK as the certified default and its split of FRS code 9, the BSP claim-time limits and higher-rate test, the cohabitee rules after the 2023 Remedial Order, and the WPA dates, continuation and uprating, including that WPA is closed to deaths from 6 April 2017 but still takes new claims for earlier deaths.
+- Corrected the child maintenance planning page (`docs/book/programs/gov/cms/child-maintenance.md`): the Child Maintenance Service default rate for one child is £39 (SI 2012/2677 reg. 49), shared-care fractions are averaged across the children in each carer's care, the further £7 reduction for 175 or more nights is per child with a £7 floor, shared care of 52 or more nights reduces the flat rate to nil where it applies because of a prescribed benefit, and the model reproduces UC's treatment of child maintenance but not the paying parent's combined marginal rates described by the Centre for Social Justice.
+
+### Fixed
+
+- - Fixed household wealth deciles to split equal wealth by original household order while retaining person weights.
+  - Clarified gross wealth, person weights, order-sensitive ties, negative outputs and indivisible-weight limits in the wealth-decile documentation.
+- Release the tax-benefit systems and simulations that five test modules cache once each module's tests finish, build the two-child limit and cliff property tests' reforms over one shared baseline system, and check that every test module cache is released (#2357).
+
+
 ## [2.152.7] - 2026-10-24
 
 ### Changed
