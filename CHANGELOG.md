@@ -1,3 +1,50 @@
+## [2.151.2] - 2026-10-24
+
+### Fixed
+
+- - The salary sacrifice National Insurance measures (`salary_sacrifice_pension_ni_employee` and `salary_sacrifice_pension_ni_employer`) now equal the change in the Class 1 liability from the NIC-only salary sacrifice pension excess: an amount crossing the upper earnings limit is split between the main and additional rates, and the thresholds and age conditions apply. No tax total changes.
+- - Corrected units: `shareholding` and `consumption_shareholding` are shares (`/1`, so a month's value is no longer a twelfth of the share), `free_tv_licence_value` is in pounds, and seven true/false variables (`sdlt_liable`, `lbtt_liable`, `benunit_is_rent_liable`, the three Pension Credit eligibility flags and `car_is_ved_exempt`) no longer declare a unit. No yearly value changes.
+
+
+## [2.151.1] - 2026-10-23
+
+### Fixed
+
+- Uprate the Pension Credit standard minimum guarantee and the lower Housing Benefit pension-age personal allowances by the previous May-July earnings increase, meeting the SSAA 1992 s150A earnings floor after the last published rates. Derive projected Savings Credit thresholds from the guarantee and a September-CPI-uprated maximum award, keeping the threshold in force when a reform sets a zero phase-in rate, and the higher pension-age allowances as the guarantee plus that maximum. April 2027's single guarantee rises from £238 to £247.282 before rounding, rather than £243.47.
+
+
+## [2.151.0] - 2026-10-23
+
+### Added
+
+- - Added seven input-driven gambling duty families from 2024/25 to household and government taxes, including a documented casino incidence proxy.
+
+
+## [2.150.1] - 2026-10-23
+
+### Fixed
+
+- Project Scottish Child Payment and Pension Age Winter Heating Payment by the previous September's CPI with annual nearest-5p rounding, replacing outdated Scottish Child Payment forecast anchors from 2027.
+
+
+## [2.150.0] - 2026-10-23
+
+### Fixed
+
+- - Stop discounting Land Transaction Tax and Land and Buildings Transaction Tax twice. `expected_ltt` and `expected_lbtt` multiplied `land_transaction_tax` and `land_and_buildings_transaction_tax` by `gov.hmrc.stamp_duty.property_sale_rate` (0.045), but those liabilities are already charged only on the year's purchases and rent increments. Each expected value now equals its liability, the convention `expected_sdlt` follows, so `gov_tax`, `household_tax` and `pre_budget_change_household_tax` count LTT and LBTT at their full value and LTT or LBTT reforms are scored at full value rather than 4.5% of it.
+
+### Removed
+
+- - Remove `gov.hmrc.stamp_duty.property_sale_rate`, a 2021 placeholder with no remaining reader once `expected_sdlt`, `expected_ltt` and `expected_lbtt` stopped scaling by it. A reform that sets it now raises an unknown-parameter error instead of silently doing nothing.
+
+
+## [2.149.1] - 2026-10-23
+
+### Fixed
+
+- - Corrected the ordinary pension-age Housing Benefit capital threshold history to £6,000 before 2 November 2009 and £10,000 thereafter.
+
+
 ## [2.149.0] - 2026-10-23
 
 ### Added
