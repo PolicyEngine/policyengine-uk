@@ -22,8 +22,7 @@ class total_income_charged_to_tax(Variable):
         "which sums gross income, this is "
         "the figure the law tests, as far as the model's components go: "
         "where a component departs from the law, so does this total. For "
-        "example, the model deducts deficiency relief from dividend income, "
-        "and does not yet tax statutory paternity pay."
+        "example, the model deducts deficiency relief from dividend income."
     )
     definition_period = YEAR
     unit = GBP

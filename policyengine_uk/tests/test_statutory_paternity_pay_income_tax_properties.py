@@ -18,10 +18,14 @@ statutory paternity pay:
    tax as income rises (the High Income Child Benefit Charge stops when the
    benefit stops), for wages too, so the generated families do not opt out.
 2. Bounds: for families that do not claim Marriage Allowance, a pound more
-   of statutory paternity pay raises the family's income tax by at most a
-   pound. Income Tax Act 2007 s. 55B(2)(b) withdraws the whole Marriage
-   Allowance reduction once the recipient is liable above the basic rate, so
-   one pound can cost more than a pound there; wages do the same.
+   of statutory paternity pay raises the family's income tax before the
+   winter fuel payment charge by at most a pound. Two cliffs are intended
+   exceptions, and wages cross both the same way. Income Tax Act 2007
+   s. 55B(2)(b) withdraws the whole Marriage Allowance reduction once the
+   recipient is liable above the basic rate. ITEPA 2003 s. 681I charges back
+   the whole winter fuel payment once the recipient's total income exceeds
+   £35,000, so in income_tax one pound across that line costs the payment
+   plus the tax on the pound (the last test below).
 3. Same as statutory sick pay: statutory paternity pay of s gives every
    member the same income tax, National Insurance, adjusted net income and
    student loan repayment, and the family the same Housing Benefit and
@@ -263,7 +267,14 @@ def test_income_tax_never_falls_as_statutory_paternity_pay_rises(population):
         assert family_gain >= -TOLERANCE, family
         # Invariant 2.
         if not claims_marriage_allowance(family):
-            assert family_gain <= family["high"] - family["low"] + TOLERANCE, family
+            gain_before_charge = results.family_total(
+                "income_tax_before_winter_fuel_payment_charge", i, HIGH
+            ) - results.family_total(
+                "income_tax_before_winter_fuel_payment_charge", i, LOW
+            )
+            assert gain_before_charge <= family["high"] - family["low"] + TOLERANCE, (
+                family
+            )
 
 
 @PROPERTY_SETTINGS
@@ -376,3 +387,48 @@ def test_statutory_paternity_pay_on_the_basic_rate_bears_20_percent():
     assert abs(tax[HIGH] - tax[LOW] - 77.728) < 0.01
     assert abs(tax[AS_SICK_PAY] - tax[HIGH]) < 0.01
     assert abs(tax[AS_WAGES] - tax[HIGH]) < 0.01
+
+
+def test_a_pound_of_statutory_paternity_pay_can_bring_the_winter_fuel_payment_charge():
+    # A 70-year-old in England with £20,000 of private pension and £15,000 of
+    # savings interest has total income of exactly £35,000, so the £200 Winter
+    # Fuel Payment is not charged back. A pound of statutory paternity pay
+    # takes total income over £35,000 (ITEPA 2003 s. 681I(1)(b)): income tax
+    # rises by the whole payment plus 20% of the pound. Before the charge, the
+    # pound costs only its 20p.
+    family = dict(
+        adults=[
+            dict(
+                age=70,
+                wages=0.0,
+                profit=0.0,
+                pension_income=20_000.0,
+                savings=15_000.0,
+                dividends=0.0,
+                pension_contributions=0.0,
+                student_loan_plan="NONE",
+                claims_marriage_allowance=False,
+            )
+        ],
+        married=False,
+        child_ages=[],
+        region="NORTH_EAST",
+        tenure="RENT_PRIVATELY",
+        rent=0.0,
+        would_claim_uc=False,
+        recipient=0,
+        low=0.0,
+        high=1.0,
+    )
+    results = Results([family])
+
+    def rise(variable):
+        return results.recipient(variable, 0, HIGH) - results.recipient(
+            variable, 0, LOW
+        )
+
+    assert results.recipient("winter_fuel_payment", 0, HIGH) == 200
+    assert results.recipient("winter_fuel_payment_charge", 0, LOW) == 0
+    assert results.recipient("winter_fuel_payment_charge", 0, HIGH) == 200
+    assert abs(rise("income_tax_before_winter_fuel_payment_charge") - 0.2) < 0.01
+    assert abs(rise("income_tax") - 200.2) < 0.01
