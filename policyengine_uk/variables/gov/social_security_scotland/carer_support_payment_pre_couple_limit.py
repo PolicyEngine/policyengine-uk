@@ -4,7 +4,7 @@ from policyengine_uk.model_api import *
 class carer_support_payment_pre_couple_limit(Variable):
     value_type = float
     entity = Person
-    label = "Carer support payment before couple and overlap restrictions"
+    label = "Carer Support Payment before the couple and overlap restrictions"
     documentation = (
         "The existing age, caring, earnings and take-up calculation before "
         "the same-person couple restriction and overlapping-benefit adjustment. "

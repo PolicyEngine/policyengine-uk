@@ -95,6 +95,10 @@ order breaks an age tie. This is a modelling convention, not statutory
 priority. An ineligible reported recipient or head cannot displace an eligible
 partner. The caring-hours, earnings, age and take-up conditions are unchanged.
 
+The convention does not maximise the couple's payment. It can select a partner
+whose overlapping benefits reduce CA or CSP to zero, while suppressing a
+payment that the other otherwise-eligible partner could receive if selected.
+
 The existing same-person default remains: two qualifying reported awards, or
 awards that caring hours and take-up cannot explain, indicate different care
 targets. Directly supplied payment, pre-overlap or entitlement inputs remain
