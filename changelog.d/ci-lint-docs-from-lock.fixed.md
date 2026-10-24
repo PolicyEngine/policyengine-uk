@@ -1,1 +1,0 @@
-- Lint and the documentation build now install from uv.lock, as the tests already do, so a new release of ruff, jupyter-book or another dependency cannot change what pull requests are checked against.

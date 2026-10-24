@@ -1,3 +1,10 @@
+## [2.152.1] - 2026-10-24
+
+### Fixed
+
+- - Lint and the documentation build now install from uv.lock, as the tests already do, so a new release of ruff, jupyter-book or another dependency cannot change what pull requests are checked against.
+
+
 ## [2.152.0] - 2026-10-24
 
 ### Added
