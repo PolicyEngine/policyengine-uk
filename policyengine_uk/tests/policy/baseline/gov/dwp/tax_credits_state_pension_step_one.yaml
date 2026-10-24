@@ -333,3 +333,30 @@
   output:
     tax_credits_current_year_income: 9_258.80
     child_tax_credit: 4_000
+
+- name: Widowed Parent's Allowance is step one, sharing the £300 disregard
+  # ITEPA 2003 s.577(1) applies to "widowed parent's allowance", so it is
+  # pension income (reg 5(1)(a)) and not social security income (reg 7(2)).
+  # Step one: 7,000 + 100 savings interest - 300 = £6,800; no step-two income.
+  # (In step two it would count in full: 7,000 + max(0, 100 - 300) = £7,000.)
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_claimant_or_partner: true
+        widowed_parents_allowance_reported: 7_000
+        savings_interest_income: 100
+      child:
+        age: 3
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+  output:
+    widowed_parents_allowance: [7_000, 0]
+    tax_credits_current_year_income: 6_800

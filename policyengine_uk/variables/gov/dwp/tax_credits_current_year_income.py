@@ -4,7 +4,8 @@ from policyengine_uk.model_api import *
 # (reg 10), property income (reg 11), foreign income (reg 12) and notional
 # income (reg 13). Pension income includes "any pension to which section 577
 # ... of ITEPA applies" (reg 5(1)(a)), and ITEPA 2003 s.577(1) applies to "the
-# state pension", so the State Pension is step one, with the £300 disregard.
+# state pension" and "widowed parent's allowance", so both are step one, with
+# the £300 disregard.
 # private_pension_income is pension income (reg 5(1)(b), (d): ITEPA ss.569,
 # 579A) or, for a foreign pension, foreign income (reg 12), which is also step
 # one. savings_interest_income and dividend_income are investment income (reg
@@ -12,6 +13,7 @@ from policyengine_uk.model_api import *
 # model's deduction of property finance costs.
 STEP_ONE_INCOME = [
     "state_pension",
+    "widowed_parents_allowance",
     "private_pension_income",
     "savings_interest_income",
     "dividend_income",
@@ -23,9 +25,10 @@ STEP_ONE_INCOME = [
 # 2007 (reg 7(1)(a)), and amounts under regulations made under s.28 of the
 # Social Security (Scotland) Act 2018 (reg 7(1)(ab), from 15 March 2023):
 # Carer Support Payment and the Scottish Carer Supplement component. It is the
-# model's social_security_income without the State Pension: "Pensions under the
-# Contributions and Benefits Act which are pension income by virtue of
-# regulation 5(1)(a) are not social security income" (reg 7(2)). The model's
+# model's social_security_income without the State Pension and Widowed
+# Parent's Allowance (SSCBA 1992 s.39A): "Pensions under the Contributions and
+# Benefits Act which are pension income by virtue of regulation 5(1)(a) are not
+# social security income" (reg 7(2)). The model's
 # other benefits are disregarded by reg 7(3) Table 3, or are not under an Act
 # reg 7(1) lists (Pension Credit, Universal Credit). Two partial disregards
 # are not modelled: short-term lower-rate Incapacity Benefit and Incapacity

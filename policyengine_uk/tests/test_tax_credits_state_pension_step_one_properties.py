@@ -29,7 +29,8 @@ Properties, for any family:
 5. In 2025-26, with no tax credit awards, every award and Pension Credit
    equal the previous formula's.
 6. Every component of social_security_income is counted exactly once: the
-   State Pension in step one, the rest in step two.
+   State Pension and Widowed Parent's Allowance (both ITEPA s.577 pensions) in
+   step one, the rest in step two.
 """
 
 import numpy as np
@@ -346,14 +347,21 @@ def test_state_pension_is_step_one_income(units):
             event("guarantee_credit lowered")
 
 
+# The components of social_security_income to which ITEPA 2003 s.577(1)
+# applies: pension income by reg 5(1)(a), so not social security income (reg
+# 7(2)).
+ITEPA_S577_PENSIONS = {"state_pension", "widowed_parents_allowance"}
+
+
 def test_social_security_income_is_counted_once():
-    # Reg 7(2): the State Pension is pension income, not social security
-    # income. Every other component of the model's social_security_income is
-    # reg 7 social security income. A new component must be classified here.
+    # Reg 7(2): the State Pension and Widowed Parent's Allowance are pension
+    # income, not social security income. Every other component of the model's
+    # social_security_income is reg 7 social security income. A new component
+    # must be classified here.
     components = set(social_security_income.adds)
-    assert "state_pension" in tc.STEP_ONE_INCOME
-    assert "state_pension" not in tc.SOCIAL_SECURITY_INCOME
-    assert components == set(tc.SOCIAL_SECURITY_INCOME) | {"state_pension"}
+    assert ITEPA_S577_PENSIONS <= set(tc.STEP_ONE_INCOME)
+    assert not ITEPA_S577_PENSIONS & set(tc.SOCIAL_SECURITY_INCOME)
+    assert components == set(tc.SOCIAL_SECURITY_INCOME) | ITEPA_S577_PENSIONS
     assert not set(tc.STEP_ONE_INCOME) & set(tc.SOCIAL_SECURITY_INCOME)
 
 
