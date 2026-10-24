@@ -18,6 +18,10 @@ class baseline_vat(Variable):
             + reduced_rate_consumption * p.hmrc.vat.reduced_rate
         )
         # Survey consumption under-records spending, and households bear only
-        # part of VAT liabilities, so household VAT is grossed up to receipts.
+        # part of VAT liabilities, so household VAT on recorded consumption is
+        # grossed up to receipts. VAT on the household's own energy bills is
+        # not grossed up: the bills are calibrated to national energy use and
+        # households bear that VAT in full.
         coverage = vat_grossing_factor(p.simulation)
-        return raw_vat / coverage
+        energy_vat = household("baseline_domestic_energy_vat", period)
+        return raw_vat / coverage + energy_vat

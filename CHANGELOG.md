@@ -1,3 +1,155 @@
+## [2.153.5] - 2026-10-24
+
+### Fixed
+
+- Modelled the temporary zero rate of VAT on domestic electricity in Great Britain from 1 October 2026 to 31 March 2027 (SI 2026/987), with Northern Ireland and gas staying at 5%. VAT on domestic electricity and gas is now charged on the households' own bills (`domestic_energy_vat`), at a new nation-split `gov.hmrc.vat.domestic_electricity_rate` and the reduced rate, instead of on a flat share of total consumption grossed up to receipts. Energy-bill VAT is not grossed up by the survey coverage or the household share of VAT receipts. The ONS domestic fuel and power share of spending now comes out of the reduced-rate share, which leaves at most 0.01% of spending in the generic reduced-rate base in any year since 2006. The bills are taken net of the 5% VAT they were priced at (`gov.simulation.vat.energy_input_price_basis_rate`), so a reform to the reduced rate no longer changes the VAT-exclusive energy base.
+
+
+## [2.153.4] - 2026-10-24
+
+### Fixed
+
+- - Excluded Child Benefit, Sure Start Maternity Grants and dependent children's own income from the ordinary Housing Benefit income assessment.
+
+
+## [2.153.3] - 2026-10-24
+
+### Fixed
+
+- - Count statutory sick, maternity and paternity pay in the legacy Income Support means test.
+
+
+## [2.153.2] - 2026-10-24
+
+### Fixed
+
+- Pull requests now fail a Changelog fragments check when they add a `changelog.d` file without a towncrier type, or an empty fragment; towncrier silently left these out of CHANGELOG.md. `.github/bump_version.py` now counts only typed fragments and warns about the rest. Dependency-only manifest/lock updates can omit a fragment after a release without bypassing fragment checks.
+
+
+## [2.153.1] - 2026-10-24
+
+### Fixed
+
+- - Store `person_household_id` and `person_benunit_id` as integers, like the other identifier variables, so identifiers above 16,777,216 read back exactly from `calculate`, `to_input_dataframe()` and `UKSingleYearDataset.from_simulation`. A simulation built from a policyengine-core dataset file no longer merges households or benefit units whose identifiers rounded to the same number. A simulation now gives an `EntityIdWarning` when an identifier is not a whole number from -2,147,483,648 to 2,147,483,647, the range it can store exactly.
+
+
+## [2.153.0] - 2026-10-24
+
+### Added
+
+- - Wheels record the commit they were built from in `.dist-info/extra_metadata/build_info.json`, and `build_metadata` reports it as `git_sha` for installs that have no other record, such as wheels from PyPI. The release build now builds the wheel from the checkout instead of from the sdist so that the commit is available.
+
+### Changed
+
+- Corrected the bereavement support plan (docs/book/programs/gov/dwp/bereavement-support-plan.md): Microcosm UK as the certified default and its split of FRS code 9, the BSP claim-time limits and higher-rate test, the cohabitee rules after the 2023 Remedial Order, and the WPA dates, continuation and uprating, including that WPA is closed to deaths from 6 April 2017 but still takes new claims for earlier deaths.
+- Corrected the child maintenance planning page (`docs/book/programs/gov/cms/child-maintenance.md`): the Child Maintenance Service default rate for one child is £39 (SI 2012/2677 reg. 49), shared-care fractions are averaged across the children in each carer's care, the further £7 reduction for 175 or more nights is per child with a £7 floor, shared care of 52 or more nights reduces the flat rate to nil where it applies because of a prescribed benefit, and the model reproduces UC's treatment of child maintenance but not the paying parent's combined marginal rates described by the Centre for Social Justice.
+
+### Fixed
+
+- - Fixed household wealth deciles to split equal wealth by original household order while retaining person weights.
+  - Clarified gross wealth, person weights, order-sensitive ties, negative outputs and indivisible-weight limits in the wealth-decile documentation.
+- Release the tax-benefit systems and simulations that five test modules cache once each module's tests finish, build the two-child limit and cliff property tests' reforms over one shared baseline system, and check that every test module cache is released (#2357).
+
+
+## [2.152.7] - 2026-10-24
+
+### Changed
+
+- Updated the capital gains distribution page (docs/book/assumptions/capital-gains-distribution-plan.md) for Microcosm UK becoming the certified default dataset, the default retention-rate elasticity of 1, policyengine-uk-data's donor bands, the 27 August 2026 HMRC release and the Microcosm stage details.
+- Corrected the Cold Weather Payment plan (docs/book/programs/gov/dwp/cold-weather-payment-plan.md): the full regulation 1A conditions (care homes, England and Wales, Income Support and JSA premiums, mortgage-interest loans with Pension Credit), the winter 2022-23 Scottish replacement, the Winter Heating Payment rule and the weather data source.
+- Updated the reform impacts dashboard plan (docs/book/validation/reform-impacts-dashboard-plan.md) for the fixture receipts, the certified Enhanced FRS 2024-25 pin and the per-pull-request aggregate-impact costings now on main, and corrected the higher-rate fixture, the external benchmarks and the two-child limit reform.
+- Corrected the Ubuntu vs macOS reproducibility page (docs/book/validation/ubuntu-vs-macos.md): the parameter dumps on #1209 point to order-dependent chained uprating, not the import-time growth-factor table, #1092 added macOS alongside Ubuntu, and the Python tests now run on five shards.
+- Corrected the Warm Home Discount plan (docs/book/programs/gov/ofgem/warm-home-discount-plan.md): the April-to-March scheme year, the Scottish core group under Schedule 1 to SI 2026/488, the pre-2022 rebate amounts, the 2025-26 qualifying benefits, the helpline route and the ESA take-up caveat.
+
+
+## [2.152.6] - 2026-10-24
+
+### Changed
+
+- Corrected the future-dated announcements page (docs/book/policy/future-date-announcements.md): the Class 1 employee rate now lives in employee_scale.yaml, the levy and repeal wording, the 30 April caveat for mid-year NI changes, the preserve_calendar_dates wording, and a link to the dated-changes guide.
+- Corrected the policyengine.py household-impact page (docs/book/validation/policyengine-py-household-impact.md): the zeros in #1628 came from a policyengine-core 3.24 bug fixed in 3.24.4, not from policyengine-uk; re-checked on 2.148.2.
+- Brought the PIP point system planning page (`docs/book/programs/gov/dwp/pip-points-plan.md`) up to date: #1661 merged on 21 October 2026, so total points and the 8- and 12-point thresholds are modelled, with no data path supplying points yet; Microcosm #145 closed without the points item; Microcosm UK is now the certified default; and the descriptor-weighting source is DWP's Pathways to Work evidence pack (Tables 2.27 and 2.28).
+- Corrected the regional childcare planning page (docs/book/programs/gov/dfe/regional-childcare-plan.md) against current law, data and main: the Scottish two-year-old, SAAS, Childcare Offer, Flying Start and PSEP descriptions, the Childcare Grant calibration claim and the Microcosm UK geography.
+- Corrected the effective take-up analysis plan (docs/book/assumptions/takeup-analysis-plan.md): Microcosm UK as the certified default dataset, the SPI-before-reweighting order, the size of seed-to-effective drift, the Council Tax Reduction, Carer's Allowance, State Pension and disability rows, new legacy-closure and JSA/ESA rows, and two broken gov.uk links.
+
+
+## [2.152.5] - 2026-10-24
+
+### Changed
+
+- Corrected the indirect tax effects planning page (`docs/book/policy/indirect-tax-effects-plan.md`): UKMOD's TCO technical note does not give the 0.8 consumption elasticity reported in #1114, labour supply responses run through two separate routes, fuel duty also reads LPG and natural gas inputs, and a formula on a consumption input would not change values supplied by a dataset.
+- Corrected the non-UK benefit receipt planning page (`docs/book/assumptions/non-uk-benefit-receipt-plan.md`): Microcosm UK's resident State Pension series removes pensions paid abroad but still includes care-home residents, the Enhanced FRS keeps its own targets, fraud and error overpayments reach households, so they are treated separately, Winter Fuel Payment has not been paid abroad since winter 2025-26, Housing Benefit doesn't pay for a care-home place, Attendance Allowance can be paid abroad in limited cases, and the overseas share of State Pension spending has fallen since 2019-20.
+- Brought the pension tax relief page (`docs/book/programs/gov/hmrc/pension-tax-relief.md`) up to date with main: #2488 has merged, unused annual allowance is now estimated from 2020-21 rather than defaulting to nil, defined-benefit accrual can be supplied as `defined_benefit_pension_input_amount`, with `defined_benefit_pension_share` for the workplace contributions it replaces, relevant UK earnings follow taxable employment income and trading profit before losses, relief-at-source contributions stay in income for the annual allowance charge and raise its rate limits only under the s. 192(4) condition, which HMRC's PTM056120 does not state, and s. 192(4) raises the higher rate limit as well as the basic rate limit. The worked examples were re-run on policyengine-uk 2.148.2.
+- Corrected the UK pipeline alignment planning page (`docs/book/assumptions/uk-pipeline-alignment-plan.md`): five `would_claim_*` formulas read reported receipt (Council Tax Reduction was missing); in data-built simulations `claims_all_entitled_benefits` is false and Housing Benefit and Council Tax Reduction ignore it, and eligibility for tax credits, Income Support and working-age Housing Benefit needs a reported award; policyengine-uk-data anchored take-up (#359), imputed gift aid (#347) and added a second-stage imputation (#362) in April 2026; the residual aggregates are #1621's April 2026 figures; the Income Support phase-out landed in #1631; `CTC_child_element` is not gated on `is_CTC_eligible`, so in tax-credit years an ineligible Child Tax Credit claimant's `tax_credits` enters its Housing Benefit and Council Tax Reduction means tests; and the third small item in #1621 was a `~`-on-bool warning, not `state_pension_type`.
+- Corrected the STBM pension comparison page (`docs/book/programs/gov/hmrc/pensions-comparison-stbm.md`): STBM raises the basic-rate limit and every limit above it for non-savings income, and every savings and dividend limit, rather than widening every band, its basic amount is £10,000 in its 2023-24 to 2026-27 systems, Microcosm UK imputes employer contributions from the same ONS ASHE table (P10) as STBM, PolicyEngine UK now estimates carry-forward of unused annual allowance from 2020-21, the threshold income test has been £200,000 since 2020-21, and salary sacrifice under arrangements made before 9 July 2015 can be supplied.
+
+
+## [2.152.4] - 2026-10-24
+
+### Changed
+
+- Corrected the default-dataset switch plan (`docs/book/assumptions/mp30k-uk-switch-plan.md`): the tests now pin Enhanced FRS 2024-25 from policyengine-uk-data 1.58.1, policyengine.py 6.10.0 already switched its UK default to Microcosm UK, an inline situation takes precedence over any dataset, unknown enum names raise an error, and the VAT survey-coverage parameter is calibrated to Microcosm UK and must be re-derived on a switch or rollback.
+- Corrected the firm-level VAT planning page (`docs/book/programs/gov/hmrc/firm-vat.md`): #1333 is closed as a duplicate of #1320, the proposed `Firm` entity no longer names a non-existent `state` containing entity, the data table now says FRS self-employment income is profit rather than turnover and that the FRS carries a main-job SIC division, and turnover-band counts come from ONS *UK business: activity, size and location* rather than Business demography.
+
+### Fixed
+
+- - Northern Ireland Local Housing Allowance rates now follow new gov.dfc.LHA.maximum, gov.dfc.LHA.maximum_monthly and gov.dfc.LHA.march_2020_minimum parameters, so reforms to the Great Britain maxima and minimum change Great Britain rates only.
+
+
+## [2.152.3] - 2026-10-24
+
+### Changed
+
+- - Used explicit Boolean conjunctions for basic-income eligibility and unreported Universal Credit claimant masks.
+- - Clarified that the non-primary-residence wealth tax uses gross wealth and deducts no debt.
+
+
+## [2.152.2] - 2026-10-24
+
+### Changed
+
+- - Updated certifi from 2026.7.22 to 2026.10.19 in `uv.lock`, which removed the "emSign ECC Root CA - G3" root certificate from the CA bundle that the locked environment trusts.
+
+### Fixed
+
+- - Kept declared energy projection and reset limited to the three energy inputs, rejected projections before the selected index's supported history, and documented generic CPI as an interim price proxy.
+
+
+## [2.152.1] - 2026-10-24
+
+### Fixed
+
+- - Lint and the documentation build now install from uv.lock, as the tests already do, so a new release of ruff, jupyter-book or another dependency cannot change what pull requests are checked against.
+
+
+## [2.152.0] - 2026-10-24
+
+### Added
+
+- - Added the higher Housing Benefit personal allowance for pre-assessed main-phase ESA claimants without double counting the ordinary allowance.
+
+### Fixed
+
+- Update the corporate SDLT and business rates statistics behind `corporate_sdlt` and `business_rates` to the latest official outturn (HMRC stamp tax statistics to 2024-25; England, Scotland and Northern Ireland non-domestic rates to 2025-26; Wales to 2024-25) and project them with the OBR's March 2026 receipts forecasts instead of holding 2018-2021 values flat. Northern Ireland business rates no longer include domestic rates.
+- - Targeted (2-year-old) childcare now qualifies through Pension Credit only when the family receives a guarantee credit, so pensioners who do not claim Pension Credit no longer qualify through a computed guarantee credit. Receipt of a guarantee credit now also requires a Pension Credit payment, so a reform that stops Pension Credit being paid closes the routes that read it.
+
+
+## [2.151.3] - 2026-10-24
+
+### Changed
+
+- Corrected the two-child limit child poverty validation page (`docs/book/validation/child-poverty-tcl.md`): its snippet counted absolute low income (`in_poverty_ahc`) against DWP and Resolution Foundation benchmarks that measure relative low income. Re-run on policyengine-uk 2.148.3 with the certified Microcosm UK 2024-25 release, using relative low income and HBAI dependent children, removing the limit lifts about 548,000 children after housing costs and 460,000 before in 2029-30, at a cost of £3.21bn: above both benchmarks on headcount. The page also corrects the Resolution Foundation report's title and forecast vintage and the reason for the cost's sign.
+- Give each Python test shard 75 minutes, not 60, so a slow runner no longer times out a merge-queue run; five shards now take 45 to 60 minutes.
+
+
+## [2.151.2] - 2026-10-24
+
+### Fixed
+
+- - The salary sacrifice National Insurance measures (`salary_sacrifice_pension_ni_employee` and `salary_sacrifice_pension_ni_employer`) now equal the change in the Class 1 liability from the NIC-only salary sacrifice pension excess: an amount crossing the upper earnings limit is split between the main and additional rates, and the thresholds and age conditions apply. No tax total changes.
+- - Corrected units: `shareholding` and `consumption_shareholding` are shares (`/1`, so a month's value is no longer a twelfth of the share), `free_tv_licence_value` is in pounds, and seven true/false variables (`sdlt_liable`, `lbtt_liable`, `benunit_is_rent_liable`, the three Pension Credit eligibility flags and `car_is_ved_exempt`) no longer declare a unit. No yearly value changes.
+
+
 ## [2.151.1] - 2026-10-23
 
 ### Fixed

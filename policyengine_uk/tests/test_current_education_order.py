@@ -146,6 +146,14 @@ def last_data_year():
     return max(data_years(Simulation(dataset=small_dataset())))
 
 
+@pytest.fixture(scope="module", autouse=True)
+def release_last_data_year():
+    # Drop the cached year once this module's tests are done, instead of
+    # keeping it for the rest of the test process.
+    yield
+    last_data_year.cache_clear()
+
+
 @pytest.mark.parametrize(
     "offsets",
     [
