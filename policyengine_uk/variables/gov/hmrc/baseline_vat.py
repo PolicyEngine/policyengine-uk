@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.vat import vat_grossing_factor
 
 
 class baseline_vat(Variable):
@@ -16,4 +17,11 @@ class baseline_vat(Variable):
             full_rate_consumption * p.hmrc.vat.standard_rate
             + reduced_rate_consumption * p.hmrc.vat.reduced_rate
         )
-        return raw_vat / p.simulation.microdata_vat_coverage
+        # Survey consumption under-records spending, and households bear only
+        # part of VAT liabilities, so household VAT on recorded consumption is
+        # grossed up to receipts. VAT on the household's own energy bills is
+        # not grossed up: the bills are calibrated to national energy use and
+        # households bear that VAT in full.
+        coverage = vat_grossing_factor(p.simulation)
+        energy_vat = household("baseline_domestic_energy_vat", period)
+        return raw_vat / coverage + energy_vat

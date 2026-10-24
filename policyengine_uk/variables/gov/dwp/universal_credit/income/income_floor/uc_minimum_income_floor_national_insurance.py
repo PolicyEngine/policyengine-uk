@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.class_2 import class_2_contribution_weeks, class_2_liable
 
 
 class uc_minimum_income_floor_national_insurance(Variable):
@@ -34,26 +35,32 @@ class uc_minimum_income_floor_national_insurance(Variable):
         # Primary Class 1 on pay equal to the threshold, with the annual
         # thresholds (weekly amounts times 52) the model uses for employees.
         class_1 = ni.class_1
-        primary_threshold = class_1.thresholds.primary_threshold * WEEKS_IN_YEAR
-        upper_earnings_limit = class_1.thresholds.upper_earnings_limit * WEEKS_IN_YEAR
-        employee = class_1.rates.employee.main * max_(
+        primary_threshold = (
+            class_1.employee_scale.components[1].threshold * WEEKS_IN_YEAR
+        )
+        upper_earnings_limit = (
+            class_1.employee_scale.components[2].threshold * WEEKS_IN_YEAR
+        )
+        employee = class_1.employee_scale.components[1].rate * max_(
             0, min_(threshold, upper_earnings_limit) - primary_threshold
-        ) + class_1.rates.employee.additional * max_(
+        ) + class_1.employee_scale.components[2].rate * max_(
             0, threshold - upper_earnings_limit
         )
-        # Class 2 and Class 4 on profits equal to the threshold.
+        # Class 2 and Class 4 on profits equal to the threshold, by the same
+        # s.11(2) test and contribution weeks as ni_class_2: from 2022-23
+        # profits up to the lower profits threshold are treated as paid.
         class_2 = (
-            (threshold >= ni.class_2.small_profits_threshold)
+            class_2_liable(threshold, ni.class_2)
             * ni.class_2.flat_rate
-            * WEEKS_IN_YEAR
+            * class_2_contribution_weeks(period.start.year)
         )
         class_4 = ni.class_4
-        class_4_amount = class_4.rates.main * max_(
+        class_4_amount = class_4.contribution_scale.components[1].rate * max_(
             0,
-            min_(threshold, class_4.thresholds.upper_profits_limit)
-            - class_4.thresholds.lower_profits_limit,
-        ) + class_4.rates.additional * max_(
-            0, threshold - class_4.thresholds.upper_profits_limit
+            min_(threshold, class_4.contribution_scale.components[2].threshold)
+            - class_4.contribution_scale.components[1].threshold,
+        ) + class_4.contribution_scale.components[2].rate * max_(
+            0, threshold - class_4.contribution_scale.components[2].threshold
         )
         # Each class is due only from those the model treats as liable for
         # it, as for the person's actual contributions. Primary Class 1 and

@@ -272,10 +272,10 @@
       household:
         members: [parent, child]
   output:
-    # Child Benefit 27.05 x 52 = 1,406.60; the charge takes
-    # (70,000 - 60,000) / 200 = 50% of it, 703.30.
-    CB_HITC: [703.30, 0]
-    income_tax: [16_135.30, 0]
+    # Child Benefit 27.05 x 52 = 1,406.60, rounded down to £1,406; the charge
+    # takes (70,000 - 60,000) / 200 = 50% of it, £703 (s. 681C(3)).
+    CB_HITC: [703, 0]
+    income_tax: [16_135, 0]
     # 37,700 x 20% + (57,430 - 37,700) x 40%.
     uc_income_tax_on_earnings: [15_432, 0]
 
@@ -355,6 +355,8 @@
         age: 92
         employment_income: 20_000
         employer_pension_contributions: 65_000
+        # No allowance carried forward, so the whole excess is charged.
+        unused_pension_annual_allowance: 0
         married_couples_allowance: 11_000
         would_claim_marriage_allowance: false
       partner:
