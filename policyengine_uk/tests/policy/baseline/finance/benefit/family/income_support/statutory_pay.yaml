@@ -191,7 +191,7 @@
         age: 38
         is_claimant_or_partner: false
         statutory_maternity_pay: 1_500
-        income_tax: 300
+        income_tax_before_winter_fuel_payment_charge: 300
         national_insurance: 100
         pension_contributions: 200
         social_security_income: 0
@@ -257,7 +257,9 @@
         statutory_sick_pay: 1_000
         # Enter actual deductions to isolate the IS calculation. This case
         # does not assert how the annual tax and NI models calculate them.
-        income_tax: 100
+        # Income Support deducts income tax before the winter fuel payment
+        # charge.
+        income_tax_before_winter_fuel_payment_charge: 100
         national_insurance: 50
         pension_contributions: 200
         social_security_income: 0

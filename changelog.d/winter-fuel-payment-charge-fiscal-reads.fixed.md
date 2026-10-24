@@ -1,0 +1,1 @@
+- Correct fiscal-partition eligibility reads for income tax and the TV licence after separating the Winter Fuel Payment charge from tax deducted by Pension Credit.

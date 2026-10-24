@@ -19,6 +19,9 @@ import pytest
 
 from policyengine_uk import Simulation
 
+# A variable with a formula. income_tax itself adds this and the winter fuel
+# payment charge, so it has no formula of its own.
+FORMULA_VARIABLE = "income_tax_before_winter_fuel_payment_charge"
 SITUATION = {
     "people": {"adult": {"age": {2026: 40}, "employment_income": {2026: 30_000}}},
     "benunits": {"benunit": {"members": ["adult"]}},
@@ -42,8 +45,8 @@ def core_shares_code(request):
     with pytest.MonkeyPatch.context() as monkeypatch:
         monkeypatch.setattr(SourceFileLoader, "get_code", _conftest(request)._get_code)
         first, second = CountryTaxBenefitSystem(), CountryTaxBenefitSystem()
-    first = first.variables["income_tax"].get_formula().__code__
-    second = second.variables["income_tax"].get_formula().__code__
+    first = first.variables[FORMULA_VARIABLE].get_formula().__code__
+    second = second.variables[FORMULA_VARIABLE].get_formula().__code__
     return first is second
 
 
@@ -55,8 +58,8 @@ def _skip_if_core_shares(core_shares_code):
         )
 
 
-def _income_tax_formula(simulation):
-    variable = simulation.tax_benefit_system.variables["income_tax"]
+def _formula(simulation):
+    variable = simulation.tax_benefit_system.variables[FORMULA_VARIABLE]
     return variable.get_formula()
 
 
@@ -79,10 +82,10 @@ def _coverage_code_objects():
 def test_systems_share_code_but_not_modules_classes_or_functions():
     first = Simulation(situation=SITUATION)
     second = Simulation(situation=SITUATION)
-    first_class = type(first.tax_benefit_system.variables["income_tax"])
-    second_class = type(second.tax_benefit_system.variables["income_tax"])
-    first_formula = _income_tax_formula(first)
-    second_formula = _income_tax_formula(second)
+    first_class = type(first.tax_benefit_system.variables[FORMULA_VARIABLE])
+    second_class = type(second.tax_benefit_system.variables[FORMULA_VARIABLE])
+    first_formula = _formula(first)
+    second_formula = _formula(second)
 
     assert first_class is not second_class
     assert (
