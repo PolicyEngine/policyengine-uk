@@ -217,8 +217,8 @@ built from it. Amounts not raised by September CPI in practice that sat on
 had, through `indices.obr.lagged_cpi`. These include the earnings-linked
 Pension Credit standard minimum guarantee, savings credit threshold, Housing
 Benefit pension-age allowances and Housing Benefit non-dependant deduction
-income bands, as well as DfE funding rates and the council tax high value
-surcharge. Lagged calendar-year CPI remains a placeholder pending an
+income bands, as well as DfE funding rates, the Childcare Offer for Wales
+hourly rate and the council tax high value surcharge. Lagged calendar-year CPI remains a placeholder pending an
 appropriate earnings-linked model for the first group; deduction amounts
 continue to follow September CPI. The savings credit threshold and Housing
 Benefit pension-age allowances are within the s150 review, under

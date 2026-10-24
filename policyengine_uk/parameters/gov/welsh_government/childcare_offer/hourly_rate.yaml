@@ -3,7 +3,11 @@ metadata:
   unit: currency-GBP
   period: hour
   label: Childcare Offer for Wales hourly rate
-  uprating: gov.benefit_uprating_cpi
+  # Not uprated by September CPI: the Welsh Government sets this rate in its
+  # own annual review, not in the Social Security Administration Act 1992 s150
+  # review. Follows the lagged calendar-year CPI projection that
+  # gov.dfe.childcare_funding_rate uses.
+  uprating: gov.economic_assumptions.indices.obr.lagged_cpi
   reference:
     - title: Welsh Government, Evaluation of the early implementation of the Childcare Offer for Wales (2018), payment rate of £4.50 an hour
       href: https://www.gov.wales/sites/default/files/statistics-and-research/2019-06/181122-evaluation-early-implementation-childcare-offer-en.pdf

@@ -10,15 +10,22 @@ the model otherwise pays for the child, is set to zero so that each source
 alone decides the result.
 
 One simulation holds a family for each source, plus a control family with
-wages only.
+wages only. The cases come from the lists, so a source removed from a list
+would just lose its case; the lists are also pinned to the reviewed sources
+below, so a removal fails here too. Each source is also checked not to add
+another listed source (through adds or subtracts, at any depth), which would
+count it twice. That check does not see a formula that reads another listed
+source.
 """
 
 from pathlib import Path
 
 import pytest
 import yaml
+from policyengine_core.parameters import get_parameter
 
 from policyengine_uk import Simulation
+from policyengine_uk.system import system
 
 YEAR = 2026
 WAGES = 99_000
@@ -43,6 +50,68 @@ def sources(name):
 CASES = [("people", source) for source in sources("gross_income_sources")] + [
     ("benunits", source) for source in sources("benunit_gross_income_sources")
 ]
+
+# The sources as reviewed. Adding a source to a list, or removing one, means
+# changing it here too.
+REVIEWED = {
+    "gross_income_sources": {
+        "employment_income",
+        "employment_benefits",
+        "pension_contributions_via_salary_sacrifice_from_pay",
+        "self_employment_income",
+        "private_pension_income",
+        "social_security_income",
+        "pip",
+        "dla",
+        "attendance_allowance",
+        "iidb",
+        "sda",
+        "maternity_allowance",
+        "afcs",
+        "war_widows_pension",
+        "armed_forces_independence_payment",
+        "bsp",
+        "winter_fuel_payment",
+        "private_transfer_income",
+        "adult_ema",
+        "access_fund",
+        "education_grants",
+        "parents_learning_allowance",
+        "adult_dependants_grant",
+        "property_income",
+        "sublet_income",
+        "savings_interest_income",
+        "other_investment_income",
+        "dividend_income",
+        "taxable_miscellaneous_income",
+        "maintenance_income",
+        "spousal_maintenance_income",
+    },
+    "benunit_gross_income_sources": {
+        "child_benefit",
+        "universal_credit",
+        "child_tax_credit",
+        "working_tax_credit",
+        "housing_benefit",
+        "income_support",
+        "pension_credit",
+        "esa_income",
+        "jsa_income",
+    },
+}
+
+
+def components(name):
+    """Every variable that `name` adds or subtracts, at any depth."""
+    variable = system.variables[name]
+    found = set()
+    for terms in (variable.adds, variable.subtracts):
+        if isinstance(terms, str):
+            terms = get_parameter(system.parameters, terms)(f"{YEAR}-01-01")
+        for term in terms or []:
+            if term in system.variables:
+                found |= {term} | components(term)
+    return found
 
 
 @pytest.fixture(scope="module")
@@ -74,3 +143,16 @@ def test_wages_alone_are_within_the_limit(offer):
 @pytest.mark.parametrize("entity, source", CASES, ids=[source for _, source in CASES])
 def test_each_listed_source_counts_towards_the_limit(offer, entity, source):
     assert offer[1 + CASES.index((entity, source))] == 0
+
+
+@pytest.mark.parametrize("name", sorted(REVIEWED))
+def test_each_list_holds_the_reviewed_sources_once(name):
+    listed = sources(name)
+    assert len(listed) == len(set(listed))
+    assert set(listed) == REVIEWED[name]
+
+
+@pytest.mark.parametrize("entity, source", CASES, ids=[source for _, source in CASES])
+def test_no_listed_source_adds_another(entity, source):
+    listed = {other for _, other in CASES}
+    assert not components(source) & listed

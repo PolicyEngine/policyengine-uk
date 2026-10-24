@@ -483,8 +483,8 @@
   output:
     wales_childcare_offer: 0
 
-# current_education's default formula puts an 18- or 19-year-old in post-
-# secondary education when nothing is supplied, so a parent of that age
+# current_education's default formula puts an 18- or 19-year-old in tertiary
+# education when nothing is supplied, so a parent of that age
 # counts as a parent in education (guidance para 71). Survey data supplies
 # current_education, so this default matters only for household calculations.
 - name: A 19-year-old lone parent with no education input counts as in education by default
