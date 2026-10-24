@@ -142,12 +142,14 @@ def test_head_totals_agree_with_the_model_weighted_sums(measured):
         for d in partition.double_counts
         if "gov_tax" in d.totals
     )
-    # Float32 model variables, summed per household then weighted, differ
-    # from the sum of the weighted head totals by a few parts per billion
-    # (2.8e-9, GBP 2,646 of GBP 935bn, after #2611's population change), so
-    # 1e-9 failed on rounding alone. 1e-8 still catches any missed or
-    # double-counted head above about GBP 9,000.
-    assert receipts + double_counted == pytest.approx(model, rel=1e-8)
+    # The model sums gov_tax for each household in float32, policyengine-core's
+    # float type, and the heads are summed here in float64, so the two agree to
+    # float32 rounding: report_spec.yaml's tolerance for identities between
+    # weighted totals. Updating corporate SDLT and business rates (#2322) moved
+    # the 2026 difference on policyengine-uk-data 1.58.1 to 1.75e-9, past the
+    # 1e-9 this check used to allow.
+    tolerance = load_spec().identity_relative_tolerance
+    assert receipts + double_counted == pytest.approx(model, rel=tolerance)
 
 
 def test_household_detail_is_complete(measured):

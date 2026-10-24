@@ -1,3 +1,87 @@
+## [2.152.5] - 2026-10-24
+
+### Changed
+
+- Corrected the indirect tax effects planning page (`docs/book/policy/indirect-tax-effects-plan.md`): UKMOD's TCO technical note does not give the 0.8 consumption elasticity reported in #1114, labour supply responses run through two separate routes, fuel duty also reads LPG and natural gas inputs, and a formula on a consumption input would not change values supplied by a dataset.
+- Corrected the non-UK benefit receipt planning page (`docs/book/assumptions/non-uk-benefit-receipt-plan.md`): Microcosm UK's resident State Pension series removes pensions paid abroad but still includes care-home residents, the Enhanced FRS keeps its own targets, fraud and error overpayments reach households, so they are treated separately, Winter Fuel Payment has not been paid abroad since winter 2025-26, Housing Benefit doesn't pay for a care-home place, Attendance Allowance can be paid abroad in limited cases, and the overseas share of State Pension spending has fallen since 2019-20.
+- Brought the pension tax relief page (`docs/book/programs/gov/hmrc/pension-tax-relief.md`) up to date with main: #2488 has merged, unused annual allowance is now estimated from 2020-21 rather than defaulting to nil, defined-benefit accrual can be supplied as `defined_benefit_pension_input_amount`, with `defined_benefit_pension_share` for the workplace contributions it replaces, relevant UK earnings follow taxable employment income and trading profit before losses, relief-at-source contributions stay in income for the annual allowance charge and raise its rate limits only under the s. 192(4) condition, which HMRC's PTM056120 does not state, and s. 192(4) raises the higher rate limit as well as the basic rate limit. The worked examples were re-run on policyengine-uk 2.148.2.
+- Corrected the UK pipeline alignment planning page (`docs/book/assumptions/uk-pipeline-alignment-plan.md`): five `would_claim_*` formulas read reported receipt (Council Tax Reduction was missing); in data-built simulations `claims_all_entitled_benefits` is false and Housing Benefit and Council Tax Reduction ignore it, and eligibility for tax credits, Income Support and working-age Housing Benefit needs a reported award; policyengine-uk-data anchored take-up (#359), imputed gift aid (#347) and added a second-stage imputation (#362) in April 2026; the residual aggregates are #1621's April 2026 figures; the Income Support phase-out landed in #1631; `CTC_child_element` is not gated on `is_CTC_eligible`, so in tax-credit years an ineligible Child Tax Credit claimant's `tax_credits` enters its Housing Benefit and Council Tax Reduction means tests; and the third small item in #1621 was a `~`-on-bool warning, not `state_pension_type`.
+- Corrected the STBM pension comparison page (`docs/book/programs/gov/hmrc/pensions-comparison-stbm.md`): STBM raises the basic-rate limit and every limit above it for non-savings income, and every savings and dividend limit, rather than widening every band, its basic amount is £10,000 in its 2023-24 to 2026-27 systems, Microcosm UK imputes employer contributions from the same ONS ASHE table (P10) as STBM, PolicyEngine UK now estimates carry-forward of unused annual allowance from 2020-21, the threshold income test has been £200,000 since 2020-21, and salary sacrifice under arrangements made before 9 July 2015 can be supplied.
+
+
+## [2.152.4] - 2026-10-24
+
+### Changed
+
+- Corrected the default-dataset switch plan (`docs/book/assumptions/mp30k-uk-switch-plan.md`): the tests now pin Enhanced FRS 2024-25 from policyengine-uk-data 1.58.1, policyengine.py 6.10.0 already switched its UK default to Microcosm UK, an inline situation takes precedence over any dataset, unknown enum names raise an error, and the VAT survey-coverage parameter is calibrated to Microcosm UK and must be re-derived on a switch or rollback.
+- Corrected the firm-level VAT planning page (`docs/book/programs/gov/hmrc/firm-vat.md`): #1333 is closed as a duplicate of #1320, the proposed `Firm` entity no longer names a non-existent `state` containing entity, the data table now says FRS self-employment income is profit rather than turnover and that the FRS carries a main-job SIC division, and turnover-band counts come from ONS *UK business: activity, size and location* rather than Business demography.
+
+### Fixed
+
+- - Northern Ireland Local Housing Allowance rates now follow new gov.dfc.LHA.maximum, gov.dfc.LHA.maximum_monthly and gov.dfc.LHA.march_2020_minimum parameters, so reforms to the Great Britain maxima and minimum change Great Britain rates only.
+
+
+## [2.152.3] - 2026-10-24
+
+### Changed
+
+- - Used explicit Boolean conjunctions for basic-income eligibility and unreported Universal Credit claimant masks.
+- - Clarified that the non-primary-residence wealth tax uses gross wealth and deducts no debt.
+
+
+## [2.152.2] - 2026-10-24
+
+### Changed
+
+- - Updated certifi from 2026.7.22 to 2026.10.19 in `uv.lock`, which removed the "emSign ECC Root CA - G3" root certificate from the CA bundle that the locked environment trusts.
+
+### Fixed
+
+- - Kept declared energy projection and reset limited to the three energy inputs, rejected projections before the selected index's supported history, and documented generic CPI as an interim price proxy.
+
+
+## [2.152.1] - 2026-10-24
+
+### Fixed
+
+- - Lint and the documentation build now install from uv.lock, as the tests already do, so a new release of ruff, jupyter-book or another dependency cannot change what pull requests are checked against.
+
+
+## [2.152.0] - 2026-10-24
+
+### Added
+
+- - Added the higher Housing Benefit personal allowance for pre-assessed main-phase ESA claimants without double counting the ordinary allowance.
+
+### Fixed
+
+- Update the corporate SDLT and business rates statistics behind `corporate_sdlt` and `business_rates` to the latest official outturn (HMRC stamp tax statistics to 2024-25; England, Scotland and Northern Ireland non-domestic rates to 2025-26; Wales to 2024-25) and project them with the OBR's March 2026 receipts forecasts instead of holding 2018-2021 values flat. Northern Ireland business rates no longer include domestic rates.
+- - Targeted (2-year-old) childcare now qualifies through Pension Credit only when the family receives a guarantee credit, so pensioners who do not claim Pension Credit no longer qualify through a computed guarantee credit. Receipt of a guarantee credit now also requires a Pension Credit payment, so a reform that stops Pension Credit being paid closes the routes that read it.
+
+
+## [2.151.3] - 2026-10-24
+
+### Changed
+
+- Corrected the two-child limit child poverty validation page (`docs/book/validation/child-poverty-tcl.md`): its snippet counted absolute low income (`in_poverty_ahc`) against DWP and Resolution Foundation benchmarks that measure relative low income. Re-run on policyengine-uk 2.148.3 with the certified Microcosm UK 2024-25 release, using relative low income and HBAI dependent children, removing the limit lifts about 548,000 children after housing costs and 460,000 before in 2029-30, at a cost of £3.21bn: above both benchmarks on headcount. The page also corrects the Resolution Foundation report's title and forecast vintage and the reason for the cost's sign.
+- Give each Python test shard 75 minutes, not 60, so a slow runner no longer times out a merge-queue run; five shards now take 45 to 60 minutes.
+
+
+## [2.151.2] - 2026-10-24
+
+### Fixed
+
+- - The salary sacrifice National Insurance measures (`salary_sacrifice_pension_ni_employee` and `salary_sacrifice_pension_ni_employer`) now equal the change in the Class 1 liability from the NIC-only salary sacrifice pension excess: an amount crossing the upper earnings limit is split between the main and additional rates, and the thresholds and age conditions apply. No tax total changes.
+- - Corrected units: `shareholding` and `consumption_shareholding` are shares (`/1`, so a month's value is no longer a twelfth of the share), `free_tv_licence_value` is in pounds, and seven true/false variables (`sdlt_liable`, `lbtt_liable`, `benunit_is_rent_liable`, the three Pension Credit eligibility flags and `car_is_ved_exempt`) no longer declare a unit. No yearly value changes.
+
+
+## [2.151.1] - 2026-10-23
+
+### Fixed
+
+- Uprate the Pension Credit standard minimum guarantee and the lower Housing Benefit pension-age personal allowances by the previous May-July earnings increase, meeting the SSAA 1992 s150A earnings floor after the last published rates. Derive projected Savings Credit thresholds from the guarantee and a September-CPI-uprated maximum award, keeping the threshold in force when a reform sets a zero phase-in rate, and the higher pension-age allowances as the guarantee plus that maximum. April 2027's single guarantee rises from £238 to £247.282 before rounding, rather than £243.47.
+
+
 ## [2.151.0] - 2026-10-23
 
 ### Added
