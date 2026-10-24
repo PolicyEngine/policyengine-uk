@@ -1,3 +1,17 @@
+## [2.155.0] - 2026-10-24
+
+### Added
+
+- - `import_obr_forecasts.py` now refreshes the OBR receipts growth series that project corporate SDLT and business rates (`yoy_growth.obr.stamp_duty_land_tax.*` and `.business_rates.*`) from a new EFO's receipts tables, with the previous EFO's tables (`--previous-receipts-file`) as the base for outturn growth, and refuses receipts tables from a different or unidentifiable EFO or without an unambiguous pound-billion unit declaration in every selected table in both releases.
+- Add the Childcare Offer for Wales: the childcare element for working parents, and from September 2022 parents in further or higher education, of 3- and 4-year-olds, valued at the Welsh Government's hourly rate to providers.
+- Add the HBAI absolute low-income line on the FYE 2011 reference in every year (`absolute_poverty_threshold_fye2011_bhc` and `_ahc`, `poverty_threshold_fye2011_bhc` and `_ahc`, and `in_absolute_poverty_fye2011_bhc` and `_ahc`), for comparison with absolute poverty estimates published before HBAI moved to the FYE 2025 reference in March 2026. The labels of `in_poverty_bhc`, `in_poverty_ahc`, `poverty_threshold_bhc` and `poverty_threshold_ahc` now say they follow HBAI's current reference line.
+
+### Fixed
+
+- - Rebuild the 2027-2029 England and Wales water bill growth (`yoy_growth.ofwat.water_bills`) from Ofwat's PR24 final determinations and the OBR CPIH forecast, with the source table committed so the values can be reproduced, and rederive the after housing costs CPI from it (#2384).
+- Take population growth from the OBR's March 2026 long-term economic determinants (ONS 2024-based projections after 2030-31) and re-derive the per-capita GDP, mixed income and non-labour income series and the road-fuel spending proxies from it, so they share one vintage.
+
+
 ## [2.154.1] - 2026-10-24
 
 ### Fixed
