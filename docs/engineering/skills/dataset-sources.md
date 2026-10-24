@@ -121,6 +121,38 @@ matching that receipt. The producer must carry both period kind and year into
 the H5 artifact; this consumer change does not retrofit that metadata or verify
 the released private file.
 
+## Bereavement-benefit split
+
+Bereavement Support Payment rates remain unchanged under the
+[2026 up-rating order, article 19](https://www.legislation.gov.uk/uksi/2026/148/article/19/made).
+Older datasets combine it with CPI-uprated Widowed Parent's Allowance and
+War Widow's Pension in `bsp_reported`. They keep CPI projection until the
+producer separates those benefits.
+
+An explicitly supplied `widowed_parents_allowance_reported` person column
+declares the completed split used by
+[Microcosm PR #1383](https://github.com/PolicyEngine/microcosm/pull/1383),
+including when every value in that column is zero. The automatic projector
+then holds `bsp_reported` nominally flat; the separate allowance and
+`war_widows_pension_reported` still grow by CPI. A war-widow column alone
+does not declare completion. Unclassified off-rate amounts that the producer
+retains in `bsp_reported` receive the same nominal treatment.
+
+Beyond the materialized projection horizon, the model holds BSP flat only
+when its latest earlier input has an explicitly stored allowance input for
+the same period. A calculated or carried allowance default does not count.
+This also preserves the distinction when an external multi-year dataset
+changes schema between observations. Supplied annual BSP amounts remain
+authoritative. Disabling economic assumptions preserves those amounts when
+either observation declares the split, rather than replacing separate BSP
+with an older combined report.
+
+UK single-year files, materialized Core datasets and their projected children
+preserve the column. Household situations retain their existing CPI behavior,
+even when they supply the allowance separately. The change follows dataset
+semantics, without inferring a split from a filename, model version or the
+amount received. See [issue #2381](https://github.com/PolicyEngine/policyengine-uk/issues/2381).
+
 ## Tests
 
 For dataset source routing, prefer stubbed tests that prove dispatch behavior

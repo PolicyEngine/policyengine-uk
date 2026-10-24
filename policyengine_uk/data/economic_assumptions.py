@@ -342,7 +342,16 @@ def apply_single_year_uprating(
             for table_name, df in zip(current_year.table_names, current_year.tables):
                 if variable in df.columns:
                     prev_year_value = getattr(previous_year, table_name)[variable]
-                    current_year_value = prev_year_value * (1 + index_rel_change)
+                    split_bsp = (
+                        variable == "bsp_reported"
+                        and "widowed_parents_allowance_reported"
+                        in previous_year.person.columns
+                    )
+                    current_year_value = (
+                        prev_year_value
+                        if split_bsp
+                        else prev_year_value * (1 + index_rel_change)
+                    )
                     getattr(current_year, table_name)[variable] = current_year_value
 
     # Next, apply custom uprating.
@@ -841,6 +850,13 @@ def reset_growthfactor_uprating(
             base_table = getattr(base_year_dataset, table_name)
             current_table = getattr(current_year_dataset, table_name)
             for variable in growthfactor_uprated_variables:
+                # Split BSP amounts do not reflect economic growth. In a
+                # schema transition, the base amount can include other benefits.
+                if variable == "bsp_reported" and (
+                    "widowed_parents_allowance_reported" in base_table.columns
+                    or "widowed_parents_allowance_reported" in current_table.columns
+                ):
+                    continue
                 if variable in current_table.columns and variable in base_table.columns:
                     current_table[variable] = base_table[variable].values
         if reset_energy:
