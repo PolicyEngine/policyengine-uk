@@ -33,6 +33,7 @@ from policyengine_uk.data.dataset_schema import (
 from policyengine_uk.utils.entity_ids import ENTITY_ID_VARIABLES, check_entity_ids
 from policyengine_uk.utils.scenario import ConstructionReformState, Scenario
 from policyengine_uk.data.economic_assumptions import (
+    BEREAVEMENT_SPLIT_INPUTS,
     extend_single_year_dataset,
     reset_growthfactor_uprating,
     uprating_input_fingerprint,
@@ -1391,11 +1392,15 @@ class Simulation(CoreSimulation):
                     default=None,
                 )
                 if source is not None:
-                    allowance = self.get_holder("widowed_parents_allowance_reported")
-                    split = source in allowance.get_input_periods(self.branch_name)
-                    # Track the dependency even when the marker is absent.
-                    # A calculated default must not declare a completed split.
-                    self.calculate("widowed_parents_allowance_reported", source)
+                    split = all(
+                        source
+                        in self.get_holder(name).get_input_periods(self.branch_name)
+                        for name in BEREAVEMENT_SPLIT_INPUTS
+                    )
+                    # Track both dependencies even when either input is absent.
+                    # Calculated defaults do not declare a completed split.
+                    for name in BEREAVEMENT_SPLIT_INPUTS:
+                        self.calculate(name, source)
                     if split:
                         return self.calculate(variable_name, source)
         return super()._calculate(variable_name, period)

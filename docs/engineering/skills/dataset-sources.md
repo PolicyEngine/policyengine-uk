@@ -129,18 +129,22 @@ Older datasets combine it with CPI-uprated Widowed Parent's Allowance and
 War Widow's Pension in `bsp_reported`. They keep CPI projection until the
 producer separates those benefits.
 
-An explicitly supplied `widowed_parents_allowance_reported` person column
-declares the completed split used by
+Explicitly supplied `widowed_parents_allowance_reported` and
+`war_widows_pension_reported` person columns together declare the completed
+split used by the merged
 [Microcosm PR #1383](https://github.com/PolicyEngine/microcosm/pull/1383),
-including when every value in that column is zero. The automatic projector
+including when every value in either column is zero. The automatic projector
 then holds `bsp_reported` nominally flat; the separate allowance and
-`war_widows_pension_reported` still grow by CPI. A war-widow column alone
-does not declare completion. Unclassified off-rate amounts that the producer
-retains in `bsp_reported` receive the same nominal treatment.
+war-widow inputs still grow by CPI. Either column alone leaves BSP on the
+legacy CPI path. Unclassified off-rate amounts that the producer retains in
+`bsp_reported` receive the same nominal treatment. These can include Widowed
+Parent's Allowance with an inherited additional pension above its rate;
+freezing that CPI-linked component understates it.
 
 Beyond the materialized projection horizon, the model holds BSP flat only
-when its latest earlier input has an explicitly stored allowance input for
-the same period. A calculated or carried allowance default does not count.
+when its latest earlier input has both explicitly stored split inputs for
+the same period. A calculated or carried default does not count, nor do
+inputs supplied in different periods.
 This also preserves the distinction when an external multi-year dataset
 changes schema between observations. Supplied annual BSP amounts remain
 authoritative. Disabling economic assumptions preserves those amounts when
@@ -148,8 +152,8 @@ either observation declares the split, rather than replacing separate BSP
 with an older combined report.
 
 UK single-year files, materialized Core datasets and their projected children
-preserve the column. Household situations retain their existing CPI behavior,
-even when they supply the allowance separately. The change follows dataset
+preserve both columns. Household situations retain their existing CPI behavior,
+even when they supply the separate benefits. The change follows dataset
 semantics, without inferring a split from a filename, model version or the
 amount received. See [issue #2381](https://github.com/PolicyEngine/policyengine-uk/issues/2381).
 

@@ -1,7 +1,7 @@
 """Only a completed survey bereavement split freezes BSP projection (#2381).
 
-The WPA column is the producer's completed-split signal, including an all-zero
-column. BSP rates remain fixed under the Bereavement Support Payment Regulations
+The WPA and war-widow columns together declare the producer's completed split,
+including all-zero columns. BSP rates remain fixed under the Bereavement Support Payment Regulations
 2017, regulation 3; the legacy combined survey field retains its CPI treatment.
 The controlled 10% annual growth below is a projection oracle, not a forecast.
 """
@@ -32,7 +32,9 @@ BASE_YEAR = 2024
 AMOUNTS = {BSP: 100.0, WPA: 70.0, WAR_WIDOW: 60.0}
 
 
-def bereavement_dataset(*, wpa=70.0, war_widow=True, year=BASE_YEAR):
+def bereavement_dataset(
+    *, wpa=70.0, war_widow=True, war_widow_amount=60.0, year=BASE_YEAR
+):
     """Two unrelated adults, one claimant and one with no reported benefits."""
     person = {
         "person_id": [1, 2],
@@ -44,7 +46,7 @@ def bereavement_dataset(*, wpa=70.0, war_widow=True, year=BASE_YEAR):
     if wpa is not None:
         person[WPA] = [wpa, 0.0]
     if war_widow:
-        person[WAR_WIDOW] = [AMOUNTS[WAR_WIDOW], 0.0]
+        person[WAR_WIDOW] = [war_widow_amount, 0.0]
     return UKSingleYearDataset(
         person=pd.DataFrame(person),
         benunit=pd.DataFrame({"benunit_id": [1, 2]}),
@@ -94,8 +96,11 @@ def assert_reported(simulation, name, year, amount):
 
 
 @pytest.mark.parametrize("wpa", [70.0, 0.0], ids=["positive-wpa", "zero-wpa"])
-def test_completed_split_freezes_bsp_in_each_projected_year(controlled_parameters, wpa):
-    source = bereavement_dataset(wpa=wpa)
+@pytest.mark.parametrize("war_widow_amount", [60.0, 0.0])
+def test_completed_split_freezes_bsp_in_each_projected_year(
+    controlled_parameters, wpa, war_widow_amount
+):
+    source = bereavement_dataset(wpa=wpa, war_widow_amount=war_widow_amount)
     before = source.person.copy(deep=True)
     projected = extend_single_year_dataset(source, controlled_parameters, end_year=2032)
     for year in (2024, 2029, 2032):
@@ -103,30 +108,35 @@ def test_completed_split_freezes_bsp_in_each_projected_year(controlled_parameter
         factor = 1.1 ** (year - BASE_YEAR)
         np.testing.assert_allclose(projected[year].person[WPA], [wpa * factor, 0.0])
         np.testing.assert_allclose(
-            projected[year].person[WAR_WIDOW], [60.0 * factor, 0.0]
+            projected[year].person[WAR_WIDOW], [war_widow_amount * factor, 0.0]
         )
     pd.testing.assert_frame_equal(source.person, before)
 
 
 @pytest.mark.parametrize("wpa", [70.0, 0.0], ids=["positive-wpa", "zero-wpa"])
-def test_completed_split_freezes_bsp_after_the_projection_horizon(wpa):
+@pytest.mark.parametrize("war_widow_amount", [60.0, 0.0])
+def test_completed_split_freezes_bsp_after_the_projection_horizon(
+    wpa, war_widow_amount
+):
     simulation = Simulation(
-        dataset=bereavement_dataset(wpa=wpa), scenario=controlled_scenario()
+        dataset=bereavement_dataset(wpa=wpa, war_widow_amount=war_widow_amount),
+        scenario=controlled_scenario(),
     )
     for year in (2029, 2032, 2035):
         assert_reported(simulation, BSP, year, 100.0)
         factor = 1.1 ** (year - BASE_YEAR)
         assert_reported(simulation, WPA, year, wpa * factor)
-        assert_reported(simulation, WAR_WIDOW, year, 60.0 * factor)
+        assert_reported(simulation, WAR_WIDOW, year, war_widow_amount * factor)
 
 
-def test_wpa_column_alone_signals_the_completed_split():
+@pytest.mark.parametrize("wpa", [70.0, 0.0])
+def test_wpa_column_alone_preserves_legacy_cpi_uprating(wpa):
     simulation = Simulation(
-        dataset=bereavement_dataset(wpa=0.0, war_widow=False),
+        dataset=bereavement_dataset(wpa=wpa, war_widow=False),
         scenario=controlled_scenario(),
     )
     for year in (2029, 2032, 2035):
-        assert_reported(simulation, BSP, year, 100.0)
+        assert_reported(simulation, BSP, year, 100.0 * 1.1 ** (year - BASE_YEAR))
 
 
 @pytest.mark.parametrize("war_widow", [False, True], ids=["legacy", "partial-split"])
@@ -367,16 +377,23 @@ def test_split_bsp_fallback_respects_structural_variable_overrides(override):
     assert_reported(simulation, BSP, 2035, expected)
 
 
-def test_branch_split_declaration_invalidates_previously_calculated_cpi_fallback():
+@pytest.mark.parametrize("missing_marker", [WPA, WAR_WIDOW])
+def test_branch_split_declaration_invalidates_previously_calculated_cpi_fallback(
+    missing_marker,
+):
     original = Simulation(
-        dataset=bereavement_dataset(wpa=None), scenario=controlled_scenario()
+        dataset=bereavement_dataset(
+            wpa=None if missing_marker == WPA else 0.0,
+            war_widow=missing_marker != WAR_WIDOW,
+        ),
+        scenario=controlled_scenario(),
     )
     assert_reported(original, BSP, 2035, 100.0 * 1.1**11)
     branch = original.get_branch("completed-split")
     assert_reported(branch, BSP, 2035, 100.0 * 1.1**11)
     # Equal to the calculated default, but now explicitly supplied in the BSP
     # source year. The provenance change alone declares a completed split.
-    branch.set_input(WPA, 2032, [0.0, 0.0])
+    branch.set_input(missing_marker, 2032, [0.0, 0.0])
     assert_reported(branch, BSP, 2035, 100.0 * 1.1**8)
     assert_reported(original, BSP, 2035, 100.0 * 1.1**11)
 
@@ -398,4 +415,80 @@ def test_a_split_declaration_in_another_year_does_not_change_legacy_source_bsp()
     later.person[BSP] = [777.0, 0.0]
     source = UKMultiYearDataset(datasets=[first, later])
     simulation = Simulation(dataset=source, scenario=controlled_scenario())
+    assert_reported(simulation, BSP, 2035, 777.0 * 1.1**3)
+
+
+SCHEMAS = [(None, False), (None, True), (0.0, False), (0.0, True)]
+SCHEMA_IDS = ["legacy", "war-widow-only", "wpa-only", "complete"]
+
+
+@pytest.mark.parametrize("wpa,war_widow", SCHEMAS, ids=SCHEMA_IDS)
+def test_projection_requires_both_split_columns(controlled_parameters, wpa, war_widow):
+    source = bereavement_dataset(wpa=wpa, war_widow=war_widow, war_widow_amount=0.0)
+    projected = extend_single_year_dataset(source, controlled_parameters, end_year=2025)
+    expected = 100.0 if wpa is not None and war_widow else 110.0
+    np.testing.assert_allclose(projected[2025].person[BSP], [expected, 0.0])
+
+
+@pytest.mark.parametrize("wpa,war_widow", SCHEMAS, ids=SCHEMA_IDS)
+def test_latest_bsp_observation_requires_both_split_inputs(wpa, war_widow):
+    first = bereavement_dataset(wpa=0.0, war_widow_amount=0.0)
+    later = bereavement_dataset(
+        wpa=wpa, war_widow=war_widow, war_widow_amount=0.0, year=2032
+    )
+    later.person[BSP] = [777.0, 0.0]
+    simulation = Simulation(
+        dataset=UKMultiYearDataset(datasets=[first, later]),
+        scenario=controlled_scenario(),
+    )
+    expected = 777.0 if wpa is not None and war_widow else 777.0 * 1.1**3
+    assert_reported(simulation, BSP, 2035, expected)
+
+
+@pytest.mark.parametrize("base_schema", SCHEMAS, ids=SCHEMA_IDS)
+@pytest.mark.parametrize("later_schema", SCHEMAS, ids=SCHEMA_IDS)
+def test_no_economic_reset_requires_a_complete_split_in_one_observation(
+    base_schema, later_schema
+):
+    first = bereavement_dataset(
+        wpa=base_schema[0], war_widow=base_schema[1], war_widow_amount=0.0
+    )
+    later = bereavement_dataset(
+        wpa=later_schema[0],
+        war_widow=later_schema[1],
+        war_widow_amount=0.0,
+        year=2032,
+    )
+    later.person[BSP] = [777.0, 0.0]
+    source = UKMultiYearDataset(datasets=[first, later])
+    simulation = Simulation(dataset=source, scenario=no_economic_assumptions)
+    complete = any(
+        wpa is not None and war_widow for wpa, war_widow in (base_schema, later_schema)
+    )
+    assert_reported(simulation, BSP, 2032, 777.0 if complete else 100.0)
+    np.testing.assert_array_equal(source[2032].person[BSP], [777.0, 0.0])
+
+
+def test_calculated_default_war_widow_does_not_complete_the_split():
+    simulation = Simulation(
+        dataset=bereavement_dataset(wpa=0.0, war_widow=False),
+        scenario=controlled_scenario(),
+    )
+    assert_reported(simulation, WAR_WIDOW, 2032, 0.0)
+    assert_reported(simulation, WAR_WIDOW, 2035, 0.0)
+    assert_reported(simulation, BSP, 2035, 100.0 * 1.1**11)
+
+
+@pytest.mark.parametrize("earlier_marker", [WPA, WAR_WIDOW])
+def test_split_markers_from_different_periods_do_not_complete_the_split(earlier_marker):
+    first = bereavement_dataset(wpa=None, war_widow=False)
+    later = bereavement_dataset(wpa=None, war_widow=False, year=2032)
+    first.person[earlier_marker] = 0.0
+    later_marker = WAR_WIDOW if earlier_marker == WPA else WPA
+    later.person[later_marker] = 0.0
+    later.person[BSP] = [777.0, 0.0]
+    simulation = Simulation(
+        dataset=UKMultiYearDataset(datasets=[first, later]),
+        scenario=controlled_scenario(),
+    )
     assert_reported(simulation, BSP, 2035, 777.0 * 1.1**3)
