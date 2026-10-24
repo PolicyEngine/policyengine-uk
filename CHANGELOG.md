@@ -1,3 +1,14 @@
+## [2.152.2] - 2026-10-24
+
+### Changed
+
+- - Updated certifi from 2026.7.22 to 2026.10.19 in `uv.lock`, which removed the "emSign ECC Root CA - G3" root certificate from the CA bundle that the locked environment trusts.
+
+### Fixed
+
+- - Kept declared energy projection and reset limited to the three energy inputs, rejected projections before the selected index's supported history, and documented generic CPI as an interim price proxy.
+
+
 ## [2.152.1] - 2026-10-24
 
 ### Fixed
