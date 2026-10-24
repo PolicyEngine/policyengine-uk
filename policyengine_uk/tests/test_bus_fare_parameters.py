@@ -52,9 +52,35 @@ def test_reference_cap_is_the_cap_the_published_index_reflects():
 
 BANDS = ("LOW", "MIDDLE", "HIGH")
 SINGLE_SHARE = 0.70
-# DfT BUS01a journeys less BUS01c concessionary journeys, England outside London.
-FARE_PAYING_2023_24 = 1_780_912_900.016 - 499_730_082.115
-FARE_PAYING_2024_25 = 1_850_509_887.261 - 519_107_608.594
+# DfT BUS01a journeys less BUS01c older/disabled journeys, England outside
+# London. Other concessions remain in priced boardings, with their discounts
+# reflected in the average yield.
+# https://assets.publishing.service.gov.uk/media/69c11f97cfa346b9d4704a50/bus01.ods
+FARE_PAYING_2023_24 = 1_780_912_900.01636 - 391_017_149.37439
+FARE_PAYING_2024_25 = 1_850_509_887.26131 - 402_846_350.14539
+
+
+def test_outside_london_yield_uses_older_disabled_concessions():
+    # BUS05ai FY2024-25 receipts divided by BUS01a boardings less only the
+    # older/disabled BUS01c journeys. Subtracting every concessionary journey
+    # also excludes other concessions and inflates this yield.
+    yield_per_boarding = system.parameters.gov.dft.bus.yield_per_boarding
+    assert yield_per_boarding.ENGLAND_OUTSIDE_LONDON("2024-01-01") == pytest.approx(
+        2_069_953_713.42079 / FARE_PAYING_2024_25, abs=1e-12
+    )
+
+
+@pytest.mark.parametrize(
+    "area, expected",
+    [
+        ("LONDON", 1.017729905895),
+        ("SCOTLAND", 2.599723222144),
+        ("NORTHERN_IRELAND", 2.550929922065),
+    ],
+)
+def test_other_area_yields_are_unchanged(area, expected):
+    yield_per_boarding = system.parameters.gov.dft.bus.yield_per_boarding
+    assert yield_per_boarding.children[area]("2024-01-01") == expected
 
 
 def cpi(year):
@@ -109,15 +135,15 @@ def test_table_matches_january_2025_index_step():
     # BUS0415a outside London rose 11.0% from December 2024 to March 2025,
     # when the cap rose from GBP 2 to GBP 3; neighbouring quarters moved 0.1%
     # to 2.3%. The cap's part, 9% to 11% of the yield at the December 2024
-    # index level (1.554716967657 * 185.9 / 190.2282).
-    december_yield = 1.554716967657 * 185.9 / 190.2282
+    # index level (1.429858292587 * 185.9 / 190.2282).
+    december_yield = 1.429858292587 * 185.9 / 190.2282
     step = SINGLE_SHARE * (saving(2) - saving(3)) / december_yield
     assert 0.09 <= step <= 0.11
 
 
 def test_table_matches_2023_24_fare_cap_grant():
     # BUS05bi fare cap support for 2023-24, a full year at GBP 2: GBP 278.95m,
-    # over 1,281m fare-paying boardings. Fares at 2023-24 prices.
+    # over 1,390m priced boardings. Fares at 2023-24 prices.
     grant = (
         SINGLE_SHARE
         * FARE_PAYING_2023_24

@@ -88,7 +88,7 @@ def test_england_fares_follow_each_area_index():
     # Trips set so 2024-25 spending is in the ratio of published receipts
     # (BUS05ai: London GBP 1,347.43m, England outside London GBP 2,069.95m).
     london = 1_347.434943 / (2.369144880275 * 1.017729905895)
-    outside = 2_069.953713 / (1.12466920264 * 1.554716967657)
+    outside = 2_069.953713 / (1.12466920264 * 1.429858292587)
     simulation = Simulation(
         dataset=projected_dataset(london_trips=(london, 0), other_trips=(0, outside))
     )
@@ -131,14 +131,14 @@ def test_a_three_pound_cap_binds_and_cap_reforms_follow_the_table():
     uncapped = spending_2025(**{cap: np.inf})
     two_pounds = spending_2025(**{cap: 2})
     assert uncapped > baseline > two_pounds
-    # FY2025-26 fares are the FY2024-25 table times CPI (1.034). Only the 15%
-    # at GBP 3.87 is above GBP 3; a GBP 2 cap also takes the 30% at GBP 2.21
+    # FY2025-26 fares are the FY2024-25 table times CPI (1.034). Only the 13%
+    # at GBP 3.96 is above GBP 3; a GBP 2 cap also takes the 31% at GBP 2.21
     # down to GBP 2.
     assert uncapped - baseline == pytest.approx(
-        SINGLES * 0.15 * (3.87 * 1.034 - 3), rel=1e-3
+        SINGLES * 0.13 * (3.96 * 1.034 - 3), rel=1e-3
     )
     assert baseline - two_pounds == pytest.approx(
-        SINGLES * (0.30 * (2.21 * 1.034 - 2) + 0.15 * 1), rel=1e-3
+        SINGLES * (0.31 * (2.21 * 1.034 - 2) + 0.13 * 1), rel=1e-3
     )
 
 
@@ -151,7 +151,7 @@ def test_scheduled_caps_enter_the_projected_baseline():
     def index_path(year):
         # The fares index projected with CPI, which holds the GBP 3 cap.
         ratio = index(f"{year}-01-01") / index("2024-01-01")
-        return 100 * 1.12466920264 * 1.554716967657 * ratio
+        return 100 * 1.12466920264 * 1.429858292587 * ratio
 
     def fare(band, year):
         return table.children[band](f"{year}-01-01")
@@ -161,7 +161,7 @@ def test_scheduled_caps_enter_the_projected_baseline():
 
     # 2026-27: GBP 2 for the last 95 days, from 1 January 2027.
     middle = fare("MIDDLE", 2026)
-    change = -(0.30 * (middle - 2) + 0.15 * (3 - 2)) * 95 / 365
+    change = -(0.31 * (middle - 2) + 0.13 * (3 - 2)) * 95 / 365
     assert spending(2026) == pytest.approx(
         index_path(2026) + SINGLES * change, rel=1e-5
     )
@@ -169,13 +169,13 @@ def test_scheduled_caps_enter_the_projected_baseline():
     # from 1 January 2028 for 96.
     middle, high = fare("MIDDLE", 2027), fare("HIGH", 2027)
     change = (
-        -(0.30 * (middle - 2) + 0.15 * (3 - 2)) * 270 + 0.15 * (high - 3) * 96
+        -(0.31 * (middle - 2) + 0.13 * (3 - 2)) * 270 + 0.13 * (high - 3) * 96
     ) / 366
     assert spending(2027) == pytest.approx(
         index_path(2027) + SINGLES * change, rel=1e-5
     )
-    # From 2028-29 there is no cap, so the 15% above GBP 3 pay in full.
-    change = 0.15 * (fare("HIGH", 2028) - 3)
+    # From 2028-29 there is no cap, so the 13% above GBP 3 pay in full.
+    change = 0.13 * (fare("HIGH", 2028) - 3)
     assert spending(2028) == pytest.approx(
         index_path(2028) + SINGLES * change, rel=1e-5
     )
@@ -191,7 +191,7 @@ def test_a_supplied_uncapped_fare_replaces_the_table():
         0
     ] == pytest.approx(4 * 1.034)
     # Every single ticket costs GBP 4.14, so a GBP 2 cap in place of GBP 3
-    # saves GBP 1 on each, against GBP 0.24 on average with the table.
+    # saves GBP 1 on each, against GBP 0.22 on average with the table.
     reformed = simulation.calculate("person_bus_fare_spending", 2025)[0]
     baseline = simulation.baseline.calculate("person_bus_fare_spending", 2025)[0]
     assert baseline == pytest.approx(spending_2025(), rel=1e-6)
@@ -210,11 +210,11 @@ def test_loaded_total_does_not_mask_journeys_or_cap_reforms():
     )
     # Published 2024-25 receipts / fare-paying boardings, translated from trips.
     k = 1_850_509_887.26131 / (28.0685543170643 * 58_620_101)
-    fare_paying = 1_850_509_887.26131 - 519_107_608.59444
+    fare_paying = 1_850_509_887.26131 - 402_846_350.14539
     benchmark = 2_069_953_713.42079 / fare_paying
     # In 2024-25 the cap was GBP 2 for 270 days and GBP 3 for 95. Without it,
-    # the 30% of singles at GBP 2.21 and the 15% at GBP 3.87 pay in full.
-    saving = 0.30 * 0.21 * 270 / 365 + 0.15 * (1.87 * 270 / 365 + 0.87 * 95 / 365)
+    # the 31% of singles at GBP 2.21 and the 13% at GBP 3.96 pay in full.
+    saving = 0.31 * 0.21 * 270 / 365 + 0.13 * (1.96 * 270 / 365 + 0.96 * 95 / 365)
     uncapped_yield = benchmark + 0.7 * saving
     baseline_people = np.array([100, 20]) * k * benchmark
     reformed_people = np.array([100, 20]) * k * uncapped_yield

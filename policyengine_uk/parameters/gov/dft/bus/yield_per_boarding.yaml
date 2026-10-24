@@ -1,12 +1,14 @@
 description: Passenger receipts divided by fare-paying boardings in 2024-25, including
-  single and season tickets. This is a benchmark yield, before subsequent cap changes and
-  explicit fare-index reforms; held nominally constant unless reformed.
+  single and season tickets. England outside London excludes only older and disabled
+  concessionary boardings, leaving other concessions in the priced denominator to match
+  the dataset's bus_pass_eligible flag approximately. This is a benchmark yield before
+  subsequent fare-index and cap changes.
 metadata:
   unit: currency-GBP
   period: year
   label: bus yield per boarding
   reference:
-  - title: DfT bus statistics, BUS01 and BUS05i, 2024-25
+  - title: DfT bus statistics, BUS01a journeys, BUS01c older and disabled concessions, and BUS05ai receipts, 2024-25
     href: https://www.gov.uk/government/statistical-data-sets/bus-statistics-data-tables
   - title: DfT National Travel Survey, NTS0705a, 2024
     href: https://www.gov.uk/government/statistical-data-sets/nts07-car-ownership-and-access
@@ -19,7 +21,7 @@ metadata:
 LONDON:
   '2024-01-01': 1.017729905895
 ENGLAND_OUTSIDE_LONDON:
-  '2024-01-01': 1.554716967657
+  '2024-01-01': 1.429858292587
 SCOTLAND:
   '2024-01-01': 2.599723222144
 NORTHERN_IRELAND:
