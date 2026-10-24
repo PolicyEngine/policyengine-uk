@@ -26,10 +26,13 @@ devolved programs, use the appropriate devolved agency path, such as
 - Use `np.ceil` and other NumPy functions where OpenFisca formulas need array
   behavior.
 - Cite durable policy sources in `reference` fields when available.
-- Parameter labels should be concise, lowercase, and stable.
+- Parameter labels should be concise, use sentence case, and stay stable.
 - Add or update focused tests alongside variables and parameters.
 
-Use a concise, lowercase noun phrase for a parameter label and explain the
+Use a concise noun phrase in sentence case for a parameter label. Capitalise
+the first word, preserve capitals in programme proper names and acronyms, and
+use lowercase for other ordinary words. For example, change `capital limit`
+to `Capital limit`; retain `Universal Credit standard allowance`. Explain the
 quantity's purpose and programme in its description. Follow the
 [parameter description guide](../parameter-descriptions.md#labels-and-descriptions)
 for wording examples, punctuation and the distinction between automatic checks

@@ -20,7 +20,10 @@ matches the parameter and its sources. An acronym search cannot establish that.
 
 ## Labels and descriptions
 
-Use `metadata.label` as a concise, lowercase noun phrase that names the quantity.
+Use `metadata.label` as a concise noun phrase in sentence case that names the quantity.
+Capitalise the first word, preserve capitals in programme proper names and
+acronyms, and use lowercase for other ordinary words. For example, change
+`capital limit` to `Capital limit`; retain `Universal Credit standard allowance`.
 Use `description` to explain the quantity's purpose without relying on the
 parameter path. Include the programme name and relevant scope when the short
 label leaves them unclear.
@@ -29,13 +32,13 @@ These wording examples illustrate the distinction without defining policy rules:
 
 ```yaml
 metadata:
-  label: capital limit
+  label: Capital limit
 description: Capital limit used to assess eligibility for the example programme.
 ```
 
 ```yaml
 metadata:
-  label: earnings disregard
+  label: Earnings disregard
 description: Amount of earnings excluded from the income assessment for the example programme.
 ```
 
