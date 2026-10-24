@@ -1,3 +1,10 @@
+## [2.156.2] - 2026-10-24
+
+### Fixed
+
+- - Clarified parameter label and description wording standards, including sentence case and capitals in programme names and acronyms.
+
+
 ## [2.156.1] - 2026-10-24
 
 ### Fixed
