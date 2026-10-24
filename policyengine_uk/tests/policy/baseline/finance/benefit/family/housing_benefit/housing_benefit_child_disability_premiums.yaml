@@ -340,6 +340,9 @@
     receives_enhanced_pip_dl: false
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
+    # The claimant attained State Pension age before 1 April 2021, so the
+    # higher pension-age personal allowance applies (SI 2021/188).
+    housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
     is_lone_parent: false
@@ -367,6 +370,9 @@
     receives_enhanced_pip_dl: false
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
+    # The claimant attained State Pension age before 1 April 2021, so the
+    # higher pension-age personal allowance applies (SI 2021/188).
+    housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
     is_lone_parent: false
@@ -394,6 +400,9 @@
     receives_enhanced_pip_dl: false
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
+    # The claimant attained State Pension age before 1 April 2021, so the
+    # higher pension-age personal allowance applies (SI 2021/188).
+    housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
     is_lone_parent: false
@@ -421,6 +430,9 @@
     receives_enhanced_pip_dl: false
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
+    # The claimant attained State Pension age before 1 April 2021, so the
+    # higher pension-age personal allowance applies (SI 2021/188).
+    housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
     is_lone_parent: false
@@ -448,6 +460,9 @@
     receives_enhanced_pip_dl: false
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
+    # The claimant attained State Pension age before 1 April 2021, so the
+    # higher pension-age personal allowance applies (SI 2021/188).
+    housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
     is_lone_parent: false
@@ -475,6 +490,9 @@
     receives_enhanced_pip_dl: false
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
+    # The claimant attained State Pension age before 1 April 2021, so the
+    # higher pension-age personal allowance applies (SI 2021/188).
+    housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
     is_lone_parent: false
@@ -502,6 +520,9 @@
     receives_enhanced_pip_dl: false
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
+    # The claimant attained State Pension age before 1 April 2021, so the
+    # higher pension-age personal allowance applies (SI 2021/188).
+    housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
     is_lone_parent: false
@@ -529,6 +550,9 @@
     receives_enhanced_pip_dl: false
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
+    # The claimant attained State Pension age before 1 April 2021, so the
+    # higher pension-age personal allowance applies (SI 2021/188).
+    housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
     is_lone_parent: false
@@ -556,6 +580,9 @@
     receives_enhanced_pip_dl: true
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
+    # The claimant attained State Pension age before 1 April 2021, so the
+    # higher pension-age personal allowance applies (SI 2021/188).
+    housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
     is_lone_parent: false
@@ -583,6 +610,9 @@
     receives_enhanced_pip_dl: false
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
+    # The claimant attained State Pension age before 1 April 2021, so the
+    # higher pension-age personal allowance applies (SI 2021/188).
+    housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
     is_lone_parent: false
@@ -610,6 +640,9 @@
     receives_enhanced_pip_dl: false
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
+    # The claimant attained State Pension age before 1 April 2021, so the
+    # higher pension-age personal allowance applies (SI 2021/188).
+    housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
     is_lone_parent: false
@@ -637,6 +670,9 @@
     receives_enhanced_pip_dl: false
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
+    # The claimant attained State Pension age before 1 April 2021, so the
+    # higher pension-age personal allowance applies (SI 2021/188).
+    housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
     is_lone_parent: false
@@ -988,6 +1024,9 @@
     receives_enhanced_pip_dl: false
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
+    # The claimant attained State Pension age before 1 April 2021, so the
+    # higher pension-age personal allowance applies (SI 2021/188).
+    housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
     is_lone_parent: false
@@ -1015,6 +1054,9 @@
     receives_enhanced_pip_dl: false
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
+    # The claimant attained State Pension age before 1 April 2021, so the
+    # higher pension-age personal allowance applies (SI 2021/188).
+    housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
     is_lone_parent: false
@@ -1042,6 +1084,9 @@
     receives_enhanced_pip_dl: false
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
+    # The claimant attained State Pension age before 1 April 2021, so the
+    # higher pension-age personal allowance applies (SI 2021/188).
+    housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
     is_lone_parent: false
@@ -1069,6 +1114,9 @@
     receives_enhanced_pip_dl: false
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
+    # The claimant attained State Pension age before 1 April 2021, so the
+    # higher pension-age personal allowance applies (SI 2021/188).
+    housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
     is_lone_parent: false
@@ -1096,6 +1144,9 @@
     receives_enhanced_pip_dl: false
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
+    # The claimant attained State Pension age before 1 April 2021, so the
+    # higher pension-age personal allowance applies (SI 2021/188).
+    housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
     is_lone_parent: false
@@ -1123,6 +1174,9 @@
     receives_enhanced_pip_dl: false
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
+    # The claimant attained State Pension age before 1 April 2021, so the
+    # higher pension-age personal allowance applies (SI 2021/188).
+    housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
     is_lone_parent: false
@@ -1150,6 +1204,9 @@
     receives_enhanced_pip_dl: false
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
+    # The claimant attained State Pension age before 1 April 2021, so the
+    # higher pension-age personal allowance applies (SI 2021/188).
+    housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
     is_lone_parent: false
@@ -1177,6 +1234,9 @@
     receives_enhanced_pip_dl: false
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
+    # The claimant attained State Pension age before 1 April 2021, so the
+    # higher pension-age personal allowance applies (SI 2021/188).
+    housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
     is_lone_parent: false
@@ -1204,6 +1264,9 @@
     receives_enhanced_pip_dl: true
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
+    # The claimant attained State Pension age before 1 April 2021, so the
+    # higher pension-age personal allowance applies (SI 2021/188).
+    housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
     is_lone_parent: false
@@ -1231,6 +1294,9 @@
     receives_enhanced_pip_dl: false
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
+    # The claimant attained State Pension age before 1 April 2021, so the
+    # higher pension-age personal allowance applies (SI 2021/188).
+    housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
     is_lone_parent: false
@@ -1258,6 +1324,9 @@
     receives_enhanced_pip_dl: false
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
+    # The claimant attained State Pension age before 1 April 2021, so the
+    # higher pension-age personal allowance applies (SI 2021/188).
+    housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
     is_lone_parent: false
@@ -1285,6 +1354,9 @@
     receives_enhanced_pip_dl: false
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
+    # The claimant attained State Pension age before 1 April 2021, so the
+    # higher pension-age personal allowance applies (SI 2021/188).
+    housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
     is_lone_parent: false
