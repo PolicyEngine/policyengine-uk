@@ -1,3 +1,16 @@
+## [2.156.0] - 2026-10-24
+
+### Added
+
+- Added a documentation page on reproducing fully rolled-out two-child limit estimates and absolute child poverty: the 2025-26 year, the `born_before` settings for full roll-out, full Universal Credit take-up, which poverty variables are absolute or relative, and how to use the FYE 2011-based absolute line.
+- - Added a person-weighted household income decile after housing costs, using the existing income-decile ranking conventions.
+
+### Fixed
+
+- - Exclude the Child Tax Credit child element for ineligible families so phantom tax credit income does not reduce Housing Benefit or Council Tax Reduction.
+- - Made pre-2027 rUK property income follow reforms to the full main income-tax scale, while preserving separate property rates from 2027-28 and Scottish treatment.
+
+
 ## [2.155.1] - 2026-10-24
 
 ### Fixed
