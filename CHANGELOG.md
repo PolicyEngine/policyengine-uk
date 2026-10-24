@@ -1,3 +1,14 @@
+## [2.152.6] - 2026-10-24
+
+### Changed
+
+- Corrected the future-dated announcements page (docs/book/policy/future-date-announcements.md): the Class 1 employee rate now lives in employee_scale.yaml, the levy and repeal wording, the 30 April caveat for mid-year NI changes, the preserve_calendar_dates wording, and a link to the dated-changes guide.
+- Corrected the policyengine.py household-impact page (docs/book/validation/policyengine-py-household-impact.md): the zeros in #1628 came from a policyengine-core 3.24 bug fixed in 3.24.4, not from policyengine-uk; re-checked on 2.148.2.
+- Brought the PIP point system planning page (`docs/book/programs/gov/dwp/pip-points-plan.md`) up to date: #1661 merged on 21 October 2026, so total points and the 8- and 12-point thresholds are modelled, with no data path supplying points yet; Microcosm #145 closed without the points item; Microcosm UK is now the certified default; and the descriptor-weighting source is DWP's Pathways to Work evidence pack (Tables 2.27 and 2.28).
+- Corrected the regional childcare planning page (docs/book/programs/gov/dfe/regional-childcare-plan.md) against current law, data and main: the Scottish two-year-old, SAAS, Childcare Offer, Flying Start and PSEP descriptions, the Childcare Grant calibration claim and the Microcosm UK geography.
+- Corrected the effective take-up analysis plan (docs/book/assumptions/takeup-analysis-plan.md): Microcosm UK as the certified default dataset, the SPI-before-reweighting order, the size of seed-to-effective drift, the Council Tax Reduction, Carer's Allowance, State Pension and disability rows, new legacy-closure and JSA/ESA rows, and two broken gov.uk links.
+
+
 ## [2.152.5] - 2026-10-24
 
 ### Changed

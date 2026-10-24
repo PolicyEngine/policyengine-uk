@@ -1,1 +1,0 @@
-Corrected the policyengine.py household-impact page (docs/book/validation/policyengine-py-household-impact.md): the zeros in #1628 came from a policyengine-core 3.24 bug fixed in 3.24.4, not from policyengine-uk; re-checked on 2.148.2.
