@@ -1,3 +1,15 @@
+## [2.152.4] - 2026-10-24
+
+### Changed
+
+- Corrected the default-dataset switch plan (`docs/book/assumptions/mp30k-uk-switch-plan.md`): the tests now pin Enhanced FRS 2024-25 from policyengine-uk-data 1.58.1, policyengine.py 6.10.0 already switched its UK default to Microcosm UK, an inline situation takes precedence over any dataset, unknown enum names raise an error, and the VAT survey-coverage parameter is calibrated to Microcosm UK and must be re-derived on a switch or rollback.
+- Corrected the firm-level VAT planning page (`docs/book/programs/gov/hmrc/firm-vat.md`): #1333 is closed as a duplicate of #1320, the proposed `Firm` entity no longer names a non-existent `state` containing entity, the data table now says FRS self-employment income is profit rather than turnover and that the FRS carries a main-job SIC division, and turnover-band counts come from ONS *UK business: activity, size and location* rather than Business demography.
+
+### Fixed
+
+- - Northern Ireland Local Housing Allowance rates now follow new gov.dfc.LHA.maximum, gov.dfc.LHA.maximum_monthly and gov.dfc.LHA.march_2020_minimum parameters, so reforms to the Great Britain maxima and minimum change Great Britain rates only.
+
+
 ## [2.152.3] - 2026-10-24
 
 ### Changed
