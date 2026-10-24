@@ -63,7 +63,7 @@ def durations(lines) -> dict[str, float]:
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("logs", nargs="+", help="saved logs of shard jobs")
-    parser.add_argument("--min-seconds", type=float, default=60)
+    parser.add_argument("--min-seconds", type=float, default=20)
     args = parser.parse_args(argv)
     seen = defaultdict(list)
     for path in args.logs:
