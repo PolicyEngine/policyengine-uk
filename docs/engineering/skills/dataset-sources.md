@@ -58,10 +58,12 @@ Unlabelled dataset energy spending stays flat through the projection horizon.
 Do not infer its price year from the dataset year, filename, URL or file format.
 Legacy builds can hold FY2026-27 energy prices in a dataset labelled 2024.
 
-An explicit declaration opts the three stored energy amounts into their
-existing annual OBR consumer-price-index assumption. For an input whose
-producer receipt declares calendar-2024 prices, a caller can label a local
-UK single-year H5 before constructing a simulation:
+An explicit declaration opts only `domestic_energy_consumption`,
+`electricity_consumption` and `gas_consumption` into the existing generic annual
+OBR consumer-price-index assumption as an interim price proxy. Other generic
+uprating exclusions do not join this declaration or its reset group. For an
+input whose producer receipt declares calendar-2024 prices, a caller can label
+a local UK single-year H5 before constructing a simulation:
 
 ```python
 from policyengine_uk import Microsimulation
@@ -79,14 +81,24 @@ financial year. Both keys are required. The year must be an integer from 1
 through 9999; malformed or conflicting caller/file declarations raise a clear
 error. A caller's `None` leaves an existing file declaration intact.
 
-The model retains the period kind as provenance but uses its existing annual
-index-year convention: CY2024 and FY2024-25 both use `I[2024]`. Projection
-multiplies the supplied amount by `I[target year] / I[price year]`. This is
-the existing generic CPI assumption, with no new energy-specific forecast or
-precise fiscal/calendar price adjustment. A 2026 basis therefore stays unchanged
-at target 2026 and can grow at target 2027. The original observation remains
-unchanged; a projected child's declaration records its effective fiscal-year
-price basis so later extension does not apply the original ratio twice.
+The model retains the period kind as provenance but uses the January 1 index
+level of the starting year for both calendar and fiscal price periods.
+Projection multiplies the supplied amount by `I[target year] / I[price year]`.
+This shared start-year convention approximates calendar/fiscal alignment;
+generic CPI does not establish constant-consumption energy-price outturns or
+an energy-specific forecast. Open [issue #2526](https://github.com/PolicyEngine/policyengine-uk/issues/2526)
+tracks energy-specific index alignment and a sourced future assumption. The
+original observation remains unchanged; a projected child's declaration records
+its effective fiscal-year price basis so later extension does not apply the
+original ratio twice.
+
+When a declaration projects stored energy inputs, both January 1 dates must
+fall on or after the selected index's earliest non-null value. An earlier
+basis or target, including January 1 before a midyear start, raises a clear
+error rather than using Core's backward first-value fallback. An index with
+no usable history also raises an error for that projection. Unlabelled
+observations and declarations with no relevant stored inputs retain their
+existing behaviour without requiring index history.
 
 Single-year H5 files store a JSON declaration in the root attribute
 `energy_price_basis`. Multi-year files store it on each `/time_period/<year>`
