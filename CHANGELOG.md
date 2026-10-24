@@ -1,3 +1,11 @@
+## [2.151.2] - 2026-10-24
+
+### Fixed
+
+- - The salary sacrifice National Insurance measures (`salary_sacrifice_pension_ni_employee` and `salary_sacrifice_pension_ni_employer`) now equal the change in the Class 1 liability from the NIC-only salary sacrifice pension excess: an amount crossing the upper earnings limit is split between the main and additional rates, and the thresholds and age conditions apply. No tax total changes.
+- - Corrected units: `shareholding` and `consumption_shareholding` are shares (`/1`, so a month's value is no longer a twelfth of the share), `free_tv_licence_value` is in pounds, and seven true/false variables (`sdlt_liable`, `lbtt_liable`, `benunit_is_rent_liable`, the three Pension Credit eligibility flags and `car_is_ved_exempt`) no longer declare a unit. No yearly value changes.
+
+
 ## [2.151.1] - 2026-10-23
 
 ### Fixed
