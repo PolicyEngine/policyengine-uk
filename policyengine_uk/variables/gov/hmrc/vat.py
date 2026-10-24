@@ -6,7 +6,8 @@ class vat(Variable):
     label = "VAT excluding private school fees"
     documentation = (
         "Receipt-calibrated VAT less private school fees' share of VAT "
-        "receipts, which private_school_vat counts separately."
+        "receipts, which private_school_vat counts separately, plus VAT on "
+        "the household's energy bills, which is not grossed up."
     )
     entity = Household
     definition_period = YEAR

@@ -1,4 +1,4 @@
-description: VAT on private school fees as a share of total VAT receipts. Household VAT grossed up to total receipts is reduced by this share, because private school VAT is counted separately.
+description: VAT on private school fees as a share of total VAT receipts. Household VAT grossed up to receipts (net of VAT on energy bills) is reduced by this share, because private school VAT is counted separately.
 metadata:
   unit: /1
   period: year
@@ -8,13 +8,17 @@ metadata:
     HMRC's OBR-certified costing of VAT on private school fees divided by OBR
     cash-basis VAT receipts for the same fiscal year: 1,505 / 180,169 in
     2025-26, 1,560 / 187,704 in 2026-27, 1,610 / 195,923 in 2027-28, 1,665 /
-    204,591 in 2028-29 and 1,725 / 213,118 in 2029-30 (£m). Each value starts
-    on 1 April, so a model year reads its fiscal year's share. The 2024-25
-    part-year receipt (£460m from 1 January 2025, 0.27% of £170,994m) is left
-    in general VAT, as private_school_vat is zero in model year 2024. The
-    survey consumption coverage is fitted to total receipts, so the grossed-up
-    amount includes this share. vat and baseline_vat both read it from the
-    simulation's own parameters, so that the baseline reads each fiscal
+    204,591 in 2028-29 and 1,725 / 213,118 in 2029-30 (£m). Each value starts on
+    1 April, so a model year reads its fiscal year's share. The 2024-25
+    part-year receipt (£460m from 1 January 2025, 0.27% of £170,994m) is left in
+    general VAT, as private_school_vat is zero in model year 2024. The survey
+    consumption coverage is fitted to receipts net of VAT on energy bills, which
+    still include school-fee VAT, so the grossed-up amount includes it. The
+    share is taken of total receipts and applied to the grossed-up amount only,
+    so where that amount matches receipts net of energy-bill VAT exactly it
+    removes the costing less the share times energy-bill VAT (about £17m on
+    Microcosm f9d1922c in 2025-26). vat and baseline_vat both read the share
+    from the simulation's own parameters, so that the baseline reads each fiscal
     year's value; docs/engineering/vat-coverage.md sets out the allocation.
     The receipts were read from the OBR workbook with SHA-256
     f65b6cb7f96931d4abd85940794eb60f6f65afca8bbf16c74a4548bf92766a28:

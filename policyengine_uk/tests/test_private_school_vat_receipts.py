@@ -12,7 +12,7 @@ or restored:
 
 - non-negative: as 0 <= s < 1, the allocation never makes general VAT
   negative, so vat and vat + private_school_vat are non-negative wherever
-  recorded consumption is;
+  recorded consumption and energy bills are;
 - national identity: weighted vat + private_school_vat is weighted G, less s
   times weighted G, plus weighted E and weighted P0. It equals weighted G + E
   when the population's school charge is s of its gross VAT, and restoring
@@ -198,7 +198,7 @@ def test_published_microcosm_receipts_check_is_unchanged():
     combined = amount(sim, "vat", 2024) + amount(sim, "private_school_vat", 2024)
     expected = 0.2 * 396.15e9 / FACTOR + 1.99e9
     assert combined == pytest.approx(expected)
-    assert combined / 170.994e9 == pytest.approx(1, rel=0.004)
+    assert combined / 170.994e9 == pytest.approx(1, rel=0.001)
 
 
 def population_simulation(households, year=2025, reforms=None, fees=10_000.0):
@@ -345,3 +345,140 @@ def test_vat_is_never_negative_and_receipts_are_counted_once(households, year, f
     assert combined - repeal_combined == pytest.approx(
         weighted(weight, school), rel=1e-5, abs=0.01
     )
+
+
+GB_ELECTRICITY = "gov.hmrc.vat.domestic_electricity_rate.great_britain"
+NI_ELECTRICITY = "gov.hmrc.vat.domestic_electricity_rate.northern_ireland"
+
+
+def electricity_rate(region, year):
+    # SI 2026/987 zero-rates domestic electricity in Great Britain from
+    # 1 October 2026 to 31 March 2027: 183 of model year 2026's 365 days are
+    # at 5%. Northern Ireland and every other year stay at 5%.
+    if region != "NORTHERN_IRELAND" and year == 2026:
+        return 0.05 * 183 / 365
+    return 0.05
+
+
+energy_households = st.fixed_dictionaries(
+    {
+        "weight": st.floats(1, 5_000),
+        "pupils": st.integers(0, 3),
+        "full": st.one_of(st.just(0.0), st.floats(1_000, 150_000)),
+        "electricity": st.one_of(st.just(0.0), st.floats(100, 5_000)),
+        "gas": st.one_of(st.just(0.0), st.floats(100, 5_000)),
+        "region": st.sampled_from(["LONDON", "SCOTLAND", "NORTHERN_IRELAND"]),
+    }
+)
+
+
+def energy_population(households, year, fees, reforms=None):
+    """Weighted households with energy bills, as one simulation."""
+    people, benunits, hhs = {}, {}, {}
+    for i, h in enumerate(households):
+        members = [f"adult_{i}"]
+        people[f"adult_{i}"] = {"age": {year: 45}}
+        for j in range(h["pupils"]):
+            people[f"pupil_{i}_{j}"] = {
+                "age": {year: 7 + j},
+                "attends_private_school": {year: True},
+            }
+            members.append(f"pupil_{i}_{j}")
+        benunits[f"benunit_{i}"] = {"members": members}
+        hhs[f"household_{i}"] = {
+            "members": members,
+            "region": {year: h["region"]},
+            "household_weight": {year: h["weight"]},
+            "full_rate_vat_consumption": {year: h["full"]},
+            "reduced_rate_vat_consumption": {year: 0.0},
+            "electricity_consumption": {year: h["electricity"]},
+            "gas_consumption": {year: h["gas"]},
+        }
+    sim = Simulation(
+        situation={"people": people, "benunits": benunits, "households": hhs},
+        reform={
+            FEES: {ALWAYS: fees},
+            BASIS: {ALWAYS: 1},
+            **{key: {ALWAYS: value} for key, value in (reforms or {}).items()},
+        },
+    )
+    return {
+        variable: np.asarray(sim.calculate(variable, year), dtype=float)
+        for variable in (
+            "household_weight",
+            "vat",
+            "vat_change",
+            "domestic_energy_vat",
+            "baseline_domestic_energy_vat",
+            "private_school_vat",
+            "baseline_private_school_vat",
+        )
+    }
+
+
+@settings(
+    max_examples=10,
+    deadline=None,
+    derandomize=True,
+    suppress_health_check=[HealthCheck.too_slow],
+)
+@given(
+    households=st.lists(energy_households, min_size=1, max_size=4),
+    year=st.integers(2024, 2030),
+    fees=st.floats(1_000, 50_000),
+)
+@example(
+    households=[
+        {
+            "weight": 1.0,
+            "pupils": 1,
+            "full": 0.0,
+            "electricity": 1_050.0,
+            "gas": 1_050.0,
+            "region": "LONDON",
+        }
+    ],
+    year=2027,
+    fees=10_000.0,
+)
+def test_school_share_never_touches_energy_bill_vat(households, year, fees):
+    # vat = G x (1 - s) + E with E from the statute (the bill net of the 5%
+    # price basis, at the electricity and gas rates). Restoring the exemption
+    # leaves vat unchanged, zero-rating electricity moves vat by exactly the
+    # change in energy-bill VAT, and the national identity holds with E.
+    s = OFFICIAL_SHARE[year]
+    gross = np.array([h["full"] * 0.2 for h in households]) / FACTOR
+    electricity = np.array(
+        [
+            h["electricity"] / 1.05 * electricity_rate(h["region"], year)
+            for h in households
+        ]
+    )
+    energy = electricity + np.array([h["gas"] / 1.05 * 0.05 for h in households])
+
+    base = energy_population(households, year, fees)
+    np.testing.assert_allclose(
+        base["domestic_energy_vat"], energy, rtol=1e-5, atol=0.01
+    )
+    np.testing.assert_allclose(
+        base["vat"], gross * (1 - s) + energy, rtol=1e-5, atol=0.01
+    )
+    np.testing.assert_allclose(base["vat_change"], 0, atol=0.01)
+
+    repeal = energy_population(households, year, fees, {EXEMPT: True})
+    np.testing.assert_array_equal(repeal["vat"], base["vat"])
+
+    zero = energy_population(
+        households, year, fees, {GB_ELECTRICITY: 0.0, NI_ELECTRICITY: 0.0}
+    )
+    energy_change = zero["domestic_energy_vat"] - zero["baseline_domestic_energy_vat"]
+    np.testing.assert_allclose(energy_change, -electricity, rtol=1e-5, atol=0.01)
+    np.testing.assert_allclose(zero["vat_change"], energy_change, rtol=1e-5, atol=0.01)
+    np.testing.assert_array_equal(
+        zero["private_school_vat"], base["private_school_vat"]
+    )
+
+    w = base["household_weight"]
+    combined = weighted(w, base["vat"], base["private_school_vat"])
+    expected = weighted(w, gross * (1 - s), energy, base["baseline_private_school_vat"])
+    assert combined == pytest.approx(expected, rel=1e-5, abs=0.01)

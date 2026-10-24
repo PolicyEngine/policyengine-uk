@@ -73,13 +73,16 @@ survey coverage = product / household share (0.7)
 ```
 
 Dividing each household's statutory VAT by the product gives the gross
-amount. At current law, total `vat + private_school_vat` is close to this
-amount but not equal to it: combined receipts are
-`(1 - s) * sum(w * G) + sum(w * P0)` (see the receipt-partition derivation
-below), so they differ from the gross amount by `sum(w * P0) - s * sum(w * G)`.
-On the certified Enhanced FRS (policyengine-uk-data 1.58.1), measured
-before energy bills were split out, that difference was -£36m to -£173m a
-year from 2025-26 to 2031-32, at most 0.07% of VAT.
+amount, `G`; VAT on energy bills, `E`, is added to it without grossing (see
+[Energy bills are not grossed up](#energy-bills-are-not-grossed-up)). At
+current law, total `vat + private_school_vat` is close to `G + E` but not
+equal to it: combined receipts are
+`(1 - s) * sum(w * G) + sum(w * E) + sum(w * P0)` (see the receipt-partition
+derivation below), so they differ from `G + E` by
+`sum(w * P0) - s * sum(w * G)`. On the certified Enhanced FRS
+(policyengine-uk-data 1.58.1) that difference is -£5.5m to -£142.5m a year from
+2025-26 to 2031-32, at most 0.06% of VAT (Aggregate impact run
+[40116746457](https://github.com/PolicyEngine/policyengine-uk/actions/runs/40116746457)).
 
 ### Results
 
@@ -98,11 +101,11 @@ year from 2025-26 to 2031-32, at most 0.07% of VAT.
 The parameter takes the Microcosm 2024-25 value, 0.67 (product 0.469), the
 latest outturn year.
 
-With that product, the gross amount against receipts is as below, before
+With that product, the gross amount against receipts was as below, before
 energy bills were split out. On the certified Enhanced FRS
-(policyengine-uk-data 1.58.1), current-law `vat + private_school_vat`
-matched it to within 0.07% then (see above); the other rows weren't checked
-against that bound:
+(policyengine-uk-data 1.58.1), current-law `vat + private_school_vat` is
+within 0.06% of the receipt-calibrated `G + E` (see above); the other rows
+weren't checked against that bound:
 
 | Dataset | 2024-25 | 2025-26 | 2026-27 |
 |---|---|---|---|
@@ -267,30 +270,27 @@ Properties of the split:
   `P` to zero and leaves `vat` unchanged, so receipts fall by the weighted
   school charge, `sum(w * P0)`, with no second grossing factor. A contributed
   rate moves only `P`.
-- A standard-rate change moves each head on its own base: `G * (1 - s)` with
-  the rate on recorded consumption, `E` with the rates on energy bills, and
-  `P` with the rate on the fees.
+- A standard-rate change moves `G * (1 - s)` and `P`, each on its own base:
+  recorded consumption and the fees. `E` moves only with the domestic
+  electricity and reduced rates.
 - With household weights `w`, current-law combined receipts are
   `sum(w * G) - s * sum(w * G) + sum(w * E) + sum(w * P0)`. They equal the
   receipt-calibrated total `sum(w * G) + sum(w * E)` when the population's
   school charge is the share `s` of its grossed-up VAT, and otherwise differ
   from it by `sum(w * P0) - s * sum(w * G)`.
 - `s` is a share of total receipts, but `G` is calibrated to receipts net of
-  energy-bill VAT. On the calibration dataset, then, `s * sum(w * G)` is the
-  costing less `s` times energy-bill VAT: on `f9d1922c` in 2025-26, 0.8353%
-  of £2.01bn, about £17m (arithmetic on the energy table above, not a run).
-
-The figures in the rest of this section were measured before energy bills
-were split out (PolicyEngine/policyengine-uk#2189), on the formula without
-`E`; they have not been re-measured since.
+  energy-bill VAT. Where `G` matches receipts net of energy-bill VAT exactly,
+  `s * sum(w * G)` falls short of the costing by `s` times energy-bill VAT:
+  on `f9d1922c`'s 2025-26 energy-bill VAT, 0.8353% of £2.01bn, about £17m
+  (arithmetic on the energy table above, not a run).
 
 The earlier design subtracted each household's own school charge from its
 own gross VAT. Combined receipts then equalled `G` household by household,
 but a pupil with little recorded consumption had negative general VAT, which
 a repeal left in place. On the certified Enhanced FRS (policyengine-uk-data
-1.58.1) that made general VAT negative for 549 households with non-negative
-gross VAT in 2025-26 (306,750 weighted households, -£0.58bn), rising to 572
-in 2030-31.
+1.58.1), before energy bills were split out, that made general VAT negative
+for 549 households with non-negative gross VAT in 2025-26 (306,750 weighted
+households, -£0.58bn), rising to 572 in 2030-31.
 
 A share measured on each simulation's own population,
 `sum(w * P0) / sum(w * G)`, would preserve combined receipts exactly, and was
@@ -305,20 +305,22 @@ that coincidence likelier. A household situation would also measure its own
 school charge against its own VAT. The official share keeps each household's
 VAT a function of its own consumption.
 
-Measured on the certified Enhanced FRS, the official share changes
-current-law combined receipts by -£0.17bn in 2025-26, -£0.16bn in 2026-27,
--£0.13bn in 2027-28, -£0.11bn in 2028-29 and -£0.04bn in 2029-30, at most
-0.07% of that dataset's VAT. Two overstatements nearly offset there: gross
-VAT is 41% above OBR receipts (£253.7bn against £180.2bn in 2025-26), and
-the modelled school charge is £1.95bn, against HMRC's £1.505bn, because
+Measured on the certified Enhanced FRS (Aggregate impact run
+[40116746457](https://github.com/PolicyEngine/policyengine-uk/actions/runs/40116746457)),
+the official share changes current-law combined receipts by -£0.14bn in
+2025-26, -£0.13bn in 2026-27, -£0.10bn in 2027-28, -£0.08bn in 2028-29 and
+-£0.01bn in 2029-30, at most 0.06% of that dataset's VAT. Two overstatements
+nearly offset there: VAT is 40% above OBR receipts (£252.5bn against
+£180.2bn in 2025-26), and the modelled school charge is £1.95bn, against
+HMRC's £1.505bn, because
 attendance is imputed for 751,000 weighted pupils (policyengine-uk-data issue
 568). The difference belongs to those two calibrations, not to the split.
 
 The receipts check for the coverage factor is unchanged. Model year 2024 has
 no school charge and a zero share, so, using the rounded 2024-25 Microcosm
 inputs in the energy table above, `79.23 / (0.67 * 0.7) + 1.99 = £170.924bn`,
-compared with OBR's £170.994bn: about 0.04% below receipts. The existing differences from
-receipts, including Enhanced FRS's larger overstatement, still require
+compared with OBR's £170.994bn: about 0.04% below receipts. The existing
+differences from receipts, including Enhanced FRS's larger overstatement, still require
 dataset-specific calibration. Aggregate impact CI compares the combined VAT
 report group against the PR's base.
 

@@ -738,10 +738,12 @@ overlap_guards:
     kind: overlapping_base
     heads: [vat, private_school_vat]
     property: >-
-      Grossed-up consumption VAT is fitted to receipts including school-fee
-      VAT. vat keeps gross VAT less the fees' official share of receipts
-      (gov.simulation.vat.private_school_share_of_receipts), then gov_tax
-      adds private_school_vat. vat reads neither attendance nor fees, so
+      Grossed-up consumption VAT is fitted to receipts net of energy-bill
+      VAT, which include school-fee VAT. vat keeps gross VAT less the fees'
+      official share of receipts
+      (gov.simulation.vat.private_school_share_of_receipts), plus VAT on
+      energy bills, which bears no share; then gov_tax adds
+      private_school_vat. vat reads neither attendance nor fees, so
       school-specific exemption and contributed rate reforms move only the
       school head, and a standard-rate change moves each head on its own
       base. At current law combined receipts change by the weighted school
