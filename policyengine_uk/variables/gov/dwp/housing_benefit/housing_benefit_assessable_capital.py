@@ -3,6 +3,7 @@ from policyengine_uk.utils.capital_valuation import (
     exact_amount,
     round_to_penny,
     valued_capital,
+    valued_person_capital,
 )
 
 
@@ -54,9 +55,8 @@ class housing_benefit_assessable_capital(Variable):
             lambda variable: household(variable, period), p
         )
         claimant_or_partner = person("is_claimant_or_partner", period)
-        person_capital = sum(
-            benunit.sum(exact_amount(person(source, period)) * claimant_or_partner)
-            for source in p.person_sources
+        person_capital = valued_person_capital(
+            benunit, period, parameters, p, claimant_or_partner
         )
         benunit_claimants_and_partners = add(
             benunit, period, ["is_claimant_or_partner"]

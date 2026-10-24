@@ -36,8 +36,8 @@ Invariants, for any generated population of single-adult households:
    maximum over its household's values is.
 8. Whole pennies through the model: every programme counts whole-penny
    savings, shares and Lifetime ISA balances to the penny: savings in full,
-   shares at 90% rounded by the programme's rule, and a Lifetime ISA at 75%
-   below its charge-free age.
+   shares at 90% and a Lifetime ISA at 75% below its charge-free age, each
+   rounded by the programme's rule, and a Lifetime ISA in full from that age.
 """
 
 from fractions import Fraction
@@ -347,8 +347,10 @@ def test_sale_expenses_never_round_the_wrong_way(values):
     exact = exact_amount(stored)
     assert np.array_equal(exact, exact_amount(stored.astype(np.float64)))
     # From 131,072 float32 cannot hold every penny, so no penny is identified
-    # and the value is kept as stored: 140,000.01 and 140,000.02 are both
-    # stored as 140,000.015625, which rounds down to 140,000.01.
+    # and the value is kept as stored. The result is then within a penny of
+    # the stored value's figure, not of every penny it could have been stored
+    # from: 140,000.01 and 140,000.02 are both stored as 140,000.015625, and
+    # 90% of that rounds down to 126,000.01, a penny above 140,000.01's.
     large = stored >= 131_072
     assert np.array_equal(exact[large], stored[large].astype(np.float64))
     # Storage error is removed only within half a unit of the stored value's
@@ -381,10 +383,10 @@ ROUNDS_DOWN = {
 
 def whole_penny_situation(rows):
     people, benunits, homes = {}, {}, {}
-    for i, (savings, shares, lisa_quarters, age) in enumerate(rows):
+    for i, (savings, shares, lisa, age) in enumerate(rows):
         people[f"p{i}"] = {
             "age": {YEAR: age},
-            "lifetime_isa_balance": {YEAR: 4 * lisa_quarters / 100},
+            "lifetime_isa_balance": {YEAR: lisa / 100},
         }
         benunits[f"b{i}"] = {"members": [f"p{i}"]}
         homes[f"h{i}"] = {
@@ -401,7 +403,7 @@ def whole_penny_situation(rows):
         st.tuples(
             st.integers(0, 6_000_000),
             st.integers(0, 6_000_000),
-            st.integers(0, 375_000),
+            st.integers(0, 1_500_000),
             st.sampled_from([30, 70]),
         ),
         min_size=20,
@@ -410,17 +412,22 @@ def whole_penny_situation(rows):
 )
 # 16,000.01 of savings is over every 16,000 limit; 1,000.10 and 12,345.67
 # lose a penny if float32 storage error reaches a floor; a Lifetime ISA of
-# 0.24 or 1,000.04 counts 0.18 or 750.03 under 60.
+# 0.24 or 1,000.04 counts 0.18 or 750.03 under 60. 75% of a 0.26 balance is
+# 0.195 and of 1,000.30 is 750.225, half pennies, which float32 stores just
+# below: with 15,999.81 or 15,249.77 of savings the capital is 16,000.01 or
+# 16,000.00 to the nearest penny, and 16,000.00 or 15,999.99 rounded down.
 @example(
     [
         (1_600_001, 0, 0, 30),
         (100_010, 0, 0, 30),
         (1_234_567, 0, 0, 70),
         (159_992, 1_600_010, 0, 30),
-        (0, 0, 6, 30),
-        (0, 0, 25_001, 30),
+        (0, 0, 24, 30),
+        (0, 0, 100_004, 30),
+        (1_599_981, 0, 26, 30),
+        (1_524_977, 0, 100_030, 30),
     ]
-    * 4
+    * 3
 )
 def test_whole_pennies_are_counted_to_the_penny(rows):
     sim = Simulation(situation=whole_penny_situation(rows))
@@ -433,7 +440,7 @@ def test_whole_pennies_are_counted_to_the_penny(rows):
         sim.calculate("in_receipt_of_savings_credit_only", YEAR)
     )
     for variable, round_down in ROUNDS_DOWN.items():
-        for i, (savings, shares, lisa_quarters, age) in enumerate(rows):
+        for i, (savings, shares, lisa, age) in enumerate(rows):
             if not applies(variable, {"age": age}, gc[i], passported[i]):
                 continue
             # Housing Benefit takes Pension Credit's capital for a savings
@@ -443,7 +450,7 @@ def test_whole_pennies_are_counted_to_the_penny(rows):
                 and savings_credit_only[i]
             )
             share_pence = (9 * shares + (0 if down else 5)) // 10
-            lisa_pence = 4 * lisa_quarters if age >= 60 else 3 * lisa_quarters
+            lisa_pence = lisa if age >= 60 else (3 * lisa + (0 if down else 2)) // 4
             expected = (savings + share_pence + lisa_pence) / 100
             # The model stores float32, which holds every penny below 131,072.
             assert abs(values[variable][i] - expected) < 0.004, (

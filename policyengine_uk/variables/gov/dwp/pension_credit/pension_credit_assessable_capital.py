@@ -3,6 +3,7 @@ from policyengine_uk.utils.capital_valuation import (
     exact_amount,
     round_to_penny,
     valued_capital,
+    valued_person_capital,
 )
 
 
@@ -38,9 +39,8 @@ class pension_credit_assessable_capital(Variable):
             lambda variable: household(variable, period), p
         )
         claimant_or_partner = person("is_claimant_or_partner", period)
-        person_capital = sum(
-            benunit.sum(exact_amount(person(source, period)) * claimant_or_partner)
-            for source in p.person_sources
+        person_capital = valued_person_capital(
+            benunit, period, parameters, p, claimant_or_partner
         )
         any_pension_age = benunit.any(
             person("has_attained_state_pension_credit_qualifying_age", period)

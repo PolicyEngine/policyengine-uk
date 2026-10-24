@@ -479,3 +479,59 @@
     income_support_assessable_capital: 750.03
     esa_income_assessable_capital: 750.03
     uc_assessable_capital: 750.03
+
+- name: UC rounds a Lifetime ISA's half penny up, a penny over the limit
+  period: 2026
+  absolute_error_margin: 0.004
+  input:
+    people:
+      person:
+        age: 30
+        # Below age 60 the surrender value is 75% of the balance: 0.195, half
+        # a penny, which float32 would store as 0.19499999. UC Regs 2013 reg.
+        # 6(1) treats it as a penny, so the capital is 15,999.81 + 0.20 =
+        # 16,000.01, over the 16,000 limit. The legacy benefits disregard it
+        # (IS Regs 1987 reg. 27; JSA Regs 1996 reg. 92; ESA Regs 2008 reg.
+        # 3(a)): 15,999.81 + 0.19 = 16,000.00.
+        lifetime_isa_balance: 0.26
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 15_999.81
+  output:
+    uc_assessable_capital: 16_000.01
+    is_uc_eligible: false
+    income_support_assessable_capital: 16_000
+    jsa_income_assessable_capital: 16_000
+    esa_income_assessable_capital: 16_000
+
+- name: Each partner's Lifetime ISA is valued to the penny on its own
+  period: 2026
+  absolute_error_margin: 0.004
+  input:
+    people:
+      first:
+        age: 30
+        lifetime_isa_balance: 0.26
+      second:
+        age: 30
+        lifetime_isa_balance: 0.26
+    benunits:
+      benunit:
+        members: [first, second]
+    households:
+      household:
+        members: [first, second]
+        # Each surrender value is 0.195, a calculation of its own: 0.20 to the
+        # nearest penny (UC Regs 2013 reg. 6(1)), so 15,999.62 + 0.40 =
+        # 16,000.02; 0.19 rounded down (IS Regs 1987 reg. 27; JSA Regs 1996
+        # reg. 92; ESA Regs 2008 reg. 3(a)), so 15,999.62 + 0.38 = 16,000.00.
+        savings: 15_999.62
+  output:
+    uc_assessable_capital: 16_000.02
+    income_support_assessable_capital: 16_000
+    jsa_income_assessable_capital: 16_000
+    esa_income_assessable_capital: 16_000

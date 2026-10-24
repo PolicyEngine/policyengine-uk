@@ -51,6 +51,49 @@ def valued_capital(value_of, capital):
     return total
 
 
+def valued_person_capital(benunit, period, parameters, capital, counted):
+    """Sum ``capital.person_sources`` over the benefit unit's members for whom
+    ``counted`` is true (its claimant and partner), in float64.
+
+    A source the engine would store with a fraction of a penny is worked out
+    here from its inputs (``CALCULATED_PERSON_SOURCES``) and rounded to the
+    penny under the programme's rule, like any other valuation, rather than
+    read back from float32. Any other source is a stored amount."""
+    person = benunit.members
+    total = 0
+    for source in capital.person_sources:
+        if source in CALCULATED_PERSON_SOURCES:
+            value = round_to_penny(
+                CALCULATED_PERSON_SOURCES[source](person, period, parameters),
+                capital.round_down,
+            )
+        else:
+            value = exact_amount(person(source, period))
+        total = total + benunit.sum(value * counted)
+    return total
+
+
+def lifetime_isa_surrender_value(person, period, parameters):
+    """Surrender value of each person's Lifetime ISAs, in float64: the balance
+    less the withdrawal charge below the charge-free age, and the whole balance
+    from that age.
+
+    75% of a whole-penny balance can end in a quarter or half penny (75% of
+    £0.26 is £0.195), which float32 would store as 0.19499999 and so move a
+    nearest-penny rounding; 75% of £1,000.04 is £750.03."""
+    p = parameters(period).gov.hmrc.isa.lifetime
+    balance = exact_amount(person("lifetime_isa_balance", period))
+    charge_free = person("age", period) >= p.charge_free_age
+    return np.where(charge_free, balance, balance * (1 - p.withdrawal_charge))
+
+
+# Person-level capital sources the means tests value from their inputs, each
+# mapped to the float64 calculation of its value.
+CALCULATED_PERSON_SOURCES = {
+    "lifetime_isa_countable_capital": lifetime_isa_surrender_value,
+}
+
+
 def counted_share(sale_expenses, source):
     """Share of a source's market value counted as capital: 90% where its
     sale would incur expenses (reg. 49(1)(a)), otherwise all of it."""
@@ -78,15 +121,21 @@ def exact_amount(amount):
     half its float32 spacing: it is then the penny the value was stored from.
     Below £131,072 float32 holds every penny, so at most one penny is that
     close. From £131,072 its spacing is wider than a penny, the penny cannot
-    be identified, and the value is kept as stored, so rounding it down
-    never goes against the claimant. Any other value (a share price to four
-    decimal places, or a float64 that is not a float32) is kept exactly."""
+    be identified, and the value is kept as stored. A capital figure built
+    from it can then be a penny either way: £140,000.01 and £140,000.02 are
+    both stored as 140,000.015625, and 90% of that rounds down to
+    £126,000.01, a penny above the £126,000.00 that £140,000.01 gives. The
+    same holds for any stored value from £262,144, where the spacing exceeds
+    two pennies. A value in whole pounds below £16,777,216 is stored exactly
+    and is unaffected. Any other value (a share price to four decimal places,
+    or a float64 that is not a float32) is kept exactly."""
     wide = np.asarray(amount).astype(np.float64)
-    narrow = wide.astype(np.float32)
     pennies = np.round(wide, 2)
-    # Zero and subnormal values underflow in np.spacing, and an infinite one
-    # overflows; neither is a penny that needs recovering.
+    # Zero and subnormal values underflow in np.spacing and in the cast to
+    # float32, and an infinite one overflows; neither is a penny that needs
+    # recovering.
     with np.errstate(over="ignore", under="ignore", invalid="ignore"):
+        narrow = wide.astype(np.float32)
         precision = np.where(
             narrow == wide,
             np.spacing(np.abs(narrow)).astype(np.float64),

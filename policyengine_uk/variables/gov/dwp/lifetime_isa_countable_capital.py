@@ -1,5 +1,5 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.capital_valuation import exact_amount
+from policyengine_uk.utils.capital_valuation import lifetime_isa_surrender_value
 
 
 class lifetime_isa_countable_capital(Variable):
@@ -25,9 +25,7 @@ class lifetime_isa_countable_capital(Variable):
     ]
 
     def formula(person, period, parameters):
-        p = parameters(period).gov.hmrc.isa.lifetime
-        # Worked in float64 from the stored balance, so 75% of a balance in
-        # whole pennies keeps its pennies (75% of 1,000.04 is 750.03).
-        balance = exact_amount(person("lifetime_isa_balance", period))
-        charge_free = person("age", period) >= p.charge_free_age
-        return where(charge_free, balance, balance * (1 - p.withdrawal_charge))
+        # Stored as float32. The means tests work the value out in float64
+        # from the balance instead, and round it under each programme's rule
+        # (capital_valuation.valued_person_capital).
+        return lifetime_isa_surrender_value(person, period, parameters)
