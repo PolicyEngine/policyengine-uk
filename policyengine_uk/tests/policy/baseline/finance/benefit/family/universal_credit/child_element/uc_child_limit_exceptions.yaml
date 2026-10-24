@@ -233,3 +233,124 @@
         members: [parent, adopted, child_1, child_2, child_3]
   output:
     uc_individual_child_element: [0, 3_647.28, 3_647.28, 3_647.28, 3_647.28]
+
+# Reg 24A(1)(za) and reg 24B(2A) came into force on 28 November 2018 (SI
+# 2018/1129 regs 1(2), 3(3) and 3(4)). Before then reg 24A(1)(b)(ii) covered
+# every Schedule 12 exception, so an adopted child kept their place in the
+# order and got the element only as a third or later child. In 2017-18 the
+# child element is 231.67 a month (2,780.04 a year) and the higher first
+# child amount 277.08 (3,324.96 a year).
+
+- name: Adoption before 28 November 2018 - adopted children keep their places, so a third birth child gets no element
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        is_benunit_head: true
+        is_parent: true
+      adopted_1:
+        age: 6
+        date_of_birth: 20110301
+        child_limit_adoption_exception: true
+      adopted_2:
+        age: 4
+        date_of_birth: 20130301
+        child_limit_adoption_exception: true
+      child:
+        age: 0
+        date_of_birth: 20170501
+    benunits:
+      benunit:
+        members: [parent, adopted_1, adopted_2, child]
+  output:
+    uc_child_limit_disregarded: [false, false, false, false]
+    uc_child_limit_position: [-1, 1, 2, 3]
+    # The adopted children are born before 6 April 2017, so protected.
+    uc_individual_child_element: [0, 3_324.96, 2_780.04, 0]
+
+- name: Adoption from 2019-20 - the adopted children are left out of the order, so the birth child gets the element
+  period: 2019
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 37
+        is_benunit_head: true
+        is_parent: true
+      adopted_1:
+        age: 8
+        date_of_birth: 20110301
+        child_limit_adoption_exception: true
+      adopted_2:
+        age: 6
+        date_of_birth: 20130301
+        child_limit_adoption_exception: true
+      child:
+        age: 2
+        date_of_birth: 20170501
+    benunits:
+      benunit:
+        members: [parent, adopted_1, adopted_2, child]
+  output:
+    uc_child_limit_disregarded: [false, true, true, false]
+    uc_child_limit_position: [-1, -1, -1, 1]
+    uc_individual_child_element: [0, 3_324.96, 2_780.04, 2_780.04]
+
+# Reg 24B(2): children born on the same day are ordered so that the element
+# is available for as many as possible, whatever the exception and whatever
+# the order they are listed in.
+
+- name: Same-day children from different pregnancies, the one with the non-consensual conception exception listed first
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        is_benunit_head: true
+        is_parent: true
+      child_1:
+        age: 7
+        date_of_birth: 20180501
+      with_exception:
+        age: 5
+        date_of_birth: 20200701
+        child_limit_non_consensual_conception_exception: true
+      without_exception:
+        age: 5
+        date_of_birth: 20200701
+    benunits:
+      benunit:
+        members: [parent, child_1, with_exception, without_exception]
+  output:
+    uc_child_limit_position: [-1, 1, 3, 2]
+    # 3 x 3,513.72.
+    uc_child_element: 10_541.16
+
+- name: Same-day children from different pregnancies, the one with the non-consensual conception exception listed second
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        is_benunit_head: true
+        is_parent: true
+      child_1:
+        age: 7
+        date_of_birth: 20180501
+      without_exception:
+        age: 5
+        date_of_birth: 20200701
+      with_exception:
+        age: 5
+        date_of_birth: 20200701
+        child_limit_non_consensual_conception_exception: true
+    benunits:
+      benunit:
+        members: [parent, child_1, without_exception, with_exception]
+  output:
+    uc_child_limit_position: [-1, 1, 2, 3]
+    uc_child_element: 10_541.16

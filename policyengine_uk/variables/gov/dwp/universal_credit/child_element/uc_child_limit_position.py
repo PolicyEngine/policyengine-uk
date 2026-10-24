@@ -24,9 +24,10 @@ class uc_child_limit_position(Variable):
         in_order = is_uc_child & ~person("uc_child_limit_disregarded", period)
         # Reg 24B(1) orders by date of birth, earliest first. Reg 24B(2)
         # orders children born on the same day so that the child element is
-        # available for as many as possible, so a child with the multiple
-        # births exception comes after a sibling born that day without it.
-        multiple_birth = person("child_limit_multiple_birth_exception", period)
-        order_key = birth_day(person, period) + 0.5 * multiple_birth
+        # available for as many as possible. A child with an exception gets
+        # the element in any place, so every child born that day with one
+        # comes after those without, whatever the exception.
+        exception = person("uc_child_limit_exception", period)
+        order_key = birth_day(person, period) + 0.5 * exception
         rank = person.get_rank(person.benunit, order_key, condition=in_order) + 1
         return where(in_order, rank, -1)

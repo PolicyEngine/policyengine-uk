@@ -24,9 +24,11 @@ class ctc_child_limit_position(Variable):
         # date a claimant became responsible for them, which the model does
         # not hold, so it orders every child by date of birth. Reg 9(6)
         # orders children with the same date so that the individual element
-        # is included for as many as possible, so a child with the multiple
-        # births exception comes after a sibling born that day without it.
-        multiple_birth = person("child_limit_multiple_birth_exception", period)
-        order_key = birth_day(person, period) + 0.5 * multiple_birth
+        # is included for as many as possible. A child with their own
+        # exception under regs 10 to 14 gets the element in any place, so
+        # every child with that date and one comes after those without,
+        # whatever the exception.
+        exception = person("is_CTC_child_limit_own_exception", period)
+        order_key = birth_day(person, period) + 0.5 * exception
         rank = person.get_rank(person.benunit, order_key, condition=is_ctc_child) + 1
         return where(is_ctc_child, rank, -1)

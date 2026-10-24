@@ -15,17 +15,27 @@ class uc_child_limit_disregarded(Variable):
     reference = (
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/24A/2025-04-06",
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/24B/2025-04-06",
+        "https://www.legislation.gov.uk/uksi/2018/1129/regulation/3/made",
     )
 
     def formula(person, period, parameters):
-        # Reg 24A(1)(za)(i) and reg 24B(2A). Reg 24A(1)(za)(ii), a
+        # Reg 24A(1)(za)(i) and reg 24B(2A), in force from 28 November 2018
+        # (SI 2018/1129). Before then these children kept their place in
+        # the order: see uc_child_limit_exception. Reg 24A(1)(za)(ii), a
         # continuation under Schedule 12 paragraph 6 of an adoption
         # exception, is not distinguished from other continuations: see
         # child_limit_continuation_exception.
+        outside_order = parameters(
+            period
+        ).gov.dwp.universal_credit.elements.child.limit.adoption_and_kinship_outside_order
         is_uc_child = person(
             "is_child_or_qualifying_young_person_for_universal_credit", period
         ) & ~person("is_uc_claimant", period)
-        return is_uc_child & (
-            person("child_limit_adoption_exception", period)
-            | person("child_limit_non_parental_caring_exception", period)
+        return (
+            is_uc_child
+            & bool(outside_order)
+            & (
+                person("child_limit_adoption_exception", period)
+                | person("child_limit_non_parental_caring_exception", period)
+            )
         )
