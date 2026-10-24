@@ -39,7 +39,7 @@ Allowance and Carer Support Payment counted since #1952 are covered too:
    capped at earnings and is given whether or not there are earnings. Every
    other difference is excluded by the draws: no pension contributions,
    maintenance, maternity allowance or Sure Start maternity grant, and both
-   measures deduct the same income tax and National Insurance of the
+   measures deduct the same pre-charge income tax and National Insurance of the
    claimant and partner.
 2. Metamorphic: moving an amount between employment income and statutory
    sick or maternity pay of the same person changes nothing: Pension Credit
@@ -50,8 +50,8 @@ Allowance and Carer Support Payment counted since #1952 are covered too:
    Moving it to statutory paternity pay
    leaves Pension Credit earnings and National Insurance unchanged and changes
    Pension Credit income only through income tax, which does not see that
-   pay: Pension Credit income plus the claimant's and partner's income tax and
-   National Insurance plus the earnings disregard is unchanged where Pension
+   pay: Pension Credit income plus the claimant's and partner's pre-charge income
+   tax and National Insurance plus the earnings disregard is unchanged where Pension
    Credit income is above its zero floor in both runs. (The disregard is added
    back because it is capped at net earnings, which are net of that tax.)
 3. Monotonicity: Guarantee Credit never rises as any one statutory payment
@@ -169,7 +169,11 @@ BENUNIT_VARIABLES = [
     "housing_benefit_applicable_income",
     "housing_benefit_applicable_income_disregard",
 ]
-SUMMED_PERSON_VARIABLES = ["income_tax", "national_insurance"] + STATUTORY_PAY
+SUMMED_PERSON_VARIABLES = [
+    "income_tax",
+    "income_tax_before_winter_fuel_payment_charge",
+    "national_insurance",
+] + STATUTORY_PAY
 
 
 def grid(families, steps, vary):
@@ -269,7 +273,7 @@ def test_moving_pay_between_wages_and_statutory_pay(cases):
             def before_tax(g):
                 return (
                     g["pension_credit_income"][i]
-                    + g["income_tax"][i]
+                    + g["income_tax_before_winter_fuel_payment_charge"][i]
                     + g["national_insurance"][i]
                     + g["pension_credit_earnings_disregard"][i]
                 )

@@ -1,0 +1,1 @@
+- Fixed aggregate counted-once checks falsely identifying unchanged large tax heads as containing a component read through a declared dependency.

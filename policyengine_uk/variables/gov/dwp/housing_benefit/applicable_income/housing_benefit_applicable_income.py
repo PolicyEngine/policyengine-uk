@@ -138,7 +138,10 @@ class housing_benefit_applicable_income(Variable):
             add_for_members(benunit, period, ["pension_contributions"], members)
             * p.pension_contribution_deduction_rate
         )
-        TAX_COMPONENTS = ["income_tax", "national_insurance"]
+        TAX_COMPONENTS = [
+            "income_tax_before_winter_fuel_payment_charge",
+            "national_insurance",
+        ]
         tax = add_for_members(benunit, period, TAX_COMPONENTS, members)
         increased_income_reduced_by_tax_and_pensions = (
             increased_income - tax - pension_contributions
