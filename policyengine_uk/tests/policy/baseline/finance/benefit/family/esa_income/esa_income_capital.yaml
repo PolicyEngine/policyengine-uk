@@ -9,6 +9,7 @@
     benunits:
       benunit:
         members: claimant
+        would_claim_uc: false
     households:
       household:
         members: claimant
@@ -34,6 +35,7 @@
     benunits:
       benunit:
         members: claimant
+        would_claim_uc: false
     households:
       household:
         members: claimant
@@ -53,6 +55,7 @@
     benunits:
       benunit:
         members: claimant
+        would_claim_uc: false
     households:
       household:
         members: claimant
@@ -73,6 +76,7 @@
     benunits:
       benunit:
         members: claimant
+        would_claim_uc: false
     households:
       household:
         members: claimant
@@ -93,6 +97,7 @@
     benunits:
       benunit:
         members: claimant
+        would_claim_uc: false
     households:
       household:
         members: claimant
@@ -137,6 +142,7 @@
     benunits:
       claimant_benunit:
         members: claimant
+        would_claim_uc: false
       unrelated_benunit:
         members: unrelated_adult
     households:
@@ -160,8 +166,10 @@
     benunits:
       benunit_1:
         members: claimant_1
+        would_claim_uc: false
       benunit_2:
         members: claimant_2
+        would_claim_uc: false
     households:
       household:
         members: [claimant_1, claimant_2]
@@ -184,6 +192,7 @@
       benunit:
         members: [claimant, child]
         would_claim_IS: true
+        would_claim_uc: false
     households:
       household:
         members: [claimant, child]
@@ -204,6 +213,7 @@
     benunits:
       benunit:
         members: claimant
+        would_claim_uc: false
     households:
       household:
         members: claimant

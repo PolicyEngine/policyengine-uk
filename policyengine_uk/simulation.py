@@ -30,15 +30,17 @@ from policyengine_uk.data.dataset_schema import (
     UKMultiYearDataset,
     UKSingleYearDataset,
 )
-from policyengine_uk.utils.scenario import Scenario
+from policyengine_uk.utils.scenario import ConstructionReformState, Scenario
 from policyengine_uk.data.economic_assumptions import (
     extend_single_year_dataset,
     reset_growthfactor_uprating,
     uprating_input_fingerprint,
 )
 from policyengine_uk.data.dataset_sources import materialize_gcs_dataset_url
+from policyengine_uk.data.energy_price_basis import core_dataset_energy_price_basis
 from policyengine_uk.data.input_dataframe import (
     dataset_from_input_dataframe,
+    hold_identifiers_in,
     with_identifiers_in_each_year,
 )
 from policyengine_uk.data.capital_gains_projection import (
@@ -51,6 +53,7 @@ from policyengine_uk.data.capital_gains_projection import (
     capital_gains_application_metadata,
 )
 from policyengine_uk.utils.dependencies import get_variable_dependencies
+from policyengine_uk.utils.input_dataframe_export import input_dataframe
 from policyengine_uk.utils.supplied_inputs import (
     SUPPLIED_INPUT_VARIABLES,
     copy_model_values,
@@ -298,6 +301,7 @@ class Simulation(CoreSimulation):
         # of this scenario's single-day leftovers while rejecting unreadable
         # overrides from a user modifier's separate from_reform call.
         self._building_dated_reforms = scenario.dated_reforms if scenario else None
+        self._construction_reform_state = None
 
         self.branch_name = "default"
         self.invalidated_caches = set()
@@ -335,8 +339,10 @@ class Simulation(CoreSimulation):
         )
         if before_data_load is not None:
             self.apply_scenario_parameters(before_data_load)
+            self._construction_reform_state = ConstructionReformState(self)
             if before_data_load.simulation_modifier is not None:
                 before_data_load.simulation_modifier(self)
+            self._construction_reform_state.observe_user_edits(self)
         elif after_parameters_before_data:
             self.apply_scenario_parameters(after_data_load)
         self._refresh_capital_gains_projection()
@@ -365,6 +371,8 @@ class Simulation(CoreSimulation):
         # (including single-day reform-dict keys) leave the data as built.
         if after_data_load is not None and not after_parameters_before_data:
             self.apply_scenario_parameters(after_data_load)
+        if self._construction_reform_state is None and self._building_dated_reforms:
+            self._construction_reform_state = ConstructionReformState(self)
 
         # Universal Credit reform (July 2025). Needs closer integration in the baseline,
         # but adding here for ease of toggling on/off via the 'active' parameter.
@@ -414,10 +422,13 @@ class Simulation(CoreSimulation):
         self.baseline._cgt_warning_enabled = False
         self.baseline._defer_uc_health_warning = False
         self.baseline._building_dated_reforms = None
+        self.baseline._construction_reform_state = None
 
         self.calculated_periods = []
 
         if after_data_load is not None:
+            if self._construction_reform_state is not None:
+                self._construction_reform_state.refresh_framework(self)
             if after_data_load.simulation_modifier is not None:
                 after_data_load.simulation_modifier(self)
         self._refresh_capital_gains_projection()
@@ -427,6 +438,7 @@ class Simulation(CoreSimulation):
 
         self._defer_uc_health_warning = False
         self._building_dated_reforms = None
+        self._construction_reform_state = None
         warn_shadowed_lcwra_reform(self)
 
     def _refresh_capital_gains_projection(self) -> None:
@@ -560,11 +572,18 @@ class Simulation(CoreSimulation):
             super().set_input(variable_name, period, value)
         finally:
             forget_replaced_model_values(self, variable_name, records)
+        # Inputs do not carry back, so give the simulation its identifiers
+        # for the year the input starts in if it holds them only for later
+        # years. See ``policyengine_uk.data.input_dataframe.hold_identifiers_in``.
+        hold_identifiers_in(self, variable_name, period)
         if variable_name in CGT_DATASET_INPUTS:
             self._capture_cgt_supplied_inputs(variable_name, replace_period=period)
 
     def clone(self, *args, **kwargs) -> "Simulation":
         clone = super().clone(*args, **kwargs)
+        clone._construction_reform_state = copy.deepcopy(
+            getattr(self, "_construction_reform_state", None)
+        )
         copy_model_values(self, clone)
         clone._cgt_input_provenance = copy.deepcopy(
             getattr(self, "_cgt_input_provenance", {})
@@ -917,9 +936,9 @@ class Simulation(CoreSimulation):
             cache_key = self._dataset_cache_key(dataset_source)
             if cache_key is not None and cache_key in _url_dataset_cache:
                 multi_year_dataset = _url_dataset_cache[cache_key]
+                self.dataset = multi_year_dataset
                 self.build_from_multi_year_dataset(multi_year_dataset)
                 self._restore_cgt_extension_provenance(multi_year_dataset)
-                self.dataset = multi_year_dataset
                 return
             dataset_file = materialize_gcs_dataset_url(dataset_source)
             self.build_from_file(dataset_file, cache_key=dataset_source)
@@ -958,9 +977,9 @@ class Simulation(CoreSimulation):
         if key is not None:
             _url_dataset_cache[key] = multi_year_dataset
 
+        self.dataset = multi_year_dataset
         self.build_from_multi_year_dataset(multi_year_dataset)
         self._restore_cgt_extension_provenance(multi_year_dataset)
-        self.dataset = multi_year_dataset
 
     def build_from_url(self, url: str) -> None:
         """Build simulation from a HuggingFace dataset URL.
@@ -979,9 +998,9 @@ class Simulation(CoreSimulation):
         cache_key = self._dataset_cache_key(url)
         if cache_key is not None and cache_key in _url_dataset_cache:
             multi_year_dataset = _url_dataset_cache[cache_key]
+            self.dataset = multi_year_dataset
             self.build_from_multi_year_dataset(multi_year_dataset)
             self._restore_cgt_extension_provenance(multi_year_dataset)
-            self.dataset = multi_year_dataset
             return
 
         # Parse HuggingFace URL components
@@ -1039,22 +1058,25 @@ class Simulation(CoreSimulation):
         """Export the simulation's inputs as a DataFrame that
         ``Simulation(dataset=...)`` loads back.
 
-        policyengine-core exports each input for the periods it was set for.
+        Export supplied values, including overrides of variables with formulas,
+        for the periods they were set for. Calculated caches and values stored
+        by the model itself are not supplied inputs.
         The identifiers are also given for every whole year a column names,
-        where a simulation built from the frame holds them, so that the frame
-        loads back to a simulation that exports the same frame. See
+        where a simulation built from the frame holds them, so that the
+        default export loads back to a simulation that exports the same
+        frame. See
         ``policyengine_uk.data.input_dataframe.with_identifiers_in_each_year``.
 
         Args:
             include_computed_variables: If True, export every stored value,
                 calculated ones included, as policyengine-core does.
         """
-        return with_identifiers_in_each_year(
-            super().to_input_dataframe(
-                include_computed_variables=include_computed_variables
-            ),
-            self.tax_benefit_system,
+        frame = (
+            super().to_input_dataframe(include_computed_variables=True)
+            if include_computed_variables
+            else input_dataframe(self)
         )
+        return with_identifiers_in_each_year(frame, self.tax_benefit_system)
 
     def build_from_dataset(self, dataset: Dataset) -> None:
         """Build simulation from a Dataset object.
@@ -1062,6 +1084,7 @@ class Simulation(CoreSimulation):
         Args:
             dataset: PolicyEngine Dataset object containing simulation data
         """
+        energy_price_basis = core_dataset_energy_price_basis(dataset)
         data: Dict[str, Dict[str, Union[float, int, str]]] = dataset.load_dataset()
 
         first_variable = data[list(data.keys())[0]]
@@ -1116,13 +1139,13 @@ class Simulation(CoreSimulation):
         self.dataset = dataset
 
         dataset = UKSingleYearDataset.from_simulation(
-            self, fiscal_year=first_time_period
+            self, fiscal_year=first_time_period, energy_price_basis=energy_price_basis
         )
         multi_year_dataset = self._extend_dataset_with_cgt_provenance(dataset)
 
+        self.dataset = multi_year_dataset
         self.build_from_multi_year_dataset(multi_year_dataset)
         self._restore_cgt_extension_provenance(multi_year_dataset)
-        self.dataset = multi_year_dataset
 
     def build_from_single_year_dataset(self, dataset: UKSingleYearDataset) -> None:
         """Build simulation from a single-year UK dataset.
@@ -1133,9 +1156,9 @@ class Simulation(CoreSimulation):
 
         dataset = self._extend_dataset_with_cgt_provenance(dataset)
         _pre_encode_enum_columns(dataset, self.tax_benefit_system)
+        self.dataset = dataset
         self.build_from_multi_year_dataset(dataset)
         self._restore_cgt_extension_provenance(dataset)
-        self.dataset = dataset
 
     def build_from_multi_year_dataset(self, dataset: UKMultiYearDataset) -> None:
         """Build simulation from a multi-year UK dataset.
@@ -1180,6 +1203,8 @@ class Simulation(CoreSimulation):
                         continue
                     self.set_input(variable, year, table[variable])
 
+        # Retain the dataset actually loaded, including the copied base amounts
+        # and price declaration when economic assumptions were disabled.
         self.dataset = dataset
         if self.disable_economic_assumptions:
             # The loader changed these future amounts even for an external

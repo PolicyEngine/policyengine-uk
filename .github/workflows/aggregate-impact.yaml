@@ -1,6 +1,8 @@
 # Measure a pull request's base and head on the certified dataset and post
 # the comparison: receipts by tax head, spending and caseloads, poverty,
 # inequality, deciles and the standard reform costings, 2025-26 to 2031-32.
+# For a pull request, the head is GitHub's merge commit and the base is that
+# commit's first parent, so the report is exactly what merging would change.
 #
 # Both sides run the pull request head's copy of the measurement tool
 # (policyengine_uk/utils/aggregate_impact), each in an environment synced
@@ -66,16 +68,15 @@ jobs:
         id: commits
         env:
           EVENT: ${{ github.event_name }}
-          PR_BASE: ${{ github.event.pull_request.base.sha }}
           PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           INPUT_BASE: ${{ inputs.base }}
           INPUT_HEAD: ${{ inputs.head }}
         run: |
-          # A pull request's head is its merge commit, whose first parent is
-          # the base, so the comparison is exactly what merging would change.
+          # A pull request's head is its merge commit. Its base is read from
+          # that commit once the head is checked out (Choose the base).
           if [ "$EVENT" = "pull_request" ]; then
-            base="$PR_BASE"; head="$GITHUB_SHA"
+            base=""; head="$GITHUB_SHA"
             base_name="$PR_BASE_REF"; head_name="#$PR_NUMBER merged into $PR_BASE_REF"
           else
             base="${INPUT_BASE:-main}"; head="${INPUT_HEAD:-$GITHUB_SHA}"
@@ -93,11 +94,39 @@ jobs:
         with:
           ref: ${{ steps.commits.outputs.head }}
           path: head
+          # A pull request's merge commit and its parents, so that the next
+          # step can read the base from it.
+          fetch-depth: 2
+
+      - name: Choose the base
+        id: base
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE: ${{ steps.commits.outputs.base }}
+        run: |
+          # A pull request's base is its merge commit's first parent: the tip
+          # of the branch it merges into, as GitHub made the merge commit for
+          # this run. The comparison is then exactly what merging would
+          # change. The event's pull_request.base.sha is not that commit: it
+          # lags the branch once the branch has moved on, and the report then
+          # counted the branch's newer merges as the pull request's impact
+          # (#2516's took in 26 commits from main).
+          if [ "$EVENT" = "pull_request" ]; then
+            # The merge commit, then its parents.
+            line=$(git -C head rev-list --parents -n 1 HEAD)
+            read -r -a commit <<< "$line"
+            if [ "${#commit[@]}" -ne 3 ]; then
+              echo "::error::The head ${commit[0]} has $((${#commit[@]} - 1)) parents, not 2, so it is not a pull request's merge commit and its base is unknown."
+              exit 1
+            fi
+            BASE="${commit[1]}"
+          fi
+          echo "sha=$BASE" >> "$GITHUB_OUTPUT"
 
       - name: Check out the base
         uses: actions/checkout@v6
         with:
-          ref: ${{ steps.commits.outputs.base }}
+          ref: ${{ steps.base.outputs.sha }}
           path: base
 
       - name: Install uv

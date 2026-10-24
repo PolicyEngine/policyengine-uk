@@ -110,7 +110,17 @@ jobs:
         - name: Install uv
           uses: astral-sh/setup-uv@v8.1.0
         - name: Check formatting
-          run: uvx ruff format --check .
+          # With the ruff that uv.lock pins, so a new ruff release cannot change
+          # what Lint accepts until the lock is updated.
+          run: |
+            set -euo pipefail
+            ruff=$(uv export --frozen --extra dev --no-hashes --no-header | { grep -E '^ruff==' || true; } | cut -d' ' -f1)
+            if [ "$(printf '%s' "$ruff" | grep -c '^ruff==')" != 1 ]; then
+              echo "::error::uv.lock should pin exactly one ruff; found: ${ruff:-none}"
+              exit 1
+            fi
+            echo "RUFF=$ruff" >> "$GITHUB_ENV"
+            uvx --from "$ruff" ruff format --check .
         - name: Lint
           # The ruff rules pyproject.toml selects, then two pyflakes rules it
           # ignores, checked in the package: F811, a definition that a later
@@ -119,8 +129,8 @@ jobs:
           # notice 16), and F821, an undefined name. Neither has a finding
           # in the package today.
           run: |
-            uvx ruff check .
-            uvx ruff check --select F811,F821 policyengine_uk
+            uvx --from "$RUFF" ruff check .
+            uvx --from "$RUFF" ruff check --select F811,F821 policyengine_uk
         - name: No agent working notes at the repository root
           # Agent jobs keep their working notes at the root of their
           # worktree, and #2376's REPORT.md and PROGRESS.md reached main by
@@ -150,19 +160,13 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
-      - name: Install uv
-        uses: astral-sh/setup-uv@v8.1.0
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.13'
-      - name: Install package
-        run: uv pip install -e .[dev] --system
-      - name: Install policyengine
-        run: uv pip install policyengine --system
+      # The environment the tests use: uv.lock with the dev extra (which
+      # includes jupyter-book), so a new release cannot change the build.
+      - name: Install the locked environment
+        uses: ./.github/actions/test-environment
       - name: Test documentation builds
         run: make documentation
-  # The YAML tests, the Python tests on four runners, and the check that
+  # The YAML tests, the Python tests on five runners, and the check that
   # every test ran once and passed, in the locked environment. As one job
   # they took 59 minutes on 10 October 2026 (run 38075384588), and runs were
   # cancelled at a 60-minute limit (issues #2099 and #2257). The release

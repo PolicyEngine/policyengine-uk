@@ -22,6 +22,7 @@ class carers_allowance_pre_overlap(Variable):
         csp_replaces_ca = period.start.year >= 2025
         receives_ca = person("carers_allowance_reported", period) > 0
         ca = parameters(period).gov.dwp.carers_allowance
+        meets_age_condition = person("age", period) >= ca.min_age
         weekly_care_hours = person("care_hours", period)
         meets_work_condition = weekly_care_hours >= ca.min_hours
         would_claim = person("would_claim_carers_allowance", period)
@@ -36,5 +37,6 @@ class carers_allowance_pre_overlap(Variable):
             & (meets_work_condition | receives_ca)
             & ~gainfully_employed
             & would_claim
+            & meets_age_condition
         )
         return eligible * ca.rate * WEEKS_IN_YEAR

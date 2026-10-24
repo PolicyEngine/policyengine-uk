@@ -355,6 +355,8 @@
         age: 92
         employment_income: 20_000
         employer_pension_contributions: 65_000
+        # No allowance carried forward, so the whole excess is charged.
+        unused_pension_annual_allowance: 0
         married_couples_allowance: 11_000
         would_claim_marriage_allowance: false
       partner:

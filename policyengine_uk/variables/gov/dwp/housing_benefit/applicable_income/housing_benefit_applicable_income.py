@@ -22,6 +22,10 @@ class housing_benefit_applicable_income(Variable):
         "https://www.legislation.gov.uk/nisr/2006/405/schedule/6/paragraph/4",
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/2",
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/5",
+        "https://www.legislation.gov.uk/uksi/2006/213/regulation/40",
+        "https://www.legislation.gov.uk/uksi/2006/213/schedule/5/paragraph/16",
+        "https://www.legislation.gov.uk/uksi/2006/213/schedule/5/paragraph/47",
+        "https://www.legislation.gov.uk/uksi/2006/214/regulation/29",
         "https://www.legislation.gov.uk/uksi/2006/214/regulation/26",
         "https://www.legislation.gov.uk/uksi/2006/214/regulation/27",
         "https://www.legislation.gov.uk/nisr/2006/406/regulation/24",
@@ -31,14 +35,13 @@ class housing_benefit_applicable_income(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        # Members whose income counts: the claimant and partner and, as the model did
-        # before, the programme's own children or young persons. The regulations count
-        # only the claimant's and partner's (HB Regs 2006 reg 25); dropping dependants'
-        # own income is a follow-up. Anyone else in the benefit unit does not count.
+        # Members whose income counts: the claimant and partner (SSCBA 1992
+        # s.136(1); HB Regs 2006 reg 25(1), HB (SPC) Regs 2006 reg 23(1)). "The
+        # income and capital of a child or young person shall not be treated as
+        # the income and capital of the claimant" (HB Regs 2006 reg 25(3)).
+        # Anyone else in the benefit unit does not count either.
         person = benunit.members
-        members = person("is_claimant_or_partner", period) | person(
-            "is_child_or_young_person_for_legacy_benefits", period
-        )
+        members = person("is_claimant_or_partner", period)
         pension_age_regulations = benunit(
             "housing_benefit_pension_age_regulations_apply", period
         )
@@ -64,9 +67,26 @@ class housing_benefit_applicable_income(Variable):
             "jsa_contrib",
             "state_pension",
             "maternity_allowance",
+            # Statutory sick, maternity and paternity pay are earnings: SI
+            # 2006/213 reg 35(1)(i); SI 2006/214 reg 35(1)(h) and (i); NI SR
+            # 2006/405 reg 32(1)(i); NI SR 2006/406 reg 33(1)(h) and (i). The
+            # income tax and National Insurance deducted below include the
+            # tax on them (employment_benefits, ni_class_1_income).
             "statutory_sick_pay",
             "statutory_maternity_pay",
+            "statutory_paternity_pay",
             "ssmg",
+            # Counted by both regimes: HB (SPC) Regs 2006 reg 29(1)(j), whose
+            # exceptions touching these are the IIDB increases under SSCBA
+            # ss.104-105 (head (iii)) and non-partner dependant increases (head
+            # (viii)); heads (iv) and (v) cover the Sch 8 schemes for old
+            # industrial injury cases. And HB Regs 2006 reg 40 with Sch 5,
+            # whose para 9 attendance allowance disregard covers the
+            # ss.104-105 increases (reg 2(1)). iidb is the whole reported
+            # payment and cannot separate those increases.
+            "iidb",
+            "sda",
+            "incapacity_benefit",
         ]
         INCOME_COMPONENTS = [
             "employment_income",
@@ -82,7 +102,30 @@ class housing_benefit_applicable_income(Variable):
         income = add_for_members(benunit, period, INCOME_COMPONENTS, members)
         personal_benefits = add_for_members(benunit, period, PERSONAL_BENEFITS, members)
         credits = add_for_members(benunit, period, ["tax_credits"], members)
-        increased_income = income + personal_benefits + credits + benefits
+        # Maintenance paid to the claimant or partner by a spouse, civil
+        # partner or former partner is income other than earnings (HB Regs
+        # 2006 reg 40(1); HB (SPC) Regs 2006 reg 29(1)(o)), less £15 a week
+        # where the family includes a child or young person. Child
+        # maintenance is disregarded in full (HB Regs 2006 Sch 5 para 47A) or
+        # is not listed as income (reg 29(1)), so maintenance_income is not
+        # counted.
+        spousal_maintenance = benunit.sum(
+            max_(0, person("spousal_maintenance_income", period))
+            * person("is_claimant_or_partner", period)
+        ) - benunit("housing_benefit_maintenance_disregard", period)
+        # Widowed parent's allowance less £15 a week (HB Regs 2006 Sch 5
+        # para 16(b); HB (SPC) Regs 2006 Sch 5 para 7).
+        widowed_parents_allowance = benunit(
+            "housing_benefit_widowed_parents_allowance_income", period
+        )
+        increased_income = (
+            income
+            + personal_benefits
+            + credits
+            + benefits
+            + spousal_maintenance
+            + widowed_parents_allowance
+        )
 
         if not bi.interactions.include_in_means_tests:
             # Basic income is already in personal benefits, deduct if needed
@@ -90,8 +133,10 @@ class housing_benefit_applicable_income(Variable):
                 benunit, period, ["basic_income"], members
             )
         # Reduce increased income by pension contributions and tax
+        p = parameters(period).gov.dwp.housing_benefit.means_test
         pension_contributions = (
-            add_for_members(benunit, period, ["pension_contributions"], members) * 0.5
+            add_for_members(benunit, period, ["pension_contributions"], members)
+            * p.pension_contribution_deduction_rate
         )
         TAX_COMPONENTS = ["income_tax", "national_insurance"]
         tax = add_for_members(benunit, period, TAX_COMPONENTS, members)

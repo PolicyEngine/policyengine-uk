@@ -1,11 +1,12 @@
 description: >
   Universal Credit financial capital sources (capital.sources) whose sale
   would incur expenses, so that they are valued at 90% of market value.
-  `corporate_wealth` is listed because shares are valued less 10% for the
-  costs of selling them (ADM H1665). It is a mixed variable, though: it also
-  holds unit trusts, which have no costs of sale (H1674), stocks and shares
-  ISAs, valued at their withdrawal value (H1656), and employee share options,
-  and datasets built before private pension wealth was split out also fold
+  `share_like_capital` (`corporate_wealth`, or its itemised components where
+  they exceed it) is listed because shares are valued less 10% for the costs
+  of selling them (ADM H1665). It is a mixed variable, though: it also holds
+  unit trusts, which have no costs of sale (H1674), stocks and shares ISAs,
+  valued at their withdrawal value (H1656), and employee share options, and
+  datasets built before private pension wealth was split out also fold
   non-defined-benefit pension wealth into it, which is not capital at all. The
   deduction reaches all of these until the data separate them. `savings` is
   not listed: the 10% applies where selling normally needs an agent, broker,
@@ -32,4 +33,4 @@ metadata:
       href: https://assets.publishing.service.gov.uk/media/6a5e0ac7a2662d4563fe39e0/adm-ch-h1.pdf#page=59
 values:
   2013-04-29:
-    - corporate_wealth
+    - share_like_capital

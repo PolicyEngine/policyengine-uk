@@ -1,26 +1,23 @@
 # Fiscal partition: how the model's tax and spending totals divide into heads.
 #
-# Each head is one receipt (an OBR current-receipts line, split by who pays
-# where the model splits it) and names the one variable that measures the
-# household's share of it. Heads are mutually exclusive: no head's value
-# contains another head's value, and no variable is summed twice in a total.
+# Each tax head is one receipt (a row of the OBR's current receipts table,
+# split by who pays or where it is charged when the model splits it) and
+# names the one variable that measures the household's share of it. Heads
+# are mutually exclusive: no head's value contains another head's value, and
+# no variable is summed twice in a total.
 #
 # The heads were specified from the OBR receipts classification and from each
 # variable's formula, not copied from the model's own lists
 # (GOV_TAX_VARIABLES, HOUSEHOLD_TAX_VARIABLES,
-# PRE_BUDGET_CHANGE_HOUSEHOLD_TAX_VARIABLES).
+# PRE_BUDGET_CHANGE_HOUSEHOLD_TAX_VARIABLES). policyengine_uk/tests/
+# test_fiscal_partition.py checks the two against each other and checks the
+# accounting properties below on simulated households.
 # policyengine_uk/tests/aggregate_impact/test_aggregate_impact_partition.py
-# checks the two against each other without data, and the aggregate-impact
-# report checks the accounting properties on the certified dataset. The #2159
-# fix adds tests of them on simulated households.
+# checks closure for every total without data, and the aggregate-impact
+# report checks the accounting properties on the certified dataset.
 #
 # Spending heads divide gov_spending and household_benefits the same way:
 # one benefit or service per head, one variable each.
-#
-# This version describes main before the #2159 fix: expected_sdlt still adds
-# corporate_sdlt, so the household SDLT head carries corporate SDLT too and
-# corporate_sdlt is declared under model_double_counts. The fix gives
-# corporate_sdlt its own head (sdlt_corporate) and empties that section.
 #
 # Consumers (tests, the per-PR aggregate impact report) read this file
 # directly. Bump schema_version on any change to field meanings.
@@ -31,8 +28,12 @@
 #     label             sentence-case name
 #     variable          the one model variable that measures the head
 #     entity            household or person
-#     obr_line          OBR current-receipts line the head belongs to, or
-#                       not_an_obr_current_receipt
+#     obr_line          the row of OBR EFO November 2025 Table A.5 ("Current
+#                       receipts") the head belongs to, or
+#                       not_an_obr_current_receipt (see sources)
+#     obr_table_3_1     the line of EFO Table 3.1 ("Public sector receipts
+#                       as a share of GDP") that holds it, where the table's
+#                       footnotes say so; null where they don't (see sources)
 #     report_group      grouping for reports
 #     payer             who bears it in the model: household (the household
 #                       or its members pay it directly), employer, consumer
@@ -49,16 +50,62 @@
 #     kind: component (summed or read inside `head`), measure_within (an
 #     analytical decomposition already inside `head` through its inputs),
 #     composite (spans several heads), duplicate (same value as `head`),
-#     baseline_measure.
+#     baseline_measure, assessment (a tax amount worked out for a means test,
+#     a ceiling or a record, not a payment), change_measure (a wage change
+#     that already sits inside the incomes a head taxes).
 #   model_double_counts[]: known violations still in the model: a variable a
 #     total lists although the head variable `contained_in` already adds it.
-#   spending_heads[]: as tax_heads, without obr_line and payer, plus
-#     caseload (default true): whether reports count recipients.
+#     None since the #2159 fix gave corporate_sdlt its own head.
+#   uncovered_receipts[]: rows of Table A.5 the model has no household
+#     measure for. With the heads' obr_line values they account for every
+#     tax row of the table.
 #   overlap_guards[]: the places double counting could occur, and the
-#     property that should hold for each. The aggregate-impact report checks
-#     the geographic_exclusivity guards on the certified dataset; the #2159
-#     fix's tests check the others.
+#     property the tests check for each. The aggregate-impact report also
+#     checks the geographic_exclusivity guards on the certified dataset.
+#   spending_heads[]: as tax_heads, without obr_line, obr_table_3_1 and
+#     payer, plus caseload (default true): whether reports count recipients.
 schema_version: 1
+
+sources:
+  obr_table_3_1: >-
+    OBR, Economic and fiscal outlook, March 2026, Table 3.1. Its footnotes put
+    capital gains tax, inheritance tax, property transaction taxes and stamp
+    taxes on shares in "Capital taxes", and council tax in "PSNB-neutral
+    receipts". They do not place vehicle excise duty, the licence fee or
+    Northern Ireland domestic rates. Read 2026-10-11 from
+    https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
+  obr_line: >-
+    OBR, Economic and fiscal outlook, November 2025, Table A.5 ("Current
+    receipts"): its tax rows, from "Income tax" to "Other taxes". Footnote 3
+    puts the high-value council tax surcharge in "Council tax"; footnote 4
+    puts stamp duty land tax, the devolved property transaction taxes and
+    the annual tax on enveloped dwellings in "Property transaction taxes".
+    Read 2026-10-11 from
+    https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
+  council_tax: >-
+    OBR, "Council tax" (tax by tax, spend by spend): council tax receipts add
+    a forecast of Northern Irish domestic rates to Great Britain's, and are
+    net of discounts and reduction schemes. Read 2026-10-11 from
+    https://obr.uk/forecasts-in-depth/tax-by-tax-spend-by-spend/council-tax/
+  student_loans: >-
+    Student loan repayments are not a row of Table A.5. In the March 2026
+    EFO only the interest accrued on the loans enters receipts, in "Interest
+    and dividend receipts".
+  independent_specification: >-
+    A second specification was written from Table A.5 and the variables'
+    formulas by a reviewer who was not shown the model's lists or this file
+    (2026-10-11). It chose the same variable for every head here except
+    where noted on the head, and supplied the uncovered rows and several of
+    the exclusions and guards. It listed the change measures (vat_change,
+    the employer NI response incidence and the two unallocated tax changes)
+    as exclusions from a total of levels; here they are heads of the totals
+    that use them, zero at current law.
+  gambling_duties: >-
+    OBR, Economic and fiscal outlook, November 2025, Table A.5, footnote 5,
+    includes betting and gaming duties within Other HMRC taxes. This head
+    measures only supplied household gambling bases; the other components
+    of that receipts row remain unmodelled. No Table 3.1 allocation is
+    claimed. https://obr.uk/docs/dlm_uploads/OBR_Economic_and_fiscal_outlook_November_2025.pdf#page=195
 
 totals:
   gov_tax:
@@ -115,6 +162,7 @@ tax_heads:
     variable: income_tax
     entity: person
     obr_line: Income tax
+    obr_table_3_1: Income tax
     report_group: income_tax
     payer: household
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
@@ -124,6 +172,7 @@ tax_heads:
     variable: national_insurance
     entity: person
     obr_line: National insurance contributions
+    obr_table_3_1: NICs
     report_group: national_insurance
     payer: household
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
@@ -133,6 +182,7 @@ tax_heads:
     variable: ni_employer
     entity: person
     obr_line: National insurance contributions
+    obr_table_3_1: NICs
     report_group: national_insurance
     payer: employer
     totals: [gov_tax]
@@ -142,6 +192,7 @@ tax_heads:
     variable: employer_ni_response_capital_incidence
     entity: person
     obr_line: National insurance contributions
+    obr_table_3_1: NICs
     report_group: national_insurance
     payer: corporate incidence
     totals: [household_tax]
@@ -152,6 +203,7 @@ tax_heads:
     variable: employer_ni_response_consumer_incidence
     entity: person
     obr_line: National insurance contributions
+    obr_table_3_1: NICs
     report_group: national_insurance
     payer: consumer incidence
     totals: [household_tax]
@@ -162,6 +214,7 @@ tax_heads:
     variable: capital_gains_tax
     entity: person
     obr_line: Capital gains tax
+    obr_table_3_1: Capital taxes
     report_group: capital_taxes
     payer: household
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
@@ -171,10 +224,12 @@ tax_heads:
     variable: student_loan_repayments
     entity: person
     obr_line: not_an_obr_current_receipt
+    obr_table_3_1: null
     obr_line_note: >-
       A financial transaction: repayments reduce the student loan book, not
       borrowing, so they are outside current receipts. The model counts them
-      in gov_tax and household_tax; reports should show them separately.
+      in gov_tax and household_tax; reports should show them separately. The
+      independent specification left them out of both tax totals.
     report_group: financial_transactions
     payer: household
     totals: [gov_tax, household_tax]
@@ -186,15 +241,24 @@ tax_heads:
     variable: vat
     entity: household
     obr_line: Value added tax
+    obr_table_3_1: Value added tax
     report_group: vat
     payer: consumer incidence
     totals: [gov_tax]
     sign: nonnegative
+    data_note: >-
+      Negative for 76 households on policyengine-uk-data 1.58.0
+      (enhanced_frs_2024_25) in every year from 2025 to 2030, -£72m weighted
+      in 2026: full_rate_vat_consumption is negative there because the
+      dataset's consumption (44 households) or full_rate_vat_expenditure_rate
+      (32 households) is negative. policyengine-uk-data issue 565. Measured
+      2026-10-11.
   - id: vat_change
     label: Change in VAT from its baseline
     variable: vat_change
     entity: household
     obr_line: Value added tax
+    obr_table_3_1: Value added tax
     report_group: vat
     payer: consumer incidence
     totals: [household_tax, pre_budget_change_household_tax]
@@ -209,6 +273,7 @@ tax_heads:
     variable: private_school_vat
     entity: household
     obr_line: Value added tax
+    obr_table_3_1: Value added tax
     report_group: vat
     payer: household
     totals: [gov_tax, household_tax]
@@ -232,6 +297,7 @@ tax_heads:
     variable: fuel_duty
     entity: household
     obr_line: Fuel duties
+    obr_table_3_1: Fuel duties
     report_group: excise_duties
     payer: household
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
@@ -241,6 +307,7 @@ tax_heads:
     variable: alcohol_duty
     entity: household
     obr_line: Alcohol duties
+    obr_table_3_1: Alcohol and tobacco duties
     report_group: excise_duties
     payer: household
     totals: [gov_tax, household_tax]
@@ -248,12 +315,13 @@ tax_heads:
     data_note: >-
       Zero for every household on policyengine-uk-data 1.58.0
       (enhanced_frs_2024_25) in every year from 2025 to 2030, measured
-      2026-10-11.
+      2026-10-11. Issue 1872.
   - id: tobacco_duty
     label: Tobacco duties
     variable: tobacco_duty
     entity: household
     obr_line: Tobacco duties
+    obr_table_3_1: Alcohol and tobacco duties
     report_group: excise_duties
     payer: household
     totals: [gov_tax, household_tax]
@@ -261,12 +329,13 @@ tax_heads:
     data_note: >-
       Zero for every household on policyengine-uk-data 1.58.0
       (enhanced_frs_2024_25) in every year from 2025 to 2030, measured
-      2026-10-11.
+      2026-10-11. Issue 1873.
   - id: vehicle_excise_duty
     label: Vehicle excise duties
     variable: vehicle_excise_duty
     entity: household
     obr_line: Vehicle excise duties
+    obr_table_3_1: null
     report_group: excise_duties
     payer: household
     totals: [gov_tax, household_tax]
@@ -274,12 +343,33 @@ tax_heads:
     data_note: >-
       Zero for every household on policyengine-uk-data 1.58.0
       (enhanced_frs_2024_25) in every year from 2025 to 2030, measured
-      2026-10-11.
+      2026-10-11. Issue 1874.
+  - id: gambling_duty
+    label: Betting and gaming duties
+    variable: gambling_duty
+    entity: household
+    obr_line: Other HMRC taxes
+    obr_line_note: >-
+      Betting and gaming duties belong to this row under November 2025 Table
+      A.5 footnote 5. This head provides partial row coverage only; other
+      Other HMRC taxes remain unmodelled.
+    obr_table_3_1: null
+    report_group: excise_duties
+    payer: household
+    totals: [gov_tax, household_tax]
+    sign: nonnegative
+    data_note: >-
+      Calculated from supplied nonnegative attributed dutiable bases only.
+      Missing inputs default to zero; this does not establish population
+      data adoption or calibrated receipts. Casino incidence uses a fixed
+      UK cash receipts/GB game yield proxy reviewed under issue 2587.
+      This head does not measure the residual Other HMRC taxes components.
   - id: tv_licence
     label: TV licence fee
     variable: tv_licence
     entity: household
     obr_line: Licence fee receipts
+    obr_table_3_1: null
     report_group: other_receipts
     payer: household
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
@@ -298,6 +388,13 @@ tax_heads:
     variable: council_tax
     entity: household
     obr_line: Council tax
+    obr_line_note: >-
+      Gross of Council Tax Reduction. The OBR's receipts are net of discounts
+      and reduction schemes; the model counts the reduction as spending
+      (council_tax_benefit) instead. Compare with the OBR row net of it. The
+      independent specification chose the net variable,
+      council_tax_less_benefit.
+    obr_table_3_1: PSNB-neutral receipts
     report_group: local_taxes
     payer: household
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
@@ -307,6 +404,7 @@ tax_heads:
     variable: high_value_council_tax_surcharge
     entity: household
     obr_line: Council tax
+    obr_table_3_1: PSNB-neutral receipts
     report_group: local_taxes
     payer: household
     totals: [gov_tax, household_tax]
@@ -316,10 +414,10 @@ tax_heads:
     variable: domestic_rates
     entity: household
     obr_line: Council tax
+    obr_table_3_1: null
     obr_line_note: >-
-      Northern Ireland's domestic rates are its counterpart to council tax;
-      check the line against the OBR table in use before publishing a
-      line-by-line comparison.
+      The OBR adds Northern Irish domestic rates to its council tax receipts
+      (see sources).
     report_group: local_taxes
     payer: household
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
@@ -329,46 +427,80 @@ tax_heads:
     variable: business_rates
     entity: household
     obr_line: Business rates
+    obr_table_3_1: Business rates
     report_group: business_rates
     payer: corporate incidence
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
     sign: nonnegative
+    data_note: >-
+      Allocates each nation's published non-domestic rates outturn (England
+      and Wales local and central rating lists, Scotland, Northern Ireland),
+      projected with OBR receipts (gov.hmrc.business_rates.statistics). In
+      2026-27 the England, Scotland and Wales series total £37.26bn against
+      £37.41bn on the OBR's Business rates line (receipts Table 3.8).
+      Northern Ireland's £0.78bn (LPS non-domestic rates paid) compares with
+      £0.40bn on the OBR's "Northern Ireland business rates" line, which the
+      OBR records under other taxes (Table 3.2). Measured 2026-10-11.
   - id: sdlt_household
-    label: Stamp duty land tax (own purchases, and corporate until the #2159 fix)
+    label: Stamp duty land tax on the household's own purchases
     variable: expected_sdlt
     entity: household
-    obr_line: Stamp duty land tax
+    obr_line: Property transaction taxes
+    obr_table_3_1: Capital taxes
     report_group: property_transaction_taxes
-    payer: mixed
+    payer: household
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
     sign: nonnegative
     data_note: >-
-      Before the #2159 fix expected_sdlt adds corporate_sdlt and a stray 0.045
-      per household, so this head is both parts of the receipt.
+      policyengine-uk-data 1.58.0 calibrates stamp_duty_land_tax to the OBR's
+      total SDLT, which includes the companies' share that sdlt_corporate
+      allocates by shareholding (policyengine-uk-data issue 564). In 2026-27
+      the two heads total £23.29bn against the OBR's £18.15bn, measured
+      2026-10-11.
+  - id: sdlt_corporate
+    label: Stamp duty land tax paid by companies
+    variable: corporate_sdlt
+    entity: household
+    obr_line: Property transaction taxes
+    obr_table_3_1: Capital taxes
+    report_group: property_transaction_taxes
+    payer: corporate incidence
+    totals: [gov_tax, household_tax, pre_budget_change_household_tax]
+    sign: nonnegative
   - id: land_transaction_tax
     label: Land transaction tax (Wales)
     variable: expected_ltt
     entity: household
-    obr_line: Land transaction tax
+    obr_line: Property transaction taxes
+    obr_table_3_1: Capital taxes
     report_group: property_transaction_taxes
     payer: household
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
     sign: nonnegative
     data_note: >-
-      expected_ltt multiplies an already purchase-drawn liability by
-      property_sale_rate, discounting it twice (issue 2246).
+      Equal to land_transaction_tax, with no property sale rate scaling
+      (issue 2246). On policyengine-uk-data 1.58.0 (enhanced_frs_2024_25),
+      £0.070bn in 2026, all on main-residence purchases: no Welsh record has
+      an additional-dwelling or non-residential purchase or a rent charge.
+      Measured 2026-10-11 on model 2.126.8, before the Welsh rate updates
+      (issue 1796); these are historical figures.
   - id: land_and_buildings_transaction_tax
     label: Land and buildings transaction tax (Scotland)
     variable: expected_lbtt
     entity: household
-    obr_line: Land and buildings transaction tax
+    obr_line: Property transaction taxes
+    obr_table_3_1: Capital taxes
     report_group: property_transaction_taxes
     payer: household
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
     sign: nonnegative
     data_note: >-
-      expected_lbtt multiplies an already purchase-drawn liability by
-      property_sale_rate, discounting it twice (issue 2246).
+      Equal to land_and_buildings_transaction_tax, with no property sale rate
+      scaling (issue 2246). On policyengine-uk-data 1.58.0
+      (enhanced_frs_2024_25) in 2026, £0.385bn on main-residence purchases.
+      Before PR 2241 (issue 2238) it is £2.310bn: the main-residence purchase
+      flag also charges £15.2bn of other residential property as
+      additional-dwelling purchases. Measured 2026-10-11.
 
   # Reform-only heads
   - id: corporate_incident_tax_change
@@ -376,6 +508,7 @@ tax_heads:
     variable: corporate_incident_tax_revenue_change
     entity: household
     obr_line: not_an_obr_current_receipt
+    obr_table_3_1: null
     obr_line_note: A lump-sum revenue change allocated by shareholding.
     report_group: incidence_changes
     payer: corporate incidence
@@ -387,6 +520,7 @@ tax_heads:
     variable: consumer_incident_tax_revenue_change
     entity: household
     obr_line: not_an_obr_current_receipt
+    obr_table_3_1: null
     obr_line_note: A lump-sum revenue change allocated by consumption.
     report_group: incidence_changes
     payer: consumer incidence
@@ -398,6 +532,7 @@ tax_heads:
     variable: wealth_tax
     entity: household
     obr_line: not_an_obr_current_receipt
+    obr_table_3_1: null
     obr_line_note: A hypothetical tax.
     report_group: hypothetical_taxes
     payer: household
@@ -409,6 +544,7 @@ tax_heads:
     variable: non_primary_residence_wealth_tax
     entity: household
     obr_line: not_an_obr_current_receipt
+    obr_table_3_1: null
     obr_line_note: A hypothetical tax.
     report_group: hypothetical_taxes
     payer: household
@@ -420,6 +556,7 @@ tax_heads:
     variable: LVT
     entity: household
     obr_line: not_an_obr_current_receipt
+    obr_table_3_1: null
     obr_line_note: A hypothetical tax.
     report_group: hypothetical_taxes
     payer: mixed
@@ -431,6 +568,7 @@ tax_heads:
     variable: carbon_tax
     entity: household
     obr_line: not_an_obr_current_receipt
+    obr_table_3_1: null
     obr_line_note: A hypothetical tax.
     report_group: hypothetical_taxes
     payer: mixed
@@ -440,29 +578,29 @@ tax_heads:
 
 exclusions:
   # Property transaction taxes
-  - {variable: stamp_duty_land_tax, kind: component, head: sdlt_household, note: "Summed inside expected_sdlt, which until the #2159 fix also adds corporate_sdlt and a stray 0.045; not zeroed by gov.hmrc.stamp_duty.abolish. Report the head, not this."}
+  - {variable: stamp_duty_land_tax, kind: component, head: sdlt_household, note: "The liability expected_sdlt reads; zero under gov.hmrc.stamp_duty.abolish because sdlt_liable is then false."}
   - {variable: sdlt_on_transactions, kind: component, head: sdlt_household}
   - {variable: sdlt_on_rent, kind: component, head: sdlt_household}
   - {variable: sdlt_on_residential_property_transactions, kind: component, head: sdlt_household}
   - {variable: sdlt_on_non_residential_property_transactions, kind: component, head: sdlt_household}
   - {variable: sdlt_on_residential_property_rent, kind: component, head: sdlt_household}
   - {variable: sdlt_on_non_residential_property_rent, kind: component, head: sdlt_household}
-  - {variable: land_transaction_tax, kind: component, head: land_transaction_tax, note: "The liability before the property_sale_rate scaling (issue 2246)."}
+  - {variable: land_transaction_tax, kind: component, head: land_transaction_tax, note: "Equal to expected_ltt (issue 2246); report the head, not this."}
   - {variable: ltt_on_transactions, kind: component, head: land_transaction_tax}
   - {variable: ltt_on_rent, kind: component, head: land_transaction_tax}
   - {variable: ltt_on_residential_property_transactions, kind: component, head: land_transaction_tax}
   - {variable: ltt_on_non_residential_property_transactions, kind: component, head: land_transaction_tax}
   - {variable: ltt_on_residential_property_rent, kind: component, head: land_transaction_tax}
   - {variable: ltt_on_non_residential_property_rent, kind: component, head: land_transaction_tax}
-  - {variable: land_and_buildings_transaction_tax, kind: component, head: land_and_buildings_transaction_tax, note: "The liability before the property_sale_rate scaling (issue 2246)."}
+  - {variable: land_and_buildings_transaction_tax, kind: component, head: land_and_buildings_transaction_tax, note: "Equal to expected_lbtt (issue 2246); report the head, not this."}
   - {variable: lbtt_on_transactions, kind: component, head: land_and_buildings_transaction_tax}
   - {variable: lbtt_on_rent, kind: component, head: land_and_buildings_transaction_tax}
   - {variable: lbtt_on_residential_property_transactions, kind: component, head: land_and_buildings_transaction_tax}
   - {variable: lbtt_on_non_residential_property_transactions, kind: component, head: land_and_buildings_transaction_tax}
   - {variable: lbtt_on_residential_property_rent, kind: component, head: land_and_buildings_transaction_tax}
   - {variable: lbtt_on_non_residential_property_rent, kind: component, head: land_and_buildings_transaction_tax}
-  - {variable: corporate_tax_incidence, kind: composite, spans: [sdlt_household, business_rates]}
-  - {variable: hbai_excluded_income, kind: composite, spans: [sdlt_household, business_rates], note: "Minus corporate_tax_incidence."}
+  - {variable: corporate_tax_incidence, kind: composite, spans: [sdlt_corporate, business_rates]}
+  - {variable: hbai_excluded_income, kind: composite, spans: [sdlt_corporate, business_rates], note: "Minus corporate_tax_incidence."}
   - {variable: baseline_business_rates, kind: duplicate, head: business_rates, note: "Same formula and current-law parameters as business_rates."}
   # Income tax and National Insurance
   - {variable: income_tax_pre_charges, kind: component, head: income_tax}
@@ -472,6 +610,18 @@ exclusions:
   - {variable: property_income_tax, kind: component, head: income_tax}
   - {variable: CB_HITC, kind: component, head: income_tax}
   - {variable: personal_pension_contributions_tax, kind: component, head: income_tax}
+  - {variable: capped_mcad, kind: component, head: income_tax, note: "A tax reduction, subtracted inside income_tax."}
+  - {variable: married_couples_allowance_deduction, kind: component, head: income_tax, note: "Inside capped_mcad."}
+  - {variable: other_tax_credits, kind: component, head: income_tax, note: "A tax reduction, subtracted inside income_tax."}
+  - {variable: property_finance_cost_relief, kind: component, head: income_tax, note: "A tax reduction, subtracted inside income_tax."}
+  - {variable: basic_rate_earned_income_tax, kind: assessment, head: income_tax, note: "Earned income tax by band; earned_income_tax does not read it."}
+  - {variable: higher_rate_earned_income_tax, kind: assessment, head: income_tax, note: "As above."}
+  - {variable: add_rate_earned_income_tax, kind: assessment, head: income_tax, note: "As above."}
+  - {variable: tax_reported, kind: assessment, head: income_tax, note: "Tax as the survey reports it, an alternative to the modelled liability."}
+  - {variable: tax_modelling, kind: assessment, head: income_tax, note: "Modelled minus reported tax."}
+  - {variable: uc_income_tax_on_earnings, kind: assessment, head: income_tax, note: "Income tax on earnings as Universal Credit deducts it; no extra payment."}
+  - {variable: uc_minimum_income_floor_income_tax, kind: assessment, head: income_tax, note: "Tax on the notional minimum income floor earnings."}
+  - {variable: child_benefit_less_tax_charge, kind: composite, spans: [income_tax], note: "Child Benefit net of the High Income Child Benefit Charge, which income_tax already includes; never alongside gross Child Benefit and income_tax."}
   - {variable: ni_employee, kind: measure_within, head: nics_individual, note: "Class 1 employee; national_insurance adds the classes directly."}
   - {variable: ni_self_employed, kind: measure_within, head: nics_individual, note: "Classes 2 and 4; national_insurance adds the classes directly."}
   - {variable: ni_class_1_employee, kind: component, head: nics_individual}
@@ -480,8 +630,14 @@ exclusions:
   - {variable: ni_class_2, kind: component, head: nics_individual}
   - {variable: ni_class_3, kind: component, head: nics_individual}
   - {variable: ni_class_4, kind: component, head: nics_individual}
+  - {variable: ni_class_4_main, kind: assessment, head: nics_individual, note: "Class 4 before the annual maximum."}
+  - {variable: ni_class_4_maximum, kind: assessment, head: nics_individual, note: "The annual ceiling on Class 4, not a payment."}
+  - {variable: uc_national_insurance_on_earnings, kind: assessment, head: nics_individual, note: "National Insurance on earnings as Universal Credit deducts it; no extra payment."}
+  - {variable: uc_minimum_income_floor_national_insurance, kind: assessment, head: nics_individual, note: "National Insurance on the notional minimum income floor earnings."}
+  - {variable: employer_ni_fixed_employer_cost_change, kind: change_measure, head: nics_employer, note: "The wage change from an employer NI reform; employment_income already adds it."}
+  - {variable: salary_sacrifice_broad_base_haircut, kind: change_measure, head: nics_employer, note: "A wage change employment_income already adds."}
   - {variable: ni_class_1_employer, kind: component, head: nics_employer}
-  - {variable: salary_sacrifice_pension_ni_employee, kind: measure_within, head: nics_individual, note: "The excess sacrifice is added back to employment_income, so Class 1 already charges it."}
+  - {variable: salary_sacrifice_pension_ni_employee, kind: measure_within, head: nics_individual, note: "The excess sacrifice is added back to ni_class_1_income, so Class 1 already charges it."}
   - {variable: salary_sacrifice_pension_ni_employer, kind: measure_within, head: nics_employer, note: "As above, for employer Class 1."}
   - {variable: tax, kind: composite, spans: [income_tax, nics_individual]}
   - {variable: benunit_tax, kind: composite, spans: [income_tax, nics_individual]}
@@ -495,32 +651,32 @@ exclusions:
   - {variable: wine_duty, kind: component, head: alcohol_duty}
   - {variable: spirits_duty, kind: component, head: alcohol_duty}
   - {variable: other_fermented_duty, kind: component, head: alcohol_duty}
+  - {variable: general_betting_duty, kind: component, head: gambling_duty}
+  - {variable: pool_betting_duty, kind: component, head: gambling_duty}
+  - {variable: remote_gaming_duty, kind: component, head: gambling_duty}
+  - {variable: machine_games_duty, kind: component, head: gambling_duty}
+  - {variable: gaming_duty, kind: component, head: gambling_duty}
+  - {variable: bingo_duty, kind: component, head: gambling_duty}
+  - {variable: lottery_duty, kind: component, head: gambling_duty}
   - {variable: car_vehicle_excise_duty, kind: component, head: vehicle_excise_duty}
   # Council tax net of a benefit
-  - {variable: council_tax_less_benefit, kind: composite, spans: [council_tax], note: "Council tax minus Council Tax Reduction, a benefit; not a receipt."}
+  - {variable: council_tax_less_benefit, kind: composite, spans: [council_tax], note: "Council tax net of Council Tax Reduction (the OBR's basis). The totals count gross council tax and credit the reduction as spending, so adding this would count council tax twice."}
 
-model_double_counts:
-  - variable: corporate_sdlt
-    contained_in: expected_sdlt
-    totals: [gov_tax, household_tax, pre_budget_change_household_tax]
-    issue: https://github.com/PolicyEngine/policyengine-uk/issues/2159
+model_double_counts: []
 
 overlap_guards:
   - id: sdlt_payer_split
     kind: payer_split
-    heads: [sdlt_household]
+    heads: [sdlt_household, sdlt_corporate]
     property: >-
-      Until the #2159 fix, expected_sdlt adds corporate_sdlt, which the totals
-      also list (model_double_counts). The fix splits the head in two, neither
-      reading the other, both zeroed by gov.hmrc.stamp_duty.abolish.
+      Neither head reads the other. gov.hmrc.stamp_duty.abolish zeroes both,
+      so abolition lowers each total by exactly their sum. With a dataset,
+      weighted sdlt_corporate equals the corporate SDLT revenue statistics.
+      (Issue 2159: expected_sdlt used to add corporate_sdlt.)
   - id: property_transaction_tax_geography
     kind: geographic_exclusivity
     heads: [sdlt_household, land_transaction_tax, land_and_buildings_transaction_tax]
-    property: >-
-      At most one is non-zero for any household (England and Northern Ireland,
-      Wales, Scotland). Until the #2159 fix this does not hold: expected_sdlt
-      carries a stray 0.045, and corporate SDLT for shareholders, in every
-      nation.
+    property: At most one is non-zero for any household (England and Northern Ireland, Wales, Scotland).
   - id: local_tax_geography
     kind: geographic_exclusivity
     heads: [council_tax, domestic_rates]
@@ -537,7 +693,7 @@ overlap_guards:
     property: The level is only in gov_tax; the response incidence is only in household_tax.
   - id: corporate_incidence_allocations
     kind: shared_allocation_key
-    heads: [business_rates, sdlt_household, corporate_incident_tax_change, carbon_tax, land_value_tax]
+    heads: [business_rates, sdlt_corporate, corporate_incident_tax_change, carbon_tax, land_value_tax]
     property: >-
       Each allocates a different receipt by shareholding; none reads another.
       corporate_tax_incidence sums two of them and is excluded.
@@ -549,6 +705,28 @@ overlap_guards:
       fees, turning on private_school_vat would tax them twice. The head is
       zero at baseline, so baseline totals are unaffected; check the
       consumption imputation before costing a reform that sets it.
+  - id: council_tax_gross_and_reduction
+    kind: gross_and_net
+    heads: [council_tax]
+    property: >-
+      The tax totals hold gross council tax, and the spending totals hold
+      Council Tax Reduction (council_tax_benefit). Never add
+      council_tax_less_benefit, and compare with the OBR row net of the
+      reduction. gov.contrib.abolish_council_tax drops council tax from the
+      tax totals and council_tax_benefit from the spending totals together.
+  - id: child_benefit_charge
+    kind: gross_and_net
+    heads: [income_tax]
+    property: >-
+      income_tax includes the High Income Child Benefit Charge, so benefits
+      must be counted gross of it; child_benefit_less_tax_charge is excluded.
+  - id: unallocated_budget_changes
+    kind: level_and_change
+    heads: [corporate_incident_tax_change, consumer_incident_tax_change]
+    property: >-
+      These allocate a lump-sum revenue change. A change in a tax that has
+      its own head must be made through that head's parameters, not entered
+      here as well.
   - id: eligibility_reads
     kind: read_not_inclusion
     heads: [tv_licence, private_school_vat]
@@ -556,6 +734,26 @@ overlap_guards:
       These heads reach other heads of the same total only through
       eligibility or imputation (see each head's reads). Raising the other
       head by a small amount leaves them unchanged on the test population.
+
+uncovered_receipts:
+  # Rows of Table A.5 with no household measure in the model.
+  - {obr_line: Corporation tax}
+  - {obr_line: Petroleum revenue tax}
+  - {obr_line: VAT refunds, note: "A National Accounts adjustment, not a tax on households."}
+  - {obr_line: Inheritance tax}
+  - {obr_line: Stamp taxes on shares}
+  - {obr_line: Air passenger duty}
+  - {obr_line: Insurance premium tax}
+  - {obr_line: Climate change levy}
+  - {obr_line: Bank levy}
+  - {obr_line: Bank surcharge}
+  - {obr_line: Apprenticeship levy}
+  - {obr_line: Digital services tax}
+  - {obr_line: Environmental levies}
+  - {obr_line: Emissions Trading Scheme}
+  - {obr_line: Energy profits levy}
+  - {obr_line: Electricity generator levy}
+  - {obr_line: Other taxes}
 
 spending_heads:
   # Pensioners
@@ -804,6 +1002,13 @@ spending_heads:
   - id: bsp
     label: Bereavement Support Payment
     variable: bsp
+    entity: person
+    report_group: child_and_family_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: widowed_parents_allowance
+    label: Widowed Parent's Allowance
+    variable: widowed_parents_allowance
     entity: person
     report_group: child_and_family_benefits
     totals: [gov_spending, household_benefits]

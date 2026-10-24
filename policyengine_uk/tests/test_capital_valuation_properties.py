@@ -78,7 +78,7 @@ SALE_EXPENSE_ASSETS = {
     "owned_land",
     "other_residential_property_value",
     "non_residential_property_value",
-    "corporate_wealth",
+    "share_like_capital",
 }
 LEGAL_RATE = 0.1
 ASSETS = [
@@ -88,6 +88,15 @@ ASSETS = [
     "other_residential_property_value",
     "non_residential_property_value",
 ]
+# The capital sources count shares as share_like_capital, which is the
+# corporate_wealth these households are given.
+INPUT_OF = {"share_like_capital": "corporate_wealth"}
+
+
+def asset(unit, source):
+    return unit["assets"][INPUT_OF.get(source, source)]
+
+
 DEBTS = {
     "owned_land": "owned_land_secured_debt",
     "other_residential_property_value": "other_residential_property_secured_debt",
@@ -175,11 +184,10 @@ def expected_capital(unit, node, variable=None):
         ]:
             total += max(
                 0.0,
-                unit["assets"][source] * (1 - LEGAL_RATE)
-                - unit["debts"][DEBTS[source]],
+                asset(unit, source) * (1 - LEGAL_RATE) - unit["debts"][DEBTS[source]],
             )
     for source in node.sources:
-        value = unit["assets"][source]
+        value = asset(unit, source)
         if source in SALE_EXPENSE_ASSETS:
             value *= 1 - LEGAL_RATE
         if source in DEBTS:
@@ -222,7 +230,7 @@ def check_valuation(units):
                     hb_checked["working_age_differential"] += 1
                 # Debt secured on property never reaches the other assets.
                 floor = sum(
-                    unit["assets"][s] * (1 - LEGAL_RATE * (s in SALE_EXPENSE_ASSETS))
+                    asset(unit, s) * (1 - LEGAL_RATE * (s in SALE_EXPENSE_ASSETS))
                     for s in node.sources
                     if s not in DEBTS
                 )

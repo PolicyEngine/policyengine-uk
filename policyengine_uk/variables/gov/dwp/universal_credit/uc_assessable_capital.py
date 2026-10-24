@@ -5,6 +5,9 @@ from policyengine_uk.utils.capital_valuation import (
     round_to_penny,
     valued_capital,
 )
+from policyengine_uk.variables.gov.dwp.universal_credit.household_uc_company_holding_pool_scale import (
+    HOLDINGS_SOURCE,
+)
 
 
 class uc_assessable_capital(Variable):
@@ -34,7 +37,7 @@ class uc_assessable_capital(Variable):
         "Under regulation 77, disregarded company holdings are replaced by "
         "the claimant/partner's share of company capital. Regulation 49(1) "
         "values the financial pool's sources whose sale would incur expenses "
-        "(sale_expenses.sources, shares in corporate_wealth) at 90%, and a "
+        "(sale_expenses.sources, shares in share_like_capital) at 90%, and a "
         "disregarded holding comes off at the value at which it was counted: "
         "90% in the pool and in a complete override, which is a countable "
         "figure, and in full from a recorded financial total, which is used "
@@ -58,9 +61,9 @@ class uc_assessable_capital(Variable):
         household_financial_capital = valued_capital(
             lambda variable: household(variable, period), p
         )
-        # A reg. 77 holding sits in corporate_wealth, so it is counted at the
+        # A reg. 77 holding sits in share_like_capital, so it is counted at the
         # same 90% as the shares around it wherever they are valued.
-        holding_value = counted_share(p.sale_expenses, "corporate_wealth")
+        holding_value = counted_share(p.sale_expenses, HOLDINGS_SOURCE)
         claimant_or_partner = benunit.members("is_uc_claimant", period)
         benunit_claimants = benunit.sum(claimant_or_partner)
         person_capital = sum(

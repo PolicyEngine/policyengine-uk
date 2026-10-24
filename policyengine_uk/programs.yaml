@@ -125,6 +125,19 @@ programs:
     verified_end_year: 2026
     notes: One car per person with supplied vehicle characteristics. Excludes vans, motorcycles, eVED and population imputation.
 
+  - id: gambling_duty
+    name: Gambling duties
+    full_name: Betting and gaming duties
+    category: Taxes
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: gambling_duty
+    parameter_prefix: gov.hmrc.gambling_duty
+    verified_start_year: 2024
+    verified_end_year: 2027
+    notes: Seven duty families on supplied attributed bases. Casino incidence uses a fixed FY2024/25 UK receipts/GB game yield proxy under household.consumption.gambling; review issue 2587. Excludes population imputation, verified machine-class-by-premises allocation and VAT-base repair.
+
   - id: student_loans
     name: Student loan repayments
     full_name: Student Loan Repayments
@@ -166,9 +179,9 @@ programs:
     coverage: UK
     variable: business_rates
     parameter_prefix: gov.hmrc.business_rates
-    verified_start_year: 2019
-    verified_end_year: 2021
-    notes: Parameters need updating beyond 2021
+    verified_start_year: 2020
+    verified_end_year: 2030
+    notes: Receipts allocated to households by shareholding. Local and central rating lists; outturn from 2020-21 (Northern Ireland's first year) to 2025-26 (Wales 2024-25), then OBR March 2026 receipts forecasts to 2030-31.
 
   - id: minimum_wage
     name: National Minimum Wage
@@ -249,7 +262,7 @@ programs:
     agency: DWP
     status: complete
     coverage: UK
-    variable: JSA
+    variable: jsa
     parameter_prefix: gov.dwp.JSA
     verified_start_year: 2022
     notes: Income-based and contribution-based
@@ -261,7 +274,7 @@ programs:
     agency: DWP
     status: complete
     coverage: UK
-    variable: ESA
+    variable: esa
     parameter_prefix: gov.dwp.ESA
     verified_start_year: 2022
     notes: Income-related and contribution-based
@@ -296,7 +309,7 @@ programs:
     agency: DWP
     status: complete
     coverage: UK
-    variable: DLA
+    variable: dla
     parameter_prefix: gov.dwp.dla
     verified_start_year: 2022
 
@@ -319,7 +332,7 @@ programs:
     status: complete
     coverage: UK
     variable: benefit_cap_reduction
-    parameter_prefix: gov.dwp
+    parameter_prefix: gov.dwp.benefit_cap
     verified_start_year: 2022
     notes: Universal Credit (uc_benefit_cap) and Housing Benefit (housing_benefit_benefit_cap) each apply their own cap; benefit_cap_reduction is the sum of their reductions
 
@@ -377,7 +390,6 @@ programs:
     status: complete
     coverage: UK
     variable: maternity_allowance
-    parameter_prefix: gov.dwp
     verified_start_year: 2022
 
   # --- DfE programs ---
