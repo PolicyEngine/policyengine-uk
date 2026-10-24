@@ -10,7 +10,9 @@ class relative_capital_gains_retention_rate_change(Variable):
     documentation = (
         "Log change in the share of a marginal pound of gains kept after tax. "
         "The empirical literature estimates realisation elasticities against "
-        "this retention rate rather than against the tax rate."
+        "this retention rate rather than against the tax rate. Zero, without "
+        "measuring, where the simulation has no baseline or applies its "
+        "baseline's rules."
     )
     unit = "/1"
     definition_period = YEAR

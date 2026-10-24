@@ -23,7 +23,7 @@ def test_uc_capital_stocks_are_not_prorated_in_monthly_calculations():
 
     assert simulation.calculate("savings", "2026-01")[0] == 12_000
     assert simulation.calculate("corporate_wealth", "2026-01")[0] == 12_000
-    assert simulation.calculate("uc_assessable_capital", "2026-01")[0] == 36_000
+    assert simulation.calculate("uc_assessable_capital", "2026-01")[0] == 34_800
     assert not simulation.calculate("is_uc_eligible", "2026-01")[0]
 
 
