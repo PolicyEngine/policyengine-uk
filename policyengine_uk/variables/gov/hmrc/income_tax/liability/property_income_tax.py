@@ -6,6 +6,11 @@ from policyengine_uk.utils.income_tax import (
 
 
 class property_income_tax(Variable):
+    """Tax on property income, following main UK rates before 2027-28 and
+    separate property rates thereafter for rUK taxpayers; Scottish
+    taxpayers retain the model's Scottish rate treatment.
+    """
+
     value_type = float
     entity = Person
     label = "Income tax on property income"
@@ -19,10 +24,51 @@ class property_income_tax(Variable):
             title="OBR Economic and Fiscal Outlook November 2025",
             href="https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/",
         ),
+        dict(
+            title="Finance Act 2026, s. 6 (commencement in 2027-28)",
+            href="https://www.legislation.gov.uk/ukpga/2026/11/section/6/enacted",
+        ),
+        dict(
+            title="Finance Act 2026, s. 7 (property income rates)",
+            href="https://www.legislation.gov.uk/ukpga/2026/11/section/7/enacted",
+        ),
     ]
     unit = GBP
 
     def formula(person, period, parameters):
+        """Before 2027-28, property income uses the applicable main scale."""
+        rates = parameters(period).gov.hmrc.income_tax.rates
+        property_after_allowances = person(
+            "taxable_property_income_after_allowances", period
+        )
+        other_earned_taxable = max_(
+            0,
+            person("non_savings_income_after_allowances", period)
+            - property_after_allowances,
+        )
+        gross_gift = person("gift_aid_grossed_up", period)
+        ruk_tax = calc_income_tax_with_gift_aid(
+            rates.uk,
+            other_earned_taxable + property_after_allowances,
+            gross_gift,
+        ) - calc_income_tax_with_gift_aid(rates.uk, other_earned_taxable, gross_gift)
+        first_extended = first_extended_scottish_threshold(rates.scotland.rates)
+        scottish_tax = calc_income_tax_with_gift_aid(
+            rates.scotland.rates,
+            other_earned_taxable + property_after_allowances,
+            gross_gift,
+            first_extended,
+            len(rates.scotland.rates.thresholds),
+        ) - calc_income_tax_with_gift_aid(
+            rates.scotland.rates,
+            other_earned_taxable,
+            gross_gift,
+            first_extended,
+            len(rates.scotland.rates.thresholds),
+        )
+        return where(person("pays_scottish_income_tax", period), scottish_tax, ruk_tax)
+
+    def formula_2027(person, period, parameters):
         """
         Calculate income tax on property income.
 

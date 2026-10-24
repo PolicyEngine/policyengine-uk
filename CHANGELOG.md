@@ -1,3 +1,82 @@
+## [2.156.0] - 2026-10-24
+
+### Added
+
+- Added a documentation page on reproducing fully rolled-out two-child limit estimates and absolute child poverty: the 2025-26 year, the `born_before` settings for full roll-out, full Universal Credit take-up, which poverty variables are absolute or relative, and how to use the FYE 2011-based absolute line.
+- - Added a person-weighted household income decile after housing costs, using the existing income-decile ranking conventions.
+
+### Fixed
+
+- - Exclude the Child Tax Credit child element for ineligible families so phantom tax credit income does not reduce Housing Benefit or Council Tax Reduction.
+- - Made pre-2027 rUK property income follow reforms to the full main income-tax scale, while preserving separate property rates from 2027-28 and Scottish treatment.
+
+
+## [2.155.1] - 2026-10-24
+
+### Fixed
+
+- - Restored neutral pre-2021 Housing Benefit and Council Tax Reduction cohort flags while retaining the existing FY2021-22 annual split.
+
+
+## [2.155.0] - 2026-10-24
+
+### Added
+
+- - `import_obr_forecasts.py` now refreshes the OBR receipts growth series that project corporate SDLT and business rates (`yoy_growth.obr.stamp_duty_land_tax.*` and `.business_rates.*`) from a new EFO's receipts tables, with the previous EFO's tables (`--previous-receipts-file`) as the base for outturn growth, and refuses receipts tables from a different or unidentifiable EFO or without an unambiguous pound-billion unit declaration in every selected table in both releases.
+- Add the Childcare Offer for Wales: the childcare element for working parents, and from September 2022 parents in further or higher education, of 3- and 4-year-olds, valued at the Welsh Government's hourly rate to providers.
+- Add the HBAI absolute low-income line on the FYE 2011 reference in every year (`absolute_poverty_threshold_fye2011_bhc` and `_ahc`, `poverty_threshold_fye2011_bhc` and `_ahc`, and `in_absolute_poverty_fye2011_bhc` and `_ahc`), for comparison with absolute poverty estimates published before HBAI moved to the FYE 2025 reference in March 2026. The labels of `in_poverty_bhc`, `in_poverty_ahc`, `poverty_threshold_bhc` and `poverty_threshold_ahc` now say they follow HBAI's current reference line.
+
+### Fixed
+
+- - Rebuild the 2027-2029 England and Wales water bill growth (`yoy_growth.ofwat.water_bills`) from Ofwat's PR24 final determinations and the OBR CPIH forecast, with the source table committed so the values can be reproduced, and rederive the after housing costs CPI from it (#2384).
+- Take population growth from the OBR's March 2026 long-term economic determinants (ONS 2024-based projections after 2030-31) and re-derive the per-capita GDP, mixed income and non-labour income series and the road-fuel spending proxies from it, so they share one vintage.
+
+
+## [2.154.1] - 2026-10-24
+
+### Fixed
+
+- Count the State Pension and Widowed Parent's Allowance as step-one pension income in tax credit income, so the £300 disregard on step-one income applies to them (SI 2002/2006 regs 3(1), 5(1)(a) and 7(2); ITEPA 2003 s.577).
+
+
+## [2.154.0] - 2026-10-24
+
+### Added
+
+- - Added the Warm Home Discount in England and Wales (`warm_home_discount`) from winter 2025-26 to the end of the scheme period on 31 March 2031, with parameters for the rebate amount and the qualifying means-tested benefits, and its rebate counted as miscellaneous income in HBAI household net income.
+
+### Changed
+
+- - CI test and check jobs can run on another runner pool named by the repository variables `CI_RUNNER_ARM`, `CI_RUNNER_X64` and `CI_RUNNER_EVENTS`. With no variable set, every job runs where it does today.
+
+### Fixed
+
+- - Added the enacted 2015 to 2017 Housing Benefit non-dependant deduction thresholds and amounts instead of backdating the 2018 scale.
+  - Corrected the 2018 scale commencement so the 2018-19 Housing Benefit and Council Tax Reduction deductions use the April rates.
+- - Calculate Childcare Grant from eligible children's childcare costs and pay the family award once per benefit unit.
+
+
+## [2.153.5] - 2026-10-24
+
+### Fixed
+
+- Modelled the temporary zero rate of VAT on domestic electricity in Great Britain from 1 October 2026 to 31 March 2027 (SI 2026/987), with Northern Ireland and gas staying at 5%. VAT on domestic electricity and gas is now charged on the households' own bills (`domestic_energy_vat`), at a new nation-split `gov.hmrc.vat.domestic_electricity_rate` and the reduced rate, instead of on a flat share of total consumption grossed up to receipts. Energy-bill VAT is not grossed up by the survey coverage or the household share of VAT receipts. The ONS domestic fuel and power share of spending now comes out of the reduced-rate share, which leaves at most 0.01% of spending in the generic reduced-rate base in any year since 2006. The bills are taken net of the 5% VAT they were priced at (`gov.simulation.vat.energy_input_price_basis_rate`), so a reform to the reduced rate no longer changes the VAT-exclusive energy base.
+
+
+## [2.153.4] - 2026-10-24
+
+### Fixed
+
+- - Excluded Child Benefit, Sure Start Maternity Grants and dependent children's own income from the ordinary Housing Benefit income assessment.
+
+
+## [2.153.3] - 2026-10-24
+
+### Fixed
+
+- - Count statutory sick, maternity and paternity pay in the legacy Income Support means test.
+
+
 ## [2.153.2] - 2026-10-24
 
 ### Fixed
