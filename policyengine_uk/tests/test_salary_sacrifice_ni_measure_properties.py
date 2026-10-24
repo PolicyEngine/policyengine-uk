@@ -38,10 +38,12 @@ The invariants are checked under current law (2028, before the cap, and 2029
 and 2030 under it), with a hypothetical cap in 2022 to exercise the annual
 full-year Category A director schedule, and in a world where the employee
 rates and the upper earnings limit change within 2041 and employer pension
-contributions are charged (invariant 4 under current law only: it needs one
-rate and schedule for the year). Fiscal-year conversion gives every parameter
-one value for each year from 2015 to 2040, so a year after 2040 is needed for
-rates that differ between months; ni_class_1_employee is a monthly variable.
+contributions are charged, with no employee incidence of the fixed employer
+cost so that pay is the same with and without the excess (invariant 4 under
+current law only: it needs one rate and schedule for the year). Fiscal-year
+conversion gives every parameter one value for each year from 2015 to 2040,
+so a year after 2040 is needed for rates that differ between months;
+ni_class_1_employee is a monthly variable.
 
 Comparisons allow float32 rounding: the model stores values as float32.
 """
@@ -67,6 +69,12 @@ WORLDS = {
             f"{CLASS_1}.employee_scale[2].threshold": {"2041-04-01.2041-12-31": 1_300},
             "gov.contrib.policyengine.employer_ni."
             "exempt_employer_pension_contributions": False,
+            # Changing the exemption switches on the fixed-employer-cost pay
+            # change, which would pass employer NI on the excess into pay.
+            # Only the reformed simulation's excess is zeroed (its baseline
+            # keeps it), so pay would differ between the simulations with and
+            # without the excess. With no employee incidence it does not.
+            "gov.contrib.policyengine.employer_ni.employee_incidence": 0,
         },
         [2030, 2041],
     ),
@@ -96,8 +104,9 @@ Row = namedtuple(
 # below every threshold, a person over State Pension age, a person under 16,
 # one whose statutory sick pay takes them over the upper earnings limit,
 # one with no excess, a full-year Category A director crossing the upper
-# earnings limit, and an earner aged 20 whose excess crosses the upper
-# secondary threshold.
+# earnings limit, an earner aged 20 whose excess crosses the upper secondary
+# threshold, and one aged 20 whose excess lies between the secondary and upper
+# secondary thresholds.
 KNOWN_CASES = [
     Row(48_000, 6_000, 10_000, 40, 0, 0),
     Row(11_000, 5_000, 3_000, 40, 0, 0),
@@ -109,6 +118,7 @@ KNOWN_CASES = [
     Row(60_000, 1_500, 0, 40, 0, 0),
     Row(48_000, 6_000, 10_000, 40, 0, 0, True),
     Row(48_000, 6_000, 10_000, 20, 0, 0),
+    Row(30_000, 5_000, 0, 20, 0, 0),
 ]
 
 
@@ -352,10 +362,14 @@ def test_known_cases_cross_each_threshold_and_age_condition():
         False,
         True,
         True,
+        False,
     ]
     assert crosses(employee[1].threshold)[1]
     assert crosses(secondary_threshold)[2]
     assert crosses(class_1.thresholds.upper_secondary_threshold)[9]
+    upper_secondary_threshold = class_1.thresholds.upper_secondary_threshold
+    assert without[10] > secondary_threshold * WEEKS_IN_YEAR
+    assert earnings[10] < upper_secondary_threshold * WEEKS_IN_YEAR
     assert excess[3] > 0
     assert earnings[3] < secondary_threshold * WEEKS_IN_YEAR
     liable = simulation.calculate("ni_liable", year)
