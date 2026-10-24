@@ -94,8 +94,8 @@ TOLERANCE = 0.03
 
 Row = namedtuple(
     "Row",
-    "pay sacrifice more_sacrifice age sick_pay employer_pension director",
-    defaults=[False],
+    "pay sacrifice more_sacrifice age sick_pay employer_pension director apprentice",
+    defaults=[False, False],
 )
 
 # People the properties must always cover, whatever is drawn. With the £2,000
@@ -105,8 +105,9 @@ Row = namedtuple(
 # one whose statutory sick pay takes them over the upper earnings limit,
 # one with no excess, a full-year Category A director crossing the upper
 # earnings limit, an earner aged 20 whose excess crosses the upper secondary
-# threshold, and one aged 20 whose excess lies between the secondary and upper
-# secondary thresholds.
+# threshold, one aged 20 whose excess lies between the secondary and upper
+# secondary thresholds, and an apprentice aged 23 whose excess lies between
+# the secondary and apprentice upper secondary thresholds.
 KNOWN_CASES = [
     Row(48_000, 6_000, 10_000, 40, 0, 0),
     Row(11_000, 5_000, 3_000, 40, 0, 0),
@@ -119,6 +120,7 @@ KNOWN_CASES = [
     Row(48_000, 6_000, 10_000, 40, 0, 0, True),
     Row(48_000, 6_000, 10_000, 20, 0, 0),
     Row(30_000, 5_000, 0, 20, 0, 0),
+    Row(30_000, 5_000, 0, 23, 0, 0, False, True),
 ]
 
 
@@ -147,6 +149,7 @@ rows = st.lists(
         sick_pay=st.one_of(st.just(0.0), _amount(8_000)),
         employer_pension=st.one_of(st.just(0.0), _amount(20_000)),
         director=st.booleans(),
+        apprentice=st.booleans(),
     ),
     min_size=1,
     max_size=40,
@@ -170,6 +173,7 @@ def _simulate(people, world, no_excess=False):
                 "statutory_sick_pay": each_year(row.sick_pay),
                 "employer_pension_contributions": each_year(row.employer_pension),
                 "is_full_year_category_a_director": each_year(row.director),
+                "is_apprentice": each_year(row.apprentice),
             }
             for name, row in zip(names, people)
         },
@@ -363,6 +367,7 @@ def test_known_cases_cross_each_threshold_and_age_condition():
         True,
         True,
         False,
+        False,
     ]
     assert crosses(employee[1].threshold)[1]
     assert crosses(secondary_threshold)[2]
@@ -370,6 +375,10 @@ def test_known_cases_cross_each_threshold_and_age_condition():
     upper_secondary_threshold = class_1.thresholds.upper_secondary_threshold
     assert without[10] > secondary_threshold * WEEKS_IN_YEAR
     assert earnings[10] < upper_secondary_threshold * WEEKS_IN_YEAR
+    apprentice_threshold = class_1.thresholds.apprentice_upper_secondary_threshold
+    assert simulation.calculate("is_apprentice", year)[11]
+    assert without[11] > secondary_threshold * WEEKS_IN_YEAR
+    assert earnings[11] < apprentice_threshold * WEEKS_IN_YEAR
     assert excess[3] > 0
     assert earnings[3] < secondary_threshold * WEEKS_IN_YEAR
     liable = simulation.calculate("ni_liable", year)
