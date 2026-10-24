@@ -1,10 +1,10 @@
 """Liquid and solid heating fuel inputs (#2572).
 
-Homes off the gas grid heat with oil, LPG, coal or wood: COICOP 04.5.3 and
-04.5.4. Their spending is part of housing_water_and_electricity_consumption,
-so the inputs default to zero and add nothing to consumption. Ofgem's price
-cap does not cover them, so dataset projection uprates them by CPI like other
-LCFS spending.
+Homes off the gas grid heat with oil (COICOP 04.5.3), LPG (04.5.2), coal or
+wood (04.5.4). Their spending is part of
+housing_water_and_electricity_consumption, so the inputs default to zero and
+add nothing to consumption. Ofgem's price cap does not cover them, so dataset
+projection uprates them by CPI like other LCFS spending.
 """
 
 from pathlib import Path
