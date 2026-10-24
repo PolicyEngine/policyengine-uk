@@ -1,2 +1,0 @@
-- Added the enacted 2015 to 2017 Housing Benefit non-dependant deduction thresholds and amounts instead of backdating the 2018 scale.
-- Corrected the 2018 scale commencement so the 2018-19 Housing Benefit and Council Tax Reduction deductions use the April rates.

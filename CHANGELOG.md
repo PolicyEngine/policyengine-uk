@@ -1,3 +1,20 @@
+## [2.154.0] - 2026-10-24
+
+### Added
+
+- - Added the Warm Home Discount in England and Wales (`warm_home_discount`) from winter 2025-26 to the end of the scheme period on 31 March 2031, with parameters for the rebate amount and the qualifying means-tested benefits, and its rebate counted as miscellaneous income in HBAI household net income.
+
+### Changed
+
+- - CI test and check jobs can run on another runner pool named by the repository variables `CI_RUNNER_ARM`, `CI_RUNNER_X64` and `CI_RUNNER_EVENTS`. With no variable set, every job runs where it does today.
+
+### Fixed
+
+- - Added the enacted 2015 to 2017 Housing Benefit non-dependant deduction thresholds and amounts instead of backdating the 2018 scale.
+  - Corrected the 2018 scale commencement so the 2018-19 Housing Benefit and Council Tax Reduction deductions use the April rates.
+- - Calculate Childcare Grant from eligible children's childcare costs and pay the family award once per benefit unit.
+
+
 ## [2.153.5] - 2026-10-24
 
 ### Fixed
