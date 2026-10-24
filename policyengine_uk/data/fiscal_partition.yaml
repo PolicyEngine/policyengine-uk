@@ -1027,6 +1027,13 @@ spending_heads:
     report_group: childcare_and_education
     totals: [gov_spending, household_benefits]
     sign: nonnegative
+  - id: wales_childcare_offer
+    label: Childcare Offer for Wales
+    variable: wales_childcare_offer
+    entity: benunit
+    report_group: childcare_and_education
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
   - id: care_to_learn
     label: Care to Learn
     variable: care_to_learn
