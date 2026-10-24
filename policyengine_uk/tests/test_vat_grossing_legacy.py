@@ -28,7 +28,7 @@ def test_legacy_default_is_the_product_of_the_two_factors():
             year
         ) * p.vat.household_share_of_receipts(year)
         assert p.microdata_vat_coverage(year) == pytest.approx(product)
-    assert LEGACY_COVERAGE_DEFAULT == pytest.approx(0.518)
+    assert LEGACY_COVERAGE_DEFAULT == pytest.approx(0.469)
 
 
 def test_reform_dict_to_legacy_path_changes_vat():

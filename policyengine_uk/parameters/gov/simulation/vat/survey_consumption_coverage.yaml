@@ -6,28 +6,27 @@ metadata:
   derivation: >-
     Calibrated to the certified Microcosm UK 2024-25 national release only
     (policyengine/populace-uk-private, tag
-    microcosm-uk-2024-25-national-20261023T075039Z-a133f37a, SHA-256
-    64f83900ca3a1242...). Pre-scaling VAT (standard rate times
-    full_rate_vat_consumption plus reduced rate times
-    reduced_rate_vat_consumption) on that release is 0.20 x £435.60bn + 0.05 x
-    £26.76bn = £88.46bn in 2024. OBR VAT receipts for 2024-25 (outturn, March
-    2026 EFO table 3.8, cash basis) are £170.994bn. 88.46 / 170.994 = 0.517 for
-    the product of the two factors; divided by the household share of 0.7 gives
-    0.739, used as 0.74 (product 0.518). Across 2024-25 to 2026-27 the product
-    is 0.504 to 0.517, and the HMRC ready reckoner (£8.8bn for one point on the
-    standard rate in 2026-27) implies 0.529, so the coverage lies between 0.720
-    and 0.756. The cut it replaces (tag
-    microcosm-uk-2024-25-national-20261002T230158Z-5c6b3f68) recorded about 10%
-    less standard-rated consumption and gave 0.67; the 6cba5d71 cut gives the
-    same 2024-25 coverage, 0.739. Enhanced FRS 2024-25
-    records more consumption (implied coverage 0.90 to 0.97), so this value
-    puts VAT on that dataset above receipts. Re-derive when the dataset it
-    should match changes, with docs/engineering/vat-coverage.md, which lists
-    the inputs, file hashes and per-dataset results.
+    microcosm-uk-2024-25-national-20261002T230158Z-5c6b3f68, revision
+    f9d1922c). VAT on household energy bills (domestic_energy_vat) is not
+    grossed up, so the coverage applies only to VAT on other recorded
+    consumption. On that release, pre-scaling VAT on that consumption is 0.20 x
+    £396.15bn = £79.23bn in 2024 (the generic reduced-rate base is empty once
+    domestic fuel and power is taken out), and VAT on energy bills is £1.99bn.
+    OBR VAT receipts for 2024-25 (outturn, March 2026 EFO table 3.8, cash
+    basis) are £170.994bn. Coverage = 79.23 / (0.7 x (170.994 - 1.99)) = 0.670.
+    Before energy bills were split out, the same calculation gave 0.672, so
+    the rounded value is unchanged. Across 2024-25 to 2026-27 the coverage is
+    0.650 to 0.670, and the HMRC ready reckoner (£8.8bn for one point on the
+    standard rate in 2026-27) implies 0.688. On Enhanced FRS 2024-25 the same
+    calculation gives 0.927 (policyengine-uk-data 1.56.16) or 0.967 (1.58.0),
+    so this value puts total VAT on that dataset 38% or 44% above 2024-25
+    receipts. Re-derive when the dataset it should match changes, with
+    docs/engineering/vat-coverage.md, which lists the inputs, file hashes and
+    per-dataset results.
   reference:
     - title: OBR, Economic and fiscal outlook March 2026, detailed forecast tables, receipts, table 3.8
       href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
     - title: HMRC, Direct effects of illustrative tax changes bulletin (June 2025)
       href: https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes/direct-effects-of-illustrative-tax-changes-bulletin-january-2025
 values:
-  2010-01-01: 0.74
+  2010-01-01: 0.67

@@ -1,3 +1,56 @@
+## [2.153.5] - 2026-10-24
+
+### Fixed
+
+- Modelled the temporary zero rate of VAT on domestic electricity in Great Britain from 1 October 2026 to 31 March 2027 (SI 2026/987), with Northern Ireland and gas staying at 5%. VAT on domestic electricity and gas is now charged on the households' own bills (`domestic_energy_vat`), at a new nation-split `gov.hmrc.vat.domestic_electricity_rate` and the reduced rate, instead of on a flat share of total consumption grossed up to receipts. Energy-bill VAT is not grossed up by the survey coverage or the household share of VAT receipts. The ONS domestic fuel and power share of spending now comes out of the reduced-rate share, which leaves at most 0.01% of spending in the generic reduced-rate base in any year since 2006. The bills are taken net of the 5% VAT they were priced at (`gov.simulation.vat.energy_input_price_basis_rate`), so a reform to the reduced rate no longer changes the VAT-exclusive energy base.
+
+
+## [2.153.4] - 2026-10-24
+
+### Fixed
+
+- - Excluded Child Benefit, Sure Start Maternity Grants and dependent children's own income from the ordinary Housing Benefit income assessment.
+
+
+## [2.153.3] - 2026-10-24
+
+### Fixed
+
+- - Count statutory sick, maternity and paternity pay in the legacy Income Support means test.
+
+
+## [2.153.2] - 2026-10-24
+
+### Fixed
+
+- Pull requests now fail a Changelog fragments check when they add a `changelog.d` file without a towncrier type, or an empty fragment; towncrier silently left these out of CHANGELOG.md. `.github/bump_version.py` now counts only typed fragments and warns about the rest. Dependency-only manifest/lock updates can omit a fragment after a release without bypassing fragment checks.
+
+
+## [2.153.1] - 2026-10-24
+
+### Fixed
+
+- - Store `person_household_id` and `person_benunit_id` as integers, like the other identifier variables, so identifiers above 16,777,216 read back exactly from `calculate`, `to_input_dataframe()` and `UKSingleYearDataset.from_simulation`. A simulation built from a policyengine-core dataset file no longer merges households or benefit units whose identifiers rounded to the same number. A simulation now gives an `EntityIdWarning` when an identifier is not a whole number from -2,147,483,648 to 2,147,483,647, the range it can store exactly.
+
+
+## [2.153.0] - 2026-10-24
+
+### Added
+
+- - Wheels record the commit they were built from in `.dist-info/extra_metadata/build_info.json`, and `build_metadata` reports it as `git_sha` for installs that have no other record, such as wheels from PyPI. The release build now builds the wheel from the checkout instead of from the sdist so that the commit is available.
+
+### Changed
+
+- Corrected the bereavement support plan (docs/book/programs/gov/dwp/bereavement-support-plan.md): Microcosm UK as the certified default and its split of FRS code 9, the BSP claim-time limits and higher-rate test, the cohabitee rules after the 2023 Remedial Order, and the WPA dates, continuation and uprating, including that WPA is closed to deaths from 6 April 2017 but still takes new claims for earlier deaths.
+- Corrected the child maintenance planning page (`docs/book/programs/gov/cms/child-maintenance.md`): the Child Maintenance Service default rate for one child is £39 (SI 2012/2677 reg. 49), shared-care fractions are averaged across the children in each carer's care, the further £7 reduction for 175 or more nights is per child with a £7 floor, shared care of 52 or more nights reduces the flat rate to nil where it applies because of a prescribed benefit, and the model reproduces UC's treatment of child maintenance but not the paying parent's combined marginal rates described by the Centre for Social Justice.
+
+### Fixed
+
+- - Fixed household wealth deciles to split equal wealth by original household order while retaining person weights.
+  - Clarified gross wealth, person weights, order-sensitive ties, negative outputs and indivisible-weight limits in the wealth-decile documentation.
+- Release the tax-benefit systems and simulations that five test modules cache once each module's tests finish, build the two-child limit and cliff property tests' reforms over one shared baseline system, and check that every test module cache is released (#2357).
+
+
 ## [2.152.7] - 2026-10-24
 
 ### Changed

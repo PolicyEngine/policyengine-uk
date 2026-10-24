@@ -5,9 +5,9 @@
     full_rate_vat_consumption: 10_000
     reduced_rate_vat_consumption: 1_000
   output:
-    # (10,000 x 20% + 1,000 x 5%) / (0.74 x 0.7) = 2,050 / 0.518
-    vat: 3_957.53
-    baseline_vat: 3_957.53
+    # (10,000 x 20% + 1,000 x 5%) / (0.67 x 0.7) = 2,050 / 0.469
+    vat: 4_371.00
+    baseline_vat: 4_371.00
 
 - name: VAT in 2024 is grossed up by the same product as later years
   period: 2024
@@ -17,9 +17,9 @@
     reduced_rate_vat_consumption: 1_000
   output:
     # The deprecated combined factor has one undated value, so 2024 takes the
-    # two factors' product too: 2,050 / 0.518
-    vat: 3_957.53
-    baseline_vat: 3_957.53
+    # two factors' product too: 2,050 / 0.469
+    vat: 4_371.00
+    baseline_vat: 4_371.00
 
 - name: With both factors at one, VAT is the statutory liability on recorded consumption
   period: 2025
