@@ -9,6 +9,18 @@
     vat: 3_957.53
     baseline_vat: 3_957.53
 
+- name: VAT in 2024 is grossed up by the same product as later years
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    full_rate_vat_consumption: 10_000
+    reduced_rate_vat_consumption: 1_000
+  output:
+    # The deprecated combined factor has one undated value, so 2024 takes the
+    # two factors' product too: 2,050 / 0.518
+    vat: 3_957.53
+    baseline_vat: 3_957.53
+
 - name: With both factors at one, VAT is the statutory liability on recorded consumption
   period: 2025
   absolute_error_margin: 0.01

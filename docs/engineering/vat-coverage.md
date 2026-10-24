@@ -54,8 +54,8 @@ about 10% more standard-rated consumption. With 0.67, total `vat` on
 
 | Input | Value | Source |
 |---|---|---|
-| Microcosm UK 2024-25 national release | `microcosm_uk_2024_25.h5`, Hugging Face `policyengine/populace-uk-private`, tag `microcosm-uk-2024-25-national-20261023T075039Z-a133f37a`, SHA-256 `64f83900ca3a1242fb017585234844ce89f743d32e41cd2b6558057777f914aa` | Private repository |
-| Microcosm UK 2024-25 national release, cross-check | tag `microcosm-uk-2024-25-national-20261019T083323Z-6cba5d71`, SHA-256 `810ba980005a8b907cb51464279fa5e0125464b7af9a4871b7f6744c30951ece` | Private repository |
+| Microcosm UK 2024-25 national release | `microcosm_uk_2024_25.h5`, Hugging Face `policyengine/populace-uk-private`, tag `microcosm-uk-2024-25-national-20261023T075039Z-a133f37a` (revision `c3a751d9`), SHA-256 `64f83900ca3a1242fb017585234844ce89f743d32e41cd2b6558057777f914aa` | Private repository |
+| Microcosm UK 2024-25 national release, cross-check | tag `microcosm-uk-2024-25-national-20261019T083323Z-6cba5d71` (revision `bb225848`), SHA-256 `810ba980005a8b907cb51464279fa5e0125464b7af9a4871b7f6744c30951ece` | Private repository |
 | Microcosm UK 2024-25 national release, first derivation | tag `microcosm-uk-2024-25-national-20261002T230158Z-5c6b3f68` (revision `f9d1922c`), SHA-256 `aa31bdf67c977927ea2b325567d1cf7a79d94381239bc79918a0a0fc9c9588af` | Private repository |
 | Enhanced FRS 2024-25 | `enhanced_frs_2024_25.h5`, Hugging Face `policyengine/policyengine-uk-data-private`, policyengine-uk-data 1.56.16 (revision `a9e52499`, SHA-256 `e433e532b17bd8ce76030156285816e33d44e93edabd2204adbef71d19a68712`) and 1.58.0 (revision `47bbb58d`, SHA-256 `5ba399ea5ab9a6c7d4e9aaf6c623080beb34d9ad5f330f6244dbad72b8d960b6`) | Private repository |
 | VAT receipts | £170.994bn (2024-25 outturn), £180.169bn (2025-26), £187.704bn (2026-27) | OBR, Economic and fiscal outlook March 2026, detailed forecast tables, receipts, table 3.8, cash-basis VAT |
@@ -142,7 +142,7 @@ path = hf_hub_download(
     "policyengine/populace-uk-private",
     "microcosm_uk_2024_25.h5",
     repo_type="dataset",
-    revision="microcosm-uk-2024-25-national-20261023T075039Z-a133f37a",
+    revision="c3a751d911ac82e482d298dda0b6f2c949f4ed4d",  # tag ...-a133f37a
 )
 sim = Microsimulation(dataset=path)
 # OBR March 2026 EFO, table 3.8, cash-basis VAT receipts
