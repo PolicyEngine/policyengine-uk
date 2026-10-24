@@ -63,8 +63,9 @@ adult) claims in their own right, so:
   (esa_income_eligible and jsa_income_eligible, read independently from the
   law in legacy_award_work_reference). The screens also end the award once
   the family's legacy benefits have closed (legacy_benefits_closed, #2119),
-  for their own award only; no family here reaches that in 2025, when
-  Income Support and income-based JSA are open and nobody reports tax credits;
+  and the model then ends every member's status too; no family here reaches
+  that in 2025, when Income Support and income-based JSA are open and
+  nobody reports tax credits;
 - a person is on an award exactly when they are the payee of their couple's
   positive award (the claimant or partner who reports it, or the claimant)
   or, for anyone else, when their own claim passes: they are not engaged in
@@ -238,13 +239,15 @@ def families(draw):
 def other_members(draw):
     """An adult who is neither claimant, partner nor a dependant.
 
-    They are under state pension age and not in education, so a 16 to 19 year
-    old is not a qualifying young person. They may work, and have no income
-    other than their pay and the awards they report.
+    They are under state pension age, not in education and past the 1
+    September following their 16th birthday (UC Regs 2013 reg. 5(1)(a)), so a
+    16 to 19 year old is not a qualifying young person. They may work, and have
+    no income other than their pay and the awards they report.
     """
     return {
         "age": draw(st.integers(16, 60)),
         "current_education": "NOT_IN_EDUCATION",
+        "is_before_first_september_following_16th_birthday": False,
         **draw(work()),
         **draw(award_reports()),
     }
@@ -539,6 +542,7 @@ def other_members_with_awards(draw):
     return {
         "age": draw(st.integers(16, 60)),
         "current_education": "NOT_IN_EDUCATION",
+        "is_before_first_september_following_16th_birthday": False,
         **awards,
     }
 

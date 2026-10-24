@@ -1,0 +1,296 @@
+# A young person in non-advanced education or approved training is a
+# qualifying young person "up to, but not including, the 1st September
+# following their 19th birthday" (UC Regs 2013 reg. 5(1)(b); SPC Regs 2002
+# reg. 4A(1)(b)). The model places that date from the date of birth and
+# counts a year that starts (6 April) before it, so every 19-year-old counts
+# unless an input says the date has passed.
+#
+# 2026-27 amounts: Universal Credit child element for a first child born
+# before 6 April 2017, £351.88 a month
+# (gov/dwp/universal_credit/elements/child/first/higher_amount.yaml);
+# Pension Credit first-child addition, £81.07 a week
+# (gov/dwp/pension_credit/guarantee_credit/child/first/addition.yaml).
+
+- name: Case 1, a 19-year-old at school is a Universal Credit and Pension Credit qualifying young person by default.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+        is_claimant_or_partner: true
+      student:
+        age: 19
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, student]
+  output:
+    is_before_first_september_following_19th_birthday: [false, true]
+    is_before_universal_credit_qualifying_young_person_terminal_date: [false, true]
+    is_qualifying_young_person_for_universal_credit: [false, true]
+    is_qualifying_young_person_for_pension_credit: [false, true]
+    # 351.88 * 12.
+    uc_individual_child_element: [0, 4_222.56]
+    is_uc_work_allowance_eligible: true
+
+- name: Case 2, the Universal Credit input ends Universal Credit status only.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+        is_claimant_or_partner: true
+      student:
+        age: 19
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        is_before_universal_credit_qualifying_young_person_terminal_date: false
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, student]
+  output:
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    is_qualifying_young_person_for_pension_credit: [false, true]
+    uc_individual_child_element: [0, 0]
+    is_uc_work_allowance_eligible: false
+
+- name: Case 3, the date fact set false ends both.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+        is_claimant_or_partner: true
+      student:
+        age: 19
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        is_before_first_september_following_19th_birthday: false
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, student]
+  output:
+    # The parent, not set, takes the default, true: harmless, since every
+    # reader is behind the qualifying young person age limit.
+    is_before_universal_credit_qualifying_young_person_terminal_date: [true, false]
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    is_qualifying_young_person_for_pension_credit: [false, false]
+    uc_individual_child_element: [0, 0]
+
+- name: Case 4, a pensioner gets the Pension Credit child addition for a 19-year-old at school.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        is_claimant_or_partner: true
+      student:
+        age: 19
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [pensioner, student]
+  output:
+    is_qualifying_young_person_for_pension_credit: [false, true]
+    # 81.07 * 52.
+    child_minimum_guarantee_addition: 4_215.64
+
+- name: Case 5, no Pension Credit child addition once the 1 September after the 19th birthday has passed.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        is_claimant_or_partner: true
+      student:
+        age: 19
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        is_before_first_september_following_19th_birthday: false
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [pensioner, student]
+  output:
+    is_qualifying_young_person_for_pension_credit: [false, false]
+    child_minimum_guarantee_addition: 0
+
+- name: Case 6, born 31 August 2007, the period ends on the 19th birthday, in the year.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+        is_claimant_or_partner: true
+      student:
+        age: 19
+        date_of_birth: 20070831
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, student]
+  output:
+    is_before_first_september_following_19th_birthday: [false, true]
+    is_qualifying_young_person_for_universal_credit: [false, true]
+    is_qualifying_young_person_for_pension_credit: [false, true]
+
+- name: Case 7, born 15 September 2006, before the date until 31 August 2026 but aged 20 on 6 October.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+        is_claimant_or_partner: true
+      student:
+        age: 20
+        date_of_birth: 20060915
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, student]
+  output:
+    is_before_first_september_following_19th_birthday: [false, true]
+    # The age limit, read on 6 October, excludes them.
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    is_qualifying_young_person_for_pension_credit: [false, false]
+
+- name: Case 8, born 31 August 2006, the 1 September after the 19th birthday was in 2025.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+        is_claimant_or_partner: true
+      student:
+        age: 20
+        date_of_birth: 20060831
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, student]
+  output:
+    is_before_first_september_following_19th_birthday: [false, false]
+    is_qualifying_young_person_for_universal_credit: [false, false]
+
+- name: Case 9, a course begun at 19 does not qualify, whatever the date (reg. 5(2); reg. 4A(2)).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+        is_claimant_or_partner: true
+      student:
+        age: 19
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 19
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, student]
+  output:
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    is_qualifying_young_person_for_pension_credit: [false, false]
+
+- name: Case 10, a 19-year-old outside education is not a qualifying young person, whatever the date.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+        is_claimant_or_partner: true
+      young_adult:
+        age: 19
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, young_adult]
+  output:
+    is_before_first_september_following_19th_birthday: [false, true]
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    is_qualifying_young_person_for_pension_credit: [false, false]
+
+- name: Case 11, born 1 September 2006, the 1 September following the 19th birthday is in 2026, not the birthday itself.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+        is_claimant_or_partner: true
+      student:
+        age: 20
+        date_of_birth: 20060901
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, student]
+  output:
+    # The 19th birthday is 1 September 2025; the 1 September that follows it
+    # is in 2026, inside the year.
+    is_before_first_september_following_19th_birthday: [false, true]
+    # The age limit, read on 6 October, excludes them.
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    is_qualifying_young_person_for_pension_credit: [false, false]
+
+- name: Case 12, setting the date fact for one 19-year-old leaves another's status as the formula gives it.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        is_claimant_or_partner: true
+      first:
+        age: 19
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        is_before_first_september_following_19th_birthday: false
+        is_claimant_or_partner: false
+      second:
+        age: 19
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [pensioner, first, second]
+  output:
+    # The second takes the default, true, which is the formula's value for
+    # anyone under 20 on 6 October.
+    is_before_first_september_following_19th_birthday: [true, false, true]
+    is_qualifying_young_person_for_universal_credit: [false, false, true]
+    is_qualifying_young_person_for_pension_credit: [false, false, true]
