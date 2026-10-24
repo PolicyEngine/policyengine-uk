@@ -1,3 +1,10 @@
+## [2.153.3] - 2026-10-24
+
+### Fixed
+
+- - Count statutory sick, maternity and paternity pay in the legacy Income Support means test.
+
+
 ## [2.153.2] - 2026-10-24
 
 ### Fixed
