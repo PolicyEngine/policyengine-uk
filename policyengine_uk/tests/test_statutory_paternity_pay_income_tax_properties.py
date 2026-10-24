@@ -17,15 +17,26 @@ statutory paternity pay:
    family's total income tax. A Child Benefit opt-out can lower the family's
    tax as income rises (the High Income Child Benefit Charge stops when the
    benefit stops), for wages too, so the generated families do not opt out.
-2. Bounds: for families that do not claim Marriage Allowance, a pound more
-   of statutory paternity pay raises the family's income tax before the
-   winter fuel payment charge by at most a pound. Two cliffs are intended
-   exceptions, and wages cross both the same way. Income Tax Act 2007
-   s. 55B(2)(b) withdraws the whole Marriage Allowance reduction once the
-   recipient is liable above the basic rate. ITEPA 2003 s. 681I charges back
-   the whole winter fuel payment once the recipient's total income exceeds
-   £35,000, so in income_tax one pound across that line costs the payment
-   plus the tax on the pound (the last test below).
+2. Bounds: a pound more of statutory paternity pay raises the family's
+   income tax, before the winter fuel payment charge and less the High
+   Income Child Benefit Charge, by at most a pound, for families that do not
+   claim Marriage Allowance and where the recipient's Personal Savings
+   Allowance does not change. Four cliffs are intended exceptions, and wages
+   cross each the same way:
+   - Income Tax Act 2007 s. 55B(2)(b) withdraws the whole Marriage
+     Allowance reduction once the recipient is liable above the basic rate.
+   - ITA 2007 s. 12B cuts the Personal Savings Allowance from £1,000 to £500
+     once the recipient has higher-rate income, and to nil with
+     additional-rate income, so one pound across the basic rate limit can
+     cost £100 of tax on savings.
+   - ITEPA 2003 s. 681C(3)(b) rounds the charge's percentage down to a
+     whole number, so one pound across a £200 step adds 1% of the year's
+     Child Benefit at once.
+   - ITEPA 2003 s. 681I charges back the whole winter fuel payment once the
+     recipient's total income exceeds £35,000, so in income_tax one pound
+     across that line costs the payment plus the tax on the pound.
+   The last three tests below cross the savings allowance, Child Benefit
+   charge and winter fuel payment cliffs in turn.
 3. Same as statutory sick pay: statutory paternity pay of s gives every
    member the same income tax, National Insurance, adjusted net income and
    student loan repayment, and the family the same Housing Benefit and
@@ -35,9 +46,9 @@ statutory paternity pay:
 4. Same as wages: statutory paternity pay of s on top of wages of e gives the
    same income tax and National Insurance as wages of e + s, where the
    recipient's wages and trading profit cover their pension contributions.
-   pension_contributions_relief caps relief at employment and self-employment
-   income, which leaves statutory pay out, so a recipient whose contributions
-   exceed those gets less relief on statutory pay than on wages.
+   pension_contributions_relief caps relief at relevant UK earnings, which
+   include statutory pay as taxable employment income (utils/pensions.py),
+   so the restriction is conservative.
 5. Accounting: employment_benefits is statutory sick, maternity and
    paternity pay, and taxable_employment_income is wages plus those less
    employment deductions, floored at nil.
@@ -266,15 +277,21 @@ def test_income_tax_never_falls_as_statutory_paternity_pay_rises(population):
         ) - results.family_total("income_tax", i, LOW)
         assert family_gain >= -TOLERANCE, family
         # Invariant 2.
-        if not claims_marriage_allowance(family):
-            gain_before_charge = results.family_total(
-                "income_tax_before_winter_fuel_payment_charge", i, HIGH
-            ) - results.family_total(
-                "income_tax_before_winter_fuel_payment_charge", i, LOW
+        same_savings_allowance = results.recipient(
+            "savings_allowance", i, HIGH
+        ) == results.recipient("savings_allowance", i, LOW)
+        if not claims_marriage_allowance(family) and same_savings_allowance:
+            gain = (
+                results.family_total(
+                    "income_tax_before_winter_fuel_payment_charge", i, HIGH
+                )
+                - results.family_total("CB_HITC", i, HIGH)
+                - results.family_total(
+                    "income_tax_before_winter_fuel_payment_charge", i, LOW
+                )
+                + results.family_total("CB_HITC", i, LOW)
             )
-            assert gain_before_charge <= family["high"] - family["low"] + TOLERANCE, (
-                family
-            )
+            assert gain <= family["high"] - family["low"] + TOLERANCE, family
 
 
 @PROPERTY_SETTINGS
@@ -389,6 +406,74 @@ def test_statutory_paternity_pay_on_the_basic_rate_bears_20_percent():
     assert abs(tax[AS_WAGES] - tax[HIGH]) < 0.01
 
 
+def single_earner(wages, savings=0.0, child_ages=(), low=0.0, high=1.0):
+    adult = dict(
+        age=33,
+        wages=wages,
+        profit=0.0,
+        pension_income=0.0,
+        savings=savings,
+        dividends=0.0,
+        pension_contributions=0.0,
+        student_loan_plan="NONE",
+        claims_marriage_allowance=False,
+    )
+    return dict(
+        adults=[adult],
+        married=False,
+        child_ages=list(child_ages),
+        region="NORTH_EAST",
+        tenure="RENT_PRIVATELY",
+        rent=0.0,
+        would_claim_uc=False,
+        recipient=0,
+        low=low,
+        high=high,
+    )
+
+
+def rise(results, variable):
+    return results.recipient(variable, 0, HIGH) - results.recipient(variable, 0, LOW)
+
+
+def test_a_pound_of_statutory_paternity_pay_can_halve_the_savings_allowance():
+    # Wages of £48,270 and £2,000 of savings interest give taxable income of
+    # 50,270 - 12,570 = £37,700, exactly the basic rate limit, so the
+    # Personal Savings Allowance is £1,000 (ITA 2007 s. 12B). A pound of
+    # statutory paternity pay gives higher-rate income and a £500 allowance.
+    # Non-savings income goes from £35,700 to £35,701 (20p more). Savings tax
+    # goes from 20% of 1,000 = £200 to 20% of 1,499 plus 40% of 1 = £300.20.
+    results = Results([single_earner(48_270.0, savings=2_000.0)])
+    assert results.recipient("savings_allowance", 0, LOW) == 1_000
+    assert results.recipient("savings_allowance", 0, HIGH) == 500
+    assert (
+        abs(rise(results, "income_tax_before_winter_fuel_payment_charge") - 100.4)
+        < 0.01
+    )
+
+
+def test_a_pound_of_statutory_paternity_pay_can_add_a_child_benefit_charge_step():
+    # Wages of £50,000 and £10,199 of statutory paternity pay give adjusted
+    # net income of £60,199: the charge's percentage is floor(199 / 200) = 0.
+    # A pound more gives £60,200 and 1% of the year's Child Benefit, rounded
+    # down to whole pounds (ITEPA 2003 s. 681C(3)), on top of 40p of
+    # higher-rate tax on the pound. Net of the charge, the pound costs 40p.
+    results = Results(
+        [single_earner(50_000.0, child_ages=[4], low=10_199.0, high=10_200.0)]
+    )
+    child_benefit = results.families("child_benefit", HIGH)[0]
+    assert child_benefit > 0
+    assert results.recipient("CB_HITC", 0, LOW) == 0
+    charge = results.recipient("CB_HITC", 0, HIGH)
+    assert charge == np.floor(0.01 * np.floor(child_benefit))
+    assert (
+        abs(
+            rise(results, "income_tax_before_winter_fuel_payment_charge") - charge - 0.4
+        )
+        < 0.01
+    )
+
+
 def test_a_pound_of_statutory_paternity_pay_can_bring_the_winter_fuel_payment_charge():
     # A 70-year-old in England with £20,000 of private pension and £15,000 of
     # savings interest has total income of exactly £35,000, so the £200 Winter
@@ -421,14 +506,10 @@ def test_a_pound_of_statutory_paternity_pay_can_bring_the_winter_fuel_payment_ch
         high=1.0,
     )
     results = Results([family])
-
-    def rise(variable):
-        return results.recipient(variable, 0, HIGH) - results.recipient(
-            variable, 0, LOW
-        )
-
     assert results.recipient("winter_fuel_payment", 0, HIGH) == 200
     assert results.recipient("winter_fuel_payment_charge", 0, LOW) == 0
     assert results.recipient("winter_fuel_payment_charge", 0, HIGH) == 200
-    assert abs(rise("income_tax_before_winter_fuel_payment_charge") - 0.2) < 0.01
-    assert abs(rise("income_tax") - 200.2) < 0.01
+    assert (
+        abs(rise(results, "income_tax_before_winter_fuel_payment_charge") - 0.2) < 0.01
+    )
+    assert abs(rise(results, "income_tax") - 200.2) < 0.01

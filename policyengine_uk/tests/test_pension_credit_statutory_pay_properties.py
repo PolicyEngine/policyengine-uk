@@ -200,8 +200,9 @@ def with_private_pension(fam, pension):
     ]
 
 
-# The statutory payments the model's Housing Benefit counts (see the module
-# docstring on statutory paternity pay).
+# The statutory payments invariant 1 draws. The model's Housing Benefit also
+# counts statutory paternity pay, which invariant 1 does not draw (see the
+# module docstring).
 HOUSING_BENEFIT_PAY = ("statutory_sick_pay", "statutory_maternity_pay")
 
 
