@@ -4,8 +4,8 @@
 # An explicit energy_price_basis opts into the variables' existing annual OBR-CPI
 # assumption from the declared price year. This does not supply an energy-specific
 # forecast or automatically label existing private Microcosm artifacts.
-# liquid_fuel_consumption and solid_fuel_consumption (heating oil, LPG, coal
-# and wood) are not in that group: Ofgem's price cap does not cover them, so
+# liquid_fuel_consumption and solid_fuel_consumption (heating oil, coal and
+# wood) are not in that group: Ofgem's price cap does not cover them, so
 # they are uprated by CPI from the data year below, like other LCFS spending.
 #
 # This map governs dataset projection. Core's class-level variable uprating still

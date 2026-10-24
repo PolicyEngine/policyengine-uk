@@ -1,7 +1,8 @@
 """Liquid and solid heating fuel inputs (#2572).
 
-Homes off the gas grid heat with oil, LPG, coal or wood: COICOP 04.5.3 and
-04.5.4. Their spending is part of housing_water_and_electricity_consumption,
+Homes off the gas grid heat with oil, coal or wood: COICOP 04.5.3 and
+04.5.4. (Bottled LPG is gas in COICOP, 04.5.2, so neither input holds it.)
+Their spending is part of housing_water_and_electricity_consumption,
 so the inputs default to zero and add nothing to consumption. Ofgem's price
 cap does not cover them, so dataset projection uprates them by CPI like other
 LCFS spending.
@@ -55,7 +56,7 @@ def test_defaults_are_zero_and_add_nothing_to_consumption(fuel):
 
 def test_fuels_are_uprated_by_cpi_like_other_lcfs_spending():
     # Ofgem's cap prices the electricity and gas inputs, which are held at
-    # their stored prices; it does not cover heating oil, LPG, coal or wood.
+    # their stored prices; it does not cover heating oil, coal or wood.
     listed = yaml.safe_load(UPRATING_INDICES.read_text())
     for fuel in FUELS:
         assert fuel not in DATASET_UPRATING_EXCLUSIONS
