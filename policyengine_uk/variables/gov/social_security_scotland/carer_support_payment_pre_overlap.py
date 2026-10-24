@@ -22,6 +22,7 @@ class carer_support_payment_pre_overlap(Variable):
     reference = (
         "https://www.legislation.gov.uk/asp/2018/9/part/4",
         "https://www.legislation.gov.uk/ssi/2023/302/regulation/3",
+        "https://www.legislation.gov.uk/ssi/2023/302/regulation/4",
         "https://www.legislation.gov.uk/ssi/2023/302/regulation/16",
         "https://www.legislation.gov.uk/ssi/2023/302/regulation/14",
         "https://www.legislation.gov.uk/ssi/2023/302/schedule/2/paragraph/4",
@@ -33,6 +34,7 @@ class carer_support_payment_pre_overlap(Variable):
         if not csp_in_effect:
             return person.empty_array()
         csp = parameters(period).gov.social_security_scotland.carer_support_payment
+        meets_age_condition = person("age", period) >= csp.min_age
         weekly_care_hours = person("care_hours", period)
         meets_hours = weekly_care_hours >= csp.min_hours
         receives_ca = person("carers_allowance_reported", period) > 0
@@ -52,6 +54,7 @@ class carer_support_payment_pre_overlap(Variable):
             & csp_in_effect
             & (meets_hours | receives_ca)
             & meets_earnings
+            & meets_age_condition
             & would_claim
         )
         return eligible * csp.rate * WEEKS_IN_YEAR

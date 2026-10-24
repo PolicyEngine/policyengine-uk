@@ -503,6 +503,14 @@ def qualifying_age_couples():
     return Simulation(situation=situation), keys
 
 
+@pytest.fixture(scope="module", autouse=True)
+def release_cached_simulation():
+    # Drop the cached simulation, and the system it built, once this module's
+    # tests are done, instead of for the rest of the test process.
+    yield
+    qualifying_age_couples.cache_clear()
+
+
 @pytest.mark.parametrize("year", QUALIFYING_AGE_YEARS)
 def test_regulation_89_1_a_follows_the_statute_for_every_birth_date(year):
     """The elder member is in section 19 exactly when the statute puts a woman

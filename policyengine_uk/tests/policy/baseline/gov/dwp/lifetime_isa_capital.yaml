@@ -308,6 +308,7 @@
     benunits:
       parent:
         members: parent
+        would_claim_uc: false
       adult_child:
         members: adult_child
     households:

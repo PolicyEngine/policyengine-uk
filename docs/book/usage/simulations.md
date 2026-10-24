@@ -207,6 +207,12 @@ print(sim.calculate("council_tax", 2025))  # One value per household
   simulation was given inputs for years outside its data, such as the
   Universal Credit health element status the rebalancing records for 2026 to
   2029.
+- Inputs carry forward to later years but not back to earlier ones. So when
+  `set_input` gives a simulation an input for a year before every year it
+  holds the identifiers for, it also gives the identifiers for that year.
+  Formulas that read identifiers, such as the draws that place each person in
+  their year of age, then read the same people and groups there as in the
+  simulation its exported frame loads back to.
 
 ```{important}
 The model stores `person_household_id` and `person_benunit_id` as 32-bit
@@ -270,6 +276,13 @@ Each table should contain the ID columns needed to link entities together:
 - `person`: `person_id`, `person_benunit_id`, `person_household_id`, plus any person-level variables
 - `benunit`: `benunit_id`, plus any benefit-unit variables
 - `household`: `household_id`, plus any household-level variables
+
+Whatever the data source, keep identifiers to whole numbers from
+-2,147,483,648 to 2,147,483,647. A simulation stores them as 32-bit integers,
+so within that range the identifiers it returns (for example
+`sim.calculate("person_household_id", 2025)`) are the ones in your tables.
+Outside it, the simulation gives an `EntityIdWarning`: the identifiers it
+returns differ from yours, and so may anything rebuilt from them.
 
 Benefit-unit and household rows can be in any order. The loader aligns each
 year's group inputs by its ID column to the simulation's sorted group IDs;

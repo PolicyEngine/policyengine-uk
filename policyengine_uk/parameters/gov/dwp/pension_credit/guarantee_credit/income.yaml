@@ -22,6 +22,9 @@ values:
   - private_pension_income
   - property_income_after_finance_costs
   - pension_credit_deemed_income
+  # Reg. 15(5)(d): maintenance from a spouse, civil partner, former spouse or
+  # former civil partner. Child maintenance is not listed.
+  - spousal_maintenance_income
   - esa_contrib
   - jsa_contrib
   # Reg. 15(1) prescribes all social security benefits except those it lists;

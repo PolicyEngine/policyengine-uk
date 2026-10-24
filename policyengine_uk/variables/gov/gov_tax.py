@@ -13,6 +13,7 @@ GOV_TAX_VARIABLES = [
     "fuel_duty",
     "alcohol_duty",
     "tobacco_duty",
+    "gambling_duty",
     "vehicle_excise_duty",
     "tv_licence",
     "wealth_tax",
