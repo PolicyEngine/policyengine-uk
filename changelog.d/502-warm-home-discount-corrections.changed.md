@@ -1,1 +1,0 @@
-Corrected the Warm Home Discount plan (docs/book/programs/gov/ofgem/warm-home-discount-plan.md): the April-to-March scheme year, the Scottish core group under Schedule 1 to SI 2026/488, the pre-2022 rebate amounts, the 2025-26 qualifying benefits, the helpline route and the ESA take-up caveat.

@@ -1,1 +1,0 @@
-Corrected the Ubuntu vs macOS reproducibility page (docs/book/validation/ubuntu-vs-macos.md): the parameter dumps on #1209 point to order-dependent chained uprating, not the import-time growth-factor table, #1092 added macOS alongside Ubuntu, and the Python tests now run on five shards.

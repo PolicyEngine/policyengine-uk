@@ -1,3 +1,14 @@
+## [2.152.7] - 2026-10-24
+
+### Changed
+
+- Updated the capital gains distribution page (docs/book/assumptions/capital-gains-distribution-plan.md) for Microcosm UK becoming the certified default dataset, the default retention-rate elasticity of 1, policyengine-uk-data's donor bands, the 27 August 2026 HMRC release and the Microcosm stage details.
+- Corrected the Cold Weather Payment plan (docs/book/programs/gov/dwp/cold-weather-payment-plan.md): the full regulation 1A conditions (care homes, England and Wales, Income Support and JSA premiums, mortgage-interest loans with Pension Credit), the winter 2022-23 Scottish replacement, the Winter Heating Payment rule and the weather data source.
+- Updated the reform impacts dashboard plan (docs/book/validation/reform-impacts-dashboard-plan.md) for the fixture receipts, the certified Enhanced FRS 2024-25 pin and the per-pull-request aggregate-impact costings now on main, and corrected the higher-rate fixture, the external benchmarks and the two-child limit reform.
+- Corrected the Ubuntu vs macOS reproducibility page (docs/book/validation/ubuntu-vs-macos.md): the parameter dumps on #1209 point to order-dependent chained uprating, not the import-time growth-factor table, #1092 added macOS alongside Ubuntu, and the Python tests now run on five shards.
+- Corrected the Warm Home Discount plan (docs/book/programs/gov/ofgem/warm-home-discount-plan.md): the April-to-March scheme year, the Scottish core group under Schedule 1 to SI 2026/488, the pre-2022 rebate amounts, the 2025-26 qualifying benefits, the helpline route and the ESA take-up caveat.
+
+
 ## [2.152.6] - 2026-10-24
 
 ### Changed
