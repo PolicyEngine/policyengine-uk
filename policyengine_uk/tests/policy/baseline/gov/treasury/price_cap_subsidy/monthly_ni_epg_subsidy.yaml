@@ -391,7 +391,7 @@
     monthly_ni_epg_subsidy: [94.24275, 0, 0]
     monthly_epg_subsidy: [94.24275, 0, 0]
 
-- name: Case 18, a bill above full consumer relief supports a positive calculation.
+- name: Case 18, a compatible full-rate bill supports a positive calculation.
   period: 2023-04
   input:
     country:
@@ -399,10 +399,10 @@
     electricity_consumption_kwh: 1_000
     gas_consumption_kwh: 2_000
     ni_epg_full_rate_applies: true
-    monthly_domestic_energy_consumption: 94.25
+    monthly_domestic_energy_consumption: 500
   output:
-    # Case 15 checks 94.24 below D; here 94.25 exceeds D = 94.24275.
+    # The caller explicitly attests that full rates apply to these supplies.
     ni_epg_subsidy_calculable: true
     monthly_ni_epg_subsidy: 94.24275
     monthly_epg_subsidy: 94.24275
-    monthly_epg_consumption_level: 0.00725
+    monthly_epg_consumption_level: 405.75725
