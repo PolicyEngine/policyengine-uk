@@ -17,10 +17,10 @@ class widowed_parents_allowance(Variable):
         "Benefit counts it less £15 a week. It is not payable from State "
         "Pension age or while the recipient lives with a partner (s.39A(4) "
         "and (5)), so a lawful award never reaches a Pension Credit or "
-        "pension-age Housing Benefit assessment. A reported one counts in "
-        "full for Pension Credit (SPC Regs 2002 reg. 15(1)) and less £15 a "
-        "week for pension-age Housing Benefit (HB (SPC) Regs 2006 Sch. 5 "
-        "para. 7)."
+        "pension-age Housing Benefit assessment. A reported one counts less "
+        "£10 a week for Pension Credit (SPC Regs 2002 reg. 15(1) and Sch. IV "
+        "para. 7) and less £15 a week for pension-age Housing Benefit (HB "
+        "(SPC) Regs 2006 Sch. 5 para. 7)."
     )
     definition_period = YEAR
     unit = GBP

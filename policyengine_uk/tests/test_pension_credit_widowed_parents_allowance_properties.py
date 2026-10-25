@@ -2,17 +2,19 @@
 
 The State Pension Credit Regulations 2002 reg 15(1) prescribe "all social
 security benefits" as income except a closed list. The list excepts
-bereavement support payment (n) but not widowed parent's allowance (WPA),
-Sch IV disregards none of it, and reg 9 does not make it non-qualifying income
-for Savings Credit. Pension-age Housing Benefit counts it less £15 a week
-(HB (SPC) Regs 2006 Sch 5 para 7).
+bereavement support payment (n) but not widowed parent's allowance (WPA).
+Sch IV para 7 (applied by reg 17(7)) disregards £10 a week of each member's
+WPA, and reg 9 does not make it non-qualifying income for Savings Credit.
+Pension-age Housing Benefit counts it less £15 a week (HB (SPC) Regs 2006
+Sch 5 para 7).
 
 SSCBA 1992 s.39A(4) and (5) end the allowance at pensionable age and suspend
 it while the recipient lives with a partner, so a lawful award should not meet
 either assessment. The model takes a reported award as given, though, and WPA
 overlaps with Carer's Allowance and Carer Support Payment. While Pension Credit
 left WPA out, an award that displaced either carer's benefit raised Guarantee
-Credit by the amount displaced.
+Credit by the amount displaced; counted less £10 a week, it raises Guarantee
+Credit by at most the disregard.
 
 Draws: the families of test_pension_credit_prescribed_benefits_properties.py
 (single people and couples over State Pension age, some with a carer), with a
@@ -20,14 +22,15 @@ WPA award added to the first adult.
 
 Invariants:
 
-1. Guarantee Credit is non-increasing in WPA, and while it is positive it
-   falls pound for pound with the extra Pension Credit income, which is the
-   extra WPA less the extra income tax and National Insurance, less any
-   Carer's Allowance or Carer Support Payment it displaces.
+1. Extra Pension Credit income is the extra WPA above £10 a week, less the
+   extra income tax and National Insurance, less any Carer's Allowance or
+   Carer Support Payment it displaces. While Guarantee Credit is positive it
+   falls pound for pound with that income, and it never rises where no
+   carer's benefit is displaced.
 2. Differential: where neither Guarantee Credit nor Savings Credit is due and
    Housing Benefit income is above its zero floor, Housing Benefit applicable
-   income equals Pension Credit income less the £15 weekly disregard, capped at
-   the award.
+   income equals Pension Credit income less the extra £5 a week Housing
+   Benefit disregards: min(WPA, £15 x 52) - min(WPA, £10 x 52).
 3. Savings Credit income moves with Pension Credit income: WPA is qualifying
    income, so adding it changes Savings Credit income by exactly the change in
    Pension Credit income wherever neither is at its zero floor.
@@ -41,6 +44,7 @@ from policyengine_uk.tests.test_pension_credit_prescribed_benefits_properties im
     AMOUNTS,
     PENSIONS,
     PRESCRIBED_BENEFITS,
+    INCOME_TAX,
     PROPERTY_SETTINGS,
     calculate,
     family,
@@ -48,7 +52,9 @@ from policyengine_uk.tests.test_pension_credit_prescribed_benefits_properties im
 )
 
 WPA = "widowed_parents_allowance"
-# HB (SPC) Regs 2006 Sch 5 para 7: £15 a week, over the model's 52-week year.
+# Over the model's 52-week year: SPC Regs 2002 Sch IV para 7, £10 a week;
+# HB (SPC) Regs 2006 Sch 5 para 7, £15 a week.
+PC_DISREGARD = 10 * 52
 HB_DISREGARD = 15 * 52
 
 
@@ -71,7 +77,7 @@ def carer(country):
 CARERS = [carer("ENGLAND"), carer("SCOTLAND")]
 
 
-def test_an_award_that_displaces_a_carer_benefit_leaves_guarantee_credit_unchanged():
+def test_an_award_that_displaces_a_carer_benefit_raises_guarantee_credit_by_the_disregard():
     for fam in CARERS:
         g = calculate(
             [(fam, 0, {}), (fam, 0, {WPA: 1_000})],
@@ -81,18 +87,22 @@ def test_an_award_that_displaces_a_carer_benefit_leaves_guarantee_credit_unchang
                 "pension_credit_income",
                 "carers_allowance",
                 "carer_support_payment",
-                "income_tax",
+                INCOME_TAX,
             ],
         )
         carer_benefit = g["carers_allowance"] + g["carer_support_payment"]
         assert np.allclose(np.diff(carer_benefit), -1_000, atol=0.01), (fam, g)
-        assert np.allclose(g["income_tax"], 0, atol=0.01), (fam, g)
+        assert np.allclose(g[INCOME_TAX], 0, atol=0.01), (fam, g)
         assert g["guarantee_credit"][0] > 1_000, (fam, g)
-        assert np.allclose(np.diff(g["pension_credit_income"]), 0, atol=0.01), (
+        # 1,000 of WPA counts as 480 and displaces 1,000 of the carer's
+        # benefit, so Pension Credit income falls by the 520 disregarded.
+        assert np.allclose(
+            np.diff(g["pension_credit_income"]), -PC_DISREGARD, atol=0.01
+        ), (fam, g)
+        assert np.allclose(np.diff(g["guarantee_credit"]), PC_DISREGARD, atol=0.01), (
             fam,
             g,
         )
-        assert np.allclose(np.diff(g["guarantee_credit"]), 0, atol=0.01), (fam, g)
 
 
 @PROPERTY_SETTINGS
@@ -108,7 +118,7 @@ def test_guarantee_credit_falls_pound_for_pound_with_widowed_parents_allowance(
         [
             "guarantee_credit",
             "pension_credit_income",
-            "income_tax",
+            INCOME_TAX,
             "national_insurance",
             "carers_allowance",
             "carer_support_payment",
@@ -116,13 +126,15 @@ def test_guarantee_credit_falls_pound_for_pound_with_widowed_parents_allowance(
     )
     gc = g["guarantee_credit"]
     pc_income = g["pension_credit_income"]
-    tax = g["income_tax"] + g["national_insurance"]
+    tax = g[INCOME_TAX] + g["national_insurance"]
     carer_benefit = g["carers_allowance"] + g["carer_support_payment"]
-    assert np.all(np.diff(gc, axis=-1) <= 0.01), (families, gc)
+    displaced = np.diff(carer_benefit, axis=-1) < -0.01
+    assert np.all(np.diff(gc, axis=-1)[~displaced] <= 0.01), (families, gc)
     extra_income = np.diff(pc_income, axis=-1)
     positive_income = (pc_income[..., :-1] > 0) & (pc_income[..., 1:] > 0)
+    counted = np.maximum(AMOUNTS - PC_DISREGARD, 0)
     expected = (
-        np.diff(AMOUNTS) - np.diff(tax, axis=-1) + np.diff(carer_benefit, axis=-1)
+        np.diff(counted) - np.diff(tax, axis=-1) + np.diff(carer_benefit, axis=-1)
     )
     assert np.allclose(
         extra_income[positive_income], expected[positive_income], atol=0.01
@@ -162,7 +174,9 @@ def test_housing_benefit_counts_widowed_parents_allowance_less_15_a_week(
         & g["housing_benefit_eligible"].astype(bool)
         & (hb_income > 0)
     )
-    expected = g["pension_credit_income"] - min(amount, HB_DISREGARD)
+    expected = g["pension_credit_income"] - (
+        min(amount, HB_DISREGARD) - min(amount, PC_DISREGARD)
+    )
     assert np.allclose(hb_income[compared], expected[compared], atol=0.01), (
         families,
         amount,
