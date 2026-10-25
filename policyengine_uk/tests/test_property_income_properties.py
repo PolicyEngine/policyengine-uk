@@ -102,6 +102,9 @@ def set_inputs(sim, drawn, uses_allowance=None):
     sim.set_input("property_rental_income", YEAR, receipts)
     sim.set_input("property_finance_costs", YEAR, costs)
     sim.set_input("property_finance_costs_brought_forward", YEAR, brought_forward)
+    if uses_allowance is None:
+        # An automatic draw must not inherit the preceding forced test route.
+        sim.delete_arrays("uses_property_allowance", YEAR)
     sim.reset_calculations()
     if uses_allowance is not None:
         sim.set_input("uses_property_allowance", YEAR, np.full(PEOPLE, uses_allowance))
@@ -335,6 +338,8 @@ def set_couple_inputs(sim, drawn, uses_allowance=None):
     sim.set_input("property_income", YEAR, profit)
     sim.set_input("property_rental_income", YEAR, receipts)
     sim.set_input("property_finance_costs", YEAR, costs)
+    if uses_allowance is None:
+        sim.delete_arrays("uses_property_allowance", YEAR)
     sim.reset_calculations()
     if uses_allowance is not None:
         sim.set_input("uses_property_allowance", YEAR, uses_allowance)
@@ -496,6 +501,8 @@ def set_pensioner_inputs(sim, drawn, uses_allowance=None):
     sim.set_input("property_rental_income", PENSIONER_YEAR, profit + expenses)
     sim.set_input("property_finance_costs", PENSIONER_YEAR, costs)
     sim.set_input("would_claim_pc", PENSIONER_YEAR, np.array(claims_pc))
+    if uses_allowance is None:
+        sim.delete_arrays("uses_property_allowance", PENSIONER_YEAR)
     sim.reset_calculations()
     if uses_allowance is not None:
         sim.set_input("uses_property_allowance", PENSIONER_YEAR, uses_allowance)

@@ -1,14 +1,12 @@
 """A reform applied to a built simulation keeps the inputs it stores.
 
-input_variables is taken when a simulation is built, and reset_calculations
-deletes the values of every variable it does not name (as derivative did
-before policyengine-core 3.33.0, from which it keeps every input). So
-Simulation.apply_reform names each variable the reform stored an input for
-that the simulation still holds afterwards, however the reform stored it, and
-no other: an input set since the build that the reform did not store is still
-deleted by a reset, as before, unless the reform names its variable.
-input_variables names whole variables, so a reset keeps every input of a named
-variable. See _InputKeyLog in policyengine_uk/simulation.py.
+input_variables starts with the build's inputs. Simulation.apply_reform names
+each variable the reform stored an input for that the simulation still holds,
+however the reform stored it, and no other. Its own-write naming contract is
+separate from reset_calculations, which also preserves surviving explicit
+inputs supplied directly since construction. Deletion removes those inputs;
+calculated values do not become supplied inputs. See _InputKeyLog in
+policyengine_uk/simulation.py.
 
 Each simulation is one adult, the claimant, with £3,000 of income-related ESA
 entered for 2026, so their claimant-or-partner award that year is £3,000
@@ -211,12 +209,22 @@ NOT_STORING = {
 @pytest.mark.parametrize("case", NOT_STORING)
 def test_a_reform_names_no_input_it_did_not_store(case):
     # The reform tries to set the variable but leaves no input of its own,
-    # while one set since the build survives. That one is not the reform's,
-    # so it is not named, and a reset deletes it as it would have anyway.
+    # while one supplied directly since construction survives. That input is
+    # not named by the reform, but reset still preserves the explicit value.
     simulation = built()
     recorded = list(simulation.input_variables)
     variable, year, calculated = NOT_STORING[case](simulation)
     assert simulation.input_variables == recorded
+    simulation.reset_calculations()
+    supplied = {
+        "stores and deletes another year": 100,
+        "sets a year after the variable's end": 100,
+        "sets a year whose months a helper keeps": True,
+    }[case]
+    assert simulation.calculate(variable, year).tolist() == [supplied]
+    # Differential control: deleting that actual input restores the original
+    # formula/default. Retention does not freeze calculated values as inputs.
+    simulation.delete_arrays(variable, year)
     simulation.reset_calculations()
     assert simulation.calculate(variable, year).tolist() == [calculated]
 
@@ -321,10 +329,9 @@ def test_a_reform_that_raises_leaves_the_record_as_it_was():
 
 # Property: drawn inputs set since the build, then a reform that sets and
 # deletes inputs by any route. The reform names exactly the variables it
-# leaves an input of its own for. A reset keeps every input of those
-# variables (its own, and any set since the build that it left in place),
-# and every variable it does not name recalculates as if nothing had been
-# set since the build.
+# leaves an input of its own for. Reset independently keeps every surviving
+# supplied cell, including earlier direct stores the reform did not write.
+# A genuinely unsupplied cell recalculates as it does in the pristine model.
 VARIABLES = [SCOPED, "claimant_or_partner_jsa_income"]
 YEARS = [AWARD_YEAR - 1, AWARD_YEAR, AWARD_YEAR + 1]
 ROUTES = ["simulation", "holder", "thread", "delete"]
@@ -400,13 +407,13 @@ def test_a_reform_names_exactly_the_variables_it_leaves_inputs_for(earlier, oper
     assert names == recorded
     simulation.reset_calculations()
     for (variable, year), value in left.items():
-        if variable in named:
-            assert simulation.calculate(variable, year).tolist() == [value]
+        assert simulation.calculate(variable, year).tolist() == [value]
     pristine = parent.clone()
-    for variable in set(VARIABLES) - named:
+    for variable in VARIABLES:
         for year in YEARS:
-            np.testing.assert_array_equal(
-                simulation.calculate(variable, year),
-                pristine.calculate(variable, year),
-                err_msg=f"{variable} {year}",
-            )
+            if (variable, year) not in left:
+                np.testing.assert_array_equal(
+                    simulation.calculate(variable, year),
+                    pristine.calculate(variable, year),
+                    err_msg=f"{variable} {year}",
+                )
