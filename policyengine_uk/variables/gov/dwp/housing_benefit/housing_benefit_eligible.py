@@ -8,8 +8,12 @@ class housing_benefit_eligible(Variable):
     documentation = (
         "Whether this family can receive Housing Benefit. A family whose "
         "claimant and any partner have reached the qualifying age for State "
-        "Pension Credit "
-        "can make a new claim; Universal Credit is not available to it. Any "
+        "Pension Credit can make a new claim, unless DWP moved it to "
+        "Universal Credit when its legacy benefits closed and it claimed and "
+        "is entitled before benefit-cap reductions "
+        "(left_pension_route_at_legacy_closure; SI "
+        "2014/1230 reg 60A waives the upper age condition for a pension-age "
+        "Working Tax Credit recipient). Any "
         "other family keeps Housing Benefit only while it continues an "
         "existing award (reported Housing Benefit), does not claim "
         "Universal Credit and has not been moved off a closed legacy benefit "
@@ -36,11 +40,15 @@ class housing_benefit_eligible(Variable):
         # is made by the older member of a mixed-age couple that keeps the
         # SI 2019/37 art. 4 saving (reg 6A(5); NI reg 4A(5)). Before 15 May
         # 2019 mixed-age couples could claim too. These are the Pension
-        # Credit age conditions, which also rule out Universal Credit
-        # (is_uc_eligible), so no family on this route receives it. They read
-        # the claimant and partner (is_claimant_or_partner), so a pensioner
-        # with an 18 or 19 year old dependant can claim Housing Benefit and
-        # not Universal Credit.
+        # Credit age conditions. They rule out Universal Credit
+        # (is_uc_eligible) except for a family that claims it when DWP moves
+        # it off its legacy benefits: a mixed-age couple claiming jointly, or
+        # a pension-age Working Tax Credit recipient whose upper age condition
+        # SI 2014/1230 reg 60A waives. Such a family leaves this route once
+        # it is entitled (below), so no family on this route receives
+        # Universal Credit. The conditions read the claimant and partner
+        # (is_claimant_or_partner), so a pensioner with an 18 or 19 year old
+        # dependant can claim Housing Benefit and not Universal Credit.
         # A family DWP moved to Universal Credit leaves this route if it
         # claims Universal Credit and is entitled before benefit-cap reductions
         # and deductions (left_pension_route_at_legacy_closure). One that does
