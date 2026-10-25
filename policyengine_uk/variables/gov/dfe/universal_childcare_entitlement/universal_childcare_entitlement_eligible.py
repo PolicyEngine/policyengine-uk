@@ -1,4 +1,8 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.childcare import (
+    universal_childcare_terms,
+    uses_legacy_childcare_inputs,
+)
 
 
 class universal_childcare_entitlement_eligible(Variable):
@@ -10,7 +14,9 @@ class universal_childcare_entitlement_eligible(Variable):
         "Legal eligibility, independent of standalone take-up, in at least "
         "one of the year's terms. A child in a reception class gets no "
         "universal hours: its school place meets the entitlement "
-        "(early_years_term_share_before_school)."
+        "(early_years_term_share_before_school). Native eligibility starts "
+        "with the term after the minimum-age birthday. Supplied legacy "
+        "annual shares or amounts retain snapshot-age eligibility."
     )
     reference = (
         "https://www.legislation.gov.uk/ukpga/2006/21/section/7",
@@ -30,6 +36,10 @@ class universal_childcare_entitlement_eligible(Variable):
         age = person("age", period)
         p = parameters(period).gov.dfe.universal_childcare_entitlement
         meets_age_condition = (age >= p.age.min) & (age < p.age.max)
+        if not uses_legacy_childcare_inputs(person, period):
+            meets_age_condition = (age < p.age.max) & np.logical_or.reduce(
+                universal_childcare_terms(person, period, parameters)
+            )
         not_compulsory_age = ~person("is_of_compulsory_school_age", period)
 
         # Eligibility for the working parent entitlement does not remove the

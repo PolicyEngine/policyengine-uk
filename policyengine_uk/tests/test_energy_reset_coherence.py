@@ -413,3 +413,41 @@ def test_energy_reset_controls_preserve_coherent_public_observations(
             (source[year].person, source[year].benunit, source[year].household),
         ):
             pd.testing.assert_frame_equal(before, after, check_dtype=False)
+
+
+@pytest.mark.parametrize("unrelated_location", ["shared", "later-only"])
+def test_reset_energy_group_ignores_widened_generic_exclusions(
+    monkeypatch, unrelated_location
+):
+    from policyengine_uk.data import economic_assumptions
+
+    unrelated = "food_and_non_alcoholic_beverages_consumption"
+    monkeypatch.setattr(
+        economic_assumptions,
+        "DATASET_UPRATING_EXCLUSIONS",
+        economic_assumptions.DATASET_UPRATING_EXCLUSIONS | {unrelated},
+    )
+    base_basis = {"period_type": "calendar_year", "period_value": 2024}
+    base_amounts = dict(zip(ENERGY, [111.0, 222.0, 333.0]))
+    if unrelated_location == "shared":
+        base_amounts[unrelated] = 10.0
+    later_amounts = {**dict(zip(ENERGY, [777.0, 888.0, 999.0])), unrelated: 20.0}
+    source = UKMultiYearDataset(
+        datasets=[
+            _observation(2024, base_amounts, base_basis),
+            _observation(2026, later_amounts, LATER_BASIS),
+        ]
+    )
+    before = {year: source[year].household.copy(deep=True) for year in source.years}
+
+    reset = economic_assumptions.reset_growthfactor_uprating(source.copy())
+
+    # Complete energy replacement must not depend on an unrelated later-only column.
+    for variable, expected in zip(ENERGY, [111.0, 222.0, 333.0]):
+        np.testing.assert_array_equal(reset[2026].household[variable], [expected])
+    assert reset[2026].energy_price_basis == base_basis
+    np.testing.assert_array_equal(reset[2026].household[unrelated], [20.0])
+    for year in source.years:
+        pd.testing.assert_frame_equal(source[year].household, before[year])
+    assert source[2024].energy_price_basis == base_basis
+    assert source[2026].energy_price_basis == LATER_BASIS

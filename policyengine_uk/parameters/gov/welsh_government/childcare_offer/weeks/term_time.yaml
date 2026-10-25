@@ -1,0 +1,10 @@
+description: The Childcare Offer for Wales provides nursery education and childcare in this many school term weeks a year.
+metadata:
+  unit: week
+  period: year
+  label: Childcare Offer for Wales term-time weeks
+  reference:
+    - title: Welsh Government, Childcare Offer for Wales guidance for local authorities, version 8.3 (April 2026), paragraphs 1 and 6
+      href: https://www.gov.wales/sites/default/files/publications/2026-04/childcare-offer-for-wales-guidance-for-local-authorities-april-2026-english_0.pdf
+values:
+  2019-08-01: 39

@@ -1018,14 +1018,18 @@ def test_identifiers_too_large_for_64_bits_are_refused(values):
 
 
 def test_an_exported_frame_saved_as_csv_loads_back():
-    # The exported person_ columns hold 32-bit floats: 906,000,001 is
-    # 906,000,000. CSV gives them back as 64-bit floats, which still name the
-    # groups the exact benunit_id and household_id columns give.
+    # Membership identifiers stay exact integers through export and CSV,
+    # including neighbouring groups that float32 would round together.
     original = Simulation(dataset=dataset())
     exported = original.to_input_dataframe()
     from_csv = pd.read_csv(io.StringIO(exported.to_csv(index=False)))
-    assert from_csv["person_benunit_id__2025"].dtype == np.float64
-    assert from_csv["person_benunit_id__2025"].iloc[0] == 906_000_000
+    for group in GROUPS:
+        column = f"person_{group}_id__{YEAR}"
+        expected = group_of_each_person(original, group)
+        assert exported[column].dtype.kind == "i"
+        assert exported[column].tolist() == expected
+        assert from_csv[column].dtype == np.int64
+        assert from_csv[column].tolist() == expected
 
     reloaded = Simulation(dataset=from_csv)
 
@@ -1139,8 +1143,7 @@ def test_object_person_columns_are_checked_value_by_value():
 
 
 def test_integer_group_columns_must_agree_exactly():
-    # Integer columns hold identifiers exactly (as they will once #2267 makes
-    # the person_ variables integers), so they must name the same group.
+    # Integer columns hold identifiers exactly, so they must name the same group.
     refused(
         couple(
             **{
@@ -1261,19 +1264,20 @@ def test_an_exported_frame_loads_back_and_exports_itself(population, id_columns)
 
     reloaded = Simulation(dataset=exported)
 
-    # 5. Round trip: the same people, groups and inputs, including for
-    # identifiers the exported person_ columns hold rounded.
+    # 5. Round trip: the same people, groups and inputs, with exact identifiers.
     assert_holds(reloaded, population)
     pd.testing.assert_frame_equal(reloaded.to_input_dataframe(), exported)
     for group in GROUPS:
         exact = population.groups[group]
         assert exported[f"{group}_id__{YEAR}"].tolist() == exact.tolist()
-        assert (
-            exported[f"person_{group}_id__{YEAR}"].tolist()
-            == exact.astype(np.float32).tolist()
-        )
-    # Saved as CSV, the rounded person_ columns come back as 64-bit floats.
+        assert exported[f"person_{group}_id__{YEAR}"].dtype.kind == "i"
+        assert exported[f"person_{group}_id__{YEAR}"].tolist() == exact.tolist()
+    # CSV parses the integer text without passing the memberships through float32.
     from_csv = pd.read_csv(io.StringIO(exported.to_csv(index=False)))
+    for group in GROUPS:
+        column = f"person_{group}_id__{YEAR}"
+        assert from_csv[column].dtype == np.int64
+        assert from_csv[column].tolist() == population.groups[group].tolist()
     assert_holds(Simulation(dataset=from_csv), population)
 
 
@@ -1488,6 +1492,19 @@ TWINS = Population(
 # their place in their year of age, in a year before the data.
 @example(population=ONE_PERSON, id_columns="both", input_years={YEAR - 3}, weight=1)
 @example(population=TWINS, id_columns="own", input_years={YEAR - 1}, weight=1_000_000)
+@example(
+    population=Population(
+        person_ids=np.array([900_000_034, 900_000_035]),
+        groups={
+            "benunit": np.array([900_000_036, 900_000_036]),
+            "household": np.array([900_000_037, 900_000_037]),
+        },
+        values=TWINS.values,
+    ),
+    id_columns="exported",
+    input_years={YEAR - 1},
+    weight=1_000_000,
+)
 def test_a_reloaded_simulation_reads_the_same_identifiers_in_each_year_given_inputs(
     identifier_readers, population, id_columns, input_years, weight
 ):
@@ -1518,7 +1535,8 @@ def test_a_reloaded_simulation_reads_the_same_identifiers_in_each_year_given_inp
                     built, group
                 )
                 membership = built.calculate(f"person_{group}_id", year)
-                exact = population.groups[group].astype(np.float32)
+                exact = population.groups[group]
+                assert membership.dtype.kind == "i"
                 assert membership.tolist() == exact.tolist()
     pd.testing.assert_frame_equal(reloaded.to_input_dataframe(), exported)
 

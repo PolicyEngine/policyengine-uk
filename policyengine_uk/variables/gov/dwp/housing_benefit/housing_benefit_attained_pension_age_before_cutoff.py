@@ -12,16 +12,25 @@ class housing_benefit_attained_pension_age_before_cutoff(Variable):
         "did get the lower one. Other members of the benefit unit do not "
         "count. Before the "
         "cutoff took effect there was a single pension-age allowance, the "
-        "higher one, so this is true for every unit then."
+        "higher one, so this is true for every unit then. Annual 2021 "
+        "represents FY2021-22 under the model fiscal-year convention; the "
+        "cohort split commenced on 1 April 2021. This flag does not decide "
+        "pension-age eligibility."
     )
     definition_period = YEAR
     reference = (
         "https://www.legislation.gov.uk/uksi/2006/214/schedule/3",
         "https://www.legislation.gov.uk/uksi/2021/188/regulation/2/made",
         "https://www.legislation.gov.uk/nisr/2006/406/schedule/4",
+        "https://www.legislation.gov.uk/uksi/2021/188/regulation/1/made",
+        "https://www.legislation.gov.uk/nisr/2021/70/regulation/1/made",
+        "https://www.legislation.gov.uk/nisr/2021/70/regulation/2/made",
     )
 
     def formula(benunit, period, parameters):
+        return np.ones(benunit.count, dtype=bool)
+
+    def formula_2021(benunit, period, parameters):
         cutoff = parameters(
             period
         ).gov.dwp.housing_benefit.allowances.pension_age_cutoff

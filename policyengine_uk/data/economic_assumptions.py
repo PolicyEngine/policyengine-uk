@@ -120,13 +120,14 @@ PROJECTION_END_YEAR = 2032
 # a separate change. Energy has its own declaration-aware projection below,
 # so it must not also grow through the generic variable-index fallback.
 LEGACY_PROJECTION_END_YEAR = 2030
-DATASET_UPRATING_EXCLUSIONS = frozenset(
+DECLARED_ENERGY_INPUTS = frozenset(
     {
         "domestic_energy_consumption",
         "electricity_consumption",
         "gas_consumption",
     }
 )
+DATASET_UPRATING_EXCLUSIONS = DECLARED_ENERGY_INPUTS
 # Inputs that describe only the year they are stored for, so are not carried
 # into projected years. Unused annual allowance comes from the three tax years
 # before this one (Finance Act 2004 s. 228A), a window that moves each year; a
@@ -409,7 +410,7 @@ def uprate_energy(
     basis = observed_year.energy_price_basis
     variables = [
         name
-        for name in DATASET_UPRATING_EXCLUSIONS
+        for name in DECLARED_ENERGY_INPUTS
         if name in observed_year.household.columns
         and name in current_year.household.columns
     ]
@@ -417,10 +418,27 @@ def uprate_energy(
     projected = False
     if basis is not None and variables:
         index = parameters.get_child(ENERGY_PRICE_INDEX)
-        source_index = _uprating_index_value(
-            index, f"{basis['period_value']:04d}-01-01"
-        )
-        target_index = _uprating_index_value(index, f"{current_year.time_period}-01-01")
+        source_instant = f"{basis['period_value']:04d}-01-01"
+        target_instant = f"{int(current_year.time_period):04d}-01-01"
+        supported_instants = [
+            value.instant_str
+            for value in getattr(index, "values_list", [])
+            if value.value is not None
+        ]
+        if not supported_instants:
+            raise ValueError(
+                f"Energy index {ENERGY_PRICE_INDEX!r} has no non-null history "
+                f"for declared basis {source_instant} and target {target_instant}."
+            )
+        first_supported = min(supported_instants)
+        if source_instant < first_supported or target_instant < first_supported:
+            raise ValueError(
+                f"Energy index {ENERGY_PRICE_INDEX!r} first supports "
+                f"{first_supported}; declared basis {source_instant} and target "
+                f"{target_instant} must be on or after that instant."
+            )
+        source_index = _uprating_index_value(index, source_instant)
+        target_index = _uprating_index_value(index, target_instant)
         projected = source_index not in (None, 0) and target_index is not None
         if projected:
             ratio = target_index / source_index
@@ -799,7 +817,7 @@ def reset_growthfactor_uprating(
 
     first_year = min(dataset.datasets.keys())
     base_year_dataset = dataset.datasets[first_year]
-    base_energy = DATASET_UPRATING_EXCLUSIONS.intersection(
+    base_energy = DECLARED_ENERGY_INPUTS.intersection(
         base_year_dataset.household.columns
     )
 
@@ -807,7 +825,7 @@ def reset_growthfactor_uprating(
         if year == first_year:
             continue
         current_year_dataset = dataset.datasets[year]
-        current_energy = DATASET_UPRATING_EXCLUSIONS.intersection(
+        current_energy = DECLARED_ENERGY_INPUTS.intersection(
             current_year_dataset.household.columns
         )
         shared_energy = current_energy.intersection(base_energy)
