@@ -626,22 +626,37 @@ def uprate_student_loan_plans(
     Existing holders keep their recorded plan and the repayment amount passed
     to this helper. Course, funding and first-repayment dates are unavailable,
     so age and current residence cannot establish a different plan or a
-    cancellation date. This fallback can retain older plans too long and
-    changes the future cohort mix; it is not date-aware cancellation modelling.
-    The enclosing uprating separately grows stored repayments with average
-    earnings, which this helper does not change.
+    cancellation date. The enclosing uprating separately grows stored
+    repayments with average earnings, which this helper does not change.
+
+    Retaining recorded plans also leaves future cohort transitions from
+    Plan 1 to Plan 2 in England and Wales at the 2012 intake, and from Plan 2
+    to Plan 5 in England at the 2023 intake, unimplemented. Vahid Ahmadi's
+    25 October 2026 review audit used enhanced_frs_2024_25 at revision
+    2526edbb and the age-18 intake proxy. Among 7.14m recorded Plan 2 holders,
+    it counted 0.53m in England whose proxy intake reached 2023 in 2026,
+    1.57m in 2028 and 2.99m in 2031. Among 1.52m recorded Plan 1 holders,
+    it counted none in England and Wales whose proxy intake reached 2012
+    in 2025, 0.30m in 2028 and 0.68m in 2031. These approximate counts
+    describe that reviewer's dataset audit; this change does not reproduce
+    the audit or establish national population accuracy or revenue effects.
+    See the audit and accepted follow-up scope:
+    https://github.com/PolicyEngine/policyengine-uk/pull/2650#issuecomment-6396818516
+    https://github.com/PolicyEngine/policyengine-uk/pull/2650#issuecomment-6397144626
+    Date-aware cohort and cancellation work remains open under issue 2636.
 
     Projected datasets copy the base year with ages fixed. Each year's plans
     therefore start from that copy, not accumulated prior-year plan state.
     base_year is the year the data describe; without it, the previous year is
-    taken as that year.
+    taken as that year. This fallback can retain older plans too long and
+    changes the future plan mix; it does not model exact cancellation dates.
 
     New entrants use the existing intake-at-18 approximation, year - age + 18,
     to extend the base year's age bands and add England's Plan 5 intakes.
     We use highest_education == TERTIARY as the signal for who is a graduate,
-    then apply a flat take-up probability. Each
-    person's take-up draw is keyed on person_id, so the same people take up
-    a loan in every year and in any row order.
+    then apply a flat take-up probability. Each person's take-up draw is keyed
+    on person_id, so the same people take up a loan in every year and in any
+    row order.
 
     New holders follow the funding nation's undergraduate repayment plan.
     Funding agency is unavailable in the dataset, so current household
