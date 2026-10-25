@@ -1,3 +1,10 @@
+## [2.158.0] - 2026-10-25
+
+### Added
+
+- Added Housing Benefit disabled-child and enhanced-child premiums for qualifying benefits and blindness represented by existing inputs.
+
+
 ## [2.157.3] - 2026-10-25
 
 ### Fixed
