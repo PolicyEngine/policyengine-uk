@@ -22,20 +22,14 @@ Invariants, for any generated population of families not on those benefits
    £37.10 (an intended difference).
 5. The disregard reduces applicable income by no more than the claimant's
    and partner's gross earnings, and never raises it.
-6. Metamorphic: the pension-age and working-age schedules agree. Moving every
-   adult between working age (25 to 60) and pension age (67 to 90), with
-   earnings below the tax and National Insurance thresholds, leaves the
-   disregard unchanged. It covers only those earnings and adults aged 25 or
-   over, where nothing age-dependent (para 12, the age-25 test, National
-   Insurance above State Pension age) can differ between the two groups, so
-   it pins the current behaviour rather than independently testing the two
-   schedules. Intended difference: the £20 special disregard has different
-   conditions at each age. At working age it follows the disability premium,
-   which the model grants on the disability flag the draws set; at pension age
-   it needs receipt of a listed benefit, blindness or the carer premium (SI
-   2006/214 Sch 4 paras 4 and 5), none of which the draws supply. The
-   comparison therefore covers families whose special eligibility is the same
-   at both ages, which includes every family without a disabled adult.
+6. Metamorphic: with special eligibility fixed identically false or true,
+   moving every adult between working age (25 to 60) and pension age (67 to
+   90) leaves every family's disregard unchanged. Earnings stay below the
+   tax and National Insurance thresholds and every adult stays over 25.
+   Natural eligibility is checked independently: the disability flag qualifies
+   at working age, but the draws supply no pension-age qualifying receipt,
+   blindness or carer premium (SI 2006/214 Sch 4 paras 4 and 5). Lone parents
+   naturally keep the same £25 even when these eligibility flags differ.
 7. Differential against the old flat formula (£5/£10/£25 by family type, plus
    £37.10 for summed hours over 30, or 16 for lone parents), read without
    CPI uprating. They agree for families whose net earnings cover the flat
@@ -45,6 +39,10 @@ Invariants, for any generated population of families not on those benefits
    must differ where net earnings fall below the flat amount (the new
    disregard is the net earnings) and for families without earnings (the new
    disregard is zero).
+8. The selected standard is min(net earnings, 52 times the statutory weekly
+   choice), with £25 lone-parent precedence, then £20 special, then £10
+   couple, then £5 single. These amounts never stack and the selected
+   standard stays between zero and net earnings.
 
 Para 12 is tested on its own: with Income Support, every family has all its
 net earnings disregarded, at working or pension age. Leaving Income Support can
@@ -57,7 +55,7 @@ from April 2010, with SI 2020/371's £37.10 for 2020-21.
 """
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -179,8 +177,14 @@ VARIABLES = [
 ]
 
 
-def calculate(units, **kwargs):
+def calculate(units, special_eligible=None, **kwargs):
     sim = Simulation(situation=situation(units, **kwargs))
+    if special_eligible is not None:
+        sim.set_input(
+            "housing_benefit_special_earnings_disregard_eligible",
+            YEAR,
+            np.full(len(units), special_eligible),
+        )
     return {v: np.asarray(sim.calculate(v, YEAR), dtype=float) for v in VARIABLES}
 
 
@@ -229,6 +233,7 @@ def test_weekly_amounts_are_frozen_from_2015_to_2030():
     for year in range(2015, 2031):
         p = system.parameters(year).gov.dwp.housing_benefit.means_test.income_disregard
         assert (p.single, p.couple, p.lone_parent) == (5, 10, 25), year
+        assert p.special == 20, year
         # SI 2020/371 reg 5: £37.10 from 6 April 2020 to 4 April 2021, which
         # the model's fiscal-year convention reads as 2020.
         expected_worker = 37.1 if year == 2020 else 17.1
@@ -258,18 +263,123 @@ def test_disregard_lowers_applicable_income_by_no_more_than_earnings(units):
         min_size=1,
     )
 )
+@example(
+    units=[
+        dict(
+            shape=shape,
+            adults=[
+                dict(
+                    age=40,
+                    employment_income=2_000.0,
+                    weekly_hours=0.0,
+                    disabled=True,
+                    pension_contributions=0.0,
+                )
+                for _ in range(n_adults)
+            ],
+            children=[5] * n_children,
+            childcare=0.0,
+        )
+        for shape, (n_adults, n_children) in SHAPES.items()
+    ]
+)
 def test_pension_age_and_working_age_schedules_agree(units):
     working_age = calculate(units)
+
     # Map 25-60 onto 67-90, keeping everyone at or over 25.
-    pension_age = calculate(units, age_map=lambda age: 67 + (age - 25) * 23 // 35)
+    def pension_age_map(age):
+        return 67 + (age - 25) * 23 // 35
+
+    pension_age = calculate(units, age_map=pension_age_map)
     key = "housing_benefit_applicable_income_disregard"
     special = "housing_benefit_special_earnings_disregard_eligible"
     for i, unit in enumerate(units):
-        if not any(adult["disabled"] for adult in unit["adults"]):
-            # Nothing else in the draws can make the two routes differ.
-            assert working_age[special][i] == pension_age[special][i], unit
-        if working_age[special][i] == pension_age[special][i]:
+        assert working_age[special][i] == any(
+            adult["disabled"] for adult in unit["adults"]
+        ), unit
+        assert not pension_age[special][i], unit
+        if unit["shape"] == "lone_parent":
             assert abs(working_age[key][i] - pension_age[key][i]) < 0.01, unit
+
+    for eligible in (False, True):
+        working_age_fixed = calculate(units, special_eligible=eligible)
+        pension_age_fixed = calculate(
+            units, special_eligible=eligible, age_map=pension_age_map
+        )
+        for i, unit in enumerate(units):
+            assert working_age_fixed[special][i] == eligible, unit
+            assert pension_age_fixed[special][i] == eligible, unit
+            assert abs(working_age_fixed[key][i] - pension_age_fixed[key][i]) < 0.01, (
+                unit,
+                eligible,
+            )
+
+
+@PROPERTY_SETTINGS
+@given(
+    st.lists(
+        st.tuples(
+            st.sampled_from(sorted(SHAPES)),
+            st.integers(0, 100_000_000).map(lambda pennies: pennies / 100),
+            st.booleans(),
+        ),
+        min_size=1,
+        max_size=30,
+    )
+)
+@example(
+    cases=[
+        (shape, net, eligible)
+        for shape in SHAPES
+        for net in (0, 259.99, 260, 500, 520, 1039.99, 1040, 1300, 2000)
+        for eligible in (False, True)
+    ]
+)
+def test_selected_standard_has_statutory_precedence_and_is_capped_at_net_earnings(
+    cases,
+):
+    units = []
+    for shape, _, _ in cases:
+        n_adults, n_children = SHAPES[shape]
+        units.append(
+            dict(
+                shape=shape,
+                adults=[
+                    dict(
+                        age=40,
+                        employment_income=0.0,
+                        weekly_hours=0.0,
+                        disabled=False,
+                        pension_contributions=0.0,
+                    )
+                    for _ in range(n_adults)
+                ],
+                children=[5] * n_children,
+                childcare=0.0,
+            )
+        )
+    sim = Simulation(situation=situation(units))
+    # Supply net earnings independently of taxes, pensions and gross income:
+    # this property tests the selected standard before downstream composition.
+    sim.set_input("housing_benefit_net_earnings", YEAR, [case[1] for case in cases])
+    sim.set_input(
+        "housing_benefit_special_earnings_disregard_eligible",
+        YEAR,
+        [case[2] for case in cases],
+    )
+    selected = sim.calculate("housing_benefit_special_earnings_disregard", YEAR)
+    net_earnings = sim.calculate("housing_benefit_net_earnings", YEAR)
+    for actual, net, (shape, _, eligible) in zip(selected, net_earnings, cases):
+        if shape == "lone_parent":
+            weekly = 25
+        elif eligible:
+            weekly = 20
+        elif SHAPES[shape][0] == 2:
+            weekly = 10
+        else:
+            weekly = 5
+        assert actual == min(net, WEEKS * weekly), (shape, net, eligible)
+        assert 0 <= actual <= net, (shape, net, eligible)
 
 
 @PROPERTY_SETTINGS
