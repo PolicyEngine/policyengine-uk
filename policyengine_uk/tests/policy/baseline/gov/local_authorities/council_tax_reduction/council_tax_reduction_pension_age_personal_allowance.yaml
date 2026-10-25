@@ -1,0 +1,236 @@
+# Pension-age Council Tax Reduction personal allowances by country. England's
+# prescribed requirements (SI 2012/2885 Sch 2 para 1, amended by SI 2021/29) give
+# the lower rates where every member attained State Pension age on or after
+# 1 April 2021; the Scottish (SSI 2012/319 Sch 1 para 2) and Welsh (SI 2013/3029
+# Sch 2 para 1) schemes have one pension-age rate. Amounts are for 2026-27.
+
+- name: In England, a single person who attained State Pension age on 31 March 2021 gets the higher rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 71
+        months_since_last_birthday: 6.19355
+        is_male: false
+    benunits:
+      benunit:
+        members: [claimant]
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+  output:
+    council_tax_reduction_applicable_amount: 256.00 * 52
+
+- name: In England, a single person who attained State Pension age on 1 April 2021 gets the lower rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 71
+        months_since_last_birthday: 6.1613
+        is_male: false
+    benunits:
+      benunit:
+        members: [claimant]
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    council_tax_reduction_applicable_amount: 238.00 * 52
+
+- name: In England, a couple who both attained State Pension age after April 2021 get the lower rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 70
+        months_since_last_birthday: 6.0
+        is_male: true
+      younger:
+        age: 68
+        months_since_last_birthday: 9.1613
+        is_male: false
+    benunits:
+      benunit:
+        members: [older, younger]
+        benefits_premiums: 0
+    households:
+      household:
+        members: [older, younger]
+        region: SOUTH_WEST
+  output:
+    council_tax_reduction_applicable_amount: 363.25 * 52
+
+- name: In Scotland, a single person who attained State Pension age on 1 April 2021 keeps the one pension-age rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 71
+        months_since_last_birthday: 6.1613
+        is_male: false
+    benunits:
+      benunit:
+        members: [claimant]
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        region: SCOTLAND
+  output:
+    council_tax_reduction_applicable_amount: 256.00 * 52
+
+- name: In Scotland, a couple who both attained State Pension age after April 2021 keep the one pension-age rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 70
+        months_since_last_birthday: 6.0
+        is_male: true
+      younger:
+        age: 68
+        months_since_last_birthday: 9.1613
+        is_male: false
+    benunits:
+      benunit:
+        members: [older, younger]
+        benefits_premiums: 0
+    households:
+      household:
+        members: [older, younger]
+        region: SCOTLAND
+  output:
+    council_tax_reduction_applicable_amount: 383.35 * 52
+
+- name: In Wales, a single person who attained State Pension age on 1 April 2021 keeps the one pension-age rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 71
+        months_since_last_birthday: 6.1613
+        is_male: false
+    benunits:
+      benunit:
+        members: [claimant]
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        region: WALES
+  output:
+    council_tax_reduction_applicable_amount: 256.00 * 52
+
+- name: In England, a mixed-age couple whose older member attained State Pension age after April 2021 gets the lower rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 70
+        months_since_last_birthday: 6.0
+        is_male: true
+      younger:
+        age: 60
+        months_since_last_birthday: 9.1613
+        is_male: false
+    benunits:
+      benunit:
+        members: [older, younger]
+        benefits_premiums: 0
+        # A mixed-age couple with no Universal Credit claims as pensioners
+        # (SI 2012/2885 reg 3(1)(a)).
+        council_tax_reduction_pensioner: true
+    households:
+      household:
+        members: [older, younger]
+        region: EAST_MIDLANDS
+  output:
+    council_tax_reduction_applicable_amount: 363.25 * 52
+
+- name: In England, an older non-applicant does not change the applicant's cohort
+  # SI 2012/2885 Sch 2 para 1 reads the applicant's and partner's ages. The
+  # applicant attained State Pension age in 2025, after the cutoff, so the
+  # lower single rate applies: 238 x 52.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 67
+        date_of_birth: 19590101
+        is_claimant_or_partner: true
+        is_household_head: true
+      other_adult:
+        age: 80
+        date_of_birth: 19460101
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members: [claimant, other_adult]
+        council_tax_reduction_pensioner: true
+        benefits_premiums: 0
+        pension_age_benefits_premiums: 0
+    households:
+      home:
+        members: [claimant, other_adult]
+        country: ENGLAND
+  output:
+    council_tax_reduction_attained_pension_age_before_cutoff: false
+    council_tax_reduction_applicable_amount: 238 * 52
+
+# April 2027 projections of the one Scottish pension-age rate, the higher
+# Housing Benefit allowance: the standard minimum guarantee, uprated by
+# May-July 2026 earnings growth of 3.9%, plus the maximum Savings Credit,
+# uprated by September 2026 CPI of 3.5% (HB A3/2021).
+- name: In Scotland, a single person's April 2027 pension-age rate is the projected guarantee plus the Savings Credit maximum
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 72
+        is_male: false
+    benunits:
+      benunit:
+        members: [claimant]
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        region: SCOTLAND
+  output:
+    council_tax_reduction_applicable_amount: 13_825.2712  # (238 * 1.039 + 17.96 * 1.035) * 52
+
+- name: In Scotland, a couple's April 2027 pension-age rate is the projected guarantee plus the Savings Credit maximum
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 71
+        is_male: true
+      younger:
+        age: 69
+        is_male: false
+    benunits:
+      benunit:
+        members: [older, younger]
+        benefits_premiums: 0
+    households:
+      household:
+        members: [older, younger]
+        region: SCOTLAND
+  output:
+    council_tax_reduction_applicable_amount: 20_707.453  # (363.25 * 1.039 + 20.10 * 1.035) * 52

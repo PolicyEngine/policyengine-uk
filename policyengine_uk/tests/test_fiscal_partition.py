@@ -7,7 +7,9 @@ from the OBR classification and the variables' formulas, not from the
 model's lists, so these tests compare two specifications:
 
 1. Schema: ids and variables are unique, every reference resolves, and no
-   variable is both a head and an exclusion.
+   variable is both a head and an exclusion. Every tax row of the OBR's
+   current receipts table (EFO November 2025, Table A.5) is either a head's
+   ``obr_line`` or listed under ``uncovered_receipts``, never both.
 2. Differential: for each total, the heads the partition assigns to it are
    exactly the variables the model sums (``GOV_TAX_VARIABLES``,
    ``HOUSEHOLD_TAX_VARIABLES``, ``PRE_BUDGET_CHANGE_HOUSEHOLD_TAX_VARIABLES``),
@@ -17,15 +19,17 @@ model's lists, so these tests compare two specifications:
    eligibility or imputation route) under the head's ``reads``; every
    declared read occurs. Component and baseline-measure exclusions are reached
    from their head; composite, duplicate and measure-within exclusions are
-   reached from no head.
+   reached from no head. (Assessment and change-measure exclusions may be
+   read by means tests and incomes, so only the differential test binds them.)
 4. Coefficient one (perturbation): raising one head by delta, with every
    other input unchanged, raises each total that includes it by exactly
    delta per member and leaves every other head of those totals unchanged.
    A head counted twice, as corporate SDLT was through ``expected_sdlt``
    (#2159), moves its totals by 2 x delta.
-5. Identity (property-based): on random households, years 2025-2030, and
-   under SDLT abolition and council tax abolition, each total equals the sum
-   of its heads, less the heads ``dropped_when`` names. Heads marked
+5. Identity (property-based): on random households, some with a child at
+   private school, years 2025-2030, and under SDLT abolition, council tax
+   abolition and a restored private school VAT exemption, each total equals
+   the sum of its heads, less the heads ``dropped_when`` names. Heads marked
    ``sign: nonnegative`` are non-negative and heads marked
    ``zero_at_baseline: expected`` are zero at current law; at most one of
    SDLT, LTT and LBTT is non-zero per household.
@@ -41,7 +45,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 import yaml
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 import policyengine_uk
@@ -67,6 +71,41 @@ EXCLUSION_KINDS = {
     "composite",
     "duplicate",
     "baseline_measure",
+    "assessment",
+    "change_measure",
+}
+# The tax rows of OBR EFO November 2025 Table A.5, "Current receipts".
+OBR_TABLE_A5_TAX_ROWS = {
+    "Income tax",
+    "National insurance contributions",
+    "Value added tax",
+    "Corporation tax",
+    "Petroleum revenue tax",
+    "Fuel duties",
+    "Business rates",
+    "Council tax",
+    "VAT refunds",
+    "Capital gains tax",
+    "Inheritance tax",
+    "Property transaction taxes",
+    "Stamp taxes on shares",
+    "Tobacco duties",
+    "Alcohol duties",
+    "Air passenger duty",
+    "Insurance premium tax",
+    "Climate change levy",
+    "Bank levy",
+    "Bank surcharge",
+    "Apprenticeship levy",
+    "Digital services tax",
+    "Other HMRC taxes",
+    "Vehicle excise duties",
+    "Licence fee receipts",
+    "Environmental levies",
+    "Emissions Trading Scheme",
+    "Energy profits levy",
+    "Electricity generator levy",
+    "Other taxes",
 }
 OBR_TABLE_3_1_LINES = {
     "Income tax",
@@ -114,23 +153,31 @@ def tolerance(*arrays) -> np.ndarray:
 def test_partition_schema():
     p = partition()
     assert p["schema_version"] == 1
-    totals = set(p["totals"])
-    assert totals == set(MODEL_LISTS)
+    # The tax totals are this file's subject; the spending totals and
+    # spending_heads (the aggregate impact report's) share the file and must
+    # not borrow tax heads or variables.
+    assert set(MODEL_LISTS) <= set(p["totals"])
+    spending_heads = p.get("spending_heads", [])
+    spending_totals = {t for head in spending_heads for t in head["totals"]}
+    assert not spending_totals & set(MODEL_LISTS)
     ids = [head["id"] for head in heads()]
     variables = [head["variable"] for head in heads()]
     assert len(ids) == len(set(ids)), "duplicate head id"
     assert len(variables) == len(set(variables)), "a variable is in two heads"
+    assert not set(variables) & {h["variable"] for h in spending_heads}
+    assert not set(ids) & {h["id"] for h in spending_heads}
     for head in heads():
         variable = system.variables[head["variable"]]
         assert head["entity"] == variable.entity.key, head["id"]
-        assert set(head["totals"]) <= totals, head["id"]
+        assert set(head["totals"]) <= set(MODEL_LISTS), head["id"]
         assert head["sign"] in {"nonnegative", "any"}, head["id"]
         assert head.get("zero_at_baseline", "expected") == "expected", head["id"]
-        assert head["obr_line"], head["id"]
         table_line = head["obr_table_3_1"]
         assert table_line is None or table_line in OBR_TABLE_3_1_LINES, head["id"]
         if head["obr_line"] == "not_an_obr_current_receipt":
             assert table_line is None and head["obr_line_note"], head["id"]
+        else:
+            assert head["obr_line"] in OBR_TABLE_A5_TAX_ROWS, head["id"]
         assert head["report_group"], head["id"]
         for read in head.get("reads", []):
             assert read["head"] in head_by_id(), (head["id"], read)
@@ -144,13 +191,20 @@ def test_partition_schema():
             assert set(x["spans"]) <= set(ids), x
         else:
             assert x["head"] in ids, x
-    for total, spec in p["totals"].items():
-        for switch, dropped in spec.get("dropped_when", {}).items():
+    for total in MODEL_LISTS:
+        for switch, dropped in p["totals"][total].get("dropped_when", {}).items():
             system.parameters.get_child(switch)
             assert set(dropped) <= {h["variable"] for h in heads_of(total)}
     for guard in p["overlap_guards"]:
         assert set(guard["heads"]) <= set(ids), guard["id"]
     assert p["model_double_counts"] == []
+    # Every tax row of Table A.5 is either measured by a head or declared
+    # uncovered, never both.
+    covered = {head["obr_line"] for head in heads()} - {"not_an_obr_current_receipt"}
+    uncovered = [row["obr_line"] for row in p["uncovered_receipts"]]
+    assert len(uncovered) == len(set(uncovered))
+    assert not covered & set(uncovered)
+    assert covered | set(uncovered) == OBR_TABLE_A5_TAX_ROWS
 
 
 # 2. Differential against the model's lists
@@ -279,13 +333,13 @@ def household_values(sim: Simulation, variable: str, year: int) -> np.ndarray:
 
 @lru_cache(maxsize=None)
 def traced_reads() -> dict:
-    """Variable name -> names of the variables it reads, at current law."""
-    sim = Simulation(situation=fixed_situation())
-    sim.trace = True
-    for head in heads():
-        sim.calculate(head["variable"], YEAR)
-    for total in MODEL_LISTS:
-        sim.calculate(total, YEAR)
+    """Variable name -> names of the variables it reads, at current law.
+
+    The union of two traces of the same households: as a situation, and as
+    if built from data. Some formulas read further only in a data-built
+    simulation (private school attendance is imputed from net income only
+    there, since #1905), and the guards cover both.
+    """
     children = defaultdict(set)
 
     def walk(node):
@@ -293,8 +347,17 @@ def traced_reads() -> dict:
             children[node.name].add(child.name)
             walk(child)
 
-    for tree in sim.tracer.trees:
-        walk(tree)
+    for built_from_dataset in (False, True):
+        sim = Simulation(situation=fixed_situation())
+        # The flag utils.data_source.built_from_data reads.
+        sim.built_from_dataset = built_from_dataset
+        sim.trace = True
+        for head in heads():
+            sim.calculate(head["variable"], YEAR)
+        for total in MODEL_LISTS:
+            sim.calculate(total, YEAR)
+        for tree in sim.tracer.trees:
+            walk(tree)
     return dict(children)
 
 
@@ -341,7 +404,7 @@ def test_exclusions_sit_where_the_partition_says():
         if x["kind"] in ("component", "baseline_measure"):
             owner = head_by_id()[x["head"]]["variable"]
             assert owner in readers, f"{x['variable']} is not inside {owner}"
-        else:
+        elif x["kind"] in ("composite", "duplicate", "measure_within"):
             assert not readers, (
                 f"{x['variable']} ({x['kind']}) is read by heads {sorted(readers)}"
             )
@@ -372,6 +435,17 @@ def baseline_entity_values(variable: str) -> dict:
         period: np.asarray(sim.calculate(variable, period), dtype=np.float64)
         for period in periods
     }
+
+
+@pytest.fixture(scope="module", autouse=True)
+def release_cached_values():
+    # Drop the partition, the traced reads and the baseline values once this
+    # module's tests are done, instead of for the rest of the test process.
+    yield
+    partition.cache_clear()
+    traced_reads.cache_clear()
+    baseline_values.cache_clear()
+    baseline_entity_values.cache_clear()
 
 
 def raise_head(sim: Simulation, variable: str, delta: float) -> None:
@@ -435,6 +509,9 @@ SCENARIOS = {
     "baseline": None,
     "sdlt_abolished": {"gov.hmrc.stamp_duty.abolish": {ALWAYS: True}},
     "council_tax_abolished": {"gov.contrib.abolish_council_tax": {ALWAYS: True}},
+    "private_school_exemption_restored": {
+        "gov.hmrc.vat.private_school_fees_exempt": {ALWAYS: True}
+    },
 }
 REGIONS = ["LONDON", "NORTH_WEST", "WALES", "SCOTLAND", "NORTHERN_IRELAND"]
 amount = lambda top: st.one_of(st.just(0.0), st.floats(1_000, top))  # noqa: E731
@@ -451,6 +528,8 @@ random_household = st.fixed_dictionaries(
         "consumption": amount(80_000),
         "main_residence_value": amount(5_000_000),
         "owner": st.booleans(),
+        # A child at private school, so private school VAT is non-zero.
+        "pupil": st.booleans(),
     }
 )
 PERSON_INPUTS = {"age", "employment_income", "self_employment_income", "capital_gains"}
@@ -461,17 +540,42 @@ def random_situation(drawn: list, year: int) -> dict:
     for i, inputs in enumerate(drawn):
         person = f"person_{i}"
         people[person] = {key: {year: inputs[key]} for key in PERSON_INPUTS}
-        benunits[f"benunit_{i}"] = {"members": [person]}
+        members = [person]
+        if inputs["pupil"]:
+            people[f"child_{i}"] = {
+                "age": {year: 10},
+                "attends_private_school": {year: True},
+            }
+            members.append(f"child_{i}")
+        benunits[f"benunit_{i}"] = {"members": members}
         household = {
             key: {year: value}
             for key, value in inputs.items()
-            if key not in PERSON_INPUTS and key != "owner"
+            if key not in PERSON_INPUTS and key not in ("owner", "pupil")
         }
         household["tenure_type"] = {
             year: "OWNED_OUTRIGHT" if inputs["owner"] else "RENT_PRIVATELY"
         }
-        households[f"household_{i}"] = {"members": [person], **household}
+        households[f"household_{i}"] = {"members": members, **household}
     return {"people": people, "benunits": benunits, "households": households}
+
+
+# Always one household with a pupil, so the private school checks are never
+# vacuous.
+PUPIL_HOUSEHOLD = {
+    "region": "LONDON",
+    "age": 45,
+    "employment_income": 120_000.0,
+    "self_employment_income": 0.0,
+    "capital_gains": 0.0,
+    "main_residential_property_purchased": 0.0,
+    "shareholding": 0.0,
+    "council_tax": 2_500.0,
+    "consumption": 50_000.0,
+    "main_residence_value": 900_000.0,
+    "owner": True,
+    "pupil": True,
+}
 
 
 @settings(
@@ -484,11 +588,13 @@ def random_situation(drawn: list, year: int) -> dict:
     drawn=st.lists(random_household, min_size=2, max_size=2),
     year=st.integers(2025, 2030),
 )
+@example(drawn=[PUPIL_HOUSEHOLD, {**PUPIL_HOUSEHOLD, "pupil": False}], year=2026)
 def test_each_total_is_the_sum_of_its_heads(drawn, year):
     for scenario, reform in SCENARIOS.items():
         sim = Simulation(situation=random_situation(drawn, year), reform=reform)
         values = {h["id"]: household_values(sim, h["variable"], year) for h in heads()}
-        for total, spec in partition()["totals"].items():
+        for total in MODEL_LISTS:
+            spec = partition()["totals"][total]
             dropped = set()
             for switch, names in spec.get("dropped_when", {}).items():
                 if reform and switch in reform:
@@ -520,6 +626,22 @@ def test_each_total_is_the_sum_of_its_heads(drawn, year):
                     assert (values[head["id"]] >= 0).all(), head["id"]
                 if head.get("zero_at_baseline") == "expected":
                     np.testing.assert_array_equal(values[head["id"]], 0, head["id"])
+            # Exercise the head: it is positive wherever a pupil's fees are
+            # charged at current law.
+            pupils = np.array([h["pupil"] for h in drawn])
+            np.testing.assert_array_equal(values["private_school_vat"] > 0, pupils)
+        if scenario == "private_school_exemption_restored":
+            # Restoring the exemption removes the charge, and household taxes
+            # fall by the baseline charge wherever a pupil's fees bore it.
+            pupils = np.array([h["pupil"] for h in drawn])
+            np.testing.assert_array_equal(values["private_school_vat"], 0)
+            change = values["private_school_vat_change"]
+            np.testing.assert_array_equal(change < 0, pupils)
+            np.testing.assert_allclose(
+                change,
+                -household_values(sim, "baseline_private_school_vat", year),
+                rtol=1e-6,
+            )
         if scenario == "sdlt_abolished":
             np.testing.assert_array_equal(values["sdlt_household"], 0)
             np.testing.assert_array_equal(values["sdlt_corporate"], 0)

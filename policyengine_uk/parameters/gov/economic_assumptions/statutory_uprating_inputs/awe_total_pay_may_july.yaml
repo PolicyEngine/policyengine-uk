@@ -26,9 +26,8 @@ values:
   2023-07-01: 0.085 # SI 2024/242 EM
   2024-07-01: 0.041 # SI 2025/295 EM
   2025-07-01: 0.048 # SI 2026/148 EM
-  # Provisional: 3.9% is the 15 September 2026 first estimate and stays
-  # provisional until the October labour market release (due 20 October),
-  # the vintage the uprating review uses; replace it once published.
+  # ONS KAC3, 20 October 2026 labour market release: May-July growth
+  # remained 3.9%, unchanged from the September first estimate.
   2026-07-01: 0.039
   # Not yet published. From here the value is calendar-year earnings growth
   # (yoy_growth.obr.average_earnings) plus forecast_gap.awe_total_pay_may_july.
@@ -40,6 +39,8 @@ metadata:
   reference:
     - title: ONS KAC3, AWE whole economy total pay, three-month average growth on a year earlier
       href: https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/timeseries/kac3/lms
+    - title: ONS Average weekly earnings in Great Britain, 20 October 2026
+      href: https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/bulletins/averageweeklyearningsingreatbritain/october2026
     - title: Explanatory Memorandum to the Social Security Benefits Up-rating Order 2026 (SI 2026/148)
       href: https://www.legislation.gov.uk/uksi/2026/148/contents/made
     - title: Explanatory Memorandum to the Social Security Benefits Up-rating Order 2025 (SI 2025/295)

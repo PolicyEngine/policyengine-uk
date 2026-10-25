@@ -1,4 +1,4 @@
-description: A reduced rate of VAT applicable to select goods and services (domestic fuel and power).
+description: A reduced rate of VAT applicable to select goods and services, including domestic gas and other fuels. Domestic electricity has its own rate (gov.hmrc.vat.domestic_electricity_rate), so a change to this rate does not reach electricity.
 values:
   1994-04-01:
     value: 0.08

@@ -1,4 +1,4 @@
-description: Monthly LCWRA element for a pre-2026 claimant, a severe conditions criteria claimant or a claimant who is terminally ill (the protected LCWRA amount). Each dated value is the legislated amount for the tax year it falls in; a later tax year without one takes the lowest amount the Universal Credit Act 2025 s. 4 duty allows.
+description: Monthly LCWRA element for a pre-2026 claimant, a severe conditions criteria claimant or a claimant who is terminally ill (the protected LCWRA amount). Each dated value is the legislated amount for the tax year it falls in. A later tax year without one takes, to 2029-30, the lowest amount the Universal Credit Act 2025 s. 4 duty allows, and from 2030-31 the year before's amount uprated by the LCWRA element's uprating index (s. 4 ends with 2029-30 and s. 3 no longer disapplies the annual up-rating).
 values:
   2026-04-01:
     value: 429.80

@@ -106,3 +106,64 @@
     income_support: 80
   output:
     winter_fuel_allowance: 200
+
+# ITEPA 2003 s.681I(1)(b): the winter fuel payment charge applies only where
+# total income "exceeds £35,000". From 2025-26 the payment goes to everyone of
+# pensionable age who meets its other conditions, and the charge recovers it
+# through income tax, so a pensioner with exactly £35,000 is not charged and
+# one with £35,001 is charged the whole payment. Total income is built from
+# pension and other investment income, not input.
+- name: Pensioner with total income just under £35,000 keeps WFP
+  period: 2026
+  absolute_error_margin: 1
+  input:
+    age: 70
+    country: ENGLAND
+    private_pension_income: 15_000
+    other_investment_income: 19_999
+    pension_credit: 0
+  output:
+    total_income: 34_999
+    winter_fuel_allowance: 200
+    winter_fuel_payment_charge: 0
+
+- name: Pensioner with total income of exactly £35,000 keeps WFP
+  period: 2026
+  absolute_error_margin: 1
+  input:
+    age: 70
+    country: ENGLAND
+    private_pension_income: 15_000
+    other_investment_income: 20_000
+    pension_credit: 0
+  output:
+    total_income: 35_000
+    winter_fuel_allowance: 200
+    winter_fuel_payment_charge: 0
+
+- name: Pensioner with total income just over £35,000 is charged the whole WFP back
+  period: 2026
+  absolute_error_margin: 1
+  input:
+    age: 70
+    country: ENGLAND
+    private_pension_income: 15_000
+    other_investment_income: 20_001
+    pension_credit: 0
+  output:
+    total_income: 35_001
+    winter_fuel_allowance: 200
+    winter_fuel_payment_charge: 200
+
+- name: Pensioner with total income of exactly £35,000 keeps WFP in 2025-26
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    age: 70
+    country: ENGLAND
+    private_pension_income: 35_000
+    pension_credit: 0
+  output:
+    total_income: 35_000
+    winter_fuel_allowance: 200
+    winter_fuel_payment_charge: 0

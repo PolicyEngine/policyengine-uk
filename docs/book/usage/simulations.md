@@ -200,6 +200,19 @@ print(sim.calculate("council_tax", 2025))  # One value per household
   period that is not one year are set on the simulation directly. A variable
   given for both months and the year is set column by column in the frame's
   order, since a year's value is spread over the months not already set.
+- `to_input_dataframe()` gives the identifier columns for every year that one
+  of its columns gives a whole year's value for, since a simulation built from
+  the frame holds the identifiers in each of those years. So an exported frame
+  loads back to a simulation that exports the same frame, even when the
+  simulation was given inputs for years outside its data, such as the
+  Universal Credit health element status the rebalancing records for 2026 to
+  2029.
+- Inputs carry forward to later years but not back to earlier ones. So when
+  `set_input` gives a simulation an input for a year before every year it
+  holds the identifiers for, it also gives the identifiers for that year.
+  Formulas that read identifiers, such as the draws that place each person in
+  their year of age, then read the same people and groups there as in the
+  simulation its exported frame loads back to.
 
 ```{important}
 The model stores `person_household_id` and `person_benunit_id` as 32-bit
@@ -264,6 +277,18 @@ Each table should contain the ID columns needed to link entities together:
 - `benunit`: `benunit_id`, plus any benefit-unit variables
 - `household`: `household_id`, plus any household-level variables
 
+Whatever the data source, keep identifiers to whole numbers from
+-2,147,483,648 to 2,147,483,647. A simulation stores them as 32-bit integers,
+so within that range the identifiers it returns (for example
+`sim.calculate("person_household_id", 2025)`) are the ones in your tables.
+Outside it, the simulation gives an `EntityIdWarning`: the identifiers it
+returns differ from yours, and so may anything rebuilt from them.
+
+Benefit-unit and household rows can be in any order. The loader aligns each
+year's group inputs by its ID column to the simulation's sorted group IDs;
+person rows keep their supplied order. This alignment does not reorder the
+caller's tables. Multi-year tables must still describe the same population.
+
 Use `UKSingleYearDataset` when you have one cross-section and want PolicyEngine
 UK to extend it forward using its standard uprating assumptions.
 
@@ -289,6 +314,10 @@ print(sim.calculate("household_net_income", 2026))
 
 `Simulation` and `Microsimulation` can also load H5 files from local paths,
 Hugging Face URLs, or Google Cloud Storage URLs:
+
+Files written by either `UKSingleYearDataset.save(path)` or
+`UKMultiYearDataset.save(path)` can be loaded with `Simulation(dataset=path)`.
+The loader detects single-year tables and multi-year groups from the H5 layout.
 
 ```python
 sim = Microsimulation(
@@ -352,7 +381,7 @@ print(f"Additional government revenue: £{revenue_change:.1f}bn")
 ```
 
 ```{note}
-Revenue calculations use the accounting identity: when household net income decreases, government revenue increases by the same amount (assuming no behavioural responses).
+Revenue calculations use the accounting identity: when household net income decreases, government revenue increases by the same amount. The identity holds while no behavioural response moves household income. Realised capital gains are part of household income and respond by default to reforms that change the tax on them, including reforms to income tax bands and allowances ([capital gains realisation response](../assumptions/capital-gains-responses.md)), so for those reforms use `gov_balance` instead. Household and distributional results for those reforms count gains no longer realised as income lost, although the gains are deferred rather than lost.
 ```
 
 ```python

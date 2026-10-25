@@ -1,4 +1,8 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.labour_supply_responses import (
+    measurement_branches,
+    response_source,
+)
 
 
 class employment_income_behavioral_response(Variable):
@@ -15,33 +19,22 @@ class employment_income_behavioral_response(Variable):
             return 0  # No reform, no impact
         if lsr.income_elasticity == 0 and lsr.substitution_elasticity == 0:
             return 0
-
-        measurement_branch = simulation.get_branch(
-            "lsr_measurement", clone_system=True
-        )  # A branch without LSRs
-        baseline_branch = simulation.get_branch("baseline").get_branch(
-            "baseline_lsr_measurement", clone_system=True
-        )  # Already created by default
+        # A branch with its parent's rules takes the parent's response.
+        source = response_source(simulation)
+        if source is not simulation:
+            return source.person("employment_income_behavioral_response", period)
 
         # (system with LSRs) <- (system without LSRs used to calculate LSRs)
         #                      |
         #                      * -(baseline system without LSRs used to calculate LSRs)
 
-        for branch in [measurement_branch, baseline_branch]:
-            branch.tax_benefit_system.neutralize_variable(
-                "employment_income_behavioral_response"
-            )
-            branch.set_input(
-                "employment_income_before_lsr",
+        # Both terms measure on the one pair of branches opened here.
+        with measurement_branches(person, period):
+            return add(
+                person,
                 period,
-                person("employment_income_before_lsr", period),
+                [
+                    "income_elasticity_lsr",
+                    "substitution_elasticity_lsr",
+                ],
             )
-
-        return add(
-            person,
-            period,
-            [
-                "income_elasticity_lsr",
-                "substitution_elasticity_lsr",
-            ],
-        )
