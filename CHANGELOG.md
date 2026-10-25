@@ -1,3 +1,10 @@
+## [2.162.1] - 2026-10-25
+
+### Changed
+
+- Corrected the Housing Benefit eligibility description of the Universal Credit route open to pension-age Working Tax Credit recipients moved off legacy benefits.
+
+
 ## [2.162.0] - 2026-10-25
 
 ### Added
