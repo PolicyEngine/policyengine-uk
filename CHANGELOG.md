@@ -1,3 +1,11 @@
+## [2.162.2] - 2026-10-25
+
+### Fixed
+
+- Correct ISA income and cash-ISA capital treatment, with a versioned adapter for legacy gross-interest datasets. Add qualifying Lifetime ISA bonuses and withdrawal charges, and the final charge on cash interest in non-cash ISAs from fiscal 2027–28, with separate capital-flow accounting. Carry ISA dividend and non-cash interest inputs into later household years using their ordinary-income counterparts' growth indices, and grow stored dataset values with their ordinary counterparts throughout the projection horizon. Name the Lifetime ISA medical-exemption input `lifetime_isa_terminally_ill`.
+- Preserved recorded student loan plans and stopped clearing existing-holder repayments from inferred course dates during dataset projection; documented the remaining projected Plan 1 to Plan 2 and Plan 2 to Plan 5 cohort gaps and exact cancellation-date limitations.
+
+
 ## [2.162.1] - 2026-10-25
 
 ### Changed
