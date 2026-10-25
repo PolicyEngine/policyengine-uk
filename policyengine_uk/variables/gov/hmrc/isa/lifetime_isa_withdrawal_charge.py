@@ -36,7 +36,7 @@ class lifetime_isa_withdrawal_charge(Variable):
             min_(gross, max_(price, 0)),
         )
         exempt = (person("age", period) >= p.charge_free_age) | person(
-            "is_terminally_ill", period
+            "lifetime_isa_terminally_ill", period
         )
         chargeable = max_(gross - where(qualifying_home, home_payment, 0), 0)
         return where(exempt, 0, chargeable * p.withdrawal_charge)

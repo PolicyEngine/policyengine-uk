@@ -99,3 +99,130 @@ def test_noncash_isa_interest_charge_reaches_tax_and_final_current_income_once()
             variable, 2027
         )
         assert difference.tolist() == pytest.approx([expected], abs=0.01), variable
+
+
+GDP_INDEX = "gov.economic_assumptions.indices.obr.per_capita.gdp"
+INTEREST_INDEX = "gov.economic_assumptions.indices.ons.household_interest_income"
+ISA_INCOME_PAIRS = [
+    ("individual_savings_account_dividend_income", "dividend_income", [100, 125, 150]),
+    ("non_cash_isa_cash_interest", "savings_interest_income", [100, 150, 200]),
+]
+
+
+def income_household(observations):
+    return {
+        "people": {
+            "person": {
+                "age": {2026: 35, 2027: 35, 2028: 35},
+                **observations,
+            }
+        },
+        "benunits": {"benunit": {"members": ["person"]}},
+        "households": {"household": {"members": ["person"]}},
+    }
+
+
+def controlled_income_growth():
+    from policyengine_uk.model_api import Scenario
+
+    return Scenario(
+        parameter_changes={
+            GDP_INDEX: {"2026": 100, "2027": 125, "2028": 150},
+            INTEREST_INDEX: {"2026": 100, "2027": 150, "2028": 200},
+        },
+        applied_before_data_load=True,
+    )
+
+
+@pytest.mark.parametrize("isa, ordinary, levels", ISA_INCOME_PAIRS)
+@pytest.mark.parametrize("observations", ["base", "later", "zero", "absent"])
+def test_new_isa_income_uses_the_ordinary_counterpart_index(
+    isa, ordinary, levels, observations
+):
+    if observations == "absent":
+        inputs = {}
+    else:
+        amounts = {2026: 0 if observations == "zero" else 100}
+        if observations == "later":
+            amounts[2027] = 300
+        inputs = {isa: deepcopy(amounts), ordinary: deepcopy(amounts)}
+    simulation = Simulation(
+        situation=income_household(inputs), scenario=controlled_income_growth()
+    )
+    for year in (2028, 2027, 2026):
+        if observations in ("zero", "absent"):
+            expected = 0
+        elif observations == "later" and year >= 2027:
+            expected = 300 * levels[year - 2026] / levels[1]
+        else:
+            expected = 100 * levels[year - 2026] / levels[0]
+        actual = simulation.calculate(isa, year).tolist()
+        assert actual == pytest.approx([expected], abs=0.01)
+        assert actual == pytest.approx(
+            simulation.calculate(ordinary, year).tolist(), abs=0.01
+        )
+    if observations in ("base", "later"):
+        assert simulation.calculate(isa, 2028)[0] > 100
+        assert simulation.calculate(isa, 2026).tolist() == [100]
+    if observations == "later":
+        assert simulation.calculate(isa, 2027).tolist() == [300]
+
+
+def test_uprated_isa_components_reach_income_once():
+    inputs = {
+        name: {2026: 100}
+        for name in (
+            "dividend_income",
+            "individual_savings_account_dividend_income",
+            "savings_interest_income",
+            "non_cash_isa_cash_interest",
+        )
+    }
+    simulation = Simulation(
+        situation=income_household(inputs), scenario=controlled_income_growth()
+    )
+    for variable in ("market_income", "capital_income"):
+        assert simulation.calculate(variable, 2027).tolist() == pytest.approx(
+            [550], abs=0.01
+        )
+        assert simulation.calculate(variable, 2026).tolist() == pytest.approx(
+            [400], abs=0.01
+        )
+    for variable in (
+        "non_cash_isa_cash_interest",
+        "individual_savings_account_interest_income",
+        "tax_free_savings_income",
+        "taxable_savings_interest_income",
+    ):
+        assert simulation.calculate(variable, 2027).tolist() == pytest.approx(
+            [150], abs=0.01
+        )
+    assert simulation.calculate("dividend_income", 2027).tolist() == pytest.approx(
+        [125], abs=0.01
+    )
+
+
+def test_lisa_medical_input_is_specific_to_withdrawal_charge():
+    people = {}
+    for number, (age, flag) in enumerate(
+        ((35, None), (35, False), (35, True), (60, False))
+    ):
+        person = {"age": {2026: age}, "lifetime_isa_withdrawals": {2026: 2_000}}
+        if flag is not None:
+            person["lifetime_isa_terminally_ill"] = {2026: flag}
+        people[f"person{number}"] = person
+    simulation = Simulation(
+        situation={
+            "people": people,
+            "benunits": {name: {"members": [name]} for name in people},
+            "households": {name: {"members": [name]} for name in people},
+        }
+    )
+    assert simulation.calculate("lifetime_isa_withdrawal_charge", 2026).tolist() == [
+        500,
+        500,
+        0,
+        0,
+    ]
+    assert "lifetime_isa_terminally_ill" in simulation.tax_benefit_system.variables
+    assert "is_terminally_ill" not in simulation.tax_benefit_system.variables

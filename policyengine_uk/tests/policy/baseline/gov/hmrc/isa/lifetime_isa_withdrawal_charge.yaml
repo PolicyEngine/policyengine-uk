@@ -6,7 +6,7 @@
   period: 2026
   input:
     age: [35, 59, 60, 35]
-    is_terminally_ill: [false, false, false, true]
+    lifetime_isa_terminally_ill: [false, false, false, true]
     lifetime_isa_withdrawals: [2_000, 2_000, 2_000, 2_000]
   output:
     lifetime_isa_withdrawal_charge: [500, 500, 0, 0]

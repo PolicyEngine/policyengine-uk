@@ -10,4 +10,5 @@ class individual_savings_account_dividend_income(Variable):
     unit = GBP
     quantity_type = FLOW
     default_value = 0
+    uprating = "gov.economic_assumptions.indices.obr.per_capita.gdp"
     reference = "https://www.legislation.gov.uk/uksi/1998/1870/regulation/22"

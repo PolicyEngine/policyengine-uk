@@ -82,3 +82,52 @@ def test_legacy_and_additive_isa_income_reach_the_same_local_ctr_gross_band():
         assert simulation.calculate(
             "westminster_council_tax_reduction_individual_non_dep_deduction", 2026
         ).tolist() == pytest.approx([0, 551.20], abs=0.01)
+
+
+@pytest.mark.parametrize("benefit", ["housing_benefit", "esa_income"])
+def test_cash_isa_reaches_legacy_awards_like_ordinary_savings(benefit):
+    """Cash ISAs count like equal ordinary cash, including the final award.
+
+    These are ongoing public synthetic claims in 2025. ESA is a reported
+    award passed through the existing bounded screen, not full entitlement.
+    GBP8000 gives eight GBP250 tariff steps above6000, or GBP416 a year.
+    """
+
+    def build(savings, cash_isa):
+        person = {"age": {2025: 40}}
+        household = {
+            "members": ["person"],
+            "savings": {2025: savings},
+            "cash_isa": {2025: cash_isa},
+        }
+        if benefit == "housing_benefit":
+            person.update(
+                employment_income={2025: 10_000}, housing_benefit_reported={2025: 1_000}
+            )
+            household.update(
+                tenure_type={2025: "RENT_FROM_COUNCIL"}, rent={2025: 6_000}
+            )
+        else:
+            person.update(esa_income_reported={2025: 1_000}, weekly_hours={2025: 0})
+        return Simulation(
+            situation={
+                "people": {"person": person},
+                "benunits": {
+                    "benunit": {"members": ["person"], "would_claim_uc": {2025: False}}
+                },
+                "households": {"household": household},
+            }
+        )
+
+    lower = build(5_000, 0)
+    wrapped = build(5_000, 3_000)
+    ordinary = build(8_000, 0)
+    awards = [
+        float(sim.calculate(benefit, 2025)[0]) for sim in (lower, wrapped, ordinary)
+    ]
+    assert all(award > 0 for award in awards)
+    assert awards[1] == pytest.approx(awards[2], abs=0.01)
+    assert awards[1] < awards[0]
+    for sim in (wrapped, ordinary):
+        assert sim.calculate(f"{benefit}_assessable_capital", 2025).tolist() == [8_000]
+        assert sim.calculate(f"{benefit}_tariff_income", 2025).tolist() == [416]

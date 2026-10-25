@@ -1,7 +1,7 @@
 from policyengine_uk.model_api import *
 
 
-class is_terminally_ill(Variable):
+class lifetime_isa_terminally_ill(Variable):
     value_type = bool
     entity = Person
     label = "Terminal illness certified for a Lifetime ISA withdrawal"
