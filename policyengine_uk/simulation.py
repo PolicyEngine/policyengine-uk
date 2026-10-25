@@ -427,6 +427,10 @@ class Simulation(CoreSimulation):
                 capital_gains_projection=capital_gains_projection,
             )
         else:
+            # Finish framework input invalidation before copying the baseline.
+            if self._external_input_change_pending:
+                drop_calculated_values(self)
+                self._external_input_change_pending = False
             self.baseline = self.clone()
         self.baseline._cgt_warning_enabled = False
         self.baseline._defer_uc_health_warning = False

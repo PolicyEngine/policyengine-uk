@@ -588,3 +588,147 @@ def test_after_load_cleanup_failure_keeps_pending_write(monkeypatch, failure):
     )
     assert not simulation._external_input_change_pending
     assert len(cleanup_calls) == (1 if failure == "modifier" else 2)
+
+
+def test_default_baseline_clones_after_framework_input_drain(monkeypatch):
+    import policyengine_uk.simulation as uk_simulation
+
+    captured = {}
+    cleanup_calls = []
+    move_values = Simulation.move_values
+    clone = Simulation.clone
+    drop_calculated_values = uk_simulation.drop_calculated_values
+
+    def observe_framework_inputs(owner, donor, target):
+        result = move_values(owner, donor, target)
+        if donor == "bus_fare_spending":
+            captured["owner"] = owner
+            assert owner._external_input_change_pending
+            captured["health_element"] = (
+                owner.get_holder("uc_LCWRA_element")
+                .get_array(period(YEAR), owner.branch_name)
+                .copy()
+            )
+        return result
+
+    def counted_cleanup(owner):
+        if owner is captured.get("owner"):
+            cleanup_calls.append(owner)
+        return drop_calculated_values(owner)
+
+    def observe_clone(owner, *args, **kwargs):
+        if owner is captured.get("owner"):
+            assert not owner._external_input_change_pending
+            assert cleanup_calls == [owner]
+            captured["cloned"] = True
+        return clone(owner, *args, **kwargs)
+
+    monkeypatch.setattr(Simulation, "move_values", observe_framework_inputs)
+    monkeypatch.setattr(Simulation, "clone", observe_clone)
+    monkeypatch.setattr(uk_simulation, "drop_calculated_values", counted_cleanup)
+    simulation = Simulation(situation=family())
+
+    assert captured["cloned"]
+    for owner in (simulation, simulation.baseline):
+        assert not owner._external_input_change_pending
+        np.testing.assert_array_equal(
+            owner.get_holder("employment_income_before_lsr").get_array(
+                period(YEAR), owner.branch_name
+            ),
+            [25_000, 0],
+        )
+        np.testing.assert_array_equal(
+            owner.get_holder("uc_LCWRA_element").get_array(
+                period(YEAR), owner.branch_name
+            ),
+            captured["health_element"],
+        )
+
+
+def test_default_constructor_first_reads_do_not_repeat_framework_drain(monkeypatch):
+    import policyengine_uk.simulation as uk_simulation
+
+    reference = Simulation(situation=family())
+    reference.reset_calculations()
+    reference.baseline.reset_calculations()
+    expected = values(reference, "household_net_income")
+    cleanup_calls = []
+    drop_calculated_values = uk_simulation.drop_calculated_values
+
+    def counted_cleanup(owner):
+        cleanup_calls.append(owner)
+        return drop_calculated_values(owner)
+
+    simulation = Simulation(situation=family())
+    monkeypatch.setattr(uk_simulation, "drop_calculated_values", counted_cleanup)
+    for _ in range(2):
+        for owner in (simulation, simulation.baseline):
+            np.testing.assert_allclose(
+                values(owner, "household_net_income"), expected, atol=0.01
+            )
+    assert cleanup_calls == []
+
+
+def test_default_baseline_drain_failure_retains_pending_inputs(monkeypatch):
+    import policyengine_uk.simulation as uk_simulation
+
+    reference = Simulation(situation=family())
+    reference.reset_calculations()
+    expected_tax = values(reference, "income_tax")
+    captured = {}
+    cloned = []
+    move_values = Simulation.move_values
+    clone = Simulation.clone
+    drop_calculated_values = uk_simulation.drop_calculated_values
+
+    def observe_framework_inputs(owner, donor, target):
+        result = move_values(owner, donor, target)
+        if donor == "bus_fare_spending":
+            captured["owner"] = owner
+            captured["health_element"] = (
+                owner.get_holder("uc_LCWRA_element")
+                .get_array(period(YEAR), owner.branch_name)
+                .copy()
+            )
+        return result
+
+    def fail_terminal_cleanup(owner):
+        if owner is captured.get("owner"):
+            assert owner._external_input_change_pending
+            raise RuntimeError("synthetic terminal framework drain failure")
+        return drop_calculated_values(owner)
+
+    def observe_clone(owner, *args, **kwargs):
+        if owner is captured.get("owner"):
+            cloned.append(owner)
+        return clone(owner, *args, **kwargs)
+
+    with monkeypatch.context() as context:
+        context.setattr(Simulation, "move_values", observe_framework_inputs)
+        context.setattr(Simulation, "clone", observe_clone)
+        context.setattr(uk_simulation, "drop_calculated_values", fail_terminal_cleanup)
+        with pytest.raises(
+            RuntimeError, match="synthetic terminal framework drain failure"
+        ):
+            Simulation(situation=family())
+
+    simulation = captured["owner"]
+    assert simulation._external_input_change_pending
+    assert "baseline" not in simulation.__dict__
+    assert cloned == []
+    np.testing.assert_array_equal(
+        simulation.get_holder("employment_income_before_lsr").get_array(
+            period(YEAR), simulation.branch_name
+        ),
+        [25_000, 0],
+    )
+    np.testing.assert_array_equal(
+        simulation.get_holder("uc_LCWRA_element").get_array(
+            period(YEAR), simulation.branch_name
+        ),
+        captured["health_element"],
+    )
+    np.testing.assert_allclose(
+        values(simulation, "income_tax"), expected_tax, atol=0.01
+    )
+    assert not simulation._external_input_change_pending
