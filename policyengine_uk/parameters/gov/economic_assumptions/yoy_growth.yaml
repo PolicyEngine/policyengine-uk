@@ -808,7 +808,7 @@ obr:
           - title: OBR EFO March 2025 (detailed forecast tables, receipts, Table 3.9; 2023-24 outturn)
             href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
     northern_ireland:
-      description: Growth in Northern Ireland business rates receipts (the OBR "Northern Ireland business rates" line in other taxes, which covers the regional rate; also applied to district rates, which councils set a year at a time).
+      description: Growth in Northern Ireland business rates receipts (the OBR "Northern Ireland business rates" line in other taxes, which appears to cover the regional rate only; also applied to district rates, for which we found no published forecast).
       values:
         # Outturn (2024-25 over 2023-24) from OBR EFO March 2026 over March 2025, receipts Table 3.2 "Northern Ireland business rates"
         2024-01-01: 0.032513

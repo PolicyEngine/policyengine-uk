@@ -29,7 +29,7 @@ metadata:
 # OBR's receipts forecast: England, Scotland and Wales with the OBR's
 # "Business rates" line, Northern Ireland with its "Northern Ireland business
 # rates" line (gov.economic_assumptions.yoy_growth.obr.business_rates), which
-# covers the regional rate only (see NORTHERN_IRELAND below). The
+# appears to cover the regional rate only (see NORTHERN_IRELAND below). The
 # economic-assumption indices run to 2039, so every series is flat in cash
 # terms from 2039-40.
 revenue:
@@ -134,24 +134,30 @@ revenue:
   # A Northern Ireland rate bill is the regional rate, made by the Department
   # of Finance, plus the council's district rate, levied "as if they were
   # items of a single rate" (Rates (Northern Ireland) Order 1977, art 9(1)).
-  # This series counts both. The OBR's "Northern Ireland business rates" line
-  # that projects it covers the regional rate only, so it is about half this
-  # level: £382m against £741m in 2024-25.
+  # This series counts payments of both, as allocated to non-domestic
+  # ratepayer accounts by 31 March (mixed domestic and non-domestic
+  # properties included). Of the £1.59bn of rates that Land & Property
+  # Services paid into the NI Consolidated Fund in 2024-25, councils received
+  # £0.81bn as district rates (Public Income and Expenditure Account
+  # 2024-25, note 6).
+  # The OBR's "Northern Ireland business rates" line that projects this series
+  # is about half its level, £382m against £741m in 2024-25, and appears to
+  # cover the regional rate only, though the OBR's tables do not define it:
   # - ONS records NI regional non-domestic rates (central government, £327m
   #   in 2024-25) and district non-domestic rates (local government, £378m)
   #   separately (Country and regional public sector finances, financial year
   #   ending 2025).
   # - Splitting each council's 2024-25 payments by its regional (29.02p) and
-  #   district (25.57p to 38.22p) poundages gives a regional part of £364m.
-  # - Councils set district rates a year at a time and no official forecast
-  #   covers later years, so the district part is assumed to grow with the
-  #   OBR's regional line.
+  #   district (25.57p to 38.22p) poundages estimates the regional part at
+  #   £364m. This is an estimate, not a published split.
+  # We found no published forecast of NI district non-domestic rates, so the
+  # district part is assumed to grow with the OBR's regional line.
   NORTHERN_IRELAND:
     description: >-
-      Non-domestic rates paid against ratepayer accounts in the rating year,
-      Northern Ireland, regional and district rates together. The series
-      starts in 2020-21 (a rates-holiday year), and earlier years take that
-      value.
+      Non-domestic rates paid against ratepayer accounts by the end of the
+      rating year, Northern Ireland, regional and district rates together.
+      The series starts in 2020-21 (a rates-holiday year), and 2015-16 to
+      2019-20 take that value.
     values:
       2020-01-01: 380_876_615
       2021-01-01: 446_688_825
