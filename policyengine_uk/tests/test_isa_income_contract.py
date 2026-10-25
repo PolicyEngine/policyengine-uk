@@ -810,3 +810,110 @@ def test_isa_and_energy_contracts_compose_through_reset_export_and_projection(
             pd.testing.assert_frame_equal(
                 getattr(actual, name), getattr(original, name), check_dtype=False
             )
+
+
+def test_split_bsp_isa_and_energy_share_reset_and_projection_boundaries():
+    """Reset preserves separate BSP, gross interest and the energy price basis.
+
+    The later BSP observation stays777 while the separate CPI benefits reset
+    to70/60. Legacy gross interest resets to3000, with later exemption1200.
+    A controlled20% projection gives ordinary2400 plus exempt1200, while BSP
+    stays777, the other benefits become84/72, and energy uses150/100 prices.
+    """
+    energy = (
+        "domestic_energy_consumption",
+        "electricity_consumption",
+        "gas_consumption",
+    )
+    base = single(
+        savings_interest_income=3_000,
+        individual_savings_account_interest_income=500,
+        tax_free_savings_income=700,
+        bsp_reported=1_000,
+        widowed_parents_allowance_reported=70,
+        war_widows_pension_reported=60,
+    )
+    later = single(
+        2026,
+        savings_interest_income=6_000,
+        individual_savings_account_interest_income=900,
+        tax_free_savings_income=1_200,
+        bsp_reported=777,
+        widowed_parents_allowance_reported=140,
+        war_widows_pension_reported=120,
+    )
+    base.energy_price_basis = {"period_type": "calendar_year", "period_value": 2025}
+    later.energy_price_basis = {"period_type": "fiscal_year", "period_value": 2026}
+    for dataset in (base, later):
+        dataset.person["months_since_last_birthday"] = [0]
+        dataset.person["attends_private_school"] = [False]
+    for variable, first, second in zip(energy, [100, 200, 300], [700, 800, 900]):
+        base.household[variable] = [first]
+        later.household[variable] = [second]
+    originals = [dataset.copy() for dataset in (base, later)]
+    simulation = Simulation(
+        dataset=UKMultiYearDataset(datasets=[base, later]),
+        scenario=no_economic_assumptions,
+    )
+    reset_expected = {
+        "bsp_reported": 777,
+        "widowed_parents_allowance_reported": 70,
+        "war_widows_pension_reported": 60,
+        "savings_interest_income": 1_800,
+        "tax_free_savings_income": 1_200,
+        "capital_income": 3_000,
+    }
+    for variable, expected in reset_expected.items():
+        assert value(simulation, variable, 2026) == pytest.approx(expected, abs=0.01)
+    observed = UKSingleYearDataset.from_simulation(
+        simulation,
+        fiscal_year=2026,
+        energy_price_basis=simulation.dataset[2026].energy_price_basis,
+    )
+    assert observed.isa_income_contract == NORMALIZED
+    assert observed.energy_price_basis == base.energy_price_basis
+    changes = {
+        "gov.economic_assumptions.indices.obr.consumer_price_index": {
+            str(year): level
+            for year, level in {2025: 100, 2026: 125, 2027: 150, 2035: 300}.items()
+        },
+        "gov.economic_assumptions.yoy_growth.obr.consumer_price_index": {"2027": 0.2},
+        GDP_GROWTH: {"2027": 0.2},
+    }
+    parameters = simulation.tax_benefit_system.parameters.clone()
+    for name, periods in changes.items():
+        for year, amount in periods.items():
+            parameters.get_child(name).update(period=year, value=amount)
+    projected = extend_single_year_dataset(observed, parameters, end_year=2027)
+    result = Simulation(
+        dataset=projected,
+        scenario=Scenario(parameter_changes=changes, applied_before_data_load=True),
+    )
+    expected_2027 = {
+        "bsp_reported": 777,
+        "widowed_parents_allowance_reported": 84,
+        "war_widows_pension_reported": 72,
+        "savings_interest_income": 2_400,
+        "tax_free_savings_income": 1_200,
+        "capital_income": 3_600,
+        **dict(zip(energy, [150, 300, 450])),
+    }
+    for reset in (False, True):
+        if reset:
+            result.reset_calculations()
+        for variable, expected in expected_2027.items():
+            assert value(result, variable, 2027) == pytest.approx(expected, abs=0.01)
+        assert value(result, "bsp_reported", 2035) == 777
+        assert value(
+            result, "widowed_parents_allowance_reported", 2035
+        ) == pytest.approx(168, abs=0.01)
+        assert value(result, "bsp_reported", "2035-07") == pytest.approx(
+            777 / 12, abs=0.01
+        )
+    for dataset, original in zip((base, later), originals):
+        assert dataset.isa_income_contract == original.isa_income_contract
+        assert dataset.energy_price_basis == original.energy_price_basis
+        for table in ("person", "benunit", "household"):
+            pd.testing.assert_frame_equal(
+                getattr(dataset, table), getattr(original, table)
+            )
