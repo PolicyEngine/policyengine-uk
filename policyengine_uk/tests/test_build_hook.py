@@ -20,6 +20,7 @@ import subprocess
 import sys
 import tarfile
 import threading
+import types
 import venv
 import zipfile
 
@@ -972,8 +973,15 @@ def test_hook_removes_its_directory_even_if_the_build_fails(
     # finalize does not run when a build fails after initialize.
     root, _ = project
     registered = []
+    # Replace only the hook's own reference to atexit. Patching
+    # atexit.register itself also catches the exit hook CPython's
+    # weakref.finalize registers the first time any finalizer is made, which
+    # the hook's tempfile.TemporaryDirectory does when nothing earlier in the
+    # process has (with filelock 4.2.1, nothing does).
     monkeypatch.setattr(
-        hatch_build.atexit, "register", lambda *args: registered.append(args)
+        hatch_build,
+        "atexit",
+        types.SimpleNamespace(register=lambda *args: registered.append(args)),
     )
 
     _initialize_hook(root, tmp_path, "standard")
