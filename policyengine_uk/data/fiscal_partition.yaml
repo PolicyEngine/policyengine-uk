@@ -56,9 +56,10 @@
 #   model_double_counts[]: known violations still in the model: a variable a
 #     total lists although the head variable `contained_in` already adds it.
 #     None since the #2159 fix gave corporate_sdlt its own head.
-#   uncovered_receipts[]: rows of Table A.5 the model has no household
-#     measure for. With the heads' obr_line values they account for every
-#     tax row of the table.
+#   uncovered_receipts[]: rows of Table A.5 that no head's obr_line names.
+#     With the heads' obr_line values they account for every tax row of the
+#     table. A row's note records any part of it that heads naming other
+#     rows measure.
 #   overlap_guards[]: the places double counting could occur, and the
 #     property the tests check for each. overlapping_base records a receipt
 #     allocation between heads sharing an imputed base. The report also
@@ -461,9 +462,9 @@ tax_heads:
     obr_line: Council tax
     obr_table_3_1: null
     obr_line_note: >-
-      domestic_rates is the whole Northern Ireland domestic bill, the
-      regional rate and the council's district rate together (Land &
-      Property Services (LPS) domestic rates paid, £889.5m in 2024-25). The
+      The head is the whole Northern Ireland domestic bill, the regional rate
+      and the council's district rate together. Land & Property Services
+      (LPS) reports £889.5m of domestic rates paid across NI in 2024-25. The
       OBR shows NI domestic rates in two places and labels neither as
       regional or district (see sources): "NI domestic rates" in its council
       tax receipts, a flat £0.494bn in every year from the 2024-25 outturn to
@@ -472,12 +473,20 @@ tax_heads:
       in 2024-25 (receipts Table 3.2), which appears to cover the regional
       rate only. ONS records NI regional domestic rates (central government,
       £498m in 2024-25) and district domestic rates (local government, with
-      council tax, £441m) separately. The head keeps the Council tax row,
-      where the OBR says it adds NI domestic rates; its regional part appears
-      to sit in Other taxes. On this reading the head corresponds to the two
-      lines together (£0.979bn in 2024-25), not to either alone. The comment
-      on gov.economic_assumptions.yoy_growth.finance_ni.domestic_rates gives
-      the evidence for the reading.
+      council tax, £441m) separately. The reading rests on where each line
+      sits, not on its size: £0.494bn is nearer ONS's regional row than its
+      district row, and the two lines together (£0.979bn in 2024-25) exceed
+      both LPS's figure and ONS's two rows (£0.939bn). The head keeps the
+      Council tax row, where the OBR says its forecast adds NI domestic
+      rates. In the 2024-25 outturn that row (March 2026 Table A.5,
+      £47.417bn) is £0.273bn below Table 4.1's total (£47.690bn), so whether
+      it then includes NI domestic rates is not established; the two agree
+      in the forecast years. The regional part appears to sit in Other
+      taxes. On this reading the head's scope is the two lines together, not
+      either alone. obr_table_3_1 is null because Table 3.1's footnotes do
+      not place NI domestic rates and the head spans two Table A.5 rows. The
+      comment on gov.economic_assumptions.yoy_growth.finance_ni.domestic_rates
+      gives the evidence for the reading.
     data_note: >-
       On the certified dataset (policyengine-uk-data 1.58.1) the head totals
       £0.52bn in 2024, the FRS 2024-25 year, against £0.89bn of LPS domestic
@@ -827,7 +836,7 @@ overlap_guards:
       microdata (policyengine-uk-data issue 568).
 
 uncovered_receipts:
-  # Rows of Table A.5 with no household measure in the model.
+  # Rows of Table A.5 that no head's obr_line names.
   - {obr_line: Corporation tax}
   - {obr_line: Petroleum revenue tax}
   - {obr_line: VAT refunds, note: "A National Accounts adjustment, not a tax on households."}
@@ -846,11 +855,11 @@ uncovered_receipts:
   - {obr_line: Electricity generator levy}
   - obr_line: Other taxes
     note: >-
-      Partly measured. Its "Northern Ireland domestic rates" and "Northern
-      Ireland business rates" lines (receipts Table 3.2) appear to be the
-      regional rate, which domestic_rates and business_rates include
-      together with the district rate (see those heads). The rest of the row
-      has no household measure.
+      Partly measured by heads that name other rows. Its "Northern Ireland
+      domestic rates" and "Northern Ireland business rates" lines (receipts
+      Table 3.2) appear to be the regional rate, which domestic_rates and
+      business_rates include together with the district rate (see those
+      heads). The rest of the row has no household measure.
 
 spending_heads:
   # Pensioners
