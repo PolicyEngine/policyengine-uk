@@ -1,3 +1,10 @@
+## [2.157.3] - 2026-10-25
+
+### Fixed
+
+- - Counted widowed parent's allowance as Pension Credit income less £10 a week (State Pension Credit Regulations 2002 reg. 15(1) and Sch. IV para. 7), so an award that displaces Carer's Allowance or Carer Support Payment no longer raises Guarantee Credit by the whole amount displaced.
+
+
 ## [2.157.2] - 2026-10-25
 
 ### Changed
