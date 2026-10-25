@@ -6,15 +6,15 @@ earnings of an employed earner, and reg 15(1)(o) to (q) except them from the
 social security benefits prescribed as income. Pension Credit counted none of
 them, while pension-age Housing Benefit counted statutory sick and maternity
 pay. Both Housing Benefit schemes count statutory paternity pay as earnings
-too (HB Regs 2006 reg 35(1)(i); HB (SPC) Regs 2006 reg 35(1)(i)), which the
-model's Housing Benefit does not yet do (PolicyEngine/policyengine-uk#2368
-adds it), so invariant 1 draws only statutory sick and maternity pay.
+too (HB Regs 2006 reg 35(1)(i); HB (SPC) Regs 2006 reg 35(1)(i)), as the
+model's Housing Benefit has since PolicyEngine/policyengine-uk#2368.
+Invariant 1 was written before that and still draws only statutory sick and
+maternity pay.
 
 What the model taxes (read from the code, not changed here): income tax sees
-statutory sick and maternity pay through employment_benefits, which
-taxable_employment_income adds to employment income; it does not see
-statutory paternity pay. Class 1 National Insurance sees all three:
-ni_class_1_income adds them to employment income.
+all three through employment_benefits, which taxable_employment_income adds
+to employment income (statutory paternity pay since #2368). Class 1 National
+Insurance sees all three: ni_class_1_income adds them to employment income.
 
 Invariants, for single people and couples over State Pension age in 2026
 (invariant 2 also draws younger partners), with no dependants, renting from
@@ -39,7 +39,7 @@ Allowance and Carer Support Payment counted since #1952 are covered too:
    capped at earnings and is given whether or not there are earnings. Every
    other difference is excluded by the draws: no pension contributions,
    maintenance, maternity allowance or Sure Start maternity grant, and both
-   measures deduct the same income tax and National Insurance of the
+   measures deduct the same pre-charge income tax and National Insurance of the
    claimant and partner.
 2. Metamorphic: moving an amount between employment income and statutory
    sick or maternity pay of the same person changes nothing: Pension Credit
@@ -48,12 +48,14 @@ Allowance and Carer Support Payment counted since #1952 are covered too:
    own earnings rules, housing_benefit_net_earnings and the Sch 4
    disregards, are outside this change.)
    Moving it to statutory paternity pay
-   leaves Pension Credit earnings and National Insurance unchanged and changes
-   Pension Credit income only through income tax, which does not see that
-   pay: Pension Credit income plus the claimant's and partner's income tax and
-   National Insurance plus the earnings disregard is unchanged where Pension
-   Credit income is above its zero floor in both runs. (The disregard is added
-   back because it is capped at net earnings, which are net of that tax.)
+   leaves Pension Credit earnings and National Insurance unchanged, and
+   Pension Credit income plus the claimant's and partner's pre-charge income
+   tax and National Insurance plus the earnings disregard is unchanged where
+   Pension Credit income is above its zero floor in both runs. (The disregard
+   is added back because it is capped at net earnings, which are net of that
+   tax.) This was written when income tax did not see statutory paternity pay;
+   since #2368 it does, so the check still holds but is weaker than the one for
+   sick and maternity pay.
 3. Monotonicity: Guarantee Credit never rises as any one statutory payment
    rises.
 """
@@ -169,7 +171,11 @@ BENUNIT_VARIABLES = [
     "housing_benefit_applicable_income",
     "housing_benefit_applicable_income_disregard",
 ]
-SUMMED_PERSON_VARIABLES = ["income_tax", "national_insurance"] + STATUTORY_PAY
+SUMMED_PERSON_VARIABLES = [
+    "income_tax",
+    "income_tax_before_winter_fuel_payment_charge",
+    "national_insurance",
+] + STATUTORY_PAY
 
 
 def grid(families, steps, vary):
@@ -194,8 +200,9 @@ def with_private_pension(fam, pension):
     ]
 
 
-# The statutory payments the model's Housing Benefit counts (see the module
-# docstring on statutory paternity pay).
+# The statutory payments invariant 1 draws. The model's Housing Benefit also
+# counts statutory paternity pay, which invariant 1 does not draw (see the
+# module docstring).
 HOUSING_BENEFIT_PAY = ("statutory_sick_pay", "statutory_maternity_pay")
 
 
@@ -265,11 +272,11 @@ def test_moving_pay_between_wages_and_statutory_pay(cases):
                 context,
             )
         if pay == "statutory_paternity_pay":
-            # Income tax does not see statutory paternity pay.
+            # Checked net of tax, as written before #2368 taxed this pay.
             def before_tax(g):
                 return (
                     g["pension_credit_income"][i]
-                    + g["income_tax"][i]
+                    + g["income_tax_before_winter_fuel_payment_charge"][i]
                     + g["national_insurance"][i]
                     + g["pension_credit_earnings_disregard"][i]
                 )

@@ -125,6 +125,8 @@
         age: 40
         is_parent: true
         is_claimant_or_partner: true
+        # Continuing CTC claim; this fixture does not claim Universal Credit.
+        child_tax_credit_reported: 1_000
       young_person:
         age: 17
         current_education: UPPER_SECONDARY
@@ -132,6 +134,7 @@
     benunits:
       benunit:
         members: [parent, young_person]
+        would_claim_uc: false
   output:
     is_child_or_qualifying_young_person_for_child_tax_credit: [false, true]
     is_responsible_for_child_or_qualifying_young_person_for_child_tax_credit: true
@@ -147,12 +150,15 @@
         current_education: UPPER_SECONDARY
         is_parent: true
         is_claimant_or_partner: true
+        # Continuing CTC claim; this fixture does not claim Universal Credit.
+        child_tax_credit_reported: 1_000
       baby:
         age: 1
         is_claimant_or_partner: false
     benunits:
       benunit:
         members: [parent, baby]
+        would_claim_uc: false
   output:
     is_child_or_qualifying_young_person_for_child_tax_credit: [false, true]
     CTC_child_element: 3_455

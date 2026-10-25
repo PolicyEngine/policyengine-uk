@@ -12,17 +12,25 @@ Invariants, for any people and incomes:
    treatment without the loss (a separate simulation); adjusted total income
    is that less the pension contributions given relief once (own contributions
    up to the greater of £3,600 and pay plus profits, none from age 75).
-2. Differential: a person's Income Tax with a loss equals the Income Tax of
-   the same person without the loss and with their income cut by the relief,
-   taken from non-savings income first, then savings, then dividends: the
-   model's fixed allowance order (s.25(2) asks for the order giving the
-   greatest reduction; #2106).
-3. Income Tax never rises with the loss and falls by at most the relief (for
-   people without savings income: the personal savings allowance steps up by
-   £500 when someone stops being a higher-rate taxpayer, so with savings
-   income a small relief can save more than itself).
+2. Differential: a person's Income Tax before the winter fuel payment
+   charge with a loss equals the same tax of the same person without the
+   loss and with their income cut by the relief, taken from non-savings
+   income first, then savings, then dividends: the model's fixed allowance
+   order (s.25(2) asks for the order giving the greatest reduction; #2106).
+   The charge itself can differ between the two: it tests total income,
+   which the relief, at Step 2, does not lower but the cut does.
+3. Income Tax before the winter fuel payment charge never rises with the
+   loss and falls by at most the relief (for people without savings income:
+   the personal savings allowance steps up by £500 when someone stops being
+   a higher-rate taxpayer, so with savings income a small relief can save
+   more than itself). The charge moves only where the loss changes the
+   person's receipt of a relevant benefit or their total income: relief
+   comes at Step 2, after total income, but lower tax can end a Pension
+   Credit award and with it the exemption (ITEPA 2003 s.681I(4)), and a loss
+   claim replaces the trading allowance.
 4. Means tests never set the loss against employed earnings or other
-   income: with Income Tax and NI held at the values the loss gives, every
+   income: with Income Tax before the winter fuel payment charge (what the
+   means tests deduct) and NI held at the values the loss gives, every
    means-tested benefit and means-test income is what it is without the loss,
    except that UC sets it against the person's other trades' profits (UC Regs
    2013 reg 57(2)), so UC, its benefit cap earnings test and the capped
@@ -30,10 +38,10 @@ Invariants, for any people and incomes:
    model's means tests use annual tax deductions, so otherwise the loss
    reaches them through those deductions. UC's own deductions for tax and
    NI on earnings and Pension Credit's tax attribution to employed and
-   self-employed earnings are held alongside Income Tax and NI, including
-   the actual Class 2/4 components replaced by notional PC deductions.
-   The personal reliefs used for PC's notional tax are held too: the loss
-   can change entitlement to those reliefs without offsetting PC earnings.
+   self-employed earnings are held alongside them, including the actual
+   Class 2/4 components replaced by notional PC deductions. The personal
+   reliefs used for PC's notional tax are held too: the loss can change
+   entitlement to those reliefs without offsetting PC earnings.
 5. Tax credits (SI 2002/2006 reg 3(1) Step 4): the claimants' losses (not a
    child's) come off their applicable income, never below zero, and the award
    never falls.
@@ -49,7 +57,9 @@ Invariants, for any people and incomes:
    pays none whatever their loss.
 8. The s.24A cap starts in 2013-14.
 9. A loss-making trade, compared with the same trade making zero profit and
-   no loss, never increases Income Tax. With paid tax and NI deductions and
+   no loss, never increases Income Tax before the winter fuel payment
+   charge, and the charge moves only where the loss changes who in the
+   household is on a relevant benefit. With paid tax and NI deductions and
    other benefit receipts held consistently, it never reduces UC, Housing
    Benefit or tax credits. This isolates each programme's loss rule: the
    model's annual tax deductions and changes to other benefits can otherwise
@@ -72,6 +82,17 @@ from policyengine_uk.variables.household.income.hbai_household_net_income import
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
 YEAR = 2026
+# Income tax before the winter fuel payment charge: what the means tests
+# deduct. The charge depends on their awards, so they cannot deduct it.
+PRE_CHARGE_TAX = "income_tax_before_winter_fuel_payment_charge"
+# The benefits that exempt a person from the charge (s.681I(5)).
+RELEVANT_BENEFITS = [
+    "is_on_income_support",
+    "is_on_income_based_jsa",
+    "is_on_pension_credit",
+    "is_on_income_related_esa",
+    "is_on_universal_credit",
+]
 PROPERTY_SETTINGS = settings(
     max_examples=3,
     deadline=None,
@@ -359,21 +380,39 @@ PINNED_PORTFOLIOS = [
 )
 def test_relief_taxes_like_income_cut_in_section_25_order(people, regions):
     twins = [reduced(p)[0] for p in people]
-    variables = ["income_tax", "trade_loss_relief_against_general_income"]
+    # The winter fuel payment charge tests total income, before Step 2
+    # reliefs (ITEPA 2003 s.681I(1)(b), ITA 2007 s.23), so a relief and an
+    # income cut can differ in it for people of pension age.
+    tax = PRE_CHARGE_TAX
+    variables = [tax, "trade_loss_relief_against_general_income"]
     a = calculate(single_people(people, regions), variables)
-    b = calculate(single_people(twins, regions), ["income_tax"])
+    b = calculate(single_people(twins, regions), [tax])
     for i, person in enumerate(people):
         _, relief = reduced(person)
         assert abs(a["trade_loss_relief_against_general_income"][i] - relief) <= (
             tolerance(relief)
         ), person
-        assert abs(a["income_tax"][i] - b["income_tax"][i]) <= 0.5 + tolerance(
-            a["income_tax"][i], person["employment_income"]
-        ), (person, a["income_tax"][i], b["income_tax"][i])
+        assert abs(a[tax][i] - b[tax][i]) <= 0.5 + tolerance(
+            a[tax][i], person["employment_income"]
+        ), (person, a[tax][i], b[tax][i])
+
+
+# A pensioner with a tiny Pension Credit award: Pension Credit income
+# deducts tax but leaves out dividends, so with total income over £35,000 the
+# award survives until the loss cuts the tax. In 2026 the relief ends it, and
+# with it the exemption from the winter fuel payment charge, so Income Tax
+# with the charge rises with the loss although total income does not move.
+PINNED_CHARGE_TAXPAYER = taxpayer(
+    age=80,
+    private_pension_income=19_200,
+    dividend_income=30_000,
+    trading_loss=1_100,
+)
 
 
 @PROPERTY_SETTINGS
 @example(PINNED_TAXPAYERS, PINNED_REGIONS, 0.5)
+@example([PINNED_CHARGE_TAXPAYER] * 8, ["LONDON"] * 16, 0.5)
 @given(
     st.lists(taxpayers(), min_size=8, max_size=16),
     st.lists(st.sampled_from(REGIONS), min_size=16, max_size=16),
@@ -382,18 +421,46 @@ def test_relief_taxes_like_income_cut_in_section_25_order(people, regions):
 def test_income_tax_falls_with_the_loss_by_at_most_the_relief(people, regions, share):
     smaller = [{**p, "trading_loss": p["trading_loss"] * share} for p in people]
     without = [{**p, "trading_loss": 0.0} for p in people]
-    variables = ["income_tax", "trade_loss_relief_against_general_income"]
+    charge = "winter_fuel_payment_charge"
+    total_income = "total_income_charged_to_tax"
+    variables = [
+        PRE_CHARGE_TAX,
+        "trade_loss_relief_against_general_income",
+        charge,
+        total_income,
+        *RELEVANT_BENEFITS,
+    ]
     a = calculate(single_people(people, regions), variables)
     s = calculate(single_people(smaller, regions), variables)
     b = calculate(single_people(without, regions), variables)
+
+    def on_relevant_benefit(result, i):
+        return any(result[v][i] > 0 for v in RELEVANT_BENEFITS)
+
     for i, person in enumerate(people):
-        tol = tolerance(b["income_tax"][i], person["employment_income"])
-        assert a["income_tax"][i] <= s["income_tax"][i] + tol, person
-        assert s["income_tax"][i] <= b["income_tax"][i] + tol, person
+        tol = tolerance(b[PRE_CHARGE_TAX][i], person["employment_income"])
+        assert a[PRE_CHARGE_TAX][i] <= s[PRE_CHARGE_TAX][i] + tol, person
+        assert s[PRE_CHARGE_TAX][i] <= b[PRE_CHARGE_TAX][i] + tol, person
         if person["savings_interest_income"] == 0:
-            saved = b["income_tax"][i] - a["income_tax"][i]
+            saved = b[PRE_CHARGE_TAX][i] - a[PRE_CHARGE_TAX][i]
             relief = a["trade_loss_relief_against_general_income"][i]
             assert saved <= relief + tol, (person, saved, relief)
+        # Each person is alone in their household, so their payment, and
+        # with it the charge, follows only their own benefit receipt and
+        # total income.
+        for result in (a, s):
+            if abs(result[charge][i] - b[charge][i]) > 0.5:
+                receipt_moved = on_relevant_benefit(result, i) != (
+                    on_relevant_benefit(b, i)
+                )
+                total_income_moved = abs(
+                    result[total_income][i] - b[total_income][i]
+                ) > tolerance(b[total_income][i])
+                assert receipt_moved or total_income_moved, (
+                    person,
+                    result[charge][i],
+                    b[charge][i],
+                )
 
 
 @st.composite
@@ -527,19 +594,56 @@ PINNED_FAMILIES = [
 ]
 
 
+# A pensioner with five children on Pension Credit and so not charged. In
+# 2026 the loss cuts tax by £1,000, which ends Pension Credit and with it the
+# exemption from the winter fuel payment charge (ITEPA 2003 s.681I(4)). The
+# second pensioner is charged with or without the loss: total income of
+# £40,000 is found before trade loss relief, and the loss leaves them off
+# Pension Credit.
+PINNED_PENSIONER = [
+    (
+        [
+            adult(
+                age=70,
+                employment_income=3_000.0,
+                private_pension_income=32_520.0,
+                trading_loss=5_000.0,
+                hours_worked=16.0,
+            )
+        ]
+        + [{"age": 10, "trading_loss": 0.0} for _ in range(5)],
+        home(9_000.0, "NORTH_EAST"),
+    ),
+    (
+        [
+            adult(
+                age=70,
+                private_pension_income=40_000.0,
+                trading_loss=10_000.0,
+                hours_worked=0.0,
+            )
+        ],
+        home(9_000.0),
+    ),
+]
+
+
 @pytest.mark.parametrize(
     ("programme", "year"),
     [("universal_credit", 2026), ("housing_benefit", 2024), ("tax_credits", 2024)],
 )
 @PROPERTY_SETTINGS
 @example(units=PINNED_FAMILIES)
+@example(units=PINNED_PENSIONER)
 @given(units=st.lists(families(), min_size=4, max_size=10))
 def test_zero_profit_trade_loss_cannot_raise_tax_or_reduce_programme_award(
     units, programme, year
 ):
     """Compare a loss-making trade with an otherwise identical zero-profit trade.
 
-    Tax uses each person's actual liability. Benefit comparisons hold paid
+    Tax uses each person's actual liability before the winter fuel payment
+    charge, and the charge moves only where the loss changes receipt of a
+    relevant benefit in the household. Benefit comparisons hold paid
     deductions at the zero-loss values, including UC's earnings-only tax and
     NI. Housing Benefit is tested for continuing 2024 awards without tax
     credits: a changed credit receipt can legitimately change Housing Benefit.
@@ -586,12 +690,38 @@ def test_zero_profit_trade_loss_cannot_raise_tax_or_reduce_programme_award(
 
     baseline = simulation(zero_profit, person_inputs)
     actual_loss = simulation(loss_making, person_inputs)
-    actual_tax = values(actual_loss, "income_tax")
-    baseline_tax = values(baseline, "income_tax")
+    # Before the winter fuel payment charge: a loss can end Pension Credit,
+    # and with it the exemption from the charge (s.681I(4)).
+    actual_tax = values(actual_loss, PRE_CHARGE_TAX)
+    baseline_tax = values(baseline, PRE_CHARGE_TAX)
     assert np.all(actual_tax <= baseline_tax + 0.5), (actual_tax, baseline_tax, units)
 
+    # The charge itself tests total income, which the loss leaves alone
+    # (relief comes at Step 2), and receipt of a relevant benefit, which also
+    # sets the payments. So it moves only in a household where the loss
+    # changes who is on a relevant benefit.
+    def on_relevant_benefit(sim):
+        return np.any([values(sim, v) > 0 for v in RELEVANT_BENEFITS], axis=0)
+
+    names = baseline.populations["person"].ids
+    household = np.array([int(name.split("_")[0][1:]) for name in names])
+    receipt_moved = np.bincount(
+        household,
+        weights=(
+            on_relevant_benefit(baseline) != on_relevant_benefit(actual_loss)
+        ).astype(float),
+        minlength=len(units),
+    )[household]
+    charge = "winter_fuel_payment_charge"
+    charge_moved = np.abs(values(actual_loss, charge) - values(baseline, charge)) > 0.5
+    assert np.all(~charge_moved | (receipt_moved > 0)), (
+        values(actual_loss, charge),
+        values(baseline, charge),
+        units,
+    )
+
     deductions = [
-        "income_tax",
+        PRE_CHARGE_TAX,
         "national_insurance",
         "uc_income_tax_on_earnings",
         "uc_national_insurance_on_earnings",
@@ -748,6 +878,31 @@ def test_zero_profit_trade_loss_cannot_raise_tax_or_reduce_programme_award(
         ),
     ]
 )
+@example(
+    [
+        # Removing the loss must preserve UC's Housing Benefit passport:
+        # holding only final UC changed HB income from £0 to £45,976.93.
+        (
+            [
+                adult(
+                    age=63,
+                    employment_income=28_997.520933585933,
+                    self_employment_income=17_292.726071844652,
+                    trading_loss=33_528.10659809126,
+                    hours_worked=35.0,
+                ),
+                {"age": 7, "trading_loss": 0.0},
+                {"age": 9, "trading_loss": 3_911.068241394866},
+            ],
+            {
+                "rent": 0.0,
+                "council_tax": 0.0,
+                "tenure_type": "RENT_FROM_COUNCIL",
+                "region": "SCOTLAND",
+            },
+        ),
+    ]
+)
 @given(st.lists(families(), min_size=4, max_size=10))
 def test_means_tests_see_the_loss_only_through_tax(units):
     with_loss = Simulation(situation=family_situation(units))
@@ -758,7 +913,7 @@ def test_means_tests_see_the_loss_only_through_tax(units):
     names = with_loss.populations["person"].ids
     benunits = with_loss.populations["benunit"].ids
     deductions = [
-        "income_tax",
+        PRE_CHARGE_TAX,
         "national_insurance",
         # PC replaces these actual components with CER notional deductions;
         # hold them consistently with the total national_insurance input.
@@ -776,9 +931,10 @@ def test_means_tests_see_the_loss_only_through_tax(units):
     ]
     tax = {v: values(with_loss, v) for v in deductions}
     # SPC Regs reg 17(11) substitutes CER notional deductions for the tax
-    # actually attributable to profits. Holding income_tax alone also holds
-    # it in the no-profit counterfactual, incorrectly setting that attribution
-    # to zero. Preserve both PC tax allocations from the with-loss side.
+    # actually attributable to profits. Holding the pre-charge tax alone also
+    # holds it in the no-profit counterfactual, incorrectly setting that
+    # attribution to zero. Preserve both PC tax allocations from the
+    # with-loss side.
     # In the child-loss example the adult has no loss: actual/notional tax
     # is (17,809.09433 - 12,570) x 20% = 1,047.818866, and notional Class 4
     # is 5,239.09433 x 6% = 314.345660. Holding both tax allocations gives
@@ -795,6 +951,7 @@ def test_means_tests_see_the_loss_only_through_tax(units):
     profits = values(with_loss, "self_employment_income")
     mif = np.asarray(with_loss.calculate("uc_mif_applies", YEAR))
     uc = values(with_loss, "universal_credit")
+    uc_pre_cap = values(with_loss, "universal_credit_pre_benefit_cap")
     hb = values(with_loss, "housing_benefit")
 
     def held(k, **extra):
@@ -805,6 +962,8 @@ def test_means_tests_see_the_loss_only_through_tax(units):
         }
 
     # Every means test but UC: the loss reaches them only through the tax.
+    # Housing Benefit's UC passport reads entitlement before the benefit
+    # cap, so preserve that amount alongside the final award.
     no_loss = Simulation(
         situation=family_situation(
             units,
@@ -812,6 +971,7 @@ def test_means_tests_see_the_loss_only_through_tax(units):
             {
                 b: {
                     "universal_credit": float(uc[k]),
+                    "universal_credit_pre_benefit_cap": float(uc_pre_cap[k]),
                     **{v: float(pc_tax[v][k]) for v in pc_tax},
                 }
                 for k, b in enumerate(benunits)

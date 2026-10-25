@@ -53,7 +53,7 @@
         uc_is_in_startup_period: true
         uc_income_tax_on_earnings: 0
         uc_national_insurance_on_earnings: 0
-        income_tax: 0
+        income_tax_before_winter_fuel_payment_charge: 0
         national_insurance: 0
       child_1:
         age: 1

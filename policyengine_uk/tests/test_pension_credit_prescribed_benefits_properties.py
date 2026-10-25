@@ -42,6 +42,10 @@ Invariants:
    Insurance (the model taxes IB), less any Carer's Allowance or Carer Support
    Payment the benefit displaces: SDA, IB and MA overlap with them (Social
    Security (Overlapping Benefits) Regulations 1979; carers_allowance_overlapping_benefits).
+   The income tax is the liability before the winter fuel payment charge
+   (ITEPA 2003 s. 681I), which Pension Credit income deducts: the charge
+   recovers a winter payment rather than taxing the income assessed. Here and
+   in invariant 3, "income tax" means that liability.
 3. Savings Credit income never exceeds Pension Credit income. Adding an amount
    of a reg 9 source (working tax credit, IB, SDA, MA, contribution-based JSA
    or contributory ESA) changes Savings Credit income only through income tax
@@ -74,6 +78,9 @@ YEAR = 2026
 PENSIONS = np.arange(0, 25_001, 500)
 AMOUNTS = np.arange(0, 15_001, 1_250)
 PRESCRIBED_BENEFITS = ("iidb", "sda", "incapacity_benefit", "maternity_allowance")
+# The income tax Pension Credit income deducts: the liability before the
+# winter fuel payment charge.
+INCOME_TAX = "income_tax_before_winter_fuel_payment_charge"
 # Reg 9 sources and the input each is set through: the tax base reads
 # reported contribution-based JSA and contributory ESA.
 REG_9_INPUTS = {
@@ -247,7 +254,7 @@ def test_guarantee_credit_falls_pound_for_pound_with_each_prescribed_benefit(
         [
             "guarantee_credit",
             "pension_credit_income",
-            "income_tax",
+            INCOME_TAX,
             "national_insurance",
             "carers_allowance",
             "carer_support_payment",
@@ -255,7 +262,7 @@ def test_guarantee_credit_falls_pound_for_pound_with_each_prescribed_benefit(
     )
     gc = g["guarantee_credit"]
     pc_income = g["pension_credit_income"]
-    tax = g["income_tax"] + g["national_insurance"]
+    tax = g[INCOME_TAX] + g["national_insurance"]
     carer_benefit = g["carers_allowance"] + g["carer_support_payment"]
     assert np.all(np.diff(gc, axis=-1) <= 0.01), (families, gc)
     # The extra Pension Credit income is the extra benefit less the extra tax
@@ -304,7 +311,7 @@ def test_reg_9_sources_change_savings_credit_income_only_through_tax(
             "pension_credit_income",
             "savings_credit_income",
             "savings_credit",
-            "income_tax",
+            INCOME_TAX,
             "national_insurance",
             "carers_allowance",
             "carer_support_payment",
@@ -318,7 +325,7 @@ def test_reg_9_sources_change_savings_credit_income_only_through_tax(
         amount,
         savings_credit,
     )
-    tax = g["income_tax"] + g["national_insurance"]
+    tax = g[INCOME_TAX] + g["national_insurance"]
     extra_tax = tax[..., 1] - tax[..., 0]
     carer_benefit = g["carers_allowance"] + g["carer_support_payment"]
     carer_change = carer_benefit[..., 1] - carer_benefit[..., 0]
