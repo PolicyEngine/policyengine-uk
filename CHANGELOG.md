@@ -1,3 +1,10 @@
+## [2.158.2] - 2026-10-25
+
+### Changed
+
+- - Documented that the Northern Ireland business rates statistic counts the regional and district rates, while the OBR line that projects it appears to cover the regional rate only.
+
+
 ## [2.158.1] - 2026-10-25
 
 ### Fixed
