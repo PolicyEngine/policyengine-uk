@@ -34,7 +34,9 @@ COUPLE:
 metadata:
   unit: currency-GBP
   period: week
-  uprating: gov.benefit_uprating_cpi
+  # Projected after uprating by create_savings_credit_threshold.py:
+  # standard minimum guarantee - Savings Credit maximum / phase-in rate.
+  # Published thresholds keep their own rounding; only projections are derived.
   propagate_metadata_to_children: true
   reference:
     - title: The State Pension Credit Regulations 2002 reg. 7

@@ -786,6 +786,7 @@ CODE_PATHS = [
     ".github/**",
     "pyproject.toml",
     "uv.lock",
+    "hatch_build.py",
     "Makefile",
     "conftest.py",
     ".gitignore",
@@ -805,6 +806,7 @@ def reference_is_code(path):
         in {
             "pyproject.toml",
             "uv.lock",
+            "hatch_build.py",
             "Makefile",
             "conftest.py",
             ".gitignore",
@@ -823,6 +825,7 @@ def reference_is_code(path):
                 "docs/a.md",
                 "changelog.d/1.fixed.md",
                 "Makefile",
+                "hatch_build.py",
                 "Makefile.bak",
                 "policyengine_uk",
                 "policyengine_uk_other/x.py",

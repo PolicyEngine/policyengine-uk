@@ -1915,6 +1915,17 @@ def parameters_with_a_closed_span():
     return tuple(sorted(found))
 
 
+@pytest.fixture(scope="module", autouse=True)
+def release_parameter_caches():
+    # Drop the current-law leaf values (one table for each day asked for) and
+    # the parameter lists once this module's tests are done, instead of for
+    # the rest of the test process.
+    yield
+    current_law_leaf_values.cache_clear()
+    later_first_dated_parameters.cache_clear()
+    parameters_with_a_closed_span.cache_clear()
+
+
 @st.composite
 def restatements(draw):
     """A parameter's own stated value, written over part of its span."""
@@ -1927,12 +1938,27 @@ def restatements(draw):
     stop = start + datetime.timedelta(
         days=draw(st.integers(0, (ends - start).days - 1))
     )
-    route = draw(st.sampled_from(sorted(ROUTES)))
+    # Scenario.parameter_changes types its values as numbers and booleans, so
+    # a list-valued parameter (such as the Universal Credit capital sources)
+    # is restated through the other routes only.
+    routes = sorted(ROUTES)
+    if not isinstance(value, (int, float, bool)):
+        routes.remove("parameter_changes")
+    route = draw(st.sampled_from(routes))
     return name, start, stop, value, route
 
 
 @PROPERTY_SETTINGS
 @given(change=restatements())
+@example(
+    change=(
+        "gov.dwp.universal_credit.means_test.capital.person_sources",
+        datetime.date(2013, 4, 29),
+        datetime.date(2013, 4, 29),
+        [],
+        "reform_dict",
+    )
+)
 def test_restating_a_parameters_own_value_changes_nothing(change):
     name, start, stop, value, route = change
     simulation = ROUTES[route](as_dict(name, start, stop, value))

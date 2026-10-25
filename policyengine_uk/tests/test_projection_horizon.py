@@ -146,8 +146,14 @@ def _rent_growth(region, tenure, year):
 
 
 def _council_tax_growth(region, year):
+    # Bills grow by their country's receipts growth net of the growth in
+    # household weights, so each country's total tracks its receipts (#2067).
     series = COUNCIL_TAX_SERIES.get(region)
-    return 0.0 if series is None else GROWTH.obr.council_tax.get_child(series)(year)
+    if series is None:
+        return 0.0
+    receipts = GROWTH.obr.council_tax.get_child(series)(year)
+    weights = parameters.get_child(INDEX_OF["household_weight"])(year)
+    return (1 + receipts) / (1 + weights) - 1
 
 
 RESIDENTIAL_STOCKS = (
@@ -188,7 +194,8 @@ def test_every_year_to_the_horizon_is_a_dataset_year(projected, sim):
 def test_each_singly_indexed_input_grows_by_its_index_every_year(projected):
     """For every variable uprating_indices.yaml lists and every projected
     year, check its index: residential stocks use the original observation
-    and cumulative HPI; other inputs grow from the previous year's raw YoY."""
+    and cumulative HPI. This fixture stores the completed bereavement split,
+    so BSP stays flat; other inputs grow from the previous year's raw YoY."""
     observed = _dataset()
     for year in range(BASE_YEAR + 1, PROJECTION_END_YEAR + 1):
         for variable, index in INDEX_OF.items():
@@ -199,7 +206,9 @@ def test_each_singly_indexed_input_grows_by_its_index_every_year(projected):
             else:
                 previous = _table(projected[year - 1], variable)[variable].to_numpy()
                 growth = parameters.get_child(index)(year)
-                expected = previous * (1 + growth)
+                expected = (
+                    previous if variable == "bsp_reported" else previous * (1 + growth)
+                )
             assert current == pytest.approx(expected), (variable, year)
 
 
@@ -296,7 +305,8 @@ def test_growth_ratio_is_one_plus_the_index(amounts, year, variable):
     """For any positive amounts, any projected year and any singly indexed
     variable, check its annual growth record by record. Residential ratios
     come from original-observation cumulative HPI levels at storage precision;
-    every other variable retains its raw one-plus-YoY growth expectation."""
+    split BSP stays flat; every other variable retains its raw one-plus-YoY
+    growth expectation."""
     projected = extend_single_year_dataset(
         _dataset(np.array(amounts)), parameters, end_year=year
     )
@@ -309,6 +319,8 @@ def test_growth_ratio_is_one_plus_the_index(amounts, year, variable):
         assert current == pytest.approx(expected_current)
         assert previous == pytest.approx(expected_previous)
         expected_ratio = expected_current / expected_previous
+    elif variable == "bsp_reported":
+        expected_ratio = np.ones(len(amounts))
     else:
         index = parameters.get_child(INDEX_OF[variable])(year)
         expected_ratio = np.full(len(amounts), 1 + index)

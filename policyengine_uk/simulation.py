@@ -30,15 +30,19 @@ from policyengine_uk.data.dataset_schema import (
     UKMultiYearDataset,
     UKSingleYearDataset,
 )
+from policyengine_uk.utils.entity_ids import ENTITY_ID_VARIABLES, check_entity_ids
 from policyengine_uk.utils.scenario import ConstructionReformState, Scenario
 from policyengine_uk.data.economic_assumptions import (
+    BEREAVEMENT_SPLIT_INPUTS,
     extend_single_year_dataset,
     reset_growthfactor_uprating,
     uprating_input_fingerprint,
 )
 from policyengine_uk.data.dataset_sources import materialize_gcs_dataset_url
+from policyengine_uk.data.energy_price_basis import core_dataset_energy_price_basis
 from policyengine_uk.data.input_dataframe import (
     dataset_from_input_dataframe,
+    hold_identifiers_in,
     with_identifiers_in_each_year,
 )
 from policyengine_uk.data.capital_gains_projection import (
@@ -51,6 +55,7 @@ from policyengine_uk.data.capital_gains_projection import (
     capital_gains_application_metadata,
 )
 from policyengine_uk.utils.dependencies import get_variable_dependencies
+from policyengine_uk.utils.data_source import built_from_data
 from policyengine_uk.utils.input_dataframe_export import input_dataframe
 from policyengine_uk.utils.supplied_inputs import (
     SUPPLIED_INPUT_VARIABLES,
@@ -570,6 +575,10 @@ class Simulation(CoreSimulation):
             super().set_input(variable_name, period, value)
         finally:
             forget_replaced_model_values(self, variable_name, records)
+        # Inputs do not carry back, so give the simulation its identifiers
+        # for the year the input starts in if it holds them only for later
+        # years. See ``policyengine_uk.data.input_dataframe.hold_identifiers_in``.
+        hold_identifiers_in(self, variable_name, period)
         if variable_name in CGT_DATASET_INPUTS:
             self._capture_cgt_supplied_inputs(variable_name, replace_period=period)
 
@@ -930,9 +939,9 @@ class Simulation(CoreSimulation):
             cache_key = self._dataset_cache_key(dataset_source)
             if cache_key is not None and cache_key in _url_dataset_cache:
                 multi_year_dataset = _url_dataset_cache[cache_key]
+                self.dataset = multi_year_dataset
                 self.build_from_multi_year_dataset(multi_year_dataset)
                 self._restore_cgt_extension_provenance(multi_year_dataset)
-                self.dataset = multi_year_dataset
                 return
             dataset_file = materialize_gcs_dataset_url(dataset_source)
             self.build_from_file(dataset_file, cache_key=dataset_source)
@@ -971,9 +980,9 @@ class Simulation(CoreSimulation):
         if key is not None:
             _url_dataset_cache[key] = multi_year_dataset
 
+        self.dataset = multi_year_dataset
         self.build_from_multi_year_dataset(multi_year_dataset)
         self._restore_cgt_extension_provenance(multi_year_dataset)
-        self.dataset = multi_year_dataset
 
     def build_from_url(self, url: str) -> None:
         """Build simulation from a HuggingFace dataset URL.
@@ -992,9 +1001,9 @@ class Simulation(CoreSimulation):
         cache_key = self._dataset_cache_key(url)
         if cache_key is not None and cache_key in _url_dataset_cache:
             multi_year_dataset = _url_dataset_cache[cache_key]
+            self.dataset = multi_year_dataset
             self.build_from_multi_year_dataset(multi_year_dataset)
             self._restore_cgt_extension_provenance(multi_year_dataset)
-            self.dataset = multi_year_dataset
             return
 
         # Parse HuggingFace URL components
@@ -1056,8 +1065,9 @@ class Simulation(CoreSimulation):
         for the periods they were set for. Calculated caches and values stored
         by the model itself are not supplied inputs.
         The identifiers are also given for every whole year a column names,
-        where a simulation built from the frame holds them, so that the frame
-        loads back to a simulation that exports the same frame. See
+        where a simulation built from the frame holds them, so that the
+        default export loads back to a simulation that exports the same
+        frame. See
         ``policyengine_uk.data.input_dataframe.with_identifiers_in_each_year``.
 
         Args:
@@ -1077,6 +1087,7 @@ class Simulation(CoreSimulation):
         Args:
             dataset: PolicyEngine Dataset object containing simulation data
         """
+        energy_price_basis = core_dataset_energy_price_basis(dataset)
         data: Dict[str, Dict[str, Union[float, int, str]]] = dataset.load_dataset()
 
         first_variable = data[list(data.keys())[0]]
@@ -1131,13 +1142,13 @@ class Simulation(CoreSimulation):
         self.dataset = dataset
 
         dataset = UKSingleYearDataset.from_simulation(
-            self, fiscal_year=first_time_period
+            self, fiscal_year=first_time_period, energy_price_basis=energy_price_basis
         )
         multi_year_dataset = self._extend_dataset_with_cgt_provenance(dataset)
 
+        self.dataset = multi_year_dataset
         self.build_from_multi_year_dataset(multi_year_dataset)
         self._restore_cgt_extension_provenance(multi_year_dataset)
-        self.dataset = multi_year_dataset
 
     def build_from_single_year_dataset(self, dataset: UKSingleYearDataset) -> None:
         """Build simulation from a single-year UK dataset.
@@ -1148,9 +1159,9 @@ class Simulation(CoreSimulation):
 
         dataset = self._extend_dataset_with_cgt_provenance(dataset)
         _pre_encode_enum_columns(dataset, self.tax_benefit_system)
+        self.dataset = dataset
         self.build_from_multi_year_dataset(dataset)
         self._restore_cgt_extension_provenance(dataset)
-        self.dataset = dataset
 
     def build_from_multi_year_dataset(self, dataset: UKMultiYearDataset) -> None:
         """Build simulation from a multi-year UK dataset.
@@ -1195,6 +1206,8 @@ class Simulation(CoreSimulation):
                         continue
                     self.set_input(variable, year, table[variable])
 
+        # Retain the dataset actually loaded, including the copied base amounts
+        # and price declaration when economic assumptions were disabled.
         self.dataset = dataset
         if self.disable_economic_assumptions:
             # The loader changed these future amounts even for an external
@@ -1244,12 +1257,32 @@ class Simulation(CoreSimulation):
             person_household_id: Array mapping persons to households
             benunit_id: Array of benefit unit IDs
             household_id: Array of household IDs
+
+        Warns:
+            EntityIdWarning: If an ID is not a whole number, or is outside the
+                range of the variable that stores it, so that the stored ID
+                differs from the one given.
         """
         # Every data source (DataFrame, dataset, file, URL) builds through here.
         self._start_new_population(built_from_dataset=True)
         from policyengine_core.simulations.simulation_builder import (
             SimulationBuilder,
         )  # Import here to avoid circular dependency
+
+        # The callers store these columns as the variables' values after
+        # building the entities, and exports and rebuilds read them from there.
+        # The populations below take the arrays as given.
+        for variable_name, ids in zip(
+            ENTITY_ID_VARIABLES,
+            (
+                person_id,
+                person_benunit_id,
+                person_household_id,
+                benunit_id,
+                household_id,
+            ),
+        ):
+            check_entity_ids(self.tax_benefit_system.variables[variable_name], ids)
 
         builder = SimulationBuilder()
         builder.populations = self.tax_benefit_system.instantiate_entities()
@@ -1327,6 +1360,50 @@ class Simulation(CoreSimulation):
             household=household,
             fiscal_year=year,
         )
+
+    def _calculate(self, variable_name: str, period: Period = None):
+        # Core requires an indexed input to have no formula. Keep the legacy
+        # CPI declaration, but carry split dataset BSP nominally after the
+        # materialized horizon, including through Core's monthly conversion.
+        if (
+            variable_name == "bsp_reported"
+            and period is not None
+            and period.unit == "year"
+            and period.size == 1
+            and built_from_data(self)
+        ):
+            variable = self.tax_benefit_system.get_variable(variable_name)
+            holder = self.get_holder(variable_name)
+            inputs = holder.get_input_periods(self.branch_name)
+            if (
+                not variable.formulas
+                and not variable.is_neutralized
+                and variable.uprating
+                == "gov.economic_assumptions.indices.obr.consumer_price_index"
+                and period not in inputs
+            ):
+                source = max(
+                    (
+                        known
+                        for known in inputs
+                        if known.unit == "year" and known.start < period.start
+                    ),
+                    key=lambda known: (known.start, known.stop),
+                    default=None,
+                )
+                if source is not None:
+                    split = all(
+                        source
+                        in self.get_holder(name).get_input_periods(self.branch_name)
+                        for name in BEREAVEMENT_SPLIT_INPUTS
+                    )
+                    # Track both dependencies even when either input is absent.
+                    # Calculated defaults do not declare a completed split.
+                    for name in BEREAVEMENT_SPLIT_INPUTS:
+                        self.calculate(name, source)
+                    if split:
+                        return self.calculate(variable_name, source)
+        return super()._calculate(variable_name, period)
 
     def calculate(
         self,

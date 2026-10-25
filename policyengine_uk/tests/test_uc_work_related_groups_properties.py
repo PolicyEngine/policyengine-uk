@@ -472,7 +472,9 @@ QUALIFYING_AGE_BIRTHS = sorted(
 def qualifying_age_couples():
     """Each birth date, for each sex, as the elder member of a couple whose
     partner is 40 and has no section 19 to 21 circumstance. The elder is
-    listed first in each benefit unit."""
+    listed first in each benefit unit. Both are given the claimant-or-partner
+    role, since the age presumption would read a partner 20 or more years
+    younger as the elder's child."""
     people, benunits, households, keys = {}, {}, {}, []
     for male in (True, False):
         for birth in QUALIFYING_AGE_BIRTHS:
@@ -487,16 +489,26 @@ def qualifying_age_couples():
                 "age": ages,
                 "months_since_last_birthday": months,
                 "is_male": {year: male for year in QUALIFYING_AGE_YEARS},
+                "is_claimant_or_partner": {year: True for year in QUALIFYING_AGE_YEARS},
             }
             people[partner] = {
                 "age": {year: 40 for year in QUALIFYING_AGE_YEARS},
                 "is_male": {year: not male for year in QUALIFYING_AGE_YEARS},
+                "is_claimant_or_partner": {year: True for year in QUALIFYING_AGE_YEARS},
             }
             benunits[f"b_{elder}"] = {"members": [elder, partner]}
             households[f"h_{elder}"] = {"members": [elder, partner]}
             keys.append((birth, male))
     situation = {"people": people, "benunits": benunits, "households": households}
     return Simulation(situation=situation), keys
+
+
+@pytest.fixture(scope="module", autouse=True)
+def release_cached_simulation():
+    # Drop the cached simulation, and the system it built, once this module's
+    # tests are done, instead of for the rest of the test process.
+    yield
+    qualifying_age_couples.cache_clear()
 
 
 @pytest.mark.parametrize("year", QUALIFYING_AGE_YEARS)

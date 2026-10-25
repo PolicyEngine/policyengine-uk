@@ -1,0 +1,101 @@
+# Component regressions: upstream pensioner flags explicitly isolate allowance
+# selection. These cases do not claim natural pensioner eligibility or cash awards.
+# GB SI 2006/214 Sch 3 para 1 at 30 April 2020 and England SI 2012/2885 Sch 2 para 1
+# supply 187.75/280.85 weekly. Model annualisation uses 52 weeks.
+- name: Case 1, omitted-age component has the single higher allowance in 2020.
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1: {}
+    benunits:
+      benunit:
+        members: [person1]
+        housing_benefit_eligible: true
+        housing_benefit_pension_age_regulations_apply: true
+        council_tax_reduction_pensioner: true
+        benefits_premiums: 0
+        council_tax_reduction_premiums: 0
+    households:
+      household:
+        members: [person1]
+        region: LONDON
+  output:
+    housing_benefit_applicable_amount: 9_763
+    council_tax_reduction_applicable_amount: 9_763
+
+- name: Case 2, isolated couple component has the higher allowance in 2020.
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+      person2:
+        age: 40
+    benunits:
+      benunit:
+        members: [person1, person2]
+        housing_benefit_eligible: true
+        housing_benefit_pension_age_regulations_apply: true
+        council_tax_reduction_pensioner: true
+        benefits_premiums: 0
+        council_tax_reduction_premiums: 0
+    households:
+      household:
+        members: [person1, person2]
+        region: LONDON
+  output:
+    housing_benefit_applicable_amount: 14_604.2
+    council_tax_reduction_applicable_amount: 14_604.2
+
+# Annual 2021 means FY2021-22, not legal commencement on 1 January.
+# SI 2021/188 reg 2 and NI SR 2021/70 reg 2 insert 177.10 weekly;
+# England SI 2021/29 regs 1(2), 7 insert the same lower component.
+- name: Case 3, post-cutoff single component retains the lower allowance in 2021.
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        is_male: true
+    benunits:
+      benunit:
+        members: [person1]
+        housing_benefit_eligible: true
+        housing_benefit_pension_age_regulations_apply: true
+        council_tax_reduction_pensioner: true
+        benefits_premiums: 0
+        council_tax_reduction_premiums: 0
+    households:
+      household:
+        members: [person1]
+        region: LONDON
+  output:
+    housing_benefit_applicable_amount: 9_209.2
+    council_tax_reduction_applicable_amount: 9_209.2
+
+# 191.15 is pinned here only for England CTR, directly by SI 2021/29 reg 7.
+- name: Case 4, England CTR retains the higher allowance for pre-cutoff attainment.
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 66
+        date_of_birth: 19550331
+        is_male: true
+    benunits:
+      benunit:
+        members: [person1]
+        council_tax_reduction_pensioner: true
+        benefits_premiums: 0
+        council_tax_reduction_premiums: 0
+    households:
+      household:
+        members: [person1]
+        region: LONDON
+  output:
+    state_pension_age_date: 20210331
+    council_tax_reduction_applicable_amount: 9_939.8
