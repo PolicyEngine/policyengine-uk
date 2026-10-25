@@ -7,9 +7,11 @@
 # all five Python shards of nine runs on 24 October 2026, each test's mean
 # over the runs: merge queue runs 40050881130, 40059344467, 40063244949,
 # 40067189795, 40071060766, 40079467297, 40083761750 and 40087883891, and
-# pull request run 40095846881. A test here that no longer exists is
-# harmless; a slow test not here is placed by the hash. Regenerate when a
-# shard drifts well above the others.
+# pull request run 40095846881. A slow test not here is placed by the hash.
+# test_ci_test_shards.py fails if an entry names a test that no longer
+# exists, so a pull request that renames or removes a listed test should
+# rename or delete its line here. Regenerate when a shard drifts well above
+# the others.
 [seconds]
 "policyengine_uk/tests/test_capital_share_components.py::test_capital_matches_the_original_lists" = 1299
 "policyengine_uk/tests/test_statutory_pension_edges.py::test_nics_cap_preserves_aa_inputs_and_charge_with_fixed_ordinary_tax[2029]" = 761
@@ -220,7 +222,6 @@
 "policyengine_uk/tests/test_dfe_childcare_student_support_properties.py::test_care_to_learn_pays_each_child_once_up_to_the_per_child_cap" = 84
 "policyengine_uk/tests/test_child_and_adult_definitions_properties.py::test_member_far_below_a_flagged_claimant_is_never_their_partner" = 84
 "policyengine_uk/tests/test_process_time_reforms.py::test_a_triple_lock_rate_set_by_reform_uprates_the_state_pension[via_reform_dict-generated-interval]" = 83
-"policyengine_uk/tests/test_child_and_adult_definitions_properties.py::test_frs_shaped_units_keep_the_under_20_presumption" = 83
 "policyengine_uk/tests/test_carers_allowance_pension_contribution_deduction_rate_properties.py::test_earnings_fall_by_contributions_times_the_change_in_share" = 83
 "policyengine_uk/tests/test_child_and_adult_definitions_properties.py::test_any_benefit_unit_has_at_most_two_claimants_or_partners" = 83
 "policyengine_uk/tests/test_household_head_agreement_properties.py::test_every_programme_reads_one_head" = 82
