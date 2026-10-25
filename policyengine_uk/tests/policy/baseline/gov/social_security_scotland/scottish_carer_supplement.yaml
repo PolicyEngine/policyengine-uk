@@ -1,12 +1,12 @@
 # Social Security (Scotland) Act 2018 s.86B requires Scottish Ministers to
 # bring forward legislation raising the Scottish Carer Supplement and the
 # Carer Support Payment component to at least their s.86A inflation-adjusted
-# levels; their measure is the 12 months to September CPI (Social Security
-# Assistance in Scotland: up-rating for inflation in 2026-27, section 3).
-# From 2027 the model uprates both with gov.benefit_uprating_cpi, its proxy
-# for that measure, which is 184.3803432 in 2026, 188.6206824 in 2027 and
-# 192.3927984 in 2028 under the OBR March 2026 EFO. The model does not round
-# to the nearest 5p as Ministers do.
+# levels. Their measure is the 12 months to September CPI, rounded to the
+# nearest 5p (Social Security Assistance in Scotland: up-rating for inflation
+# in 2026-27, sections 2 and 3). From April 2027 the model raises both each
+# April by the previous September's CPI (gov.benefit_uprating_cpi) and rounds
+# to the nearest 5p: 3.5% for April 2027 (ONS, 21 October 2026) and the OBR
+# March 2026 EFO forecast of 2.1% for April 2028.
 
 - name: Scottish Carer Supplement is 11.70 a week in 2026
   period: 2026
@@ -20,7 +20,7 @@
     scottish_carer_supplement: 608.40
     carer_support_payment: 86.45 * 52
 
-- name: Scottish Carer Supplement rises with gov.benefit_uprating_cpi in 2027
+- name: Scottish Carer Supplement rises by September CPI in 2027
   period: 2027
   absolute_error_margin: 0.01
   input:
@@ -28,10 +28,10 @@
     care_hours: 40
     country: SCOTLAND
   output:
-    # 11.70 x 188.6206824 / 184.3803432 x 52 = 622.39, up from 608.40.
-    scottish_carer_supplement: 11.70 * 188.6206824 / 184.3803432 * 52
-    # The Carer Support Payment component rises by the same factor.
-    carer_support_payment: 86.45 * 188.6206824 / 184.3803432 * 52
+    # 11.70 x 1.035 = 12.1095, to the nearest 5p 12.10; x 52 = 629.20.
+    scottish_carer_supplement: 12.10 * 52
+    # 86.45 x 1.035 = 89.47575, to the nearest 5p 89.50.
+    carer_support_payment: 89.50 * 52
 
 - name: Scottish Carer Supplement keeps rising in 2028
   period: 2028
@@ -41,8 +41,10 @@
     care_hours: 40
     country: SCOTLAND
   output:
-    # 11.70 x 192.3927984 / 184.3803432 x 52 = 634.84.
-    scottish_carer_supplement: 11.70 * 192.3927984 / 184.3803432 * 52
+    # 12.10 x 1.021 = 12.3541, to the nearest 5p 12.35; x 52 = 642.20.
+    scottish_carer_supplement: 12.35 * 52
+    # 89.50 x 1.021 = 91.3795, to the nearest 5p 91.40.
+    carer_support_payment: 91.40 * 52
 
 - name: Carer in England gets no Scottish Carer Supplement in 2027
   period: 2027

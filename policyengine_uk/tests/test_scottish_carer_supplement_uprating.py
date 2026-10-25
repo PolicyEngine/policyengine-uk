@@ -1,4 +1,4 @@
-"""Uprating of the Scottish Carer Supplement.
+"""Uprating of the Scottish Carer Supplement and Carer Support Payment.
 
 Social Security (Scotland) Act 2018 s.86B requires Scottish Ministers to bring
 forward legislation raising each figure of assistance given under Chapter 2 of
@@ -11,53 +11,93 @@ Payment component from 83.30 to 86.45 and the Scottish Carer Supplement from
 supplement had no uprating metadata, so the model froze it at 11.70 a week from
 2027 while the Carer Support Payment component kept rising.
 
-Invariants, for every year from 2027 to 2039, the last year of the uprating
-index:
+Both rates now rise as Scottish Child Payment and Pension Age Winter Heating
+Payment do: each April by the previous September's CPI
+(gov.benefit_uprating_cpi), rounded to the nearest 5p. Invariants, for every
+year from 2027 to 2039, the last year of the uprating index:
 
-1. Differential: the supplement and the Carer Support Payment component grow
-   by the same factor from their April 2026 rates.
-2. That factor is gov.benefit_uprating_cpi relative to 2026, so the supplement
-   never falls while the index does not.
-3. Metamorphic: setting CPI growth in the year before to g scales both
-   components by 1 + g on the year, to within the rounding of the index.
+1. Each April's rate is the previous rounded rate times one plus the
+   September CPI rise, rounded to the nearest 5p. The reference here compounds
+   the published 2026 rates in Decimal, independently of the index.
+2. Neither rate falls, since the rise is never negative.
+3. Metamorphic: setting the previous September's CPI to a published rate g
+   moves that April's rates to the previous rates times 1 + g, rounded to 5p,
+   and leaves the year before alone.
 
 The YAML tests in tests/policy/baseline/gov/social_security_scotland check
-that a Carer Support Payment recipient in Scotland gets 52 weeks of the rate.
+that a Carer Support Payment recipient in Scotland gets 52 weeks of each rate.
 """
 
+from decimal import ROUND_HALF_UP, Decimal
+
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, assume, given, settings
 from hypothesis import strategies as st
 
-from policyengine_uk import CountryTaxBenefitSystem
+from policyengine_uk import Simulation
+from policyengine_uk.model_api import Scenario
+from policyengine_uk.system import system
 
-BASE_YEAR = 2026
-YEARS = range(BASE_YEAR + 1, 2040)
-SUPPLEMENT_2026 = 11.70
-CSP_RATE_2026 = 86.45
+CARER = "gov.social_security_scotland.carer_support_payment"
+CPI_SEPTEMBER = "gov.economic_assumptions.statutory_uprating_inputs.cpi_september"
+# SSI 2026/170 reg 12(3)(a) and (b).
+RATES_2026 = {
+    f"{CARER}.supplement": Decimal("11.70"),
+    f"{CARER}.rate": Decimal("86.45"),
+}
+# Hand calculations: the 2026 rate x 1.035 (September 2026 CPI, ONS release
+# of 21 October 2026), to the nearest 5p: 11.70 -> 12.1095; 86.45 -> 89.47575.
+APRIL_2027 = {f"{CARER}.supplement": 12.10, f"{CARER}.rate": 89.50}
+YEARS = range(2027, 2040)
+FIVE_PENCE = Decimal("0.05")
+
+PERSON = {
+    "people": {"person": {"age": {2026: 40}}},
+    "benunits": {"benunit": {"members": ["person"]}},
+    "households": {"household": {"members": ["person"]}},
+}
 
 
-@pytest.fixture(scope="module")
-def parameters():
-    return CountryTaxBenefitSystem().parameters
+def nearest_5p(amount: Decimal) -> Decimal:
+    return (amount / FIVE_PENCE).quantize(Decimal(1), ROUND_HALF_UP) * FIVE_PENCE
 
 
-@pytest.mark.parametrize("year", YEARS)
-def test_supplement_uprates_with_carer_support_payment(parameters, year):
-    csp = parameters.gov.social_security_scotland.carer_support_payment
-    index = parameters.gov.benefit_uprating_cpi
-    factor = index(str(year)) / index(str(BASE_YEAR))
+def weekly_rate(parameters, name, year):
+    return parameters.get_child(name)(f"{year}-04-30")
 
-    assert csp.supplement(str(BASE_YEAR)) == SUPPLEMENT_2026
-    assert csp.rate(str(BASE_YEAR)) == CSP_RATE_2026
-    assert csp.supplement(str(year)) / SUPPLEMENT_2026 == pytest.approx(
-        csp.rate(str(year)) / CSP_RATE_2026, rel=1e-12
+
+@pytest.mark.parametrize("name", RATES_2026)
+def test_2026_rates_are_the_enacted_ones(name):
+    assert weekly_rate(system.parameters, name, 2026) == float(RATES_2026[name])
+
+
+@pytest.mark.parametrize("name, expected", APRIL_2027.items())
+def test_april_2027_rates_use_september_2026_cpi(name, expected):
+    assert weekly_rate(system.parameters, name, 2027) == pytest.approx(
+        expected, abs=1e-9
     )
-    assert csp.supplement(str(year)) == pytest.approx(
-        SUPPLEMENT_2026 * factor, rel=1e-12
+
+
+@pytest.mark.parametrize("name", RATES_2026)
+def test_each_april_compounds_the_previous_rounded_rate(name):
+    parameters = system.parameters
+    rise = parameters.gov.economic_assumptions.yoy_growth.september_cpi_uprating
+    previous = RATES_2026[name]
+    for year in YEARS:
+        growth = 1 + Decimal(str(rise(f"{year}-01-01")))
+        expected = nearest_5p(previous * growth)
+        actual = weekly_rate(parameters, name, year)
+        assert actual == pytest.approx(float(expected), abs=1e-9), year
+        assert actual >= weekly_rate(parameters, name, year - 1), year
+        previous = expected
+
+
+def parameters_under(changes):
+    simulation = Simulation(
+        situation=PERSON,
+        scenario=Scenario(parameter_changes=changes, applied_before_data_load=True),
     )
-    if index(str(year)) >= index(str(year - 1)):
-        assert csp.supplement(str(year)) >= csp.supplement(str(year - 1))
+    return simulation.tax_benefit_system.parameters
 
 
 @settings(
@@ -67,25 +107,30 @@ def test_supplement_uprates_with_carer_support_payment(parameters, year):
     suppress_health_check=[HealthCheck.too_slow],
 )
 @given(
-    year=st.integers(min_value=BASE_YEAR + 1, max_value=2035),
-    growth=st.floats(min_value=0, max_value=0.12),
+    year=st.integers(min_value=YEARS.start, max_value=2035),
+    september_permille=st.integers(min_value=0, max_value=120),
 )
-def test_supplement_follows_prior_year_cpi(year, growth):
-    system = CountryTaxBenefitSystem()
-    system.reset_parameters()
-    cpi = system.parameters.gov.economic_assumptions.yoy_growth.obr
-    shocked = [
-        value_at_instant
-        for value_at_instant in cpi.consumer_price_index.values_list
-        if value_at_instant.instant_str == f"{year - 1}-01-01"
-    ]
-    assert len(shocked) == 1
-    shocked[0].value = growth
-    system.process_parameters()
+def test_rates_follow_the_previous_september_cpi(year, september_permille):
+    september = Decimal(september_permille) / 1000
+    expected = {}
+    for name in RATES_2026:
+        before = Decimal(f"{weekly_rate(system.parameters, name, year - 1):.2f}")
+        unrounded = before * (1 + september)
+        # The index is stored to 5 decimal places, so skip rises that land
+        # within a tenth of a step of a 5p half-way point.
+        steps = unrounded / FIVE_PENCE
+        remainder = abs(steps - steps.to_integral_value())
+        assume(Decimal("0.5") - remainder > Decimal("0.1"))
+        expected[name] = (before, nearest_5p(unrounded))
 
-    csp = system.parameters.gov.social_security_scotland.carer_support_payment
-    supplement_growth = csp.supplement(str(year)) / csp.supplement(str(year - 1))
-    rate_growth = csp.rate(str(year)) / csp.rate(str(year - 1))
+    parameters = parameters_under(
+        {CPI_SEPTEMBER: {f"year:{year - 1}-09-01:1": float(september)}}
+    )
 
-    assert supplement_growth == pytest.approx(1 + growth, abs=1e-4)
-    assert supplement_growth == pytest.approx(rate_growth, rel=1e-12)
+    for name, (before, after) in expected.items():
+        assert weekly_rate(parameters, name, year - 1) == pytest.approx(
+            float(before), abs=1e-9
+        )
+        assert weekly_rate(parameters, name, year) == pytest.approx(
+            float(after), abs=1e-9
+        )
