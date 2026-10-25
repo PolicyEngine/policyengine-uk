@@ -192,6 +192,10 @@ def situation(
                 values.update(first_claimant_overrides or {})
             person = {k: {year: v} for k, v in values.items()}
             person["is_parent"] = {year: bool(unit["dependants"])}
+            # The claimants' ages are drawn independently, so they can be 20
+            # or more years apart, where the age presumption reads the younger
+            # as the elder's child. They are the claimants by construction.
+            person["is_claimant_or_partner"] = {year: True}
             members.append((f"p{i}_{j}", person))
         for k, dependant in enumerate(unit["dependants"]):
             person = {

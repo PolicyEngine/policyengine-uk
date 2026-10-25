@@ -1915,6 +1915,17 @@ def parameters_with_a_closed_span():
     return tuple(sorted(found))
 
 
+@pytest.fixture(scope="module", autouse=True)
+def release_parameter_caches():
+    # Drop the current-law leaf values (one table for each day asked for) and
+    # the parameter lists once this module's tests are done, instead of for
+    # the rest of the test process.
+    yield
+    current_law_leaf_values.cache_clear()
+    later_first_dated_parameters.cache_clear()
+    parameters_with_a_closed_span.cache_clear()
+
+
 @st.composite
 def restatements(draw):
     """A parameter's own stated value, written over part of its span."""
