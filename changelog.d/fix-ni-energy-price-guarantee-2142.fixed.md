@@ -1,1 +1,1 @@
-Separated Northern Ireland's dated Energy Price Guarantee maximum discounts from Great Britain calculations and exposed incomplete input coverage.
+Separated Northern Ireland's dated Energy Price Guarantee discounts from Great Britain's calculation; spending-only cases in 2022 and 2023 now return zero subsidy with `ni_epg_subsidy_calculable=false` during supported months. Historical monetary totals remain incomplete for those cases; zero does not establish that no support was due.
