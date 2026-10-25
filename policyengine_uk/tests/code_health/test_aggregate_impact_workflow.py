@@ -409,3 +409,21 @@ def test_a_dependabot_run_is_reported_as_skipped_and_passes(tmp_path):
     assert step_named("Fail on a structural failure")["if"] == (
         "steps.compare.outputs.status != '0'"
     )
+
+
+def test_only_dependabot_may_skip_a_run_with_no_data_access(tmp_path):
+    """Any other run with no token fails the job instead of skipping."""
+    shutil.copytree(
+        REPO / "policyengine_uk" / "utils" / "aggregate_impact",
+        tmp_path / "head" / "policyengine_uk" / "utils" / "aggregate_impact",
+    )
+    (tmp_path / "runner_temp").mkdir()
+    measured, _ = run_step(
+        "Measure base, then head",
+        tmp_path,
+        ACTOR="a-maintainer",
+        RUNNER_TEMP=str(tmp_path / "runner_temp"),
+    )
+    assert measured.returncode != 0
+    assert "::error::HUGGING_FACE_TOKEN is not available" in measured.stdout
+    assert not (tmp_path / "measured" / "head" / "result.json").exists()
