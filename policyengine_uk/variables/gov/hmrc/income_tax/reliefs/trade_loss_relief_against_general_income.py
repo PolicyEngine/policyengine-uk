@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.supplied_inputs import supplied_input
 
 
 class trade_loss_relief_against_general_income(Variable):
@@ -13,8 +14,10 @@ class trade_loss_relief_against_general_income(Variable):
         "Nothing lets a claim be restricted to keep the Personal Allowance in "
         "use. The model assumes the trade is commercial (s.66), that the person "
         "claims, and that the claim is for the loss-making year rather than "
-        "the year before (s.64(2)(b)); the part it cannot use is carried "
-        "forward only by entering it in loss_relief in later years (s.83). "
+        "the year before (s.64(2)(b)); the part it cannot use enters the "
+        "opening loss_relief stock in later years under the model's "
+        "same-trade carry-forward claim convention (s.83). Only a loss "
+        "explicitly supplied for this year is a current loss. "
         "A current loss is recognised only under ordinary expense treatment; "
         "the trading allowance election compares the raw loss supplied for "
         "the tax year, before net-income and relief-cap limits, with the "
@@ -38,13 +41,22 @@ class trade_loss_relief_against_general_income(Variable):
     ]
 
     def formula(person, period, parameters):
-        net_income = max_(0, person("net_income_before_trade_loss_relief", period))
+        # Ordinary net-pay contributions already reduce Step 1 employment
+        # income. That income cannot also consume a Step 2 trading loss.
+        net_income = max_(
+            0,
+            person("net_income_before_trade_loss_relief", period)
+            - person("net_pay_pension_relief", period),
+        )
+        current_loss = supplied_input(person, "trading_loss", period)
+        if current_loss is None:
+            current_loss = person.empty_array()
         # Allowance treatment cannot retain a current expense-generated loss
         # on another trade in the same individual's tax year.
         loss = where(
             person("trading_allowance_deduction", period) > 0,
             0,
-            person("trading_loss", period),
+            max_(0, current_loss),
         )
         return min_(
             loss,
