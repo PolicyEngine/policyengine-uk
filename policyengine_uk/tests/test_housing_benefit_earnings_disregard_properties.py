@@ -28,7 +28,10 @@ Invariants, for any generated population of families not on those benefits
    tax and National Insurance thresholds and every adult stays over 25.
    Natural eligibility is checked independently: the disability flag qualifies
    at working age, but the draws supply no pension-age qualifying receipt,
-   blindness or carer premium (SI 2006/214 Sch 4 paras 4 and 5). Lone parents
+   blindness or carer premium (SI 2006/214 Sch 4 paras 4 and 5), and YEAR
+   falls after tax credits end in the model (6 April 2025, tax_credits.active),
+   so the disability-element route of working tax credit cannot apply. A YEAR
+   before 2025-26 would need that route excluded from the draws. Lone parents
    naturally keep the same £25 even when these eligibility flags differ.
 7. Differential against the old flat formula (£5/£10/£25 by family type, plus
    £37.10 for summed hours over 30, or 16 for lone parents), read without

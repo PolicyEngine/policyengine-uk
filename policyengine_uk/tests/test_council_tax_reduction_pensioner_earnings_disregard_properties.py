@@ -366,3 +366,32 @@ def test_housing_benefit_disregard_is_the_statutory_weekly_sum_in_every_year(
         if conditions[i]:
             weekly += 37.1 if year == 2020 else 17.1
         assert abs(disregard[i] - weekly * WEEKS) < 0.01, (unit, year)
+
+
+def test_disabled_working_age_single_gets_the_special_hb_disregard():
+    # The property above reads special eligibility from the model, so pin it
+    # here. With no hours the additional sum cannot apply, and tax credits
+    # have ended by 2026, so the working tax credit route is off.
+    unit = dict(
+        shape="single",
+        nation="ENGLAND",
+        children=[],
+        adults=[
+            dict(
+                age=40,
+                employment_income=20_000.0,
+                weekly_hours=0.0,
+                disabled=True,
+                state_pension=0.0,
+            )
+        ],
+    )
+    values = calculate(
+        [unit],
+        year=2026,
+        variables=VARIABLES + ["housing_benefit_special_earnings_disregard_eligible"],
+        no_income_related_benefits=True,
+    )
+    assert values["housing_benefit_special_earnings_disregard_eligible"][0]
+    disregard = values["housing_benefit_applicable_income_disregard"][0]
+    assert abs(disregard - 20 * WEEKS) < 0.01

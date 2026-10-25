@@ -2,7 +2,8 @@ from policyengine_uk.model_api import *
 
 
 class housing_benefit_special_earnings_disregard_eligible(Variable):
-    """Implement the modelled pension-age paragraph 5 qualifying routes.
+    """Implement the working-age premium route and the modelled pension-age
+    paragraph 5 qualifying routes.
 
     GB SI 2006/214 Sch. 4 and NI SR 2006/406 Sch. 5 para. 5(1)(a)
     list the following receipts implemented here:
