@@ -27,9 +27,15 @@ it when ``set_input`` stores a value for its period, whatever the value (an
 input set for a longer or shorter period that stores nothing there leaves
 it), when ``delete_arrays`` removes it, and when the populations are
 rebuilt, and a clone or branch gets its own copy of the record.
+
+``supplied_input_arrays`` answers for every variable. It reads only a record
+whose supplied value is still stored, from the storage tier (memory or disk)
+the holder records it in. A value the engine carried over or calculated into
+the same period, in either tier, is not read as supplied. It includes values
+``set_model_value`` stored, which ``is_model_value`` tells apart.
 """
 
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import numpy as np
 from policyengine_core import periods
@@ -203,10 +209,68 @@ def supplied_input(
     return None
 
 
+def supplied_input_arrays(simulation) -> List[Tuple[str, Period, np.ndarray]]:
+    """Every value ``simulation`` was given as an input and still stores, on
+    its own branch, with its variable and the period it is stored for.
+
+    Ordered by variable and period, so that the same simulation always gives
+    the same list.
+    """
+    input_keys = getattr(simulation, "_user_input_keys", None) or ()
+    arrays = []
+    for variable_name, branch_name, period in input_keys:
+        if branch_name != simulation.branch_name:
+            continue
+        value = stored_supplied_value(
+            simulation.get_holder(variable_name), period, branch_name
+        )
+        if value is not None:
+            arrays.append((variable_name, period, value))
+    return sorted(arrays, key=lambda item: (item[0], item[1].start, str(item[1])))
+
+
+def stored_supplied_value(holder, period: Period, branch_name: str):
+    """The supplied value ``holder`` still stores for ``period``, or None.
+
+    A record can outlive its stored value (see above), and a value calculated
+    later can take its place in one tier while the input survives in the
+    other. So read only a tier that the holder records the input in (either
+    tier when it records none) and that holds a value it did not calculate,
+    as ``Holder._stores_user_input`` decides whether an input survives.
+    Reading memory before disk instead could return a calculated value cached
+    over an input stored on disk.
+    """
+    recorded = (getattr(holder, "_user_input_storage", None) or {}).get(
+        (branch_name, str(period))
+    )
+    locations = recorded[1] if recorded is not None else {"memory", "disk"}
+    for location, storage in (
+        ("memory", holder._memory_storage),
+        ("disk", holder._disk_storage),
+    ):
+        if (
+            location in locations
+            and storage is not None
+            and storage.has(period, branch_name)
+            and not storage.is_derived(period, branch_name)
+        ):
+            return storage.get(period, branch_name)
+    return None
+
+
 def _is_model_value(simulation, key, value) -> bool:
     model_values = getattr(simulation, "_model_values", None) or {}
     written = model_values.get(key)
     return written is not None and np.array_equal(written, value)
+
+
+def is_model_value(simulation, variable_name: str, period: Period, value) -> bool:
+    """Whether ``value``, stored for ``variable_name`` and ``period`` on this
+    simulation's branch, is the model's own value (``set_model_value``)
+    rather than a supplied one."""
+    return _is_model_value(
+        simulation, (variable_name, simulation.branch_name, period), value
+    )
 
 
 def set_model_value(simulation, variable_name: str, period, value) -> None:
