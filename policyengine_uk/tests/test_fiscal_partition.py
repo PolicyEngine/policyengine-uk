@@ -436,6 +436,17 @@ def baseline_entity_values(variable: str) -> dict:
     }
 
 
+@pytest.fixture(scope="module", autouse=True)
+def release_cached_values():
+    # Drop the partition, the traced reads and the baseline values once this
+    # module's tests are done, instead of for the rest of the test process.
+    yield
+    partition.cache_clear()
+    traced_reads.cache_clear()
+    baseline_values.cache_clear()
+    baseline_entity_values.cache_clear()
+
+
 def raise_head(sim: Simulation, variable: str, delta: float) -> None:
     """Set a head to its baseline value plus delta a year, per member."""
     values = baseline_entity_values(variable)

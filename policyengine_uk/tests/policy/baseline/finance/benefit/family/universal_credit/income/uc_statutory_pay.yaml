@@ -250,7 +250,10 @@
     # 400 of pay raises its income by 180.
     household_benefits: 5_278.80
     household_net_income: 5_278.80
-    hbai_household_net_income: 5_278.80
+    # HBAI also counts the £150 Warm Home Discount the Universal Credit
+    # award brings in England, as miscellaneous income.
+    warm_home_discount: 150
+    hbai_household_net_income: 5_428.80
     gov_spending: 5_278.80
 
 - name: Taxable statutory paternity pay reduces Universal Credit like wages

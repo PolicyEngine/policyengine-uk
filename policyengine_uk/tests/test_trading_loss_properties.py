@@ -120,7 +120,8 @@ UC_TESTS = [
     "universal_credit",
 ]
 # HBAI components the loss may move: the loss itself, taxes, and benefits
-# that are means-tested or passported from a means-tested benefit.
+# that are means-tested or passported from a means-tested benefit. The Warm
+# Home Discount follows receipt of a qualifying means-tested benefit.
 HBAI_CHANNELS = {
     "trading_loss",
     "income_tax",
@@ -143,6 +144,7 @@ HBAI_CHANNELS = {
     "healthy_start_vouchers",
     "scottish_child_payment",
     "cost_of_living_support_payment",
+    "warm_home_discount",
 }
 
 
