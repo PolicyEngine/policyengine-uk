@@ -1,1 +1,0 @@
-The Aggregate impact report now reports a Dependabot pull request as skipped, as it was meant to, instead of failing it. Dependabot runs have no data access, and the measure step stopped before it set up the tool the comparison runs.
