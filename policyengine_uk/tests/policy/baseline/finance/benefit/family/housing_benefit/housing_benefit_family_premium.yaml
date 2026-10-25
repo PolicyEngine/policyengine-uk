@@ -218,3 +218,166 @@
         housing_benefit_family_premium_category: ORDINARY_PROTECTED
   output:
     housing_benefit_family_premium: 0
+
+# Full-person pension-age integration: Pensions Act 1995 Sch 4 Rules (1),
+# SI 2006/214 Sch 3 para 1 and NI SR 2006/406 Sch 4 Part I, plus DWP2026-27.
+# A known continuing protected award is pre-assessed, not inferred from ages.
+# No eldest-age, SPA-date, cutoff or pension-regime result is overridden.
+# The NI case checks the existing shared UK age-date API and NI HB rate,
+# not a new independent certification of NI pension-age enactments.
+- name: Protected family premium with real pension-age claimant ENGLAND claimant first
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 75
+        is_male: true
+        is_parent: true
+        is_claimant_or_partner: true
+      child:
+        age: 15
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members: [claimant, child]
+        housing_benefit_eligible: true
+        housing_benefit_family_premium_category: ORDINARY_PROTECTED
+        benefits_premiums: 0
+        housing_benefit_has_main_phase_esa: false
+        is_uc_entitled: false
+        council_tax_reduction_relevant_income_based_benefit: false
+    households:
+      home:
+        members: [claimant, child]
+        country: ENGLAND
+  output:
+    is_claimant_or_partner: [true, false]
+    is_child_or_young_person_for_legacy_benefits: [false, true]
+    eldest_claimant_or_partner_age: 75
+    housing_benefit_pension_age_regulations_apply: true
+    housing_benefit_attained_pension_age_before_cutoff: true
+    housing_benefit_family_premium: 1051.44
+    benefits_premiums: 0
+    housing_benefit_child_disability_premiums: 0
+    housing_benefit_main_phase_esa_allowance_adjustment: 0
+    # Personal 256 x 52 + family 20.22 x 52.
+    housing_benefit_applicable_amount: 14363.44
+
+- name: Protected family premium with real pension-age claimant ENGLAND child first
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    people:
+      child:
+        age: 15
+        is_claimant_or_partner: false
+      claimant:
+        age: 75
+        is_male: true
+        is_parent: true
+        is_claimant_or_partner: true
+    benunits:
+      family:
+        members: [child, claimant]
+        housing_benefit_eligible: true
+        housing_benefit_family_premium_category: ORDINARY_PROTECTED
+        benefits_premiums: 0
+        housing_benefit_has_main_phase_esa: false
+        is_uc_entitled: false
+        council_tax_reduction_relevant_income_based_benefit: false
+    households:
+      home:
+        members: [child, claimant]
+        country: ENGLAND
+  output:
+    is_claimant_or_partner: [false, true]
+    is_child_or_young_person_for_legacy_benefits: [true, false]
+    eldest_claimant_or_partner_age: 75
+    housing_benefit_pension_age_regulations_apply: true
+    housing_benefit_attained_pension_age_before_cutoff: true
+    housing_benefit_family_premium: 1051.44
+    benefits_premiums: 0
+    housing_benefit_child_disability_premiums: 0
+    housing_benefit_main_phase_esa_allowance_adjustment: 0
+    # Personal 256 x 52 + family 20.22 x 52.
+    housing_benefit_applicable_amount: 14363.44
+
+- name: Protected family premium with real pension-age claimant NORTHERN_IRELAND claimant first
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 75
+        is_male: true
+        is_parent: true
+        is_claimant_or_partner: true
+      child:
+        age: 15
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members: [claimant, child]
+        housing_benefit_eligible: true
+        housing_benefit_family_premium_category: ORDINARY_PROTECTED
+        benefits_premiums: 0
+        housing_benefit_has_main_phase_esa: false
+        is_uc_entitled: false
+        council_tax_reduction_relevant_income_based_benefit: false
+    households:
+      home:
+        members: [claimant, child]
+        country: NORTHERN_IRELAND
+  output:
+    is_claimant_or_partner: [true, false]
+    is_child_or_young_person_for_legacy_benefits: [false, true]
+    eldest_claimant_or_partner_age: 75
+    housing_benefit_pension_age_regulations_apply: true
+    housing_benefit_attained_pension_age_before_cutoff: true
+    housing_benefit_family_premium: 1051.44
+    benefits_premiums: 0
+    housing_benefit_child_disability_premiums: 0
+    housing_benefit_main_phase_esa_allowance_adjustment: 0
+    # Personal 256 x 52 + family 20.22 x 52.
+    housing_benefit_applicable_amount: 14363.44
+
+- name: Protected family premium with real pension-age claimant NORTHERN_IRELAND child first
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    people:
+      child:
+        age: 15
+        is_claimant_or_partner: false
+      claimant:
+        age: 75
+        is_male: true
+        is_parent: true
+        is_claimant_or_partner: true
+    benunits:
+      family:
+        members: [child, claimant]
+        housing_benefit_eligible: true
+        housing_benefit_family_premium_category: ORDINARY_PROTECTED
+        benefits_premiums: 0
+        housing_benefit_has_main_phase_esa: false
+        is_uc_entitled: false
+        council_tax_reduction_relevant_income_based_benefit: false
+    households:
+      home:
+        members: [child, claimant]
+        country: NORTHERN_IRELAND
+  output:
+    is_claimant_or_partner: [false, true]
+    is_child_or_young_person_for_legacy_benefits: [true, false]
+    eldest_claimant_or_partner_age: 75
+    housing_benefit_pension_age_regulations_apply: true
+    housing_benefit_attained_pension_age_before_cutoff: true
+    housing_benefit_family_premium: 1051.44
+    benefits_premiums: 0
+    housing_benefit_child_disability_premiums: 0
+    housing_benefit_main_phase_esa_allowance_adjustment: 0
+    # Personal 256 x 52 + family 20.22 x 52.
+    housing_benefit_applicable_amount: 14363.44
+
