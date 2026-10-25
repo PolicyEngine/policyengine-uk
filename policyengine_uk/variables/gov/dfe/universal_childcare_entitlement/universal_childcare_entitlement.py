@@ -1,4 +1,8 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.childcare import (
+    childcare_term_value,
+    uses_legacy_childcare_inputs,
+)
 
 
 class universal_childcare_entitlement(Variable):
@@ -12,8 +16,11 @@ class universal_childcare_entitlement(Variable):
         "Universal hours claimed on their own, or allocated first from a "
         "participating child's working parent hours, in the terms it gets "
         "them, when standalone take-up is false. Legal eligibility "
-        "determines this allocation. Only the terms before the child starts "
-        "school count (early_years_term_share_before_school)."
+        "determines this allocation. Native date-based awards count only "
+        "the terms after the minimum-age birthday and before school. "
+        "The year's existing national-average funding proxy uses the "
+        "qualifying age band in each term. Explicit legacy annual shares "
+        "or amounts retain their original annual calculation."
     )
     reference = (
         "https://www.legislation.gov.uk/ukpga/2016/5/section/1",
@@ -22,6 +29,9 @@ class universal_childcare_entitlement(Variable):
     )
 
     def formula(person, period, parameters):
+        if not uses_legacy_childcare_inputs(person, period):
+            return childcare_term_value(person, period, parameters, "universal")
+        # Opaque annual inputs retain the complete original valuation route.
         p = parameters(period).gov.dfe
         age = person("age", period)
         hours = p.universal_childcare_entitlement.hours

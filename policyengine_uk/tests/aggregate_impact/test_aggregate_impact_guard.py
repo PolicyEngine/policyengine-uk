@@ -11,7 +11,14 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from policyengine_uk.utils.aggregate_impact.guard import counted_once, snapshot_inputs
+from policyengine_uk.utils.aggregate_impact.guard import (
+    _slack,
+    breaks_on_slope,
+    counted_once,
+    judge_total,
+    snapshot_inputs,
+    still_breaks,
+)
 from policyengine_uk.utils.aggregate_impact.partition import parse_partition
 
 YEAR = 2026
@@ -230,6 +237,110 @@ def test_a_declared_read_may_respond_but_not_one_for_one():
     _, containing = run(model(contains=True), reading)
     row = by_variable(containing)["tax_b"]
     assert row["status"] == "fail" and ("tax_a", "contains") in kinds(row)
+
+
+@pytest.mark.parametrize("tax_level", [100_000, 300_000])
+@pytest.mark.parametrize("declared", [False, True])
+@pytest.mark.parametrize("contains", [False, True])
+def test_a_large_tax_head_is_containment_only_when_it_responds_one_for_one(
+    tax_level, declared, contains
+):
+    """A flat £300,000 reader is unchanged at both NI-style perturbations."""
+    formulas = model(contains=False)
+    formulas["tax_a"] = lambda f: tax_level + contains * f("tax_b")
+    reads = {"tax_a": ["tax_b"]} if declared else {}
+    _, result = run(formulas, partition(["tax_a", "tax_b"], reads=reads))
+    row = by_variable(result)["tax_b"]
+    assert row["status"] == ("fail" if contains else "pass")
+    if contains:
+        assert ("tax_a", "contains" if declared else "moves") in kinds(row)
+    else:
+        assert "tax_a" not in row["responses"]["gov_tax"]
+    assert result["reset_reproduces_baseline"]
+
+
+def test_a_large_reader_with_a_mediated_slope_has_no_held_containment():
+    """Both held measurements are flat after the other head stops moving."""
+    formulas = model(contains=False)
+    formulas["tax_c"] = lambda f: 0.5 * f("tax_b")
+    formulas["tax_a"] = lambda f: 300_000 + 2 * f("tax_c")
+    formulas["gov_tax"] = lambda f: f("tax_a") + f("tax_b") + f("tax_c")
+    _, result = run(
+        formulas,
+        partition(
+            ["tax_a", "tax_b", "tax_c"],
+            reads={"tax_a": ["tax_b", "tax_c"], "tax_c": ["tax_b"]},
+        ),
+    )
+    row = by_variable(result)["tax_b"]
+    assert row["status"] == "pass"
+    assert [(m["head"], m["kind"], m["via"]) for m in row["mediated"]] == [
+        ("tax_a", "contains", ["tax_c"])
+    ]
+    assert result["reset_reproduces_baseline"]
+
+
+def test_a_large_reader_contains_a_component_despite_an_extra_mediated_slope():
+    """The unrestricted slope is 1.125; holding tax_c reveals containment."""
+    formulas = model(contains=False)
+    formulas["tax_c"] = lambda f: 0.25 * f("tax_b")
+    formulas["tax_a"] = lambda f: 300_000 + f("tax_b") + 0.5 * f("tax_c")
+    formulas["gov_tax"] = lambda f: f("tax_a") + f("tax_b") + f("tax_c")
+    _, result = run(
+        formulas,
+        partition(
+            ["tax_a", "tax_b", "tax_c"],
+            reads={"tax_a": ["tax_b", "tax_c"], "tax_c": ["tax_b"]},
+        ),
+    )
+    row = by_variable(result)["tax_b"]
+    assert row["status"] == "fail"
+    assert ("tax_a", "contains") in kinds(row)
+    assert result["reset_reproduces_baseline"]
+
+
+@pytest.mark.parametrize("contains", [False, True])
+@settings(max_examples=60, deadline=None)
+@given(
+    tax_level=st.floats(0, 1e9),
+    perturbation=st.floats(1e-6, 1e6),
+)
+def test_containment_depends_on_the_response_and_perturbation_not_the_tax_level(
+    contains, tax_level, perturbation
+):
+    """Zero never contains; a one-for-one response always does, at any size."""
+    expected = np.array([perturbation])
+    first = expected if contains else np.zeros(1)
+    second = 2 * first
+    scales = np.array([tax_level])
+    where = np.array([True])
+    for second_changes in (None, {"tax_a": second}):
+        verdict = judge_total(
+            total="gov_tax",
+            is_tax=True,
+            component="tax_b",
+            own_variable="tax_b",
+            declared_double_count=False,
+            zero_baseline=False,
+            weights=np.ones(1),
+            expected=expected,
+            head_changes={"tax_b": expected, "tax_a": first},
+            head_scales={"tax_b": scales, "tax_a": scales},
+            model_change=None,
+            model_scale=None,
+            allowed_readers=["tax_a"],
+            second_changes=second_changes,
+        )
+        assert bool(verdict["problems"]) == contains
+        if contains:
+            assert verdict["problems"][0]["head"] == "tax_a"
+            assert verdict["problems"][0]["kind"] == "contains"
+    slack = _slack(scales)
+    for held_second in (None, second):
+        direct = still_breaks("contains", where, expected, slack, first, held_second)
+        assert bool(direct[0]) == contains
+    at_first = breaks_on_slope("contains", where, expected, slack, second - first)
+    assert bool(at_first[0]) == contains
 
 
 def test_supplied_inputs_are_restored_after_perturbation():

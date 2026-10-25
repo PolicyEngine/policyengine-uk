@@ -20,10 +20,11 @@ class housing_benefit_applicable_income_disregard(Variable):
         "(housing_benefit_on_passporting_benefit) has all earnings "
         "disregarded, at any age: the working-age Regulations then apply "
         "(SI 2006/213 reg 5(1)(b)). The "
-        "£20 disregards for disabled people, carers and some part-time "
-        "occupations are not modelled, nor is the working-age permitted work "
+        "£20 standard disregard uses established qualifying routes or an "
+        "explicit full-amount pre-assessment, without reconstructing partial "
+        "carer/occupation earnings allocations. The permitted-work "
         "disregard (Sch 4 para 10A), which replaces paras 3 to 10 but not "
-        "para 18."
+        "para 18, is not yet modelled here."
     )
     definition_period = YEAR
     unit = GBP
@@ -42,12 +43,7 @@ class housing_benefit_applicable_income_disregard(Variable):
         p = parameters(period).gov.dwp.housing_benefit.means_test.income_disregard
         net_earnings = benunit("housing_benefit_net_earnings", period)
         # Working age Sch 4 paras 4, 7 and 10; pension age Sch 4 paras 2 and 7.
-        weekly_amount = select(
-            [benunit("is_lone_parent", period), benunit("is_couple", period)],
-            [p.lone_parent, p.couple],
-            default=p.single,
-        )
-        standard = min_(weekly_amount * WEEKS_IN_YEAR, net_earnings)
+        standard = benunit("housing_benefit_special_earnings_disregard", period)
         # Working age Sch 4 para 18 (NI Sch 5 para 18), from 5 October 2026:
         # specified or temporary accommodation. It applies alongside paras 3
         # to 10A, none of which excludes it, and takes the earnings they

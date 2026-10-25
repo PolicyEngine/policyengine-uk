@@ -13,17 +13,22 @@ INDEPENDENT_OF_ROUTE = [
     "pays_scottish_income_tax",
     "other_tax_credits",
 ]
-# Rounds of decisions within a benefit unit before the routes are taken as
-# settled. Partners' routes interact only through small amounts (such as the
-# Marriage Allowance), so a second round rarely changes anything.
+# Rounds of decisions within a household before the routes are taken as
+# settled. Members' routes interact only through small amounts (such as the
+# Marriage Allowance, or a shared winter fuel payment and so its charge), so
+# a second round rarely changes anything.
 MAX_ROUNDS = 3
 
 
 def income_tax_with_route(simulation, name, period, uses_allowance):
     """Each person's income tax with the given choices of property allowance.
 
-    The branch shares the simulation's cached arrays until it writes, and is
-    dropped afterwards so a later period starts from a fresh branch.
+    The tax includes the winter fuel payment charge. A route can change the
+    person's total income, which is after the property allowance, and their
+    Pension Credit, and so whether the charge applies (s.681I(1)(b) and (4)).
+    The branch shares the simulation's cached arrays
+    until it writes, and is dropped afterwards so a later period starts from
+    a fresh branch.
     """
     while name in simulation.branches or name == simulation.branch_name:
         name += "_"
@@ -45,12 +50,22 @@ class uses_property_allowance(Variable):
         "than with actual expenses and the finance-cost tax reduction. The "
         "two cannot be combined. Full relief applies to receipts within the "
         "allowance unless the person elects out of it, and partial relief "
-        "only if they elect for it; each election is made only if it lowers "
-        "the person's own income tax, with everyone else's route held fixed. "
+        "only if they elect for it; with finance costs to relieve, each "
+        "election is made only if it lowers the person's own income tax, "
+        "including the winter fuel payment charge, with everyone else's "
+        "route held fixed. "
         "Ties keep the default, so a person with receipts within the "
         "allowance keeps full relief even where electing out would carry "
         "finance costs forward. Without finance costs to relieve, the "
-        "allowance is used whenever it lowers taxable property income."
+        "allowance is used whenever it lowers taxable property income, "
+        "without comparing tax. That is always the lower tax before the "
+        "winter fuel payment charge. While the charge has effect it can "
+        "rarely cost more: the lower tax can raise the income Pension Credit "
+        "counts and end an award that exempts the person from the charge. "
+        "The model does not compare routes for these landlords, because "
+        "that works out the benefits on both routes for the whole "
+        "population and made simulations several times slower; on the "
+        "Enhanced FRS the comparison changed no one's tax."
     )
     definition_period = YEAR
     reference = [
@@ -82,9 +97,11 @@ class uses_property_allowance(Variable):
         reduction_at_stake = (
             person("property_finance_costs_relievable", period) > 0
         ) & (profit > 0)
-        # Without a reduction at stake, the allowance is used whenever it
-        # lowers taxable property income. Otherwise compare income tax on
-        # each route.
+        # Without a reduction at stake, lower taxable property income means
+        # lower tax before the winter fuel payment charge, so the allowance
+        # is used without comparing. The charge can rarely reverse that
+        # (lower tax can end Pension Credit and with it the exemption,
+        # s.681I(4)); see the documentation for why that is not compared.
         uses = lowers_income & ~reduction_at_stake
         choosing = lowers_income & reduction_at_stake
         if not choosing.any():
@@ -98,13 +115,15 @@ class uses_property_allowance(Variable):
         for variable in INDEPENDENT_OF_ROUTE:
             person(variable, period)
         simulation = person.simulation
-        # One person per benefit unit decides at a time, with everyone
-        # else's route held fixed: a partner's route can move this person's
-        # tax (through the Marriage Allowance, for example), and comparing
-        # both partners' switches at once would count that. Rounds repeat
-        # until nobody changes.
+        # One person per household decides at a time, with everyone else's
+        # route held fixed: another member's route can move this person's
+        # tax (a partner's through the Marriage Allowance; anyone's, through
+        # the shared winter fuel payment, when it changes who is entitled),
+        # and comparing their switches at once would count that. Rounds
+        # repeat until nobody changes, for at most MAX_ROUNDS: routes still
+        # changing in the last round are kept as they stand.
         order = person.get_rank(
-            person.benunit, np.zeros(person.count), condition=choosing
+            person.household, np.zeros(person.count), condition=choosing
         )
         for _ in range(MAX_ROUNDS):
             changed = False
@@ -126,8 +145,8 @@ class uses_property_allowance(Variable):
                 decided = where(deciding, prefers_allowance, route)
                 changed = changed or bool((decided != route).any())
                 route = decided
-            # With one person deciding per benefit unit, everyone else's
-            # route was fixed throughout, so one round settles it.
+            # With one person deciding per household, everyone else's route
+            # was fixed throughout, so one round settles it.
             if order.max() == 0 or not changed:
                 break
         return route

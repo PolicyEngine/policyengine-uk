@@ -16,6 +16,9 @@ from policyengine_core.periods import Period, period as period_
 from policyengine_core.parameters import Parameter
 from policyengine_core.reforms import Reform
 from policyengine_core.simulations import Simulation as CoreSimulation
+from policyengine_core.simulations.simulation import (
+    _uprating_index_value,
+)
 from policyengine_core.tools.hugging_face import download_huggingface_dataset
 from policyengine_core.tracers import FullTracer, SimpleTracer
 
@@ -30,8 +33,10 @@ from policyengine_uk.data.dataset_schema import (
     UKMultiYearDataset,
     UKSingleYearDataset,
 )
+from policyengine_uk.utils.entity_ids import ENTITY_ID_VARIABLES, check_entity_ids
 from policyengine_uk.utils.scenario import ConstructionReformState, Scenario
 from policyengine_uk.data.economic_assumptions import (
+    BEREAVEMENT_SPLIT_INPUTS,
     extend_single_year_dataset,
     reset_growthfactor_uprating,
     uprating_input_fingerprint,
@@ -43,6 +48,22 @@ from policyengine_uk.data.input_dataframe import (
     hold_identifiers_in,
     with_identifiers_in_each_year,
 )
+from policyengine_uk.data.isa_income import (
+    ISA_INCOME_CONTRACT_KEY,
+    MISSING_CONTRACT,
+    ISA_INTEREST,
+    SAVINGS_INTEREST,
+    TAX_FREE_INTEREST,
+    contract_envelope,
+    contracts_for_years,
+    has_isa_interest_detail_input,
+    latest_input,
+    normalized_dataset,
+    read_h5_contract,
+    read_object_contract,
+    resolve_contracts,
+    simulation_contract,
+)
 from policyengine_uk.data.capital_gains_projection import (
     CapitalGainsProjection,
     CGT_INPUTS,
@@ -53,6 +74,7 @@ from policyengine_uk.data.capital_gains_projection import (
     capital_gains_application_metadata,
 )
 from policyengine_uk.utils.dependencies import get_variable_dependencies
+from policyengine_uk.utils.data_source import built_from_data
 from policyengine_uk.utils.input_dataframe_export import input_dataframe
 from policyengine_uk.utils.supplied_inputs import (
     SUPPLIED_INPUT_VARIABLES,
@@ -591,7 +613,78 @@ class Simulation(CoreSimulation):
         clone._cgt_calculation_depth = 0
         clone._cgt_operation_inputs = set()
         clone._cgt_defaulted_periods = set(getattr(self, "_cgt_defaulted_periods", ()))
+        clone._isa_income_contracts = copy.deepcopy(
+            getattr(self, "_isa_income_contracts", {})
+        )
         return clone
+
+    def _isa_latest_input(self, name, period, *, earlier=False):
+        return latest_input(self, name, period, earlier=earlier)
+
+    def has_isa_interest_detail_input(self, period) -> bool:
+        """Whether this branch supplies an applicable ISA cash-interest detail.
+
+        Computed caches are excluded, as in Core's carry-over input rule. A
+        future detail cannot change an earlier year's aggregate.
+        """
+        return has_isa_interest_detail_input(self, period)
+
+    def _isa_stored_exemption(self, period):
+        # Core can store a rolling year or a longer YEAR input as given. The
+        # latter carries its whole amount into a queried year; it is not a
+        # sum of calendar-year flows. Use the same first definition-year
+        # anchor when translating that stored amount in either direction.
+        return self.calculate(TAX_FREE_INTEREST, period_(period).start.period("year"))
+
+    def _run_formula(self, variable, population, period):
+        result = super()._run_formula(variable, population, period)
+        if (
+            result is not None
+            or variable.name != SAVINGS_INTEREST
+            or period.unit != "year"
+            or simulation_contract(self, period.start.year)["projection"]
+            != "legacy_gross"
+        ):
+            return result
+
+        # This is fallback, after Core's explicit input/abolition checks and
+        # policy formulas. Preserve the old gross history even past the last
+        # materialized dataset year; new additive records use Core normally.
+        history = getattr(self, "_get_store_history", None)
+        if callable(history):
+            # Store-history tracking is available in newer Core releases;
+            # the declared minimum already caches formula results without it.
+            from policyengine_core.data_storage.store_history import (
+                next_sequence_number,
+            )
+
+            history().record_derived(variable.name, next_sequence_number())
+        source = self._isa_latest_input(variable.name, period, earlier=True)
+        if source is None:
+            # Core first uprates strictly earlier annual inputs, then carries
+            # an input starting on the query date if there was none earlier.
+            source = self._isa_latest_input(variable.name, period)
+        holder = self.get_holder(variable.name)
+        if source is None:
+            gross = holder.default_array()
+        else:
+            gross = holder.get_array(source, self.branch_name)
+            if (
+                simulation_contract(self, source.start.year)["representation"]
+                == "additive"
+            ):
+                gross = gross + self._isa_stored_exemption(source)
+            if variable.uprating is not None:
+                index = self.tax_benefit_system.parameters.get_child(variable.uprating)
+                source_index = _uprating_index_value(index, source.start)
+                target_index = _uprating_index_value(index, period.start)
+                factor = (
+                    target_index / source_index
+                    if source_index not in (None, 0) and target_index is not None
+                    else 1
+                )
+                gross = gross * factor
+        return gross - self.calculate(TAX_FREE_INTEREST, period)
 
     @staticmethod
     def _cgt_supplied_record() -> dict:
@@ -970,6 +1063,9 @@ class Simulation(CoreSimulation):
             self.build_from_dataset(dataset)
             return
 
+        # Convert a detached source once, then cache only the canonical object.
+        # Callers holding an old gross dataset retain their original values.
+        multi_year_dataset = normalized_dataset(multi_year_dataset)
         # Pre-encode string enum columns to int16 once before caching so
         # subsequent loads skip the expensive astype(str) + searchsorted path.
         _pre_encode_enum_columns(multi_year_dataset, self.tax_benefit_system)
@@ -1050,7 +1146,42 @@ class Simulation(CoreSimulation):
         for variable in dict.fromkeys(name for name, _, _ in replayed):
             self.delete_arrays(variable)
         for variable, time_period, values in replayed:
+            if variable == SAVINGS_INTEREST:
+                continue
             self.set_input(variable, time_period, values)
+
+        # Replay savings in the incoming entry's representation. Core decides
+        # which annual slots a month/span stores and what remains after prior
+        # entries. Never subtract an exemption from the requested month or
+        # mix a prior ordinary input into a gross residual calculation.
+        def translate_stored_savings(to_gross):
+            holder = self.get_holder(SAVINGS_INTEREST)
+            translated = [
+                (
+                    stored,
+                    np.array(holder.get_array(stored, self.branch_name))
+                    + (1 if to_gross else -1) * self._isa_stored_exemption(stored),
+                )
+                for stored in holder.get_input_periods(self.branch_name)
+            ]
+            for stored, amount in translated:
+                self.set_input(SAVINGS_INTEREST, stored, amount)
+
+        gross_mode = None
+        for variable, time_period, values in replayed:
+            if variable != SAVINGS_INTEREST:
+                continue
+            year = period_(time_period).start.year
+            contract = contracts_for_years(
+                df.attrs.get(ISA_INCOME_CONTRACT_KEY, MISSING_CONTRACT), [year]
+            )[year]
+            incoming_gross = contract["representation"] == "legacy_gross"
+            if gross_mode is not None and gross_mode != incoming_gross:
+                translate_stored_savings(to_gross=incoming_gross)
+            self.set_input(variable, time_period, values)
+            gross_mode = incoming_gross
+        if gross_mode:
+            translate_stored_savings(to_gross=False)
 
     def to_input_dataframe(
         self, include_computed_variables: bool = False
@@ -1076,7 +1207,16 @@ class Simulation(CoreSimulation):
             if include_computed_variables
             else input_dataframe(self)
         )
-        return with_identifiers_in_each_year(frame, self.tax_benefit_system)
+        frame = with_identifiers_in_each_year(frame, self.tax_benefit_system)
+        years = {
+            period_(str(column).split("__", 1)[1]).start.year
+            for column in frame.columns
+            if "__" in str(column)
+        }
+        frame.attrs[ISA_INCOME_CONTRACT_KEY] = contract_envelope(
+            {year: simulation_contract(self, year) for year in years}
+        )
+        return frame
 
     def build_from_dataset(self, dataset: Dataset) -> None:
         """Build simulation from a Dataset object.
@@ -1107,6 +1247,12 @@ class Simulation(CoreSimulation):
                     "household_id",
                 ],
             )
+        )
+
+        self._isa_income_contracts = resolve_contracts(
+            read_object_contract(dataset),
+            read_h5_contract(getattr(dataset, "file_path", None)),
+            [period_(first_time_period).start.year],
         )
 
         # Populations use sorted group IDs; arrays in a Core dataset follow
@@ -1177,6 +1323,10 @@ class Simulation(CoreSimulation):
                     setattr(dataset[year], entity, table.iloc[order])
             reset_growthfactor_uprating(dataset)
 
+        # The legacy gross projection/reset must finish before conversion.
+        # Work on detached tables: a cached or caller-owned source is reusable.
+        dataset = normalized_dataset(dataset)
+
         # Ensure enum columns are encoded and _enum_columns is populated so
         # that .person/.benunit/.household properties can decode back to strings.
         if not any(dataset[y]._enum_columns for y in dataset.years):
@@ -1190,6 +1340,10 @@ class Simulation(CoreSimulation):
             first_year.benunit.benunit_id,
             first_year.household.household_id,
         )
+        self._isa_income_contracts = {
+            year: copy.deepcopy(dataset[year].isa_income_contract)
+            for year in dataset.years
+        }
 
         # Load variable values for all years
         for year in dataset.years:
@@ -1237,6 +1391,7 @@ class Simulation(CoreSimulation):
         self._cgt_defaulted_periods = set()
         self._cgt_operation_inputs = set()
         self._cgt_warned_unused = False
+        self._isa_income_contracts = {}
 
     def build_from_ids(
         self,
@@ -1254,12 +1409,32 @@ class Simulation(CoreSimulation):
             person_household_id: Array mapping persons to households
             benunit_id: Array of benefit unit IDs
             household_id: Array of household IDs
+
+        Warns:
+            EntityIdWarning: If an ID is not a whole number, or is outside the
+                range of the variable that stores it, so that the stored ID
+                differs from the one given.
         """
         # Every data source (DataFrame, dataset, file, URL) builds through here.
         self._start_new_population(built_from_dataset=True)
         from policyengine_core.simulations.simulation_builder import (
             SimulationBuilder,
         )  # Import here to avoid circular dependency
+
+        # The callers store these columns as the variables' values after
+        # building the entities, and exports and rebuilds read them from there.
+        # The populations below take the arrays as given.
+        for variable_name, ids in zip(
+            ENTITY_ID_VARIABLES,
+            (
+                person_id,
+                person_benunit_id,
+                person_household_id,
+                benunit_id,
+                household_id,
+            ),
+        ):
+            check_entity_ids(self.tax_benefit_system.variables[variable_name], ids)
 
         builder = SimulationBuilder()
         builder.populations = self.tax_benefit_system.instantiate_entities()
@@ -1337,6 +1512,50 @@ class Simulation(CoreSimulation):
             household=household,
             fiscal_year=year,
         )
+
+    def _calculate(self, variable_name: str, period: Period = None):
+        # Core requires an indexed input to have no formula. Keep the legacy
+        # CPI declaration, but carry split dataset BSP nominally after the
+        # materialized horizon, including through Core's monthly conversion.
+        if (
+            variable_name == "bsp_reported"
+            and period is not None
+            and period.unit == "year"
+            and period.size == 1
+            and built_from_data(self)
+        ):
+            variable = self.tax_benefit_system.get_variable(variable_name)
+            holder = self.get_holder(variable_name)
+            inputs = holder.get_input_periods(self.branch_name)
+            if (
+                not variable.formulas
+                and not variable.is_neutralized
+                and variable.uprating
+                == "gov.economic_assumptions.indices.obr.consumer_price_index"
+                and period not in inputs
+            ):
+                source = max(
+                    (
+                        known
+                        for known in inputs
+                        if known.unit == "year" and known.start < period.start
+                    ),
+                    key=lambda known: (known.start, known.stop),
+                    default=None,
+                )
+                if source is not None:
+                    split = all(
+                        source
+                        in self.get_holder(name).get_input_periods(self.branch_name)
+                        for name in BEREAVEMENT_SPLIT_INPUTS
+                    )
+                    # Track both dependencies even when either input is absent.
+                    # Calculated defaults do not declare a completed split.
+                    for name in BEREAVEMENT_SPLIT_INPUTS:
+                        self.calculate(name, source)
+                    if split:
+                        return self.calculate(variable_name, source)
+        return super()._calculate(variable_name, period)
 
     def calculate(
         self,

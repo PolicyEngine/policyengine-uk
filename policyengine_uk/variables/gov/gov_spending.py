@@ -2,6 +2,7 @@ from policyengine_uk.model_api import *
 
 
 GOV_SPENDING_VARIABLES = [
+    "lifetime_isa_bonus",
     "child_benefit",
     "council_tax_benefit",
     "esa_income",
@@ -42,6 +43,7 @@ GOV_SPENDING_VARIABLES = [
     "extended_childcare_entitlement",
     "universal_childcare_entitlement",
     "targeted_childcare_entitlement",
+    "wales_childcare_offer",
     "care_to_learn",
     "childcare_grant",
     "parents_learning_allowance",

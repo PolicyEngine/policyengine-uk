@@ -9,6 +9,24 @@
 # accepted in .github/test_outcome_allowlist.toml. A caller that names its job
 # Test gets the checks "Test / YAML", "Test / Python K/5" and "Test / Result";
 # "Test / Result" is the one to require.
+#
+# Runners. These jobs, and the check jobs that pull requests, merge queue
+# groups, main pushes and releases wait on, run on today's GitHub-hosted
+# labels unless a repository variable names another runner (Settings >
+# Secrets and variables > Actions > Variables):
+#   CI_RUNNER_ARM     instead of ubuntu-24.04-arm: these jobs, Changes, Tested
+#   CI_RUNNER_X64     instead of ubuntu-latest: Lint, the install checks, Docs
+#   CI_RUNNER_EVENTS  optional: event names separated by commas, no spaces,
+#                     such as merge_group,push. Only those events use the
+#                     variables. Empty means every event.
+# Delete a variable to go back to today's label for the next run. The jobs
+# that make the version commit, build and publish a release, the
+# fix-evidence check (pull_request_target) and aggregate impact always keep
+# GitHub-hosted runners. Each job that can move has a read-only
+# GITHUB_TOKEN, since the organisation's default token can write. These jobs
+# read the licensed dataset, so point the variables only at runners where
+# that data may be processed, such as the organisation's GitHub-hosted
+# larger runners. test_ci_runner_variables.py holds the workflows to this.
 
 name: Test suite
 
@@ -59,7 +77,7 @@ jobs:
     # used to run on. GitHub-hosted macOS runners are scarce, so PR runs
     # queued for hours; the parameter tree and every test result are
     # identical on both.
-    runs-on: ubuntu-24.04-arm
+    runs-on: ${{ vars.CI_RUNNER_ARM != '' && (vars.CI_RUNNER_EVENTS == '' || contains(format(',{0},', vars.CI_RUNNER_EVENTS), format(',{0},', github.event_name))) && vars.CI_RUNNER_ARM || 'ubuntu-24.04-arm' }}
     # About 4 minutes on 10 October (run 38085920460).
     timeout-minutes: 30
     steps:
@@ -137,7 +155,7 @@ jobs:
     # 39568525017).
     name: Python ${{ matrix.shard }}/${{ strategy.job-total }}
     if: ${{ !inputs.skip }}
-    runs-on: ubuntu-24.04-arm
+    runs-on: ${{ vars.CI_RUNNER_ARM != '' && (vars.CI_RUNNER_EVENTS == '' || contains(format(',{0},', vars.CI_RUNNER_EVENTS), format(',{0},', github.event_name))) && vars.CI_RUNNER_ARM || 'ubuntu-24.04-arm' }}
     # The shards took 15, 20 and 15 minutes on 10 October (run
     # 38085920460), and up to 52 minutes with four shards on 21 October.
     # With five shards they took 45 to 59 minutes on 23 October (runs
@@ -232,7 +250,7 @@ jobs:
     # The shards' runners, not ubuntu-latest: on 10 October this 5-second
     # job waited 32 minutes for an ubuntu-latest runner after the shards
     # had finished (run 38085920460).
-    runs-on: ubuntu-24.04-arm
+    runs-on: ${{ vars.CI_RUNNER_ARM != '' && (vars.CI_RUNNER_EVENTS == '' || contains(format(',{0},', vars.CI_RUNNER_EVENTS), format(',{0},', github.event_name))) && vars.CI_RUNNER_ARM || 'ubuntu-24.04-arm' }}
     timeout-minutes: 10
     steps:
       - name: Nothing to test
