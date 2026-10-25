@@ -9,7 +9,8 @@ metadata:
 #   the central rating lists (mostly extensive holdings of industries that
 #   span several authorities), whose rates are paid to the Secretary of State
 #   or the Welsh Government instead.
-# - Scotland: the contributable amount councils pay into the national pool.
+# - Scotland: the contributable amount, councils' nominal contribution to the
+#   national non-domestic rates pool.
 # - Northern Ireland: non-domestic rates paid to Land & Property Services,
 #   which levies the regional rate and each council's district rate as one
 #   bill.
