@@ -84,11 +84,25 @@ CARER_SUPPORT_PAYMENT_FROM = 2025
 YEARS_IN_FUTURE = 10
 
 
-def disable_simulated_benefits(parameters, period):
-    if parameters(period).gov.contrib.policyengine.disable_simulated_benefits:
+def disable_simulated_benefits(parameters, period, _period_aware=False):
+    if _period_aware:
+        from policyengine_uk.reforms.reforms import parameter_ever_true
+
+        available = parameter_ever_true(
+            parameters, "gov.contrib.policyengine.disable_simulated_benefits"
+        )
+    else:
+        available = parameters(
+            period
+        ).gov.contrib.policyengine.disable_simulated_benefits
+    if available:
 
         class DisableSimulatedBenefits(Reform):
             """Use the dataset year's reported benefit amounts in every year.
+
+            Parameter-driven construction stores only active calculation years
+            and temporarily removes its owned inputs for an inactive query.
+            Explicit application keeps this reform's existing ten-year mode.
 
             Each listed benefit is set, in the dataset year and the nine years
             after it, to its amount reported in the dataset year. The amount
@@ -144,6 +158,15 @@ def disable_simulated_benefits(parameters, period):
                 system = simulation.tax_benefit_system
                 time_period = int(str(simulation.dataset.time_period)[:4])
                 years = range(time_period, time_period + YEARS_IN_FUTURE)
+                if _period_aware:
+                    years = tuple(
+                        year
+                        for year in years
+                        if system.parameters(
+                            year
+                        ).gov.contrib.policyengine.disable_simulated_benefits
+                    )
+                prepared = {}
 
                 def reported(variable, members=None):
                     """A benefit's reported amount in the dataset year, for
@@ -179,8 +202,7 @@ def disable_simulated_benefits(parameters, period):
                         entity = system.variables[variable].entity.key
                         count = simulation.populations[entity].count
                         values[variable] = np.zeros(count, dtype=bool)
-                    for target, value in values.items():
-                        simulation.set_input(target, year, value)
+                    prepared[year] = values
 
                 # Where a household lives is read in each year, as the model
                 # reads it (country is a YEAR variable). The reported amounts
@@ -215,15 +237,11 @@ def disable_simulated_benefits(parameters, period):
                     paid_as_csp = households.project(in_scotland[year]) & (
                         year >= CARER_SUPPORT_PAYMENT_FROM
                     )
-                    simulation.set_input(
-                        "carers_allowance",
-                        year,
-                        np.where(paid_as_csp, 0, reported_care),
+                    prepared[year]["carers_allowance"] = np.where(
+                        paid_as_csp, 0, reported_care
                     )
-                    simulation.set_input(
-                        "carer_support_payment",
-                        year,
-                        np.where(paid_as_csp, reported_care, 0),
+                    prepared[year]["carer_support_payment"] = np.where(
+                        paid_as_csp, reported_care, 0
                     )
 
                 # The survey reports one winter heating payment: FRS benefit
@@ -250,15 +268,22 @@ def disable_simulated_benefits(parameters, period):
                 for year in years:
                     scheme = system.parameters(year).gov.social_security_scotland
                     paid_as_pawhp = in_scotland[year] & scheme.pawhp.active
-                    simulation.set_input(
-                        "winter_fuel_allowance",
-                        year,
-                        np.where(paid_as_pawhp, 0, reported_winter_heating),
+                    prepared[year]["winter_fuel_allowance"] = np.where(
+                        paid_as_pawhp, 0, reported_winter_heating
                     )
-                    simulation.set_input(
-                        "pawhp",
-                        year,
-                        np.where(paid_as_pawhp, reported_winter_heating, 0),
+                    prepared[year]["pawhp"] = np.where(
+                        paid_as_pawhp, reported_winter_heating, 0
                     )
+
+                # Read all source reports and current-year mappings before
+                # storing anything that could become a carried input.
+                if _period_aware:
+                    simulation._install_reported_benefit_inputs(
+                        prepared, time_period, YEARS_IN_FUTURE
+                    )
+                else:
+                    for year, values in prepared.items():
+                        for target, value in values.items():
+                            simulation.set_input(target, year, value)
 
         return DisableSimulatedBenefits

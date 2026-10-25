@@ -570,8 +570,519 @@ class Simulation(CoreSimulation):
         except KeyError:
             raise AttributeError("_user_input_keys") from None
 
+    def _invalidate_all_caches(self) -> None:
+        """Rebind continuously owned reports across Core's own input replay.
+
+        A caller's equal write is already a new input token and is pruned
+        before this boundary. Only this successful synchronous Core replay
+        may replace the tokens of entries that remain continuously owned.
+        """
+        self._prune_reported_benefit_inputs()
+        ledger = getattr(self, "_reported_benefit_inputs", {})
+        if not ledger:
+            return super()._invalidate_all_caches()
+        from policyengine_core.simulations.simulation import _value_signature
+
+        snapshots = []
+        for key, entry in ledger.items():
+            holder = self.get_holder(entry["variable"])
+            token = self._reported_input_token(holder, entry["branch"], entry["period"])
+            if token is not entry["token"]:
+                self._reported_overlay_refusal(
+                    "Reported input changed before Core replay"
+                )
+            tiers = self._reported_genuine_tiers(
+                holder, entry["branch"], entry["period"]
+            )
+            # Core retains memory first, otherwise disk, rather than treating
+            # a computed memory shadow as the genuine disk input.
+            location = (
+                "memory" if "memory" in tiers else "disk" if "disk" in tiers else None
+            )
+            signature = (
+                _value_signature(tiers[location]) if location is not None else None
+            )
+            if location is not None and signature is None:
+                self._reported_overlay_refusal(
+                    "Unsupported owned input before Core replay"
+                )
+            snapshots.append(
+                (
+                    key,
+                    entry,
+                    token,
+                    entry["visible"],
+                    entry["genuine"],
+                    entry["synthetic"],
+                    location,
+                    signature,
+                )
+            )
+
+        try:
+            # The pinned Core boundary calls storage replay directly, with
+            # no user formulas or input-change events. Unexpected events are
+            # ambiguity, not evidence that a model report became genuine.
+            result = self._reported_owned_input_events(
+                [], super()._invalidate_all_caches
+            )
+            if getattr(self, "_reported_benefit_inputs", None) is not ledger:
+                self._reported_overlay_refusal(
+                    "Reported ledger replaced during Core replay"
+                )
+            rebound = []
+            for (
+                key,
+                entry,
+                old_token,
+                visible,
+                genuine,
+                synthetic,
+                location,
+                signature,
+            ) in snapshots:
+                if (
+                    ledger.get(key) is not entry
+                    or entry["token"] is not old_token
+                    or entry["visible"] is not visible
+                    or entry["genuine"] is not genuine
+                    or entry["synthetic"] is not synthetic
+                ):
+                    self._reported_overlay_refusal(
+                        "Reported ownership changed during Core replay"
+                    )
+                holder = self.get_holder(entry["variable"])
+                branch, period = entry["branch"], entry["period"]
+                token = self._reported_input_token(holder, branch, period)
+                actual = self._reported_genuine_tiers(holder, branch, period)
+                if location is None:
+                    if token is not None or actual or key in self._user_input_keys:
+                        self._reported_overlay_refusal(
+                            "Absent reported input appeared during Core replay"
+                        )
+                elif (
+                    token is old_token
+                    or type(token) is not tuple
+                    or len(token) != 2
+                    or type(token[0]) is not type(period)
+                    or type(token[1]) is not frozenset
+                    or token[0] != period
+                    or token[1] != frozenset((location,))
+                    or set(actual) != {location}
+                    or _value_signature(actual[location]) != signature
+                ):
+                    self._reported_overlay_refusal(
+                        "Owned input did not match exact Core replay"
+                    )
+                rebound.append((entry, token))
+            # Do not leave a partially rebound ledger if a later slot fails.
+            for entry, token in rebound:
+                entry["token"] = token
+            return result
+        except BaseException as error:
+            try:
+                self._reported_overlay_refusal(
+                    "Core reported-input replay failed or was ambiguous"
+                )
+            except RuntimeError as refusal:
+                raise refusal from error
+
+    def _reported_overlay_refusal(self, reason):
+        """Latch ambiguity; it is never proof that a model input is genuine."""
+        self._reported_benefit_observer_error = reason
+        raise RuntimeError(
+            f"Cannot safely synchronize reported benefit inputs: {reason}"
+        )
+
+    def _check_reported_overlay_observer(self):
+        reason = getattr(self, "_reported_benefit_observer_error", None)
+        if reason is not None:
+            raise RuntimeError(
+                f"Cannot safely synchronize reported benefit inputs: {reason}"
+            )
+
+    def _reported_observer_state(self, observer):
+        frame = observer["frame"]
+        events = observer["events"]
+        cursor = observer["cursor"]
+        from policyengine_core.simulations.simulation import _calculation_frames
+
+        if (
+            getattr(frame, "simulation", None) is not self
+            or getattr(frame, "changes", None) is not events
+            or type(events) is not list
+            or not any(current is frame for current in _calculation_frames.get())
+        ):
+            self._reported_overlay_refusal(
+                "Core calculation event-list identity changed"
+            )
+        if type(cursor) is not int or not 0 <= cursor <= len(events):
+            self._reported_overlay_refusal("Core calculation event cursor is invalid")
+        return events, cursor
+
+    def _drain_reported_benefit_events(self):
+        self._check_reported_overlay_observer()
+        ledger = getattr(self, "_reported_benefit_inputs", {})
+        for observer in tuple(getattr(self, "_reported_benefit_observers", ())):
+            events, cursor = self._reported_observer_state(observer)
+            for change in events[cursor:]:
+                if type(change) is not tuple or len(change) != 6:
+                    self._reported_overlay_refusal("Unknown Core input-event schema")
+                operation, simulation, branch, variable, period, signature = change
+                if (
+                    type(operation) is not str
+                    or operation not in ("set", "delete")
+                    or not isinstance(simulation, CoreSimulation)
+                    or type(branch) is not str
+                    or type(variable) is not str
+                    or (period is not None and not isinstance(period, Period))
+                ):
+                    self._reported_overlay_refusal("Unknown Core input-event identity")
+                known_signature = (
+                    signature is None
+                    if operation == "delete"
+                    else (
+                        type(signature) is tuple
+                        and len(signature) == 4
+                        and type(signature[0]) is str
+                        and type(signature[1]) is tuple
+                        and all(
+                            type(size) is int and size >= 0 for size in signature[1]
+                        )
+                        and (
+                            signature[2] is None
+                            or isinstance(signature[2], type)
+                            and issubclass(signature[2], CoreEnum)
+                        )
+                        and type(signature[3]) is bytes
+                    )
+                )
+                if not known_signature:
+                    self._reported_overlay_refusal(
+                        "Unknown Core input-event value signature"
+                    )
+                if simulation is self and operation == "delete":
+                    for key, entry in list(ledger.items()):
+                        if (
+                            entry["variable"] == variable
+                            and entry["branch"] == branch
+                            and (period is None or period.contains(entry["period"]))
+                        ):
+                            # This includes a real no-op deletion while the
+                            # displaced physical input is genuinely absent.
+                            del ledger[key]
+            observer["cursor"] = len(events)
+
+    def _reported_owned_input_events(self, expected, operation):
+        """Consume only the exact suffix made by one synchronous own block.
+
+        The holder/storage operations below run no user formulas. An extra
+        event or an attempt-list replacement is ambiguity, not permission to
+        adopt a synthetic value as a genuine supplied input.
+        """
+        self._drain_reported_benefit_events()
+        marks = [
+            (observer, *self._reported_observer_state(observer))
+            for observer in tuple(getattr(self, "_reported_benefit_observers", ()))
+        ]
+        try:
+            result = operation()
+        except BaseException as error:
+            try:
+                self._reported_overlay_refusal(
+                    "Internal reported-input storage operation failed"
+                )
+            except RuntimeError as refusal:
+                raise refusal from error
+        for observer, events, cursor in marks:
+            actual, current = self._reported_observer_state(observer)
+            if actual is not events or current != cursor:
+                self._reported_overlay_refusal(
+                    "Internal reported-input event cursor changed"
+                )
+            suffix = events[cursor:]
+            if len(suffix) != len(expected):
+                self._reported_overlay_refusal(
+                    "Unexpected event during reported-input storage"
+                )
+            for change, wanted in zip(suffix, expected):
+                if (
+                    type(change) is not tuple
+                    or len(change) != 6
+                    or change[1] is not self
+                    or change != wanted
+                ):
+                    self._reported_overlay_refusal(
+                        "Unverified reported-input storage event"
+                    )
+            observer["cursor"] = len(events)
+        return result
+
+    def _calculate(self, variable_name, period=None):
+        """Observe actual attempt-local events only while reported inputs exist."""
+        self._check_reported_overlay_observer()
+        if not getattr(self, "_reported_benefit_inputs", None):
+            return self._calculate_with_bsp_routing(variable_name, period)
+        from policyengine_core.simulations.simulation import _calculation_frames
+
+        frames = _calculation_frames.get()
+        frame = next((frame for frame in frames if frame.simulation is self), None)
+        if frame is None:
+            self._reported_overlay_refusal(
+                "Reported calculation has no actual Core frame"
+            )
+        observers = getattr(self, "_reported_benefit_observers", None)
+        if observers is None:
+            observers = self._reported_benefit_observers = []
+        observer = next((item for item in observers if item["frame"] is frame), None)
+        if observer is None:
+            # A new outer calculation starts with a new empty attempt list.
+            # Never guess a cursor into history that predates observation.
+            if frame.changes:
+                self._reported_overlay_refusal(
+                    "Core input history predates reported observation"
+                )
+            if observers:
+                self._reported_overlay_refusal(
+                    "Reported observer escaped its Core attempt"
+                )
+            observer = {
+                "frame": frame,
+                "events": frame.changes,
+                "cursor": 0,
+                "users": 0,
+            }
+            observers.append(observer)
+        self._reported_observer_state(observer)
+        observer["users"] += 1
+        original_error = None
+        try:
+            return self._calculate_with_bsp_routing(variable_name, period)
+        except BaseException as error:
+            original_error = error
+            raise
+        finally:
+            try:
+                # This runs BEFORE Core removes or restarts the actual frame.
+                self._drain_reported_benefit_events()
+            except RuntimeError as refusal:
+                if original_error is not None:
+                    raise refusal from original_error
+                raise
+            finally:
+                observer["users"] -= 1
+                if observer["users"] == 0:
+                    observers.remove(observer)
+
+    @staticmethod
+    def _reported_input_token(holder, branch, period):
+        return getattr(holder, "_user_input_storage", {}).get((branch, str(period)))
+
+    def _reported_genuine_tiers(self, holder, branch, period):
+        """Copy only genuine physical inputs, never a derived memory shadow."""
+        key = (holder.variable.name, branch, period)
+        if key not in getattr(self, "_user_input_keys", ()):
+            return {}
+        result = {}
+        for location, storage in (
+            ("memory", holder._memory_storage),
+            ("disk", holder._disk_storage),
+        ):
+            if storage is not None and holder._stores_user_input(
+                period, branch, location
+            ):
+                value = storage.get(period, branch)
+                if value is not None:
+                    result[location] = value.copy()
+        return result
+
+    def _prune_reported_benefit_inputs(self):
+        self._drain_reported_benefit_events()
+        ledger = getattr(self, "_reported_benefit_inputs", {})
+        for key, entry in list(ledger.items()):
+            holder = self.get_holder(entry["variable"])
+            actual = self._reported_input_token(
+                holder, entry["branch"], entry["period"]
+            )
+            if actual is not entry["token"]:
+                # Every actual input write replaces the immutable record,
+                # even for equal values or the same ndarray object.
+                del ledger[key]
+            elif actual is not None and not holder._stores_user_input(
+                entry["period"], entry["branch"]
+            ):
+                del ledger[key]
+
+    def _restore_reported_physical_input(self, holder, branch, period, tiers):
+        """Use Core's storage/input bookkeeping with fresh write history.
+
+        This is an exact physical-slot restore, not a baseline calculation or
+        a carry-over implementation. Both genuine tiers can hold inputs.
+        """
+        from policyengine_core.data_storage.store_history import next_sequence_number
+        from policyengine_core.simulations.simulation import _note_input_change
+
+        for location, value in tiers.items():
+            storage = (
+                holder._memory_storage if location == "memory" else holder._disk_storage
+            )
+            if storage is None:
+                raise ValueError(
+                    f"Missing {location} storage while restoring {holder.variable.name}"
+                )
+            sequence = next_sequence_number()
+            restored = value.copy()
+            storage.put(
+                restored, period, branch, derived=False, sequence_number=sequence
+            )
+            holder._record_store(period, sequence)
+            holder._evict_fast_cache(period, branch)
+            holder._record_input_storage(period, branch, location, is_input=True)
+            self._user_input_keys.add((holder.variable.name, branch, period))
+            _note_input_change(
+                self, "set", holder.variable.name, period, branch, restored
+            )
+
+    def _replace_reported_benefit_input(self, entry, tiers):
+        from policyengine_core.simulations.simulation import _value_signature
+
+        self._prune_reported_benefit_inputs()
+        key = (entry["variable"], entry["branch"], entry["period"])
+        if getattr(self, "_reported_benefit_inputs", {}).get(key) is not entry:
+            return False
+        holder = self.get_holder(entry["variable"])
+        period, branch = entry["period"], entry["branch"]
+        # Holder.delete_arrays uses period containment in memory. Preserve
+        # every other genuine contained input in its original physical tier.
+        companions = []
+        for name, physical_branch, other in tuple(
+            getattr(self, "_user_input_keys", ())
+        ):
+            if (
+                name == entry["variable"]
+                and physical_branch == branch
+                and other != period
+                and period.contains(other)
+            ):
+                genuine = self._reported_genuine_tiers(holder, branch, other)
+                if genuine:
+                    companions.append((other, genuine))
+        expected = [("delete", self, branch, entry["variable"], period, None)]
+        for restored_period, restored_tiers in companions + [(period, tiers)]:
+            for value in restored_tiers.values():
+                signature = _value_signature(value)
+                if signature is None:
+                    self._reported_overlay_refusal(
+                        "Unsupported reported-input storage value"
+                    )
+                expected.append(
+                    ("set", self, branch, entry["variable"], restored_period, signature)
+                )
+
+        def replace():
+            holder.delete_arrays(period, branch)
+            for other, genuine in companions:
+                self._restore_reported_physical_input(holder, branch, other, genuine)
+            self._restore_reported_physical_input(holder, branch, period, tiers)
+
+        self._reported_owned_input_events(expected, replace)
+        entry["token"] = self._reported_input_token(holder, branch, period)
+        return True
+
+    def _sync_reported_benefit_inputs(self, enabled):
+        self._prune_reported_benefit_inputs()
+        changed = False
+        for entry in tuple(getattr(self, "_reported_benefit_inputs", {}).values()):
+            if entry["visible"] == enabled:
+                continue
+            if self._replace_reported_benefit_input(
+                entry, entry["synthetic"] if enabled else entry["genuine"]
+            ):
+                entry["visible"] = enabled
+                changed = True
+        self._reported_benefit_inputs_enabled = enabled
+        if changed:
+            # Preserve genuine inputs; invalidate only this simulation's
+            # computed values and let Core settle any stale calculation frame.
+            self.drop_computed_arrays()
+
+    @contextmanager
+    def _reported_benefit_context(self, period):
+        self._check_reported_overlay_observer()
+        if (
+            not getattr(self, "_reported_benefit_inputs", None)
+            or period.unit == "eternity"
+        ):
+            yield
+            return
+        year = period.this_year
+        start, count = self._reported_benefit_window
+        enabled = start <= year.start.year < start + count and bool(
+            self.tax_benefit_system.parameters(
+                year
+            ).gov.contrib.policyengine.disable_simulated_benefits
+        )
+        previous = getattr(self, "_reported_benefit_inputs_enabled", True)
+        stack = self._reported_benefit_requests
+        stack.append((year, enabled))
+        try:
+            self._sync_reported_benefit_inputs(enabled)
+            yield
+        finally:
+            stack.pop()
+            # A nested request returns to its caller's state. The outer call
+            # leaves the stored active inputs in place for replay/export.
+            # Pruning inside sync makes a genuine write during suspension win.
+            self._sync_reported_benefit_inputs(previous)
+
+    def _install_reported_benefit_inputs(self, prepared, start, count):
+        self._prune_reported_benefit_inputs()
+        ledger = getattr(self, "_reported_benefit_inputs", {}).copy()
+        self._reported_benefit_inputs = ledger
+        self._reported_benefit_window = (start, count)
+        self._reported_benefit_requests = []
+        self._reported_benefit_inputs_enabled = True
+        for year, values in prepared.items():
+            for variable, value in values.items():
+                holder = self.get_holder(variable)
+                period = holder._storage_period(period_(year))
+                branch = self.branch_name
+                key = (variable, branch, period)
+                prior = ledger.get(key)
+                genuine = (
+                    prior["genuine"]
+                    if prior is not None
+                    else self._reported_genuine_tiers(holder, branch, period)
+                )
+                self.set_input(variable, year, value)
+                token = self._reported_input_token(holder, branch, period)
+                if token is None or not holder._stores_user_input(period, branch):
+                    continue
+                ledger[key] = {
+                    "variable": variable,
+                    "period": period,
+                    "branch": branch,
+                    "genuine": genuine,
+                    "synthetic": self._reported_genuine_tiers(holder, branch, period),
+                    "token": token,
+                    "visible": True,
+                }
+        self.drop_computed_arrays()
+
     def delete_arrays(self, variable: str, period: Period = None) -> None:
         super().delete_arrays(variable, period)
+        # Explicit deletion retires ownership even when the inactive view
+        # currently holds genuine absence at that physical slot.
+        ledger = getattr(self, "_reported_benefit_inputs", {})
+        deleted = period_(period) if period is not None else None
+        visible = set(self._get_visible_branch_names())
+        for key, entry in list(ledger.items()):
+            if (
+                entry["variable"] == variable
+                and entry["branch"] in visible
+                and (deleted is None or deleted.contains(entry["period"]))
+            ):
+                del ledger[key]
         # From policyengine-core 3.32.27 (policyengine-core#561) the deletion
         # forgets the input records of the values it removes, but not records
         # that a population rebuild left with no stored value
@@ -591,6 +1102,10 @@ class Simulation(CoreSimulation):
                     del records[recorded_period]
 
     def build_from_populations(self, populations) -> None:
+        self._reported_benefit_inputs = {}
+        self._reported_benefit_requests = []
+        self._reported_benefit_observers = []
+        self._reported_benefit_observer_error = None
         super().build_from_populations(populations)
         # The new populations hold none of the values set_model_value stored,
         # so an equal value a rebuild stores (from a situation or a frame) is
@@ -618,16 +1133,54 @@ class Simulation(CoreSimulation):
             getattr(self, "input_variables", None) is not None and calculation is None
         )
         stored = set()
+        failures = []
+
+        def remember_failure(error):
+            failures.append(
+                (
+                    error,
+                    error.__traceback__,
+                    error.__cause__,
+                    error.__context__,
+                    error.__suppress_context__,
+                )
+            )
+
         try:
             recording = (
                 self._record_stored_inputs() if external else nullcontext(stored)
             )
             with recording as stored:
-                super().set_input(variable_name, period, value)
-        finally:
+                try:
+                    super().set_input(variable_name, period, value)
+                except BaseException as error:
+                    remember_failure(error)
+        except BaseException as error:
+            remember_failure(error)
+        try:
             forget_replaced_model_values(self, variable_name, records)
+        except BaseException as error:
+            remember_failure(error)
+        try:
             if external and stored:
                 self._external_input_change_pending = True
+        except BaseException as error:
+            remember_failure(error)
+        try:
+            self._prune_reported_benefit_inputs()
+        except BaseException as error:
+            remember_failure(error)
+        if failures:
+            error, traceback, cause, context, suppression = failures[0]
+            BaseException.__setattr__(
+                error, "_policyengine_input_cleanup_failures", tuple(failures[1:])
+            )
+            try:
+                raise BaseException.with_traceback(error, traceback)
+            finally:
+                BaseException.__setattr__(error, "__cause__", cause)
+                BaseException.__setattr__(error, "__context__", context)
+                BaseException.__setattr__(error, "__suppress_context__", suppression)
         # Inputs do not carry back, so give the simulation its identifiers
         # for the year the input starts in if it holds them only for later
         # years. See ``policyengine_uk.data.input_dataframe.hold_identifiers_in``.
@@ -636,7 +1189,26 @@ class Simulation(CoreSimulation):
             self._capture_cgt_supplied_inputs(variable_name, replace_period=period)
 
     def clone(self, *args, **kwargs) -> "Simulation":
+        self._prune_reported_benefit_inputs()
         clone = super().clone(*args, **kwargs)
+        clone._reported_benefit_inputs = {}
+        clone._reported_benefit_requests = []
+        clone._reported_benefit_observers = []
+        clone._reported_benefit_observer_error = None
+        for key, entry in getattr(self, "_reported_benefit_inputs", {}).items():
+            copied = {
+                **entry,
+                "genuine": {
+                    tier: value.copy() for tier, value in entry["genuine"].items()
+                },
+                "synthetic": {
+                    tier: value.copy() for tier, value in entry["synthetic"].items()
+                },
+            }
+            copied["token"] = clone._reported_input_token(
+                clone.get_holder(entry["variable"]), entry["branch"], entry["period"]
+            )
+            clone._reported_benefit_inputs[key] = copied
         clone._construction_reform_state = copy.deepcopy(
             getattr(self, "_construction_reform_state", None)
         )
@@ -650,6 +1222,10 @@ class Simulation(CoreSimulation):
         clone._isa_income_contracts = copy.deepcopy(
             getattr(self, "_isa_income_contracts", {})
         )
+        # Expose a stable physical model-input state even when this clone was
+        # created during an inactive caller. A direct Holder deletion before
+        # its first calculate then removes a real tuple and cannot be missed.
+        clone._sync_reported_benefit_inputs(True)
         return clone
 
     def _isa_latest_input(self, name, period, *, earlier=False):
@@ -1415,6 +1991,10 @@ class Simulation(CoreSimulation):
         """Record the new population's source, and drop what the simulation
         cached for the previous one, so rebuilding in place (e.g. a clone)
         never reads arrays sized for the old population."""
+        self._reported_benefit_inputs = {}
+        self._reported_benefit_requests = []
+        self._reported_benefit_observers = []
+        self._reported_benefit_observer_error = None
         self.built_from_dataset = built_from_dataset
         if getattr(self, "_fast_cache", None) is not None:
             self._fast_cache = {}
@@ -1549,7 +2129,7 @@ class Simulation(CoreSimulation):
             fiscal_year=year,
         )
 
-    def _calculate(self, variable_name: str, period: Period = None):
+    def _calculate_with_bsp_routing(self, variable_name: str, period: Period = None):
         # Core requires an indexed input to have no formula. Keep the legacy
         # CPI declaration, but carry split dataset BSP nominally after the
         # materialized horizon, including through Core's monthly conversion.
@@ -1600,6 +2180,7 @@ class Simulation(CoreSimulation):
         map_to: str = None,
         decode_enums: bool = False,
     ):
+        self._check_reported_overlay_observer()
         if self._cgt_calculation_depth == 0 and self._external_input_change_pending:
             self._external_input_change_pending = False
             drop_calculated_values(self)
@@ -1616,57 +2197,60 @@ class Simulation(CoreSimulation):
 
         period = period_(period)
 
-        projection = self.tax_benefit_system.capital_gains_projection
-        if projection is not None and variable_name in CGT_INPUTS:
-            holder = self.get_holder(variable_name)
-            annual_period = period.this_year
-            if holder.get_array(annual_period, self.branch_name) is None:
-                earlier_inputs = [
-                    p
-                    for p in holder.get_input_periods(self.branch_name)
-                    if p.unit == "year"
-                    and p.start < annual_period.start
-                    and holder.get_array(p, self.branch_name) is not None
-                ]
-                if earlier_inputs:
-                    source_year = max(p.start.year for p in earlier_inputs)
-                    projection.validate_span(source_year, annual_period.start.year)
+        with self._reported_benefit_context(period):
+            projection = self.tax_benefit_system.capital_gains_projection
+            if projection is not None and variable_name in CGT_INPUTS:
+                holder = self.get_holder(variable_name)
+                annual_period = period.this_year
+                if holder.get_array(annual_period, self.branch_name) is None:
+                    earlier_inputs = [
+                        p
+                        for p in holder.get_input_periods(self.branch_name)
+                        if p.unit == "year"
+                        and p.start < annual_period.start
+                        and holder.get_array(p, self.branch_name) is not None
+                    ]
+                    if earlier_inputs:
+                        source_year = max(p.start.year for p in earlier_inputs)
+                        projection.validate_span(source_year, annual_period.start.year)
 
-        if variable_name in SUPPLIED_INPUT_VARIABLES:
-            # Rebuilding the populations leaves the input records of the
-            # replaced holders behind (policyengine-core#605). Forget a record
-            # whose stored value is gone before the engine can refill the
-            # period with a carried-over value that the record would pass off
-            # as supplied.
-            drop_missing_supplied_inputs(self, variable_name)
+            if variable_name in SUPPLIED_INPUT_VARIABLES:
+                # Rebuilding the populations leaves the input records of the
+                # replaced holders behind (policyengine-core#605). Forget a record
+                # whose stored value is gone before the engine can refill the
+                # period with a carried-over value that the record would pass off
+                # as supplied.
+                drop_missing_supplied_inputs(self, variable_name)
 
-        outer_calculation = self._cgt_calculation_depth == 0
-        if outer_calculation:
-            self._cgt_operation_inputs = set()
-        record = None
-        neutralized = False
-        if variable_name in CGT_INPUTS:
-            neutralized = self._cgt_is_neutralized(variable_name, period)
-            record = self._cgt_calculation_record(variable_name, period, neutralized)
-        self._cgt_calculation_depth += 1
-        try:
-            result = super().calculate(
-                variable_name, period, map_to=map_to, decode_enums=decode_enums
-            )
-            if record is not None:
-                if neutralized:
-                    self._cgt_defaulted_periods.add((variable_name, str(period)))
-                else:
-                    self._cgt_input_provenance.setdefault(variable_name, {})[
-                        str(period)
-                    ] = record
-                self._cgt_operation_inputs.add((variable_name, str(period)))
-        finally:
-            self._cgt_calculation_depth -= 1
-        if outer_calculation and self._cgt_operation_inputs:
-            for input_period in sorted({p for _, p in self._cgt_operation_inputs}):
-                self._warn_unused_cgt_projection(period_(input_period))
-        return result
+            outer_calculation = self._cgt_calculation_depth == 0
+            if outer_calculation:
+                self._cgt_operation_inputs = set()
+            record = None
+            neutralized = False
+            if variable_name in CGT_INPUTS:
+                neutralized = self._cgt_is_neutralized(variable_name, period)
+                record = self._cgt_calculation_record(
+                    variable_name, period, neutralized
+                )
+            self._cgt_calculation_depth += 1
+            try:
+                result = super().calculate(
+                    variable_name, period, map_to=map_to, decode_enums=decode_enums
+                )
+                if record is not None:
+                    if neutralized:
+                        self._cgt_defaulted_periods.add((variable_name, str(period)))
+                    else:
+                        self._cgt_input_provenance.setdefault(variable_name, {})[
+                            str(period)
+                        ] = record
+                    self._cgt_operation_inputs.add((variable_name, str(period)))
+            finally:
+                self._cgt_calculation_depth -= 1
+            if outer_calculation and self._cgt_operation_inputs:
+                for input_period in sorted({p for _, p in self._cgt_operation_inputs}):
+                    self._warn_unused_cgt_projection(period_(input_period))
+            return result
 
     def apply_dynamics(self, year: int):
         """Apply dynamics to the simulation for a specific year.
