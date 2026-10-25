@@ -21,8 +21,8 @@ metadata:
   - title: DfT, GBP 2 bus fares from January 2027 (GBP 400 million), 22 July 2026
     href: https://www.gov.uk/government/speeches/2-bus-fares-from-january-2027
 LOW:
-  '2024-01-01': 0.55
+  '2024-01-01': 0.56
 MIDDLE:
-  '2024-01-01': 0.3
+  '2024-01-01': 0.31
 HIGH:
-  '2024-01-01': 0.15
+  '2024-01-01': 0.13
