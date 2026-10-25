@@ -674,24 +674,42 @@ def uprate_student_loan_plans(
     parameters: ParameterNode,
     base_year: int | None = None,
 ) -> UKSingleYearDataset:
-    """Assign student loan plans based on cohort and add new entrants.
+    """Retain observed student loan plans and add new entrants.
 
-    Projected datasets copy the base year with ages fixed, so in a later year
-    a person of a given age stands for a later university intake. Plans
-    follow that intake: year - age + 18. The function works on the base
-    year's plans, not accumulated state, so each year's plans do not depend
-    on which other years were projected. base_year is the year the data
-    describe; without it, the previous year is taken as that year.
+    Existing holders keep their recorded plan and the repayment amount passed
+    to this helper. Course, funding and first-repayment dates are unavailable,
+    so age and current residence cannot establish a different plan or a
+    cancellation date. The enclosing uprating separately grows stored
+    repayments with average earnings, which this helper does not change.
 
-    As we project forward, we need to:
-    1. Re-label existing holders to correct plan based on uni start year
-    2. Add holders in age bands beyond the base year's coverage
-    3. Add Plan 5 holders in England (new plan starting 2023)
+    Retaining recorded plans also leaves future cohort transitions from
+    Plan 1 to Plan 2 in England and Wales at the 2012 intake, and from Plan 2
+    to Plan 5 in England at the 2023 intake, unimplemented. Vahid Ahmadi's
+    25 October 2026 review audit used enhanced_frs_2024_25 at revision
+    2526edbb and the age-18 intake proxy. Among 7.14m recorded Plan 2 holders,
+    it counted 0.53m in England whose proxy intake reached 2023 in 2026,
+    1.57m in 2028 and 2.99m in 2031. Among 1.52m recorded Plan 1 holders,
+    it counted none in England and Wales whose proxy intake reached 2012
+    in 2025, 0.30m in 2028 and 0.68m in 2031. These approximate counts
+    describe that reviewer's dataset audit; this change does not reproduce
+    the audit or establish national population accuracy or revenue effects.
+    See the audit and accepted follow-up scope:
+    https://github.com/PolicyEngine/policyengine-uk/pull/2650#issuecomment-6396818516
+    https://github.com/PolicyEngine/policyengine-uk/pull/2650#issuecomment-6397144626
+    Date-aware cohort and cancellation work remains open under issue 2636.
 
-    For (2) and (3), we use highest_education == TERTIARY as the signal
-    for who is a graduate, then apply a flat take-up probability. Each
-    person's take-up draw is keyed on person_id, so the same people take up
-    a loan in every year and in any row order.
+    Projected datasets copy the base year with ages fixed. Each year's plans
+    therefore start from that copy, not accumulated prior-year plan state.
+    base_year is the year the data describe; without it, the previous year is
+    taken as that year. This fallback can retain older plans too long and
+    changes the future plan mix; it does not model exact cancellation dates.
+
+    New entrants use the existing intake-at-18 approximation, year - age + 18,
+    to extend the base year's age bands and add England's Plan 5 intakes.
+    We use highest_education == TERTIARY as the signal for who is a graduate,
+    then apply a flat take-up probability. Each person's take-up draw is keyed
+    on person_id, so the same people take up a loan in every year and in any
+    row order.
 
     New holders follow the funding nation's undergraduate repayment plan.
     Funding agency is unavailable in the dataset, so current household
@@ -761,21 +779,10 @@ def uprate_student_loan_plans(
         new_plan[sampled] = new_borrower_plan[sampled]
         repayments[sampled] = 0.0
 
-    # === Step 1: Re-label existing loan holders ===
-    has_loan = base_plan != "NONE"
-    written_off = has_loan & (uni_start_year + _PLAN1_WRITEOFF_YEARS <= year)
-    is_plan1_cohort = has_loan & ~written_off & (uni_start_year < 2012)
-    is_plan2_cohort = (
-        has_loan & ~written_off & (uni_start_year >= 2012) & (uni_start_year < 2023)
-    )
-    is_plan5_cohort = has_loan & ~written_off & (uni_start_year >= 2023)
-
-    new_plan[written_off] = "NONE"
-    repayments[written_off] = 0.0
-    new_plan[is_plan1_cohort] = "PLAN_1"
-    new_plan[is_plan2_cohort] = "PLAN_2"
-    new_plan[is_plan5_cohort & is_england] = "PLAN_5"
-    new_plan[is_plan5_cohort & ~is_england] = "PLAN_2"
+    # === Step 1: Retain observed loan holders ===
+    # Missing course and repayment dates do not establish a new plan or a
+    # cancellation. The initialized arrays retain each recorded non-NONE
+    # plan and repayment; the intake and region proxies apply only below.
 
     # === Step 2: Add holders in the extended pre-2012 age bands ===
     # Income-contingent (Plan 1) loans began with the 1998 intake, aged 44 in

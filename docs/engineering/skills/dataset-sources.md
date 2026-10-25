@@ -239,3 +239,61 @@ these defaults, including a future calibrated dataset column (uk-data#448).
 Do not rebuild an existing data-built simulation by calling core's
 `SimulationBuilder.build_from_dict` directly. In core 3.33.2 this leaves stale
 dataset provenance, which copies inherit. Use UK `build_from_situation` instead.
+
+## Student loan plan projection
+
+Student loan projection preserves each existing holder's recorded non-`NONE`
+plan and the repayment amount passed to `uprate_student_loan_plans`. The
+enclosing dataset uprating separately grows stored `student_loan_repayments`
+with average earnings; preserving an amount in this helper does not hold its
+nominal value flat throughout a projection or change reported-versus-modelled
+repayment precedence.
+
+The available inputs do not identify the course start, first loan payment,
+first April due to repay, or funding agency. Age and current household region
+cannot establish those dates or an existing holder's cancellation deadline.
+The helper therefore does not relabel or cancel an observed loan from an
+assumed course start at 18. It retains recorded Plan 4 and Postgraduate
+categories even where present residence differs from the funding nation.
+This fallback does not certify that every recorded plan is legally correct.
+See the official [plan rules](https://www.gov.uk/repaying-your-student-loan/which-repayment-plan-you-are-on)
+and [cancellation rules](https://www.gov.uk/repaying-your-student-loan/when-your-student-loan-gets-written-off-or-cancelled).
+
+Projection holds ages fixed and retains existing holders' base plans across
+future cohort boundaries. It leaves the England and Wales Plan 1 to Plan 2
+transition at the 2012 intake and the England Plan 2 to Plan 5 transition at
+the 2023 intake unimplemented. It can also retain older plans too long.
+
+Vahid Ahmadi's [25 October 2026 review audit](https://github.com/PolicyEngine/policyengine-uk/pull/2650#issuecomment-6396818516)
+used `enhanced_frs_2024_25` at revision `2526edbb` and the intake-at-18 proxy.
+The audit reported these approximate counts of recorded holders whose proxy
+intakes crossed the relevant boundary:
+
+| Recorded plan and funding-region proxy | Boundary | Projection year | Audit count | Recorded-plan denominator |
+| --- | --- | --- | --- | --- |
+| Plan 2, England | 2023 intake, Plan 5 | 2026 | 0.53 million | 7.14 million Plan 2 holders |
+| Plan 2, England | 2023 intake, Plan 5 | 2028 | 1.57 million | 7.14 million Plan 2 holders |
+| Plan 2, England | 2023 intake, Plan 5 | 2031 | 2.99 million | 7.14 million Plan 2 holders |
+| Plan 1, England and Wales | 2012 intake, Plan 2 | 2025 | None | 1.52 million Plan 1 holders |
+| Plan 1, England and Wales | 2012 intake, Plan 2 | 2028 | 0.30 million | 1.52 million Plan 1 holders |
+| Plan 1, England and Wales | 2012 intake, Plan 2 | 2031 | 0.68 million | 1.52 million Plan 1 holders |
+
+These are the reviewer's dataset audit counts. This change does not reproduce
+that audit or estimate national population accuracy or revenue effects. The
+reviewer [accepted documenting the residual gap and tracking the boundary moves
+separately](https://github.com/PolicyEngine/policyengine-uk/pull/2650#issuecomment-6397144626).
+The intake-at-18 proxy cannot identify mature starters' actual course dates,
+and present residence cannot identify their funding agency.
+
+This fallback does not model longitudinal ageing or exact cancellation dates.
+A retained Plan 1 at age 65 does not establish that a known pre-2006 loan
+remains legally outstanding. Date-aware cohort and write-off work remains open
+in [issue #2636](https://github.com/PolicyEngine/policyengine-uk/issues/2636).
+
+The existing new-holder rules remain separate: they use an intake-at-18
+approximation, a deterministic draw keyed on `person_id`, and current region
+as a funding-nation proxy. These assumptions cannot identify cross-border
+movers and are not newly validated by the existing-holder fallback. A single
+plan enum also cannot represent simultaneous undergraduate and postgraduate
+loans. This change supplies no new date schema, producer migration, Microcosm
+remeasurement or population accuracy estimate.
