@@ -12,7 +12,7 @@ These are:
 - `equiv_hbai_household_net_income`: Equivalised household net income, before housing costs (BHC)
 - `equiv_hbai_household_net_income_ahc`: Equivalised household net income, after housing costs (AHC)
 
-See [Comparing PolicyEngine UK and UKMOD](ukmod-comparison.md) for the equivalence-scale coefficients and the limits of a cross-model comparison.
+See [Comparing PolicyEngine UK and UKMOD](ukmod-comparison.md) for equivalence-scale coefficients, benefit take-up and UC transitions, and the limits of comparing the models.
 
 These variables are used in the HBAI income distribution and poverty [statistics](https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2025), which are published by the Department for Work and Pensions (DWP) in the UK. The HBAI income concepts are defined in the [FYE 2025 background information and methodology report](https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2025/households-below-average-income-background-information-and-methodology-report-fye-2025#housing-costs).
 
