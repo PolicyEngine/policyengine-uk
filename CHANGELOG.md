@@ -1,3 +1,10 @@
+## [2.161.2] - 2026-10-25
+
+### Fixed
+
+- Correct `gov.dft.rail.ridership_index` to ORR Table 1220 passenger journeys (2021-22 is 2.55 and 2024-25 4.46 on a 2020-21 base, not 0.40 and 0.95), hold it flat from 2026-27, and project `rail_usage` by its growth per person, which it was not projected by before.
+
+
 ## [2.161.1] - 2026-10-25
 
 ### Fixed
