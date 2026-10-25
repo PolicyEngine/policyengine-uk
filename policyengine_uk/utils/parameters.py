@@ -100,9 +100,9 @@ def uk_fiscal_year_period(time_period):
 def _fiscal_year_conversion_years(param):
     """Finite annual steps needed by this leaf's stated timeline.
 
-    Keep the legacy26 annual records and the first following boundary. A
+    Keep the 26 legacy annual records and the first following boundary. A
     stated change then adds the annual labels it can affect, without filling
-    an arbitrary projection horizon. Raw pre2015 keys, including year0000,
+    an arbitrary projection horizon. Raw keys before 2015, including year 0000,
     remain opaque and are retained by Parameter.update.
     """
     years = set(range(2015, 2042))
@@ -121,7 +121,7 @@ def _fiscal_year_conversion_years(param):
     if max(years) > last_representable:
         raise ValueError(
             f"Cannot annualise {param.name}: its fiscal conversion needs a "
-            "date beyond the supported Gregorian year9999"
+            "date beyond the supported Gregorian year 9999"
         )
     return sorted(year for year in years if year >= 2015)
 
@@ -129,18 +129,25 @@ def _fiscal_year_conversion_years(param):
 def convert_to_fiscal_year_parameters(parameters):
     """Give each calendar-labelled year its UK fiscal parameter value.
 
-    Ordinary leaves take their30April value. Opt-in ``fiscal_year_blend``
-    leaves retain the existing day-weighted6April-to5April average and its
-    single-date fallback. ``preserve_calendar_dates`` leaves are untouched.
+    Ordinary leaves take their 30 April value. Opt-in ``fiscal_year_blend``
+    leaves retain the existing day-weighted average from 6 April to 5 April
+    and its single-date fallback. ``preserve_calendar_dates`` leaves are untouched.
 
-    Ordinary Parameter histories retain all2015–2040 annual records, an
-    explicit2041 boundary and finite later steps induced by stated changes.
+    Sampling a single date drops any change taking effect later in the fiscal
+    year. Parameters carrying `fiscal_year_blend: true` in their metadata are
+    day-weighted across the year instead, which is the right annualisation for
+    a rate or threshold that applies to a flow spread over the year. Leave the
+    flag off where the value at a point in time is what applies, as for a tax
+    charged on a transaction at the rate in force on its date.
+
+    Ordinary Parameter histories retain all 2015–2040 annual records, an
+    explicit 2041 boundary and finite later steps induced by stated changes.
     Dates within a calendar label therefore read the same annual value even
-    beyond2040. This annualises known values; it does not project new values.
+    beyond 2040. This annualises known values; it does not project new values.
 
     Domain checks and snapshot sampling finish before any live write.
     Start-only writes remove intervening raw dates and retain the original
-    pre2015 entries.
+    entries before 2015.
     """
     planned = []
     for param in canonical_descendants(parameters):

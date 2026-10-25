@@ -717,7 +717,7 @@ def _statutory_values_are_current(assignments, system):
         windows = [(entry.start, entry.stop) for entry in wanted]
         if annualised:
             # Cover every calendar label affected by these finite writes,
-            # including January prefixes beyond the old2040 window. This
+            # including January prefixes beyond the old 2040 window. This
             # follows the same sampling/intersection rule without imposing
             # another fixed last year or inspecting unrelated parameters.
             years = set()

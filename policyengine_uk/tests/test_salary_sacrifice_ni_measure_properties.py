@@ -203,7 +203,7 @@ def _simulate(people, world, no_excess=False):
         "households": {f"household_{i}": {"members": [n]} for i, n in enumerate(names)},
     }
     if world == "rates change within the year":
-        # Keep scalarFalse on the normal constructor route. Only the three
+        # Keep scalar False on the normal constructor route. Only the three
         # explicitly declared monthly histories bypass annual processing.
         monthly_paths = (
             f"{CLASS_1}.employee_scale[1].rate",

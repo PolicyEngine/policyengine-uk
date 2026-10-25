@@ -1997,7 +1997,7 @@ def test_future_1436_logged_write_detects_calendar_prefix_edit_and_public_rebuil
     # corresponding annual label. The old effectiveness window misses them.
     assert not reform_modifiers_are_effective(scenario.dated_reforms, system)
     # Public statutory rebuild, not Scenario.apply's intentional annualised
-    # override semantics. Its independent expected January value is200.
+    # override semantics. Its independent expected January value is 200.
     simulation.apply_parameter_changes(change)
     assert annual(simulation, VAT_STANDARD_RATE, 2041) == 200
     assert system.parameters.get_child(VAT_STANDARD_RATE)("2041-12-31") == 200

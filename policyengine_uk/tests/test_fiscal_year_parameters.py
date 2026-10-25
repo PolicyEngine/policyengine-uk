@@ -383,7 +383,7 @@ def test_future_1436_non_numeric_blend_fallback_preserves_the_exact_value(value)
     root = _future_1436_tree(blend=True, values={"2010-01-01": 11, "2041-04-06": value})
     convert_to_fiscal_year_parameters(root.gov)
     # Numeric zero takes the existing float averaging path; bool False is
-    # excluded from that path and retains the exact April30 fallback type.
+    # excluded from that path and retains the exact 30 April fallback type.
     expected = 0.0 if type(value) is int else value
     for day in ("2041-01-01", "2041-12-31", "2042-01-01"):
         actual = root.gov.future(day)
