@@ -33,6 +33,7 @@ from policyengine_uk.data.dataset_schema import (
 from policyengine_uk.utils.entity_ids import ENTITY_ID_VARIABLES, check_entity_ids
 from policyengine_uk.utils.scenario import ConstructionReformState, Scenario
 from policyengine_uk.data.economic_assumptions import (
+    BEREAVEMENT_SPLIT_INPUTS,
     extend_single_year_dataset,
     reset_growthfactor_uprating,
     uprating_input_fingerprint,
@@ -54,6 +55,7 @@ from policyengine_uk.data.capital_gains_projection import (
     capital_gains_application_metadata,
 )
 from policyengine_uk.utils.dependencies import get_variable_dependencies
+from policyengine_uk.utils.data_source import built_from_data
 from policyengine_uk.utils.input_dataframe_export import input_dataframe
 from policyengine_uk.utils.supplied_inputs import (
     SUPPLIED_INPUT_VARIABLES,
@@ -1358,6 +1360,50 @@ class Simulation(CoreSimulation):
             household=household,
             fiscal_year=year,
         )
+
+    def _calculate(self, variable_name: str, period: Period = None):
+        # Core requires an indexed input to have no formula. Keep the legacy
+        # CPI declaration, but carry split dataset BSP nominally after the
+        # materialized horizon, including through Core's monthly conversion.
+        if (
+            variable_name == "bsp_reported"
+            and period is not None
+            and period.unit == "year"
+            and period.size == 1
+            and built_from_data(self)
+        ):
+            variable = self.tax_benefit_system.get_variable(variable_name)
+            holder = self.get_holder(variable_name)
+            inputs = holder.get_input_periods(self.branch_name)
+            if (
+                not variable.formulas
+                and not variable.is_neutralized
+                and variable.uprating
+                == "gov.economic_assumptions.indices.obr.consumer_price_index"
+                and period not in inputs
+            ):
+                source = max(
+                    (
+                        known
+                        for known in inputs
+                        if known.unit == "year" and known.start < period.start
+                    ),
+                    key=lambda known: (known.start, known.stop),
+                    default=None,
+                )
+                if source is not None:
+                    split = all(
+                        source
+                        in self.get_holder(name).get_input_periods(self.branch_name)
+                        for name in BEREAVEMENT_SPLIT_INPUTS
+                    )
+                    # Track both dependencies even when either input is absent.
+                    # Calculated defaults do not declare a completed split.
+                    for name in BEREAVEMENT_SPLIT_INPUTS:
+                        self.calculate(name, source)
+                    if split:
+                        return self.calculate(variable_name, source)
+        return super()._calculate(variable_name, period)
 
     def calculate(
         self,
