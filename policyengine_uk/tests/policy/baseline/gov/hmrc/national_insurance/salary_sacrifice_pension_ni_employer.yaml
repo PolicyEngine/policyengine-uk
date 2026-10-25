@@ -199,3 +199,74 @@
     ni_class_1_income: 51_923.20
     # Earnings stay above the secondary threshold: 4,000 x 15% = 600.
     salary_sacrifice_pension_ni_employer: 4_000 * 0.15
+
+# SSCBA 1992 s.9A and s.9B: the secondary percentage is 0% up to the upper
+# secondary threshold for an earner under 21, and up to the apprentice upper
+# secondary threshold for an apprentice under 25 (both £50,270 in 2029-30).
+# The £3,000 of a £5,000 sacrifice above the cap enters NIC earnings only
+# (total £33,000), all below them.
+- name: No employer NI on the excess for an earner aged 20 below the upper secondary threshold
+  period: 2029
+  absolute_error_margin: 0.01
+  input:
+    age: 20
+    employment_income_before_lsr: 30_000
+    pension_contributions_via_salary_sacrifice: 5_000
+    employer_pension_contributions: 2_000
+    gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
+    gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
+  output:
+    salary_sacrifice_pension_ni_excess: 3_000
+    salary_sacrifice_returned_to_income: 0
+    employment_income: 30_000
+    ni_class_1_income: 33_000
+    salary_sacrifice_pension_ni_employer: 0
+    ni_class_1_employer: 0
+    # 30,000 pay + 2,000 employer pension contribution, no employer NI.
+    adjusted_employer_cost: 32_000
+
+- name: No employer NI on the excess for an apprentice aged 24 below the apprentice upper secondary threshold
+  period: 2029
+  absolute_error_margin: 0.01
+  input:
+    age: 24
+    is_apprentice: true
+    employment_income_before_lsr: 30_000
+    pension_contributions_via_salary_sacrifice: 5_000
+    employer_pension_contributions: 2_000
+    gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
+    gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
+  output:
+    salary_sacrifice_pension_ni_employer: 0
+    ni_class_1_employer: 0
+    adjusted_employer_cost: 32_000
+
+- name: Employer NI on the excess for an earner aged 21
+  period: 2029
+  absolute_error_margin: 0.01
+  input:
+    age: 21
+    employment_income_before_lsr: 30_000
+    pension_contributions_via_salary_sacrifice: 5_000
+    employer_pension_contributions: 2_000
+    gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
+    gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
+  output:
+    # The £3,000 excess sits above the secondary threshold.
+    salary_sacrifice_pension_ni_employer: 3_000 * 0.15
+
+- name: No employer NI on the excess for an earner aged 19 on £40,000
+  period: 2029
+  absolute_error_margin: 0.01
+  input:
+    age: 19
+    employment_income_before_lsr: 40_000
+    pension_contributions_via_salary_sacrifice: 6_000
+    gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
+    gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
+  output:
+    # £4,000 excess; NIC earnings of £44,000 are below the UST (£50,270).
+    salary_sacrifice_pension_ni_excess: 4_000
+    ni_class_1_income: 44_000
+    salary_sacrifice_pension_ni_employer: 0
+    ni_class_1_employer: 0

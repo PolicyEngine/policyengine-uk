@@ -29,17 +29,21 @@ employer pension contribution:
 4. One band, one rate: when the earnings with and without the excess
    lie in the same band, the measure is that band's rate times the
    excess. This is where the earlier single-rate formulas were
-   right.
+   right. The employer bands are split at each earner's own secondary
+   threshold, which is higher for an earner under 21 (SSCBA 1992 s.9A) and
+   an apprentice under 25 (s.9B).
 5. Monotonicity: a measure never falls when the sacrifice rises.
 
 The invariants are checked under current law (2028, before the cap, and 2029
 and 2030 under it), with a hypothetical cap in 2022 to exercise the annual
 full-year Category A director schedule, and in a world where the employee
 rates and the upper earnings limit change within 2041 and employer pension
-contributions are charged (invariant 4 under current law only: it needs one
-rate and schedule for the year). Fiscal-year conversion gives every parameter
-one value for each year from 2015 to 2040, so a year after 2040 is needed for
-rates that differ between months; ni_class_1_employee is a monthly variable.
+contributions are charged, with no employee incidence of the fixed employer
+cost so that pay is the same with and without the excess (invariant 4 under
+current law only: it needs one rate and schedule for the year). Fiscal-year
+conversion gives every parameter one value for each year from 2015 to 2040,
+so a year after 2040 is needed for rates that differ between months;
+ni_class_1_employee is a monthly variable.
 
 Comparisons allow float32 rounding: the model stores values as float32.
 """
@@ -65,6 +69,12 @@ WORLDS = {
             f"{CLASS_1}.employee_scale[2].threshold": {"2041-04-01.2041-12-31": 1_300},
             "gov.contrib.policyengine.employer_ni."
             "exempt_employer_pension_contributions": False,
+            # Changing the exemption switches on the fixed-employer-cost pay
+            # change, which would pass employer NI on the excess into pay.
+            # Only the reformed simulation's excess is zeroed (its baseline
+            # keeps it), so pay would differ between the simulations with and
+            # without the excess. With no employee incidence it does not.
+            "gov.contrib.policyengine.employer_ni.employee_incidence": 0,
         },
         [2030, 2041],
     ),
@@ -84,8 +94,8 @@ TOLERANCE = 0.03
 
 Row = namedtuple(
     "Row",
-    "pay sacrifice more_sacrifice age sick_pay employer_pension director",
-    defaults=[False],
+    "pay sacrifice more_sacrifice age sick_pay employer_pension director apprentice",
+    defaults=[False, False],
 )
 
 # People the properties must always cover, whatever is drawn. With the £2,000
@@ -93,8 +103,11 @@ Row = namedtuple(
 # crosses the primary threshold, one that crosses the secondary threshold, one
 # below every threshold, a person over State Pension age, a person under 16,
 # one whose statutory sick pay takes them over the upper earnings limit,
-# one with no excess, and a full-year Category A director crossing the upper
-# earnings limit.
+# one with no excess, a full-year Category A director crossing the upper
+# earnings limit, an earner aged 20 whose excess crosses the upper secondary
+# threshold, one aged 20 whose excess lies between the secondary and upper
+# secondary thresholds, and an apprentice aged 23 whose excess lies between
+# the secondary and apprentice upper secondary thresholds.
 KNOWN_CASES = [
     Row(48_000, 6_000, 10_000, 40, 0, 0),
     Row(11_000, 5_000, 3_000, 40, 0, 0),
@@ -105,6 +118,9 @@ KNOWN_CASES = [
     Row(46_000, 5_000, 0, 40, 3_000, 0),
     Row(60_000, 1_500, 0, 40, 0, 0),
     Row(48_000, 6_000, 10_000, 40, 0, 0, True),
+    Row(48_000, 6_000, 10_000, 20, 0, 0),
+    Row(30_000, 5_000, 0, 20, 0, 0),
+    Row(30_000, 5_000, 0, 23, 0, 0, False, True),
 ]
 
 
@@ -133,6 +149,7 @@ rows = st.lists(
         sick_pay=st.one_of(st.just(0.0), _amount(8_000)),
         employer_pension=st.one_of(st.just(0.0), _amount(20_000)),
         director=st.booleans(),
+        apprentice=st.booleans(),
     ),
     min_size=1,
     max_size=40,
@@ -156,6 +173,7 @@ def _simulate(people, world, no_excess=False):
                 "statutory_sick_pay": each_year(row.sick_pay),
                 "employer_pension_contributions": each_year(row.employer_pension),
                 "is_full_year_category_a_director": each_year(row.director),
+                "is_apprentice": each_year(row.apprentice),
             }
             for name, row in zip(names, people)
         },
@@ -182,6 +200,33 @@ def _class_1(simulation, instant):
     return parameters.gov.hmrc.national_insurance.class_1
 
 
+def _own_secondary_threshold(simulation, year, class_1):
+    """Each earner's annual secondary threshold, from the parameters.
+
+    The secondary threshold, or the upper secondary threshold for an earner
+    under 21 (SSCBA 1992 s.9A) or the apprentice upper secondary threshold for
+    an apprentice under 25 (s.9B), whichever is highest.
+    """
+    age = _values(simulation, "age", year)
+    apprentice = simulation.calculate("is_apprentice", year)
+    limits = class_1.secondary_zero_rate_age_limits
+    thresholds = class_1.thresholds
+    weekly = np.maximum.reduce(
+        [
+            np.full_like(age, class_1.employer_scale.components[1].threshold),
+            np.where(
+                age < limits.under_21_group, thresholds.upper_secondary_threshold, 0
+            ),
+            np.where(
+                apprentice & (age < limits.relevant_apprentice),
+                thresholds.apprentice_upper_secondary_threshold,
+                0,
+            ),
+        ]
+    )
+    return weekly * WEEKS_IN_YEAR
+
+
 def _check_one_band_one_rate(simulation, year, excess):
     """Invariant 4, for a year whose rates and thresholds do not change."""
     class_1 = _class_1(simulation, f"{year}-01-01")
@@ -189,7 +234,7 @@ def _check_one_band_one_rate(simulation, year, excess):
     employer = class_1.employer_scale.components
     primary_threshold = employee[1].threshold * WEEKS_IN_YEAR
     upper_earnings_limit = employee[2].threshold * WEEKS_IN_YEAR
-    secondary_threshold = employer[1].threshold * WEEKS_IN_YEAR
+    secondary_threshold = _own_secondary_threshold(simulation, year, class_1)
     earnings = _values(simulation, "ni_class_1_income", year)
     without = earnings - excess
     # A pound clear of each threshold, so float32 rounding cannot move a
@@ -320,9 +365,20 @@ def test_known_cases_cross_each_threshold_and_age_condition():
         True,
         False,
         True,
+        True,
+        False,
+        False,
     ]
     assert crosses(employee[1].threshold)[1]
     assert crosses(secondary_threshold)[2]
+    assert crosses(class_1.thresholds.upper_secondary_threshold)[9]
+    upper_secondary_threshold = class_1.thresholds.upper_secondary_threshold
+    assert without[10] > secondary_threshold * WEEKS_IN_YEAR
+    assert earnings[10] < upper_secondary_threshold * WEEKS_IN_YEAR
+    apprentice_threshold = class_1.thresholds.apprentice_upper_secondary_threshold
+    assert simulation.calculate("is_apprentice", year)[11]
+    assert without[11] > secondary_threshold * WEEKS_IN_YEAR
+    assert earnings[11] < apprentice_threshold * WEEKS_IN_YEAR
     assert excess[3] > 0
     assert earnings[3] < secondary_threshold * WEEKS_IN_YEAR
     liable = simulation.calculate("ni_liable", year)
