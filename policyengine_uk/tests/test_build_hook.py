@@ -977,7 +977,7 @@ def test_hook_removes_its_directory_even_if_the_build_fails(
     # atexit.register itself also catches the exit hook CPython's
     # weakref.finalize registers the first time any finalizer is made, which
     # the hook's tempfile.TemporaryDirectory does when nothing earlier in the
-    # process has (with filelock 4.2.1, nothing does).
+    # process has made one.
     monkeypatch.setattr(
         hatch_build,
         "atexit",
