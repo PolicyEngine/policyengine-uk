@@ -38,30 +38,35 @@ class marginal_tax_rate_wrt_employer_cost(Variable):
         # values.
         held_responses = held_behavioural_responses(person, period)
         for adult_index in range(1, 1 + adult_count):
-            alt_simulation = simulation.get_branch(
-                f"adult_{adult_index}_employer_cost_mtr"
-            )
-            mask = adult_index_values == adult_index
-            for variable in simulation.tax_benefit_system.variables:
-                variable_data = simulation.tax_benefit_system.variables[variable]
-                if (
-                    variable not in simulation.input_variables
-                    and not variable_data.is_input_variable()
-                ):
-                    alt_simulation.delete_arrays(variable)
-            hold_behavioural_responses(alt_simulation, period, held_responses)
-            alt_simulation.set_input(
-                "employment_income",
-                period,
-                employment_income + mask * step,
-            )
-            alt_person = alt_simulation.person
-            new_net = alt_person.household("household_net_income", period)
-            new_employer_cost = alt_person("employer_cost", period)
-            net_increase = new_net - baseline_net
-            employer_cost_increase = new_employer_cost - baseline_employer_cost
-            safe_denominator = where(
-                employer_cost_increase != 0, employer_cost_increase, 1
-            )
-            mtr_values += where(mask, 1 - net_increase / safe_denominator, 0)
+            name = f"adult_{adult_index}_employer_cost_mtr"
+            while name in simulation.branches or name == simulation.branch_name:
+                name += "_"
+            alt_simulation = simulation.get_branch(name)
+            try:
+                mask = adult_index_values == adult_index
+                for variable in simulation.tax_benefit_system.variables:
+                    variable_data = simulation.tax_benefit_system.variables[variable]
+                    if (
+                        variable not in simulation.input_variables
+                        and not variable_data.is_input_variable()
+                    ):
+                        alt_simulation.delete_arrays(variable)
+                hold_behavioural_responses(alt_simulation, period, held_responses)
+                alt_simulation.set_input(
+                    "employment_income",
+                    period,
+                    employment_income + mask * step,
+                )
+                alt_person = alt_simulation.person
+                new_net = alt_person.household("household_net_income", period)
+                new_employer_cost = alt_person("employer_cost", period)
+                net_increase = new_net - baseline_net
+                employer_cost_increase = new_employer_cost - baseline_employer_cost
+                safe_denominator = where(
+                    employer_cost_increase != 0, employer_cost_increase, 1
+                )
+                mtr_values += where(mask, 1 - net_increase / safe_denominator, 0)
+            finally:
+                if simulation.branches.get(name) is alt_simulation:
+                    del simulation.branches[name]
         return mtr_values

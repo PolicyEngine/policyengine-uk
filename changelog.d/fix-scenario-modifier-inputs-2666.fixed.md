@@ -1,0 +1,1 @@
+Keep inputs stored by construction-time scenario modifiers through resets and marginal-rate calculations, and clear their stale calculated values so labour supply responses reflect the completed scenario.

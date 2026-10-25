@@ -159,6 +159,30 @@ A sum keeps the timing of each part's modifier. A simulation runs the modifiers 
 
 Beyond simple parameter changes, you sometimes need scenarios that make structural modifications to how the tax-benefit system works. Let's walk through how to create these, using examples similar to those in PolicyEngine UK's scenarios module.
 
+### Setting inputs in a simulation modifier
+
+When you pass a scenario to `Simulation` or `Microsimulation`, its modifier runs
+after data load by default. Values it stores with `set_input` become inputs in
+`simulation.input_variables`. They survive `reset_calculations`, marginal-rate
+branches and `apply_dynamics`, and dataset exports include them as inputs.
+The simulation drops calculated values after the modifier finishes, so later
+calculations use the inputs the modifier left behind. Calculating a variable
+inside the modifier does not make that variable an input.
+Employment marginal-rate calculations also take the completed scenario's
+inputs when the modifier calculated a marginal rate before changing an input.
+
+An input remains fixed when a marginal-rate calculation changes earnings. A
+modifier that adds a fixed amount to Child Benefit therefore keeps that amount
+through the earnings step. For a policy that should vary with earnings, use
+parameter changes or a formula reform; setting its calculated value once cannot
+represent that dependence. This cleanup happens when the constructor runs the
+modifier. Calling a modifier directly, or using `Scenario.apply` on an existing
+simulation, retains those operations' existing behavior.
+
+Modifiers with `applied_before_data_load=True` run before the simulation has its
+data. They can change parameters or model structure at that stage; modifiers
+that read or set household inputs belong after data load.
+
 ### Creating a two-child limit repeal scenario
 
 The two-child limit restricts Universal Credit child elements to the first two children. Here's how to build a scenario that removes this restriction:
