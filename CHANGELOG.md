@@ -1,3 +1,27 @@
+## [2.161.1] - 2026-10-25
+
+### Fixed
+
+- The build-hook test that checks a failed build still removes its directory counts only the hook's own exit registrations, so it no longer fails when it runs before anything else in the process has created a finalizer.
+- Separated Northern Ireland's dated Energy Price Guarantee discounts from Great Britain's calculation; spending-only cases in 2022 and 2023 now return zero subsidy with `ni_epg_subsidy_calculable=false` during supported months. Historical monetary totals remain incomplete for those cases; zero does not establish that no support was due.
+- Assigned lone fathers the OBR lone-parent substitution, income and participation elasticities.
+
+
+## [2.161.0] - 2026-10-25
+
+### Added
+
+- Model the exceptions to the Universal Credit and Child Tax Credit two-child limit (UC Regulations 2013 Schedule 12 and CTC Regulations 2002 regs 9 to 14): multiple births, adoption, non-parental caring arrangements, non-consensual conception and continuation of an earlier exception, as person-level inputs that default to false. Adopted children and children in non-parental care are left out of the Universal Credit order of children, as reg 24B(2A) requires, and a third Child Tax Credit child gets the element when all, or all but one, of the others are adopted or cared for, both from 28 November 2018 (two new dated parameters). Children born on the same day are ordered so the element reaches as many as possible, whatever the exception.
+
+### Changed
+
+- Tested the Housing Benefit child disability premiums with a real pension-age claimant and child, deriving the 2021 cutoff from the claimant.
+
+### Fixed
+
+- Fixed a Pension Credit property test that compared Guarantee Credit pound for pound where it started from zero.
+
+
 ## [2.160.0] - 2026-10-25
 
 ### Added

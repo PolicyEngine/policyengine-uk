@@ -572,12 +572,16 @@ programs:
     full_name: Energy Price Guarantee
     category: Benefits
     agency: Ofgem
-    status: complete
+    status: partial
     coverage: UK
     parameter_prefix: gov.ofgem
     verified_start_year: 2022
     verified_end_year: 2024
-    notes: Temporary program, ended 31 March 2024
+    notes: >-
+      Great Britain support ended 31 March 2024. Northern Ireland general unit
+      discounts ran 1 November 2022 to 30 June 2023; calculations require supplied
+      monthly fuel use, a full-rate applicability assertion and a compatible
+      pre-discount bill. Current microdata lack these inputs.
 
   - id: warm_home_discount
     name: Warm Home Discount
