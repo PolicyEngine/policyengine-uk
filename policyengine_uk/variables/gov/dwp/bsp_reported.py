@@ -8,16 +8,23 @@ class bsp_reported(Variable):
     documentation = (
         "Reported Bereavement Support Payment. Its rates have been frozen "
         "since April 2017 (Bereavement Support Payment Regulations 2017 reg 3, "
-        "held unchanged by each up-rating order). Datasets built so far fill "
-        "this from Family Resources Survey benefit codes 6 (Bereavement "
-        "Support Payment or Widowed Parent's Allowance) and 9 (War Widow's or "
-        "Widower's Pension). Code 9 is most of the value and is uprated by "
-        "CPI, as is Widowed Parent's Allowance, so this variable keeps CPI "
-        "uprating until datasets move code 9 into war_widows_pension_reported "
-        "and Widowed Parent's Allowance into "
-        "widowed_parents_allowance_reported. It should then be frozen (#2381)."
+        "held unchanged by each up-rating order). A dataset that explicitly "
+        "supplies both widowed_parents_allowance_reported and "
+        "war_widows_pension_reported in the same source year "
+        "declares the completed bereavement-benefit split: this input stays "
+        "nominally flat, while the separate allowance and War Widow's Pension "
+        "keep CPI uprating. Legacy datasets can combine Family Resources "
+        "Survey benefit codes 6 and 9 here, so they retain CPI uprating, as do "
+        "household situations. Unclassified amounts that the producer retains "
+        "in the split BSP column also stay flat, understating any CPI-linked "
+        "Widowed Parent's Allowance with inherited additional pension retained "
+        "there. See the dataset-source guide "
+        "and #2381."
     )
     definition_period = YEAR
     unit = GBP
-    reference = "https://www.legislation.gov.uk/uksi/2017/410/regulation/3"
+    reference = (
+        "https://www.legislation.gov.uk/uksi/2017/410/regulation/3",
+        "https://www.legislation.gov.uk/uksi/2026/148/article/19/made",
+    )
     uprating = "gov.economic_assumptions.indices.obr.consumer_price_index"

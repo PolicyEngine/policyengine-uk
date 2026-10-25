@@ -1,3 +1,5 @@
+# Whole age 3 implies a 6 April birthday: universal hours start in September,
+# so two terms receive 190 hours each (or the corresponding usage cap).
 - name: Child under 3 isn't eligible (person-level)
   period: 2024
   input:
@@ -16,7 +18,7 @@
         age: 3
         universal_childcare_entitlement_eligible: True
   output:
-    universal_childcare_entitlement: 3_351.60
+    universal_childcare_entitlement: 2_234.40
 
 # A whole age is the middle of the year of age: born on 6 April 2020, so in
 # reception from September 2024 and funded for the summer term only.
@@ -58,7 +60,7 @@
         age: 3
         universal_childcare_entitlement_eligible: True
   output:
-    universal_childcare_entitlement: 3_351.60
+    universal_childcare_entitlement: 2_234.40
 
 - name: Child aged 4 (eligible)
   period: 2024
@@ -89,7 +91,7 @@
         universal_childcare_entitlement_eligible: True
         max_free_entitlement_hours_used: 10
   output:
-    universal_childcare_entitlement: 2_234.4  # 10 hours * 38 weeks * £5.88 per hour
+    universal_childcare_entitlement: 1_489.60
 
 - name: Child using half of maximum entitlement
   period: 2024
@@ -100,7 +102,7 @@
         universal_childcare_entitlement_eligible: True
         max_free_entitlement_hours_used: 15
   output:
-    universal_childcare_entitlement: 3_351.6  # 15 hours * 38 weeks * £5.88 per hour
+    universal_childcare_entitlement: 2_234.40
 
 - name: Child using exactly maximum entitlement
   period: 2024
@@ -124,7 +126,7 @@
         universal_childcare_entitlement_eligible: True
         max_free_entitlement_hours_used: 20
   output:
-    universal_childcare_entitlement: 3_351.6  # Capped at 15 hours * 38 weeks * £5.88 per hour
+    universal_childcare_entitlement: 2_234.40
 
 # DfE's statutory guidance (April 2026, footnotes 7 and 17, paras A4.8 and
 # C.6): a child in a state-funded or council-funded reception class is "not

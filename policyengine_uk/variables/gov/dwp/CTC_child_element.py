@@ -8,6 +8,7 @@ class CTC_child_element(Variable):
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 9"
     unit = GBP
+    defined_for = "is_CTC_eligible"
 
     def formula(benunit, period, parameters):
         person = benunit.members

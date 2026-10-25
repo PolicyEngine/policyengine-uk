@@ -5,7 +5,10 @@
 consumption*: the `vat` variable applies `gov.hmrc.vat.standard_rate` and
 `gov.hmrc.vat.reduced_rate` to each household's standard- and reduced-rate
 spending (`full_rate_vat_consumption`, `reduced_rate_vat_consumption`), then
-grosses the result up to VAT receipts. There is no business side. This page
+grosses the result up to VAT receipts. VAT on the household's own electricity
+and gas bills (`domestic_energy_vat`, at `gov.hmrc.vat.domestic_electricity_rate`
+and `gov.hmrc.vat.reduced_rate`) is added once, without the gross-up. There is
+no business side. This page
 sets out the scope for adding firm-level VAT and a `Firm` entity, tracked in
 [#1320](https://github.com/PolicyEngine/policyengine-uk/issues/1320), which is
 still open (October 2026). The companion analysis issue,

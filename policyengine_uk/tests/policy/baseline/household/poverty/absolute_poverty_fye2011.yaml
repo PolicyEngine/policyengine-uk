@@ -1,0 +1,76 @@
+- name: FYE 2025 (2024) thresholds on the FYE 2011 reference are 60% of the FYE 2011 median in 2024/25 prices
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    households:
+      household:
+        members: [person]
+  output:
+    # HBAI FYE 2025 table 1.2b, 2010/11 median in 2024/25 prices: BHC
+    # 634.6141, so 0.6 x 634.6141 = 380.77 a week, x 52 = 19,800.04; AHC
+    # 536.4494, so 321.87 a week, x 52 = 16,737.24.
+    poverty_threshold_fye2011_bhc: 19_800.04
+    poverty_threshold_fye2011_ahc: 16_737.24
+    # HBAI's current lines for comparison: 431.69 x 52 and 373.89 x 52.
+    poverty_threshold_bhc: 22_447.88
+    poverty_threshold_ahc: 19_442.28
+
+- name: In FYE 2025 (2024) income between the two lines is in absolute poverty on the FYE 2025 line but not on the FYE 2011 line
+  period: 2024
+  input:
+    people:
+      person:
+        age: 40
+    households:
+      household:
+        members: [person]
+        # Between 19,800.04 and 22,447.88 (BHC) and between 16,737.24 and
+        # 19,442.28 (AHC).
+        equiv_hbai_household_net_income: 21_000
+        equiv_hbai_household_net_income_ahc: 18_000
+  output:
+    in_poverty_bhc: true
+    in_absolute_poverty_fye2011_bhc: false
+    in_poverty_ahc: true
+    in_absolute_poverty_fye2011_ahc: false
+
+- name: In FYE 2025 (2024) income below both lines is in absolute poverty on both
+  period: 2024
+  input:
+    people:
+      person:
+        age: 40
+    households:
+      household:
+        members: [person]
+        equiv_hbai_household_net_income: 19_000
+        equiv_hbai_household_net_income_ahc: 16_000
+  output:
+    in_poverty_bhc: true
+    in_absolute_poverty_fye2011_bhc: true
+    in_poverty_ahc: true
+    in_absolute_poverty_fye2011_ahc: true
+
+- name: FYE 2021 (2020) is on the FYE 2011 reference in both measures, so the flags agree
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    households:
+      household:
+        members: [person]
+        # AHC line 259.01 x 52 = 13,468.52; BHC 301.34 x 52 = 15,669.68.
+        equiv_hbai_household_net_income: 15_500
+        equiv_hbai_household_net_income_ahc: 13_500
+  output:
+    poverty_threshold_fye2011_bhc: 15_669.68
+    poverty_threshold_fye2011_ahc: 13_468.52
+    in_poverty_bhc: true
+    in_absolute_poverty_fye2011_bhc: true
+    in_poverty_ahc: false
+    in_absolute_poverty_fye2011_ahc: false

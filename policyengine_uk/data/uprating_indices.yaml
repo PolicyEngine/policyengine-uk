@@ -35,11 +35,10 @@ gov.economic_assumptions.yoy_growth.obr.consumer_price_index:
 - alcohol_and_tobacco_consumption
 - bus_fare_spending
 - bus_fare_spending_reported
-# bsp_reported still holds FRS code 9 (War Widow's Pension, CPI-uprated) and
-# the Widowed Parent's Allowance in code 6 (CPI-uprated) as well as
-# Bereavement Support Payment, whose rates are frozen. It moves off this index
-# once datasets put code 9 in war_widows_pension_reported and Widowed
-# Parent's Allowance in widowed_parents_allowance_reported (#2381).
+# Legacy bsp_reported can include War Widow's Pension and Widowed Parent's
+# Allowance, so it retains CPI here. The projector holds it flat when the
+# source person table supplies both widowed_parents_allowance_reported and
+# war_widows_pension_reported. The separate benefits still grow by CPI (#2381).
 - bsp_reported
 - carers_allowance_reported
 - child_benefit_reported

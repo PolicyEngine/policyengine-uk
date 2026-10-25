@@ -18,6 +18,42 @@ Use programme-specific terminology where it matters rather than mechanically
 replacing every “allowance” with “disregard”. A reviewer must check that the prose
 matches the parameter and its sources. An acronym search cannot establish that.
 
+## Labels and descriptions
+
+Use `metadata.label` as a concise noun phrase in sentence case that names the quantity.
+Capitalise the first word, preserve capitals in programme proper names and
+acronyms, and use lowercase for other ordinary words. For example, change
+`capital limit` to `Capital limit`; retain `Universal Credit standard allowance`.
+Use `description` to explain the quantity's purpose without relying on the
+parameter path. Include the programme name and relevant scope when the short
+label leaves them unclear.
+
+These wording examples illustrate the distinction without defining policy rules:
+
+```yaml
+metadata:
+  label: Capital limit
+description: Capital limit used to assess eligibility for the example programme.
+```
+
+```yaml
+metadata:
+  label: Earnings disregard
+description: Amount of earnings excluded from the income assessment for the example programme.
+```
+
+Start an amount, rate or threshold description with the quantity and explain its
+role. Use a complete sentence when it explains an action or condition more
+clearly. End either form with a period. Avoid padding a repeated label with
+"is" or extra words that add no meaning.
+
+Keep the label stable when improving a description. Do not rename a parameter
+or change its meaning to make the prose fit a template. Retain established
+programme terminology, necessary qualifications and modelling approximations;
+additional sentences can explain them. Review the meaning against the parameter
+and its sources rather than enforcing one grammatical template across every
+programme. Labels do not need a trailing period.
+
 ## Automated checks
 
 `policyengine_uk/tests/test_parameter_descriptions.py` checks top-level metadata:
