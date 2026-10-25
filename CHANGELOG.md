@@ -1,3 +1,10 @@
+## [2.162.0] - 2026-10-25
+
+### Added
+
+- Added the Housing Benefit special standard earnings disregard with regime-specific qualifying routes, explicit residual pre-assessment and no stacking with ordinary amounts.
+
+
 ## [2.161.2] - 2026-10-25
 
 ### Fixed
