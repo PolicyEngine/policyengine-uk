@@ -1,3 +1,11 @@
+## [2.157.1] - 2026-10-25
+
+### Fixed
+
+- - Charge VAT at the standard rate on private school fees from 1 January 2025 (Finance Act 2025 ss.47 and 49), through the new `gov.hmrc.vat.private_school_fees_exempt` parameter. The contributed rate `gov.contrib.labour.private_school_vat` now raises the rate rather than adding to it, so reforms that set it to 20% score nothing from 2025. Household taxes include private school VAT as a change from baseline (`private_school_vat_change`), as they do VAT; government tax revenue includes the level.
+  - Allocate school-fee VAT out of receipt-calibrated general VAT before counting it separately: general VAT is gross VAT less private school fees' official share of VAT receipts (new parameter `gov.simulation.vat.private_school_share_of_receipts`, HMRC's OBR-certified costing over OBR VAT receipts). No household's general VAT is made negative, school-specific reforms move only private school VAT, and standard-rate reforms move each head once.
+
+
 ## [2.157.0] - 2026-10-25
 
 ### Added
