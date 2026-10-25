@@ -917,3 +917,85 @@ def test_split_bsp_isa_and_energy_share_reset_and_projection_boundaries():
             pd.testing.assert_frame_equal(
                 getattr(dataset, table), getattr(original, table)
             )
+
+
+@pytest.mark.parametrize(
+    "contract", [LEGACY, ADDITIVE], ids=["legacy-gross", "additive"]
+)
+@pytest.mark.parametrize(
+    "isa_column, ordinary_column, supplied",
+    [
+        ("individual_savings_account_dividend_income", "dividend_income", 300),
+        ("non_cash_isa_cash_interest", "savings_interest_income", 100),
+    ],
+    ids=["isa-dividend", "noncash-interest"],
+)
+def test_new_isa_columns_follow_ordinary_dataset_projection_in_both_contracts(
+    contract, isa_column, ordinary_column, supplied
+):
+    """Both sides of the 2030 map boundary use the ordinary dataset indices.
+
+    Ordinary interest and ISA interest together start at 2000 on either
+    contract. Legacy projection grows gross interest before subtracting the
+    unchanged 500 exemption; additive projection grows ordinary 1500 and
+    exempt 500 separately. The noncash 100 is already included in that 500.
+    Ordinary dividends 200 and separate ISA dividends 300 complete the cash
+    total 2500. A benchmark with only the ordinary counterpart independently
+    checks the new columns without populating the projection map for them.
+    """
+    projection = Scenario(
+        parameter_changes={
+            GDP_GROWTH: {f"year:{year}-01-01:1": 0.1 for year in range(2026, 2033)}
+        },
+        applied_before_data_load=True,
+    )
+    source = single(
+        contract=contract,
+        savings_interest_income=2_000 if contract == LEGACY else 1_500,
+        individual_savings_account_interest_income=500,
+        dividend_income=200,
+        individual_savings_account_dividend_income=300,
+        non_cash_isa_cash_interest=100,
+    )
+    original = source.copy()
+    benchmark_source = single(contract=ADDITIVE, **{ordinary_column: supplied})
+    benchmark_original = benchmark_source.copy()
+    simulation = Simulation(dataset=source, scenario=projection)
+    benchmark = Simulation(dataset=benchmark_source, scenario=projection)
+
+    for year in (2025, 2028, 2030, 2031, 2032):
+        factor = 1.1 ** (year - 2025)
+        ordinary = value(benchmark, ordinary_column, year)
+        assert ordinary == pytest.approx(supplied * factor, abs=0.01)
+        assert value(simulation, isa_column, year) == pytest.approx(ordinary, abs=0.01)
+        if year > 2025:
+            assert ordinary > supplied
+        exempt = 500 if contract == LEGACY else 500 * factor
+        ordinary_interest = (
+            2_000 * factor - exempt if contract == LEGACY else 1_500 * factor
+        )
+        assert value(
+            simulation, "individual_savings_account_interest_income", year
+        ) == (pytest.approx(exempt, abs=0.01))
+        assert value(simulation, "tax_free_savings_income", year) == pytest.approx(
+            exempt, abs=0.01
+        )
+        assert value(simulation, "savings_interest_income", year) == pytest.approx(
+            ordinary_interest, abs=0.01
+        )
+        assert value(simulation, "taxable_savings_interest_income", year) == (
+            pytest.approx(ordinary_interest, abs=0.01)
+        )
+        assert value(simulation, "taxable_dividend_income", year) == pytest.approx(
+            200 * factor, abs=0.01
+        )
+        assert value(simulation, "capital_income", year) == pytest.approx(
+            2_500 * factor, abs=0.01
+        )
+
+    for actual, before in ((source, original), (benchmark_source, benchmark_original)):
+        assert actual.isa_income_contract == before.isa_income_contract
+        for table in ("person", "benunit", "household"):
+            pd.testing.assert_frame_equal(
+                getattr(actual, table), getattr(before, table)
+            )

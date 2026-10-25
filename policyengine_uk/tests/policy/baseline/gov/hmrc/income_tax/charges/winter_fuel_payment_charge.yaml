@@ -656,6 +656,7 @@
         private_pension_income: 34_000
         savings_interest_income: 500
         individual_savings_account_interest_income: 1_500
+        # An explicit exemption equal to total ISA interest is consistent.
         tax_free_savings_income: 1_500
     benunits:
       unit:
