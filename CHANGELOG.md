@@ -1,3 +1,15 @@
+## [2.158.3] - 2026-10-25
+
+### Changed
+
+- Clarified bottled gas coverage and ONS levelling requirements for liquid and solid heating fuel inputs.
+
+### Fixed
+
+- Held reported Bereavement Support Payment flat for datasets supplying both separate bereavement-benefit inputs, while preserving CPI uprating for legacy and partial splits and the separate pensions.
+- Corrected England outside London's bus fare yield to exclude only older and disabled concessionary journeys, and refitted the cap-savings table using the same priced boardings.
+
+
 ## [2.158.2] - 2026-10-25
 
 ### Changed
