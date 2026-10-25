@@ -1,0 +1,96 @@
+description: The Childcare Offer for Wales counts these income sources as a parent's gross income for its £100,000 limit.
+metadata:
+  unit: list
+  period: year
+  label: Childcare Offer for Wales gross income sources
+  reference:
+    - title: Welsh Government, The Childcare Offer for Wales, Assessing parents' income to determine eligibility for the Offer, version 1 (July 2020), questions 8 and 9
+      href: https://www.gov.wales/sites/default/files/publications/2023-04/atisn17333doc1.pdf#page=7
+    - title: Welsh Government, Childcare Offer for Wales guidance for local authorities, version 8.3 (April 2026), paragraph 69
+      href: https://www.gov.wales/sites/default/files/publications/2026-04/childcare-offer-for-wales-guidance-for-local-authorities-april-2026-english_0.pdf#page=18
+values:
+  # Question 8: the test "takes all income into account, whether from work or
+  # from investments held", and the per-person limit aligns with Tax-Free
+  # Childcare's. Question 9: earned income before tax and payslip deductions,
+  # and unearned income such as dividends, rental income, maintenance allowance,
+  # guardianship allowance and interest. Paragraph 69: gross income is before
+  # any deductions, including pension contributions and salary sacrifice
+  # schemes.
+  #
+  # The sources are listed one by one rather than through total_income, an
+  # income tax aggregate, so that none counts twice (no listed source adds
+  # another; test_wales_childcare_offer_income_sources.py checks this):
+  # - employment_income is cash pay, so statutory sick, maternity and paternity
+  #   pay (employment_benefits) and salary and bonus sacrifice
+  #   (pension_contributions_via_salary_sacrifice_from_pay) are added back;
+  # - maintenance is in two inputs, child (maintenance_income) and spousal
+  #   (spousal_maintenance_income);
+  # - benefits count as unearned income, taxed or not: question 9 names
+  #   guardianship allowance, read as Guardian's Allowance, which is untaxed
+  #   (and not modelled), and the all-income wording of questions 8 and 9
+  #   supports the reading without it. Taxable ones are in
+  #   social_security_income; the untaxed non-means-tested person-level ones
+  #   are listed below (with Bereavement Support Payment and the Winter Fuel
+  #   Payment). Benefits paid to the benefit unit (Child Benefit, Universal
+  #   Credit, tax credits, Housing Benefit and the legacy income-related
+  #   benefits) are in benunit_gross_income_sources, shared between the
+  #   parents;
+  # - rental income (question 9) includes subletting (sublet_income). The
+  #   survey data puts subletting in property_income and leaves sublet_income
+  #   at zero, so sublet_income counts only when entered; rent entered in both
+  #   inputs counts twice;
+  # - other cash a parent receives counts: private transfers, and student and
+  #   further-education support paid as income (Adult EMA, Access Fund,
+  #   education grants). Parents' Learning Allowance and Adult Dependants'
+  #   Grant are listed for completeness, but their formulas are England-only,
+  #   so they are zero for a family in Wales unless entered.
+  #
+  # Not counted: support that reimburses a specific cost or is given in kind
+  # (Childcare Grant, Care to Learn, Travel Grant, Disabled Students'
+  # Allowance, the 16 to 19 Bursary, which the model pays as participation
+  # costs, Healthy Start, the childcare entitlements and Tax-Free Childcare);
+  # one-off grants and lump sums, whether paid to a person (Sure Start
+  # Maternity Grant, lump_sum_income) or to the household (cost of living
+  # payments, the energy rebate, bill credits), because question 10 works out
+  # annual income from regular pay and the bonuses a parent expects, read here
+  # as a test of recurring income (question 9's "all payments" points the
+  # other way); and loans, which are repaid (student_loans).
+  #
+  # Data limits, immaterial near £100,000: for a Welsh student the FRS
+  # education_grants residual can still hold Childcare Grant and Disabled
+  # Students' Allowance, because the dataset moves those out only through
+  # England-only formulas; and the FRS allpay2 amount reaches both
+  # taxable_miscellaneous_income and private_transfer_income
+  # (policyengine-uk-data#627).
+  2019-08-01:
+    - employment_income
+    - employment_benefits
+    - pension_contributions_via_salary_sacrifice_from_pay
+    - self_employment_income
+    - private_pension_income
+    - social_security_income
+    - pip
+    - dla
+    - attendance_allowance
+    - iidb
+    - sda
+    - maternity_allowance
+    - afcs
+    - war_widows_pension
+    - armed_forces_independence_payment
+    - bsp
+    - winter_fuel_payment
+    - private_transfer_income
+    - adult_ema
+    - access_fund
+    - education_grants
+    - parents_learning_allowance
+    - adult_dependants_grant
+    - property_income
+    - sublet_income
+    - savings_interest_income
+    - other_investment_income
+    - dividend_income
+    - taxable_miscellaneous_income
+    - maintenance_income
+    - spousal_maintenance_income

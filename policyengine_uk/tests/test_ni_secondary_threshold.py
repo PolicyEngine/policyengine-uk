@@ -24,12 +24,13 @@ Invariants:
    From 2025-26 the stored value is the annual figure / 52 (5,000 / 52), the
    convention reg 11(3A)(c) uses for multiples of a week. The rounded reg
    10(d) £96 would give £4,992 (#1967).
-3. Differential: in every year except 2022-23, for any Class 1 earnings
-   e >= 0 of an earner aged 21 or over who is not an apprentice,
-   ni_class_1_employer equals rate x max(e - annual ST, 0), computed in exact
-   arithmetic from STATUTORY. 2022-23 is left out: the Health and Social Care
-   Levy raised the secondary percentage to 15.05% from 6 April to 5 November
-   2022, and the rate parameter does not carry it.
+3. Differential: in every year, for any Class 1 earnings e >= 0 of an
+   earner aged 21 or over who is not an apprentice, ni_class_1_employer
+   equals rate x max(e - annual ST, 0), computed in exact arithmetic from
+   STATUTORY. For 2022-23 the s.9(2) percentage at 6 April is 15.05% (Health
+   and Social Care Levy Act 2021 s.5(2)(b)). It applied to earnings paid
+   before 6 November 2022 (Repeal Act 2022 s.2(1)), and the model reads the
+   tax year at 30 April, as for the employee main rate (#1807).
 4. Threshold edge: employer NI is zero just below the annual ST, less than
    half a penny at it, and positive a penny above it. At the ST itself the
    stored 5,000 / 52 (96.153846) annualises to £4,999.999992, so exact
@@ -58,8 +59,8 @@ STATUTORY = {
     2019: (Fraction(166), Fraction(8_632), Fraction(138, 1_000)),
     2020: (Fraction(169), Fraction(8_788), Fraction(138, 1_000)),
     2021: (Fraction(170), Fraction(8_840), Fraction(138, 1_000)),
-    # 15.05% from 6 April to 5 November 2022, then 13.8%.
-    2022: (Fraction(175), Fraction(9_100), None),
+    # 15.05% for earnings paid from 6 April to 5 November 2022, then 13.8%.
+    2022: (Fraction(175), Fraction(9_100), Fraction(1_505, 10_000)),
     2023: (Fraction(175), Fraction(9_100), Fraction(138, 1_000)),
     2024: (Fraction(175), Fraction(9_100), Fraction(138, 1_000)),
     2025: (Fraction(96), Fraction(5_000), Fraction(15, 100)),
@@ -199,5 +200,7 @@ def test_employer_ni_at_the_threshold_edge(year):
 # between £8,060 and £8,112 in 2016-17 were charged.
 @example(year=2025, earnings=[40_000.0, 4_996.0, 5_000.0])
 @example(year=2016, earnings=[8_100.0, 8_112.0, 20_000.0])
+# 2022-23 was charged at 13.8%, not the 15.05% levy rate.
+@example(year=2022, earnings=[30_000.0, 9_100.0, 100_000.0])
 def test_employer_ni_follows_the_statutory_threshold(year, earnings):
     check_employer_ni(year, earnings)

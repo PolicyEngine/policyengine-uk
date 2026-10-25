@@ -6,8 +6,11 @@ and exercise the income step where Guarantee Credit ends.
 
 The structural and boundary properties draw single people and couples aged
 at least 72 without children, carers or other household residents, who rent
-from the council in England in 2026. The schedule property also draws
-younger claimants:
+from the council in England in 2026. A couple's members supply
+is_claimant_or_partner, since the age presumption would read a partner 20 or
+more years younger (72 and 95 are drawn) as the claimant's child. The
+schedule property also draws younger claimants, and reads the model's own
+claimant and partner:
 
 1. Structural: where Housing Benefit is available, its applicable amount is
    at least the Pension Credit minimum guarantee, and so is the Council Tax
@@ -107,6 +110,7 @@ def situation(families):
                 name = f"p{i}_{k}_{j}"
                 person = {
                     "age": {YEAR: a["age"]},
+                    "is_claimant_or_partner": {YEAR: True},
                     "state_pension": {YEAR: a["state_pension"]},
                     # All private pension goes to the first adult.
                     "private_pension_income": {YEAR: float(pension) * (j == 0)},

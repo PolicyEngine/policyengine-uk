@@ -17,4 +17,6 @@ class social_security_income(Variable):
         "carers_allowance",
         "carer_support_payment",
         "scottish_carer_supplement",
+        # ITEPA 2003 s.577(1).
+        "widowed_parents_allowance",
     ]

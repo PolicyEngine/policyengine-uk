@@ -196,7 +196,11 @@ class TestScenarioOverrides:
                 "households": {"household": {"members": ["person"]}},
             },
             scenario=Scenario(
-                parameter_changes={"gov.hmrc.cgt.basic_rate": {"2025": 0.5}}
+                parameter_changes={
+                    "gov.hmrc.cgt.basic_rate": {"2025": 0.5},
+                    # The tax on the gains as given, without the response.
+                    "gov.simulation.capital_gains_responses.elasticity": {"2025": 0},
+                }
             ),
         )
 

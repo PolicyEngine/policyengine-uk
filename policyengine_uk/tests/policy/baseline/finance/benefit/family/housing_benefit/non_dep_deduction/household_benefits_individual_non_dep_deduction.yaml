@@ -1,31 +1,77 @@
+# 2025-26 bands and deductions (HB Regs 2006 reg 74 as up-rated by SI 2025/295
+# art 23(3); DWP Benefit and pension rates 2025 to 2026): under £183 a week
+# 19.65; £183-265.99 45.15; £266-347.99 62.00; £348-462.99 101.35;
+# £463-576.99 115.45; £577 and above 126.65.
+
+- name: The 2018 fiscal year uses the April non-dependant deduction in HB and CTR
+  # SI 2018/281 arts 23(3)(b), 24(3)(b), and 1(2)(h): £15.25 from
+  # 2 April for weekly rent (1 April otherwise), before the 30 April sample.
+  period: 2018
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    council_tax_reduction_individual_non_dep_deduction_eligible: true
+    total_income: 5_200 # £100 a week
+  output:
+    household_benefits_individual_non_dep_deduction: 793
+    council_tax_reduction_individual_non_dep_deduction: 793
+
 - name: Reduced rent without LHA
   period: 2025
   input:
     housing_benefit_individual_non_dep_deduction_eligible: true
     total_income: 5_200 # 100 weekly
   output:
-    household_benefits_individual_non_dep_deduction: 19.3 * 52
+    household_benefits_individual_non_dep_deduction: 19.65 * 52
 
 - name: Higher amount
   period: 2025
   input:
     housing_benefit_individual_non_dep_deduction_eligible: true
-    total_income: 28_912 # 556 weekly
+    total_income: 30_056 # 578 weekly
   output:
-    household_benefits_individual_non_dep_deduction: 124.55 * 52
+    household_benefits_individual_non_dep_deduction: 126.65 * 52
 
 - name: Middle amount
   period: 2025
   input:
     housing_benefit_individual_non_dep_deduction_eligible: true
-    total_income: 17_420 # 335 weekly
+    total_income: 18_148 # 349 weekly
   output:
-    household_benefits_individual_non_dep_deduction: 99.65 * 52
+    household_benefits_individual_non_dep_deduction: 101.35 * 52
 
-- name: Exclusive brackets
+- name: Income just above the lower edge of the second band
+  # Passes whether band edges are read inclusively (reg 74(2)) or, as the
+  # formula still does, exclusively; see #2004 and #2007.
   period: 2025
   input:
     housing_benefit_individual_non_dep_deduction_eligible: true
-    total_income: 9_153 # 176 weekly
+    total_income: 9_517 # just over 183 weekly, the lower edge of the second band
   output:
-    household_benefits_individual_non_dep_deduction: 44.4 * 52
+    household_benefits_individual_non_dep_deduction: 45.15 * 52
+
+# Other investment income counts in total_income (ITA 2007 s. 23), but it is
+# left out of the non-dependant band until the reg 74(2) remunerative-work
+# test is modelled (#2007). Otherwise a non-worker whose only income is
+# investment income would be banded on it, where reg 74(1)(b) gives them the
+# minimum whatever their income.
+- name: Other investment income does not band a non-worker
+  period: 2025
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    other_investment_income: 28_912 # 556 weekly, no hours
+  output:
+    # The same as a non-dependant with no income. Banding the £556 would give
+    # 115.45 * 52 = 6,003.40.
+    household_benefits_individual_non_dep_deduction: 0
+
+- name: Other investment income does not move a worker's band
+  period: 2025
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    hours_worked: 1_950 # 37.5 hours a week
+    employment_income: 9_517 # just over 183 weekly
+    other_investment_income: 28_912 # 556 weekly
+  output:
+    # Banded on the £183 of earnings: 45.15 * 52 = 2,347.80. Adding the £556
+    # would give the top band, 126.65 * 52 = 6,585.80.
+    household_benefits_individual_non_dep_deduction: 45.15 * 52

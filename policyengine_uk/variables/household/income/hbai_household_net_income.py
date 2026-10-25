@@ -9,10 +9,14 @@ HBAI_HOUSEHOLD_NET_INCOME_ADDS = [
     "savings_interest_income",
     "dividend_income",
     "miscellaneous_income",
-    "property_income",
+    # Landlords' profit after mortgage interest: HBAI uses FRS rent from
+    # property, reported after the mortgage payments and loan interest on
+    # show card K6. property_income is before those finance costs.
+    "property_income_after_finance_costs",
     "private_pension_income",
     "private_transfer_income",
     "maintenance_income",
+    "spousal_maintenance_income",
     "free_school_meals",
     "free_school_fruit_veg",
     "free_school_milk",
@@ -32,6 +36,8 @@ HBAI_HOUSEHOLD_NET_INCOME_ADDS = [
     "attendance_allowance",
     "afcs",
     "bsp",
+    "war_widows_pension",
+    "widowed_parents_allowance",
     "carers_allowance",
     "dla",
     "iidb",
@@ -42,14 +48,19 @@ HBAI_HOUSEHOLD_NET_INCOME_ADDS = [
     "maternity_allowance",
     "statutory_sick_pay",
     "statutory_maternity_pay",
+    "statutory_paternity_pay",
     "ssmg",
     "cost_of_living_support_payment",
     "winter_fuel_allowance",
+    "pawhp",
     "tax_free_childcare",
     "healthy_start_vouchers",
     "scottish_child_payment",
     "carer_support_payment",
     "scottish_carer_supplement",
+    # HBAI classifies the Warm Home Discount as miscellaneous income:
+    # https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2025/households-below-average-income-background-information-and-methodology-report-fye-2025
+    "warm_home_discount",
     # Reference for tax-free-childcare: https://assets.publishing.service.gov.uk/media/5e7b191886650c744175d08b/households-below-average-income-1994-1995-2018-2019.pdf
 ]
 
@@ -59,6 +70,8 @@ HBAI_HOUSEHOLD_NET_INCOME_SUBTRACTS = [
     "income_tax",
     "national_insurance",
     "student_loan_repayments",
+    # Self-employment losses count as negative income in HBAI.
+    "trading_loss",
     "employee_pension_contributions",
     "personal_pension_contributions",
     "maintenance_expenses",
@@ -71,22 +84,21 @@ class hbai_household_net_income(Variable):
     value_type = float
     entity = Household
     label = "Household net income (HBAI definition)"
-    documentation = "Disposable income for the household, following the definition used for official poverty statistics"
+    documentation = (
+        "Disposable income for the household before housing costs, following "
+        "the definition used for official poverty statistics. As in HBAI, a "
+        'negative income is reset to zero ("Negative incomes BHC are reset to '
+        'zero"), so this is never negative; the figure before the reset is '
+        "hbai_household_net_income_before_reset_to_zero. Income after housing "
+        "costs is derived from this reset figure and can be negative."
+    )
     unit = GBP
     definition_period = YEAR
+    reference = "https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2025/households-below-average-income-background-information-and-methodology-report-fye-2025#negative-incomes"
 
     def formula(household, period, parameters):
-        abolish_council_tax = parameters.gov.contrib.abolish_council_tax(period)
-        if abolish_council_tax:
-            adds = [
-                a for a in HBAI_HOUSEHOLD_NET_INCOME_ADDS if a != "council_tax_benefit"
-            ]
-            subtracts = [
-                s for s in HBAI_HOUSEHOLD_NET_INCOME_SUBTRACTS if s != "council_tax"
-            ]
-            return add(household, period, adds) - add(household, period, subtracts)
-        return add(household, period, HBAI_HOUSEHOLD_NET_INCOME_ADDS) - add(
-            household, period, HBAI_HOUSEHOLD_NET_INCOME_SUBTRACTS
+        return max_(
+            0, household("hbai_household_net_income_before_reset_to_zero", period)
         )
 
 

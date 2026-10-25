@@ -17,7 +17,8 @@ requirements.
 
 ## Required Changelog Fragment
 
-Every PR must include a Towncrier changelog fragment under `changelog.d/`.
+Every PR must include a Towncrier changelog fragment under `changelog.d/`,
+except for a dependency-only update as defined below.
 
 Use a stable issue number or branch slug before the configured Towncrier type:
 
@@ -40,19 +41,100 @@ changelog.d/1748.added.md
 changelog.d/1748.fixed.md
 ```
 
-Write the fragment as a short bullet describing the user-visible or maintainer
-visible change:
+towncrier writes a fragment to `CHANGELOG.md` only when its name carries one of
+these types. It never reads, and never deletes, a file without one, such as
+`changelog.d/1748.md`, and it leaves an empty fragment out.
+`.github/bump_version.py` counts only the fragments towncrier consumes, so such
+a file never triggers a release. The **Changelog fragments** check
+(`.github/workflows/pr_changelog.yaml`, which runs
+`.github/check_changelog_fragments.py`) fails a PR that adds or changes a file
+in `changelog.d/` that is not named `<slug>.<type>.md`, is empty, is not UTF-8,
+is a symbolic link, sits in a subdirectory, or shares towncrier's key with
+another fragment (such as `7.fixed.md` and `007.fixed.md`, which stops the
+release). It also fails a PR that changes `pyproject.toml` or `changelog.d/`
+when its merge would leave no typed fragment, except for dependency-only
+updates. It warns when a PR adds no fragment or a fragment starts with a list
+marker.
+
+A dependency-only update may omit a fragment when its entire diff changes only
+`uv.lock` and/or dependency declarations in `pyproject.toml`: `project.dependencies`,
+`project.optional-dependencies`, `build-system.requires` or `dependency-groups`.
+Every other parsed TOML value must stay the same, and a manifest edit must change
+an actual dependency value. Deletions, renames, file mode/type changes, mixed code
+changes and version/build-backend/Towncrier changes do not qualify. The check
+uses the same semantic diff for every author and for merge queue groups, without
+skipping validation of any added fragment. When no typed fragments remain,
+`prepare_release.py` safely skips versioning; dependency updates do not cause an
+empty release.
+
+Write the fragment as a short sentence describing the user-visible or
+maintainer-visible change. towncrier adds the bullet itself, so do not start
+with `- `; that renders as `- - ` in `CHANGELOG.md`:
 
 ```markdown
-- Added model-agnostic AI engineering guidance for UK model work.
+Added model-agnostic AI engineering guidance for UK model work.
 ```
 
-The versioning workflow runs on pushes to `main` that touch `changelog.d/**` or
-`pyproject.toml`. It runs `.github/bump_version.py`, then `towncrier build`.
+The release workflow (`.github/workflows/versioning.yaml`) runs on pushes to
+`main` that touch `changelog.d/**` or `pyproject.toml`. It makes the version
+commit on the latest `main` with `.github/bump_version.py` and `towncrier build`,
+builds the wheel and sdist once from that commit, and runs the full test suite
+on the installed wheel. It publishes those same files to PyPI only if every
+check passed, then tags the version commit.
 Do not manually edit `CHANGELOG.md` or bump `pyproject.toml` in an ordinary PR
 unless the user or maintainer explicitly asks. The type controls the inferred
 version bump: `breaking` is major, `added` and `removed` are minor, and other
 types are patch.
+
+## Fix evidence
+
+The **Fix evidence** pull request check applies when a PR adds, modifies or
+type-changes a fixed fragment directly in `changelog.d/`, or has the `bug` or
+`bug-fix` label. A fragment counts as fixed when its basename has `fixed` in
+any dot-separated part after the first, including `x.fixed.md`, `x.fixed.1.md`,
+`x.fixed.md.md` and `x.fixed`. Use the canonical fragment naming convention
+above when writing new fragments. A fix PR must add, modify or type-change an
+executable test under `policyengine_uk/tests/` and name its reproducer in the
+PR description:
+
+```text
+Reproducer: policyengine_uk/tests/path/to/test_file.py::test_name
+```
+
+Accepted ids are pytest node ids (`file.py::test_name` or
+`file.py::TestClass::test_name`) and YAML policy tests under
+`policyengine_uk/tests/policy/` (`file.yaml` or `file.yaml::test name`, also
+accepting `.yml`). Each named file must be added, modified or type-changed in
+the PR. Python files must match `test_*.py` or `*_test.py`, and names must
+resolve to module-level functions starting with `test`, or methods starting
+with `test` in module-level classes starting with `Test`. Such a class may
+derive only from `object` or `unittest.TestCase` (also as `TestCase` imported
+from `unittest`) and may not define `__init__` or `__new__`. A module or class
+whose `__test__` is anything but `True`, a test or class whose `__test__`
+attribute is set after it is defined, a fixture, and definitions nested in
+functions or conditional blocks are excluded. The reproducer must run and
+pass: a `skip` or `xfail` mark, or unittest's `skip` or `expectedFailure`, on
+it, its class or its module (`pytestmark`) is rejected. A `skipif` (or
+unittest `skipIf`/`skipUnless`) condition must let the reproducer run in CI,
+and the test must not skip itself at run time (`pytest.skip`,
+`pytest.importorskip`), which the check cannot see. A test marked
+`microsimulation` runs only where the dataset is available, which includes
+merge-queue and main runs. The check reads test files statically, so it
+catches mistakes, not deliberate evasion; reviewers still read the test. YAML files must parse to a non-empty list with at
+least one mapping containing a string `name` and a non-empty `output` mapping;
+a named YAML reproducer must match such a mapping exactly.
+Separate multiple ids with commas or semicolons. Backticks around each id
+are optional; use them when a name or reason contains these separators.
+Reproducer lines inside HTML comments are ignored.
+
+For CI/docs-only fixes, use `Reproducer: n/a: <reason>` with a non-empty reason.
+This exempts the PR from changing a test only when no file under
+`policyengine_uk/` outside `policyengine_uk/tests/` is added, modified,
+type-changed or deleted, and neither `pyproject.toml` nor `uv.lock` changes.
+Dependency changes can change model results, so they also require a test.
+The workflow runs the trusted base-branch checker and reads test files from
+the PR head's git objects, rejecting symlinked test paths. It validates the
+named reproducer without running PR code or testing against the old code.
 
 ## Required Axiom Line
 

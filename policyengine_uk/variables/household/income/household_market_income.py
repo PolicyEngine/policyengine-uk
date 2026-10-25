@@ -9,10 +9,12 @@ HOUSEHOLD_MARKET_INCOME_VARIABLES = [
     "savings_interest_income",
     "dividend_income",
     "miscellaneous_income",
-    "property_income",
+    # Landlords' profit after mortgage interest, as in HBAI income.
+    "property_income_after_finance_costs",
     "private_pension_income",
     "private_transfer_income",
     "maintenance_income",
+    "spousal_maintenance_income",
     "capital_gains",
 ]
 
@@ -26,6 +28,9 @@ class household_market_income(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        total = add(person, period, HOUSEHOLD_MARKET_INCOME_VARIABLES)
+        # Trading losses are negative self-employment income.
+        total = add(person, period, HOUSEHOLD_MARKET_INCOME_VARIABLES) - add(
+            person, period, ["trading_loss"]
+        )
         contrib = parameters(period).gov.contrib.policyengine.economy.gdp_per_capita
         return total * (contrib + 1)

@@ -23,8 +23,8 @@ liability, ND the non-dependant deductions and A the applicable amount:
    nothing otherwise.
 4. Differential: everyone else keeps the previous formula, max(0, L - 0.2 x
    max(0, I - A) - ND) when household savings are within 16,000, where I is the
-   income definition on main before this change less the schemes' pensioner
-   earnings disregard, both recomputed here (the income from its components,
+   income definition on main before this change less pensioners' Child Benefit
+   and the schemes' pensioner earnings disregard, recomputed here (income from its components,
    the disregard from the statutory sums) rather than read from the variables
    under test.
 5. Metamorphic: a guarantee credit recipient's CTR does not change when the
@@ -206,8 +206,6 @@ def situation(
         claim_pc = unit["would_claim_pc"] if would_claim_pc is None else would_claim_pc
         benunit = {
             "members": names,
-            # claims_all_entitled_benefits sums reported benefits across the
-            # whole simulation, so set it for every family.
             "claims_all_entitled_benefits": {YEAR: True},
             "would_claim_pc": {YEAR: claim_pc},
             "would_claim_uc": {YEAR: unit.get("would_claim_uc", False)},
@@ -264,7 +262,8 @@ BENUNIT_VARIABLES = [
 # council_tax_reduction_applicable_income on main before this change (1c5b4d04):
 # these incomes and benefits, less income tax, National Insurance and half of
 # pension contributions, floored at zero. Since #2033, a pensioner family's
-# earnings disregard also comes off before the floor.
+# earnings disregard also comes off before the floor. These GB families now
+# exclude Child Benefit on the pensioner general-rules route as well.
 MAIN_INCOME_COMPONENTS = [
     "employment_income",
     "self_employment_income",
@@ -285,7 +284,10 @@ MAIN_INCOME_COMPONENTS = [
     "esa_income",
     "universal_credit",
 ]
-MAIN_DEDUCTIONS = ["income_tax", "national_insurance"]
+# The means tests deduct income tax before the winter fuel payment charge
+# (ITEPA 2003 s.681I), which recovers a payment rather than taxing the income
+# they assess. A pensioner over £35,000 of total income is charged it.
+MAIN_DEDUCTIONS = ["income_tax_before_winter_fuel_payment_charge", "national_insurance"]
 # The pensioner earnings disregards in 2026, written out from the law, not
 # read from the parameters: £25 a week for a lone parent, £10 with a partner,
 # £5 otherwise, plus £17.10 (SI 2012/2885 Sch 4 paras 2, 8 and 10; WSI
@@ -362,6 +364,11 @@ def calculate(units, guarantee=None, **kwargs):
     values["income_under_main_definition"] = np.maximum(
         0,
         benunit_total(MAIN_INCOME_COMPONENTS)
+        - np.where(
+            values["council_tax_reduction_pensioner"],
+            benunit_total(["child_benefit"]),
+            0,
+        )
         - benunit_total(MAIN_DEDUCTIONS)
         - 0.5 * benunit_total(["pension_contributions"])
         - pensioner_earnings_disregard(sim, claimants),
@@ -509,6 +516,34 @@ def test_not_claiming_pension_credit_never_raises_a_recipients_ctr(units, guaran
                 not_claiming["simulated_council_tax_reduction_benunit"][i]
                 <= claiming["simulated_council_tax_reduction_benunit"][i] + 0.01
             ), unit
+
+
+def test_ctr_income_deducts_tax_before_the_winter_fuel_payment_charge():
+    """A pensioner with £39,500 of total income is charged the winter fuel
+    payment (ITEPA 2003 s.681I) through income tax. CTR deducts the tax
+    before the charge, so the routes agree with the main definition."""
+    family = dict(
+        shape="single_pension",
+        ages=[70],
+        country="ENGLAND",
+        council_tax=4_000.0,
+        savings=0.0,
+        other_property=0.0,
+        state_pension=25_000.0,
+        private_pension=5_000.0,
+        employment_income=0.0,
+        self_employment_income=0.0,
+        property_income=5_000.0,
+        carers_allowance=4_500.0,
+        child_ages=[],
+        would_claim_uc=False,
+        would_claim_pc=True,
+        non_dependant_income=None,
+    )
+    data, _ = situation([family])
+    sim = Simulation(situation=data)
+    assert sim.calculate("winter_fuel_payment_charge", YEAR).sum() > 0
+    check_routes([family], calculate([family]))
 
 
 def test_savings_credit_only_award_counts_the_frozen_savings_credit():

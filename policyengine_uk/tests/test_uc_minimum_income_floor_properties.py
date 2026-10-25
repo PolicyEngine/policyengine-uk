@@ -12,7 +12,9 @@ partner's earned income would exceed that threshold (reg. 62(3)).
 
 Invariants, for any generated population of single people, couples,
 couples with an older partner aged 65 to 80 (mixed-age once past State
-Pension age) and couples with an adult child in their benefit unit, with
+Pension age) and couples with an adult child in their benefit unit (the
+drawn adults supply is_claimant_or_partner: true for the couple, false for
+the adult child and children), with
 employment, self-employment profits and losses, pension contributions and
 start-up periods, in England, Wales and Scotland:
 
@@ -61,9 +63,10 @@ PROPERTY_SETTINGS = settings(
     derandomize=True,
     suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large],
 )
-# 2020 has 12% Class 1 NI and the temporary UC uplift; 2026 current rates;
-# 2027 the Finance Act 2026 rates.
-YEARS = [2020, 2026, 2027]
+# 2019 has 53 Class 2 contribution weeks; 2020 has 12% Class 1 NI and the
+# temporary UC uplift; 2022 and 2023 have the Class 2 lower profits
+# threshold; 2026 current rates; 2027 the Finance Act 2026 rates.
+YEARS = [2019, 2020, 2022, 2023, 2026, 2027]
 TENURES = ["RENT_FROM_COUNCIL", "RENT_PRIVATELY", "OWNED_OUTRIGHT"]
 REGIONS = ["LONDON", "NORTH_EAST", "WALES", "SCOTLAND"]
 WORKING_AGE = st.integers(18, 64)
@@ -71,9 +74,11 @@ WORKING_AGE = st.integers(18, 64)
 # the tax year: Class 4 stays due for that year (SI 2001/1004 reg. 91(a)),
 # but primary Class 1 and Class 2 stop.
 PENSION_AGE = st.integers(65, 80)
-# The last shape has an adult child in the parents' benefit unit. The model
-# flags at most two claimants (is_claimant_or_partner), here the parents; the
-# couple is the two eldest claimants. The YAML tests flag a third by input.
+# The last shape has an adult child in the parents' benefit unit. The
+# situation supplies is_claimant_or_partner for the parents and not the adult
+# child, since the age presumption would read a parent 20 or more years
+# younger than the other as their child; the couple is the two eldest
+# claimants. The YAML tests flag a third by input.
 SHAPES = {
     "single": [WORKING_AGE],
     "couple": [WORKING_AGE, WORKING_AGE],
@@ -144,12 +149,14 @@ def situation(units, year, bump=None):
             if bump is not None and bump[:2] == (i, j):
                 variable, amount = bump[2], bump[3]
                 person[variable] = {year: adult[variable] + amount}
+            # The couple are the first two adults; an adult child is neither.
+            person["is_claimant_or_partner"] = {year: j < 2}
             person["would_claim_marriage_allowance"] = {year: False}
             people[name] = person
             names.append(name)
         for k, age in enumerate(unit["children"]):
             name = f"c{i}_{k}"
-            people[name] = {"age": {year: age}}
+            people[name] = {"age": {year: age}, "is_claimant_or_partner": {year: False}}
             names.append(name)
         benunits[f"b{i}"] = {"members": names}
         households[f"h{i}"] = {
@@ -320,6 +327,28 @@ SPA_DURING_2026 = [
 ]
 
 
+# A lone parent of a child aged 3 has a 16-hour threshold, which in 2022-23
+# and 2023-24 lies between the Class 2 small profits threshold and the lower
+# profits threshold: Class 2 is treated as paid and costs nothing.
+LONE_PARENT_16_HOURS = [
+    dict(
+        adults=[
+            dict(
+                age=30,
+                self_employment_income=3_000.0,
+                employment_income=0.0,
+                pension_contributions=0.0,
+                uc_is_in_startup_period=False,
+            )
+        ],
+        children=[3],
+        tenure="RENT_PRIVATELY",
+        rent=7_200.0,
+        region="NORTH_EAST",
+    )
+]
+
+
 @PROPERTY_SETTINGS
 @given(
     units=populations,
@@ -328,6 +357,9 @@ SPA_DURING_2026 = [
 )
 @example(units=SPA_DURING_2026, year=2026, self_employed=True)
 @example(units=SPA_DURING_2026, year=2026, self_employed=False)
+@example(units=LONE_PARENT_16_HOURS, year=2022, self_employed=True)
+@example(units=LONE_PARENT_16_HOURS, year=2023, self_employed=True)
+@example(units=LONE_PARENT_16_HOURS, year=2019, self_employed=True)
 def test_notional_deductions_equal_tax_on_threshold_as_only_income(
     units, year, self_employed
 ):
