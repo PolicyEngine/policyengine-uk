@@ -103,7 +103,13 @@ We derive these rates as calendar-year nominal GDP growth from the OBR's March 2
 |-------------|------|------|------|------|------|------|------|------|
 | Growth rate | 10.0% | 5.2% | 3.9% | 4.7% | 2.9% | 3.3% | 3.2% | 3.1% |
 
-We use per capita GDP for these variables: `benunit_reported_capital`, `capital_gains`, `capital_gains_badr`, `capital_gains_before_response`, `capital_gains_carried_interest`, `capital_gains_residential_property`, `cash_isa`, `corporate_wealth`, `directly_held_shares`, `dividend_income`, `gross_financial_wealth`, `household_lifetime_isa_balance`, `lifetime_isa_balance`, `lump_sum_income`, `main_residence_value`, `maintenance_income`, `miscellaneous_income`, `mortgage_capital_repayment`, `net_financial_wealth`, `non_residential_property_value`, `other_investment_income`, `other_residential_property_value`, `owned_land`, `pension_credit_reported_capital`, `pension_income`, `private_pension_wealth`, `private_transfer_income`, `property_income`, `property_rental_income`, `savings`, `savings_interest_income`, `spousal_maintenance_income`, `stocks_and_shares_isa`, `sublet_income`, `uc_reported_capital`, `unit_and_investment_trusts`
+We use per capita GDP for these variables: `benunit_reported_capital`, `capital_gains`, `capital_gains_badr`, `capital_gains_before_response`, `capital_gains_carried_interest`, `capital_gains_residential_property`, `cash_isa`, `corporate_wealth`, `directly_held_shares`, `dividend_income`, `gross_financial_wealth`, `household_lifetime_isa_balance`, `lifetime_isa_balance`, `lump_sum_income`, `main_residence_value`, `maintenance_income`, `miscellaneous_income`, `mortgage_capital_repayment`, `net_financial_wealth`, `non_residential_property_value`, `other_investment_income`, `other_residential_property_value`, `owned_land`, `pension_credit_reported_capital`, `pension_income`, `private_pension_wealth`, `private_transfer_income`, `property_income`, `property_rental_income`, `savings`, `spousal_maintenance_income`, `stocks_and_shares_isa`, `sublet_income`, `uc_reported_capital`, `unit_and_investment_trusts`
+
+## Interest received per person
+
+Households' interest received is ONS series HAXV (D.41) to 2025. From 2026 the OBR's March 2026 EFO gives household financial assets (Table 1.11) and the deposit rate (Table 1.9), and interest grows by (1 + asset growth) × (this year's rate / last year's) − 1. Household weights grow with population, so each person's interest grows by (1 + interest growth) / (1 + population growth) − 1.
+
+We apply this to: `non_cash_isa_cash_interest`, `savings_interest_income`
 
 ## Council tax
 
