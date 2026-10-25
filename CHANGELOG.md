@@ -1,3 +1,96 @@
+## [2.162.2] - 2026-10-25
+
+### Fixed
+
+- Correct ISA income and cash-ISA capital treatment, with a versioned adapter for legacy gross-interest datasets. Add qualifying Lifetime ISA bonuses and withdrawal charges, and the final charge on cash interest in non-cash ISAs from fiscal 2027–28, with separate capital-flow accounting. Carry ISA dividend and non-cash interest inputs into later household years using their ordinary-income counterparts' growth indices, and grow stored dataset values with their ordinary counterparts throughout the projection horizon. Name the Lifetime ISA medical-exemption input `lifetime_isa_terminally_ill`.
+- Preserved recorded student loan plans and stopped clearing existing-holder repayments from inferred course dates during dataset projection; documented the remaining projected Plan 1 to Plan 2 and Plan 2 to Plan 5 cohort gaps and exact cancellation-date limitations.
+
+
+## [2.162.1] - 2026-10-25
+
+### Changed
+
+- Corrected the Housing Benefit eligibility description of the Universal Credit route open to pension-age Working Tax Credit recipients moved off legacy benefits.
+
+
+## [2.162.0] - 2026-10-25
+
+### Added
+
+- Added the Housing Benefit special standard earnings disregard with regime-specific qualifying routes, explicit residual pre-assessment and no stacking with ordinary amounts.
+
+
+## [2.161.2] - 2026-10-25
+
+### Fixed
+
+- Correct `gov.dft.rail.ridership_index` to ORR Table 1220 passenger journeys (2021-22 is 2.55 and 2024-25 4.46 on a 2020-21 base, not 0.40 and 0.95), hold it flat from 2026-27, and project `rail_usage` by its growth per person, which it was not projected by before.
+
+
+## [2.161.1] - 2026-10-25
+
+### Fixed
+
+- The build-hook test that checks a failed build still removes its directory counts only the hook's own exit registrations, so it no longer fails when it runs before anything else in the process has created a finalizer.
+- Separated Northern Ireland's dated Energy Price Guarantee discounts from Great Britain's calculation; spending-only cases in 2022 and 2023 now return zero subsidy with `ni_epg_subsidy_calculable=false` during supported months. Historical monetary totals remain incomplete for those cases; zero does not establish that no support was due.
+- Assigned lone fathers the OBR lone-parent substitution, income and participation elasticities.
+
+
+## [2.161.0] - 2026-10-25
+
+### Added
+
+- Model the exceptions to the Universal Credit and Child Tax Credit two-child limit (UC Regulations 2013 Schedule 12 and CTC Regulations 2002 regs 9 to 14): multiple births, adoption, non-parental caring arrangements, non-consensual conception and continuation of an earlier exception, as person-level inputs that default to false. Adopted children and children in non-parental care are left out of the Universal Credit order of children, as reg 24B(2A) requires, and a third Child Tax Credit child gets the element when all, or all but one, of the others are adopted or cared for, both from 28 November 2018 (two new dated parameters). Children born on the same day are ordered so the element reaches as many as possible, whatever the exception.
+
+### Changed
+
+- Tested the Housing Benefit child disability premiums with a real pension-age claimant and child, deriving the 2021 cutoff from the claimant.
+
+### Fixed
+
+- Fixed a Pension Credit property test that compared Guarantee Credit pound for pound where it started from zero.
+
+
+## [2.160.0] - 2026-10-25
+
+### Added
+
+- Added protected Housing Benefit family premiums with jurisdiction-specific closure dates and an explicit pre-assessed historical category.
+
+### Changed
+
+- Document that the inferred carer claimant convention can select an unpaid partner and does not maximise the couple's Carer's Allowance or Carer Support Payment.
+
+### Fixed
+
+- The Aggregate impact report now reports a Dependabot pull request as skipped, as it was meant to, instead of failing it. Dependabot runs have no data access, and the measure step stopped before it set up the tool the comparison runs.
+- - Zero-rate employer Class 1 National Insurance for earners under 21 up to the upper secondary threshold (SSCBA 1992 s.9A) and for apprentices under 25 up to the apprentice upper secondary threshold (s.9B), with both thresholds kept equal to the upper earnings limit after 2030-31. The employer cost variables, the fixed-employer-cost pay response and the salary sacrifice employer NI measure apply the same schedule through one shared helper. The fixed-employer-cost pay response now solves for NIC earnings (pay plus statutory pay) on each side of the reformed threshold, so it also holds where statutory pay takes earnings over a threshold or a reform moves a threshold across a person's earnings. From 2029 the employer cost variables and the pay response also charge employer NI on salary sacrifice above the £2,000 cap, as Class 1 does, and count the broad-base haircut and returned pay as pay, so the baseline and reformed costs equal `employer_cost` in their simulations.
+- - Limited Carer's Allowance and Carer Support Payment to one eligible partner when a couple cares for the same person, preserving reported-award defaults and underlying entitlement before overlapping benefits.
+
+
+## [2.159.0] - 2026-10-25
+
+### Added
+
+- Warm Home Discount receipt rates by group (85% for Pension Credit households, 70% for other qualifying benefits), from DESNZ's 2026 impact assessment, so the rebate no longer goes to every household modelled as receiving a qualifying benefit.
+
+### Fixed
+
+- Allowed caller-verified joint occupier exclusions in the legacy severe disability premium's non-dependant test.
+
+
+## [2.158.3] - 2026-10-25
+
+### Changed
+
+- Clarified bottled gas coverage and ONS levelling requirements for liquid and solid heating fuel inputs.
+
+### Fixed
+
+- Held reported Bereavement Support Payment flat for datasets supplying both separate bereavement-benefit inputs, while preserving CPI uprating for legacy and partial splits and the separate pensions.
+- Corrected England outside London's bus fare yield to exclude only older and disabled concessionary journeys, and refitted the cap-savings table using the same priced boardings.
+
+
 ## [2.158.2] - 2026-10-25
 
 ### Changed

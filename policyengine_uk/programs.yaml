@@ -5,6 +5,30 @@
 
 programs:
   # --- HMRC programs ---
+  - id: lifetime_isa
+    name: Lifetime ISA
+    full_name: Lifetime Individual Savings Account bonus and withdrawal charge
+    category: Savings
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: lifetime_isa_bonus
+    parameter_prefix: gov.hmrc.isa.lifetime
+    verified_start_year: 2017
+    notes: Annual qualifying-payment bonus and gross-withdrawal charge, including individual first-home conditions. Assumes valid account opening and transaction qualification; does not update balances. Late-March 2020 withdrawals are outside the annual timing resolution.
+
+  - id: isa_cash_interest_charge
+    name: Non-cash ISA cash-interest charge
+    full_name: Final charge on cash interest in stocks-and-shares and innovative finance ISAs
+    category: Taxes
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: isa_cash_interest_flat_rate_charge
+    parameter_prefix: gov.hmrc.isa.cash_interest_charge
+    verified_start_year: 2027
+    notes: Separate final manager charge at the savings basic rate from 6 April 2027. Requires the cash-interest component as an input; subscription-limit compliance is not modelled.
+
   - id: income_tax
     name: Income tax
     full_name: Income Tax
@@ -572,12 +596,16 @@ programs:
     full_name: Energy Price Guarantee
     category: Benefits
     agency: Ofgem
-    status: complete
+    status: partial
     coverage: UK
     parameter_prefix: gov.ofgem
     verified_start_year: 2022
     verified_end_year: 2024
-    notes: Temporary program, ended 31 March 2024
+    notes: >-
+      Great Britain support ended 31 March 2024. Northern Ireland general unit
+      discounts ran 1 November 2022 to 30 June 2023; calculations require supplied
+      monthly fuel use, a full-rate applicability assertion and a compatible
+      pre-discount bill. Current microdata lack these inputs.
 
   - id: warm_home_discount
     name: Warm Home Discount

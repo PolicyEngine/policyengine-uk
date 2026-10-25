@@ -139,7 +139,7 @@ def calculate_participation_elasticities(
     )
 
     # Lone parents by youngest child age
-    lone_parents = (gender == "FEMALE") & is_single & has_children
+    lone_parents = is_single & has_children
     assign_elasticities(lone_parents & (youngest_child_age <= 2), "lone_parent_0_2")
     assign_elasticities(
         lone_parents & (youngest_child_age >= 3) & (youngest_child_age <= 5),

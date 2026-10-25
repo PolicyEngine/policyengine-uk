@@ -3,6 +3,14 @@ from policyengine_uk.data.capital_gains_projection import (
     CGT_DATASET_INPUTS,
     CGT_INDEX_PATH,
 )
+from policyengine_uk.data.isa_income import (
+    ISA_INTEREST,
+    SAVINGS_INTEREST,
+    effective_tax_free,
+    gross_interest,
+    legacy_projection_source,
+    ordinary_interest,
+)
 
 import hashlib
 
@@ -128,6 +136,10 @@ DECLARED_ENERGY_INPUTS = frozenset(
     }
 )
 DATASET_UPRATING_EXCLUSIONS = DECLARED_ENERGY_INPUTS
+# Both separated benefits must be explicit before BSP can be held nominally flat.
+BEREAVEMENT_SPLIT_INPUTS = frozenset(
+    {"war_widows_pension_reported", "widowed_parents_allowance_reported"}
+)
 # Inputs that describe only the year they are stored for, so are not carried
 # into projected years. Unused annual allowance comes from the three tax years
 # before this one (Finance Act 2004 s. 228A), a window that moves each year; a
@@ -237,6 +249,8 @@ def extend_single_year_dataset(
     end_year: int | None = None,
 ) -> UKMultiYearDataset:
     """Project a supplied year to the shared default within any finite CGT span."""
+    # A normalized legacy export still projects the original gross amount.
+    dataset = legacy_projection_source(dataset)
     # Extend years and uprate
     start_year = int(dataset.time_period)
     if end_year is None:
@@ -342,8 +356,43 @@ def apply_single_year_uprating(
             for table_name, df in zip(current_year.table_names, current_year.tables):
                 if variable in df.columns:
                     prev_year_value = getattr(previous_year, table_name)[variable]
-                    current_year_value = prev_year_value * (1 + index_rel_change)
+                    split_bsp = (
+                        variable == "bsp_reported"
+                        and BEREAVEMENT_SPLIT_INPUTS.issubset(
+                            previous_year.person.columns
+                        )
+                    )
+                    current_year_value = (
+                        prev_year_value
+                        if split_bsp
+                        else prev_year_value * (1 + index_rel_change)
+                    )
                     getattr(current_year, table_name)[variable] = current_year_value
+
+    if (
+        current_year.isa_income_contract["projection"] == "legacy_gross"
+        and SAVINGS_INTEREST in current_year.person
+    ):
+        growth = parameters.get_child(
+            "gov.economic_assumptions.yoy_growth.obr.per_capita.gdp"
+        )(current_year.time_period)
+        values = gross_interest(previous_year) * (1 + growth)
+        if current_year.isa_income_contract["representation"] == "additive":
+            values = values - effective_tax_free(current_year.person)
+        current_year.person[SAVINGS_INTEREST] = values
+
+    # New additive ISA receipts use the same dataset GDP rule as ordinary
+    # interest. Legacy receipts retain their former unindexed treatment.
+    if (
+        current_year.isa_income_contract["projection"] == "additive"
+        and ISA_INTEREST in current_year.person
+    ):
+        growth = parameters.get_child(
+            "gov.economic_assumptions.yoy_growth.obr.per_capita.gdp"
+        )(current_year.time_period)
+        current_year.person[ISA_INTEREST] = previous_year.person[ISA_INTEREST] * (
+            1 + growth
+        )
 
     # Next, apply custom uprating.
 
@@ -375,6 +424,10 @@ def apply_single_year_uprating(
     # inputs missing from the projection map (for example salary sacrifice).
     if int(current_year.time_period) > LEGACY_PROJECTION_END_YEAR:
         for variable, index_name in _unmapped_uprating_indices(uprating).items():
+            # Handled above for new additive data; deliberately unchanged for
+            # legacy gross data, whose exemption never had this new index.
+            if variable == ISA_INTEREST:
+                continue
             for table_name in current_year.table_names:
                 table = getattr(current_year, table_name)
                 if variable in table.columns:
@@ -621,24 +674,42 @@ def uprate_student_loan_plans(
     parameters: ParameterNode,
     base_year: int | None = None,
 ) -> UKSingleYearDataset:
-    """Assign student loan plans based on cohort and add new entrants.
+    """Retain observed student loan plans and add new entrants.
 
-    Projected datasets copy the base year with ages fixed, so in a later year
-    a person of a given age stands for a later university intake. Plans
-    follow that intake: year - age + 18. The function works on the base
-    year's plans, not accumulated state, so each year's plans do not depend
-    on which other years were projected. base_year is the year the data
-    describe; without it, the previous year is taken as that year.
+    Existing holders keep their recorded plan and the repayment amount passed
+    to this helper. Course, funding and first-repayment dates are unavailable,
+    so age and current residence cannot establish a different plan or a
+    cancellation date. The enclosing uprating separately grows stored
+    repayments with average earnings, which this helper does not change.
 
-    As we project forward, we need to:
-    1. Re-label existing holders to correct plan based on uni start year
-    2. Add holders in age bands beyond the base year's coverage
-    3. Add Plan 5 holders in England (new plan starting 2023)
+    Retaining recorded plans also leaves future cohort transitions from
+    Plan 1 to Plan 2 in England and Wales at the 2012 intake, and from Plan 2
+    to Plan 5 in England at the 2023 intake, unimplemented. Vahid Ahmadi's
+    25 October 2026 review audit used enhanced_frs_2024_25 at revision
+    2526edbb and the age-18 intake proxy. Among 7.14m recorded Plan 2 holders,
+    it counted 0.53m in England whose proxy intake reached 2023 in 2026,
+    1.57m in 2028 and 2.99m in 2031. Among 1.52m recorded Plan 1 holders,
+    it counted none in England and Wales whose proxy intake reached 2012
+    in 2025, 0.30m in 2028 and 0.68m in 2031. These approximate counts
+    describe that reviewer's dataset audit; this change does not reproduce
+    the audit or establish national population accuracy or revenue effects.
+    See the audit and accepted follow-up scope:
+    https://github.com/PolicyEngine/policyengine-uk/pull/2650#issuecomment-6396818516
+    https://github.com/PolicyEngine/policyengine-uk/pull/2650#issuecomment-6397144626
+    Date-aware cohort and cancellation work remains open under issue 2636.
 
-    For (2) and (3), we use highest_education == TERTIARY as the signal
-    for who is a graduate, then apply a flat take-up probability. Each
-    person's take-up draw is keyed on person_id, so the same people take up
-    a loan in every year and in any row order.
+    Projected datasets copy the base year with ages fixed. Each year's plans
+    therefore start from that copy, not accumulated prior-year plan state.
+    base_year is the year the data describe; without it, the previous year is
+    taken as that year. This fallback can retain older plans too long and
+    changes the future plan mix; it does not model exact cancellation dates.
+
+    New entrants use the existing intake-at-18 approximation, year - age + 18,
+    to extend the base year's age bands and add England's Plan 5 intakes.
+    We use highest_education == TERTIARY as the signal for who is a graduate,
+    then apply a flat take-up probability. Each person's take-up draw is keyed
+    on person_id, so the same people take up a loan in every year and in any
+    row order.
 
     New holders follow the funding nation's undergraduate repayment plan.
     Funding agency is unavailable in the dataset, so current household
@@ -708,21 +779,10 @@ def uprate_student_loan_plans(
         new_plan[sampled] = new_borrower_plan[sampled]
         repayments[sampled] = 0.0
 
-    # === Step 1: Re-label existing loan holders ===
-    has_loan = base_plan != "NONE"
-    written_off = has_loan & (uni_start_year + _PLAN1_WRITEOFF_YEARS <= year)
-    is_plan1_cohort = has_loan & ~written_off & (uni_start_year < 2012)
-    is_plan2_cohort = (
-        has_loan & ~written_off & (uni_start_year >= 2012) & (uni_start_year < 2023)
-    )
-    is_plan5_cohort = has_loan & ~written_off & (uni_start_year >= 2023)
-
-    new_plan[written_off] = "NONE"
-    repayments[written_off] = 0.0
-    new_plan[is_plan1_cohort] = "PLAN_1"
-    new_plan[is_plan2_cohort] = "PLAN_2"
-    new_plan[is_plan5_cohort & is_england] = "PLAN_5"
-    new_plan[is_plan5_cohort & ~is_england] = "PLAN_2"
+    # === Step 1: Retain observed loan holders ===
+    # Missing course and repayment dates do not establish a new plan or a
+    # cancellation. The initialized arrays retain each recorded non-NONE
+    # plan and repayment; the intake and region proxies apply only below.
 
     # === Step 2: Add holders in the extended pre-2012 age bands ===
     # Income-contingent (Plan 1) loans began with the 1998 intake, aged 44 in
@@ -810,7 +870,7 @@ def reset_growthfactor_uprating(
     growthfactor_uprated_variables = {
         variable for variables in uprating.values() for variable in variables
     }
-    growthfactor_uprated_variables.update({"council_tax", "rent"})
+    growthfactor_uprated_variables.update({"council_tax", "rent", ISA_INTEREST})
     growthfactor_uprated_variables.update(COUNTRY_UPRATED_INPUTS)
     growthfactor_uprated_variables.update(_unmapped_uprating_indices(uprating))
     growthfactor_uprated_variables.difference_update(DATASET_UPRATING_EXCLUSIONS)
@@ -834,6 +894,9 @@ def reset_growthfactor_uprating(
             current_year_dataset.energy_price_basis
             == base_year_dataset.energy_price_basis
         )
+        preserve_bsp = BEREAVEMENT_SPLIT_INPUTS.issubset(
+            base_year_dataset.person.columns
+        ) or BEREAVEMENT_SPLIT_INPUTS.issubset(current_year_dataset.person.columns)
 
         # One declaration describes every stored energy amount. Keep the
         # later group intact if a partial reset would mix different bases.
@@ -841,8 +904,35 @@ def reset_growthfactor_uprating(
             base_table = getattr(base_year_dataset, table_name)
             current_table = getattr(current_year_dataset, table_name)
             for variable in growthfactor_uprated_variables:
+                # Split BSP amounts do not reflect economic growth. In a
+                # schema transition, the base amount can include other benefits.
+                if variable == "bsp_reported" and preserve_bsp:
+                    continue
                 if variable in current_table.columns and variable in base_table.columns:
-                    current_table[variable] = base_table[variable].values
+                    if (
+                        variable == ISA_INTEREST
+                        and current_year_dataset.isa_income_contract["projection"]
+                        == "legacy_gross"
+                    ):
+                        continue
+                    if variable == SAVINGS_INTEREST:
+                        if (
+                            current_year_dataset.isa_income_contract["projection"]
+                            == "legacy_gross"
+                        ):
+                            values = gross_interest(base_year_dataset)
+                            if (
+                                current_year_dataset.isa_income_contract[
+                                    "representation"
+                                ]
+                                == "additive"
+                            ):
+                                values = values - effective_tax_free(current_table)
+                        else:
+                            values = ordinary_interest(base_year_dataset)
+                        current_table[variable] = values
+                    else:
+                        current_table[variable] = base_table[variable].values
         if reset_energy:
             for variable in shared_energy:
                 current_year_dataset.household[variable] = base_year_dataset.household[

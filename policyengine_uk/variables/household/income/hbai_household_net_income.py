@@ -7,6 +7,8 @@ HBAI_HOUSEHOLD_NET_INCOME_ADDS = [
     "employment_income",
     "self_employment_income",
     "savings_interest_income",
+    "tax_free_savings_income",
+    "individual_savings_account_dividend_income",
     "dividend_income",
     "miscellaneous_income",
     # Landlords' profit after mortgage interest: HBAI uses FRS rent from
@@ -68,6 +70,7 @@ HBAI_HOUSEHOLD_NET_INCOME_SUBTRACTS = [
     "council_tax",
     "domestic_rates",
     "income_tax",
+    "isa_cash_interest_flat_rate_charge",
     "national_insurance",
     "student_loan_repayments",
     # Self-employment losses count as negative income in HBAI.

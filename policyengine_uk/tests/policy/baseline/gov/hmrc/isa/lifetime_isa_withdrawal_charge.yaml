@@ -1,0 +1,94 @@
+# ISA Regulations1998 Schedule paras4-7 and5A.
+# Withdrawals are GROSS, excluding exempt inter-LISA transfers and death.
+# Annual2020/2021 use the existing30April fiscal-year parameter convention.
+
+- name: Ordinary withdrawal charge is on the gross withdrawal with age and medical exemptions
+  period: 2026
+  input:
+    age: [35, 59, 60, 35]
+    lifetime_isa_terminally_ill: [false, false, false, true]
+    lifetime_isa_withdrawals: [2_000, 2_000, 2_000, 2_000]
+  output:
+    lifetime_isa_withdrawal_charge: [500, 500, 0, 0]
+
+- name: Fiscal2020-21 samples the temporary20 percent charge
+  period: 2020
+  input:
+    age: 35
+    lifetime_isa_withdrawals: 2_000
+  output:
+    lifetime_isa_withdrawal_charge: 400
+
+- name: Fiscal2021-22 restores the25 percent charge
+  period: 2021
+  input:
+    age: 35
+    lifetime_isa_withdrawals: 2_000
+  output:
+    lifetime_isa_withdrawal_charge: 500
+
+- name: No LISA withdrawal charge exists before the scheme starts
+  period: 2016
+  input:
+    age: 35
+    lifetime_isa_withdrawals: 2_000
+  output:
+    lifetime_isa_withdrawal_charge: 0
+
+- name: First-home exemption requires the investor and each qualifying-purchase condition
+  period: 2026
+  input:
+    age: [35, 35, 35, 35, 35, 35, 35, 35, 35]
+    lifetime_isa_withdrawals: [10_000, 10_000, 10_000, 10_000, 10_000, 10_000, 10_000, 10_000, 10_000]
+    # A zero home component means none was paid directly to a conveyancer.
+    lifetime_isa_withdrawals_towards_first_home: [10_000, 10_000, 10_000, 10_000, 10_000, 10_000, 10_000, 0, 10_000]
+    lifetime_isa_first_time_buyer: [true, true, true, true, true, true, false, true, true]
+    lifetime_isa_months_since_first_payment: [12, 12, 12, 12, 12, 11, 12, 12, 12]
+    main_residential_property_purchased: [400_000, 450_000, 450_001, 400_000, 400_000, 400_000, 400_000, 400_000, 0]
+    main_residential_property_purchased_with_mortgage: [true, true, true, false, true, true, true, true, true]
+    main_residential_property_purchased_is_in_uk: [true, true, true, true, false, true, true, true, true]
+  output:
+    #450001 is representably above the450000 cap in float32 Money storage.
+    lifetime_isa_withdrawal_charge: [0, 0, 2_500, 2_500, 2_500, 2_500, 2_500, 2_500, 2_500]
+
+- name: A first-time investor may qualify when their joint buyer previously owned a home
+  period: 2026
+  input:
+    people:
+      first_time_investor:
+        age: 35
+        lifetime_isa_withdrawals: 10_000
+        lifetime_isa_withdrawals_towards_first_home: 10_000
+        lifetime_isa_first_time_buyer: true
+        lifetime_isa_months_since_first_payment: 12
+      previous_owner:
+        age: 36
+        lifetime_isa_withdrawals: 10_000
+        lifetime_isa_withdrawals_towards_first_home: 10_000
+        lifetime_isa_first_time_buyer: false
+        lifetime_isa_months_since_first_payment: 12
+    benunits:
+      couple:
+        members: [first_time_investor, previous_owner]
+    households:
+      household:
+        members: [first_time_investor, previous_owner]
+        main_residential_property_purchased: 400_000
+        main_residential_property_purchased_with_mortgage: true
+        main_residential_property_purchased_is_in_uk: true
+  output:
+    lifetime_isa_withdrawal_charge: [0, 2_500]
+
+- name: Only the bounded qualifying home portion avoids the withdrawal charge
+  period: 2026
+  input:
+    age: [35, 35, 35, 35, 35]
+    lifetime_isa_withdrawals: [12_000, 10_000, 12_000, -100, 2_000]
+    lifetime_isa_withdrawals_towards_first_home: [10_000, 20_000, 12_000, 100, -100]
+    lifetime_isa_first_time_buyer: [true, true, true, true, true]
+    lifetime_isa_months_since_first_payment: [12, 12, 12, 12, 12]
+    main_residential_property_purchased: [400_000, 400_000, 8_000, 400_000, 400_000]
+    main_residential_property_purchased_with_mortgage: [true, true, true, true, true]
+    main_residential_property_purchased_is_in_uk: [true, true, true, true, true]
+  output:
+    lifetime_isa_withdrawal_charge: [500, 0, 1_000, 0, 500]
