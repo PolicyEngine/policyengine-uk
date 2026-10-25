@@ -85,25 +85,46 @@ def test_direct_callback_response_matches_parameter_benchmark(cls, read_first, f
         if reset:
             simulation.reset_calculations()
         for variable in (
-            BENEFIT, "household_net_income", "relative_income_change",
-            "relative_wage_change", "marginal_tax_rate", RESPONSE,
-            "income_elasticity_lsr", "substitution_elasticity_lsr",
+            BENEFIT,
+            "household_net_income",
+            "relative_income_change",
+            "relative_wage_change",
+            "marginal_tax_rate",
+            RESPONSE,
+            "income_elasticity_lsr",
+            "substitution_elasticity_lsr",
         ):
             np.testing.assert_allclose(
-                values(simulation, variable), values(expected, variable),
-                atol=0.01, rtol=1e-5, err_msg=variable,
+                values(simulation, variable),
+                values(expected, variable),
+                atol=0.01,
+                rtol=1e-5,
+                err_msg=variable,
             )
-        np.testing.assert_allclose(values(simulation, "relative_wage_change"), 0, atol=1e-5)
-        np.testing.assert_allclose(values(simulation, "substitution_elasticity_lsr"), 0, atol=0.01)
+        np.testing.assert_allclose(
+            values(simulation, "relative_wage_change"), 0, atol=1e-5
+        )
+        np.testing.assert_allclose(
+            values(simulation, "substitution_elasticity_lsr"), 0, atol=0.01
+        )
     assert simulation.baseline.input_variables is baseline_names
     assert baseline_names == original_names
-    np.testing.assert_array_equal(values(simulation.baseline, "household_net_income"), baseline_net)
+    np.testing.assert_array_equal(
+        values(simulation.baseline, "household_net_income"), baseline_net
+    )
 
 
 @pytest.mark.parametrize("claim", [True, False], ids=["formula-override", "input-only"])
 def test_direct_writes_survive_reset_marginal_rates_and_export(claim):
     years = (YEAR, YEAR + 1)
     situation = family(years)
+    # Export replay requires explicit identifiers, as dataset inputs do.
+    for identifier, person in enumerate(situation["people"].values(), start=1):
+        person["person_id"] = {year: identifier for year in years}
+        person["person_benunit_id"] = {year: 1 for year in years}
+        person["person_household_id"] = {year: 1 for year in years}
+    situation["benunits"]["family"]["benunit_id"] = {year: 1 for year in years}
+    situation["households"]["home"]["household_id"] = {year: 1 for year in years}
     original = copy.deepcopy(situation)
     simulation = Simulation(situation=situation)
     variable = BENEFIT if claim else CLAIM
@@ -118,18 +139,27 @@ def test_direct_writes_survive_reset_marginal_rates_and_export(claim):
     for year in years:
         for output in (*RATES, BENEFIT, "household_net_income"):
             np.testing.assert_allclose(
-                values(simulation, output, year), values(expected, output, year),
-                atol=0.01, rtol=1e-5, err_msg=output,
+                values(simulation, output, year),
+                values(expected, output, year),
+                atol=0.01,
+                rtol=1e-5,
+                err_msg=output,
             )
     simulation.reset_calculations()
     for year in years:
-        np.testing.assert_allclose(values(simulation, BENEFIT, year), values(expected, BENEFIT, year), atol=0.01)
+        np.testing.assert_allclose(
+            values(simulation, BENEFIT, year),
+            values(expected, BENEFIT, year),
+            atol=0.01,
+        )
     frame = simulation.to_input_dataframe()
     assert all(f"{variable}__{year}" in frame for year in years)
     assert not any(column.startswith("household_net_income__") for column in frame)
     rebuilt = Simulation(dataset=frame)
     for year in years:
-        np.testing.assert_allclose(values(rebuilt, BENEFIT, year), values(expected, BENEFIT, year), atol=0.01)
+        np.testing.assert_allclose(
+            values(rebuilt, BENEFIT, year), values(expected, BENEFIT, year), atol=0.01
+        )
     assert variable not in simulation.baseline.input_variables
     assert situation == original
 
@@ -146,9 +176,18 @@ def test_direct_writes_survive_obr_dynamics(claim):
     expected = benchmark(claim=claim, reform=reform, cls=Microsimulation)
     result = simulation.apply_dynamics(YEAR).progression
     comparison = expected.apply_dynamics(YEAR).progression
-    np.testing.assert_allclose(values(simulation, BENEFIT), values(expected, BENEFIT), atol=0.01)
-    for variable in ("deriv_scenario", "substitution_response", "income_response", "total_response"):
-        np.testing.assert_allclose(result[variable], comparison[variable], atol=0.01, rtol=1e-5)
+    np.testing.assert_allclose(
+        values(simulation, BENEFIT), values(expected, BENEFIT), atol=0.01
+    )
+    for variable in (
+        "deriv_scenario",
+        "substitution_response",
+        "income_response",
+        "total_response",
+    ):
+        np.testing.assert_allclose(
+            result[variable], comparison[variable], atol=0.01, rtol=1e-5
+        )
     assert np.any(np.asarray(comparison["income_response"]) != 0)
 
 
@@ -176,7 +215,9 @@ def test_direct_retention_excludes_calculated_deleted_and_foreign_inputs(route):
         simulation.get_branch("owned-by-user").set_input(BENEFIT, YEAR, [0])
     simulation.reset_calculations()
     assert simulation.input_variables == original
-    np.testing.assert_array_equal(values(simulation, BENEFIT), values(simulation.baseline, BENEFIT))
+    np.testing.assert_array_equal(
+        values(simulation, BENEFIT), values(simulation.baseline, BENEFIT)
+    )
 
 
 def test_direct_zero_overwrite_and_inherited_branch_are_isolated():
@@ -203,17 +244,21 @@ def test_shipped_pip_callback_retains_its_explicit_periods():
         }
         for i in range(8)
     }
-    simulation = Simulation(situation={
-        "people": people,
-        "benunits": {name: {"members": [name]} for name in people},
-        "households": {name: {"members": [name]} for name in people},
-    })
+    simulation = Simulation(
+        situation={
+            "people": people,
+            "benunits": {name: {"members": [name]} for name in people},
+            "households": {name: {"members": [name]} for name in people},
+        }
+    )
     phase_in_pip(simulation)
     expected = {year: values(simulation, "pip", year) for year in years}
     assert np.any(expected[2029] == 0) and np.any(expected[2029] > 0)
     simulation.reset_calculations()
     for year in years:
         np.testing.assert_array_equal(values(simulation, "pip", year), expected[year])
-        np.testing.assert_array_equal(values(simulation.baseline, "pip", year), np.full(8, 100))
+        np.testing.assert_array_equal(
+            values(simulation.baseline, "pip", year), np.full(8, 100)
+        )
     frame = simulation.to_input_dataframe()
     assert all(f"pip__{year}" in frame for year in years)

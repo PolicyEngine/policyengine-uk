@@ -2,7 +2,7 @@
 import os
 import copy
 import warnings
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from importlib.metadata import version
 from typing import Dict, Optional, Union, Type, List
 
@@ -58,7 +58,10 @@ from policyengine_uk.data.capital_gains_projection import (
 from policyengine_uk.utils.dependencies import get_variable_dependencies
 from policyengine_uk.utils.data_source import built_from_data
 from policyengine_uk.utils.input_dataframe_export import input_dataframe
-from policyengine_uk.utils.measurement_branches import drop_calculated_values
+from policyengine_uk.utils.measurement_branches import (
+    drop_calculated_values,
+    retained_input_variables,
+)
 from policyengine_uk.utils.supplied_inputs import (
     SUPPLIED_INPUT_VARIABLES,
     copy_model_values,
@@ -286,6 +289,7 @@ class Simulation(CoreSimulation):
         self._cgt_input_provenance = {}
         self._cgt_defaulted_periods = set()
         self._cgt_calculation_depth = 0
+        self._external_input_change_pending = False
         self._cgt_operation_inputs = set()
         self._cgt_warned_unused = False
         self._cgt_warning_enabled = False
@@ -461,34 +465,31 @@ class Simulation(CoreSimulation):
         self.tax_benefit_system.reset_parameter_caches()
 
     @contextmanager
-    def _preserve_stored_inputs(self):
-        """Name inputs an operation stores and retains, for later resets."""
+    def _record_stored_inputs(self):
+        """Record actual stores, including overwrites and custom input routes."""
         logs = _input_key_logs.setdefault(id(self), [])
         stored = set()
         logs.append(stored)
         self._user_input_keys = getattr(self, "_user_input_keys", None) or set()
         try:
-            yield
+            yield stored
         finally:
             logs.pop()
             if not logs:
                 del _input_key_logs[id(self)]
             # A plain set again, unless an enclosing operation is still logging.
             self._user_input_keys = set(self._user_input_keys)
-        # input_variables is taken when the simulation is built.
-        # reset_calculations deletes the values of every variable it does not
-        # name (as core's derivative did before policyengine-core 3.33.0, from
-        # which it keeps every input), and the marginal rate formulas those of
-        # every such variable that has a formula. A reform or scenario modifier
-        # applied afterwards can store inputs: new ones, or ones that replace
-        # an input set since the build. Name every variable with an input it
-        # stored that this simulation still holds, under a branch name it
-        # reads and a reset deletes, or a reset would delete what the reform
-        # stored and recalculate the formula. input_variables names whole
-        # variables, so a reset then keeps every input of the variable, any
-        # set since the build included. An operation that raises names nothing
-        # it stored itself (a reform it applied first has named its own). Assign
-        # a new list: a clone or branch shares its parent's.
+
+    @contextmanager
+    def _preserve_stored_inputs(self):
+        """Name inputs an operation stores and retains, for later resets."""
+        with self._record_stored_inputs() as stored:
+            yield
+        # Preserve the existing construction/reform input-name contract.
+        # Later direct stores are also retained by retained_input_variables;
+        # calculated values do not become inputs. An operation that raises
+        # names nothing it stored itself (a reform it applied first has named
+        # its own). Assign a new list: a clone or branch shares its parent's.
         input_variables = getattr(self, "input_variables", None)
         if input_variables is not None:
             branches = set(self._get_visible_branch_names())
@@ -578,10 +579,25 @@ class Simulation(CoreSimulation):
         # stores a value for, and only those. set_model_value records its
         # value as the model's after this call.
         records = model_value_input_records(self, variable_name)
+        # This depth covers every calculate call, including nongains
+        # variables. Formula/framework writes must not invalidate a calculation
+        # still running; direct edits of a built simulation must refresh its
+        # dependent values before the next outermost calculation.
+        external = (
+            getattr(self, "input_variables", None) is not None
+            and self._cgt_calculation_depth == 0
+        )
+        stored = set()
         try:
-            super().set_input(variable_name, period, value)
+            recording = (
+                self._record_stored_inputs() if external else nullcontext(stored)
+            )
+            with recording as stored:
+                super().set_input(variable_name, period, value)
         finally:
             forget_replaced_model_values(self, variable_name, records)
+            if external and stored:
+                self._external_input_change_pending = True
         # Inputs do not carry back, so give the simulation its identifiers
         # for the year the input starts in if it holds them only for later
         # years. See ``policyengine_uk.data.input_dataframe.hold_identifiers_in``.
@@ -851,8 +867,10 @@ class Simulation(CoreSimulation):
         )
 
     def reset_calculations(self):
+        retained = retained_input_variables(self)
+        self._external_input_change_pending = False
         for variable in self.tax_benefit_system.variables:
-            if variable not in self.input_variables:
+            if variable not in retained:
                 self.delete_arrays(variable)
 
     def get_known_variables(self):
@@ -1419,6 +1437,9 @@ class Simulation(CoreSimulation):
         map_to: str = None,
         decode_enums: bool = False,
     ):
+        if self._cgt_calculation_depth == 0 and self._external_input_change_pending:
+            self._external_input_change_pending = False
+            drop_calculated_values(self)
         if variable_name is None:
             return self.calculate_all()
         tracer: SimpleTracer = self.tracer

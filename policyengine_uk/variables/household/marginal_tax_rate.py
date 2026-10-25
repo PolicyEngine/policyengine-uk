@@ -4,6 +4,7 @@ from policyengine_uk.utils.marginal_rates import marginal_rate_step
 from policyengine_uk.utils.measurement_branches import (
     held_behavioural_responses,
     hold_behavioural_responses,
+    retained_input_variables,
 )
 
 
@@ -40,10 +41,11 @@ class marginal_tax_rate(Variable):
             alt_simulation = simulation.get_branch(name)
             try:
                 mask = adult_index_values == adult_index
+                retained = retained_input_variables(alt_simulation)
                 for variable in simulation.tax_benefit_system.variables:
                     variable_data = simulation.tax_benefit_system.variables[variable]
                     if (
-                        variable not in simulation.input_variables
+                        variable not in retained
                         and not variable_data.is_input_variable()
                     ):
                         alt_simulation.delete_arrays(variable)

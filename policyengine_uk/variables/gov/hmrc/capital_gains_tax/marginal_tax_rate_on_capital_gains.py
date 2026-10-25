@@ -3,6 +3,7 @@ from policyengine_core.simulations import *
 from policyengine_uk.utils.measurement_branches import (
     held_behavioural_responses,
     hold_behavioural_responses,
+    retained_input_variables,
 )
 from policyengine_uk.utils.marginal_rates import marginal_rate_step
 
@@ -46,12 +47,10 @@ class marginal_tax_rate_on_capital_gains(Variable):
         for adult_index in [1, 2]:
             alt_simulation = simulation.get_branch(f"adult_{adult_index}_cg_rise")
             mask = adult_index_values == adult_index
+            retained = retained_input_variables(alt_simulation)
             for variable in simulation.tax_benefit_system.variables:
                 variable_data = simulation.tax_benefit_system.variables[variable]
-                if (
-                    variable not in simulation.input_variables
-                    and not variable_data.is_input_variable()
-                ):
+                if variable not in retained and not variable_data.is_input_variable():
                     alt_simulation.delete_arrays(variable)
             hold_behavioural_responses(alt_simulation, period, held_responses)
             alt_simulation.set_input("capital_gains", period, gains + mask * step)

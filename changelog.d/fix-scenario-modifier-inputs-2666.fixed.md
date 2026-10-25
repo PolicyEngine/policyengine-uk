@@ -1,1 +1,1 @@
-Keep inputs stored by construction-time scenario modifiers through resets and marginal-rate calculations, and clear their stale calculated values so labour supply responses reflect the completed scenario.
+Keep inputs stored by scenario modifiers and direct callbacks through resets and all marginal-rate calculations, including input-only variables absent at construction. Refresh dependent values after direct input edits so labour supply responses use the completed inputs, while preserving calculation-time framework writes and independent baselines.

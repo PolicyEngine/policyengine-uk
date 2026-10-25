@@ -175,9 +175,26 @@ An input remains fixed when a marginal-rate calculation changes earnings. A
 modifier that adds a fixed amount to Child Benefit therefore keeps that amount
 through the earnings step. For a policy that should vary with earnings, use
 parameter changes or a formula reform; setting its calculated value once cannot
-represent that dependence. This cleanup happens when the constructor runs the
-modifier. Calling a modifier directly, or using `Scenario.apply` on an existing
-simulation, retains those operations' existing behavior.
+represent that dependence.
+
+The same input retention applies when a callback calls `set_input` directly on
+an already-built simulation, including through `Scenario.apply`. Resets and all
+three marginal-rate calculations retain surviving inputs visible to that
+simulation, including inputs absent at construction. A top-level `set_input`
+also refreshes dependent calculations before the next read, so a callback can
+read Child Benefit, add an amount and then obtain fresh income and response
+values. Inputs stored only on another clone or branch do not become the
+parent's inputs. Formula and framework writes during a calculation keep their
+existing calculation lifecycle.
+
+Direct edits of the parameter tree require a separate array-cache boundary.
+After calling a parameter's `update` method on a built simulation, call
+`simulation.drop_computed_arrays()` before reading its results. In a wrapper
+that runs a policy callback, late dynamic parameter updates and a dynamic
+callback, clear computed arrays after each operation in that order. This
+preserves the input values and lets the next operation see the updated policy.
+A wrapper must also use a country-model release containing the native input
+retention fix; array cleanup alone does not add it to an older release.
 
 Modifiers with `applied_before_data_load=True` run before the simulation has its
 data. They can change parameters or model structure at that stage; modifiers
