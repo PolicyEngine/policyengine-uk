@@ -1,1 +1,0 @@
-- Documented that the Northern Ireland business rates statistic counts the regional and district rates, while the OBR line that projects it appears to cover the regional rate only.
