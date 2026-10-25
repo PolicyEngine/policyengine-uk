@@ -49,7 +49,9 @@ money = st.floats(0, 50_000, allow_nan=False, allow_infinity=False)
 
 @st.composite
 def families(draw):
-    # A head, an optional partner, and one member who by construction is
+    # A head, an optional partner under 20 years younger (so the age
+    # presumption reads them as the partner, not the head's child), and one
+    # member who by construction is
     # outside every programme's family: a 16-19-year-old at least 16 years
     # younger than the head (presumed the head's child) who is not in
     # non-advanced education, so no programme's young person; or a third adult
@@ -71,7 +73,7 @@ def families(draw):
         }
     ]
     if kind == "third_adult" or draw(st.booleans()):
-        partner_age = draw(st.integers(20, head_age))
+        partner_age = draw(st.integers(max(20, head_age - 19), head_age))
         family.append({"age": partner_age, "employment_income": draw(money)})
     if kind == "third_adult":
         other_age = draw(st.integers(20, partner_age))

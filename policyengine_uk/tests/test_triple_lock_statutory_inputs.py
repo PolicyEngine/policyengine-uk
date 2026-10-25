@@ -44,8 +44,8 @@ def uprating(parameters, year):
     return parameters.gov.economic_assumptions.yoy_growth.triple_lock(f"{year}-01-01")
 
 
-def statutory_earnings_floor(parameters, year):
-    return parameters.gov.economic_assumptions.yoy_growth.statutory_earnings_floor(
+def earnings_uprating(parameters, year):
+    return parameters.gov.economic_assumptions.yoy_growth.earnings_uprating(
         f"{year}-01-01"
     )
 
@@ -87,7 +87,7 @@ def test_pension_credit_uses_the_state_pension_statutory_earnings_input():
     assert statutory_inputs(parameters).awe_total_pay_may_july(
         "2026-07-01"
     ) == pytest.approx(0.039)
-    assert statutory_earnings_floor(parameters, 2027) == pytest.approx(0.039)
+    assert earnings_uprating(parameters, 2027) == pytest.approx(0.039)
     assert minimum_guarantee_weekly(parameters, "SINGLE", 2027) == pytest.approx(
         238 * 1.039, rel=1e-5
     )
@@ -107,7 +107,7 @@ def test_pension_credit_earnings_floor_rounds_and_never_reduces_the_guarantee():
     )
 
     assert [
-        statutory_earnings_floor(parameters, year) for year in (2028, 2029)
+        earnings_uprating(parameters, year) for year in (2028, 2029)
     ] == pytest.approx([0.012, 0.0])
     for relation_type in ("SINGLE", "COUPLE"):
         guarantee_2027 = minimum_guarantee_weekly(parameters, relation_type, 2027)

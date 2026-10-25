@@ -1,7 +1,7 @@
 import pytest
 
 from policyengine_uk import Simulation, system
-from policyengine_uk.parameters.gov.dwp.housing_benefit.allowances.create_protected_pension_age_uprating import (
+from policyengine_uk.parameters.gov.dwp.housing_benefit.allowances.create_pension_age_allowances import (
     project_retained_uplift,
 )
 
@@ -18,9 +18,9 @@ def _parameters():
         "expected_2027_allowance",
     ),
     [
-        ("single", "single", 256.0, 265.9113772049),
-        ("lone_parent", "lone_parent", 256.0, 265.9113772049),
-        ("couple", "couple", 383.35, 398.2192994524),
+        ("single", "single", 256.0, 238 * 1.039 + 17.96 * 1.035),
+        ("lone_parent", "lone_parent", 256.0, 238 * 1.039 + 17.96 * 1.035),
+        ("couple", "couple", 383.35, 363.25 * 1.039 + 20.10 * 1.035),
     ],
 )
 def test_protected_allowances_use_relationship_specific_component_projections(
@@ -40,7 +40,7 @@ def test_protected_allowances_use_relationship_specific_component_projections(
     expected = base_allowance * index("2027-04-01") / index("2026-04-01")
 
     assert allowance("2026-04-01") == base_allowance
-    assert expected == pytest.approx(expected_2027_allowance)
+    assert expected == pytest.approx(expected_2027_allowance, abs=0.001)
     assert allowance("2027-04-01") == pytest.approx(expected)
     assert allowance("2027-04-01") != pytest.approx(
         base_allowance
@@ -61,6 +61,7 @@ def test_protected_allowances_cover_guarantee_and_maximum_savings_credit():
         phase_in_rate = float(pension_credit.savings_credit.rate.phase_in(instant))
         for relationship, allowance_name in (
             ("SINGLE", "single"),
+            ("SINGLE", "lone_parent"),
             ("COUPLE", "couple"),
         ):
             weekly_guarantee = float(getattr(guarantee, relationship)(instant))
@@ -71,8 +72,8 @@ def test_protected_allowances_cover_guarantee_and_maximum_savings_credit():
             protected_allowance = float(
                 getattr(allowances, allowance_name).aged(instant)
             )
-            assert protected_allowance >= (
-                weekly_guarantee + maximum_savings_credit - 0.01
+            assert protected_allowance == pytest.approx(
+                weekly_guarantee + maximum_savings_credit, abs=1e-9
             ), (relationship, year)
 
 

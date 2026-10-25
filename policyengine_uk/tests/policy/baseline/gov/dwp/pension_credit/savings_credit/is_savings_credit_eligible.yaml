@@ -163,5 +163,5 @@
         relation_type: SINGLE
         savings_credit_income: 11_000
   output:
-    # The projected weekly threshold is about 216.71465, or 11,269.16 a year.
+    # The projected weekly threshold is about 216.301, or 11,247.65 a year.
     is_savings_credit_eligible: false

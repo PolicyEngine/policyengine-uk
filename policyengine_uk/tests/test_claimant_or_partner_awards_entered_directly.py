@@ -46,7 +46,11 @@ def family(award):
                     reported: {YEAR: 3_000},
                 },
             },
-            "benunits": {"family": {"members": members}},
+            # Not claiming Universal Credit, which would end the claimant's
+            # income-related ESA (esa_income_report_closed).
+            "benunits": {
+                "family": {"members": members, "would_claim_uc": {YEAR: False}}
+            },
             "households": {"home": {"members": members}},
         }
     )
@@ -154,7 +158,11 @@ def test_the_raw_reported_total_is_read_through_the_reports(award):
                     reported: {YEAR: 3_000},
                 },
             },
-            "benunits": {"family": {"members": members}},
+            # Not claiming Universal Credit, which would end the partner's
+            # income-related ESA (esa_income_report_closed).
+            "benunits": {
+                "family": {"members": members, "would_claim_uc": {YEAR: False}}
+            },
             "households": {"home": {"members": members, "savings": {YEAR: 10_000}}},
         }
     )

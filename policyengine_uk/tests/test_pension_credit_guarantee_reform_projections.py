@@ -20,7 +20,7 @@ from policyengine_core.periods import instant
 
 from policyengine_uk import Simulation, system
 from policyengine_uk.model_api import Scenario
-from policyengine_uk.parameters.gov.dwp.housing_benefit.allowances.create_protected_pension_age_uprating import (
+from policyengine_uk.parameters.gov.dwp.housing_benefit.allowances.create_pension_age_allowances import (
     ALLOWANCE_GUARANTEES,
     protected_allowance_index_values,
 )
@@ -164,9 +164,13 @@ def test_joint_guarantee_and_hb_cuts_use_consistent_reformed_components(
         path = f"{HB_ALLOWANCES}.protected_pension_age_uprating.{name}"
         index = parameters.get_child(path)
         assumptions = parameters.gov.economic_assumptions
-        earnings = assumptions.indices.statutory_earnings_floor
+        earnings = assumptions.indices.earnings_uprating
         earnings_growth = earnings("2027-04-30") / earnings("2026-04-30")
-        cpi_growth = assumptions.statutory_uprating_inputs.cpi_september("2026-09-01")
+        cpi_growth = (
+            assumptions.indices.september_cpi_uprating("2027-04-30")
+            / assumptions.indices.september_cpi_uprating("2026-04-30")
+            - 1
+        )
         guarantee = guarantees[relationship]
         base = allowances[name]
         expected = (
@@ -200,9 +204,13 @@ def test_joint_guarantee_and_savings_threshold_cuts_use_reformed_components(
         path = f"{SAVINGS_CREDIT}.threshold_uprating.{relationship}"
         index = parameters.get_child(path)
         assumptions = parameters.gov.economic_assumptions
-        earnings = assumptions.indices.statutory_earnings_floor
+        earnings = assumptions.indices.earnings_uprating
         earnings_growth = earnings("2027-04-30") / earnings("2026-04-30")
-        cpi_growth = assumptions.statutory_uprating_inputs.cpi_september("2026-09-01")
+        cpi_growth = (
+            assumptions.indices.september_cpi_uprating("2027-04-30")
+            / assumptions.indices.september_cpi_uprating("2026-04-30")
+            - 1
+        )
         # These reformed gaps imply exact £12 maxima at the 60% phase-in rate.
         expected_threshold = guarantees[relationship] * earnings_growth - 20 * (
             1 + cpi_growth
@@ -294,7 +302,7 @@ def test_invalid_enacted_protected_allowance_still_raises(relationship):
         protected_allowance_index_values(
             guarantee - 0.01,
             guarantee,
-            assumptions.indices.statutory_earnings_floor,
+            assumptions.indices.earnings_uprating,
             assumptions.statutory_uprating_inputs.cpi_september,
             2026,
             base_year=2026,
@@ -324,7 +332,7 @@ def _index_growth(parameters, name, year=2027):
 
 
 def _earnings_growth(parameters, year=2027):
-    earnings = parameters.gov.economic_assumptions.indices.statutory_earnings_floor
+    earnings = parameters.gov.economic_assumptions.indices.earnings_uprating
     return earnings(f"{year}-04-30") / earnings(f"{year - 1}-04-30")
 
 

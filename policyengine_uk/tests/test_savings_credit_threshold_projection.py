@@ -3,7 +3,7 @@ from policyengine_core.periods import instant
 
 from policyengine_uk import Simulation, system
 from policyengine_uk.model_api import Scenario
-from policyengine_uk.parameters.gov.dwp.pension_credit.create_savings_credit_threshold_projection import (
+from policyengine_uk.parameters.gov.dwp.pension_credit.savings_credit.create_savings_credit_threshold import (
     project_maximum_savings_credit,
     round_currency,
     savings_credit_threshold,
@@ -58,14 +58,14 @@ def test_2027_threshold_preserves_the_cpi_projected_maximum(
     projected_maximum = phase_in_rate * (projected_guarantee - projected_threshold)
 
     assert base_maximum * 1.035 == pytest.approx(expected_2027_maximum)
-    assert projected_maximum == pytest.approx(expected_2027_maximum)
+    assert projected_maximum == pytest.approx(expected_2027_maximum, abs=0.001)
 
 
 def test_projected_thresholds_preserve_the_maximum_in_every_forecast_year():
     parameters = _parameters()
     savings_credit = parameters.gov.dwp.pension_credit.savings_credit
     guarantee = parameters.gov.dwp.pension_credit.guarantee_credit.minimum_guarantee
-    cpi = parameters.gov.economic_assumptions.statutory_uprating_inputs.cpi_september
+    cpi = parameters.gov.economic_assumptions.indices.september_cpi_uprating
 
     for relationship in ("SINGLE", "COUPLE"):
         guarantee_parameter = getattr(guarantee, relationship)
@@ -81,7 +81,7 @@ def test_projected_thresholds_preserve_the_maximum_in_every_forecast_year():
         for year in range(2027, 2040):
             maximum = project_maximum_savings_credit(
                 maximum,
-                float(cpi(f"{year - 1}-09-01")),
+                float(cpi(f"{year}-04-01")) / float(cpi(f"{year - 1}-04-01")) - 1,
             )
             phase_in_rate = float(savings_credit.rate.phase_in(f"{year}-04-01"))
             actual = phase_in_rate * (
@@ -167,7 +167,7 @@ def test_next_year_rates_move_the_projection_base():
     parameters = _system_with_rates(NEXT_YEAR_RATES).parameters
     savings_credit = parameters.gov.dwp.pension_credit.savings_credit
     guarantee = parameters.gov.dwp.pension_credit.guarantee_credit.minimum_guarantee
-    cpi = parameters.gov.economic_assumptions.statutory_uprating_inputs.cpi_september
+    cpi = parameters.gov.economic_assumptions.indices.september_cpi_uprating
     for path, value in NEXT_YEAR_RATES.items():
         assert parameters.get_child(path)("2027-06-01") == value, path
 
@@ -176,7 +176,9 @@ def test_next_year_rates_move_the_projection_base():
         threshold = getattr(savings_credit.threshold, relationship)
         index = getattr(savings_credit.threshold_uprating, relationship)
         assert index("2027-04-30") == 1
-        projected_maximum = maximum * (1 + max(float(cpi("2027-09-01")), 0))
+        projected_maximum = maximum * (
+            1 + max(float(cpi("2028-04-01")) / float(cpi("2027-04-01")) - 1, 0)
+        )
         phase_in = float(savings_credit.rate.phase_in("2028-04-30"))
         assert phase_in * (
             float(getattr(guarantee, relationship)("2028-04-30"))

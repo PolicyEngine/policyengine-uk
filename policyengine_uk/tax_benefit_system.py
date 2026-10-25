@@ -30,11 +30,11 @@ from policyengine_uk.parameters.gov.contrib.create_private_pension_uprating impo
 from policyengine_uk.parameters.gov.dwp.state_pension.triple_lock.create_triple_lock import (
     add_triple_lock,
 )
-from policyengine_uk.parameters.gov.dwp.housing_benefit.allowances.create_protected_pension_age_uprating import (
-    add_protected_pension_age_uprating,
+from policyengine_uk.parameters.gov.dwp.housing_benefit.allowances.create_pension_age_allowances import (
+    project_pension_age_allowances,
 )
-from policyengine_uk.parameters.gov.dwp.pension_credit.create_savings_credit_threshold_projection import (
-    add_savings_credit_threshold_projection,
+from policyengine_uk.parameters.gov.dwp.pension_credit.savings_credit.create_savings_credit_threshold import (
+    project_savings_credit_threshold,
 )
 from policyengine_uk.parameters.gov.dwp.universal_credit.rebalancing.create_health_element_uprating import (
     add_uc_health_element_uprating,
@@ -44,6 +44,9 @@ from policyengine_uk.parameters.gov.dwp.universal_credit.rebalancing.create_stan
 )
 from policyengine_uk.parameters.gov.economic_assumptions.create_september_cpi_uprating import (
     add_september_cpi_uprating,
+)
+from policyengine_uk.parameters.gov.economic_assumptions.create_earnings_uprating import (
+    add_earnings_uprating,
 )
 from policyengine_uk.parameters.gov.economic_assumptions.create_economic_assumption_indices import (
     create_economic_assumption_indices,
@@ -128,11 +131,12 @@ GENERATION_STEPS = (
     add_lagged_earnings,
     add_lagged_cpi,
     add_statutory_uprating_inputs,
+    add_earnings_uprating,
     add_triple_lock,
     add_september_cpi_uprating,
     create_economic_assumption_indices,
-    add_savings_credit_threshold_projection,
-    add_protected_pension_age_uprating,
+    project_savings_credit_threshold,
+    project_pension_age_allowances,
     add_threshold_indexation,
     add_uc_standard_allowance_uprating,
     add_uc_health_element_uprating,
@@ -149,16 +153,12 @@ def _add_generated_parameters(
 
     Each change in ``generated`` is written onto its parameter just after
     the step that generates it, so the later steps, and uprating, read it.
-    ``unreformed`` supplies the base year, guarantee and phase-in rate for the
-    separately set Savings Credit threshold and protected Housing Benefit
-    allowance forecast indices.
+    ``unreformed`` supplies the enacted base year and independent Pension
+    Credit and Housing Benefit component bases.
     """
     pending = list(generated or [])
     for step in GENERATION_STEPS:
-        if step in (
-            add_savings_credit_threshold_projection,
-            add_protected_pension_age_uprating,
-        ):
+        if step in (project_savings_credit_threshold, project_pension_age_allowances):
             parameters = step(parameters, unreformed=unreformed)
         else:
             parameters = step(parameters)
@@ -189,10 +189,9 @@ def process_parameter_tree(
     - lagged earnings and CPI indices
     - statutory uprating inputs (September CPI, May-July earnings)
     - triple lock calculations for state pensions
-    - September CPI uprating
+    - earnings and September CPI uprating
     - economic assumption indices
-    - Pension Credit Savings Credit threshold projections
-    - protected pension-age Housing Benefit allowance indices
+    - Pension Credit threshold and protected Housing Benefit forecast indices
     - income tax and NICs threshold indexation after the freeze
     - Universal Credit standard allowance uprating (UC Act 2025 s. 1)
     - Universal Credit LCWRA element uprating (UC Act 2025 s. 3 freeze)
@@ -209,9 +208,6 @@ def process_parameter_tree(
     tree carrying dated reform changes passes ``unreformed``, the same tree
     without them, which the copy is taken from instead (#2188).
     ``annualise=False`` stops after the projection and adds no copy.
-    ``unreformed`` also keeps the Savings Credit threshold and protected HB
-    indices independent of reforms to the guarantee or phase-in rate,
-    including during intermediate projections with ``annualise=False``.
     ``generated`` holds the reform's changes to generated parameters, each
     written just after the step that generates it (see
     ``_add_generated_parameters``).
@@ -750,10 +746,7 @@ def prior_law_projection(
                         tree.get_child(assignment.path), assignment, lookup
                     )
             updated[path] = process_parameter_tree(
-                tree,
-                unreformed=unreformed,
-                annualise=False,
-                generated=generated,
+                tree, unreformed=unreformed, annualise=False, generated=generated
             )[1].get(path)
         if _same_timelines(updated, environment):
             return lookup

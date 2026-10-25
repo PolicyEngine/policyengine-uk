@@ -60,10 +60,11 @@ COUPLE:
 metadata:
   unit: currency-GBP
   period: week
+  # Forecast indices built by create_savings_credit_threshold.py:
+  # standard minimum guarantee - Savings Credit maximum / phase-in rate.
+  # Published thresholds keep their own rounding; only projections are derived.
   propagate_metadata_to_children: true
   reference:
-    - title: State Pension Credit Act 2002 s. 3
-      href: https://www.legislation.gov.uk/ukpga/2002/16/section/3
     - title: The State Pension Credit Regulations 2002 reg. 7
       href: https://www.legislation.gov.uk/uksi/2002/1792/regulation/7/2021-04-12
     - title: Benefit and pension rates 2025 to 2026 (DWP, gov.uk)
@@ -74,19 +75,3 @@ metadata:
       href: https://www.legislation.gov.uk/uksi/2025/295/contents/made
     - title: The Social Security Benefits Up-rating Order 2026 (SI 2026/148)
       href: https://www.legislation.gov.uk/uksi/2026/148/contents/made
-    - title: Social Security Administration Act 1992 section 150
-      href: https://www.legislation.gov.uk/ukpga/1992/5/section/150
-    - title: Social Security Administration Act 1992 section 150A
-      href: https://www.legislation.gov.uk/ukpga/1992/5/section/150A
-    - title: Social Security Administration (Northern Ireland) Act 1992 section 132
-      href: https://www.legislation.gov.uk/ukpga/1992/8/section/132
-    - title: Social Security Administration (Northern Ireland) Act 1992 section 132A
-      href: https://www.legislation.gov.uk/ukpga/1992/8/section/132A
-    - title: A11/2024 Housing Benefit uprating for the financial year ending March 2026
-      href: https://www.gov.uk/government/publications/housing-benefit-adjudication-circulars-2024/a112024-housing-benefit-uprating-for-the-financial-year-ending-march-2026
-    - title: A14/2025 Housing Benefit uprating for the financial year ending March 2027
-      href: https://www.gov.uk/government/publications/housing-benefit-adjudication-circulars-2025/a142025-housing-benefit-uprating-for-the-financial-year-ending-march-2027
-    - title: ONS KAC3 average weekly earnings, whole economy, total pay
-      href: https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/timeseries/kac3/lms
-    - title: ONS D7G7 Consumer Prices Index annual rate
-      href: https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/d7g7/mm23

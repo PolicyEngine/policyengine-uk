@@ -1,11 +1,38 @@
 description: >-
-  Personal allowance for Housing Benefit for a couple where one or both members attained State Pension age before 1 April 2021 (and, before that date, every couple with a member over State Pension age).
-  Amounts after the last enacted rate use a component-weighted forecast and
-  are not enacted future rates.
+  Personal allowance for Housing Benefit for a couple where one or both members attained State Pension age before 1 April 2021 (before that date, every couple with a member over State Pension age except, until 6 December 2018, one where both members were under 65).
+  Values after the last enacted rate are forecasts, not enacted future rates.
 values:
-  # 2020-21 to 2026-27: DWP Benefit and pension rates (gov.uk), each
-  # year's rate as listed in that year's publication.
-  2015-04-01: 270.6
+  # 2015-16 to 2019-20: the rate set by the instrument cited at each value
+  # (to 2018-19, the aged-65-or-over rate; younger claimants got
+  # aged_under_65). 2020-21 to 2026-27: DWP Benefit and pension rates
+  # (gov.uk), each year's rate as listed in that year's publication.
+  2015-04-01:
+    value: 248.3
+    reference:
+      - title: The Social Security Benefits Up-rating Order 2015, Schedule 7
+        href: https://www.legislation.gov.uk/uksi/2015/457/schedule/7/made
+  2016-04-01:
+    value: 252.3
+    reference:
+      - title: The Social Security Benefits (Adjustment of Amounts and Thresholds) Regulations 2016, regulation 6
+        href: https://www.legislation.gov.uk/uksi/2016/242/regulation/6/made
+  2017-04-01:
+    value: 258.15
+    reference:
+      - title: The Social Security Benefits Up-rating Order 2017, Schedule 7
+        href: https://www.legislation.gov.uk/uksi/2017/260/schedule/7/made
+  2018-04-01:
+    value: 263.8
+    reference:
+      - title: The Social Security Benefits Up-rating Order 2018, Schedule 6
+        href: https://www.legislation.gov.uk/uksi/2018/281/schedule/6/made
+  2019-04-01:
+    value: 270.6
+    reference:
+      - title: The Social Security Benefits Up-rating Order 2019, Schedule 4
+        href: https://www.legislation.gov.uk/uksi/2019/480/schedule/4/made
+      - title: The Social Security Benefits Up-rating Order (Northern Ireland) 2019, Schedule 4
+        href: https://www.legislation.gov.uk/nisr/2019/58/made
   2020-04-01: 280.85
   2021-04-01: 286.05
   2022-04-06: 294.9
@@ -27,20 +54,18 @@ metadata:
   period: week
   unit: currency-GBP
   label: Housing Benefit couple pension-age personal allowance
-  # Not uprated by September CPI: the allowance is the Pension Credit
-  # guarantee plus a retained Savings Credit amount, projected by component
-  # (create_protected_pension_age_uprating.py): the guarantee by the
-  # statutory earnings floor, the retained amount by September CPI.
+  # Component-weighted forecast: the allowance is the Pension Credit standard
+  # minimum guarantee plus the maximum Savings Credit (HB A3/2021), which
+  # rise by earnings and September CPI. create_pension_age_allowances.py
+  # builds an allowance-specific index from that sum after published amounts.
   uprating: gov.dwp.housing_benefit.allowances.protected_pension_age_uprating.couple
   reference:
     - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006 (SI 2006/214), Schedule 3, paragraph 1(2)(b)
       href: https://www.legislation.gov.uk/uksi/2006/214/schedule/3
+    - title: DWP Housing Benefit circular A3/2021, paragraphs 3-5 (the allowance is the standard minimum guarantee plus the maximum Savings Credit)
+      href: https://www.gov.uk/government/publications/housing-benefit-adjudication-circulars-2021/a32021-housing-benefit-person-who-have-attained-the-qualifying-age-for-state-pension-credit-amendment-regulations-2021
     - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations (Northern Ireland) 2006 (SR 2006/406), Schedule 4, paragraph 1 (the same amounts)
       href: https://www.legislation.gov.uk/nisr/2006/406/schedule/4
-    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006 Schedule 3 paragraph 1
-      href: https://www.legislation.gov.uk/uksi/2006/214/schedule/3/paragraph/1
-    - title: The Social Security Benefits Up-rating Order 2026 article 24(6) and Schedule 6
-      href: https://www.legislation.gov.uk/uksi/2026/148/schedule/6/made
     - title: Benefit and pension rates 2024 to 2025 - Policy paper
       href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2024-to-2025/benefit-and-pension-rates-2024-to-2025
     - title: Benefit and pension rates 2020 to 2021 (DWP, gov.uk)
@@ -53,5 +78,3 @@ metadata:
       href: https://www.legislation.gov.uk/uksi/2025/295/contents/made
     - title: The Social Security Benefits Up-rating Order 2026 (SI 2026/148)
       href: https://www.legislation.gov.uk/uksi/2026/148/contents/made
-    - title: A14/2025 Housing Benefit uprating for the financial year ending March 2027, paragraphs 5, 6 and 20
-      href: https://www.gov.uk/government/publications/housing-benefit-adjudication-circulars-2025/a142025-housing-benefit-uprating-for-the-financial-year-ending-march-2027
