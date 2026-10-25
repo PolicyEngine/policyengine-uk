@@ -69,7 +69,7 @@
     is_lone_parent: [false, true, true, false, true]
     housing_benefit_pension_age_regulations_apply: [true, true, true, true, true]
     # The claimants attained State Pension age before 1 April 2021, so the
-    # higher pension-age personal allowances apply (SI 2021/188).
+    # higher pension-age personal allowances apply (SR 2021/70).
     housing_benefit_attained_pension_age_before_cutoff: [true, true, true, true, true]
     housing_benefit_eligible: [true, true, true, true, true]
     eldest_claimant_or_partner_age: [75, 75, 75, 75, 75]
