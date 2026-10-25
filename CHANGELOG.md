@@ -1,3 +1,14 @@
+## [2.159.0] - 2026-10-25
+
+### Added
+
+- Warm Home Discount receipt rates by group (85% for Pension Credit households, 70% for other qualifying benefits), from DESNZ's 2026 impact assessment, so the rebate no longer goes to every household modelled as receiving a qualifying benefit.
+
+### Fixed
+
+- Allowed caller-verified joint occupier exclusions in the legacy severe disability premium's non-dependant test.
+
+
 ## [2.158.3] - 2026-10-25
 
 ### Changed
