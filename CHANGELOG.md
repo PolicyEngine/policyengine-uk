@@ -1,3 +1,12 @@
+## [2.161.1] - 2026-10-25
+
+### Fixed
+
+- The build-hook test that checks a failed build still removes its directory counts only the hook's own exit registrations, so it no longer fails when it runs before anything else in the process has created a finalizer.
+- Separated Northern Ireland's dated Energy Price Guarantee discounts from Great Britain's calculation; spending-only cases in 2022 and 2023 now return zero subsidy with `ni_epg_subsidy_calculable=false` during supported months. Historical monetary totals remain incomplete for those cases; zero does not establish that no support was due.
+- Assigned lone fathers the OBR lone-parent substitution, income and participation elasticities.
+
+
 ## [2.161.0] - 2026-10-25
 
 ### Added

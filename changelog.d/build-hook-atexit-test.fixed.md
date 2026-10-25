@@ -1,1 +1,0 @@
-The build-hook test that checks a failed build still removes its directory counts only the hook's own exit registrations, so it no longer fails when it runs before anything else in the process has created a finalizer.
