@@ -580,12 +580,18 @@ class Simulation(CoreSimulation):
         # value as the model's after this call.
         records = model_value_input_records(self, variable_name)
         # This depth covers every calculate call, including nongains
-        # variables. Formula/framework writes must not invalidate a calculation
-        # still running; direct edits of a built simulation must refresh its
-        # dependent values before the next outermost calculation.
+        # variables. A formula can write to a new branch whose own depth is
+        # zero while an ancestor is calculating. Core already invalidates
+        # that branch's affected dependencies; keep its unrelated caches.
+        # Direct edits with every ancestor idle must refresh dependent values
+        # before the next outermost calculation.
+        calculation = self
+        while calculation is not None and not getattr(
+            calculation, "_cgt_calculation_depth", 0
+        ):
+            calculation = getattr(calculation, "parent_branch", None)
         external = (
-            getattr(self, "input_variables", None) is not None
-            and self._cgt_calculation_depth == 0
+            getattr(self, "input_variables", None) is not None and calculation is None
         )
         stored = set()
         try:

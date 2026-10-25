@@ -4,8 +4,11 @@ import copy
 
 import numpy as np
 import pytest
+from policyengine_core.periods import YEAR as YEAR_PERIOD
+from policyengine_core.variables import Variable
 
 from policyengine_uk import Microsimulation, Simulation
+from policyengine_uk.entities import Person
 from policyengine_uk.scenarios.pip_reform import modify_simulation as phase_in_pip
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
@@ -262,3 +265,77 @@ def test_shipped_pip_callback_retains_its_explicit_periods():
         )
     frame = simulation.to_input_dataframe()
     assert all(f"pip__{year}" in frame for year in years)
+
+
+def test_internal_nested_branch_keeps_unrelated_tax_counterfactual_cache(monkeypatch):
+    situation = family()
+    situation["people"]["parent"]["private_pension_income"] = {YEAR: 20_000}
+    counterfactual = "pension_credit_income_tax_without_employment_income"
+    expected = values(Simulation(situation=situation), counterfactual)
+    assert expected[0] > 0
+    simulation = Simulation(situation=situation)
+    calls = []
+    observed = {}
+    variable = simulation.tax_benefit_system.variables[counterfactual]
+    namespace = variable.get_formula(YEAR).__globals__
+    original = namespace["income_tax_with_inputs_zeroed"]
+
+    def counted(owner, period, variables):
+        calls.append(owner.branch_name)
+        return original(owner, period, variables)
+
+    monkeypatch.setitem(namespace, "income_tax_with_inputs_zeroed", counted)
+
+    class nested_tax_counterfactual_probe(Variable):
+        value_type = float
+        entity = Person
+        definition_period = YEAR_PERIOD
+        label = "Real income tax read through an internal nested branch"
+
+        def formula(person, period, parameters):
+            # These are genuine policy calculations, not fixed test outputs.
+            person(counterfactual, period)
+            owner = person.simulation
+            middle = owner.get_branch("internal_middle")
+            leaf = middle.get_branch("internal_leaf")
+            observed["leaf"] = leaf
+            try:
+                # UC housing does not enter tax on earnings. The inherited
+                # tax counterfactual remains valid through this internal edit.
+                leaf.set_input("uc_housing_costs_element", period, [0])
+                return leaf.calculate(counterfactual, period)
+            finally:
+                del middle.branches["internal_leaf"]
+                del owner.branches["internal_middle"]
+
+    simulation.tax_benefit_system.add_variable(nested_tax_counterfactual_probe)
+    np.testing.assert_allclose(
+        values(simulation, "nested_tax_counterfactual_probe"), expected, atol=0.01
+    )
+    assert observed["leaf"].parent_branch.parent_branch is simulation
+    assert calls == ["default"]
+    assert simulation.branches == {}
+
+
+def test_idle_nested_user_branch_edit_matches_cold_parameter_benchmark():
+    simulation = Simulation(situation=family())
+    parent_net = values(simulation, "household_net_income")
+    middle = simulation.get_branch("user_middle")
+    leaf = middle.get_branch("user_leaf")
+    warm_net = values(leaf, "household_net_income")
+    add_benefit(leaf)
+    expected = benchmark()
+    expected_net = values(expected, "household_net_income")
+    assert expected_net[0] > warm_net[0]
+    for reset in (False, True):
+        if reset:
+            leaf.reset_calculations()
+        for variable in (BENEFIT, "household_net_income"):
+            np.testing.assert_allclose(
+                values(leaf, variable), values(expected, variable), atol=0.01
+            )
+    np.testing.assert_array_equal(
+        values(simulation, "household_net_income"), parent_net
+    )
+    assert simulation.branches["user_middle"] is middle
+    assert middle.branches["user_leaf"] is leaf
