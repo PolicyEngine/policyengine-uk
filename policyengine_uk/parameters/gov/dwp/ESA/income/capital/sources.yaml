@@ -1,4 +1,6 @@
 description: >
+  Ordinary cash ISA balances are separate from savings and are included at
+  their accessible cash value, without a generic cash sale-cost deduction.
   Model variables currently mapped to countable income-related Employment and
   Support Allowance capital. The Employment and Support Allowance Regulations
   2008 treat capital as assessable unless it is disregarded under Schedule 9.
@@ -37,6 +39,7 @@ metadata:
 values:
   2008-10-27:
     - savings
+    - cash_isa
     - owned_land
     - share_like_capital
     - other_residential_property_value

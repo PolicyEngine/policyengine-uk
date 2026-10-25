@@ -10,4 +10,9 @@ class capital_income(Variable):
     definition_period = YEAR
     unit = GBP
 
-    adds = ["savings_interest_income", "dividend_income"]
+    adds = [
+        "savings_interest_income",
+        "tax_free_savings_income",
+        "dividend_income",
+        "individual_savings_account_dividend_income",
+    ]

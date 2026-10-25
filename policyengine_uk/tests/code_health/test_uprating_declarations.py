@@ -45,6 +45,10 @@ KNOWN_INDEX_OVERRIDES = {
     # Declares ons.household_interest_income; the YAML applies per_capita.gdp.
     # Flagged in #1862 for someone with the context to say which is intended.
     "savings_interest_income",
+    # Like ordinary savings interest, noncash ISA interest declares the ONS
+    # household index but follows the existing GDP dataset rule. Broader
+    # alignment of those two surfaces remains separate work in #2638.
+    "non_cash_isa_cash_interest",
 }
 
 
