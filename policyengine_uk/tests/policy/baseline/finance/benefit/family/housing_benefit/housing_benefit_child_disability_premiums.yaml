@@ -1025,7 +1025,7 @@
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
     # The claimant attained State Pension age before 1 April 2021, so the
-    # higher pension-age personal allowance applies (SI 2021/188).
+    # higher pension-age personal allowance applies (SR 2021/70).
     housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
@@ -1055,7 +1055,7 @@
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
     # The claimant attained State Pension age before 1 April 2021, so the
-    # higher pension-age personal allowance applies (SI 2021/188).
+    # higher pension-age personal allowance applies (SR 2021/70).
     housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
@@ -1085,7 +1085,7 @@
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
     # The claimant attained State Pension age before 1 April 2021, so the
-    # higher pension-age personal allowance applies (SI 2021/188).
+    # higher pension-age personal allowance applies (SR 2021/70).
     housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
@@ -1115,7 +1115,7 @@
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
     # The claimant attained State Pension age before 1 April 2021, so the
-    # higher pension-age personal allowance applies (SI 2021/188).
+    # higher pension-age personal allowance applies (SR 2021/70).
     housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
@@ -1145,7 +1145,7 @@
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
     # The claimant attained State Pension age before 1 April 2021, so the
-    # higher pension-age personal allowance applies (SI 2021/188).
+    # higher pension-age personal allowance applies (SR 2021/70).
     housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
@@ -1175,7 +1175,7 @@
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
     # The claimant attained State Pension age before 1 April 2021, so the
-    # higher pension-age personal allowance applies (SI 2021/188).
+    # higher pension-age personal allowance applies (SR 2021/70).
     housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
@@ -1205,7 +1205,7 @@
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
     # The claimant attained State Pension age before 1 April 2021, so the
-    # higher pension-age personal allowance applies (SI 2021/188).
+    # higher pension-age personal allowance applies (SR 2021/70).
     housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
@@ -1235,7 +1235,7 @@
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
     # The claimant attained State Pension age before 1 April 2021, so the
-    # higher pension-age personal allowance applies (SI 2021/188).
+    # higher pension-age personal allowance applies (SR 2021/70).
     housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
@@ -1265,7 +1265,7 @@
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
     # The claimant attained State Pension age before 1 April 2021, so the
-    # higher pension-age personal allowance applies (SI 2021/188).
+    # higher pension-age personal allowance applies (SR 2021/70).
     housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
@@ -1295,7 +1295,7 @@
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
     # The claimant attained State Pension age before 1 April 2021, so the
-    # higher pension-age personal allowance applies (SI 2021/188).
+    # higher pension-age personal allowance applies (SR 2021/70).
     housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
@@ -1325,7 +1325,7 @@
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
     # The claimant attained State Pension age before 1 April 2021, so the
-    # higher pension-age personal allowance applies (SI 2021/188).
+    # higher pension-age personal allowance applies (SR 2021/70).
     housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
@@ -1355,7 +1355,7 @@
     housing_benefit_eligible: true
     housing_benefit_pension_age_regulations_apply: true
     # The claimant attained State Pension age before 1 April 2021, so the
-    # higher pension-age personal allowance applies (SI 2021/188).
+    # higher pension-age personal allowance applies (SR 2021/70).
     housing_benefit_attained_pension_age_before_cutoff: true
     eldest_claimant_or_partner_age: 75
     is_single_person: true
@@ -1572,8 +1572,11 @@
 
 # A real claimant aged 75 and a qualifying child aged 17, with no eldest-age or
 # cutoff override, so both are derived from the claimant. A man aged 75 in 2026
-# reached State Pension age on 6 April 2016, before the 1 April 2021 cutoff
-# (SI 2021/188), so the higher pension-age rate of £256.00 a week applies.
+# was born before 6 December 1953, so he reached State Pension age at 65
+# (Pensions Act 1995 Sch 4 para 1(1)), between 2015 and 2017 depending on his
+# birthday; from age alone the model places it on 6 April 2016. That is before
+# the 1 April 2021 cutoff (SI 2021/188), so the higher pension-age rate of
+# £256.00 a week applies.
 - name: Pension-age claimant and qualifying child, claimant listed first
   period: 2026
   absolute_error_margin: 0.02
