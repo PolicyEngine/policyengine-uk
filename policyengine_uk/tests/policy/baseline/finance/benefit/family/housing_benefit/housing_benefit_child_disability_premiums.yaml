@@ -1569,3 +1569,75 @@
         members: [parent, child1, child2, child3, non_dependant]
   output:
     housing_benefit_child_disability_premiums: 30 * 52
+
+# A real claimant aged 75 and a qualifying child aged 17, with no eldest-age or
+# cutoff override, so both are derived from the claimant. A man aged 75 in 2026
+# reached State Pension age on 6 April 2016, before the 1 April 2021 cutoff
+# (SI 2021/188), so the higher pension-age rate of £256.00 a week applies.
+- name: Pension-age claimant and qualifying child, claimant listed first
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 75
+        is_male: true
+      child:
+        age: 17
+        is_child_or_young_person_for_legacy_benefits: true
+        dla_sc: 100
+        receives_highest_dla_sc: true
+    benunits:
+      family:
+        members: [claimant, child]
+        housing_benefit_eligible: true
+        housing_benefit_pension_age_regulations_apply: true
+        is_single_person: false
+        is_lone_parent: true
+        is_couple: false
+        benefits_premiums: 100
+    households:
+      home:
+        members: [claimant, child]
+        country: ENGLAND
+  output:
+    is_claimant_or_partner: [true, false]
+    eldest_claimant_or_partner_age: 75
+    housing_benefit_attained_pension_age_before_cutoff: true
+    housing_benefit_child_disability_premiums: 118.45 * 52
+    # £256.00 x 52 + £100 supplied premiums + £118.45 x 52.
+    housing_benefit_applicable_amount: 19571.4
+
+- name: Pension-age claimant and qualifying child, child listed first
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    people:
+      child:
+        age: 17
+        is_child_or_young_person_for_legacy_benefits: true
+        dla_sc: 100
+        receives_highest_dla_sc: true
+      claimant:
+        age: 75
+        is_male: true
+    benunits:
+      family:
+        members: [child, claimant]
+        housing_benefit_eligible: true
+        housing_benefit_pension_age_regulations_apply: true
+        is_single_person: false
+        is_lone_parent: true
+        is_couple: false
+        benefits_premiums: 100
+    households:
+      home:
+        members: [child, claimant]
+        country: ENGLAND
+  output:
+    is_claimant_or_partner: [false, true]
+    eldest_claimant_or_partner_age: 75
+    housing_benefit_attained_pension_age_before_cutoff: true
+    housing_benefit_child_disability_premiums: 118.45 * 52
+    # £256.00 x 52 + £100 supplied premiums + £118.45 x 52.
+    housing_benefit_applicable_amount: 19571.4
