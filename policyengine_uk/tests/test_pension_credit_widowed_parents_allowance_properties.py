@@ -25,7 +25,8 @@ Invariants:
 1. Extra Pension Credit income is the extra WPA above £10 a week, less the
    extra income tax and National Insurance, less any Carer's Allowance or
    Carer Support Payment it displaces. While Guarantee Credit is positive it
-   falls pound for pound with that income, and it never rises where no
+   falls pound for pound with that income until it reaches zero; from zero it
+   rises by no more than the income falls; and it never rises where no
    carer's benefit is displaced.
 2. Differential: where neither Guarantee Credit nor Savings Credit is due and
    Housing Benefit income is above its zero floor, Housing Benefit applicable
@@ -124,6 +125,7 @@ def test_guarantee_credit_falls_pound_for_pound_with_widowed_parents_allowance(
         (len(families), len(AMOUNTS)),
         [
             "guarantee_credit",
+            "minimum_guarantee",
             "pension_credit_income",
             INCOME_TAX,
             "national_insurance",
@@ -146,10 +148,22 @@ def test_guarantee_credit_falls_pound_for_pound_with_widowed_parents_allowance(
     assert np.allclose(
         extra_income[positive_income], expected[positive_income], atol=0.01
     ), (families, pc_income, tax, carer_benefit)
-    # Pound for pound only where Guarantee Credit is paid at both amounts: from
-    # zero it rises by less than the income falls (round 2 review N4 of #2645).
-    paid = (gc[..., :-1] > 0) & (gc[..., 1:] > 0)
-    assert np.allclose(-np.diff(gc, axis=-1)[paid], extra_income[paid], atol=0.01), (
+    # Guarantee Credit is the minimum guarantee less Pension Credit income,
+    # floored at zero, and WPA does not change the minimum guarantee (the
+    # carer addition follows entitlement before overlap). So Guarantee Credit
+    # falls pound for pound with the income until it reaches zero, and from
+    # zero it rises by no more than the income falls (round 2 review N4 of
+    # #2645).
+    assert np.allclose(np.diff(g["minimum_guarantee"], axis=-1), 0, atol=0.01), (
+        families,
+        g["minimum_guarantee"],
+    )
+    before, after = gc[..., :-1], gc[..., 1:]
+    paid = before > 0
+    assert np.allclose(
+        after[paid], np.maximum(before - extra_income, 0)[paid], atol=0.01
+    ), (families, gc, pc_income)
+    assert np.all(after[~paid] <= np.maximum(-extra_income, 0)[~paid] + 0.01), (
         families,
         gc,
         pc_income,
