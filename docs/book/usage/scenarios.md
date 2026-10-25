@@ -177,19 +177,27 @@ through the earnings step. For a policy that should vary with earnings, use
 parameter changes or a formula reform; setting its calculated value once cannot
 represent that dependence.
 
-The same input retention applies when a callback calls `set_input` directly on
-an already-built simulation, including through `Scenario.apply`. Resets and all
-three marginal-rate calculations retain surviving inputs visible to that
-simulation, including inputs absent at construction. A top-level `set_input`
-also refreshes dependent calculations before the next read, so a callback can
-read Child Benefit, add an amount and then obtain fresh income and response
-values. Inputs stored only on another clone or branch do not become the
-parent's inputs. Formula and framework writes during a calculation keep their
-existing calculation lifecycle.
+This input retention also applies to ordinary `set_input` calls on an
+already-built simulation, including calls outside any modifier or scenario.
+`reset_calculations` retains every surviving explicit input visible to that
+simulation, including inputs absent at construction, and all three marginal-rate
+calculations retain them too. To undo an override, call
+`simulation.delete_arrays(variable, period)`, then reset or recalculate so the
+variable's formula or default runs again. A reset alone no longer undoes an
+input supplied after construction.
+
+Every top-level `set_input` on a built simulation queues dependent-cache cleanup
+before its next outermost read. This includes simulations with no modifier: a
+caller can read Child Benefit, add an amount and then obtain fresh income and
+response values. Inputs stored only on another clone or branch do not become
+the parent's inputs. Formula and framework writes during a calculation keep
+their existing selective invalidation.
 
 Direct edits of the parameter tree require a separate array-cache boundary.
 After calling a parameter's `update` method on a built simulation, call
-`simulation.drop_computed_arrays()` before reading its results. In a wrapper
+`simulation.drop_computed_arrays()` before reading its results. This public
+method requires PolicyEngine Core 3.33.0 or later, the model's minimum version.
+In a wrapper
 that runs a policy callback, late dynamic parameter updates and a dynamic
 callback, clear computed arrays after each operation in that order. This
 preserves the input values and lets the next operation see the updated policy.

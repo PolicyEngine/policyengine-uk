@@ -416,3 +416,175 @@ def test_marginal_rate_failure_detaches_its_scratch_branch(monkeypatch, variable
     with pytest.raises(RuntimeError, match="synthetic pay-rise failure"):
         values(simulation, variable)
     assert not simulation.branches
+
+
+def capital_gains_family():
+    situation = family()
+    situation["people"]["parent"]["capital_gains"] = {YEAR: 10_000}
+    situation["people"]["partner"] = {
+        "age": {YEAR: 35},
+        "gender": {YEAR: "MALE"},
+        "employment_income": {YEAR: 20_000},
+        "capital_gains": {YEAR: 20_000},
+    }
+    situation["benunits"]["benunit"]["members"].append("partner")
+    situation["households"]["household"]["members"].append("partner")
+    return situation
+
+
+@pytest.mark.parametrize("branch_name", ["adult_1_cg_rise", "adult_2_cg_rise"])
+def test_capital_gains_rate_preserves_preoccupied_user_branch(branch_name):
+    situation = capital_gains_family()
+    expected = values(
+        Simulation(situation=situation), "marginal_tax_rate_on_capital_gains"
+    )
+    assert (expected[[0, 2]] > 0).all()
+    simulation = Simulation(situation=situation)
+    original_gains = values(simulation, "capital_gains")
+    original_benefit = values(simulation, CHILD_BENEFIT)
+    original_names = list(simulation.input_variables)
+    existing = simulation.get_branch(branch_name)
+    existing.set_input(CHILD_BENEFIT, YEAR, [5_000])
+
+    np.testing.assert_allclose(
+        values(simulation, "marginal_tax_rate_on_capital_gains"),
+        expected,
+        atol=1e-5,
+    )
+
+    assert set(simulation.branches) == {branch_name}
+    assert simulation.branches[branch_name] is existing
+    np.testing.assert_array_equal(values(existing, CHILD_BENEFIT), [5_000])
+    np.testing.assert_array_equal(values(simulation, "capital_gains"), original_gains)
+    np.testing.assert_array_equal(values(simulation, CHILD_BENEFIT), original_benefit)
+    assert simulation.input_variables == original_names
+
+
+@pytest.mark.parametrize(
+    "preoccupied", [False, True], ids=["unoccupied", "preoccupied"]
+)
+def test_capital_gains_rate_failure_preserves_user_branch_and_detaches_owned_scratch(
+    monkeypatch, preoccupied
+):
+    situation = capital_gains_family()
+    expected = values(
+        Simulation(situation=situation), "marginal_tax_rate_on_capital_gains"
+    )
+    assert (expected[[0, 2]] > 0).all()
+    simulation = Simulation(situation=situation)
+    original_gains = values(simulation, "capital_gains")
+    existing = None
+    if preoccupied:
+        existing = simulation.get_branch("adult_1_cg_rise")
+        existing.set_input(CHILD_BENEFIT, YEAR, [5_000])
+    original_branches = dict(simulation.branches)
+    captured = {}
+    set_input = Simulation.set_input
+
+    def fail_gains_rise(branch, name, *args, **kwargs):
+        if branch.parent_branch is simulation and name == "capital_gains":
+            captured["branch"] = branch
+            raise RuntimeError("synthetic capital-gains step failure")
+        return set_input(branch, name, *args, **kwargs)
+
+    with monkeypatch.context() as context:
+        context.setattr(Simulation, "set_input", fail_gains_rise)
+        with pytest.raises(RuntimeError, match="synthetic capital-gains step failure"):
+            values(simulation, "marginal_tax_rate_on_capital_gains")
+
+    assert captured["branch"] is not existing
+    assert simulation.branches == original_branches
+    assert all(
+        branch is not captured["branch"] for branch in simulation.branches.values()
+    )
+    if existing is not None:
+        assert simulation.branches["adult_1_cg_rise"] is existing
+        np.testing.assert_array_equal(values(existing, CHILD_BENEFIT), [5_000])
+    np.testing.assert_array_equal(values(simulation, "capital_gains"), original_gains)
+
+
+def test_after_load_modifier_clears_calculated_values_once(monkeypatch):
+    import policyengine_uk.simulation as uk_simulation
+
+    expected = parameter_benchmark()
+    expected_net = values(expected, "household_net_income")
+    captured = {}
+    cleanup_calls = []
+    drop_calculated_values = uk_simulation.drop_calculated_values
+
+    def counted_cleanup(owner):
+        if owner is captured.get("owner") and captured.get("watch_cleanup"):
+            cleanup_calls.append(owner)
+        return drop_calculated_values(owner)
+
+    def modifier(simulation):
+        captured["owner"] = simulation
+        captured["warm_net"] = values(simulation, "household_net_income")
+        add_benefit(simulation)
+        captured["watch_cleanup"] = True
+
+    monkeypatch.setattr(uk_simulation, "drop_calculated_values", counted_cleanup)
+    simulation = Simulation(
+        situation=family(), scenario=Scenario(simulation_modifier=modifier)
+    )
+    assert len(cleanup_calls) == 1
+    assert (expected_net > captured["warm_net"]).all()
+    for _ in range(2):
+        np.testing.assert_allclose(
+            values(simulation, "household_net_income"), expected_net, atol=0.01
+        )
+        assert len(cleanup_calls) == 1
+
+
+@pytest.mark.parametrize("failure", ["modifier", "cleanup"])
+def test_after_load_cleanup_failure_keeps_pending_write(monkeypatch, failure):
+    import policyengine_uk.simulation as uk_simulation
+
+    expected = parameter_benchmark()
+    expected_benefit = values(expected, CHILD_BENEFIT)
+    expected_net = values(expected, "household_net_income")
+    captured = {}
+    cleanup_calls = []
+    drop_calculated_values = uk_simulation.drop_calculated_values
+
+    def fail_cleanup_once(owner):
+        if owner is captured.get("owner") and captured.get("watch_cleanup"):
+            cleanup_calls.append(owner)
+            if failure == "cleanup" and len(cleanup_calls) == 1:
+                raise RuntimeError("synthetic after-load failure")
+        return drop_calculated_values(owner)
+
+    def modifier(simulation):
+        captured["owner"] = simulation
+        captured["warm_net"] = values(simulation, "household_net_income")
+        add_benefit(simulation)
+        captured["stored_benefit"] = (
+            simulation.get_holder(CHILD_BENEFIT)
+            .get_array(period(YEAR), simulation.branch_name)
+            .copy()
+        )
+        np.testing.assert_allclose(
+            captured["stored_benefit"], expected_benefit, atol=0.01
+        )
+        captured["watch_cleanup"] = True
+        if failure == "modifier":
+            raise RuntimeError("synthetic after-load failure")
+
+    monkeypatch.setattr(uk_simulation, "drop_calculated_values", fail_cleanup_once)
+    with pytest.raises(RuntimeError, match="synthetic after-load failure"):
+        Simulation(situation=family(), scenario=Scenario(simulation_modifier=modifier))
+
+    simulation = captured["owner"]
+    assert simulation._external_input_change_pending
+    np.testing.assert_array_equal(
+        simulation.get_holder(CHILD_BENEFIT).get_array(
+            period(YEAR), simulation.branch_name
+        ),
+        captured["stored_benefit"],
+    )
+    assert (expected_net > captured["warm_net"]).all()
+    np.testing.assert_allclose(
+        values(simulation, "household_net_income"), expected_net, atol=0.01
+    )
+    assert not simulation._external_input_change_pending
+    assert len(cleanup_calls) == (1 if failure == "modifier" else 2)

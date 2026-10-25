@@ -442,6 +442,7 @@ class Simulation(CoreSimulation):
                 with self._preserve_stored_inputs():
                     after_data_load.simulation_modifier(self)
                 drop_calculated_values(self)
+                self._external_input_change_pending = False
         self._refresh_capital_gains_projection()
         self._capture_cgt_supplied_inputs()
         self._cgt_warning_enabled = True
