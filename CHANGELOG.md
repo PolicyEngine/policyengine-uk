@@ -1,3 +1,43 @@
+## [2.160.0] - 2026-10-25
+
+### Added
+
+- Added protected Housing Benefit family premiums with jurisdiction-specific closure dates and an explicit pre-assessed historical category.
+
+### Changed
+
+- Document that the inferred carer claimant convention can select an unpaid partner and does not maximise the couple's Carer's Allowance or Carer Support Payment.
+
+### Fixed
+
+- The Aggregate impact report now reports a Dependabot pull request as skipped, as it was meant to, instead of failing it. Dependabot runs have no data access, and the measure step stopped before it set up the tool the comparison runs.
+- - Zero-rate employer Class 1 National Insurance for earners under 21 up to the upper secondary threshold (SSCBA 1992 s.9A) and for apprentices under 25 up to the apprentice upper secondary threshold (s.9B), with both thresholds kept equal to the upper earnings limit after 2030-31. The employer cost variables, the fixed-employer-cost pay response and the salary sacrifice employer NI measure apply the same schedule through one shared helper. The fixed-employer-cost pay response now solves for NIC earnings (pay plus statutory pay) on each side of the reformed threshold, so it also holds where statutory pay takes earnings over a threshold or a reform moves a threshold across a person's earnings. From 2029 the employer cost variables and the pay response also charge employer NI on salary sacrifice above the £2,000 cap, as Class 1 does, and count the broad-base haircut and returned pay as pay, so the baseline and reformed costs equal `employer_cost` in their simulations.
+- - Limited Carer's Allowance and Carer Support Payment to one eligible partner when a couple cares for the same person, preserving reported-award defaults and underlying entitlement before overlapping benefits.
+
+
+## [2.159.0] - 2026-10-25
+
+### Added
+
+- Warm Home Discount receipt rates by group (85% for Pension Credit households, 70% for other qualifying benefits), from DESNZ's 2026 impact assessment, so the rebate no longer goes to every household modelled as receiving a qualifying benefit.
+
+### Fixed
+
+- Allowed caller-verified joint occupier exclusions in the legacy severe disability premium's non-dependant test.
+
+
+## [2.158.3] - 2026-10-25
+
+### Changed
+
+- Clarified bottled gas coverage and ONS levelling requirements for liquid and solid heating fuel inputs.
+
+### Fixed
+
+- Held reported Bereavement Support Payment flat for datasets supplying both separate bereavement-benefit inputs, while preserving CPI uprating for legacy and partial splits and the separate pensions.
+- Corrected England outside London's bus fare yield to exclude only older and disabled concessionary journeys, and refitted the cap-savings table using the same priced boardings.
+
+
 ## [2.158.2] - 2026-10-25
 
 ### Changed

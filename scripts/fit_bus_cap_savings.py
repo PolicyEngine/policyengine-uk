@@ -14,12 +14,19 @@ import numpy as np
 from policyengine_uk.system import system
 
 SINGLE_SHARE = 0.70  # gov.dft.bus.default_single_fare_share
-# DfT BUS01a journeys less BUS01c concessionary journeys, England outside London.
-FARE_PAYING_2023_24 = 1_780_912_900.016 - 499_730_082.115
-FARE_PAYING_2024_25 = 1_850_509_887.261 - 519_107_608.594
+# DfT BUS01a journeys less BUS01c older and disabled concessionary journeys,
+# England outside London: the same concession definition as the benchmark yield.
+# https://assets.publishing.service.gov.uk/media/69c11f97cfa346b9d4704a50/bus01.ods
+PRICED_BOARDINGS_2023_24 = 1_780_912_900.01636 - 391_017_149.37439
+PRICED_BOARDINGS_2024_25 = 1_850_509_887.26131 - 402_846_350.14539
 # The benchmark yield at the December 2024 BUS0415a level, just before the
-# January 2025 step: 1.554716967657 * 185.9 / 190.2282.
-YIELD_DECEMBER_2024 = 1.554716967657 * 185.9 / 190.2282
+# January 2025 step. Read the model's benchmark so the fit uses the same yield.
+BENCHMARK = system.parameters.gov.dft.bus("2024-01-01")
+YIELD_DECEMBER_2024 = (
+    BENCHMARK.yield_per_boarding.ENGLAND_OUTSIDE_LONDON
+    * 185.9
+    / BENCHMARK.local_bus_fares_index.ENGLAND_OUTSIDE_LONDON
+)
 
 # Each fact: target and tolerance, relative (a share of the target) or absolute.
 FACTS = {
@@ -34,7 +41,7 @@ FACTS = {
     # GBP 400 million backing the GBP 2 cap in 2027 (GBP m), read as GBP 2
     # against no cap: the GBP 3 scheme is funded only to December 2026 and the
     # GBP 2 scheme replaces it. Read as GBP 2 against a continued GBP 3 cap, the
-    # fitted table gives about GBP 247m, 38% below (see UNFITTED below).
+    # fitted table gives about GBP 253m, 37% below (see UNFITTED below).
     "cap_2_in_2027": (400, 0.20, "relative"),
     # Frontier Economics and SYSTRA for DfT, Table 6: all single tickets
     # averaged GBP 2.15 before the cap; those above GBP 2 averaged GBP 2.73,
@@ -49,7 +56,7 @@ FACTS = {
 # Published figures the fit reports but does not target (GBP m).
 UNFITTED = {
     # BUS05bi fare cap support for 2024-25, the benchmark year: GBP 2 for 270
-    # days, then GBP 3. Grant per fare-paying boarding rose 78% on 2023-24
+    # days, then GBP 3. Grant per priced boarding rose 77.5% on 2023-24
     # while fares rose 3% to 7% and the cap rose for the last quarter, so the
     # figure may hold more than that year's forgone fares (timing or coverage
     # of payments, not checked). The 2023-24 grant and the two announced
@@ -72,9 +79,12 @@ def unfitted(shares, fares, ratios):
         for s, f in zip(shares, fares)
     )
     return {
-        "grant_2024_25": SINGLE_SHARE * FARE_PAYING_2024_25 / 1e6 * in_force_2024_25,
+        "grant_2024_25": SINGLE_SHARE
+        * PRICED_BOARDINGS_2024_25
+        / 1e6
+        * in_force_2024_25,
         "cap_2_against_3_in_2027": SINGLE_SHARE
-        * FARE_PAYING_2024_25
+        * PRICED_BOARDINGS_2024_25
         / 1e6
         * (
             saving(shares, fares, 2, ratios[2027])
@@ -93,18 +103,18 @@ def facts(shares, fares, ratios):
     above = middle + high
     return {
         "grant_2023_24": SINGLE_SHARE
-        * FARE_PAYING_2023_24
+        * PRICED_BOARDINGS_2023_24
         / 1e6
         * saving(shares, fares, 2, ratios[2023]),
         "january_2025_step": SINGLE_SHARE
         * (saving(shares, fares, 2) - saving(shares, fares, 3))
         / YIELD_DECEMBER_2024,
         "cap_3_in_2025": SINGLE_SHARE
-        * FARE_PAYING_2024_25
+        * PRICED_BOARDINGS_2024_25
         / 1e6
         * saving(shares, fares, 3, ratios[2025]),
         "cap_2_in_2027": SINGLE_SHARE
-        * FARE_PAYING_2024_25
+        * PRICED_BOARDINGS_2024_25
         / 1e6
         * saving(shares, fares, 2, ratios[2027]),
         "mean_single_fare": sum(s * f for s, f in zip(shares, fares)),
