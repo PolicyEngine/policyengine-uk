@@ -1520,7 +1520,8 @@ finance_ni:
     # 2019-20, the first year not published). It is a national average: it
     # does not reproduce any one council's bill or changes in reliefs.
     #
-    # Neither OBR March 2026 line covers the whole bill, and OBR labels
+    # Neither OBR March 2026 line is large enough to cover the whole bill
+    # (each is about half of LPS's £889.5m paid in 2024-25), and OBR labels
     # neither as regional or district; the attribution here is inferred.
     # Expenditure Table 4.1 holds "NI domestic rates" at £0.494bn in every
     # year to 2030-31 inside its council tax total, and ONS classes district
