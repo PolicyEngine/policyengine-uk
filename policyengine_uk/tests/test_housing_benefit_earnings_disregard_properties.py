@@ -145,11 +145,18 @@ def situation(units, earnings_bump=0.0, income_support=0.0, age_map=None):
                     YEAR: adult["pension_contributions"]
                 },
                 "childcare_expenses": {YEAR: unit["childcare"] if j == 0 else 0.0},
+                # The generated adults are the claimant and partner whatever
+                # their age gap (or mapped ages), so the roles are supplied
+                # rather than left to the age presumption.
+                "is_claimant_or_partner": {YEAR: True},
             }
             names.append(name)
         for k, child_age in enumerate(unit["children"]):
             name = f"c{i}_{k}"
-            people[name] = {"age": {YEAR: child_age}}
+            people[name] = {
+                "age": {YEAR: child_age},
+                "is_claimant_or_partner": {YEAR: False},
+            }
             names.append(name)
         benunits[f"b{i}"] = {
             "members": names,
@@ -321,3 +328,27 @@ def test_additional_disregard_history():
     for instant, amount in expected.items():
         p = system.parameters(instant).gov.dwp.housing_benefit.means_test
         assert p.income_disregard.worker == amount, instant
+
+
+def test_a_couple_twenty_years_apart_keeps_the_couple_disregard():
+    # Supplied as a couple, ages 60 and 40 keep the couple amount; without
+    # roles the age presumption would read the 40-year-old as the claimant's
+    # child and apply the single amount instead.
+    unit = dict(
+        shape="couple",
+        adults=[
+            dict(
+                age=age,
+                employment_income=income,
+                weekly_hours=0,
+                disabled=False,
+                pension_contributions=0.0,
+            )
+            for age, income in ((60, 1_000.0), (40, 0.0))
+        ],
+        children=[],
+        childcare=0.0,
+    )
+    values = calculate([unit])
+    disregard = values["housing_benefit_applicable_income_disregard"][0]
+    assert abs(disregard - DISREGARD.couple * WEEKS) < 0.01

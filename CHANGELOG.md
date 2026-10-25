@@ -1,3 +1,86 @@
+## [2.157.3] - 2026-10-25
+
+### Fixed
+
+- - Counted widowed parent's allowance as Pension Credit income less £10 a week (State Pension Credit Regulations 2002 reg. 15(1) and Sch. IV para. 7), so an award that displaces Carer's Allowance or Carer Support Payment no longer raises Guarantee Credit by the whole amount displaced.
+
+
+## [2.157.2] - 2026-10-25
+
+### Changed
+
+- - Without any parent flag, a member at least 20 years younger than the claimant is now presumed to be their child at any age (`presumed_child.minimum_age_gap_at_any_age`), so ages 50 and 25 entered without relationships are a single claimant and an adult child, not a couple. Members 16 to 19 years younger stay partners from age 20. The presumption only applies where `is_claimant_or_partner` is not supplied: a dataset that carries it (such as policyengine-uk-data's enhanced FRS, which has supplied the FRS roles since 1.58.0) is unaffected, while datasets without it are not.
+
+### Fixed
+
+- - Corrected the higher pension-age Housing Benefit personal allowances for 2015 to 2018, retaining the 2019 rates from 2019.
+- - Use the separate historical under-65 pensioner Housing Benefit allowances, with jurisdiction-specific category end dates and the existing annual sampling convention.
+
+
+## [2.157.1] - 2026-10-25
+
+### Fixed
+
+- - Charge VAT at the standard rate on private school fees from 1 January 2025 (Finance Act 2025 ss.47 and 49), through the new `gov.hmrc.vat.private_school_fees_exempt` parameter. The contributed rate `gov.contrib.labour.private_school_vat` now raises the rate rather than adding to it, so reforms that set it to 20% score nothing from 2025. Household taxes include private school VAT as a change from baseline (`private_school_vat_change`), as they do VAT; government tax revenue includes the level.
+  - Allocate school-fee VAT out of receipt-calibrated general VAT before counting it separately: general VAT is gross VAT less private school fees' official share of VAT receipts (new parameter `gov.simulation.vat.private_school_share_of_receipts`, HMRC's OBR-certified costing over OBR VAT receipts). No household's general VAT is made negative, school-specific reforms move only private school VAT, and standard-rate reforms move each head once.
+
+
+## [2.157.0] - 2026-10-25
+
+### Added
+
+- - Add the winter fuel payment charge (`winter_fuel_payment_charge`, ITEPA 2003 s.681I, from 2025-26) with parameters under `gov.hmrc.income_tax.charges.winter_fuel_payment`. It is charged person by person: the whole Winter Fuel Payment (England, Wales and Northern Ireland) or Pension Age Winter Heating Payment, when the person's own total income (ITA 2007 s.23 Step 1) exceeds £35,000 and they are not entitled to Income Support, income-based JSA, Pension Credit, income-related ESA or Universal Credit. It is added to `income_tax` after tax reductions (ITA 2007 s.23 Step 7).
+  - Add `income_tax_before_winter_fuel_payment_charge`. The Pension Credit means test, including the income tax it attributes to employed and self-employed earnings (SPC Regs 2002 reg. 17(10) and (11)), and the Income Support, Housing Benefit (applicable income and net earnings) and Council Tax Reduction means tests now deduct it instead of `income_tax`. The charge recovers a payment rather than taxing the income those tests assess, and it depends on Pension Credit and Universal Credit receipt, so deducting it would make the model circular. Universal Credit earned income and the benefit cap's earnings test already deduct only each person's own tax on earnings, which leaves out the charge. The property allowance election still compares `income_tax`, which now includes the charge: a route can change total income and Pension Credit, and so whether the charge applies. Landlords decide one per household rather than one per benefit unit, because a couple's Pension Credit can change another benefit unit's shared payment and so its charge. Landlords without finance costs still take the allowance without comparing, as before; that can rarely cost more once the charge applies (when the lower tax ends Pension Credit and with it the exemption), but comparing for them made simulations several times slower.
+  - Add `total_income_charged_to_tax`, total income as ITA 2007 s.23 Step 1 defines it: the model's taxable income components (after employment expenses, capital allowances, the trading and property allowances and exempt ISA interest), less employee pension contributions relieved under a net pay arrangement (`net_pay_pension_relief`, new: FA 2004 s.193(2) deducts them from employment income, so up to taxable employment income, statutory sick, maternity and paternity pay included, and none from age 75), with losses brought forward added back. The winter fuel payment charge tests it, and `adjusted_total_income` now reads it for Step 1 instead of computing it itself, deducting at Steps 3 and 4 only the relieved contributions not already deducted, so its values are unchanged up to float32 rounding. `total_income` still sums gross income.
+
+### Changed
+
+- - Deprecate `gov.dwp.winter_fuel_payment.eligibility.taxable_income_test`: it is off in every year and has effect only in a reform that both switches it on and requires a relevant benefit. Its limit now admits total income equal to it. Use `gov.hmrc.income_tax.charges.winter_fuel_payment` for the charge.
+- Corrected the Widowed Parent's Allowance description: it is closed for deaths on or after 6 April 2017, not to new claims.
+
+### Fixed
+
+- - From the 2025 qualifying week, pay the Winter Fuel Payment to everyone of pensionable age in England, Wales and Northern Ireland who meets its other conditions (SI 2025/969 reg. 2; NISR 2025/142 reg. 2) and recover it through the winter fuel payment charge, in place of a household income test. The test paid a whole household if any member of pensionable age had total income under £35,000. It applied only in England and Wales, so pensioners in Northern Ireland not on a relevant benefit were paid nothing, and nothing stood in for the charge on the Pension Age Winter Heating Payment. Its boundary was also wrong: total income of exactly £35,000 is not charged.
+- - Correct fiscal-partition eligibility reads for income tax and the TV licence after separating the Winter Fuel Payment charge from tax deducted by Pension Credit.
+- - Fixed aggregate counted-once checks falsely identifying unchanged large tax heads as containing a component read through a declared dependency.
+
+
+## [2.156.2] - 2026-10-24
+
+### Fixed
+
+- - Clarified parameter label and description wording standards, including sentence case and capitals in programme names and acronyms.
+
+
+## [2.156.1] - 2026-10-24
+
+### Fixed
+
+- - Start England’s universal and targeted childcare provision in the term after the qualifying birthday, allocating base and working-parent hours once in common terms while preserving supplied annual inputs.
+  - Preserve genuine and model-owned input provenance when aggregate checks perturb childcare awards.
+  - Keep the standalone aggregate-impact tool's model fingerprint ahead of model construction by loading input-provenance helpers only during simulation operations.
+
+
+## [2.156.0] - 2026-10-24
+
+### Added
+
+- Added a documentation page on reproducing fully rolled-out two-child limit estimates and absolute child poverty: the 2025-26 year, the `born_before` settings for full roll-out, full Universal Credit take-up, which poverty variables are absolute or relative, and how to use the FYE 2011-based absolute line.
+- - Added a person-weighted household income decile after housing costs, using the existing income-decile ranking conventions.
+
+### Fixed
+
+- - Exclude the Child Tax Credit child element for ineligible families so phantom tax credit income does not reduce Housing Benefit or Council Tax Reduction.
+- - Made pre-2027 rUK property income follow reforms to the full main income-tax scale, while preserving separate property rates from 2027-28 and Scottish treatment.
+
+
+## [2.155.1] - 2026-10-24
+
+### Fixed
+
+- - Restored neutral pre-2021 Housing Benefit and Council Tax Reduction cohort flags while retaining the existing FY2021-22 annual split.
+
+
 ## [2.155.0] - 2026-10-24
 
 ### Added

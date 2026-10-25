@@ -1,4 +1,8 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.childcare import (
+    childcare_term_value,
+    uses_legacy_childcare_inputs,
+)
 
 
 class extended_childcare_entitlement_per_child(Variable):
@@ -21,7 +25,11 @@ class extended_childcare_entitlement_per_child(Variable):
         "here. The comparison is term by term: a child old enough for only "
         "some of the year's terms (extended_childcare_entitlement_term_share) "
         "has the working parent total for those terms, set against the "
-        "universal or targeted hours in the same terms."
+        "universal or targeted hours in the same terms. Base entitlements "
+        "also start by birthday term, so their prorated annual values are "
+        "not multiplied by a second annual share. Explicit legacy annual "
+        "shares or amounts retain the original annual calculation and "
+        "actual supplied downstream amounts."
     )
     definition_period = YEAR
     unit = GBP
@@ -36,6 +44,9 @@ class extended_childcare_entitlement_per_child(Variable):
     )
 
     def formula(person, period, parameters):
+        if not uses_legacy_childcare_inputs(person, period):
+            return childcare_term_value(person, period, parameters, "extended")
+        # Opaque annual inputs retain the complete original valuation route.
         total_value = person("extended_childcare_entitlement_total_per_child", period)
 
         # Childcare Act 2016 s.1(6)(a) and SI 2022/1134 reg 44(3): the
