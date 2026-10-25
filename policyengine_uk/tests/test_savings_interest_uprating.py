@@ -79,7 +79,7 @@ def test_forecast_is_financial_assets_growth_times_the_deposit_rate_ratio(year):
 
 @pytest.mark.parametrize("year", range(2021, 2031))
 def test_per_person_growth_is_the_aggregate_net_of_population_growth(year):
-    # 2025: 0.9724 / 1.0072 - 1 = -0.0346. Fails if ons.population is
+    # 2025: 0.9724 / 1.0030 - 1 = -0.0305. Fails if ons.population is
     # refreshed without re-deriving this series.
     instant = f"{year}-01-01"
     expected = (1 + AGGREGATE(instant)) / (1 + POPULATION(instant)) - 1
@@ -116,8 +116,8 @@ def _dataset(interest):
 
 
 def test_projected_total_interest_tracks_haxv_in_2025():
-    # Each person's interest grows by 0.9724 / 1.0072 = 0.9654 and the
-    # weights by 1.0072, so the weighted total grows by 95,477 / 98,189.
+    # Each person's interest grows by 0.9724 / 1.0030 = 0.9695 and the
+    # weights by 1.0030, so the weighted total grows by 95,477 / 98,189.
     projected = extend_single_year_dataset(
         _dataset([1_000.0, 250.0]), parameters, end_year=2025
     )
@@ -128,7 +128,7 @@ def test_projected_total_interest_tracks_haxv_in_2025():
         return (dataset.person["savings_interest_income"].to_numpy() * weights).sum()
 
     assert after.person["savings_interest_income"].tolist() == pytest.approx(
-        [965.4, 241.35], rel=1e-4
+        [969.5, 242.375], rel=1e-4
     )
     assert total(after) / total(base) == pytest.approx(
         HAXV[2025] / HAXV[2024], abs=1e-4

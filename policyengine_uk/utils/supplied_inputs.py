@@ -43,6 +43,9 @@ SUPPLIED_INPUT_VARIABLES = frozenset(
         "bus_fare_spending",
         "bus_in_london_trips",
         "current_education",
+        "early_years_term_share_before_school",
+        "extended_childcare_entitlement_term_share",
+        "extended_childcare_entitlement_total_per_child",
         "in_HE",
         "other_local_bus_trips",
         "pip_dl_category",
@@ -54,9 +57,11 @@ SUPPLIED_INPUT_VARIABLES = frozenset(
         "ni_class_4_losses_brought_forward",
         "ni_class_4_trading_loss",
         "tenure_type",
+        "targeted_childcare_entitlement",
         "trading_loss",
         "uc_carer_element",
         "uc_LCWRA_element",
+        "universal_childcare_entitlement",
     }
 )
 
