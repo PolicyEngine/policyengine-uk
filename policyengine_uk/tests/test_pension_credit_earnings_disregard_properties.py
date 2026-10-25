@@ -200,13 +200,15 @@ def test_statute_bounds_differential_and_monotonicity(case):
         0, employment + self_employment - class_1 - notional - contributions
     )
 
-    income_tax = person_values(sim, "income_tax")
+    # Pension Credit's tax deductions exclude recovery of the winter fuel payment.
+    income_tax = person_values(sim, "income_tax_before_winter_fuel_payment_charge")
     no_employment = person_values(
-        simulate(without(case, ["employment_income"])), "income_tax"
+        simulate(without(case, ["employment_income"])),
+        "income_tax_before_winter_fuel_payment_charge",
     )
     no_earnings = person_values(
         simulate(without(case, ["employment_income", "self_employment_income"])),
-        "income_tax",
+        "income_tax_before_winter_fuel_payment_charge",
     )
     employment_tax = max(0.0, float((income_tax - no_employment)[adult].sum()))
     self_employment_tax = max(0.0, float((no_employment - no_earnings)[adult].sum()))
