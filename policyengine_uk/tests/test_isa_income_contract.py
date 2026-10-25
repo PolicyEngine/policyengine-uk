@@ -17,6 +17,8 @@ from policyengine_core.simulations import SimulationBuilder
 import policyengine_uk.simulation as simulation_module
 from policyengine_uk import Simulation
 from policyengine_uk.data.dataset_schema import UKMultiYearDataset, UKSingleYearDataset
+from policyengine_uk.data.economic_assumptions import extend_single_year_dataset
+from policyengine_uk.data.filter_dataset import filter_dataset
 from policyengine_uk.scenarios import no_economic_assumptions
 from policyengine_uk.system import system
 from policyengine_uk.utils.scenario import Scenario
@@ -706,3 +708,105 @@ def test_larger_year_input_preserves_core_same_start_fallback_and_earlier_priori
         assert value(simulation, "savings_interest_income", year) == pytest.approx(
             gross - exemption, abs=0.01
         )
+
+
+@pytest.mark.parametrize(
+    "complete_base_energy, expected_energy",
+    [
+        pytest.param(True, [150, 300, 450], id="complete-base-group"),
+        pytest.param(False, [840, 960, 1_080], id="partial-base-different-basis"),
+    ],
+)
+def test_isa_and_energy_contracts_compose_through_reset_export_and_projection(
+    tmp_path, complete_base_energy, expected_energy
+):
+    """Both projection contracts survive the shared dataset boundaries.
+
+    Resetting legacy interest gives gross3000 less the later exemption1200.
+    Reprojection gives gross3000*1.2=3600, then ordinary2400 plus exempt1200.
+    Energy grows by150/100 from the complete reset group's2025 basis, or by
+    150/125 from the preserved later group's2026 basis. CPI levels and growth
+    are controlled test inputs, not forecasts.
+    """
+    energy = (
+        "domestic_energy_consumption",
+        "electricity_consumption",
+        "gas_consumption",
+    )
+    base = single(
+        savings_interest_income=3_000,
+        individual_savings_account_interest_income=500,
+        tax_free_savings_income=700,
+    )
+    later = single(
+        2026,
+        savings_interest_income=6_000,
+        individual_savings_account_interest_income=900,
+        tax_free_savings_income=1_200,
+    )
+    base.energy_price_basis = {"period_type": "calendar_year", "period_value": 2025}
+    later.energy_price_basis = {"period_type": "fiscal_year", "period_value": 2026}
+    for observation in (base, later):
+        observation.person["months_since_last_birthday"] = [0]
+        observation.person["attends_private_school"] = [False]
+    for variable, amount in zip(
+        energy if complete_base_energy else energy[:1], [100, 200, 300]
+    ):
+        base.household[variable] = [amount]
+    for variable, amount in zip(energy, [700, 800, 900]):
+        later.household[variable] = [amount]
+    original_base = base.copy()
+    original_later = later.copy()
+
+    simulation = Simulation(
+        dataset=UKMultiYearDataset(datasets=[base, later]),
+        scenario=no_economic_assumptions,
+    )
+    assert value(simulation, "savings_interest_income", 2026) == 1_800
+    assert value(simulation, "tax_free_savings_income", 2026) == 1_200
+    assert value(simulation, "individual_savings_account_interest_income", 2026) == 900
+    assert value(simulation, "capital_income", 2026) == 3_000
+
+    observed = UKSingleYearDataset.from_simulation(
+        simulation,
+        fiscal_year=2026,
+        energy_price_basis=simulation.dataset[2026].energy_price_basis,
+    )
+    exported = Simulation(dataset=UKMultiYearDataset(datasets=[observed]))
+    filtered = filter_dataset(exported, household_id=1, year=2026).copy()
+    path = tmp_path / "joint-contracts.h5"
+    filtered.save(path)
+    reloaded = UKSingleYearDataset(file_path=path)
+    assert reloaded.isa_income_contract == NORMALIZED
+    assert (
+        reloaded.energy_price_basis
+        == (base if complete_base_energy else later).energy_price_basis
+    )
+
+    parameters = simulation.tax_benefit_system.parameters.clone()
+    cpi = parameters.get_child(
+        "gov.economic_assumptions.indices.obr.consumer_price_index"
+    )
+    for year, level in {2025: 100, 2026: 125, 2027: 150}.items():
+        cpi.update(period=str(year), value=level)
+    parameters.get_child(GDP_GROWTH).update(period="2027", value=0.2)
+    projected = extend_single_year_dataset(reloaded, parameters, end_year=2027)
+    projected_simulation = Simulation(dataset=projected)
+    assert value(
+        projected_simulation, "savings_interest_income", 2027
+    ) == pytest.approx(2_400, abs=0.01)
+    assert value(projected_simulation, "tax_free_savings_income", 2027) == 1_200
+    assert value(projected_simulation, "capital_income", 2027) == pytest.approx(
+        3_600, abs=0.01
+    )
+    for variable, expected in zip(energy, expected_energy):
+        assert value(projected_simulation, variable, 2027) == pytest.approx(
+            expected, abs=0.01
+        )
+    for actual, original in ((base, original_base), (later, original_later)):
+        assert actual.energy_price_basis == original.energy_price_basis
+        assert actual.isa_income_contract == original.isa_income_contract
+        for name in ("person", "benunit", "household"):
+            pd.testing.assert_frame_equal(
+                getattr(actual, name), getattr(original, name), check_dtype=False
+            )
