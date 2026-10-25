@@ -10,7 +10,8 @@
   input:
     housing_benefit_individual_non_dep_deduction_eligible: true
     council_tax_reduction_individual_non_dep_deduction_eligible: true
-    total_income: 5_200 # £100 a week
+    hours_worked: 832 # 16 hours a week
+    employment_income: 5_200 # £100 a week, in both programmes' gross income
   output:
     household_benefits_individual_non_dep_deduction: 793
     council_tax_reduction_individual_non_dep_deduction: 793
