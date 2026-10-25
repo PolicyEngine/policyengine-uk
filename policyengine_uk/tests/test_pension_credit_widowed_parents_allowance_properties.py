@@ -75,6 +75,12 @@ def carer(country):
 # Carer's Allowance in England and Carer Support Payment in Scotland, each
 # paid in full until WPA displaces it.
 CARERS = [carer("ENGLAND"), carer("SCOTLAND")]
+# The same carer with £10,500 of IIDB: a draw where Guarantee Credit can start
+# from zero once WPA displaces Carer's Allowance.
+CARER_WITH_IIDB = dict(
+    carer("ENGLAND"),
+    benefits={**carer("ENGLAND")["benefits"], "iidb": (0, 10_500.0)},
+)
 
 
 def test_an_award_that_displaces_a_carer_benefit_raises_guarantee_credit_by_the_disregard():
@@ -108,6 +114,7 @@ def test_an_award_that_displaces_a_carer_benefit_raises_guarantee_credit_by_the_
 @PROPERTY_SETTINGS
 @given(st.lists(family(state_pension=8_000), min_size=1, max_size=4))
 @example(CARERS)
+@example([CARER_WITH_IIDB])
 def test_guarantee_credit_falls_pound_for_pound_with_widowed_parents_allowance(
     families,
 ):
@@ -139,7 +146,9 @@ def test_guarantee_credit_falls_pound_for_pound_with_widowed_parents_allowance(
     assert np.allclose(
         extra_income[positive_income], expected[positive_income], atol=0.01
     ), (families, pc_income, tax, carer_benefit)
-    paid = gc[..., 1:] > 0
+    # Pound for pound only where Guarantee Credit is paid at both amounts: from
+    # zero it rises by less than the income falls (round 2 review N4 of #2645).
+    paid = (gc[..., :-1] > 0) & (gc[..., 1:] > 0)
     assert np.allclose(-np.diff(gc, axis=-1)[paid], extra_income[paid], atol=0.01), (
         families,
         gc,
