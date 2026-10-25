@@ -121,6 +121,42 @@ matching that receipt. The producer must carry both period kind and year into
 the H5 artifact; this consumer change does not retrofit that metadata or verify
 the released private file.
 
+## Bereavement-benefit split
+
+Bereavement Support Payment rates remain unchanged under the
+[2026 up-rating order, article 19](https://www.legislation.gov.uk/uksi/2026/148/article/19/made).
+Older datasets combine it with CPI-uprated Widowed Parent's Allowance and
+War Widow's Pension in `bsp_reported`. They keep CPI projection until the
+producer separates those benefits.
+
+Explicitly supplied `widowed_parents_allowance_reported` and
+`war_widows_pension_reported` person columns together declare the completed
+split used by the merged
+[Microcosm PR #1383](https://github.com/PolicyEngine/microcosm/pull/1383),
+including when every value in either column is zero. The automatic projector
+then holds `bsp_reported` nominally flat; the separate allowance and
+war-widow inputs still grow by CPI. Either column alone leaves BSP on the
+legacy CPI path. Unclassified off-rate amounts that the producer retains in
+`bsp_reported` receive the same nominal treatment. These can include Widowed
+Parent's Allowance with an inherited additional pension above its rate;
+freezing that CPI-linked component understates it.
+
+Beyond the materialized projection horizon, the model holds BSP flat only
+when its latest earlier input has both explicitly stored split inputs for
+the same period. A calculated or carried default does not count, nor do
+inputs supplied in different periods.
+This also preserves the distinction when an external multi-year dataset
+changes schema between observations. Supplied annual BSP amounts remain
+authoritative. Disabling economic assumptions preserves those amounts when
+either observation declares the split, rather than replacing separate BSP
+with an older combined report.
+
+UK single-year files, materialized Core datasets and their projected children
+preserve both columns. Household situations retain their existing CPI behavior,
+even when they supply the separate benefits. The change follows dataset
+semantics, without inferring a split from a filename, model version or the
+amount received. See [issue #2381](https://github.com/PolicyEngine/policyengine-uk/issues/2381).
+
 ## Tests
 
 For dataset source routing, prefer stubbed tests that prove dispatch behavior

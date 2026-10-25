@@ -808,7 +808,7 @@ obr:
           - title: OBR EFO March 2025 (detailed forecast tables, receipts, Table 3.9; 2023-24 outturn)
             href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
     northern_ireland:
-      description: Growth in Northern Ireland business rates receipts (the OBR "Northern Ireland business rates" line in other taxes).
+      description: Growth in Northern Ireland business rates receipts (the OBR "Northern Ireland business rates" line in other taxes, which appears to cover the regional rate only; also applied to district rates, for which we found no published forecast).
       values:
         # Outturn (2024-25 over 2023-24) from OBR EFO March 2026 over March 2025, receipts Table 3.2 "Northern Ireland business rates"
         2024-01-01: 0.032513
@@ -1582,6 +1582,80 @@ finance_ni:
         - title: ONS, Country and regional public sector finances methodology guide, sections 29 and 30
           href: https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance/methodologies/countryandregionalpublicsectorfinancesmethodologyguide
 
+orr:
+  per_capita:
+    rail_passenger_journeys:
+      description: Growth in rail passenger journeys per person.
+      # Growth in gov.dft.rail.ridership_index (ORR Table 1220 passenger
+      # journeys, Great Britain) net of ons.population growth:
+      # (index_t / index_t-1) / (1 + population_t) - 1, rounded to 4
+      # decimals. Household weights grow by ons.population, so growing each
+      # household's rail_usage by this keeps the weighted total on ORR's
+      # journeys (#1862). The financial year starting in April of year t is
+      # stored at t-01-01. From 2026 journeys are held flat (no official
+      # forecast), so this is minus population growth, for every year
+      # ons.population has a value. Re-derive it whenever either series
+      # changes (policyengine_uk/tests/test_rail_usage_uprating.py checks).
+      values:
+        2021-01-01: 1.5433  # 2.5525 / 1.0036 - 1
+        2022-01-01: 0.3851  # (3.5700 / 2.5525) / 1.0098 - 1
+        2023-01-01: 0.1490  # (4.1559 / 3.5700) / 1.0132 - 1
+        2024-01-01: 0.0607  # (4.4567 / 4.1559) / 1.0110 - 1
+        2025-01-01: 0.0551  # (4.7165 / 4.4567) / 1.0030 - 1
+        2026-01-01: -0.0035  # 1 / 1.0035 - 1
+        2027-01-01: -0.0029  # 1 / 1.0029 - 1
+        2028-01-01: -0.0032  # 1 / 1.0032 - 1
+        2029-01-01: -0.0034  # 1 / 1.0034 - 1
+        2030-01-01: -0.0036  # 1 / 1.0036 - 1
+        2031-01-01: -0.0024  # 1 / 1.0024 - 1
+        2032-01-01: -0.0022  # 1 / 1.0022 - 1
+        2033-01-01: -0.0021  # 1 / 1.0021 - 1
+        2034-01-01: -0.0019  # 1 / 1.0019 - 1
+        2035-01-01: -0.0018  # 1 / 1.0018 - 1
+        2036-01-01: -0.0017  # 1 / 1.0017 - 1
+        2037-01-01: -0.0016  # 1 / 1.0016 - 1
+        2038-01-01: -0.0015  # 1 / 1.0015 - 1
+        2039-01-01: -0.0015  # 1 / 1.0015 - 1
+        2040-01-01: -0.0014  # 1 / 1.0014 - 1
+        2041-01-01: -0.0014  # 1 / 1.0014 - 1
+        2042-01-01: -0.0013  # 1 / 1.0013 - 1
+        2043-01-01: -0.0013  # 1 / 1.0013 - 1
+        2044-01-01: -0.0012  # 1 / 1.0012 - 1
+        2045-01-01: -0.0011  # 1 / 1.0011 - 1
+        2046-01-01: -0.0011  # 1 / 1.0011 - 1
+        2047-01-01: -0.0010  # 1 / 1.0010 - 1
+        2048-01-01: -0.0009  # 1 / 1.0009 - 1
+        2049-01-01: -0.0008  # 1 / 1.0008 - 1
+        2050-01-01: -0.0006  # 1 / 1.0006 - 1
+        2051-01-01: -0.0005  # 1 / 1.0005 - 1
+        2052-01-01: -0.0003  # 1 / 1.0003 - 1
+        2053-01-01: -0.0002  # 1 / 1.0002 - 1
+        2054-01-01: 0.0000  # 1 / 1.0000 - 1
+        2055-01-01: 0.0001  # 1 / 0.9999 - 1
+        2056-01-01: 0.0003  # 1 / 0.9997 - 1
+        2057-01-01: 0.0004  # 1 / 0.9996 - 1
+        2058-01-01: 0.0005  # 1 / 0.9995 - 1
+        2059-01-01: 0.0006  # 1 / 0.9994 - 1
+        2060-01-01: 0.0007  # 1 / 0.9993 - 1
+        2061-01-01: 0.0008  # 1 / 0.9992 - 1
+        2062-01-01: 0.0008  # 1 / 0.9992 - 1
+        2063-01-01: 0.0008  # 1 / 0.9992 - 1
+        2064-01-01: 0.0009  # 1 / 0.9991 - 1
+        2065-01-01: 0.0009  # 1 / 0.9991 - 1
+        2066-01-01: 0.0009  # 1 / 0.9991 - 1
+        2067-01-01: 0.0009  # 1 / 0.9991 - 1
+        2068-01-01: 0.0009  # 1 / 0.9991 - 1
+        2069-01-01: 0.0009  # 1 / 0.9991 - 1
+        2070-01-01: 0.0009  # 1 / 0.9991 - 1
+        2071-01-01: 0.0010  # 1 / 0.9990 - 1
+        2072-01-01: 0.0010  # 1 / 0.9990 - 1
+        2073-01-01: 0.0010  # 1 / 0.9990 - 1
+      metadata:
+        unit: /1
+        label: Rail passenger journeys growth per person
+        reference:
+          - title: ORR, Table 1220 Passenger journeys, Great Britain, January 1872 to March 2026 (18 June 2026)
+            href: https://dataportal.orr.gov.uk/statistics/usage/passenger-rail-usage/table-1220-passenger-journeys/
 carbon_intensity:
   description: Carbon intensity year-over-year growth (decline).
   values:
