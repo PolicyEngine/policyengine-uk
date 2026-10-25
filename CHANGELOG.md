@@ -1,3 +1,15 @@
+## [2.157.2] - 2026-10-25
+
+### Changed
+
+- - Without any parent flag, a member at least 20 years younger than the claimant is now presumed to be their child at any age (`presumed_child.minimum_age_gap_at_any_age`), so ages 50 and 25 entered without relationships are a single claimant and an adult child, not a couple. Members 16 to 19 years younger stay partners from age 20. The presumption only applies where `is_claimant_or_partner` is not supplied: a dataset that carries it (such as policyengine-uk-data's enhanced FRS, which has supplied the FRS roles since 1.58.0) is unaffected, while datasets without it are not.
+
+### Fixed
+
+- - Corrected the higher pension-age Housing Benefit personal allowances for 2015 to 2018, retaining the 2019 rates from 2019.
+- - Use the separate historical under-65 pensioner Housing Benefit allowances, with jurisdiction-specific category end dates and the existing annual sampling convention.
+
+
 ## [2.157.1] - 2026-10-25
 
 ### Fixed
