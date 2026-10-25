@@ -31,16 +31,18 @@ Invariants, for any generated population of families:
    Benefit's additional sum was £37.10 (SI 2020/371 reg 5) and CTR's stayed
    £17.10 (an intended difference, which the test pins).
 6. The Housing Benefit disregard (#1908) is the statutory weekly sum x 52 in
-   every year from 2015 to 2030, at working and pension age: £5, £10 or £25
-   (SI 2006/213 Sch 4 paras 4, 7, 10; SI 2006/214 Sch 4 paras 2, 7), plus
-   £17.10 (£37.10 in 2020, SI 2020/371 reg 5) where a work condition holds,
+   every year from 2015 to 2030, at working and pension age: £25 for a lone
+   parent, otherwise £20 for a special-qualifying family, otherwise £10 for
+   a couple or £5 for a single claimant (SI 2006/213 Sch 4; SI 2006/214
+   Sch 4), plus £17.10 (£37.10 in 2020, SI 2020/371 reg 5) where a work
+   condition holds,
    for families with enough earnings and on none of Universal Credit, Income
    Support, income-based JSA or income-related ESA (whose working-age
    earnings are all disregarded, Sch 4 para 12).
 """
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -306,16 +308,61 @@ def test_differential_against_the_housing_benefit_pension_age_disregard(units, y
     ),
     st.integers(2015, 2030),
 )
+@example(
+    units=[
+        dict(
+            shape="couple",
+            nation="ENGLAND",
+            adults=[
+                dict(
+                    age=age,
+                    employment_income=20_000.0,
+                    weekly_hours=0.0,
+                    disabled=False,
+                    state_pension=0.0,
+                )
+                for age in (18, 34)
+            ],
+            children=[],
+        ),
+        dict(
+            shape="single",
+            nation="ENGLAND",
+            adults=[
+                dict(
+                    age=40,
+                    employment_income=20_000.0,
+                    weekly_hours=0.0,
+                    disabled=True,
+                    state_pension=0.0,
+                )
+            ],
+            children=[],
+        ),
+    ],
+    year=2026,
+)
 def test_housing_benefit_disregard_is_the_statutory_weekly_sum_in_every_year(
     units, year
 ):
-    values = calculate(units, year=year, no_income_related_benefits=True)
+    values = calculate(
+        units,
+        year=year,
+        variables=VARIABLES + ["housing_benefit_special_earnings_disregard_eligible"],
+        no_income_related_benefits=True,
+    )
     disregard = values["housing_benefit_applicable_income_disregard"]
     conditions = values[
         "meets_housing_benefit_additional_earnings_disregard_conditions"
     ].astype(bool)
+    special = values["housing_benefit_special_earnings_disregard_eligible"].astype(bool)
     for i, unit in enumerate(units):
-        weekly = WEEKLY[unit["shape"]]
+        if unit["shape"] == "lone_parent":
+            weekly = 25
+        elif special[i]:
+            weekly = 20
+        else:
+            weekly = WEEKLY[unit["shape"]]
         if conditions[i]:
             weekly += 37.1 if year == 2020 else 17.1
         assert abs(disregard[i] - weekly * WEEKS) < 0.01, (unit, year)
