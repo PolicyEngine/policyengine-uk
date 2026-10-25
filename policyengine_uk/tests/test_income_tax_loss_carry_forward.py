@@ -28,6 +28,12 @@ def model_template():
     return CountryTaxBenefitSystem()
 
 
+@pytest.fixture(scope="module", autouse=True)
+def clear_model_template_cache():
+    yield
+    model_template.cache_clear()
+
+
 def simulation(person):
     # Match the repository's cloned_uk_tax_benefit_system fixture. The UK
     # wrapper constructs its system internally, rather than accepting Core's
