@@ -1,0 +1,408 @@
+# NI published total discounts, p/kWh excluding VAT:
+# Nov-Dec 2022: electricity 19.9083, mains gas 4.8262.
+# Jan-Mar 2023: electricity 13.6083, mains gas 3.8932.
+# Apr-Jun 2023: electricity 3.7697, mains gas 2.6029.
+# The Nov-Mar totals already include the temporary backdated support.
+# https://www.uregni.gov.uk/news-centre/energy-price-guarantee-scheme-and-what-it-means-northern-irelands-regulated-energy
+# NI support began 1 November 2022 and ended 30 June 2023.
+# https://www.gov.uk/government/publications/energy-bills-support/energy-price-guarantee-up-until-30-june-2023#how-the-epg-applied-in-northern-ireland
+# https://www.gov.uk/government/publications/energy-bills-support/energy-bills-support-factsheet-8-september-2022#households-in-northern-ireland
+# Consumer relief includes avoided VAT on customer charges. Applying the
+# existing 5% domestic VAT rate to 2022-23 uses the disclosed historical
+# continuity inference; the fetched current notice has no archived numeric rate.
+# https://www.gov.uk/guidance/vat-on-fuel-and-power-notice-70119#the-energy-price-guarantee
+# Positive cases explicitly assert that full published rates apply to all
+# represented supplies and supply a compatible gross pre-discount monthly bill.
+
+- name: Case 1, Northern Ireland receives two supported months in calendar 2022.
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    country: NORTHERN_IRELAND
+    electricity_consumption_kwh:
+      2022-11: 1_000
+      2022-12: 1_000
+    gas_consumption_kwh:
+      2022-11: 2_000
+      2022-12: 2_000
+    ni_epg_full_rate_applies:
+      2022-11: true
+      2022-12: true
+    monthly_domestic_energy_consumption:
+      2022-11: 1_000
+      2022-12: 1_000
+  output:
+    # (1_000 * 19.9083 + 2_000 * 4.8262) / 100 * 1.05.
+    monthly_ni_epg_subsidy:
+      2022-11: 310.38735
+      2022-12: 310.38735
+    monthly_epg_subsidy:
+      2022-11: 310.38735
+      2022-12: 310.38735
+    monthly_epg_consumption_level:
+      2022-11: 689.61265
+    # 2 * 310.38735; the calendar-year wrapper must sum monthly relief.
+    epg_subsidy: 620.7747
+
+- name: Case 2, Northern Ireland applies the January and April totals within calendar 2023.
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    country: NORTHERN_IRELAND
+    electricity_consumption_kwh:
+      2023-01: 1_000
+      2023-02: 1_000
+      2023-03: 1_000
+      2023-04: 1_000
+      2023-05: 1_000
+      2023-06: 1_000
+    gas_consumption_kwh:
+      2023-01: 2_000
+      2023-02: 2_000
+      2023-03: 2_000
+      2023-04: 2_000
+      2023-05: 2_000
+      2023-06: 2_000
+    ni_epg_full_rate_applies:
+      2023-01: true
+      2023-02: true
+      2023-03: true
+      2023-04: true
+      2023-05: true
+      2023-06: true
+    monthly_domestic_energy_consumption:
+      2023-01: 500
+      2023-02: 500
+      2023-03: 500
+      2023-04: 500
+      2023-05: 500
+      2023-06: 500
+  output:
+    # Jan-Mar: (1_000 * 13.6083 + 2_000 * 3.8932) / 100 * 1.05.
+    # Apr-Jun: (1_000 * 3.7697 + 2_000 * 2.6029) / 100 * 1.05.
+    monthly_ni_epg_subsidy:
+      2023-01: 224.64435
+      2023-03: 224.64435
+      2023-04: 94.24275
+      2023-06: 94.24275
+    monthly_epg_subsidy:
+      2023-01: 224.64435
+      2023-03: 224.64435
+      2023-04: 94.24275
+      2023-06: 94.24275
+    monthly_epg_consumption_level:
+      2023-03: 275.35565
+      2023-04: 405.75725
+    # 3 * 224.64435 + 3 * 94.24275.
+    epg_subsidy: 956.6613
+
+- name: Case 3, electricity-only use receives no gas discount across the April change.
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    country: NORTHERN_IRELAND
+    electricity_consumption_kwh:
+      2023-03: 1_000
+      2023-04: 1_000
+    gas_consumption_kwh:
+      2023-03: 0
+      2023-04: 0
+    ni_epg_full_rate_applies:
+      2023-03: true
+      2023-04: true
+    monthly_domestic_energy_consumption:
+      2023-03: 500
+      2023-04: 500
+  output:
+    # 1_000 * 13.6083 / 100 * 1.05; then 1_000 * 3.7697 / 100 * 1.05.
+    monthly_ni_epg_subsidy:
+      2023-03: 142.88715
+      2023-04: 39.58185
+    monthly_epg_subsidy:
+      2023-03: 142.88715
+      2023-04: 39.58185
+
+- name: Case 4, mains-gas-only use receives no electricity discount across the April change.
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    country: NORTHERN_IRELAND
+    electricity_consumption_kwh:
+      2023-03: 0
+      2023-04: 0
+    gas_consumption_kwh:
+      2023-03: 2_000
+      2023-04: 2_000
+    ni_epg_full_rate_applies:
+      2023-03: true
+      2023-04: true
+    monthly_domestic_energy_consumption:
+      2023-03: 500
+      2023-04: 500
+  output:
+    # 2_000 * 3.8932 / 100 * 1.05; then 2_000 * 2.6029 / 100 * 1.05.
+    monthly_ni_epg_subsidy:
+      2023-03: 81.7572
+      2023-04: 54.6609
+    monthly_epg_subsidy:
+      2023-03: 81.7572
+      2023-04: 54.6609
+
+- name: Case 5, Northern Ireland support does not depend on the Great Britain scheme gate.
+  period: 2023-04
+  absolute_error_margin: 0.01
+  input:
+    country:
+      2023: NORTHERN_IRELAND
+    electricity_consumption_kwh: 1_000
+    gas_consumption_kwh: 2_000
+    ni_epg_full_rate_applies: true
+    monthly_domestic_energy_consumption: 500
+    gov.ofgem.energy_price_guarantee_in_effect: false
+    gov.ofgem.energy_price_cap: 5_000
+    gov.ofgem.energy_price_guarantee: 2_500
+  output:
+    monthly_ni_epg_subsidy: 94.24275
+    monthly_epg_subsidy: 94.24275
+    monthly_epg_consumption_level: 405.75725
+
+- name: Case 6, England Scotland and Wales retain the existing spending-based route.
+  period: 2023-04
+  absolute_error_margin: 0.01
+  input:
+    country:
+      2023: [ENGLAND, SCOTLAND, WALES]
+    electricity_consumption_kwh: [1_000, 1_000, 1_000]
+    gas_consumption_kwh: [2_000, 2_000, 2_000]
+    ni_epg_full_rate_applies: [true, true, true]
+    monthly_domestic_energy_consumption: [100, 100, 100]
+    gov.ofgem.energy_price_cap: 5_000
+    gov.ofgem.energy_price_guarantee: 2_500
+  output:
+    # Existing regression contract: 100 * (1 - 2_500 / 5_000).
+    monthly_epg_subsidy: [50, 50, 50]
+    monthly_epg_consumption_level: [50, 50, 50]
+
+- name: Case 7, Northern Ireland support is known to be zero before November 2022.
+  period: 2022
+  input:
+    country: NORTHERN_IRELAND
+    monthly_domestic_energy_consumption:
+      2022-09: 100
+      2022-10: 100
+  output:
+    ni_epg_subsidy_calculable:
+      2022-09: true
+      2022-10: true
+    monthly_ni_epg_subsidy:
+      2022-09: 0
+      2022-10: 0
+    monthly_epg_subsidy:
+      2022-09: 0
+      2022-10: 0
+
+- name: Case 8, later prepayment support does not revive Northern Ireland unit discounts.
+  period: 2023
+  input:
+    country: NORTHERN_IRELAND
+    uses_energy_prepayment_meter: true
+    monthly_domestic_energy_consumption:
+      2023-07: 100
+      2023-10: 100
+  output:
+    ni_epg_subsidy_calculable:
+      2023-07: true
+      2023-10: true
+    monthly_ni_epg_subsidy:
+      2023-07: 0
+      2023-10: 0
+    monthly_epg_subsidy:
+      2023-07: 0
+      2023-10: 0
+    monthly_epg_consumption_level:
+      2023-07: 100
+      2023-10: 100
+
+- name: Case 9, explicitly observed zero fuel use establishes zero support without a bill.
+  period: 2023-04
+  input:
+    country:
+      2023: NORTHERN_IRELAND
+    electricity_consumption_kwh: 0
+    gas_consumption_kwh: 0
+    domestic_energy_consumption:
+      2023: 1_200
+  output:
+    ni_epg_subsidy_calculable: true
+    monthly_ni_epg_subsidy: 0
+    monthly_epg_subsidy: 0
+
+- name: Case 10, a false full-rate assertion leaves positive-use relief uncomputed.
+  period: 2023-04
+  input:
+    country:
+      2023: NORTHERN_IRELAND
+    electricity_consumption_kwh: 1_000
+    gas_consumption_kwh: 2_000
+    ni_epg_full_rate_applies: false
+    monthly_domestic_energy_consumption: 500
+  output:
+    ni_epg_subsidy_calculable: false
+    monthly_ni_epg_subsidy: 0
+    monthly_epg_subsidy: 0
+
+- name: Case 11, a missing full-rate assertion leaves positive-use relief uncomputed.
+  period: 2023-04
+  input:
+    country:
+      2023: NORTHERN_IRELAND
+    electricity_consumption_kwh: 1_000
+    gas_consumption_kwh: 2_000
+    monthly_domestic_energy_consumption: 500
+  output:
+    ni_epg_subsidy_calculable: false
+    monthly_ni_epg_subsidy: 0
+    monthly_epg_subsidy: 0
+
+- name: Case 12, a missing gas quantity leaves positive-use relief uncomputed.
+  period: 2023-04
+  input:
+    country:
+      2023: NORTHERN_IRELAND
+    electricity_consumption_kwh: 1_000
+    ni_epg_full_rate_applies: true
+    monthly_domestic_energy_consumption: 500
+  output:
+    ni_epg_subsidy_calculable: false
+    monthly_ni_epg_subsidy: 0
+    monthly_epg_subsidy: 0
+
+- name: Case 13, a negative electricity or gas quantity leaves relief uncomputed.
+  period: 2023-04
+  input:
+    country:
+      2023: [NORTHERN_IRELAND, NORTHERN_IRELAND]
+    electricity_consumption_kwh: [-1, 1_000]
+    gas_consumption_kwh: [2_000, -1]
+    ni_epg_full_rate_applies: [true, true]
+    monthly_domestic_energy_consumption: [500, 500]
+  output:
+    ni_epg_subsidy_calculable: [false, false]
+    monthly_ni_epg_subsidy: [0, 0]
+    monthly_epg_subsidy: [0, 0]
+
+- name: Case 14, ordinary annual spending does not establish a supplied monthly bill.
+  period: 2023-04
+  input:
+    country:
+      2023: NORTHERN_IRELAND
+    electricity_consumption_kwh: 1_000
+    gas_consumption_kwh: 2_000
+    ni_epg_full_rate_applies: true
+    domestic_energy_consumption:
+      2023: 12_000
+  output:
+    ni_epg_subsidy_calculable: false
+    monthly_ni_epg_subsidy: 0
+    monthly_epg_subsidy: 0
+
+- name: Case 15, a negative or insufficient supplied bill leaves relief uncomputed.
+  period: 2023-04
+  input:
+    country:
+      2023: [NORTHERN_IRELAND, NORTHERN_IRELAND]
+    electricity_consumption_kwh: [1_000, 1_000]
+    gas_consumption_kwh: [2_000, 2_000]
+    ni_epg_full_rate_applies: [true, true]
+    monthly_domestic_energy_consumption: [-1, 94.24]
+  output:
+    # Full consumer relief is 94.24275; the second supplied bill is below it.
+    ni_epg_subsidy_calculable: [false, false]
+    monthly_ni_epg_subsidy: [0, 0]
+    monthly_epg_subsidy: [0, 0]
+
+- name: Case 16, a March assertion does not establish April full-rate applicability.
+  period: 2023
+  input:
+    country: NORTHERN_IRELAND
+    electricity_consumption_kwh:
+      2023-03: 1_000
+      2023-04: 1_000
+    gas_consumption_kwh:
+      2023-03: 2_000
+      2023-04: 2_000
+    ni_epg_full_rate_applies:
+      2023-03: true
+    monthly_domestic_energy_consumption:
+      2023-03: 500
+      2023-04: 500
+  output:
+    # Omit a case margin for boolean coverage; the runner's default 0.001
+    # also checks the positive currency value more tightly than one penny.
+    ni_epg_subsidy_calculable:
+      2023-03: true
+      2023-04: false
+    monthly_ni_epg_subsidy:
+      2023-03: 224.64435
+      2023-04: 0
+    monthly_epg_subsidy:
+      2023-03: 224.64435
+      2023-04: 0
+
+- name: Case 17, supplied absent and zero-use households keep distinct coverage states.
+  period: 2023-04
+  input:
+    people:
+      person1: {}
+      person2: {}
+      person3: {}
+    benunits:
+      benunit1:
+        members: [person1]
+      benunit2:
+        members: [person2]
+      benunit3:
+        members: [person3]
+    households:
+      household1:
+        members: [person1]
+        country:
+          2023: NORTHERN_IRELAND
+        electricity_consumption_kwh: 1_000
+        gas_consumption_kwh: 2_000
+        ni_epg_full_rate_applies: true
+        monthly_domestic_energy_consumption: 500
+      household2:
+        members: [person2]
+        country:
+          2023: NORTHERN_IRELAND
+        gas_consumption_kwh: 2_000
+        ni_epg_full_rate_applies: true
+        monthly_domestic_energy_consumption: 500
+      household3:
+        members: [person3]
+        country:
+          2023: NORTHERN_IRELAND
+        electricity_consumption_kwh: 0
+        gas_consumption_kwh: 0
+  output:
+    # Same default 0.001 currency tolerance as Case 16; booleans stay exact.
+    ni_epg_subsidy_calculable: [true, false, true]
+    monthly_ni_epg_subsidy: [94.24275, 0, 0]
+    monthly_epg_subsidy: [94.24275, 0, 0]
+
+- name: Case 18, a bill above full consumer relief supports a positive calculation.
+  period: 2023-04
+  input:
+    country:
+      2023: NORTHERN_IRELAND
+    electricity_consumption_kwh: 1_000
+    gas_consumption_kwh: 2_000
+    ni_epg_full_rate_applies: true
+    monthly_domestic_energy_consumption: 94.25
+  output:
+    # Case 15 checks 94.24 below D; here 94.25 exceeds D = 94.24275.
+    ni_epg_subsidy_calculable: true
+    monthly_ni_epg_subsidy: 94.24275
+    monthly_epg_subsidy: 94.24275
+    monthly_epg_consumption_level: 0.00725
