@@ -39,7 +39,7 @@ status and the notes that explain it. Two notes matter most:
 Scorecard also records a [decomposition][decomposition] of how the
 estimate moved between PolicyEngine's September and October 2026 figures:
 how much came from the data, the model version, the child count and the
-relative-line convention.
+relative-line convention, and which policyengine-uk releases moved it.
 
 ## The reform
 
