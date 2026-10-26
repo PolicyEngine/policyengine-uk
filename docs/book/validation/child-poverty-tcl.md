@@ -29,9 +29,11 @@ Each row shows the published figure, PolicyEngine's value, the comparison
 status and the notes that explain it. Two notes matter most:
 
 - **The absolute line.** DWP's note uses the FYE 2011 reference year (60%
-  of the FYE 2011 median, held constant in real terms). PolicyEngine UK
-  serves the FYE 2025 reference, so Scorecard also constructs the FYE 2011
-  line for that comparison.
+  of the FYE 2011 median, held constant in real terms). PolicyEngine UK's
+  `in_poverty_*` use the FYE 2025 reference. The FYE 2011 line is
+  `in_absolute_poverty_fye2011_*` from policyengine-uk 2.155.0. The
+  certified release Scorecard runs on predates that, so Scorecard
+  constructs the FYE 2011 line for the comparison.
 - **Static and post-behavioural costs.** PolicyEngine's cost is static, so
   it compares with HM Treasury's static leg. The £3.1 billion includes a
   behavioural adjustment.
@@ -57,8 +59,10 @@ PolicyEngine UK is the financial year that starts in April `Y`, so FYE
   `in_relative_poverty_bhc`. These flag equivalised HBAI household income
   below 60% of the median of the world being calculated, with the median
   taken over people.
-- **Absolute low income**: `in_poverty_ahc` and `in_poverty_bhc`. These use
-  60% of the FYE 2025 median, held constant in real terms.
+- **Absolute low income**: `in_poverty_ahc` and `in_poverty_bhc`. From FYE
+  2022 these use 60% of the FYE 2025 median, held constant in real terms.
+  `in_absolute_poverty_fye2011_ahc` and `in_absolute_poverty_fye2011_bhc`
+  use the FYE 2011 median in every year, the line in DWP's note.
 - **Children**: `is_hbai_dependent_child`, HBAI's dependent children, as
   DWP counts them.
 - **Cost**: the change in `gov_balance` (tax less spending). The estimate
