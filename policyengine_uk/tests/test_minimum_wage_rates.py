@@ -374,3 +374,51 @@ def test_rates_do_not_fall_with_age(year, younger, older):
 def test_rates_do_not_fall_from_year_to_year(year, age):
     assert _model_rate(year, age) <= _model_rate(year + 1, age)
     assert _model_apprentice_rate(year) <= _model_apprentice_rate(year + 1)
+
+
+@pytest.mark.parametrize("instant", ["2010-10-01", "2011-01-01", "2012-01-01"])
+def test_apprentice_age_limit_covers_the_extended_wage_history(instant):
+    # S.I. 2010/1901 reg. 5 inserted the under-19/first-12-month rule into
+    # the 1999 Regulations from 1 October 2010, before the 2015 restatement.
+    assert system.parameters(instant).gov.hmrc.minimum_wage.apprentice_age_limit == 19
+
+
+@pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
+@pytest.mark.parametrize(
+    "year, expected_rates",
+    [
+        # January 2011 still reads S.I. 2010/1901 regs. 3 and 5; January
+        # 2012 reads the rates introduced by S.I. 2011/2345 regs. 3 and 5.
+        (2011, [3.64, 4.92, 5.93, 5.93, 2.50]),
+        (2012, [3.68, 4.98, 6.08, 6.08, 2.60]),
+    ],
+)
+def test_historical_minimum_wage_and_category_remain_available(year, expected_rates):
+    people = {
+        "under_18": {"age": 16},
+        "young_adult": {"age": 20},
+        "adult_21": {"age": 21},
+        "adult_40": {"age": 40},
+        "apprentice": {"age": 18, "is_apprentice": True},
+    }
+    names = list(people)
+    simulation = Simulation(
+        situation={
+            "people": {
+                name: {variable: {year: value} for variable, value in inputs.items()}
+                for name, inputs in people.items()
+            },
+            "benunits": {f"b_{name}": {"members": [name]} for name in names},
+            "households": {"household": {"members": names}},
+        }
+    )
+    np.testing.assert_allclose(
+        simulation.calculate("minimum_wage", year), expected_rates, rtol=0, atol=0.001
+    )
+    categories = simulation.calculate("minimum_wage_category", year)
+    if hasattr(categories, "decode_to_str"):
+        categories = categories.decode_to_str()
+    np.testing.assert_array_equal(
+        categories,
+        ["UNDER_18", "BETWEEN_18_20", "BETWEEN_21_22", "OVER_24", "APPRENTICE"],
+    )
