@@ -1,3 +1,10 @@
+## [2.162.4] - 2026-10-26
+
+### Fixed
+
+- Extended fiscal parameter annualisation beyond 2040 while preserving legacy annual records and dated reform checks, and rejected unrepresentable dates before changing parameters.
+
+
 ## [2.162.3] - 2026-10-26
 
 ### Fixed
