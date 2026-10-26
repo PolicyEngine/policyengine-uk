@@ -262,6 +262,7 @@
     housing_benefit_child_disability_premiums: 0
     housing_benefit_main_phase_esa_allowance_adjustment: 0
     # Personal 256 x 52 + family 20.22 x 52.
+    # Fixed model component total excludes child personal allowance, not modelled (#2232).
     housing_benefit_applicable_amount: 14363.44
 
 - name: Protected family premium with real pension-age claimant ENGLAND child first
@@ -301,6 +302,7 @@
     housing_benefit_child_disability_premiums: 0
     housing_benefit_main_phase_esa_allowance_adjustment: 0
     # Personal 256 x 52 + family 20.22 x 52.
+    # Fixed model component total excludes child personal allowance, not modelled (#2232).
     housing_benefit_applicable_amount: 14363.44
 
 - name: Protected family premium with real pension-age claimant NORTHERN_IRELAND claimant first
@@ -340,6 +342,7 @@
     housing_benefit_child_disability_premiums: 0
     housing_benefit_main_phase_esa_allowance_adjustment: 0
     # Personal 256 x 52 + family 20.22 x 52.
+    # Fixed model component total excludes child personal allowance, not modelled (#2232).
     housing_benefit_applicable_amount: 14363.44
 
 - name: Protected family premium with real pension-age claimant NORTHERN_IRELAND child first
@@ -379,5 +382,6 @@
     housing_benefit_child_disability_premiums: 0
     housing_benefit_main_phase_esa_allowance_adjustment: 0
     # Personal 256 x 52 + family 20.22 x 52.
+    # Fixed model component total excludes child personal allowance, not modelled (#2232).
     housing_benefit_applicable_amount: 14363.44
 

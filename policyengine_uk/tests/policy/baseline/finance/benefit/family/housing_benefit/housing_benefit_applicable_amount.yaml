@@ -364,6 +364,7 @@
     housing_benefit_family_premium: 907.40
     housing_benefit_child_disability_premiums: 3123.12
     housing_benefit_main_phase_esa_allowance_adjustment: 790.40
-    # Personal3010.80 + carer1799.20 + family907.40 + child3123.12 + ESA790.40.
+    # Personal3010.80 + carer1799.20 + family907.40 + disabled child 3123.12 + ESA790.40.
     # Personal plus ESA is73.10/week, not two full personal allowances.
+    # Fixed model component total excludes child personal allowance, not modelled (#2232).
     housing_benefit_applicable_amount: 9630.92

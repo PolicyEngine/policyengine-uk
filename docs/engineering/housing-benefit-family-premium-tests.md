@@ -29,7 +29,9 @@ and the parent's relationship fact distinguish the claimant from the child.
 The eldest age, pension-age date, pension-regime result and pre-April 2021
 cohort flag are derived, rather than supplied. An independently pre-assessed
 continuing protected award is a premise; ages alone do not establish it.
-The fixed component oracle is £256×52 + £20.22×52 = **£14,363.44**.
+The fixed model component total is £256×52 + £20.22×52 = **£14,363.44**.
+It excludes child personal allowance, which is not modelled
+([#2232](https://github.com/PolicyEngine/policyengine-uk/issues/2232)).
 The NI case checks the existing shared UK age-date API with its own HB cohort
 rates, without newly certifying separate NI pension-age enactments.
 
@@ -42,7 +44,10 @@ A separate 2015 working-age fixture has five positive components:
 | Ordinary family premium, £17.45×52 | £907.40 |
 | Ordinary disabled-child premium, £60.06×52 | £3,123.12 |
 | Main-phase ESA difference, (£73.10−£57.90)×52 | £790.40 |
-| Applicable amount | **£9,630.92** |
+| Model component total | **£9,630.92** |
+
+This fixed model component total also excludes child personal allowance,
+which is not modelled ([#2232](https://github.com/PolicyEngine/policyengine-uk/issues/2232)).
 
 That fixture uses a 17-year-old lone parent before new-claim closure. It does
 not invent protected continuity for a teenager in 2026 or combine historical
