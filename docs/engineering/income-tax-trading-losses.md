@@ -53,3 +53,15 @@ national impacts, input coverage or population accuracy.
 References: [ITA 2007 sections 63–65](https://www.legislation.gov.uk/ukpga/2007/3/part/4/chapter/2),
 [sections 83–84](https://www.legislation.gov.uk/ukpga/2007/3/part/4/chapter/2/crossheading/carryforward-trade-loss-relief),
 and [section 24A](https://www.legislation.gov.uk/ukpga/2007/3/section/24A).
+
+## A new loss alongside profits
+
+The automatic carry-forward uses aggregate person inputs and does not identify trades. In every year, the caller must establish that each brought-forward loss used by the calculation is deductible from the supplied profits of that same trade, including the required ordering. The aggregate deduction must equal the sum of the permitted same-trade deductions. Supplying a pool does not establish that unrelated losses and profits are compatible.
+
+For example, an old £10,000 loss from trade A in 2025, followed by £8,000 profit from A and a new £4,000 loss from B in 2026, uses £8,000 of A's old stock first. With no other income, ordinary expenses rather than the trading allowance, no pensions, capital allowances or external relief, and eligible current-year claims, current general-income relief is £0. The 2027 opening inventory is £2,000 from A plus £4,000 from B, or £6,000. This balance does not authorise relief against arbitrary later profits: compatibility must be assessed again each year.
+
+If instead both the old and new losses belong to A while the £8,000 profit belongs to B, section 83 cannot deduct A's old stock from B's profit. Under the retained current-year section 64 convention, £4,000 of the current loss can be used, leaving £4,000 net income before personal allowances and £10,000 old stock unrelieved. These identical aggregate inputs do not identify that association, so this case is outside automatic reconstruction. Keep per-trade records externally and supply reconciled annual inputs and balances, or exclude the situation from the automatic calculation. An explicit `loss_relief: 0` resets the accounting segment; it does not suspend an old loss in a hidden ledger. Excluded stock must be explicitly reseeded when appropriate later, accounting for relief already obtained.
+
+## Projected dataset inputs
+
+If a data producer copies a supplied `trading_loss` value into later years, each physical annual input is treated as a new loss for that year. Preserve the original supplied year of a one-off loss and use assessed later inputs, including explicit zeros where appropriate; do not forward-fill it because it remains unused. Copying `loss_relief` likewise supplies a new opening-balance override each year. This conditional input-contract warning makes no claim about current certified-data columns, population coverage or national effects.

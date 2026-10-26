@@ -244,3 +244,44 @@
     loss_relief: 3_000
     trade_loss_relief_against_general_income: 0
     taxable_self_employment_income: 1_000
+
+# PROPOSED ONLY; conditional same-trade compatibility is externally assessed.
+# 2025 old loss belongs to A; in 2026 A profits 8,000 and B loses 4,000.
+# Trade identities are premises, not variables inferred by the model.
+- name: Caller-assessed profitable-trade stock is used before another trade's current loss
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    taxable_social_security_income: 0
+    employment_income: 0
+    employee_pension_contributions: 0
+    personal_pension_contributions: 0
+    employer_pension_contributions: 0
+    pension_contributions_via_salary_sacrifice: 0
+    self_employment_income:
+      2025: 0
+      2026: 8_000
+      2027: 0
+    trading_loss:
+      2025: 10_000
+      2026: 4_000
+      2027: 0
+    trading_allowance_deduction:
+      2025: 0
+      2026: 0
+      2027: 0
+  output:
+    loss_relief:
+      2025: 0
+      2026: 10_000
+      # Remaining 2,000 from A plus 4,000 from B; reassess later eligibility.
+      2027: 6_000
+    trade_loss_relief_against_general_income:
+      2025: 0
+      2026: 0
+      2027: 0
+    taxable_self_employment_income:
+      2025: 0
+      2026: 0
+      2027: 0
