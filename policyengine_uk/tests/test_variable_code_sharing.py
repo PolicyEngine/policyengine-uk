@@ -8,12 +8,19 @@ so code compiled again for every system used to fill the CI shards' memory.
 Until core shared it, the test conftest did the sharing itself.
 
 Systems must still get their own modules, classes and functions, and compute
-the same results.
+the same results. Older cores, which pe-uk's floor still allows, compile the code
+again for every system, so only the shared-code check depends on the version.
 """
 
 import sys
+from importlib.metadata import version
+
+from packaging.version import Version
 
 from policyengine_uk import Simulation
+
+# PolicyEngine/policyengine-core#608 compiles each variable file once per process.
+CORE_SHARES_VARIABLE_CODE = Version(version("policyengine-core")) >= Version("3.33.12")
 
 # A variable with a formula. income_tax itself adds this and the winter fuel
 # payment charge, so it has no formula of its own.
@@ -45,5 +52,7 @@ def test_systems_share_code_but_not_modules_classes_or_functions():
     )
     assert first_formula is not second_formula
     assert first_formula.__globals__ is not second_formula.__globals__
-    assert first_formula.__code__ is second_formula.__code__
+    assert (
+        first_formula.__code__ is second_formula.__code__
+    ) is CORE_SHARES_VARIABLE_CODE
     assert first.calculate("income_tax", 2026) == second.calculate("income_tax", 2026)
