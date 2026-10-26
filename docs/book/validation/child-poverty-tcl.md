@@ -72,9 +72,7 @@ YEAR = 2029  # FY 2029-30 (FYE 2030)
 LIMIT = "gov.dwp.universal_credit.elements.child.limit.child_count"
 
 current_law = pe.uk.managed_microsimulation()
-with_limit = pe.uk.managed_microsimulation(
-    reform={LIMIT: {"2025-01-01.2035-12-31": 2}}
-)
+with_limit = pe.uk.managed_microsimulation(reform={LIMIT: {"2025-01-01.2035-12-31": 2}})
 
 children = current_law.calculate("is_hbai_dependent_child", YEAR)
 for measure in ("in_relative_poverty_ahc", "in_relative_poverty_bhc"):
