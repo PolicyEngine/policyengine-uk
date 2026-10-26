@@ -240,6 +240,23 @@ Do not rebuild an existing data-built simulation by calling core's
 `SimulationBuilder.build_from_dict` directly. In core 3.33.2 this leaves stale
 dataset provenance, which copies inherit. Use UK `build_from_situation` instead.
 
+## Reported Council Tax Reduction projection
+
+Dataset projection grows existing `council_tax_benefit_reported` person inputs
+by their household's council tax bill factor, using `person_household_id` to
+map the factor. The factor uses each country's council tax receipts growth
+net of household weight growth; UNKNOWN uses England's series. Reported
+reductions therefore retain their share of the bill. Northern Ireland's
+factor remains one, so both its supplied bill and reduction stay flat. This
+does not classify any Northern Ireland report as domestic rate relief.
+
+The projector requires the reported column in both years and creates no
+missing reports. Resetting economic assumptions restores the base reported
+amount alongside the bill when both years store it. No generic CPI index is
+added, and hand-entered situations retain their existing behavior. Beyond the
+materialized projection horizon, Core carries the latest reported reduction
+and council tax bill at their last stored cash values.
+
 ## Student loan plan projection
 
 Student loan projection preserves each existing holder's recorded non-`NONE`
