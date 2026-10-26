@@ -160,3 +160,64 @@ def test_closed_reports_and_inactive_jsa_are_not_paid(award):
             scenario=Scenario(parameter_changes={"gov.dwp.JSA.income.active": False}),
         )
         assert amount(inactive, award) == 0
+
+
+def test_alternate_uc_claimant_mask_reaches_specified_benefit_exemption():
+    """A supported UC claimant-mask override reaches the actual cap and final UC.
+
+    The different masks exercise the callback interface, rather than assert
+    a new entitlement rule for a couple claiming as a single person.
+    """
+    import math
+
+    members = ["claimant", "partner"]
+    people = {}
+    for name in members:
+        people[name] = {
+            "age": {YEAR: 40},
+            "is_claimant_or_partner": {YEAR: True},
+            "is_uc_claimant": {YEAR: name == "claimant"},
+            "current_education": {YEAR: "NOT_IN_EDUCATION"},
+            "employment_income": {YEAR: 0},
+            "esa_income_reported": {YEAR: 0},
+            "esa_contrib_reported": {YEAR: 0},
+            "care_hours": {YEAR: 0},
+            "is_disabled_for_benefits": {YEAR: False},
+        }
+    simulation = Simulation(
+        situation={
+            "people": people,
+            "benunits": {
+                "family": {
+                    "members": members,
+                    "would_claim_uc": {YEAR: True},
+                    "would_claim_pc": {YEAR: False},
+                    "working_tax_credit": {YEAR: 0},
+                }
+            },
+            "households": {
+                "home": {
+                    "members": members,
+                    "region": {YEAR: "NORTH_EAST"},
+                    "country": {YEAR: "ENGLAND"},
+                }
+            },
+        }
+    )
+    assert simulation.calculate("is_claimant_or_partner", YEAR).tolist() == [True, True]
+    assert simulation.calculate("is_uc_claimant", YEAR).tolist() == [True, False]
+    assert simulation.calculate("is_uc_assessed_claimant", YEAR).tolist() == [
+        True,
+        False,
+    ]
+    assert simulation.calculate("claims_universal_credit", YEAR)[0]
+    assert amount(simulation, "universal_credit_pre_benefit_cap") > 0
+    assert not simulation.calculate("is_uc_benefit_cap_exempt_specified_benefit", YEAR)[
+        0
+    ]
+    cap = amount(simulation, "uc_benefit_cap")
+    reduction = amount(simulation, "uc_benefit_cap_reduction_after_floor")
+    final_uc = amount(simulation, "universal_credit")
+    assert math.isfinite(cap) and cap > 0
+    assert math.isfinite(reduction) and reduction >= 0
+    assert math.isfinite(final_uc) and final_uc >= 0

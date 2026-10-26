@@ -131,7 +131,8 @@ def test_the_raw_reported_total_is_read_through_the_reports():
     £200 and an adult outside the couple £3,000, with capital of £10,000.
     Tariff income of ceil(4,000 / 250) x £1 x 52 = £832 a year extinguishes
     the partner's award on the formula's reading, so the formula's £2,168
-    (£3,200 - £832) does not bar the claim. The raw total, £3,200, pays the
+    (max(0, £200 - £832) + max(0, £3,000 - £832)) does not bar the claim.
+    The raw total, £3,200, pays the
     partner's £200 unscreened, so it does. The excluded adult's £3,000 is
     theirs on either reading."""
     members = ["carer", "partner", "other_adult"]
