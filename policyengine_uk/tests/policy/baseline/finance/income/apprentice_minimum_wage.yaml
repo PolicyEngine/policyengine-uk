@@ -1,0 +1,309 @@
+# NMW Regulations 2015 reg. 5: an apprentice aged 19 or over who has
+# completed the first 12 months receives the rate for their age. Omitting
+# first-year status must not extend the apprentice rate to older apprentices.
+# In 2026 the 21+ rate is 12.71, versus the apprentice rate of 8.00:
+# https://www.gov.uk/national-minimum-wage-rates
+#
+# Earnings of 8,000 a year are 2,000 in a 13-week declaration period:
+# below 12.71 x 16 x 13 = 2,643.68, but above 8 x 16 x 13 = 1,664.
+# The Welsh weekly test is equivalent: 8,000 / 52 = 153.85 is below
+# 12.71 x 16 = 203.36, but above 8 x 16 = 128.
+
+- name: Case 1, an older apprentice without first-year status fails the Tax-Free Childcare minimum income condition.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 22
+        is_apprentice: true
+        employment_income: 8_000
+      person2:
+        age: 3
+    benunits:
+      benunit:
+        members: [person1, person2]
+    households:
+      household:
+        members: [person1, person2]
+        region: WALES
+  output:
+    tax_free_childcare_meets_income_requirements: [false, false]
+
+- name: Case 2, an older apprentice without first-year status fails the extended childcare minimum income condition.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 22
+        is_apprentice: true
+        employment_income: 8_000
+      person2:
+        age: 3
+    benunits:
+      benunit:
+        members: [person1, person2]
+    households:
+      household:
+        members: [person1, person2]
+        region: WALES
+  output:
+    extended_childcare_entitlement_meets_income_requirements: [false, false]
+
+- name: Case 3, an older apprentice without first-year status fails the Childcare Offer for Wales parent condition.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 22
+        is_apprentice: true
+        employment_income: 8_000
+      person2:
+        age: 3
+    benunits:
+      benunit:
+        members: [person1, person2]
+    households:
+      household:
+        members: [person1, person2]
+        region: WALES
+  output:
+    wales_childcare_offer_parent_condition: [false, false]
+
+- name: Case 4, the apprentice rate ends at age 19 after the first year.
+  period: 2026
+  input:
+    age: [18, 19, 22, 30]
+    is_apprentice: [true, true, true, true]
+    is_in_first_year_of_apprenticeship: [false, false, false, false]
+  output:
+    qualifies_for_apprentice_minimum_wage: [true, false, false, false]
+    minimum_wage: [8, 10.85, 12.71, 12.71]
+    minimum_wage_category: [APPRENTICE, BETWEEN_18_20, BETWEEN_21_22, OVER_24]
+
+- name: Case 5, the first-year condition gives older apprentices the apprentice rate.
+  period: 2026
+  input:
+    age: [19, 22, 30]
+    is_apprentice: [true, true, true]
+    is_in_first_year_of_apprenticeship: [true, true, true]
+  output:
+    qualifies_for_apprentice_minimum_wage: [true, true, true]
+    minimum_wage: [8, 8, 8]
+    minimum_wage_category: [APPRENTICE, APPRENTICE, APPRENTICE]
+
+- name: Case 6, first-year status alone does not give non-apprentices the apprentice rate.
+  period: 2026
+  input:
+    age: [18, 22, 30]
+    is_apprentice: [false, false, false]
+    is_in_first_year_of_apprenticeship: [true, true, true]
+  output:
+    qualifies_for_apprentice_minimum_wage: [false, false, false]
+    minimum_wage: [10.85, 12.71, 12.71]
+    minimum_wage_category: [BETWEEN_18_20, BETWEEN_21_22, OVER_24]
+
+- name: Case 7, omitted first-year status defaults to false without overriding age-based qualification.
+  period: 2026
+  input:
+    age: [18, 19, 22]
+    is_apprentice: [true, true, true]
+  output:
+    is_in_first_year_of_apprenticeship: [false, false, false]
+    qualifies_for_apprentice_minimum_wage: [true, false, false]
+    minimum_wage: [8, 10.85, 12.71]
+    minimum_wage_category: [APPRENTICE, BETWEEN_18_20, BETWEEN_21_22]
+
+- name: Case 8, an older apprentice after the first year receives the 2025 age-based rate.
+  period: 2025
+  input:
+    age: 22
+    is_apprentice: true
+    is_in_first_year_of_apprenticeship: false
+  output:
+    qualifies_for_apprentice_minimum_wage: false
+    minimum_wage: 12.21
+    minimum_wage_category: BETWEEN_21_22
+
+- name: Case 9, a first-year apprentice parent meets all three childcare income conditions at 8000 a year.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 22
+        is_apprentice: true
+        is_in_first_year_of_apprenticeship: true
+        employment_income: 8_000
+      person2:
+        age: 3
+    benunits:
+      benunit:
+        members: [person1, person2]
+    households:
+      household:
+        members: [person1, person2]
+        region: WALES
+  output:
+    minimum_wage: [8, 8]
+    minimum_wage_category: [APPRENTICE, UNDER_18]
+    tax_free_childcare_expected_declaration_period_income: [2_000, 0]
+    tax_free_childcare_meets_income_requirements: [true, false]
+    extended_childcare_entitlement_meets_income_requirements: [true, false]
+    wales_childcare_offer_parent_condition: [true, false]
+    wales_childcare_offer_eligible: true
+
+- name: Case 10, an older apprentice parent after the first year fails all three childcare income conditions at 8000 a year.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 22
+        is_apprentice: true
+        is_in_first_year_of_apprenticeship: false
+        employment_income: 8_000
+      person2:
+        age: 3
+    benunits:
+      benunit:
+        members: [person1, person2]
+    households:
+      household:
+        members: [person1, person2]
+        region: WALES
+  output:
+    minimum_wage: [12.71, 8]
+    minimum_wage_category: [BETWEEN_21_22, UNDER_18]
+    tax_free_childcare_expected_declaration_period_income: [2_000, 0]
+    tax_free_childcare_meets_income_requirements: [false, false]
+    extended_childcare_entitlement_meets_income_requirements: [false, false]
+    wales_childcare_offer_parent_condition: [false, false]
+    wales_childcare_offer_eligible: false
+
+# SSCBA 1992 s.9B and HMRC NIM01307: relevant apprentices qualify for
+# employer NIC relief while under 25, irrespective of apprenticeship year.
+# At 30,000, ages 21 and 24 are below the 50,270 apprentice upper secondary
+# threshold. From age 25 the ordinary charge is (30,000 - 5,000) x 15%.
+# https://www.gov.uk/hmrc-internal-manuals/national-insurance-manual/nim01307
+- name: Case 11, employer NIC relief for apprentices uses the under-25 limit in every apprenticeship year.
+  period: 2026
+  input:
+    age: [21, 21, 24, 24, 25, 25]
+    is_apprentice: [true, true, true, true, true, true]
+    is_in_first_year_of_apprenticeship: [true, false, true, false, true, false]
+    employment_income: [30_000, 30_000, 30_000, 30_000, 30_000, 30_000]
+  output:
+    minimum_wage: [8, 12.71, 8, 12.71, 8, 12.71]
+    ni_class_1_employer: [0, 0, 0, 0, 3_750, 3_750]
+
+# UC Regs 2013 reg. 90(2) excludes the apprentice rate from the individual
+# threshold: 12.71 x 35 x 52 = 23,132.20, in either apprenticeship year.
+# Regs. 82(1)(a) and 6(1A)(za) use the National Living Wage for the cap:
+# floor(12.71 x 16 x 52 / 12) x 12 = 10,572.
+- name: Case 12, UC minimum income floor and benefit cap thresholds keep their non-apprentice rates in every apprenticeship year.
+  period: 2026
+  input:
+    age: [22, 22]
+    is_apprentice: [true, true]
+    is_in_first_year_of_apprenticeship: [true, false]
+  output:
+    minimum_wage: [8, 12.71]
+    uc_minimum_income_floor_gross: [23_132.20, 23_132.20]
+    uc_benefit_cap_earnings_exception_threshold: [10_572, 10_572]
+
+# End to end: the same first-year/later-year households in England and
+# Wales. Their income, ages and childcare use are identical; only the
+# apprenticeship year differs within each country. None receives UC or
+# tax credits, so those programmes do not disqualify Tax-Free Childcare.
+# Each child spends 5,000 on childcare after funded hours; 20% is 1,000.
+# https://www.gov.uk/tax-free-childcare
+#
+# The England child turns 3 on 31 March, so all three terms have universal
+# hours. The working-parent top-up is (30 - 15) x 38 = 570 hours, valued
+# at the existing 2026 national-average funding proxy, 6.61: 3,767.70.
+# https://www.gov.uk/government/publications/early-years-funding-2026-to-2027/2026-to-2027-early-years-national-funding-formulae-technical-note
+#
+# In Wales the childcare element is (30 - 10) x 39 + 30 x 9 = 1,050 hours,
+# at the 6.67 provider rate from 6 April 2026: 7,003.50.
+# https://www.gov.wales/written-statement-childcare-offer-rate-review
+- name: Case 13, first-year status changes the final childcare awards in England and Wales.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 22
+        is_parent: true
+        is_apprentice: true
+        is_in_first_year_of_apprenticeship: true
+        employment_income: 8_000
+      person2:
+        age: 3
+        date_of_birth: 20230331
+        childcare_expenses: 5_000
+      person3:
+        age: 22
+        is_parent: true
+        is_apprentice: true
+        is_in_first_year_of_apprenticeship: false
+        employment_income: 8_000
+      person4:
+        age: 3
+        date_of_birth: 20230331
+        childcare_expenses: 5_000
+      person5:
+        age: 22
+        is_parent: true
+        is_apprentice: true
+        is_in_first_year_of_apprenticeship: true
+        employment_income: 8_000
+      person6:
+        age: 3
+        date_of_birth: 20230331
+        childcare_expenses: 5_000
+      person7:
+        age: 22
+        is_parent: true
+        is_apprentice: true
+        is_in_first_year_of_apprenticeship: false
+        employment_income: 8_000
+      person8:
+        age: 3
+        date_of_birth: 20230331
+        childcare_expenses: 5_000
+    benunits:
+      benunit1:
+        members: [person1, person2]
+        would_claim_uc: false
+        would_claim_CTC: false
+        would_claim_WTC: false
+      benunit2:
+        members: [person3, person4]
+        would_claim_uc: false
+        would_claim_CTC: false
+        would_claim_WTC: false
+      benunit3:
+        members: [person5, person6]
+        would_claim_uc: false
+        would_claim_CTC: false
+        would_claim_WTC: false
+      benunit4:
+        members: [person7, person8]
+        would_claim_uc: false
+        would_claim_CTC: false
+        would_claim_WTC: false
+    households:
+      household1:
+        members: [person1, person2]
+        region: NORTH_EAST
+      household2:
+        members: [person3, person4]
+        region: NORTH_EAST
+      household3:
+        members: [person5, person6]
+        region: WALES
+      household4:
+        members: [person7, person8]
+        region: WALES
+  output:
+    tax_free_childcare: [0, 1_000, 0, 0, 0, 1_000, 0, 0]
+    extended_childcare_entitlement: [3_767.70, 0, 0, 0]
+    wales_childcare_offer: [0, 0, 7_003.50, 0]

@@ -23,8 +23,9 @@ and 25 or over. The national living wage applied from age 25 from 1 April 2016
 the parameters used to get wrong: with no 1 April 2023 entry, 2023 read the
 April 2022 rates, for example £9.50 instead of the £10.42 national living wage.
 
-The model reads ``is_apprentice`` as "the apprenticeship rate applies"
-(2015 Regs reg. 5: an apprentice under 19 or in the first 12 months). Ages
+The apprenticeship rate applies to an apprentice under 19 or in the first
+12 months (2015 Regs reg. 5). The adult apprenticeship-rate fixture therefore
+sets both ``is_apprentice`` and ``is_in_first_year_of_apprenticeship``. Ages
 under 16 are not checked: the Act does not cover workers of compulsory school
 age, and the model gives them the under-18 rate.
 
@@ -258,10 +259,11 @@ def test_minimum_wage_variable_matches_statutory_instruments():
         for age in ages
     }
     # The apprenticeship rate displaces the age rates (2015 Regs reg. 4A(2)).
-    # is_apprentice stands for "the apprenticeship rate applies" (reg. 5).
+    # At age 19, the first-12-month condition is needed (reg. 5).
     people["apprentice_19"] = {
         "age": {str(year): 19 for year in years},
         "is_apprentice": {str(year): True for year in years},
+        "is_in_first_year_of_apprenticeship": {str(year): True for year in years},
     }
     names = list(people)
     sim = Simulation(

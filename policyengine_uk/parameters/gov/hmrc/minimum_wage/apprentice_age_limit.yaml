@@ -1,0 +1,12 @@
+description: Apprentices below this age qualify for the apprentice minimum wage regardless of how long they have been in their apprenticeship.
+values:
+  2015-04-06: 19
+metadata:
+  label: Apprentice minimum wage age limit
+  unit: year
+  period: year
+  reference:
+    - title: The National Minimum Wage Regulations 2015, regulation 5(1)(b)
+      href: https://www.legislation.gov.uk/uksi/2015/621/regulation/5
+    - title: The National Minimum Wage Regulations 2015, regulation 1
+      href: https://www.legislation.gov.uk/uksi/2015/621/regulation/1
