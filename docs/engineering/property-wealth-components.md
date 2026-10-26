@@ -182,7 +182,7 @@ citations. Paths are relative to `policyengine_uk/variables/`.
 | --- | --- |
 | Residential and worldwide property | `household/wealth/residential_property_value.py` and `property_wealth.py` use the component identities above |
 | Total wealth and wealth deciles | `household/wealth/total_wealth.py` includes property once; `household_wealth_decile.py` reads total wealth with person-weighted household weights |
-| Wealth taxes | `contrib/ubi_center/wealth_tax.py` reads total wealth; `contrib/cec/non_primary_residence_wealth_tax.py` subtracts main residence from total wealth |
+| Wealth taxes | `contrib/ubi_center/wealth_tax.py` reads `net_wealth`, which deducts mortgage, consumer and student-loan debt from total wealth; `contrib/cec/non_primary_residence_wealth_tax.py` subtracts main residence from gross total wealth |
 | UK land and LVT | `household/wealth/household_land_value.py` estimates domestic household land; `land_value.py` adds corporate land; `contrib/ubi_center/land_value_tax.py` applies the configured combined, household and corporate rates |
 | Domestic property purchases | `household/consumption/main_residential_property_purchased.py`, `additional_residential_property_purchased.py` and `non_residential_property_purchased.py` retain their separate transaction routing |
 | SDLT | `gov/hmrc/sdlt_on_residential_property_transactions.py` and `sdlt_on_non_residential_property_transactions.py` read transactions; `stamp_duty_land_tax.py` aggregates liabilities and `expected_sdlt.py` carries the household liability |

@@ -305,3 +305,31 @@
   output:
     # max(0, 90% of 120,000 - 120,000); no separate buy-to-let input.
     uc_assessable_capital: 0
+
+- name: A financial report overrides overseas property but retains domestic property capital
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    benunit_reported_capital: 0
+    overseas_property_value: 18_000
+    other_residential_property_value: 10_000
+  output:
+    # The financial observation replaces the new category's proxy, while the
+    # independent domestic property pool retains 90% of the 10,000 stock.
+    uc_property_capital: 9_000
+    uc_assessable_capital: 9_000
+
+- name: A financial report overrides unclassified other property but retains domestic property capital
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    benunit_reported_capital: 0
+    other_property_value: 18_000
+    non_residential_property_value: 10_000
+  output:
+    # The financial observation replaces the new category's proxy, while the
+    # independent domestic property pool retains 90% of the 10,000 stock.
+    uc_property_capital: 9_000
+    uc_assessable_capital: 9_000

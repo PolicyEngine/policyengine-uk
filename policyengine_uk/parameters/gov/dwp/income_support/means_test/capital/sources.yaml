@@ -38,5 +38,5 @@ values:
   - share_like_capital
   - other_residential_property_value
   - non_residential_property_value
-    - overseas_property_value
-    - other_property_value
+  - overseas_property_value
+  - other_property_value
