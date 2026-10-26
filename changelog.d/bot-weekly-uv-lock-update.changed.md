@@ -1,0 +1,1 @@
+- Updated `uv.lock` to the newest dependency releases.
