@@ -1,3 +1,16 @@
+## [2.162.7] - 2026-10-26
+
+### Changed
+
+- Added property and full-person fixture coverage for Housing Benefit's protected family premium. Clarified that the fixed test totals exclude the unmodelled child personal allowance.
+
+### Fixed
+
+- - Preserved each benefit unit's Universal Credit advance repayment fallback when other units supply cash, while retaining explicit zero repayments.
+- - Keep Universal Credit advance repayment cash demand fixed through standard allowance reforms while preserving supplied deduction rates, existing caps, abolition switches and protected-floor allocation.
+- Apply the apprentice minimum wage only to apprentices under 19 or explicitly in their first 12 months, including historical calculations from October 2012, while preserving employer National Insurance relief for later-year apprentices under 25.
+
+
 ## [2.162.6] - 2026-10-26
 
 ### Changed
