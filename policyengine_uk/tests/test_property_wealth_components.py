@@ -77,6 +77,14 @@ COMPONENT_VALUES = dict(
 )
 
 
+@pytest.fixture(scope="module")
+def _property_metadata_system(cloned_uk_tax_benefit_system):
+    # The dependency installs the clone factory before this read-only fixture.
+    import policyengine_uk.simulation as simulation_module
+
+    return simulation_module.CountryTaxBenefitSystem()
+
+
 def _saved_components(source_values):
     """The upstream release contract combines second homes and buy-to-let."""
     components = dict.fromkeys(PROPERTY_INPUTS, 0.0)
@@ -144,10 +152,9 @@ def _component_dataset(components, *, stored_total=None):
     "variable", ["overseas_property_value", "other_property_value"]
 )
 def test_new_property_inputs_register_gdp_uprating_for_situations_and_datasets(
-    variable,
+    variable, _property_metadata_system
 ):
-    sim = _simulation({variable: 100_000})
-    model_variable = sim.tax_benefit_system.variables[variable]
+    model_variable = _property_metadata_system.variables[variable]
     assert model_variable.uprating == GDP_INDEX
     assert model_variable.entity.key == "household"
     assert model_variable.default_value == 0
@@ -159,8 +166,10 @@ def test_new_property_inputs_register_gdp_uprating_for_situations_and_datasets(
 
 @pytest.mark.parametrize("capital_path", CAPITAL_PATHS)
 @pytest.mark.parametrize("year", [2024, 2026])
-def test_property_capital_lists_preserve_each_source_once(capital_path, year):
-    parameters = _simulation({}).tax_benefit_system.parameters
+def test_property_capital_lists_preserve_each_source_once(
+    capital_path, year, _property_metadata_system
+):
+    parameters = _property_metadata_system.parameters
     sources = list(parameters.get_child(f"{capital_path}.sources")(year))
     sale_sources = list(
         parameters.get_child(f"{capital_path}.sale_expenses.sources")(year)
