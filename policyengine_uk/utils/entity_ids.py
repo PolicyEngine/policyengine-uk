@@ -11,10 +11,11 @@ rebuilds the entities from that last export.
 policyengine-core casts a stored value to its variable's dtype with ``astype``
 (``Holder._to_array``). That cast wraps an integer outside the dtype's range
 and drops the fraction of a float, both without an error. ``check_entity_ids``
-warns about such identifiers when the entities are built. It does not refuse
-them: the populations built from them still hold them exactly, and data builds
-that number clones past the range (by adding multiples of a power of ten to
-every identifier) load them today.
+warns about such identifiers when the entities are built. The check itself
+does not refuse them, but core may reject memberships that name no declared
+group. When a build succeeds, its populations hold the identifiers exactly.
+Data builds that number clones past the range (by adding multiples of a power
+of ten to every identifier) load them today.
 """
 
 import warnings
@@ -74,9 +75,8 @@ def check_entity_ids(variable: Variable, values) -> bool:
             warnings.warn(
                 f"{variable.name} should hold whole numbers, but "
                 f"{int((~whole).sum())} of its {values.size} values do not (the "
-                f"first is {values[~whole][0]}). The simulation stores them "
-                f"as {np.dtype(variable.dtype).name}, so the {variable.name} "
-                "values it returns will differ from them.",
+                f"first is {values[~whole][0]}). Storing them as "
+                f"{np.dtype(variable.dtype).name} would change their values.",
                 EntityIdWarning,
                 stacklevel=3,
             )
