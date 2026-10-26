@@ -24,7 +24,7 @@ class loss_relief(Variable):
     )
     definition_period = YEAR
     unit = GBP
-    quantity_type = FLOW
+    quantity_type = STOCK
 
     def formula(person, period, parameters):
         earlier_years = [

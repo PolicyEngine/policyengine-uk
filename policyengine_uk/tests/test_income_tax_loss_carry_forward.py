@@ -174,3 +174,11 @@ def test_neutralizing_the_loss_removes_automatic_carry_forward():
     assert value(sim, "loss_relief", 2026) == 8_000
     sim.apply_reform(neutralize_loss)
     assert value(sim, "loss_relief", 2026) == 0
+
+
+def test_monthly_reads_preserve_the_annual_opening_stock():
+    sim = simulation(history())
+    # The 10,000 loss less 2,000 used in 2025 leaves 8,000 opening stock.
+    assert value(sim, "loss_relief", 2026) == 8_000
+    assert value(sim, "loss_relief", "2026-01") == 8_000
+    assert value(sim, "loss_relief", "2026-12") == 8_000

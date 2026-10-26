@@ -245,7 +245,7 @@
     trade_loss_relief_against_general_income: 0
     taxable_self_employment_income: 1_000
 
-# PROPOSED ONLY; conditional same-trade compatibility is externally assessed.
+# Conditional same-trade compatibility is externally assessed.
 # 2025 old loss belongs to A; in 2026 A profits 8,000 and B loses 4,000.
 # Trade identities are premises, not variables inferred by the model.
 - name: Caller-assessed profitable-trade stock is used before another trade's current loss
