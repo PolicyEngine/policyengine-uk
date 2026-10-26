@@ -315,3 +315,56 @@
     is_lone_parent: true
   output:
     housing_benefit_applicable_amount: 90.5 * 52
+
+# Independent 2015 component oracle: SI 2006/213 Sch 3 Part I (2015-04-06),
+# SI 2015/457 art17(8) and Sch6. This pre-closure ordinary-family case is
+# separate from the pension-age fixtures and establishes no protected history.
+# The adult term is a lawful pre-assessed carer premium: qualifying care,
+# underlying entitlement and overlapping-benefit treatment are premises.
+# It does NOT execute adult-premium, carer's allowance or ESA eligibility.
+- name: Five positive Housing Benefit components for a young lone parent before closure
+  period: 2015
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 17
+        is_parent: true
+        is_claimant_or_partner: true
+      child:
+        age: 1
+        is_claimant_or_partner: false
+        # Positive predicate sentinel for an established middle-care DLA
+        # award, not the statutory award amount or an award calculation.
+        dla_sc: 1
+        dla_m: 0
+        pip_dl: 0
+        pip_m: 0
+        armed_forces_independence_payment: 0
+        receives_highest_dla_sc: false
+        receives_enhanced_pip_dl: false
+        is_blind: false
+    benunits:
+      family:
+        members: [claimant, child]
+        housing_benefit_eligible: true
+        housing_benefit_family_premium_category: ORDINARY_PROTECTED
+        housing_benefit_has_main_phase_esa: true
+        benefits_premiums: 1799.20 # Pre-assessed carer34.60 x52; not adult disability.
+        is_uc_entitled: false
+        council_tax_reduction_relevant_income_based_benefit: false
+    households:
+      home:
+        members: [claimant, child]
+        country: ENGLAND
+  output:
+    is_lone_parent: true
+    housing_benefit_pension_age_regulations_apply: false
+    benefits_premiums: 1799.20
+    housing_benefit_family_premium: 907.40
+    housing_benefit_child_disability_premiums: 3123.12
+    housing_benefit_main_phase_esa_allowance_adjustment: 790.40
+    # Personal3010.80 + carer1799.20 + family907.40 + disabled child 3123.12 + ESA790.40.
+    # Personal plus ESA is73.10/week, not two full personal allowances.
+    # Fixed model component total excludes child personal allowance, not modelled (#2232).
+    housing_benefit_applicable_amount: 9630.92
