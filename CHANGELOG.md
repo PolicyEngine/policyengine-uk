@@ -1,3 +1,12 @@
+## [2.162.8] - 2026-10-26
+
+### Fixed
+
+- Screen income-related ESA and income-based JSA reports separately for people outside the claimant couple, preserving scoped award readers, and use assessed ESA receipt in the 16–19 Bursary Fund own-right signal.
+
+  Use the report-aware ESA callback in the Housing Benefit cap reader, restore ESA/JSA documentation citations and spacing, and clarify bursary test comments.
+
+
 ## [2.162.7] - 2026-10-26
 
 ### Changed
