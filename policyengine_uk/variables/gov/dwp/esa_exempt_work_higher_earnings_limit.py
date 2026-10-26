@@ -13,7 +13,7 @@ class esa_exempt_work_higher_earnings_limit(Variable):
         "reg 16(5)) it is 16 x National Minimum Wage, rounded up to the next "
         "50p (reg 45(9A)). Reg 2(1) defines the National Minimum Wage as the "
         "rate in reg 11 of the National Minimum Wage Regulations 1999, now "
-        "the national living wage, the highest rate (DMG 41190), so the "
+        "the national living wage, the adult rate (DMG 41190), so the "
         "limit moves with gov.hmrc.minimum_wage.non_apprentice. That "
         "parameter holds its April 2026 rate in later years, so the limit "
         "stays at £203.50 from 2026-27 until the national living wage is "
@@ -35,13 +35,11 @@ class esa_exempt_work_higher_earnings_limit(Variable):
     def formula_2011_04_11(person, period, parameters):
         p = parameters(period)
         exempt_work = p.gov.dwp.ESA.exempt_work
-        # Reg 2(1): "the rate of the national minimum wage specified in
-        # regulation 11" of the 1999 Regulations, which DWP reads as the
-        # national living wage (DMG 41190), the scale's top rate, as in
-        # uc_benefit_cap_earnings_exception_threshold.
-        national_living_wage = p.gov.hmrc.minimum_wage.non_apprentice.calc(
-            np.full(person.count, 200.0)
-        )
+        # Reg 2(1) specifies the adult rate in reg 11 of the 1999
+        # Regulations, now the national living wage (DMG 41190). The
+        # compiled scale orders brackets by age, so its last amount is
+        # that adult rate, even if a reform raises a younger age band.
+        national_living_wage = p.gov.hmrc.minimum_wage.non_apprentice.amounts[-1]
         limit = (
             national_living_wage * exempt_work.higher_earnings_limit_minimum_wage_hours
         )

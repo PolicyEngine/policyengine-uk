@@ -84,8 +84,9 @@ def _higher_earnings_limits(years, reform=None):
 
 
 def test_esa_exempt_work_higher_limit_is_16_x_nmw_rounded_up():
-    # Reg 45(4): £92 as made, £93 from 1 October 2009, then 16 x NMW from 11
-    # April 2011 (SI 2011/674), rounded up under reg 45(9A).
+    # Reg 45(4): £92 as made, £93 from 1 October 2009, £95 from 1 October
+    # 2010 (SI 2010/2126), then 16 x NMW from 11 April 2011 (SI 2011/674),
+    # rounded up under reg 45(9A).
     parameters = CountryTaxBenefitSystem().parameters
     exempt_work = parameters.gov.dwp.ESA.exempt_work
     assert exempt_work.fixed_higher_earnings_limit("2008-10-27") == 92
@@ -93,11 +94,11 @@ def test_esa_exempt_work_higher_limit_is_16_x_nmw_rounded_up():
     assert exempt_work.fixed_higher_earnings_limit("2009-10-01") == 93
     assert exempt_work.higher_earnings_limit_minimum_wage_hours("2011-04-11") == 16
     limits = _higher_earnings_limits(range(2009, 2041))
-    # Before 2015 a year reads its rules on 1 January: the fixed amount until
-    # 2011, then 16 x the rate in force that day.
+    # Before 2015 a year reads its rules on 1 January: fixed amounts through
+    # 2011, then 16 x the adult rate in force that day from 2012.
     assert limits[2009] == 92
     assert limits[2010] == 93
-    assert limits[2011] == 93
+    assert limits[2011] == 95
     for year in range(2012, 2015):
         expected = _round_up_to_50p(16 * _rate_in_force(f"{year}-01-01"))
         assert limits[year] == expected, year
@@ -112,7 +113,7 @@ def test_esa_exempt_work_higher_limit_is_16_x_nmw_rounded_up():
     # Later years follow the model's national living wage, whatever it is.
     for year in range(2027, 2041):
         wage = parameters(str(year)).gov.hmrc.minimum_wage.non_apprentice
-        assert limits[year] == _round_up_to_50p(16 * max(wage.amounts)), year
+        assert limits[year] == _round_up_to_50p(16 * wage.amounts[-1]), year
 
 
 def test_esa_exempt_work_higher_limit_follows_a_national_living_wage_reform():
@@ -155,3 +156,41 @@ def test_esa_self_employment_class_2_by_fiscal_year():
     assert not rule.deducted("2024") and not rule.deducted("2026")
     assert not rule.above_lower_profits_threshold("2021")
     assert rule.above_lower_profits_threshold("2022")
+
+
+def test_esa_fixed_higher_earnings_limit_2010_amendment_boundaries():
+    # S.I. 2010/2126 reg. 5(2) raised reg. 45(4)'s £93 limit to £95 from
+    # 1 October 2010, before S.I. 2011/674 linked it to NMW on 11 April 2011.
+    fixed_limit = CountryTaxBenefitSystem().parameters.gov.dwp.ESA.exempt_work.fixed_higher_earnings_limit
+    assert fixed_limit("2010-09-30") == 93
+    assert fixed_limit("2010-10-01") == 95
+    assert fixed_limit("2011-04-10") == 95
+
+
+def test_esa_fixed_higher_earnings_limit_annual_transition():
+    # Pre-2015 annual variables read 1 January: 2010 precedes the £95
+    # amendment, 2011 follows it, and 2012 reads the NMW-linked formula.
+    assert _higher_earnings_limits([2010, 2011, 2012]) == {
+        2010: 93,
+        2011: 95,
+        2012: 97.5,
+    }
+
+
+def test_esa_higher_earnings_limit_uses_adult_band_after_youth_only_reform():
+    from legacy_award_work_reference import esa_higher_earnings_limit
+
+    # Reform only the under-18 band above the adult/NLW rate. Reg. 2(1)
+    # designates the adult rate (1999 reg. 11), rather than the largest
+    # number anywhere in the age scale (the youth rate is in reg. 13).
+    simulation = Simulation(
+        situation={"people": {"claimant": {"age": {2026: 40}}}},
+        reform={"gov.hmrc.minimum_wage.non_apprentice[0].amount": {"2026": 20}},
+    )
+    parameters = simulation.tax_benefit_system.parameters("2026")
+    assert parameters.gov.hmrc.minimum_wage.non_apprentice.amounts[0] == 20
+    # Adult rate £12.71: 16 x £12.71 = £203.36, rounded up to £203.50.
+    assert (
+        simulation.calculate("esa_exempt_work_higher_earnings_limit", 2026)[0] == 203.5
+    )
+    assert esa_higher_earnings_limit(parameters) == 203.5

@@ -10,6 +10,11 @@ values:
     reference:
       - title: Social Security (Miscellaneous Amendments) (No. 3) Regulations 2009 (SI 2009/2343) reg. 5(2)
         href: https://www.legislation.gov.uk/uksi/2008/794/regulation/45/2009-10-01
+  2010-10-01:
+    value: 95
+    reference:
+      - title: Social Security (Miscellaneous Amendments) (No. 4) Regulations 2010 (SI 2010/2126) reg. 5(2)
+        href: https://www.legislation.gov.uk/uksi/2010/2126/regulation/5/made
 metadata:
   unit: currency-GBP
   period: week
