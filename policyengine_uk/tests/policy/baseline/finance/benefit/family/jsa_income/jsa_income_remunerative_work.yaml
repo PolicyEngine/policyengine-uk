@@ -437,10 +437,9 @@
       household:
         members: [claimant, lodger]
   output:
-    # The benefit unit's award applies the claimant's failed screen to every
-    # report in it, so it is nil.
+    # The claimant fails, but the outside adult's separate own award pays.
     jsa_income_eligible: false
-    jsa_income: 0
+    jsa_income: 3_000
     claimant_or_partner_jsa_income: 0
     # The lodger's own claim passes, so they are on it; the claimant is not.
     is_on_income_based_jsa: [false, true]
