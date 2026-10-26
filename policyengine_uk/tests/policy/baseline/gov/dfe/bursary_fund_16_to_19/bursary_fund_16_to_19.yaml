@@ -284,8 +284,8 @@
     is_on_income_related_esa: false
     bursary_fund_16_to_19_receives_uc_or_esa_in_own_right: false
 
-# A continuing preassessed award can supply the helper signal at20; DfE
-# section3.1 still excludes19+ students from the defined vulnerable groups.
+# A continuing preassessed award can supply the helper signal at 20; DfE
+# section 3.1 still excludes 19+ students from the defined vulnerable groups.
 - name: Issue2263 continuing own-right ESA gives a helper signal only
   period: 2025
   input:

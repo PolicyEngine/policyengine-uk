@@ -221,3 +221,99 @@ def test_alternate_uc_claimant_mask_reaches_specified_benefit_exemption():
     assert math.isfinite(cap) and cap > 0
     assert math.isfinite(reduction) and reduction >= 0
     assert math.isfinite(final_uc) and final_uc >= 0
+
+
+def test_hb_specified_benefit_reader_honours_report_callback_contract(monkeypatch):
+    """HB supplies the report callback needed beyond the same-couple fast path.
+
+    Route the real HB reader through award_of_members to exercise its dormant
+    callback contract. This does not invent another legal HB claimant mask.
+    """
+    import math
+
+    import numpy as np
+
+    from policyengine_uk.utils.benefit_unit import award_of_members
+
+    people, benunits, households = {}, {}, {}
+    for unit, report in (("paid_couple", 400), ("nil_couple", 200)):
+        members = [f"{unit}_claimant", f"{unit}_outside"]
+        for name, claimant in zip(members, (True, False)):
+            inputs = {
+                "age": 40 if claimant else 30,
+                "is_claimant_or_partner": claimant,
+                "employment_income": 0,
+                "hours_worked": 0,
+                "current_education": "NOT_IN_EDUCATION",
+                "esa_income_reported": report if claimant else 3_000,
+                "esa_contrib_reported": 0,
+                "esa_includes_support_component": True,
+                "care_hours": 0,
+                "is_disabled_for_benefits": False,
+                "person_legacy_benefits_closed": False,
+            }
+            people[name] = {key: {YEAR: value} for key, value in inputs.items()}
+        benunits[unit] = {
+            "members": members,
+            "would_claim_uc": {YEAR: False},
+            "would_claim_pc": {YEAR: False},
+            "esa_income_assessable_capital": {YEAR: 7_000},
+            "universal_credit_pre_benefit_cap": {YEAR: 0},
+            "housing_benefit_pre_benefit_cap": {YEAR: 25_000},
+            "working_tax_credit": {YEAR: 0},
+        }
+        households[unit] = {
+            "members": members,
+            "region": {YEAR: "NORTH_EAST"},
+        }
+    simulation = Simulation(
+        situation={"people": people, "benunits": benunits, "households": households}
+    )
+    # The existing shared-capital proxy gives four £250 steps above £6,000:
+    # £4 a week, £208 a year. The couple keeps 400 - 208 = 192 or nil;
+    # each outside claimant keeps 3,000 - 208 = 2,792 on their separate claim.
+    np.testing.assert_array_equal(
+        simulation.calculate("is_claimant_or_partner", YEAR),
+        [True, False, True, False],
+    )
+    np.testing.assert_array_equal(
+        simulation.calculate("esa_income_report_closed", YEAR), [False] * 4
+    )
+    np.testing.assert_allclose(
+        simulation.calculate("esa_income_tariff_income", YEAR),
+        [208, 208],
+        rtol=0,
+        atol=0.01,
+    )
+    np.testing.assert_allclose(
+        simulation.calculate("claimant_or_partner_esa_income", YEAR),
+        [192, 0],
+        rtol=0,
+        atol=0.01,
+    )
+    np.testing.assert_allclose(
+        simulation.calculate("esa_income", YEAR),
+        [2_984, 2_792],
+        rtol=0,
+        atol=0.01,
+    )
+
+    scoped_awards = []
+
+    def read_report_contract(benunit, period, award, report, award_on_reports, couple):
+        scoped = award_of_members(
+            benunit, period, award, report, award_on_reports, couple
+        )
+        scoped_awards.append(scoped.copy())
+        return scoped
+
+    specified = "is_housing_benefit_benefit_cap_exempt_specified_benefit"
+    reader = simulation.tax_benefit_system.get_variable(specified).get_formula(YEAR)
+    monkeypatch.setitem(reader.__globals__, "award_of_couple", read_report_contract)
+    np.testing.assert_array_equal(simulation.calculate(specified, YEAR), [True, False])
+    np.testing.assert_allclose(scoped_awards[0], [192, 0], rtol=0, atol=0.01)
+    caps = simulation.calculate("housing_benefit_benefit_cap", YEAR)
+    assert math.isinf(caps[0]) and math.isfinite(caps[1]) and caps[1] > 0
+    reductions = simulation.calculate("housing_benefit_benefit_cap_reduction", YEAR)
+    assert reductions[0] == 0
+    assert math.isfinite(reductions[1]) and reductions[1] > 0
