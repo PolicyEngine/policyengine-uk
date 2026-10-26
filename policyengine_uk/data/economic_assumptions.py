@@ -596,6 +596,23 @@ def uprate_council_tax(
     current_year.household["council_tax"] = (
         previous_year.household["council_tax"] * factors
     )
+    if (
+        "council_tax_benefit_reported" in previous_year.person.columns
+        and "council_tax_benefit_reported" in current_year.person.columns
+    ):
+        # Keep reported reductions at the same share of their household bill.
+        household_factors = pd.Series(
+            factors, index=current_year.household["household_id"]
+        )
+        person_factors = previous_year.person["person_household_id"].map(
+            household_factors
+        )
+        person = current_year.person.copy()
+        person["council_tax_benefit_reported"] = (
+            previous_year.person["council_tax_benefit_reported"].to_numpy()
+            * person_factors.to_numpy()
+        )
+        current_year.person = person
     return current_year
 
 
@@ -870,7 +887,9 @@ def reset_growthfactor_uprating(
     growthfactor_uprated_variables = {
         variable for variables in uprating.values() for variable in variables
     }
-    growthfactor_uprated_variables.update({"council_tax", "rent", ISA_INTEREST})
+    growthfactor_uprated_variables.update(
+        {"council_tax", "council_tax_benefit_reported", "rent", ISA_INTEREST}
+    )
     growthfactor_uprated_variables.update(COUNTRY_UPRATED_INPUTS)
     growthfactor_uprated_variables.update(_unmapped_uprating_indices(uprating))
     growthfactor_uprated_variables.difference_update(DATASET_UPRATING_EXCLUSIONS)
