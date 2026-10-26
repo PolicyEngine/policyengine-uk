@@ -40,9 +40,10 @@ full-year Category A director schedule, and in a world where the employee
 rates and the upper earnings limit change within 2041 and employer pension
 contributions are charged, with no employee incidence of the fixed employer
 cost so that pay is the same with and without the excess (invariant 4 under
-current law only: it needs one rate and schedule for the year). Fiscal-year
-conversion gives every parameter one value for each year from 2015 to 2040,
-so a year after 2040 is needed for rates that differ between months;
+current law only: it needs one rate and schedule for the year). The hypothetical
+monthly world uses an explicit after-load modifier to update its three NI
+histories after annual parameter processing. Other worlds retain ordinary
+constructor conversion, including its finite effective tail;
 ni_class_1_employee is a monthly variable.
 
 Comparisons allow float32 rounding: the model stores values as float32.
@@ -56,6 +57,8 @@ from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
+from policyengine_core import periods
+from policyengine_uk.utils.scenario import Scenario
 from policyengine_uk.model_api import MONTHS_IN_YEAR, WEEKS_IN_YEAR
 
 CLASS_1 = "gov.hmrc.national_insurance.class_1"
@@ -156,6 +159,25 @@ rows = st.lists(
 )
 
 
+def _within_year_ni_modifier(histories):
+    """Apply the declared hypothetical intervals after annual processing."""
+
+    def modify(simulation):
+        parameters = simulation.tax_benefit_system.parameters
+        for path, intervals in histories.items():
+            leaf = parameters.get_child(path)
+            for interval, value in intervals.items():
+                start, stop = interval.split(".")
+                leaf.update(
+                    value=value,
+                    start=periods.instant(start),
+                    stop=periods.instant(stop),
+                )
+        simulation.tax_benefit_system.reset_parameter_caches()
+
+    return modify
+
+
 def _simulate(people, world, no_excess=False):
     """One single-person household for each of the people."""
     changes, years = WORLDS[world]
@@ -180,7 +202,26 @@ def _simulate(people, world, no_excess=False):
         "benunits": {f"benunit_{i}": {"members": [n]} for i, n in enumerate(names)},
         "households": {f"household_{i}": {"members": [n]} for i, n in enumerate(names)},
     }
-    simulation = Simulation(situation=situation, reform=changes)
+    if world == "rates change within the year":
+        # Keep scalar False on the normal constructor route. Only the three
+        # explicitly declared monthly histories bypass annual processing.
+        monthly_paths = (
+            f"{CLASS_1}.employee_scale[1].rate",
+            f"{CLASS_1}.employee_scale[2].rate",
+            f"{CLASS_1}.employee_scale[2].threshold",
+        )
+        monthly_changes = {path: changes[path] for path in monthly_paths}
+        ordinary_changes = {
+            path: value
+            for path, value in changes.items()
+            if path not in monthly_changes
+        }
+        scenario = Scenario.from_reform(ordinary_changes) + Scenario(
+            simulation_modifier=_within_year_ni_modifier(monthly_changes)
+        )
+        simulation = Simulation(situation=situation, scenario=scenario)
+    else:
+        simulation = Simulation(situation=situation, reform=changes)
     if no_excess:
         for year in years:
             simulation.set_input(
@@ -390,11 +431,10 @@ def test_known_cases_cross_each_threshold_and_age_condition():
 
 
 def test_rates_change_within_the_year_in_the_second_world():
-    """The second world keeps the changes dated within 2041.
+    """The explicit monthly fixture retains its changes within 2041.
 
-    If fiscal-year conversion came to cover 2041, the changes would be
-    replaced by one value for the year and the property above would no longer
-    test a liability whose rates differ between months.
+    Only this world's three NI leaves are updated after parameter processing.
+    Its monthly differences do not depend on a fiscal-conversion year limit.
     """
     simulation = _simulate(KNOWN_CASES[:1], "rates change within the year")
     january, december = (
