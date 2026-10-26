@@ -784,3 +784,266 @@ def test_public_reform_replay_preserves_genuine_holder_write_or_delete(mutation)
     equals(money(simulation, "child_benefit", 2027), [0])
     equals(money(simulation, "esa_income", 2026), [600])
     equals(money(parent, "child_benefit", 2026), [666])
+
+
+def _traceback_tail(traceback):
+    while traceback.tb_next is not None:
+        traceback = traceback.tb_next
+    return traceback
+
+
+@pytest.mark.parametrize(
+    "failure_stages",
+    (
+        ("core", "recording", "forget", "prune"),
+        ("recording", "forget", "prune"),
+        ("forget", "prune"),
+        ("prune",),
+        ("core",),
+        (),
+    ),
+    ids=(
+        "all_fail",
+        "exit_first",
+        "forget_first",
+        "prune_only",
+        "core_only",
+        "success",
+    ),
+)
+def test_input_cleanup_preserves_first_failure_and_attempts_remaining_steps(
+    monkeypatch, failure_stages
+):
+    """A failed input operation still accounts for its store and all cleanup.
+
+    Mock the Core store boundary rather than build a dataset: this tests the
+    composition of UK cleanup, not the storage implementation or policy math.
+    """
+    from contextlib import contextmanager
+
+    import policyengine_uk.simulation as uk_simulation
+
+    simulation = object.__new__(Simulation)
+    simulation.input_variables = []
+    simulation._external_input_change_pending = False
+    calls, stored, stored_values, originals = [], set(), {}, {}
+    errors = {
+        stage: (
+            KeyboardInterrupt("synthetic Core input failure")
+            if stage == "core"
+            else ValueError(f"synthetic {stage} failure")
+        )
+        for stage in failure_stages
+    }
+    for index, error in enumerate(errors.values()):
+        error.__cause__ = RuntimeError("original explicit cause")
+        error.__context__ = LookupError("original implicit context")
+        error.__suppress_context__ = bool(index % 2)
+
+    def fail_if_requested(stage):
+        if stage in errors:
+            try:
+                raise errors[stage]
+            except BaseException as error:
+                originals[stage] = (
+                    error.__traceback__,
+                    error.__cause__,
+                    error.__context__,
+                    error.__suppress_context__,
+                )
+                raise
+
+    @contextmanager
+    def record_stores():
+        calls.append("recording_enter")
+        try:
+            yield stored
+        finally:
+            calls.append("recording_exit")
+            fail_if_requested("recording")
+
+    def core_store(owner, name, period, value):
+        calls.append("core")
+        stored_values[(name, period)] = value
+        stored.add((name, "default", period))
+        fail_if_requested("core")
+
+    def forget(owner, name, records):
+        calls.append("forget")
+        fail_if_requested("forget")
+
+    def prune():
+        calls.append("prune")
+        # Even failed Core/context/forget cleanup must retain the pending
+        # invalidation for a store that completed before the error.
+        assert simulation._external_input_change_pending is True
+        fail_if_requested("prune")
+
+    monkeypatch.setattr(simulation, "_record_stored_inputs", record_stores)
+    monkeypatch.setattr(simulation, "_prune_reported_benefit_inputs", prune)
+    monkeypatch.setattr(uk_simulation.CoreSimulation, "set_input", core_store)
+    monkeypatch.setattr(uk_simulation, "model_value_input_records", lambda *args: {})
+    monkeypatch.setattr(uk_simulation, "forget_replaced_model_values", forget)
+    monkeypatch.setattr(
+        uk_simulation, "hold_identifiers_in", lambda *args: calls.append("identifiers")
+    )
+    monkeypatch.setattr(
+        simulation,
+        "_capture_cgt_supplied_inputs",
+        lambda *args, **kwargs: calls.append("cgt"),
+    )
+    value = object()
+    if failure_stages:
+        with pytest.raises(BaseException) as caught:
+            simulation.set_input("capital_gains", 2026, value)
+        primary = failure_stages[0]
+        error = errors[primary]
+        traceback, cause, context, suppression = originals[primary]
+        assert caught.value is error
+        assert _traceback_tail(error.__traceback__) is _traceback_tail(traceback)
+        assert error.__cause__ is cause
+        assert error.__context__ is context
+        assert error.__suppress_context__ is suppression
+        secondary = error._policyengine_input_cleanup_failures
+        assert type(secondary) is tuple
+        assert [record[0] for record in secondary] == [
+            errors[stage] for stage in failure_stages[1:]
+        ]
+        for stage, (failure, original_tb, cause, context, suppression) in zip(
+            failure_stages[1:], secondary, strict=True
+        ):
+            expected_tb, expected_cause, expected_context, expected_suppression = (
+                originals[stage]
+            )
+            assert failure is errors[stage]
+            assert _traceback_tail(original_tb) is _traceback_tail(expected_tb)
+            assert cause is expected_cause
+            assert context is expected_context
+            assert suppression is expected_suppression
+    else:
+        simulation.set_input("capital_gains", 2026, value)
+    expected_calls = ["recording_enter", "core", "recording_exit", "forget", "prune"]
+    if not failure_stages:
+        expected_calls += ["identifiers", "cgt"]
+    assert calls == expected_calls
+    assert stored_values[("capital_gains", 2026)] is value
+    assert simulation._external_input_change_pending is True
+
+
+def test_reported_observer_refusal_precedes_pending_cache_invalidation(monkeypatch):
+    import policyengine_uk.simulation as uk_simulation
+
+    simulation = object.__new__(Simulation)
+    simulation._reported_benefit_observer_error = "synthetic prior observer refusal"
+    simulation._external_input_change_pending = True
+    simulation._cgt_calculation_depth = 0
+    invalidated = []
+    monkeypatch.setattr(
+        uk_simulation, "drop_calculated_values", lambda owner: invalidated.append(owner)
+    )
+    with pytest.raises(RuntimeError, match="synthetic prior observer refusal"):
+        simulation.calculate("child_benefit", 2026)
+    assert invalidated == []
+    assert simulation._external_input_change_pending is True
+
+
+@pytest.mark.parametrize("reported_overlay", (False, True), ids=("plain", "reported"))
+@pytest.mark.parametrize("fails", (False, True), ids=("return", "exception"))
+def test_bsp_projection_routing_remains_inside_reported_observer(
+    monkeypatch, reported_overlay, fails
+):
+    """The split BSP route and reported-input attempt observer both survive."""
+    from types import SimpleNamespace
+
+    from policyengine_core.periods import period as period_
+    from policyengine_core.simulations.simulation import _calculation_frames
+
+    simulation = object.__new__(Simulation)
+    simulation.branch_name = "default"
+    simulation.built_from_dataset = True
+    simulation._reported_benefit_inputs = (
+        {"present": object()} if reported_overlay else {}
+    )
+    simulation._reported_benefit_observers = []
+    source, target = period_(2025), period_(2027)
+    holder = SimpleNamespace(get_input_periods=lambda branch: [source])
+    variable = SimpleNamespace(
+        formulas={},
+        is_neutralized=False,
+        uprating="gov.economic_assumptions.indices.obr.consumer_price_index",
+    )
+    simulation.tax_benefit_system = SimpleNamespace(get_variable=lambda name: variable)
+    monkeypatch.setattr(simulation, "get_holder", lambda name: holder)
+    calls, observed = [], []
+    result, error = object(), ValueError("synthetic BSP source failure")
+
+    def calculate_source(name, period):
+        calls.append((name, period))
+        observed.append(bool(simulation._reported_benefit_observers))
+        if name == "bsp_reported" and fails:
+            raise error
+        return result
+
+    monkeypatch.setattr(simulation, "calculate", calculate_source)
+    frame = SimpleNamespace(simulation=simulation, changes=[])
+    token = _calculation_frames.set((frame,))
+    try:
+        if fails:
+            with pytest.raises(
+                ValueError, match="synthetic BSP source failure"
+            ) as caught:
+                simulation._calculate("bsp_reported", target)
+            assert caught.value is error
+        else:
+            assert simulation._calculate("bsp_reported", target) is result
+        # The two dependency names form a set; their evaluation order is not
+        # part of the BSP contract. Both precede the retained source amount.
+        assert len(calls) == 3
+        assert set(calls[:2]) == {
+            ("widowed_parents_allowance_reported", source),
+            ("war_widows_pension_reported", source),
+        }
+        assert calls[-1] == ("bsp_reported", source)
+        assert observed == [reported_overlay] * 3
+        assert simulation._reported_benefit_observers == []
+    finally:
+        _calculation_frames.reset(token)
+
+
+def test_clone_copies_isa_contract_before_synchronizing_reported_inputs(monkeypatch):
+    """Reported-input synchronization sees the clone's own nested ISA metadata."""
+    import policyengine_uk.simulation as uk_simulation
+
+    parent = object.__new__(Simulation)
+    parent._reported_benefit_inputs = {}
+    parent._isa_income_contracts = {
+        2025: {"version": 1, "representation": "additive", "projection": "legacy_gross"}
+    }
+    original = copy.deepcopy(parent._isa_income_contracts)
+    calls = []
+    monkeypatch.setattr(
+        parent, "_prune_reported_benefit_inputs", lambda: calls.append("prune")
+    )
+
+    def core_clone(owner, *args, **kwargs):
+        calls.append("core_clone")
+        clone = object.__new__(Simulation)
+        clone.__dict__.update(owner.__dict__)
+        return clone
+
+    def synchronize(clone, active):
+        calls.append(("synchronize", active))
+        assert clone._isa_income_contracts == original
+        assert clone._isa_income_contracts is not parent._isa_income_contracts
+        assert (
+            clone._isa_income_contracts[2025] is not parent._isa_income_contracts[2025]
+        )
+        clone._isa_income_contracts[2025]["projection"] = "additive"
+
+    monkeypatch.setattr(uk_simulation.CoreSimulation, "clone", core_clone)
+    monkeypatch.setattr(uk_simulation, "copy_model_values", lambda *args: None)
+    monkeypatch.setattr(Simulation, "_sync_reported_benefit_inputs", synchronize)
+    clone = parent.clone()
+    assert calls == ["prune", "core_clone", ("synchronize", True)]
+    assert parent._isa_income_contracts == original
+    assert clone._isa_income_contracts[2025]["projection"] == "additive"
