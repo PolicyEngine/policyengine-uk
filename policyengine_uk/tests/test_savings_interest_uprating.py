@@ -88,7 +88,7 @@ def test_per_person_growth_is_the_aggregate_net_of_population_growth(year):
     )
 
 
-def _dataset(interest):
+def _dataset(interest, fiscal_year=2024, **kwargs):
     ids = np.arange(len(interest))
     return UKSingleYearDataset(
         person=pd.DataFrame(
@@ -111,7 +111,8 @@ def _dataset(interest):
                 "council_tax": 0.0,
             }
         ),
-        fiscal_year=2024,
+        fiscal_year=fiscal_year,
+        **kwargs,
     )
 
 
@@ -133,3 +134,42 @@ def test_projected_total_interest_tracks_haxv_in_2025():
     assert total(after) / total(base) == pytest.approx(
         HAXV[2025] / HAXV[2024], abs=1e-4
     )
+
+
+INDEX = "gov.economic_assumptions.indices.ons.per_capita.household_interest_income"
+LEGACY = {"version": 1, "representation": "legacy_gross", "projection": "legacy_gross"}
+
+
+def test_index_includes_the_first_growth_year():
+    # The per-person series starts at 2021 (ons.population has no 2020
+    # value), so the index is anchored at 1 on 1 January 2020 and its
+    # first step is the 2021 growth: 1.2238 / 1.0036 = 1.2194.
+    index = parameters.get_child(INDEX)
+    assert index("2020-01-01") == 1
+    assert index("2021-01-01") / index("2020-01-01") == pytest.approx(
+        1 + parameters.get_child(PER_PERSON)("2021-01-01"), abs=1e-5
+    )
+
+
+def test_direct_index_route_matches_dataset_projection_from_2020_to_2021():
+    # A legacy 2020 observation queried for 2021 without projection uses
+    # the index ratio (Simulation._run_formula); dataset projection uses the
+    # 2021 growth rate. Both must give 100 x 1.2194.
+    from copy import deepcopy
+
+    from policyengine_uk import Simulation
+    from policyengine_uk.data import UKMultiYearDataset
+
+    def observed():
+        return _dataset([100.0], 2020, isa_income_contract=deepcopy(LEGACY))
+
+    direct = Simulation(dataset=UKMultiYearDataset(datasets=[observed()]))
+    direct_2021 = float(direct.calculate("savings_interest_income", 2021)[0])
+
+    projected = extend_single_year_dataset(observed(), parameters, end_year=2021)
+    projected_2021 = float(
+        projected.datasets[2021].person["savings_interest_income"].iloc[0]
+    )
+
+    assert projected_2021 == pytest.approx(121.94, abs=0.01)
+    assert direct_2021 == pytest.approx(projected_2021, abs=0.01)

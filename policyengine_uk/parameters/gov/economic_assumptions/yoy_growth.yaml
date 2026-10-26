@@ -1165,6 +1165,11 @@ ons:
       metadata:
         unit: /1
         label: Household interest income growth per person
+        # The series starts at 2021 because ons.population does, so 2020
+        # growth per person is not defined. Anchor the index at 1 on
+        # 1 January 2020 so its first step is the 2021 growth, matching
+        # dataset projection from 2020 to 2021.
+        index_base_year: 2020
         reference:
           - title: ONS, Households (S.14) interest (D.41) resources, current prices, £m, NSA (HAXV), UK Economic Accounts, 30 September 2026
             href: https://www.ons.gov.uk/economy/grossdomesticproductgdp/timeseries/haxv/ukea
