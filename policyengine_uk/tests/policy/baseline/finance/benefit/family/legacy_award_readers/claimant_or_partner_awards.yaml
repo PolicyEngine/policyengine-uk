@@ -99,7 +99,7 @@
   output:
     # (10,000 - 6,000) / 250 = 16 steps; 16 x £1 x 52 = £832.
     esa_income_tariff_income: 832
-    esa_income: 7_168  # 3,000 + 5,000 - 832
+    esa_income: 6_336  # (3,000 - 832) + (5,000 - 832)
     claimant_or_partner_esa_income: 2_168  # 3,000 - 832
 
 - name: Capital above the income-related ESA limit removes the claimant-or-partner award
@@ -232,7 +232,7 @@
   output:
     # (7,000 - 6,000) / 250 = 4 steps; 4 x £1 x 52 = £208.
     jsa_income_tariff_income: 208
-    jsa_income: 6_792  # 3,000 + 4,000 - 208
+    jsa_income: 6_584  # (3,000 - 208) + (4,000 - 208)
     claimant_or_partner_jsa_income: 2_792  # 3,000 - 208
 
 - name: No claimant-or-partner JSA award once income-based JSA has closed
