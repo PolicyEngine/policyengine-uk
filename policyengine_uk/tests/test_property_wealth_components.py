@@ -3,6 +3,9 @@
 WAS has seven gross terms, but second homes and buy-to-let are saved together
 by policyengine-uk-data. These tests exercise that six-input model contract;
 licensed-source reconciliation and release persistence belong to the data repo.
+The five formula properties use fresh Core simulation holders with one shared
+model; uprating, datasets, monthly stocks, LVT and purchases exercise the UK
+simulation wrapper separately.
 """
 
 from pathlib import Path
@@ -13,6 +16,7 @@ import pytest
 import yaml
 from hypothesis import example, given, settings
 from hypothesis import strategies as st
+from policyengine_core.simulations import Simulation as CoreSimulation
 
 from policyengine_uk import Simulation
 from policyengine_uk.data import UKSingleYearDataset
@@ -93,24 +97,35 @@ def _saved_components(source_values):
     return components
 
 
-def _simulation(assets, *, region="LONDON", reform=None):
-    return Simulation(
-        situation={
-            "people": {"person": {"age": {BASE_YEAR: 40}}},
-            "benunits": {"benunit": {"members": ["person"]}},
-            "households": {
-                "household": {
-                    "members": ["person"],
-                    "region": {BASE_YEAR: region},
-                    **{
-                        variable: {BASE_YEAR: value}
-                        for variable, value in assets.items()
-                    },
-                }
-            },
+def _situation(assets, region="LONDON"):
+    return {
+        "people": {"person": {"age": {BASE_YEAR: 40}}},
+        "benunits": {"benunit": {"members": ["person"]}},
+        "households": {
+            "household": {
+                "members": ["person"],
+                "region": {BASE_YEAR: region},
+                **{variable: {BASE_YEAR: value} for variable, value in assets.items()},
+            }
         },
-        reform=reform,
-    )
+    }
+
+
+def _simulation(assets, *, region="LONDON", reform=None):
+    return Simulation(situation=_situation(assets, region), reform=reform)
+
+
+@pytest.fixture(scope="module")
+def _formula_simulation(_property_metadata_system):
+    """Fresh holders per example; unchanged production formula definitions."""
+
+    def build(assets, *, region="LONDON"):
+        return CoreSimulation(
+            tax_benefit_system=_property_metadata_system,
+            situation=_situation(assets, region),
+        )
+
+    return build
 
 
 def _value(simulation, variable, period=BASE_YEAR):
@@ -225,8 +240,8 @@ def test_london_mixed_property_has_150000_gross_and_105000_uk_land():
 @PROPERTY_SETTINGS
 @given(st.tuples(*(MONEY for _ in PROPERTY_INPUTS)))
 @example((60_000, 25_000, 15_000, 20_000, 30_000, 40_000))
-def test_property_wealth_equals_sum_of_saved_inputs(values):
-    sim = _simulation(dict(zip(PROPERTY_INPUTS, values)))
+def test_property_wealth_equals_sum_of_saved_inputs(_formula_simulation, values):
+    sim = _formula_simulation(dict(zip(PROPERTY_INPUTS, values)))
 
     assert _value(sim, "property_wealth") == pytest.approx(
         _property_sum(sim), rel=2e-6, abs=0.01
@@ -236,8 +251,10 @@ def test_property_wealth_equals_sum_of_saved_inputs(values):
 @PROPERTY_SETTINGS
 @given(st.tuples(*(MONEY for _ in PROPERTY_INPUTS)), st.sampled_from(REGIONS))
 @example((0, 0, 0, 20_000, 0, 0), "LONDON")
-def test_household_land_value_is_at_least_direct_uk_land(values, region):
-    sim = _simulation(dict(zip(PROPERTY_INPUTS, values)), region=region)
+def test_household_land_value_is_at_least_direct_uk_land(
+    _formula_simulation, values, region
+):
+    sim = _formula_simulation(dict(zip(PROPERTY_INPUTS, values)), region=region)
     direct_land = _value(sim, "owned_land")
     land = _value(sim, "household_land_value")
     # Subtracting independently rounded stocks can lose a few float32 ulps.
@@ -249,8 +266,8 @@ def test_household_land_value_is_at_least_direct_uk_land(values, region):
 @PROPERTY_SETTINGS
 @given(MONEY, st.sampled_from(REGIONS))
 @example(30_000, "LONDON")
-def test_overseas_only_households_have_zero_uk_land(value, region):
-    sim = _simulation({"overseas_property_value": value}, region=region)
+def test_overseas_only_households_have_zero_uk_land(_formula_simulation, value, region):
+    sim = _formula_simulation({"overseas_property_value": value}, region=region)
 
     assert _value(sim, "property_wealth") == _value(sim, "overseas_property_value")
     assert _value(sim, "household_land_value") == 0
@@ -259,8 +276,10 @@ def test_overseas_only_households_have_zero_uk_land(value, region):
 @PROPERTY_SETTINGS
 @given(MONEY, st.sampled_from(REGIONS))
 @example(20_000, "LONDON")
-def test_land_only_households_count_direct_uk_land_once(value, region):
-    sim = _simulation({"owned_land": value}, region=region)
+def test_land_only_households_count_direct_uk_land_once(
+    _formula_simulation, value, region
+):
+    sim = _formula_simulation({"owned_land": value}, region=region)
     direct_land = _value(sim, "owned_land")
 
     assert _value(sim, "property_wealth") == direct_land
@@ -271,8 +290,10 @@ def test_land_only_households_count_direct_uk_land_once(value, region):
 @PROPERTY_SETTINGS
 @given(st.tuples(*(MONEY for _ in (*PROPERTY_INPUTS, *OTHER_WEALTH_INPUTS))))
 @example((60_000, 25_000, 15_000, 20_000, 30_000, 40_000, 10_000, 5_000, 1_000))
-def test_total_wealth_includes_every_asset_category_once(values):
-    sim = _simulation(dict(zip((*PROPERTY_INPUTS, *OTHER_WEALTH_INPUTS), values)))
+def test_total_wealth_includes_every_asset_category_once(_formula_simulation, values):
+    sim = _formula_simulation(
+        dict(zip((*PROPERTY_INPUTS, *OTHER_WEALTH_INPUTS), values))
+    )
     expected = sum(
         _value(sim, variable) for variable in (*PROPERTY_INPUTS, *OTHER_WEALTH_INPUTS)
     )
