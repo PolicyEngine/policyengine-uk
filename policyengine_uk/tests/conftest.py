@@ -9,7 +9,6 @@ import sys
 import tomllib
 import weakref
 from dataclasses import dataclass
-from importlib.machinery import SourceFileLoader
 from pathlib import Path
 from typing import Mapping, Optional
 
@@ -401,7 +400,7 @@ def pytest_configure(config):
     _owners_at_start.update(_variable_module_owners())
     _threshold_before = gc.get_threshold()
     gc.set_threshold(GC_FIRST_GENERATION_THRESHOLD, *_threshold_before[1:])
-    # The variable code and module hooks defined below. pytest_configure, unlike
+    # The variable module hook defined below. pytest_configure, unlike
     # pytest_sessionstart, also reaches a conftest that pytest finds only while
     # collecting (a bare `pytest` from the repository root).
     _install_variable_hooks()
@@ -511,43 +510,8 @@ def _release_variable_modules_of_dead_systems():
     release_after_new_systems()
 
 
-# Coverage on CI is measured with sys.monitoring (COVERAGE_CORE=sysmon). That
-# core keeps every code object it has seen alive until the process exits, so
-# that it can key its records by id(code) (SysMonitor.code_objects in
-# coverage/sysmon.py). policyengine-core compiles a system's variable files
-# again for every new system, into new code objects, and every Simulation
-# builds a new system, so each Simulation left about 2,500 code objects that
-# were never freed. By the end of a CI shard each pytest-xdist worker's
-# coverage held 0.8 to 1.5 million of them, and the shards peaked at 14.4 to
-# 15.3 GiB of the runner's 15.6, using up to 1.8 GiB of swap (run 38159894687).
-#
-# A file's code object does not depend on the system that runs it, so each
-# process compiles each variable file once and every later system runs that
-# code object. Systems still get their own modules, classes and functions;
-# only the immutable code is shared. In the same run this lowered the shards'
-# peaks to 10.2 to 12.2 GiB with no swap, cut their pytest time by 15 to 21%,
-# and left every test's outcome unchanged. Remove _get_variable_code once
-# policyengine-core shares the code itself (PolicyEngine/policyengine-core#608).
-_variable_code = {}
-_get_code = SourceFileLoader.get_code
-_get_code_was_own = "get_code" in SourceFileLoader.__dict__
-
-
-def _get_variable_code(loader, fullname):
-    """``SourceFileLoader.get_code``, compiling each variable file only once."""
-    if not _VARIABLE_MODULE_NAME.match(fullname):
-        return _get_code(loader, fullname)
-    path = loader.get_filename(fullname)
-    stat = os.stat(path)
-    key = (path, stat.st_mtime_ns, stat.st_size)
-    code = _variable_code.get(key)
-    if code is None:
-        code = _variable_code[key] = _get_code(loader, fullname)
-    return code
-
-
-# Dead systems' variable modules are also released as each new system starts
-# adding its variables, not only after each test: in that run one property
+# Dead systems' variable modules are released as each new system starts
+# adding its variables, not only after each test: in run 38159894687 one property
 # test had 165 systems' modules loaded at once, and Hypothesis can build many
 # more while it shrinks a failing example. With an earlier form of this
 # release, which scanned at every new system once more than eight systems
@@ -571,16 +535,10 @@ def _add_variables_from_file_releasing(system, file_path):
 
 
 def _install_variable_hooks():
-    SourceFileLoader.get_code = _get_variable_code
     TaxBenefitSystem.add_variables_from_file = _add_variables_from_file_releasing
 
 
 def _remove_variable_hooks():
-    if _get_code_was_own:
-        SourceFileLoader.get_code = _get_code
-    elif "get_code" in SourceFileLoader.__dict__:
-        # Inherited from SourceLoader: leave no copy on the subclass.
-        del SourceFileLoader.get_code
     TaxBenefitSystem.add_variables_from_file = _add_variables_from_file
 
 
