@@ -1,3 +1,10 @@
+## [2.162.6] - 2026-10-26
+
+### Changed
+
+- Balance the CI Python test shards: the slowest tests, listed with their measured CI durations, are dealt out by duration instead of by hash, so no shard carries most of them.
+
+
 ## [2.162.5] - 2026-10-26
 
 ### Fixed
