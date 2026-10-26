@@ -69,6 +69,17 @@ ORIGINAL_REFORM = {
     path: {f"{YEAR}-01-01.{YEAR + 4}-12-31": sources}
     for path, sources in ORIGINAL_LISTS.items()
 }
+# Preserve the same valuation when comparing the original aggregate routing.
+for path in SOURCE_LISTS.values():
+    capital = _node(path.rsplit(".", 1)[0])
+    if "sale_expenses" in capital.children:
+        sale_path = path.rsplit(".", 1)[0] + ".sale_expenses.sources"
+        ORIGINAL_REFORM[sale_path] = {
+            f"{YEAR}-01-01.{YEAR + 4}-12-31": [
+                "corporate_wealth" if source == "share_like_capital" else source
+                for source in _parameter(sale_path)
+            ]
+        }
 
 # Pounds and pence, as a dataset stores them in float64; the engine rounds
 # each to float32, which is the rounding the tolerance has to absorb.
@@ -244,7 +255,7 @@ def test_components_alone_are_counted():
     ]
     got = _results(households)
     assert got["share_like_capital"][0] == 12_000
-    assert got["uc_assessable_capital"][0] == 13_000
+    assert got["uc_assessable_capital"][0] == 11_800
 
 
 def test_a_disregarded_company_holding_leaves_the_capital_that_counts_it():
@@ -281,5 +292,5 @@ def test_a_disregarded_company_holding_leaves_the_capital_that_counts_it():
         }
         sim = Simulation(situation=situation)
         assert sim.calculate("household_uc_company_holding_pool_scale", YEAR)[0] == 1
-        assert sim.calculate("household_uc_pool_company_holdings", YEAR)[0] == 30_000
+        assert sim.calculate("household_uc_pool_company_holdings", YEAR)[0] == 27_000
         assert list(sim.calculate("uc_assessable_capital", YEAR)) == [5_000, 5_000]

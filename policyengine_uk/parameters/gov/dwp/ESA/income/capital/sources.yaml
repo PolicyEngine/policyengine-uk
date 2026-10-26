@@ -25,6 +25,11 @@ description: >
   only falls back to an adult-share proxy when nobody in the household is on
   that reported claim path. That allocation is a data approximation, not a
   legislated ownership rule.
+  `overseas_property_value` covers overseas land and property, and
+  `other_property_value` covers other real estate with unspecified
+  geography and type. These broad household categories cannot identify
+  individual beneficial ownership or additional statutory disregards.
+  No separate secured-debt input is available for either category.
 metadata:
   label: Income-related ESA countable capital sources
   period: year
@@ -44,3 +49,5 @@ values:
     - share_like_capital
     - other_residential_property_value
     - non_residential_property_value
+    - overseas_property_value
+    - other_property_value

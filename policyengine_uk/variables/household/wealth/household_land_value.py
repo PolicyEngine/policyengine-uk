@@ -5,7 +5,12 @@ import numpy as np
 class household_land_value(Variable):
     entity = Household
     label = "Land value"
-    documentation = "Estimated total land value directly owned by the household"
+    documentation = (
+        "Estimated UK land value: regional land intensity applied to property "
+        "excluding direct UK land and identified overseas holdings, plus "
+        "direct UK land at full value. Unclassified other real estate retains "
+        "the regional approximation because its geography is not identified."
+    )
     unit = GBP
     definition_period = YEAR
     value_type = float
@@ -16,6 +21,7 @@ class household_land_value(Variable):
         Region = region.possible_values
         property_wealth = household("property_wealth", period)
         owned_land = household("owned_land", period)
+        overseas_property_value = household("overseas_property_value", period)
 
         regional = parameters(
             period
@@ -53,4 +59,6 @@ class household_land_value(Variable):
             default=regional.UNKNOWN,
         )
 
-        return property_wealth * property_wealth_intensity + owned_land
+        return (
+            property_wealth - owned_land - overseas_property_value
+        ) * property_wealth_intensity + owned_land

@@ -73,6 +73,9 @@ from hypothesis import strategies as st
 from policyengine_uk import Simulation
 
 YEAR = 2026
+# corporate_wealth (shares) is valued at 90% for the expenses of sale (UC Regs
+# 2013 reg. 49(1)(a)), so a disregarded holding inside it comes off at 90%.
+SHARE_VALUE = 0.9
 PROPERTY_SETTINGS = settings(
     max_examples=10,
     deadline=None,
@@ -488,7 +491,7 @@ def test_capital_and_earnings_identities(unit_list):
                     assert close(earned, max(before, floor))
             else:
                 assert close(earned, before)
-        disregarded = min(holdings, unit["corporate_wealth"])
+        disregarded = SHARE_VALUE * min(holdings, unit["corporate_wealth"])
         expected = base["uc_assessable_capital"][i] - disregarded + company_capital
         assert close(got["uc_assessable_capital"][i], expected)
 
@@ -646,7 +649,9 @@ def test_household_capital_is_allocated_and_conserved_across_benefit_units(pairs
             "corporate_wealth": {YEAR: first["corporate_wealth"]},
         }
         disregarded = min(holdings, first["corporate_wealth"])
-        pool = first["savings"] + first["corporate_wealth"] - disregarded
+        pool = first["savings"] + SHARE_VALUE * (
+            first["corporate_wealth"] - disregarded
+        )
         claimants = [len(first["adults"]), len(second["adults"])]
         for n, company_capital in zip(claimants, unit_company_capital):
             expected_units.append(pool * n / sum(claimants) + company_capital)

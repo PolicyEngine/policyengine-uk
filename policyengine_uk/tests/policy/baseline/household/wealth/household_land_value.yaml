@@ -48,7 +48,7 @@
   output:
     household_land_value: 104000
 
-- name: Zero property wealth still counts owned land
+- name: Zero domestic building value still counts owned land
   period: 2023
   absolute_error_margin: 0
   input:
@@ -87,3 +87,57 @@
     owned_land: 0
   output:
     household_land_value: 88000
+
+- name: UK land-only holdings enter property wealth and household land once
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    region: LONDON
+    owned_land: 25000
+  output:
+    property_wealth: 25000
+    household_land_value: 25000
+    total_wealth: 25000
+
+- name: Overseas-only holdings have worldwide wealth but no UK land or household LVT
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    gov.contrib.ubi_center.land_value_tax.rate: 0
+    gov.contrib.ubi_center.land_value_tax.household_rate: 0.02
+    gov.contrib.ubi_center.land_value_tax.corporate_rate: 0
+    region: LONDON
+    overseas_property_value: 30000
+  output:
+    property_wealth: 30000
+    total_wealth: 30000
+    household_land_value: 0
+    LVT: 0
+
+- name: Mixed London holdings exclude overseas property and count direct UK land once
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.contrib.ubi_center.land_value_tax.rate: 0
+    gov.contrib.ubi_center.land_value_tax.household_rate: 0.02
+    gov.contrib.ubi_center.land_value_tax.corporate_rate: 0
+    region: LONDON
+    main_residence_value: 100000
+    owned_land: 20000
+    overseas_property_value: 30000
+  output:
+    property_wealth: 150000
+    total_wealth: 150000
+    household_land_value: 105000
+    LVT: 2100
+
+- name: Unclassified other real estate uses the regional land approximation
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    region: LONDON
+    other_property_value: 20000
+  output:
+    property_wealth: 20000
+    total_wealth: 20000
+    household_land_value: 17000

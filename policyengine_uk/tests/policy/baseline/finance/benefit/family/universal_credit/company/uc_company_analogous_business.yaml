@@ -242,7 +242,9 @@
     uc_mif_applies: [false]
     uc_company_capital: [0]
     uc_company_holding_disregard: [0]
-    uc_assessable_capital: 25_000
+    # Outside reg. 77 the holding is ordinary shares, valued at 90% for the
+    # expenses of sale (reg. 49(1)(a)).
+    uc_assessable_capital: 22_500
 
 - name: An investor in a company with many shareholders is not treated as its owner
   # H4364: such a shareholder has no influence over the running of the
@@ -270,7 +272,8 @@
   output:
     uc_company_owner_treatment_applies: [false]
     uc_individual_earned_income: [0]
-    uc_assessable_capital: 12_000
+    # Ordinary shares, valued at 90% for the expenses of sale (reg. 49(1)(a)).
+    uc_assessable_capital: 10_800
 
 - name: A company carrying on neither a trade nor a property business is outside the rule
   # Reg. 77(1) needs a company "carrying on a trade or a property business".
@@ -292,7 +295,8 @@
         corporate_wealth: 10_000
   output:
     uc_company_owner_treatment_applies: [false]
-    uc_assessable_capital: 10_000
+    # Ordinary shares, valued at 90% for the expenses of sale (reg. 49(1)(a)).
+    uc_assessable_capital: 9_000
 
 - name: Each partner's company is attributed to the couple's capital
   # Joint claimants' capital is combined against one limit (Welfare Reform
@@ -483,7 +487,9 @@
         savings: 10_000
         corporate_wealth: 30_000
   output:
-    household_uc_pool_company_holdings: 30_000
+    # The 30,000 holding leaves the pool at the 90% at which corporate_wealth
+    # is counted (reg. 49(1)(a)).
+    household_uc_pool_company_holdings: 27_000
     uc_assessable_capital: [5_000, 5_000]
 
 - name: A benunit that reports its capital has its own holding taken off what it reports
@@ -507,7 +513,10 @@
       household:
         members: person
   output:
-    uc_assessable_capital: 35_000
+    # The complete override is a countable figure, so the holding inside it
+    # is counted at 90% (reg. 49(1)(a)) and comes off at that value:
+    # 50,000 - 27,000 + 15,000 of company capital.
+    uc_assessable_capital: 38_000
 
 - name: A dependant's company earnings are not the claimant's earned income
   # Reg. 22(1)(b) deducts "the claimant's earned income (or, in the case of
@@ -647,5 +656,7 @@
         savings: 8_000
         corporate_wealth: 12_000
   output:
-    household_uc_pool_company_holdings: 12_000
+    # The 12,000 holding leaves the pool at the 90% at which corporate_wealth
+    # is counted (reg. 49(1)(a)).
+    household_uc_pool_company_holdings: 10_800
     uc_assessable_capital: [0, 8_000]
