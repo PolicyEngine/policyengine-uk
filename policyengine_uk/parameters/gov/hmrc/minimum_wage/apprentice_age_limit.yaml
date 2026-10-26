@@ -1,11 +1,17 @@
 description: Apprentices below this age qualify for the apprentice minimum wage regardless of how long they have been in their apprenticeship.
+# The under-19 rule took effect on 1 October 2010. Values begin with the
+# model's minimum wage rate history on 1 October 2012.
 values:
-  2015-04-06: 19
+  2012-10-01: 19
 metadata:
   label: Apprentice minimum wage age limit
   unit: year
   period: year
   reference:
+    - title: The National Minimum Wage Regulations 1999 (Amendment) Regulations 2010, regulation 5 (substituted regulation 13(3)(b))
+      href: https://www.legislation.gov.uk/uksi/2010/1901/regulation/5/made
+    - title: The National Minimum Wage Regulations 1999 (Amendment) Regulations 2010, regulation 1
+      href: https://www.legislation.gov.uk/uksi/2010/1901/regulation/1/made
     - title: The National Minimum Wage Regulations 2015, regulation 5(1)(b)
       href: https://www.legislation.gov.uk/uksi/2015/621/regulation/5
     - title: The National Minimum Wage Regulations 2015, regulation 1

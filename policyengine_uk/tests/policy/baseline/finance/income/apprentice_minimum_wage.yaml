@@ -307,3 +307,89 @@
     tax_free_childcare: [0, 1_000, 0, 0, 0, 1_000, 0, 0]
     extended_childcare_entitlement: [3_767.70, 0, 0, 0]
     wales_childcare_offer: [0, 0, 7_003.50, 0]
+
+# The age/first-year distinction predates the 2015 consolidation:
+# S.I. 2010/1901 reg. 5 substituted NMW Regulations 1999 reg. 13(3).
+# At the start of 2013 the 21+ rate was 6.19 and apprentice rate 2.65,
+# set from 1 October 2012 by S.I. 2012/2397 reg. 2(2), (4)(a):
+# https://www.legislation.gov.uk/uksi/2012/2397/made
+# At the start of 2014 those rates were 6.31 and 2.68, set from
+# 1 October 2013 by S.I. 2013/1975 reg. 2(2), (3)(c):
+# https://www.legislation.gov.uk/uksi/2013/1975/made
+- name: Case 14, a non-apprentice receives the adult minimum wage in 2013.
+  period: 2013
+  input:
+    age: 22
+    is_apprentice: false
+  output:
+    minimum_wage: 6.19
+    minimum_wage_category: BETWEEN_21_22
+
+- name: Case 15, an apprentice under 19 receives the apprentice rate after their first year in 2013.
+  period: 2013
+  input:
+    age: 18
+    is_apprentice: true
+    is_in_first_year_of_apprenticeship: false
+  output:
+    minimum_wage: 2.65
+    minimum_wage_category: APPRENTICE
+
+- name: Case 16, an adult first-year apprentice receives the apprentice rate in 2013.
+  period: 2013
+  input:
+    age: 22
+    is_apprentice: true
+    is_in_first_year_of_apprenticeship: true
+  output:
+    minimum_wage: 2.65
+    minimum_wage_category: APPRENTICE
+
+- name: Case 17, an adult apprentice after their first year receives the adult rate in 2013.
+  period: 2013
+  input:
+    age: 22
+    is_apprentice: true
+    is_in_first_year_of_apprenticeship: false
+  output:
+    minimum_wage: 6.19
+    minimum_wage_category: BETWEEN_21_22
+
+- name: Case 18, a non-apprentice receives the adult minimum wage in 2014.
+  period: 2014
+  input:
+    age: 22
+    is_apprentice: false
+  output:
+    minimum_wage: 6.31
+    minimum_wage_category: BETWEEN_21_22
+
+- name: Case 19, an apprentice under 19 receives the apprentice rate after their first year in 2014.
+  period: 2014
+  input:
+    age: 18
+    is_apprentice: true
+    is_in_first_year_of_apprenticeship: false
+  output:
+    minimum_wage: 2.68
+    minimum_wage_category: APPRENTICE
+
+- name: Case 20, an adult first-year apprentice receives the apprentice rate in 2014.
+  period: 2014
+  input:
+    age: 22
+    is_apprentice: true
+    is_in_first_year_of_apprenticeship: true
+  output:
+    minimum_wage: 2.68
+    minimum_wage_category: APPRENTICE
+
+- name: Case 21, an adult apprentice after their first year receives the adult rate in 2014.
+  period: 2014
+  input:
+    age: 22
+    is_apprentice: true
+    is_in_first_year_of_apprenticeship: false
+  output:
+    minimum_wage: 6.31
+    minimum_wage_category: BETWEEN_21_22
