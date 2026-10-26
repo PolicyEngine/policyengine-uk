@@ -1,3 +1,11 @@
+## [2.162.9] - 2026-10-26
+
+### Changed
+
+- - Updated `uv.lock` to the newest dependency releases.
+- Clarified the fractional entity-ID warning for builds that core rejects.
+
+
 ## [2.162.8] - 2026-10-26
 
 ### Fixed
