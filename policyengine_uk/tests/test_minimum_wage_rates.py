@@ -36,7 +36,7 @@ Properties:
 2. For every year from 2015 to 2040, no rate falls as age rises, and the
    apprenticeship rate is never above the rate for any age from 16.
 3. No rate falls from one year to the next, 2015 to 2040. This holds for
-   every rate set from October 2011 to April 2026; it is a property of the
+   every rate set from October 2010 to April 2026; it is a property of the
    enacted rates, not a rule in the Act, so a future cut would need this test
    changing.
 
@@ -86,6 +86,11 @@ BAND_AGES = {
 # (commencement date, S.I. and provisions, rates by band). Where an S.I. left a
 # rate unchanged the row repeats the rate then in force.
 RATES_FROM_COMMENCEMENT = [
+    # 1999 Regs reg. 11 (21 and over) and reg. 13 as substituted by reg. 5:
+    # 13(1) 18 to 20 (the adult rate now starts at 21, not 22), 13(2) under
+    # 18 and 13(3) the new apprenticeship rate.
+    ("2010-10-01", "S.I. 2010/1901 regs. 3, 5", (2.50, 3.64, 4.92, 5.93, 5.93, 5.93)),
+    ("2011-10-01", "S.I. 2011/2345 regs. 3, 5", (2.60, 3.68, 4.98, 6.08, 6.08, 6.08)),
     # 1999 Regs reg. 11 (21 and over) and reg. 13(3) (apprentices); the
     # 18 to 20 and under 18 rates (reg. 13(1), (2)) stayed at the levels set
     # by S.I. 2011/2345 reg. 5 from 1 October 2011.

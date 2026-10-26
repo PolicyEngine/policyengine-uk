@@ -1,6 +1,6 @@
 import math
 
-from policyengine_uk import CountryTaxBenefitSystem
+from policyengine_uk import CountryTaxBenefitSystem, Simulation
 
 
 def test_legacy_benefit_age_threshold_parameters():
@@ -68,31 +68,64 @@ def _rate_in_force(on):
     return [rate for start, rate in sorted(NMW_RATES.items()) if start <= on][-1]
 
 
+def _higher_earnings_limits(years, reform=None):
+    situation = {
+        "people": {"claimant": {"age": {str(year): 40 for year in years}}},
+        "benunits": {"benunit": {"members": ["claimant"]}},
+        "households": {"household": {"members": ["claimant"]}},
+    }
+    simulation = Simulation(situation=situation, reform=reform)
+    return {
+        year: float(
+            simulation.calculate("esa_exempt_work_higher_earnings_limit", year)[0]
+        )
+        for year in years
+    }
+
+
 def test_esa_exempt_work_higher_limit_is_16_x_nmw_rounded_up():
     # Reg 45(4): £92 as made, £93 from 1 October 2009, then 16 x NMW from 11
     # April 2011 (SI 2011/674), rounded up under reg 45(9A).
-    limit = CountryTaxBenefitSystem().parameters.gov.dwp.ESA.exempt_work
-    limit = limit.higher_earnings_limit
-    assert limit("2008-10-27") == 92
-    assert limit("2009-09-30") == 92
-    assert limit("2009-10-01") == 93
-    assert limit("2011-04-10") == 93
-    # Before 2015 parameters keep their statutory dates.
-    for on in ["2011-04-11", "2011-10-01", "2012-10-01", "2013-10-01", "2014-10-01"]:
-        assert limit(on) == _round_up_to_50p(16 * _rate_in_force(on)), on
-    # From 2015 each year takes the value on 30 April (fiscal-year parameters).
+    parameters = CountryTaxBenefitSystem().parameters
+    exempt_work = parameters.gov.dwp.ESA.exempt_work
+    assert exempt_work.fixed_higher_earnings_limit("2008-10-27") == 92
+    assert exempt_work.fixed_higher_earnings_limit("2009-09-30") == 92
+    assert exempt_work.fixed_higher_earnings_limit("2009-10-01") == 93
+    assert exempt_work.higher_earnings_limit_minimum_wage_hours("2011-04-11") == 16
+    limits = _higher_earnings_limits(range(2009, 2041))
+    # Before 2015 a year reads its rules on 1 January: the fixed amount until
+    # 2011, then 16 x the rate in force that day.
+    assert limits[2009] == 92
+    assert limits[2010] == 93
+    assert limits[2011] == 93
+    for year in range(2012, 2015):
+        expected = _round_up_to_50p(16 * _rate_in_force(f"{year}-01-01"))
+        assert limits[year] == expected, year
+    # From 2015 each year takes the rate on 30 April (fiscal-year parameters).
     for year in range(2015, 2027):
         expected = _round_up_to_50p(16 * _rate_in_force(f"{year}-04-30"))
-        assert limit(str(year)) == expected, year
+        assert limits[year] == expected, year
     # DWP's published limits.
-    assert limit("2024") == 183.5
-    assert limit("2025") == 195.5
-    assert limit("2026") == 203.5
-    # Later years follow average earnings, rounded up to 50p like reg 45(9A).
+    assert limits[2024] == 183.5
+    assert limits[2025] == 195.5
+    assert limits[2026] == 203.5
+    # Later years follow the model's national living wage, whatever it is.
     for year in range(2027, 2041):
-        value = limit(str(year))
-        assert value == _round_up_to_50p(value), year
-        assert value >= limit(str(year - 1)), year
+        wage = parameters(str(year)).gov.hmrc.minimum_wage.non_apprentice
+        assert limits[year] == _round_up_to_50p(16 * max(wage.amounts)), year
+
+
+def test_esa_exempt_work_higher_limit_follows_a_national_living_wage_reform():
+    # A national living wage of £13.18 from April 2027: 16 x £13.18 = £210.88,
+    # rounded up to £211 (reg 45(9A)).
+    reform = {
+        f"gov.hmrc.minimum_wage.non_apprentice[{bracket}].amount": {"2027": 13.18}
+        for bracket in (2, 3, 4)
+    }
+    assert _higher_earnings_limits([2026, 2027], reform=reform) == {
+        2026: 203.5,
+        2027: 211.0,
+    }
 
 
 def test_esa_and_jsa_remunerative_work_parameters_by_date():
