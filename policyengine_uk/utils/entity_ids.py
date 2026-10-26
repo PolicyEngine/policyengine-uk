@@ -13,9 +13,10 @@ policyengine-core casts a stored value to its variable's dtype with ``astype``
 and drops the fraction of a float, both without an error. ``check_entity_ids``
 warns about such identifiers when the entities are built. The check itself
 does not refuse them, but core may reject memberships that name no declared
-group. When a build succeeds, its populations hold the identifiers exactly.
-Data builds that number clones past the range (by adding multiples of a power
-of ten to every identifier) load them today.
+group. Populations keep the declared entity identifiers. From core 3.33.7 a
+membership must equal a declared identifier; older cores join memberships to
+groups by rank. Data builds that number clones past the range (by adding
+multiples of a power of ten to every identifier) load them today.
 """
 
 import warnings
