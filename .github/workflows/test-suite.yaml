@@ -135,6 +135,13 @@ jobs:
     # shard. N is the number of jobs this matrix makes: to add a shard, add
     # a number to the list.
     #
+    # The slowest tests, listed with their CI durations in
+    # policyengine_uk/tests/shard_durations.toml, are dealt out by duration
+    # instead of hashed. With the hash alone, over 95 runs on 24 October
+    # shard 2/5 averaged 57 minutes (up to 70) and shard 1/5 49: a 22-minute
+    # property test and several of 4 to 7 minutes had hashed to shard 2.
+    # .github/test_durations.py regenerates the table from shard logs.
+    #
     # Four shards, not three, for memory: each pytest-xdist worker's memory
     # grows with the tests it runs, and with three shards of four workers
     # the 16 GB runners peaked at 15.6 GB, 283 MB short of running out
