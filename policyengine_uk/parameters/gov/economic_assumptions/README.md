@@ -237,9 +237,9 @@ and so do the Universal Credit standard allowance and health element indices
 built from it. Housing Benefit non-dependant deduction income bands, DfE
 funding rates, the Childcare Offer for Wales hourly rate and the council tax
 high value surcharge follow the lagged calendar-year CPI projection through
-`indices.obr.lagged_cpi`, pending their own uprating models. The deduction amounts continue to follow September CPI.
-The savings credit threshold and Housing
-Benefit pension-age allowances are within the s150 review, under
+`indices.obr.lagged_cpi`, pending their own uprating models. The deduction
+amounts continue to follow September CPI. The savings credit threshold and
+Housing Benefit pension-age allowances are within the s150 review, under
 [s150(1)(l) and (h)](https://www.legislation.gov.uk/ukpga/1992/5/section/150),
 even though their increases in practice are linked to earnings rather than
 September CPI.
