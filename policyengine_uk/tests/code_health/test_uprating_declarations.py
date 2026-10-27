@@ -24,11 +24,6 @@ UPRATING_INDICES = Path(__file__).parents[2] / "data" / "uprating_indices.yaml"
 # Variables that declare an index but are deliberately not in the YAML, with
 # the reason. Anything else failing this test is a genuine gap.
 KNOWN_UNUPRATED = {
-    # gov.dft.rail.ridership_index is a CUMULATIVE index (2020 = 1.0), not a
-    # year-on-year growth rate, so it cannot go in a yoy_growth list without
-    # compounding wrongly: doing so uprates rail_usage by ~684% over 2024-27.
-    # Uprating this needs a yoy series, not a YAML entry (#1862).
-    "rail_usage",
     # Reported counterpart of employee_pension_contributions, which IS
     # uprated; the reported variable feeds imputation rather than results.
     "employee_pension_contributions_reported",
@@ -50,6 +45,10 @@ KNOWN_INDEX_OVERRIDES = {
     # Declares ons.household_interest_income; the YAML applies per_capita.gdp.
     # Flagged in #1862 for someone with the context to say which is intended.
     "savings_interest_income",
+    # Like ordinary savings interest, noncash ISA interest declares the ONS
+    # household index but follows the existing GDP dataset rule. Broader
+    # alignment of those two surfaces remains separate work in #2638.
+    "non_cash_isa_cash_interest",
 }
 
 

@@ -22,6 +22,12 @@ We apply CPI to these variables:
 
 - Other variables– `afcs_reported`, `bsp_reported`, `childcare_expenses`, `free_school_fruit_veg`, `free_school_meals`, `free_school_milk`, `maintenance_expenses`, `statutory_maternity_pay`, `statutory_paternity_pay`, `statutory_sick_pay`, `state_pension`, `war_widows_pension_reported`, `widowed_parents_allowance_reported`
 
+`bsp_reported` stays nominally flat when a dataset explicitly supplies both
+`war_widows_pension_reported` and `widowed_parents_allowance_reported` in
+the same source year, including all-zero columns. Datasets with either
+column missing and household situations retain CPI uprating. See the
+[bereavement-benefit split guide](https://github.com/PolicyEngine/policyengine-uk/blob/main/docs/engineering/skills/dataset-sources.md#bereavement-benefit-split).
+
 ## Road fuel volume
 
 We use HMRC road-fuel clearances and OBR-implied forecast volumes for petrol and diesel spending, because PolicyEngine converts these spending fields into litres by dividing by pump prices.

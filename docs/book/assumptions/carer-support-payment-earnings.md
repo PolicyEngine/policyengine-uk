@@ -75,3 +75,44 @@ The open [PR #2518](https://github.com/PolicyEngine/policyengine-uk/pull/2518)
 changes a shared Carer’s Allowance earnings parameter. Once this reader is shared
 with CSP, that parameter’s effects on CSP require coordination and validation;
 this page does not assume the two benefits remain independent of that parameter.
+
+## Couples caring for the same person
+
+[SSCBA 1992 section 70(7ZA)](https://www.legislation.gov.uk/ukpga/1992/4/section/70),
+the [Northern Ireland counterpart, section 70(7ZA)](https://www.legislation.gov.uk/ukpga/1992/7/section/70),
+and [CSP regulation 5(3)](https://www.legislation.gov.uk/ssi/2023/302/regulation/5)
+restrict multiple relevant entitlements for the same cared-for person. The
+model applies the allowance restriction to the claimant and partner when
+`partners_care_for_same_severely_disabled_person` is true. It removes the
+second candidate entitlement before reducing either payment for overlapping
+benefits. A selected carer whose overlapping benefit removes the payment
+still retains the underlying entitlement.
+
+The law provides election or decision rules; the model does not observe that
+choice. Among otherwise eligible partners, it prefers a reported recipient,
+then an eligible benefit-unit head, then the eldest eligible partner. Member
+order breaks an age tie. This is a modelling convention, not statutory
+priority. An ineligible reported recipient or head cannot displace an eligible
+partner. The caring-hours, earnings, age and take-up conditions are unchanged.
+
+The convention does not maximise the couple's payment. It can select a partner
+whose overlapping benefits reduce CA or CSP to zero, while suppressing a
+payment that the other otherwise-eligible partner could receive if selected.
+
+The existing same-person default remains: two qualifying reported awards, or
+awards that caring hours and take-up cannot explain, indicate different care
+targets. Directly supplied payment, pre-overlap or entitlement inputs remain
+authoritative. The default reads candidate amounts and supplied inputs before
+the couple restriction, so it does not depend on the final awards it limits.
+A cached calculation is not treated as a supplied award. Where relationships
+are known, supply the same-person flag and claimant/partner flags explicitly.
+
+This restriction covers units with exactly two claimant/partner flags. It
+does not identify care targets across benefit units, allocate awards to other
+members, or settle malformed units with more than two partners. The model
+still uses caring hours or reported receipt as a proxy for the cared-for
+person's qualifying conditions. The statutory coordination with another
+person's UC carer element is a separate limitation: the existing UC allocation
+can choose a different person from the allowance convention. The couple fix
+does not certify that cross-programme allocation. Scottish Carer Supplement
+remains separate from the CSP component and follows CSP actually payable.

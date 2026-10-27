@@ -23,6 +23,25 @@ BEHAVIOURAL_RESPONSES = (
 )
 
 
+def retained_input_variables(simulation) -> set:
+    """Names retained by resets and measurements, including later inputs.
+
+    A key can outlive its array or belong to a branch this simulation cannot
+    read. Check the supplied storage record as well as branch visibility, so
+    a calculated or deleted value does not become a fixed input.
+    """
+    retained = set(getattr(simulation, "input_variables", None) or ())
+    visible = set(simulation._get_visible_branch_names())
+    for name, branch, period in tuple(
+        getattr(simulation, "_user_input_keys", None) or ()
+    ):
+        if branch in visible and simulation.get_holder(name)._stores_user_input(
+            period, branch
+        ):
+            retained.add(name)
+    return retained
+
+
 def drop_calculated_values(simulation) -> None:
     """Delete the values a simulation has calculated, keeping its inputs.
 
@@ -31,10 +50,7 @@ def drop_calculated_values(simulation) -> None:
     simulation modifier does to formula variables. Only variables the
     simulation holds values for are visited.
     """
-    supplied = set(getattr(simulation, "input_variables", None) or ())
-    supplied.update(
-        name for name, _, _ in getattr(simulation, "_user_input_keys", None) or ()
-    )
+    supplied = retained_input_variables(simulation)
     variables = simulation.tax_benefit_system.variables
     held = {
         name

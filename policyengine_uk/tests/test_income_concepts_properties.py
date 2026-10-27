@@ -200,6 +200,36 @@ taxpayer = st.fixed_dictionaries(
 
 @PROPERTY_SETTINGS
 @given(people=st.lists(taxpayer, min_size=1, max_size=12))
+# A separate ISA receipt cannot absorb taxable other investment income.
+@example(
+    people=[
+        {
+            "age": 18,
+            "employment_income": 0,
+            "employment_expenses": 0,
+            "statutory_sick_pay": 0,
+            "statutory_maternity_pay": 0,
+            "statutory_paternity_pay": 0,
+            "private_pension_income": 0,
+            "social_security_income": 0,
+            "self_employment_income": 0,
+            "capital_allowances": 0,
+            "trading_allowance_deduction": 0,
+            "loss_relief": 0,
+            "trading_loss": 0,
+            "property_income": 0,
+            "property_allowance_deduction": 0,
+            "savings_interest_income": 0,
+            "other_investment_income": 1,
+            "individual_savings_account_interest_income": 1,
+            "dividend_income": 0,
+            "miscellaneous_income": 0,
+            "employee_pension_contributions": 0,
+            "personal_pension_contributions": 0,
+            "gift_aid": 0,
+        }
+    ]
+)
 @example(
     people=[
         {
@@ -248,9 +278,7 @@ def test_total_income_equals_tax_components_before_step_two_reliefs(template, pe
             + max(0, get("property_income") - get("property_allowance_deduction"))
             + max(
                 0,
-                get("savings_interest_income")
-                + get("other_investment_income")
-                - get("individual_savings_account_interest_income"),
+                get("savings_interest_income") + get("other_investment_income"),
             )
             + get("dividend_income")
             + max(0, get("miscellaneous_income"))

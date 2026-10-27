@@ -143,7 +143,8 @@ totals:
     label: Government spending in respect of the household
     description: >-
       Cash benefits, childcare and student support, and public services in
-      kind (NHS, education, transport subsidies).
+      kind (NHS, education, transport subsidies), and Lifetime ISA bonuses
+      paid into capital accounts.
     dropped_when:
       gov.contrib.abolish_council_tax:
         - council_tax_benefit
@@ -151,13 +152,38 @@ totals:
     label: Benefits received by the household
     description: >-
       The benefit side of household net income. It is gov_spending without the
-      contributed budget-change line, which is not paid to households.
+      contributed budget-change line and Lifetime ISA capital bonuses;
+      neither is part of household current benefit income.
     dropped_when:
       gov.contrib.abolish_council_tax:
         - council_tax_benefit
 
 tax_heads:
   # Income and earnings
+  - id: isa_cash_interest_charge
+    label: Final charge on cash interest in non-cash ISAs
+    variable: isa_cash_interest_flat_rate_charge
+    entity: person
+    obr_line: Income tax
+    obr_table_3_1: Income tax
+    report_group: income_tax
+    payer: household
+    totals: [gov_tax, household_tax]
+    sign: nonnegative
+  - id: lifetime_isa_withdrawal_charge
+    label: Lifetime ISA withdrawal charge
+    variable: lifetime_isa_withdrawal_charge
+    entity: person
+    obr_line: not_an_obr_current_receipt
+    obr_table_3_1: null
+    obr_line_note: >-
+      The model records this payment out of account capital as government
+      revenue, outside current household income taxes. No placement in an
+      OBR current-receipts row is asserted here.
+    report_group: lifetime_isa_capital_transfers
+    payer: household
+    totals: [gov_tax]
+    sign: nonnegative
   - id: income_tax
     label: Income tax
     variable: income_tax
@@ -469,9 +495,13 @@ tax_heads:
       projected with OBR receipts (gov.hmrc.business_rates.statistics). In
       2026-27 the England, Scotland and Wales series total £37.26bn against
       £37.41bn on the OBR's Business rates line (receipts Table 3.8).
-      Northern Ireland's £0.78bn (LPS non-domestic rates paid) compares with
-      £0.40bn on the OBR's "Northern Ireland business rates" line, which the
-      OBR records under other taxes (Table 3.2). Measured 2026-10-11.
+      Northern Ireland's projected £0.78bn (LPS non-domestic rates paid,
+      regional and district rates together) compares with £0.40bn on the
+      OBR's "Northern Ireland business rates" line, which the OBR records
+      under other taxes (Table 3.2) and which appears to cover the regional
+      rate only. ONS records NI regional non-domestic rates (central
+      government, £327m in 2024-25) and district non-domestic rates (local
+      government, £378m) separately. Measured 2026-10-11.
   - id: sdlt_household
     label: Stamp duty land tax on the household's own purchases
     variable: expected_sdlt
@@ -808,6 +838,13 @@ uncovered_receipts:
   - {obr_line: Other taxes}
 
 spending_heads:
+  - id: lifetime_isa_bonus
+    label: Lifetime ISA bonus
+    variable: lifetime_isa_bonus
+    entity: person
+    report_group: lifetime_isa_capital_transfers
+    totals: [gov_spending]
+    sign: nonnegative
   # Pensioners
   - id: state_pension
     label: State Pension

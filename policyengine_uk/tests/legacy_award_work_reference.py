@@ -131,14 +131,25 @@ def esa_weekly_earnings(adult, parameters):
     return (net_pay + net_profit) / WEEKS
 
 
+def esa_higher_earnings_limit(parameters):
+    """Reg 45(4) from 11 April 2011: 16 x the adult/NLW rate (reg 2(1),
+    DMG 41190), with part of a pound under 50p rounded up to 50p and over
+    50p up to the next pound (reg 45(9A))."""
+    exempt_work = parameters.gov.dwp.ESA.exempt_work
+    # The scale is sorted by age. The final band holds the designated adult
+    # rate even if a reform sets a younger band's rate above it.
+    adult_rate = parameters.gov.hmrc.minimum_wage.non_apprentice.amounts[-1]
+    limit = exempt_work.higher_earnings_limit_minimum_wage_hours * adult_rate
+    return math.ceil(round(limit * 2, 6)) / 2
+
+
 def esa_claimant_in_remunerative_work(adult, parameters):
     exempt_work = parameters.gov.dwp.ESA.exempt_work
     earnings = esa_weekly_earnings(adult, parameters)
     within_lower_limit = earnings <= exempt_work.lower_earnings_limit
-    permitted_work = (
-        weekly_hours(adult) < exempt_work.hours_limit
-        and earnings <= exempt_work.higher_earnings_limit
-    )
+    permitted_work = weekly_hours(
+        adult
+    ) < exempt_work.hours_limit and earnings <= esa_higher_earnings_limit(parameters)
     return not (within_lower_limit or permitted_work)
 
 

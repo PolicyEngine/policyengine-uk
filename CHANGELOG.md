@@ -1,3 +1,198 @@
+## [2.162.14] - 2026-10-27
+
+### Changed
+
+- Give the YAML test job 45 minutes, not 30, so a slow runner no longer cancels it after its tests have passed and takes the pull request out of the merge queue; passing jobs take 22 to 28 minutes.
+
+
+## [2.162.13] - 2026-10-27
+
+### Changed
+
+- Work out the winter fuel payment charge in the property allowance election only where it can change the choice. Add `winter_fuel_payment_charge_ceiling`, the most the charge could be whatever benefits are received, and settle each election on income tax before the charge wherever the ceilings on the two routes cannot reverse it. Each household's landlords now decide in their own order, and every household's next decision is compared in one pair of branches, so the elections that turn on the charge are compared on income tax including it together rather than once per round and rank. Where an input or a structural reform replaces income tax, the ceiling, the charge, the payments it recovers or entitlement to them, or a reform neutralises income tax or the ceiling, every election is still compared on income tax including the charge. Routes, income tax and household net income are unchanged; a Microcosm UK 2024-25 microsimulation builds and calculates 2026 household net income in about half the time.
+
+
+## [2.162.12] - 2026-10-27
+
+### Changed
+
+- Split the Python tests in CI over six runners instead of five.
+
+
+## [2.162.11] - 2026-10-27
+
+### Changed
+
+- Participation responses now impute non-workers' wages once on the reform simulation and reuse the result for gain-to-work, earnings quintiles and the entry step, halving the imputations per step from four to two. Outputs are unchanged.
+
+
+## [2.162.10] - 2026-10-27
+
+### Changed
+
+- The ESA permitted work higher earnings limit is now calculated as 16 x the national living wage, rounded up to the next 50p (ESA Regs 2008 reg 45(4) and (9A)), so it follows a change to gov.hmrc.minimum_wage instead of being listed year by year and projected with average earnings. The gov.dwp.ESA.exempt_work.higher_earnings_limit parameter is removed, and the minimum wage rates and apprentice age limit now start at 1 October 2010. Regression tests cover historical wage categories and national living wage reforms across ESA claimants. The historical fixed limit now includes £95 from 1 October 2010, and both the model and reference tests use the designated adult wage band.
+
+
+## [2.162.9] - 2026-10-26
+
+### Changed
+
+- - Updated `uv.lock` to the newest dependency releases.
+- Clarified the fractional entity-ID warning for builds that core rejects.
+
+
+## [2.162.8] - 2026-10-26
+
+### Fixed
+
+- Screen income-related ESA and income-based JSA reports separately for people outside the claimant couple, preserving scoped award readers, and use assessed ESA receipt in the 16–19 Bursary Fund own-right signal.
+
+  Use the report-aware ESA callback in the Housing Benefit cap reader, restore ESA/JSA documentation citations and spacing, and clarify bursary test comments.
+
+
+## [2.162.7] - 2026-10-26
+
+### Changed
+
+- Added property and full-person fixture coverage for Housing Benefit's protected family premium. Clarified that the fixed test totals exclude the unmodelled child personal allowance.
+
+### Fixed
+
+- - Preserved each benefit unit's Universal Credit advance repayment fallback when other units supply cash, while retaining explicit zero repayments.
+- - Keep Universal Credit advance repayment cash demand fixed through standard allowance reforms while preserving supplied deduction rates, existing caps, abolition switches and protected-floor allocation.
+- Apply the apprentice minimum wage only to apprentices under 19 or explicitly in their first 12 months, including historical calculations from October 2012, while preserving employer National Insurance relief for later-year apprentices under 25.
+
+
+## [2.162.6] - 2026-10-26
+
+### Changed
+
+- Balance the CI Python test shards: the slowest tests, listed with their measured CI durations, are dealt out by duration instead of by hash, so no shard carries most of them.
+
+
+## [2.162.5] - 2026-10-26
+
+### Fixed
+
+- Uprate reported Council Tax Reduction with household council tax bills and restore base awards when resetting economic assumptions. The historical `enhanced_frs_2024_25` CI comparison at `ea9ee921b` against `fba0c0a53` raises projected CTR spending by about £0.1bn in 2025-26, rising to £0.6bn in 2031-32 ([review](https://github.com/PolicyEngine/policyengine-uk/pull/2680#issuecomment-6413849354)).
+
+
+## [2.162.4] - 2026-10-26
+
+### Fixed
+
+- Extended fiscal parameter annualisation beyond 2040 while preserving legacy annual records and dated reform checks, and rejected unrepresentable dates before changing parameters.
+
+
+## [2.162.3] - 2026-10-26
+
+### Fixed
+
+- Retain every surviving explicit input through `reset_calculations`, including ordinary `set_input` calls made after construction outside any modifier or scenario. A reset alone no longer undoes those overrides: use `delete_arrays(variable, period)`, then reset or recalculate to restore the variable's formula or default. Retain these inputs through dynamics, marginal-rate calculations and exports, including input-only variables absent at construction.
+
+  Refresh dependent values before the next outermost read after every top-level `set_input` on a built simulation, even without a modifier. Preserve selective invalidation for internal formula and framework writes and keep independent baselines. Use collision-safe temporary branches with cleanup on failure for all three marginal rates, and avoid duplicate cleanup after a successful construction-time modifier. Require PolicyEngine Core 3.33.0 or later for the documented public `drop_computed_arrays` method.
+
+
+## [2.162.2] - 2026-10-25
+
+### Fixed
+
+- Correct ISA income and cash-ISA capital treatment, with a versioned adapter for legacy gross-interest datasets. Add qualifying Lifetime ISA bonuses and withdrawal charges, and the final charge on cash interest in non-cash ISAs from fiscal 2027–28, with separate capital-flow accounting. Carry ISA dividend and non-cash interest inputs into later household years using their ordinary-income counterparts' growth indices, and grow stored dataset values with their ordinary counterparts throughout the projection horizon. Name the Lifetime ISA medical-exemption input `lifetime_isa_terminally_ill`.
+- Preserved recorded student loan plans and stopped clearing existing-holder repayments from inferred course dates during dataset projection; documented the remaining projected Plan 1 to Plan 2 and Plan 2 to Plan 5 cohort gaps and exact cancellation-date limitations.
+
+
+## [2.162.1] - 2026-10-25
+
+### Changed
+
+- Corrected the Housing Benefit eligibility description of the Universal Credit route open to pension-age Working Tax Credit recipients moved off legacy benefits.
+
+
+## [2.162.0] - 2026-10-25
+
+### Added
+
+- Added the Housing Benefit special standard earnings disregard with regime-specific qualifying routes, explicit residual pre-assessment and no stacking with ordinary amounts.
+
+
+## [2.161.2] - 2026-10-25
+
+### Fixed
+
+- Correct `gov.dft.rail.ridership_index` to ORR Table 1220 passenger journeys (2021-22 is 2.55 and 2024-25 4.46 on a 2020-21 base, not 0.40 and 0.95), hold it flat from 2026-27, and project `rail_usage` by its growth per person, which it was not projected by before.
+
+
+## [2.161.1] - 2026-10-25
+
+### Fixed
+
+- The build-hook test that checks a failed build still removes its directory counts only the hook's own exit registrations, so it no longer fails when it runs before anything else in the process has created a finalizer.
+- Separated Northern Ireland's dated Energy Price Guarantee discounts from Great Britain's calculation; spending-only cases in 2022 and 2023 now return zero subsidy with `ni_epg_subsidy_calculable=false` during supported months. Historical monetary totals remain incomplete for those cases; zero does not establish that no support was due.
+- Assigned lone fathers the OBR lone-parent substitution, income and participation elasticities.
+
+
+## [2.161.0] - 2026-10-25
+
+### Added
+
+- Model the exceptions to the Universal Credit and Child Tax Credit two-child limit (UC Regulations 2013 Schedule 12 and CTC Regulations 2002 regs 9 to 14): multiple births, adoption, non-parental caring arrangements, non-consensual conception and continuation of an earlier exception, as person-level inputs that default to false. Adopted children and children in non-parental care are left out of the Universal Credit order of children, as reg 24B(2A) requires, and a third Child Tax Credit child gets the element when all, or all but one, of the others are adopted or cared for, both from 28 November 2018 (two new dated parameters). Children born on the same day are ordered so the element reaches as many as possible, whatever the exception.
+
+### Changed
+
+- Tested the Housing Benefit child disability premiums with a real pension-age claimant and child, deriving the 2021 cutoff from the claimant.
+
+### Fixed
+
+- Fixed a Pension Credit property test that compared Guarantee Credit pound for pound where it started from zero.
+
+
+## [2.160.0] - 2026-10-25
+
+### Added
+
+- Added protected Housing Benefit family premiums with jurisdiction-specific closure dates and an explicit pre-assessed historical category.
+
+### Changed
+
+- Document that the inferred carer claimant convention can select an unpaid partner and does not maximise the couple's Carer's Allowance or Carer Support Payment.
+
+### Fixed
+
+- The Aggregate impact report now reports a Dependabot pull request as skipped, as it was meant to, instead of failing it. Dependabot runs have no data access, and the measure step stopped before it set up the tool the comparison runs.
+- - Zero-rate employer Class 1 National Insurance for earners under 21 up to the upper secondary threshold (SSCBA 1992 s.9A) and for apprentices under 25 up to the apprentice upper secondary threshold (s.9B), with both thresholds kept equal to the upper earnings limit after 2030-31. The employer cost variables, the fixed-employer-cost pay response and the salary sacrifice employer NI measure apply the same schedule through one shared helper. The fixed-employer-cost pay response now solves for NIC earnings (pay plus statutory pay) on each side of the reformed threshold, so it also holds where statutory pay takes earnings over a threshold or a reform moves a threshold across a person's earnings. From 2029 the employer cost variables and the pay response also charge employer NI on salary sacrifice above the £2,000 cap, as Class 1 does, and count the broad-base haircut and returned pay as pay, so the baseline and reformed costs equal `employer_cost` in their simulations.
+- - Limited Carer's Allowance and Carer Support Payment to one eligible partner when a couple cares for the same person, preserving reported-award defaults and underlying entitlement before overlapping benefits.
+
+
+## [2.159.0] - 2026-10-25
+
+### Added
+
+- Warm Home Discount receipt rates by group (85% for Pension Credit households, 70% for other qualifying benefits), from DESNZ's 2026 impact assessment, so the rebate no longer goes to every household modelled as receiving a qualifying benefit.
+
+### Fixed
+
+- Allowed caller-verified joint occupier exclusions in the legacy severe disability premium's non-dependant test.
+
+
+## [2.158.3] - 2026-10-25
+
+### Changed
+
+- Clarified bottled gas coverage and ONS levelling requirements for liquid and solid heating fuel inputs.
+
+### Fixed
+
+- Held reported Bereavement Support Payment flat for datasets supplying both separate bereavement-benefit inputs, while preserving CPI uprating for legacy and partial splits and the separate pensions.
+- Corrected England outside London's bus fare yield to exclude only older and disabled concessionary journeys, and refitted the cap-savings table using the same priced boardings.
+
+
+## [2.158.2] - 2026-10-25
+
+### Changed
+
+- - Documented that the Northern Ireland business rates statistic counts the regional and district rates, while the OBR line that projects it appears to cover the regional rate only.
+
+
 ## [2.158.1] - 2026-10-25
 
 ### Fixed

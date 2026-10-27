@@ -1214,10 +1214,9 @@
       household:
         members: [claimant, lodger]
   output:
-    # The benefit unit's award applies the claimant's failed screen to every
-    # report in it, so it is nil.
+    # The claimant fails, but the outside adult's separate own award pays.
     esa_income_eligible: false
-    esa_income: 0
+    esa_income: 5_000
     claimant_or_partner_esa_income: 0
     # The lodger's own claim passes, so they are on it; the claimant is not.
     is_on_income_related_esa: [false, true]

@@ -36,6 +36,10 @@ the pieces to the invariants the Test job relies on:
 11. ``changed_code.py`` calls a change code exactly when a path matches a
     pattern as a workflow ``paths`` filter would (``dir/**`` is every file
     under ``dir/``), and calls an empty change list code.
+12. The slow tests in ``shard_durations.toml`` are dealt out longest first to
+    the least loaded shard, whatever order the table lists them in, so no
+    shard's listed load exceeds another's by more than the longest test; the
+    table parses and each entry names a test function that exists.
 """
 
 import ast
@@ -169,6 +173,76 @@ def test_parse_shard_rejects_anything_else(conftest, value):
 
     with pytest.raises(argparse.ArgumentTypeError):
         conftest.parse_shard(value)
+
+
+# Invariant 12: the slowest tests are dealt out by duration.
+
+_durations = st.dictionaries(nodeids, st.floats(0, 3_000, allow_nan=False), max_size=40)
+
+
+@PROPERTY_SETTINGS
+@given(durations=_durations, shards=st.integers(1, 8), data=st.data())
+def test_balanced_shards_bound_the_gap_by_the_longest_test(
+    conftest, durations, shards, data
+):
+    placed = conftest.balanced_shards(durations, shards)
+    assert placed.keys() == durations.keys()
+    assert all(1 <= shard <= shards for shard in placed.values())
+    load = [0.0] * shards
+    for nodeid, shard in placed.items():
+        load[shard - 1] += durations[nodeid]
+    assert max(load) - min(load) <= max(durations.values(), default=0) + 1e-6
+    # The same placement whatever order the table lists the tests in.
+    reordered = dict(data.draw(st.permutations(list(durations.items()))))
+    assert conftest.balanced_shards(reordered, shards) == placed
+
+
+@PROPERTY_SETTINGS
+@given(ids=st.lists(nodeids, max_size=40, unique=True), shards=st.integers(1, 8))
+def test_shards_partition_a_collection_with_listed_tests(conftest, ids, shards):
+    listed = list(conftest.read_shard_durations())[:20]
+    collection = sorted(set(ids) | set(listed))
+    members = {
+        shard: [
+            nodeid
+            for nodeid in collection
+            if conftest.shard_of(nodeid, shards) == shard
+        ]
+        for shard in range(1, shards + 1)
+    }
+    assert sorted(sum(members.values(), [])) == collection
+
+
+def test_listed_tests_follow_the_table(conftest):
+    durations = conftest.read_shard_durations()
+    for shards in (1, 3, 5, 6):
+        placed = conftest.balanced_shards(durations, shards)
+        assert all(conftest.shard_of(n, shards) == k for n, k in placed.items())
+
+
+def test_the_checked_in_shard_durations_name_tests_that_exist(conftest):
+    durations = conftest.read_shard_durations()
+    assert durations
+    assert all(seconds > 0 for seconds in durations.values())
+    for nodeid in durations:
+        path, _, rest = nodeid.partition("::")
+        file = REPO_ROOT / path
+        assert file.exists(), nodeid
+        names = rest.split("::")
+        scope = ast.parse(file.read_text(encoding="utf-8")).body
+        for name in names[:-1]:
+            [cls] = [n for n in scope if isinstance(n, ast.ClassDef) and n.name == name]
+            scope = cls.body
+        functions = {
+            n.name
+            for n in scope
+            if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))
+        }
+        assert names[-1].split("[")[0] in functions, nodeid
+
+
+def test_a_missing_table_leaves_every_test_to_the_hash(conftest, tmp_path):
+    assert conftest.read_shard_durations(tmp_path / "absent.toml") == {}
 
 
 # Invariant 4: the collection listing.

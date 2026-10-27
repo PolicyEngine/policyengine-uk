@@ -1,4 +1,6 @@
 description: >
+  Ordinary cash ISA balances are separate from savings and are included at
+  their accessible cash value, without a generic cash sale-cost deduction.
   Capital sources included in the Income Support capital test.
   `private_pension_wealth` is excluded because Schedule 10 paragraphs 23 and
   23A disregard the value of the right to receive an occupational or personal
@@ -26,6 +28,7 @@ metadata:
 values:
   2010-01-01:
   - savings
+  - cash_isa
   - owned_land
   - share_like_capital
   - other_residential_property_value

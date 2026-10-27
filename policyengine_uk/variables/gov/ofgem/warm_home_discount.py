@@ -10,7 +10,8 @@ class warm_home_discount(Variable):
         "Home Discount scheme in England and Wales, in the year containing "
         "the winter it is paid for. A household qualifies if any member "
         "receives a qualifying means-tested benefit; the rebate is paid "
-        "without a claim. Suppliers fund the rebate from their customers' "
+        "without a claim, but not every qualifying household receives it "
+        "(see would_receive_warm_home_discount). Suppliers fund the rebate from their customers' "
         "bills, so it is not government spending, and it is not included in "
         "household_benefits or household_net_income. HBAI counts it as "
         "miscellaneous income, so it is included in "
@@ -34,4 +35,5 @@ class warm_home_discount(Variable):
         if len(benefits) == 0:
             return household.empty_array()
         receives_benefit = add(household, period, benefits) > 0
-        return in_scheme_area * receives_benefit * p.amount
+        receives_rebate = household("would_receive_warm_home_discount", period)
+        return in_scheme_area * receives_benefit * receives_rebate * p.amount
