@@ -14,8 +14,8 @@ wages only. The cases come from the lists, so a source removed from a list
 would just lose its case; the lists are also pinned to the reviewed sources
 below, so a removal fails here too. Each source is also checked not to add
 another listed source (through adds or subtracts, at any depth), which would
-count it twice. That check does not see a formula that reads another listed
-source.
+count it twice, and the sources are checked to expand to disjoint variables.
+Those checks do not see a formula that reads another listed source.
 """
 
 from pathlib import Path
@@ -156,3 +156,18 @@ def test_each_list_holds_the_reviewed_sources_once(name):
 def test_no_listed_source_adds_another(entity, source):
     listed = {other for _, other in CASES}
     assert not components(source) & listed
+
+
+def test_listed_sources_expand_to_disjoint_variables():
+    # Each source's closure is the source and every variable it adds or
+    # subtracts, at any depth. Overlapping closures would count the shared
+    # income twice, even where neither source adds the other.
+    closures = {source: {source} | components(source) for _, source in CASES}
+    overlaps = {
+        (first, second): sorted(closures[first] & closures[second])
+        for i, first in enumerate(closures)
+        for second in list(closures)[i + 1 :]
+        if closures[first] & closures[second]
+    }
+    assert len(closures) == 40
+    assert not overlaps, overlaps
