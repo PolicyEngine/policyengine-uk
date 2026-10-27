@@ -121,6 +121,27 @@ def test_combined_reforms_build_and_never_project_negative_amounts(path, reforms
             assert parameter(f"{year}-04-30") >= 0, (name, year, reforms)
 
 
+@pytest.mark.parametrize("first_year", [2026, 2028])
+def test_maximum_reforms_reach_both_dependent_forecasts(first_year):
+    parameters = synthetic_parameter_tree([(0.039, 0.035)])
+    unreformed = parameters.clone()
+    parameters.get_child(f"{SC_NAME}.maximum.SINGLE").update(
+        start=f"{first_year}-04-01", value=0
+    )
+    projected = project_synthetic_parameters(parameters, unreformed)
+    for year in range(max(first_year, FIRST_PROJECTION_YEAR), LAST_INDEX_YEAR + 1):
+        at = f"{year}-04-30"
+        guarantee = projected.get_child(f"{SMG_NAME}.SINGLE")(at)
+        assert projected.get_child(f"{SC_NAME}.maximum.SINGLE")(at) == 0
+        assert projected.get_child(f"{SC_NAME}.threshold.SINGLE")(at) == pytest.approx(
+            guarantee
+        )
+        for kind in ("single", "lone_parent"):
+            assert projected.get_child(f"{HB_NAME}.{kind}.aged")(at) == pytest.approx(
+                guarantee
+            )
+
+
 @settings(max_examples=40, deadline=None)
 @given(path=paths)
 def test_unreformed_higher_allowances_equal_guarantee_plus_maximum_every_year(path):

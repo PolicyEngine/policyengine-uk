@@ -7,13 +7,21 @@ therefore a derived residual; applying CPI to it directly, or freezing it,
 does not preserve the statutory relationship. Each generated index is applied
 by the standard parameter-uprating operation, so explicit threshold values and
 reforms remain authoritative anchors. The indices start from the last year
-with enacted rates (pension_age_projection_base.py).
+with enacted rates (pension_age_projection_base.py). The maximum in each
+forecast year is the maximum parameter's own projection, so a reform to it,
+from any year, reaches the threshold as it did when the threshold was derived
+after general uprating.
 """
 
 from decimal import ROUND_HALF_UP, Decimal, localcontext
 from sys import float_info
+from typing import Any, Iterable
 
 from policyengine_core.parameters import Parameter, ParameterNode
+from policyengine_core.parameters.operations.uprate_parameters import (
+    get_uprating_dependency_name,
+    uprate_parameters,
+)
 
 from policyengine_uk.parameters.gov.dwp.pension_credit.pension_age_projection_base import (
     projection_base_year,
@@ -55,6 +63,75 @@ def savings_credit_threshold(
     return guarantee - maximum_savings_credit / phase_in_rate
 
 
+def _propagated_uprating(parameter: Parameter) -> Any:
+    """The uprating metadata a parameter has once metadata is propagated.
+
+    The nearest ancestor that propagates an uprating to its descendants
+    overrides the parameter's own (propagate_parameter_metadata).
+    """
+    node = getattr(parameter, "parent", None)
+    while node is not None:
+        metadata = node.metadata or {}
+        if metadata.get("propagate_metadata_to_children") and "uprating" in metadata:
+            return metadata["uprating"]
+        node = getattr(node, "parent", None)
+    return parameter.metadata.get("uprating")
+
+
+def _add_at_path(root: ParameterNode, path: str, parameter: Parameter) -> None:
+    node = root
+    *ancestors, key = path.split(".")
+    for name in ancestors:
+        if name not in node.children:
+            node.add_child(
+                name, ParameterNode(name=f"{node.name}.{name}".lstrip("."), data={})
+            )
+        node = node.children[name]
+    node.add_child(key, parameter)
+
+
+def uprated_values(
+    parameter: Parameter, parameters: ParameterNode, years: Iterable[int]
+) -> dict[int, float]:
+    """A parameter's value in each year once general uprating has run.
+
+    Uprates private copies of the parameter and of each index its uprating
+    reads, by Core's own rule, before general uprating has run on the tree.
+    Every explicit value, a reform's included, therefore anchors the years
+    after it exactly as it will on the parameter itself.
+    """
+    copies = ParameterNode(data={})
+    copied = set()
+    path, source = parameter.name, parameter
+    # Stop at a repeated path: Core reports the cycle when it uprates.
+    while source is not None and path not in copied:
+        copied.add(path)
+        copy = source.clone()
+        uprating = _propagated_uprating(source)
+        if uprating is not None:
+            copy.metadata["uprating"] = uprating
+        _add_at_path(copies, path, copy)
+        path = get_uprating_dependency_name(copy)
+        source = parameters.get_child(path) if path is not None else None
+    uprate_parameters(copies)
+    projected = copies.get_child(parameter.name)
+    return {year: float(projected(projection_instant(year))) for year in years}
+
+
+def projected_maximum_values(
+    parameters: ParameterNode, relationship: str, base_year: int, final_year: int
+) -> dict[int, float]:
+    """The maximum Savings Credit in each forecast year, never below zero."""
+    maximum = getattr(
+        parameters.gov.dwp.pension_credit.savings_credit.maximum, relationship
+    )
+    years = range(base_year + 1, final_year + 1)
+    return {
+        year: max(0, value)
+        for year, value in uprated_values(maximum, parameters, years).items()
+    }
+
+
 def threshold_index_values(
     base_guarantee: float,
     base_threshold: float,
@@ -66,8 +143,13 @@ def threshold_index_values(
     base_year: int,
     base_maximum: float | None = None,
     price_index: Parameter | None = None,
+    maxima: dict[int, float] | None = None,
 ) -> dict[str, float]:
-    """Build a forecast index from the last enacted threshold."""
+    """Build a forecast index from the last enacted threshold.
+
+    ``maxima`` gives the maximum Savings Credit in each forecast year. Without
+    it, the base maximum is projected by non-negative September CPI.
+    """
     base_instant = f"{base_year}-04-01"
     if base_threshold <= 0:
         # The index scales the base, so a reform's zero threshold stays zero.
@@ -90,7 +172,11 @@ def threshold_index_values(
             if price_index is not None
             else float(cpi_september(f"{observation_year}-{CPI_OBSERVATION_MONTH_DAY}"))
         )
-        maximum = project_maximum_savings_credit(maximum, growth)
+        maximum = (
+            maxima[year]
+            if maxima is not None
+            else project_maximum_savings_credit(maximum, growth)
+        )
         guarantee = base_guarantee * (
             float(earnings_index(f"{year}-04-01")) / base_earnings_index
         )
@@ -121,6 +207,7 @@ def _projection_parameter(
     base_year: int,
     base_maximum: float,
     price_index: Parameter,
+    maxima: dict[int, float] | None = None,
 ) -> Parameter:
     relationship_label = relationship.lower()
     return Parameter(
@@ -144,6 +231,7 @@ def _projection_parameter(
                 base_year=base_year,
                 base_maximum=base_maximum,
                 price_index=price_index,
+                maxima=maxima,
             ),
             "metadata": {
                 "unit": "/1",
@@ -265,6 +353,11 @@ def project_savings_credit_threshold(
     in which case use the reformed pair, and the enacted phase-in rate, so a
     phase-in reform (to zero, say) changes the Savings Credit paid and not the
     threshold. Earnings and CPI inputs come from the reform's tree.
+
+    The maximum Savings Credit is read from the reform's tree as general
+    uprating will project it, so a reform to the maximum from the base year
+    or any later year moves the projected threshold. A reformed threshold
+    base takes precedence: its own reformed gap is projected, as before.
     """
     savings_credit = parameters.gov.dwp.pension_credit.savings_credit
     projection_base = parameters if unreformed is None else unreformed
@@ -306,10 +399,14 @@ def project_savings_credit_threshold(
             < base_year
         ):
             maximum_parameter.update(start=f"{base_year}-04-01", value=maximum)
+        maxima = projected_maximum_values(
+            parameters, relationship, base_year, final_observation_year + 1
+        )
         reformed_threshold = getattr(savings_credit.threshold, relationship)
         if reformed_threshold(base_instant) != threshold_parameter(base_instant):
             threshold_parameter = reformed_threshold
             guarantee_parameter = getattr(reformed_guarantees, relationship)
+            maxima = None
             maximum = max(
                 0,
                 round_currency(
@@ -333,6 +430,7 @@ def project_savings_credit_threshold(
                 base_year,
                 maximum,
                 price_index,
+                maxima,
             ),
         )
     return parameters

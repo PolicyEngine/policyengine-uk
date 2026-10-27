@@ -2,10 +2,13 @@
 
 Keep main's forecast identity: guarantee plus published maximum Savings
 Credit (DWP A3/2021 paras 3–5). Published HB amounts include independent
-rounding and remain exact. Reformed allowance bases use their own retained
-component; a base below its guarantee follows earnings without a retained
-component. A guarantee-only reform leaves the separately set allowances
-unchanged. These indices run before general uprating.
+rounding and remain exact. The maximum Savings Credit part is the maximum
+parameter's own projection, so a reform to the maximum, from any year,
+reaches the allowances, as it did when they were derived after general
+uprating. Reformed allowance bases use their own retained component; a base
+below its guarantee follows earnings without a retained component. A
+guarantee-only reform leaves the separately set allowances unchanged. These
+indices run before general uprating.
 """
 
 from policyengine_core.parameters import Parameter, ParameterNode
@@ -13,6 +16,7 @@ from policyengine_core.parameters import Parameter, ParameterNode
 from policyengine_uk.parameters.gov.dwp.pension_credit.savings_credit.create_savings_credit_threshold import (
     enacted_maximum,
     last_projected_year,
+    projected_maximum_values,
 )
 from policyengine_uk.parameters.gov.dwp.pension_credit.pension_age_projection_base import (
     projection_base_year,
@@ -45,8 +49,14 @@ def protected_allowance_index_values(
     base_year: int,
     retained_maximum: float | None = None,
     price_index: Parameter | None = None,
+    maxima: dict[int, float] | None = None,
 ) -> dict[str, float]:
-    """Build a component-weighted index from the last enacted allowance."""
+    """Build a component-weighted index from the last enacted allowance.
+
+    ``maxima`` gives the maximum Savings Credit in each forecast year, which
+    then replaces the retained component. Without it, the retained component
+    is projected by non-negative September CPI.
+    """
     retained_uplift = (
         base_allowance - guarantee_component
         if retained_maximum is None
@@ -76,7 +86,11 @@ def protected_allowance_index_values(
             if price_index is not None
             else float(cpi_september(f"{observation_year}-{CPI_OBSERVATION_MONTH_DAY}"))
         )
-        retained_uplift = project_retained_uplift(retained_uplift, growth)
+        retained_uplift = (
+            maxima[year]
+            if maxima is not None
+            else project_retained_uplift(retained_uplift, growth)
+        )
         values[f"{year}-04-01"] = (guarantee + retained_uplift) / base_allowance
     return values
 
@@ -91,6 +105,7 @@ def _projection_parameter(
     base_year: int,
     retained_maximum: float | None,
     price_index: Parameter,
+    maxima: dict[int, float] | None = None,
 ) -> Parameter:
     retained_uplift = (
         base_allowance - guarantee_component
@@ -99,6 +114,15 @@ def _projection_parameter(
     )
     relationship_label = allowance.replace("_", "-")
     fiscal_year = f"{base_year}-{(base_year + 1) % 100:02d}"
+    savings_credit_component = (
+        "the maximum Savings Credit, as uprated from its last explicit value. "
+        "The guarantee component follows the shared statutory earnings index; "
+        "the maximum follows non-negative September CPI."
+        if maxima is not None
+        else f"a £{retained_uplift:g} Savings Credit component. "
+        "The components follow the shared statutory "
+        "earnings index and non-negative September CPI, respectively."
+    )
     return Parameter(
         (
             "gov.dwp.housing_benefit.allowances."
@@ -110,9 +134,7 @@ def _projection_parameter(
                 f"pension-age Housing Benefit allowance. The £{base_allowance:g} "
                 f"{fiscal_year} base is retained exactly. Forecasts combine a "
                 f"£{guarantee_component:g} Pension Credit guarantee component "
-                f"and a £{retained_uplift:g} Savings Credit component. "
-                "The components follow the shared statutory "
-                "earnings index and non-negative September CPI, respectively. "
+                f"and {savings_credit_component} "
                 "Projected values are not enacted rates."
             ),
             "values": protected_allowance_index_values(
@@ -124,6 +146,7 @@ def _projection_parameter(
                 base_year=base_year,
                 retained_maximum=retained_maximum,
                 price_index=price_index,
+                maxima=maxima,
             ),
             "metadata": {
                 "unit": "/1",
@@ -198,6 +221,12 @@ def project_pension_age_allowances(
     The enacted pair is still validated, so a rates update that puts an
     allowance below its guarantee fails. Earnings and CPI inputs come from
     the reform's parameter tree.
+
+    The maximum Savings Credit part is read from the reform's tree as general
+    uprating will project it, so a reform to the maximum from the base year
+    or any later year moves each allowance whose own base is unchanged. A
+    reformed allowance base takes precedence: its own retained component is
+    projected, as before.
     """
     allowances = parameters.gov.dwp.housing_benefit.allowances
     projection_base = parameters if unreformed is None else unreformed
@@ -227,8 +256,12 @@ def project_pension_age_allowances(
         guarantee = float(getattr(guarantees, relationship)(start))
         reformed_allowance = float(getattr(allowances, allowance_name).aged(start))
         retained_maximum = enacted_maximum(projection_base, relationship, base_year)
+        maxima = projected_maximum_values(
+            parameters, relationship, base_year, final_observation_year + 1
+        )
         if reformed_allowance != allowance:
             retained_maximum = None
+            maxima = None
             allowance = reformed_allowance
             guarantee = min(
                 float(getattr(reformed_guarantees, relationship)(start)),
@@ -246,6 +279,7 @@ def project_pension_age_allowances(
                 base_year,
                 retained_maximum,
                 price_index,
+                maxima,
             ),
         )
     return parameters
