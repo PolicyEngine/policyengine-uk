@@ -574,15 +574,16 @@ def test_a_landlord_without_finance_costs_takes_the_allowance_even_where_it_cost
     assert with_expenses[pinned] == pytest.approx(5_187.40, abs=0.01)
 
 
-# Review r1 of #2695. winter_fuel_payment_charge_ceiling bounds the charge as
-# the model works it out, and the election settles choices on tax before the
-# charge only where that ceiling cannot reverse them. Where an input or a
-# structural reform replaces income tax, the charge, the payments it recovers
-# or entitlement to them, every choice is still compared on income tax
-# including the charge. Each landlord below has £3,300 of receipts and £200
-# of expenses in England, so total income £800 lower with the allowance, and
-# lower tax before the charge with expenses; the charge on the expenses route
-# makes the allowance cheaper.
+# Reviews r1 and r2 of #2695. winter_fuel_payment_charge_ceiling bounds the
+# charge as the model works it out, and the election settles choices on tax
+# before the charge only where that ceiling cannot reverse them. Where an
+# input or a structural reform replaces income tax, the ceiling, the charge,
+# the payments it recovers or entitlement to them, or neutralises income tax
+# or the ceiling, every choice is still compared on income tax including the
+# charge. Each landlord below has £3,300 of receipts and £200 of expenses in
+# England, so total income £800 lower with the allowance, and lower tax
+# before the charge with expenses; the charge on the expenses route makes the
+# allowance cheaper.
 CHARGE_YEAR = 2026
 
 
@@ -610,6 +611,16 @@ class winter_fuel_payment_charge(Variable):
 class tapered_charge(Reform):
     def apply(self):
         self.update_variable(winter_fuel_payment_charge)
+
+
+class neutralised_ceiling(Reform):
+    def apply(self):
+        self.neutralize_variable("winter_fuel_payment_charge_ceiling")
+
+
+class neutralised_income_tax(Reform):
+    def apply(self):
+        self.neutralize_variable("income_tax")
 
 
 def landlord(age, **values):
@@ -669,6 +680,18 @@ CHARGE_BEYOND_THE_CEILING = {
         dict(private_pension_income=27_000),
         tapered_charge,
     ),
+    # Total income £35,100 with expenses and £34,300 with the allowance, so
+    # the £200 charge falls only on the expenses route.
+    "ceiling_given_as_nothing": (
+        70,
+        dict(private_pension_income=32_000, winter_fuel_payment_charge_ceiling=0),
+        None,
+    ),
+    "ceiling_neutralised_by_a_reform": (
+        70,
+        dict(private_pension_income=32_000),
+        neutralised_ceiling,
+    ),
 }
 
 
@@ -689,15 +712,25 @@ def test_a_charge_beyond_the_ceiling_is_still_compared(age, values, reform):
     assert before_charge > other_before_charge
 
 
-def test_income_tax_given_as_an_input_leaves_the_default():
-    """Income tax given as an input is the same on both routes, so the choice
-    is a tie and the default, expenses for receipts above the allowance,
-    stands, although tax before the charge is lower with the allowance."""
-    values = dict(
-        employment_income=40_000, property_finance_costs=100, income_tax=6_000
-    )
-    sim = Simulation(situation=landlord(50, **values))
+INCOME_TAX_THE_SAME_ON_BOTH_ROUTES = {
+    "income_tax_given_as_an_input": (dict(income_tax=6_000), None),
+    # Review r2: a neutralised variable keeps the parts it adds.
+    "income_tax_neutralised_by_a_reform": (dict(), neutralised_income_tax),
+}
+
+
+@pytest.mark.parametrize(
+    "values, reform",
+    INCOME_TAX_THE_SAME_ON_BOTH_ROUTES.values(),
+    ids=INCOME_TAX_THE_SAME_ON_BOTH_ROUTES,
+)
+def test_income_tax_the_same_on_both_routes_leaves_the_default(values, reform):
+    """Income tax is the same on both routes, so the choice is a tie and the
+    default, expenses for receipts above the allowance, stands, although tax
+    before the charge is lower with the allowance."""
+    values = dict(employment_income=40_000, property_finance_costs=100, **values)
+    sim = Simulation(situation=landlord(50, **values), reform=reform)
     assert not sim.calculate("uses_property_allowance", CHARGE_YEAR)[0]
-    _, before_charge_using = taxes_on_route(landlord(50, **values), None, True)
-    _, before_charge_not_using = taxes_on_route(landlord(50, **values), None, False)
+    _, before_charge_using = taxes_on_route(landlord(50, **values), reform, True)
+    _, before_charge_not_using = taxes_on_route(landlord(50, **values), reform, False)
     assert before_charge_using < before_charge_not_using

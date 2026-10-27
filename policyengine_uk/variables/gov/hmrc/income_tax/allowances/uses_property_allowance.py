@@ -27,12 +27,14 @@ INCOME_TAX_PARTS = [
 ]
 # The tax before the charge, and the most the charge could be, need nobody's
 # benefits; the charge itself needs everyone's.
+CEILING = "winter_fuel_payment_charge_ceiling"
 BEFORE_CHARGE = [
     "income_tax_before_winter_fuel_payment_charge",
-    "winter_fuel_payment_charge_ceiling",
+    CEILING,
 ]
-# What winter_fuel_payment_charge_ceiling bounds: the charge, the payments it
-# recovers and entitlement to them, as the model works them out.
+# What the ceiling bounds: the charge, the payments it recovers and
+# entitlement to them, as the model works them out. Neutralising one of them
+# leaves the charge nil, within the ceiling.
 CHARGE_DEFINITIONS = [
     "winter_fuel_payment_charge",
     "winter_fuel_payment",
@@ -46,24 +48,35 @@ def ceiling_bounds_the_charge(simulation, period):
     """Whether income tax is tax before the charge plus the charge, and the
     ceiling bounds the charge, for the period.
 
-    Both hold while the model works out income tax, the charge, the payments
-    it recovers and entitlement to them itself: no input sets one for the
-    period (a household calculation can give a payment to a person under
-    pensionable age), and no structural reform replaces one (a reform can
-    taper the charge). Nothing calculates them before this election, which
-    they all wait on, so a value held for the period is an input.
+    Both hold while the model works out income tax, the ceiling, the charge,
+    the payments it recovers and entitlement to them itself: no input sets
+    one for the period (a household calculation can give a payment to a
+    person under pensionable age), and no structural reform replaces one (a
+    reform can taper the charge) or neutralises income tax or the ceiling.
+    Nothing calculates them before this election, which they all wait on, so
+    a value held for the period is an input.
     """
     system = simulation.tax_benefit_system
     income_tax = system.get_variable("income_tax")
-    if list(income_tax.adds or ()) != INCOME_TAX_PARTS or income_tax.formulas:
+    # A neutralised variable keeps its parts but is nil.
+    if (
+        list(income_tax.adds or ()) != INCOME_TAX_PARTS
+        or income_tax.formulas
+        or income_tax.is_neutralized
+        or system.get_variable(CEILING).is_neutralized
+    ):
         return False
-    for name in ["income_tax"] + CHARGE_DEFINITIONS:
+    for name in ["income_tax", CEILING] + CHARGE_DEFINITIONS:
         if simulation.get_array(name, period) is not None:
             return False
-    for name in CHARGE_DEFINITIONS:
+    for name in [CEILING] + CHARGE_DEFINITIONS:
         formula = system.get_variable(name).get_formula(period)
         if formula is None:
             return False
+        # The model keeps each formula in a file named after its variable
+        # under policyengine_uk/variables. A replacement kept in such a file
+        # would pass; structural reforms live elsewhere (policyengine_uk/
+        # reforms, or the caller's own code).
         source = Path(formula.__code__.co_filename)
         if source.name != f"{name}.py" or "variables" not in source.parts:
             return False
@@ -109,8 +122,9 @@ class uses_property_allowance(Variable):
         "(winter_fuel_payment_charge_ceiling) cannot reverse it; the charge "
         "itself, which needs everyone's benefits on each route, is worked "
         "out only where it can. Where an input or a structural reform "
-        "replaces income tax, the charge, the payments it recovers or "
-        "entitlement to them, the ceiling does not apply and every choice is "
+        "replaces income tax, the ceiling, the charge, the payments it "
+        "recovers or entitlement to them, or a reform neutralises income tax "
+        "or the ceiling, the ceiling does not apply and every choice is "
         "compared on income tax including the charge. "
         "Ties keep the default, so a person with receipts within the "
         "allowance keeps full relief even where electing out would carry "
