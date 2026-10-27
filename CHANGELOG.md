@@ -1,3 +1,10 @@
+## [2.162.12] - 2026-10-27
+
+### Changed
+
+- Split the Python tests in CI over six runners instead of five.
+
+
 ## [2.162.11] - 2026-10-27
 
 ### Changed
