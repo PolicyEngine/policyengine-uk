@@ -23,18 +23,25 @@ class winter_fuel_payment_charge_ceiling(Variable):
         "income exceeds the threshold, and nothing otherwise. Whether they "
         "are entitled to a payment beyond those conditions, which amount it "
         "is, and whether a relevant benefit exempts them all turn on benefit "
-        "receipt, which this leaves out, so the charge is never more than "
-        "this. It lets the property allowance election "
-        "(uses_property_allowance) compare tax before the charge wherever "
-        "the charge cannot change the choice, without working out benefits "
-        "on both routes."
+        "receipt, which this leaves out, so the charge as the model works it "
+        "out is never more than this. An input of a payment or of "
+        "entitlement to one, or a structural reform of either or of the "
+        "charge, can take the charge above it; the property allowance "
+        "election (uses_property_allowance) then does not rely on it. "
+        "Otherwise it lets the election compare tax before the charge "
+        "wherever the charge cannot change the choice, without working out "
+        "benefits on both routes."
     )
     definition_period = YEAR
     unit = GBP
     reference = (
         "https://www.legislation.gov.uk/ukpga/2003/1/section/681I",
         "https://www.legislation.gov.uk/uksi/2025/969/regulation/2",
+        "https://www.legislation.gov.uk/uksi/2025/969/regulation/3",
+        "https://www.legislation.gov.uk/nisr/2025/142/regulation/2",
+        "https://www.legislation.gov.uk/nisr/2025/142/regulation/3",
         "https://www.legislation.gov.uk/ssi/2024/351/regulation/10",
+        "https://www.legislation.gov.uk/ssi/2025/282/regulation/9/made",
     )
 
     def formula(person, period, parameters):
@@ -42,8 +49,10 @@ class winter_fuel_payment_charge_ceiling(Variable):
         wfp = parameters(period).gov.dwp.winter_fuel_payment
         pawhp = parameters(period).gov.social_security_scotland.pawhp
         country = person.household("country", period).decode_to_str()
-        # Either age the payments test, in any year
-        # (winter_fuel_payment_eligible, pawhp_eligible).
+        # Either age the payments test, in any year: deliberately wider than
+        # the State Pension age test winter_fuel_payment_eligible applies
+        # from the 2024 qualifying week, so it also covers the Pension Credit
+        # qualifying age before then and reforms that move either timetable.
         pension_age = person("is_SP_age", period) | person(
             "has_attained_state_pension_credit_qualifying_age", period
         )

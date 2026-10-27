@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from policyengine_uk.model_api import *
 
 # Inputs to income tax that do not depend on how property profits are
@@ -19,12 +21,53 @@ INDEPENDENT_OF_ROUTE = [
 # a second round rarely changes anything.
 MAX_ROUNDS = 3
 # Income tax is tax before the winter fuel payment charge plus the charge.
-# The tax before it, and the most the charge could be, need nobody's
+INCOME_TAX_PARTS = [
+    "income_tax_before_winter_fuel_payment_charge",
+    "winter_fuel_payment_charge",
+]
+# The tax before the charge, and the most the charge could be, need nobody's
 # benefits; the charge itself needs everyone's.
 BEFORE_CHARGE = [
     "income_tax_before_winter_fuel_payment_charge",
     "winter_fuel_payment_charge_ceiling",
 ]
+# What winter_fuel_payment_charge_ceiling bounds: the charge, the payments it
+# recovers and entitlement to them, as the model works them out.
+CHARGE_DEFINITIONS = [
+    "winter_fuel_payment_charge",
+    "winter_fuel_payment",
+    "pension_age_winter_heating_payment",
+    "winter_fuel_payment_eligible",
+    "pawhp_eligible",
+]
+
+
+def ceiling_bounds_the_charge(simulation, period):
+    """Whether income tax is tax before the charge plus the charge, and the
+    ceiling bounds the charge, for the period.
+
+    Both hold while the model works out income tax, the charge, the payments
+    it recovers and entitlement to them itself: no input sets one for the
+    period (a household calculation can give a payment to a person under
+    pensionable age), and no structural reform replaces one (a reform can
+    taper the charge). Nothing calculates them before this election, which
+    they all wait on, so a value held for the period is an input.
+    """
+    system = simulation.tax_benefit_system
+    income_tax = system.get_variable("income_tax")
+    if list(income_tax.adds or ()) != INCOME_TAX_PARTS or income_tax.formulas:
+        return False
+    for name in ["income_tax"] + CHARGE_DEFINITIONS:
+        if simulation.get_array(name, period) is not None:
+            return False
+    for name in CHARGE_DEFINITIONS:
+        formula = system.get_variable(name).get_formula(period)
+        if formula is None:
+            return False
+        source = Path(formula.__code__.co_filename)
+        if source.name != f"{name}.py" or "variables" not in source.parts:
+            return False
+    return True
 
 
 def with_route(simulation, name, period, uses_allowance, variables):
@@ -65,7 +108,10 @@ class uses_property_allowance(Variable):
         "wherever the most the charge could be on either route "
         "(winter_fuel_payment_charge_ceiling) cannot reverse it; the charge "
         "itself, which needs everyone's benefits on each route, is worked "
-        "out only where it can. "
+        "out only where it can. Where an input or a structural reform "
+        "replaces income tax, the charge, the payments it recovers or "
+        "entitlement to them, the ceiling does not apply and every choice is "
+        "compared on income tax including the charge. "
         "Ties keep the default, so a person with receipts within the "
         "allowance keeps full relief even where electing out would carry "
         "finance costs forward. Without finance costs to relieve, the "
@@ -147,34 +193,42 @@ class uses_property_allowance(Variable):
         rounds = np.ones(person.count, dtype=int)
         changed = np.zeros(person.count, dtype=bool)
         done = deciders == 0
+        bounded = ceiling_bounds_the_charge(simulation, period)
         while not done.all():
             deciding = choosing & ~done & (order == rank)
             using = route | deciding
             not_using = route & ~deciding
-            tax_using, most_charge_using = with_route(
-                simulation, "property_allowance_used", period, using, BEFORE_CHARGE
-            )
-            tax_not_using, most_charge_not_using = with_route(
-                simulation,
-                "property_allowance_not_used",
-                period,
-                not_using,
-                BEFORE_CHARGE,
-            )
-            # On each route the charge is between nothing and its ceiling,
-            # so the allowance saves at least the saving before the charge
-            # less the ceiling using it, and at most that saving plus the
-            # ceiling not using it. Where those bounds share a sign, beyond a
-            # penny and float32 rounding, the choice is the one tax
-            # including the charge gives.
-            saving = tax_not_using - tax_using
-            rounding = 0.01 + 1e-6 * (abs(tax_using) + abs(tax_not_using))
-            unsettled = (
-                deciding
-                & ((most_charge_using > 0) | (most_charge_not_using > 0))
-                & (saving - most_charge_using < rounding)
-                & (saving + most_charge_not_using > -rounding)
-            )
+            if bounded:
+                tax_using, most_charge_using = with_route(
+                    simulation, "property_allowance_used", period, using, BEFORE_CHARGE
+                )
+                tax_not_using, most_charge_not_using = with_route(
+                    simulation,
+                    "property_allowance_not_used",
+                    period,
+                    not_using,
+                    BEFORE_CHARGE,
+                )
+                # On each route the charge is between nothing and its
+                # ceiling, so the allowance saves at least the saving before
+                # the charge less the ceiling using it, and at most that
+                # saving plus the ceiling not using it. Where those bounds
+                # share a sign, beyond a penny and float32 rounding, the
+                # choice is the one tax including the charge gives.
+                saving = tax_not_using - tax_using
+                rounding = 0.01 + 1e-6 * (abs(tax_using) + abs(tax_not_using))
+                unsettled = (
+                    deciding
+                    & ((most_charge_using > 0) | (most_charge_not_using > 0))
+                    & (saving - most_charge_using < rounding)
+                    & (saving + most_charge_not_using > -rounding)
+                )
+            else:
+                # Nothing bounds the charge: every choice turns on it.
+                most_charge_using = most_charge_not_using = np.full(
+                    person.count, np.inf
+                )
+                unsettled = deciding
             if (deciding & ~unsettled).any():
                 # The rest wait, and their households with them, until no
                 # household can decide without the charge.
