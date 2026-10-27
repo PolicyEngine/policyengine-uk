@@ -1,0 +1,28 @@
+description: >-
+  Hours a week at the national living wage that set the Carer's Allowance
+  earnings limit in the years after its last legislated amount. Regulation 8(1)
+  of the Social Security (Invalid Care Allowance) Regulations 1976 states the
+  limit as a fixed sum, which the annual up-rating regulations replace. From
+  April 2025 the Government sets that sum at 16 times the hourly national living
+  wage, rounded up to the nearest pound, "from April 2025 and in future years"
+  (Explanatory Memorandum to SI 2025/352, paragraph 5.6). The model keeps each
+  legislated amount and projects later years as this many hours at the national
+  living wage in force on 30 April, rounded up to the next pound. A projected
+  year never lowers the limit.
+values:
+  2025-04-07:
+    value: 16
+    reference:
+      - title: Explanatory Memorandum to the Social Security Benefits Up-rating Regulations 2025 (SI 2025/352), paragraphs 5.3 and 5.6
+        href: https://www.legislation.gov.uk/uksi/2025/352/pdfs/uksiem_20250352_en_001.pdf
+metadata:
+  unit: hour
+  period: week
+  label: Carer's Allowance earnings limit national living wage hours
+  reference:
+    - title: Explanatory Memorandum to the Social Security Benefits Up-rating Regulations 2025 (SI 2025/352), paragraphs 5.3 and 5.6
+      href: https://www.legislation.gov.uk/uksi/2025/352/pdfs/uksiem_20250352_en_001.pdf
+    - title: Explanatory Memorandum to the Social Security Benefits Up-rating Regulations 2026 (SI 2026/218), paragraph 5.3
+      href: https://www.legislation.gov.uk/uksi/2026/218/pdfs/uksiem_20260218_en_001.pdf
+    - title: Autumn Budget 2024 (HM Treasury, 30 October 2024)
+      href: https://www.gov.uk/government/publications/autumn-budget-2024/autumn-budget-2024-html
