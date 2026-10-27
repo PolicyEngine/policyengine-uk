@@ -19,8 +19,13 @@ def add_lagged_parameter(
     source_name: str,
     lagged_name: str,
     first_year: int,
+    metadata: dict = None,
 ) -> Parameter:
-    """Add a one-year-lagged copy of ``source_name`` as a child of ``node``."""
+    """Add a one-year-lagged copy of ``source_name`` as a child of ``node``.
+
+    ``metadata`` is set on the lagged parameter (for example
+    ``index_base_year``).
+    """
     source = getattr(node, source_name)
 
     lagged = Parameter(
@@ -30,6 +35,7 @@ def add_lagged_parameter(
                 f"{year}-01-01": source(year - 1)
                 for year in lag_source_years(source, first_year)
             },
+            **({"metadata": metadata} if metadata else {}),
         },
     )
 

@@ -411,6 +411,9 @@ obr:
       2072-01-01: 0.0010010010010010895
       2073-01-01: 0.0010010010010010895
     metadata:
+      # Anchor the index at 1 on 1 January 2020 so it includes the
+      # 2021 growth, the first listed (#2692).
+      index_base_year: 2020
       unit: /1
       label: Petrol spending litre-proxy growth
       reference:
@@ -478,6 +481,9 @@ obr:
       2072-01-01: 0.0010010010010010895
       2073-01-01: 0.0010010010010010895
     metadata:
+      # Anchor the index at 1 on 1 January 2020 so it includes the
+      # 2021 growth, the first listed (#2692).
+      index_base_year: 2020
       unit: /1
       label: Diesel spending litre-proxy growth
       reference:
@@ -854,6 +860,9 @@ obr:
         2029-01-01: 0.0306
         2030-01-01: 0.0315
       metadata:
+        # Anchor the index at 1 on 1 January 2020 so it includes the
+        # 2021 growth, the first listed (#2692).
+        index_base_year: 2020
         unit: /1
         label: Per capita GDP growth
         reference:
@@ -878,6 +887,9 @@ obr:
         2029-01-01: 0.0364
         2030-01-01: 0.0370
       metadata:
+        # Anchor the index at 1 on 1 January 2020 so it includes the
+        # 2021 growth, the first listed (#2692).
+        index_base_year: 2020
         unit: /1
         label: Per capita mixed income growth
         reference:
@@ -923,6 +935,9 @@ obr:
       2029-01-01: 0.026
       2030-01-01: 0.024
     metadata:
+      # Anchor the index at 1 on 1 January 2020 so it includes the
+      # 2021 growth, the first listed (#2692).
+      index_base_year: 2020
       unit: /1
       label: House prices growth
       reference:
@@ -949,6 +964,9 @@ obr:
       # figure; its 2030 Q1 rate is 5.40% and its 2029-30 rate 5.05%.
       2030-01-01: 0.0553
     metadata:
+      # Anchor the index at 1 on 1 January 2020 so it includes the
+      # 2021 growth, the first listed (#2692).
+      index_base_year: 2020
       unit: /1
       label: Mortgage interest growth
       reference:
@@ -1098,6 +1116,9 @@ ons:
       2072-01-01: -0.0010
       2073-01-01: -0.0010
     metadata:
+      # Anchor the index at 1 on 1 January 2020 so it includes the
+      # 2021 growth, the first listed (#2692).
+      index_base_year: 2020
       unit: /1
       label: Population growth
       reference:
@@ -1694,6 +1715,9 @@ orr:
         2072-01-01: 0.0010  # 1 / 0.9990 - 1
         2073-01-01: 0.0010  # 1 / 0.9990 - 1
       metadata:
+        # Anchor the index at 1 on 1 January 2020 so it includes the
+        # 2021 growth, the first listed (#2692).
+        index_base_year: 2020
         unit: /1
         label: Rail passenger journeys growth per person
         reference:
