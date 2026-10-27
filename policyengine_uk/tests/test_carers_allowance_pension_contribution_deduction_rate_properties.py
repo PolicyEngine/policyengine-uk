@@ -14,7 +14,8 @@ employee and personal pension contributions of at most 30% of earnings, so
 that no floor binds:
 
 1. Exactness: when the share moves from 0.5 to r, carers_allowance_earnings
-   falls by exactly the person's contributions x (r - 0.5).
+   falls by exactly the person's contributions x (r - 0.5), give or take the
+   penny that rounding each deduction up to a whole penny (reg. 5) can add.
 2. Locality: the Housing Benefit share is reformed at the same time to a
    different value, so earnings that read Housing Benefit's share would miss
    invariant 1.
@@ -22,9 +23,9 @@ that no floor binds:
    is gainfully employed exactly when weekly earnings, with a fraction of a
    penny disregarded (reg. 5), exceed the limit, and then has no underlying
    entitlement. The pence are counted as the formula counts them: the stored
-   (float32) annual earnings are taken to the nearest half penny, a half
-   penny is disregarded, and the pence are spread over 52 weeks in whole
-   pence. A lower share can only end entitlement and a
+   (float32) annual earnings are read as the whole pence they lie within
+   half a float32 step of, or else with the fraction disregarded, and spread
+   over 52 weeks in whole pence. A lower share can only end entitlement and a
    higher share can only restore it.
 4. Current law: the share is 0.5 in every year from 2015 (the first year the
    model simulates) to 2030.
@@ -50,7 +51,8 @@ YEARS = [2016, 2020, 2024, 2026, 2030]
 SHARES = [i / 20 for i in range(21) if i != 10]
 # The model stores amounts as float32, whose spacing is about 0.008 at the
 # largest earnings drawn (up to 120,000), so two stored values can differ from
-# the exact difference by more than a penny.
+# the exact difference by more than a penny; reg. 5's rounding of the pension
+# deduction adds up to a penny more.
 TOLERANCE = 0.05
 
 PROPERTY_SETTINGS = settings(
@@ -123,13 +125,16 @@ def calculate(people, year, reform=None):
 
 def over_limit(earnings, limit):
     # Reg. 5, as is_gainfully_employed_for_carers_allowance applies it, in
-    # exact rational arithmetic: the stored amount to the nearest half penny
-    # a year (an exact quarter penny down), a half penny disregarded, then
-    # whole pence a week, a fraction of a penny disregarded. 10,608.52 a year,
-    # stored as 10,608.51953125, is 1,060,852 pence and 20,401 pence (204.01)
-    # a week.
-    half_pence = math.ceil(Fraction(float(earnings)) * 200 - Fraction(1, 2))
-    return half_pence // 2 // 52 > Fraction(str(limit)) * 100
+    # exact rational arithmetic: the whole pence a year the stored amount lies
+    # within half a float32 step of, or else its pence with the fraction
+    # disregarded, then whole pence a week, the fraction disregarded.
+    # 10,608.52 a year, stored as 10,608.51953125, is 1,060,852 pence and
+    # 20,401 pence (204.01) a week.
+    pence = Fraction(float(earnings)) * 100
+    whole = round(pence)
+    half_step = Fraction(float(np.spacing(np.float32(earnings)))) * 50
+    annual = whole if abs(pence - whole) <= half_step else math.floor(pence)
+    return annual // 52 > Fraction(str(limit)) * 100
 
 
 # A carer one penny a week over the 2026-27 limit (10,608.52 / 52 = 204.01),

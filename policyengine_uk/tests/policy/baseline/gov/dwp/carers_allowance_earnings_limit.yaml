@@ -5,7 +5,8 @@
 # are gross pay less income tax, primary Class 1 contributions and half of
 # pension contributions (Computation of Earnings Regulations 1996 reg.
 # 10(4)), and trading profit less a notional basic-rate tax and main-rate
-# Class 4 (regs. 13(4) and 14). A fraction of a penny is disregarded (reg. 5).
+# Class 4 (regs. 13(4) and 14). A fraction of a penny counts in the
+# claimant's favour (reg. 5): disregarded in earnings, a penny in a deduction.
 # 2026-27: personal allowance and NI primary threshold £12,570, employee
 # Class 1 main rate 8%, Class 4 lower profits limit £12,570 at 6%, basic rate
 # 20%. Carer's Allowance £86.45 a week.
@@ -361,9 +362,10 @@
     care_hours: 40
     country: ENGLAND
   output:
-    # 7,852.52 less half of 0.01 is 7,852.515. Counting the half penny of the
-    # deduction as a penny favours the claimant (reg. 5), so earnings are
-    # 7,852.51, or £151.0098 a week, which counts as £151.00.
+    # Half of 0.01 is 0.005. Counting the half penny of the deduction as a
+    # penny favours the claimant (reg. 5), so earnings are 7,852.51, or
+    # £151.0098 a week, which counts as £151.00.
+    carers_allowance_earnings: 7_852.51
     is_gainfully_employed_for_carers_allowance: false
     carers_allowance: 81.90 * 52
 
@@ -377,7 +379,28 @@
     care_hours: 40
     country: ENGLAND
   output:
-    # 7,852.53 less 0.005 is 7,852.525, which reg. 5 takes to 7,852.52, or
+    # 7,852.53 less 0.01 (the half penny counted as a penny) is 7,852.52, or
     # £151.01 a week.
+    carers_allowance_earnings: 7_852.52
     is_gainfully_employed_for_carers_allowance: true
     carers_allowance: 0
+
+- name: Case 25, a fraction of a penny in each self-employed deduction counts as a penny.
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    age: 45
+    self_employment_income: 14_000.01
+    personal_pension_contributions: 6_039.38
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # Notional tax 20% x 1,430.01 = 286.002 and Class 4 6% x 1,430.01 =
+    # 85.8006 count as 286.01 and 85.81 (reg. 5), and half the premium is
+    # 3,019.69: 14,000.01 - 286.01 - 85.81 - 3,019.69 = 10,608.50, or £204.00
+    # a week, within the limit. Unrounded, earnings are 10,608.5174; the
+    # nearest half penny of that is 10,608.52, £204.01 a week, which would
+    # have ended entitlement (juaristi22's review of #2543).
+    carers_allowance_earnings: 10_608.50
+    is_gainfully_employed_for_carers_allowance: false
+    carers_allowance: 86.45 * 52

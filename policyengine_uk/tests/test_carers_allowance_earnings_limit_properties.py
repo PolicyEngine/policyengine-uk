@@ -8,15 +8,17 @@ for trading profit, Class 4) contributions and half of pension contributions
 (Computation of Earnings Regulations 1996 regs. 10(4), 13 and 14; reg. 14(2)(a),
 which deducted Class 2, was omitted from 6 April 2024).
 
-A fraction of a penny is disregarded where counting it would not favour the
-claimant (reg. 5). Net earnings are whole pence less half of pension
-contributions (reg. 10(4)(b)), so a whole number of half pence, and the half
-penny of an odd-pence contribution counts as a penny off earnings, which
-favours the claimant. The model holds annual earnings in float32, so the
-formula first takes them to the nearest half penny, disregards a half penny,
-then compares the whole pence a week, after dividing by 52 (reg. 8(1)(b)(iii))
-with the fraction disregarded, with the limit. _over_limit restates that rule
-in exact rational arithmetic.
+A fraction of a penny counts in the claimant's favour (reg. 5): it is
+disregarded in pay, profit and net earnings, and counts as a penny in each
+deduction. So the half penny of half an odd-pence pension contribution (reg.
+10(4)(b)) counts as a penny off earnings, as does the fraction of a penny in
+a notional tax or Class 4 deduction. carers_allowance_earnings applies that to
+each step, in float64 pence from the whole pence each amount was entered as
+(stored_pence), so net earnings are whole pence despite float32 storage. The
+test then reads back the whole pence, disregarding any fraction in an amount
+entered directly, and compares the whole pence a week, after dividing by 52
+(reg. 8(1)(b)(iii)) with the fraction disregarded, with the limit.
+_over_limit restates the test in exact rational arithmetic.
 
 Invariants, for a carer in England in 2026 caring 35 hours or more, with pay,
 trading profit, employee pension contributions and unearned income drawn
@@ -31,8 +33,8 @@ freely:
 4. Unearned income is not earnings: savings interest and pension income
    leave carers_allowance_earnings unchanged.
 
-Invariants of the test itself, for every limit in earnings_limit.yaml in every
-year it applies, with carers_allowance_earnings entered directly:
+Invariants of the test itself, for every limit in every year from 2015 to
+the parameter horizon, with carers_allowance_earnings entered directly:
 
 5. Whole pence are judged exactly: annual earnings of A pence are over the
    limit L exactly when A // 52 > 100 x L, that is A >= 52 x (100 x L + 1),
@@ -44,13 +46,18 @@ year it applies, with carers_allowance_earnings entered directly:
 7. Monotonic in earnings: more earnings never take a person from over the
    limit to within it.
 
-And with pay and an employee pension contribution entered, in whole pence,
-in each year up to the latest limit's first, where pay near the limit pays no
-tax or NI:
+And through the model, with pay or profit and a pension contribution entered
+in whole pence:
 
 8. Half of a pension contribution comes off pay, its half penny counting as a
-   penny (regs. 10(4)(b) and 5): pay of P pence with a contribution of C
-   pence is over the limit L exactly when (P - ceil(C / 2)) // 52 > 100 x L.
+   penny (regs. 10(4)(b) and 5): in each year up to the latest limit's first,
+   pay of P pence below the personal allowance and the primary threshold,
+   with a contribution of C pence, is over the limit L exactly when
+   (P - ceil(C / 2)) // 52 > 100 x L.
+9. Each deduction counts a fraction of a penny as a penny (reg. 5): with tax
+   and Class 1 or Class 4 to pay, from 2024-25 (Class 2 nil, Class 1 at 8%),
+   net earnings are P less each of the tax, the contributions and half the
+   pension contribution, rounded up to a whole penny, exactly.
 """
 
 import datetime
@@ -91,18 +98,27 @@ HORIZON = max(
 
 def _limits_by_year(last_year):
     """Each year from the first limit in earnings_limit.yaml to last_year,
-    with the limit the file sets for it: the value in force on 30 April, after
-    that year's April up-rating."""
+    with the limit for it: up to the year of the file's last value, the value
+    in force on 30 April, after that year's April up-rating; after that, the
+    model's, which may project the limit beyond the last legislated one."""
     limits = []
     for year in range(LIMIT_VALUES[0][0].year, last_year + 1):
-        in_force = [v for date, v in LIMIT_VALUES if date <= datetime.date(year, 4, 30)]
-        limits.append((year, in_force[-1]))
+        if year <= LIMIT_VALUES[-1][0].year:
+            in_force = [
+                v for date, v in LIMIT_VALUES if date <= datetime.date(year, 4, 30)
+            ]
+            limit = in_force[-1]
+        else:
+            limit = system.parameters(
+                f"{year}-01-01"
+            ).gov.dwp.carers_allowance.earnings_limit
+        limits.append((year, limit))
     return limits
 
 
-# Every year each limit applies, the last one up to the horizon.
+# Every year from the first limit to the horizon.
 LIMITS_BY_YEAR = _limits_by_year(HORIZON)
-# The same, up to the year the last limit took effect.
+# The same, up to the year the last legislated limit took effect.
 SET_YEARS = _limits_by_year(LIMIT_VALUES[-1][0].year)
 
 
@@ -137,17 +153,27 @@ def _person(pay, profit, pension, savings=0.0, private_pension=0.0):
     }
 
 
+def _stored_pence(value):
+    """A stored float32 amount in exact pence: the whole pence it lies within
+    half a float32 step of, or else its exact value."""
+    pence = Fraction(float(value)) * 100
+    whole = round(pence)
+    if abs(pence - whole) <= Fraction(float(np.spacing(np.float32(value)))) * 50:
+        return Fraction(whole)
+    return pence
+
+
 def _over_limit(earnings, limit=LIMIT):
     # The formula's rule in exact rational arithmetic, on the stored value:
-    # the nearest half penny a year (an exact quarter penny down), a half
-    # penny disregarded, then whole pence a week, a fraction of a penny
-    # disregarded (reg. 5), compared with the limit. £10,608.52 a year, stored
-    # as 10,608.51953125, is 1,060,852 pence a year and 20,401 pence (£204.01)
-    # a week, a penny over £204. £7,852.515 (pay of £7,852.52 less half of a
-    # 1p contribution), stored as 7,852.51513671875, is 785,251 pence a year
-    # and 15,100 pence (£151.00) a week, within £151.
-    half_pence = math.ceil(Fraction(float(earnings)) * 200 - Fraction(1, 2))
-    return half_pence // 2 // WEEKS > Fraction(str(limit)) * 100
+    # the whole pence a year it lies within half a float32 step of, or else
+    # its pence with the fraction disregarded, then whole pence a week, the
+    # fraction disregarded (reg. 5), compared with the limit. £10,608.52 a
+    # year, stored as 10,608.51953125, is 1,060,852 pence a year and 20,401
+    # pence (£204.01) a week, a penny over £204. 10,608.517578125 (the
+    # float32 just below it) is more than half a step from any whole penny,
+    # so 1,060,851 pence and £204.00 a week, within £204.
+    annual = math.floor(_stored_pence(earnings))
+    return annual // WEEKS > Fraction(str(limit)) * 100
 
 
 money = st.floats(min_value=0, max_value=60_000, allow_nan=False)
@@ -186,7 +212,7 @@ def test_a_penny_a_week_over_the_2026_limit_ends_entitlement(pay, gainful):
     penny over it. This pins the outcome for the amount entered, not only
     agreement with _over_limit. The model stores £10,608.52 as 10,608.51953125
     (£204.00 a week in exact arithmetic), and the formula recovers the
-    £10,608.52 by taking the nearest penny; see #2541."""
+    £10,608.52, the only whole pence within half a float32 step; see #2541."""
     result = _person(pay, 0, 0)
     assert bool(result["is_gainfully_employed_for_carers_allowance"]) == gainful
     expected = 0 if gainful else RATE * WEEKS
@@ -257,10 +283,11 @@ def _penny_steps_misjudged(variable, limits_by_year):
 
 def test_a_penny_a_week_over_each_limit_is_over_it_in_every_year():
     """Reg. 8(1), after reg. 5, for every limit in earnings_limit.yaml in every
-    year it applies, with carers_allowance_earnings entered directly. Before
-    #2541 the formula counted pence in float32 and treated 52 x L + £0.52 as
-    within the 2020-21 to 2024-25 limits (£128, £132, £139 and £151)."""
-    assert {limit for _, limit in LIMITS_BY_YEAR} == {v for _, v in LIMIT_VALUES}
+    year it applies, and the model's limit in each later year to the horizon,
+    with carers_allowance_earnings entered directly. Before #2541 the formula
+    counted pence in float32 and treated 52 x L + £0.52 as within the 2020-21
+    to 2024-25 limits (£128, £132, £139 and £151)."""
+    assert {limit for _, limit in SET_YEARS} == {v for _, v in LIMIT_VALUES}
     assert _penny_steps_misjudged("carers_allowance_earnings", LIMITS_BY_YEAR) == []
 
 
@@ -316,10 +343,10 @@ ODD_PENCE_CONTRIBUTIONS = (
 def test_half_an_odd_pence_pension_contribution_counts_as_a_penny_off():
     """Regs. 10(4)(b) and 5, for every limit in earnings_limit.yaml in each
     year up to the latest limit's first. Pay of 52 x L + £0.52 less half of a
-    1p contribution is 52 x L + £0.515, which reg. 5 takes to 52 x L + £0.51,
-    within the limit. Float32 holds that half penny just above it for most
-    limits (£7,852.515 as 7,852.51513671875), so taking the nearest penny
-    instead of the nearest half penny would put it over."""
+    1p contribution is 52 x L + £0.515, and reg. 5 counts the half penny
+    deducted as a penny, leaving 52 x L + £0.51, within the limit. Float32
+    would hold £7,852.515 as 7,852.51513671875, just above it, so earnings
+    taken to the nearest penny after the deduction would be over."""
     misjudged = []
     for year, limit in SET_YEARS:
         pairs = [(WEEKS * limit + extra, c) for extra, c, _ in ODD_PENCE_CONTRIBUTIONS]
@@ -327,9 +354,10 @@ def test_half_an_odd_pence_pension_contribution_counts_as_a_penny_off():
         for (pay, contribution), (_, _, over), stored, judged in zip(
             pairs, ODD_PENCE_CONTRIBUTIONS, earnings, gainful
         ):
-            # Earnings are pay less half of the contribution, to within
-            # float32's rounding of the inputs and the subtraction.
-            assert abs(float(stored) - (pay - contribution / 2)) < 0.002, (
+            # Earnings are pay less half of the contribution rounded up to a
+            # whole penny, as float32 holds them.
+            net = round(pay * 100) - math.ceil(round(contribution * 100) / 2)
+            assert stored == np.float32(net / 100), (
                 year,
                 pay,
                 contribution,
@@ -376,6 +404,120 @@ def test_pay_less_half_a_pension_contribution_is_judged_as_the_law_says(case):
     for (pay, contribution), judged in zip(pairs, gainful):
         net = pay - math.ceil(contribution / 2)
         assert bool(judged) == (net // WEEKS > limit * 100), (year, pay, contribution)
+
+
+def _with_fractions(route, year):
+    """Whole-pence pay or profit P and pension contributions C (odd and even
+    pence) whose net earnings, deductions unrounded, lie from 4p below to 2p
+    above the threshold B = 52 x (100 L + 1) pence a year. Returns B and
+    (P, C) pairs in pence. Trading: profit above the personal allowance and
+    the lower profits limit, so notional basic-rate tax and Class 4 at the
+    main rate. Employee: pay above the primary threshold, less a contribution
+    that leaves it below the personal allowance, so Class 1 and no PAYE (an
+    employee paying PAYE is over every limit, each below the personal
+    allowance)."""
+    hmrc = system.parameters(f"{year}-01-01").gov.hmrc
+    limit = system.parameters(f"{year}-01-01").gov.dwp.carers_allowance.earnings_limit
+    threshold = WEEKS * (round(limit * 100) + 1)
+    pa = Fraction(str(hmrc.income_tax.allowances.personal_allowance.amount)) * 100
+    class_4 = hmrc.national_insurance.class_4
+    lpl = Fraction(str(class_4.thresholds.lower_profits_limit)) * 100
+    basic = Fraction(str(hmrc.income_tax.rates.uk.rates[0]))
+    main = Fraction(str(class_4.rates.main))
+    # Class 1 at 8% of pay above £12,570, to choose pay near the threshold.
+    pt, class_1 = 1_257_000, Fraction(8, 100)
+    if route == "trading":
+        keep = 1 - basic - main
+        first = 2 * (keep * max(pa, lpl) + basic * pa + main * lpl - threshold)
+        offset = basic * pa + main * lpl
+    else:
+        keep = 1 - class_1
+        first = 2 * (pt - threshold)
+        offset = class_1 * pt
+    pairs = []
+    for contribution in range(
+        math.ceil(first) + 1_001, math.ceil(first) + 401_000, 9_973
+    ):
+        const = offset - Fraction(contribution, 2)
+        low = math.ceil((threshold - 4 - const) / keep)
+        high = math.floor((threshold + 2 - const) / keep)
+        pairs += [(p, contribution) for p in range(low, high + 1)]
+    return threshold, pairs
+
+
+@pytest.mark.parametrize("route", ["trading", "employee"])
+@pytest.mark.parametrize("year", [2024, 2026])
+def test_each_deduction_counts_a_fraction_of_a_penny_as_a_penny(route, year):
+    """Invariant 9, through the model: net earnings are P less each
+    deduction rounded up to a whole penny (reg. 5), exactly, and the person
+    is over the limit exactly when that reaches the threshold. Class 1 is the
+    model's ni_class_1_employee, read as stored_pence reads it. Rounding only
+    the total, or not at all, misjudges some of these pairs: juaristi22's
+    review of #2543 found a trader within the limit (C1, below) whom the
+    earlier nearest-half-penny rule put over it."""
+    threshold, pairs = _with_fractions(route, year)
+    if route == "trading" and year == 2026:
+        pairs.append((1_400_001, 603_938))
+    gross, contribution = (
+        ("self_employment_income", "personal_pension_contributions")
+        if route == "trading"
+        else ("employment_income", "employee_pension_contributions")
+    )
+    people = {
+        f"carer_{i}": {
+            "age": {year: 45},
+            "care_hours": {year: 40},
+            gross: {year: p / 100},
+            contribution: {year: c / 100},
+        }
+        for i, (p, c) in enumerate(pairs)
+    }
+    simulation = Simulation(
+        situation={
+            "people": people,
+            "benunits": {
+                f"b{i}": {"members": [f"carer_{i}"]} for i in range(len(pairs))
+            },
+            "households": {
+                f"h{i}": {"members": [f"carer_{i}"], "country": {year: "ENGLAND"}}
+                for i in range(len(pairs))
+            },
+        }
+    )
+    earnings = simulation.calculate("carers_allowance_earnings", year)
+    gainful = simulation.calculate("is_gainfully_employed_for_carers_allowance", year)
+    class_1 = simulation.calculate("ni_class_1_employee", year)
+    hmrc = system.parameters(f"{year}-01-01").gov.hmrc
+    pa = Fraction(str(hmrc.income_tax.allowances.personal_allowance.amount)) * 100
+    lpl = (
+        Fraction(str(hmrc.national_insurance.class_4.thresholds.lower_profits_limit))
+        * 100
+    )
+    basic = Fraction(str(hmrc.income_tax.rates.uk.rates[0]))
+    main = Fraction(str(hmrc.national_insurance.class_4.rates.main))
+    fractions = 0
+    for (p, c), stored, judged, ni in zip(pairs, earnings, gainful, class_1):
+        if route == "trading":
+            assert max(pa, lpl) <= p and ni == 0, (p, c)
+            deductions = [basic * (p - pa), main * (p - lpl)]
+        else:
+            assert p - c < pa and ni > 0, (p, c)
+            deductions = [_stored_pence(ni)]
+        deductions.append(Fraction(c, 2))
+        net = p - sum(math.ceil(d) for d in deductions)
+        fractions += any(d.denominator > 1 for d in deductions)
+        assert stored == np.float32(net / 100), (p, c, float(stored), net)
+        assert bool(judged) == (net >= threshold), (p, c, net)
+    # Most pairs carry a fraction of a penny in some deduction.
+    assert fractions > len(pairs) // 2
+    if route == "trading" and year == 2026:
+        # C1: £14,000.01 of profit and a £6,039.38 premium. Tax £286.002 and
+        # Class 4 £85.8006 round up to £286.01 and £85.81, and half the
+        # premium is £3,019.69, leaving £10,608.50: £204.00 a week, within the
+        # limit, so the full £4,495.40 a year is paid.
+        assert float(earnings[-1]) == 10_608.5 and not gainful[-1]
+        allowance = simulation.calculate("carers_allowance", year)[-1]
+        assert abs(float(allowance) - RATE * WEEKS) < 0.01
 
 
 def test_a_limit_in_pounds_and_pence_is_read_exactly():
@@ -433,11 +575,10 @@ def _float32_either_side(amount):
     return [float(below), float(nearest), float(above)]
 
 
-EDGES = {
-    limit: _float32_either_side(WEEKS * limit + 0.515)
-    + _float32_either_side(WEEKS * limit + 0.5175)
-    for limit in (139, 204)
-}
+# The stored amounts either side of 52L + £0.52, the least whole pence a year
+# over the limit: the float32 nearest it is those pence, and the one below it
+# is more than half a step away, so a fraction of a penny short.
+EDGES = {limit: _float32_either_side(WEEKS * limit + 0.52) for limit in (139, 204)}
 
 
 @st.composite
@@ -460,11 +601,14 @@ def amounts_around_a_limit(draw):
 # 2022-23: £6,864.51 (within the £132 limit) and £6,864.52 (a penny a week
 # over it), with amounts a tenth of a penny off them.
 @example(case=(2022, 132, [6_864.509, 6_864.51, 6_864.511, 6_864.52, 6_864.521]))
-# The stored amounts either side of 52L + £0.515 (a half penny, within the
-# limit) and 52L + £0.5175 (where the nearest half penny turns from £0.515 to
-# £0.52, over it), for a limit #2541 affected and one it did not.
+# The stored amounts either side of 52L + £0.52, for a limit #2541 affected
+# and one it did not.
 @example(case=(2023, 139, EDGES[139]))
 @example(case=(2026, 204, EDGES[204]))
+# 2026-27: 10,608.515625 and 10,608.517578125, a fraction of a penny short of
+# £10,608.52 (the second is the earnings of juaristi22's review case under
+# the earlier nearest-half-penny rule), and 10,608.5205078125, just over it.
+@example(case=(2026, 204, [10_608.515625, 10_608.517578125, 10_608.5205078125]))
 def test_the_formula_matches_exact_arithmetic_and_rises_with_earnings(case):
     """Invariants 6 and 7, for amounts with any fraction of a penny."""
     year, limit, amounts = case
