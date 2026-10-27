@@ -19,9 +19,16 @@ class household_land_value(Variable):
     def formula(household, period, parameters):
         region = household("region", period)
         Region = region.possible_values
-        property_wealth = household("property_wealth", period)
+        domestic_property = add(
+            household,
+            period,
+            [
+                "residential_property_value",
+                "non_residential_property_value",
+                "other_property_value",
+            ],
+        )
         owned_land = household("owned_land", period)
-        overseas_property_value = household("overseas_property_value", period)
 
         regional = parameters(
             period
@@ -59,6 +66,4 @@ class household_land_value(Variable):
             default=regional.UNKNOWN,
         )
 
-        return (
-            property_wealth - owned_land - overseas_property_value
-        ) * property_wealth_intensity + owned_land
+        return domestic_property * property_wealth_intensity + owned_land

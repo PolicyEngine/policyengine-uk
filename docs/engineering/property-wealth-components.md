@@ -56,8 +56,9 @@ property_wealth = residential_property_value
 total_wealth = property_wealth + corporate_wealth
              + private_pension_wealth + savings
 
-household_land_value = (property_wealth - owned_land
-                       - overseas_property_value) * regional_intensity
+household_land_value = (residential_property_value
+                       + non_residential_property_value
+                       + other_property_value) * regional_intensity
                       + owned_land
 ```
 
@@ -70,7 +71,10 @@ contribute to worldwide wealth and contribute zero to UK household land.
 adding land, overseas or other property separately would duplicate them.
 
 `household_land_value.py` retains the existing regional intensities and the
-dwelling-weighted fallback for an unknown region. Unclassified other real
+dwelling-weighted fallback for an unknown region. Summing the domestic base
+directly avoids subtracting components from an already rounded aggregate,
+so float32 cancellation cannot reduce land below directly owned UK land.
+Unclassified other real
 estate uses that regional approximation. Its unknown geography means this
 can attribute overseas holdings to UK land. Improved source classification,
 or excluding unclassified holdings from the domestic land base, requires a
@@ -214,7 +218,9 @@ compatibility guard must reject a model unable to carry the new components.
 Existing datasets are not migrated. A stored `property_wealth` input remains
 authoritative and overrides the formula, even after the model changes. The
 new release must stop storing it and remove inherited copies; updating only
-the installed model cannot repair old saved totals.
+the installed model cannot repair old saved totals. Household land reads the
+domestic component inputs directly, including when a saved worldwide total
+is present, so that total does not determine the domestic land base.
 
 Synthetic tests cover isolated and mixed components, aggregate identities,
 land accounting, household LVT, monthly stocks, situation and dataset

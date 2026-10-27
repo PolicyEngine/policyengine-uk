@@ -141,3 +141,26 @@
     property_wealth: 20000
     total_wealth: 20000
     household_land_value: 17000
+
+- name: Large overseas holdings cannot reduce directly owned UK land through float32 cancellation
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    region: LONDON
+    owned_land: 20000.50
+    overseas_property_value: 8388608
+  output:
+    household_land_value: 20000.50
+
+- name: A saved worldwide aggregate does not replace the domestic land components
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    region: LONDON
+    property_wealth: 900000
+    main_residence_value: 100000
+    owned_land: 20000
+    overseas_property_value: 30000
+  output:
+    property_wealth: 900000
+    household_land_value: 105000

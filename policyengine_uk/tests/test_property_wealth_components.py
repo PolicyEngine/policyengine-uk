@@ -302,16 +302,15 @@ def test_property_wealth_equals_sum_of_saved_inputs(_formula_simulation, values)
 @PROPERTY_SETTINGS
 @given(st.tuples(*(MONEY for _ in PROPERTY_INPUTS)), st.sampled_from(REGIONS))
 @example((0, 0, 0, 20_000, 0, 0), "LONDON")
+@example((0, 0, 0, 20_000.50, 8_388_608, 0), "LONDON")
 def test_household_land_value_is_at_least_direct_uk_land(
     _formula_simulation, values, region
 ):
     sim = _formula_simulation(dict(zip(PROPERTY_INPUTS, values)), region=region)
     direct_land = _value(sim, "owned_land")
     land = _value(sim, "household_land_value")
-    # Subtracting independently rounded stocks can lose a few float32 ulps.
-    tolerance = 2e-6 * max(1, _property_sum(sim))
-
-    assert land >= direct_land - tolerance
+    # A nonnegative domestic base cannot reduce the directly owned land.
+    assert land >= direct_land
 
 
 @PROPERTY_SETTINGS
