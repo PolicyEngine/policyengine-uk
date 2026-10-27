@@ -334,8 +334,8 @@ def calculate_gain_to_work(
         count_adults: Number of adults to calculate responses for
         impute_nonworker_wages: Whether to impute wages for non-workers
         imputed_wages: Pre-computed output of :func:`impute_wages_for_nonworkers`
-            for ``sim`` and ``year``. Pass it to avoid recomputing the
-            imputation; it is computed here when omitted.
+            for ``sim``, ``year`` and ``hours_for_new_entrants``. Pass it to
+            avoid recomputing the imputation; it is computed here when omitted.
 
     Returns:
         DataFrame with in-work income, out-of-work income, and gain-to-work
