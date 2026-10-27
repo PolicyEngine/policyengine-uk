@@ -1,0 +1,1 @@
+Participation responses now impute non-workers' wages once on the reform simulation and reuse the result for gain-to-work, earnings quintiles and the entry step, halving the imputations per step from four to two. Outputs are unchanged.
