@@ -41,7 +41,12 @@ enacted year. Reform dates do not move this base.
 
 A reform to the Pension Credit guarantee or Savings Credit phase-in rate does
 not re-derive the separately set Savings Credit threshold or Housing Benefit
-allowances. Explicit threshold and allowance reforms remain anchors for their
+allowances. A reform to the maximum Savings Credit does: the projections read
+the maximum as general uprating projects it, so a reform from the base year or
+any later year, or to the index the maximum is uprated by, moves the projected
+threshold and higher allowances as it moves the maximum. A threshold or
+allowance whose own base-year value is reformed projects its own reformed gap
+instead. Explicit threshold and allowance reforms remain anchors for their
 own later projections. Each higher allowance has its own index, including the
 lone-parent allowance. A base-year allowance at or below its guarantee follows
 earnings, so reducing an allowance below the guarantee or setting it to zero
