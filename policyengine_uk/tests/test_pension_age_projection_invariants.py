@@ -39,6 +39,9 @@ from policyengine_uk.tests.test_pension_credit_uprating import (
     synthetic_parameter_tree,
     synthetic_parameters,
 )
+from policyengine_uk.tests.test_savings_credit_threshold_projection import (
+    NEXT_YEAR_RATES,
+)
 
 
 PROJECTED_PATHS = (
@@ -121,11 +124,12 @@ def _apply_reforms(parameters, reforms):
 
 
 @settings(max_examples=60, deadline=None)
-@given(path=paths, reforms=combined_reforms())
+@given(path=paths, reforms=combined_reforms(), advance_base=st.booleans())
 @example(
     path=[(0.039, 0.035)],
     reforms={path: (2026, 0.0) for path in REFORM_PATHS}
     | {path: [(2026, 0.0)] for path in MAXIMUM_PATHS},
+    advance_base=False,
 )
 @example(
     path=[(0.039, -0.06), (-0.06, 0.15)],
@@ -141,24 +145,73 @@ def _apply_reforms(parameters, reforms):
         f"{SC_NAME}.maximum.SINGLE": [(2025, 1e100), (2028, 0), (2031, 40)],
         f"{SC_NAME}.maximum.COUPLE": [(2030, 5e-324)],
     },
+    advance_base=False,
 )
-def test_combined_reforms_build_and_never_project_negative_amounts(path, reforms):
+@example(
+    path=[(0.039, 0.035)],
+    reforms={f"{SC_NAME}.maximum.SINGLE": [(2025, 0.0)]},
+    advance_base=True,
+)
+def test_combined_reforms_build_and_never_project_negative_amounts(
+    path, reforms, advance_base
+):
     """Building succeeds even for zero bases and allowances below guarantees.
 
     The enacted tree supplies the base year; future reform anchors must not
     turn into a mismatched set of supposedly enacted years. Maximum Savings
     Credit paths, including anchors before the base year, combine with every
-    other reform.
+    other reform, including after a complete rates update advances the base.
+    Independent component reforms must preserve the maximum's own uprating.
     """
     parameters = synthetic_parameter_tree(path)
+    if advance_base:
+        for name, amount in NEXT_YEAR_RATES.items():
+            parameters.get_child(name).update(start="2027-04-01", value=amount)
     unreformed = parameters.clone()
     _apply_reforms(parameters, reforms)
     projected = project_synthetic_parameters(parameters, unreformed)
+    main = _main_parameters(
+        path, reforms={name: reforms[name] for name in MAXIMUM_PATHS if name in reforms}
+    )
 
     for name in PROJECTED_PATHS:
         parameter = projected.get_child(name)
         for year in range(FIRST_PROJECTION_YEAR, LAST_INDEX_YEAR + 1):
             assert parameter(f"{year}-04-30") >= 0, (name, year, reforms)
+            if name in MAXIMUM_PATHS and name in reforms:
+                assert parameter(f"{year}-04-30") == pytest.approx(
+                    main.get_child(name)(f"{year}-04-30"), rel=1e-12
+                ), (name, year, reforms, advance_base)
+
+
+@pytest.mark.parametrize("first_year", [2025, 2026])
+def test_advanced_base_preserves_a_pre_base_maximum_reform(first_year):
+    """A complete rates update must not replace an earlier maximum reform."""
+    parameters = synthetic_parameter_tree([(0.039, 0.035)])
+    for name, amount in NEXT_YEAR_RATES.items():
+        parameters.get_child(name).update(start="2027-04-01", value=amount)
+    unreformed = parameters.clone()
+    parameters.get_child(f"{SC_NAME}.maximum.SINGLE").update(
+        start=f"{first_year}-04-01", value=0
+    )
+
+    projected = project_synthetic_parameters(parameters, unreformed)
+
+    for name, amount in NEXT_YEAR_RATES.items():
+        assert projected.get_child(name)("2027-04-30") == amount
+    assert projected.get_child(f"{SC_NAME}.maximum.SINGLE")("2027-04-30") == 0
+    assert projected.get_child(f"{SC_NAME}.maximum.SINGLE")("2028-04-30") == 0
+    for name in (
+        f"{SC_NAME}.threshold.SINGLE",
+        f"{HB_NAME}.single.aged",
+        f"{HB_NAME}.lone_parent.aged",
+    ):
+        assert projected.get_child(name)("2028-04-30") == pytest.approx(259.75)
+        for year in range(2028, LAST_INDEX_YEAR + 1):
+            at = f"{year}-04-30"
+            assert projected.get_child(name)(at) == pytest.approx(
+                projected.get_child(f"{SMG_NAME}.SINGLE")(at)
+            )
 
 
 @pytest.mark.parametrize("first_year", [2026, 2028])

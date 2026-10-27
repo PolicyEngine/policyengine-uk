@@ -395,14 +395,15 @@ def project_savings_credit_threshold(
     ) in relationship_parameters.items():
         maximum = enacted_maximum(projection_base, relationship, base_year)
         maximum_parameter = getattr(savings_credit.maximum, relationship)
+        enacted_maximum_parameter = getattr(
+            enacted_savings_credit.maximum, relationship
+        )
         # Enter the maximum a rates update without one implies, but never
-        # over a reform that starts before the base year.
-        if all(
-            last_enacted_year(parameter) < base_year
-            for parameter in (
-                maximum_parameter,
-                getattr(enacted_savings_credit.maximum, relationship),
-            )
+        # over a changed maximum timeline, even if its anchors all precede
+        # the new base. Entries compare their names, dates and values.
+        if (
+            last_enacted_year(maximum_parameter) < base_year
+            and maximum_parameter.values_list == enacted_maximum_parameter.values_list
         ):
             maximum_parameter.update(start=f"{base_year}-04-01", value=maximum)
         maxima = projected_maximum_values(
