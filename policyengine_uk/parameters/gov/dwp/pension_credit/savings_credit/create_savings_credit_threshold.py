@@ -410,6 +410,15 @@ def project_savings_credit_threshold(
             parameters, relationship, base_year, final_observation_year + 1
         )
         reformed_threshold = getattr(savings_credit.threshold, relationship)
+        if (
+            max(entry.instant_str for entry in reformed_threshold.values_list)
+            < base_instant
+        ):
+            # A pre-base reform can remove the newer enacted anchor. Start
+            # its forecast at the common base, where the index is defined.
+            reformed_threshold.update(
+                start=base_instant, value=reformed_threshold(base_instant)
+            )
         if reformed_threshold(base_instant) != threshold_parameter(base_instant):
             threshold_parameter = reformed_threshold
             guarantee_parameter = getattr(reformed_guarantees, relationship)

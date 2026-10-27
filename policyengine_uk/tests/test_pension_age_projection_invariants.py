@@ -132,6 +132,12 @@ def _apply_reforms(parameters, reforms):
     advance_base=False,
 )
 @example(
+    path=[(0.0, 0.0)],
+    reforms={path: (2026, 0.0) for path in REFORM_PATHS}
+    | {path: [(2025, 0.0)] for path in MAXIMUM_PATHS},
+    advance_base=True,
+)
+@example(
     path=[(0.039, -0.06), (-0.06, 0.15)],
     reforms={
         f"{SMG_NAME}.SINGLE": (2026, 300),
@@ -152,6 +158,13 @@ def _apply_reforms(parameters, reforms):
     reforms={f"{SC_NAME}.maximum.SINGLE": [(2025, 0.0)]},
     advance_base=True,
 )
+@example(
+    path=[(0.039, 0.035)],
+    reforms={
+        f"{SC_NAME}.maximum.SINGLE": [(2026, RAW_SC.maximum.SINGLE("2026-04-30"))]
+    },
+    advance_base=True,
+)
 def test_combined_reforms_build_and_never_project_negative_amounts(
     path, reforms, advance_base
 ):
@@ -169,6 +182,12 @@ def test_combined_reforms_build_and_never_project_negative_amounts(
             parameters.get_child(name).update(start="2027-04-01", value=amount)
     unreformed = parameters.clone()
     _apply_reforms(parameters, reforms)
+    changed_maxima = {
+        name
+        for name in MAXIMUM_PATHS
+        if parameters.get_child(name).values_list
+        != unreformed.get_child(name).values_list
+    }
     projected = project_synthetic_parameters(parameters, unreformed)
     main = _main_parameters(
         path, reforms={name: reforms[name] for name in MAXIMUM_PATHS if name in reforms}
@@ -178,7 +197,8 @@ def test_combined_reforms_build_and_never_project_negative_amounts(
         parameter = projected.get_child(name)
         for year in range(FIRST_PROJECTION_YEAR, LAST_INDEX_YEAR + 1):
             assert parameter(f"{year}-04-30") >= 0, (name, year, reforms)
-            if name in MAXIMUM_PATHS and name in reforms:
+            # A no-op maximum update still permits the ordinary rates-update fill.
+            if name in changed_maxima:
                 assert parameter(f"{year}-04-30") == pytest.approx(
                     main.get_child(name)(f"{year}-04-30"), rel=1e-12
                 ), (name, year, reforms, advance_base)

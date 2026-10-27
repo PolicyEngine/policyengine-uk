@@ -254,7 +254,12 @@ def project_pension_age_allowances(
     for allowance_name, relationship in ALLOWANCE_GUARANTEES.items():
         allowance = float(getattr(base_allowances, allowance_name).aged(start))
         guarantee = float(getattr(guarantees, relationship)(start))
-        reformed_allowance = float(getattr(allowances, allowance_name).aged(start))
+        allowance_parameter = getattr(allowances, allowance_name).aged
+        reformed_allowance = float(allowance_parameter(start))
+        if max(entry.instant_str for entry in allowance_parameter.values_list) < start:
+            # Keep a pre-base reform's amount through the common base, where
+            # its generated forecast index begins.
+            allowance_parameter.update(start=start, value=reformed_allowance)
         retained_maximum = enacted_maximum(projection_base, relationship, base_year)
         maxima = projected_maximum_values(
             parameters, relationship, base_year, final_observation_year + 1
