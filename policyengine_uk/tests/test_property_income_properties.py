@@ -17,6 +17,7 @@ from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
+from policyengine_uk.model_api import GBP, Person, Reform, Variable, add
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
@@ -571,3 +572,165 @@ def test_a_landlord_without_finance_costs_takes_the_allowance_even_where_it_cost
     set_pensioner_inputs(sim, drawn, routes & ~claimants)
     with_expenses = sim.calculate("income_tax", PENSIONER_YEAR).astype(float)
     assert with_expenses[pinned] == pytest.approx(5_187.40, abs=0.01)
+
+
+# Reviews r1 and r2 of #2695. winter_fuel_payment_charge_ceiling bounds the
+# charge as the model works it out, and the election settles choices on tax
+# before the charge only where that ceiling cannot reverse them. Where an
+# input or a structural reform replaces income tax, the ceiling, the charge,
+# the payments it recovers or entitlement to them, or neutralises income tax
+# or the ceiling, every choice is still compared on income tax including the
+# charge. Each landlord below has £3,300 of receipts and £200 of expenses in
+# England, so total income £800 lower with the allowance, and lower tax
+# before the charge with expenses; the charge on the expenses route makes the
+# allowance cheaper.
+CHARGE_YEAR = 2026
+
+
+class winter_fuel_payment_charge(Variable):
+    """A reform's charge: half the payment, over £30,000 of total income."""
+
+    value_type = float
+    entity = Person
+    label = "Winter fuel payment charge, tapered"
+    definition_period = "year"
+    unit = GBP
+
+    def formula(person, period, parameters):
+        p = parameters(period).gov.hmrc.income_tax.charges.winter_fuel_payment
+        payment = add(
+            person,
+            period,
+            ["winter_fuel_payment", "pension_age_winter_heating_payment"],
+        )
+        on_relevant_benefit = add(person, period, p.relevant_benefits) > 0
+        over_threshold = person("total_income", period) > 30_000
+        return p.in_effect * 0.5 * payment * over_threshold * ~on_relevant_benefit
+
+
+class tapered_charge(Reform):
+    def apply(self):
+        self.update_variable(winter_fuel_payment_charge)
+
+
+class neutralised_ceiling(Reform):
+    def apply(self):
+        self.neutralize_variable("winter_fuel_payment_charge_ceiling")
+
+
+class neutralised_income_tax(Reform):
+    def apply(self):
+        self.neutralize_variable("income_tax")
+
+
+def landlord(age, **values):
+    person = dict(
+        age=age,
+        property_rental_income=3_300,
+        property_income=3_100,
+        property_finance_costs=1_200,
+    )
+    person.update(values)
+    return {
+        "people": {
+            "landlord": {name: {CHARGE_YEAR: value} for name, value in person.items()}
+        },
+        "households": {
+            "home": {"members": ["landlord"], "region": {CHARGE_YEAR: "NORTH_WEST"}}
+        },
+    }
+
+
+def taxes_on_route(situation, reform, uses_allowance):
+    situation["people"]["landlord"]["uses_property_allowance"] = {
+        CHARGE_YEAR: uses_allowance
+    }
+    sim = Simulation(situation=situation, reform=reform)
+    return [
+        float(sim.calculate(variable, CHARGE_YEAR)[0])
+        for variable in ("income_tax", "income_tax_before_winter_fuel_payment_charge")
+    ]
+
+
+CHARGE_BEYOND_THE_CEILING = {
+    # Review r1's case: a payment given to someone under pensionable age.
+    "payment_given_under_pensionable_age": (
+        60,
+        dict(employment_income=32_000, winter_fuel_payment=200),
+        None,
+    ),
+    "entitlement_given_under_pensionable_age": (
+        60,
+        dict(employment_income=32_000, winter_fuel_payment_eligible=True),
+        None,
+    ),
+    # Tax before the charge is £400 lower with expenses, beyond the £300
+    # higher Winter Fuel Payment, but the £500 payment given exceeds it.
+    "payment_given_above_the_largest_amount": (
+        70,
+        dict(
+            private_pension_income=32_000,
+            property_finance_costs=2_800,
+            winter_fuel_payment=500,
+        ),
+        None,
+    ),
+    "charge_tapered_by_a_reform": (
+        70,
+        dict(private_pension_income=27_000),
+        tapered_charge,
+    ),
+    # Total income £35,100 with expenses and £34,300 with the allowance, so
+    # the £200 charge falls only on the expenses route.
+    "ceiling_given_as_nothing": (
+        70,
+        dict(private_pension_income=32_000, winter_fuel_payment_charge_ceiling=0),
+        None,
+    ),
+    "ceiling_neutralised_by_a_reform": (
+        70,
+        dict(private_pension_income=32_000),
+        neutralised_ceiling,
+    ),
+}
+
+
+@pytest.mark.parametrize(
+    "age, values, reform",
+    CHARGE_BEYOND_THE_CEILING.values(),
+    ids=CHARGE_BEYOND_THE_CEILING,
+)
+def test_a_charge_beyond_the_ceiling_is_still_compared(age, values, reform):
+    chosen = Simulation(situation=landlord(age, **values), reform=reform)
+    route = bool(chosen.calculate("uses_property_allowance", CHARGE_YEAR)[0])
+    tax, before_charge = taxes_on_route(landlord(age, **values), reform, route)
+    other_tax, other_before_charge = taxes_on_route(
+        landlord(age, **values), reform, not route
+    )
+    assert tax < other_tax
+    # Tax before the charge alone would choose the other route.
+    assert before_charge > other_before_charge
+
+
+INCOME_TAX_THE_SAME_ON_BOTH_ROUTES = {
+    "income_tax_given_as_an_input": (dict(income_tax=6_000), None),
+    # Review r2: a neutralised variable keeps the parts it adds.
+    "income_tax_neutralised_by_a_reform": (dict(), neutralised_income_tax),
+}
+
+
+@pytest.mark.parametrize(
+    "values, reform",
+    INCOME_TAX_THE_SAME_ON_BOTH_ROUTES.values(),
+    ids=INCOME_TAX_THE_SAME_ON_BOTH_ROUTES,
+)
+def test_income_tax_the_same_on_both_routes_leaves_the_default(values, reform):
+    """Income tax is the same on both routes, so the choice is a tie and the
+    default, expenses for receipts above the allowance, stands, although tax
+    before the charge is lower with the allowance."""
+    values = dict(employment_income=40_000, property_finance_costs=100, **values)
+    sim = Simulation(situation=landlord(50, **values), reform=reform)
+    assert not sim.calculate("uses_property_allowance", CHARGE_YEAR)[0]
+    _, before_charge_using = taxes_on_route(landlord(50, **values), reform, True)
+    _, before_charge_not_using = taxes_on_route(landlord(50, **values), reform, False)
+    assert before_charge_using < before_charge_not_using
