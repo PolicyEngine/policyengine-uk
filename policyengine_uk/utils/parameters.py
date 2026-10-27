@@ -243,6 +243,17 @@ REMOVED_PARAMETERS = {
         "single ticket at one fare, set that band's share to 1 and the others "
         "to 0, or supply local_bus_uncapped_single_fare for each person.",
     ),
+    "gov.dwp.ESA.exempt_work.higher_earnings_limit": RemovedParameter(
+        "removed ESA exempt work higher earnings limit",
+        "From 11 April 2011 the limit is 16 x the national living wage, "
+        "rounded up to the next 50p (ESA Regs 2008 reg 45(4) and (9A)), "
+        "calculated by esa_exempt_work_higher_earnings_limit. Change "
+        "gov.hmrc.minimum_wage.non_apprentice (the national living wage is "
+        "its top rate) or "
+        "gov.dwp.ESA.exempt_work.higher_earnings_limit_minimum_wage_hours "
+        "(the 16), or gov.dwp.ESA.exempt_work.fixed_higher_earnings_limit "
+        "for dates before 11 April 2011.",
+    ),
 }
 
 

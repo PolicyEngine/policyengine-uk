@@ -1,3 +1,61 @@
+## [2.162.12] - 2026-10-27
+
+### Changed
+
+- Split the Python tests in CI over six runners instead of five.
+
+
+## [2.162.11] - 2026-10-27
+
+### Changed
+
+- Participation responses now impute non-workers' wages once on the reform simulation and reuse the result for gain-to-work, earnings quintiles and the entry step, halving the imputations per step from four to two. Outputs are unchanged.
+
+
+## [2.162.10] - 2026-10-27
+
+### Changed
+
+- The ESA permitted work higher earnings limit is now calculated as 16 x the national living wage, rounded up to the next 50p (ESA Regs 2008 reg 45(4) and (9A)), so it follows a change to gov.hmrc.minimum_wage instead of being listed year by year and projected with average earnings. The gov.dwp.ESA.exempt_work.higher_earnings_limit parameter is removed, and the minimum wage rates and apprentice age limit now start at 1 October 2010. Regression tests cover historical wage categories and national living wage reforms across ESA claimants. The historical fixed limit now includes £95 from 1 October 2010, and both the model and reference tests use the designated adult wage band.
+
+
+## [2.162.9] - 2026-10-26
+
+### Changed
+
+- - Updated `uv.lock` to the newest dependency releases.
+- Clarified the fractional entity-ID warning for builds that core rejects.
+
+
+## [2.162.8] - 2026-10-26
+
+### Fixed
+
+- Screen income-related ESA and income-based JSA reports separately for people outside the claimant couple, preserving scoped award readers, and use assessed ESA receipt in the 16–19 Bursary Fund own-right signal.
+
+  Use the report-aware ESA callback in the Housing Benefit cap reader, restore ESA/JSA documentation citations and spacing, and clarify bursary test comments.
+
+
+## [2.162.7] - 2026-10-26
+
+### Changed
+
+- Added property and full-person fixture coverage for Housing Benefit's protected family premium. Clarified that the fixed test totals exclude the unmodelled child personal allowance.
+
+### Fixed
+
+- - Preserved each benefit unit's Universal Credit advance repayment fallback when other units supply cash, while retaining explicit zero repayments.
+- - Keep Universal Credit advance repayment cash demand fixed through standard allowance reforms while preserving supplied deduction rates, existing caps, abolition switches and protected-floor allocation.
+- Apply the apprentice minimum wage only to apprentices under 19 or explicitly in their first 12 months, including historical calculations from October 2012, while preserving employer National Insurance relief for later-year apprentices under 25.
+
+
+## [2.162.6] - 2026-10-26
+
+### Changed
+
+- Balance the CI Python test shards: the slowest tests, listed with their measured CI durations, are dealt out by duration instead of by hash, so no shard carries most of them.
+
+
 ## [2.162.5] - 2026-10-26
 
 ### Fixed

@@ -100,6 +100,32 @@ discard H5 attributes must explicitly preserve this declaration before their
 output can be reloaded safely. Test routing and migration on synthetic frames
 and small H5 fixtures, without downloading private datasets.
 
+## Apprenticeship status and tenure
+
+Dataset producers should export `is_apprentice` and
+`is_in_first_year_of_apprenticeship` as separate annual person columns.
+Apprentice status alone cannot establish entitlement to the apprentice
+minimum wage at age 19 or over. The first-year column records the first
+12 months of the current apprenticeship employment, including any period
+covered by statutory continuity; it is not an academic-year flag. See the
+[calculator input contract](../../book/usage/simulations.md#apprenticeship-inputs).
+
+An absent first-year column uses the variable's `False` default. This can
+change minimum-wage and dependent childcare income-condition results for
+existing data whose `is_apprentice` flag is true at age 19 or over. It does
+not change the existing under-25 apprentice employer National Insurance
+relief. A missing column is not evidence that every apprentice is in a
+later year.
+
+The producer work in [Microcosm PR #1373](https://github.com/PolicyEngine/microcosm/pull/1373)
+must supply an explicit first-year classification alongside apprentice
+status before that status can also identify older apprentices who receive
+the lower minimum wage. This UK change supplies no first-year imputation,
+prevalence estimate or migration of existing releases. Projection does not
+advance apprenticeship tenure, so a producer or caller must supply changed
+classifications for later years rather than rely on a carried input to
+expire automatically.
+
 ## Defaults
 
 `policyengine_uk` does not silently choose a default dataset when no situation is
