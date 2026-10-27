@@ -42,7 +42,9 @@ class housing_benefit_applicable_income_disregard(Variable):
     def formula(benunit, period, parameters):
         p = parameters(period).gov.dwp.housing_benefit.means_test.income_disregard
         net_earnings = benunit("housing_benefit_net_earnings", period)
-        # Working age Sch 4 paras 4, 7 and 10; pension age Sch 4 paras 2 and 7.
+        # Working age Sch 4 paras 3, 4, 7 and 10; pension age Sch 4 paras 2,
+        # 4, 5 and 7. Other full-amount £20 routes are pre-assessed
+        # (housing_benefit_special_earnings_disregard_eligible).
         standard = benunit("housing_benefit_special_earnings_disregard", period)
         # Working age Sch 4 para 18 (NI Sch 5 para 18), from 5 October 2026:
         # specified or temporary accommodation. It applies alongside paras 3
