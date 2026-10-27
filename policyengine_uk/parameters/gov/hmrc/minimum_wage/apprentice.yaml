@@ -4,6 +4,9 @@ description: Minimum wage rate for apprentices.
 # rate began on 1 October 2010 (NMW Regulations 1999 reg. 13(3) as substituted
 # by S.I. 2010/1901 reg. 5). Rates take effect on the commencement date of each
 # amending S.I.: on 1 October until 2016, then on 1 April from 2017.
+# Rates after the last one set here are a projection, not law: each April's
+# rise is gov.economic_assumptions.indices.earnings_uprating, rounded to the
+# nearest penny, as for the other minimum wage rates (non_apprentice.yaml).
 values:
   2010-10-01:
     value: 2.5
@@ -100,6 +103,11 @@ metadata:
   household: false
   label: Apprentice minimum wage
   unit: currency-GBP
+  uprating:
+    parameter: gov.economic_assumptions.indices.earnings_uprating
+    rounding:
+      type: nearest
+      interval: 0.01
   reference:
   - title: The National Minimum Wage Regulations 2015, regulations 4A(1)(d) and 5
     href: https://www.legislation.gov.uk/uksi/2015/621/contents

@@ -222,8 +222,17 @@ def _in_force(pairs, date):
 
 
 RAW_APPRENTICE = _dated_values(_load_raw("apprentice")["values"])
+
+
+def _amount_values(bracket):
+    """A bracket's dated amounts: under ``values`` when the amount carries
+    metadata (the uprating that projects later years)."""
+    amount = bracket["amount"]
+    return amount["values"] if "values" in amount else amount
+
+
 RAW_BRACKETS = [
-    (_dated_values(bracket["threshold"]), _dated_values(bracket["amount"]))
+    (_dated_values(bracket["threshold"]), _dated_values(_amount_values(bracket)))
     for bracket in _load_raw("non_apprentice")["brackets"]
 ]
 LATEST_DATED_YEAR = max(
@@ -344,7 +353,7 @@ def test_fiscal_year_value_is_the_value_in_force_on_30_april(year):
 def test_every_rate_cites_a_statutory_instrument():
     entries = list(_load_raw("apprentice")["values"].items())
     for bracket in _load_raw("non_apprentice")["brackets"]:
-        entries += list(bracket["amount"].items())
+        entries += list(_amount_values(bracket).items())
     for instant, entry in entries:
         assert isinstance(entry, dict), f"{instant} has no reference"
         hrefs = [reference["href"] for reference in entry.get("reference", [])]

@@ -1,0 +1,1 @@
+Project the minimum wage rates, including the national living wage, after the last rate set by the May-July earnings growth of the year before, so the Universal Credit benefit cap earnings exception, the minimum income floor, ESA permitted work, the childcare earnings tests and the Carer's Allowance earnings limit rise with them instead of holding April 2026 rates.

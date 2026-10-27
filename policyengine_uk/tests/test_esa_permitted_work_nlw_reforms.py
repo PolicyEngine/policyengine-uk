@@ -14,7 +14,9 @@ from policyengine_uk import Simulation
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
-YEAR = 2027
+# 2026-27, the last year whose national living wage is set (£12.71), so the
+# baseline limit does not depend on the model's projection of later rates.
+YEAR = 2026
 NLW_REFORM = {
     f"gov.hmrc.minimum_wage.non_apprentice[{bracket}].amount": {str(YEAR): 13.18}
     for bracket in (2, 3, 4)
