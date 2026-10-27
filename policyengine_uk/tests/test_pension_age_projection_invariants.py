@@ -3,8 +3,10 @@
 The differential reference below freezes the two builders merged in #2576
 (main eb0b8087). It deliberately keeps their generation-after-uprating order.
 For unreformed forecasts the reconciled builders must reproduce those
-amounts, including main’s earnings and CPI floors. Reform independence and
-the additional threshold residual floor have their own properties.
+amounts, including main’s earnings and CPI floors. Main read the maximum
+Savings Credit after uprating, so for any path of maximum reforms they must
+reproduce main too, apart from the additional threshold residual floor.
+Reform independence and that floor have their own properties.
 """
 
 from typing import Any, Callable
@@ -32,6 +34,7 @@ from policyengine_uk.tests.test_pension_credit_uprating import (
     growth,
     higher_allowances,
     paths,
+    phase_in_paths,
     project_synthetic_parameters,
     synthetic_parameter_tree,
     synthetic_parameters,
@@ -57,6 +60,11 @@ REFORM_PATHS = (
     f"{SC_NAME}.rate.phase_in",
     *(f"{HB_NAME}.{kind}.aged" for kind in HB_RELATIONS),
 )
+MAXIMUM_PATHS = tuple(
+    f"{SC_NAME}.maximum.{relation}" for relation in ("SINGLE", "COUPLE")
+)
+# The maximum's uprating index (maximum.yaml).
+BENEFIT_UPRATING_CPI = "gov.benefit_uprating_cpi"
 # Cover zeros, subnormal values and large monetary/rate reforms, without
 # overflowing intermediate products of independently generated float64 values.
 nonnegative_amount = st.floats(
@@ -68,8 +76,30 @@ nonnegative_rate = st.floats(
 
 
 @st.composite
+def maximum_path(draw):
+    """One to three explicit anchors, from the year before the base onwards."""
+    years = draw(
+        st.lists(
+            st.integers(FIRST_PROJECTION_YEAR - 2, LAST_INDEX_YEAR),
+            min_size=1,
+            max_size=3,
+            unique=True,
+        )
+    )
+    return [(year, draw(nonnegative_amount)) for year in sorted(years)]
+
+
+@st.composite
+def maximum_reforms(draw):
+    """A path of maximum Savings Credit anchors for one or both relationships."""
+    reformed = draw(st.sets(st.sampled_from(MAXIMUM_PATHS), min_size=1))
+    return {path: draw(maximum_path()) for path in sorted(reformed)}
+
+
+@st.composite
 def combined_reforms(draw):
-    """Change every independent component, including the lone parent's own base."""
+    """Change every independent component, including the lone parent's own base
+    and a path of maximum Savings Credit anchors for each relationship."""
     reforms = {}
     for path in REFORM_PATHS:
         year = draw(st.integers(FIRST_PROJECTION_YEAR - 1, LAST_INDEX_YEAR))
@@ -77,19 +107,25 @@ def combined_reforms(draw):
             nonnegative_rate if path.endswith("phase_in") else nonnegative_amount
         )
         reforms[path] = (year, value)
+    for path in MAXIMUM_PATHS:
+        reforms[path] = draw(maximum_path())
     return reforms
 
 
 def _apply_reforms(parameters, reforms):
-    for path, (year, value) in reforms.items():
-        parameters.get_child(path).update(start=f"{year}-04-01", value=value)
+    """Apply each change from April of its year; a list is a path of anchors."""
+    for path, change in reforms.items():
+        # In year order, so each open-ended update keeps the earlier anchors.
+        for year, value in change if isinstance(change, list) else [change]:
+            parameters.get_child(path).update(start=f"{year}-04-01", value=value)
 
 
 @settings(max_examples=60, deadline=None)
 @given(path=paths, reforms=combined_reforms())
 @example(
     path=[(0.039, 0.035)],
-    reforms={path: (2026, 0.0) for path in REFORM_PATHS},
+    reforms={path: (2026, 0.0) for path in REFORM_PATHS}
+    | {path: [(2026, 0.0)] for path in MAXIMUM_PATHS},
 )
 @example(
     path=[(0.039, -0.06), (-0.06, 0.15)],
@@ -102,13 +138,17 @@ def _apply_reforms(parameters, reforms):
         f"{HB_NAME}.single.aged": (2026, 220),
         f"{HB_NAME}.lone_parent.aged": (2026, 0),
         f"{HB_NAME}.couple.aged": (2026, 300),
+        f"{SC_NAME}.maximum.SINGLE": [(2025, 1e100), (2028, 0), (2031, 40)],
+        f"{SC_NAME}.maximum.COUPLE": [(2030, 5e-324)],
     },
 )
 def test_combined_reforms_build_and_never_project_negative_amounts(path, reforms):
     """Building succeeds even for zero bases and allowances below guarantees.
 
     The enacted tree supplies the base year; future reform anchors must not
-    turn into a mismatched set of supposedly enacted years.
+    turn into a mismatched set of supposedly enacted years. Maximum Savings
+    Credit paths, including anchors before the base year, combine with every
+    other reform.
     """
     parameters = synthetic_parameter_tree(path)
     unreformed = parameters.clone()
@@ -140,6 +180,53 @@ def test_maximum_reforms_reach_both_dependent_forecasts(first_year):
             assert projected.get_child(f"{HB_NAME}.{kind}.aged")(at) == pytest.approx(
                 guarantee
             )
+
+
+FOLLOWS_SINGLE_MAXIMUM = (
+    f"{SC_NAME}.threshold.SINGLE",
+    f"{HB_NAME}.single.aged",
+    f"{HB_NAME}.lone_parent.aged",
+)
+
+
+@pytest.mark.parametrize("first_year", [2026, 2028])
+@pytest.mark.parametrize(
+    "own_base,value",
+    [
+        (f"{SC_NAME}.threshold.SINGLE", 180),
+        (f"{HB_NAME}.single.aged", 250),
+        (f"{HB_NAME}.lone_parent.aged", 230),
+    ],
+)
+def test_a_reformed_own_base_takes_precedence_over_a_maximum_reform(
+    first_year, own_base, value
+):
+    """A threshold or allowance whose own base-year value is reformed keeps
+    projecting its own reformed gap, with or without a maximum reform. Every
+    other amount built from that maximum follows the maximum reform."""
+
+    def project(maximum_reform):
+        parameters = synthetic_parameter_tree([(0.039, 0.035)])
+        unreformed = parameters.clone()
+        parameters.get_child(own_base).update(start="2026-04-01", value=value)
+        if maximum_reform:
+            parameters.get_child(f"{SC_NAME}.maximum.SINGLE").update(
+                start=f"{first_year}-04-01", value=0
+            )
+        return project_synthetic_parameters(parameters, unreformed)
+
+    combined, own_base_only = project(True), project(False)
+    for year in range(FIRST_PROJECTION_YEAR, LAST_INDEX_YEAR + 1):
+        at = f"{year}-04-30"
+        assert combined.get_child(own_base)(at) == pytest.approx(
+            own_base_only.get_child(own_base)(at), rel=1e-12
+        ), year
+        guarantee = combined.get_child(f"{SMG_NAME}.SINGLE")(at)
+        for name in FOLLOWS_SINGLE_MAXIMUM:
+            if name != own_base and year >= first_year:
+                assert combined.get_child(name)(at) == pytest.approx(
+                    guarantee, rel=1e-12
+                ), (name, year)
 
 
 @settings(max_examples=40, deadline=None)
@@ -244,8 +331,10 @@ def _main_project_pension_age_allowances(parameters: ParameterNode) -> Parameter
     return parameters
 
 
-def _main_parameters(path):
-    parameters = synthetic_parameter_tree(path)
+def _main_parameters(path, phase_ins=(), reforms=None):
+    parameters = synthetic_parameter_tree(path, phase_ins)
+    # Main processed reforms written onto the statutory timeline.
+    _apply_reforms(parameters, reforms or {})
     pc = parameters.gov.dwp.pension_credit
     # Main's thresholds and higher allowances were generated after uprating,
     # without metadata pointing at the reconciliation's new forecast indices.
@@ -281,3 +370,62 @@ def test_reconciled_builders_agree_with_main_where_its_behavior_is_retained(path
             assert reconciled.get_child(name)(at) == pytest.approx(
                 main.get_child(name)(at), abs=1e-9
             ), (name, year, path)
+
+
+@settings(max_examples=40, deadline=None)
+@given(
+    path=paths,
+    phase_ins=phase_in_paths,
+    reforms=maximum_reforms(),
+    index_reform=st.none()
+    | st.tuples(
+        st.integers(FIRST_PROJECTION_YEAR - 1, LAST_INDEX_YEAR),
+        st.floats(min_value=1, max_value=1e6),
+    ),
+)
+@example(
+    path=[(0.039, 0.035)],
+    phase_ins=[],
+    reforms={f"{SC_NAME}.maximum.SINGLE": [(2026, 0.0)]},
+    index_reform=None,
+)
+@example(
+    path=[(0.039, 0.035)],
+    phase_ins=[],
+    reforms={f"{SC_NAME}.maximum.COUPLE": [(2028, 0.0)]},
+    index_reform=None,
+)
+@example(
+    path=[(0.039, -0.06), (-0.06, 0.15)],
+    phase_ins=[0.6, 0.0, 0.01],
+    reforms={
+        f"{SC_NAME}.maximum.SINGLE": [(2025, 1e100), (2027, 25), (2030, 0)],
+        f"{SC_NAME}.maximum.COUPLE": [(2029, 5e-324)],
+    },
+    index_reform=(2028, 150.0),
+)
+def test_maximum_reforms_reproduce_main_with_a_floored_threshold(
+    path, phase_ins, reforms, index_reform
+):
+    """Any path of maximum Savings Credit reforms, before, at or after the base
+    year, reaches every forecast as main's post-uprating builders took it,
+    and so does a reform to the index the maximum is uprated by.
+
+    Main's threshold could go negative; the reconciliation floors it at zero.
+    """
+    if index_reform is not None:
+        reforms = reforms | {BENEFIT_UPRATING_CPI: index_reform}
+    main = _main_parameters(path, phase_ins, reforms)
+    parameters = synthetic_parameter_tree(path, phase_ins)
+    unreformed = parameters.clone()
+    _apply_reforms(parameters, reforms)
+    reconciled = project_synthetic_parameters(parameters, unreformed)
+    for name in PROJECTED_PATHS:
+        for year in range(FIRST_PROJECTION_YEAR - 1, LAST_INDEX_YEAR + 1):
+            at = f"{year}-04-30"
+            expected = main.get_child(name)(at)
+            if ".threshold." in name:
+                expected = max(expected, 0)
+            assert reconciled.get_child(name)(at) == pytest.approx(
+                expected, rel=1e-12, abs=1e-9
+            ), (name, year, reforms)

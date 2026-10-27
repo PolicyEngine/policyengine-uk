@@ -24,6 +24,7 @@ from policyengine_core.parameters.operations.uprate_parameters import (
 )
 
 from policyengine_uk.parameters.gov.dwp.pension_credit.pension_age_projection_base import (
+    last_enacted_year,
     projection_base_year,
 )
 from policyengine_uk.parameters.gov.economic_assumptions.create_statutory_uprating_inputs import (
@@ -394,9 +395,14 @@ def project_savings_credit_threshold(
     ) in relationship_parameters.items():
         maximum = enacted_maximum(projection_base, relationship, base_year)
         maximum_parameter = getattr(savings_credit.maximum, relationship)
-        if (
-            max(int(entry.instant_str[:4]) for entry in maximum_parameter.values_list)
-            < base_year
+        # Enter the maximum a rates update without one implies, but never
+        # over a reform that starts before the base year.
+        if all(
+            last_enacted_year(parameter) < base_year
+            for parameter in (
+                maximum_parameter,
+                getattr(enacted_savings_credit.maximum, relationship),
+            )
         ):
             maximum_parameter.update(start=f"{base_year}-04-01", value=maximum)
         maxima = projected_maximum_values(
