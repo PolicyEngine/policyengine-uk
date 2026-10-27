@@ -3,7 +3,7 @@
 WAS has seven gross terms, but second homes and buy-to-let are saved together
 by policyengine-uk-data. These tests exercise that six-input model contract;
 licensed-source reconciliation and release persistence belong to the data repo.
-The five formula properties use fresh Core simulation holders with one shared
+The formula properties use fresh Core simulation holders with one shared
 model; uprating, datasets, monthly stocks, LVT and purchases exercise the UK
 simulation wrapper separately.
 """
@@ -191,7 +191,9 @@ def test_property_capital_lists_preserve_each_source_once(
     )
     for names in (sources, sale_sources):
         for variable in ("overseas_property_value", "other_property_value"):
-            assert names.count(variable) == 1
+            assert names.count(variable) == (
+                0 if "universal_credit" in capital_path else 1
+            )
         assert "main_residence_value" not in names
         assert "private_pension_wealth" not in names
         assert names.count("share_like_capital") == 1
@@ -200,8 +202,57 @@ def test_property_capital_lists_preserve_each_source_once(
     # Preserve UC's existing omission; the aggregate change does not decide it.
     if "universal_credit" in capital_path:
         assert "owned_land" not in sources
+        property_sources = list(
+            parameters.get_child(f"{capital_path}.property_sources")(year)
+        )
+        for variable in ("uc_overseas_property_capital", "uc_other_property_capital"):
+            assert property_sources.count(variable) == 1
     else:
         assert sources.count("owned_land") == 1
+
+
+@pytest.mark.parametrize(
+    "variable", ["overseas_property_value", "other_property_value"]
+)
+@PROPERTY_SETTINGS
+@given(
+    property_pence=st.integers(min_value=0, max_value=2_000_000),
+    report_pence=st.integers(min_value=0, max_value=2_000_000),
+    holding_pence=st.integers(min_value=0, max_value=2_000_000),
+)
+@example(property_pence=2_000_000, report_pence=0, holding_pence=0)
+def test_financial_reports_preserve_separately_valued_property(
+    _property_metadata_system, variable, property_pence, report_pence, holding_pence
+):
+    # The only financial proxy is an entirely disregarded company holding.
+    # A financial-only report adds to the same independently valued property,
+    # net of that holding, even when the report is zero.
+    holding = holding_pence / 100
+    situation = _situation(
+        {variable: property_pence / 100, "corporate_wealth": holding}
+    )
+    situation["people"]["person"]["uc_company_holding_disregard"] = {BASE_YEAR: holding}
+    unreported = CoreSimulation(
+        tax_benefit_system=_property_metadata_system, situation=situation
+    )
+    baseline = _value(unreported, "uc_assessable_capital")
+    property_capital = _value(unreported, "uc_property_capital")
+    report = report_pence / 100
+    situation["benunits"]["benunit"]["benunit_reported_capital"] = {BASE_YEAR: report}
+    reported = CoreSimulation(
+        tax_benefit_system=_property_metadata_system, situation=situation
+    )
+    counted = _value(reported, "uc_assessable_capital")
+
+    assert counted >= baseline
+    assert baseline == property_capital
+    assert _value(reported, "uc_property_capital") == property_capital
+    # Recover the penny from float32 storage before adding the observed report;
+    # compare the exact value after the final float32 holder conversion.
+    net_report = max(0, report - holding)
+    assert counted == float(
+        np.float32(round(net_report + round(property_capital, 2), 2))
+    )
 
 
 @pytest.mark.parametrize("source,variable", SOURCE_INPUTS)

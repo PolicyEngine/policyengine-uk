@@ -10,6 +10,9 @@ description: >
   to their number in each benefit unit, including units with financial reports,
   complete overrides and no UC receipt. A complete override consumes its share.
   This is an assumption about unobserved ownership, not a statutory rule.
+  Overseas land and property and unclassified other real estate follow this
+  same route, so a financial-only report cannot replace their counted values.
+  Neither category has an identified secured-debt input.
 metadata:
   label: Universal Credit countable property sources
   period: year
@@ -23,3 +26,5 @@ values:
   2013-04-29:
     - uc_other_residential_property_capital
     - uc_non_residential_property_capital
+    - uc_overseas_property_capital
+    - uc_other_property_capital

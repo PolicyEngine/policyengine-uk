@@ -34,6 +34,8 @@ from policyengine_uk.data.economic_assumptions import (
 )
 from policyengine_uk.system import system
 
+pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
+
 BASE_YEAR = 2024
 GROWTH = parameters.gov.economic_assumptions.yoy_growth
 UPRATING_INDICES = yaml.safe_load(
@@ -96,9 +98,9 @@ def _dataset(amount=1_000.0, base_year=BASE_YEAR):
     input set to ``amount`` (or one amount per household), plus rent and
     council tax.
 
-    Recorded Pension Credit capital is twice the benefit unit's recorded
-    capital, which its formula reads, so the two tell apart a stored value
-    from a calculated one."""
+    Recorded complete Pension Credit capital is twice the benefit unit's
+    financial report, distinguishing the stored complete override from both
+    the financial observation and the default no-override sentinel."""
     n = len(HOUSEHOLDS)
     ids = np.arange(1, n + 1)
     amounts = np.broadcast_to(np.asarray(amount, dtype=float), (n,)).copy()
@@ -370,11 +372,11 @@ def test_a_year_past_the_horizon_is_served_from_the_last_projected_year(sim):
     one with an uprating attribute is scaled by that index from the last
     projected year, and any other is held at its last projected value."""
     last, after = PROJECTION_END_YEAR, PROJECTION_END_YEAR + 1
-    # The formula reads benunit_reported_capital, uprated from the last
-    # projected year, in place of the stored value, which was twice it.
+    # The complete Pension Credit override expires after the stored horizon.
+    # Its default is -1; the financial observation remains separately indexed.
     assert system.variables["pension_credit_reported_capital"].formulas
     assert sim.calculate("pension_credit_reported_capital", after).values == (
-        pytest.approx(sim.calculate("benunit_reported_capital", after).values)
+        pytest.approx(np.full(len(HOUSEHOLDS), -1))
     )
     assert sim.calculate("pension_credit_reported_capital", last).values == (
         pytest.approx(2 * sim.calculate("benunit_reported_capital", last).values)
@@ -400,7 +402,7 @@ def test_legacy_reported_capital_expires_only_after_the_horizon(projected):
     """Legacy survey files store programme capital without the shared input.
 
     Projection preserves that observation through the supported horizon.
-    Afterward the programme formula uses the absent shared input's sentinel,
+    Afterward the complete-override formula returns its default sentinel,
     matching direct-situation semantics rather than carrying the observation.
     """
     dataset = _dataset()

@@ -11,7 +11,7 @@ description: >
   not listed: the 10% applies where selling normally needs an agent, broker,
   solicitor or accountant (H1604-H1605), the costs of withdrawing money are
   not costs of sale (H1607), and an account is valued at its balance (H1675).
-  Existing domestic property is valued through property_sources with the same rate,
+  Countable property is valued through property_sources with the same rate,
   and real property always has costs of sale (H1606).
   `share_like_capital` retains the supplied `corporate_wealth` aggregate or
   the larger itemised-share total beyond float32 rounding, without adding
@@ -20,7 +20,7 @@ description: >
   `overseas_property_value` covers overseas land and property, and
   `other_property_value` covers other real estate with unspecified
   geography and type. Both use the real-property sale-expense treatment
-  when counted. These broad household sources cannot identify individual
+  through their separate property valuations. These broad household sources cannot identify individual
   beneficial ownership or every statutory disregard; no separate secured
   debt is available for either category.
 metadata:
@@ -43,5 +43,3 @@ metadata:
 values:
   2013-04-29:
     - share_like_capital
-    - overseas_property_value
-    - other_property_value

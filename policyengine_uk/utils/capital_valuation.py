@@ -27,7 +27,7 @@ SECURED_DEBT = {
 }
 
 
-def valued_capital(value_of, capital):
+def valued_capital(value_of, capital, *, sources=None):
     """Sum ``capital.sources`` at market value less sale expenses and secured debt.
 
     ``value_of(variable)`` returns that household variable on the entity the
@@ -37,9 +37,15 @@ def valued_capital(value_of, capital):
     penny under the programme's rule. A source carrying secured debt is never
     valued below nil. The total is in float64, unrounded: the caller rounds
     the capital it assesses at the last stage (``round_to_penny``).
+
+    ``sources`` can restrict the valuation to a subset of the configured
+    sources, for example property retained alongside a financial-only report.
     """
     total = 0
-    for source in capital.sources:
+    selected_sources = capital.sources if sources is None else sources
+    for source in selected_sources:
+        if source not in capital.sources:
+            continue
         value = exact_amount(value_of(source))
         if source in capital.sale_expenses.sources:
             value = less_sale_expenses(

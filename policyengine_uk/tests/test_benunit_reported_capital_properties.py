@@ -2,14 +2,14 @@
 
 A dataset records financial capital (the benefit unit's savings and
 investments, -1 when nothing is recorded). Universal Credit replaces only
-financial proxies with that observation; `uc_reported_capital` is a separate
-complete override and defaults to -1. Pension Credit continues to derive
-`pension_credit_reported_capital` from the observation.
+financial proxies with that observation. `uc_reported_capital` and
+`pension_credit_reported_capital` are separate complete overrides and both
+default to -1; Pension Credit also assesses the financial input separately.
 
 Invariants, over generated households of one or two benefit units:
 
-1. Derivation: Pension Credit's reported capital equals the financial input,
-   -1 included. UC's complete override remains -1 without an explicit value.
+1. Separation: both programmes' complete overrides remain -1 without an
+   explicit value, including when the financial input is supplied.
 2. Differential: without property or person-level capital, a financial
    observation gives the same assessment as explicitly setting that unit's
    complete override too. Each unit consumes the same amount from the financial
@@ -27,12 +27,13 @@ Invariants, over generated households of one or two benefit units:
 7. Periods: the input set for one year is uprated into later years. A
    programme variable set directly applies only to the years it is set, as for
    any formula variable. Later years use the financial input, when present,
-   while the complete UC override returns to -1.
+   while both complete programme overrides return to -1.
 """
 
 from pathlib import Path
 
 import numpy as np
+import pytest
 import yaml
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
@@ -41,6 +42,8 @@ import pandas as pd
 
 from policyengine_uk import Microsimulation, Simulation
 from policyengine_uk.data import UKSingleYearDataset
+
+pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
 YEAR = 2025
 SETTINGS = settings(
@@ -157,11 +160,11 @@ def test_financial_capital_matches_complete_override_without_nonfinancial_assets
     a, b = outputs(via_input), outputs(via_programmes)
     for i, unit in enumerate(units):
         assert a["uc_reported_capital"][i] == -1
-        assert a["pension_credit_reported_capital"][i] == unit["recorded"]
+        assert a["pension_credit_reported_capital"][i] == -1
         if unit["recorded"] >= 0:
             assert a["uc_assessable_capital"][i] == unit["recorded"]
     for v in OUTPUTS:
-        if v == "uc_reported_capital":
+        if v in PROGRAMME_VARIABLES:
             continue
         np.testing.assert_allclose(a[v], b[v], rtol=0, atol=1e-6, err_msg=v)
     for v in ["uc_assessable_capital", "pension_credit_assessable_capital"]:
@@ -178,7 +181,7 @@ def test_programme_variable_set_directly_wins_for_that_programme(case, base, uc)
     inputs[0]["uc_reported_capital"] = uc
     sim = simulate(units, household, inputs)
     assert sim.calculate("uc_reported_capital", YEAR)[0] == uc
-    assert sim.calculate("pension_credit_reported_capital", YEAR)[0] == base
+    assert sim.calculate("pension_credit_reported_capital", YEAR)[0] == -1
     assert sim.calculate("uc_assessable_capital", YEAR)[0] == uc
 
 
@@ -274,13 +277,13 @@ def test_stored_financial_observations_and_explicit_overrides_project_like_savin
             / sim.calculate("savings", 2025).values
         )
         assert np.all(growth > 1)
-        projected_names = ["pension_credit_reported_capital"]
-        if "uc_reported_capital" in columns:
-            projected_names.append("uc_reported_capital")
-        else:
+        projected_names = list(columns)
+        for name in PROGRAMME_VARIABLES:
+            if name in columns:
+                continue
             for year in [2025, 2027]:
                 np.testing.assert_array_equal(
-                    sim.calculate("uc_reported_capital", year).values,
+                    sim.calculate(name, year).values,
                     [-1, -1, -1],
                 )
         for name in projected_names:
@@ -303,10 +306,10 @@ def test_stored_financial_observations_and_explicit_overrides_project_like_savin
         )
 
 
-def _single_adult(benunit_inputs):
+def _single_adult(benunit_inputs, age=30):
     return Simulation(
         situation={
-            "people": {"p": {"age": {"2025": 30}}},
+            "people": {"p": {"age": {"2025": age}}},
             "benunits": {"b": {"members": ["p"], **benunit_inputs}},
             "households": {"h": {"members": ["p"], "savings": {"2025": 50_000}}},
         }
@@ -314,14 +317,17 @@ def _single_adult(benunit_inputs):
 
 
 def test_input_set_once_is_uprated_into_later_years():
-    sim = _single_adult({"benunit_reported_capital": {"2025": 10_000}})
+    sim = _single_adult({"benunit_reported_capital": {"2025": 10_000}}, age=75)
     index = sim.tax_benefit_system.parameters.get_child(
         "gov.economic_assumptions.indices.obr.per_capita.gdp"
     )
     expected = 10_000 * index("2026-01-01") / index("2025-01-01")
     assert sim.calculate("uc_reported_capital", 2026)[0] == -1
+    assert sim.calculate("pension_credit_reported_capital", 2026)[0] == -1
     np.testing.assert_allclose(
-        sim.calculate("pension_credit_reported_capital", 2026)[0], expected, rtol=1e-6
+        sim.calculate("pension_credit_assessable_capital", 2026)[0],
+        expected,
+        rtol=1e-6,
     )
     np.testing.assert_allclose(
         sim.calculate("uc_assessable_capital", 2026)[0], expected, rtol=1e-6

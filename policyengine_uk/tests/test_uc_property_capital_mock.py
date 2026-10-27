@@ -366,13 +366,17 @@ def test_mock_property_valuation_uses_the_assessment_year(tmp_path):
     assert simulation.calculate("uc_assessable_capital", 2026)[0] == 24_000
 
 
-# With nothing reported, Pension Credit values the property at 90% (SPC Regs
-# 2002 reg. 19(a)): 6,000 + 45,000.
-@pytest.mark.parametrize("reported, expected", [(6_000, 6_000), (0, 0), (-1, 51_000)])
-def test_mock_pension_credit_keeps_its_existing_reported_capital_contract(
-    tmp_path, reported, expected
+# Pension Credit retains property at 90% alongside financial-only reports
+# (SPC Regs 2002 reg. 19(a)): the report plus 45,000, or 6,000 + 45,000
+# when no financial capital is reported.
+@pytest.mark.parametrize(
+    "reported, expected_report, expected",
+    [(6_000, -1, 51_000), (0, -1, 45_000), (-1, -1, 51_000)],
+)
+def test_mock_pension_credit_financial_reports_preserve_property(
+    tmp_path, reported, expected_report, expected
 ):
-    """Changing UC's financial boundary does not change Pension Credit."""
+    """A financial observation excludes the separately imputed property."""
     simulation = _load_mock(
         tmp_path,
         _mock_year(
@@ -387,7 +391,10 @@ def test_mock_pension_credit_keeps_its_existing_reported_capital_contract(
     )
 
     assert simulation.calculate("uc_assessable_capital", YEAR)[0] == 0
-    assert simulation.calculate("pension_credit_reported_capital", YEAR)[0] == reported
+    assert (
+        simulation.calculate("pension_credit_reported_capital", YEAR)[0]
+        == expected_report
+    )
     assert (
         simulation.calculate("pension_credit_assessable_capital", YEAR)[0] == expected
     )

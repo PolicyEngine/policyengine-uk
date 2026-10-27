@@ -114,8 +114,8 @@ COUNTRY_UPRATED_INPUTS = frozenset({"water_and_sewerage_charges"})
 #
 # Past this year policyengine-core serves each stored input from the last
 # projected year. An input whose variable has a formula is calculated by it
-# instead (pension_credit_reported_capital reads benunit_reported_capital,
-# which the Enhanced FRS does not store, so it falls to -1); one whose
+# instead (the complete pension_credit_reported_capital override defaults
+# to -1, while financial observations are assessed separately); one whose
 # variable has an `uprating` attribute is scaled by that index; any other,
 # rent and council tax among them, is held at its last projected value.
 # A finite CGT scenario can shorten the whole dataset horizon; it never

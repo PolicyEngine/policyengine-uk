@@ -24,7 +24,7 @@ description: >
   residual is allocated by claimant/partner counts to benefit units with
   neither a financial observation nor a complete override, including units
   that do not receive UC. This allocation is an assumption about unobserved
-  ownership, not a statutory rule. Existing domestic property is valued and shared
+  ownership, not a statutory rule. Countable property is valued and shared
   independently through property_sources across ALL claimant/partner adults,
   with complete-override units consuming their shares. Main-home property and
   the named private_pension_wealth input are excluded under Schedule 10
@@ -38,8 +38,7 @@ description: >
   geography and type. These broad household categories cannot identify
   individual beneficial ownership or additional statutory disregards.
   No separate secured-debt input is available for either category. They use
-  this financial proxy pool, so financial reports replace their proxy values
-  and reported units consume their reports from its residual.
+  the separate property_sources route, independently of financial reports.
 metadata:
   label: Universal Credit financial capital proxy sources
   period: year
@@ -56,5 +55,3 @@ values:
     - savings
     - cash_isa
     - share_like_capital
-    - overseas_property_value
-    - other_property_value

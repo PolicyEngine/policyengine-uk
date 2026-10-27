@@ -2,6 +2,9 @@
 # UC Regulations 2013 reg.18(2) includes a single claimant's partner's capital.
 # https://www.legislation.gov.uk/ukpga/2012/5/section/5
 # https://www.legislation.gov.uk/uksi/2013/376/regulation/18
+# Property expectations deduct 10% sale expenses, then secured debt, under
+# https://www.legislation.gov.uk/uksi/2013/376/regulation/49
+# Capital above the limit fails https://www.legislation.gov.uk/uksi/2013/376/regulation/18
 # Allocating unreported household capital by claimant/partner count is a
 # PolicyEngine convention, not a statutory allocation rule.
 
@@ -220,8 +223,8 @@
         members: [first, second, partner]
         overseas_property_value: 18_000
   output:
-    # The override consumes 4,000 of the net pool; the other unit gets its residual.
-    uc_assessable_capital: [4_000, 12_200]
+    # The complete override consumes its property share; it is not redistributed.
+    uc_assessable_capital: [4_000, 10_800]
 
 - name: Universal Credit values unclassified other real estate less sale expenses
   period: 2026
@@ -279,8 +282,8 @@
         members: [first, second, partner]
         other_property_value: 18_000
   output:
-    # The override consumes 4,000 of the net pool; the other unit gets its residual.
-    uc_assessable_capital: [4_000, 12_200]
+    # The complete override consumes its property share; it is not redistributed.
+    uc_assessable_capital: [4_000, 10_800]
 
 - name: Universal Credit deducts sale expenses before combined secured debt for second homes and buy-to-let
   period: 2026
@@ -306,7 +309,7 @@
     # max(0, 90% of 120,000 - 120,000); no separate buy-to-let input.
     uc_assessable_capital: 0
 
-- name: A financial report overrides overseas property but retains domestic property capital
+- name: A financial report retains overseas and domestic property capital
   period: 2026
   absolute_error_margin: 0
   input:
@@ -315,12 +318,11 @@
     overseas_property_value: 18_000
     other_residential_property_value: 10_000
   output:
-    # The financial observation replaces the new category's proxy, while the
-    # independent domestic property pool retains 90% of the 10,000 stock.
-    uc_property_capital: 9_000
-    uc_assessable_capital: 9_000
+    # Regulation 49: 90% of both property stocks, independent of financial reports.
+    uc_property_capital: 25_200
+    uc_assessable_capital: 25_200
 
-- name: A financial report overrides unclassified other property but retains domestic property capital
+- name: A financial report retains unclassified other and domestic property capital
   period: 2026
   absolute_error_margin: 0
   input:
@@ -329,7 +331,98 @@
     other_property_value: 18_000
     non_residential_property_value: 10_000
   output:
-    # The financial observation replaces the new category's proxy, while the
-    # independent domestic property pool retains 90% of the 10,000 stock.
-    uc_property_capital: 9_000
-    uc_assessable_capital: 9_000
+    # Regulation 49: 90% of both property stocks, independent of financial reports.
+    uc_property_capital: 25_200
+    uc_assessable_capital: 25_200
+
+- name: Overseas property exceeds the UC capital limit without a financial report
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    overseas_property_value: 20_000
+  output:
+    # UC regulation 49(1)-(2): market value less 10% sale expenses, no debt.
+    uc_property_capital: 18_000
+    uc_assessable_capital: 18_000
+    is_uc_eligible: false
+
+- name: A zero financial report preserves overseas property above the UC capital limit
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    overseas_property_value: 20_000
+    benunit_reported_capital: 0
+  output:
+    uc_property_capital: 18_000
+    uc_assessable_capital: 18_000
+    is_uc_eligible: false
+
+- name: A complete UC override replaces overseas property and the financial report
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    overseas_property_value: 20_000
+    benunit_reported_capital: 0
+    uc_reported_capital: 4_000
+  output:
+    uc_property_capital: 18_000
+    uc_assessable_capital: 4_000
+    is_uc_eligible: true
+
+- name: Unclassified other property exceeds the UC capital limit without a financial report
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    other_property_value: 20_000
+  output:
+    uc_property_capital: 18_000
+    uc_assessable_capital: 18_000
+    is_uc_eligible: false
+
+- name: A zero financial report preserves unclassified other property above the UC capital limit
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    other_property_value: 20_000
+    benunit_reported_capital: 0
+  output:
+    uc_property_capital: 18_000
+    uc_assessable_capital: 18_000
+    is_uc_eligible: false
+
+- name: A complete UC override replaces unclassified other property and the financial report
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    other_property_value: 20_000
+    benunit_reported_capital: 0
+    uc_reported_capital: 4_000
+  output:
+    uc_property_capital: 18_000
+    uc_assessable_capital: 4_000
+    is_uc_eligible: true
+
+- name: A financial report adds to all property with sale expenses and secured debt applied once
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    savings: 50_000
+    benunit_reported_capital: 2_000
+    overseas_property_value: 20_000
+    other_property_value: 10_000
+    other_residential_property_value: 20_000
+    other_residential_property_secured_debt: 8_000
+    non_residential_property_value: 30_000
+    non_residential_property_secured_debt: 30_000
+  output:
+    # 18,000 + 9,000 + (18,000 - 8,000) + max(0, 27,000 - 30,000).
+    uc_property_capital: 37_000
+    uc_assessable_capital: 39_000
+    is_uc_eligible: false

@@ -44,11 +44,14 @@ from fractions import Fraction
 from functools import reduce
 
 import numpy as np
+import pytest
 from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
 from policyengine_uk.utils.capital_valuation import exact_amount, less_sale_expenses
+
+pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
 YEAR = 2026
 PROPERTY_SETTINGS = settings(
@@ -183,11 +186,13 @@ def expected_capital(unit, node, variable=None):
         for source in [
             "other_residential_property_value",
             "non_residential_property_value",
+            "overseas_property_value",
+            "other_property_value",
         ]:
             total += max(
                 0.0,
                 unit["assets"][source] * (1 - LEGAL_RATE)
-                - unit["debts"][DEBTS[source]],
+                - unit["debts"].get(DEBTS.get(source), 0.0),
             )
     for source in node.sources:
         value = source_value(unit, source)

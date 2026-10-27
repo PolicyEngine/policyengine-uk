@@ -108,7 +108,7 @@ the adjustment through the aggregate.
 
 Countable capital reads configured sources, rather than `property_wealth`.
 The new overseas and other-property inputs enter each affected programme's
-configured capital sources once and receive the existing real-property
+capital calculation once and receive the existing real-property
 sale-expense treatment. The shared `policyengine_uk/utils/capital_valuation.py` helper
 deducts source-specific sale expenses before mapped secured debt, with the
 existing zero floor for secured-property categories. A source appearing only
@@ -130,20 +130,29 @@ Universal Credit keeps financial `sources.yaml` separate from
 `property_sources.yaml` and `uc_property_capital`. Its existing domestic
 property valuation variables remain in that property pool, independent of
 financial `benunit_reported_capital` observations. The new overseas and
-unclassified other-property categories enter `sources.yaml` and
-`sale_expenses/sources.yaml`, so they use the financial proxy pool: a
-nonnegative `benunit_reported_capital` observation replaces them, and a report
-or complete override reduces the residual pool shared by unreported units.
+unclassified other-property categories follow the same route through
+`uc_overseas_property_capital` and `uc_other_property_capital`, which deduct
+sale expenses once before `uc_property_capital` allocates their net values.
+They are absent from the financial and financial sale-expense source lists.
+A financial-only report leaves all separately valued property counted.
 A complete `uc_reported_capital` override replaces the ordinary assessment
-before the existing company-capital substitution. Existing domestic property
+before the existing company-capital substitution. All countable property
 shares remain allocated across all claimant/partner adults, with
 complete-override units consuming their shares rather than redistributing
 them. Direct `owned_land` remains outside UC countable sources; adding it
 requires a separate model decision.
 
-The other five programmes retain their existing financial/property source
-lists, reported-capital precedence and household-to-benefit-unit allocation
-rules. `share_like_capital` retains the component-aware financial fallback,
+Pension Credit retains its source lists and pension-age-adult allocation.
+Its assessment combines a financial-only benefit-unit report with separately
+valued land and property before final rounding. Its independent complete
+override, `pension_credit_reported_capital`, defaults to -1; an explicitly
+supplied nonnegative override still replaces the whole total. Combining the
+financial report and property directly in the assessment avoids an intermediate
+rounded aggregate that could reduce counted property for large values.
+Housing Benefit's savings-credit-only route inherits that corrected total.
+Ordinary Housing Benefit, Income Support, income-based JSA and income-related
+ESA do not replace their source pools with a financial-only report, so their
+existing routing is retained. `share_like_capital` retains the component-aware financial fallback,
 so the new property sources do not restore `corporate_wealth` lists or add
 the underlying share components twice. Main residence and the separately
 identified private-pension input remain excluded from countable sources.
