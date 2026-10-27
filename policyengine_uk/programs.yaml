@@ -5,6 +5,30 @@
 
 programs:
   # --- HMRC programs ---
+  - id: lifetime_isa
+    name: Lifetime ISA
+    full_name: Lifetime Individual Savings Account bonus and withdrawal charge
+    category: Savings
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: lifetime_isa_bonus
+    parameter_prefix: gov.hmrc.isa.lifetime
+    verified_start_year: 2017
+    notes: Annual qualifying-payment bonus and gross-withdrawal charge, including individual first-home conditions. Assumes valid account opening and transaction qualification; does not update balances. Late-March 2020 withdrawals are outside the annual timing resolution.
+
+  - id: isa_cash_interest_charge
+    name: Non-cash ISA cash-interest charge
+    full_name: Final charge on cash interest in stocks-and-shares and innovative finance ISAs
+    category: Taxes
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: isa_cash_interest_flat_rate_charge
+    parameter_prefix: gov.hmrc.isa.cash_interest_charge
+    verified_start_year: 2027
+    notes: Separate final manager charge at the savings basic rate from 6 April 2027. Requires the cash-interest component as an input; subscription-limit compliance is not modelled.
+
   - id: income_tax
     name: Income tax
     full_name: Income Tax
@@ -15,7 +39,7 @@ programs:
     variable: income_tax
     parameter_prefix: gov.hmrc.income_tax
     verified_start_year: 2019
-    notes: Includes Scottish rates via devolved tax bands
+    notes: Includes Scottish rates via devolved tax bands, the high income child benefit charge and, from 2025-26, the winter fuel payment charge
 
   - id: national_insurance
     name: National Insurance
@@ -125,6 +149,19 @@ programs:
     verified_end_year: 2026
     notes: One car per person with supplied vehicle characteristics. Excludes vans, motorcycles, eVED and population imputation.
 
+  - id: gambling_duty
+    name: Gambling duties
+    full_name: Betting and gaming duties
+    category: Taxes
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: gambling_duty
+    parameter_prefix: gov.hmrc.gambling_duty
+    verified_start_year: 2024
+    verified_end_year: 2027
+    notes: Seven duty families on supplied attributed bases. Casino incidence uses a fixed FY2024/25 UK receipts/GB game yield proxy under household.consumption.gambling; review issue 2587. Excludes population imputation, verified machine-class-by-premises allocation and VAT-base repair.
+
   - id: student_loans
     name: Student loan repayments
     full_name: Student Loan Repayments
@@ -166,9 +203,9 @@ programs:
     coverage: UK
     variable: business_rates
     parameter_prefix: gov.hmrc.business_rates
-    verified_start_year: 2019
-    verified_end_year: 2021
-    notes: Parameters need updating beyond 2021
+    verified_start_year: 2020
+    verified_end_year: 2030
+    notes: Receipts allocated to households by shareholding. Local and central rating lists; outturn from 2020-21 (Northern Ireland's first year) to 2025-26 (Wales 2024-25), then OBR March 2026 receipts forecasts to 2030-31.
 
   - id: minimum_wage
     name: National Minimum Wage
@@ -356,7 +393,7 @@ programs:
     variable: winter_fuel_payment
     parameter_prefix: gov.dwp.winter_fuel_payment
     verified_start_year: 2022
-    notes: Great Britain to winter 2023-24, then England and Wales; Northern Ireland's mirror scheme uses the same parameters
+    notes: Great Britain to winter 2023-24, then England and Wales; Northern Ireland's mirror scheme uses the same parameters. From winter 2025-26 paid to everyone of pensionable age and recovered by the winter fuel payment charge (income tax)
 
   - id: ssmg
     name: Sure Start Maternity Grant
@@ -419,6 +456,19 @@ programs:
     verified_end_year: 2025
     notes: 570 free hours/year for 2-year-olds in families on qualifying benefits or low incomes; kept when the family is also eligible for the extended entitlement, which adds working parent hours on top.
 
+  - id: wales_childcare_offer
+    name: Childcare Offer for Wales
+    full_name: Childcare Offer for Wales (working parents of 3- and 4-year-olds)
+    category: Education
+    agency: Welsh Government
+    status: partial
+    coverage: Wales
+    variable: wales_childcare_offer
+    parameter_prefix: gov.welsh_government.childcare_offer
+    verified_start_year: 2020
+    verified_end_year: 2026
+    notes: The childcare element only, valued at the Welsh Government's hourly rate to providers. Up to 30 hours a week less the local authority's nursery education hours (10, the minimum) for 39 term weeks, and 30 hours for 9 holiday weeks. Nursery education, funded by local authorities, is not valued.
+
   - id: childcare_grant
     name: Childcare Grant
     full_name: Student Finance England Childcare Grant
@@ -429,7 +479,7 @@ programs:
     variable: childcare_grant
     parameter_prefix: gov.dfe.childcare_grant
     verified_start_year: 2025
-    notes: First-pass full-time undergraduate England model using explicit full-time, SEN, and childcare-support inputs plus maintenance-loan proxies; childcare_expenses are treated as out-of-pocket spend net of free hours
+    notes: First-pass full-time undergraduate England model using explicit full-time, SEN, and childcare-support inputs plus maintenance-loan proxies; eligible children's childcare_expenses are out-of-pocket spend net of free hours, aggregated and capped once per benefit unit. The model allocates the family award to the eldest eligible student parent; actual student partners can share it.
 
   - id: parents_learning_allowance
     name: Parents' Learning Allowance
@@ -546,12 +596,28 @@ programs:
     full_name: Energy Price Guarantee
     category: Benefits
     agency: Ofgem
-    status: complete
+    status: partial
     coverage: UK
     parameter_prefix: gov.ofgem
     verified_start_year: 2022
     verified_end_year: 2024
-    notes: Temporary program, ended 31 March 2024
+    notes: >-
+      Great Britain support ended 31 March 2024. Northern Ireland general unit
+      discounts ran 1 November 2022 to 30 June 2023; calculations require supplied
+      monthly fuel use, a full-rate applicability assertion and a compatible
+      pre-discount bill. Current microdata lack these inputs.
+
+  - id: warm_home_discount
+    name: Warm Home Discount
+    full_name: Warm Home Discount (England and Wales)
+    category: Benefits
+    agency: Ofgem
+    status: partial
+    coverage: England and Wales
+    variable: warm_home_discount
+    parameter_prefix: gov.ofgem.warm_home_discount
+    verified_start_year: 2025
+    notes: Supplier-funded bill rebate, outside household_net_income and gov_spending. Benefit-receipt rule from winter 2025-26; Scottish scheme not modelled
 
   # --- Scotland programs ---
   - id: scottish_income_tax
@@ -596,4 +662,4 @@ programs:
     variable: pension_age_winter_heating_payment
     parameter_prefix: gov.social_security_scotland.pawhp
     verified_start_year: 2024
-    notes: Replaced the Winter Fuel Payment in Scotland from winter 2024-25
+    notes: Replaced the Winter Fuel Payment in Scotland from winter 2024-25. From winter 2025-26 recovered by the winter fuel payment charge (income tax) above £35,000 of total income

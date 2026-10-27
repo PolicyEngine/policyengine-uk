@@ -249,9 +249,11 @@
         age: 70
         private_pension_income: 5_000
         housing_benefit_reported: 1
+        is_claimant_or_partner: true
       partner:
         age: 40
         employment_income: 2_000
+        is_claimant_or_partner: true
     benunits:
       benunit:
         members: [claimant, partner]
@@ -266,6 +268,7 @@
         rent: 5_720
         savings: 9_000
   output:
+    relation_type: COUPLE
     housing_benefit_pension_age_regulations_apply: false
     housing_benefit_on_passporting_benefit: true
     housing_benefit_applicable_income_disregard: 2_000

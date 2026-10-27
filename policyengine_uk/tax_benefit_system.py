@@ -30,6 +30,12 @@ from policyengine_uk.parameters.gov.contrib.create_private_pension_uprating impo
 from policyengine_uk.parameters.gov.dwp.state_pension.triple_lock.create_triple_lock import (
     add_triple_lock,
 )
+from policyengine_uk.parameters.gov.dwp.housing_benefit.allowances.create_pension_age_allowances import (
+    project_pension_age_allowances,
+)
+from policyengine_uk.parameters.gov.dwp.pension_credit.savings_credit.create_savings_credit_threshold import (
+    project_savings_credit_threshold,
+)
 from policyengine_uk.parameters.gov.dwp.universal_credit.rebalancing.create_health_element_uprating import (
     add_uc_health_element_uprating,
 )
@@ -38,6 +44,9 @@ from policyengine_uk.parameters.gov.dwp.universal_credit.rebalancing.create_stan
 )
 from policyengine_uk.parameters.gov.economic_assumptions.create_september_cpi_uprating import (
     add_september_cpi_uprating,
+)
+from policyengine_uk.parameters.gov.economic_assumptions.create_earnings_uprating import (
+    add_earnings_uprating,
 )
 from policyengine_uk.parameters.gov.economic_assumptions.create_economic_assumption_indices import (
     create_economic_assumption_indices,
@@ -79,6 +88,15 @@ from policyengine_uk.utils.parameters import (
     convert_to_fiscal_year_parameters,
 )
 
+from policyengine_uk.utils.ni_parameter_scales import (
+    LegacyNIParameter,
+    canonical_descendants,
+    canonical_ni_processing,
+    validate_ni_scale_compatibility,
+    canonical_ni_uprating_references,
+    canonicalize_ni_parameter_path,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -113,6 +131,7 @@ GENERATION_STEPS = (
     add_lagged_earnings,
     add_lagged_cpi,
     add_statutory_uprating_inputs,
+    add_earnings_uprating,
     add_triple_lock,
     add_september_cpi_uprating,
     create_economic_assumption_indices,
@@ -162,7 +181,7 @@ def process_parameter_tree(
     - lagged earnings and CPI indices
     - statutory uprating inputs (September CPI, May-July earnings)
     - triple lock calculations for state pensions
-    - September CPI uprating
+    - earnings and September CPI uprating
     - economic assumption indices
     - income tax and NICs threshold indexation after the freeze
     - Universal Credit standard allowance uprating (UC Act 2025 s. 1)
@@ -184,6 +203,7 @@ def process_parameter_tree(
     written just after the step that generates it (see
     ``_add_generated_parameters``).
     """
+    validate_ni_scale_compatibility(parameters)
     parameters = _add_generated_parameters(parameters, generated)
 
     # Create baseline parameters for reform comparisons
@@ -196,8 +216,15 @@ def process_parameter_tree(
         parameters.add_child("baseline", baseline)
 
     # Apply general parameter operations
-    parameters = propagate_parameter_metadata(parameters)
-    parameters = uprate_parameters(parameters)
+    with canonical_ni_processing(parameters):
+        propagate_parameter_metadata(parameters)
+        with canonical_ni_uprating_references(parameters):
+            uprate_parameters(parameters)
+    project_savings_credit_threshold(parameters)
+    project_pension_age_allowances(parameters)
+    if annualise:
+        project_savings_credit_threshold(parameters.baseline)
+        project_pension_age_allowances(parameters.baseline)
     parameters = backdate_parameters(parameters, BACKDATED_FROM)
     # Prior law's projected path for every parameter a reform can change: the
     # gov tree, before annualisation, and the trees outside it (household),
@@ -248,7 +275,8 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
 
     def reset_parameter_caches(self):
         """Clear dated views through their Core owners, retaining the tree."""
-        for node in [self.parameters, *self.parameters.get_descendants()]:
+        validate_ni_scale_compatibility(self.parameters)
+        for node in [self.parameters, *canonical_descendants(self.parameters)]:
             if isinstance(node, ParameterNode):
                 # The public operation clears this node and its ancestors;
                 # root-only clearing would leave cached descendants behind.
@@ -569,6 +597,8 @@ def _leaf_paths(node: ParameterNode, prefix: str = "") -> List[str]:
     paths = []
     for key, child in node.children.items():
         path = f"{prefix}.{key}" if prefix else key
+        if isinstance(child, LegacyNIParameter):
+            continue
         if isinstance(child, Parameter):
             paths.append(path)
         elif isinstance(child, ParameterNode):
@@ -593,7 +623,9 @@ def generated_parameter_defines() -> Callable[[str], bool]:
         _generated_paths_cache = frozenset(
             path
             for path in _leaf_paths(generated)
-            if not statutory(path) and canonicalize_lsr_parameter_path(path) == path
+            if not statutory(path)
+            and canonicalize_ni_parameter_path(canonicalize_lsr_parameter_path(path))
+            == path
         )
     return _generated_paths_cache.__contains__
 

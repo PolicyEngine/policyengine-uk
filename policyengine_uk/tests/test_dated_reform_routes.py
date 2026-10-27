@@ -1915,6 +1915,17 @@ def parameters_with_a_closed_span():
     return tuple(sorted(found))
 
 
+@pytest.fixture(scope="module", autouse=True)
+def release_parameter_caches():
+    # Drop the current-law leaf values (one table for each day asked for) and
+    # the parameter lists once this module's tests are done, instead of for
+    # the rest of the test process.
+    yield
+    current_law_leaf_values.cache_clear()
+    later_first_dated_parameters.cache_clear()
+    parameters_with_a_closed_span.cache_clear()
+
+
 @st.composite
 def restatements(draw):
     """A parameter's own stated value, written over part of its span."""
@@ -1927,12 +1938,27 @@ def restatements(draw):
     stop = start + datetime.timedelta(
         days=draw(st.integers(0, (ends - start).days - 1))
     )
-    route = draw(st.sampled_from(sorted(ROUTES)))
+    # Scenario.parameter_changes types its values as numbers and booleans, so
+    # a list-valued parameter (such as the Universal Credit capital sources)
+    # is restated through the other routes only.
+    routes = sorted(ROUTES)
+    if not isinstance(value, (int, float, bool)):
+        routes.remove("parameter_changes")
+    route = draw(st.sampled_from(routes))
     return name, start, stop, value, route
 
 
 @PROPERTY_SETTINGS
 @given(change=restatements())
+@example(
+    change=(
+        "gov.dwp.universal_credit.means_test.capital.person_sources",
+        datetime.date(2013, 4, 29),
+        datetime.date(2013, 4, 29),
+        [],
+        "reform_dict",
+    )
+)
 def test_restating_a_parameters_own_value_changes_nothing(change):
     name, start, stop, value, route = change
     simulation = ROUTES[route](as_dict(name, start, stop, value))
@@ -1941,3 +1967,99 @@ def test_restating_a_parameters_own_value_changes_nothing(change):
     for year in range(2015, 2040, 2):
         day = f"{year}-01-01"
         assert parameters_differing_from_current_law(parameters, day) == [], year
+
+
+# #1436: construction annualises statutory writes; Scenario.apply intentionally
+# retains its distinct direct-annualised-date contract.
+@pytest.mark.parametrize("route", ["reform_dict", "parameter_changes"])
+def test_future_1436_logged_write_detects_calendar_prefix_edit_and_public_rebuild_restores_it(
+    route,
+):
+    from policyengine_uk.utils.dated_reforms import reform_modifiers_are_effective
+
+    change = as_dict(VAT_STANDARD_RATE, "2041-04-06", "2042-04-05", 200.0)
+    situation = adult(years=(2041, 2042))
+    simulation = ROUTES[route](change, situation=situation)
+    system = simulation.tax_benefit_system
+    scenario = Scenario.from_reform(change)
+    recorded = tuple(system.dated_assignments)
+    assert any(
+        entry.path == VAT_STANDARD_RATE and entry.value == 200 for entry in recorded
+    )
+    assert annual(simulation, VAT_STANDARD_RATE, 2041) == 200
+    assert reform_modifiers_are_effective(scenario.dated_reforms, system)
+    rate = system.parameters.get_child(VAT_STANDARD_RATE)
+    rate.update(start=instant_("2041-01-01"), stop=instant_("2041-01-01"), value=999)
+    assert annual(simulation, VAT_STANDARD_RATE, 2041) == 999
+    assert rate("2041-01-02") == 200
+    assert tuple(system.dated_assignments) == recorded
+    # These points are outside the raw April-to-April write but inside the
+    # corresponding annual label. The old effectiveness window misses them.
+    assert not reform_modifiers_are_effective(scenario.dated_reforms, system)
+    # Public statutory rebuild, not Scenario.apply's intentional annualised
+    # override semantics. Its independent expected January value is 200.
+    simulation.apply_parameter_changes(change)
+    assert annual(simulation, VAT_STANDARD_RATE, 2041) == 200
+    assert system.parameters.get_child(VAT_STANDARD_RATE)("2041-12-31") == 200
+
+
+def test_future_1436_scenario_apply_keeps_direct_annualised_dates(caplog):
+    simulation = Simulation(situation=adult(years=(2041, 2042)))
+    before = annual(simulation, VAT_STANDARD_RATE, 2041)
+    with caplog.at_level("WARNING", logger="policyengine_uk.utils.scenario"):
+        Scenario.from_reform(
+            as_dict(VAT_STANDARD_RATE, "2041-04-06", "2042-04-05", 0.73)
+        ).apply(simulation)
+    assert any(
+        record.name == "policyengine_uk.utils.scenario"
+        and record.levelname == "WARNING"
+        and record.getMessage()
+        == (
+            "Scenario.apply edits the built simulation's annualised parameters, "
+            "so its dated reform keys are not annualised again. Pass the scenario "
+            "when constructing the Simulation to apply them on the statutory timeline."
+        )
+        for record in caplog.records
+    )
+    rate = simulation.tax_benefit_system.parameters.get_child(VAT_STANDARD_RATE)
+    assert rate("2041-01-01") == before
+    assert rate("2041-04-06") == 0.73
+    assert rate("2042-01-01") == 0.73
+    assert rate("2042-04-06") != 0.73
+
+
+def test_future_1436_failed_annualised_batch_restores_exact_saved_list_and_flags(
+    monkeypatch,
+):
+    simulation = Simulation(situation=adult(years=(2041, 2042)))
+    system = simulation.tax_benefit_system
+    rate = system.parameters.get_child(BASIC_RATE)
+    saved_list = rate.values_list
+    before = rate("2041-01-01")
+    path, node = [], rate
+    while node is not None:
+        node.modified = False
+        path.append(node)
+        node = getattr(node, "parent", None)
+    reform = Reform.from_dict(
+        {BASIC_RATE: {"2041-01-01": 0.73}, UC_SINGLE_OLD: {"not-a-date": 1}},
+        country_id="uk",
+    )
+    original = tbs_module.apply_legacy_overrides
+    observed = {}
+
+    def spy(parameters, overrides):
+        try:
+            return original(parameters, overrides)
+        except Exception:
+            observed["updated_before_failure"] = rate.values_list is not saved_list
+            raise
+
+    monkeypatch.setattr(tbs_module, "apply_legacy_overrides", spy)
+    with pytest.raises(ValueError):
+        Scenario.from_reform(reform).apply(simulation)
+    assert observed == {"updated_before_failure": True}
+    assert rate.values_list is saved_list
+    assert rate("2041-01-01") == before
+    assert system.legacy_overrides == []
+    assert not any(node.modified for node in path)

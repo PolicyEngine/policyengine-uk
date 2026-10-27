@@ -6,6 +6,15 @@ import numpy as np
 # each other are the same, and an award within half a penny of zero is none.
 HALF_PENNY = 0.005
 
+# For each award award_of_members reads, the person-level variable saying the
+# award on a member's report has ended. Its formula leaves those reports out:
+# income-related ESA also ends for the claimant and partner of a family that
+# claims Universal Credit (esa_income_report_closed).
+REPORT_CLOSED = {
+    "esa_income": "esa_income_report_closed",
+    "jsa_income": "person_legacy_benefits_closed",
+}
+
 
 def add_for_members(benunit, period, variables, members):
     """Sum variables over the benefit-unit members a means test counts.
@@ -57,8 +66,10 @@ def award_of_members(benunit, period, award, report, award_on_reports, members):
     """The part of the benefit-unit award ``award`` that ``members`` claim.
 
     ``report`` is the person-level report behind the award and
-    ``award_on_reports(benunit, period, reported)`` the award the formula of
-    ``award`` gives on a reported amount. Which awards ``award`` holds is
+    ``award_on_reports(benunit, period, reported, members=None)`` the award the formula of
+    ``award`` gives on unsummed open person reports. Its optional mask selects
+    reports while preserving the original claimant/partner roles. Which awards
+    ``award`` holds is
     decided by value: when it holds the award its formula gives on all
     reported awards, this is the same award on the reports of ``members``;
     when it holds the plain total of the reports (as the
@@ -80,8 +91,11 @@ def award_of_members(benunit, period, award, report, award_on_reports, members):
     reported = person(report, period)
     reported_total = benunit.sum(reported)
     members_reported = benunit.sum(reported * members)
-    award_on_all_reports = award_on_reports(benunit, period, reported_total)
-    award_on_members_reports = award_on_reports(benunit, period, members_reported)
+    # Formula awards omit reports whose own award has closed. Keep the raw
+    # totals above for disable_simulated_benefits and direct-value provenance.
+    open_reported = reported * ~person(REPORT_CLOSED[award], period)
+    award_on_all_reports = award_on_reports(benunit, period, open_reported)
+    award_on_members_reports = award_on_reports(benunit, period, open_reported, members)
     # Compare in the precision the award is stored in (float32), so the
     # formula's own award always matches the award recomputed here.
     stored = stored_award.dtype
@@ -105,8 +119,9 @@ def claimant_or_partner_award(benunit, period, award, reported, award_on_reports
     ``award`` names the stored award (esa_income or jsa_income), which covers
     every member of the benefit unit, and ``reported`` the person-level
     reported amount it is built from. ``award_on_reports(benunit, period,
-    amount)`` is the award paid on a reported amount: the benefit's screen
-    and tariff income (income_related_esa_award, income_related_jsa_award).
+    reports, members=None)`` applies the formula to open person reports:
+    one claim for the original couple and a separate claim for each outside
+    reporter, with each claim's existing work/capital screen and tariff.
 
     This is award_of_members for the claimant and partner, so which awards
     the stored value holds is decided by its value, compared in the

@@ -53,7 +53,7 @@
         uc_is_in_startup_period: true
         uc_income_tax_on_earnings: 0
         uc_national_insurance_on_earnings: 0
-        income_tax: 0
+        income_tax_before_winter_fuel_payment_charge: 0
         national_insurance: 0
       child_1:
         age: 1
@@ -104,7 +104,7 @@
     uc_trading_losses_set_against_profits: 5_000
     uc_individual_earned_income_before_mif: 7_000
     uc_individual_earned_income: 20_000
-    # Actual £7,000 is below £10,152, even though the MIF is £20,000.
+    # Actual £7,000 is below £10,572, even though the MIF is £20,000.
     is_uc_benefit_cap_exempt_earnings: false
 
 - name: Company earnings without the loss exceed the cap threshold with the same deductions
