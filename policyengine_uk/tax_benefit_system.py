@@ -190,9 +190,9 @@ def process_parameter_tree(
     - Universal Credit standard allowance uprating (UC Act 2025 s. 1)
     - Universal Credit LCWRA element uprating (UC Act 2025 s. 3 freeze)
     - parameter uprating and backdating
-    - projections derived from uprated parameters: the Savings Credit
-      threshold, the pension-age Housing Benefit allowances and the Carer's
-      Allowance earnings limit
+    - projections derived from other parameters after uprating: the
+      Savings Credit threshold, the pension-age Housing Benefit allowances
+      and the Carer's Allowance earnings limit
     - conversion to fiscal year parameters
 
     Returns the tree and each parameter's timeline after projection (for gov

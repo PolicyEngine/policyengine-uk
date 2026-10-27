@@ -9,14 +9,17 @@ from 16 x £12.21 = £195.36, and £204 from 16 x £12.71 = £203.36 (SI 2026/21
 Keep the legislated amounts and derive only later years, from the national
 living wage in force on 30 April, as the April up-rating sets the limit.
 
-The limit has never been cut: each amount since 2015 is at least the one
-before it. A year in which the national living wage would give a lower limit
-keeps the limit in force before it.
+Each projected year is the rule alone. A reform that lowers the national
+living wage or the hours lowers the limit, and one that changes a single year
+changes that year only. While the national living wage never falls below its
+April 2026 rate, no projected year is below £204.
 
 Run after general uprating and before fiscal-year conversion, on both the
 main tree and its baseline copy, as the Savings Credit threshold projection
 is. Reprocessing a reform then reads its changed national living wage or
-hours.
+hours. The exceptions edit the processed parameters, so they do not move the
+limit: ``Scenario.apply`` on an already-built simulation, and a reform-dict
+key naming a single day or month.
 """
 
 import math
@@ -33,8 +36,9 @@ from policyengine_uk.parameters.gov.dwp.pension_credit.savings_credit.create_sav
 def national_living_wage_limit(hours: float, national_living_wage: float) -> float:
     """``hours`` at the national living wage, rounded up to the next pound.
 
-    Rounding to six places first keeps an exact amount, such as 16 x £13.25 =
-    £212, from rounding up when a float holds the wage just above £13.25.
+    Rounding to six places first keeps an exact amount from rounding up when
+    the float product sits just above it: 20 x (1,020 x 0.01) is
+    204.00000000000003, which must give £204, not £205.
     """
     return float(math.ceil(round(hours * national_living_wage, 6)))
 
@@ -52,7 +56,7 @@ def project_carers_allowance_earnings_limit(
         # esa_exempt_work_higher_earnings_limit.
         national_living_wage = wage.get_at_instant(instant(sample)).amounts[-1]
         hours = carers_allowance.earnings_limit_national_living_wage_hours(sample)
-        return max(previous, national_living_wage_limit(hours, national_living_wage))
+        return national_living_wage_limit(hours, national_living_wage)
 
     extend_after_last_stated(
         carers_allowance.earnings_limit, last_projected_year(parameters), derive

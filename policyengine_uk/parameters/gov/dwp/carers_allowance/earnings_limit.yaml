@@ -4,8 +4,7 @@ description: Weekly earnings above which a person is treated as gainfully employ
 # to the nearest pound (Explanatory Memorandum to SI 2025/352, paragraph 5.6).
 # Years after the last value here are projected that way, from the national
 # living wage and gov.dwp.carers_allowance.earnings_limit_national_living_wage_hours,
-# by create_earnings_limit_projection.py. A projected year never lowers the
-# limit.
+# by create_earnings_limit_projection.py.
 metadata:
   economy: false
   period: week

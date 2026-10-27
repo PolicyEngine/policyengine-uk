@@ -15,17 +15,20 @@ Invariants, for every national living wage path and hours value:
    amount earnings_limit.yaml states for it, whatever the wage.
 2. The rule reproduces the legislated amounts from the legislated wages:
    ceil(16 x £12.21) = £196 and ceil(16 x £12.71) = £204.
-3. Floor: no projected year is below the last legislated amount, nor below
-   the year before it.
-4. Rule: a projected year is ceil(hours x the national living wage in force on
-   30 April), unless that is below the year before's limit, which then holds.
-   Holding is intended: the limit has never been cut, and the rule is stated
-   for wages that rise. For a wage path that never falls below the last
-   legislated wage, every projected year equals the rule.
+3. Rule: a projected year is ceil(hours x the national living wage in force on
+   30 April), whatever the years before it were. A reform that lowers the
+   wage or the hours lowers the limit, and one that changes a single year
+   changes that year only.
+4. Floor: while the national living wage is at least its April 2026 rate and
+   the hours at least 16, no projected year is below the last legislated
+   amount. The model's own projection never takes the wage below that rate.
 5. Exact pounds (differential against exact arithmetic): a wage at which the
    hours come to a whole number of pounds, such as 16 x £13.25 = £212, gives
-   that number, not one more.
+   that number, not one more, for every wage in whole pence however the float
+   holds it.
 6. The entitlement test reads the projected limit.
+7. The baseline copy of the parameters keeps current law's limit under a
+   reform.
 """
 
 import datetime
@@ -65,27 +68,34 @@ LAST_CHECKED = 2040
 # The adult brackets (21 to 22, 23 to 24, 25 and over): the national living
 # wage since April 2024.
 NLW_BRACKETS = (2, 3, 4)
+# The national living wage in force when the last amount was legislated
+# (£12.71 from April 2026), in pence.
+LAST_WAGE_PENCE = 1_271
+HOURS = 16
 WEEKS = 52
 
 SITUATION = {"people": {"carer": {"age": {"2026": 45}}}}
 
 
-def _wage_reform(wages):
-    """Set the national living wage for each {year: wage}."""
+def _wage_reform(wages, brackets=NLW_BRACKETS):
+    """Set the national living wage for each fiscal {year: wage}."""
     return {
         f"gov.hmrc.minimum_wage.non_apprentice[{bracket}].amount": {
             str(year): wage for year, wage in wages.items()
         }
-        for bracket in NLW_BRACKETS
+        for bracket in brackets
     }
 
 
-def _paths(reform=None, years=range(2015, LAST_CHECKED + 1)):
+def _parameters(reform=None):
+    return Simulation(situation=SITUATION, reform=reform).tax_benefit_system.parameters
+
+
+def _paths(reform=None, years=range(2015, LAST_CHECKED + 1), parameters=None):
     """Each year's earnings limit and national living wage, as the model
     reads them for that (fiscal) year."""
-    parameters = Simulation(
-        situation=SITUATION, reform=reform
-    ).tax_benefit_system.parameters
+    if parameters is None:
+        parameters = _parameters(reform)
     limits, wages, hours = {}, {}, {}
     for year in years:
         p = parameters(f"{year}-01-01")
@@ -103,14 +113,18 @@ def _stated_limit(year):
     return [v for d, v in LIMIT_VALUES if d <= datetime.date(year, 4, 30)][-1]
 
 
+def _rule(hours, wage):
+    return math.ceil(Fraction(str(hours)) * Fraction(str(wage)))
+
+
 def _check_invariants(limits, wages, hours):
+    """Invariants 1, 3 and 4."""
     for year in range(2015, FIRST_PROJECTED):
         assert limits[year] == _stated_limit(year), year
     for year in range(FIRST_PROJECTED, LAST_CHECKED + 1):
-        rule = math.ceil(Fraction(str(hours[year])) * Fraction(str(wages[year])))
-        assert limits[year] >= LAST_LIMIT, year
-        assert limits[year] >= limits[year - 1], year
-        assert limits[year] == max(limits[year - 1], rule), (year, wages[year])
+        assert limits[year] == _rule(hours[year], wages[year]), (year, wages[year])
+        if wages[year] >= LAST_WAGE_PENCE / 100 and hours[year] >= HOURS:
+            assert limits[year] >= LAST_LIMIT, year
 
 
 def test_the_rule_reproduces_the_legislated_amounts():
@@ -126,11 +140,13 @@ def test_the_rule_reproduces_the_legislated_amounts():
 
 def test_baseline_projection_follows_the_model_national_living_wage():
     """Invariants 1, 3 and 4 on the model's own projection, whatever its
-    national living wage path is."""
-    _check_invariants(*_paths())
-
-
-pence = st.integers(min_value=1_000, max_value=2_000)
+    national living wage path is. That path never falls below the April 2026
+    rate, so no projected year is below £204."""
+    limits, wages, hours = _paths()
+    _check_invariants(limits, wages, hours)
+    for year in range(FIRST_PROJECTED, LAST_CHECKED + 1):
+        assert wages[year] >= LAST_WAGE_PENCE / 100, year
+        assert limits[year] >= LAST_LIMIT, year
 
 
 @settings(
@@ -139,33 +155,73 @@ pence = st.integers(min_value=1_000, max_value=2_000)
     derandomize=True,
     suppress_health_check=[HealthCheck.too_slow],
 )
-@given(wages=st.lists(pence, min_size=6, max_size=6))
+@given(
+    legislated=st.lists(st.integers(1_000, 2_000), min_size=2, max_size=2),
+    projected=st.lists(st.integers(LAST_WAGE_PENCE, 2_000), min_size=4, max_size=4),
+)
 # A rising path that hits whole pounds: 16 x £13.25 = £212 and 16 x £13.50 =
 # £216 exactly, which must not round up to £213 and £217.
-@example(wages=[1_221, 1_271, 1_325, 1_350, 1_375, 1_400])
-# A wage that falls after 2027: the limit holds at £212 rather than falling.
-@example(wages=[1_221, 1_271, 1_325, 1_200, 1_000, 1_400])
+@example(legislated=[1_221, 1_271], projected=[1_325, 1_350, 1_375, 1_400])
+# A path that rises and falls back to the April 2026 rate: the limit follows
+# it down to £204 and no further.
+@example(legislated=[1_221, 1_271], projected=[1_400, 1_271, 1_300, 1_271])
 # Wages below the legislated ones in the legislated years change nothing there.
-@example(wages=[1_000, 1_000, 1_300, 1_300, 1_300, 1_300])
-def test_projection_follows_any_national_living_wage_path(wages):
-    """Invariants 1, 3 and 4 for a reformed wage in 2025 to 2030. Later years
-    take the model's own wage again."""
-    reform = _wage_reform({year: p / 100 for year, p in zip(range(2025, 2031), wages)})
+@example(legislated=[1_000, 1_000], projected=[1_300, 1_300, 1_300, 1_300])
+def test_projection_follows_any_national_living_wage_path(legislated, projected):
+    """Invariants 1, 3 and 4 for any national living wage in 2025 and 2026 and
+    any at or above the April 2026 rate in 2027 to 2030: each projected year
+    is ceil(16 x the wage) and none is below £204. Later years take the
+    model's own wage again."""
+    wages = [p / 100 for p in legislated + projected]
+    reform = _wage_reform(dict(zip(range(2025, 2031), wages)))
     limits, model_wages, hours = _paths(reform)
-    for year, p in zip(range(2025, 2031), wages):
-        assert model_wages[year] == pytest.approx(p / 100), year
+    for year, wage in zip(range(2025, 2031), wages):
+        assert model_wages[year] == pytest.approx(wage), year
     _check_invariants(limits, model_wages, hours)
-    # A path that never falls below the last legislated wage follows the rule
-    # in every year it sets.
-    path = [12.71] + [p / 100 for p in wages[2:]]
-    if all(later >= earlier for earlier, later in zip(path, path[1:])):
-        for year, p in zip(range(FIRST_PROJECTED, 2031), wages[2:]):
-            assert limits[year] == math.ceil(Fraction(16 * p, 100)), year
+    for year in range(FIRST_PROJECTED, LAST_CHECKED + 1):
+        assert limits[year] >= LAST_LIMIT, year
+    for year, p in zip(range(FIRST_PROJECTED, 2031), projected):
+        assert limits[year] == math.ceil(Fraction(HOURS * p, 100)), year
+
+
+def test_reforms_lower_the_limit_and_change_only_their_own_years():
+    """Invariants 3 and 7, and which wage the rule reads.
+
+    - 12 hours in 2027-28 and 20 hours in 2028-29 only.
+    - A national living wage of £12.00 in 2029-30, below the April 2026 rate.
+    - £14.50 for the 25 and over band alone in 2030-31: the rule reads that
+      band, the last.
+    Each year takes the rule from that year's own hours and wage, so the limit
+    falls below £204 in 2027-28 and 2029-30 and returns to the model's path
+    after 2030-31. The baseline copy keeps current law's limit throughout."""
+    reform = _wage_reform({2029: 12.00})
+    reform["gov.hmrc.minimum_wage.non_apprentice[4].amount"]["2030"] = 14.50
+    reform["gov.dwp.carers_allowance.earnings_limit_national_living_wage_hours"] = {
+        "2027": 12,
+        "2028": 20,
+    }
+    parameters = _parameters(reform)
+    limits, wages, hours = _paths(parameters=parameters)
+    current_law, current_wages, _ = _paths()
+    _check_invariants(limits, wages, hours)
+    assert hours[2027] == 12 and hours[2028] == 20 and hours[2029] == 16
+    assert limits[2027] == _rule(12, current_wages[2027]) < LAST_LIMIT
+    assert limits[2028] == _rule(20, current_wages[2028])
+    assert limits[2029] == 192
+    assert wages[2030] == 14.50
+    adult_bands = parameters("2030-01-01").gov.hmrc.minimum_wage.non_apprentice
+    assert adult_bands.amounts[2] == current_wages[2030]
+    assert limits[2030] == 232
+    for year in range(2031, LAST_CHECKED + 1):
+        assert limits[year] == current_law[year], year
+    baseline = parameters.baseline.gov.dwp.carers_allowance.earnings_limit
+    for year in range(2015, LAST_CHECKED + 1):
+        assert baseline(f"{year}-04-30") == current_law[year], year
 
 
 def test_hours_change_only_projected_years():
-    """Invariant 1 and 4 for the hours: 20 hours from 2027 at the model's wage
-    leaves 2025 and 2026 at their legislated amounts."""
+    """Invariants 1 and 3 for the hours: 20 hours from 2025 on leaves 2025
+    and 2026 at their legislated amounts and sets every later year."""
     reform = {
         "gov.dwp.carers_allowance.earnings_limit_national_living_wage_hours": {
             "2025-01-01.2100-12-31": 20
@@ -184,8 +240,9 @@ def test_hours_change_only_projected_years():
 def test_whole_pounds_are_exact_for_every_wage_in_pence(representation):
     """Invariant 5, exhaustively for wages from 1p to £50 and 1 to 40 hours,
     against exact arithmetic. "multiplied" holds the wage as uprating's
-    rounding does (pence x 0.01), which can sit just above the exact amount:
-    1,325 x 0.01 is 13.250000000000002."""
+    rounding does (pence x 0.01). The product can then sit just above the
+    exact amount: 20 x (1,020 x 0.01) is 204.00000000000003."""
+    assert 20 * (1_020 * 0.01) > 204
     for hours in range(1, 41):
         for p in range(1, 5_001):
             wage = p / 100 if representation == "divided" else p * 0.01
