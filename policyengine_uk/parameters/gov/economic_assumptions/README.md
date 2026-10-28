@@ -327,7 +327,7 @@ Competitiveness Scheme brings consumers outside energy-intensive industry
 
 | Parameter | Contents | Source |
 |---|---|---|
-| `ons` | Monthly CPI indices, 2015 = 100, from January 2015: electricity (D7DT), gas (D7DU) and electricity, gas and solid fuels (DK9U, classes 04.5.1, 04.5.2 and 04.5.4); and their annual CPI weights (CJXA, CJXB, A9F4) | ONS MM23 |
+| `ons` | Monthly CPI indices, 2015 = 100, from January 2015: electricity (D7DT), gas (D7DU) and electricity, gas and solid fuels (DK9U, classes 04.5.1, 04.5.2 and 04.5.4); their annual CPI weights (CJXA, CJXB, A9F4); and, as node metadata, `last_full_quarter`, the last quarter ONS publishes all three months of in every series | ONS MM23 |
 | `obr.utilities` | CPI utilities (electricity and gas) inflation, year on year, by quarter, from the first quarter ONS has not published in full | EFO economy tables, CPI category inflation (Table 1.19 in October 2026) |
 | `consumption_shares` | Each calendar quarter's share of a year's domestic electricity and of domestic gas consumption, the mean over the complete years from 2015 | DESNZ Energy Trends ET 5.2 and ET 4.1 |
 | `embedded_electricity_vat` | The VAT rate on domestic electricity that the published prices and forecast include, in Great Britain and in Northern Ireland, and Northern Ireland's share of UK domestic electricity consumption (2.69% in 2024), which weights them | SI 2026/987, Budget 2026 and its policy costings, EFO paragraph 3.10, DESNZ subnational consumption statistics |
@@ -344,8 +344,8 @@ OBR assumed, which a reform to `gov.hmrc.vat` does not change.
 parameters are processed, builds three series for each of `electricity`,
 `gas` and `electricity_gas_and_solid_fuels`:
 
-- `quarterly`, 2015Q1 to 2042Q1. Where ONS publishes all three months of a
-  quarter (to 2026Q3 in the October 2026 inputs), the mean of the monthly
+- `quarterly`, 2015Q1 to 2042Q1. To `last_full_quarter` (2026Q3 in the
+  October 2026 inputs), the mean of the monthly
   index, each month divided by the VAT factor its price includes,
   `1 + s × ((1 + r) / (1 + b) − 1)`. Here `r` is the UK rate on domestic
   electricity in the published price on the 15th of the month (the Great
@@ -367,6 +367,16 @@ Where `held_flat` is true for a year, both annual series take the previous
 year's level. `no_economic_assumptions` sets it from its first input year as
 it zeroes the growth series, and since it is a raw input, every later rebuild
 of the indices keeps it.
+
+Every input is read at the month or quarter it applies to, not from its
+stated dates, so a reform can state one value for a year or a span of
+quarters: `{"gov.economic_assumptions.energy_prices.obr.utilities": {"2027":
+0.1}}` sets utilities inflation to 10% in each quarter of 2027 (through
+Core's `Reform.from_dict` a bare year applies from that year onward). The ONS
+prices are read only to the end of `last_full_quarter` and `obr.utilities`
+only after it, and a reform cannot move that boundary. A forecast quarter
+grows from the level a year earlier, so a reform to the ONS prices also moves
+the forecast levels, though not their growth.
 
 ### Limits
 
@@ -436,10 +446,11 @@ of the indices keeps it.
 8. Refresh the household energy price inputs (see
    [Household energy prices](#household-energy-prices)) from the new EFO's
    economy tables, the MM23 release of the same month and the latest Energy
-   Trends tables. The importer takes the OBR forecast from the first quarter
-   ONS has not published in full, and stops before writing anything if an
-   MM23 series has a gap, if the series come from different releases or if
-   Table 1.19 has no quarter after the ONS outturn. Then check
+   Trends tables. The importer records the last quarter ONS publishes in
+   full as `last_full_quarter`, takes the OBR forecast from the quarter after
+   it, and stops before writing anything if an MM23 series has a gap, if the
+   series come from different releases or if Table 1.19 has no quarter after
+   the ONS outturn. Then check
    `embedded_electricity_vat.yaml` against the VAT on domestic electricity
    the EFO assumes. Replace the cut-down sources in
    `policyengine_uk/tests/fixtures/energy_prices/` and their SHA-256s, and

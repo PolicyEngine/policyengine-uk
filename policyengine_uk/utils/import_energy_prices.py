@@ -6,7 +6,9 @@ rewrites ``ons.yaml``, ``obr.yaml`` and ``consumption_shares.yaml`` under
 
 - ONS MM23, the consumer price inflation time series (CSV): the monthly CPI
   indices for electricity (D7DT), gas (D7DU) and electricity, gas and solid
-  fuels (DK9U), and their annual CPI weights (CJXA, CJXB, A9F4), from 2015;
+  fuels (DK9U), and their annual CPI weights (CJXA, CJXB, A9F4), from 2015,
+  with the last quarter ONS publishes all three months of in every series
+  (``last_full_quarter``), where the generation step ends the outturn;
 - the economy workbook of an OBR Economic and fiscal outlook's detailed
   forecast tables: Table 1.19's year-on-year CPI utilities inflation, for the
   quarters after the last one ONS publishes all three months of;
@@ -242,11 +244,17 @@ def _long_date(day: date) -> str:
 
 def render_ons_yaml(mm23: Mm23) -> str:
     released = _long_date(mm23.release)
+    year, quarter = last_complete_quarter(mm23)
     lines = [
         "# Written by policyengine_uk/utils/import_energy_prices.py from ONS MM23.",
         "# Rerun the importer on a new MM23 release; do not edit by hand.",
         "description: ONS consumer prices index series that the household energy "
         "price indices are built from.",
+        "metadata:",
+        "  # The last quarter ONS publishes all three months of in every series.",
+        "  # The indices use the prices to its end and the OBR forecast after it;",
+        "  # a reform to the prices cannot move it.",
+        f"  last_full_quarter: {year}Q{quarter}",
     ]
     for series in ONS_SERIES:
         lines += [

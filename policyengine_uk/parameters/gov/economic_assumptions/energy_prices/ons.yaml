@@ -1,6 +1,11 @@
 # Written by policyengine_uk/utils/import_energy_prices.py from ONS MM23.
 # Rerun the importer on a new MM23 release; do not edit by hand.
 description: ONS consumer prices index series that the household energy price indices are built from.
+metadata:
+  # The last quarter ONS publishes all three months of in every series.
+  # The indices use the prices to its end and the OBR forecast after it;
+  # a reform to the prices cannot move it.
+  last_full_quarter: 2026Q3
 electricity:
   description: ONS CPI index for electricity (class 04.5.1, series D7DT), monthly, 2015 = 100. The prices include VAT at the rate in force.
   metadata:

@@ -21,6 +21,9 @@ Invariants:
 6. Higher OBR growth in one forecast quarter raises that quarter and the same
    quarter of each later year, and nothing else.
 7. ``held_flat`` from a year holds the annual levels at the year before.
+8. Inputs are read at each month and quarter, so a reform that states one
+   value for a year or a span of quarters sets each month or quarter in it,
+   and the outturn ends at ``last_full_quarter`` whatever a reform states.
 """
 
 import math
@@ -320,11 +323,46 @@ def test_a_forecast_that_starts_after_the_outturn_ends_is_an_error(raw):
         build(raw, edit)
 
 
+def test_the_ons_prices_state_every_month_to_the_last_full_quarter(raw):
+    # The generator reads each month's effective price, so a month missing
+    # from the file would silently take the month before's.
+    inputs = indices.EnergyPriceInputs(raw.clone())
+    assert inputs.last_outturn == OUTTURN[-1]
+    months = {
+        f"{year:04d}-{month:02d}-01"
+        for quarter in OUTTURN
+        for year, month in indices._months(quarter)
+    }
+    for key in SERIES:
+        assert months <= set(indices._stated(prices_of(raw).ons.get_child(key))), key
+
+
+@pytest.mark.parametrize("value", [None, "2026-07", "2026Q5"])
+def test_the_last_full_quarter_must_be_stated(raw, value):
+    def edit(tree):
+        metadata = prices_of(tree).ons.metadata
+        if value is None:
+            del metadata["last_full_quarter"]
+        else:
+            metadata["last_full_quarter"] = value
+
+    with pytest.raises(ValueError, match="last_full_quarter"):
+        build(raw, edit)
+
+
+def test_ons_prices_that_end_before_the_last_full_quarter_are_an_error(raw):
+    def edit(tree):
+        prices_of(tree).ons.gas.update(start="2026-09-01", value=None)
+
+    with pytest.raises(ValueError, match="gas prices end in 2026-08"):
+        build(raw, edit)
+
+
 def test_a_gap_in_the_ons_prices_is_an_error(raw):
     def edit(tree):
         prices_of(tree).ons.gas.update(period="month:2020-05", value=None)
 
-    with pytest.raises(ValueError, match="gas prices skip a month"):
+    with pytest.raises(ValueError, match="gas prices have no value for 2020-05"):
         build(raw, edit)
 
 
@@ -585,3 +623,104 @@ def test_no_economic_assumptions_holds_direct_energy_amounts_flat(scenario):
     assert fiscal("2030-01-01") == fiscal("2024-01-01")
     current = system.parameters.gov.economic_assumptions.energy_prices
     assert fiscal("2023-01-01") == current.fiscal_year.electricity("2023-01-01")
+
+
+# 8. Reforms to the inputs.
+
+
+def realised_obr_rate(raw, level, quarter):
+    """Growth in a forecast quarter with the published VAT re-applied."""
+    earlier = (quarter[0] - 1, quarter[1])
+    growth = level(quarter) / level(earlier)
+    return growth * utilities_factor(raw, quarter) / utilities_factor(raw, earlier) - 1
+
+
+@settings(max_examples=30, deadline=None, derandomize=True)
+@given(
+    first=st.integers(2026, 2034),
+    span=st.integers(1, 6),
+    rate=st.floats(-0.3, 0.6, allow_nan=False, allow_infinity=False),
+    by_year=st.booleans(),
+)
+def test_a_forecast_reform_sets_the_rate_of_every_quarter_it_covers(
+    raw, current, first, span, rate, by_year
+):
+    # One stated value for whole years, as a reform keyed by year leaves, or
+    # for a span of quarters from a fourth quarter, across the year end;
+    # either removes the stated values of the quarters inside it.
+    if by_year:
+        years = min(span, 3)
+        period = f"year:{first}:{years}"
+        covered = indices._quarters((first, 1), (first + years - 1, 4))
+    else:
+        period = f"month:{first}-10:{3 * span}"
+        covered = indices._quarters((first, 4), (first + 2, 4))[:span]
+
+    def edit(tree):
+        prices_of(tree).obr.utilities.update(period=period, value=rate)
+
+    changed = build(raw, edit)
+    effective = changed.obr.utilities
+    covered = [quarter for quarter in covered if quarter in FORECAST]
+    assert covered
+    for key in SERIES:
+        for quarter in OUTTURN:
+            assert quarter_level(changed, key, quarter) == quarter_level(
+                current, key, quarter
+            )
+        for quarter in FORECAST:
+            expected = effective(indices._start(quarter))
+            if quarter in covered:
+                assert expected == rate
+            assert realised_obr_rate(
+                raw, lambda q: quarter_level(changed, key, q), quarter
+            ) == pytest.approx(expected, abs=1e-9), (key, quarter)
+
+
+def test_a_year_keyed_forecast_reform_builds_a_simulation(raw):
+    # Regression: one stated value for 2027 used to leave the generator
+    # without a rate for 2027Q2 to 2027Q4.
+    reform = {f"{ENERGY_PRICES}.obr.utilities": {"2027": 0.5}}
+    reformed = Simulation(situation=situation(), reform=reform)
+    baseline = Simulation(situation=situation())
+    prices = reformed.tax_benefit_system.parameters.gov.economic_assumptions
+    quarterly = prices.energy_prices.quarterly
+    for key in SERIES:
+        level = quarterly.get_child(key)
+        for quarter in indices._quarters((2027, 1), (2027, 4)):
+            assert realised_obr_rate(
+                raw, lambda q: level(indices._start(q)), quarter
+            ) == pytest.approx(0.5, abs=1e-9), (key, quarter)
+    for variable in ENERGY:
+        assert (
+            reformed.calculate(variable, 2027)[0]
+            > baseline.calculate(variable, 2027)[0]
+        )
+
+
+@pytest.mark.parametrize("year", [2025, 2026])
+def test_a_year_keyed_ons_reform_sets_each_month_of_the_year(raw, current, year):
+    def edit(tree):
+        prices_of(tree).ons.electricity.update(period=f"year:{year}:1", value=130.0)
+
+    changed = build(raw, edit)
+    outturn = [quarter for quarter in OUTTURN if quarter[0] == year]
+    for quarter in outturn:
+        # Published VAT is the basis rate in these quarters.
+        assert quarter_level(changed, "electricity", quarter) == pytest.approx(
+            130.0, rel=1e-12
+        )
+    # The forecast still starts after 2026Q3, though the reform states a
+    # value for 2027 (the September 2026 price, after the year it sets).
+    for quarter in FORECAST:
+        earlier = (quarter[0] - 1, quarter[1])
+        assert quarter_level(changed, "gas", quarter) == quarter_level(
+            current, "gas", quarter
+        )
+        assert quarter_level(changed, "electricity", quarter) / quarter_level(
+            changed, "electricity", earlier
+        ) == pytest.approx(
+            quarter_level(current, "electricity", quarter)
+            / quarter_level(current, "electricity", earlier),
+            rel=1e-12,
+        )

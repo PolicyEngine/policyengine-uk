@@ -1,4 +1,4 @@
-"""Household electricity and gas price indices, before the Budget measures.
+"""Household electricity and gas price indices, with VAT at the input basis rate.
 
 Builds ``gov.economic_assumptions.energy_prices.quarterly``,
 ``.calendar_year`` and ``.fiscal_year`` from the published inputs under
@@ -9,8 +9,9 @@ change, in the published prices or in a reform, never moves it.
 
 Quarterly levels, from the first quarter of 2015:
 
-- where ONS publishes all three months of a quarter, the mean of the monthly
-  CPI index, each month divided by the VAT factor the price includes:
+- to the last quarter ONS publishes in full (``last_full_quarter`` in the
+  ``ons`` metadata, which the importer writes), the mean of the monthly CPI
+  index, each month divided by the VAT factor the price includes:
   ``1 + s * ((1 + r) / (1 + b) - 1)``, where ``r`` is the UK electricity VAT
   rate in the published price on the 15th (``embedded_electricity_vat``, the
   Great Britain and Northern Ireland rates weighted by consumption), ``b`` the
@@ -21,6 +22,10 @@ Quarterly levels, from the first quarter of 2015:
   ``(1 + g) * u(q - 4) / u(q) - 1``, where ``u`` is the same factor for
   electricity's share of the utilities weight (electricity and gas), averaged
   over the quarter's months. Past the OBR's last quarter the last rate holds.
+
+Every input is read at the month or quarter it applies to, not from its
+stated dates, so a reform keyed by year (one value for a calendar year)
+applies to each month or quarter of it.
 
 The OBR forecasts utilities only, so electricity and gas grow at the same
 rate after the ONS outturn: each index is the fuel's own price to there and a
@@ -34,6 +39,8 @@ April to March: model year 2026 is fiscal year 2026-27. Both are dated
 1 January. Where ``held_flat`` is true for a year, as ``no_economic_assumptions``
 sets it, the annual levels take the previous year's.
 """
+
+import re
 
 from policyengine_core.parameters import Parameter, ParameterNode
 
@@ -73,17 +80,15 @@ def _start(quarter):
     return f"{quarter[0]:04d}-{3 * quarter[1] - 2:02d}-01"
 
 
-def _values(parameter, period):
-    """A dated series' stated values, by (year, month) or (year, quarter)."""
-    values = {}
-    for entry in parameter.values_list:
-        if entry.value is None:
-            continue
-        year, month = int(entry.instant_str[:4]), int(entry.instant_str[5:7])
-        values[(year, month) if period == "month" else (year, (month + 2) // 3)] = (
-            entry.value
-        )
-    return values
+def _label(quarter):
+    return f"{quarter[0]}Q{quarter[1]}"
+
+
+def _stated(parameter):
+    """The dates of a series' stated values, leaving out removed ones."""
+    return [
+        entry.instant_str for entry in parameter.values_list if entry.value is not None
+    ]
 
 
 class EnergyPriceInputs:
@@ -92,12 +97,48 @@ class EnergyPriceInputs:
     def __init__(self, parameters: ParameterNode):
         self.prices = parameters.gov.economic_assumptions.energy_prices
         self.basis_rate = parameters.gov.simulation.vat.energy_input_price_basis_rate
-        self.monthly = {
-            key: _values(self.prices.ons.get_child(key), "month") for key in SERIES
-        }
-        self.utilities = _values(self.prices.obr.utilities, "quarter")
-        if not self.utilities:
+        last = str(self.prices.ons.metadata.get("last_full_quarter"))
+        match = re.fullmatch(r"(\d{4})Q([1-4])", last)
+        if match is None:
+            raise ValueError(
+                "The ONS prices must state the last quarter ONS publishes in "
+                f"full as last_full_quarter metadata, such as 2026Q3, not {last}."
+            )
+        self.last_outturn = int(match[1]), int(match[2])
+        if self.last_outturn < (FIRST_YEAR, 4):
+            raise ValueError(
+                f"ONS prices must cover the four quarters of {FIRST_YEAR}."
+            )
+        last_month = "{:04d}-{:02d}-01".format(*_months(self.last_outturn)[-1])
+        for key in SERIES:
+            stated = _stated(self.prices.ons.get_child(key))
+            if not stated or min(stated) > f"{FIRST_YEAR}-01-01":
+                raise ValueError(
+                    f"ONS {key} prices must start in January {FIRST_YEAR}."
+                )
+            if max(stated) < last_month:
+                raise ValueError(
+                    f"ONS {key} prices end in {max(stated)[:7]}, before the end "
+                    f"of {last}, the last quarter ONS publishes in full."
+                )
+        stated = _stated(self.prices.obr.utilities)
+        if not stated:
             raise ValueError("The OBR utilities inflation forecast has no values.")
+        self.forecast_start = _next(self.last_outturn)
+        first = int(min(stated)[:4]), (int(min(stated)[5:7]) + 2) // 3
+        if first > self.forecast_start:
+            raise ValueError(
+                f"The OBR utilities forecast starts in {_label(first)}, after "
+                f"{_label(self.forecast_start)}, the first quarter without three "
+                "months of ONS prices."
+            )
+
+    def ons_price(self, key: str, year: int, month: int) -> float:
+        """The ONS CPI index for a series in a month."""
+        price = self.prices.ons.get_child(key)(f"{year:04d}-{month:02d}-01")
+        if price is None:
+            raise ValueError(f"ONS {key} prices have no value for {year}-{month:02d}.")
+        return price
 
     def electricity_vat_factor(self, year: int, month: int) -> float:
         """Published electricity price over its price at the basis rate."""
@@ -131,14 +172,11 @@ class EnergyPriceInputs:
 
     def utilities_growth(self, quarter) -> float:
         """OBR utilities inflation for a quarter, before the VAT change."""
-        first, last = min(self.utilities), max(self.utilities)
-        if quarter < first:
+        growth = self.prices.obr.utilities(_start(quarter))
+        if growth is None:
             raise ValueError(
-                f"The OBR utilities forecast starts in {first[0]}Q{first[1]}, "
-                f"after {quarter[0]}Q{quarter[1]}, the first quarter without "
-                "three months of ONS prices."
+                f"The OBR utilities forecast has no value for {_label(quarter)}."
             )
-        growth = self.utilities[min(quarter, last)]
         return (1 + growth) * self.utilities_vat_factor(
             _year_earlier(quarter)
         ) / self.utilities_vat_factor(quarter) - 1
@@ -167,41 +205,22 @@ class EnergyPriceInputs:
 
 def quarterly_levels(inputs: EnergyPriceInputs, key: str) -> dict:
     """Quarterly levels at the basis rate, 2015 = 100 before the adjustment."""
-    monthly = inputs.monthly[key]
-    quarters = _quarters((FIRST_YEAR, 1), (LAST_YEAR + 1, 1))
-    outturn = []
-    for quarter in quarters:
-        if not all(month in monthly for month in _months(quarter)):
-            break
-        outturn.append(quarter)
-    if not outturn:
-        raise ValueError(f"ONS {key} prices must start in January {FIRST_YEAR}.")
-    # Months of the quarter after the outturn may be published; later ones
-    # mean a month is missing.
-    later = [month for month in monthly if month > _months(_next(outturn[-1]))[-1]]
-    if later:
-        raise ValueError(
-            f"ONS {key} prices skip a month before {max(later)[0]}-{max(later)[1]:02d}."
-        )
     levels = {}
-    for quarter in outturn:
-        share = inputs.electricity_share(key, quarter[0])
-        levels[quarter] = (
-            sum(
-                monthly[month]
-                / (1 + share * (inputs.electricity_vat_factor(*month) - 1))
-                for month in _months(quarter)
+    for quarter in _quarters((FIRST_YEAR, 1), (LAST_YEAR + 1, 1)):
+        if quarter <= inputs.last_outturn:
+            share = inputs.electricity_share(key, quarter[0])
+            levels[quarter] = (
+                sum(
+                    inputs.ons_price(key, *month)
+                    / (1 + share * (inputs.electricity_vat_factor(*month) - 1))
+                    for month in _months(quarter)
+                )
+                / 3
             )
-            / 3
-        )
-    for quarter in quarters[len(outturn) :]:
-        earlier = _year_earlier(quarter)
-        if earlier not in levels:
-            raise ValueError(
-                f"ONS {key} prices must cover the four quarters before "
-                f"{quarter[0]}Q{quarter[1]}."
+        else:
+            levels[quarter] = levels[_year_earlier(quarter)] * (
+                1 + inputs.utilities_growth(quarter)
             )
-        levels[quarter] = levels[earlier] * (1 + inputs.utilities_growth(quarter))
     return levels
 
 

@@ -75,7 +75,9 @@ def test_the_forecast_starts_after_the_last_full_ons_quarter():
     # Without September 2026, ONS has the third quarter only in part, so the
     # OBR's rate for it (3.7143% in Table 1.19) is the first one kept.
     rows = [row for row in mm23_rows() if row[0] != "2026 SEP"]
-    obr = render(mm23=to_csv(rows))["obr.yaml"]
+    rendered = render(mm23=to_csv(rows))
+    assert "  last_full_quarter: 2026Q2\n" in rendered["ons.yaml"]
+    obr = rendered["obr.yaml"]
     values = obr.split("  values:\n")[1].splitlines()
     assert values[0] == "    2026-07-01: 0.037143"
     assert values[1] == "    2026-10-01: 0.045313"
