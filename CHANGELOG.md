@@ -1,3 +1,10 @@
+## [2.163.1] - 2026-10-28
+
+### Fixed
+
+- Corrected the two-child limit full roll-out page: it now describes the modelled exceptions to the limit and uses the FYE 2011 absolute poverty variables instead of overriding the thresholds.
+
+
 ## [2.163.0] - 2026-10-28
 
 ### Added
