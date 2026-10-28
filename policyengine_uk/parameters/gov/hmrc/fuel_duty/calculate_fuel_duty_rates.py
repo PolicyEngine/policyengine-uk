@@ -1,19 +1,22 @@
 """
-Generates the forecast RPI uprating steps in petrol_and_diesel.yaml.
+Generates the forecast RPI uprating steps in petrol_and_diesel.yaml, lpg.yaml
+and natural_gas.yaml.
 
 Budget 2026 keeps the 5p cut to 1 July 2027. Its policy costing (page 13)
 says that "On 1 July 2027, fuel duty rates will increase by 5ppl and will be
 uprated in line with the Retail Prices Index (RPI). From 1 April 2028, fuel
-duty rates will be uprated annually in line with RPI." The 1 July 2027
-rate is the OBR's forecast in the EFO (CUT_END_RATE): 60.59p in October
-2026, the 57.95p pre-cut rate (Finance Act 2011 s. 19) uprated by RPI growth
-in the year to 2027 Q1. This script applies each previous calendar year's
-RPI growth to it on 1 April from 2028, using
-economic_assumptions/yoy_growth.yaml. It rounds to the nearest hundredth of
-a penny and writes the results between the BEGIN and END markers in
-petrol_and_diesel.yaml. After a new EFO, set CUT_END_RATE to its fuel duty
-forecast, and run it with --update whenever that or the RPI forecast
-changes; test_fuel_duty_schedule.py fails until you do.
+duty rates will be uprated annually in line with RPI." The OBR forecasts
+the 1 July 2027 petrol and diesel rate (CUT_END_RATE: 60.59p in the October
+2026 EFO): the 57.95p pre-cut rate (Finance Act 2011 s. 19) uprated by RPI
+growth in the year to 2027 Q1 (CUT_END_RPI_GROWTH). LPG and natural gas
+take the proportionate cut to the same date, so their full rates get the
+same uprating then. From 1 April 2028 the script applies each previous
+calendar year's RPI growth, using economic_assumptions/yoy_growth.yaml. It
+rounds to the nearest hundredth of a penny and writes the results between
+the BEGIN and END markers in each file. After a new EFO, set CUT_END_RATE
+and CUT_END_RPI_GROWTH to its forecast, and run it with --update whenever
+they or the RPI forecast change; test_fuel_duty_schedule.py fails until you
+do.
 
 Usage:
     uv run python calculate_fuel_duty_rates.py           # print the steps
@@ -27,18 +30,22 @@ from pathlib import Path
 import yaml
 
 FUEL_DUTY_DIR = Path(__file__).resolve().parent
-PARAMETER_FILE = FUEL_DUTY_DIR / "petrol_and_diesel.yaml"
 YOY_GROWTH_FILE = FUEL_DUTY_DIR.parents[1] / "economic_assumptions" / "yoy_growth.yaml"
 
-# The pre-cut rate, the date the cut ends and the OBR's rate from then, and
-# the first and last 1 April steps written out. Later steps come from the
-# parameter's uprating metadata.
-BASE_DATE = "2011-03-23"
+# Each parameter file and the date of its full (pre-cut) rate.
+FUELS = {
+    "petrol_and_diesel.yaml": "2011-03-23",
+    "lpg.yaml": "2021-01-01",
+    "natural_gas.yaml": "2021-01-01",
+}
+# The date the cut ends, and the first and last 1 April steps written out.
+# Later steps come from each parameter's uprating metadata.
 CUT_END_DATE = "2027-07-01"
 # OBR EFO October 2026, paragraph 3.19: "from 52.95 pence per litre to 60.59
 # pence per litre" on 1 July 2027. It is 57.95p times one plus RPI growth in
 # 2027 Q1 on a year earlier (4.5565%, economy Table 1.7).
 CUT_END_RATE = Decimal("0.6059")
+CUT_END_RPI_GROWTH = Decimal("0.045565")
 EFO = "https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/"
 FIRST_APRIL_YEAR = 2028
 LAST_UPRATING_YEAR = 2031
@@ -61,40 +68,55 @@ def rpi_growth_by_year() -> dict:
     return {int(str(date)[:4]): Decimal(str(value)) for date, value in values.items()}
 
 
-def base_rate() -> Decimal:
-    with open(PARAMETER_FILE) as f:
+def base_rate(fuel: str) -> Decimal:
+    with open(FUEL_DUTY_DIR / fuel) as f:
         values = yaml.safe_load(f)["values"]
-    entry = {str(date): value for date, value in values.items()}[BASE_DATE]
+    entry = {str(date): value for date, value in values.items()}[FUELS[fuel]]
     return Decimal(str(entry["value"] if isinstance(entry, dict) else entry))
 
 
-def forecast_steps() -> list:
+def uprate(rate: Decimal, growth: Decimal) -> Decimal:
+    return (rate * (1 + growth)).quantize(PENNY_HUNDREDTH, rounding=ROUND_HALF_UP)
+
+
+def forecast_steps(fuel: str) -> list:
     """(date, rate, previous rate, RPI growth) for each forecast step. The
-    1 July 2027 step is the OBR's rate, so it has no RPI growth of its own."""
+    1 July 2027 step applies the OBR's RPI growth to 2027 Q1, so it has no
+    calendar-year growth of its own."""
     growth = rpi_growth_by_year()
-    rate = CUT_END_RATE
-    steps = [(CUT_END_DATE, rate, base_rate(), None)]
+    base = base_rate(fuel)
+    rate = uprate(base, CUT_END_RPI_GROWTH)
+    steps = [(CUT_END_DATE, rate, base, None)]
     for year in range(FIRST_APRIL_YEAR, LAST_UPRATING_YEAR + 1):
         previous = rate
-        rate = (previous * (1 + growth[year - 1])).quantize(
-            PENNY_HUNDREDTH, rounding=ROUND_HALF_UP
-        )
+        rate = uprate(previous, growth[year - 1])
         steps.append((f"{year}-04-01", rate, previous, growth[year - 1]))
     return steps
 
 
-def render(steps: list) -> str:
+def render(fuel: str, steps: list) -> str:
     # Cite the forecast that yoy_growth.yaml itself cites for RPI.
     forecast = rpi_series()["metadata"]["reference"][0]
     lines = []
     for date, rate, previous, growth in steps:
         if growth is None:
-            note = (
-                f"OBR forecast. {previous} uprated by RPI growth in the year "
-                "to 2027 Q1."
-            )
+            pct = f"{CUT_END_RPI_GROWTH * 100:.2f}%"
+            if fuel == "petrol_and_diesel.yaml":
+                note = (
+                    f"OBR forecast. {previous} uprated by RPI growth in the "
+                    f"year to 2027 Q1 ({pct})."
+                )
+                title = "OBR EFO October 2026, paragraph 3.19 (60.59p on 1 July 2027)"
+            else:
+                note = (
+                    f"Forecast. {previous} uprated by RPI growth in the year "
+                    f"to 2027 Q1 ({pct}), as the OBR uprates petrol and diesel."
+                )
+                title = (
+                    "OBR EFO October 2026, paragraph 3.19 (RPI uprating on 1 July 2027)"
+                )
             source = [
-                "        - title: OBR EFO October 2026, paragraph 3.19 (60.59p on 1 July 2027)",
+                f"        - title: {title}",
                 f"          href: {EFO}",
             ]
         else:
@@ -121,12 +143,13 @@ def render(steps: list) -> str:
     return "\n".join(lines) + "\n"
 
 
-def update(steps: list) -> None:
-    content = PARAMETER_FILE.read_text()
+def update(fuel: str, steps: list) -> None:
+    path = FUEL_DUTY_DIR / fuel
+    content = path.read_text()
     start = content.index(BEGIN) + len(BEGIN)
     stop = content.index(END)
-    PARAMETER_FILE.write_text(content[:start] + render(steps) + content[stop:])
-    print(f"Updated {PARAMETER_FILE}")
+    path.write_text(content[:start] + render(fuel, steps) + content[stop:])
+    print(f"Updated {path}")
 
 
 def main():
@@ -134,16 +157,22 @@ def main():
     parser.add_argument(
         "--update",
         action="store_true",
-        help="Rewrite the forecast block in petrol_and_diesel.yaml",
+        help="Rewrite the forecast block in each fuel duty parameter file",
     )
     args = parser.parse_args()
-    steps = forecast_steps()
-    print(f"{BASE_DATE}: {base_rate()} (pre-cut rate)")
-    for date, rate, previous, growth in steps:
-        how = "OBR forecast" if growth is None else f"{previous} x (1 + {growth})"
-        print(f"{date}: {rate} ({how})")
-    if args.update:
-        update(steps)
+    for fuel in FUELS:
+        steps = forecast_steps(fuel)
+        if fuel == "petrol_and_diesel.yaml" and steps[0][1] != CUT_END_RATE:
+            raise ValueError(
+                f"CUT_END_RPI_GROWTH gives {steps[0][1]} on {CUT_END_DATE}, not "
+                f"the OBR's {CUT_END_RATE}"
+            )
+        print(f"{fuel}: {FUELS[fuel]} {base_rate(fuel)} (full rate)")
+        for date, rate, previous, growth in steps:
+            how = f"{previous} x (1 + {growth or CUT_END_RPI_GROWTH})"
+            print(f"  {date}: {rate} ({how})")
+        if args.update:
+            update(fuel, steps)
 
 
 if __name__ == "__main__":

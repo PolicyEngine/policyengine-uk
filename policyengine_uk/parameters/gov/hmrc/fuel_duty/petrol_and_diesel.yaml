@@ -94,11 +94,11 @@ values:
   # Forecast from 1 July 2027. Budget 2026's costing: "On 1 July 2027, fuel
   # duty rates will increase by 5ppl and will be uprated in line with the
   # Retail Prices Index (RPI). From 1 April 2028, fuel duty rates will be
-  # uprated annually in line with RPI." That is policy, not law. No official
-  # source names the RPI measure. The 1 July 2027 step takes the 57.95p
-  # pre-cut rate (Finance Act 2011 s. 19) and applies 2026 RPI growth, the
-  # increase deferred from April 2027; each 1 April from 2028 applies the
-  # previous calendar year's RPI growth from
+  # uprated annually in line with RPI." That is policy, not law. The 1 July
+  # 2027 step is the OBR's forecast (EFO October 2026, paragraph 3.19): the
+  # 57.95p pre-cut rate (Finance Act 2011 s. 19) uprated by RPI growth in the
+  # year to 2027 Q1, 60.59p. Each 1 April from 2028 applies the previous
+  # calendar year's RPI growth from
   # gov.economic_assumptions.yoy_growth.obr.rpi, rounding to the nearest
   # hundredth of a penny. After the last entry, the uprating metadata below
   # continues the same April cadence.
@@ -106,7 +106,7 @@ values:
   2027-07-01:
     value: 0.6059
     metadata:
-      note: OBR forecast. 0.5795 uprated by RPI growth in the year to 2027 Q1.
+      note: OBR forecast. 0.5795 uprated by RPI growth in the year to 2027 Q1 (4.56%).
       reference:
         - title: Budget 2026, paragraph 6.211 (5p cut ends and RPI uprating from 1 July 2027)
           href: https://assets.publishing.service.gov.uk/media/6ae1ec57bdb574cf1c9b3f12/E03668986_HMT_Budget_2026_ELAY__2_.pdf#page=138

@@ -1,6 +1,10 @@
 # Gas quantities are kilograms. Budget 2026 keeps the 5p-equivalent cut to
 # 1 July 2027 (paragraph 6.211; policy costings page 13), so FY2026 is all at
-# the cut rates and FY2027 weights are 86/280 days.
+# the cut rates. On 1 July 2027 the full rates return uprated by RPI growth in
+# the year to 2027 Q1 (4.5565%): LPG 33.05p, natural gas 25.83p a kilogram.
+# Each 1 April from 2028 applies the previous calendar year's RPI growth: LPG
+# 34.04p and natural gas 26.60p in 2028, then 34.99p and 27.34p in 2029.
+# FY2027 (366 days) weights are 86, 275 and 5 days.
 # Rural relief only reduces the petrol/diesel component.
 - name: No road fuel gas consumption
   period: 2026
@@ -44,7 +48,7 @@
   output:
     # 1000 * (0.2888 + 0.2257)
     fuel_duty: 514.5
-- name: Fiscal 2027 gas rates return to the full rates on 1 July 2027
+- name: Fiscal 2027 gas rates return to the RPI-uprated full rates on 1 July 2027
   period: 2027
   absolute_error_margin: 0.01
   input:
@@ -53,6 +57,18 @@
     petrol_litres: 0
     diesel_litres: 0
   output:
-    # 1000 * (0.2888 * 86 + 0.3161 * 280) / 366
-    # + 1000 * (0.2257 * 86 + 0.2470 * 280) / 366
-    fuel_duty: 551.6803278688524
+    # 1000 * (0.2888 * 86 + 0.3305 * 275 + 0.3404 * 5) / 366
+    # + 1000 * (0.2257 * 86 + 0.2583 * 275 + 0.2660 * 5) / 366
+    fuel_duty: 571.5819672131148
+- name: Fiscal 2028 gas rates rise by 2027 RPI on 1 April 2028
+  period: 2028
+  absolute_error_margin: 0.01
+  input:
+    lpg_kg: 1000
+    natural_gas_kg: 1000
+    petrol_litres: 0
+    diesel_litres: 0
+  output:
+    # 1000 * (0.3404 * 360 + 0.3499 * 5) / 365
+    # + 1000 * (0.2660 * 360 + 0.2734 * 5) / 365
+    fuel_duty: 606.6315068493151

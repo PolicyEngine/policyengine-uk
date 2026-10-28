@@ -123,6 +123,35 @@ def test_forecast_steps_use_current_rpi_forecast():
         assert schedule(day_before) != schedule(date)
 
 
+@pytest.mark.parametrize(
+    "fuel, full_rate", [("lpg", "0.3161"), ("natural_gas", "0.2470")]
+)
+def test_road_fuel_gases_get_the_same_rpi_uprating(fuel, full_rate):
+    """LPG and natural gas take the proportionate cut to 1 July 2027 (Budget
+    2026, paragraph 6.211; costings page 13). Their full rates then get the
+    OBR's 1 July uprating for petrol and diesel, 57.95p to 60.59p, and RPI
+    each 1 April from 2028."""
+    parameters = raw_parameters()
+    rpi = parameters.gov.economic_assumptions.yoy_growth.obr.rpi
+    schedule = getattr(parameters.gov.hmrc.fuel_duty, fuel)
+    july_growth = Decimal("0.045565")
+    assert (Decimal("0.5795") * (1 + july_growth)).quantize(
+        Decimal("0.0001"), ROUND_HALF_UP
+    ) == Decimal(str(CUT_END_RATE))
+    rate = (Decimal(full_rate) * (1 + july_growth)).quantize(
+        Decimal("0.0001"), ROUND_HALF_UP
+    )
+    assert schedule("2027-06-30") < float(full_rate)
+    assert schedule(CUT_END_DATE) == pytest.approx(float(rate), abs=1e-12)
+    for date in FORECAST_DATES:
+        growth = Decimal(str(rpi(f"{int(date[:4]) - 1}-01-01")))
+        rate = (rate * (1 + growth)).quantize(Decimal("0.0001"), ROUND_HALF_UP)
+        assert schedule(date) == pytest.approx(float(rate), abs=1e-12), (
+            f"{fuel} {date} is stale against the RPI forecast; run "
+            "calculate_fuel_duty_rates.py --update"
+        )
+
+
 def test_uprating_continues_each_april_after_the_written_steps():
     schedule = dated_schedule()
     rpi = system.parameters.baseline.gov.economic_assumptions.yoy_growth.obr.rpi
