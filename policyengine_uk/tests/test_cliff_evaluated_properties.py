@@ -16,6 +16,7 @@ any household composition and any N:
 from functools import lru_cache
 
 import numpy as np
+import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 from policyengine_core.reforms import Reform, set_parameter
@@ -32,7 +33,14 @@ PROPERTY_SETTINGS = settings(
 )
 
 
-@lru_cache(maxsize=None)
+@lru_cache(maxsize=1)
+def baseline_system():
+    return CountryTaxBenefitSystem()
+
+
+# One reform per value scenarios() draws for mtr_adults. A reform clones only
+# the baseline's parameters.
+@lru_cache(maxsize=4)
 def tax_benefit_system(mtr_adults):
     modifier = set_parameter(
         MTR_ADULTS, mtr_adults, return_modifier=True, period="year:2000:100"
@@ -42,7 +50,16 @@ def tax_benefit_system(mtr_adults):
         def apply(self):
             self.parameters = modifier(self.parameters)
 
-    return override(CountryTaxBenefitSystem())
+    return override(baseline_system())
+
+
+@pytest.fixture(scope="module", autouse=True)
+def release_systems():
+    # Each system also keeps its last simulation alive. Drop them once this
+    # module's tests are done, instead of for the rest of the test process.
+    yield
+    tax_benefit_system.cache_clear()
+    baseline_system.cache_clear()
 
 
 earnings = st.sampled_from([0, 5_000, 20_000, 60_000, 120_000])

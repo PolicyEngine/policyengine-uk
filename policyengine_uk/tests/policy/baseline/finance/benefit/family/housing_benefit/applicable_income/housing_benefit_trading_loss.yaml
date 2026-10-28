@@ -1,0 +1,94 @@
+# HB Regs 2006 reg 38(10) prohibits offsetting a loss against another
+# self-employed or employed job. Regs 36(3) and 39 specify separate tax/NI
+# deductions; hold these and other benefit receipts at nil to isolate the
+# trading-loss rule from annual-tax and other-benefit interactions.
+# https://www.legislation.gov.uk/uksi/2006/213/regulation/38
+# https://www.legislation.gov.uk/uksi/2006/213/regulation/36
+# https://www.legislation.gov.uk/uksi/2006/213/regulation/39
+
+- name: A trading loss does not offset another trade's Housing Benefit income
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    would_claim_uc: false
+    self_employment_income: 12_000
+    trading_loss: 8_000
+    income_tax: 0
+    national_insurance: 0
+    tax_credits: 0
+    working_tax_credit: 0
+    child_tax_credit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_contributions: 0
+    housing_benefit_tariff_income: 0
+    housing_benefit_applicable_income_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    housing_benefit_applicable_amount: 10_000
+    housing_benefit_non_dep_deductions: 0
+    LHA_eligible: false
+    rent: 9_000
+  output:
+    housing_benefit_applicable_income: 12_000
+    # Eligible rent 9,000 less 65% of (12,000 - 10,000) = 7,700.
+    housing_benefit_entitlement: 7_700
+
+- name: A loss-making trade does not offset employed Housing Benefit income
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    would_claim_uc: false
+    employment_income: 12_000
+    self_employment_income: 0
+    trading_loss: 20_000
+    income_tax: 0
+    national_insurance: 0
+    tax_credits: 0
+    working_tax_credit: 0
+    child_tax_credit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_contributions: 0
+    housing_benefit_tariff_income: 0
+    housing_benefit_applicable_income_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    housing_benefit_applicable_amount: 10_000
+    housing_benefit_non_dep_deductions: 0
+    LHA_eligible: false
+    rent: 9_000
+  output:
+    housing_benefit_applicable_income: 12_000
+    housing_benefit_entitlement: 7_700
+
+- name: The same Housing Benefit claimant with a zero-profit trade
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    would_claim_uc: false
+    employment_income: 12_000
+    self_employment_income: 0
+    trading_loss: 0
+    income_tax: 0
+    national_insurance: 0
+    tax_credits: 0
+    working_tax_credit: 0
+    child_tax_credit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_contributions: 0
+    housing_benefit_tariff_income: 0
+    housing_benefit_applicable_income_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    housing_benefit_applicable_amount: 10_000
+    housing_benefit_non_dep_deductions: 0
+    LHA_eligible: false
+    rent: 9_000
+  output:
+    housing_benefit_applicable_income: 12_000
+    housing_benefit_entitlement: 7_700

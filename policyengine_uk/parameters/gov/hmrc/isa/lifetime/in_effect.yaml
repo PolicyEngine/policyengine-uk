@@ -1,0 +1,11 @@
+description: Whether the Lifetime ISA bonus and withdrawal charge operate.
+values:
+  2000-01-01: false
+  2017-04-06: true
+metadata:
+  label: Lifetime ISA in effect
+  period: year
+  unit: bool
+  reference:
+    - title: ISA (Amendment No. 2) Regulations 2017 regulation 1
+      href: https://www.legislation.gov.uk/uksi/2017/466/regulation/1/made

@@ -1,0 +1,496 @@
+"""Pension-age Housing Benefit personal allowances by when State Pension age
+was attained.
+
+The Housing Benefit (Persons who have attained the qualifying age for state
+pension credit) Regulations 2006 (SI 2006/214) Sch 3 para 1, as amended by SI
+2021/188 from 1 April 2021 (Northern Ireland: SR 2006/406 Sch 4 para 1): a
+single claimant or lone parent who attained pensionable age before 1 April
+2021 gets the higher allowance in (1)(b), one who attained it on or after gets
+(1)(c); a couple gets (2)(b) where one or both members attained it before, and
+(2)(c) where both attained it on or after.
+
+Invariants, for any pension-age single person or couple in any year:
+
+1. Differential: the pension-age personal allowance in
+   housing_benefit_applicable_amount is the higher rate exactly when a member's
+   attainment day, read from the statute day by day
+   (test_state_pension_age.reference_attainment_day), is before 1 April 2021,
+   and the lower rate otherwise.
+2. Bounds: the lower rate is below the higher rate in every year, including
+   uprated years, and lone parents get the single rates.
+3. Monotonicity: among pension-age single people of one sex in one year, an
+   earlier date of birth never gives a lower allowance.
+4. Before April 2021 there was one pension-age rate, which every pension-age
+   unit gets.
+5. The lower rates, the higher rates and the cutoff equal the statute's table
+   for every year 2021-22 to 2026-27 (hard-coded below from legislation.gov.uk
+   and DWP's Benefit and pension rates).
+6. Council Tax Reduction: England's pensioner scheme has the same split and
+   amounts (SI 2012/2885 Sch 2 para 1, amended by SI 2021/29), so its
+   allowance equals Housing Benefit's; the Scottish and Welsh schemes have
+   one pension-age rate, the higher one.
+7. Only the claimant and partner (HB) or the applicant and partner (CTR)
+   count: adding another member of any age never changes either allowance.
+"""
+
+from datetime import date, timedelta
+
+import numpy as np
+import pytest
+from hypothesis import HealthCheck, given, settings
+from hypothesis import strategies as st
+
+from policyengine_uk import Simulation
+from policyengine_uk.system import system
+from test_state_pension_age import grid_months, reference_attainment_day
+
+CUTOFF = date(2021, 4, 1)
+YEARS = list(range(2019, 2031))
+P = system.parameters.gov.dwp.housing_benefit.allowances
+
+
+def rates(year: int, couple: bool) -> tuple:
+    """(higher, lower) weekly pension-age allowance; lower is None before the
+    cutoff took effect."""
+    node = P.couple if couple else P.single
+    at = f"{year}-06-01"
+    return node.aged(at), node.aged_from_cutoff(at)
+
+
+def build(units: list, year: int, region: str = "LONDON") -> Simulation:
+    """Each unit is a list of (birth, male). Units are eligible with no
+    premiums, so the applicable amount is 52 times the personal allowance.
+
+    Which table applies is set here, not left to the model: a unit with a
+    member over State Pension age is under the pension-age Housing Benefit
+    regulations and is a Council Tax Reduction pensioner. That leaves the
+    cohort rule as the only thing under test (a mixed-age couple on Universal
+    Credit would otherwise be in the working-age tables). Every member is the
+    claimant or partner, and says so: the age presumption would read a
+    partner 20 or more years younger as the claimant's child."""
+    people, benunits = {}, {}
+    mid_year = grid_months(date(year, 10, 6))
+    for u, members in enumerate(units):
+        names = []
+        for k, (birth, male) in enumerate(members):
+            age_in_months = mid_year - grid_months(birth)
+            age = int(age_in_months // 12)
+            name = f"u{u}p{k}"
+            people[name] = {
+                "age": {year: age},
+                "months_since_last_birthday": {year: age_in_months - 12 * age},
+                "is_male": {year: male},
+                "is_claimant_or_partner": {year: True},
+            }
+            names.append(name)
+        pension_age = at_pension_age(members, year)
+        benunits[f"u{u}"] = {
+            "members": names,
+            "housing_benefit_eligible": {year: True},
+            "housing_benefit_pension_age_regulations_apply": {year: pension_age},
+            "council_tax_reduction_pensioner": {year: pension_age},
+            "benefits_premiums": {year: 0},
+        }
+    return Simulation(
+        situation={
+            "people": people,
+            "benunits": benunits,
+            "households": {"h": {"members": list(people), "region": {year: region}}},
+        }
+    )
+
+
+def at_pension_age(members: list, year: int) -> bool:
+    mid_year = date(year, 10, 6)
+    return any(reference_attainment_day(b, m) <= mid_year for b, m in members)
+
+
+def expected_allowance(members: list, year: int) -> float:
+    higher, lower = rates(year, couple=len(members) == 2)
+    attained = [reference_attainment_day(b, m) for b, m in members]
+    if lower is None or any(day < CUTOFF for day in attained):
+        return higher
+    return lower
+
+
+def check(units: list, year: int) -> np.ndarray:
+    """Invariant 1 for every unit with a member over State Pension age."""
+    amount = build(units, year).calculate("housing_benefit_applicable_amount", year)
+    weekly = amount / 52
+    wrong = [
+        (members, weekly[i], expected_allowance(members, year))
+        for i, members in enumerate(units)
+        if at_pension_age(members, year)
+        and abs(weekly[i] - expected_allowance(members, year)) > 0.005
+    ]
+    assert not wrong, wrong[:10]
+    return weekly
+
+
+BIRTHS = [date(1938, 1, 1) + timedelta(days=d) for d in range(0, 23 * 366, 5)]
+EDGES = [date(1955, 4, 1) + timedelta(days=shift) for shift in range(-3, 4)]
+
+
+@pytest.mark.parametrize("year", YEARS)
+def test_single_allowance_matches_statute_for_every_birth_date(year):
+    """Invariants 1, 3 and 4 for single people born every fifth day from 1938
+    and either side of 1 April 1955, the birthday that reaches 66 on the
+    cutoff."""
+    births = sorted(set(BIRTHS) | set(EDGES))
+    for male in (True, False):
+        units = [[(birth, male)] for birth in births]
+        weekly = check(units, year)
+        eligible = [weekly[i] for i, u in enumerate(units) if at_pension_age(u, year)]
+        assert all(a >= b - 1e-6 for a, b in zip(eligible, eligible[1:]))
+        if year < CUTOFF.year:
+            assert np.allclose(eligible, rates(year, couple=False)[0])
+
+
+@pytest.mark.parametrize("year", range(2021, 2041))
+def test_lower_rates_are_below_higher_rates(year):
+    """Invariant 2, including years uprated past the last published rate."""
+    for couple in (False, True):
+        higher, lower = rates(year, couple)
+        assert lower < higher
+    at = f"{year}-06-01"
+    assert P.lone_parent.aged_from_cutoff(at) == P.single.aged_from_cutoff(at)
+
+
+MEMBER = st.tuples(
+    st.dates(min_value=date(1930, 1, 1), max_value=date(1962, 12, 31)),
+    st.booleans(),
+)
+
+
+@settings(
+    max_examples=15,
+    deadline=None,
+    derandomize=True,
+    suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large],
+)
+@given(
+    units=st.lists(st.lists(MEMBER, min_size=1, max_size=2), min_size=1, max_size=25),
+    year=st.sampled_from(YEARS),
+)
+def test_any_single_or_couple_follows_the_cohort_rule(units, year):
+    """Invariant 1 for random single people and couples, including couples
+    where only one member is over State Pension age."""
+    check(units, year)
+
+
+@settings(
+    max_examples=10,
+    deadline=None,
+    derandomize=True,
+    suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large],
+)
+@given(
+    units=st.lists(st.lists(MEMBER, min_size=1, max_size=2), min_size=1, max_size=20),
+    year=st.sampled_from(YEARS),
+    region=st.sampled_from(["LONDON", "NORTH_WEST", "SCOTLAND", "WALES"]),
+)
+def test_council_tax_reduction_splits_only_in_england(units, year, region):
+    """Invariant 6 for random single people and couples."""
+    sim = build(units, year, region)
+    hb = sim.calculate("housing_benefit_applicable_amount", year) / 52
+    ctr = sim.calculate("council_tax_reduction_applicable_amount", year) / 52
+    for i, members in enumerate(units):
+        if not at_pension_age(members, year):
+            continue
+        if region in ("SCOTLAND", "WALES"):
+            expected = rates(year, couple=len(members) == 2)[0]
+        else:
+            expected = hb[i]
+        assert abs(ctr[i] - expected) < 0.005, (members, region, ctr[i], expected)
+
+
+# SI 2006/214 Sch 3 para 1(1)(c) and (2)(c), weekly: inserted by SI 2021/188 reg
+# 2(3) from 1 April 2021, then set by the Up-rating Orders SI 2022/292,
+# 2023/316, 2024/242, 2025/295 and 2026/148 (legislation.gov.uk point-in-time
+# texts at 11 April 2022, 10 April 2023, 8 April 2024, 7 April 2025 and the
+# current text).
+STATUTE_LOWER_RATES = {
+    2021: (177.10, 270.30),
+    2022: (182.60, 278.70),
+    2023: (201.05, 306.85),
+    2024: (218.15, 332.95),
+    2025: (227.10, 346.60),
+    2026: (238.00, 363.25),
+}
+
+
+@pytest.mark.parametrize("year", sorted(STATUTE_LOWER_RATES))
+def test_lower_rates_and_cutoff_match_the_statute(year):
+    """Invariant 5."""
+    single, couple = STATUTE_LOWER_RATES[year]
+    at = f"{year}-06-01"
+    assert P.single.aged_from_cutoff(at) == pytest.approx(single, abs=1e-6)
+    assert P.lone_parent.aged_from_cutoff(at) == pytest.approx(single, abs=1e-6)
+    assert P.couple.aged_from_cutoff(at) == pytest.approx(couple, abs=1e-6)
+    assert P.pension_age_cutoff(at) == 20210401
+
+
+# SI 2006/214 Sch 3 para 1(1)(b) and (2)(b), weekly, for those who attained State
+# Pension age before 1 April 2021, set by the Up-rating Orders SI 2021/162,
+# 2022/292, 2023/316, 2024/242, 2025/295 and 2026/148; the same amounts are in
+# DWP's Benefit and pension rates for each year.
+STATUTE_HIGHER_RATES = {
+    2021: (191.15, 286.05),
+    2022: (197.10, 294.90),
+    2023: (217.00, 324.70),
+    2024: (235.20, 352.00),
+    2025: (244.40, 366.00),
+    2026: (256.00, 383.35),
+}
+
+
+@pytest.mark.parametrize("year", sorted(STATUTE_HIGHER_RATES))
+def test_higher_rates_match_the_statute(year):
+    """Invariant 5."""
+    single, couple = STATUTE_HIGHER_RATES[year]
+    at = f"{year}-06-01"
+    assert P.single.aged(at) == pytest.approx(single, abs=1e-6)
+    assert P.lone_parent.aged(at) == pytest.approx(single, abs=1e-6)
+    assert P.couple.aged(at) == pytest.approx(couple, abs=1e-6)
+
+
+@settings(
+    max_examples=10,
+    deadline=None,
+    derandomize=True,
+    suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large],
+)
+@given(
+    units=st.lists(st.lists(MEMBER, min_size=1, max_size=2), min_size=1, max_size=15),
+    others=st.lists(MEMBER, min_size=15, max_size=15),
+    year=st.sampled_from(YEARS),
+)
+def test_other_members_do_not_change_the_cohort(units, others, year):
+    """Invariant 7: the cohort reads only the claimant and partner (HB) or
+    the applicant and partner (England CTR). Adding a member who is neither,
+    of any age, never changes either allowance."""
+    plain = build(units, year)
+    people, benunits = {}, {}
+    mid_year = grid_months(date(year, 10, 6))
+    for u, members in enumerate(units):
+        names = []
+        for k, (birth, male) in enumerate(members + [others[u]]):
+            age_in_months = mid_year - grid_months(birth)
+            age = int(age_in_months // 12)
+            name = f"u{u}p{k}"
+            people[name] = {
+                "age": {year: age},
+                "months_since_last_birthday": {year: age_in_months - 12 * age},
+                "is_male": {year: male},
+                "is_claimant_or_partner": {year: k < len(members)},
+                "is_council_tax_reduction_applicant_or_partner": {
+                    year: k < len(members)
+                },
+            }
+            names.append(name)
+        pension_age = at_pension_age(members, year)
+        benunits[f"u{u}"] = {
+            "members": names,
+            "housing_benefit_eligible": {year: True},
+            "housing_benefit_pension_age_regulations_apply": {year: pension_age},
+            "council_tax_reduction_pensioner": {year: pension_age},
+            "benefits_premiums": {year: 0},
+        }
+    with_others = Simulation(
+        situation={
+            "people": people,
+            "benunits": benunits,
+            "households": {"h": {"members": list(people), "region": {year: "LONDON"}}},
+        }
+    )
+    for variable in (
+        "housing_benefit_applicable_amount",
+        "council_tax_reduction_applicable_amount",
+    ):
+        np.testing.assert_allclose(
+            with_others.calculate(variable, year),
+            plain.calculate(variable, year),
+            atol=0.005,
+        )
+
+
+# SI 2021/188 reg 1(2), NI SR 2021/70 reg 1(2), and SI 2021/29 reg 1(2)
+# introduce the cohort split for FY2021-22. Annual 2021 represents that fiscal
+# year; it does not claim that these provisions commenced on 1 January 2021.
+COHORT_VARIABLES = (
+    "housing_benefit_attained_pension_age_before_cutoff",
+    "council_tax_reduction_attained_pension_age_before_cutoff",
+)
+
+
+def cutoff_situation(year, people=None, region="LONDON", component=False):
+    """Build public situations; component flags isolate allowances, not eligibility."""
+    if people is None:
+        people = {"person1": {"age": {year: 40}, "is_male": {year: True}}}
+    benunit = {"members": list(people)}
+    if component:
+        benunit.update(
+            {
+                "housing_benefit_eligible": {year: True},
+                "housing_benefit_pension_age_regulations_apply": {year: True},
+                "council_tax_reduction_pensioner": {year: True},
+                "benefits_premiums": {year: 0},
+                "council_tax_reduction_premiums": {year: 0},
+            }
+        )
+    return {
+        "people": people,
+        "benunits": {"benunit": benunit},
+        "households": {
+            "household": {"members": list(people), "region": {year: region}}
+        },
+    }
+
+
+@pytest.mark.parametrize("variable", COHORT_VARIABLES, ids=["hb", "ctr"])
+@pytest.mark.parametrize("year", [2015, 2020, 2021])
+def test_pre2021_cutoff_is_neutral_without_entitlement_overrides(variable, year):
+    """A neutral historical cohort flag does not award pensioner eligibility."""
+    sim = Simulation(situation=cutoff_situation(year))
+    assert sim.calculate("state_pension_age_date", year)[0] > 20210401
+    assert bool(sim.calculate(variable, year)[0]) is (year < 2021)
+
+
+@pytest.mark.parametrize("region", ["LONDON", "SCOTLAND", "WALES", "NORTHERN_IRELAND"])
+@pytest.mark.parametrize("year", [2015, 2020])
+def test_pre2021_neutral_cohort_does_not_depend_on_region(year, region):
+    """The CTR helper is neutral; this does not extend English monetary rules."""
+    sim = Simulation(situation=cutoff_situation(year, region=region))
+    for variable in COHORT_VARIABLES:
+        assert bool(sim.calculate(variable, year)[0]) is True
+
+
+@pytest.mark.parametrize("year", [2021, 2025])
+@pytest.mark.parametrize(
+    "birth, attainment, expected",
+    [
+        (19550331, 20210331, True),
+        (19550401, 20210401, False),
+        (19550402, 20210402, False),
+    ],
+)
+def test_post2021_exact_attainment_boundary_is_preserved(
+    year, birth, attainment, expected
+):
+    """These men attain 66 on their actual 1955 birth-date anniversary."""
+    people = {
+        "person1": {
+            "age": {year: year - 1955},
+            "date_of_birth": {year: birth},
+            "is_male": {year: True},
+        }
+    }
+    sim = Simulation(situation=cutoff_situation(year, people))
+    assert sim.calculate("state_pension_age_date", year)[0] == attainment
+    for variable in COHORT_VARIABLES:
+        assert bool(sim.calculate(variable, year)[0]) is expected
+
+
+@pytest.mark.parametrize("year", [2021, 2025])
+@pytest.mark.parametrize("qualifying_role", ["partner", "other"])
+def test_post2021_only_claimant_or_partner_can_supply_earlier_attainment(
+    year, qualifying_role
+):
+    """An earlier-attaining partner counts; an unrelated member does not."""
+    people = {}
+    for name, birth, role in [
+        ("person1", 19550402, True),
+        ("person2", 19550331, qualifying_role == "partner"),
+    ]:
+        people[name] = {
+            "age": {year: year - 1955},
+            "date_of_birth": {year: birth},
+            "is_male": {year: True},
+            "is_claimant_or_partner": {year: role},
+            "is_council_tax_reduction_applicant_or_partner": {year: role},
+        }
+    sim = Simulation(situation=cutoff_situation(year, people))
+    for variable in COHORT_VARIABLES:
+        assert bool(sim.calculate(variable, year)[0]) is (qualifying_role == "partner")
+
+
+@pytest.mark.parametrize("year", [2021, 2025])
+def test_post2021_cutoff_parameter_remains_reformable(year):
+    """Moving the cutoff one day includes an otherwise identical 1 April cohort."""
+    from policyengine_uk.model_api import Scenario
+
+    people = {
+        "person1": {
+            "age": {year: year - 1955},
+            "date_of_birth": {year: 19550401},
+            "is_male": {year: True},
+        }
+    }
+    situation = cutoff_situation(year, people)
+    baseline = Simulation(situation=situation)
+    reformed = Simulation(
+        situation=situation,
+        scenario=Scenario(
+            parameter_changes={
+                "gov.dwp.housing_benefit.allowances.pension_age_cutoff": {
+                    str(year): 20210402
+                }
+            }
+        ),
+    )
+    for variable in COHORT_VARIABLES:
+        assert bool(reformed.calculate(variable, year)[0]) is True
+        assert bool(baseline.calculate(variable, year)[0]) is False
+
+
+@pytest.mark.parametrize("year", [2015, 2020])
+def test_omitted_age_component_keeps_existing_higher_allowance(year):
+    """No age/DOB inputs: isolate the component, not natural pensioner entitlement."""
+    sim = Simulation(
+        situation=cutoff_situation(year, people={"person1": {}}, component=True)
+    )
+    for variable in COHORT_VARIABLES:
+        assert bool(sim.calculate(variable, year)[0]) is True
+    single = sim.tax_benefit_system.parameters(
+        str(year)
+    ).gov.dwp.housing_benefit.allowances.single
+    higher = single.aged
+    # With no age input the claimant is 40. Until 6 December 2018 Housing
+    # Benefit paid pension-age claimants under 65 the former under-65 rate
+    # (SI 2006/214 Sch 3 para 1(1)(a); ended by SI 2017/1187), so in 2015 the
+    # pre-cutoff route gives that rate. England's pensioner Council Tax
+    # Reduction has no such category in the model and keeps the higher rate.
+    age = sim.calculate("age", year)[0]
+    under_65 = single.aged_under_65
+    hb_rate = under_65.amount if age < under_65.age_limit_great_britain else higher
+    expected = {
+        "housing_benefit_applicable_amount": hb_rate,
+        "council_tax_reduction_applicable_amount": higher,
+    }
+    if year == 2015:
+        assert hb_rate == under_65.amount < higher
+    for variable, rate in expected.items():
+        assert sim.calculate(variable, year)[0] == pytest.approx(rate * 52, abs=0.01)
+
+
+@pytest.mark.parametrize("region", ["SCOTLAND", "WALES", "NORTHERN_IRELAND"])
+def test_nonenglish_ctr_component_keeps_existing_higher_route(region):
+    """England's cutoff does not introduce a new monetary gate elsewhere."""
+    year = 2021
+    sim = Simulation(situation=cutoff_situation(year, region=region, component=True))
+    assert bool(sim.calculate(COHORT_VARIABLES[1], year)[0]) is False
+    higher = sim.tax_benefit_system.parameters(
+        str(year)
+    ).gov.dwp.housing_benefit.allowances.single.aged
+    assert sim.calculate("council_tax_reduction_applicable_amount", year)[
+        0
+    ] == pytest.approx(higher * 52, abs=0.01)
+
+
+@pytest.mark.parametrize("variable", COHORT_VARIABLES, ids=["hb", "ctr"])
+def test_explicit_historical_cohort_input_remains_authoritative(variable):
+    year = 2020
+    situation = cutoff_situation(year)
+    situation["benunits"]["benunit"][variable] = {year: False}
+    sim = Simulation(situation=situation)
+    assert bool(sim.calculate(variable, year)[0]) is False

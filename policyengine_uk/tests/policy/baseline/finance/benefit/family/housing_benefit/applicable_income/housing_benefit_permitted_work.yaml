@@ -531,3 +531,221 @@
     housing_benefit_on_passporting_benefit: true
   output:
     housing_benefit_applicable_income_disregard: 5000
+
+# The cases below derive special eligibility from severe disablement
+# allowance or blindness (housing_benefit_special_earnings_disregard_eligible)
+# instead of supplying it, and add a lone parent at the permitted-work
+# maximum. Each holds the accommodation, childcare, additional-disregard and
+# passport terms at nil, so the output is the standard amount alone.
+#
+# Specified amount, 2024-25: ESA Regulations 2008 reg 45(4) (NI: SR 2008/280
+# reg 45(4)) and SI 1995/311 reg 17(4) set the limit at 16 x National Minimum
+# Wage, rounded up to the next 50p (reg 45(9A), reg 17(10)). The adult rate
+# in gov.hmrc.minimum_wage.non_apprentice is £11.44, and
+# gov.dwp.ESA.exempt_work.higher_earnings_limit_minimum_wage_hours is 16:
+# 16 x £11.44 = £183.04, rounded up to £183.50 a week.
+#
+# Couples: A does that exempt work for £60 a week, under 16 hours; B, the
+# other member, earns £100 a week from other work and does no exempt work.
+# Pension-age para 5A(4) (working-age para 10A(4)): A's £60 is under £183.50,
+# so B's earnings are also disregarded up to £183.50 - £60 = £123.50, but at
+# most £20. Pre-assessed permitted-work amount: (£60 + £20) x 52 = £4,160.
+# Net earnings: (£60 + £100) x 52 = £8,320.
+#
+# Special amount before permitted work: £20 x 52 = £1,040, in place of the
+# couple's £10. Para 5A(2): "paragraphs 1 to 5 and 7 do not apply", so the
+# disregard is £4,160, not £4,160 + £1,040 = £5,200 and not £1,040.
+
+# SI 2006/214 Sch 4. The claimant (A, 70) receives severe disablement
+# allowance (para 5A(5)(c)) and does exempt work under SI 1995/311 reg 17(4)
+# (para 5A(6)(b)). The SDA qualifies the couple for £20 (para 5(1)(a)(ii)).
+- name: ENGLAND pension-age SDA recipient's permitted work replaces the special £20
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_claimant_or_partner: true
+        sda: 100
+      partner:
+        age: 68
+        is_claimant_or_partner: true
+        sda: 0
+    benunits:
+      couple:
+        members: [claimant, partner]
+        housing_benefit_pension_age_regulations_apply: true
+        housing_benefit_net_earnings: 8320
+        housing_benefit_permitted_work_disregard: 4160
+        carer_premium: 0
+        working_tax_credit: 0
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        housing_benefit_applicable_income_childcare_element: 0
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+  output:
+    is_couple: true
+    is_lone_parent: false
+    housing_benefit_special_earnings_disregard_eligible: true
+    housing_benefit_special_earnings_disregard: 1040
+    housing_benefit_applicable_income_disregard: 4160
+
+# SR 2006/406 Sch 5, the same facts: SDA (para 5A(5)(c)) and the special
+# £20 (para 5(1)(a)(ii)). The NI exempt work is under SR 1995/41 reg 17(4)
+# (para 5A(6)(b)). Its revised text on legislation.gov.uk still lists
+# unapplied amendments, so the £183.50 limit was not checked against that
+# text; the £4,160 input is the pre-assessed amount the case supplies.
+- name: NORTHERN_IRELAND pension-age SDA recipient's permitted work replaces the special £20
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_claimant_or_partner: true
+        sda: 100
+      partner:
+        age: 68
+        is_claimant_or_partner: true
+        sda: 0
+    benunits:
+      couple:
+        members: [claimant, partner]
+        housing_benefit_pension_age_regulations_apply: true
+        housing_benefit_net_earnings: 8320
+        housing_benefit_permitted_work_disregard: 4160
+        carer_premium: 0
+        working_tax_credit: 0
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        housing_benefit_applicable_income_childcare_element: 0
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+    households:
+      household:
+        members: [claimant, partner]
+        country: NORTHERN_IRELAND
+  output:
+    is_couple: true
+    is_lone_parent: false
+    housing_benefit_special_earnings_disregard_eligible: true
+    housing_benefit_special_earnings_disregard: 1040
+    housing_benefit_applicable_income_disregard: 4160
+
+# SI 2006/214 Sch 4. The claimant (B, 70) is certified blind, which
+# qualifies the couple for £20 (para 5(1)(b)), and earns £100 a week. The
+# partner (A, 63, under State Pension age) receives contributory ESA (para
+# 5A(5)(a)) and does exempt work under ESA Regulations 2008 reg 45(4) (para
+# 5A(6)(a)). Neither receives SDA, so blindness is the only special route.
+- name: ENGLAND pension-age blind claimant with a partner in permitted work has no stacked £20
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_claimant_or_partner: true
+        is_blind: true
+        sda: 0
+      partner:
+        age: 63
+        is_claimant_or_partner: true
+        is_blind: false
+        sda: 0
+    benunits:
+      couple:
+        members: [claimant, partner]
+        housing_benefit_pension_age_regulations_apply: true
+        housing_benefit_net_earnings: 8320
+        housing_benefit_permitted_work_disregard: 4160
+        carer_premium: 0
+        working_tax_credit: 0
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        housing_benefit_applicable_income_childcare_element: 0
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+  output:
+    is_couple: true
+    is_lone_parent: false
+    housing_benefit_special_earnings_disregard_eligible: true
+    housing_benefit_special_earnings_disregard: 1040
+    housing_benefit_applicable_income_disregard: 4160
+
+# SR 2006/406 Sch 5, the same facts: blindness (para 5(1)(b)); the partner's
+# contributory ESA (para 5A(5)(a)) and exempt work under SR 2008/280 reg
+# 45(4) (para 5A(6)(a)), whose limit is also 16 x National Minimum Wage,
+# rounded up under its reg 45(9A).
+- name: NORTHERN_IRELAND pension-age blind claimant with a partner in permitted work has no stacked £20
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_claimant_or_partner: true
+        is_blind: true
+        sda: 0
+      partner:
+        age: 63
+        is_claimant_or_partner: true
+        is_blind: false
+        sda: 0
+    benunits:
+      couple:
+        members: [claimant, partner]
+        housing_benefit_pension_age_regulations_apply: true
+        housing_benefit_net_earnings: 8320
+        housing_benefit_permitted_work_disregard: 4160
+        carer_premium: 0
+        working_tax_credit: 0
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        housing_benefit_applicable_income_childcare_element: 0
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+    households:
+      household:
+        members: [claimant, partner]
+        country: NORTHERN_IRELAND
+  output:
+    is_couple: true
+    is_lone_parent: false
+    housing_benefit_special_earnings_disregard_eligible: true
+    housing_benefit_special_earnings_disregard: 1040
+    housing_benefit_applicable_income_disregard: 4160
+
+# Lone parent at the permitted-work maximum, working age: SI 2006/213 Sch 4
+# (England) and SR 2006/405 Sch 5 (NI). The lone parent receives
+# contributory ESA (para 10A(5)(a)) and earns only from exempt work under
+# reg 45(4), at its £183.50 limit: the specified amount is £183.50 x 52 =
+# £9,542 (para 10A(7)). Para 10A(2): £183.50 is not less than para 4's £25,
+# so para 4 does not apply instead, and the selected £25 x 52 = £1,300 gives
+# way to the permitted-work amount whether or not the family is otherwise
+# special-eligible. Earning exactly the limit, all £9,542 is disregarded
+# (columns 1 and 3). Where net earnings are £9,282 (£178.50 a week), the
+# disregard is capped at them (columns 2 and 4).
+- name: Lone parent at the permitted-work maximum has the specified amount, capped at net earnings
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    country: [ENGLAND, ENGLAND, NORTHERN_IRELAND, NORTHERN_IRELAND]
+    housing_benefit_pension_age_regulations_apply: [false, false, false, false]
+    housing_benefit_special_earnings_disregard_eligible: [true, false, true, false]
+    housing_benefit_net_earnings: [9542, 9282, 9542, 9282]
+    housing_benefit_permitted_work_disregard: [9542, 9542, 9542, 9542]
+    is_lone_parent: [true, true, true, true]
+    is_couple: [false, false, false, false]
+    housing_benefit_specified_or_temporary_accommodation_disregard: [0, 0, 0, 0]
+    housing_benefit_applicable_income_childcare_element: [0, 0, 0, 0]
+    meets_housing_benefit_additional_earnings_disregard_conditions: [false, false, false, false]
+    housing_benefit_on_passporting_benefit: [false, false, false, false]
+  output:
+    housing_benefit_special_earnings_disregard: [1300, 1300, 1300, 1300]
+    housing_benefit_applicable_income_disregard: [9542, 9282, 9542, 9282]

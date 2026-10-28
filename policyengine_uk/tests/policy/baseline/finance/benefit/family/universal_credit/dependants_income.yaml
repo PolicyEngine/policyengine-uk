@@ -31,8 +31,8 @@
         members: [parent, young_person]
         region: NORTH_EAST
   output:
-    is_benefit_cap_exempt_earnings: false
-    benefit_cap: 22_020
+    is_uc_benefit_cap_exempt_earnings: false
+    uc_benefit_cap: 22_020
 
 - name: The claimant's own earnings still meet the benefit cap earnings exception
   period: 2026
@@ -54,7 +54,7 @@
         members: [parent, young_person]
         region: NORTH_EAST
   output:
-    is_benefit_cap_exempt_earnings: true
+    is_uc_benefit_cap_exempt_earnings: true
 
 - name: Joint claimants' combined earnings meet the benefit cap earnings exception
   # Neither partner's £6,000 reaches the threshold alone; together they do.
@@ -80,7 +80,7 @@
         members: [parent_1, parent_2, child]
         region: NORTH_EAST
   output:
-    is_benefit_cap_exempt_earnings: true
+    is_uc_benefit_cap_exempt_earnings: true
 
 - name: A dependent 18-year-old's job makes no difference to the childcare work condition
   # The working lone parent meets it whether or not the young person works.
@@ -184,7 +184,9 @@
         members: [parent, young_person]
         region: NORTH_EAST
   output:
-    benefit_cap: 22_020
+    uc_benefit_cap: 22_020
+    benefit_cap_welfare_benefits: 30_000
+    uc_benefit_cap_reduction: 30_000 - 22_020
     benefit_cap_reduction: 30_000 - 22_020
 
 - name: The claimant's own contributory benefit is part of the benefit cap total
@@ -209,5 +211,7 @@
         members: [parent, young_person]
         region: NORTH_EAST
   output:
-    benefit_cap: 22_020
+    uc_benefit_cap: 22_020
+    benefit_cap_welfare_benefits: 30_000 + 2_000
+    uc_benefit_cap_reduction: 30_000 + 2_000 - 22_020
     benefit_cap_reduction: 30_000 + 2_000 - 22_020

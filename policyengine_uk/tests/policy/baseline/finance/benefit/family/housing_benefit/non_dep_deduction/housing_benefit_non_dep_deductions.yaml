@@ -97,3 +97,34 @@
   output:
     # Only person 3 is a non-dependant of the head's family: 3.
     housing_benefit_non_dep_deductions: [3, 0, 0]
+
+# The review case on #2184: an existing claimant in council housing with an
+# adult child whose only income is £28,912 of other investment income and who
+# does no paid work. The deduction is the same as for an adult child with no
+# income: the work gate leaves the scale's zero for a non-worker with no
+# banding income until #2007 models the exemptions with reg 74(1)(b)'s flat
+# charge.
+- name: A non-dependant's investment income does not raise the Housing Benefit deduction
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_household_head: true
+      adult_child:
+        age: 25
+        other_investment_income: 28_912 # 556 a week, no hours
+    benunits:
+      claimant_family:
+        members: [claimant]
+      adult_child_family:
+        members: [adult_child]
+    households:
+      household:
+        members: [claimant, adult_child]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 15_000
+  output:
+    # Banding the £556 would give 115.45 * 52 = 6,003.40.
+    housing_benefit_non_dep_deductions: [0, 0]
