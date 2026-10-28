@@ -11,8 +11,11 @@ same generated people, and checks identities that hold for every input:
   income stays on the Scottish rates;
 - savings tax rises by exactly 2% of the savings income in the basic, higher
   and additional bands, in every UK country;
-- finance cost relief, which follows the property basic rate, rises by at
-  most 2% of the costs relieved, and never falls.
+- finance cost relief, which follows the property basic rate, never falls,
+  and rises by at most 2% of the costs relieved wherever the Budget 2025
+  relief was its full 22%. Where the tax left after earlier reductions
+  capped it, the relief can rise by more: the higher rates leave more tax
+  for it (test_capped_finance_cost_relief_can_rise_by_more_than_two_points).
 """
 
 import numpy as np
@@ -156,4 +159,35 @@ def test_finance_cost_relief_rises_by_at_most_two_points(sims, drawn):
     cap = RISE * law["property_finance_costs_relieved"]
     tol = tolerance(law["property_finance_cost_relief"], cap)
     assert (rise >= -tol).all()
-    assert (rise <= cap + tol).all()
+    full_before = 0.22 * before["property_finance_costs_relieved"]
+    uncapped = np.abs(before["property_finance_cost_relief"] - full_before) <= tol
+    assert (rise <= cap + tol)[uncapped].all()
+
+
+def test_capped_finance_cost_relief_can_rise_by_more_than_two_points():
+    """£7,800 of earlier tax credits leave £86 of tax under the Budget 2025
+    rates, so the relief on £1,000 of finance costs is £86, not £220. The
+    Budget 2026 rates raise tax before reductions by £400, to £8,286, leaving
+    £486: the relief is its full 24%, £240, a rise of £154."""
+    situation = {
+        "people": {
+            "person": {
+                "age": {YEAR: 45},
+                "employment_income": {YEAR: 30_000},
+                "property_income": {YEAR: 20_000},
+                "property_finance_costs": {YEAR: 1_000},
+                "other_tax_credits": {YEAR: 7_800},
+            }
+        },
+        "benunits": {"benunit": {"members": ["person"]}},
+        "households": {
+            "household": {"members": ["person"], "region": {YEAR: "LONDON"}}
+        },
+    }
+    law = Simulation(situation=situation)
+    before = Simulation(situation=situation, reform=BUDGET_2025_RATES)
+    relief = "property_finance_cost_relief"
+    assert float(before.calculate(relief, YEAR)[0]) == pytest.approx(86, abs=0.01)
+    assert float(law.calculate(relief, YEAR)[0]) == pytest.approx(240, abs=0.01)
+    assert float(before.calculate("income_tax", YEAR)[0]) == pytest.approx(0, abs=0.01)
+    assert float(law.calculate("income_tax", YEAR)[0]) == pytest.approx(246, abs=0.01)
