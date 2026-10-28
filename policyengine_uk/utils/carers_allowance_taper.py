@@ -5,11 +5,20 @@ England and Wales from a date within 2030-31. Before the taper starts, a carer
 above the limit gets nothing; once it applies, they get the rate less the
 earnings above the limit. In the year it starts, each rule covers part of the
 year. The couple restriction and the overlapping-benefit rule work week by
-week, so each part gets them on its own award, and the parts are then weighted
-by their share of the year.
+week, so each part gets them on its own award, weighted by its share of the
+year.
+
+A person's weekly award is the same in every part of the year in which it is
+positive: the full rate wherever they are within the earnings limit, and the
+tapered rate, which only the part under the taper pays, where they are above
+it. So the annual amounts carry the parts as shares of the year: the
+pre-overlap award is the candidate award scaled by the share the couple
+restriction keeps, and the overlapping benefits come off for that share.
 """
 
 import numpy as np
+
+from policyengine_uk.utils.couple_carer_award import limit_carer_benefit_to_one_partner
 
 
 def carers_allowance_weekly_by_part_of_year(person, period, parameters):
@@ -48,3 +57,15 @@ def carers_allowance_weekly_by_part_of_year(person, period, parameters):
         (taper.applies, np.where(gainfully_employed, tapered, ca.rate)),
     )
     return [(share, eligible * weekly) for share, weekly in parts if share > 0]
+
+
+def carers_allowance_shares_of_year(person, period, parts):
+    """The share of the year in which the person has an award before the
+    couple restriction, and the share in which the restriction leaves it
+    with them, from carers_allowance_weekly_by_part_of_year's parts."""
+    candidate = kept = 0
+    for share, weekly in parts:
+        candidate = candidate + share * (weekly > 0)
+        selected = limit_carer_benefit_to_one_partner(person, period, weekly)
+        kept = kept + share * (selected > 0)
+    return candidate, kept

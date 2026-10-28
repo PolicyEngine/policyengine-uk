@@ -98,9 +98,16 @@ partner. The caring-hours, earnings, age and take-up conditions are unchanged.
 In 2030-31, the year the Budget 2026 Carer's Allowance earnings taper starts,
 the model applies this convention separately to the weeks before the taper and
 the weeks under it. A partner below the earnings limit then keeps the award
-for the weeks before the other becomes eligible. A supplied
-`carers_allowance_pre_overlap` carries no dates, so it is reduced by the whole
-year's overlapping benefits.
+for the weeks before the other becomes eligible. The parts of the year reach
+the payment as shares of the year: `carers_allowance_pre_overlap` is the
+amount from `carers_allowance_pre_couple_limit` that the restriction keeps,
+and overlapping benefits come off for the share of the year it is kept, so a
+value supplied for either variable, or a reform that replaces one, is what the
+payment starts from. A supplied `carers_allowance_pre_couple_limit` or
+`carers_allowance_pre_overlap` carries no dates, so the restriction and the
+whole year's overlapping benefits apply to it. Less than a penny for the year,
+which in practice is floating-point residue where an overlapping benefit
+equals the award, is treated as nil.
 
 The convention does not maximise the couple's payment. It can select a partner
 whose overlapping benefits reduce CA or CSP to zero, while suppressing a

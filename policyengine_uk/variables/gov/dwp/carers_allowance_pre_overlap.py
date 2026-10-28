@@ -1,8 +1,10 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.utils.carers_allowance_taper import (
+    carers_allowance_shares_of_year,
     carers_allowance_weekly_by_part_of_year,
 )
 from policyengine_uk.utils.couple_carer_award import limit_carer_benefit_to_one_partner
+from policyengine_uk.utils.supplied_inputs import supplied_input
 
 
 class carers_allowance_pre_overlap(Variable):
@@ -22,7 +24,9 @@ class carers_allowance_pre_overlap(Variable):
         "year the Budget 2026 earnings taper starts, the couple restriction "
         "picks a partner separately for the weeks before the taper and the "
         "weeks under it, so a partner below the earnings limit keeps the "
-        "award for the weeks before the other becomes eligible."
+        "award for the weeks before the other becomes eligible. A supplied "
+        "carers_allowance_pre_couple_limit carries no dates, so the "
+        "restriction applies to it for the whole year."
     )
     definition_period = YEAR
     unit = GBP
@@ -32,9 +36,17 @@ class carers_allowance_pre_overlap(Variable):
     )
 
     def formula(person, period, parameters):
+        candidate = person("carers_allowance_pre_couple_limit", period)
+        whole_year = limit_carer_benefit_to_one_partner(person, period, candidate)
         parts = carers_allowance_weekly_by_part_of_year(person, period, parameters)
-        return sum(
-            share
-            * limit_carer_benefit_to_one_partner(person, period, weekly * WEEKS_IN_YEAR)
-            for share, weekly in parts
+        supplied = supplied_input(person, "carers_allowance_pre_couple_limit", period)
+        if len(parts) == 1 or supplied is not None:
+            return whole_year
+        # In the year the earnings taper starts, a person keeps their award
+        # for the parts of the year the restriction picks them in.
+        candidate_share, kept_share = carers_allowance_shares_of_year(
+            person, period, parts
         )
+        has_candidate = candidate_share > 0
+        kept = kept_share / where(has_candidate, candidate_share, 1)
+        return where(has_candidate, candidate * kept, whole_year)
