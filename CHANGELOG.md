@@ -1,3 +1,10 @@
+## [2.162.16] - 2026-10-28
+
+### Changed
+
+- Documented that the OBR shows Northern Ireland domestic rates in two places, a council tax line that appears to be the district rates and an other taxes line that appears to be the regional rate, while `domestic_rates` charges both.
+
+
 ## [2.162.15] - 2026-10-28
 
 ### Fixed
