@@ -327,7 +327,7 @@ def test_a_carer_who_moves_is_paid_under_each_years_scheme(before, after, route)
     else:
         np.testing.assert_allclose(supplement, 0)
     # The Household Energy Payment (Budget 2026, England, 2026-27) is in
-    # household_benefits but not in HBAI income.
+    # household_benefits and HBAI income.
     energy_payment = values(simulation, "household_energy_payment", first + 1)
     np.testing.assert_allclose(
         values(simulation, "household_benefits", first + 1),
@@ -335,7 +335,7 @@ def test_a_carer_who_moves_is_paid_under_each_years_scheme(before, after, route)
     )
     np.testing.assert_allclose(
         values(simulation, "hbai_household_net_income", first + 1),
-        4_000 + supplement,
+        4_000 + supplement + energy_payment,
     )
 
 

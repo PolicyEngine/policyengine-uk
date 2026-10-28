@@ -63,6 +63,11 @@ HBAI_HOUSEHOLD_NET_INCOME_ADDS = [
     # HBAI classifies the Warm Home Discount as miscellaneous income:
     # https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2025/households-below-average-income-background-information-and-methodology-report-fye-2025
     "warm_home_discount",
+    # HBAI counted the 2022 £150 Council Tax Rebate and the Energy Bills
+    # Support Scheme as miscellaneous income (HBAI quality and methodology
+    # report FYE 2023). The Household Energy Payment is the same kind of
+    # one-off support to the same council tax bands, so it counts too.
+    "household_energy_payment",
     # Reference for tax-free-childcare: https://assets.publishing.service.gov.uk/media/5e7b191886650c744175d08b/households-below-average-income-1994-1995-2018-2019.pdf
 ]
 
