@@ -97,7 +97,7 @@ def test_aggregate_index_carries_2023_24_to_2025_26_on_the_obr_path():
     assert at(index, 2023) / at(index, 2022) == pytest.approx(2.2985, abs=1e-5)
 
 
-def test_the_savings_series_years_are_its_sourced_years():
+def test_the_savings_window_runs_from_the_first_sourced_year_to_2025_26():
     assert (SAVINGS_INCOME_GROWTH_FIRST_YEAR, SAVINGS_INCOME_GROWTH_LAST_YEAR) == (
         min(OBR_SAVINGS_INCOME_GROWTH),
         2025,
