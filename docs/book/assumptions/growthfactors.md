@@ -107,14 +107,16 @@ We use per capita GDP for these variables: `benunit_reported_capital`, `capital_
 
 ## Savings income
 
-When we project a dataset to later years (up to 2032-33), we grow savings income by the OBR's savings income forecast per person from 2022-23 to 2025-26 and by per capita GDP in other years. The OBR's series is the "Savings income" row of its receipts table "Self-employed income streams: growth rates" (October 2026 EFO, Table 4.5, from 2024-25; earlier years from the March 2026 and October 2024 EFOs), divided by population growth.
+When we project a dataset to later years (up to 2032-33), we grow savings income by the path the dataset says its savings income was calibrated to. A dataset that declares the `obr_savings_income_2022_2025` projection grows it by the OBR's savings income forecast per person from 2022-23 to 2025-26 and by per capita GDP in other years. A dataset that declares nothing grows it by per capita GDP in every year, as before. The OBR's series is the "Savings income" row of its receipts table "Self-employed income streams: growth rates" (October 2026 EFO, Table 4.5, from 2024-25; earlier years from the March 2026 and October 2024 EFOs), divided by population growth.
 
 | Fiscal year | 2022 | 2023 | 2024 | 2025 |
 |-------------|------|------|------|------|
 | OBR savings income | 50.4% | 129.9% | 35.0% | 0.6% |
 | Per person | 48.9% | 126.9% | 33.5% | 0.4% |
 
-From 2023-24 to 2025-26 the OBR's savings income rises 35.8%, where per capita GDP and population growth would give 10.3%. After 2025-26 these variables follow per capita GDP, as before.
+From 2023-24 to 2025-26 the OBR's savings income rises 35.8%, where per capita GDP and population growth would give 10.3%. After 2025-26 these variables follow per capita GDP under either rule.
+
+The declaration matters because a dataset's savings income is fitted to targets its builder moved forward along some path. Growing it by a different path would miss those targets. Datasets store the declaration in the H5 root attribute `policyengine_uk.savings_income_projection`.
 
 We apply this to `non_cash_isa_cash_interest`, `other_investment_income` and `savings_interest_income`, and to ISA interest in datasets whose ISA income contract projects it additively. Datasets with the legacy gross contract grow gross interest, ISA interest included, and hold the ISA part flat. Inputs given directly to a calculation, and years after the dataset projection, use the index each variable declares: household interest income (ONS D.41) for interest and per capita GDP for other investment income.
 

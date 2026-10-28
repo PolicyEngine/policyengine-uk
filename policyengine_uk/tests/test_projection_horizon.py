@@ -32,12 +32,17 @@ from policyengine_uk.data.economic_assumptions import (
     extend_single_year_dataset,
     reset_growthfactor_uprating,
 )
+from policyengine_uk.data.savings_income_projection import (
+    OBR_SAVINGS_INCOME_2022_2025,
+)
 from policyengine_uk.system import system
 
 BASE_YEAR = 2024
 GROWTH = parameters.gov.economic_assumptions.yoy_growth
-# The savings income series grows its inputs only from 2022 to 2025; GDP per
-# head serves the other years.
+# The fixture declares the OBR savings income projection, under which the
+# savings income series grows its inputs only from 2022 to 2025; GDP per head
+# serves the other years. Undeclared data is checked in
+# test_savings_income_uprating.py.
 SAVINGS_INCOME = "gov.economic_assumptions.yoy_growth.obr.per_capita.savings_income"
 GDP_PER_HEAD = "gov.economic_assumptions.yoy_growth.obr.per_capita.gdp"
 UPRATING_INDICES = yaml.safe_load(
@@ -95,9 +100,11 @@ WATER_SERIES = {
 }
 
 
-def _growth(index, year):
+def _growth(index, year, savings_rule=OBR_SAVINGS_INCOME_2022_2025):
     """The growth uprating_indices.yaml's ``index`` gives into ``year``."""
-    if index == SAVINGS_INCOME and not 2022 <= year <= 2025:
+    if index == SAVINGS_INCOME and not (
+        savings_rule == OBR_SAVINGS_INCOME_2022_2025 and 2022 <= year <= 2025
+    ):
         index = GDP_PER_HEAD
     return parameters.get_child(index)(year)
 
@@ -142,6 +149,7 @@ def _dataset(amount=1_000.0, base_year=BASE_YEAR):
         benunit=pd.DataFrame(tables["benunit"]),
         household=pd.DataFrame(tables["household"]),
         fiscal_year=base_year,
+        savings_income_projection=OBR_SAVINGS_INCOME_2022_2025,
     )
 
 

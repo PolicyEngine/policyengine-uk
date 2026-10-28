@@ -17,6 +17,13 @@ from policyengine_uk.data.energy_price_basis import (
     read_energy_price_basis,
     write_energy_price_basis,
 )
+from policyengine_uk.data.savings_income_projection import (
+    SAVINGS_INCOME_PROJECTION_KEY,
+    read_savings_income_projection,
+    resolve_savings_income_projection,
+    uniform_savings_income_projection,
+    validate_savings_income_projection,
+)
 from policyengine_uk.data.isa_income import (
     ISA_INCOME_CONTRACT_KEY,
     MISSING_CONTRACT,
@@ -78,6 +85,7 @@ class UKSingleYearDataset:
         fiscal_year: int = None,
         energy_price_basis: dict[str, str | int] | EnergyPriceBasis | None = None,
         isa_income_contract: dict | None = None,
+        savings_income_projection: str | None = None,
     ):
         basis = parse_energy_price_basis(energy_price_basis)
         file_path = str(file_path) if file_path else None
@@ -126,6 +134,9 @@ class UKSingleYearDataset:
             read_h5_contract(file_path),
             [int(self.time_period[:4])],
         )[int(self.time_period[:4])]
+        self.savings_income_projection = resolve_savings_income_projection(
+            savings_income_projection, read_savings_income_projection(file_path)
+        )
         self.data_format = "arrays"
         # tables tuple points at the raw (int16) DataFrames used by the
         # simulation engine internals - do not decode these.
@@ -198,6 +209,9 @@ class UKSingleYearDataset:
         write_energy_price_basis(file_path, self._energy_price_basis)
         with h5py.File(file_path, "a") as f:
             f.attrs[ISA_INCOME_CONTRACT_KEY] = json.dumps(contract)
+            f.attrs[SAVINGS_INCOME_PROJECTION_KEY] = validate_savings_income_projection(
+                self.savings_income_projection
+            )
 
     def load(self):
         data = {}
@@ -215,6 +229,7 @@ class UKSingleYearDataset:
             fiscal_year=self.time_period,
             energy_price_basis=self._energy_price_basis,
             isa_income_contract=validate_contract(self.isa_income_contract),
+            savings_income_projection=self.savings_income_projection,
         )
 
     def validate(self):
@@ -229,6 +244,7 @@ class UKSingleYearDataset:
         simulation: "Microsimulation",
         fiscal_year: int = 2025,
         energy_price_basis: dict[str, str | int] | EnergyPriceBasis | None = None,
+        savings_income_projection: str | None = None,
     ):
         entity_dfs = {}
 
@@ -253,6 +269,10 @@ class UKSingleYearDataset:
             fiscal_year=fiscal_year,
             energy_price_basis=energy_price_basis,
             isa_income_contract=simulation_contract(simulation, fiscal_year),
+            savings_income_projection=(
+                savings_income_projection
+                or getattr(simulation, "_savings_income_projection", None)
+            ),
         )
 
 
@@ -272,10 +292,15 @@ class UKMultiYearDataset:
                     )
                 year = int(dataset.time_period[:4])
                 self.datasets[year] = dataset
+            # Projection grows every year by one declared rule.
+            uniform_savings_income_projection(
+                dataset.savings_income_projection for dataset in datasets
+            )
 
         if file_path is not None:
             UKMultiYearDataset.validate_file_path(file_path)
             stored_contract = read_h5_contract(file_path)
+            stored_savings_rule = read_savings_income_projection(file_path)
             with pd.HDFStore(file_path, mode="r") as f:
                 self.datasets = {}
                 years = [
@@ -296,6 +321,7 @@ class UKMultiYearDataset:
                             household=household_df,
                             fiscal_year=fiscal_year,
                             isa_income_contract=contracts[fiscal_year],
+                            savings_income_projection=stored_savings_rule,
                         )
             for year, dataset in self.datasets.items():
                 dataset.energy_price_basis = read_energy_price_basis(
@@ -324,11 +350,18 @@ class UKMultiYearDataset:
             }
         )
 
+    @property
+    def savings_income_projection(self) -> str:
+        return uniform_savings_income_projection(
+            dataset.savings_income_projection for dataset in self.datasets.values()
+        )
+
     def __getitem__(self, fiscal_year: int):
         return self.get_year(fiscal_year)
 
     def save(self, file_path: str):
         contracts = self.isa_income_contract
+        savings_rule = self.savings_income_projection
         Path(file_path).unlink(missing_ok=True)  # Remove existing file if it exists
         with pd.HDFStore(file_path) as f:
             for year, dataset in self.datasets.items():
@@ -364,6 +397,7 @@ class UKMultiYearDataset:
 
         with h5py.File(file_path, "a") as f:
             f.attrs[ISA_INCOME_CONTRACT_KEY] = json.dumps(contracts)
+            f.attrs[SAVINGS_INCOME_PROJECTION_KEY] = savings_rule
 
     def copy(self):
         new_datasets = {year: dataset.copy() for year, dataset in self.datasets.items()}
