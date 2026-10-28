@@ -53,8 +53,9 @@ values:
   # Maternity Grant, lump_sum_income) or to the household (cost of living
   # payments, the energy rebate, bill credits), because question 10 works out
   # annual income from regular pay and the bonuses a parent expects, read here
-  # as a test of recurring income (question 9's "all payments" points the
-  # other way); and loans, which are repaid (student_loans).
+  # as a test of recurring income (question 8's current-tax-year test and
+  # question 9's "all payments" point the other way); and loans, which are
+  # repaid (student_loans).
   #
   # Data limits, immaterial near £100,000: for a Welsh student the FRS
   # education_grants residual can still hold Childcare Grant and Disabled

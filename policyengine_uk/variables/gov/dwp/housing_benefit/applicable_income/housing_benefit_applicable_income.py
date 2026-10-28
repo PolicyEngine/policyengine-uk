@@ -136,7 +136,7 @@ class housing_benefit_applicable_income(Variable):
         "https://www.legislation.gov.uk/uksi/2006/214/regulation/23",
         "https://www.legislation.gov.uk/uksi/2006/214/regulation/29",
         "https://www.legislation.gov.uk/nisr/2006/405/regulation/22",
-        "https://www.legislation.gov.uk/nisr/2006/405/schedule/6/paragraph/64",
+        "https://www.legislation.gov.uk/nisr/2009/276/regulation/3/made",
         "https://www.legislation.gov.uk/nisr/2006/405/schedule/6/paragraph/32",
         "https://www.legislation.gov.uk/nisr/2006/406/regulation/21",
         "https://www.legislation.gov.uk/nisr/2006/406/regulation/27",
