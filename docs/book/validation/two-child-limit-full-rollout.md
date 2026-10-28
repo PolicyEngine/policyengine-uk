@@ -247,10 +247,17 @@ household.
   - *Sample size.* The two full take-up figures on the IFS's line come from 185
     and 137 household records, and the ten that contribute most make up 29% and
     38% of them.
+  - *Exceptions, for the three-child limit.* No child in the release has an
+    exception, and this can move the three-child figures either way. A family
+    with three children whose third child has one would already get that
+    child's element, so the run overstates its gain. A family with four
+    children whose fourth child has one would have one more child element
+    before and after the reform than the run gives it, so the run can count it
+    as lifted out of low income when it would not be, or the reverse.
 
-  The exceptions do not explain the gap: no child in the release has one, which
-  if anything raises the figures here.
-  Attributing the gap to any one of these would need a controlled comparison.
+  For abolition the missing exceptions do not explain the gap: if anything they
+  raise the abolition figures here. Attributing the gap to any one of these
+  contributors would need a controlled comparison.
 - **Data year and method.** The IFS used TAXBEN on FRS 2022-23 and 2023-24,
   additionally reweighting 2022-23 by number of children, and FRS data as
   published before HBAI's March 2026 administrative-data linking. PolicyEngine
