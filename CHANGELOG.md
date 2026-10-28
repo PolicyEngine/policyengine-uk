@@ -1,3 +1,11 @@
+## [2.163.2] - 2026-10-28
+
+### Fixed
+
+- Made the test that dead systems' variable modules are released during a test independent of automatic garbage-collection timing.
+- Made Pension Credit and pension-age Housing Benefit projections non-negative and safe under reforms, validated their common enacted base year from the YAML as loaded, and preserved Guarantee Credit boundary continuity. Forecast thresholds and protected Housing Benefit allowances follow the reformed guarantee and maximum as uprated, as on main.
+
+
 ## [2.163.1] - 2026-10-28
 
 ### Fixed
