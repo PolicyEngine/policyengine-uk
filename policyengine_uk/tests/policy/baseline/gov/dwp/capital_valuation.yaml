@@ -535,3 +535,74 @@
     income_support_assessable_capital: 16_000
     jsa_income_assessable_capital: 16_000
     esa_income_assessable_capital: 16_000
+
+- name: A Lifetime ISA value given as an input is counted as given
+  period: 2026
+  absolute_error_margin: 0.004
+  input:
+    people:
+      person:
+        age: 30
+        # The balance's surrender value would be 0.195, but the value counted
+        # as capital is given directly, so every means test counts that 0.20:
+        # 15,999.81 + 0.20 = 16,000.01.
+        lifetime_isa_balance: 0.26
+        lifetime_isa_countable_capital: 0.20
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 15_999.81
+  output:
+    uc_assessable_capital: 16_000.01
+    is_uc_eligible: false
+    income_support_assessable_capital: 16_000.01
+    jsa_income_assessable_capital: 16_000.01
+    esa_income_assessable_capital: 16_000.01
+
+- name: A Lifetime ISA input is preserved when its float32 value matches the formula
+  period: 2026
+  absolute_error_margin: 0.004
+  input:
+    people:
+      person:
+        age: 30
+        # The formula gives 65,536.005. That and the explicit whole-penny
+        # value 65,536.01 both store as 65,536.0078125, so equality cannot
+        # tell a formula result from an input. Counting the input as given
+        # preserves 65,536.01 even under a programme that rounds down.
+        lifetime_isa_balance: 87_381.34
+        lifetime_isa_countable_capital: 65_536.01
+    benunits:
+      benunit:
+        members: person
+        housing_benefit_on_passporting_benefit: false
+    households:
+      household:
+        members: person
+  output:
+    uc_assessable_capital: 65_536.01
+    housing_benefit_assessable_capital: 65_536.01
+    income_support_assessable_capital: 65_536.01
+    jsa_income_assessable_capital: 65_536.01
+    esa_income_assessable_capital: 65_536.01
+
+- name: Pension Credit preserves an explicit Lifetime ISA value
+  period: 2026
+  absolute_error_margin: 0.004
+  input:
+    people:
+      person:
+        age: 70
+        lifetime_isa_balance: 0.26
+        lifetime_isa_countable_capital: 0.20
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+  output:
+    pension_credit_assessable_capital: 0.20

@@ -14,6 +14,8 @@ for Universal Credit and Housing Benefit, down for the others.
 import numpy as np
 from policyengine_core.model_api import max_
 
+from policyengine_uk.utils.supplied_inputs import supplied_input
+
 # Household inputs holding the debt secured on each capital source, such as a
 # mortgage on a second property. The debt is deducted from the source it is
 # secured on and that source is floored at nil, so negative equity in one
@@ -55,20 +57,29 @@ def valued_person_capital(benunit, period, parameters, capital, counted):
     """Sum ``capital.person_sources`` over the benefit unit's members for whom
     ``counted`` is true (its claimant and partner), in float64.
 
-    A source the engine would store with a fraction of a penny is worked out
-    here from its inputs (``CALCULATED_PERSON_SOURCES``) and rounded to the
-    penny under the programme's rule, like any other valuation, rather than
-    read back from float32. Any other source is a stored amount."""
+    A source whose formula can give a fraction of a penny
+    (``CALCULATED_PERSON_SOURCES``) is valued to the penny under the
+    programme's rule, like any other valuation. The baseline formula is
+    worked again in float64, so float32 cannot move the rounding. Explicit
+    inputs for this period and branch, and values from a reformed formula,
+    are kept as stored: matching a baseline value in float32 does not prove
+    where a value came from. Any other source is a stored amount."""
     person = benunit.members
     total = 0
     for source in capital.person_sources:
+        stored = person(source, period)
+        value = exact_amount(stored)
         if source in CALCULATED_PERSON_SOURCES:
-            value = round_to_penny(
-                CALCULATED_PERSON_SOURCES[source](person, period, parameters),
-                capital.round_down,
-            )
-        else:
-            value = exact_amount(person(source, period))
+            calculate = CALCULATED_PERSON_SOURCES[source]
+            # A holder can predate a reform; the system owns the active formula.
+            variable = person.simulation.tax_benefit_system.get_variable(source)
+            if (
+                not variable.is_neutralized
+                and variable.get_formula(period) is calculate
+                and supplied_input(person, source, period) is None
+            ):
+                value = calculate(person, period, parameters)
+            value = round_to_penny(value, capital.round_down)
         total = total + benunit.sum(value * counted)
     return total
 

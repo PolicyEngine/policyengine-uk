@@ -24,8 +24,8 @@ class lifetime_isa_countable_capital(Variable):
         "https://www.legislation.gov.uk/uksi/1998/1870/schedule",
     ]
 
-    def formula(person, period, parameters):
-        # Stored as float32. The means tests work the value out in float64
-        # from the balance instead, and round it under each programme's rule
-        # (capital_valuation.valued_person_capital).
-        return lifetime_isa_surrender_value(person, period, parameters)
+    # The shared function's identity lets the means tests distinguish this
+    # baseline formula from a reform. They work it again in float64 before
+    # rounding, while preserving explicit inputs and reformed values
+    # (capital_valuation.valued_person_capital).
+    formula = lifetime_isa_surrender_value

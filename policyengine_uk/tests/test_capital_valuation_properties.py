@@ -44,11 +44,17 @@ from fractions import Fraction
 from functools import reduce
 
 import numpy as np
+import pytest
 from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
+from policyengine_core.reforms import Reform
 
 from policyengine_uk import Simulation
+from policyengine_uk.model_api import Person, Variable
+from policyengine_uk.model_api import YEAR as YEAR_PERIOD
 from policyengine_uk.utils.capital_valuation import exact_amount, less_sale_expenses
+
+pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
 YEAR = 2026
 PROPERTY_SETTINGS = settings(
@@ -459,3 +465,73 @@ def test_whole_pennies_are_counted_to_the_penny(rows):
                 values[variable][i],
                 expected,
             )
+
+
+def test_lifetime_isa_reformed_value_is_kept_as_stored():
+    # This reform's value and the baseline's 0.195 are the same float32,
+    # but the reform deliberately values the ISA below the half penny.
+    class lifetime_isa_countable_capital(Variable):
+        value_type = float
+        entity = Person
+        definition_period = YEAR_PERIOD
+
+        def formula(person, period, parameters):
+            return person.filled_array(0.19499999)
+
+    class ReplaceLifetimeISA(Reform):
+        def apply(self):
+            self.update_variable(lifetime_isa_countable_capital)
+
+    sim = Simulation(
+        situation=whole_penny_situation([(0, 0, 26, 30)]),
+        reform=ReplaceLifetimeISA,
+    )
+    assert abs(sim.calculate("uc_assessable_capital", YEAR)[0] - 0.19) < 0.004
+
+
+def test_lifetime_isa_baseline_formula_uses_reformed_parameters():
+    sim = Simulation(
+        situation=whole_penny_situation([(0, 0, 26, 30)]),
+        reform={"gov.hmrc.isa.lifetime.withdrawal_charge": {str(YEAR): 0.5}},
+    )
+    assert abs(sim.calculate("uc_assessable_capital", YEAR)[0] - 0.13) < 0.004
+
+
+@pytest.mark.parametrize("via_holder", [False, True])
+def test_lifetime_isa_input_set_after_construction_is_preserved(via_holder):
+    sim = Simulation(situation=whole_penny_situation([(0, 0, 26, 30)]))
+    # Cache the formula first: a later equal-valued input still has input
+    # provenance, including when the caller uses Holder.set_input directly.
+    sim.calculate("lifetime_isa_countable_capital", YEAR)
+    if via_holder:
+        from policyengine_core import periods
+
+        sim.get_holder("lifetime_isa_countable_capital").set_input(
+            periods.period(YEAR), np.array([0.195])
+        )
+    else:
+        sim.set_input("lifetime_isa_countable_capital", YEAR, np.array([0.195]))
+    assert abs(sim.calculate("uc_assessable_capital", YEAR)[0] - 0.19) < 0.004
+
+
+def test_lifetime_isa_input_for_another_period_does_not_replace_the_formula():
+    situation = whole_penny_situation([(0, 0, 26, 30)])
+    situation["people"]["p0"]["lifetime_isa_countable_capital"] = {YEAR - 1: 0.195}
+    sim = Simulation(situation=situation)
+    # The previous year's supplied value cannot suppress this year's exact
+    # baseline valuation of 75% of 0.26, rounded nearest to 0.20.
+    assert abs(sim.calculate("uc_assessable_capital", YEAR)[0] - 0.20) < 0.004
+
+
+@pytest.mark.parametrize("inherited", [False, True])
+def test_lifetime_isa_input_is_preserved_on_its_visible_branch(inherited):
+    situation = whole_penny_situation([(0, 0, 26, 30)])
+    if inherited:
+        situation["people"]["p0"]["lifetime_isa_countable_capital"] = {YEAR: 0.195}
+    sim = Simulation(situation=situation)
+    branch = sim.get_branch("entered_lisa")
+    if not inherited:
+        branch.set_input("lifetime_isa_countable_capital", YEAR, np.array([0.195]))
+    assert abs(branch.calculate("uc_assessable_capital", YEAR)[0] - 0.19) < 0.004
+    expected_main = 0.19 if inherited else 0.20
+    assert abs(sim.calculate("uc_assessable_capital", YEAR)[0] - expected_main) < 0.004
