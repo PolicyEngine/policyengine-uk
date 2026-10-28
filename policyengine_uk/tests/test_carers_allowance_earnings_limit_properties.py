@@ -81,11 +81,14 @@ And for the amounts the deductions start from:
     neutralized or replaced the formula, the deduction is the stored amount,
     as the amount deducted (reg. 10(4)(a)), even within a fraction of a penny
     of what the formula would give.
-12. Sums the model forms are read in whole pence: pay, NI income and pension
-    contributions, which the model adds from other amounts in float32, are
-    the exact sums of their whole-penny parts, and net earnings follow
-    exact arithmetic on them.
-13. An amount calculated by a formula in place of a sum is read as stored.
+12. Sums the model forms are read in whole pence: pay, NI income, and
+    employee and all pension contributions, which the model adds from other
+    amounts in float32, are the exact sums of their whole-penny parts, and
+    net earnings follow exact arithmetic on them. Only sums the simulation
+    formed are summed again: a total entered directly is read as entered,
+    even when it is the very float32 its parts would sum to.
+13. An amount calculated by a formula in place of a sum is read as stored
+    (policyengine-core allows no formula beside a sum).
 """
 
 import datetime
@@ -101,7 +104,7 @@ from hypothesis import strategies as st
 
 import policyengine_uk
 from policyengine_uk import Simulation
-from policyengine_uk.model_api import GBP, MONTH, YEAR, Person, Reform, Variable
+from policyengine_uk.model_api import GBP, MONTH, YEAR, Person, Reform, Variable, add
 from policyengine_uk.system import system
 from policyengine_uk.utils.class_2 import class_2_contribution_weeks
 
@@ -1007,6 +1010,26 @@ def test_a_formula_in_place_of_a_sum_is_read_as_stored():
     assert net == [1_415_000]
 
 
+def test_a_formula_cannot_sit_beside_a_sum():
+    """Invariant 13 relies on this: policyengine-core refuses a variable with
+    both a formula and adds, so a variable calculated by a formula lists no
+    amounts to add, and amount_pence reads it as stored."""
+
+    class ni_class_1_income(Variable):
+        label = "NI Class 1 income"
+        entity = Person
+        definition_period = YEAR
+        value_type = float
+        unit = GBP
+        adds = list(system.variables["ni_class_1_income"].adds)
+
+        def formula(person, period, parameters):
+            return add(person, period, ["employment_income"])
+
+    with pytest.raises(ValueError, match="mixes computation modes"):
+        ni_class_1_income()
+
+
 def test_the_model_calculates_class_1_with_its_own_formula_in_every_year():
     """Invariant 11, for the baseline: in every year from 2015 to the
     horizon, no reform the model applies by default changes how Class 1 is
@@ -1064,22 +1087,65 @@ def test_the_model_calculates_class_1_with_its_own_formula_in_every_year():
             )
 
 
-def _natural_rows(rng, count, above_threshold):
+def test_an_entered_total_is_read_as_entered_even_as_its_parts_float32_sum():
+    """Invariant 12: only sums the simulation formed are summed again. A
+    pension total entered as £3,242.6401, beside programmes of £1,807.49 and
+    £1,435.15, is stored as 3,242.64013671875, the very float32 the
+    programmes sum to (CA Case 32). Summed, half would be £1,621.32; entered,
+    it is read as stored, a fraction of a penny over £3,242.64, so half
+    counts as £1,621.33 and £12,229.84 of pay leaves £10,608.51, within."""
+    row = {
+        "employment_income": 12_229.84,
+        "employee_pension_contributions": 1_807.49,
+        "personal_pension_contributions": 1_435.15,
+    }
+    summed_net, summed_over = _earnings_of([row])
+    entered_net, entered_over = _earnings_of(
+        [{**row, "pension_contributions": 3_242.6401}]
+    )
+    assert np.float32(3_242.6401) == np.float32(1_807.49) + np.float32(1_435.15)
+    assert summed_net + entered_net == [1_222_984 - 162_132, 1_222_984 - 162_133]
+    assert summed_over + entered_over == [True, False]
+
+
+def _natural_rows(rng, count, regime):
     """Inputs the model sums, in whole pence, chosen so that the legal net
     earnings lie within 3p of the 2026-27 threshold: pay before labour supply
     responses a, salary sacrifice returned to pay b (also a member
     contribution), reported employee contributions r, personal contributions
-    q and statutory sick pay s (NI income, not pay). Below the primary
-    threshold there is no PAYE or Class 1; above it, Class 1 on a + b + s."""
+    q and statutory sick pay s (NI income, not pay).
+
+    - "no NI": below the primary threshold, so no PAYE or Class 1.
+    - "Class 1": Class 1 on a + b + s, with no PAYE while pay less member
+      contributions stays below the personal allowance.
+    - "PAYE": pay less member contributions x pence over the personal
+      allowance, with PAYE of 20% of x and Class 1. x is mostly a multiple of
+      5p, so that the tax is whole pence and member contributions read a
+      fraction of a penny low would add a penny; q puts net earnings on the
+      target.
+    """
     rows, nets = [], []
     while len(rows) < count:
         b, s = int(rng.integers(0, 200_000)), int(rng.integers(0, 50_000))
         r, q = int(rng.integers(0, 300_000)), int(rng.integers(0, 100_000))
         target = THRESHOLD_2026 + int(rng.integers(-3, 4))
+        paye = 0
+        if regime == "PAYE":
+            x = int(rng.integers(0, 300_000))
+            if rng.random() < 0.8:
+                x -= x % 5
+            pay = 1_257_000 + r + b + x
+            paye = math.ceil(Fraction(20, 100) * x)
+            # Half the contributions that leaves net earnings at the target.
+            half = pay - paye - math.ceil(_class_1(pay + s)) - target
+            q = 2 * half - r - b
+            if q < 0:
+                continue
         # Pay that leaves net earnings at the target, given the deductions.
         half = math.ceil(Fraction(r + b + q, 2))
-        pay = target + half
-        if above_threshold:
+        if regime == "no NI":
+            pay = target + half
+        elif regime == "Class 1":
             # Net = pay - ceil(8% of (pay + s - PT)) - half, with no PAYE
             # while pay less member contributions stays below the allowance.
             pay = math.ceil(
@@ -1090,13 +1156,13 @@ def _natural_rows(rng, count, above_threshold):
         if a <= 0:
             continue
         employee = r + b
-        if above_threshold and not (
+        if regime == "Class 1" and not (
             pay + s > WEEKS * 24_173 and pay - employee < 1_257_000
         ):
             continue
-        if not above_threshold and (pay + s > WEEKS * 24_173 or pay > 1_257_000):
+        if regime == "no NI" and (pay + s > WEEKS * 24_173 or pay > 1_257_000):
             continue
-        net = pay - math.ceil(_class_1(pay + s)) - half
+        net = pay - paye - math.ceil(_class_1(pay + s)) - half
         rows.append(
             {
                 "employment_income_before_lsr": a / 100,
@@ -1110,16 +1176,18 @@ def _natural_rows(rng, count, above_threshold):
     return rows, nets
 
 
-@pytest.mark.parametrize("above_threshold", [False, True], ids=["no NI", "Class 1"])
-def test_sums_the_model_forms_are_read_in_whole_pence(above_threshold):
+@pytest.mark.parametrize("regime", ["no NI", "Class 1", "PAYE"])
+def test_sums_the_model_forms_are_read_in_whole_pence(regime):
     """Invariant 12: pay (employment_income, which adds pay before labour
     supply responses and returned salary sacrifice), NI income (which adds
     statutory sick pay), employee pension contributions (reported plus
-    returned salary sacrifice) and pension_contributions (the programmes) are
-    the exact sums of their whole-penny parts, however float32 rounds the
-    model's sums, and the limit test follows net earnings exactly."""
-    rows, nets = _natural_rows(np.random.default_rng(2543), 600, above_threshold)
-    if not above_threshold:
+    returned salary sacrifice, which reduce the pay PAYE is charged on) and
+    pension_contributions (the programmes) are the exact sums of their
+    whole-penny parts, however float32 rounds the model's sums, and the limit
+    test follows net earnings exactly, with no NI, with Class 1, and with
+    PAYE and Class 1."""
+    rows, nets = _natural_rows(np.random.default_rng(2543), 600, regime)
+    if regime == "no NI":
         # From review: returned pay and contributions of 20p, and of £1,435.15.
         rows += [
             {

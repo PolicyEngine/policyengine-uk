@@ -123,11 +123,12 @@ def _summands(population, variable_name, period):
     adding amounts of the same entity and period."""
     simulation = population.simulation
     variable = simulation.tax_benefit_system.get_variable(variable_name)
+    # A variable calculated by a formula lists no amounts to add:
+    # policyengine-core allows a variable one way of calculating it.
     if (
         variable.is_neutralized
         or variable.defined_for is not None
         or variable.definition_period != period.unit
-        or variable.get_formula(period) is not None
         or not population.get_holder(variable_name).is_derived(
             period, simulation.branch_name
         )
