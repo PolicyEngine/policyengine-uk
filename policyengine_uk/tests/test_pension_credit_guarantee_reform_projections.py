@@ -40,6 +40,9 @@ from policyengine_uk.tax_benefit_system import (
 )
 
 
+pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
+
+
 GUARANTEE = "gov.dwp.pension_credit.guarantee_credit.minimum_guarantee"
 HB_ALLOWANCES = "gov.dwp.housing_benefit.allowances"
 SAVINGS_CREDIT = "gov.dwp.pension_credit.savings_credit"
@@ -118,8 +121,11 @@ def _modifier_simulation(
 
     return Simulation(
         situation=_situation(couple, range(2026, 2031)),
-        scenario=Scenario(simulation_modifier=modify, applied_before_data_load=True),
-        reform=dated_changes,
+        scenario=Scenario(
+            parameter_changes=dated_changes,
+            simulation_modifier=modify,
+            applied_before_data_load=True,
+        ),
     )
 
 
