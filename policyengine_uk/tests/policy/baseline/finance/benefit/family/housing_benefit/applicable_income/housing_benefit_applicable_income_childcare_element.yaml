@@ -1563,3 +1563,97 @@
     # young person; the disability age extension does not create that status.
     num_relevant_children_for_housing_benefit_childcare: 0
     housing_benefit_applicable_income_childcare_element: 0
+
+- name: One relevant child and an older young person have no earnings or tax credits
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 30_000
+      child:
+        age: 10
+      young_person:
+        age: 17
+    benunits:
+      benunit:
+        members: [claimant, child, young_person]
+        housing_benefit_net_earnings: 0
+        housing_benefit_special_earnings_disregard: 0
+        housing_benefit_permitted_work_disregard: 0
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 0
+  output:
+    num_relevant_children_for_housing_benefit_childcare: 1
+    # Reg 27(3) still selects min(30,000, 175 * 52) = 9,100.
+    # BW2 W2.179-W2.182: limit = max(0, 0 - 0 - 0) + 0 + 0 = 0;
+    # deduction = min(9,100, 0) = 0, despite the unchanged relevant-child count.
+    housing_benefit_childcare_earnings_limit: 0
+    housing_benefit_applicable_income_childcare_element: 0
+
+- name: Pre-2025 WTC disability award selects the special standard and funds childcare
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_parent: true
+        is_claimant_or_partner: true
+        childcare_expenses: 2_000
+        sda: 0
+        attendance_allowance: 0
+        dla_sc: 0
+        dla_m: 0
+        pip_dl: 0
+        pip_m: 0
+        armed_forces_independence_payment: 0
+        is_blind: false
+      partner:
+        age: 70
+        is_claimant_or_partner: true
+        sda: 0
+        attendance_allowance: 0
+        dla_sc: 0
+        dla_m: 0
+        pip_dl: 0
+        pip_m: 0
+        armed_forces_independence_payment: 0
+        is_blind: false
+      child:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+    benunits:
+      family:
+        members: [claimant, partner, child]
+        housing_benefit_net_earnings: 2_000
+        housing_benefit_permitted_work_disregard: 0
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        housing_benefit_pension_age_regulations_apply: true
+        housing_benefit_on_passporting_benefit: false
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        disability_premium: 0
+        severe_disability_premium: 0
+        carer_premium: 0
+        # Pre-assessed award in payment and its pre-taper disability element;
+        # special eligibility and both standard variables remain calculated.
+        working_tax_credit: 500
+        WTC_disabled_element: 3_900
+        WTC_severely_disabled_element: 0
+        child_tax_credit: 0
+  output:
+    # SI 2006/214 Sch 4 para 5(1)(a)(vi): WTC disability receipt selects
+    # 20 * 52 = 1,040 (rather than the ordinary couple's 10 * 52 = 520).
+    # Reg 30(1)(c), (2)-(3), with DWP BW2 W2.179-W2.182:
+    # residual = max(0, 2,000 - 1,040 - 0) = 960;
+    # limit = 960 + 500 WTC + 0 CTC = 1,460;
+    # capped charge = min(2,000, 175 * 52) = 2,000;
+    # deduction = min(2,000, 1,460) = 1,460.
+    housing_benefit_special_earnings_disregard_eligible: true
+    housing_benefit_special_earnings_disregard: 1_040
+    housing_benefit_applied_standard_earnings_disregard: 1_040
+    housing_benefit_childcare_earnings_limit: 1_460
+    housing_benefit_applicable_income_childcare_element: 1_460
