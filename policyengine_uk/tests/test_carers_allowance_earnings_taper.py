@@ -185,3 +185,98 @@ def test_earnings_plus_the_allowance_never_fall_as_earnings_rise(sims, drawn):
     tapers = np.isin(regions, TAPER_REGIONS)[:CASES]
     rise = total[CASES:] - total[:CASES]
     assert (rise[tapers] >= -0.011).all()
+
+
+# Overlapping benefits come off only in the weeks the allowance is paid. A
+# carer over the limit in 2030-31 is paid from 6 October 2030 only, so only
+# that share of a weekly overlapping benefit reduces it.
+
+
+def final_allowance(weekly_earnings, weekly_state_pension, year, region="NORTH_WEST"):
+    situation = carer(weekly_earnings, year, region)
+    person = situation["people"]["carer"]
+    person["age"] = {year: 70}
+    person["state_pension"] = {year: 52 * weekly_state_pension}
+    sim = Simulation(situation=situation)
+    return float(sim.calculate("carers_allowance", year)[0])
+
+
+def test_2030_31_takes_overlapping_benefits_off_only_the_taper_weeks():
+    # £250 a week is £46 over the £204 limit; £40 a week of State Pension.
+    limit, rate = ca_parameters(START_YEAR)
+    excess = 250 - limit
+    expected = START_YEAR_SHARE * max(rate - excess - 40, 0) * 52
+    assert final_allowance(250, 40, START_YEAR) == pytest.approx(expected, abs=0.05)
+
+
+def test_full_taper_year_takes_off_the_whole_overlapping_benefit():
+    limit, rate = ca_parameters(FULL_YEAR)
+    excess = 250 - limit
+    expected = max(rate - excess - 40, 0) * 52
+    assert final_allowance(250, 40, FULL_YEAR) == pytest.approx(expected, abs=0.05)
+
+
+def test_below_the_limit_2030_31_takes_off_the_whole_overlapping_benefit():
+    limit, rate = ca_parameters(START_YEAR)
+    expected = max(rate - 40, 0) * 52
+    assert final_allowance(limit - 1, 40, START_YEAR) == pytest.approx(
+        expected, abs=0.05
+    )
+
+
+overlap_cases = st.lists(
+    st.tuples(weekly, st.floats(min_value=0, max_value=150)),
+    min_size=CASES,
+    max_size=CASES,
+)
+
+
+def overlap_situation():
+    return {
+        "people": {
+            f"person_{i}": {"age": {START_YEAR: 70}, "care_hours": {START_YEAR: 40}}
+            for i in range(CASES)
+        },
+        "benunits": {
+            f"benunit_{i}": {"members": [f"person_{i}"]} for i in range(CASES)
+        },
+        "households": {
+            f"household_{i}": {
+                "members": [f"person_{i}"],
+                "region": {START_YEAR: REGIONS[i % len(REGIONS)]},
+            }
+            for i in range(CASES)
+        },
+    }
+
+
+@pytest.fixture(scope="module")
+def overlap_sim():
+    return Simulation(situation=overlap_situation())
+
+
+@SETTINGS
+@given(overlap_cases)
+def test_2030_31_allowance_is_the_weekly_overlap_rule_over_the_paid_weeks(
+    overlap_sim, drawn
+):
+    earnings = np.array([e for e, _ in drawn])
+    pension = np.array([p for _, p in drawn])
+    overlap_sim.set_input("carers_allowance_earnings", START_YEAR, 52 * earnings)
+    overlap_sim.set_input("state_pension", START_YEAR, 52 * pension)
+    overlap_sim.reset_calculations()
+    paid = overlap_sim.calculate("carers_allowance", START_YEAR).astype(float)
+    above = overlap_sim.calculate(
+        "carers_allowance_weekly_earnings_above_limit", START_YEAR
+    ).astype(float)
+    limit, rate = ca_parameters(START_YEAR)
+    regions = np.array([REGIONS[i % len(REGIONS)] for i in range(CASES)])
+    tapers = np.isin(regions, TAPER_REGIONS)
+    # Weeks paid: all of them at or below the limit; above it, the taper
+    # weeks in England and Wales and none elsewhere.
+    share = np.where(above > 0, np.where(tapers, START_YEAR_SHARE, 0), 1)
+    weekly = np.where(above > 0, np.maximum(0, rate - above), rate)
+    expected = share * 52 * np.maximum(0, weekly - pension)
+    # Scotland pays Carer Support Payment instead.
+    england_wales_ni = regions != "SCOTLAND"
+    assert (np.abs(paid - expected)[england_wales_ni] <= 0.05).all()

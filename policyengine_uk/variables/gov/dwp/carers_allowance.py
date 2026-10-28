@@ -27,4 +27,8 @@ class carers_allowance(Variable):
     def formula(person, period, parameters):
         pre_overlap = person("carers_allowance_pre_overlap", period)
         overlapping = person("carers_allowance_overlapping_benefits", period)
-        return max_(pre_overlap - overlapping, 0)
+        # The overlap rule reduces the allowance only in weeks it is paid, so
+        # in a year the earnings taper covers in part, only that share of
+        # the overlapping benefits comes off.
+        share = person("carers_allowance_share_of_year_payable", period)
+        return max_(pre_overlap - share * overlapping, 0)
