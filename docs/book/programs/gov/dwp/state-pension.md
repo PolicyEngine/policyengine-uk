@@ -257,6 +257,12 @@ statutory-basis forecast minus the calendar-year growth stored in
   OBR does not forecast the ONS AWE series; its measure is wages and
   salaries per employee, and Q2 is the quarter nearest May to July.
 
+The State Pension triple lock consumes both statutory inputs. The shared
+`indices.earnings_uprating` series also projects the Pension Credit standard
+minimum guarantee, with a zero floor on earnings growth. See
+[Pension Credit uprating](./pension-credit.ipynb#uprating) for its Savings Credit
+and pension-age Housing Benefit projections and reform behaviour.
+
 With the October 2026 EFO the baseline rises are 3.9% in April 2027 (the
 published May-July 2026 earnings), 3.4% in April 2028 (September 2027 CPI),
 2.5% in April 2029 to 2031 and 2.6% in April 2032, as in the OBR's triple
