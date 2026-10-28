@@ -2,7 +2,8 @@
 
 Schedule 8 paragraphs 5, 6(a) and 9 limit the baseline disregard; regulations
 36(2) and 38(2) apply it to net earnings only. These tests exercise the real
-formulas with generated families and actual tax/NI calculations, without data.
+formulas with generated families, without data. Tax and NI are calculated
+normally except in the monotonicity property with zero tax/NI.
 The HB/CTR differential uses the frozen helper from main at 6030cbc0b.
 """
 
@@ -156,15 +157,35 @@ def test_zero_earnings_equals_income_without_a_disregard(template, families):
     ),
     increase=st.integers(1, 5_000),
 )
-def test_applicable_income_does_not_fall_as_other_income_rises(
+def test_other_income_is_monotone_with_fixed_earnings_deductions(
     template, families, source, increase
 ):
+    # The full tax system has cliffs (for example, the Personal Savings
+    # Allowance). Isolate the IS assessment rule: hold tax and NI at zero,
+    # keep pension contributions unchanged, and calculate the earnings cap.
+    families = deepcopy(families)
+    for family in families:
+        for adult in family["adults"]:
+            adult.update(
+                income_tax_before_winter_fuel_payment_charge=0,
+                national_insurance=0,
+                ni_class_1_employee=0,
+                ni_class_2=0,
+                ni_class_4=0,
+            )
     higher = deepcopy(families)
     for family in higher:
         family["adults"][0][source] += increase
-    before = calculate(simulate(template, families), "income_support_applicable_income")
-    after = calculate(simulate(template, higher), "income_support_applicable_income")
-    assert np.all(after >= before - 0.05)
+    before = simulate(template, families)
+    after = simulate(template, higher)
+    np.testing.assert_array_equal(
+        calculate(before, "income_support_earnings_disregard"),
+        calculate(after, "income_support_earnings_disregard"),
+    )
+    assert np.all(
+        calculate(after, "income_support_applicable_income")
+        >= calculate(before, "income_support_applicable_income") - 0.05
+    )
 
 
 @SETTINGS
