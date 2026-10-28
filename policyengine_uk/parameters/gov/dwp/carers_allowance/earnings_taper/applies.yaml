@@ -1,0 +1,14 @@
+description: Share of the fiscal year in which Carer's Allowance tapers on earnings above the limit instead of stopping in full.
+values:
+  # The taper "will begin within the 2030-31 financial year, with a precise
+  # start date confirmed in due course" (policy costings, page 16). Until the
+  # date is confirmed, the model starts it on 6 October 2030, the middle of
+  # 2030-31. fiscal_year_blend day-weights the year, so 2030-31 carries 182
+  # of its 365 days. Change the date here when DWP confirms it.
+  0001-01-01: 0
+  2030-10-06: 1
+metadata:
+  unit: /1
+  period: year
+  fiscal_year_blend: true
+  label: Carer's Allowance earnings taper share of year

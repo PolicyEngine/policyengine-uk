@@ -1,0 +1,1 @@
+Replace the cliff edge at the Carer's Allowance earnings limit with the 100% taper announced at Budget 2026, in England and Wales: the weekly allowance falls by £1 for each £1 of weekly earnings above the limit. The taper starts within 2030-31; until DWP confirms the date the model starts it on 6 October 2030, so 2030-31 carries 182 of its 365 days.

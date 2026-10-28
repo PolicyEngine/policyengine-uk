@@ -32,11 +32,21 @@ class carers_allowance_pre_couple_limit(Variable):
         gainfully_employed = person(
             "is_gainfully_employed_for_carers_allowance", period
         )
+        # Budget 2026 (para 6.13) replaces that cliff edge in England and
+        # Wales with a taper: the weekly allowance less taper.rate for each
+        # pound of weekly earnings above the limit. taper.applies is the
+        # share of the year in which it does, so a year it starts in part
+        # pays the tapered amount for that share of its weeks.
+        taper = ca.earnings_taper
+        country = person.household("country", period).decode_to_str()
+        tapers = np.isin(country, list(taper.countries)) * taper.applies
+        excess = person("carers_allowance_weekly_earnings_above_limit", period)
+        tapered = max_(0, ca.rate - taper.rate * excess)
+        weekly = where(gainfully_employed, tapers * tapered, ca.rate)
         eligible = (
             ~(in_scotland & csp_replaces_ca)
             & (meets_work_condition | receives_ca)
-            & ~gainfully_employed
             & would_claim
             & meets_age_condition
         )
-        return eligible * ca.rate * WEEKS_IN_YEAR
+        return eligible * weekly * WEEKS_IN_YEAR
