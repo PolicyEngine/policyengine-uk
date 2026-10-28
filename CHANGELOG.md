@@ -1,3 +1,10 @@
+## [2.162.15] - 2026-10-28
+
+### Fixed
+
+- Uprate the Scottish Carer Supplement each April by the previous September's CPI, rounded to the nearest 5p, instead of holding it at £11.70 a week from 2027-28, and round the Carer Support Payment component's projected rate to the nearest 5p in the same way.
+
+
 ## [2.162.14] - 2026-10-27
 
 ### Changed
