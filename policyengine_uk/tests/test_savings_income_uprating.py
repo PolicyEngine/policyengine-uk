@@ -12,8 +12,10 @@ decimals. Each year comes from the latest table that has it:
 
 obr.per_capita.savings_income is that growth net of ons.population growth.
 Dataset projection grows savings_interest_income, non_cash_isa_cash_interest,
-other_investment_income and additive ISA interest by the per-person series to
-2025 and by obr.per_capita.gdp after it.
+other_investment_income and additive ISA interest by the per-person series
+from 2022 to 2025 and by obr.per_capita.gdp in other years: after 2025, and
+before 2022, where the series has no source and the parameter only repeats
+its first value.
 """
 
 from copy import deepcopy
@@ -28,6 +30,7 @@ from policyengine_uk.data.dataset_schema import UKSingleYearDataset
 from policyengine_uk.data.economic_assumptions import (
     GDP_PER_HEAD_GROWTH,
     SAVINGS_INCOME_GROWTH,
+    SAVINGS_INCOME_GROWTH_FIRST_YEAR,
     SAVINGS_INCOME_GROWTH_LAST_YEAR,
     apply_single_year_uprating,
     extend_single_year_dataset,
@@ -94,11 +97,18 @@ def test_aggregate_index_carries_2023_24_to_2025_26_on_the_obr_path():
     assert at(index, 2023) / at(index, 2022) == pytest.approx(2.2985, abs=1e-5)
 
 
+def test_the_savings_series_years_are_its_sourced_years():
+    assert (SAVINGS_INCOME_GROWTH_FIRST_YEAR, SAVINGS_INCOME_GROWTH_LAST_YEAR) == (
+        min(OBR_SAVINGS_INCOME_GROWTH),
+        2025,
+    )
+
+
 @pytest.mark.parametrize("year", range(2015, 2041))
-def test_growth_rate_hands_over_to_gdp_per_head_after_2025_26(year):
+def test_growth_rate_uses_gdp_per_head_outside_2022_23_to_2025_26(year):
     series = (
         YOY.obr.per_capita.savings_income
-        if year <= SAVINGS_INCOME_GROWTH_LAST_YEAR
+        if 2022 <= year <= 2025
         else YOY.obr.per_capita.gdp
     )
     assert growth_rate(PARAMETERS, SAVINGS_INCOME_GROWTH, str(year)) == at(series, year)
@@ -201,9 +211,26 @@ def test_projection_from_2023_24_reaches_the_obr_level_in_2025_26(contract):
             )
 
 
+@pytest.mark.parametrize("contract", [LEGACY, ADDITIVE], ids=["legacy", "additive"])
+def test_projection_before_2022_23_follows_gdp_per_head(contract):
+    """The series starts in 2022-23, so a 2020-21 dataset grows by GDP per
+    head into 2021-22, not by a backdated 2022-23 rate, then by the series."""
+    gdp_2021 = at(YOY.obr.per_capita.gdp, 2021)
+    savings_2022 = at(YOY.obr.per_capita.savings_income, 2022)
+    assert gdp_2021 != pytest.approx(savings_2022)
+    projected = extend_single_year_dataset(
+        dataset(2020, contract, PEOPLE), PARAMETERS, end_year=2022
+    )
+    for year, growth in ((2021, gdp_2021), (2022, savings_2022)):
+        for name in SAVINGS_INPUTS:
+            before = projected.datasets[year - 1].person[name].values
+            after = projected.datasets[year].person[name].values
+            np.testing.assert_allclose(after, before * (1 + growth), rtol=1e-12)
+
+
 @settings(max_examples=60, deadline=None)
 @given(
-    year=st.integers(min_value=2022, max_value=2031),
+    year=st.integers(min_value=2015, max_value=2031),
     additive=st.booleans(),
     amounts=st.lists(
         st.tuples(

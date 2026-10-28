@@ -951,7 +951,7 @@ obr:
         # the fiscal year starting in year t: (1 + growth) / (1 + population)
         # - 1, rounded to 4 decimals. Dataset projection grows household
         # weights by population, so each person's savings income grows by
-        # this (data/economic_assumptions.py, savings_income_growth).
+        # this from 2022 to 2025 (data/economic_assumptions.py, growth_rate).
         2022-01-01: 0.4890
         2023-01-01: 1.2686
         2024-01-01: 0.3349

@@ -102,26 +102,31 @@ _WATER_GROWTH_SERIES = {
 COUNTRY_UPRATED_INPUTS = frozenset({"water_and_sewerage_charges"})
 
 # Savings income (savings interest, ISA interest and other investment income)
-# grows by the OBR's savings income forecast per person to 2025-26, and by GDP
-# per head after it, like dividends and the other capital incomes. The OBR's
-# series rises 35.0% in 2024-25 and 0.6% in 2025-26, where GDP per head rises
-# 3.9% and 4.7%.
+# grows in dataset projection by the OBR's savings income forecast per person
+# from 2022-23 to 2025-26, and by GDP per head in other years, like dividends
+# and the other capital incomes. The OBR's series rises 35.0% in 2024-25 and
+# 0.6% in 2025-26, where GDP per head rises 3.9% and 4.7%. It starts in
+# 2022-23, so earlier years keep GDP per head rather than the parameter's
+# backdated first value.
 SAVINGS_INCOME_GROWTH = (
     "gov.economic_assumptions.yoy_growth.obr.per_capita.savings_income"
 )
 GDP_PER_HEAD_GROWTH = "gov.economic_assumptions.yoy_growth.obr.per_capita.gdp"
+SAVINGS_INCOME_GROWTH_FIRST_YEAR = 2022
 SAVINGS_INCOME_GROWTH_LAST_YEAR = 2025
 
 
 def growth_rate(parameters: ParameterNode, index_name: str, year) -> float:
     """Growth into ``year`` by the uprating_indices.yaml series ``index_name``.
 
-    The savings income series hands over to GDP per head after
-    SAVINGS_INCOME_GROWTH_LAST_YEAR.
+    The savings income series applies from SAVINGS_INCOME_GROWTH_FIRST_YEAR
+    to SAVINGS_INCOME_GROWTH_LAST_YEAR; GDP per head serves the years
+    outside them.
     """
-    if (
-        index_name == SAVINGS_INCOME_GROWTH
-        and int(str(year)[:4]) > SAVINGS_INCOME_GROWTH_LAST_YEAR
+    if index_name == SAVINGS_INCOME_GROWTH and not (
+        SAVINGS_INCOME_GROWTH_FIRST_YEAR
+        <= int(str(year)[:4])
+        <= SAVINGS_INCOME_GROWTH_LAST_YEAR
     ):
         index_name = GDP_PER_HEAD_GROWTH
     return parameters.get_child(index_name)(year)

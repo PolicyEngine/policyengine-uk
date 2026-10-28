@@ -36,6 +36,10 @@ from policyengine_uk.system import system
 
 BASE_YEAR = 2024
 GROWTH = parameters.gov.economic_assumptions.yoy_growth
+# The savings income series grows its inputs only from 2022 to 2025; GDP per
+# head serves the other years.
+SAVINGS_INCOME = "gov.economic_assumptions.yoy_growth.obr.per_capita.savings_income"
+GDP_PER_HEAD = "gov.economic_assumptions.yoy_growth.obr.per_capita.gdp"
 UPRATING_INDICES = yaml.safe_load(
     (Path(economic_assumptions.__file__).parent / "uprating_indices.yaml").read_text()
 )
@@ -89,6 +93,13 @@ WATER_SERIES = {
     "SCOTLAND": "scottish_water.water_bills",
     "WALES": "ofwat.water_bills",
 }
+
+
+def _growth(index, year):
+    """The growth uprating_indices.yaml's ``index`` gives into ``year``."""
+    if index == SAVINGS_INCOME and not 2022 <= year <= 2025:
+        index = GDP_PER_HEAD
+    return parameters.get_child(index)(year)
 
 
 def _dataset(amount=1_000.0, base_year=BASE_YEAR):
@@ -195,7 +206,8 @@ def test_each_singly_indexed_input_grows_by_its_index_every_year(projected):
     """For every variable uprating_indices.yaml lists and every projected
     year, check its index: residential stocks use the original observation
     and cumulative HPI. This fixture stores the completed bereavement split,
-    so BSP stays flat; other inputs grow from the previous year's raw YoY."""
+    so BSP stays flat; other inputs grow from the previous year's raw YoY,
+    with savings income on GDP per head outside 2022 to 2025."""
     observed = _dataset()
     for year in range(BASE_YEAR + 1, PROJECTION_END_YEAR + 1):
         for variable, index in INDEX_OF.items():
@@ -205,7 +217,7 @@ def test_each_singly_indexed_input_grows_by_its_index_every_year(projected):
                 expected = _residential_stock_level(original, variable, year)
             else:
                 previous = _table(projected[year - 1], variable)[variable].to_numpy()
-                growth = parameters.get_child(index)(year)
+                growth = _growth(index, year)
                 expected = (
                     previous if variable == "bsp_reported" else previous * (1 + growth)
                 )
@@ -320,7 +332,7 @@ def test_growth_ratio_is_one_plus_the_index(amounts, year, variable):
     elif variable == "bsp_reported":
         expected_ratio = np.ones(len(amounts))
     else:
-        index = parameters.get_child(INDEX_OF[variable])(year)
+        index = _growth(INDEX_OF[variable], year)
         expected_ratio = np.full(len(amounts), 1 + index)
     assert ratio == pytest.approx(expected_ratio)
 
