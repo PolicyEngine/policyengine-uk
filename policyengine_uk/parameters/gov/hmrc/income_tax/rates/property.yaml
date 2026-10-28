@@ -1,10 +1,12 @@
-description: Property income tax rates. From April 2027, property income is taxed at rates 2pp higher than the standard UK rates.
+description: Property income tax rates. From April 2027, property income is taxed at rates 4pp higher than the standard UK rates (2pp from Budget 2025 and 2pp from Budget 2026), in England, Wales and Northern Ireland.
 metadata:
   label: Property Income Tax rates
   unit: /1
   reference:
     - title: OBR Economic and Fiscal Outlook November 2025
       href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
+    - title: Budget 2026, paragraph 6.246
+      href: https://assets.publishing.service.gov.uk/media/6ae1ec57bdb574cf1c9b3f12/E03668986_HMT_Budget_2026_ELAY__2_.pdf#page=142
 basic:
   description: The basic rate of tax on property income.
   metadata:
@@ -12,11 +14,19 @@ basic:
     unit: /1
   values:
     2015-04-06: 0.20
+    # Budget 2025 set 22% from 6 April 2027; Budget 2026 adds a further
+    # 2 percentage points from the same date, applying across England, Wales and Northern Ireland.
     2027-04-06:
-      value: 0.22
+      value: 0.24
       metadata:
         reference:
-          - title: OBR Economic and Fiscal Outlook November 2025
+          - title: Budget 2026, paragraph 6.246
+            href: https://assets.publishing.service.gov.uk/media/6ae1ec57bdb574cf1c9b3f12/E03668986_HMT_Budget_2026_ELAY__2_.pdf#page=142
+          - title: Budget 2026 policy costings, page 74 (from 6 April 2027)
+            href: https://assets.publishing.service.gov.uk/media/6ae1883fe4367e5c8b0467df/AB26_Policy_Costing.pdf#page=74
+          - title: Budget 2026, Table 6.1, item 61
+            href: https://assets.publishing.service.gov.uk/media/6ae187a2779378370fd80a9a/Table_6.1_and_6.2_Budget_2026_Policy_Decisions.xlsx
+          - title: OBR Economic and Fiscal Outlook November 2025 (Budget 2025's first 2 points)
             href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
 higher:
   description: The higher rate of tax on property income.
@@ -25,11 +35,19 @@ higher:
     unit: /1
   values:
     2015-04-06: 0.40
+    # Budget 2025 set 42% from 6 April 2027; Budget 2026 adds a further
+    # 2 percentage points from the same date, applying across England, Wales and Northern Ireland.
     2027-04-06:
-      value: 0.42
+      value: 0.44
       metadata:
         reference:
-          - title: OBR Economic and Fiscal Outlook November 2025
+          - title: Budget 2026, paragraph 6.246
+            href: https://assets.publishing.service.gov.uk/media/6ae1ec57bdb574cf1c9b3f12/E03668986_HMT_Budget_2026_ELAY__2_.pdf#page=142
+          - title: Budget 2026 policy costings, page 74 (from 6 April 2027)
+            href: https://assets.publishing.service.gov.uk/media/6ae1883fe4367e5c8b0467df/AB26_Policy_Costing.pdf#page=74
+          - title: Budget 2026, Table 6.1, item 61
+            href: https://assets.publishing.service.gov.uk/media/6ae187a2779378370fd80a9a/Table_6.1_and_6.2_Budget_2026_Policy_Decisions.xlsx
+          - title: OBR Economic and Fiscal Outlook November 2025 (Budget 2025's first 2 points)
             href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
 additional:
   description: The additional rate of tax on property income.
@@ -38,9 +56,17 @@ additional:
     unit: /1
   values:
     2015-04-06: 0.45
+    # Budget 2025 set 47% from 6 April 2027; Budget 2026 adds a further
+    # 2 percentage points from the same date, applying across England, Wales and Northern Ireland.
     2027-04-06:
-      value: 0.47
+      value: 0.49
       metadata:
         reference:
-          - title: OBR Economic and Fiscal Outlook November 2025
+          - title: Budget 2026, paragraph 6.246
+            href: https://assets.publishing.service.gov.uk/media/6ae1ec57bdb574cf1c9b3f12/E03668986_HMT_Budget_2026_ELAY__2_.pdf#page=142
+          - title: Budget 2026 policy costings, page 74 (from 6 April 2027)
+            href: https://assets.publishing.service.gov.uk/media/6ae1883fe4367e5c8b0467df/AB26_Policy_Costing.pdf#page=74
+          - title: Budget 2026, Table 6.1, item 61
+            href: https://assets.publishing.service.gov.uk/media/6ae187a2779378370fd80a9a/Table_6.1_and_6.2_Budget_2026_Policy_Decisions.xlsx
+          - title: OBR Economic and Fiscal Outlook November 2025 (Budget 2025's first 2 points)
             href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
