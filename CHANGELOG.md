@@ -1,3 +1,14 @@
+## [2.163.0] - 2026-10-28
+
+### Added
+
+- Added a pre-assessed Housing Benefit permitted-work earnings disregard with lone-parent precedence and separate additional-disregard handling.
+
+### Fixed
+
+- Fixed double counting of Housing Benefit standard earnings disregards in savings-credit-only income, including permitted work and the special £20 route.
+
+
 ## [2.162.21] - 2026-10-28
 
 ### Changed
