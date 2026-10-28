@@ -47,19 +47,9 @@ class housing_benefit_applicable_income_disregard(Variable):
     def formula(benunit, period, parameters):
         p = parameters(period).gov.dwp.housing_benefit.means_test.income_disregard
         net_earnings = benunit("housing_benefit_net_earnings", period)
-        # Working age Sch 4 paras 4, 7 and 10; pension age Sch 4 paras 2 and 7.
-        standard = benunit("housing_benefit_special_earnings_disregard", period)
-        # Working-age para 10A(2) / pension-age para 5A(2): replace the
-        # ordinary amount, except for a higher lone-parent amount. The input
-        # already applies the statutory work and partner-allocation limits.
-        permitted = max_(benunit("housing_benefit_permitted_work_disregard", period), 0)
-        standard = where(
-            permitted > 0,
-            min_(
-                net_earnings,
-                max_(permitted, benunit("is_lone_parent", period) * standard),
-            ),
-            standard,
+        # Share the selected/replaced standard with the savings-credit route.
+        standard = benunit(
+            "housing_benefit_applied_standard_earnings_disregard", period
         )
         # Working age Sch 4 para 18 (NI Sch 5 para 18), from 5 October 2026:
         # specified or temporary accommodation. It applies alongside paras 3

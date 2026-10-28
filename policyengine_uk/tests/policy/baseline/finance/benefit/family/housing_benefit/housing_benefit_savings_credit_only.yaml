@@ -436,3 +436,194 @@
     # 6,240 - 464.2404 = 5,775.7596. Without (a), 6,240 - 0.65 x (13,570 -
     # 13,312) = 6,240 - 167.70 = 6,072.30.
     housing_benefit: 5_775.76
+
+# Same couple awarded Savings Credit before 6 April 2016 continuously since;
+# entitled to PC/HB on 14 May 2019 and continuously entitled to either since.
+# Grandchild normally lives here and they are responsible; no tax-credit award.
+# Claimant: gross earnings 125/week, tax 25/week, net 100/week; gross private
+# pension 14,732.50/year, tax 432.50/year, net pension 275/week. No Class 1 at80.
+# Partner: assessment-phase contributory ESA 90.50/week, actual unsupported
+# self-employment 16 hours/week, net earnings 10/week. Not main phase, no other
+# special-HB route, and no reg7 ESA assessment exception. ESA reg45(2) applies;
+# precisely16hours excludes45(4). HB5A amount=10+min(100,20-10,20)=20/week.
+# PC SchVI4 already excludes20/week. AIF=275+100+10+90.50-20=455.50/week.
+# Child16hour route adds17.10 HB disregard. PC: minimum332.95+76.79=409.74,
+# qualifying income365, SavingsCredit19.04-18.30=0.74/week (PCreg7(4)).
+# All AIF/net-earnings inputs are external component assessments.
+# Expected:23686+38.48-17.10*52=22835.28. Current head incorrectly subtracts
+# (37.10-10)*52=1409.20, producing22315.28.
+- name: Protected Savings Credit family offsets the existing PC earnings disregard
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 80
+        is_claimant_or_partner: true
+        employment_income: 6500
+        private_pension_income: 14732.50
+        ni_class_1_employee: 0
+      partner:
+        age: 63
+        is_claimant_or_partner: true
+        self_employment_income: 520
+        weekly_hours: 16
+        ni_class_1_employee: 0
+        esa_contrib: 4706
+      grandchild:
+        age: 10
+        is_claimant_or_partner: false
+    benunits:
+      couple:
+        members: [claimant, partner, grandchild]
+        housing_benefit_pension_age_regulations_apply: true
+        housing_benefit_net_earnings: 5720
+        housing_benefit_permitted_work_disregard: 1040
+        pension_credit_income: 23686
+        pension_credit: 38.48
+        pension_credit_war_pension_income: 0
+        pension_credit_employment_income_tax: 1300
+        has_mixed_age_couple_pension_credit_saving: true
+        would_claim_pc: true
+        has_tax_credit_award: false
+        carer_premium: 0
+        working_tax_credit: 0
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        housing_benefit_applicable_income_childcare_element: 0
+        housing_benefit_maintenance_disregard: 0
+        housing_benefit_on_passporting_benefit: false
+    households:
+      household:
+        members: [claimant, partner, grandchild]
+        country: ENGLAND
+  output:
+    housing_benefit_special_earnings_disregard_eligible: false
+    housing_benefit_special_earnings_disregard: 520
+    pension_credit_earnings_disregard: 1040
+    housing_benefit_applicable_income_disregard: 1929.20
+    housing_benefit_savings_credit_only_income: 22835.28
+
+- name: Savings credit carer couple deducts only paragraph 9 beyond the PC assessment
+  period: 2024
+  absolute_error_margin: 0.01
+  # Reg 27(4) does not list the Sch 4 para 4 carer standard as an independent
+  # modification. HB and PC Sch VI para 3 both disregard 20 x 52 = 1,040.
+  # The supplied PC assessment and savings credit are held fixed here.
+  # Sch 4 para 9(1): net earnings cover (20 + 17.10) x 52 = 1,929.20,
+  # so only 17.10 x 52 = 889.20 comes off: 20,434 + 690.32 - 889.20
+  # = 20,235.12. The old ordinary-couple subtraction deducts another 520.
+  input:
+    people:
+      claimant:
+        age: 80
+        is_claimant_or_partner: true
+        employment_income: 6500
+        weekly_hours: 30
+        ni_class_1_employee: 0
+      partner:
+        age: 78
+        is_claimant_or_partner: true
+        is_entitled_to_carer_benefit: true
+    benunits:
+      couple:
+        members: [claimant, partner]
+        carer_premium: 2371.20
+        housing_benefit_pension_age_regulations_apply: true
+        housing_benefit_net_earnings: 5200
+        housing_benefit_permitted_work_disregard: 0
+        pension_credit_employment_income_tax: 1300
+        pension_credit_income: 20434
+        pension_credit: 690.32
+        pension_credit_war_pension_income: 0
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        housing_benefit_applicable_income_childcare_element: 0
+        housing_benefit_maintenance_disregard: 0
+        housing_benefit_on_passporting_benefit: false
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+  output:
+    is_lone_parent: false
+    housing_benefit_special_earnings_disregard_eligible: true
+    housing_benefit_special_earnings_disregard: 1040
+    pension_credit_earnings_disregard: 1040
+    housing_benefit_applicable_income_disregard: 1929.20
+    housing_benefit_savings_credit_only_income: 20235.12
+
+- name: Savings credit lone parents retain paragraph 5A proviso under a PC disregard reform
+  period: 2024
+  absolute_error_margin: 0.01
+  # Reform control: PC's higher disregard is 30/week instead of statutory 20.
+  # At the statutory rate, the old lone-parent error in the residual cancels
+  # against the standard excess; this reform makes that error observable.
+  # HB Sch 4 para 5A(2): lower permitted 20 keeps the para 2 amount 25;
+  # higher permitted 40 replaces it. Net earnings 100/week cap neither.
+  # Para 9 adds 17.10/week in both cases: totals (25 + 17.10) x 52 =
+  # 2,189.20 and (40 + 17.10) x 52 = 2,969.20. Reg 27(4)(c)(i),(d):
+  # standard modifications max(0, 25 - 30) x 52 = 0 and (40 - 30) x 52
+  # = 520; para 9 comes off in full. With supplied PC income/payment:
+  # 18,000 + 100 - 889.20 = 17,210.80;
+  # 18,000 + 100 - 520 - 889.20 = 16,690.80.
+  # Old code agrees for lower permitted work but gives 16,430.80 for higher.
+  input:
+    gov.dwp.pension_credit.earnings_disregard.higher.amount: 30
+    people:
+      lower_parent:
+        age: 80
+        is_claimant_or_partner: true
+        employment_income: 5200
+        weekly_hours: 16
+        ni_class_1_employee: 0
+      lower_child:
+        age: 10
+        is_claimant_or_partner: false
+      higher_parent:
+        age: 80
+        is_claimant_or_partner: true
+        employment_income: 5200
+        weekly_hours: 16
+        ni_class_1_employee: 0
+      higher_child:
+        age: 10
+        is_claimant_or_partner: false
+    benunits:
+      lower:
+        members: [lower_parent, lower_child]
+        housing_benefit_pension_age_regulations_apply: true
+        housing_benefit_net_earnings: 5200
+        housing_benefit_permitted_work_disregard: 1040
+        pension_credit_employment_income_tax: 0
+        pension_credit_income: 18000
+        pension_credit: 100
+        pension_credit_war_pension_income: 0
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        housing_benefit_applicable_income_childcare_element: 0
+        housing_benefit_maintenance_disregard: 0
+        housing_benefit_on_passporting_benefit: false
+      higher:
+        members: [higher_parent, higher_child]
+        housing_benefit_pension_age_regulations_apply: true
+        housing_benefit_net_earnings: 5200
+        housing_benefit_permitted_work_disregard: 2080
+        pension_credit_employment_income_tax: 0
+        pension_credit_income: 18000
+        pension_credit: 100
+        pension_credit_war_pension_income: 0
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        housing_benefit_applicable_income_childcare_element: 0
+        housing_benefit_maintenance_disregard: 0
+        housing_benefit_on_passporting_benefit: false
+    households:
+      lower_household:
+        members: [lower_parent, lower_child]
+        country: ENGLAND
+      higher_household:
+        members: [higher_parent, higher_child]
+        country: ENGLAND
+  output:
+    is_lone_parent: [true, true]
+    housing_benefit_special_earnings_disregard: [1300, 1300]
+    pension_credit_earnings_disregard: [1560, 1560]
+    housing_benefit_applicable_income_disregard: [2189.20, 2969.20]
+    housing_benefit_savings_credit_only_income: [17210.80, 16690.80]
