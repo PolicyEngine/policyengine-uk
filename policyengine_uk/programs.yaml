@@ -15,7 +15,7 @@ programs:
     variable: lifetime_isa_bonus
     parameter_prefix: gov.hmrc.isa.lifetime
     verified_start_year: 2017
-    notes: Annual qualifying-payment bonus and gross-withdrawal charge, including individual first-home conditions. Assumes valid account opening and transaction qualification; does not update balances. Late-March 2020 withdrawals are outside the annual timing resolution.
+    notes: Annual qualifying-payment bonus and gross-withdrawal charge, including individual first-home conditions and the 20% charge for purchases above the price cap from 29 October 2026 (fiscal 2027-28 in the model). Assumes valid account opening and transaction qualification; does not update balances. Late-March 2020 withdrawals are outside the annual timing resolution.
 
   - id: isa_cash_interest_charge
     name: Non-cash ISA cash-interest charge
