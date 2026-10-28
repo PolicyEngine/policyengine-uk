@@ -138,12 +138,17 @@ either stop exporting the household totals or keep them equal to the sums;
 the model does not reconcile the two.
 
 `cash_isa_subscriptions` and `stocks_and_shares_isa_subscriptions` are
-annual person flows that count towards the ISA subscription limits, with
-`lifetime_isa_payments` for Lifetime ISAs. Projection carries them flat,
-since the limits are fixed in cash terms. They are not capped at the limits:
-a producer should export subscriptions as observed, so that a reform that
-lowers a limit shows what it leaves out. Absent columns default to zero, so a
-change to an ISA limit changes nothing on such data.
+annual person flows, summed over all of a person's accounts of each type, that
+count towards the ISA subscription limits, with `lifetime_isa_payments` for
+Lifetime ISAs. Projection carries them flat, since the limits are fixed in
+cash terms. The model does not cap them at the limits: a producer should
+export subscriptions as observed, so a reform that lowers a limit shows what
+it leaves out. Observed subscriptions stay within the £20,000 annual
+limit, which the three inputs share, so an imputation should draw them
+jointly. Drawn separately, for example from tables that leave Lifetime ISAs
+out, they can sum above the limit and put people above it in the baseline,
+where `isa_subscriptions_above_limit` should be zero. Absent columns default
+to zero, so a change to an ISA limit changes nothing on such data.
 [Microcosm issue 1415](https://github.com/PolicyEngine/microcosm/issues/1415)
 covers imputing the subscriptions and balances.
 
