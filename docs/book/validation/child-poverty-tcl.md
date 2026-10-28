@@ -66,8 +66,8 @@ PolicyEngine UK is the financial year that starts in April `Y`, so FYE
 - **Children**: `is_hbai_dependent_child`, HBAI's dependent children, as
   DWP counts them.
 - **Cost**: the change in `gov_balance` (tax less spending). The estimate
-  is static: no behavioural response runs, and `would_claim_uc` is a data
-  input, so take-up does not respond to the reform.
+  is static: the labour-supply elasticities are zero, and `would_claim_uc`
+  is a data input, so neither work nor take-up responds to the reform.
 
 ```python
 import policyengine as pe
@@ -93,8 +93,10 @@ cost = (
 print("cost", cost)
 ```
 
-`pe.uk.managed_microsimulation()` loads the data release that
-policyengine.py certifies with the installed model version. Scorecard's
+`pe.uk.managed_microsimulation()` loads the dataset pinned by the
+installed policyengine.py release. Each release certifies that dataset
+with one policyengine-uk version, which `policyengine[uk]` installs:
+6.11.0, the release Scorecard uses, pins policyengine-uk 2.132.6. Scorecard's
 [`compute_uk_two_child_limit_poverty.py`][compute] runs the same
 comparison for every year, measure and group the benchmarks use.
 
