@@ -504,3 +504,24 @@
     carers_allowance_earnings: 10_608.51
     is_gainfully_employed_for_carers_allowance: false
     carers_allowance: 86.45 * 52
+
+- name: Case 32, two pension programmes are summed in whole pence, not as float32 adds them.
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    age: 45
+    employment_income: 12_229.84
+    employee_pension_contributions: 1_807.49
+    personal_pension_contributions: 1_435.15
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # The contributions total 3,242.64, which pension_contributions holds as
+    # 3,242.64013671875: more than half a float32 step out, so read alone it
+    # would be 3,242.6401367 and half of it would count as 1,621.33. Summed
+    # in whole pence, half is 1,621.32. Pay is under the primary threshold,
+    # and pay less the employee contribution under the personal allowance:
+    # 12,229.84 - 1,621.32 = 10,608.52, or £204.01 a week, over the limit.
+    carers_allowance_earnings: 10_608.52
+    is_gainfully_employed_for_carers_allowance: true
+    carers_allowance: 0
