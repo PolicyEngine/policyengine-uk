@@ -1342,11 +1342,13 @@ def test_what_the_simulation_keeps_does_not_change_earnings(row, uncached, net):
 
 
 def _natural_rows(rng, count, regime):
-    """Inputs the model sums, in whole pence, chosen so that the legal net
-    earnings lie within 3p of the 2026-27 threshold: pay before labour supply
-    responses a, salary sacrifice returned to pay b (also a member
-    contribution), reported employee contributions r, personal contributions
-    q and statutory sick pay s (NI income, not pay).
+    """Inputs the model sums, in whole pence, chosen so that net earnings, in
+    exact arithmetic on the model's own definitions, lie within 3p of the
+    2026-27 threshold: pay before labour supply responses a, salary sacrifice
+    returned to pay b (also a member contribution), reported employee
+    contributions r, personal contributions q and statutory sick pay s. The
+    model counts statutory sick pay in NI income but not in pay, so these
+    rows test its sums, not how it treats statutory sick pay.
 
     - "no NI": below the primary threshold, so no PAYE or Class 1.
     - "Class 1": Class 1 on a + b + s, with no PAYE while pay less member
