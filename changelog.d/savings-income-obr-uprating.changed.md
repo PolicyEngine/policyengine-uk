@@ -1,0 +1,1 @@
+Grew savings interest, ISA interest and other investment income by the OBR's savings income forecast to 2025-26 (October 2026 EFO, Table 4.5), then by GDP per head as before, so 2023-24 savings income reaches 2025-26 on the OBR's path (35.8%) rather than GDP per head and population (10.3%).

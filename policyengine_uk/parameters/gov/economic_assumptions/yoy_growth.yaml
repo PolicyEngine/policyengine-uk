@@ -617,6 +617,43 @@ obr:
         - title: OBR EFO March 2026 (detailed forecast tables, economy, Table 1.12)
           href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
 
+  savings_income:
+    description: Savings income year-on-year growth, from the OBR's receipts forecast.
+    # The "Savings income" row of the OBR's "Self-employed income streams:
+    # growth rates" table, percentage change on a year earlier, pre-measures,
+    # rounded to 4 decimals. The fiscal year starting in year t is stored at
+    # t-01-01, as for ons.population. Each year is from the latest table that
+    # has it:
+    # - 2024-2031: EFO October 2026, receipts Table 4.5 (2024-25 34.961%,
+    #   2025-26 0.650%). The table heads 2024-25 onwards "Forecast".
+    # - 2023: EFO March 2026, receipts Table 3.5 (129.854%, the same in the
+    #   November 2025 table).
+    # - 2022: EFO October 2024, receipts Table 3.5 (50.358%). It is the first
+    #   listed year, so it is the base of the generated index (index 1 at
+    #   2022) and its own growth is not in the index (#2692).
+    # The table ends at 2031-32; a parameter keeps its last value after that.
+    values:
+      2022-01-01: 0.5036
+      2023-01-01: 1.2985
+      2024-01-01: 0.3496
+      2025-01-01: 0.0065
+      2026-01-01: 0.0067
+      2027-01-01: 0.0614
+      2028-01-01: 0.0514
+      2029-01-01: 0.0494
+      2030-01-01: 0.0556
+      2031-01-01: 0.0589
+    metadata:
+      unit: /1
+      label: Savings income growth
+      reference:
+        - title: OBR, Economic and fiscal outlook October 2026, detailed forecast tables, receipts, Table 4.5 (sha256 d115705716d77b11c190385d41cb1924f30080c9331a8a386c04d4e65a368e95)
+          href: https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/
+        - title: OBR, Economic and fiscal outlook March 2026, detailed forecast tables, receipts, Table 3.5 (sha256 f65b6cb7f96931d4abd85940794eb60f6f65afca8bbf16c74a4548bf92766a28)
+          href: https://obr.uk/docs/d055fbf02d5b3g6jq8l2/efo-march-2026-detailed-forecast-tables-receipts.xlsx
+        - title: OBR, Economic and fiscal outlook October 2024, detailed forecast tables, receipts, Table 3.5 (sha256 16d69c0981f45e5b7fe3fa35d08bfe09e6170440231d546f374a9f4d48191991)
+          href: https://obr.uk/docs/dlm_uploads/Receipts_Detailed_forecast_tables_October_2024.xlsx
+
   # Growth in each country's council tax receipts, net of council tax
   # reduction. Receipts are the Band D level times the tax base (Band D
   # equivalent dwellings), so they grow with the number of homes as well as
@@ -906,6 +943,31 @@ obr:
         reference:
           - title: OBR EFO March 2026 (detailed forecast tables, economy, Table 1.12)
             href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
+
+    savings_income:
+      description: Per capita savings income year-on-year growth.
+      values:
+        # obr.savings_income divided by one plus ons.population, both for
+        # the fiscal year starting in year t: (1 + growth) / (1 + population)
+        # - 1, rounded to 4 decimals. Dataset projection grows household
+        # weights by population, so each person's savings income grows by
+        # this (data/economic_assumptions.py, savings_income_growth).
+        2022-01-01: 0.4890
+        2023-01-01: 1.2686
+        2024-01-01: 0.3349
+        2025-01-01: 0.0035
+        2026-01-01: 0.0032
+        2027-01-01: 0.0583
+        2028-01-01: 0.0480
+        2029-01-01: 0.0458
+        2030-01-01: 0.0518
+        2031-01-01: 0.0564
+      metadata:
+        unit: /1
+        label: Per capita savings income growth
+        reference:
+          - title: OBR, Economic and fiscal outlook October 2026, detailed forecast tables, receipts, Table 4.5, divided by ons.population growth
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/
 
   house_prices:
     description: House prices year-on-year growth.
