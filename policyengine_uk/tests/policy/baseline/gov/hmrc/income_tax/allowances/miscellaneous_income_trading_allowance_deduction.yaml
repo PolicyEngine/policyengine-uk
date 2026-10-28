@@ -1,0 +1,186 @@
+# The trading allowance on miscellaneous income, ITTOIA 2005 Part 6A
+# Chapter 1. Relief covers the income of a relevant trade and "miscellaneous
+# income" (s. 783A(1)): income chargeable under Part 5 Chapter 8, income not
+# otherwise charged, before expenses (s. 783AB). One allowance covers both
+# (s. 783AC, "relevant income").
+# - Full relief: relevant income within the allowance is not charged
+#   (ss. 783AE, 783AF and 783AG).
+# - Partial relief, by election above the allowance: each source less its
+#   share of the allowance, the shares adding up to the allowance and chosen
+#   by the person, with no expenses (ss. 783AI-783AK).
+# income_not_otherwise_charged is the part of miscellaneous_income that is
+# Chapter 8 income. 2026-27: trading allowance £1,000 (s. 783AD), personal
+# allowance £12,570, basic rate 20%.
+
+- name: Case 1, casual income within the allowance is fully relieved.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    miscellaneous_income: 800
+    income_not_otherwise_charged: 800
+  output:
+    miscellaneous_income_trading_allowance_deduction: 800
+    taxable_miscellaneous_income: 0
+    uses_trading_allowance: true
+
+- name: Case 2, above the allowance, £1,000 comes off.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 30_000
+    miscellaneous_income: 2_000
+    income_not_otherwise_charged: 2_000
+  output:
+    miscellaneous_income_trading_allowance_deduction: 1_000
+    taxable_miscellaneous_income: 1_000
+    # (30,000 + 1,000 - 12,570) x 20%
+    income_tax: 3_686
+
+- name: Case 3, the same tax as £2,000 of trade receipts with no expenses.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 30_000
+    self_employment_gross_receipts: 2_000
+    self_employment_income: 2_000
+  output:
+    trading_allowance_deduction: 1_000
+    income_tax: 3_686
+
+- name: Case 4, miscellaneous income outside Chapter 8 gets no allowance.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 30_000
+    miscellaneous_income: 2_000
+  output:
+    miscellaneous_income_trading_allowance_deduction: 0
+    taxable_miscellaneous_income: 2_000
+    uses_trading_allowance: false
+    # (30,000 + 2,000 - 12,570) x 20%
+    income_tax: 3_886
+
+- name: Case 5, trade and casual income share one allowance.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    # Receipts unknown: a profit within the allowance is taken as receipts
+    # of £600, leaving £400 of the allowance.
+    self_employment_income: 600
+    miscellaneous_income: 900
+    income_not_otherwise_charged: 900
+  output:
+    trading_allowance_deduction: 600
+    taxable_self_employment_income: 0
+    miscellaneous_income_trading_allowance_deduction: 400
+    taxable_miscellaneous_income: 500
+
+- name: Case 6, receipts of £800 and casual income of £150 are within the allowance together.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    self_employment_gross_receipts: 800
+    self_employment_income: 500
+    miscellaneous_income: 150
+    income_not_otherwise_charged: 150
+  output:
+    trading_allowance_deduction: 500
+    miscellaneous_income_trading_allowance_deduction: 150
+    taxable_self_employment_income: 0
+    taxable_miscellaneous_income: 0
+
+- name: Case 7, trade receipts above the allowance take all of it.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    # £300 of expenses: receipts less the allowance (£4,000) beats profit
+    # (£4,700), and the trade uses the whole allowance.
+    self_employment_gross_receipts: 5_000
+    self_employment_income: 4_700
+    miscellaneous_income: 900
+    income_not_otherwise_charged: 900
+  output:
+    trading_allowance_deduction: 700
+    taxable_self_employment_income: 4_000
+    miscellaneous_income_trading_allowance_deduction: 0
+    taxable_miscellaneous_income: 900
+
+- name: Case 8, partial relief would cost the trade more in expenses than it saves.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    # £1,500 of expenses: partial relief would charge receipts plus casual
+    # income less the allowance, £4,900, against £3,500 + £900 = £4,400.
+    self_employment_gross_receipts: 5_000
+    self_employment_income: 3_500
+    miscellaneous_income: 900
+    income_not_otherwise_charged: 900
+  output:
+    trading_allowance_deduction: 0
+    miscellaneous_income_trading_allowance_deduction: 0
+    taxable_miscellaneous_income: 900
+    uses_trading_allowance: false
+
+- name: Case 9, Chapter 8 income counts only up to miscellaneous income.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    miscellaneous_income: 500
+    income_not_otherwise_charged: 2_000
+  output:
+    miscellaneous_income_trading_allowance_deduction: 500
+    taxable_miscellaneous_income: 0
+
+- name: Case 10, a larger current trading loss is claimed instead, and the casual income is taxed.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 30_000
+    trading_loss: 5_000
+    miscellaneous_income: 800
+    income_not_otherwise_charged: 800
+  output:
+    uses_trading_allowance: false
+    miscellaneous_income_trading_allowance_deduction: 0
+    taxable_miscellaneous_income: 800
+    trade_loss_relief_against_general_income: 5_000
+    # (30,000 + 800 - 5,000 - 12,570) x 20%
+    income_tax: 2_646
+
+- name: Case 11, full relief on casual income makes a smaller current trading loss nil.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 30_000
+    trading_loss: 500
+    miscellaneous_income: 800
+    income_not_otherwise_charged: 800
+  output:
+    # Full relief saves £800 of income against a £500 loss (s. 783AF makes
+    # the trade's loss nil).
+    uses_trading_allowance: true
+    miscellaneous_income_trading_allowance_deduction: 800
+    trade_loss_relief_against_general_income: 0
+    # (30,000 - 12,570) x 20%
+    income_tax: 3_486
+
+- name: Case 12, means tests read the income before the allowance.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    miscellaneous_income: 2_000
+    income_not_otherwise_charged: 2_000
+  output:
+    miscellaneous_income_before_trading_allowance: 2_000
+    taxable_miscellaneous_income: 1_000
+    gross_taxable_inputs: 2_000
+
+- name: Case 13, no trading allowance before 2017-18.
+  period: 2016
+  absolute_error_margin: 0
+  input:
+    miscellaneous_income: 800
+    income_not_otherwise_charged: 800
+  output:
+    miscellaneous_income_trading_allowance_deduction: 0
+    taxable_miscellaneous_income: 800
