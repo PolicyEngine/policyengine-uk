@@ -115,10 +115,12 @@ class uses_property_allowance(Variable):
         "two cannot be combined. Full relief applies to receipts within the "
         "allowance unless the person elects out of it, and partial relief "
         "only if they elect for it; with finance costs to relieve, each "
-        "election is made only if it lowers the person's own income tax, "
-        "including the winter fuel payment charge, with everyone else's "
-        "route held fixed. Tax before the charge settles that comparison "
-        "wherever the most the charge could be on either route "
+        "election is made only if it lowers the income tax of the person's "
+        "benefit unit, including the winter fuel payment charge, with "
+        "everyone else's route held fixed. That tax includes the spouse's, "
+        "which the route can move through the Marriage Allowance election. "
+        "Tax before the charge settles that comparison "
+        "wherever the most the charges could be on either route "
         "(winter_fuel_payment_charge_ceiling) cannot reverse it; the charge "
         "itself, which needs everyone's benefits on each route, is worked "
         "out only where it can. Where an input or a structural reform "
@@ -208,6 +210,10 @@ class uses_property_allowance(Variable):
         changed = np.zeros(person.count, dtype=bool)
         done = deciders == 0
         bounded = ceiling_bounds_the_charge(simulation, period)
+        # Each person's choice weighs their benefit unit's tax: a route can
+        # change whether a spouse elects for the Marriage Allowance, which
+        # moves the other spouse's tax (#1947).
+        benunit_total = person.benunit.sum
         while not done.all():
             deciding = choosing & ~done & (order == rank)
             using = route | deciding
@@ -223,14 +229,19 @@ class uses_property_allowance(Variable):
                     not_using,
                     BEFORE_CHARGE,
                 )
-                # On each route the charge is between nothing and its
-                # ceiling, so the allowance saves at least the saving before
-                # the charge less the ceiling using it, and at most that
-                # saving plus the ceiling not using it. Where those bounds
-                # share a sign, beyond a penny and float32 rounding, the
-                # choice is the one tax including the charge gives.
-                saving = tax_not_using - tax_using
-                rounding = 0.01 + 1e-6 * (abs(tax_using) + abs(tax_not_using))
+                # On each route each member's charge is between nothing and
+                # their ceiling, so the allowance saves the benefit unit at
+                # least the saving before the charge less the ceilings using
+                # it, and at most that saving plus the ceilings not using it.
+                # Where those bounds share a sign, beyond a penny and float32
+                # rounding, the choice is the one tax including the charge
+                # gives.
+                most_charge_using = benunit_total(most_charge_using)
+                most_charge_not_using = benunit_total(most_charge_not_using)
+                saving = benunit_total(tax_not_using) - benunit_total(tax_using)
+                rounding = 0.01 + 1e-6 * benunit_total(
+                    abs(tax_using) + abs(tax_not_using)
+                )
                 unsettled = (
                     deciding
                     & ((most_charge_using > 0) | (most_charge_not_using > 0))
@@ -250,8 +261,9 @@ class uses_property_allowance(Variable):
             else:
                 # Every household's next decision turns on the charge:
                 # compare them all on income tax including it, worked out on
-                # each route where some ceiling is above nothing (where it is
-                # nothing, so is the charge, and tax before it is the tax).
+                # each route where some benefit unit's ceilings are above
+                # nothing (where they are nothing, so are its members'
+                # charges, and tax before the charge is the tax).
                 if (unsettled & (most_charge_using > 0)).any():
                     (tax_using,) = with_route(
                         simulation,
@@ -269,7 +281,9 @@ class uses_property_allowance(Variable):
                         ["income_tax"],
                     )
             # Tax is computed to the penny; smaller differences are rounding.
-            saving = np.round(tax_not_using - tax_using, 2)
+            saving = np.round(
+                benunit_total(tax_not_using) - benunit_total(tax_using), 2
+            )
             prefers_allowance = where(full_relief, saving >= 0, saving > 0)
             decided = where(deciding, prefers_allowance, route)
             changed = changed | person.household.any(decided != route)

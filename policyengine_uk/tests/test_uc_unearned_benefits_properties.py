@@ -26,13 +26,17 @@ Invariants, for any generated population of working-age families:
    For carer support payment both families keep the carer's caring hours, so
    both get the carer element.
 
-Marriage Allowance is switched off for invariants 2 and 3, and for invariant
-1 for carer support payment. The model books it on the recipient as the
-transferor's unused personal allowance (PolicyEngine/policyengine-uk#1947),
-so a taxable benefit that uses up the first adult's allowance raises the
-earning partner's tax on earnings. Invariants 2 and 3 compare the award before the benefit cap because
-contributory ESA and industrial injuries benefit trigger benefit cap
-exemptions and ESA counts towards the cap, which private pension does not.
+Marriage Allowance is claimed throughout. Once a couple has elected, the
+gaining partner's reduction is fixed (ITA 2007 s. 55B(1), (4)-(6)), so the
+first adult's benefit cannot move the earning partner's tax on earnings. The
+couple's election itself can respond to the benefit, since a taxable benefit
+changes whether electing lowers the couple's tax (see
+test_uc_state_pension_properties.py). So every invariant that compares runs
+holds each couple's election at its choice in the first run
+(PolicyEngine/policyengine-uk#1947). Invariants 2 and 3 compare the award
+before the benefit cap because contributory ESA and industrial injuries
+benefit trigger benefit cap exemptions and ESA counts towards the cap, which
+private pension does not.
 """
 
 import numpy as np
@@ -84,6 +88,7 @@ UC_VARIABLES = [
     "uc_income_reduction",
     "uc_maximum_amount",
 ]
+ELECTION = "makes_marriage_allowance_election"
 
 
 @st.composite
@@ -100,17 +105,16 @@ def families(draw):
     )
 
 
-def situation(
-    units, year, income_variable, bump=0.0, carer=False, marriage_allowance=True
-):
+def situation(units, year, income_variable, bump=0.0, carer=False, election=None):
     """Build one simulation holding every family.
 
     The first adult receives the family's ``amount`` (plus ``bump``) under
     ``income_variable``; a partner receives the family's earnings. With
     ``carer``, the first adult cares for 40 hours a week in Scotland and has
     carer support payment set explicitly (zero unless it is the income
-    variable), so the carer element applies whatever the income. With
-    ``marriage_allowance=False`` no one claims Marriage Allowance.
+    variable), so the carer element applies whatever the income.
+    ``election``, one value per person in order, fixes who makes a Marriage
+    Allowance election.
     """
     people, benunits, households = {}, {}, {}
     for i, unit in enumerate(units):
@@ -122,8 +126,6 @@ def situation(
             # head's child) does not apply. Setting it for anyone makes it an
             # input for everyone, so children get False below.
             person = {"age": {year: age}, "is_claimant_or_partner": {year: True}}
-            if not marriage_allowance:
-                person["would_claim_marriage_allowance"] = {year: False}
             if j == 0:
                 if carer:
                     person["care_hours"] = {year: 40}
@@ -145,12 +147,16 @@ def situation(
             "savings": {year: unit["savings"]},
             "country": {year: "SCOTLAND" if carer else "ENGLAND"},
         }
+    if election is not None:
+        for person, elects in zip(people.values(), election):
+            person[ELECTION] = {year: bool(elects)}
     return {"people": people, "benunits": benunits, "households": households}
 
 
 def calculate(units, year, income_variable, **kwargs):
     sim = Simulation(situation=situation(units, year, income_variable, **kwargs))
     values = {v: np.asarray(sim.calculate(v, year)) for v in UC_VARIABLES}
+    values[ELECTION] = np.asarray(sim.calculate(ELECTION, year))
     counted = np.asarray(sim.calculate("uc_unearned_carer_support_payment", year))
     values["counted_csp"] = np.asarray(
         sim.map_result(counted, "person", "benunit", how="sum")
@@ -203,7 +209,7 @@ def assert_monotone(low, high, increase, units):
 )
 def test_uc_is_non_increasing_in_each_benefit(units, benefit, bump, year):
     low = calculate(units, year, benefit)
-    high = calculate(units, year, benefit, bump=bump)
+    high = calculate(units, year, benefit, bump=bump, election=low[ELECTION])
     assert_monotone(low, high, bump, units)
 
 
@@ -214,9 +220,15 @@ def test_uc_is_non_increasing_in_each_benefit(units, benefit, bump, year):
     year=st.sampled_from(CSP_YEARS),
 )
 def test_uc_is_non_increasing_in_carer_support_payment(units, bump, year):
-    kwargs = dict(carer=True, marriage_allowance=False)
-    low = calculate(units, year, "carer_support_payment", **kwargs)
-    high = calculate(units, year, "carer_support_payment", bump=bump, **kwargs)
+    low = calculate(units, year, "carer_support_payment", carer=True)
+    high = calculate(
+        units,
+        year,
+        "carer_support_payment",
+        bump=bump,
+        carer=True,
+        election=low[ELECTION],
+    )
     increase = high["counted_csp"] - low["counted_csp"]
     assert np.all(increase >= -0.01), units
     assert_monotone(low, high, increase, units)
@@ -230,8 +242,8 @@ def test_uc_is_non_increasing_in_carer_support_payment(units, bump, year):
     year=st.sampled_from(YEARS),
 )
 def test_uc_falls_pound_for_pound_in_each_benefit(units, benefit, bump, year):
-    low = calculate(units, year, benefit, marriage_allowance=False)
-    high = calculate(units, year, benefit, bump=bump, marriage_allowance=False)
+    low = calculate(units, year, benefit)
+    high = calculate(units, year, benefit, bump=bump, election=low[ELECTION])
     award = low["universal_credit_pre_benefit_cap"]
     np.testing.assert_allclose(
         high["universal_credit_pre_benefit_cap"],
@@ -248,9 +260,15 @@ def test_uc_falls_pound_for_pound_in_each_benefit(units, benefit, bump, year):
     year=st.sampled_from(CSP_YEARS),
 )
 def test_uc_falls_pound_for_pound_in_counted_carer_support_payment(units, bump, year):
-    kwargs = dict(carer=True, marriage_allowance=False)
-    low = calculate(units, year, "carer_support_payment", **kwargs)
-    high = calculate(units, year, "carer_support_payment", bump=bump, **kwargs)
+    low = calculate(units, year, "carer_support_payment", carer=True)
+    high = calculate(
+        units,
+        year,
+        "carer_support_payment",
+        bump=bump,
+        carer=True,
+        election=low[ELECTION],
+    )
     award = low["universal_credit_pre_benefit_cap"]
     increase = high["counted_csp"] - low["counted_csp"]
     np.testing.assert_allclose(
@@ -268,9 +286,13 @@ def test_uc_falls_pound_for_pound_in_counted_carer_support_payment(units, bump, 
     year=st.sampled_from(YEARS),
 )
 def test_each_benefit_counts_like_private_pension(units, benefit, year):
+    with_benefit = calculate(units, year, benefit)
+    with_pension = calculate(
+        units, year, "private_pension_income", election=with_benefit[ELECTION]
+    )
     assert_same(
-        calculate(units, year, benefit, marriage_allowance=False),
-        calculate(units, year, "private_pension_income", marriage_allowance=False),
+        with_benefit,
+        with_pension,
         [v for v in UC_VARIABLES if v != "universal_credit"],
         str(units),
     )
@@ -282,12 +304,17 @@ def test_each_benefit_counts_like_private_pension(units, benefit, year):
     year=st.sampled_from(CSP_YEARS),
 )
 def test_carer_support_payment_counts_like_capped_private_pension(units, year):
-    kwargs = dict(carer=True, marriage_allowance=False)
-    with_csp = calculate(units, year, "carer_support_payment", **kwargs)
+    with_csp = calculate(units, year, "carer_support_payment", carer=True)
     # The same family with the counted amount of Carer Support Payment
     # received as private pension instead.
     counted = [dict(unit, amount=c) for unit, c in zip(units, with_csp["counted_csp"])]
-    with_pension = calculate(counted, year, "private_pension_income", **kwargs)
+    with_pension = calculate(
+        counted,
+        year,
+        "private_pension_income",
+        carer=True,
+        election=with_csp[ELECTION],
+    )
     assert_same(
         with_csp,
         with_pension,

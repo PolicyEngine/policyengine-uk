@@ -26,14 +26,17 @@ earnings, self-employment and every kind of taxable unearned income:
 
 Invariants 1-3 hold only while unearned income leaves the person's
 allowances alone, so the generated incomes keep adjusted net income below
-the personal allowance taper (100,000) and no one claims Marriage Allowance
-(see test_uc_state_pension_properties.py for the Marriage Allowance
-deviation). Tax reductions are covered: adults born before 6 April 1935 can
-have a married couple's allowance, which comes off the tax on earnings
-first. Invariant 4 runs with Marriage Allowance claimed, and with everyone in
-a start-up period: the minimum income floor now compares net earned income
+the personal allowance taper (100,000). Tax reductions are covered: adults
+born before 6 April 1935 can have a married couple's allowance, and couples
+claim Marriage Allowance; both come off the tax on earnings first. Each
+couple's Marriage Allowance election is held at its choice in the first run:
+the tax on the gaining partner's earnings then does not depend on anyone's
+unearned income, but the couple's choice to elect responds to it (see
+test_uc_state_pension_properties.py). Invariant 4 runs with everyone in a
+start-up period: the minimum income floor now compares net earned income
 with a net threshold (test_uc_minimum_income_floor_properties.py), which
-moves earned income either way, so it is held off here.
+moves earned income either way, so it is held off here. Its two runs elect
+alike, since the formula it compares against changes no one's tax.
 """
 
 import numpy as np
@@ -92,7 +95,9 @@ UC_VARIABLES = [
     "universal_credit_pre_benefit_cap",
     "uc_earned_income",
 ]
+ELECTION = "makes_marriage_allowance_election"
 PERSON_VARIABLES = [
+    ELECTION,
     "uc_individual_earned_income",
     "uc_income_tax_on_earnings",
     "uc_national_insurance_on_earnings",
@@ -138,11 +143,12 @@ def families(draw):
     )
 
 
-def situation(units, year, bump=None, earnings_only=False, marriage_allowance=False):
+def situation(units, year, bump=None, earnings_only=False, election=None):
     """One simulation holding every family.
 
     ``bump`` is (family index, adult index, variable, amount) to add.
-    ``earnings_only`` drops every kind of unearned income.
+    ``earnings_only`` drops every kind of unearned income. ``election``, one
+    value per person in order, fixes who makes a Marriage Allowance election.
     """
     people, benunits, households = {}, {}, {}
     for i, unit in enumerate(units):
@@ -167,21 +173,27 @@ def situation(units, year, bump=None, earnings_only=False, marriage_allowance=Fa
             if bump is not None and bump[:2] == (i, j) and not earnings_only:
                 variable, amount = bump[2], bump[3]
                 person[variable] = {year: adult.get(variable, 0.0) + amount}
-            if not marriage_allowance:
-                person["would_claim_marriage_allowance"] = {year: False}
             people[name] = person
             names.append(name)
         for k, age in enumerate(unit["children"]):
             name = f"c{i}_{k}"
             people[name] = {"age": {year: age}, "is_claimant_or_partner": {year: False}}
             names.append(name)
-        benunits[f"b{i}"] = {"members": names}
+        benunits[f"b{i}"] = {
+            "members": names,
+            # Marriage Allowance needs a marriage or civil partnership
+            # (ITA 2007 s. 55C(1)(a)).
+            "is_married": {year: len(unit["adults"]) == 2},
+        }
         households[f"h{i}"] = {
             "members": names,
             "rent": {year: unit["rent"]},
             "tenure_type": {year: unit["tenure"]},
             "region": {year: unit["region"]},
         }
+    if election is not None:
+        for person, elects in zip(people.values(), election):
+            person[ELECTION] = {year: bool(elects)}
     return {"people": people, "benunits": benunits, "households": households}
 
 
@@ -234,7 +246,7 @@ def bumped(draw):
 def test_unearned_income_never_changes_earned_income(case, year):
     units, bump = case
     low = calculate(units, year)
-    high = calculate(units, year, bump=bump)
+    high = calculate(units, year, bump=bump, election=low[ELECTION])
     for variable in ["uc_individual_earned_income", "uc_earned_income"]:
         np.testing.assert_allclose(
             high[variable], low[variable], atol=0.01, err_msg=f"{bump} {units}"
@@ -246,7 +258,7 @@ def test_unearned_income_never_changes_earned_income(case, year):
 def test_uc_is_non_increasing_in_unearned_income(case, year):
     units, bump = case
     low = calculate(units, year)
-    high = calculate(units, year, bump=bump)
+    high = calculate(units, year, bump=bump, election=low[ELECTION])
     for variable in ["universal_credit", "universal_credit_pre_benefit_cap"]:
         assert np.all(high[variable] <= low[variable] + 0.01), (variable, bump, units)
 
@@ -258,7 +270,7 @@ def test_uc_is_non_increasing_in_unearned_income(case, year):
 )
 def test_deductions_equal_tax_and_ni_on_earnings_alone(units, year):
     full = calculate(units, year)
-    alone = calculate(units, year, earnings_only=True)
+    alone = calculate(units, year, earnings_only=True, election=full[ELECTION])
     adult = full["is_adult_person"]
     # Income tax in respect of earnings (UC Regs 2013 reg 55(5)): the
     # liability before the winter fuel payment charge, which recovers a
@@ -370,8 +382,8 @@ def test_fix_only_removes_deductions(units, year):
         )
         for unit in units
     ]
-    after = calculate(units, year, marriage_allowance=True)
-    before = calculate(units, year, scenario=BEFORE_1942, marriage_allowance=True)
+    after = calculate(units, year)
+    before = calculate(units, year, scenario=BEFORE_1942)
     assert np.all(after["uc_earned_income"] >= before["uc_earned_income"] - 0.01), units
     for variable in ["universal_credit", "universal_credit_pre_benefit_cap"]:
         assert np.all(after[variable] <= before[variable] + 0.01), (variable, units)

@@ -5,6 +5,7 @@ No dataset, certified fixture, private ID or amount, country default or download
 """
 
 from datetime import date
+import types
 import numpy as np
 import pytest
 from policyengine_core.periods import period
@@ -442,20 +443,23 @@ def test_partial_setter_failure_restores_only_touched_input(monkeypatch):
     parent, child, sibling, part, saved, keys, model = _subset_origin_fixture()
     before = values(child)
     snapshot = guard.snapshot_inputs(child, part.component_variables())
-    original = child.set_input
+    original = type(child).set_input
     failed = False
 
     class DeliberatePartialSetterFailure(Exception):
         pass
 
-    def partial(name, when, value):
+    def partial(simulation, name, when, value):
         nonlocal failed
-        original(name, when, value)
-        if name == U and not failed:
+        original(simulation, name, when, value)
+        if simulation is child and name == U and not failed:
             failed = True
             raise DeliberatePartialSetterFailure()
 
-    monkeypatch.setattr(child, "set_input", partial)
+    # Bound to the child, so a branch made from it while the guard calculates
+    # (the Marriage Allowance election makes two) gets the setter bound to the
+    # branch, and its inputs stay in the branch.
+    monkeypatch.setattr(child, "set_input", types.MethodType(partial, child))
     with pytest.raises(DeliberatePartialSetterFailure):
         guard.counted_once(child, part, YEAR, 1e-6, snapshot, variables_to_check=[U])
     assert failed and genuine(child, U) is None

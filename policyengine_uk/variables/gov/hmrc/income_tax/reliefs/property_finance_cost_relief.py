@@ -1,5 +1,7 @@
 from policyengine_uk.model_api import *
 
+DEDUCTED_AFTER = ["property_finance_cost_relief", "marriage_allowance_tax_reduction"]
+
 
 class property_finance_cost_relief(Variable):
     value_type = float
@@ -42,12 +44,14 @@ class property_finance_cost_relief(Variable):
         )
         # The order of Step 6 reductions does not change their total, so the
         # person's other reductions come first; this one is limited to the
-        # Step 5 tax they leave. Step 7 charges (ITA 2007 s. 30), such as the
-        # High Income Child Benefit Charge, are not reduced.
+        # Step 5 tax they leave. The Marriage Allowance reduction comes after
+        # this one, so it is exactly the tax an election saves the gaining
+        # spouse. Step 7 charges (ITA 2007 s. 30), such as the High Income
+        # Child Benefit Charge, are not reduced.
         other_reductions = [
             variable
             for variable in income_tax.income_tax_subtractions
-            if variable != "property_finance_cost_relief"
+            if variable not in DEDUCTED_AFTER
         ]
         tax_left = max_(
             0,

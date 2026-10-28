@@ -5,7 +5,6 @@ values:
     - taxable_dividend_income
     - taxable_property_income
     - received_allowances_earned_income
-    - marriage_allowance
 
 metadata:
   unit: list
