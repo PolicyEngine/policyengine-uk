@@ -1,3 +1,10 @@
+## [2.162.20] - 2026-10-28
+
+### Fixed
+
+- Limited the Income Support earnings disregard to the claimant's and partner's net earnings, so unused disregard no longer reduces statutory pay, pensions or other income.
+
+
 ## [2.162.19] - 2026-10-28
 
 ### Changed
