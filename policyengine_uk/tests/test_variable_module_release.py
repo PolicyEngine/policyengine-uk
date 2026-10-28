@@ -138,9 +138,21 @@ def test_dead_systems_modules_are_released_while_a_test_runs(request, monkeypatc
         lambda **kwargs: scans.append(kwargs) or release(**kwargs),
     )
     owners = []
-    for _ in range(max_new + 3):
-        Simulation(situation=SITUATION).calculate("income_tax", 2026)
-        owners.append(len(conftest._variable_module_owners()))
+    # Module names carry id(system), an address. If a collection frees a dead
+    # system during the loop, a later system can reuse its address and
+    # overwrite its modules rather than add an owner, so no release falls due:
+    # with a collection after each build, owners stopped at live + 6 and no
+    # release ran. Building with automatic collection off keeps the addresses
+    # distinct; the release still collects.
+    collecting = gc.isenabled()
+    gc.disable()
+    try:
+        for _ in range(max_new + 3):
+            Simulation(situation=SITUATION).calculate("income_tax", 2026)
+            owners.append(len(conftest._variable_module_owners()))
+    finally:
+        if collecting:
+            gc.enable()
     # Released as each new system starts adding its variables, so at most
     # max_new dead systems' modules beyond the live ones, plus the newest
     # system's. Without the release the last count would be live + 11.
