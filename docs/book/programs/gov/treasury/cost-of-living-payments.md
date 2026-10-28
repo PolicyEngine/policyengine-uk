@@ -28,6 +28,26 @@ PolicyEngine models these via:
   - `council_tax_rebate/bands.yaml` — qualifying CT bands (A–D)
   - `council_tax_rebate/amount.yaml` — the £150 rebate amount
 
+## Household Energy Payment (2026-27)
+
+Budget 2026 (paragraph 6.24) announced a one-off £100 Household Energy
+Payment for households in council tax bands A to D in England, delivered
+by local authorities from January 2027. PolicyEngine models it as
+`household_energy_payment` (Household, YEAR), with parameters at
+`parameters/gov/treasury/household_energy_payment/`:
+
+- `amount.yaml`: £100 in model year 2026 (6 April 2026 to 5 April 2027),
+  zero otherwise
+- `bands.yaml`: qualifying bands (A to D)
+- `countries.yaml`: qualifying countries (England)
+
+It counts in `household_benefits` and `gov_spending`, as the Energy Bills
+Rebate does. The devolved governments receive a Barnett share instead,
+which the model does not allocate, and the £100 million of further
+local-authority funding for targeted support is not modelled.
+`council_tax_band` defaults to band D, so a household with no band
+recorded qualifies.
+
 ## Cost-of-Living Payments (2022-23 and 2023-24)
 
 Two successive packages, both modelled through the variable

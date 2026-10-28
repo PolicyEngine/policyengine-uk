@@ -1,0 +1,12 @@
+description: Countries whose households receive the Household Energy Payment. The devolved governments receive Barnett funding instead, which the model does not allocate.
+values:
+  0001-01-01:
+    - ENGLAND
+metadata:
+  economy: false
+  unit: list
+  period: year
+  label: Household Energy Payment countries
+  reference:
+    - title: Budget 2026, section 4.3 (bands A-D in England; devolved governments funded through the Barnett formula)
+      href: https://www.gov.uk/government/publications/budget-2026-document/budget-2026-html

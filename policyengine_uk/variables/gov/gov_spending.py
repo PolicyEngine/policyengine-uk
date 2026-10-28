@@ -36,6 +36,7 @@ GOV_SPENDING_VARIABLES = [
     "epg_subsidy",
     "cost_of_living_support_payment",
     "energy_bills_rebate",
+    "household_energy_payment",
     "winter_fuel_allowance",
     "pawhp",
     "other_public_spending_budget_change",

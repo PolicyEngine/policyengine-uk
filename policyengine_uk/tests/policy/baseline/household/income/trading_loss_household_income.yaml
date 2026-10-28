@@ -39,4 +39,5 @@
     income_tax: [3_486, 5_486]
     # -10,000 of loss + 2,000 of Income Tax saved.
     hbai_household_net_income: [24_320, 32_320]
-    household_net_income: [24_140, 32_140]
+    # Plus the £100 Household Energy Payment, which HBAI income leaves out.
+    household_net_income: [24_240, 32_240]
