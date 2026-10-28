@@ -1,0 +1,71 @@
+# Carer's Allowance earnings limit after its last legislated amount (£204 a
+# week from 6 April 2026, SI 2026/218). From April 2025 the Government sets
+# the limit at 16 times the hourly national living wage, rounded up to the
+# nearest pound (Explanatory Memorandum to SI 2025/352, paragraph 5.6), and
+# the model projects later years that way. The model's national living wage
+# holds at £12.71 after April 2026, so each later limit is 16 x £12.71 =
+# £203.36, rounded up to £204. Earnings are entered net, as
+# carers_allowance_earnings, so the cases do not depend on tax or NI.
+
+- name: 2027-28, net earnings of exactly £204 a week have not exceeded the limit.
+  period: 2027
+  input:
+    age: 45
+    carers_allowance_earnings: 204 * 52
+    care_hours: 40
+    country: ENGLAND
+  output:
+    is_gainfully_employed_for_carers_allowance: false
+
+- name: 2027-28, net earnings of £205 a week are over the limit.
+  period: 2027
+  input:
+    age: 45
+    carers_allowance_earnings: 205 * 52
+    care_hours: 40
+    country: ENGLAND
+  output:
+    is_gainfully_employed_for_carers_allowance: true
+    carers_allowance: 0
+
+- name: 2028-29, net earnings of exactly £204 a week have not exceeded the limit.
+  period: 2028
+  input:
+    age: 45
+    carers_allowance_earnings: 204 * 52
+    care_hours: 40
+    country: ENGLAND
+  output:
+    is_gainfully_employed_for_carers_allowance: false
+
+- name: 2028-29, net earnings of £205 a week are over the limit.
+  period: 2028
+  input:
+    age: 45
+    carers_allowance_earnings: 205 * 52
+    care_hours: 40
+    country: ENGLAND
+  output:
+    is_gainfully_employed_for_carers_allowance: true
+    carers_allowance: 0
+
+- name: 2030-31, net earnings of exactly £204 a week have not exceeded the limit.
+  period: 2030
+  input:
+    age: 45
+    carers_allowance_earnings: 204 * 52
+    care_hours: 40
+    country: ENGLAND
+  output:
+    is_gainfully_employed_for_carers_allowance: false
+
+- name: 2030-31, net earnings of £205 a week are over the limit.
+  period: 2030
+  input:
+    age: 45
+    carers_allowance_earnings: 205 * 52
+    care_hours: 40
+    country: ENGLAND
+  output:
+    is_gainfully_employed_for_carers_allowance: true
+    carers_allowance: 0

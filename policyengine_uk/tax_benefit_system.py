@@ -30,6 +30,9 @@ from policyengine_uk.parameters.gov.contrib.create_private_pension_uprating impo
 from policyengine_uk.parameters.gov.dwp.state_pension.triple_lock.create_triple_lock import (
     add_triple_lock,
 )
+from policyengine_uk.parameters.gov.dwp.carers_allowance.create_earnings_limit_projection import (
+    project_carers_allowance_earnings_limit,
+)
 from policyengine_uk.parameters.gov.dwp.housing_benefit.allowances.create_pension_age_allowances import (
     project_pension_age_allowances,
 )
@@ -198,6 +201,8 @@ def process_parameter_tree(
     - Universal Credit standard allowance uprating (UC Act 2025 s. 1)
     - Universal Credit LCWRA element uprating (UC Act 2025 s. 3 freeze)
     - parameter uprating and backdating
+    - the Carer's Allowance earnings limit, projected from the uprated
+      national living wage
     - conversion to fiscal year parameters
 
     Returns the tree and each parameter's timeline after projection (for gov
@@ -234,6 +239,13 @@ def process_parameter_tree(
         propagate_parameter_metadata(parameters)
         with canonical_ni_uprating_references(parameters):
             uprate_parameters(parameters)
+    # The Savings Credit threshold and pension-age Housing Benefit
+    # allowances are generation steps (GENERATION_STEPS); the Carer's
+    # Allowance earnings limit is still projected from the uprated
+    # national living wage here.
+    project_carers_allowance_earnings_limit(parameters)
+    if annualise:
+        project_carers_allowance_earnings_limit(parameters.baseline)
     parameters = backdate_parameters(parameters, BACKDATED_FROM)
     # Prior law's projected path for every parameter a reform can change: the
     # gov tree, before annualisation, and the trees outside it (household),
