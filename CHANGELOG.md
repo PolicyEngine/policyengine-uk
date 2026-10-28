@@ -1,3 +1,15 @@
+## [2.164.0] - 2026-10-28
+
+### Added
+
+- Added the 20% Lifetime ISA withdrawal charge for a first-home purchase above the £450,000 property price cap that meets every other condition, for withdrawals from 29 October 2026 (ISA Regulations 1998 Schedule paragraphs 5 and 6A, inserted by SI 2026/1130); the annual model applies it from fiscal 2027-28.
+- Added the ISA annual subscription limit (ISA Regulations 1998 reg 4ZA: £15,240 from 2015-16 and £20,000 from 2017-18), a cash ISA limit for people under an age at the end of the tax year that current law leaves unset (Budget 2026 retains £20,000 for cash, so SI 2026/1018's £12,000 for under-65s is a reform setting), per-person cash and stocks-and-shares ISA subscription inputs, and `cash_isa_subscriptions_above_limit` and `isa_subscriptions_above_limit`, the subscriptions a limit leaves out.
+
+### Changed
+
+- The household `cash_isa` and `stocks_and_shares_isa` now sum new per-person `cash_isa_balance` and `stocks_and_shares_isa_balance` inputs. A dataset or situation that stores a household total keeps it, and stored totals still project with savings, but a household total given for one year no longer carries into later years.
+
+
 ## [2.163.2] - 2026-10-28
 
 ### Fixed
