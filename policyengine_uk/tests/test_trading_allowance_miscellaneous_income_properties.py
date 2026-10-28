@@ -13,10 +13,13 @@ miscellaneous_income that is Chapter 8 income.
 Invariants, each checked over many generated people in one reusable
 simulation:
 
-1. With trade receipts known, taxable trade profit plus taxable
-   miscellaneous income equals the statutory figure: the lower of ordinary
-   treatment and the allowance (differential against a reference written
-   from the Act).
+1. With trade receipts known (or a trade with a loss or no profit, taken
+   to have none), taxable trade profit plus taxable miscellaneous income
+   equals the figure the Act gives under the model's split of the allowance,
+   trades first: the lower of ordinary treatment and the allowance. It is
+   never below the lowest figure any split the Act allows gives, and equals
+   it when no trade losses are brought forward (differential against a
+   reference written from the Act).
 2. One allowance: the deductions from trade profits and from miscellaneous
    income never add up to more than the allowance.
 3. Bounds: the miscellaneous deduction is between nil and the Chapter 8
@@ -35,7 +38,8 @@ simulation:
    the same income tax as trade receipts of X with no expenses.
 9. A current trading loss is never both claimed and given up: when the
    allowance gives either relief, no current loss is relieved against
-   general income or Class 4, and uses_trading_allowance says so.
+   general income or Class 4, and a loss above anything the allowance could
+   save is claimed.
 """
 
 import numpy as np
@@ -60,13 +64,14 @@ amount = st.one_of(
     st.sampled_from([0.0, 400.0, 999.99, 1_000.0, 1_000.01, 3_000.0, 12_570.0]),
 )
 case = st.tuples(
-    amount,  # trade profit
+    st.one_of(amount, st.floats(min_value=-3_000, max_value=0)),  # trade profit
     amount,  # actual expenses
     st.sampled_from([0.0, 0.0, 150.0, 900.0]),  # capital allowances
     st.sampled_from(["unknown", "consistent", "none"]),  # receipts
     st.one_of(amount, st.floats(min_value=-2_000, max_value=0)),  # misc income
     st.floats(min_value=0, max_value=1.5),  # Chapter 8 share of misc income
     st.sampled_from([0.0, 0.0, 0.0, 300.0, 5_000.0]),  # current trading loss
+    st.sampled_from([0.0, 0.0, 0.0, 300.0, 1_500.0, 20_000.0]),  # losses b/f
 )
 cases = st.lists(case, min_size=CASES, max_size=CASES)
 
@@ -85,6 +90,7 @@ def sim():
             "miscellaneous_income": {YEAR: 0},
             "income_not_otherwise_charged": {YEAR: 0},
             "trading_loss": {YEAR: 0},
+            "loss_relief": {YEAR: 0},
         }
         for i in range(PEOPLE)
     }
@@ -117,28 +123,39 @@ OUTPUTS = [
 def run(sim, drawn, trade=True):
     """Simulate the drawn cases three times over (see PEOPLE). With
     ``trade`` false, the trade is dropped."""
-    profit, expenses, capital_allowances, mode, misc, share, loss = map(
-        np.array, zip(*drawn)
+    profit, expenses, capital_allowances, mode, misc, share, loss, brought_forward = (
+        map(np.array, zip(*drawn))
     )
     if not trade:
         profit = np.zeros_like(profit)
         expenses = np.zeros_like(expenses)
         capital_allowances = np.zeros_like(capital_allowances)
+        brought_forward = np.zeros_like(brought_forward)
         mode = np.full_like(mode, "none")
     chapter_8 = np.concatenate(
         [share * np.maximum(misc, 0), np.zeros_like(misc), np.maximum(misc, 0)]
     )
-    profit, expenses, capital_allowances, mode, misc, loss = (
-        np.tile(x, 3) for x in (profit, expenses, capital_allowances, mode, misc, loss)
+    profit, expenses, capital_allowances, mode, misc, loss, brought_forward = (
+        np.tile(x, 3)
+        for x in (
+            profit,
+            expenses,
+            capital_allowances,
+            mode,
+            misc,
+            loss,
+            brought_forward,
+        )
     )
     profit = np.where(mode == "none", 0, profit)
-    receipts = np.where(mode == "consistent", profit + expenses, 0)
+    receipts = np.where(mode == "consistent", np.maximum(profit + expenses, 0), 0)
     sim.set_input("self_employment_income", YEAR, profit)
     sim.set_input("self_employment_gross_receipts", YEAR, receipts)
     sim.set_input("capital_allowances", YEAR, capital_allowances)
     sim.set_input("miscellaneous_income", YEAR, misc)
     sim.set_input("income_not_otherwise_charged", YEAR, chapter_8)
     sim.set_input("trading_loss", YEAR, loss)
+    sim.set_input("loss_relief", YEAR, brought_forward)
     sim.reset_calculations()
 
     def stored(name):
@@ -152,6 +169,7 @@ def run(sim, drawn, trade=True):
         misc=stored("miscellaneous_income"),
         chapter_8=stored("income_not_otherwise_charged"),
         loss=stored("trading_loss"),
+        brought_forward=stored("loss_relief"),
         allowance=float(
             sim.tax_benefit_system.parameters(
                 YEAR
@@ -177,24 +195,49 @@ def tolerance(*values):
 
 def statutory_taxable_income(r):
     """Taxable trade profit plus taxable miscellaneous income under Part 6A,
-    with trade receipts known and no current trading loss.
+    with trade receipts known (or a trade with a loss or no profit, taken to
+    have none) and no current trading loss, as ``(trades_first, lowest)``.
 
-    Ordinary treatment charges the profit after capital allowances (nil if
-    they exceed it) and all positive miscellaneous income. Under the
-    allowance, relevant income (receipts plus Chapter 8 income) within it is
-    not charged; above it, relevant income less the allowance is charged,
-    however the person splits it. Miscellaneous income outside Chapter 8 is
-    charged either way. The person takes the lower.
+    Ordinary treatment charges the profit after capital allowances and
+    losses brought forward (nil if they exceed it) and all positive
+    miscellaneous income. Relevant income (receipts plus Chapter 8 income)
+    within the allowance is not charged (ss. 783AF and 783AG). Above it,
+    partial relief charges each trade's receipts less its share of the
+    allowance, less losses brought forward (ITA 2007 s. 83), and the Chapter
+    8 income less the rest of the allowance (ss. 783AI-783AK). The trade's
+    share is at most its receipts and the allowance, and at least what the
+    Chapter 8 income cannot take (s. 783AK(4) and (5)). Miscellaneous income
+    outside Chapter 8 is charged either way. The person takes the lower of
+    ordinary treatment and the allowance, with the trade's share either as
+    large as it can be (the model's split) or whatever charges least.
     """
     allowance = r["allowance"]
     misc = np.maximum(r["misc"], 0)
     chapter_8 = np.minimum(np.maximum(r["chapter_8"], 0), misc)
     other = misc - chapter_8
     receipts = np.where(r["known"], r["receipts"], 0)
-    ordinary = np.maximum(r["profit"] - r["capital_allowances"], 0) + misc
-    relevant = receipts + chapter_8
-    with_allowance = np.maximum(relevant - allowance, 0) + other
-    return np.minimum(ordinary, with_allowance)
+    losses = r["brought_forward"]
+    ordinary = np.maximum(r["profit"] - r["capital_allowances"] - losses, 0) + misc
+
+    def partial_relief(trade_share):
+        trade = np.maximum(receipts - trade_share - losses, 0)
+        return trade + chapter_8 - (allowance - trade_share) + other
+
+    # The charge is piecewise linear in the trade's share, so its least value
+    # is at an end or where losses brought forward stop absorbing the trade.
+    smallest = np.maximum(allowance - chapter_8, 0)
+    largest = np.minimum(receipts, allowance)
+    kink = np.clip(receipts - losses, smallest, largest)
+    within = receipts + chapter_8 <= allowance
+    trades_first = np.where(within, other, partial_relief(largest))
+    lowest = np.where(
+        within,
+        other,
+        np.minimum.reduce(
+            [partial_relief(share) for share in (smallest, largest, kink)]
+        ),
+    )
+    return np.minimum(ordinary, trades_first), np.minimum(ordinary, lowest)
 
 
 SETTINGS = settings(
@@ -208,15 +251,19 @@ SETTINGS = settings(
 @given(cases)
 def test_taxable_income_matches_statutory_reference(sim, drawn):
     r = run(sim, drawn)
-    # Known receipts or no trade, and no current loss to weigh.
-    applies = (r["known"] | (r["profit"] == 0)) & (r["loss"] == 0)
+    # Known receipts, or none (no trade, or a loss), and no current loss.
+    applies = (r["known"] | (r["profit"] <= 0)) & (r["loss"] == 0)
     taxable = r["taxable_self_employment_income"] + r["taxable_miscellaneous_income"]
-    expected = statutory_taxable_income(r)
-    error = np.abs(taxable - expected)
-    assert (
-        error[applies]
-        <= tolerance(r["receipts"], r["profit"], r["misc"], r["chapter_8"])[applies]
-    ).all()
+    trades_first, lowest = statutory_taxable_income(r)
+    margin = tolerance(
+        r["receipts"], r["profit"], r["misc"], r["chapter_8"], r["brought_forward"]
+    )
+    assert (np.abs(taxable - trades_first)[applies] <= margin[applies]).all()
+    # Never more relief than the Act allows, and all of it without losses
+    # brought forward, which only a smaller trade share can put to use.
+    assert (taxable[applies] >= lowest[applies] - margin[applies]).all()
+    no_losses = applies & (r["brought_forward"] == 0)
+    assert (np.abs(taxable - lowest)[no_losses] <= margin[no_losses]).all()
 
 
 @SETTINGS
@@ -311,6 +358,7 @@ def test_chapter_8_income_is_taxed_like_trade_receipts(sim, amounts):
     sim.set_input("miscellaneous_income", YEAR, misc)
     sim.set_input("income_not_otherwise_charged", YEAR, misc)
     sim.set_input("trading_loss", YEAR, np.zeros(PEOPLE))
+    sim.set_input("loss_relief", YEAR, np.zeros(PEOPLE))
     sim.reset_calculations()
     tax = sim.calculate("income_tax", YEAR)
     np.testing.assert_allclose(

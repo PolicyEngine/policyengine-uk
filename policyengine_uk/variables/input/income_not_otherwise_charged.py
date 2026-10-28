@@ -17,7 +17,9 @@ class income_not_otherwise_charged(Variable):
         "when unknown. The survey data do not separate it from the rest of "
         "miscellaneous_income, which also holds royalties, charges under other "
         "Part 5 Chapters and, on SPI records, benefits and termination "
-        "payments, none of which the allowance relieves."
+        "payments, none of which the allowance relieves. Without "
+        "self_employment_gross_receipts, a trade with a loss or no profit is "
+        "taken to have no receipts, so its relevant income is this alone."
     )
     definition_period = YEAR
     unit = GBP

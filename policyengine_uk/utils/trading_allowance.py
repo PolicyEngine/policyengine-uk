@@ -28,22 +28,32 @@ def trading_allowance_reliefs(person, period, parameters):
       allowance, each trade's profit is its receipts less its share of the
       allowance, with no expenses, and the miscellaneous income is that
       income less its share. The shares add up to the allowance and the
-      individual chooses them (s. 783AK). Any split gives the same income
-      tax, since the total charged is relevant income less the allowance;
-      the model gives the trades their receipts' worth first, which keeps
-      Class 4 as low as it can be. So the miscellaneous income gets the part
-      of the allowance the trade receipts leave. Where trade receipts exceed
-      the allowance it gets none: partial relief then beats actual
-      deductions exactly when the trades' expenses and capital allowances
-      are under the allowance, and the trades take all of it.
-    - Opting out (s. 783AL): a raw current trading loss larger than the
-      saving from both deductions is claimed instead, and then neither
-      applies.
+      individual chooses them (s. 783AK). The model gives the trades their
+      receipts' worth first, which keeps Class 4 as low as it can be, so the
+      miscellaneous income gets the part of the allowance the trade receipts
+      leave. Where trade receipts exceed the allowance it gets none: partial
+      relief then beats actual deductions exactly when the trades' expenses
+      and capital allowances are under the allowance, and the trades take
+      all of it. Without losses brought forward, every split charges the
+      same income tax: relevant income less the allowance. With them
+      (loss_relief, ITA 2007 s. 83), a smaller trade share can charge less
+      tax this year, because the loss absorbs the trade profit it leaves, but
+      it uses up that much of the loss, which otherwise carries forward
+      against later profits of the trade (s. 84). The trades-first split
+      leaves the loss for later years and keeps Class 4 profits lower, so
+      the model uses it there too.
+    - Ordinary treatment: an individual whose relevant income is within the
+      allowance can elect out of full relief (s. 783AL), and one above it
+      need not elect for partial relief (s. 783AM). A raw current trading
+      loss larger than the saving from both deductions is claimed instead,
+      and then neither applies.
 
-    Without gross receipts, a profit within the allowance is taken as
-    receipts equal to the profit, which takes up that much of the allowance;
-    a larger profit is taken to reflect the better of actual expenses and the
-    allowance already, which leaves none of it for miscellaneous income.
+    Without gross receipts, a trade's receipts are taken as the lowest its
+    profit allows: a profit within the allowance is taken as receipts equal
+    to the profit, which takes up that much of the allowance, and a loss or
+    no profit as no receipts, which leaves all of it for miscellaneous
+    income. A larger profit is taken to reflect the better of actual
+    expenses and the allowance already, which leaves none of it.
 
     The miscellaneous income is income_not_otherwise_charged, up to the
     person's miscellaneous_income when that is positive (it is part of it).
@@ -84,8 +94,9 @@ def trading_allowance_reliefs(person, period, parameters):
     )
 
     # Full relief makes every relevant trade's current profit AND loss
-    # nil (s.783AF); the opt-out is for the individual/year (s.783AL), and
-    # takes the miscellaneous income's relief with it. Partial relief also
+    # nil (s.783AF); the election out of it (s.783AL), like not electing for
+    # partial relief (s.783AM), is for the individual/year and takes the
+    # miscellaneous income's relief with it. Partial relief also
     # replaces every trade's actual expenses. Choose ordinary treatment if
     # the raw supplied current loss exceeds the allowance saving. Before
     # applying net-income and relief-cap limits, this also preserves an

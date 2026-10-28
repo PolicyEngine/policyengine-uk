@@ -157,7 +157,8 @@
     income_not_otherwise_charged: 800
   output:
     # Full relief saves £800 of income against a £500 loss (s. 783AF makes
-    # the trade's loss nil).
+    # the trade's loss nil). Without receipts, the loss-making trade is
+    # taken to have none, so the casual income alone is relevant income.
     uses_trading_allowance: true
     miscellaneous_income_trading_allowance_deduction: 800
     trade_loss_relief_against_general_income: 0
@@ -184,3 +185,27 @@
   output:
     miscellaneous_income_trading_allowance_deduction: 0
     taxable_miscellaneous_income: 800
+
+- name: Case 14, losses brought forward do not move the allowance from the trade.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 30_000
+    self_employment_gross_receipts: 800
+    self_employment_income: 800
+    loss_relief: 800
+    miscellaneous_income: 800
+    income_not_otherwise_charged: 800
+  output:
+    # Relevant income of £1,600 is above the allowance. The trade takes its
+    # receipts' worth of it (£800) and the casual income the other £200
+    # (s. 783AK). The trade's profit is then nil, so none of the £800 loss
+    # is used this year; it carries forward (ITA 2007 ss. 83 and 84). The Act
+    # would also allow £200 for the trade and £800 for the casual income:
+    # £3,486 of tax now, using £600 of the loss.
+    trading_allowance_deduction: 800
+    miscellaneous_income_trading_allowance_deduction: 200
+    taxable_self_employment_income: 0
+    taxable_miscellaneous_income: 600
+    # (30,000 + 600 - 12,570) x 20%
+    income_tax: 3_606

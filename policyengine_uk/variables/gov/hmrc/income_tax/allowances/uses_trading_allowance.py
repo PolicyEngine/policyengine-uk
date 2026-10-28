@@ -12,8 +12,10 @@ class uses_trading_allowance(Variable):
         "Either relief covers all their relevant income (ITTOIA 2005 s. 783A), "
         "so it makes every relevant trade's current profit or loss its "
         "allowance figure (ss. 783AF and 783AI), and a current trading loss "
-        "cannot then be claimed. A person with a larger current loss opts out "
-        "(s. 783AL) and claims it."
+        "cannot then be claimed. A person with a larger current loss takes "
+        "ordinary treatment and claims it: within the allowance by electing "
+        "out of full relief (s. 783AL), above it by not electing for partial "
+        "relief (s. 783AM)."
     )
     definition_period = YEAR
     reference = [
@@ -24,6 +26,10 @@ class uses_trading_allowance(Variable):
         dict(
             title="Income Tax (Trading and Other Income) Act 2005 s. 783AL",
             href="https://www.legislation.gov.uk/ukpga/2005/5/section/783AL",
+        ),
+        dict(
+            title="Income Tax (Trading and Other Income) Act 2005 s. 783AM",
+            href="https://www.legislation.gov.uk/ukpga/2005/5/section/783AM",
         ),
     ]
 
