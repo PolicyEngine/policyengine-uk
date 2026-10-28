@@ -1,7 +1,15 @@
 from policyengine_uk.model_api import *
 
+# The election is weighed on income tax before the winter fuel payment charge.
+# The charge is Step 7 tax on a person whose own total income (ITA 2007 s.23
+# Step 1) is over the threshold, which the election does not change; it can
+# differ between the two positions only where the election's tax change ends
+# or starts a relevant benefit (ITEPA 2003 s.681I(4)), and the election does
+# not weigh effects on benefits. Leaving it out keeps the benefits that decide
+# the charge out of these branches.
+COMPARED_TAX = "income_tax_before_winter_fuel_payment_charge"
 BRANCH_OUTPUTS = [
-    "income_tax",
+    COMPARED_TAX,
     "personal_allowance",
     "marriage_allowance_tax_reduction_limit",
     "meets_marriage_allowance_income_conditions",
@@ -56,10 +64,10 @@ def tax_position(simulation, name, period, relinquished, held):
         name += "_"
     branch = simulation.get_branch(name)
     try:
-        # A supplied final tax is authoritative in the real simulation, but
-        # these private counterfactuals must compare formula tax at each
-        # allowance cut. Deletion only changes the branch's private storage.
-        branch.delete_arrays("income_tax", period)
+        # A supplied tax is authoritative in the real simulation, but these
+        # private counterfactuals must compare formula tax at each allowance
+        # cut. Deletion only changes the branch's private storage.
+        branch.delete_arrays(COMPARED_TAX, period)
         branch.set_input(
             "makes_marriage_allowance_election",
             period,
@@ -82,8 +90,9 @@ class makes_marriage_allowance_election(Variable):
         "Whether this person elects to give up part of their personal "
         "allowance so that their spouse or civil partner gets the Marriage "
         "Allowance tax reduction. The couple elects only when the election "
-        "is allowed and lowers their combined income tax, in whichever "
-        "direction lowers it more, and only if the spouse who would gain has "
+        "is allowed and lowers their combined income tax before the winter "
+        "fuel payment charge, in whichever direction lowers it more, and only "
+        "if the spouse who would gain has "
         "would_claim_marriage_allowance true. Set as an input, an election "
         "is taken to be one the other spouse is entitled to gain from: the "
         "conditions are checked only when the model makes the choice."
@@ -143,7 +152,7 @@ class makes_marriage_allowance_election(Variable):
             partner(rate) * transferable,
             partner(without["marriage_allowance_tax_reduction_limit"]),
         )
-        extra_tax = relinquishing["income_tax"] - without["income_tax"]
+        extra_tax = relinquishing[COMPARED_TAX] - without[COMPARED_TAX]
         # Tax is computed to the penny; smaller differences are rounding.
         saving = np.round(partner_reduction - extra_tax, 2)
         married_couples_allowance_claimed = person.benunit.any(

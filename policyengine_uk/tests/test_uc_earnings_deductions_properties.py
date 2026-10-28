@@ -102,6 +102,7 @@ PERSON_VARIABLES = [
     "uc_income_tax_on_earnings",
     "uc_national_insurance_on_earnings",
     "income_tax",
+    "income_tax_before_winter_fuel_payment_charge",
     "national_insurance",
 ]
 
@@ -271,9 +272,13 @@ def test_deductions_equal_tax_and_ni_on_earnings_alone(units, year):
     full = calculate(units, year)
     alone = calculate(units, year, earnings_only=True, election=full[ELECTION])
     adult = full["is_adult_person"]
+    # Income tax in respect of earnings (UC Regs 2013 reg 55(5)): the
+    # liability before the winter fuel payment charge, which recovers a
+    # payment rather than taxing the earnings. A pensioner of a mixed-age
+    # couple earning over £35,000 off UC is charged it.
     np.testing.assert_allclose(
         full["uc_income_tax_on_earnings"][adult],
-        alone["income_tax"][adult],
+        alone["income_tax_before_winter_fuel_payment_charge"][adult],
         atol=0.01,
         err_msg=str(units),
     )
@@ -284,9 +289,47 @@ def test_deductions_equal_tax_and_ni_on_earnings_alone(units, year):
         err_msg=str(units),
     )
     # Never more than the person's own tax and NI.
-    assert np.all(full["uc_income_tax_on_earnings"] <= full["income_tax"] + 0.01)
+    assert np.all(
+        full["uc_income_tax_on_earnings"]
+        <= full["income_tax_before_winter_fuel_payment_charge"] + 0.01
+    )
     assert np.all(
         full["uc_national_insurance_on_earnings"] <= full["national_insurance"] + 0.01
+    )
+
+
+def test_earnings_deduction_excludes_the_winter_fuel_payment_charge():
+    """A pensioner in a mixed-age couple earning £40,000 off UC is charged
+    the winter fuel payment (ITEPA 2003 s.681I) through income tax. UC
+    deducts the tax on their earnings, which the charge is not part of."""
+    units = [
+        dict(
+            adults=[
+                dict(
+                    age=70,
+                    employment_income=30_000.0,
+                    self_employment_income=10_000.0,
+                    uc_is_in_startup_period=False,
+                    married_couples_allowance=0.0,
+                ),
+                dict(
+                    age=30,
+                    employment_income=0.0,
+                    self_employment_income=0.0,
+                    uc_is_in_startup_period=False,
+                    married_couples_allowance=0.0,
+                ),
+            ],
+            children=[],
+            tenure="OWNED_OUTRIGHT",
+            rent=0.0,
+            region="LONDON",
+        )
+    ]
+    sim = Simulation(situation=situation(units, 2026, earnings_only=True))
+    assert sim.calculate("winter_fuel_payment_charge", 2026)[0] > 0
+    test_deductions_equal_tax_and_ni_on_earnings_alone.hypothesis.inner_test(
+        units, 2026
     )
 
 
@@ -304,10 +347,19 @@ def _use_formula_before_1942(simulation):
                 period,
                 ["employment_income", "self_employment_income", "miscellaneous_income"],
             )
+            # The whole benefit unit's tax, as benunit_tax was before the
+            # winter fuel payment charge joined income tax: the charge depends
+            # on Universal Credit receipt, so deducting it here would be
+            # circular.
             disregards = add(
                 benunit,
                 period,
-                ["uc_work_allowance", "benunit_tax", "pension_contributions"],
+                [
+                    "uc_work_allowance",
+                    "income_tax_before_winter_fuel_payment_charge",
+                    "national_insurance",
+                    "pension_contributions",
+                ],
             )
             return max_(0, gross - disregards)
 

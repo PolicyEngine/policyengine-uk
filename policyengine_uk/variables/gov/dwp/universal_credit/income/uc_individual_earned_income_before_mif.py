@@ -57,7 +57,7 @@ class uc_individual_earned_income_before_mif(Variable):
         # employed earnings, and reg. 55(5) takes the deductions off "the
         # amount of general earnings or benefits specified in paragraphs (2)
         # to (4)". National Insurance falls on all three (ni_class_1_income)
-        # and income tax on sick and maternity pay (employment_benefits in
+        # and income tax on all three (employment_benefits in
         # taxable_employment_income), and both are deducted below. Leaving
         # the payments out of the earnings deducted the tax and National
         # Insurance on them from other earnings, so the award rose as the

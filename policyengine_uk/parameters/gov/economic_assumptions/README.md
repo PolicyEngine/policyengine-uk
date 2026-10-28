@@ -22,7 +22,7 @@ GDP and population assumptions remain supported.
 |-------------------------|----------------------------------------------------------|-------------------------|
 | `consumer_price_index`  | CPI year-on-year growth                                  | EFO Table 1.7           |
 | `cpih`                  | CPI including owner-occupiers' housing costs             | EFO Table 1.7           |
-| `consumer_price_index_ahc` | CPI excluding rents/maintenance/water (AHC measure)   | ONS adhoc 2863          |
+| `consumer_price_index_ahc` | CPI excluding rents/maintenance/water (AHC measure)   | ONS ad hoc 3582; forecast derived by `utils/create_ahc_deflator.py` |
 | `rpi`                   | Retail Price Index year-on-year growth                   | EFO Table 1.7           |
 | `average_earnings`      | Average weekly earnings growth                           | EFO Table 1.6           |
 | `non_labour_income`     | Non-labour household income growth                       | derived from EFO        |
@@ -30,6 +30,19 @@ GDP and population assumptions remain supported.
 | `petrol_spending_litre_proxy` | Spending growth that preserves road-fuel litres    | HMRC + OBR              |
 | `diesel_spending_litre_proxy` | Same, for diesel                                   | HMRC + OBR              |
 | `finance_ni.domestic_rates` | Average Northern Ireland domestic rates bill (regional plus district poundage) | DoF rate poundages, LPS rates paid, NI draft Budget 2026-29 |
+| `stamp_duty_land_tax.residential` | SDLT receipts from residential property          | EFO receipts Table 3.7  |
+| `stamp_duty_land_tax.non_residential` | SDLT receipts from non-residential property  | EFO receipts Table 3.7  |
+| `business_rates.great_britain` | Business rates receipts, England, Scotland and Wales (cash) | EFO receipts, current receipts (cash basis): Table 3.8 in March 2026 |
+| `business_rates.northern_ireland` | Northern Ireland business rates receipts      | EFO receipts Table 3.2  |
+
+The four receipts series project the corporate SDLT and business rates
+statistics (`gov.hmrc.stamp_duty.statistics`,
+`gov.hmrc.business_rates.statistics`) from their latest outturn. Each is the
+ratio of consecutive published receipts levels, to six decimals: outturn
+growth for the EFO's outturn year (its outturn over the year before's outturn
+in an earlier EFO), the EFO's forecast years, and after them the
+`average_earnings` path. Years before the outturn year are kept, so each
+index keeps its base year.
 
 ## Time horizons
 
@@ -111,9 +124,35 @@ projection through 2030 retains its previous handling; correcting those
 earlier mapping omissions is a separate change.
 
 `domestic_energy_consumption`, `electricity_consumption` and `gas_consumption`
-are deliberately excluded from this fallback as well as the annual growth
-mapping. Their stored amounts already use FY2026-27 unit prices, so dataset
-projection holds them flat, as documented in `uprating_indices.yaml`.
+use a separate declaration-aware projector. Unlabelled datasets retain their
+stored amounts through the projection horizon, preserving legacy inputs that
+already use FY2026-27 prices. A dataset's explicit `energy_price_basis` opts
+into the variables' existing cumulative annual OBR-CPI index as an interim
+price proxy from its declared price year. The declaration covers only these
+three inputs, independently of any other generic uprating exclusions. They
+remain outside both the unconditional growth mapping and fallback, so no
+second index grows them after 2030.
+
+The declaration retains `calendar_year` or `fiscal_year` and its integer year.
+The model uses the January 1 index level for the declared starting year for
+both calendar and fiscal price periods. This shared start-year convention is
+an approximation, rather than precise fiscal/calendar price alignment. The
+projector applies `I[target year] / I[declared price year]` to the supplied
+observation. A requested declared projection raises an error if either
+January 1 precedes the selected index's earliest non-null value, including a
+midyear start, or if the index has no usable history. Unlabelled inputs and
+declarations with no stored energy inputs do not require index history. Each
+projected child records its effective fiscal-year basis, while the source
+observation keeps its original declaration.
+
+Generic CPI does not establish constant-consumption energy-price outturns or
+an energy-specific forecast. Open [issue #2526](https://github.com/PolicyEngine/policyengine-uk/issues/2526)
+tracks energy-specific index alignment and a sourced future assumption.
+
+See [dataset sources](../../../../docs/engineering/skills/dataset-sources.md)
+for the declaration and migration contract. Existing metadata-free private
+Microcosm files stay flat until a producer or caller supplies a verified
+declaration; this consumer change does not label released artifacts.
 
 The additional indices have their own source limits:
 
@@ -188,6 +227,62 @@ rise. `create_economic_assumption_indices` compounds it into
 September figure, so a scenario that edits calendar-year CPI or sets
 September CPI directly moves both.
 
+Most benefits rise each April by this measure: the Secretary of State's
+annual review under Social Security Administration Act 1992 s150 measures
+prices by the CPI 12-month rate for the previous September (every Up-rating
+Order Explanatory Memorandum since April 2011; 3.8% for April 2026, written
+statement HCWS1101). `gov.benefit_uprating_cpi`, which the benefit rate
+parameters name as their `uprating`, follows `indices.september_cpi_uprating`,
+and so do the Universal Credit standard allowance and health element indices
+built from it. Housing Benefit non-dependant deduction income bands, DfE
+funding rates, the Childcare Offer for Wales hourly rate and the council tax
+high value surcharge follow the lagged calendar-year CPI projection through
+`indices.obr.lagged_cpi`, pending their own uprating models. The deduction
+amounts continue to follow September CPI. The savings credit threshold and
+Housing Benefit pension-age allowances are within the s150 review, under
+[s150(1)(l) and (h)](https://www.legislation.gov.uk/ukpga/1992/5/section/150),
+even though their increases in practice are linked to earnings rather than
+September CPI.
+
+## Pension Credit earnings uprating
+
+[`create_earnings_uprating.py`](./create_earnings_uprating.py) builds
+`yoy_growth.earnings_uprating` from the previous May-July total-pay AWE input
+used by the triple lock, rounded to the published 0.1 percentage points.
+`indices.earnings_uprating` compounds it without rounding the index levels,
+so rounding cannot push the increase below earnings. When earnings fall,
+the projection holds amounts unchanged.
+
+The Pension Credit standard minimum guarantee and the three lower Housing
+Benefit pension-age personal allowances, which equal it, use this index after
+their last published amounts. [SSAA 1992 s150A(1)(d) and (2)](https://www.legislation.gov.uk/ukpga/1992/5/section/150A)
+require the guarantee to rise at least with earnings; they impose no CPI or
+2.5% floor. This projection uses that earnings minimum, allowing published
+amounts to reflect discretionary increases. For April 2027, May-July 2026
+earnings growth of 3.9% gives £238 × 1.039 = £247.282 a week for a single
+person and £363.25 × 1.039 = £377.41675 for a couple, before benefit rounding.
+
+The Savings Credit maximum rises by September CPI, as stated in
+[HCWS1101](https://questions-statements.parliament.uk/written-statements/detail/2025-11-26/hcws1101).
+After general uprating, the projected threshold is derived as the standard
+minimum guarantee minus the maximum divided by the phase-in rate (60%).
+Published thresholds keep their own rounding. The 2026-27 maxima are £17.96
+and £20.10, from the [DWP rates table](https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027#pension-credit).
+A zero phase-in rate pays no Savings Credit, so that year keeps the threshold
+in force before it.
+
+The three higher Housing Benefit pension-age personal allowances, for those
+who reached State Pension age before April 2021, are the standard minimum
+guarantee plus the maximum Savings Credit
+([HB A3/2021](https://www.gov.uk/government/publications/housing-benefit-adjudication-circulars-2021/a32021-housing-benefit-person-who-have-attained-the-qualifying-age-for-state-pension-credit-amendment-regulations-2021),
+paragraphs 3-5); each published amount from 2019-20 to 2026-27 is that sum
+rounded up to the next 5p.
+[`../dwp/housing_benefit/allowances/create_pension_age_allowances.py`](../dwp/housing_benefit/allowances/create_pension_age_allowances.py)
+derives the years after the published amounts as that sum, after general
+uprating, so each part keeps its own index. For April 2027 that is
+£247.282 + £17.96 × 1.035 = £265.8706 a week for a single person or lone
+parent and £377.41675 + £20.10 × 1.035 = £398.22025 for a couple.
+
 Income Tax Act 2007 ss21 and 57 index the basic rate limit and the personal
 allowance by this measure once no freeze applies.
 [`../hmrc/create_threshold_indexation.py`](../hmrc/create_threshold_indexation.py)
@@ -200,8 +295,19 @@ threshold by the same rises, up to the last year of
 
 1. Replace the 2025-2030 block in each series with values from the new EFO
    detailed forecast tables (note the EFO release month in the header comment).
+   The importer converts annual economy growth percentages to decimal rates
+   and rounds them to four decimal places. Review the economy-series diff
+   deliberately when running a full CLI import: with the real March 2026
+   economy workbook, the existing extraction changes cumulative 2030 indices
+   relative to the stored series by RPI −0.0880%, CPI −0.0584%, average
+   earnings −0.0585% and house prices +0.0194%. Receipts-only rendering can
+   reproduce the committed YAML byte for byte; a full import also refreshes
+   these economy series.
 2. Recompute the 2031-2073 convergence path so the first long-run year
-   continues smoothly from the new last forecast year (no jump).
+   continues smoothly from the new last forecast year (no jump). If the new
+   EFO forecasts a year that a series has no entry for, add that entry first:
+   the importer only replaces existing entries, and stops naming the series
+   and year it cannot update.
 3. Nothing needs regenerating: `create_economic_assumption_indices` rebuilds
    the cumulative `indices` parameters from these series whenever the
    tax-benefit system processes its parameters (`tax_benefit_system.py`).
@@ -211,11 +317,46 @@ threshold by the same rises, up to the last year of
    `yoy_growth.yaml`; pass the receipts tables with `--receipts-file` or
    `--receipts-url` so September CPI uses the OBR's September forecast. If
    you edit `yoy_growth.yaml` by hand instead, rerun it with `--gaps-only`.
-6. If the new EFO runs past `PROJECTION_END_YEAR`, move it on (see
+6. Refresh the receipts series (`stamp_duty_land_tax.*`,
+   `business_rates.*`). The importer does this in the same run when it also
+   gets the receipts tables of the EFO whose outturn year is one earlier
+   (March 2025 for March 2026), with `--previous-receipts-file` or
+   `--previous-receipts-url`; their outturn is the base for the outturn
+   year's growth. It finds each line by table title and row label, so table
+   renumbering does not matter, and reads only that table's rows. It takes
+   each workbook's release from its contents sheet, or else its file name or
+   URL, and refuses receipts tables from another EFO or of unknown release.
+   Every selected table in both releases must declare `£ billion` in its
+   header (`£bn` and `£ bn` are also accepted, ignoring case and whitespace).
+   Other units, including `£m`, and missing or ambiguous declarations stop
+   the import before any file is written, so different cash magnitudes
+   cannot be combined across releases.
+   Then update the published levels in
+   `policyengine_uk/tests/test_corporate_receipts_statistics.py`
+   (`OBR_RECEIPTS_BN`), which pin the series to the OBR's tables. Pass
+   `--skip-receipts-growth` only to leave them on the previous EFO.
+7. If the new EFO runs past `PROJECTION_END_YEAR`, move it on (see
    [Dataset projection horizon](#dataset-projection-horizon)).
+
+For example, for March 2026:
+
+```bash
+uv run python -m policyengine_uk.utils.import_obr_forecasts \
+  --file economy_tables_march_2026.xlsx \
+  --receipts-file receipts_tables_march_2026.xlsx \
+  --previous-receipts-file receipts_tables_march_2025.xlsx
+```
 
 The EFO refresh does not touch `finance_ni.domestic_rates`; OBR does not
 publish a Northern Ireland domestic rates bill series (see below).
+
+For `obr.council_tax`, take each country's growth in receipts from
+Expenditure Table 4.1, not its "council tax level" row: dataset projection
+divides the receipts growth by the growth in household weights itself
+(#2067). When a forecast year becomes an outturn, replace it with the growth
+in the published liability the comments in `yoy_growth.yaml` name, and add the
+figures to `PUBLISHED_OUTTURNS` in
+`policyengine_uk/tests/test_council_tax_uprating.py`.
 
 ## Northern Ireland domestic rates
 

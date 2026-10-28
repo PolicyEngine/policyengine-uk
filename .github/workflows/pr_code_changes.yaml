@@ -33,7 +33,9 @@ concurrency:
 
 jobs:
   Changes:
-    runs-on: ubuntu-24.04-arm
+    runs-on: ${{ vars.CI_RUNNER_ARM != '' && (vars.CI_RUNNER_EVENTS == '' || contains(format(',{0},', vars.CI_RUNNER_EVENTS), format(',{0},', github.event_name))) && vars.CI_RUNNER_ARM || 'ubuntu-24.04-arm' }}
+    permissions:
+      contents: read
     timeout-minutes: 5
     outputs:
       code: ${{ steps.diff.outputs.code }}
@@ -55,6 +57,7 @@ jobs:
             .github/**
             pyproject.toml
             uv.lock
+            hatch_build.py
             Makefile
             conftest.py
             .gitignore
@@ -80,7 +83,9 @@ jobs:
     name: Install + smoke-import (py${{ matrix.python-version }})
     needs: Changes
     if: needs.Changes.outputs.code == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER_X64 != '' && (vars.CI_RUNNER_EVENTS == '' || contains(format(',{0},', vars.CI_RUNNER_EVENTS), format(',{0},', github.event_name))) && vars.CI_RUNNER_X64 || 'ubuntu-latest' }}
+    permissions:
+      contents: read
     timeout-minutes: 15
     strategy:
       fail-fast: false
@@ -98,19 +103,75 @@ jobs:
         run: uv pip install --system .
       - name: Smoke-import
         run: python -c "import policyengine_uk; print('import OK')"
+      - name: Check the installed package reports this commit
+        # Outside the checkout, so Python imports the installed wheel, which
+        # hatch_build.py built from this clean checkout.
+        working-directory: ${{ runner.temp }}
+        run: |
+          python - "$(git -C "$GITHUB_WORKSPACE" rev-parse HEAD)" <<'EOF'
+          import sys
+          from policyengine_uk import build_metadata
+
+          head = sys.argv[1]
+          git_sha = build_metadata.get_runtime_metadata()["git_sha"]
+          print(f"{build_metadata.PACKAGE_ROOT}: git_sha={git_sha}")
+          assert "site-packages" in build_metadata.PACKAGE_ROOT.parts
+          assert git_sha == head, f"expected {head}"
+          EOF
+  Release-Build:
+    name: Release build records the commit
+    needs: Changes
+    if: needs.Changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      # The constrained artifact build used by versioning.yaml, without publishing.
+      - uses: actions/checkout@v6
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.1.0
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+            python-version: '3.13'
+      - name: Build package
+        run: >-
+          uv build --python 3.13 --sdist --wheel --out-dir dist
+          --build-constraint .github/build-constraints.txt
+      - name: Build a wheel from the sdist
+        # make builds the release wheel from the checkout. Check the sdist
+        # still builds the same package, as building the wheel from it once did.
+        run: >-
+          uv build --python 3.13 --wheel --out-dir "$RUNNER_TEMP/from-sdist"
+          --build-constraint .github/build-constraints.txt dist/*.tar.gz
+      - name: Check the wheel records this commit
+        run: >-
+          python .github/check_release_build.py dist "$(git rev-parse HEAD)"
+          "$RUNNER_TEMP/from-sdist"
   Lint:
     # On every pull request, whatever it changes: ruff formats and checks
     # notebooks under docs/ and scripts/ too, so a documentation-only change
     # can break Lint for every later pull request (#1696 landed a notebook
     # that failed the format check; #1743 fixed it).
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER_X64 != '' && (vars.CI_RUNNER_EVENTS == '' || contains(format(',{0},', vars.CI_RUNNER_EVENTS), format(',{0},', github.event_name))) && vars.CI_RUNNER_X64 || 'ubuntu-latest' }}
+    permissions:
+      contents: read
     timeout-minutes: 10
     steps:
         - uses: actions/checkout@v6
         - name: Install uv
           uses: astral-sh/setup-uv@v8.1.0
         - name: Check formatting
-          run: uvx ruff format --check .
+          # With the ruff that uv.lock pins, so a new ruff release cannot change
+          # what Lint accepts until the lock is updated.
+          run: |
+            set -euo pipefail
+            ruff=$(uv export --frozen --extra dev --no-hashes --no-header | { grep -E '^ruff==' || true; } | cut -d' ' -f1)
+            if [ "$(printf '%s' "$ruff" | grep -c '^ruff==')" != 1 ]; then
+              echo "::error::uv.lock should pin exactly one ruff; found: ${ruff:-none}"
+              exit 1
+            fi
+            echo "RUFF=$ruff" >> "$GITHUB_ENV"
+            uvx --from "$ruff" ruff format --check .
         - name: Lint
           # The ruff rules pyproject.toml selects, then two pyflakes rules it
           # ignores, checked in the package: F811, a definition that a later
@@ -119,8 +180,8 @@ jobs:
           # notice 16), and F821, an undefined name. Neither has a finding
           # in the package today.
           run: |
-            uvx ruff check .
-            uvx ruff check --select F811,F821 policyengine_uk
+            uvx --from "$RUFF" ruff check .
+            uvx --from "$RUFF" ruff check --select F811,F821 policyengine_uk
         - name: No agent working notes at the repository root
           # Agent jobs keep their working notes at the root of their
           # worktree, and #2376's REPORT.md and PROGRESS.md reached main by
@@ -145,24 +206,20 @@ jobs:
     name: Documentation build
     needs: Changes
     if: needs.Changes.outputs.code == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER_X64 != '' && (vars.CI_RUNNER_EVENTS == '' || contains(format(',{0},', vars.CI_RUNNER_EVENTS), format(',{0},', github.event_name))) && vars.CI_RUNNER_X64 || 'ubuntu-latest' }}
+    permissions:
+      contents: read
     timeout-minutes: 30
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
-      - name: Install uv
-        uses: astral-sh/setup-uv@v8.1.0
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.13'
-      - name: Install package
-        run: uv pip install -e .[dev] --system
-      - name: Install policyengine
-        run: uv pip install policyengine --system
+      # The environment the tests use: uv.lock with the dev extra (which
+      # includes jupyter-book), so a new release cannot change the build.
+      - name: Install the locked environment
+        uses: ./.github/actions/test-environment
       - name: Test documentation builds
         run: make documentation
-  # The YAML tests, the Python tests on five runners, and the check that
+  # The YAML tests, the Python tests on six runners, and the check that
   # every test ran once and passed, in the locked environment. As one job
   # they took 59 minutes on 10 October 2026 (run 38075384588), and runs were
   # cancelled at a 60-minute limit (issues #2099 and #2257). The release

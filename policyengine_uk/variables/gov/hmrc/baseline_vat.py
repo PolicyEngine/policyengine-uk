@@ -3,7 +3,7 @@ from policyengine_uk.utils.vat import vat_grossing_factor
 
 
 class baseline_vat(Variable):
-    label = "baseline VAT"
+    label = "baseline VAT excluding private school fees"
     entity = Household
     definition_period = YEAR
     value_type = float
@@ -18,6 +18,16 @@ class baseline_vat(Variable):
             + reduced_rate_consumption * p.hmrc.vat.reduced_rate
         )
         # Survey consumption under-records spending, and households bear only
-        # part of VAT liabilities, so household VAT is grossed up to receipts.
-        coverage = vat_grossing_factor(p.simulation)
-        return raw_vat / coverage
+        # part of VAT liabilities, so household VAT on recorded consumption is
+        # grossed up to receipts net of VAT on energy bills.
+        gross_vat = raw_vat / vat_grossing_factor(p.simulation)
+        # vat's allocation of private school fees' share of receipts. The
+        # share is read from this simulation's parameters, as
+        # baseline_private_school_vat reads its assumptions: the baseline tree
+        # reads 1 January, before each fiscal year's value takes effect.
+        share = parameters(period).gov.simulation.vat.private_school_share_of_receipts
+        # VAT on the household's own energy bills is not grossed up and bears
+        # no school fees: the bills are calibrated to national energy use and
+        # households bear that VAT in full.
+        energy_vat = household("baseline_domestic_energy_vat", period)
+        return gross_vat * (1 - share) + energy_vat

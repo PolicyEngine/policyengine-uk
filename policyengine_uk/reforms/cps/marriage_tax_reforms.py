@@ -212,14 +212,18 @@ def create_marriage_tax_reform(parameters, period):
     cps = parameters(period).gov.contrib.cps.marriage_tax_reforms
     remove_income_condition = cps.expanded_ma.remove_income_condition
     rate = cps.expanded_ma.ma_rate
-    original_rate = parameters(
-        period
-    ).gov.hmrc.income_tax.allowances.marriage_allowance.max
+    # The expanded Marriage Allowance switches on from its own parameters
+    # only: its switch, or a rate other than its own unreformed value.
+    # Comparing the rate with the statutory rate instead would switch it on
+    # whenever the statutory rate changed, replacing that rate with the
+    # reform's and opening the allowance to higher-rate taxpayers (#2551).
+    unreformed = parameters.baseline.gov.contrib.cps.marriage_tax_reforms
+    default_rate = unreformed.expanded_ma.ma_rate(period)
     ma_max_child_age = cps.expanded_ma.max_child_age
     neutralise_income_tax = cps.marriage_neutral_it.neutralise_income_tax
     it_max_child_age = cps.marriage_neutral_it.max_child_age
 
-    if remove_income_condition or rate != original_rate:
+    if remove_income_condition or rate != default_rate:
         ma_reform = create_expanded_ma_reform(
             max_child_age=ma_max_child_age if ma_max_child_age > 0 else None,
             remove_income_condition=bool(remove_income_condition),

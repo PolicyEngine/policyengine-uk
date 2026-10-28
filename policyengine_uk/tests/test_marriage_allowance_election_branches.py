@@ -19,6 +19,7 @@ generated population of couples and singles:
 """
 
 import numpy as np
+import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
@@ -245,10 +246,14 @@ def test_no_branch_is_left_after_any_year():
     assert all(elected), elected
 
 
-def test_final_tax_input_does_not_change_the_election_or_capital_gains_tax():
-    # A final-tax override is an accounting perturbation, not an economic
-    # change. Private election counterfactuals must still compare formula tax,
-    # while the caller's supplied tax remains authoritative in the real sim.
+@pytest.mark.parametrize(
+    "tax", ["income_tax", "income_tax_before_winter_fuel_payment_charge"]
+)
+def test_final_tax_input_does_not_change_the_election_or_capital_gains_tax(tax):
+    # A tax override is an accounting perturbation, not an economic change.
+    # Private election counterfactuals must still compare formula tax before
+    # the winter fuel payment charge, while the caller's supplied tax remains
+    # authoritative in the real sim.
     units = [
         dict(
             adults=[
@@ -267,13 +272,11 @@ def test_final_tax_input_does_not_change_the_election_or_capital_gains_tax():
     variables = [ELECTION, "personal_allowance", "capital_gains_tax"]
     before = {name: simulation.calculate(name, year).copy() for name in variables}
     assert not before[ELECTION].any()
-    supplied_tax = simulation.calculate("income_tax", year).copy() + 1
+    supplied_tax = simulation.calculate(tax, year).copy() + 1
     branches = set(simulation.branches)
     assert discard_formula_results(simulation)
-    simulation.set_input("income_tax", year, supplied_tax)
+    simulation.set_input(tax, year, supplied_tax)
     after = calculate(simulation, year, variables)
-    assert_identical(before, after, "only final income tax was overridden")
-    np.testing.assert_array_equal(
-        simulation.calculate("income_tax", year), supplied_tax
-    )
+    assert_identical(before, after, f"only {tax} was overridden")
+    np.testing.assert_array_equal(simulation.calculate(tax, year), supplied_tax)
     assert set(simulation.branches) == branches

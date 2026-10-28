@@ -130,8 +130,9 @@ def test_the_raw_reported_total_is_read_through_the_reports():
     award is the raw total of their own reports. Here the partner reports
     £200 and an adult outside the couple £3,000, with capital of £10,000.
     Tariff income of ceil(4,000 / 250) x £1 x 52 = £832 a year extinguishes
-    the partner's award on the formula's reading, so the formula's £2,368
-    (£3,200 - £832) does not bar the claim. The raw total, £3,200, pays the
+    the partner's award on the formula's reading, so the formula's £2,168
+    (max(0, £200 - £832) + max(0, £3,000 - £832)) does not bar the claim.
+    The raw total, £3,200, pays the
     partner's £200 unscreened, so it does. The excluded adult's £3,000 is
     theirs on either reading."""
     members = ["carer", "partner", "other_adult"]
@@ -165,7 +166,7 @@ def test_the_raw_reported_total_is_read_through_the_reports():
             "households": {"home": {"members": members}},
         }
     )
-    assert simulation.calculate("jsa_income", YEAR)[0] == 2_368
+    assert simulation.calculate("jsa_income", YEAR)[0] == 2_168
     assert eligible(simulation)
     simulation.set_input("jsa_income", YEAR, [3_200])
     assert not eligible(simulation)
@@ -383,12 +384,12 @@ def test_an_entered_amount_within_half_a_penny_of_zero_is_no_award():
 
 
 def test_the_couples_residual_is_no_award_beside_another_members_report():
-    # An excluded adult's £3,000 makes jsa_income a real award, but on the
+    # An excluded adult's £3,000 less £52 tariff makes jsa_income a real award, but on the
     # couple's own reports (£10.01 + £41.99 against £52 of tariff income) the
     # award is only a float residual, so it does not bar the claim. A real
     # penny of award (£52.01 against £52) still does.
     residual = reporting_family(10.01, 41.99, other_adults=[3_000])
-    assert residual.calculate("jsa_income", YEAR)[0] > 2_999
+    assert residual.calculate("jsa_income", YEAR)[0] > 2_947
     assert eligible(residual)
     penny = reporting_family(52.01)
     assert 0.005 < penny.calculate("jsa_income", YEAR)[0] < 0.015
@@ -396,7 +397,7 @@ def test_the_couples_residual_is_no_award_beside_another_members_report():
 
 
 def test_the_couples_award_tolerance_is_half_a_penny():
-    # Beside an excluded adult's £3,000, jsa_income is a real award that the
+    # Beside an excluded adult's net £2,948, jsa_income is a real award that the
     # reports explain, so the couple's own award decides. £52.004 against
     # £52 of tariff income leaves them £0.004, which is no award; £52.006
     # leaves £0.006, which bars the claim.
@@ -404,7 +405,7 @@ def test_the_couples_award_tolerance_is_half_a_penny():
         return reporting_family(report, other_adults=[3_000])
 
     below, above = couple_award(52.004), couple_award(52.006)
-    assert below.calculate("jsa_income", YEAR)[0] > 2_999
+    assert below.calculate("jsa_income", YEAR)[0] > 2_947
     assert eligible(below)
-    assert above.calculate("jsa_income", YEAR)[0] > 2_999
+    assert above.calculate("jsa_income", YEAR)[0] > 2_947
     assert not eligible(above)

@@ -1,0 +1,15 @@
+description: The UK levies Lottery Duty at this rate on chargeable ticket consideration, including deemed ticket price. The initial entry marks this model's 2024/25 coverage, rather than legislative commencement.
+values:
+  '2024-04-06': 0.12
+metadata:
+  unit: /1
+  period: year
+  label: lottery duty rate
+  reference:
+  - title: Finance Act 1993, section 25, as at 6 April 2024
+    href: https://www.legislation.gov.uk/ukpga/1993/34/section/25/2024-04-06
+  - title: Finance Act 1993, section 24, as at 6 April 2024
+    href: https://www.legislation.gov.uk/ukpga/1993/34/section/24/2024-04-06
+  - title: HMRC Lottery Duty Notice 458
+    href: https://www.gov.uk/guidance/lottery-duty-excise-notice-458
+  preserve_calendar_dates: true

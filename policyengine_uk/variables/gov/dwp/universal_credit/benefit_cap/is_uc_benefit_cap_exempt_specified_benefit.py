@@ -9,7 +9,9 @@ from policyengine_uk.utils.uc_work_related_requirements import (
 from policyengine_uk.variables.gov.dwp._legacy_award_payee import (
     is_payee_of_couple_award,
 )
-from policyengine_uk.variables.gov.dwp.esa_income import income_related_esa_award
+from policyengine_uk.variables.gov.dwp.esa_income import (
+    income_related_esa_award_on_reports,
+)
 from policyengine_uk.variables.gov.dwp.universal_credit.carer_element.uc_carer_element import (
     uc_carer_element,
 )
@@ -144,7 +146,7 @@ class is_uc_benefit_cap_exempt_specified_benefit(Variable):
             period,
             "esa_income",
             "esa_income_reported",
-            income_related_esa_award,
+            income_related_esa_award_on_reports,
             couple,
         )
         receiving_income_related_esa = benunit.project(
