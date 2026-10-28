@@ -10,9 +10,11 @@ class cash_isa_subscription_limit(Variable):
         "The most the person can subscribe to cash ISAs in the tax year: the "
         "cash ISA subscription limit while they are under the full limit age "
         "at the end of the year, and otherwise the annual subscription limit, "
-        "which also caps the cash limit. The age at the end of the year (5 "
-        "April) comes from the date of birth, so a person aged 64 on 6 October "
-        "whose 65th birthday falls by 5 April has the annual limit."
+        "which also caps the cash limit. Current law sets no cash limit of its "
+        "own, so this is the annual limit unless a reform sets one. The age at "
+        "the end of the year (5 April) comes from the date of birth, so a "
+        "person aged 64 on 6 October whose 65th birthday falls by 5 April has "
+        "the annual limit."
     )
     definition_period = YEAR
     unit = GBP

@@ -11,11 +11,10 @@ class cash_isa_subscriptions(Variable):
         "ISAs, interest and growth, and replacements of cash withdrawn from a "
         "flexible ISA earlier in the same tax year, which do not count towards "
         "the limits. The model compares this amount with the limits in force "
-        "and does not cap it: data collected under a higher limit, such as "
-        "before the 6 April 2027 cash limit, can exceed a later limit, and "
-        "cash_isa_subscriptions_above_limit reports the part that cannot be "
-        "paid in. Amounts are not uprated, as the limits are fixed in cash "
-        "terms."
+        "and does not cap it: under a lower limit, such as a reform that "
+        "brings in a £12,000 cash limit, cash_isa_subscriptions_above_limit "
+        "reports the part that cannot be paid in. Amounts are not uprated, as "
+        "the limits are fixed in cash terms."
     )
     definition_period = YEAR
     unit = GBP

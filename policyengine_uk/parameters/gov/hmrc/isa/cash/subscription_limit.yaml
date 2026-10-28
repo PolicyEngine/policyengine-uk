@@ -1,17 +1,22 @@
 description: >
   Limit on a person's subscriptions in the tax year to cash ISAs while they are
   under the cash ISA full limit age at the end of the year. Cash has had no
-  limit of its own since 1 July 2014, so until 6 April 2027 cash subscriptions
-  count only towards the annual subscription limit.
+  limit of its own since 1 July 2014, so cash subscriptions count only towards
+  the annual subscription limit. SI 2026/1018 regulation 6 sets £12,000 from 6
+  April 2027 for people aged 64 or under, but Budget 2026 retains the £20,000
+  limit for all savers, with secondary legislation to be laid in November
+  2026, so cash keeps no limit of its own here. Set this to 12,000 to model the
+  lower limit.
 values:
   2017-04-06: .inf
-  2027-04-06: 12000
 metadata:
   label: Cash ISA subscription limit
   period: year
   unit: currency-GBP
   reference:
-    - title: Individual Savings Account Regulations 1998 regulation 4ZA(1ZA)
+    - title: Individual Savings Account Regulations 1998 regulation 4ZA
       href: https://www.legislation.gov.uk/uksi/1998/1870/regulation/4ZA
     - title: Individual Savings Account (Amendment) (No. 2) Regulations 2026 regulations 1 and 6
       href: https://www.legislation.gov.uk/uksi/2026/1018/regulation/6/made
+    - title: Budget 2026, overview of tax legislation and rates, paragraph 2.5
+      href: https://www.gov.uk/government/publications/budget-2026-overview-of-tax-legislation-and-rates-ootlar/budget-2026-overview-of-tax-legislation-and-rates-ootlar

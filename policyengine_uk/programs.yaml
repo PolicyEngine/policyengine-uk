@@ -38,7 +38,7 @@ programs:
     coverage: UK
     variable: isa_subscriptions_above_limit
     verified_start_year: 2017
-    notes: The annual limit (gov.hmrc.isa.annual_subscription_limit) and, from 6 April 2027, the cash limit for people under 65 at the end of the tax year (gov.hmrc.isa.cash). Reports subscriptions above each limit from per-person subscription inputs. Where cash above the cash limit goes is an opt-in assumption (gov.contrib.behavioral_responses.cash_isa_excess), off by default. Innovative finance and Junior ISAs are not modelled.
+    notes: The annual limit (gov.hmrc.isa.annual_subscription_limit), and a cash limit for people under an age at the end of the tax year (gov.hmrc.isa.cash) that current law leaves unset, as Budget 2026 retains £20,000 for cash; a reform can restore SI 2026/1018's £12,000 for under-65s. Reports subscriptions above each limit from per-person subscription inputs, not where they go. Innovative finance and Junior ISAs are not modelled.
 
   - id: income_tax
     name: Income tax
