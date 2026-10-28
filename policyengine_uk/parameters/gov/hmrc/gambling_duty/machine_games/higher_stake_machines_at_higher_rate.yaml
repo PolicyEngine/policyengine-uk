@@ -1,0 +1,22 @@
+description: Whether the UK charges Machine Games Duty at the higher rate, instead of the standard rate, on net takings from standard-rate machines with a maximum charge to play above GBP 1 or a maximum prize above GBP 100.
+values:
+  2013-02-01: false
+  2027-04-01:
+    value: true
+    reference:
+      - title: Budget 2026 Overview of Tax Legislation and Rates, paragraph 1.50
+        href: https://www.gov.uk/government/publications/budget-2026-overview-of-tax-legislation-and-rates-ootlar/budget-2026-overview-of-tax-legislation-and-rates-ootlar
+      - title: Budget 2026 policy costings, Machine Games Duty higher stake machines, page 67
+        href: https://assets.publishing.service.gov.uk/media/6ae1883fe4367e5c8b0467df/AB26_Policy_Costing.pdf#page=67
+metadata:
+  unit: bool
+  period: year
+  label: machine games duty higher rate on higher-stake machines
+  reference:
+    - title: Finance Act 2012, Schedule 24, paragraph 5
+      href: https://www.legislation.gov.uk/ukpga/2012/14/schedule/24/paragraph/5
+    - title: Finance Act 2012, Schedule 24, paragraph 6
+      href: https://www.legislation.gov.uk/ukpga/2012/14/schedule/24/paragraph/6
+    - title: Budget 2026 Overview of Tax Legislation and Rates, paragraph 1.50
+      href: https://www.gov.uk/government/publications/budget-2026-overview-of-tax-legislation-and-rates-ootlar/budget-2026-overview-of-tax-legislation-and-rates-ootlar
+  preserve_calendar_dates: true
