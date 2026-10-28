@@ -261,7 +261,11 @@ A bare year Y represents the fiscal year from 6 April Y to 5 April Y+1.
 Parameters retain their legal effective dates; the annual model samples
 rates at 30 April. Fiscal 2020 therefore uses the temporary 20% withdrawal
 charge and fiscal 2021 uses 25%. The annual model cannot distinguish a
-withdrawal in late March 2020 within fiscal 2019. Annual ages and purchase
+withdrawal in late March 2020 within fiscal 2019. Likewise, the 20% charge for
+a purchase above the price cap has effect for withdrawals from 29 October
+2026, but fiscal 2026 samples 30 April 2026. So a 2026–27 run charges 25% on
+such a withdrawal made from 29 October 2026 to 5 April 2027 (159 of the
+year's 365 days), and the 20% applies from fiscal 2027. Annual ages and purchase
 conditions similarly represent the relevant transactions at one annual
 status. Multiple transactions with different conditions require externally
 prepared qualifying amounts.

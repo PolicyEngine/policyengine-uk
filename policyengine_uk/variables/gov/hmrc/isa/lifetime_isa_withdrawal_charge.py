@@ -5,7 +5,7 @@ class lifetime_isa_withdrawal_charge(Variable):
     value_type = float
     entity = Person
     label = "Lifetime ISA withdrawal charge"
-    documentation = "Charge deducted from non-exempt gross Lifetime ISA withdrawals. From 29 October 2026, the part paid towards a first home that meets every first-time purchase condition except the property price cap pays the reduced above-cap charge (Schedule paragraph 6A); the annual model applies it from fiscal 2027-28. The model records this capital payment as government revenue, outside household current-income taxes; a supplied balance is not automatically updated. Annual rates use the model's fiscal-year parameter sampling."
+    documentation = "Charge deducted from non-exempt gross Lifetime ISA withdrawals. From 29 October 2026, the part paid towards a first home that meets every first-time purchase condition except the property price cap pays the reduced above-cap charge (Schedule paragraph 6A). The annual model reads parameters on 30 April, so it applies the reduced charge from fiscal 2027-28: a 2026-27 run charges such a withdrawal made from 29 October 2026 to 5 April 2027 at the full withdrawal charge, 25% rather than 20%. The model records this capital payment as government revenue, outside household current-income taxes; a supplied balance is not automatically updated. Annual rates use the model's fiscal-year parameter sampling."
     definition_period = YEAR
     unit = GBP
     quantity_type = FLOW
