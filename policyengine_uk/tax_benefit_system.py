@@ -54,6 +54,9 @@ from policyengine_uk.parameters.gov.economic_assumptions.create_earnings_upratin
 from policyengine_uk.parameters.gov.economic_assumptions.create_economic_assumption_indices import (
     create_economic_assumption_indices,
 )
+from policyengine_uk.parameters.gov.economic_assumptions.create_energy_price_indices import (
+    add_energy_price_indices,
+)
 from policyengine_uk.parameters.gov.economic_assumptions.create_statutory_uprating_inputs import (
     add_statutory_uprating_inputs,
 )
@@ -138,6 +141,7 @@ GENERATION_STEPS = (
     add_triple_lock,
     add_september_cpi_uprating,
     create_economic_assumption_indices,
+    add_energy_price_indices,
     add_threshold_indexation,
     add_uc_standard_allowance_uprating,
     add_uc_health_element_uprating,

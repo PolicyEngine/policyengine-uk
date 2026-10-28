@@ -1,0 +1,1 @@
+Project household electricity and gas spending with retail energy price indices instead of headline CPI. The indices come from the ONS CPI electricity, gas and solid fuel indices to the latest month and the OBR's utilities inflation forecast after it, with the electricity VAT cut and its extension taken out, so a VAT reform no longer moves projected spending.

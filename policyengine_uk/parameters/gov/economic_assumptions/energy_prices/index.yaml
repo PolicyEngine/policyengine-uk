@@ -1,0 +1,10 @@
+metadata:
+  # The ONS series are monthly, the OBR forecast and the quarterly levels
+  # quarterly, and the annual indices one value per year dated 1 January,
+  # which each reads at its own dates; none is annualised to fiscal years.
+  # A bare-year reform key names the calendar year
+  # (policyengine_uk.utils.dated_reforms). Leaves only see node metadata that
+  # is propagated.
+  preserve_calendar_dates: true
+  calendar_year_series: true
+  propagate_metadata_to_children: true
