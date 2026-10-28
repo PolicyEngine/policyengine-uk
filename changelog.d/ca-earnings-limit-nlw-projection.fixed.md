@@ -1,0 +1,1 @@
+Project the Carer's Allowance earnings limit after its last legislated amount as 16 hours at the national living wage, rounded up to the next pound, as the Government sets it from April 2025, instead of holding £204 in every later year.
