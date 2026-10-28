@@ -303,8 +303,13 @@ obr:
       # behind that forecast: 52.95p to 30 June 2027, 60.59p from 1 July
       # 2027, then raised each 1 April by Q1 RPI growth (OBR economy
       # Table 1.7), the convention that gives 60.59p. That path is policy,
-      # not the current law in gov.hmrc.fuel_duty.petrol_and_diesel. The
-      # derivation is policyengine-uk-data's sources/road_fuel_volume.py.
+      # not the current law in gov.hmrc.fuel_duty.petrol_and_diesel, which
+      # also uses another RPI convention: calculate_fuel_duty_rates.py applies
+      # the previous calendar year's RPI growth (60.03p from April 2027), so
+      # the model's rates differ from this path by up to 0.6p a litre in
+      # 2027-28 and by 0.3p or less from 2028-29. Aligning the two belongs
+      # with the current-law schedule (#2715). The derivation is
+      # policyengine-uk-data's sources/road_fuel_volume.py.
       2026-01-01: -0.02315665811165113
       2027-01-01: -0.030554808261277322
       2028-01-01: -0.03089248062672023
@@ -1150,15 +1155,16 @@ ons:
   household_interest_income:
     description: Household interest income year-on-year growth from ONS National Accounts D.41g.
     values:
-      # Outturn from ONS HAXV - Total household interest received (D.41)
-      # https://www.ons.gov.uk/economy/grossdomesticproductgdp/timeseries/haxv/ukea
-      2020-01-01: 0.000
-      2021-01-01: 0.225  # 19.6/16.0 - 1
-      2022-01-01: 1.210  # 43.3/19.6 - 1
-      2023-01-01: 0.987  # 86.0/43.3 - 1
-      2024-01-01: 0.142  # 98.2/86.0 - 1
-      # Forecast: use OBR non-labour income growth as proxy (Table 1.12)
-      2025-01-01: 0.0292
+      # Outturn (2020-2025), ONS HAXV, total household interest received
+      # (D.41), £m, 30 September 2026 release
+      2020-01-01: -0.3025  # 15,988 / 22,923 - 1
+      2021-01-01: 0.2238  # 19,566 / 15,988 - 1
+      2022-01-01: 1.2121  # 43,282 / 19,566 - 1
+      2023-01-01: 0.9891  # 86,092 / 43,282 - 1
+      2024-01-01: 0.1405  # 98,189 / 86,092 - 1
+      2025-01-01: -0.0276  # 95,477 / 98,189 - 1
+      # Forecast (2026-2031): OBR non-labour income growth as a proxy
+      # (October 2026 EFO, Table 1.12)
       2026-01-01: 0.0302
       2027-01-01: 0.0468
       2028-01-01: 0.0419
@@ -1169,15 +1175,16 @@ ons:
       unit: /1
       label: Household interest income growth
       reference:
-        - title: ONS National Accounts D.41g - Households interest received (HAXV series)
+        - title: ONS, Households (S.14) interest (D.41) resources, current prices, £m, NSA (HAXV), UK Economic Accounts, 30 September 2026
           href: https://www.ons.gov.uk/economy/grossdomesticproductgdp/timeseries/haxv/ukea
-        - title: OBR EFO October 2026 - Non-labour income growth used as proxy for 2025+ (Table 1.12)
+        - title: OBR EFO October 2026 - Non-labour income growth used as proxy for 2026+ (Table 1.12)
           href: https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/
   private_rental_prices:
     # Historical values are calendar-year averages from ONS PIPR. Forecast
-    # values back out private-rent growth from the OBR aggregate rent forecast
-    # after applying social-rent growth, because no public region-specific
-    # private-rent forecast is available.
+    # values (2026-2031) are the OBR's UK private rents forecast, "Private
+    # rentals for housing" (ONS KYHJ) in October 2026 economy Table 1.7,
+    # rounded to 4 decimals. No public region-specific private-rent forecast
+    # is available, so every region takes the UK growth.
     UNITED_KINGDOM:
       description: Private rental prices year-on-year growth in United Kingdom.
       values:
@@ -1185,12 +1192,12 @@ ons:
         2023-01-01: 0.073824
         2024-01-01: 0.087127
         2025-01-01: 0.063279
-        2026-01-01: 0.026468085
-        2027-01-01: 0.019910638
-        2028-01-01: 0.011795745
-        2029-01-01: 0.022697872
-        2030-01-01: 0.019642553
-        2031-01-01: 0.025319149
+        2026-01-01: 0.0341
+        2027-01-01: 0.0265
+        2028-01-01: 0.0198
+        2029-01-01: 0.0208
+        2030-01-01: 0.0235
+        2031-01-01: 0.0260
       metadata:
         unit: /1
         label: United kingdom private rental prices growth
@@ -1206,12 +1213,12 @@ ons:
         2023-01-01: 0.071723
         2024-01-01: 0.087245
         2025-01-01: 0.063996
-        2026-01-01: 0.026468085
-        2027-01-01: 0.019910638
-        2028-01-01: 0.011795745
-        2029-01-01: 0.022697872
-        2030-01-01: 0.019642553
-        2031-01-01: 0.025319149
+        2026-01-01: 0.0341
+        2027-01-01: 0.0265
+        2028-01-01: 0.0198
+        2029-01-01: 0.0208
+        2030-01-01: 0.0235
+        2031-01-01: 0.0260
       metadata:
         unit: /1
         label: England private rental prices growth
@@ -1227,12 +1234,12 @@ ons:
         2023-01-01: 0.083841
         2024-01-01: 0.084642
         2025-01-01: 0.077081
-        2026-01-01: 0.026468085
-        2027-01-01: 0.019910638
-        2028-01-01: 0.011795745
-        2029-01-01: 0.022697872
-        2030-01-01: 0.019642553
-        2031-01-01: 0.025319149
+        2026-01-01: 0.0341
+        2027-01-01: 0.0265
+        2028-01-01: 0.0198
+        2029-01-01: 0.0208
+        2030-01-01: 0.0235
+        2031-01-01: 0.0260
       metadata:
         unit: /1
         label: Wales private rental prices growth
@@ -1248,12 +1255,12 @@ ons:
         2023-01-01: 0.100690
         2024-01-01: 0.084690
         2025-01-01: 0.042929
-        2026-01-01: 0.026468085
-        2027-01-01: 0.019910638
-        2028-01-01: 0.011795745
-        2029-01-01: 0.022697872
-        2030-01-01: 0.019642553
-        2031-01-01: 0.025319149
+        2026-01-01: 0.0341
+        2027-01-01: 0.0265
+        2028-01-01: 0.0198
+        2029-01-01: 0.0208
+        2030-01-01: 0.0235
+        2031-01-01: 0.0260
       metadata:
         unit: /1
         label: Scotland private rental prices growth
@@ -1269,12 +1276,12 @@ ons:
         2023-01-01: 0.087019
         2024-01-01: 0.092217
         2025-01-01: 0.068702
-        2026-01-01: 0.026468085
-        2027-01-01: 0.019910638
-        2028-01-01: 0.011795745
-        2029-01-01: 0.022697872
-        2030-01-01: 0.019642553
-        2031-01-01: 0.025319149
+        2026-01-01: 0.0341
+        2027-01-01: 0.0265
+        2028-01-01: 0.0198
+        2029-01-01: 0.0208
+        2030-01-01: 0.0235
+        2031-01-01: 0.0260
       metadata:
         unit: /1
         label: Northern Ireland private rental prices growth
@@ -1290,12 +1297,12 @@ ons:
         2023-01-01: 0.054987
         2024-01-01: 0.067069
         2025-01-01: 0.090155
-        2026-01-01: 0.026468085
-        2027-01-01: 0.019910638
-        2028-01-01: 0.011795745
-        2029-01-01: 0.022697872
-        2030-01-01: 0.019642553
-        2031-01-01: 0.025319149
+        2026-01-01: 0.0341
+        2027-01-01: 0.0265
+        2028-01-01: 0.0198
+        2029-01-01: 0.0208
+        2030-01-01: 0.0235
+        2031-01-01: 0.0260
       metadata:
         unit: /1
         label: North east private rental prices growth
@@ -1311,12 +1318,12 @@ ons:
         2023-01-01: 0.075098
         2024-01-01: 0.092231
         2025-01-01: 0.077692
-        2026-01-01: 0.026468085
-        2027-01-01: 0.019910638
-        2028-01-01: 0.011795745
-        2029-01-01: 0.022697872
-        2030-01-01: 0.019642553
-        2031-01-01: 0.025319149
+        2026-01-01: 0.0341
+        2027-01-01: 0.0265
+        2028-01-01: 0.0198
+        2029-01-01: 0.0208
+        2030-01-01: 0.0235
+        2031-01-01: 0.0260
       metadata:
         unit: /1
         label: North west private rental prices growth
@@ -1334,12 +1341,12 @@ ons:
         2023-01-01: 0.067502
         2024-01-01: 0.069094
         2025-01-01: 0.040862
-        2026-01-01: 0.026468085
-        2027-01-01: 0.019910638
-        2028-01-01: 0.011795745
-        2029-01-01: 0.022697872
-        2030-01-01: 0.019642553
-        2031-01-01: 0.025319149
+        2026-01-01: 0.0341
+        2027-01-01: 0.0265
+        2028-01-01: 0.0198
+        2029-01-01: 0.0208
+        2030-01-01: 0.0235
+        2031-01-01: 0.0260
       metadata:
         unit: /1
         label: Yorkshire and the humber private rental prices growth
@@ -1355,12 +1362,12 @@ ons:
         2023-01-01: 0.060960
         2024-01-01: 0.086271
         2025-01-01: 0.069478
-        2026-01-01: 0.026468085
-        2027-01-01: 0.019910638
-        2028-01-01: 0.011795745
-        2029-01-01: 0.022697872
-        2030-01-01: 0.019642553
-        2031-01-01: 0.025319149
+        2026-01-01: 0.0341
+        2027-01-01: 0.0265
+        2028-01-01: 0.0198
+        2029-01-01: 0.0208
+        2030-01-01: 0.0235
+        2031-01-01: 0.0260
       metadata:
         unit: /1
         label: East midlands private rental prices growth
@@ -1376,12 +1383,12 @@ ons:
         2023-01-01: 0.066340
         2024-01-01: 0.087831
         2025-01-01: 0.061272
-        2026-01-01: 0.026468085
-        2027-01-01: 0.019910638
-        2028-01-01: 0.011795745
-        2029-01-01: 0.022697872
-        2030-01-01: 0.019642553
-        2031-01-01: 0.025319149
+        2026-01-01: 0.0341
+        2027-01-01: 0.0265
+        2028-01-01: 0.0198
+        2029-01-01: 0.0208
+        2030-01-01: 0.0235
+        2031-01-01: 0.0260
       metadata:
         unit: /1
         label: West midlands private rental prices growth
@@ -1397,12 +1404,12 @@ ons:
         2023-01-01: 0.052949
         2024-01-01: 0.073996
         2025-01-01: 0.071305
-        2026-01-01: 0.026468085
-        2027-01-01: 0.019910638
-        2028-01-01: 0.011795745
-        2029-01-01: 0.022697872
-        2030-01-01: 0.019642553
-        2031-01-01: 0.025319149
+        2026-01-01: 0.0341
+        2027-01-01: 0.0265
+        2028-01-01: 0.0198
+        2029-01-01: 0.0208
+        2030-01-01: 0.0235
+        2031-01-01: 0.0260
       metadata:
         unit: /1
         label: East of England private rental prices growth
@@ -1418,12 +1425,12 @@ ons:
         2023-01-01: 0.084473
         2024-01-01: 0.103216
         2025-01-01: 0.066484
-        2026-01-01: 0.026468085
-        2027-01-01: 0.019910638
-        2028-01-01: 0.011795745
-        2029-01-01: 0.022697872
-        2030-01-01: 0.019642553
-        2031-01-01: 0.025319149
+        2026-01-01: 0.0341
+        2027-01-01: 0.0265
+        2028-01-01: 0.0198
+        2029-01-01: 0.0208
+        2030-01-01: 0.0235
+        2031-01-01: 0.0260
       metadata:
         unit: /1
         label: London private rental prices growth
@@ -1439,12 +1446,12 @@ ons:
         2023-01-01: 0.065655
         2024-01-01: 0.079285
         2025-01-01: 0.057820
-        2026-01-01: 0.026468085
-        2027-01-01: 0.019910638
-        2028-01-01: 0.011795745
-        2029-01-01: 0.022697872
-        2030-01-01: 0.019642553
-        2031-01-01: 0.025319149
+        2026-01-01: 0.0341
+        2027-01-01: 0.0265
+        2028-01-01: 0.0198
+        2029-01-01: 0.0208
+        2030-01-01: 0.0235
+        2031-01-01: 0.0260
       metadata:
         unit: /1
         label: South east private rental prices growth
@@ -1460,12 +1467,12 @@ ons:
         2023-01-01: 0.067635
         2024-01-01: 0.068267
         2025-01-01: 0.053907
-        2026-01-01: 0.026468085
-        2027-01-01: 0.019910638
-        2028-01-01: 0.011795745
-        2029-01-01: 0.022697872
-        2030-01-01: 0.019642553
-        2031-01-01: 0.025319149
+        2026-01-01: 0.0341
+        2027-01-01: 0.0265
+        2028-01-01: 0.0198
+        2029-01-01: 0.0208
+        2030-01-01: 0.0235
+        2031-01-01: 0.0260
       metadata:
         unit: /1
         label: South west private rental prices growth
@@ -1578,8 +1585,10 @@ finance_ni:
     # Neither OBR March 2026 line is large enough to cover the whole bill
     # (each is about half of LPS's £889.5m paid in 2024-25), and OBR labels
     # neither as regional or district; the attribution here is inferred.
-    # Expenditure Table 4.1 holds "NI domestic rates" at £0.494bn in every
-    # year to 2030-31 inside its council tax total, and ONS classes district
+    # March 2026 Expenditure Table 4.1 holds "NI domestic rates" at £0.494bn
+    # in every year to 2030-31 inside its council tax total (October 2026
+    # Table 5.1 grows it from £0.515bn in 2025-26 to £0.662bn in 2031-32,
+    # about 4.3% a year), and ONS classes district
     # domestic rates with council tax, so it appears to be the district
     # rates. Receipts Table 3.2 "Northern Ireland domestic rates" (in "Other
     # taxes") appears to be the regional rate: ONS classes the regional

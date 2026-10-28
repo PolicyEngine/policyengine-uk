@@ -80,9 +80,10 @@ whose published determinant ends in FY2030–31.
 CPI, CPIH, RPI, average earnings, road fuel and population run to 2073, but
 several series end with the EFO. Of those the projection uses, per-capita GDP
 and mixed income, council tax, house prices and social and private rents end
-in 2031, the October 2026 EFO's last year. Mortgage interest and Northern
-Ireland domestic rates end in 2030: the OBR stops forecasting RPI mortgage
-interest payments after 2029, before RPI changes method in February 2030.
+in 2031, the October 2026 EFO's last year. Mortgage interest ends in 2030:
+the OBR stops forecasting RPI mortgage interest payments after 2029, before
+RPI changes method in February 2030. Northern Ireland domestic rates, which
+have their own method (below), also end in 2030.
 A parameter returns its latest value after its last date, so in 2032 the
 first group holds its 2031 growth rate, and in 2031 and 2032 the second holds
 its 2030 rate. That is an extrapolation, not an OBR forecast; replace it with

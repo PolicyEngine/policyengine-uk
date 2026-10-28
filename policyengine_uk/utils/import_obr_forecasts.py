@@ -845,9 +845,10 @@ def find_receipts_line(
     ordered = sorted(levels)
     if ordered != list(range(ordered[0], ordered[-1] + 1)):
         raise ValueError(f"{where} skips a year: {ordered}")
-    # The sheet name and the contents sheet number each table too. Where the
-    # title cell disagrees, the title is the misprint: October 2026 titles
-    # sheet 4.8 "43.8 Current receipts (on a cash basis)".
+    # The sheet name and the contents sheet number each table too, so a sheet
+    # named as a table number gives the table's number, whatever its title
+    # cell says: October 2026 titles sheet 4.8 "43.8 Current receipts (on a
+    # cash basis)".
     if TABLE_NUMBER_RE.fullmatch(sheet):
         table = sheet
     return ReceiptsLine(
