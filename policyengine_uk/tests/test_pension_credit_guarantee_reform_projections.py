@@ -639,14 +639,30 @@ def test_zero_phase_in_modifier_preserves_a_reformed_own_threshold():
         )
 
 
+PENSION_TAX_ALLOWANCE = "gov.hmrc.income_tax.reliefs.pension_tax_allowance.in_effect"
+
+
 @pytest.mark.parametrize(
-    "weekly_guarantee,expected_threshold,expected_allowance,expected_step",
-    [(None, 221.585186, 272.195717, 1.01), (300, 268.368418, 318.978949, 1.38)],
+    "weekly_guarantee,pension_tax_allowance,expected_threshold,expected_allowance,expected_step",
+    [
+        # From 2027-28 the Budget 2026 Pension Tax Allowance takes the
+        # claimant out of Income Tax at the boundary, and Pension Credit
+        # counts income net of tax, so guarantee credit ends at £13,165 of
+        # private pension rather than £13,315.
+        (None, True, 221.585186, 272.195717, 1.61),
+        (None, False, 221.585186, 272.195717, 1.01),
+        (300, True, 268.368418, 318.978949, 1.38),
+    ],
 )
 def test_guarantee_credit_boundary_matches_main(
-    weekly_guarantee, expected_threshold, expected_allowance, expected_step
+    weekly_guarantee,
+    pension_tax_allowance,
+    expected_threshold,
+    expected_allowance,
+    expected_step,
 ):
-    """Frozen origin/main (6030cbc0b) cliff-probe values, including current law."""
+    """Frozen origin/main (6030cbc0b) cliff-probe values, including current law
+    without the Pension Tax Allowance."""
     year = 2028
     situation = {
         "people": {"claimant": {"age": {year: 85}}},
@@ -674,10 +690,12 @@ def test_guarantee_credit_boundary_matches_main(
             ]
         ],
     }
-    changes = {f"{GUARANTEE}.SINGLE": {"2026-01-01.2100-12-31": weekly_guarantee}}
-    simulation = Simulation(
-        situation=situation, reform=changes if weekly_guarantee is not None else None
-    )
+    changes = {}
+    if weekly_guarantee is not None:
+        changes[f"{GUARANTEE}.SINGLE"] = {"2026-01-01.2100-12-31": weekly_guarantee}
+    if not pension_tax_allowance:
+        changes[PENSION_TAX_ALLOWANCE] = {"2026-01-01.2100-12-31": False}
+    simulation = Simulation(situation=situation, reform=changes or None)
     parameters = simulation.tax_benefit_system.parameters
     assert parameters.gov.dwp.pension_credit.savings_credit.threshold.SINGLE(
         "2028-04-30"
