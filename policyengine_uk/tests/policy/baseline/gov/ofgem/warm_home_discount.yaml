@@ -291,8 +291,9 @@
         council_tax: 0
   output:
     warm_home_discount: 150
-    hbai_household_net_income: 1150
-    hbai_household_net_income_ahc: 1150
+    # Also the £100 Household Energy Payment: band D (the default) in England.
+    hbai_household_net_income: 1250
+    hbai_household_net_income_ahc: 1250
 
 - name: No rebate in HBAI income for a Universal Credit recipient in Scotland
   period: 2026
@@ -341,8 +342,9 @@
         council_tax: 0
   output:
     warm_home_discount: 0
-    hbai_household_net_income: 1000
-    hbai_household_net_income_ahc: 1000
+    # Only the £100 Household Energy Payment: band D (the default) in England.
+    hbai_household_net_income: 1100
+    hbai_household_net_income_ahc: 1100
 
 - name: Universal Credit recipient in England, 2030-31, the last scheme year
   period: 2030

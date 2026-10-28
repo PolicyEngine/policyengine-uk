@@ -3,7 +3,8 @@
 Budget 2026 adds 2 percentage points to the savings and property rates from
 6 April 2027 (paragraphs 6.246 and 6.247), on top of Budget 2025's 22%, 42%
 and 47%. Each test compares current law with the Budget 2025 rates for the
-same generated people, and checks identities that hold for every input:
+same generated people, and checks identities that hold for every input
+whose property allowance election is the same under both sets of rates:
 
 - rUK property tax rises by exactly 2% of taxable property income, since every
   pound of it sits in one of the three rate bands;
@@ -16,11 +17,17 @@ same generated people, and checks identities that hold for every input:
   relief was its full 22%. Where the tax left after earlier reductions
   capped it, the relief can rise by more: the higher rates leave more tax
   for it (test_capped_finance_cost_relief_can_rise_by_more_than_two_points).
+
+The election itself can change. The higher relief can make it worth giving up
+the property allowance to deduct expenses and claim the relief, and then
+property tax and the relief both move
+(test_higher_relief_can_make_giving_up_the_property_allowance_worthwhile).
+The model makes that choice only where it lowers the person's income tax.
 """
 
 import numpy as np
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -49,6 +56,10 @@ case = st.tuples(
     st.one_of(st.floats(min_value=0, max_value=20_000), amount),  # savings
 )
 cases = st.lists(case, min_size=CASES, max_size=CASES)
+# Review round 2's counterexample: the fourth person (Scotland) gives up the
+# property allowance at the higher rates.
+ELECTION_CHANGE = [(0.0, 0.0, 0.0, 0.0)] * CASES
+ELECTION_CHANGE[3] = (20_000.0, 500.0, 0.87, 0.0)
 
 
 def situation():
@@ -79,6 +90,7 @@ def sims():
 
 VARIABLES = [
     "pays_scottish_income_tax",
+    "uses_property_allowance",
     "taxable_property_income_after_allowances",
     "property_income_tax",
     "savings_income_tax",
@@ -104,6 +116,11 @@ def run(sims, drawn):
     return results
 
 
+def same_election(law, before):
+    """People whose property allowance election the rates leave unchanged."""
+    return law["uses_property_allowance"] == before["uses_property_allowance"]
+
+
 def tolerance(*values):
     """A penny plus float32 rounding on the amounts involved."""
     return 0.01 + 1e-6 * sum(np.abs(v) for v in values)
@@ -118,9 +135,10 @@ SETTINGS = settings(
 
 @SETTINGS
 @given(cases)
+@example(ELECTION_CHANGE)
 def test_ruk_property_tax_rises_by_two_points_of_taxable_property(sims, drawn):
     law, before = run(sims, drawn)
-    ruk = ~law["pays_scottish_income_tax"].astype(bool)
+    ruk = ~law["pays_scottish_income_tax"].astype(bool) & same_election(law, before)
     rise = law["property_income_tax"] - before["property_income_tax"]
     expected = RISE * law["taxable_property_income_after_allowances"]
     tol = tolerance(law["property_income_tax"], expected)
@@ -129,9 +147,10 @@ def test_ruk_property_tax_rises_by_two_points_of_taxable_property(sims, drawn):
 
 @SETTINGS
 @given(cases)
+@example(ELECTION_CHANGE)
 def test_scottish_property_tax_ignores_the_property_rates(sims, drawn):
     law, before = run(sims, drawn)
-    scottish = law["pays_scottish_income_tax"].astype(bool)
+    scottish = law["pays_scottish_income_tax"].astype(bool) & same_election(law, before)
     rise = law["property_income_tax"] - before["property_income_tax"]
     tol = tolerance(law["property_income_tax"])
     assert (np.abs(rise)[scottish] <= tol[scottish]).all()
@@ -139,6 +158,7 @@ def test_scottish_property_tax_ignores_the_property_rates(sims, drawn):
 
 @SETTINGS
 @given(cases)
+@example(ELECTION_CHANGE)
 def test_savings_tax_rises_by_two_points_in_every_country(sims, drawn):
     law, before = run(sims, drawn)
     banded = (
@@ -148,11 +168,13 @@ def test_savings_tax_rises_by_two_points_in_every_country(sims, drawn):
     )
     rise = law["savings_income_tax"] - before["savings_income_tax"]
     tol = tolerance(law["savings_income_tax"], banded)
-    assert (np.abs(rise - RISE * banded) <= tol).all()
+    same = same_election(law, before)
+    assert (np.abs(rise - RISE * banded) <= tol)[same].all()
 
 
 @SETTINGS
 @given(cases)
+@example(ELECTION_CHANGE)
 def test_finance_cost_relief_rises_by_at_most_two_points(sims, drawn):
     law, before = run(sims, drawn)
     rise = law["property_finance_cost_relief"] - before["property_finance_cost_relief"]
@@ -161,7 +183,7 @@ def test_finance_cost_relief_rises_by_at_most_two_points(sims, drawn):
     assert (rise >= -tol).all()
     full_before = 0.22 * before["property_finance_costs_relieved"]
     uncapped = np.abs(before["property_finance_cost_relief"] - full_before) <= tol
-    assert (rise <= cap + tol)[uncapped].all()
+    assert (rise <= cap + tol)[uncapped & same_election(law, before)].all()
 
 
 def test_capped_finance_cost_relief_can_rise_by_more_than_two_points():
@@ -191,3 +213,40 @@ def test_capped_finance_cost_relief_can_rise_by_more_than_two_points():
     assert float(law.calculate(relief, YEAR)[0]) == pytest.approx(240, abs=0.01)
     assert float(before.calculate("income_tax", YEAR)[0]) == pytest.approx(0, abs=0.01)
     assert float(law.calculate("income_tax", YEAR)[0]) == pytest.approx(246, abs=0.01)
+
+
+def test_higher_relief_can_make_giving_up_the_property_allowance_worthwhile():
+    """A Scottish landlord with £500 of rent and £435 of finance costs. At
+    22% the relief (£95.70) is worth less than the Scottish basic-rate tax
+    that the £1,000 property allowance saves on the rent (£100), so they use
+    the allowance. At 24% the relief is £104.40, so giving up the allowance
+    and claiming the relief lowers their income tax by £4.40, although their
+    property income tax rises from nothing to £100."""
+    situation = {
+        "people": {
+            "person": {
+                "age": {YEAR: 45},
+                "employment_income": {YEAR: 20_000},
+                "property_income": {YEAR: 500},
+                "property_finance_costs": {YEAR: 435},
+            }
+        },
+        "benunits": {"benunit": {"members": ["person"]}},
+        "households": {
+            "household": {"members": ["person"], "region": {YEAR: "SCOTLAND"}}
+        },
+    }
+    law = Simulation(situation=situation)
+    before = Simulation(situation=situation, reform=BUDGET_2025_RATES)
+
+    def value(sim, variable):
+        return float(sim.calculate(variable, YEAR)[0])
+
+    assert value(before, "uses_property_allowance") == 1
+    assert value(law, "uses_property_allowance") == 0
+    assert value(before, "property_finance_cost_relief") == 0
+    assert value(law, "property_finance_cost_relief") == pytest.approx(104.40, abs=0.01)
+    assert value(before, "property_income_tax") == 0
+    assert value(law, "property_income_tax") == pytest.approx(100, abs=0.01)
+    income_tax_change = value(law, "income_tax") - value(before, "income_tax")
+    assert income_tax_change == pytest.approx(-4.40, abs=0.01)

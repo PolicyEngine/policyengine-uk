@@ -12,7 +12,10 @@ then identities that hold for every input:
   earnings above the limit, floored at zero;
 - the taper never pays less than the cliff edge it replaces;
 - weekly earnings plus the allowance never fall as earnings rise: no cliff;
-- Scotland (Carer Support Payment) and Northern Ireland are unchanged.
+- Scotland (Carer Support Payment) and Northern Ireland are unchanged;
+- in 2030-31 the allowance paid is the weekly overlap rule over the weeks it
+  is paid, for single carers and for couples caring for the same person, where
+  the couple restriction picks a partner separately before and under the taper.
 """
 
 import numpy as np
@@ -277,6 +280,167 @@ def test_2030_31_allowance_is_the_weekly_overlap_rule_over_the_paid_weeks(
     share = np.where(above > 0, np.where(tapers, START_YEAR_SHARE, 0), 1)
     weekly = np.where(above > 0, np.maximum(0, rate - above), rate)
     expected = share * 52 * np.maximum(0, weekly - pension)
+    # Scotland pays Carer Support Payment instead.
+    england_wales_ni = regions != "SCOTLAND"
+    assert (np.abs(paid - expected)[england_wales_ni] <= 0.05).all()
+
+
+# A couple caring for the same person gets one award at a time. In 2030-31
+# the couple restriction picks a partner separately for the weeks before the
+# taper and the weeks under it.
+
+
+def couple(head_weekly_earnings, partner_weekly_earnings, weekly_state_pension):
+    def member(age, weekly_earnings):
+        return {
+            "age": {START_YEAR: age},
+            "care_hours": {START_YEAR: 40},
+            "carers_allowance_earnings": {START_YEAR: 52 * weekly_earnings},
+            "state_pension": {START_YEAR: 52 * weekly_state_pension},
+        }
+
+    return {
+        "people": {
+            "head": member(71, head_weekly_earnings),
+            "partner": member(70, partner_weekly_earnings),
+        },
+        "benunits": {
+            "benunit": {
+                "members": ["head", "partner"],
+                "would_claim_uc": {START_YEAR: False},
+            }
+        },
+        "households": {
+            "household": {
+                "members": ["head", "partner"],
+                "country": {START_YEAR: "ENGLAND"},
+            }
+        },
+    }
+
+
+def test_2030_31_couple_keeps_the_partner_award_before_the_taper():
+    # The head is £46 over the limit and gets the tapered allowance from
+    # 6 October; the partner is under it and gets the full rate until then.
+    limit, rate = ca_parameters(START_YEAR)
+    sim = Simulation(situation=couple(limit + 46, limit - 4, 40))
+    assert sim.calculate("partners_care_for_same_severely_disabled_person", START_YEAR)[
+        0
+    ]
+    head, partner = sim.calculate("carers_allowance", START_YEAR).astype(float)
+    assert head == pytest.approx(
+        START_YEAR_SHARE * max(rate - 46 - 40, 0) * 52, abs=0.05
+    )
+    assert partner == pytest.approx(
+        (1 - START_YEAR_SHARE) * max(rate - 40, 0) * 52, abs=0.05
+    )
+
+
+def test_a_couple_under_the_limit_gets_one_award_all_year():
+    limit, rate = ca_parameters(START_YEAR)
+    sim = Simulation(situation=couple(limit - 4, limit - 4, 40))
+    head, partner = sim.calculate("carers_allowance", START_YEAR).astype(float)
+    assert head == pytest.approx(max(rate - 40, 0) * 52, abs=0.05)
+    assert partner == 0
+
+
+# A supplied pre-overlap award carries no dates, so it meets the whole year's
+# overlapping benefits, whatever the earnings condition says.
+
+
+@pytest.mark.parametrize(
+    "region, supplied, pension, expected",
+    [
+        ("NORTHERN_IRELAND", 4_495.40, 6_000, 0),
+        ("NORTH_WEST", 4_495.40, 2_000, 2_495.40),
+    ],
+)
+def test_a_supplied_pre_overlap_award_meets_the_whole_years_overlapping_benefits(
+    region, supplied, pension, expected
+):
+    situation = carer(250, START_YEAR, region)
+    person = situation["people"]["carer"]
+    person["age"] = {START_YEAR: 70}
+    person["carers_allowance_pre_overlap"] = {START_YEAR: supplied}
+    person["state_pension"] = {START_YEAR: pension}
+    paid = Simulation(situation=situation).calculate("carers_allowance", START_YEAR)
+    assert float(paid[0]) == pytest.approx(expected, abs=0.05)
+
+
+couple_cases = st.lists(
+    st.tuples(
+        weekly,
+        weekly,
+        st.floats(min_value=0, max_value=150),
+        st.floats(min_value=0, max_value=150),
+    ),
+    min_size=CASES,
+    max_size=CASES,
+)
+
+
+def couples_situation():
+    people, benunits, households = {}, {}, {}
+    for i in range(CASES):
+        members = [f"head_{i}", f"partner_{i}"]
+        people[members[0]] = {"age": {START_YEAR: 71}, "care_hours": {START_YEAR: 40}}
+        people[members[1]] = {"age": {START_YEAR: 70}, "care_hours": {START_YEAR: 40}}
+        benunits[f"benunit_{i}"] = {
+            "members": members,
+            "would_claim_uc": {START_YEAR: False},
+        }
+        households[f"household_{i}"] = {
+            "members": members,
+            "region": {START_YEAR: REGIONS[i % len(REGIONS)]},
+        }
+    return {"people": people, "benunits": benunits, "households": households}
+
+
+@pytest.fixture(scope="module")
+def couples_sim():
+    return Simulation(situation=couples_situation())
+
+
+@SETTINGS
+@given(couple_cases)
+def test_2030_31_couple_allowance_is_the_weekly_rule_on_each_part_of_the_year(
+    couples_sim, drawn
+):
+    head_earnings, partner_earnings, head_pension, partner_pension = map(
+        np.array, zip(*drawn)
+    )
+    earnings = np.column_stack([head_earnings, partner_earnings]).ravel()
+    pension = np.column_stack([head_pension, partner_pension]).ravel()
+    sim = couples_sim
+    sim.set_input("carers_allowance_earnings", START_YEAR, 52 * earnings)
+    sim.set_input("state_pension", START_YEAR, 52 * pension)
+    sim.reset_calculations()
+    assert sim.calculate("is_benunit_head", START_YEAR)[::2].all()
+    assert sim.calculate(
+        "partners_care_for_same_severely_disabled_person", START_YEAR
+    ).all()
+    paid = sim.calculate("carers_allowance", START_YEAR).astype(float).reshape(-1, 2)
+    above = (
+        sim.calculate("carers_allowance_weekly_earnings_above_limit", START_YEAR)
+        .astype(float)
+        .reshape(-1, 2)
+    )
+    _, rate = ca_parameters(START_YEAR)
+    regions = np.array([REGIONS[i % len(REGIONS)] for i in range(CASES)])
+    tapers = np.isin(regions, TAPER_REGIONS)[:, None]
+    pension = pension.reshape(-1, 2)
+    expected = np.zeros_like(paid)
+    for share, under_taper in ((1 - START_YEAR_SHARE, False), (START_YEAR_SHARE, True)):
+        if under_taper:
+            weekly = np.where(
+                above > 0, np.where(tapers, np.maximum(0, rate - above), 0), rate
+            )
+        else:
+            weekly = np.where(above > 0, 0, rate)
+        # The head when eligible, otherwise the partner.
+        head_paid = weekly[:, 0] > 0
+        selected = np.column_stack([head_paid, ~head_paid])
+        expected += share * 52 * selected * np.maximum(0, weekly - pension)
     # Scotland pays Carer Support Payment instead.
     england_wales_ni = regions != "SCOTLAND"
     assert (np.abs(paid - expected)[england_wales_ni] <= 0.05).all()

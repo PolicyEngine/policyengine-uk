@@ -95,6 +95,13 @@ order breaks an age tie. This is a modelling convention, not statutory
 priority. An ineligible reported recipient or head cannot displace an eligible
 partner. The caring-hours, earnings, age and take-up conditions are unchanged.
 
+In 2030-31, the year the Budget 2026 Carer's Allowance earnings taper starts,
+the model applies this convention separately to the weeks before the taper and
+the weeks under it. A partner below the earnings limit then keeps the award
+for the weeks before the other becomes eligible. A supplied
+`carers_allowance_pre_overlap` carries no dates, so it is reduced by the whole
+year's overlapping benefits.
+
 The convention does not maximise the couple's payment. It can select a partner
 whose overlapping benefits reduce CA or CSP to zero, while suppressing a
 payment that the other otherwise-eligible partner could receive if selected.

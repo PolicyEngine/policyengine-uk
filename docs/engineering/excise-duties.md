@@ -21,8 +21,8 @@ default zero before 2024; that is an unmodelled period, not a statutory exemptio
 Gas duty covers 2022/23 onwards. SI 2026/555 removed the September 2026 step
 announced at Budget 2025 and moved the December 2026 step to 1 January 2027.
 Budget 2026 then kept the proportionate cut to 1 July 2027, when the gas rates
-return to their full levels. Rates after the last dated entry stay constant;
-the gas parameters do not forecast future inflation increases.
+return to their full levels uprated by RPI, and rise by RPI each 1 April from
+2028, as petrol and diesel do (see below).
 
 For alcohol and tobacco, a model year such as `2026` represents 6 April 2026 to
 5 April 2027. Quantities and cigarette retail prices are constant across that
@@ -154,15 +154,15 @@ matching the legislation. No universal litre-to-kilogram density is assumed.
 The existing `fuel_duty` output includes these charges. Rural fuel duty relief
 continues to apply only to petrol and diesel.
 
-From 1 July 2027 onwards, the gas parameters hold LPG at £0.3161/kg and natural
-gas at £0.2470/kg, the full rates before the 2022 cut. This implementation does
-not extrapolate gas rates using an inflation forecast. This is a modelling
-limitation: Budget 2026's costing says fuel duty rates are uprated by RPI from
-1 July 2027. The petrol and diesel rate includes that forecast uprating, so its
-rates rise while the gas rates stay flat. Later-year gas duty is therefore lower
-than it would be under the same uprating assumption. Analyses beyond June 2027
-that require consistent fuel-duty forecasts must supply an uprated gas-rate path
-explicitly.
+Budget 2026's costing says that on 1 July 2027 "fuel duty rates will increase
+by 5ppl and will be uprated in line with the Retail Prices Index (RPI)", and
+applies the cut to other fuels in proportion. So on 1 July 2027 the gas rates
+return to their full rates before the 2022 cut (LPG £0.3161/kg, natural gas
+£0.2470/kg) uprated by the same RPI growth as petrol and diesel: £0.3305/kg
+and £0.2583/kg. Each 1 April from 2028 they rise by the previous calendar
+year's RPI growth. `calculate_fuel_duty_rates.py` writes these steps to
+1 April 2031, as it does for petrol and diesel, and the parameters' uprating
+metadata continues them. That is policy, not law.
 
 Sources: [HMRC fuel duty rates 2026 to 2027](https://www.gov.uk/government/publications/fuel-duty-rates-for-2026-to-2027/fuel-duty-rates-2026-to-2027)
 (RPI uprating from 2027/28),
@@ -180,13 +180,16 @@ The main rate on unleaded petrol and diesel is keyed to each statutory change:
 cut to 1 July 2027. Its costing (page 13) says: "On 1 July 2027, fuel duty rates
 will increase by 5ppl and will be uprated in line with the Retail Prices Index
 (RPI). From 1 April 2028, fuel duty rates will be uprated annually in line with
-RPI." That is policy, not law. No official source names the RPI measure. The
-model takes the 57.95p pre-cut rate and applies 2026 RPI growth on 1 July 2027,
-then the previous calendar year's RPI growth on each 1 April from 2028, from the
-OBR forecast in `gov.economic_assumptions.yoy_growth.obr.rpi`, rounded to the
-nearest hundredth of a penny. The steps to 1 April 2031 are written out by
-`calculate_fuel_duty_rates.py`, and a test fails when they fall out of date
-with the RPI forecast. Later steps come from the parameter's uprating metadata.
+RPI." That is policy, not law. The OBR's October 2026 EFO (paragraph 3.19)
+puts the rate at 60.59p from 1 July 2027: the 57.95p pre-cut rate uprated by
+RPI growth in the year to 2027 Q1 (4.5565%, economy Table 1.7). The model
+uses that figure, and `calculate_fuel_duty_rates.py` refuses to write any
+other July rate. From 1 April 2028, each step applies the previous calendar
+year's RPI growth from the OBR forecast in
+`gov.economic_assumptions.yoy_growth.obr.rpi`, rounded to the nearest
+hundredth of a penny. The script writes the steps to 1 April 2031, and a test
+fails when they fall out of date with the RPI forecast. After a new EFO, set
+the script's July rate and RPI growth to its forecast and rerun it. Later steps come from the parameter's uprating metadata.
 The RPI index ends in 2039, so the last step is 1 April 2040.
 
 An annual reform names a model year and replaces the rate for all of it. For
