@@ -177,6 +177,17 @@ Only the bounded qualifying home-payment portion is exempt. The residual
 gross withdrawal is charged at 25%, or 20% during the temporary coronavirus
 period. These rules come from [Schedule paragraphs 4–7 and 5A](https://www.legislation.gov.uk/uksi/1998/1870/schedule).
 
+From 29 October 2026, a purchase that meets every one of these conditions
+except the £450,000 price cap pays 20% on the home payment instead of 25%
+(Schedule paragraphs 5 and 6A, inserted by
+[SI 2026/1130](https://www.legislation.gov.uk/uksi/2026/1130/made)). The rest
+of the withdrawal still pays 25%. `gov.hmrc.isa.lifetime.above_cap_purchase`
+holds the rate and its start. Parameters are read on 30 April, so the model
+applies the 20% rate from fiscal 2027–28; a withdrawal from 29 October 2026 to
+5 April 2027 pays 25% in the model. When such a purchase fails and the money
+is returned, the charge is restored to the account (paragraph 10A), so a
+returned withdrawal should be left out of the inputs.
+
 The model records `lifetime_isa_bonus` in government spending and
 `lifetime_isa_withdrawal_charge` in government revenue. Both are capital
 flows, excluded from household current benefits, taxes and net income. The
@@ -188,16 +199,20 @@ accounting convention for the model's current-income measures.
 `gov.hmrc.isa.annual_subscription_limit` is the £20,000 limit on a person's
 subscriptions in a tax year to all their ISAs other than Junior ISAs
 ([ISA Regulations regulation 4ZA(1)](https://www.legislation.gov.uk/uksi/1998/1870/regulation/4ZA)).
-From 6 April 2027, `gov.hmrc.isa.cash.subscription_limit` limits cash ISA
-subscriptions to £12,000 for a person who is 64 or under at the end of the
-tax year (regulation 4ZA(1ZA), inserted by
-[SI 2026/1018 regulation 6](https://www.legislation.gov.uk/uksi/2026/1018/regulation/6/made)).
-Cash has had no limit of its own since 1 July 2014, so before 2027 the
-parameter is infinite and cash counts only towards the annual limit.
-`gov.hmrc.isa.cash.full_limit_age` (65) is the age at which the cash limit
-stops applying. `cash_isa_subscription_limit` reads the age at the end of the
-year (5 April) from the date of birth, so a person aged 64 on 6 October whose
-65th birthday falls on or before 5 April has the annual limit for cash.
+Cash has had no limit of its own since 1 July 2014, so
+`gov.hmrc.isa.cash.subscription_limit` is infinite and cash counts only
+towards the annual limit.
+[SI 2026/1018 regulation 6](https://www.legislation.gov.uk/uksi/2026/1018/regulation/6/made)
+sets a £12,000 cash limit from 6 April 2027 for a person who is 64 or under
+at the end of the tax year, but Budget 2026 retains the £20,000 cash limit
+for all savers, with secondary legislation to be laid in November 2026
+([OOTLAR paragraph 2.5](https://www.gov.uk/government/publications/budget-2026-overview-of-tax-legislation-and-rates-ootlar/budget-2026-overview-of-tax-legislation-and-rates-ootlar)).
+Current law here therefore has no cash limit, and the £12,000 is a reform
+setting. `gov.hmrc.isa.cash.full_limit_age` (65) is the age at which a cash
+limit stops applying. `cash_isa_subscription_limit` reads the age at the end
+of the year (5 April) from the date of birth, so a person aged 64 on
+6 October whose 65th birthday falls on or before 5 April has the annual limit
+for cash.
 
 The inputs are per-person flows in the year: `cash_isa_subscriptions`,
 `stocks_and_shares_isa_subscriptions` and the existing
@@ -215,39 +230,17 @@ The model compares the inputs with the limits in force and does not cap them.
 `cash_isa_subscriptions_above_limit` is cash above the person's cash limit,
 and `isa_subscriptions_above_limit` is the total above the annual limit. Cash
 above both limits counts in both, so the two must not be added. Both are zero
-for data that met the limits in force when it was collected. Data collected
-under a higher limit, such as subscriptions from before April 2027, shows
-what a lower limit leaves out: scoring the 2027 cash limit, or its reversal,
-compares that excess under the two sets of limits.
+for data that met the limits in force when it was collected. A reform that
+lowers a limit reports what it leaves out. For example, a person aged 40
+paying £20,000 into cash ISAs in 2027–28 has £8,000 above a £12,000 cash
+limit.
 
-By default the excess changes no tax.
-`gov.contrib.behavioral_responses.cash_isa_excess` is an opt-in assumption
-about where cash above the cash limit goes:
-
-- a share into stocks-and-shares ISAs, within the room the annual limit
-  leaves, with any part it leaves no room for held in taxable savings;
-- a share into taxable savings;
-- the rest to other uses the model does not follow, such as spending,
-  pensions or repaying debt.
-
-Both shares are zero by default. Neither
-[HMRC's impact note](https://www.gov.uk/government/publications/reduction-in-the-cash-individual-savings-account-isa-limit/cash-individual-savings-account-isa-limit-reduction)
-nor the Budget 2025 policy costing (page 79) publishes a split. The taxable
-part earns `interest_rate`, by default 3.36%, the Bank of England's effective
-rate on individuals' outstanding time deposits in June 2026.
-`cash_isa_excess_savings_interest` enters `taxable_savings_interest_income`
-but not market income: the person earns the interest either way, tax-free in
-a cash ISA or taxed outside one, so the response changes tax and not gross
-income. It is a full year's interest on the year's excess. A static annual
-model holds no balances, so it leaves out interest on cash moved out of ISAs
-in earlier years; later years need that as a supplied input. Money above the
-annual limit is reported only.
-
-For example, a person aged 40 paying £20,000 into cash ISAs in 2027–28 has
-£8,000 above the £12,000 limit. With all of it in taxable savings, it earns
-£268.80 at the default rate. For a basic-rate taxpayer who has used their
-personal savings allowance, that is £59.14 of income tax at the 22% savings
-basic rate.
+The model reports these amounts and no more. It does not say where money
+above a limit goes or change any tax for it: the model is static by year and
+the data has no ISA history, so it holds no balances moved out of ISAs in
+earlier years. A population run gives the first year's amount above a limit;
+the tax on money moved out of ISAs over several years rests on the official
+costing.
 
 ## Annual resolution and coverage
 
@@ -261,10 +254,11 @@ status. Multiple transactions with different conditions require externally
 prepared qualifying amounts.
 
 Help to Buy ISA bonuses are not modelled here. Junior ISAs, Child Trust
-Funds, transfers between ISA types (including the 2027 restrictions on
-transfers into cash ISAs) and a proposed First Time Buyer ISA are also
-outside this implementation. Population data without payment, withdrawal,
-subscription or non-cash-interest detail inputs retain zero for those flows;
-data without per-person ISA balances keeps its stored household totals.
-Household tests establish the rules; population effects require a separate
+Funds, transfers between ISA types (including the SI 2026/1018 restrictions on
+transfers into cash ISAs) and the First Time Buyer ISA announced at Budget
+2026 for April 2029 are also outside this implementation. Population data
+without payment, withdrawal, subscription or non-cash-interest detail inputs
+retain zero for those flows; data without per-person ISA balances keeps its
+stored household totals. Household tests establish the rules; population
+effects require a separate
 certified dataset measurement.

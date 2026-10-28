@@ -141,10 +141,11 @@ the model does not reconcile the two.
 annual person flows that count towards the ISA subscription limits, with
 `lifetime_isa_payments` for Lifetime ISAs. Projection carries them flat,
 since the limits are fixed in cash terms. They are not capped at the limits:
-a producer should export subscriptions as observed, so that data from before
-the 6 April 2027 cash limit shows what that limit leaves out. Absent columns
-default to zero, so a change to an ISA limit changes nothing on such data. See
-[issue #2710](https://github.com/PolicyEngine/policyengine-uk/issues/2710).
+a producer should export subscriptions as observed, so that a reform that
+lowers a limit shows what it leaves out. Absent columns default to zero, so a
+change to an ISA limit changes nothing on such data.
+[Microcosm issue 1415](https://github.com/PolicyEngine/microcosm/issues/1415)
+covers imputing the subscriptions and balances.
 
 ## Defaults
 
