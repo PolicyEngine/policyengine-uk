@@ -306,7 +306,7 @@ threshold by the same rises, up to the last year of
 
 `energy_prices` holds the price indices that project household electricity
 and gas spending (see [Dataset projection horizon](#dataset-projection-horizon)).
-They price each fuel with VAT at the rate the energy inputs are valued at,
+They price each fuel with VAT at the rate the energy inputs assume,
 `gov.simulation.vat.energy_input_price_basis_rate` (5%). `domestic_energy_vat`
 divides the inputs by one plus that rate and applies the rate in force, so an
 index that included a VAT change would count it twice: once in spending and
@@ -331,35 +331,36 @@ Competitiveness Scheme brings consumers outside energy-intensive industry
 | `obr.utilities` | CPI utilities (electricity and gas) inflation, year on year, by quarter, from the first quarter ONS has not published in full | EFO economy tables, CPI category inflation (Table 1.19 in October 2026) |
 | `consumption_shares` | Each calendar quarter's share of a year's domestic electricity and of domestic gas consumption, the mean over the complete years from 2015 | DESNZ Energy Trends ET 5.2 and ET 4.1 |
 | `embedded_electricity_vat` | The VAT rate on domestic electricity that the published prices and forecast include, in Great Britain and in Northern Ireland, and Northern Ireland's share of UK domestic electricity consumption (2.69% in 2024), which weights them | SI 2026/987, Budget 2026 and its policy costings, EFO paragraph 3.10, DESNZ subnational consumption statistics |
-| `held_flat` | Whether the annual indices hold the previous year's level | Set by `no_economic_assumptions` |
+| `held_flat` | Whether the annual indices hold the previous year's level | `no_economic_assumptions` sets it |
 
-`policyengine_uk/utils/import_energy_prices.py` writes the first three; the
-last two are maintained by hand. `embedded_electricity_vat` describes the
+`policyengine_uk/utils/import_energy_prices.py` writes the first three;
+maintainers edit the last two by hand. `embedded_electricity_vat` describes the
 source data, not policy: it follows the VAT the ONS prices include and the
 OBR assumed, which a reform to `gov.hmrc.vat` does not change.
 
 ### Method
 
-`create_energy_price_indices.py`, a generation step run whenever the
-parameters are processed, builds three series for each of `electricity`,
-`gas` and `electricity_gas_and_solid_fuels`:
+`create_energy_price_indices.py`, a generation step that runs whenever
+policyengine-uk processes the parameters, builds three series for each of
+`electricity`, `gas` and `electricity_gas_and_solid_fuels`:
 
 - `quarterly`, 2015Q1 to 2042Q1. To `last_full_quarter` (2026Q3 in the
   October 2026 inputs), the mean of the monthly
-  index, each month divided by the VAT factor its price includes,
+  index, each month over the VAT factor its price includes,
   `1 + s × ((1 + r) / (1 + b) − 1)`. Here `r` is the UK rate on domestic
-  electricity in the published price on the 15th of the month (the Great
-  Britain and Northern Ireland rates weighted by consumption), `b` the basis
+  electricity in the published price on the 15th of the month (the mean of
+  the Great Britain and Northern Ireland rates, weighting each by its
+  consumption), `b` the basis
   rate and `s` electricity's share of the series' CPI weight: 1 for
   electricity, 0 for gas and CJXA / A9F4 for the combined series. After that,
-  the level a year earlier grown by the OBR's utilities inflation with the
-  change in electricity VAT taken out, `(1 + g) × u(q − 4) / u(q) − 1`, where
+  the level a year earlier times one plus the OBR's utilities inflation net
+  of the change in electricity VAT, `(1 + g) × u(q − 4) / u(q) − 1`, where
   `u` is the same factor for electricity's share of utilities,
-  CJXA / (CJXA + CJXB), averaged over the quarter's months. After the OBR's
+  CJXA / (CJXA + CJXB), as the mean over the quarter's months. After the OBR's
   last quarter (2032Q1), its last rate holds.
 - `calendar_year`, January to December, and `fiscal_year`, April to March,
-  2015 to 2041, each dated 1 January of its first year. Each averages the
-  year's four quarterly levels weighted by their shares of the year's
+  2015 to 2041, each at 1 January of its first year. Each averages the
+  year's four quarterly levels, weighting each by its share of the year's
   consumption; the combined series weights the electricity and gas shares by
   their CPI weights.
 
@@ -368,15 +369,15 @@ year's level. `no_economic_assumptions` sets it from its first input year as
 it zeroes the growth series, and since it is a raw input, every later rebuild
 of the indices keeps it.
 
-Every input is read at the month or quarter it applies to, not from its
-stated dates, so a reform can state one value for a year or a span of
+The generator reads every input at the month or quarter it applies to, not
+at its stated dates, so a reform can state one value for a year or a span of
 quarters: `{"gov.economic_assumptions.energy_prices.obr.utilities": {"2027":
 0.1}}` sets utilities inflation to 10% in each quarter of 2027 (through
-Core's `Reform.from_dict` a bare year applies from that year onward). A change
-written with `Parameter.update` and no end, which removes the stated values
-after its start, sets every month or quarter after it. The ONS prices are
-read only to the end of `last_full_quarter` and `obr.utilities` only after
-it, and a reform cannot move that boundary. A month or quarter with no value,
+Core's `Reform.from_dict` a bare year applies from that year onward).
+`Parameter.update` with a start and no end removes the stated values after
+the start, and its value then sets every month or quarter after it. The
+generator reads the ONS prices only to the end of `last_full_quarter` and
+`obr.utilities` only after it, and a reform cannot move that boundary. A month or quarter with no value,
 such as one a reform sets to `None`, stops generation. A forecast quarter
 grows from the level a year earlier, so a reform to the ONS prices also moves
 the forecast levels, though not their growth.
@@ -390,7 +391,7 @@ the forecast levels, though not their growth.
 - The indices are prices, so a projection holds each household's consumption
   fixed.
 - The seasonal shares are fixed averages, not each year's, and Northern
-  Ireland's share of consumption is fixed at 2024's. The share matters only
+  Ireland's share of consumption stays at 2024's. The share matters only
   while the two VAT rates differ, October 2026 to March 2027.
 - The OBR's rates are year on year, so each forecast quarter rests on the
   level four quarters before it.

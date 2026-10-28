@@ -26,10 +26,10 @@ def remove_economic_assumptions(simulation: Simulation):
                 if value_at_instant.instant_str >= cutoff:
                     value_at_instant.value = 0
 
-    # The energy price indices are built from price levels and the OBR's
-    # quarterly forecast rather than these growth series, so they are held at
-    # the year before the cutoff directly. An input, like the zeroed growth,
-    # so a later rebuild of the parameters keeps it.
+    # The energy price indices build on price levels and the OBR's quarterly
+    # forecast rather than these growth series, so this holds them at the year
+    # before the cutoff directly. It sets an input, like the zeroed growth, so
+    # a later rebuild of the parameters keeps it.
     economic_assumptions.energy_prices.held_flat.update(start=cutoff, value=True)
 
     simulation.tax_benefit_system.process_parameters()

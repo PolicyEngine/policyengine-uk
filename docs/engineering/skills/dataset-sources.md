@@ -144,8 +144,8 @@ Legacy builds can hold FY2026-27 energy prices in a dataset labelled 2024.
 An explicit declaration opts only `domestic_energy_consumption`,
 `electricity_consumption` and `gas_consumption` into the household energy
 price indices, `gov.economic_assumptions.energy_prices`: ONS CPI electricity
-and gas prices to the latest outturn, then the OBR's utilities forecast, with
-VAT held at the rate the inputs are valued at. Other generic
+and gas prices to the latest outturn, then the OBR's utilities forecast,
+holding VAT at the rate the inputs assume. Other generic
 uprating exclusions do not join this declaration or its reset group. For an
 input whose producer receipt declares calendar-2024 prices, a caller can label
 a local UK single-year H5 before constructing a simulation:
@@ -170,9 +170,10 @@ The period kind selects the index: a `calendar_year` basis reads the January to
 December level of its year, a `fiscal_year` basis the April to March level
 starting in its year. The target is always the fiscal year level, since model
 year Y is fiscal year Y–(Y+1). Projection multiplies the supplied amount by
-`I[target year] / I[price year]`, holding consumption fixed. The indices, their
-sources and the VAT adjustment are described in the economic assumptions
-[README](../../../policyengine_uk/parameters/gov/economic_assumptions/README.md#household-energy-prices).
+`I[target year] / I[price year]`, holding consumption fixed. The economic
+assumptions
+[README](../../../policyengine_uk/parameters/gov/economic_assumptions/README.md#household-energy-prices)
+describes the indices, their sources and the VAT adjustment.
 The original observation remains unchanged; a projected child's declaration
 records its effective fiscal-year price basis so later extension does not apply
 the original ratio twice.

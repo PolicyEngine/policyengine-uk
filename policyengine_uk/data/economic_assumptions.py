@@ -167,7 +167,7 @@ SOCIAL_RENT_GROWTH = "gov.economic_assumptions.yoy_growth.obr.social_rent"
 PRIVATE_RENT_GROWTH = "gov.economic_assumptions.yoy_growth.ons.private_rental_prices"
 RESIDENTIAL_PROPERTY_INDEX = "gov.economic_assumptions.indices.obr.house_prices"
 ENERGY_PRICES = "gov.economic_assumptions.energy_prices"
-# The annual energy price index each declared input is projected with.
+# The annual energy price index that projects each declared input.
 ENERGY_PRICE_SERIES = {
     "electricity_consumption": "electricity",
     "gas_consumption": "gas",
@@ -472,8 +472,8 @@ def uprate_energy(
     Each input moves by its fuel's index (``ENERGY_PRICE_SERIES``) from the
     period its prices describe (the calendar or fiscal year index, by the
     declared basis) to the projected fiscal year. The indices hold VAT at the
-    rate the inputs are valued at, so the spending is before any VAT change,
-    and the VAT formulas apply the rate in force. An undeclared basis holds the
+    rate the inputs assume, so the spending carries no VAT change, and the
+    VAT formulas apply the rate in force. An undeclared basis holds the
     amounts flat.
     """
     basis = observed_year.energy_price_basis
@@ -492,7 +492,7 @@ def uprate_energy(
         return current_year
     source_instant = f"{basis['period_value']:04d}-01-01"
     target_instant = f"{int(current_year.time_period):04d}-01-01"
-    # Every ratio is checked before any amount changes.
+    # Check every ratio before changing any amount.
     ratios = {
         variable: _energy_price_ratio(
             parameters,

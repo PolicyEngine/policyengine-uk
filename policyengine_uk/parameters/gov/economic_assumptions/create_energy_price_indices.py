@@ -4,7 +4,7 @@ Builds ``gov.economic_assumptions.energy_prices.quarterly``,
 ``.calendar_year`` and ``.fiscal_year`` from the published inputs under
 ``gov.economic_assumptions.energy_prices`` (see the README beside this file).
 Each index prices its fuel with VAT at the rate the electricity and gas inputs
-are valued at (``gov.simulation.vat.energy_input_price_basis_rate``), so a VAT
+assume (``gov.simulation.vat.energy_input_price_basis_rate``), so a VAT
 change, in the published prices or in a reform, never moves it.
 
 Quarterly levels, from the first quarter of 2015:
@@ -23,11 +23,11 @@ Quarterly levels, from the first quarter of 2015:
   electricity's share of the utilities weight (electricity and gas), averaged
   over the quarter's months. Past the OBR's last quarter the last rate holds.
 
-Every input is read at the month or quarter it applies to, not from its
-stated dates, so a reform keyed by year (one value for a calendar year)
-applies to each month or quarter of it, and one with no end, which removes
-the stated values after its start, to every month or quarter after it. A
-month or quarter with no value is an error.
+The generator reads every input at the month or quarter it applies to, not
+at its stated dates, so a reform keyed by year (one value for a calendar
+year) applies to each month or quarter of it, and one with no end, which
+removes the stated values after its start, to every month or quarter after
+it. A month or quarter with no value is an error.
 
 The OBR forecasts utilities only, so electricity and gas grow at the same
 rate after the ONS outturn: each index is the fuel's own price to there and a

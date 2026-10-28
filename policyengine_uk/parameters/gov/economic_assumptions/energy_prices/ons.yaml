@@ -1,6 +1,6 @@
-# Written by policyengine_uk/utils/import_energy_prices.py from ONS MM23.
+# policyengine_uk/utils/import_energy_prices.py writes this file from ONS MM23.
 # Rerun the importer on a new MM23 release; do not edit by hand.
-description: ONS consumer prices index series that the household energy price indices are built from.
+description: ONS consumer prices index series that the household energy price indices build on.
 metadata:
   # The last quarter ONS publishes all three months of in every series.
   # The indices use the prices to its end and the OBR forecast after it;

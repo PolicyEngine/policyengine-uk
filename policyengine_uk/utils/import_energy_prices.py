@@ -246,10 +246,10 @@ def render_ons_yaml(mm23: Mm23) -> str:
     released = _long_date(mm23.release)
     year, quarter = last_complete_quarter(mm23)
     lines = [
-        "# Written by policyengine_uk/utils/import_energy_prices.py from ONS MM23.",
+        "# policyengine_uk/utils/import_energy_prices.py writes this file from ONS MM23.",
         "# Rerun the importer on a new MM23 release; do not edit by hand.",
         "description: ONS consumer prices index series that the household energy "
-        "price indices are built from.",
+        "price indices build on.",
         "metadata:",
         "  # The last quarter ONS publishes all three months of in every series.",
         "  # The indices use the prices to its end and the OBR forecast after it;",
@@ -318,16 +318,15 @@ def render_obr_yaml(
         raise ValueError("Table 1.19's forecast quarters have gaps.")
     first = f"{quarters[0][0]}Q{quarters[0][1]}"
     lines = [
-        "# Written by policyengine_uk/utils/import_energy_prices.py from the OBR",
-        "# economy tables. Rerun the importer on a new EFO; do not edit by hand.",
-        "description: OBR forecasts that the household energy price indices are "
-        "built from.",
+        "# policyengine_uk/utils/import_energy_prices.py writes this file from the",
+        "# OBR economy tables. Rerun the importer on a new EFO; do not edit by hand.",
+        "description: OBR forecasts that the household energy price indices build on.",
         "utilities:",
         "  description: OBR forecast of CPI utilities inflation (electricity and "
         "gas), year on year, by calendar quarter, from the first quarter ONS has "
-        f"not published in full ({first}). As published, so it includes the "
-        "measures the OBR forecast includes; the generation step removes the "
-        "electricity VAT change.",
+        f"not published in full ({first}). The OBR's published rate, so it "
+        "includes the measures the OBR forecast includes; the generation step "
+        "removes the electricity VAT change.",
         "  metadata:",
         "    unit: /1",
         "    label: OBR forecast of CPI utilities inflation",
@@ -362,8 +361,8 @@ def render_consumption_shares_yaml(
         ),
     }
     lines = [
-        "# Written by policyengine_uk/utils/import_energy_prices.py from DESNZ",
-        "# Energy Trends. Rerun the importer on new tables; do not edit by hand.",
+        "# policyengine_uk/utils/import_energy_prices.py writes this file from",
+        "# DESNZ Energy Trends. Rerun the importer on new tables; do not edit by hand.",
         "description: Shares of a year's domestic energy consumption in each "
         "calendar quarter, which weight quarterly price levels into annual ones.",
     ]
@@ -378,7 +377,7 @@ def render_consumption_shares_yaml(
             lines += [
                 f"  q{quarter}:",
                 f"    description: Share of a year's domestic {name} consumption "
-                f"used in {QUARTER_MONTHS[quarter]}.",
+                f"that households use in {QUARTER_MONTHS[quarter]}.",
                 "    metadata:",
                 "      unit: /1",
                 f"      label: Domestic {name} consumption share, quarter {quarter}",

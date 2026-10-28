@@ -200,6 +200,7 @@ def process_parameter_tree(
     - triple lock calculations for state pensions
     - earnings and September CPI uprating
     - economic assumption indices
+    - household energy price indices
     - Pension Credit threshold and protected Housing Benefit forecast indices
     - income tax and NICs threshold indexation after the freeze
     - Universal Credit standard allowance uprating (UC Act 2025 s. 1)
