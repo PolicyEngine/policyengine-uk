@@ -404,3 +404,103 @@
     carers_allowance_earnings: 10_608.50
     is_gainfully_employed_for_carers_allowance: false
     carers_allowance: 86.45 * 52
+
+- name: Case 26, in 2026-27 a whole penny of Class 1 counts as that penny, not two.
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    age: 45
+    employment_income: 14_764.46
+    employee_pension_contributions: 7_960.76
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # Class 1 is 8% x (14,764.46 - 52 x 241.73) = 175.56 exactly; the model's
+    # float32 sum of twelve months holds it as 175.5600128, which rounded up
+    # would be 175.57. Pay less the contribution is 6,803.70, under the
+    # personal allowance, so no PAYE, and half the contribution is 3,980.38:
+    # 14,764.46 - 175.56 - 3,980.38 = 10,608.52, or £204.01 a week, over the
+    # limit.
+    carers_allowance_earnings: 10_608.52
+    is_gainfully_employed_for_carers_allowance: true
+    carers_allowance: 0
+
+- name: Case 27, in 2025-26 the same Class 1 of £175.56 leaves a penny a week over £196.
+  period: 2025
+  absolute_error_margin: 0.001
+  input:
+    age: 45
+    employment_income: 14_764.46
+    employee_pension_contributions: 8_792.76
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # 14,764.46 - 175.56 - 4,396.38 = 10,192.52, or £196.01 a week.
+    carers_allowance_earnings: 10_192.52
+    is_gainfully_employed_for_carers_allowance: true
+    carers_allowance: 0
+
+- name: Case 28, in 2024-25 Class 1 of £43.80 leaves a penny a week over £151.
+  period: 2024
+  absolute_error_margin: 0.001
+  input:
+    age: 45
+    employment_income: 13_117.46
+    employee_pension_contributions: 10_442.27
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # Class 1 is 8% x (13,117.46 - 12,569.96) = 43.80, stored as 43.800003.
+    # Half the contribution is 5,221.135, which counts as 5,221.14 (reg. 5):
+    # 13,117.46 - 43.80 - 5,221.14 = 7,852.52, or £151.01 a week.
+    carers_allowance_earnings: 7_852.52
+    is_gainfully_employed_for_carers_allowance: true
+    carers_allowance: 0
+
+- name: Case 29, pension contributions entered as a total still come off earnings.
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    age: 45
+    employment_income: 11_000
+    pension_contributions: 1_000
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # 11,000 - 1,000 / 2 = 10,500, or £201.92 a week, within the limit.
+    carers_allowance_earnings: 10_500
+    is_gainfully_employed_for_carers_allowance: false
+    carers_allowance: 86.45 * 52
+
+- name: Case 30, in 2026-27 £12,570.50 of profit with a £3,923.70 premium is a penny a week over the limit.
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    age: 45
+    self_employment_income: 12_570.50
+    personal_pension_contributions: 3_923.70
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # Notional tax 20% x 0.50 = 0.10 and Class 4 6% x 0.50 = 0.03:
+    # 12,570.50 - 0.10 - 0.03 - 1,961.85 = 10,608.52, £204.01 a week.
+    carers_allowance_earnings: 10_608.52
+    is_gainfully_employed_for_carers_allowance: true
+    carers_allowance: 0
+
+- name: Case 31, a penny more profit can leave a penny less in earnings, as reg. 5 intends.
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    age: 45
+    self_employment_income: 12_570.51
+    personal_pension_contributions: 3_923.70
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # Notional tax 0.102 and Class 4 0.0306 each count as a penny more (0.11
+    # and 0.04), so the extra penny of profit adds two pennies of deductions:
+    # 12,570.51 - 0.11 - 0.04 - 1,961.85 = 10,608.51, £204.00 a week, within.
+    carers_allowance_earnings: 10_608.51
+    is_gainfully_employed_for_carers_allowance: false
+    carers_allowance: 86.45 * 52

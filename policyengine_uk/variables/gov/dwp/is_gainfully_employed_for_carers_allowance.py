@@ -11,7 +11,9 @@ class is_gainfully_employed_for_carers_allowance(Variable):
         "earnings limit, so that they are treated as gainfully employed and "
         "are not entitled to the allowance. The regulation tests the earnings "
         "of the preceding week; annual earnings are spread evenly over 52 "
-        "weeks. A fraction of a penny is disregarded, as regulation 5 of the "
+        "weeks, for an employed earner's yearly pay (reg. 8(1)(b)(iii)) and a "
+        "self-employed earner's average weekly earnings over a year (reg. "
+        "11(1)(a)). A fraction of a penny is disregarded, as regulation 5 of the "
         "Computation of Earnings Regulations requires when that favours the "
         "claimant. Net earnings are whole pence, since carers_allowance_earnings "
         "applies regulation 5 to each step, and the test reads back the whole "
@@ -36,6 +38,10 @@ class is_gainfully_employed_for_carers_allowance(Variable):
             title="Social Security Benefit (Computation of Earnings) Regulations 1996 reg. 8(1)(b)(iii)",
             href="https://www.legislation.gov.uk/uksi/1996/2745/regulation/8",
         ),
+        dict(
+            title="Social Security Benefit (Computation of Earnings) Regulations 1996 reg. 11(1)(a)",
+            href="https://www.legislation.gov.uk/uksi/1996/2745/regulation/11",
+        ),
     ]
 
     def formula(person, period, parameters):
@@ -47,7 +53,7 @@ class is_gainfully_employed_for_carers_allowance(Variable):
         # directly with a fraction of a penny has the fraction disregarded
         # (reg. 5).
         annual_pence = np.floor(stored_pence(earnings))
-        # Spread over 52 weeks (reg. 8(1)(b)(iii)), disregarding the fraction
+        # Spread over 52 weeks (regs. 8(1)(b)(iii) and 11(1)(a)), disregarding the fraction
         # of a penny that leaves (reg. 5). Both steps are exact in float64, so
         # no floating-point rounding decides whether earnings have exceeded
         # the limit (ICA Regulations reg. 8(1)).

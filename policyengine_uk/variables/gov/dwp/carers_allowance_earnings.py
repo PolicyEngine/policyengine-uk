@@ -1,6 +1,6 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.utils.class_2 import class_2_contribution_weeks, class_2_liable
-from policyengine_uk.utils.pence import stored_pence
+from policyengine_uk.utils.pence import stored_pence, stored_sum_pence
 
 
 def _earned(amount):
@@ -14,6 +14,68 @@ def _deducted(pence):
     than a millionth of a penny, so a deduction within a millionth of a penny
     above a whole penny is that penny."""
     return np.ceil(pence - 1e-6)
+
+
+def _primary_class_1(person, period, parameters):
+    """ni_class_1_employee in float64 pence: its formula (the primary and
+    additional parts, month by month) worked exactly on the year's NI income
+    in whole pence, where that agrees with the stored total to within the
+    error of the model's float32 arithmetic; otherwise, as under a reform
+    that replaces the formula, the stored total.
+
+    The model works out each month's Class 1 in float32 and sums the twelve,
+    which can leave a whole-penny total further from it than stored_pence
+    recovers: £175.56 (8% of £14,764.46 less £12,569.96) is stored as
+    175.5600128, and rounding that up would deduct a penny too much.
+    """
+    income = stored_sum_pence(
+        person("ni_class_1_income", period),
+        [
+            person(name, period)
+            for name in person.simulation.tax_benefit_system.variables[
+                "ni_class_1_income"
+            ].adds
+        ],
+    )
+    director = person("is_full_year_category_a_director", period)
+    exact = 0
+    for month in period.get_subperiods(MONTH):
+        class_1 = parameters(month).gov.hmrc.national_insurance.class_1
+        scale = class_1.employee_scale
+        # Weekly thresholds in pounds, as monthly amounts in pence.
+        primary_threshold = (
+            scale.components[1].threshold * WEEKS_IN_YEAR * 100 / MONTHS_IN_YEAR
+        )
+        upper_limit = (
+            scale.components[2].threshold * WEEKS_IN_YEAR * 100 / MONTHS_IN_YEAR
+        )
+        monthly = income / MONTHS_IN_YEAR
+        above_upper = max_(monthly - upper_limit, 0)
+        contribution = (
+            scale.components[1].rate
+            * (max_(monthly - primary_threshold, 0) - above_upper)
+            + scale.components[2].rate * above_upper
+        )
+        directors = class_1.directors.full_year_category_a_2022_23
+        if directors.in_effect:
+            # Annual thresholds in pounds.
+            rates = directors.employee_scale.rates
+            thresholds = [t * 100 for t in directors.employee_scale.thresholds]
+            annual = rates[1] * min_(
+                max_(income - thresholds[1], 0), thresholds[2] - thresholds[1]
+            ) + rates[2] * max_(income - thresholds[2], 0)
+            contribution = where(director, annual / MONTHS_IN_YEAR, contribution)
+        exact = exact + contribution
+    exact = exact * person("ni_liable", period)
+    # The twelve float32 months and their sum err by less than one float32
+    # step of the year's NI income plus 64 steps of the contribution.
+    stored = person("ni_class_1_employee", period)
+    tolerance = 100 * (
+        np.spacing(np.abs(person("ni_class_1_income", period))).astype(np.float64)
+        + 64 * np.spacing(np.abs(stored)).astype(np.float64)
+    )
+    agrees = np.abs(np.asarray(stored, dtype=np.float64) * 100 - exact) <= tolerance
+    return where(agrees, exact, stored_pence(stored))
 
 
 class carers_allowance_earnings(Variable):
@@ -50,11 +112,23 @@ class carers_allowance_earnings(Variable):
         "ni_class_4_liable: reaching State Pension age during the tax year "
         "leaves that year's contributions payable.\n\n"
         "A fraction of a penny counts in the claimant's favour (reg. 5): pay "
-        "and profit are taken down to a whole penny and each deduction up to "
-        "one, so net earnings are whole pence. The pence are worked in double "
-        "precision from the whole pence each amount was entered as, since the "
-        "model stores amounts in single precision, which holds most sums of "
-        "money only to within a fraction of a penny.\n\n"
+        "and profit are taken down to a whole penny, and the calculated "
+        "deductions (notional tax, Class 4 and Class 2, and half of pension "
+        "contributions) up to one. PAYE and Class 1 are in law the amounts "
+        "actually deducted, which are whole pence; the model's figures for "
+        "them are rounded up as well, a fraction counting in the claimant's "
+        "favour. Net earnings are therefore whole pence. They are worked in "
+        "double precision from the whole pence each amount was entered as, "
+        "since the model stores amounts in single precision, which holds most "
+        "sums of money only to within a fraction of a penny. Class 1, which the "
+        "model sums from twelve single-precision months, is worked out again "
+        "from its formula. The model holds each pension programme as one "
+        "amount for the year, so half of the year's total is deducted, rounded "
+        "up once.\n\n"
+        "The Scottish Carer Support Payment reads these earnings too "
+        "(carer_support_payment_pre_couple_limit): SSI 2023/302 Schedule 2 has "
+        "the same rounding rule (para. 4) and net earnings and profit (paras. 9 "
+        "and 12).\n\n"
         "Not modelled: the deduction for care charges (Schedule 3, up to half "
         "of net earnings) and the Schedule 1 disregards, so this can overstate "
         "earnings for a carer who pays for care while at work."
@@ -97,8 +171,9 @@ class carers_allowance_earnings(Variable):
 
         # Work in float64 pence from the whole pence each amount was entered
         # as (stored_pence), taking pay and profit down to a whole penny and
-        # each deduction up to one (reg. 5). Scales and thresholds are in
-        # pounds.
+        # each deduction up to one (reg. 5 for the calculated deductions; for
+        # PAYE and Class 1, which the law takes as deducted, the same rounding
+        # in the claimant's favour). Scales and thresholds are in pounds.
 
         # Employment: PAYE on the pay alone (reg. 10(4)(a)).
         pay = _earned(person("employment_income", period))
@@ -113,10 +188,7 @@ class carers_allowance_earnings(Variable):
             ),
             income_tax.rates.uk.calc(max_(0, taxable_pay - personal_allowance)),
         )
-        # Computed in float32 by another variable: a whole-penny amount that
-        # comes back more than half a step out counts as a penny more, in the
-        # claimant's favour.
-        primary_class_1 = stored_pence(person("ni_class_1_employee", period))
+        primary_class_1 = _primary_class_1(person, period, parameters)
 
         # Self-employment: notional basic-rate tax and main-rate Class 4
         # (reg. 14(1)-(2)). The tax is on the profit as if it were the only
@@ -158,14 +230,17 @@ class carers_allowance_earnings(Variable):
         )
 
         # Regs. 10(4)(b) and 13(1)(b)(ii), (4)(c) and (10)(b): one half of
-        # pension contributions and premiums. The contributions are those
-        # pension_contributions adds, summed here in float64 pence.
+        # pension contributions and premiums. The model holds each programme
+        # as one amount for the year, not the payments the law halves one by
+        # one, so the half is of the year's total, rounded up once. The total
+        # is pension_contributions, whether entered or summed from its
+        # programmes; a sum is redone in float64 pence.
         pension_share = parameters(
             period
         ).gov.dwp.carers_allowance.pension_contribution_deduction_rate
-        contributions = sum(
-            stored_pence(person(program, period))
-            for program in p.pensions.pensions_programs
+        contributions = stored_sum_pence(
+            person("pension_contributions", period),
+            [person(program, period) for program in p.pensions.pensions_programs],
         )
         pension_deduction = pension_share * contributions
         net = (

@@ -12,13 +12,15 @@ A fraction of a penny counts in the claimant's favour (reg. 5): it is
 disregarded in pay, profit and net earnings, and counts as a penny in each
 deduction. So the half penny of half an odd-pence pension contribution (reg.
 10(4)(b)) counts as a penny off earnings, as does the fraction of a penny in
-a notional tax or Class 4 deduction. carers_allowance_earnings applies that to
-each step, in float64 pence from the whole pence each amount was entered as
-(stored_pence), so net earnings are whole pence despite float32 storage. The
-test then reads back the whole pence, disregarding any fraction in an amount
-entered directly, and compares the whole pence a week, after dividing by 52
-(reg. 8(1)(b)(iii)) with the fraction disregarded, with the limit.
-_over_limit restates the test in exact rational arithmetic.
+a notional tax or Class 4 deduction. (PAYE and Class 1 are in law the amounts
+actually deducted; the model's figures for them are rounded up the same way.)
+carers_allowance_earnings applies that to each step, in float64 pence from the
+whole pence each amount was entered as (stored_pence), so net earnings are
+whole pence despite float32 storage. The test then reads back the whole
+pence, disregarding any fraction in an amount entered directly, and compares
+the whole pence a week, after dividing by 52 (regs. 8(1)(b)(iii) and
+11(1)(a)) with the fraction disregarded, with the limit. _over_limit restates
+the test in exact rational arithmetic.
 
 Invariants, for a carer in England in 2026 caring 35 hours or more, with pay,
 trading profit, employee pension contributions and unearned income drawn
@@ -28,8 +30,14 @@ freely:
 2. Differential: the test is passed exactly when _over_limit is false for the
    stored carers_allowance_earnings, and the allowance is the full rate then
    and nil otherwise.
-3. Monotonic: raising pay never lowers net earnings, so a person over the
-   limit stays over it.
+3. Monotonic in steps of 2p: raising pay or profit by 2p or more never lowers
+   net earnings, so a person over the limit stays over it. The deductions
+   that rise with pay (PAYE and Class 1) or with profit (notional tax and
+   Class 4) have marginal rates adding to at most a half, and each is rounded
+   up, so a rise of R pence adds less than R / 2 + 2 pence to them, which is
+   at most R when R >= 2. A rise of 1p can lower net earnings by 1p, when it
+   takes both deductions to their next penny at once. That is reg. 5 working
+   as intended, not an error (YAML Cases 30 and 31 pin one such pair).
 4. Unearned income is not earnings: savings interest and pension income
    leave carers_allowance_earnings unchanged.
 
@@ -57,7 +65,11 @@ in whole pence:
 9. Each deduction counts a fraction of a penny as a penny (reg. 5): with tax
    and Class 1 or Class 4 to pay, from 2024-25 (Class 2 nil, Class 1 at 8%),
    net earnings are P less each of the tax, the contributions and half the
-   pension contribution, rounded up to a whole penny, exactly.
+   pension contribution, rounded up to a whole penny, exactly. Class 1 is 8%
+   of P less 52 x £241.73, worked exactly here, not read from the model's
+   float32 ni_class_1_employee, which can lie a hundredth of a penny from it.
+10. A pension total entered directly as pension_contributions comes off
+    earnings as the same amount entered as a programme does.
 """
 
 import datetime
@@ -445,19 +457,38 @@ def _with_fractions(route, year):
     return threshold, pairs
 
 
+# Pairs found in review of #2543, in pence. C1 (juaristi22): a trader within
+# the limit whom the earlier nearest-half-penny rule put over it. The
+# employees' Class 1 is a whole number of pence (£175.56, £235.38, £1.14,
+# £1.26, £2.28) that the model's float32 sum of twelve months holds more than
+# half a step out, so reading it with stored_pence and rounding up deducted a
+# penny too much and put each of them, exactly a penny a week over, within
+# the limit.
+REVIEW_PAIRS = {
+    ("trading", 2026): [(1_400_001, 603_938)],
+    ("employee", 2024): [(1_476_446, 1_347_276), (1_551_221, 1_484_862)],
+    ("employee", 2026): [
+        (1_476_446, 796_076),
+        (1_551_221, 933_662),
+        (1_258_421, 394_910),
+        (1_258_571, 395_186),
+        (1_259_846, 397_532),
+    ],
+}
+
+
 @pytest.mark.parametrize("route", ["trading", "employee"])
 @pytest.mark.parametrize("year", [2024, 2026])
 def test_each_deduction_counts_a_fraction_of_a_penny_as_a_penny(route, year):
     """Invariant 9, through the model: net earnings are P less each
     deduction rounded up to a whole penny (reg. 5), exactly, and the person
-    is over the limit exactly when that reaches the threshold. Class 1 is the
-    model's ni_class_1_employee, read as stored_pence reads it. Rounding only
-    the total, or not at all, misjudges some of these pairs: juaristi22's
-    review of #2543 found a trader within the limit (C1, below) whom the
-    earlier nearest-half-penny rule put over it."""
+    is over the limit exactly when that reaches the threshold. Class 1 is
+    worked exactly from its rate and threshold. Rounding only the total, or
+    not at all, misjudges some of these pairs, and so does rounding up the
+    model's float32 Class 1 (REVIEW_PAIRS)."""
     threshold, pairs = _with_fractions(route, year)
-    if route == "trading" and year == 2026:
-        pairs.append((1_400_001, 603_938))
+    review_pairs = REVIEW_PAIRS.get((route, year), [])
+    pairs += review_pairs
     gross, contribution = (
         ("self_employment_income", "personal_pension_contributions")
         if route == "trading"
@@ -495,6 +526,12 @@ def test_each_deduction_counts_a_fraction_of_a_penny_as_a_penny(route, year):
     )
     basic = Fraction(str(hmrc.income_tax.rates.uk.rates[0]))
     main = Fraction(str(hmrc.national_insurance.class_4.rates.main))
+    # Class 1 at 8% above 52 weeks of £241.73 (the model's £12,569.96), as
+    # employee_scale.yaml sets for both years.
+    employee_scale = hmrc.national_insurance.class_1.employee_scale
+    assert employee_scale.components[1].rate == 0.08
+    assert employee_scale.components[1].threshold == 241.73
+    class_1_rate, primary_threshold = Fraction(8, 100), WEEKS * 24_173
     fractions = 0
     for (p, c), stored, judged, ni in zip(pairs, earnings, gainful, class_1):
         if route == "trading":
@@ -502,7 +539,7 @@ def test_each_deduction_counts_a_fraction_of_a_penny_as_a_penny(route, year):
             deductions = [basic * (p - pa), main * (p - lpl)]
         else:
             assert p - c < pa and ni > 0, (p, c)
-            deductions = [_stored_pence(ni)]
+            deductions = [class_1_rate * (p - primary_threshold)]
         deductions.append(Fraction(c, 2))
         net = p - sum(math.ceil(d) for d in deductions)
         fractions += any(d.denominator > 1 for d in deductions)
@@ -510,6 +547,17 @@ def test_each_deduction_counts_a_fraction_of_a_penny_as_a_penny(route, year):
         assert bool(judged) == (net >= threshold), (p, c, net)
     # Most pairs carry a fraction of a penny in some deduction.
     assert fractions > len(pairs) // 2
+    if route == "employee":
+        # Each review pair is exactly the threshold: a penny a week over.
+        for (p, c), judged in zip(
+            review_pairs, gainful[len(pairs) - len(review_pairs) :]
+        ):
+            net = (
+                p
+                - math.ceil(class_1_rate * (p - primary_threshold))
+                - math.ceil(Fraction(c, 2))
+            )
+            assert net == threshold and judged, (p, c, net)
     if route == "trading" and year == 2026:
         # C1: £14,000.01 of profit and a £6,039.38 premium. Tax £286.002 and
         # Class 4 £85.8006 round up to £286.01 and £85.81, and half the
@@ -621,22 +669,83 @@ def test_the_formula_matches_exact_arithmetic_and_rises_with_earnings(case):
     assert np.all(np.diff(in_order) >= 0), (year, amounts)
 
 
-@settings(
-    max_examples=8,
-    deadline=None,
-    derandomize=True,
-    suppress_health_check=[HealthCheck.too_slow],
-)
-@given(pay=money, rise=st.floats(min_value=1, max_value=20_000))
-def test_net_earnings_never_fall_as_pay_rises(pay, rise):
-    lower = _person(pay, 0, 0)
-    higher = _person(pay + rise, 0, 0)
-    assert (
-        float(higher["carers_allowance_earnings"])
-        >= float(lower["carers_allowance_earnings"]) - 0.01
+def _net_pence(variable, pence, other=None):
+    """carers_allowance_earnings in whole pence in 2026, one carer in England
+    per amount of ``variable`` (in pence), with ``other`` amounts as well."""
+    amounts = {2026: [p / 100 for p in pence]}
+    simulation = _carers(variable, amounts)
+    for name, value in (other or {}).items():
+        simulation.set_input(name, 2026, np.full(len(pence), value))
+    earnings = simulation.calculate("carers_allowance_earnings", 2026)
+    gainful = simulation.calculate("is_gainfully_employed_for_carers_allowance", 2026)
+    return np.round(earnings.astype(np.float64) * 100).astype(int), gainful
+
+
+# Every penny across the points where a deduction starts or changes rate in
+# 2026-27: the personal allowance and Class 1 primary threshold and lower
+# profits limit (£12,570), the higher rate, upper earnings limit and upper
+# profits limit (£50,270) and the additional rate (£125,140); and, for
+# profit, the boundary pair of YAML Cases 30 and 31.
+MONOTONIC_RANGES = {
+    "employment_income": [
+        (1_255_000, 1_259_000),
+        (5_025_000, 5_029_000),
+        (12_512_000, 12_516_000),
+    ],
+    "self_employment_income": [(1_255_000, 1_259_000), (5_025_000, 5_029_000)],
+}
+
+
+@pytest.mark.parametrize("variable", list(MONOTONIC_RANGES))
+def test_net_earnings_never_fall_for_a_rise_of_two_pence_or_more(variable):
+    """Invariant 3, for every penny in each range: net earnings at P + R are
+    at least those at P for every R >= 2p, and a 1p rise lowers them by at
+    most 1p. Some 1p rises do, as reg. 5 intends."""
+    one_penny_falls = 0
+    for start, end in MONOTONIC_RANGES[variable]:
+        pence = list(range(start, end))
+        net, _ = _net_pence(variable, pence)
+        # The least net earnings at any P + R, R >= 2, for each P.
+        later_minimum = np.minimum.accumulate(net[::-1])[::-1]
+        assert np.all(later_minimum[2:] >= net[:-2]), (variable, start)
+        steps = np.diff(net)
+        assert steps.min() >= -1, (variable, start)
+        one_penny_falls += int(np.sum(steps == -1))
+    if variable == "self_employment_income":
+        assert one_penny_falls > 0
+
+
+def test_a_penny_more_profit_can_lower_net_earnings_by_a_penny():
+    """The intended exception to invariant 3, with a premium of £3,923.70:
+    £12,570.50 of profit takes notional tax of 10p and Class 4 of 3p, leaving
+    £10,608.52, a penny a week over the limit; £12,570.51 takes 10.2p and
+    3.06p, which count as 11p and 4p (reg. 5), leaving £10,608.51, within
+    it. Pinned also as YAML Cases 30 and 31."""
+    net, gainful = _net_pence(
+        "self_employment_income",
+        [1_257_050, 1_257_051],
+        {"personal_pension_contributions": 3_923.70},
     )
-    if lower["is_gainfully_employed_for_carers_allowance"]:
-        assert higher["is_gainfully_employed_for_carers_allowance"]
+    assert list(net) == [1_060_852, 1_060_851]
+    assert list(gainful) == [True, False]
+
+
+@pytest.mark.parametrize(
+    "pay, total",
+    [(1_100_000, 100_000), (1_100_103, 99_201), (785_253, 1), (1_060_853, 1)],
+)
+def test_a_pension_total_entered_directly_counts_like_a_programme(pay, total):
+    """Invariant 10: pension_contributions entered as a total comes off
+    earnings, half of it with the half penny counted as a penny, exactly as
+    the same amount entered as personal_pension_contributions (which, like the
+    total, leaves PAYE alone)."""
+    results = []
+    for name in ("pension_contributions", "personal_pension_contributions"):
+        net, gainful = _net_pence("employment_income", [pay], {name: total / 100})
+        results.append((int(net[0]), bool(gainful[0])))
+    assert results[0] == results[1]
+    if pay < 1_257_000:
+        assert results[0][0] == pay - math.ceil(total / 2)
 
 
 @settings(
