@@ -140,8 +140,11 @@ the model does not reconcile the two.
 `cash_isa_subscriptions` and `stocks_and_shares_isa_subscriptions` are
 annual person flows, summed over all of a person's accounts of each type, that
 count towards the ISA subscription limits, with `lifetime_isa_payments` for
-Lifetime ISAs. Projection carries them flat, since the limits are fixed in
-cash terms. The model does not cap them at the limits: a producer should
+Lifetime ISAs. Projection carries them flat, because growing them would put
+people who pay in exactly the annual limit above it in the baseline. Nominal
+subscriptions grow, so flat amounts understate how much a lowered limit leaves
+out in later years; a producer can grow them itself and cap each person at the
+limit in force. The model does not cap them at the limits: a producer should
 export subscriptions as observed, so a reform that lowers a limit shows what
 it leaves out. Observed subscriptions stay within the £20,000 annual
 limit, which the three inputs share, so an imputation should draw them

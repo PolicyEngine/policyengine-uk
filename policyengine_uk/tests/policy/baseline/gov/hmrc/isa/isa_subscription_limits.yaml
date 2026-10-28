@@ -1,4 +1,6 @@
-# ISA Regulations 1998 reg 4ZA(1): a GBP 20,000 annual limit. Cash has had no
+# ISA Regulations 1998 reg 4ZA(1): GBP 15,000 from 1 July 2014 (SI 2014/1450),
+# GBP 15,240 from 6 April 2015 (SI 2015/608) and a GBP 20,000 annual limit from
+# 6 April 2017 (SI 2017/186). Cash has had no
 # limit of its own since 1 July 2014, and Budget 2026 retains that from April
 # 2027 (OOTLAR para 2.5). The GBP 12,000 limit that SI 2026/1018 reg 6 set for
 # people 64 or under at the end of the year (5 April) is tested as a reform.
@@ -91,3 +93,21 @@
     cash_isa_subscription_limit: [15_000, 15_000]
     cash_isa_subscriptions_above_limit: [0, 5_000]
     isa_subscriptions_above_limit: [5_000, 5_000]
+
+- name: The annual limit was GBP 15,240 in fiscal 2015-16
+  period: 2015
+  input:
+    age: [40, 40]
+    stocks_and_shares_isa_subscriptions: [15_240, 15_241]
+  output:
+    isa_subscriptions_above_limit: [0, 1]
+
+- name: The annual limit was GBP 15,240 in fiscal 2016-17, for cash too
+  period: 2016
+  input:
+    age: [40, 40]
+    cash_isa_subscriptions: [15_240, 15_241]
+  output:
+    cash_isa_subscription_limit: [15_240, 15_240]
+    cash_isa_subscriptions_above_limit: [0, 1]
+    isa_subscriptions_above_limit: [0, 1]

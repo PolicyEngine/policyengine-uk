@@ -10,7 +10,7 @@ metadata:
   period: year
   unit: /1
   reference:
-    - title: Individual Savings Account Regulations 1998, Schedule paragraphs 5 and 6A
-      href: https://www.legislation.gov.uk/uksi/1998/1870/schedule
     - title: Individual Savings Account (Amendment) (No. 3) Regulations 2026 regulation 5
       href: https://www.legislation.gov.uk/uksi/2026/1130/regulation/5/made
+    - title: Individual Savings Account Regulations 1998, Schedule paragraphs 5 and 6A, as amended by SI 2026/1130 regulation 5
+      href: https://www.legislation.gov.uk/uksi/1998/1870/schedule

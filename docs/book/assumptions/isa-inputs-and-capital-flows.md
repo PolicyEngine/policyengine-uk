@@ -199,6 +199,9 @@ accounting convention for the model's current-income measures.
 `gov.hmrc.isa.annual_subscription_limit` is the £20,000 limit on a person's
 subscriptions in a tax year to all their ISAs other than Junior ISAs
 ([ISA Regulations regulation 4ZA(1)](https://www.legislation.gov.uk/uksi/1998/1870/regulation/4ZA)).
+It was £15,000 from 1 July 2014 and £15,240 from 6 April 2015. The model reads
+these limits from 2015–16; 2014–15 and earlier years, with their lower limits
+and cash sub-limits, are not modelled.
 Cash has had no limit of its own since 1 July 2014, so
 `gov.hmrc.isa.cash.subscription_limit` is infinite and cash counts only
 towards the annual limit.
@@ -216,15 +219,25 @@ for cash.
 
 The inputs are per-person flows in the year: `cash_isa_subscriptions`,
 `stocks_and_shares_isa_subscriptions` and the existing
-`lifetime_isa_payments`, which `isa_subscriptions` adds up. They exclude
-transfers between ISAs, interest and growth, and replacements of cash
-withdrawn from a flexible ISA earlier in the same year
+`lifetime_isa_payments`, which `isa_subscriptions` adds up. They sum over
+all of a person's accounts of each type, net of current-year subscriptions
+withdrawn from a flexible ISA. They exclude transfers between ISAs, interest
+and growth, and the subscriptions that
+[regulation 5D](https://www.legislation.gov.uk/uksi/1998/1870/regulation/5D)
+disregards, such as replacement subscriptions to a flexible ISA, additional
+permitted subscriptions, defaulted subscriptions and transfers from a matured
+Child Trust Fund
 ([HMRC guidance](https://www.gov.uk/guidance/manage-isa-subscriptions-for-your-investors)).
 `lifetime_isa_payments` includes transfers into a Lifetime ISA from other
 ISAs, which count towards the Lifetime ISA limit but are not new
 subscriptions for the annual limit, so the total overstates subscriptions
-where that input includes them. Innovative finance ISAs are not included.
-The inputs are not uprated, as the limits are fixed in cash terms.
+where that input includes them. A withdrawal charge restored under Schedule
+paragraph 10A is neither a subscription nor a Lifetime ISA payment (SI
+2026/1130 regulations 3 and 4). Innovative finance ISAs are not included.
+The inputs are not uprated: growing them would put people who pay in exactly
+the annual limit above it in the baseline. Nominal subscriptions grow, so flat
+amounts understate how much a lowered limit leaves out in later years. A
+producer can grow them instead and cap each person at the limit in force.
 
 The model compares the inputs with the limits in force and does not cap them.
 `cash_isa_subscriptions_above_limit` is cash above the person's cash limit,

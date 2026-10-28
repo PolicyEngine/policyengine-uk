@@ -8,7 +8,7 @@ description: >
   2026, so cash keeps no limit of its own here. Set this to 12,000 to model the
   lower limit.
 values:
-  2017-04-06: .inf
+  2014-07-01: .inf
 metadata:
   label: Cash ISA subscription limit
   period: year
@@ -16,6 +16,8 @@ metadata:
   reference:
     - title: Individual Savings Account Regulations 1998 regulation 4ZA
       href: https://www.legislation.gov.uk/uksi/1998/1870/regulation/4ZA
+    - title: Individual Savings Account (Amendment No. 2) Regulations 2014 regulation 6(a)(ii) (omits the cash sub-limits in regulation 4ZA(1)(a) and (b))
+      href: https://www.legislation.gov.uk/uksi/2014/1450/regulation/6/made
     - title: Individual Savings Account (Amendment) (No. 2) Regulations 2026 regulations 1 and 6
       href: https://www.legislation.gov.uk/uksi/2026/1018/regulation/6/made
     - title: Budget 2026, overview of tax legislation and rates, paragraph 2.5
