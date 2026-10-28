@@ -6,20 +6,22 @@ metadata:
   reference:
     - title: Bank of England - Bank Rate history
       href: https://www.bankofengland.co.uk/boeapps/database/Bank-Rate.asp
-    - title: OBR EFO November 2025 - Market expectations for Bank Rate
-      href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
+    - title: OBR EFO October 2026 (detailed forecast tables, economy, Table 1.9), market-derived Bank Rate, calendar-year averages
+      href: https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/
   documentation: |
     The Bank of England base rate (Bank Rate).
     Used in student loan interest calculations for Plans 1 and 4,
     which charge the lower of RPI or (BoE base rate + 1%).
 
-    Historical values are from Bank of England data.
-    Forecast values (2025+) are based on OBR November 2025 EFO market
-    expectations: Bank Rate expected to fall from 4% to 3.6% by end-2026,
-    then gradually return to 4% by end-2030.
+    Historical values (to 2025) are from Bank of England data.
+    Forecast values (2026-2031) are the calendar-year averages of the
+    market-derived Bank Rate path in the OBR October 2026 EFO (economy Table
+    1.9), rounded to 4 decimals: 3.78% in 2026, then 4.23% to 4.48%. Later
+    years hold the 2031 rate.
 
 # Historical: Bank of England outturn
-# Forecast: OBR November 2025 EFO market expectations
+# Forecast: OBR October 2026 EFO market-derived path (Table 1.9),
+# calendar-year averages
 values:
   2020-01-01: 0.001  # 0.1% from March 2020
   2021-01-01: 0.001  # 0.1% throughout
@@ -27,8 +29,9 @@ values:
   2023-01-01: 0.0425 # Rising from 3.5% to 5.25%
   2024-01-01: 0.0525 # 5.25% until August, then 5%
   2025-01-01: 0.04   # 4% as of Nov 2025
-  2026-01-01: 0.036  # OBR: falls to 3.6% by end-2026
-  2027-01-01: 0.037  # OBR: gradual rise back
-  2028-01-01: 0.038  # OBR: average ~3.8% 2025-2029
-  2029-01-01: 0.039  # OBR: rising toward 4%
-  2030-01-01: 0.04   # OBR: returns to 4% by end-2030
+  2026-01-01: 0.0378
+  2027-01-01: 0.0423
+  2028-01-01: 0.0434
+  2029-01-01: 0.0430
+  2030-01-01: 0.0436
+  2031-01-01: 0.0448
