@@ -1,0 +1,14 @@
+description: >
+  Annual interest rate on cash ISA subscriptions above the cash limit that are
+  held in taxable savings. The default is the Bank of England's effective
+  interest rate on individuals' outstanding time deposits in June 2026, held
+  for every year.
+values:
+  2000-01-01: 0.0336
+metadata:
+  label: Interest rate on cash ISA excess in taxable savings
+  period: year
+  unit: /1
+  reference:
+    - title: Bank of England, Effective interest rates, June 2026, Table A (series Z6IW)
+      href: https://www.bankofengland.co.uk/statistics/effective-interest-rates/2026/june-2026
