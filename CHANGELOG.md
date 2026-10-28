@@ -1,3 +1,10 @@
+## [2.162.19] - 2026-10-28
+
+### Changed
+
+- Corrected comments, docstrings and citations from reviews of recently merged pull requests, and added property tests for claimant roles and the Childcare Offer for Wales income sources.
+
+
 ## [2.162.18] - 2026-10-28
 
 ### Changed
