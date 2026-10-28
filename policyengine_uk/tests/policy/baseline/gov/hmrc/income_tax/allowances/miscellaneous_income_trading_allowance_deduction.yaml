@@ -209,3 +209,27 @@
     taxable_miscellaneous_income: 600
     # (30,000 + 600 - 12,570) x 20%
     income_tax: 3_606
+
+- name: Case 15, the trade takes the allowance even where pension relief would rise without it.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    self_employment_gross_receipts: 20_000
+    self_employment_income: 20_000
+    miscellaneous_income: 30_000
+    income_not_otherwise_charged: 30_000
+    personal_pension_contributions: 20_000
+  output:
+    # The trade's receipts of £20,000 exceed the allowance, so the trade
+    # takes all £1,000 of it and the casual income none (s. 783AK). Trade
+    # profit of £19,000 is the relevant UK earnings that cap pension relief
+    # (FA 2004 s. 189), so £19,000 of the £20,000 contributions get relief.
+    # The Act would also allow the casual income the whole allowance: relief
+    # on all £20,000 and £3,286 of income tax, but £445.80 of Class 4.
+    trading_allowance_deduction: 1_000
+    miscellaneous_income_trading_allowance_deduction: 0
+    pension_contributions_relief: 19_000
+    # (19,000 + 30,000 - 19,000 - 12,570) x 20%
+    income_tax: 3_486
+    # (19,000 - 12,570) x 6%
+    ni_class_4: 385.80

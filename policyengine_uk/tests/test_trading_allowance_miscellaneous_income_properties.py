@@ -34,8 +34,9 @@ simulation:
    Chapter 8 income.
 7. Income tax never rises as more of a person's miscellaneous income is
    Chapter 8 income.
-8. Parity (differential): Chapter 8 income of X, with no trade, is charged
-   the same income tax as trade receipts of X with no expenses.
+8. Parity (differential): without pension contributions, Chapter 8 income
+   of X, with no trade, is charged the same income tax as trade receipts of
+   X with no expenses.
 9. A current trading loss is never both claimed and given up: when the
    allowance gives either relief, no current loss is relieved against
    general income or Class 4, and a loss above anything the allowance could

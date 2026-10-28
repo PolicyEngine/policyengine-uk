@@ -34,14 +34,19 @@ def trading_allowance_reliefs(person, period, parameters):
       leave. Where trade receipts exceed the allowance it gets none: partial
       relief then beats actual deductions exactly when the trades' expenses
       and capital allowances are under the allowance, and the trades take
-      all of it. Without losses brought forward, every split charges the
-      same income tax: relevant income less the allowance. With them
-      (loss_relief, ITA 2007 s. 83), a smaller trade share can charge less
-      tax this year, because the loss absorbs the trade profit it leaves, but
-      it uses up that much of the loss, which otherwise carries forward
-      against later profits of the trade (s. 84). The trades-first split
-      leaves the loss for later years and keeps Class 4 profits lower, so
-      the model uses it there too.
+      all of it. Every split leaves the same trade and miscellaneous income
+      in total, relevant income less the allowance, but two other reliefs
+      read the trade's share alone, so a smaller trade share can charge less
+      income tax this year:
+      - losses brought forward (loss_relief, ITA 2007 s. 83) absorb the
+        trade profit it leaves, but that uses up loss which otherwise
+        carries forward against later profits of the trade (s. 84);
+      - pension contributions above relevant UK earnings (FA 2004 s. 189)
+        get more relief, since trade profit counts towards those earnings
+        and miscellaneous income does not.
+      The model keeps the trades-first split in both cases: it leaves the
+      loss for later years and keeps Class 4 profits lower, but it does not
+      always minimise the year's income tax and Class 4 together.
     - Ordinary treatment: an individual whose relevant income is within the
       allowance can elect out of full relief (s. 783AL), and one above it
       need not elect for partial relief (s. 783AM). A raw current trading

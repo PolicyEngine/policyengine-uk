@@ -40,13 +40,17 @@ PolicyEngine models these via:
 
 `ebr_energy_bills_credit` sums the monthly instalments within each calendar
 year, so a Great Britain household on the scheme throughout gets £199 in
-2022 and £201 in 2023, while HBAI counts the whole £400 in 2022-23.
+2022 and £201 in 2023. `energy_bills_rebate`, its sum with the Council Tax
+Rebate, counts in household net income and government spending that way.
 
-HBAI classifies both strands as miscellaneous income, not state support,
-and DWP imputes receipt because the FRS did not ask about them. So
-`energy_bills_rebate` is in `hbai_household_net_income` but not in
-`hbai_benefits`. No FRS income field behind `miscellaneous_income` holds
-the rebates, so they are not counted twice.
+HBAI counts both strands by financial year, all in FYE 2023, and classifies
+them as miscellaneous income, not state support; DWP imputes receipt
+because the FRS did not ask about them. So `hbai_household_net_income` adds
+`hbai_energy_bills_rebate`, which sums the credit from April of the year to
+the next March: the whole £400 (Northern Ireland's January 2023 payment
+included) in 2022-23 and nothing in 2023-24. It is not in `hbai_benefits`.
+No FRS income field behind `miscellaneous_income` holds the rebates, so
+they are not counted twice.
 
 ## Cost-of-Living Payments (2022-23 and 2023-24)
 
