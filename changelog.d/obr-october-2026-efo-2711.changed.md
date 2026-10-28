@@ -1,0 +1,1 @@
+Update the economic assumptions to the OBR's October 2026 Economic and fiscal outlook, including its revised 2025 outturn and its new 2031 forecast, with a smooth join to the long-run paths from 2032.

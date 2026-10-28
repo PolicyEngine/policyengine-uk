@@ -13,7 +13,9 @@ population, index 2008Q1=100). That ratio reproduces the release's 2023-24 to
 2025-26 values to 1e-9 per cent.
 
 per_capita.*: (1 + aggregate growth) / (1 + ons.population) - 1, rounded to 4
-decimals, with calendar-year aggregates from the same EFO tables.
+decimals, with calendar-year aggregates from the October 2026 EFO tables. The
+long-term determinants for the October 2026 EFO are not yet published, so
+population stays on the March 2026 vintage until they are.
 """
 
 import pytest
@@ -98,20 +100,21 @@ REAL_GDP_PER_PERSON_Q2 = {
     2025: 106.69186884652444,
 }
 
-# March 2026 EFO calendar-year totals, GBP billion.
+# October 2026 EFO calendar-year totals, GBP billion.
 # Table 1.4 nominal GDP (annual growth equals Table A.1 nominal GDP growth).
 NOMINAL_GDP = {
     2020: 2124.72,
     2021: 2322.652,
     2022: 2580.949,
     2023: 2752.164,
-    2024: 2890.664,
-    2025: 3036.746486,
-    2026: 3136.973465,
-    2027: 3248.777377,
-    2028: 3362.463387,
-    2029: 3477.144474,
-    2030: 3599.757631,
+    2024: 2890.254,
+    2025: 3033.866,
+    2026: 3161.458961,
+    2027: 3263.816753,
+    2028: 3381.78475,
+    2029: 3510.878469,
+    2030: 3640.284132,
+    2031: 3770.105082,
 }
 # Table 1.12 mixed income.
 MIXED_INCOME = {
@@ -119,13 +122,14 @@ MIXED_INCOME = {
     2021: 162.369,
     2022: 168.687,
     2023: 169.885,
-    2024: 176.374,
-    2025: 178.87647080000002,
-    2026: 185.0544149,
-    2027: 192.6154851,
-    2028: 200.4094443,
-    2029: 208.40325,
-    2030: 216.8960756,
+    2024: 176.333,
+    2025: 177.725,
+    2026: 183.374482,
+    2027: 189.543244,
+    2028: 196.611717,
+    2029: 204.513402,
+    2030: 213.30725,
+    2031: 222.381054,
 }
 
 
@@ -160,7 +164,7 @@ def _per_capita(aggregate_growth, year):
     return round((1 + aggregate_growth) / (1 + POPULATION(f"{year}-01-01")) - 1, 4)
 
 
-@pytest.mark.parametrize("year", range(2021, 2031))
+@pytest.mark.parametrize("year", range(2021, 2032))
 def test_per_capita_gdp_divides_nominal_gdp_by_population(year):
     growth = NOMINAL_GDP[year] / NOMINAL_GDP[year - 1] - 1
     assert YOY.obr.per_capita.gdp(f"{year}-01-01") == pytest.approx(
@@ -168,7 +172,7 @@ def test_per_capita_gdp_divides_nominal_gdp_by_population(year):
     )
 
 
-@pytest.mark.parametrize("year", range(2021, 2031))
+@pytest.mark.parametrize("year", range(2021, 2032))
 def test_per_capita_mixed_income_divides_mixed_income_by_population(year):
     growth = MIXED_INCOME[year] / MIXED_INCOME[year - 1] - 1
     assert YOY.obr.per_capita.mixed_income(f"{year}-01-01") == pytest.approx(
@@ -176,7 +180,7 @@ def test_per_capita_mixed_income_divides_mixed_income_by_population(year):
     )
 
 
-@pytest.mark.parametrize("year", range(2021, 2031))
+@pytest.mark.parametrize("year", range(2021, 2032))
 def test_per_capita_non_labour_income_divides_by_population(year):
     growth = YOY.obr.non_labour_income(f"{year}-01-01")
     assert YOY.obr.per_capita.non_labour_income(f"{year}-01-01") == pytest.approx(

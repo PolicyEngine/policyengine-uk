@@ -103,9 +103,9 @@ def test_published_september_rates_give_the_april_rises():
 
 
 def test_april_2028_rise_is_the_obr_september_2027_forecast():
-    """OBR March 2026 EFO: calendar-year 2027 CPI plus the receipts Table 3.19
-    gap for September 2027 (2.0719%), applied as the published 2.1%."""
-    assert rise(system.parameters, 2028) == 0.021
+    """OBR October 2026 EFO: calendar-year 2027 CPI plus the receipts Table
+    4.19 gap for September 2027 (3.4400%), applied as the published 3.4%."""
+    assert rise(system.parameters, 2028) == 0.034
 
 
 def test_the_index_rises_by_each_april_rise():
@@ -171,7 +171,7 @@ def test_uc_childcare_caps_rise_by_september_cpi_in_april_2027(children, expecte
 def test_every_parameter_on_the_index_rises_by_september_cpi_after_its_last_value():
     """After its last published value, each parameter uprated by the index
     rises by the April rise: 0% in April 2016, 3.5% in April 2027,
-    and 2.1% in April 2028, with any configured benefit-specific rounding."""
+    and 3.4% in April 2028, with any configured benefit-specific rounding."""
     parameters = system.parameters
     # The processed tree, including its baseline copy, is uprated, so read
     # the YAML files for the last published dates.
@@ -311,13 +311,13 @@ def test_scenario_setting_september_cpi_moves_the_next_april():
 
 def test_scenario_on_calendar_cpi_moves_the_forecast_with_the_obr_gap():
     """Calendar-year CPI for 2027 moves the September 2027 forecast one for
-    one (keeping the OBR's +0.072pp gap), and so the April 2028 rise."""
+    one (keeping the OBR's +0.02pp gap), and so the April 2028 rise."""
     parameters = parameters_under(
         {f"{OBR}.consumer_price_index": {"year:2027-01-01:1": 0.04}}
     )
-    assert rise(parameters, 2028) == 0.041
+    assert rise(parameters, 2028) == 0.040
     assert carers_allowance(parameters, 2028) == pytest.approx(
-        carers_allowance(parameters, 2027) * 1.041, abs=PENNY_TENTH
+        carers_allowance(parameters, 2027) * 1.040, abs=PENNY_TENTH
     )
 
 

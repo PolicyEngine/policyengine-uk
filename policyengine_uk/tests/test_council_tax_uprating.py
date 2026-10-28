@@ -22,7 +22,7 @@ from policyengine_uk.variables.household.demographic.geography import Region
 
 
 REGIONS = [region.name for region in Region]
-UPRATED_YEARS = list(range(2023, 2031))
+UPRATED_YEARS = list(range(2023, 2032))
 COUNCIL_TAX_GROWTH = parameters.gov.economic_assumptions.yoy_growth.obr.council_tax
 # Household weights grow by the series uprating_indices.yaml lists them under.
 # It is read from the file here, not from the code under test.
@@ -34,13 +34,15 @@ _UPRATING_INDICES = yaml.safe_load(
 ]
 WEIGHT_GROWTH = parameters.get_child(WEIGHT_GROWTH_PATH)
 
-# OBR March 2026 EFO, detailed forecast tables, expenditure, Table 4.1:
-# council tax receipts in £ billion, 2024-25 (outturn) to 2030-31.
-OBR_RECEIPTS_YEARS = range(2024, 2031)
+# OBR council tax receipts in £ billion: the 2024-25 outturn from the March
+# 2026 EFO (detailed forecast tables, expenditure, Table 4.1), then the
+# 2025-26 outturn and the forecast to 2031-32 from the October 2026 EFO
+# (Table 5.1).
+OBR_RECEIPTS_YEARS = range(2024, 2032)
 OBR_RECEIPTS = {
-    "england": [41.2225, 44.1172, 46.5197, 49.3324, 52.3663, 55.308, 58.3527],
-    "scotland": [2.9384, 3.0512, 3.1684, 3.2901, 3.4164, 3.5476, 3.6839],
-    "wales": [2.2284, 2.4008, 2.5793, 2.771, 2.9771, 3.1984, 3.4362],
+    "england": [41.2225, 44.117, 46.806, 49.2566, 52.0217, 54.9103, 57.8847, 60.9565],
+    "scotland": [2.9384, 3.0519, 3.1699, 3.2924, 3.4196, 3.5518, 3.6891, 3.8316],
+    "wales": [2.2284, 2.4008, 2.5784, 2.7691, 2.9739, 3.1939, 3.4301, 3.6839],
 }
 
 # The liability behind each country's OBR line, net of council tax reduction,
@@ -136,11 +138,12 @@ def _uprated_council_tax(regions, council_tax, year):
 
 def test_uprate_council_tax_holds_northern_ireland_flat():
     # In 2025-26 OBR's council tax receipts grow 7.02% in England, 7.73% in
-    # Wales and 3.84% in Scotland (March 2026 EFO, Table 4.1), and household
-    # weights grow 0.30%, with population. So a £1,000 bill becomes
+    # Wales and 3.86% in Scotland (October 2026 EFO, Table 5.1, over the March
+    # 2026 EFO's 2024-25 outturn), and household weights grow 0.30%, with
+    # population. So a £1,000 bill becomes
     # £1,000 x 1.0702 / 1.0030 = £1,067.00 in London,
     # £1,000 x 1.0773 / 1.0030 = £1,074.08 in Wales and
-    # £1,000 x 1.0384 / 1.0030 = £1,035.29 in Scotland. Northern Ireland has
+    # £1,000 x 1.0386 / 1.0030 = £1,035.49 in Scotland. Northern Ireland has
     # no council tax series and keeps £1,000; it used to fall through to
     # England's growth, because the code compared the region with
     # "NORTHERN IRELAND" (a space) while the dataset label is NORTHERN_IRELAND.
@@ -149,7 +152,7 @@ def test_uprate_council_tax_holds_northern_ireland_flat():
     )
 
     assert council_tax == pytest.approx(
-        [1_067.00, 1_074.08, 1_035.29, 1_000.0], abs=0.005
+        [1_067.00, 1_074.08, 1_035.49, 1_000.0], abs=0.005
     )
 
 
@@ -296,11 +299,11 @@ def _weighted_totals(dataset):
 
 
 def test_country_totals_track_obr_receipts():
-    """Project a dataset from 2024-25 to 2030-31 with unequal weights and
+    """Project a dataset from 2024-25 to 2031-32 with unequal weights and
     bills. Each country's weighted council tax total grows as OBR forecasts
     its receipts to grow. Each year's growth is within 0.0001 of OBR's: the
-    series rounds each year to 4 decimals, and holds Wales at 0.0743 from
-    2026, where Table 4.1 implies 0.0743 to 0.0744. Before #2067 the totals
+    series rounds each year to 4 decimals, and holds Wales at 0.0740 from
+    2026, where Table 5.1 implies 0.0739 to 0.0740. Before #2067 the totals
     also grew with the weights, by population, and were 2.8% too high by
     2030-31.
     """
@@ -311,7 +314,7 @@ def test_country_totals_track_obr_receipts():
         weights=[3_000.0, 1_000.0, 2_500.0, 1_200.0, 800.0, 1_500.0],
         fiscal_year=2024,
     )
-    projected = extend_single_year_dataset(dataset, parameters, end_year=2030)
+    projected = extend_single_year_dataset(dataset, parameters, end_year=2031)
     totals = {year: _weighted_totals(projected[year]) for year in OBR_RECEIPTS_YEARS}
 
     for series, receipts in OBR_RECEIPTS.items():
@@ -320,8 +323,8 @@ def test_country_totals_track_obr_receipts():
             growth = totals[year][series] / totals[year - 1][series] - 1
             obr_growth = receipts[year] / receipts[year - 1] - 1
             assert growth == pytest.approx(obr_growth, abs=1e-4), (series, year)
-        assert totals[2030][series] / totals[2024][series] == pytest.approx(
-            receipts[2030] / receipts[2024], rel=5e-4
+        assert totals[2031][series] / totals[2024][series] == pytest.approx(
+            receipts[2031] / receipts[2024], rel=5e-4
         ), series
 
 

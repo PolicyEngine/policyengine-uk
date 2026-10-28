@@ -25,7 +25,7 @@ def test_stored_ahc_cpi_growth_matches_the_documented_derivation():
     # updating CPI, rent or water bill forecasts without rerunning the script
     # fails here.
     derived = _derived_growth()
-    assert sorted(derived) == list(range(2022, 2031))
+    assert sorted(derived) == list(range(2022, 2032))
     for year, growth in derived.items():
         assert AHC_GROWTH(f"{year}-01-01") == pytest.approx(
             round(growth, 4), abs=1e-9
@@ -33,8 +33,8 @@ def test_stored_ahc_cpi_growth_matches_the_documented_derivation():
 
 
 def test_ahc_cpi_growth_2026_removes_rents_from_cpi():
-    # OBR March 2026: calendar-2026 CPI 2.30%, actual rents 3.34%. Rents grow
+    # OBR October 2026: calendar-2026 CPI 3.11%, actual rents 3.65%. Rents grow
     # faster than CPI, so removing them leaves lower growth than CPI.
     cpi_growth = parameters.gov.economic_assumptions.yoy_growth.obr.consumer_price_index
-    assert AHC_GROWTH("2026-01-01") == pytest.approx(0.0217, abs=1e-9)
+    assert AHC_GROWTH("2026-01-01") == pytest.approx(0.0304, abs=1e-9)
     assert AHC_GROWTH("2026-01-01") < cpi_growth("2026-01-01")

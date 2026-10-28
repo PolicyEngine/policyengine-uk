@@ -47,7 +47,7 @@ def test_uprate_rent_uses_tenure_specific_growth():
 def test_forecast_private_rent_preserves_obr_aggregate_growth():
     growth = parameters.gov.economic_assumptions.yoy_growth
 
-    for year in range(2026, 2031):
+    for year in range(2026, 2032):
         private_rent_growth = growth.ons.private_rental_prices(year)["UNITED_KINGDOM"]
         social_rent_growth = growth.obr.social_rent(year)
         aggregate_rent_growth = growth.obr.rent(year)
@@ -61,7 +61,7 @@ def test_forecast_private_rent_preserves_obr_aggregate_growth():
 
 REGIONS = [region.name for region in Region]
 TENURES = ["RENT_PRIVATELY", "RENT_FROM_COUNCIL", "RENT_FROM_HA", "OWNED_OUTRIGHT"]
-UPRATED_YEARS = list(range(2022, 2031))
+UPRATED_YEARS = list(range(2022, 2032))
 
 
 def _uprated_rent(regions, tenures, rents, year):
