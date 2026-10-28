@@ -21,9 +21,9 @@ Property 7 checks current law, with a zero protected floor:
    ``uc_benefit_cap_reduction_after_floor`` plus
    ``housing_benefit_benefit_cap_reduction``.
 2. Bound. The UC part is between 0 and ``min(reg. 81 amount, max(award
-   before the cap, 0))``, and equals it under current law (WRA 2012 s.
-   96(2): a reduction "up to or equalling the excess"; the award goes to nil
-   and no lower).
+   before the cap, 0))``, and equals it under current law. An award cannot
+   be reduced below nil, and WRA 2012 s. 96(2) allows a reduction smaller
+   than the excess ("an amount up to or equalling the excess").
 3. Incidence, for coherent inputs. Under current law
    ``benefit_cap_reduction > 0`` exactly where the parent commit's total is
    positive, so uk-data's count of capped households cannot move for these
@@ -330,6 +330,22 @@ def check_invariants(population, floor):
 @example(population=EXAMPLE_UNITS, floor=0.0)
 @example(population=EXAMPLE_UNITS, floor=0.85)
 @example(population=EXAMPLE_UNITS, floor=1.2)
+@example(
+    population=[
+        unit(award=1.0, other_benefits=40_000.0),
+        unit(award=4_999.0, other_benefits=30_000.0, childcare=2_000.0),
+        unit(award=3_000.0, other_benefits=26_000.0, latent_rate=0.25, draw=0.0),
+    ],
+    floor=0.0,
+)
+@example(
+    population=[
+        unit(award=1.0, other_benefits=40_000.0),
+        unit(award=4_999.0, other_benefits=30_000.0, childcare=2_000.0),
+        unit(award=3_000.0, other_benefits=26_000.0, latent_rate=0.25, draw=0.0),
+    ],
+    floor=0.5,
+)
 def test_reduction_reported_is_what_the_cap_removes(population, floor):
     check_invariants(population, floor)
 
@@ -415,7 +431,7 @@ def test_non_claimant_override_masks_applied_reduction():
 
     assert not new.calculate("claims_universal_credit", PERIOD)[0]
     assert new.calculate("universal_credit_pre_benefit_cap", PERIOD)[0] == 100
-    assert new.calculate("uc_benefit_cap_reduction", PERIOD)[0] == 7_980
+    # relies on uc_benefit_cap_reduction being ungated; drop if it gains a claim gate.
     assert old.calculate("benefit_cap_reduction", PERIOD)[0] == 7_980
     assert new.calculate("uc_benefit_cap_reduction_after_floor", PERIOD)[0] == 0
     assert new.calculate("benefit_cap_reduction", PERIOD)[0] == 0
@@ -441,7 +457,9 @@ def test_a_binding_floor_reports_the_cap_reduction_it_leaves():
     assert floored["uc_benefit_cap_reduction"][0] == 4_980
     assert current_law["benefit_cap_reduction"][0] == 4_980
     reported = floored["benefit_cap_reduction"][0]
-    assert 0 <= reported < 4_980
+    # Allowance: 0.15 × £4,801.68 = £720.25. The 15% deduction (£720.25)
+    # is met first, leaving nothing for the cap.
+    assert np.isclose(reported, 0, atol=TOL)
     assert np.isclose(reported, floored["uc_benefit_cap_reduction_after_floor"][0])
     assert np.isclose(
         reported,

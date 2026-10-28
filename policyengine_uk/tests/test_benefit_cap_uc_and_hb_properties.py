@@ -21,8 +21,10 @@ Invariants, for every family:
    cap (HB Regs 2006 reg 75C(2)(b)): the total rises by exactly that amount.
 3. A family receiving Universal Credit has no Housing Benefit reduction, and
    its benefit cap reduction is its Universal Credit reduction alone, up to
-   the award (WRA 2012 s. 96(2)). If it has Housing Benefit, it is exempt
-   from the Housing Benefit cap (reg 75F(1)(g)).
+   the award. An award cannot be reduced below nil, and WRA 2012 s. 96(2)
+   allows a reduction smaller than the excess ("an amount up to or equalling
+   the excess"). If it has Housing Benefit, it is exempt from the Housing
+   Benefit cap (reg 75F(1)(g)).
 4. A family without Universal Credit has no Universal Credit reduction, and
    its Housing Benefit reduction is reg 75D's: the excess over the Housing
    Benefit cap, leaving at least 50 pence a week.

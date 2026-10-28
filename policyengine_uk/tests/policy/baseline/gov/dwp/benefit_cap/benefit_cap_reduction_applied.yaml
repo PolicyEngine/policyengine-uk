@@ -2,15 +2,16 @@
 #
 # UC Regs 2013 reg 81: the reduction is "the excess" less the childcare costs
 # element, and reg 81 has no nil floor of its own, so it can exceed the award
-# before the cap (uc_benefit_cap_reduction). WRA 2012 s 96(2) reduces
-# entitlement "by an amount up to or equalling the excess": the award goes to
-# nil and no lower, so the amount removed is the smaller of the two
-# (uc_benefit_cap_reduction_after_floor). Deductions come out of what the cap
-# leaves (UC etc. (Claims and Payments) Regs 2013 Sch 6 para 3(1)(a) keeps a
-# penny payable). DWP's benefit cap statistics count UC households by "an
-# amount the payment has been capped by", and benefit_cap_reduction reports
-# that amount. HB Regs 2006 reg 75D(2) already limits the Housing Benefit
-# reduction to the award less the reg 75 minimum (50 pence a week).
+# before the cap (uc_benefit_cap_reduction). An award cannot be reduced below
+# nil, so the amount removed is the smaller of the two
+# (uc_benefit_cap_reduction_after_floor). WRA 2012 s. 96(2) allows a reduction
+# smaller than the excess ("an amount up to or equalling the excess").
+# Deductions come out of what the cap leaves (UC etc. (Claims and Payments)
+# Regs 2013 Sch 6 para 3(1)(a) keeps a penny payable). DWP's benefit cap
+# statistics count UC households by "an amount the payment has been capped
+# by", and benefit_cap_reduction reports that amount. HB Regs 2006 reg 75D(2)
+# already limits the Housing Benefit reduction to the award less the reg 75
+# minimum (50 pence a week).
 #
 # The award before the cap and the capped total are entered. Annual limits
 # outside London (UC reg 80A(2)(b)(ii), HB reg 75CA(2)(b)(ii)): couple

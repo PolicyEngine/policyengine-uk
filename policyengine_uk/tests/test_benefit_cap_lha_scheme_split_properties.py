@@ -49,8 +49,10 @@ Invariants, each over generated families and the explicit examples:
    amount before the cap, 50 pence a week) (reg. 75D(2)), and a family
    receiving Universal Credit has no Housing Benefit reduction (HB reg.
    75F(1)(g)); ``benefit_cap_reduction`` is the sum of the two, with the
-   UC part the reg. 81 amount up to the award (WRA 2012 s. 96(2)). The model
-   gives no family both awards before the cap; the YAML tests and
+   UC part the reg. 81 amount up to the award. An award cannot be reduced
+   below nil, and WRA 2012 s. 96(2) allows a reduction smaller than the
+   excess ("an amount up to or equalling the excess"). The model gives no
+   family both awards before the cap; the YAML tests and
    ``test_benefit_cap_uc_and_hb_properties.py`` supply both.
 5. Awards. Where a scheme's cap equals the old cap and neither reg. 81's
    childcare offset nor reg. 75D(2)'s minimum applies, its award equals the
@@ -785,8 +787,10 @@ def test_each_scheme_reduces_by_its_own_excess(population):
         population
     )
     assert np.all(v["housing_benefit"] <= hb_pre + 0.01), population
-    # WRA 2012 s. 96(2): the award goes to nil and no lower, so the UC part
-    # of the reported reduction is the reg. 81 amount up to the award.
+    # An award cannot be reduced below nil, so the UC part of the reported
+    # reduction is the reg. 81 amount up to the award. WRA 2012 s. 96(2)
+    # allows a reduction smaller than the excess ("an amount up to or
+    # equalling the excess").
     uc_applied = v["uc_benefit_cap_reduction_after_floor"]
     np.testing.assert_allclose(
         uc_applied,
