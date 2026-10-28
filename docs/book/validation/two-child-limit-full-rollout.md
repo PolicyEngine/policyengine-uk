@@ -171,53 +171,85 @@ Reform keys use the `YYYY-MM-DD.YYYY-MM-DD` form, which the dictionary and
 
 ## Results, 2025-26
 
-These results come from the earlier version of the snippet, run on 23 October
-2026 with policyengine-uk 2.147.2 and the Microcosm UK 2024-25 national release
-`microcosm-uk-2024-25-national-20261023T075039Z-a133f37a` (SHA-256
-`64f83900…`). That version predates both the exception rules and the FYE 2011
-line variables: no exception applied, and its FYE 2011 row overrode the
-absolute thresholds with £305.70 a week BHC and £261.92 AHC uprated by CPI. A
-re-run with the current snippet will replace them. Cost is the change in
-Universal Credit and Child Tax Credit spending. Children lifted are children
-out of absolute low income.
+These results come from running the snippet above on 28 October 2026 with
+policyengine-uk 2.162.14 and the Microcosm UK 2024-25 national release
+`microcosm-uk-2024-25-national-20261028T061416Z-3c0d11b6` (SHA-256
+`a5ae72ae…`), which was built with that version. Only the `DATASET` path was
+changed. The run is nine microsimulations: a baseline and two reforms for each
+setting. policyengine.py 6.11.1 certifies policyengine-uk 2.151.0, which has
+neither the exception rules nor the FYE 2011 line variables, so this pair is
+not a certified one. Cost is the change in Universal Credit and Child Tax
+Credit spending. A benefit unit gains if those two rise by more than £1 a year.
 
-| Setting | Abolish: cost | Abolish: children lifted, AHC / BHC | Three-child limit: cost | Three-child limit: children lifted, AHC / BHC |
+| Setting | Abolish: cost | Abolish: benefit units gaining (their children) | Three-child limit: cost | Three-child limit: benefit units gaining (their children) |
 |---|---:|---:|---:|---:|
-| Current law (protection for pre-April 2017 children) | £1.94bn | 217k / 268k | £1.17bn | 137k / 159k |
-| Full roll-out | £3.35bn | 439k / 445k | £2.32bn | 289k / 314k |
-| Full roll-out, full UC take-up | £3.58bn | 475k / 484k | £2.51bn | 312k / 374k |
-| Full roll-out, full UC take-up, FYE 2011-based line | £3.58bn | 455k / 353k | £2.51bn | 293k / 196k |
-| IFS, fully rolled out (AHC, FYE 2011-based line) | about £3.6bn | 630,000 | about £2.6bn | 420,000 |
+| Current law (protection for pre-April 2017 children) | £1.91bn | 459k (1.64m) | £1.15bn | 351k (1.13m) |
+| Full roll-out | £3.07bn | 639k (2.21m) | £2.13bn | 632k (2.17m) |
+| Full roll-out, full UC take-up | £3.56bn | 767k (2.62m) | £2.52bn | 757k (2.57m) |
+| IFS, fully rolled out | about £3.6bn | over 800,000 households | about £2.6bn | — |
 
-Under current law, 467,000 benefit units with 1.64 million children gain from
+Children lifted out of absolute low income, in thousands, after / before
+housing costs:
+
+| Setting | Abolish: FYE 2025 line | Abolish: FYE 2011 line | Three-child limit: FYE 2025 line | Three-child limit: FYE 2011 line |
+|---|---:|---:|---:|---:|
+| Current law (protection for pre-April 2017 children) | 209 / 299 | 229 / 235 | 132 / 219 | 194 / 97 |
+| Full roll-out | 392 / 417 | 287 / 339 | 267 / 313 | 186 / 178 |
+| Full roll-out, full UC take-up | 450 / 496 | 366 / 361 | 294 / 399 | 240 / 184 |
+| IFS, fully rolled out | | 630 (after housing costs) | | 420 (after housing costs) |
+
+Under current law, 459,000 benefit units with 1.64 million children gain from
 abolition in 2025-26. DWP's April 2025 statistics count 453,600 households not
 receiving the child element for at least one child, with 1.61 million children.
 
+Each children-lifted figure comes from between 59 and 196 household records,
+out of 21,086 households with children in the release, and no household moves
+into absolute low income in any comparison. The ten records that contribute
+most make up between 29% and 69% of each figure, and one record contributes up
+to 57,000 children, so two figures can differ by that much because of one
+household.
+
 ## Why the results differ from the IFS's
 
-- **Roll-out.** Running current law in 2025-26 gives about a third of the IFS
-  headcount, because most children in large families are still protected.
-  Full roll-out is the largest single setting.
-- **Take-up.** With full roll-out and full take-up, the cost (£3.58bn) and the
-  number of families gaining (778,000 benefit units, against the IFS's "over
-  800,000 households") match the IFS closely.
-- **The remaining gap.** Children lifted stay about a quarter to 30% short
-  of the IFS figures. These checks do not isolate the cause. Plausible
-  contributors, none of them ruled out:
-  - *Family size in the data.* At FYE 2025 the Microcosm release has about 10%
-    fewer children in families with three or more children than HBAI (4.20
-    million against 4.64 million, HBAI table 4.5db), and about 21% fewer of
-    those children in relative low income after housing costs (1.64 million
+- **Roll-out.** Under current law, abolition costs £1.91bn and lifts 229,000
+  children on the IFS's line (FYE 2011, after housing costs), just over a
+  third of its 630,000. Full roll-out raises the cost to £3.07bn and the
+  benefit units gaining from 459,000 to 639,000. For abolition it raises
+  children lifted on the FYE 2011 line after housing costs from 229,000 to
+  287,000, less than on the FYE 2025 line (209,000 to 392,000). For the
+  three-child limit it lowers them on the FYE 2011 line (194,000 to 186,000).
+  Full roll-out also removes the higher first-child element, which neither
+  reform restores, so a family that a reform lifts out of low income under
+  current law may stay in it at full roll-out. On that line the largest single
+  record contributes 57,000 children to each current-law figure, but at most
+  17,000 to a full roll-out one.
+- **Take-up.** With full roll-out and full take-up, the cost (£3.56bn to
+  abolish, £2.52bn for a three-child limit) is close to the IFS's (about
+  £3.6bn and £2.6bn), and 767,000 benefit units gain from abolition, against
+  the IFS's "over 800,000 households".
+- **The remaining gap.** On the IFS's line, children lifted are about 42% short
+  of the IFS figures: 366,000 against 630,000 for abolition, and 240,000
+  against 420,000 for a three-child limit. On the higher FYE 2025 line they are
+  about 30% short (450,000 and 294,000). These checks do not isolate the cause.
+  Plausible contributors, none of them ruled out:
+  - *Family size in the data.* At FYE 2025 the Microcosm release has about 13%
+    fewer children in families with three or more children than HBAI (4.04
+    million against 4.64 million, HBAI table 4.5db), and about 20% fewer of
+    those children in relative low income after housing costs (1.66 million
     against 2.07 million). See [PolicyEngine/microcosm#1371](https://github.com/PolicyEngine/microcosm/issues/1371).
     A shortfall in relative low income does not show how many children cross
     an absolute line after the reform, so this alone cannot size the gap.
-  - *The poverty line.* The 23 October run approximated the FYE 2011-based
-    line (see above), so it is not exactly the IFS line.
-  - *Exceptions.* The 23 October run applied no statutory exceptions.
+  - *The poverty line.* The model uprates the FYE 2011 line beyond FYE 2025 by
+    headline OBR CPI (see above), which may not match the IFS's uprating.
   - *Take-up.* Full take-up here sets `would_claim_uc` to true for everyone,
     which is not the IFS adjustment to reported take-up ([IFS, 2024][ifs-2024],
     Appendix 6B), and this page has not matched that adjustment.
+  - *Sample size.* The two full take-up figures on the IFS's line come from 185
+    and 137 household records, and the ten that contribute most make up 29% and
+    38% of them.
 
+  The exceptions do not explain the gap: no child in the release has one, which
+  if anything raises the figures here.
   Attributing the gap to any one of these would need a controlled comparison.
 - **Data year and method.** The IFS used TAXBEN on FRS 2022-23 and 2023-24,
   additionally reweighting 2022-23 by number of children, and FRS data as
