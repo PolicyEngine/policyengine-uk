@@ -15,9 +15,8 @@ changes that year only. While the national living wage stays at or above its
 April 2026 rate and the hours at or above 16, no projected year is below £204.
 
 Run after general uprating and before fiscal-year conversion, on both the
-main tree and its baseline copy, as the Savings Credit threshold projection
-is. Reprocessing a reform then reads its changed national living wage or
-hours. The exceptions edit the processed parameters, so they do not move the
+main tree and its baseline copy. Reprocessing a reform then reads its changed
+national living wage or hours. The exceptions edit the processed parameters, so they do not move the
 limit: ``Scenario.apply`` on an already-built simulation, and a reform-dict
 key naming a single day or month.
 """

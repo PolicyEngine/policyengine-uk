@@ -271,6 +271,65 @@ def test_zero_forecast_anchor_survives_an_extreme_component_rebound(
         assert isfinite(index(at)) and index(at) > 0
 
 
+OWN_ANCHOR_PATHS = (
+    *(
+        (
+            f"{SC_NAME}.threshold.{relationship}",
+            f"{SC_NAME}.threshold_uprating.{relationship}",
+        )
+        for relationship in ("SINGLE", "COUPLE")
+    ),
+    *(
+        (f"{HB_NAME}.{kind}.aged", f"{HB_NAME}.protected_pension_age_uprating.{kind}")
+        for kind in HB_RELATIONS
+    ),
+)
+
+
+@st.composite
+def own_anchor_path(draw):
+    """One to three explicit own amounts, in year order, from the base year."""
+    years = draw(
+        st.lists(
+            st.integers(FIRST_PROJECTION_YEAR - 1, LAST_INDEX_YEAR),
+            min_size=1,
+            max_size=3,
+            unique=True,
+        )
+    )
+    return [(year, draw(nonnegative_amount)) for year in sorted(years)]
+
+
+@settings(max_examples=40, deadline=None)
+@given(paths=st.sampled_from(OWN_ANCHOR_PATHS), anchors=own_anchor_path())
+@example(paths=OWN_ANCHOR_PATHS[0], anchors=[(2027, 0.0), (2029, 180.0)])
+@example(paths=OWN_ANCHOR_PATHS[-1], anchors=[(2027, 0.0), (2029, 180.0)])
+@example(paths=OWN_ANCHOR_PATHS[1], anchors=[(2026, 300.0), (2030, 0.0)])
+def test_explicit_own_anchors_survive_projection(paths, anchors):
+    """Each explicit threshold or protected-HB amount survives exactly.
+
+    Years whose latest explicit amount is zero stay zero, including a zero
+    followed by a positive anchor, and the index stays positive and finite.
+    """
+    own_path, index_path = paths
+    parameters = synthetic_parameter_tree([(0.039, 0.035)])
+    unreformed = parameters.clone()
+    _apply_reforms(parameters, {own_path: anchors})
+
+    projected = project_synthetic_parameters(parameters, unreformed)
+
+    own = projected.get_child(own_path)
+    for year, value in anchors:
+        assert own(f"{year}-04-30") == value, (year, anchors)
+    index = projected.get_child(index_path)
+    for year in range(anchors[0][0], LAST_INDEX_YEAR + 1):
+        at = f"{year}-04-30"
+        in_force = [value for anchor_year, value in anchors if anchor_year <= year]
+        if in_force[-1] == 0:
+            assert own(at) == 0, (year, anchors)
+        assert isfinite(index(at)) and index(at) > 0, (year, anchors)
+
+
 @pytest.mark.parametrize("first_year", [2025, 2026])
 def test_advanced_base_preserves_a_pre_base_maximum_reform(first_year):
     """A complete rates update must not replace an earlier maximum reform."""

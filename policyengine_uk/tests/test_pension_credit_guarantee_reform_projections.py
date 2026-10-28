@@ -183,6 +183,18 @@ def test_reprocessing_modifier_composes_with_dated_projection_reforms(path, valu
     )
 
 
+def _last_forecast_year(simulation):
+    """The earnings index's last generated year, before annualisation.
+
+    Annualisation holds that year's amounts and adds later annual labels (and
+    a 2041 boundary), so the annualised parameter's own dates overstate it.
+    """
+    timeline = simulation.tax_benefit_system.projected_timelines[
+        "gov.economic_assumptions.indices.earnings_uprating"
+    ]
+    return max(int(entry.instant_str[:4]) for entry in timeline)
+
+
 def _assert_projections_follow_main(simulation):
     """Main's forecast algebra, preserving independently rounded enacted rates."""
     parameters = simulation.tax_benefit_system.parameters
@@ -192,7 +204,7 @@ def _assert_projections_follow_main(simulation):
         assert parameters.get_child(path)("2026-04-30") == system.parameters.get_child(
             path
         )("2026-04-30")
-    for year in range(2027, 2041):
+    for year in range(2027, _last_forecast_year(simulation) + 1):
         at = f"{year}-04-30"
         for relationship, kinds in {
             "SINGLE": ("single", "lone_parent"),
@@ -402,7 +414,7 @@ def test_nonnegative_guarantee_reforms_never_break_pension_age_projections(
     for name, relationship in ALLOWANCE_GUARANTEES.items():
         allowance = parameters.get_child(f"{HB_ALLOWANCES}.{name}.aged")
         guarantee = parameters.get_child(f"{GUARANTEE}.{relationship}")
-        for forecast_year in range(2027, 2041):
+        for forecast_year in range(2027, _last_forecast_year(simulation) + 1):
             at = f"{forecast_year}-04-30"
             if isfinite(guarantee(at)):
                 assert allowance(at) >= guarantee(at) - abs(guarantee(at)) * 1e-12
