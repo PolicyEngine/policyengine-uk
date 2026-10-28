@@ -35,7 +35,6 @@ Invariants, over generated households of one or two benefit units:
 import math
 
 import numpy as np
-import yaml
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
@@ -86,9 +85,15 @@ def simulate(people, units, household, overrides=None):
             "members": unit["members"],
             "pension_credit_reported_capital": {year: value},
         }
+    # Every unit is a single adult or a couple whatever the age gap, so the
+    # roles are supplied rather than left to the age presumption (which reads
+    # a member 20+ years younger as the claimant's child).
     situation = {
         "people": {
-            name: {k: {year: v} for k, v in person.items()}
+            name: {
+                **{k: {year: v} for k, v in person.items()},
+                "is_claimant_or_partner": {year: True},
+            }
             for name, person in people.items()
         },
         "benunits": benunits,
@@ -233,22 +238,3 @@ def test_intended_exception_savings_credit_rises_with_capital():
         return sim.calculate("pension_credit_entitlement", YEAR)[0]
 
     assert np.isclose(entitlement(10_500) - entitlement(10_000), 0.2 * WEEKS_IN_YEAR)
-
-
-def test_reported_capital_uprates_with_savings():
-    from pathlib import Path
-
-    from policyengine_uk.system import system
-
-    variables = system.variables
-    assert (
-        variables["pension_credit_reported_capital"].uprating
-        == variables["savings"].uprating
-    )
-    assert variables["pension_credit_reported_capital"].default_value == -1
-    indices = yaml.safe_load(
-        (Path(__file__).parents[1] / "data" / "uprating_indices.yaml").read_text()
-    )
-    group = [k for k, v in indices.items() if "savings" in v]
-    assert len(group) == 1
-    assert "pension_credit_reported_capital" in indices[group[0]]

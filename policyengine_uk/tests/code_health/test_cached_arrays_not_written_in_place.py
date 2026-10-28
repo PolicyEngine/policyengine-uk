@@ -532,23 +532,51 @@ BRANCHING_SCENARIOS = {
         "gov.hmrc.cgt.basic_rate": 0.20,
         "gov.hmrc.cgt.higher_rate": 0.40,
     },
+    # The default response, read through the marginal tax rates' pay-rise
+    # branches as well as measured.
+    "capital_gains_default_response": {
+        "gov.hmrc.cgt.basic_rate": 0.20,
+        "gov.hmrc.cgt.higher_rate": 0.40,
+    },
 }
 
 
 @pytest.mark.parametrize(
-    "case", ["marginal_rates", "labour_supply_responses", "capital_gains_responses"]
+    "case",
+    [
+        "marginal_rates",
+        "labour_supply_responses",
+        "capital_gains_responses",
+        "capital_gains_default_response",
+    ],
 )
-def test_branching_runs_with_read_only_cache(read_only_cache, case):
+def test_branching_runs_with_read_only_cache(read_only_cache, case, monkeypatch):
     from policyengine_uk import Simulation
     from policyengine_uk.model_api import Scenario
 
     if case == "marginal_rates":
         sim = Simulation(situation=_earning_couple_with_gains())
+        owned = []
+        original_get_branch = Simulation.get_branch
+
+        def capture(owner, name="branch", *args, **kwargs):
+            branch = original_get_branch(owner, name, *args, **kwargs)
+            if owner is sim and name.startswith(
+                ("adult_1_pay_rise", "adult_2_pay_rise")
+            ):
+                owned.append((name, branch))
+            return branch
+
+        monkeypatch.setattr(Simulation, "get_branch", capture)
         for year in YEARS:
             sim.calculate("marginal_tax_rate", year)
             sim.calculate("marginal_tax_rate_on_capital_gains", year)
-        # The branches ran: both earners face a rate, and so do the gains.
-        assert {"adult_1_pay_rise", "adult_2_pay_rise"} <= set(sim.branches)
+        # Both scratch branches ran, and each registration was detached.
+        assert {"adult_1_pay_rise", "adult_2_pay_rise"} <= {
+            name for name, branch in owned
+        }
+        assert all(sim.branches.get(name) is not branch for name, branch in owned)
+        # Both earners face a rate, and so do the gains.
         assert (sim.calculate("marginal_tax_rate", 2026)[:2] > 0).all()
         assert sim.calculate("marginal_tax_rate_on_capital_gains", 2026)[0] > 0
         return
@@ -562,8 +590,14 @@ def test_branching_runs_with_read_only_cache(read_only_cache, case):
     )
     for year in YEARS:
         sim.calculate("household_net_income", year)
+        if case == "capital_gains_default_response":
+            sim.calculate("marginal_tax_rate", year)
+    # The measurement branches are not kept; the responses show they ran.
     if case == "labour_supply_responses":
-        assert "lsr_measurement" in sim.branches
+        # The higher personal allowance raises both earners' net income and
+        # leaves their marginal rates alone, so with a negative income
+        # elasticity both work less.
+        response = sim.calculate("employment_income_behavioral_response", 2026)
+        assert (response[:2] < 0).all()
     else:
-        # The measurement branches are deleted; the response shows they ran.
         assert sim.calculate("capital_gains_behavioural_response", 2026)[0] < 0

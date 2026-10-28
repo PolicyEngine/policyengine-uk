@@ -20,7 +20,9 @@ the supplement does not touch Council Tax Reduction at all. The model deducts
 all of a family's income tax from its Council Tax Reduction income, an
 existing approximation, so there the supplement, which is taxable (SI
 2026/93), reaches that income through the tax charged on it and in no other
-way.
+way. The tax deducted is the liability before the winter fuel payment charge
+(ITEPA 2003 s. 681I), which recovers a winter payment rather than taxing the
+income assessed; "income tax" below means that liability.
 
 Invariants, for single people and couples in Scotland in 2026 in which one
 member is a carer, all of working age and taking no Universal Credit or all
@@ -82,6 +84,9 @@ WEEKS = 52
 CARER_SUPPORT_PAYMENT = 86.45 * WEEKS
 SCOTTISH_CARER_SUPPLEMENT = 11.70 * WEEKS
 WITHDRAWAL_RATE = 0.2
+# The income tax Council Tax Reduction income deducts: the liability before
+# the winter fuel payment charge.
+INCOME_TAX = "income_tax_before_winter_fuel_payment_charge"
 PROPERTY_SETTINGS = settings(
     max_examples=10,
     deadline=None,
@@ -128,7 +133,7 @@ PERSON_VARIABLES = [
     "carer_support_payment",
     "carer_support_payment_pre_overlap",
     "scottish_carer_supplement",
-    "income_tax",
+    INCOME_TAX,
     "national_insurance",
 ]
 CLAIMS = (True, False)
@@ -186,12 +191,23 @@ def situation(families):
                     name = f"p{i}_{k}_{c}_{j}"
                     person = {
                         "age": {YEAR: a["age"]},
+                        # The drawn adults are the claimant and partner,
+                        # however far apart their ages; the age presumption
+                        # alone would read a partner 20 or more years younger
+                        # as the claimant's child.
+                        "is_claimant_or_partner": {YEAR: True},
                         "state_pension": {YEAR: a.get("state_pension", 0.0)},
                         "employment_income": {YEAR: a.get("employment_income", 0.0)},
                         # All private pension goes to the first adult.
                         "private_pension_income": {YEAR: float(pension) * (j == 0)},
                     }
                     if j == fam["carer"]:
+                        # Keep the carer's pay within the Carer's Allowance
+                        # earnings limit (£204 a week in 2026-27), so the
+                        # carer stays entitled; £10,000 is £192 a week.
+                        person["employment_income"] = {
+                            YEAR: min(a.get("employment_income", 0.0), 10_000.0)
+                        }
                         if fam["by_hours"]:
                             person["care_hours"] = {YEAR: 35}
                         else:
@@ -230,7 +246,7 @@ def grid(families, reform=None):
     # from the other benefits it counts.
     g["income_before_tax"] = (
         g["council_tax_reduction_applicable_income"]
-        + g["income_tax"]
+        + g[INCOME_TAX]
         + g["national_insurance"]
         - g["other_counted_benefits"]
     )
@@ -330,8 +346,8 @@ def test_council_tax_reduction_income_ignores_the_scottish_carer_supplement(
         compared = (income > 0) & (income_without > 0) & general
         assert compared.any(), fam
         assert np.allclose(
-            (income + g["income_tax"][i])[compared],
-            (income_without + without["income_tax"][i])[compared],
+            (income + g[INCOME_TAX][i])[compared],
+            (income_without + without[INCOME_TAX][i])[compared],
             atol=0.05,
         ), fam
         award = g["council_tax_benefit"][i]
@@ -341,7 +357,7 @@ def test_council_tax_reduction_income_ignores_the_scottish_carer_supplement(
         # follows invariant 4).
         assert np.all(award >= award_without - 0.01), fam
         both_partial = partial(g, i) & partial(without, i) & general
-        tax_on_supplement = g["income_tax"][i] - without["income_tax"][i]
+        tax_on_supplement = g[INCOME_TAX][i] - without[INCOME_TAX][i]
         assert np.allclose(
             (award - award_without)[both_partial],
             WITHDRAWAL_RATE * tax_on_supplement[both_partial],

@@ -10,14 +10,12 @@ class consumer_incident_tax_revenue_change(Variable):
 
     def formula(household, period, parameters):
         consumption = household("consumption", period)
-        if (
-            household.simulation.dataset is not None
-            and household("consumption", period).sum() != 0
-        ):
+        share = consumption / 846e9
+        if household.simulation.dataset is not None:
             weight = household("household_weight", period)
-            share = consumption / (consumption * weight).sum()
-        else:
-            share = consumption / 846e9
+            weighted_total = (consumption * weight).sum()
+            if weighted_total != 0:
+                share = consumption / weighted_total
         revenue_change = parameters(
             period
         ).gov.contrib.policyengine.budget.consumer_incident_tax_change

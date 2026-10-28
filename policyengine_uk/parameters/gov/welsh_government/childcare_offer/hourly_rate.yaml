@@ -1,0 +1,37 @@
+description: The Welsh Government pays childcare providers this hourly rate for childcare funded under the Childcare Offer for Wales.
+metadata:
+  unit: currency-GBP
+  period: hour
+  label: Childcare Offer for Wales hourly rate
+  # Not uprated by September CPI: the Welsh Government sets this rate in its
+  # own annual review, not in the Social Security Administration Act 1992 s150
+  # review. Follows the lagged calendar-year CPI projection that
+  # gov.dfe.childcare_funding_rate uses.
+  uprating: gov.economic_assumptions.indices.obr.lagged_cpi
+  reference:
+    - title: Welsh Government, Evaluation of the early implementation of the Childcare Offer for Wales (2018), payment rate of £4.50 an hour
+      href: https://www.gov.wales/sites/default/files/statistics-and-research/2019-06/181122-evaluation-early-implementation-childcare-offer-en.pdf
+    - title: Welsh Government, Written Statement, Review of the Childcare Offer for Wales hourly rate (22 February 2022)
+      href: https://www.gov.wales/written-statement-review-childcare-offer-wales-hourly-rate
+    - title: Welsh Government, Childcare Offer for Wales guidance for local authorities, version 8.0 (April 2025), paragraph 129
+      href: https://www.gov.wales/sites/default/files/publications/2025-04/childcare-offer-for-wales-local-authority-guidance-7-april-2025-english.pdf
+    - title: Welsh Government, Technical note, setting the Childcare Offer for Wales hourly rate, April 2025 to March 2026
+      href: https://www.gov.wales/technical-note-setting-childcare-offer-wales-hourly-rate-april-2025-march-2026
+    - title: Welsh Government, Written Statement, Childcare Offer rate review (25 March 2026)
+      href: https://www.gov.wales/node/75728
+    - title: Welsh Government, Childcare Offer for Wales guidance for local authorities, version 8.3 (April 2026), paragraph 135
+      href: https://www.gov.wales/sites/default/files/publications/2026-04/childcare-offer-for-wales-guidance-for-local-authorities-april-2026-english_0.pdf
+values:
+  # £4.50 from the start of the Offer (2018 evaluation; still "the current
+  # £4.50 per hour" in the 22 February 2022 statement).
+  2019-08-01: 4.50
+  # "from the current £4.50 per hour to £5 per hour from April" (22 February 2022).
+  2022-04-01: 5.00
+  # April 2025 guidance para 129: "From 7 April 2025 ... increased from £5.00
+  # per hour to £6.40 per hour". This replaced the £6.00 announced on
+  # 11 December 2024.
+  2025-04-07: 6.40
+  # "increased to £6.67, effective from 6 April 2026" (25 March 2026; April
+  # 2026 guidance para 135). Later years follow the model's CPI projection,
+  # not announced rates.
+  2026-04-06: 6.67

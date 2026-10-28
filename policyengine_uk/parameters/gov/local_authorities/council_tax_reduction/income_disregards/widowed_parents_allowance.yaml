@@ -1,0 +1,24 @@
+description: Council Tax Reduction disregards this weekly amount of each applicant's or partner's Widowed Parent's Allowance.
+values:
+  2013-04-01: 15
+metadata:
+  period: week
+  unit: currency-GBP
+  label: council tax reduction widowed parents allowance disregard
+  reference:
+    - title: Council Tax Reduction England pension-age Schedule 5 paragraph 7
+      href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/5/paragraph/7
+    - title: Council Tax Reduction England default Schedule 8 paragraph 21
+      href: https://www.legislation.gov.uk/uksi/2012/2886/appendix/8/paragraph/21
+    - title: Council Tax Reduction Wales prescribed pension-age Schedule 4 paragraph 7
+      href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/4/paragraph/7
+    - title: Council Tax Reduction Wales prescribed working-age Schedule 9 paragraph 21
+      href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/9/paragraph/21
+    - title: Council Tax Reduction Wales default pension-age Schedule 5 paragraph 7
+      href: https://www.legislation.gov.uk/wsi/2013/3035/schedule/5/paragraph/7
+    - title: Council Tax Reduction Wales default working-age Schedule 7 paragraph 21
+      href: https://www.legislation.gov.uk/wsi/2013/3035/schedule/7/paragraph/21
+    - title: Council Tax Reduction Scotland pension-age Schedule 3 paragraph 6
+      href: https://www.legislation.gov.uk/ssi/2012/319/schedule/3/paragraph/6
+    - title: Council Tax Reduction Scotland working-age regulation 57(4)
+      href: https://www.legislation.gov.uk/ssi/2021/249/regulation/57
