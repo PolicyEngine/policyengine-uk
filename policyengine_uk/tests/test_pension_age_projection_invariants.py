@@ -6,10 +6,12 @@ For unreformed forecasts the reconciled builders must reproduce those
 amounts, including main’s earnings and CPI floors. Main read the maximum
 Savings Credit after uprating, so for any path of maximum reforms they must
 reproduce main too, apart from the additional threshold residual floor.
-Reform independence and that floor have their own properties.
+Guarantee reforms retain main's behavior too; the residual floor has its own
+properties.
 """
 
 from typing import Any, Callable
+from math import isfinite
 
 import pytest
 from hypothesis import example, given, settings
@@ -193,6 +195,15 @@ def test_combined_reforms_build_and_never_project_negative_amounts(
         path, reforms={name: reforms[name] for name in MAXIMUM_PATHS if name in reforms}
     )
 
+    for node in (
+        projected.gov.dwp.pension_credit.savings_credit.threshold_uprating,
+        projected.gov.dwp.housing_benefit.allowances.protected_pension_age_uprating,
+    ):
+        for index in node.children.values():
+            assert all(
+                isfinite(entry.value) and entry.value > 0 for entry in index.values_list
+            )
+
     for name in PROJECTED_PATHS:
         parameter = projected.get_child(name)
         for year in range(FIRST_PROJECTION_YEAR, LAST_INDEX_YEAR + 1):
@@ -340,6 +351,34 @@ def test_forecasts_reproduce_each_enacted_value_exactly(path, enacted):
     name, instant, expected = enacted
     parameters = synthetic_parameters(path)
     assert parameters.get_child(name)(instant) == expected
+
+
+@settings(max_examples=40, deadline=None)
+@given(
+    path=paths,
+    increase=st.floats(min_value=1, max_value=1e100),
+    first_year=st.integers(2026, 2039),
+)
+@example(path=[(0.039, 0.035)], increase=300 / 238, first_year=2026)
+def test_guarantee_increases_match_main_and_keep_protected_allowances_above_guarantee(
+    path, increase, first_year
+):
+    parameters = synthetic_parameter_tree(path)
+    unreformed = parameters.clone()
+    reforms = {f"{SMG_NAME}.SINGLE": (first_year, 238 * increase)}
+    _apply_reforms(parameters, reforms)
+    projected = project_synthetic_parameters(parameters, unreformed)
+    main = _main_parameters(path, reforms=reforms)
+    for year in range(FIRST_PROJECTION_YEAR, LAST_INDEX_YEAR + 1):
+        at = f"{year}-04-30"
+        guarantee = projected.get_child(f"{SMG_NAME}.SINGLE")(at)
+        for name in FOLLOWS_SINGLE_MAXIMUM:
+            assert projected.get_child(name)(at) == pytest.approx(
+                main.get_child(name)(at), rel=1e-12
+            )
+        for kind in ("single", "lone_parent"):
+            allowance = projected.get_child(f"{HB_NAME}.{kind}.aged")(at)
+            assert allowance >= guarantee - abs(guarantee) * 1e-12
 
 
 def _main_last_projected_year(parameters: ParameterNode) -> int:

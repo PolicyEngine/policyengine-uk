@@ -145,11 +145,14 @@ def threshold_index_values(
     base_maximum: float | None = None,
     price_index: Parameter | None = None,
     maxima: dict[int, float] | None = None,
+    guarantees: dict[int, float] | None = None,
 ) -> dict[str, float]:
     """Build a forecast index from the last enacted threshold.
 
     ``maxima`` gives the maximum Savings Credit in each forecast year. Without
     it, the base maximum is projected by non-negative September CPI.
+    ``guarantees`` gives the guarantee's reformed uprated path; without it,
+    the own-base fallback projects the base guarantee by earnings.
     """
     base_instant = f"{base_year}-04-01"
     if base_threshold <= 0:
@@ -178,8 +181,11 @@ def threshold_index_values(
             if maxima is not None
             else project_maximum_savings_credit(maximum, growth)
         )
-        guarantee = base_guarantee * (
-            float(earnings_index(f"{year}-04-01")) / base_earnings_index
+        guarantee = (
+            guarantees[year]
+            if guarantees is not None
+            else base_guarantee
+            * (float(earnings_index(f"{year}-04-01")) / base_earnings_index)
         )
         phase_in = float(phase_in_rate(projection_instant(year)))
         threshold = (
@@ -209,6 +215,7 @@ def _projection_parameter(
     base_maximum: float,
     price_index: Parameter,
     maxima: dict[int, float] | None = None,
+    guarantees: dict[int, float] | None = None,
 ) -> Parameter:
     relationship_label = relationship.lower()
     return Parameter(
@@ -216,7 +223,7 @@ def _projection_parameter(
         data={
             "description": (
                 f"Forecast index for the {relationship_label} Savings Credit "
-                "threshold. It derives the threshold from an earnings-projected "
+                "threshold. It derives the threshold from the reformed, uprated "
                 "standard minimum guarantee and a maximum Savings Credit amount "
                 "projected by non-negative September CPI. Explicit threshold "
                 "values remain authoritative. Projected values are not enacted "
@@ -233,6 +240,7 @@ def _projection_parameter(
                 base_maximum=base_maximum,
                 price_index=price_index,
                 maxima=maxima,
+                guarantees=guarantees,
             ),
             "metadata": {
                 "unit": "/1",
@@ -349,12 +357,12 @@ def project_savings_credit_threshold(
 ) -> ParameterNode:
     """Add forecast indices for each Savings Credit threshold.
 
-    The separately set threshold is not re-derived by a guarantee or
-    phase-in reform, including a reform to the projection's base year. Use
-    the unreformed guarantee unless the corresponding threshold base changes,
-    in which case use the reformed pair, and the enacted phase-in rate, so a
-    phase-in reform (to zero, say) changes the Savings Credit paid and not the
-    threshold. Earnings and CPI inputs come from the reform's tree.
+    Forecasts follow the reformed guarantee's uprated path and the live
+    phase-in rate, as on main. A zero phase-in rate keeps the preceding
+    threshold: no Savings Credit is paid, so there is no residual to solve.
+    The enacted threshold remains the index denominator. A reformed own
+    threshold base instead projects its own reformed gap. Earnings and CPI
+    inputs come from the reform's tree.
 
     The maximum Savings Credit is read from the reform's tree as general
     uprating will project it, so a reform to the maximum from the base year
@@ -414,6 +422,11 @@ def project_savings_credit_threshold(
         maxima = projected_maximum_values(
             parameters, relationship, base_year, final_observation_year + 1
         )
+        guarantee_path = uprated_values(
+            getattr(reformed_guarantees, relationship),
+            parameters,
+            range(base_year + 1, final_observation_year + 2),
+        )
         reformed_threshold = getattr(savings_credit.threshold, relationship)
         if (
             max(entry.instant_str for entry in reformed_threshold.values_list)
@@ -428,6 +441,7 @@ def project_savings_credit_threshold(
             threshold_parameter = reformed_threshold
             guarantee_parameter = getattr(reformed_guarantees, relationship)
             maxima = None
+            guarantee_path = None
             maximum = max(
                 0,
                 round_currency(
@@ -444,7 +458,7 @@ def project_savings_credit_threshold(
                 relationship,
                 float(guarantee_parameter(base_instant)),
                 float(threshold_parameter(base_instant)),
-                enacted_savings_credit.rate.phase_in,
+                savings_credit.rate.phase_in,
                 earnings_index,
                 cpi_september,
                 final_observation_year,
@@ -452,6 +466,7 @@ def project_savings_credit_threshold(
                 maximum,
                 price_index,
                 maxima,
+                guarantee_path,
             ),
         )
     return parameters

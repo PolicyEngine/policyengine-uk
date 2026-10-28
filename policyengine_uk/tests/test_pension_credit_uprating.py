@@ -414,7 +414,7 @@ def zero_phase_in_situation():
 def test_zero_phase_in_reform_builds_and_pays_no_savings_credit():
     """A zero Savings Credit phase-in rate for 2027-28 once divided by zero.
 
-    It now keeps the independently projected thresholds, pays no Savings
+    It now keeps the preceding threshold, as on main, pays no Savings
     Credit, and leaves 2028-29 as current law has it.
     """
     reform = {"gov.dwp.pension_credit.savings_credit.rate.phase_in": {"2027": 0}}
@@ -433,15 +433,15 @@ def test_zero_phase_in_reform_builds_and_pays_no_savings_credit():
     )
     threshold = reformed.tax_benefit_system.parameters.gov.dwp.pension_credit.savings_credit.threshold.SINGLE
     current = baseline.tax_benefit_system.parameters.gov.dwp.pension_credit.savings_credit.threshold.SINGLE
-    assert threshold("2027-04-30") == pytest.approx(current("2027-04-30"))
+    assert threshold("2027-04-30") == pytest.approx(208.07)
     assert threshold("2028-04-30") == pytest.approx(current("2028-04-30"))
 
 
-def test_reforms_keep_their_own_allowance_and_independent_projections():
+def test_reforms_keep_their_own_allowance_and_move_the_derived_one():
     """A dated change to a higher allowance is kept, and prior law resumes.
 
-    A change to the guarantee leaves the separately set HB allowances and
-    Savings Credit thresholds on their baseline projection paths.
+    A change to the guarantee moves the protected HB allowance and Savings
+    Credit threshold derived from it, as on main.
     """
     reform = {
         f"{HB_NAME}.single.aged": {"2028": 300},
@@ -459,12 +459,18 @@ def test_reforms_keep_their_own_allowance_and_independent_projections():
         at = f"{year}-04-30"
         assert allowances.single.aged(at) == pytest.approx(now.single.aged(at))
     assert allowances.single.aged("2028-04-30") == 300
-    for year in (2028, 2029, 2030):
+    for year in (2028, 2030):
         at = f"{year}-04-30"
         assert allowances.couple.aged(at) == pytest.approx(now.couple.aged(at))
         threshold = reformed.parameters.gov.dwp.pension_credit.savings_credit.threshold
         baseline_threshold = current.gov.dwp.pension_credit.savings_credit.threshold
         assert threshold.COUPLE(at) == pytest.approx(baseline_threshold.COUPLE(at))
+    pc = reformed.parameters.gov.dwp.pension_credit
+    maximum = pc.savings_credit.maximum.COUPLE("2029-04-30")
+    assert allowances.couple.aged("2029-04-30") == pytest.approx(400 + maximum)
+    assert pc.savings_credit.threshold.COUPLE("2029-04-30") == pytest.approx(
+        400 - maximum / pc.savings_credit.rate.phase_in("2029-04-30")
+    )
     assert allowances.couple.aged_from_cutoff("2029-04-30") == pytest.approx(
         now.couple.aged_from_cutoff("2029-04-30")
     )

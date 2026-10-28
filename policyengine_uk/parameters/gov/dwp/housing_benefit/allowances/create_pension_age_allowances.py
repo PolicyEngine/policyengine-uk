@@ -7,9 +7,11 @@ parameter's own projection, so a reform to the maximum, from any year,
 reaches the allowances, as it did when they were derived after general
 uprating. Reformed allowance bases use their own retained component; a base
 below its guarantee follows earnings without a retained component. A
-guarantee-only reform leaves the separately set allowances unchanged. These
-indices run before general uprating.
+guarantee reform moves the forecast allowances along its reformed uprated
+path, as on main. These indices run before general uprating.
 """
+
+from sys import float_info
 
 from policyengine_core.parameters import Parameter, ParameterNode
 
@@ -17,6 +19,7 @@ from policyengine_uk.parameters.gov.dwp.pension_credit.savings_credit.create_sav
     enacted_maximum,
     last_projected_year,
     projected_maximum_values,
+    uprated_values,
 )
 from policyengine_uk.parameters.gov.dwp.pension_credit.pension_age_projection_base import (
     projection_base_year,
@@ -50,12 +53,15 @@ def protected_allowance_index_values(
     retained_maximum: float | None = None,
     price_index: Parameter | None = None,
     maxima: dict[int, float] | None = None,
+    guarantees: dict[int, float] | None = None,
 ) -> dict[str, float]:
     """Build a component-weighted index from the last enacted allowance.
 
     ``maxima`` gives the maximum Savings Credit in each forecast year, which
     then replaces the retained component. Without it, the retained component
     is projected by non-negative September CPI.
+    ``guarantees`` gives the guarantee's reformed uprated path; without it,
+    the own-base fallback projects the guarantee component by earnings.
     """
     retained_uplift = (
         base_allowance - guarantee_component
@@ -76,8 +82,11 @@ def protected_allowance_index_values(
     values = {start: 1.0}
     for year in range(base_year + 1, final_observation_year + 2):
         observation_year = year - 1
-        guarantee = guarantee_component * (
-            float(earnings_index(f"{year}-04-01")) / base_earnings_index
+        guarantee = (
+            guarantees[year]
+            if guarantees is not None
+            else guarantee_component
+            * (float(earnings_index(f"{year}-04-01")) / base_earnings_index)
         )
         growth = (
             float(price_index(f"{year}-04-01"))
@@ -91,7 +100,12 @@ def protected_allowance_index_values(
             if maxima is not None
             else project_retained_uplift(retained_uplift, growth)
         )
-        values[f"{year}-04-01"] = (guarantee + retained_uplift) / base_allowance
+        # Core divides by the index at later explicit anchors. A zero
+        # guarantee and maximum must therefore leave a positive index.
+        values[f"{year}-04-01"] = min(
+            max((guarantee + retained_uplift) / base_allowance, float_info.min),
+            float_info.max,
+        )
     return values
 
 
@@ -106,6 +120,7 @@ def _projection_parameter(
     retained_maximum: float | None,
     price_index: Parameter,
     maxima: dict[int, float] | None = None,
+    guarantees: dict[int, float] | None = None,
 ) -> Parameter:
     retained_uplift = (
         base_allowance - guarantee_component
@@ -114,9 +129,14 @@ def _projection_parameter(
     )
     relationship_label = allowance.replace("_", "-")
     fiscal_year = f"{base_year}-{(base_year + 1) % 100:02d}"
+    guarantee_source = (
+        "the reformed Pension Credit guarantee, as uprated from its last explicit value"
+        if guarantees is not None
+        else f"a £{guarantee_component:g} Pension Credit guarantee component"
+    )
     savings_credit_component = (
         "the maximum Savings Credit, as uprated from its last explicit value. "
-        "The guarantee component follows the shared statutory earnings index; "
+        "The guarantee component follows its reformed uprated path; "
         "the maximum follows non-negative September CPI."
         if maxima is not None
         else f"a £{retained_uplift:g} Savings Credit component. "
@@ -133,7 +153,7 @@ def _projection_parameter(
                 f"Forecast index for the protected {relationship_label} "
                 f"pension-age Housing Benefit allowance. The £{base_allowance:g} "
                 f"{fiscal_year} base is retained exactly. Forecasts combine a "
-                f"£{guarantee_component:g} Pension Credit guarantee component "
+                f"{guarantee_source} "
                 f"and {savings_credit_component} "
                 "Projected values are not enacted rates."
             ),
@@ -147,6 +167,7 @@ def _projection_parameter(
                 retained_maximum=retained_maximum,
                 price_index=price_index,
                 maxima=maxima,
+                guarantees=guarantees,
             ),
             "metadata": {
                 "unit": "/1",
@@ -214,9 +235,10 @@ def project_pension_age_allowances(
 ) -> ParameterNode:
     """Add a protected-allowance forecast index for each allowance.
 
-    A guarantee reform does not re-derive the separately set HB allowance:
-    each index uses the unreformed guarantee unless its own allowance base
-    changes, when it uses the reformed pair. A reformed allowance below its
+    Forecasts follow the reformed guarantee and maximum as general uprating
+    projects them, retaining the enacted allowance as the index denominator.
+    If its own allowance base changes, the index uses the reformed pair.
+    A reformed allowance below its
     guarantee keeps no retained Savings Credit, so it is projected whole with
     the guarantee's earnings path, as an allowance equal to its guarantee is.
     The enacted pair is still validated, so a rates update that puts an
@@ -269,9 +291,15 @@ def project_pension_age_allowances(
         maxima = projected_maximum_values(
             parameters, relationship, base_year, final_observation_year + 1
         )
+        guarantee_path = uprated_values(
+            getattr(reformed_guarantees, relationship),
+            parameters,
+            range(base_year + 1, final_observation_year + 2),
+        )
         if reformed_allowance != allowance:
             retained_maximum = None
             maxima = None
+            guarantee_path = None
             allowance = reformed_allowance
             guarantee = min(
                 float(getattr(reformed_guarantees, relationship)(start)),
@@ -290,6 +318,7 @@ def project_pension_age_allowances(
                 retained_maximum,
                 price_index,
                 maxima,
+                guarantee_path,
             ),
         )
     return parameters

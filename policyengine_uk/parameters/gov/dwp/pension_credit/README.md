@@ -13,12 +13,12 @@ reached the qualifying age on or after 1 April 2021, follow the same increase.
 
 The Savings Credit maximum rises with September CPI, following
 [HCWS1101](https://questions-statements.parliament.uk/written-statements/detail/2025-11-26/hcws1101).
-The maximum has a non-negative CPI floor. Unreformed projected thresholds are
+The maximum has a non-negative CPI floor. Projected thresholds are
 derived from the component indices before general uprating:
 `threshold = max(0, standard minimum guarantee - maximum / phase_in)`.
 At the 60% phase-in rate, this ensures that the formula's maximum award
 follows prices even when the guarantee follows earnings. Published
-thresholds are retained, including their rounding. If the enacted phase-in
+thresholds are retained, including their rounding. If the live phase-in
 rate is zero, the projection retains the previous threshold rather than
 dividing by zero.
 
@@ -27,24 +27,25 @@ who reached the qualifying age before 1 April 2021, are based on the guarantee
 plus maximum Savings Credit
 ([DWP HB A3/2021, paragraphs 3–5](https://www.gov.uk/government/publications/housing-benefit-adjudication-circulars-2021/a32021-housing-benefit-person-who-have-attained-the-qualifying-age-for-state-pension-credit-amendment-regulations-2021)).
 Published allowances are retained exactly, including their rounding. In the
-unreformed forecast, each higher allowance equals the projected guarantee plus
+forecast with an unreformed own base, each higher allowance equals the projected guarantee plus
 the projected maximum, so its guarantee part follows earnings and its maximum
 part follows September CPI.
 
 ## Projection base and reforms
 
-The projection base is the last year with explicit enacted values for both
+The projection base comes from the YAML as loaded: the last year with explicit enacted values for both
 guarantees, both Savings Credit thresholds and the three higher Housing
 Benefit allowances. All seven parameters must reach the same year. If they
 do not, parameter loading raises an error listing each parameter and its last
 enacted year. Reform dates do not move this base.
 
-A reform to the Pension Credit guarantee or Savings Credit phase-in rate does
-not re-derive the separately set Savings Credit threshold or Housing Benefit
-allowances. A reform to the maximum Savings Credit does: the projections read
-the maximum as general uprating projects it, so a reform from the base year or
-any later year, or to the index the maximum is uprated by, moves the projected
-threshold and higher allowances as it moves the maximum. A threshold or
+A reform to the Pension Credit guarantee moves the forecast Savings Credit
+threshold and protected Housing Benefit allowances, as on main. Each index
+reads the guarantee and maximum as general uprating projects their reformed
+paths, including reforms from the base year or any later year and reforms to
+their uprating indices. Threshold forecasts also read the live phase-in rate;
+at zero they keep the preceding threshold, as on main, and pay no Savings
+Credit. The enacted base-year amounts retain their own rounding. A threshold or
 allowance whose own base-year value is reformed projects its own reformed gap
 instead. Explicit threshold and allowance reforms remain anchors for their
 own later projections. Each higher allowance has its own index, including the

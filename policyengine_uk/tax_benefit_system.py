@@ -516,7 +516,9 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
                 # Not generated either: the error the lookup gives.
                 raw.get_child(assignment.path)
         unreformed = raw.clone()
-        projected = prior_law_projection(on_timeline, unreformed, statutory, generated)
+        projected = prior_law_projection(
+            on_timeline, unreformed, statutory, generated, enacted=self._enacted_parameters
+        )
         for assignment in on_timeline:
             write_assignment(raw.get_child(assignment.path), assignment, projected)
         parameters, self._projected_timelines = process_parameter_tree(
@@ -705,6 +707,7 @@ def prior_law_projection(
     unreformed: ParameterNode,
     statutory: bool = True,
     generated: Optional[List[ParameterAssignment]] = None,
+    enacted: Optional[ParameterNode] = None,
 ) -> Callable[[str], Optional[Timeline]]:
     """Prior law's projected timeline, by parameter name, for a reform.
 
@@ -719,7 +722,8 @@ def prior_law_projection(
     an error. ``unreformed`` is the tree the changes are written onto;
     ``statutory`` says it is the YAML as loaded, whose projection without
     changes is cached. ``generated`` holds the reform's changes to generated
-    parameters, which every pass makes too.
+    parameters, which every pass makes too. ``enacted`` keeps the YAML bases
+    separate from modifier edits through these intermediate projections too.
     """
     needing = sorted(
         {
@@ -738,6 +742,7 @@ def prior_law_projection(
             unreformed=unreformed,
             annualise=False,
             generated=generated,
+            enacted=enacted,
         )[1]
     )
     environment = {path: start.get(path) for path in needing}
@@ -756,7 +761,8 @@ def prior_law_projection(
                         tree.get_child(assignment.path), assignment, lookup
                     )
             updated[path] = process_parameter_tree(
-                tree, unreformed=unreformed, annualise=False, generated=generated
+                tree, unreformed=unreformed, annualise=False, generated=generated,
+                enacted=enacted,
             )[1].get(path)
         if _same_timelines(updated, environment):
             return lookup

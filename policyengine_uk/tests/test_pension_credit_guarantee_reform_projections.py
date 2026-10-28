@@ -1,11 +1,11 @@
-"""Reforms leave independently enacted pension-age projections intact.
+"""Pension-age forecasts follow main's reformed guarantee and maximum.
 
 Invariants, for the Savings Credit threshold and protected pension-age Housing
 Benefit allowance forecast indices:
 
-1. A reform to the standard minimum guarantee or the Savings Credit phase-in
-   rate leaves every index, and the projected thresholds and allowances, as
-   enacted.
+1. Guarantee reforms move forecast thresholds and protected allowances along
+   the guarantee's uprated path. The live phase-in rate determines the
+   threshold; zero preserves the previous threshold, as on main.
 2. No reform to a base-year allowance or threshold stops the parameter tree
    being built; only an enacted allowance below its guarantee raises.
 3. A reformed allowance below its guarantee is projected whole by the
@@ -19,6 +19,9 @@ Benefit allowance forecast indices:
    own reformed gap.
 """
 
+from math import isfinite
+
+import numpy as np
 import pytest
 from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
@@ -99,7 +102,7 @@ def _simulation(couple, changes, years, route="reform"):
     return Simulation(situation=_situation(couple, years), **options)
 
 
-def _modifier_simulation(couple, changes, start="2026-04-01", stop=None):
+def _modifier_simulation(couple, changes, start="2026-04-01", stop=None, dated_changes=None):
     """Reload YAML, apply open or bounded updates, then reprocess it."""
 
     def modify(simulation):
@@ -114,6 +117,7 @@ def _modifier_simulation(couple, changes, start="2026-04-01", stop=None):
     return Simulation(
         situation=_situation(couple, range(2026, 2031)),
         scenario=Scenario(simulation_modifier=modify, applied_before_data_load=True),
+        reform=dated_changes,
     )
 
 
@@ -148,19 +152,67 @@ def test_reprocessing_modifier_keeps_the_yaml_base_and_its_explicit_update(
         assert parameters.get_child(index)("2028-04-30") > 0
 
 
-def _assert_projections_unchanged(simulation):
+@pytest.mark.parametrize(
+    "path,value",
+    [(f"{GUARANTEE}.SINGLE", 250), (f"{SAVINGS_CREDIT}.threshold.SINGLE", 200), (f"{HB_ALLOWANCES}.single.aged", 260)],
+)
+def test_reprocessing_modifier_composes_with_dated_projection_reforms(path, value):
+    parameters = _modifier_simulation(
+        False, {path: value}, "2027-04-01", "2100-12-31",
+        dated_changes={f"{HB_ALLOWANCES}.lone_parent.aged": {"2028": 280}},
+    ).tax_benefit_system.parameters
+    assert parameters.get_child(path)("2027-04-30") == value
+    assert parameters.gov.dwp.housing_benefit.allowances.lone_parent.aged("2028-04-30") == 280
+
+
+def _assert_projections_follow_main(simulation):
+    """Main's forecast algebra, preserving independently rounded enacted rates."""
     parameters = simulation.tax_benefit_system.parameters
+    pc = parameters.gov.dwp.pension_credit
+    allowances = parameters.gov.dwp.housing_benefit.allowances
     for path in PROJECTION_PATHS:
-        actual = parameters.get_child(path)
-        baseline = system.parameters.get_child(path)
-        for year in YEARS:
-            instant = f"{year}-04-30"
-            assert actual(instant) == pytest.approx(baseline(instant)), (path, year)
+        assert parameters.get_child(path)("2026-04-30") == system.parameters.get_child(
+            path
+        )("2026-04-30")
+    for year in range(2027, 2041):
+        at = f"{year}-04-30"
+        for relationship, kinds in {
+            "SINGLE": ("single", "lone_parent"),
+            "COUPLE": ("couple",),
+        }.items():
+            guarantee = getattr(pc.guarantee_credit.minimum_guarantee, relationship)(at)
+            maximum = getattr(pc.savings_credit.maximum, relationship)(at)
+            threshold = getattr(pc.savings_credit.threshold, relationship)
+            phase_in = pc.savings_credit.rate.phase_in(at)
+            expected_threshold = (
+                max(0, guarantee - maximum / phase_in)
+                if phase_in > 0
+                else threshold(f"{year - 1}-04-30")
+            )
+            assert threshold(at) == pytest.approx(expected_threshold), (
+                relationship,
+                year,
+            )
+            base_threshold = threshold("2026-04-30")
+            assert getattr(pc.savings_credit.threshold_uprating, relationship)(
+                at
+            ) == pytest.approx(expected_threshold / base_threshold)
+            for kind in kinds:
+                allowance = getattr(allowances, kind).aged
+                expected = guarantee + maximum
+                assert allowance(at) == pytest.approx(expected), (kind, year)
+                assert allowance(at) >= guarantee - abs(guarantee) * 1e-12
+                assert getattr(allowances.protected_pension_age_uprating, kind)(
+                    at
+                ) == pytest.approx(expected / allowance("2026-04-30"))
+        for path in PROJECTION_PATHS:
+            if "_uprating." in path:
+                assert parameters.get_child(path)(at) > 0, (path, year)
 
 
 @pytest.mark.parametrize("route", ["reform", "scenario"])
 @pytest.mark.parametrize("couple,expected", [(False, 15_600), (True, 23_868)])
-def test_2026_guarantee_reform_pays_the_reformed_credit_without_rebuilding_hb(
+def test_2026_guarantee_reform_pays_the_reformed_credit_and_moves_forecasts(
     couple, expected, route
 ):
     changes = {
@@ -170,14 +222,12 @@ def test_2026_guarantee_reform_pays_the_reformed_credit_without_rebuilding_hb(
     simulation = _simulation(couple, changes, [2026], route)
 
     assert simulation.calculate("pension_credit", 2026)[0] == pytest.approx(expected)
-    _assert_projections_unchanged(simulation)
+    _assert_projections_follow_main(simulation)
 
 
 @pytest.mark.parametrize("route", ["reform", "scenario"])
 @pytest.mark.parametrize("couple,expected", [(False, 15_600), (True, 23_868)])
-def test_simultaneous_calendar_guarantee_reforms_keep_independent_projections(
-    couple, expected, route
-):
+def test_simultaneous_calendar_guarantee_reforms_follow_main(couple, expected, route):
     """Rebuilding prior law for either dated change must tolerate the other."""
     changes = {
         f"{GUARANTEE}.SINGLE": {"year:2026-01-01:1": 300},
@@ -186,7 +236,7 @@ def test_simultaneous_calendar_guarantee_reforms_keep_independent_projections(
     simulation = _simulation(couple, changes, [2026], route)
 
     assert simulation.calculate("pension_credit", 2026)[0] == pytest.approx(expected)
-    _assert_projections_unchanged(simulation)
+    _assert_projections_follow_main(simulation)
 
 
 @pytest.mark.parametrize("route", ["reform", "scenario"])
@@ -320,11 +370,28 @@ def test_nonnegative_guarantee_reforms_never_break_pension_age_projections(
 
     guarantee = simulation.tax_benefit_system.parameters.get_child(path)
     assert guarantee(f"{year}-04-30") == weekly_guarantee
-    _assert_projections_unchanged(simulation)
+    parameters = simulation.tax_benefit_system.parameters
+    # Keep the full finite input domain for buildability. At its upper end,
+    # earnings uprating can overflow amounts on main too; exact algebra is
+    # covered separately by the bounded differential property.
+    for path in PROJECTION_PATHS:
+        parameter = parameters.get_child(path)
+        for forecast_year in YEARS:
+            value = parameter(f"{forecast_year}-04-30")
+            assert value >= 0, (path, forecast_year)
+            if "_uprating." in path:
+                assert isfinite(value) and value > 0, (path, forecast_year)
+    for name, relationship in ALLOWANCE_GUARANTEES.items():
+        allowance = parameters.get_child(f"{HB_ALLOWANCES}.{name}.aged")
+        guarantee = parameters.get_child(f"{GUARANTEE}.{relationship}")
+        for forecast_year in range(2027, 2041):
+            at = f"{forecast_year}-04-30"
+            if isfinite(guarantee(at)):
+                assert allowance(at) >= guarantee(at) - abs(guarantee(at)) * 1e-12
 
 
 @pytest.mark.parametrize("couple", [False, True])
-def test_earnings_path_guarantee_reform_keeps_independent_projections(couple):
+def test_earnings_path_guarantee_reform_moves_dependent_forecasts(couple):
     """Match uk-triple-lock's annual overrides from the 2026-27 guarantee."""
     changes = {}
     for relationship in ("SINGLE", "COUPLE"):
@@ -345,7 +412,7 @@ def test_earnings_path_guarantee_reform_keeps_independent_projections(couple):
         assert simulation.calculate("pension_credit", year)[0] == pytest.approx(
             expected * 52, rel=1e-6
         )
-    _assert_projections_unchanged(simulation)
+    _assert_projections_follow_main(simulation)
 
 
 @pytest.mark.parametrize("relationship", ["SINGLE", "COUPLE"])
@@ -476,10 +543,8 @@ def test_zero_base_reform_builds_and_keeps_the_zero(path):
 
 
 @pytest.mark.parametrize("route", ["reform", "scenario"])
-def test_phase_in_reform_changes_savings_credit_not_the_projections(route):
-    """A zero phase-in rate used to stop the build. The threshold is set
-    separately, so the reform leaves every projection and pays no Savings
-    Credit."""
+def test_zero_phase_in_reform_keeps_the_previous_threshold_and_pays_no_credit(route):
+    """Follow main: a zero phase-in rate leaves no residual threshold to solve."""
     situation = _situation(False, [2027])
     # Savings Credit needs State Pension age before 6 April 2016. About £231 a
     # week is above the projected threshold and below the guarantee.
@@ -500,7 +565,7 @@ def test_phase_in_reform_changes_savings_credit_not_the_projections(route):
 
     assert baseline.calculate("savings_credit", 2027)[0] > 0
     assert simulation.calculate("savings_credit", 2027)[0] == 0
-    _assert_projections_unchanged(simulation)
+    _assert_projections_follow_main(simulation)
 
 
 MAXIMUM = f"{SAVINGS_CREDIT}.maximum"
@@ -508,6 +573,95 @@ FAR = "2100-12-31"
 FORECAST_YEARS = range(2027, 2041)
 MAXIMUM_ROUTES = ["reform", "scenario", "structural", "modifier"]
 RELATIONSHIP_ALLOWANCES = {"SINGLE": ("single", "lone_parent"), "COUPLE": ("couple",)}
+
+
+@pytest.mark.parametrize("route", MAXIMUM_ROUTES)
+def test_guarantee_increase_reaches_forecasts_through_every_route(route):
+    changes = {f"{GUARANTEE}.SINGLE": {"2026-04-01.2100-12-31": 300}}
+    if route == "modifier":
+        simulation = _modifier_simulation(
+            False, {f"{GUARANTEE}.SINGLE": 300}, stop="2100-12-31"
+        )
+    elif route == "structural":
+        simulation = Simulation(
+            situation=_situation(False, [2028]),
+            reform=Reform.from_dict(changes, country_id="uk"),
+        )
+    else:
+        simulation = _simulation(False, changes, [2028], route)
+    _assert_projections_follow_main(simulation)
+
+
+def test_zero_phase_in_modifier_preserves_a_reformed_own_threshold():
+    parameters = _modifier_simulation(
+        False,
+        {
+            f"{SAVINGS_CREDIT}.threshold.SINGLE": 180,
+            f"{SAVINGS_CREDIT}.rate.phase_in": 0,
+        },
+    ).tax_benefit_system.parameters
+    for year in range(2026, 2031):
+        assert (
+            parameters.gov.dwp.pension_credit.savings_credit.threshold.SINGLE(
+                f"{year}-04-30"
+            )
+            == 180
+        )
+
+
+@pytest.mark.parametrize(
+    "weekly_guarantee,expected_threshold,expected_allowance,expected_step",
+    [(None, 221.585186, 272.195717, 1.01), (300, 268.368418, 318.978949, 1.38)],
+)
+def test_guarantee_credit_boundary_matches_main(
+    weekly_guarantee, expected_threshold, expected_allowance, expected_step
+):
+    """Frozen origin/main (6030cbc0b) cliff-probe values, including current law."""
+    year = 2028
+    situation = {
+        "people": {"claimant": {"age": {year: 85}}},
+        "benunits": {"benunit": {"members": ["claimant"]}},
+        "households": {
+            "household": {
+                "members": ["claimant"],
+                "country": {year: "ENGLAND"},
+                "local_authority": {year: "MAIDSTONE"},
+                "tenure_type": {year: "RENT_FROM_COUNCIL"},
+                "rent": {year: 10_000},
+                "council_tax": {year: 2_000},
+                "savings": {year: 0},
+            }
+        },
+        "axes": [
+            [
+                {
+                    "name": "private_pension_income",
+                    "min": 8_000,
+                    "max": 22_000,
+                    "count": 2801,
+                    "period": year,
+                }
+            ]
+        ],
+    }
+    changes = {f"{GUARANTEE}.SINGLE": {"2026-01-01.2100-12-31": weekly_guarantee}}
+    simulation = Simulation(
+        situation=situation, reform=changes if weekly_guarantee is not None else None
+    )
+    parameters = simulation.tax_benefit_system.parameters
+    assert parameters.gov.dwp.pension_credit.savings_credit.threshold.SINGLE(
+        "2028-04-30"
+    ) == pytest.approx(expected_threshold, rel=0, abs=5e-7)
+    assert parameters.gov.dwp.housing_benefit.allowances.single.aged(
+        "2028-04-30"
+    ) == pytest.approx(expected_allowance, rel=0, abs=5e-7)
+    guarantee_credit = simulation.calculate("guarantee_credit", year)
+    last = int(np.flatnonzero(guarantee_credit > 0)[-1])
+    net = simulation.calculate("household_net_income", year) + simulation.calculate(
+        "tv_licence", year
+    )
+    assert round(float(net[last + 1] - net[last]), 2) == expected_step
+    assert net[last + 1] >= net[last]
 
 
 def _zero_single_maximum(start):
