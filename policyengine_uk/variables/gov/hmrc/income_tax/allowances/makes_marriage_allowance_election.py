@@ -80,6 +80,23 @@ def tax_position(simulation, name, period, relinquished, held):
         return {variable: population(variable, period) for variable in BRANCH_OUTPUTS}
     finally:
         del simulation.branches[name]
+        release(branch)
+
+
+def release(branch):
+    """Free the arrays a deleted branch holds.
+
+    policyengine-core records each new branch in every calculation then
+    under way, which keeps it until they finish. Without this, both branches
+    and their copies of the simulation's arrays would last until the
+    calculation that asked for the election (household net income, say)
+    ended. The storage is cleared directly: deleting values through the
+    branch would record a change in each of those calculations, though
+    nothing reads the branch again.
+    """
+    for population in branch.populations.values():
+        population._holders.clear()
+    branch._fast_cache = {}
 
 
 class makes_marriage_allowance_election(Variable):

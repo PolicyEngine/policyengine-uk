@@ -16,6 +16,9 @@ generated population of couples and singles:
    reform, whether the reform or the baseline is computed first, and the
    reform's own results do not depend on that order either.
 3. Branches are dropped: computing six years leaves no branch behind.
+4. Branches are released: once the election is made, its two branches hold
+   no values, though policyengine-core keeps them until the calculations
+   under way end, and the simulation keeps its own.
 """
 
 import numpy as np
@@ -62,6 +65,29 @@ BASELINE_OUTPUTS = [
 ]
 TENURES = ["RENT_FROM_COUNCIL", "RENT_PRIVATELY", "OWNED_OUTRIGHT"]
 REGIONS = ["LONDON", "WALES", "SCOTLAND"]
+# A couple who elect every year: 30,000 and 9,000 of earnings, so electing
+# costs the lower earner nothing and saves the other 252 (s. 55B). The lower
+# earner's property receipts are within the property allowance and carry
+# finance costs, so the property route is weighed in branches too.
+ELECTING_COUPLE = [
+    dict(
+        adults=[
+            dict(age=40, employment_income=30_000.0),
+            dict(
+                age=38,
+                employment_income=9_000.0,
+                property_rental_income=800.0,
+                property_income=800.0,
+                property_finance_costs=200.0,
+            ),
+        ],
+        married=True,
+        children=[4],
+        tenure="RENT_PRIVATELY",
+        rent=9_000.0,
+        region="LONDON",
+    )
+]
 
 
 def personal_allowance_reform(year):
@@ -212,31 +238,8 @@ def test_reform_leaves_the_baseline_unchanged(units, year):
 
 
 def test_no_branch_is_left_after_any_year():
-    # A couple who elect every year: 30,000 and 9,000 of earnings, so electing
-    # costs the lower earner nothing and saves the other 252 (s. 55B). The
-    # lower earner's property receipts are within the property allowance and
-    # carry finance costs, so the property route is weighed in branches too.
-    units = [
-        dict(
-            adults=[
-                dict(age=40, employment_income=30_000.0),
-                dict(
-                    age=38,
-                    employment_income=9_000.0,
-                    property_rental_income=800.0,
-                    property_income=800.0,
-                    property_finance_costs=200.0,
-                ),
-            ],
-            married=True,
-            children=[4],
-            tenure="RENT_PRIVATELY",
-            rent=9_000.0,
-            region="LONDON",
-        )
-    ]
     years = list(range(2025, 2031))
-    simulation = Simulation(situation=situation(units, years))
+    simulation = Simulation(situation=situation(ELECTING_COUPLE, years))
     before = set(simulation.branches)
     elected = []
     for year in years:
@@ -244,6 +247,31 @@ def test_no_branch_is_left_after_any_year():
         elected.append(bool(simulation.calculate(ELECTION, year).any()))
         assert set(simulation.branches) == before, (year, list(simulation.branches))
     assert all(elected), elected
+
+
+def test_the_election_releases_its_branches(monkeypatch):
+    # Each branch would otherwise hold its copies of the simulation's arrays,
+    # and its own results, until household net income is calculated.
+    year = 2026
+    simulation = Simulation(situation=situation(ELECTING_COUPLE, year))
+    get_branch = type(simulation).get_branch
+    made = []
+
+    def recording_get_branch(self, name="branch", clone_system=False):
+        branch = get_branch(self, name, clone_system)
+        if self is simulation and name.startswith("marriage_allowance_"):
+            made.append(branch)
+        return branch
+
+    monkeypatch.setattr(type(simulation), "get_branch", recording_get_branch)
+    simulation.calculate("household_net_income", year)
+    assert simulation.calculate(ELECTION, year).any()
+    assert len(made) == 2
+    for branch in made:
+        assert not any(p._holders for p in branch.populations.values())
+        assert not branch._fast_cache
+    # The simulation keeps the values it calculated before branching.
+    assert simulation.get_array("adjusted_net_income", year) is not None
 
 
 @pytest.mark.parametrize(
