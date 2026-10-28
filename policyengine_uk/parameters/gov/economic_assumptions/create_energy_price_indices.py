@@ -25,7 +25,9 @@ Quarterly levels, from the first quarter of 2015:
 
 Every input is read at the month or quarter it applies to, not from its
 stated dates, so a reform keyed by year (one value for a calendar year)
-applies to each month or quarter of it.
+applies to each month or quarter of it, and one with no end, which removes
+the stated values after its start, to every month or quarter after it. A
+month or quarter with no value is an error.
 
 The OBR forecasts utilities only, so electricity and gas grow at the same
 rate after the ONS outturn: each index is the fuel's own price to there and a
@@ -109,18 +111,6 @@ class EnergyPriceInputs:
             raise ValueError(
                 f"ONS prices must cover the four quarters of {FIRST_YEAR}."
             )
-        last_month = "{:04d}-{:02d}-01".format(*_months(self.last_outturn)[-1])
-        for key in SERIES:
-            stated = _stated(self.prices.ons.get_child(key))
-            if not stated or min(stated) > f"{FIRST_YEAR}-01-01":
-                raise ValueError(
-                    f"ONS {key} prices must start in January {FIRST_YEAR}."
-                )
-            if max(stated) < last_month:
-                raise ValueError(
-                    f"ONS {key} prices end in {max(stated)[:7]}, before the end "
-                    f"of {last}, the last quarter ONS publishes in full."
-                )
         stated = _stated(self.prices.obr.utilities)
         if not stated:
             raise ValueError("The OBR utilities inflation forecast has no values.")

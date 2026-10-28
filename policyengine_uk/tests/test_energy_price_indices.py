@@ -23,7 +23,8 @@ Invariants:
 7. ``held_flat`` from a year holds the annual levels at the year before.
 8. Inputs are read at each month and quarter, so a reform that states one
    value for a year or a span of quarters sets each month or quarter in it,
-   and the outturn ends at ``last_full_quarter`` whatever a reform states.
+   one with no end sets every month or quarter after its start, and the
+   outturn ends at ``last_full_quarter`` whatever a reform states.
 """
 
 import math
@@ -350,19 +351,27 @@ def test_the_last_full_quarter_must_be_stated(raw, value):
         build(raw, edit)
 
 
-def test_ons_prices_that_end_before_the_last_full_quarter_are_an_error(raw):
+@pytest.mark.parametrize(
+    "period, month",
+    [
+        ("month:2020-05", "2020-05"),
+        ("month:2014-01:13", "2015-01"),
+        ("month:2026-09", "2026-09"),
+    ],
+)
+def test_a_month_without_an_ons_price_is_an_error(raw, period, month):
     def edit(tree):
-        prices_of(tree).ons.gas.update(start="2026-09-01", value=None)
+        prices_of(tree).ons.gas.update(period=period, value=None)
 
-    with pytest.raises(ValueError, match="gas prices end in 2026-08"):
+    with pytest.raises(ValueError, match=f"gas prices have no value for {month}"):
         build(raw, edit)
 
 
-def test_a_gap_in_the_ons_prices_is_an_error(raw):
+def test_removing_the_ons_prices_from_a_month_is_an_error(raw):
     def edit(tree):
-        prices_of(tree).ons.gas.update(period="month:2020-05", value=None)
+        prices_of(tree).ons.gas.update(start="2026-09-01", value=None)
 
-    with pytest.raises(ValueError, match="gas prices have no value for 2020-05"):
+    with pytest.raises(ValueError, match="gas prices have no value for 2026-09"):
         build(raw, edit)
 
 
@@ -640,24 +649,28 @@ def realised_obr_rate(raw, level, quarter):
     first=st.integers(2026, 2034),
     span=st.integers(1, 6),
     rate=st.floats(-0.3, 0.6, allow_nan=False, allow_infinity=False),
-    by_year=st.booleans(),
+    shape=st.sampled_from(["years", "quarters", "open"]),
 )
 def test_a_forecast_reform_sets_the_rate_of_every_quarter_it_covers(
-    raw, current, first, span, rate, by_year
+    raw, current, first, span, rate, shape
 ):
-    # One stated value for whole years, as a reform keyed by year leaves, or
-    # for a span of quarters from a fourth quarter, across the year end;
-    # either removes the stated values of the quarters inside it.
-    if by_year:
+    # One stated value for whole years, as a reform keyed by year leaves, for
+    # a span of quarters from a fourth quarter, across the year end, or from
+    # a fourth quarter with no end; each removes the stated values of the
+    # quarters inside it.
+    if shape == "years":
         years = min(span, 3)
-        period = f"year:{first}:{years}"
+        change = dict(period=f"year:{first}:{years}")
         covered = indices._quarters((first, 1), (first + years - 1, 4))
-    else:
-        period = f"month:{first}-10:{3 * span}"
+    elif shape == "quarters":
+        change = dict(period=f"month:{first}-10:{3 * span}")
         covered = indices._quarters((first, 4), (first + 2, 4))[:span]
+    else:
+        change = dict(start=f"{first}-10-01")
+        covered = indices._quarters((first, 4), FORECAST[-1])
 
     def edit(tree):
-        prices_of(tree).obr.utilities.update(period=period, value=rate)
+        prices_of(tree).obr.utilities.update(value=rate, **change)
 
     changed = build(raw, edit)
     effective = changed.obr.utilities
@@ -696,6 +709,45 @@ def test_a_year_keyed_forecast_reform_builds_a_simulation(raw):
             reformed.calculate(variable, 2027)[0]
             > baseline.calculate(variable, 2027)[0]
         )
+
+
+@settings(max_examples=30, deadline=None, derandomize=True)
+@given(
+    key=st.sampled_from(SERIES),
+    month=st.integers(0, len(OUTTURN) * 3 - 1),
+    value=st.floats(50, 300, allow_nan=False, allow_infinity=False),
+)
+def test_an_open_ended_ons_reform_sets_every_month_after_it(
+    raw, current, key, month, value
+):
+    # Regression: a change with no end removes the stated values after its
+    # start, and the generator used to reject the series as ending there.
+    year, number = FIRST + month // 12, month % 12 + 1
+    start = f"{year:04d}-{number:02d}-01"
+
+    def edit(tree):
+        prices_of(tree).ons.get_child(key).update(start=start, value=value)
+
+    changed = build(raw, edit)
+    assert indices._stated(changed.ons.get_child(key))[0] == start
+    effective = changed.ons.get_child(key)
+    for quarter in OUTTURN:
+        # Published VAT is the basis rate in every outturn quarter.
+        months = indices._months(quarter)
+        monthly = [effective(f"{y:04d}-{m:02d}-01") for y, m in months]
+        if months[0] >= (year, number):
+            assert monthly == [value] * 3
+        assert quarter_level(changed, key, quarter) == pytest.approx(
+            np.mean(monthly), rel=1e-12
+        ), quarter
+    for quarter in FORECAST:
+        earlier = (quarter[0] - 1, quarter[1])
+        assert quarter_level(changed, key, quarter) / quarter_level(
+            changed, key, earlier
+        ) == pytest.approx(
+            quarter_level(current, key, quarter) / quarter_level(current, key, earlier),
+            rel=1e-12,
+        ), quarter
 
 
 @pytest.mark.parametrize("year", [2025, 2026])

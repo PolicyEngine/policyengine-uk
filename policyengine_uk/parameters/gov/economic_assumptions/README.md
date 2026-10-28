@@ -372,9 +372,12 @@ Every input is read at the month or quarter it applies to, not from its
 stated dates, so a reform can state one value for a year or a span of
 quarters: `{"gov.economic_assumptions.energy_prices.obr.utilities": {"2027":
 0.1}}` sets utilities inflation to 10% in each quarter of 2027 (through
-Core's `Reform.from_dict` a bare year applies from that year onward). The ONS
-prices are read only to the end of `last_full_quarter` and `obr.utilities`
-only after it, and a reform cannot move that boundary. A forecast quarter
+Core's `Reform.from_dict` a bare year applies from that year onward). A change
+written with `Parameter.update` and no end, which removes the stated values
+after its start, sets every month or quarter after it. The ONS prices are
+read only to the end of `last_full_quarter` and `obr.utilities` only after
+it, and a reform cannot move that boundary. A month or quarter with no value,
+such as one a reform sets to `None`, stops generation. A forecast quarter
 grows from the level a year earlier, so a reform to the ONS prices also moves
 the forecast levels, though not their growth.
 
