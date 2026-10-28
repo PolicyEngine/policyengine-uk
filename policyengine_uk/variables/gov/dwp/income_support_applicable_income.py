@@ -7,8 +7,12 @@ class income_support_applicable_income(Variable):
     label = "Relevant income for Income Support means test"
     documentation = (
         "The claimant's and partner's income for Income Support, including "
-        "statutory sick, maternity and paternity pay and spousal maintenance. "
-        "Child maintenance is disregarded."
+        "statutory sick, maternity and paternity pay, spousal maintenance and "
+        "tariff income from capital, less income tax, National Insurance, "
+        "half of pension contributions, £10 a week of widowed parent's "
+        "allowance and the Schedule 8 earnings disregard, which is capped at "
+        "net earnings (income_support_earnings_disregard). Child maintenance "
+        "is disregarded."
     )
     definition_period = YEAR
     unit = GBP
@@ -76,18 +80,8 @@ class income_support_applicable_income(Variable):
             add_for_members(benunit, period, ["pension_contributions"], members)
             * IS.means_test.pension_contribution_deduction_rate
         )
-        # Schedule 8 paras 5, 6 and 10 use mutually exclusive claimant types.
-        mt = IS.means_test
-        single = benunit("is_single_person", period)
-        income_disregard_single = single * mt.income_disregard_single
-        income_disregard_couple = (
-            benunit("is_couple", period) * mt.income_disregard_couple
-        )
-        lone_parent = benunit("is_lone_parent", period)
-        income_disregard_lone_parent = lone_parent * mt.income_disregard_lone_parent
-        income_disregard = (
-            income_disregard_single
-            + income_disregard_couple
-            + income_disregard_lone_parent
-        ) * WEEKS_IN_YEAR
-        return max_(0, income - income_disregard)
+        # Schedule 8 disregards earnings only (regs 36(2) and 38(2)), so the
+        # disregard is capped at the claimant's and partner's net earnings.
+        # Statutory pay, pensions, benefits and maintenance are income other
+        # than earnings (reg 40) and keep no part of it.
+        return max_(0, income - benunit("income_support_earnings_disregard", period))
