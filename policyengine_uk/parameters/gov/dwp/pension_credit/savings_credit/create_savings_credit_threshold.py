@@ -350,6 +350,20 @@ def enacted_maximum(
     )
 
 
+def preserve_zero_anchor(parameter: Parameter, index: Parameter) -> None:
+    """Keep a latest explicit zero anchor zero under multiplicative uprating.
+
+    Core divides each future index by the index at the explicit anchor before
+    multiplying by its amount. Even finite positive indices can have an
+    infinite ratio, turning a zero anchor into ``0 * inf = NaN``. A constant
+    index after that anchor preserves its zero without changing earlier index
+    history or the parameter's explicit timeline.
+    """
+    latest = max(parameter.values_list, key=lambda entry: entry.instant_str)
+    if latest.value == 0:
+        index.update(start=latest.instant_str, value=index(latest.instant_str))
+
+
 def project_savings_credit_threshold(
     parameters: ParameterNode,
     unreformed: ParameterNode | None = None,
@@ -452,21 +466,20 @@ def project_savings_credit_threshold(
                     )
                 ),
             )
-        projection.add_child(
+        index = _projection_parameter(
             relationship,
-            _projection_parameter(
-                relationship,
-                float(guarantee_parameter(base_instant)),
-                float(threshold_parameter(base_instant)),
-                savings_credit.rate.phase_in,
-                earnings_index,
-                cpi_september,
-                final_observation_year,
-                base_year,
-                maximum,
-                price_index,
-                maxima,
-                guarantee_path,
-            ),
+            float(guarantee_parameter(base_instant)),
+            float(threshold_parameter(base_instant)),
+            savings_credit.rate.phase_in,
+            earnings_index,
+            cpi_september,
+            final_observation_year,
+            base_year,
+            maximum,
+            price_index,
+            maxima,
+            guarantee_path,
         )
+        projection.add_child(relationship, index)
+        preserve_zero_anchor(reformed_threshold, index)
     return parameters

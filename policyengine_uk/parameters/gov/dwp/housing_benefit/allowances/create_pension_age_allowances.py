@@ -18,6 +18,7 @@ from policyengine_core.parameters import Parameter, ParameterNode
 from policyengine_uk.parameters.gov.dwp.pension_credit.savings_credit.create_savings_credit_threshold import (
     enacted_maximum,
     last_projected_year,
+    preserve_zero_anchor,
     projected_maximum_values,
     uprated_values,
 )
@@ -305,20 +306,19 @@ def project_pension_age_allowances(
                 float(getattr(reformed_guarantees, relationship)(start)),
                 reformed_allowance,
             )
-        projection.add_child(
+        index = _projection_parameter(
             allowance_name,
-            _projection_parameter(
-                allowance_name,
-                allowance,
-                guarantee,
-                earnings_index,
-                cpi_september,
-                final_observation_year,
-                base_year,
-                retained_maximum,
-                price_index,
-                maxima,
-                guarantee_path,
-            ),
+            allowance,
+            guarantee,
+            earnings_index,
+            cpi_september,
+            final_observation_year,
+            base_year,
+            retained_maximum,
+            price_index,
+            maxima,
+            guarantee_path,
         )
+        projection.add_child(allowance_name, index)
+        preserve_zero_anchor(allowance_parameter, index)
     return parameters

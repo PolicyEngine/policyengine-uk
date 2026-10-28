@@ -215,6 +215,62 @@ def test_combined_reforms_build_and_never_project_negative_amounts(
                 ), (name, year, reforms, advance_base)
 
 
+@pytest.mark.parametrize(
+    "own_path,relationship,index_path",
+    [
+        *(
+            (
+                f"{SC_NAME}.threshold.{relationship}",
+                relationship,
+                f"{SC_NAME}.threshold_uprating.{relationship}",
+            )
+            for relationship in ("SINGLE", "COUPLE")
+        ),
+        *(
+            (
+                f"{HB_NAME}.{kind}.aged",
+                relationship,
+                f"{HB_NAME}.protected_pension_age_uprating.{kind}",
+            )
+            for kind, relationship in HB_RELATIONS.items()
+        ),
+    ],
+)
+def test_zero_forecast_anchor_survives_an_extreme_component_rebound(
+    own_path, relationship, index_path
+):
+    """A positive index floor must not turn an explicit zero into 0 * inf."""
+    parameters = synthetic_parameter_tree([(0.039, 0.035)])
+    unreformed = parameters.clone()
+    guarantee = f"{SMG_NAME}.{relationship}"
+    maximum = f"{SC_NAME}.maximum.{relationship}"
+    if ".threshold." in own_path:
+        reforms = {
+            guarantee: (2028, 1e100),
+            maximum: [(2026, 1e100), (2028, 0)],
+        }
+        rebound_path = guarantee
+    else:
+        reforms = {
+            guarantee: (2026, 0),
+            maximum: [(2027, 0), (2028, 1e100)],
+        }
+        rebound_path = maximum
+    _apply_reforms(parameters, reforms | {own_path: (2027, 0)})
+
+    projected = project_synthetic_parameters(parameters, unreformed)
+
+    assert projected.get_child(own_path)("2026-04-30") == unreformed.get_child(
+        own_path
+    )("2026-04-30")
+    assert projected.get_child(rebound_path)("2028-04-30") == 1e100
+    index = projected.get_child(index_path)
+    for year in range(FIRST_PROJECTION_YEAR, 2041):
+        at = f"{year}-04-30"
+        assert projected.get_child(own_path)(at) == 0
+        assert isfinite(index(at)) and index(at) > 0
+
+
 @pytest.mark.parametrize("first_year", [2025, 2026])
 def test_advanced_base_preserves_a_pre_base_maximum_reform(first_year):
     """A complete rates update must not replace an earlier maximum reform."""
