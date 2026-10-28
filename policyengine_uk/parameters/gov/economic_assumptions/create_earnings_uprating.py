@@ -13,7 +13,9 @@ triple lock and rounds to the 0.1 percentage points published by the ONS.
 ``create_economic_assumption_indices`` compounds it into
 ``gov.economic_assumptions.indices.earnings_uprating``. The series starts
 from a 2010 base and runs to one year past the statutory inputs. Published
-benefit amounts remain explicit; the index projects later years.
+benefit amounts remain explicit; the index projects later years. The
+minimum wage rates (``gov.hmrc.minimum_wage``) also use it after the last
+rate set.
 """
 
 from typing import Dict, Iterable

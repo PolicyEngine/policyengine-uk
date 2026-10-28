@@ -14,7 +14,7 @@ from policyengine_uk import Simulation
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
-# 2026-27, the last year whose national living wage is set (£12.71), so the
+# 2026-27, a year whose national living wage is set (£12.71), so the
 # baseline limit does not depend on the model's projection of later rates.
 YEAR = 2026
 NLW_REFORM = {

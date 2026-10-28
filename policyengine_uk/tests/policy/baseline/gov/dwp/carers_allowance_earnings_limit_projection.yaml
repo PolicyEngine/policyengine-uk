@@ -2,13 +2,13 @@
 # week from 6 April 2026, SI 2026/218). From April 2025 the Government sets
 # the limit at 16 times the hourly national living wage, rounded up to the
 # nearest pound (Explanatory Memorandum to SI 2025/352, paragraph 5.6), and
-# the model projects later years that way. The model projects the national
-# living wage by May-July earnings growth of the year before (3.9% for April
-# 2027, then 2.4%, 2.1% and 2.2%), to the nearest penny: £13.21 in 2027-28,
-# £13.52 in 2028-29, £13.81 in 2029-30 and £14.11 in 2030-31. The limits are
-# 16 x £13.21 = £211.36, rounded up to £212; 16 x £13.52 = £216.32, to £217;
-# and 16 x £14.11 = £225.76, to £226. Earnings are entered net, as
-# carers_allowance_earnings, so the cases do not depend on tax or NI.
+# the model projects later years that way. The model projects the April 2027
+# national living wage by May-July 2026 earnings growth, 3.9% (published), to
+# £12.71 x 1.039 = £13.21, so the limit is 16 x £13.21 = £211.36, rounded up
+# to £212. Later years rest on OBR forecasts, so they are tested in
+# test_carers_allowance_earnings_limit_projection.py against whatever the
+# model's wage is. Earnings are entered net, as carers_allowance_earnings, so
+# the cases do not depend on tax or NI.
 
 - name: 2027-28, net earnings of exactly £212 a week have not exceeded the limit.
   period: 2027
@@ -25,48 +25,6 @@
   input:
     age: 45
     carers_allowance_earnings: 213 * 52
-    care_hours: 40
-    country: ENGLAND
-  output:
-    is_gainfully_employed_for_carers_allowance: true
-    carers_allowance: 0
-
-- name: 2028-29, net earnings of exactly £217 a week have not exceeded the limit.
-  period: 2028
-  input:
-    age: 45
-    carers_allowance_earnings: 217 * 52
-    care_hours: 40
-    country: ENGLAND
-  output:
-    is_gainfully_employed_for_carers_allowance: false
-
-- name: 2028-29, net earnings of £218 a week are over the limit.
-  period: 2028
-  input:
-    age: 45
-    carers_allowance_earnings: 218 * 52
-    care_hours: 40
-    country: ENGLAND
-  output:
-    is_gainfully_employed_for_carers_allowance: true
-    carers_allowance: 0
-
-- name: 2030-31, net earnings of exactly £226 a week have not exceeded the limit.
-  period: 2030
-  input:
-    age: 45
-    carers_allowance_earnings: 226 * 52
-    care_hours: 40
-    country: ENGLAND
-  output:
-    is_gainfully_employed_for_carers_allowance: false
-
-- name: 2030-31, net earnings of £227 a week are over the limit.
-  period: 2030
-  input:
-    age: 45
-    carers_allowance_earnings: 227 * 52
     care_hours: 40
     country: ENGLAND
   output:

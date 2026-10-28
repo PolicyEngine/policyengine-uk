@@ -22,17 +22,28 @@ description: Minimum wage rate for non-apprentices by age.
 # wage has changed each 1 April since 2016; the other rates changed on
 # 1 October 2016 and each 1 April from 2017.
 #
-# Rates after the last one set here are a projection, not law. Each amount
-# rises each April by gov.economic_assumptions.indices.earnings_uprating: the
-# May-July growth in average weekly earnings of the year before, rounded to
-# 0.1 percentage points and never negative, which also projects the April
-# up-rating of the Pension Credit guarantee. It is then rounded to the nearest
-# penny. The Government keeps two-thirds of median hourly earnings for workers
-# aged 21 and over as "the key reference point for future rates" (Low Pay
-# Commission remit 2026), so the rates move with earnings. May-July 2026
+# Rates after the last one set here are a projection, not law. Each is the
+# last rate set times the growth since then in
+# gov.economic_assumptions.indices.earnings_uprating, rounded to the nearest
+# penny (the rounding is not repeated each April). Each April's rise in that
+# index is the May-July growth in average weekly earnings of the year before,
+# rounded to 0.1 percentage points and never negative; it also projects the
+# April up-rating of the Pension Credit guarantee. The Government keeps
+# two-thirds of median hourly earnings for workers aged 21 and over as "the key
+# reference point for future rates" of the national living wage (Low Pay
+# Commission remit 2026), so that rate moves with earnings. May-July 2026
 # growth was 3.9%, so the April 2027 national living wage is projected at
-# £12.71 x 1.039 = £13.21. Add each rate when it is set, and the projection
-# continues from it.
+# £12.71 x 1.039 = £13.21.
+#
+# The younger bands' projection is an assumption: each keeps its April 2026
+# ratio to the national living wage. The Government "remains committed to"
+# aligning the 18 to 20 rate with the national living wage, at a pace the Low
+# Pay Commission sets (remit 2026), which this does not model.
+#
+# A rate added to this file takes precedence, and the projection continues
+# from it. A reform does not: a rate a reform sets for some years is not
+# projected forward, so an open-ended reform holds its rate flat while the
+# baseline rises.
 
 brackets:
 - threshold:
