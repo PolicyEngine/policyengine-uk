@@ -2,8 +2,7 @@ description: The UK levies road fuel duty on LPG at this rate per kilogram.
 values:
   '2021-01-01': 0.3161
   '2022-03-23': 0.2888
-  '2027-01-01': 0.3052
-  '2027-03-01': 0.3161
+  '2027-07-01': 0.3161
 metadata:
   unit: currency-GBP
   period: year
@@ -11,8 +10,10 @@ metadata:
   reference:
   - title: Hydrocarbon Oil Duties Act 1979, section 8
     href: https://www.legislation.gov.uk/ukpga/1979/5/section/8
-  - title: SI 2026/164, article 8, as amended by SI 2026/555 (1 January to 28 February 2027)
+  - title: SI 2026/164, as amended by SI 2026/555 (cut continued to 31 December 2026)
     href: https://www.legislation.gov.uk/uksi/2026/164
+  - title: Budget 2026, paragraph 6.211, and policy costings page 13 (proportionate cut to other fuels to 1 July 2027; not yet law)
+    href: https://assets.publishing.service.gov.uk/media/6ae1883fe4367e5c8b0467df/AB26_Policy_Costing.pdf#page=13
   - title: HMRC, Amended Fuel Duty rates 2026 to 2027 (22 May 2026)
     href: https://www.gov.uk/government/publications/amended-fuel-duty-rates-for-2026-to-2027/amended-fuel-duty-rates-2026-to-2027
   fiscal_year_blend: true

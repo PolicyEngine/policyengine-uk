@@ -2,8 +2,9 @@
 The petrol and diesel fuel duty rate follows its dated schedule.
 
 Each rate is keyed to the date it takes effect, and `fiscal_year_blend`
-day-weights the schedule across each model year (6 April to 5 April). Rates
-from 1 April 2027 are an RPI forecast: Budget 2025 policy, not yet law.
+day-weights the schedule across each model year (6 April to 5 April).
+Budget 2026 keeps the 5p cut to 1 July 2027; rates from then are an RPI
+forecast. Both are Budget 2026 policy, not yet law.
 """
 
 import datetime
@@ -21,7 +22,10 @@ from policyengine_uk.model_api import Scenario
 from policyengine_uk.system import system
 
 PATH = "gov.hmrc.fuel_duty.petrol_and_diesel"
-FORECAST_YEARS = range(2027, 2032)
+# The 1 July 2027 step, then each 1 April. Each applies the previous calendar
+# year's RPI growth.
+FORECAST_DATES = ["2027-07-01"] + [f"{year}-04-01" for year in range(2028, 2032)]
+LAST_FORECAST_YEAR = 2031
 CONVERTED_YEARS = range(2015, 2041)
 
 
@@ -57,29 +61,29 @@ def model_year_days(year: int) -> list:
         ("2022-03-22", 0.5795),
         ("2022-03-23", 0.5295),
         # SI 2026/555 removed the 1 September 2026 step and moved the
-        # 1 December 2026 step to 1 January 2027.
+        # 1 December 2026 step to 1 January 2027; Budget 2026 cancelled the
+        # January and March 2027 steps and kept the cut to 1 July 2027.
         ("2026-09-01", 0.5295),
         ("2026-12-01", 0.5295),
         ("2026-12-31", 0.5295),
-        ("2027-01-01", 0.5595),
-        ("2027-02-28", 0.5595),
-        ("2027-03-01", 0.5795),
-        ("2027-03-31", 0.5795),
+        ("2027-01-01", 0.5295),
+        ("2027-03-01", 0.5295),
+        ("2027-04-01", 0.5295),
+        ("2027-06-30", 0.5295),
     ],
 )
-def test_statutory_rate_on_each_date(date, rate):
+def test_scheduled_rate_on_each_date(date, rate):
     schedule = raw_parameters().gov.hmrc.fuel_duty.petrol_and_diesel
     assert schedule(date) == pytest.approx(rate, abs=1e-12)
 
 
-# Model year Y runs from 6 April Y to 5 April Y+1. Rates from 1 April 2027:
-# 59.75p, then 61.54p (2028), 63.26p (2029), 65.09p (2030), 66.59p (2031).
+# Model year Y runs from 6 April Y to 5 April Y+1. Rates: 59.75p from 1 July
+# 2027, then 61.54p (2028), 63.26p (2029), 65.09p (2030), 66.59p (2031).
 HAND_COMPUTED = {
     2025: 0.5295,
-    # 6 Apr to 31 Dec 2026, Jan to Feb 2027, Mar 2027, 1 to 5 Apr 2027.
-    2026: (0.5295 * 270 + 0.5595 * 59 + 0.5795 * 31 + 0.5975 * 5) / 365,
-    # 2028 is a leap year: 361 days to 31 March, then 5 days.
-    2027: (0.5975 * 361 + 0.6154 * 5) / 366,
+    2026: 0.5295,
+    # 6 Apr to 30 Jun 2027, then to 31 Mar 2028 (a leap year), then 5 days.
+    2027: (0.5295 * 86 + 0.5975 * 275 + 0.6154 * 5) / 366,
     2028: (0.6154 * 360 + 0.6326 * 5) / 365,
     2029: (0.6326 * 360 + 0.6509 * 5) / 365,
     2030: (0.6509 * 360 + 0.6659 * 5) / 365,
@@ -92,7 +96,7 @@ def test_model_year_rate_is_hand_computed_day_weighted_average(year, rate):
 
 
 def test_forecast_steps_use_current_rpi_forecast():
-    """The written 1 April steps match the RPI series they claim to use.
+    """The written steps match the RPI series they claim to use.
 
     Fails when the RPI forecast in yoy_growth.yaml changes. Regenerate with
     `uv run python policyengine_uk/parameters/gov/hmrc/fuel_duty/calculate_fuel_duty_rates.py --update`.
@@ -100,21 +104,25 @@ def test_forecast_steps_use_current_rpi_forecast():
     parameters = raw_parameters()
     rpi = parameters.gov.economic_assumptions.yoy_growth.obr.rpi
     schedule = parameters.gov.hmrc.fuel_duty.petrol_and_diesel
+    # The 57.95p pre-cut rate (Finance Act 2011 s. 19).
     rate = Decimal("0.5795")
-    for year in FORECAST_YEARS:
-        growth = Decimal(str(rpi(f"{year - 1}-01-01")))
+    for date in FORECAST_DATES:
+        day_before = (
+            datetime.date.fromisoformat(date) - datetime.timedelta(days=1)
+        ).isoformat()
+        growth = Decimal(str(rpi(f"{int(date[:4]) - 1}-01-01")))
         rate = (rate * (1 + growth)).quantize(Decimal("0.0001"), ROUND_HALF_UP)
-        assert schedule(f"{year}-04-01") == pytest.approx(float(rate), abs=1e-12), (
-            f"{year}-04-01 is stale against the RPI forecast; run "
+        assert schedule(date) == pytest.approx(float(rate), abs=1e-12), (
+            f"{date} is stale against the RPI forecast; run "
             "calculate_fuel_duty_rates.py --update"
         )
-        assert schedule(f"{year}-03-31") != schedule(f"{year}-04-01")
+        assert schedule(day_before) != schedule(date)
 
 
 def test_uprating_continues_each_april_after_the_written_steps():
     schedule = dated_schedule()
     rpi = system.parameters.baseline.gov.economic_assumptions.yoy_growth.obr.rpi
-    for year in range(max(FORECAST_YEARS) + 1, 2041):
+    for year in range(LAST_FORECAST_YEAR + 1, 2041):
         previous = schedule(f"{year - 1}-04-01")
         assert schedule(f"{year}-03-31") == previous
         expected = previous * (1 + rpi(f"{year - 1}-01-01"))
@@ -162,18 +170,19 @@ def fuel_duty_simulation(parameter_changes=None):
     return Microsimulation(situation=situation, scenario=scenario)
 
 
-def test_holding_55_95p_for_2027_removes_the_full_2027_28_rate_rise():
-    """Regression: calendar-year averaging cut this effect to 3.30p a litre.
+def test_holding_52_95p_for_2027_removes_the_full_2027_28_rate_rise():
+    """Regression: calendar-year averaging diluted annual overrides.
 
-    The 2027-28 baseline is 59.77p, so holding 55.95p saves 3.82p a litre.
+    The 2027-28 baseline averages 58.18p, so holding 52.95p for the whole
+    model year saves 5.23p a litre.
     """
     baseline = fuel_duty_simulation()
-    reformed = fuel_duty_simulation({PATH: {"2027": 0.5595}})
+    reformed = fuel_duty_simulation({PATH: {"2027": 0.5295}})
     saving = (
         baseline.calculate("fuel_duty", 2027).values[0]
         - reformed.calculate("fuel_duty", 2027).values[0]
     )
-    assert saving == pytest.approx(1_000 * (HAND_COMPUTED[2027] - 0.5595))
+    assert saving == pytest.approx(1_000 * (HAND_COMPUTED[2027] - 0.5295))
 
 
 @settings(max_examples=8, deadline=None)
