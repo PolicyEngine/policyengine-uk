@@ -95,9 +95,11 @@
         members: [parent, child]
         country: ENGLAND
   output:
-    # IS Regs 1987 Sch 9 para 16(h), then the model's £20 lone parent
-    # disregard.
-    income_support_applicable_income: (156.65 - 10 - 20) * 52
+    # IS Regs 1987 Sch 9 para 16(h): (£156.65 - £10) x 52 = £7,625.80.
+    # With no earnings, no Schedule 8 disregard applies to the allowance.
+    income_support_net_earnings: 0
+    income_support_earnings_disregard: 0
+    income_support_applicable_income: (156.65 - 10) * 52
 
 - name: Widowed Parent's Allowance overlaps with Carer's Allowance
   period: 2026
