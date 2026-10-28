@@ -29,6 +29,17 @@ programs:
     verified_start_year: 2027
     notes: Separate final manager charge at the savings basic rate from 6 April 2027. Requires the cash-interest component as an input; subscription-limit compliance is not modelled.
 
+  - id: isa_subscription_limits
+    name: ISA subscription limits
+    full_name: Individual Savings Account annual and cash subscription limits
+    category: Savings
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: isa_subscriptions_above_limit
+    verified_start_year: 2017
+    notes: The annual limit (gov.hmrc.isa.annual_subscription_limit) and, from 6 April 2027, the cash limit for people under 65 at the end of the tax year (gov.hmrc.isa.cash). Reports subscriptions above each limit from per-person subscription inputs. Innovative finance and Junior ISAs are not modelled.
+
   - id: income_tax
     name: Income tax
     full_name: Income Tax

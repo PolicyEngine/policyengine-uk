@@ -1,0 +1,15 @@
+description: >
+  Age a person must have reached by the end of the tax year (5 April) for the
+  cash ISA subscription limit not to apply. Their cash subscriptions then count
+  only towards the annual subscription limit.
+values:
+  2027-04-06: 65
+metadata:
+  label: Cash ISA full limit age
+  period: year
+  unit: year
+  reference:
+    - title: Individual Savings Account Regulations 1998 regulation 4ZA(1ZA)
+      href: https://www.legislation.gov.uk/uksi/1998/1870/regulation/4ZA
+    - title: Individual Savings Account (Amendment) (No. 2) Regulations 2026 regulation 6
+      href: https://www.legislation.gov.uk/uksi/2026/1018/regulation/6/made

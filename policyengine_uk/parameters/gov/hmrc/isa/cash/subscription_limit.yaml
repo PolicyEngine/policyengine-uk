@@ -1,0 +1,17 @@
+description: >
+  Limit on a person's subscriptions in the tax year to cash ISAs while they are
+  under the cash ISA full limit age at the end of the year. Cash has had no
+  limit of its own since 1 July 2014, so until 6 April 2027 cash subscriptions
+  count only towards the annual subscription limit.
+values:
+  2017-04-06: .inf
+  2027-04-06: 12000
+metadata:
+  label: Cash ISA subscription limit
+  period: year
+  unit: currency-GBP
+  reference:
+    - title: Individual Savings Account Regulations 1998 regulation 4ZA(1ZA)
+      href: https://www.legislation.gov.uk/uksi/1998/1870/regulation/4ZA
+    - title: Individual Savings Account (Amendment) (No. 2) Regulations 2026 regulations 1 and 6
+      href: https://www.legislation.gov.uk/uksi/2026/1018/regulation/6/made

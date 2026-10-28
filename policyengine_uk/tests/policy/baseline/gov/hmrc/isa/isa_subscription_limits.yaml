@@ -1,0 +1,106 @@
+# ISA Regulations 1998 reg 4ZA(1) (GBP 20,000 annual limit) and reg 4ZA(1ZA),
+# inserted by SI 2026/1018 reg 6 from 6 April 2027: GBP 12,000 for cash while
+# a person is 64 or under at the end of the year (5 April).
+
+- name: Cash has no limit of its own in fiscal 2026-27
+  period: 2026
+  input:
+    age: 40
+    cash_isa_subscriptions: 20_000
+  output:
+    cash_isa_subscription_limit: 20_000
+    cash_isa_subscriptions_above_limit: 0
+    isa_subscriptions_above_limit: 0
+
+- name: The GBP 12,000 cash limit applies from fiscal 2027-28
+  period: 2027
+  input:
+    age: 40
+    cash_isa_subscriptions: 20_000
+  output:
+    cash_isa_subscription_limit: 12_000
+    cash_isa_subscriptions_above_limit: 8_000
+    isa_subscriptions_above_limit: 0
+
+- name: Cash exactly at the limit has no excess and a pound above it has one
+  period: 2027
+  input:
+    age: [40, 40]
+    cash_isa_subscriptions: [12_000, 12_001]
+  output:
+    cash_isa_subscriptions_above_limit: [0, 1]
+
+- name: People aged 65 at the end of the year keep the annual limit for cash
+  period: 2027
+  input:
+    # Born 6 April 1963 and 1962 (months_since_last_birthday defaults to 6):
+    # 64 and 65 at the end of 5 April 2028.
+    age: [64, 65]
+    cash_isa_subscriptions: [20_000, 20_000]
+  output:
+    cash_isa_subscription_limit: [12_000, 20_000]
+    cash_isa_subscriptions_above_limit: [8_000, 0]
+
+- name: A 65th birthday on the last day of the year counts and one a day later does not
+  period: 2027
+  input:
+    # Both are 64 on 6 October 2027. One turns 65 on 5 April 2028, the last
+    # day of the tax year; the other on 6 April 2028, the first day of the next.
+    age: [64, 64]
+    date_of_birth: [19630405, 19630406]
+    cash_isa_subscriptions: [20_000, 20_000]
+  output:
+    cash_isa_subscription_limit: [20_000, 12_000]
+    cash_isa_subscriptions_above_limit: [0, 8_000]
+
+- name: Cash for people aged 65 or over is limited only by the annual limit
+  period: 2027
+  input:
+    age: [70, 70]
+    cash_isa_subscriptions: [20_000, 20_001]
+  output:
+    cash_isa_subscriptions_above_limit: [0, 1]
+    isa_subscriptions_above_limit: [0, 1]
+
+- name: Cash, stocks and shares and Lifetime ISA payments share the annual limit
+  period: 2027
+  input:
+    age: [30, 30]
+    cash_isa_subscriptions: [12_000, 12_000]
+    stocks_and_shares_isa_subscriptions: [4_000, 4_001]
+    lifetime_isa_payments: [4_000, 4_000]
+  output:
+    isa_subscriptions: [20_000, 20_001]
+    isa_subscriptions_above_limit: [0, 1]
+    cash_isa_subscriptions_above_limit: [0, 0]
+
+- name: Cash above both limits counts in both excesses
+  period: 2027
+  input:
+    age: 40
+    cash_isa_subscriptions: 25_000
+  output:
+    cash_isa_subscriptions_above_limit: 13_000
+    isa_subscriptions_above_limit: 5_000
+
+- name: Restoring a GBP 20,000 cash limit removes the cash excess
+  period: 2027
+  input:
+    gov.hmrc.isa.cash.subscription_limit: 20_000
+    age: 40
+    cash_isa_subscriptions: 20_000
+  output:
+    cash_isa_subscription_limit: 20_000
+    cash_isa_subscriptions_above_limit: 0
+
+- name: A GBP 15,000 annual limit caps cash at every age and leaves the rest above it
+  period: 2027
+  input:
+    gov.hmrc.isa.annual_subscription_limit: 15_000
+    age: [40, 70]
+    cash_isa_subscriptions: [12_000, 20_000]
+    stocks_and_shares_isa_subscriptions: [8_000, 0]
+  output:
+    cash_isa_subscription_limit: [12_000, 15_000]
+    cash_isa_subscriptions_above_limit: [0, 5_000]
+    isa_subscriptions_above_limit: [5_000, 5_000]

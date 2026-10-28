@@ -1,0 +1,15 @@
+description: >
+  Limit on a person's total subscriptions in the tax year to ISAs other than
+  Junior ISAs: cash, stocks-and-shares, innovative finance and new Lifetime ISA
+  payments together.
+values:
+  2017-04-06: 20000
+metadata:
+  label: ISA annual subscription limit
+  period: year
+  unit: currency-GBP
+  reference:
+    - title: Individual Savings Account Regulations 1998 regulation 4ZA(1)
+      href: https://www.legislation.gov.uk/uksi/1998/1870/regulation/4ZA
+    - title: Individual Savings Account (Amendment) Regulations 2017 regulation 5
+      href: https://www.legislation.gov.uk/uksi/2017/186/regulation/5/made
