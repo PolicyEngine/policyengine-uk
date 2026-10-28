@@ -161,7 +161,8 @@
       benunit:
         members: [person]
         relation_type: SINGLE
-        savings_credit_income: 11_000
+        savings_credit_income: 11_220
   output:
-    # The projected weekly threshold is about 216.301, or 11,247.65 a year.
+    # Plain CPI: 208.07 * 1.035 * 52 = 11,198.33, below this income.
+    # Derived: (247.282 - 18.588570 / 0.6) * 52 = 11,247.65, above it.
     is_savings_credit_eligible: false
