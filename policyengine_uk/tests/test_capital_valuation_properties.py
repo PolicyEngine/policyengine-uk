@@ -13,8 +13,8 @@ Invariants, for any generated population of single-adult households:
 
 1. Non-increasing: every programme's assessable capital is at most the same
    household's capital with the deduction switched off (rate 0, no debt).
-2. Cash only: a household holding only savings has the same capital with the
-   deduction on or off.
+2. Cash only: a household holding only savings and a cash ISA has the same
+   capital with the deduction on or off, equal to the two balances.
 3. Differential: capital equals a direct implementation of the regulation,
    savings + sum over sources of max(0, 90% of value - secured debt), where
    the test itself fixes which assets take the 10% (land, property and
@@ -89,11 +89,14 @@ SALE_EXPENSE_ASSETS = {
 LEGAL_RATE = 0.1
 ASSETS = [
     "savings",
+    "cash_isa",
     "owned_land",
     "corporate_wealth",
     "other_residential_property_value",
     "non_residential_property_value",
 ]
+# Ordinary savings and a cash ISA are both deposit balances, counted in full.
+CASH_ASSETS = ("savings", "cash_isa")
 # The capital sources count shares as share_like_capital, which is the
 # corporate_wealth these households are given.
 INPUT_OF = {"share_like_capital": "corporate_wealth"}
@@ -116,7 +119,9 @@ def households(draw, cash_only=False):
     assets = {asset: draw(amount) for asset in ASSETS}
     debts = {debt: draw(amount) for debt in DEBTS.values()}
     if cash_only:
-        assets = {asset: 0.0 for asset in ASSETS} | {"savings": assets["savings"]}
+        assets = {asset: 0.0 for asset in ASSETS} | {
+            cash: assets[cash] for cash in CASH_ASSETS
+        }
         debts = {debt: 0.0 for debt in debts}
     # About half the units do not claim Universal Credit, so the Housing
     # Benefit passport cannot remove every working-age unit from the
@@ -289,7 +294,8 @@ def test_cash_only_households_have_no_deduction(units):
                 valued["guarantee_credit"][i],
                 valued["hb_passported"][i],
             ):
-                assert close(valued[variable][i], unit["assets"]["savings"]), variable
+                cash = sum(unit["assets"][asset] for asset in CASH_ASSETS)
+                assert close(valued[variable][i], cash), variable
 
 
 @PROPERTY_SETTINGS
