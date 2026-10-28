@@ -105,7 +105,11 @@ gov.economic_assumptions.yoy_growth.capital_gains:
 - capital_gains_carried_interest
 gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 - benunit_reported_capital
+# cash_isa and stocks_and_shares_isa sum the person balances listed with
+# them; they are listed so a dataset that stores the household totals
+# grows them like their parts.
 - cash_isa
+- cash_isa_balance
 - corporate_wealth
 - directly_held_shares
 - dividend_income
@@ -138,13 +142,12 @@ gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 - non_cash_isa_cash_interest
 - spousal_maintenance_income
 - stocks_and_shares_isa
+- stocks_and_shares_isa_balance
 - sublet_income
-- cash_isa
 - consumer_debt
 - mortgage_debt
 - rent_paid_as_boarder
 - rent_paid_as_lodger
-- stocks_and_shares_isa
 - owned_company_capital
 - owned_company_holding_value
 - owned_company_trade_assets

@@ -126,6 +126,35 @@ advance apprenticeship tenure, so a producer or caller must supply changed
 classifications for later years rather than rely on a carried input to
 expire automatically.
 
+## ISA balances and subscriptions
+
+Producers can export per-person `cash_isa_balance` and
+`stocks_and_shares_isa_balance`. The household `cash_isa` and
+`stocks_and_shares_isa` sum them, but a stored household column takes
+precedence, so existing datasets that store only the household totals keep
+them, projected with `savings` and `corporate_wealth` through
+`uprating_indices.yaml`. A producer that exports the person balances should
+either stop exporting the household totals or keep them equal to the sums;
+the model does not reconcile the two.
+
+`cash_isa_subscriptions` and `stocks_and_shares_isa_subscriptions` are
+annual person flows, summed over all of a person's accounts of each type, that
+count towards the ISA subscription limits, with `lifetime_isa_payments` for
+Lifetime ISAs. Projection carries them flat, because growing them would put
+people who pay in exactly the annual limit above it in the baseline. Nominal
+subscriptions grow, so flat amounts understate how much a lowered limit leaves
+out in later years; a producer can grow them itself and cap each person at the
+limit in force. The model does not cap them at the limits: a producer should
+export subscriptions as observed, so a reform that lowers a limit shows what
+it leaves out. Observed subscriptions stay within the £20,000 annual
+limit, which the three inputs share, so an imputation should draw them
+jointly. Drawn separately, for example from tables that leave Lifetime ISAs
+out, they can sum above the limit and put people above it in the baseline,
+where `isa_subscriptions_above_limit` should be zero. Absent columns default
+to zero, so a change to an ISA limit changes nothing on such data.
+[Microcosm issue 1415](https://github.com/PolicyEngine/microcosm/issues/1415)
+covers imputing the subscriptions and balances.
+
 ## Defaults
 
 `policyengine_uk` does not silently choose a default dataset when no situation is
