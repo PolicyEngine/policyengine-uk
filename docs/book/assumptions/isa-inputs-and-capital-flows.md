@@ -96,14 +96,24 @@ established by the household tests.
 
 ## Capital stocks
 
-`cash_isa` is a household stock separate from `savings`. Ordinary accessible
-cash ISA balances enter the capital sources for Universal Credit, Housing
-Benefit, Pension Credit, Income Support, income-based JSA and income-related
-ESA. There is no general ISA-wrapper disregard and no generic 10% sale-cost
-deduction for cash. Existing source-specific disregards, ownership allocation
-assumptions and reported-capital overrides still apply. A complete reported
-capital amount already includes relevant ISA holdings; it replaces covered
-components rather than adding them again.
+`cash_isa` is a household stock separate from `savings`. It sums the members'
+`cash_isa_balance`, and `stocks_and_shares_isa` sums their
+`stocks_and_shares_isa_balance`, as `household_lifetime_isa_balance` sums
+`lifetime_isa_balance`. A dataset or situation that stores a household total
+keeps it: the total is recomputed only when it is not stored, and a stored
+total is projected with `savings` or `corporate_wealth`. A household input is
+used only for the year it is given for; the person balances carry the
+variable-level uprating to later years. The means tests read the household
+totals, so a person's balance is pooled with the household's other financial
+capital rather than attributed to their own benefit unit.
+
+Ordinary accessible cash ISA balances enter the capital sources for Universal
+Credit, Housing Benefit, Pension Credit, Income Support, income-based JSA and
+income-related ESA. There is no general ISA-wrapper disregard and no generic
+10% sale-cost deduction for cash. Existing source-specific disregards,
+ownership allocation assumptions and reported-capital overrides still apply. A
+complete reported capital amount already includes relevant ISA holdings; it
+replaces covered components rather than adding them again.
 
 For example, £5,000 savings and a £3,000 ordinary cash ISA give £8,000 UC
 capital. [UC regulation 72](https://www.legislation.gov.uk/uksi/2013/376/regulation/72)
@@ -173,6 +183,72 @@ flows, excluded from household current benefits, taxes and net income. The
 flows do not automatically update a supplied account balance. This is an
 accounting convention for the model's current-income measures.
 
+## Subscription limits
+
+`gov.hmrc.isa.annual_subscription_limit` is the £20,000 limit on a person's
+subscriptions in a tax year to all their ISAs other than Junior ISAs
+([ISA Regulations regulation 4ZA(1)](https://www.legislation.gov.uk/uksi/1998/1870/regulation/4ZA)).
+From 6 April 2027, `gov.hmrc.isa.cash.subscription_limit` limits cash ISA
+subscriptions to £12,000 for a person who is 64 or under at the end of the
+tax year (regulation 4ZA(1ZA), inserted by
+[SI 2026/1018 regulation 6](https://www.legislation.gov.uk/uksi/2026/1018/regulation/6/made)).
+Cash has had no limit of its own since 1 July 2014, so before 2027 the
+parameter is infinite and cash counts only towards the annual limit.
+`gov.hmrc.isa.cash.full_limit_age` (65) is the age at which the cash limit
+stops applying. `cash_isa_subscription_limit` reads the age at the end of the
+year (5 April) from the date of birth, so a person aged 64 on 6 October whose
+65th birthday falls on or before 5 April has the annual limit for cash.
+
+The inputs are per-person flows in the year: `cash_isa_subscriptions`,
+`stocks_and_shares_isa_subscriptions` and the existing
+`lifetime_isa_payments`, which `isa_subscriptions` adds up. They exclude
+transfers between ISAs, interest and growth, and replacements of cash
+withdrawn from a flexible ISA earlier in the same year
+([HMRC guidance](https://www.gov.uk/guidance/manage-isa-subscriptions-for-your-investors)).
+`lifetime_isa_payments` includes transfers into a Lifetime ISA from other
+ISAs, which count towards the Lifetime ISA limit but are not new
+subscriptions for the annual limit, so the total overstates subscriptions
+where that input includes them. Innovative finance ISAs are not included.
+The inputs are not uprated, as the limits are fixed in cash terms.
+
+The model compares the inputs with the limits in force and does not cap them.
+`cash_isa_subscriptions_above_limit` is cash above the person's cash limit,
+and `isa_subscriptions_above_limit` is the total above the annual limit. Cash
+above both limits counts in both, so the two must not be added. Both are zero
+for data that met the limits in force when it was collected. Data collected
+under a higher limit, such as subscriptions from before April 2027, shows
+what a lower limit leaves out: scoring the 2027 cash limit, or its reversal,
+compares that excess under the two sets of limits.
+
+By default the excess changes no tax.
+`gov.contrib.behavioral_responses.cash_isa_excess` is an opt-in assumption
+about where cash above the cash limit goes:
+
+- a share into stocks-and-shares ISAs, within the room the annual limit
+  leaves, with any part it leaves no room for held in taxable savings;
+- a share into taxable savings;
+- the rest to other uses the model does not follow, such as spending,
+  pensions or repaying debt.
+
+Both shares are zero by default. Neither
+[HMRC's impact note](https://www.gov.uk/government/publications/reduction-in-the-cash-individual-savings-account-isa-limit/cash-individual-savings-account-isa-limit-reduction)
+nor the Budget 2025 policy costing (page 79) publishes a split. The taxable
+part earns `interest_rate`, by default 3.36%, the Bank of England's effective
+rate on individuals' outstanding time deposits in June 2026.
+`cash_isa_excess_savings_interest` enters `taxable_savings_interest_income`
+but not market income: the person earns the interest either way, tax-free in
+a cash ISA or taxed outside one, so the response changes tax and not gross
+income. It is a full year's interest on the year's excess. A static annual
+model holds no balances, so it leaves out interest on cash moved out of ISAs
+in earlier years; later years need that as a supplied input. Money above the
+annual limit is reported only.
+
+For example, a person aged 40 paying £20,000 into cash ISAs in 2027–28 has
+£8,000 above the £12,000 limit. With all of it in taxable savings, it earns
+£268.80 at the default rate. For a basic-rate taxpayer who has used their
+personal savings allowance, that is £59.14 of income tax at the 22% savings
+basic rate.
+
 ## Annual resolution and coverage
 
 A bare year Y represents the fiscal year from 6 April Y to 5 April Y+1.
@@ -184,9 +260,11 @@ conditions similarly represent the relevant transactions at one annual
 status. Multiple transactions with different conditions require externally
 prepared qualifying amounts.
 
-Help to Buy ISA bonuses are not modelled here. Subscription-limit compliance,
-Junior ISAs, Child Trust Funds and a proposed First Time Buyer ISA are also
-outside this implementation. Population data without payment, withdrawal or
-non-cash-interest detail inputs retain zero for those new flows. Household
-tests establish the rules; population effects require a separate certified
-dataset measurement.
+Help to Buy ISA bonuses are not modelled here. Junior ISAs, Child Trust
+Funds, transfers between ISA types (including the 2027 restrictions on
+transfers into cash ISAs) and a proposed First Time Buyer ISA are also
+outside this implementation. Population data without payment, withdrawal,
+subscription or non-cash-interest detail inputs retain zero for those flows;
+data without per-person ISA balances keeps its stored household totals.
+Household tests establish the rules; population effects require a separate
+certified dataset measurement.

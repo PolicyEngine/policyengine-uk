@@ -126,6 +126,26 @@ advance apprenticeship tenure, so a producer or caller must supply changed
 classifications for later years rather than rely on a carried input to
 expire automatically.
 
+## ISA balances and subscriptions
+
+Producers can export per-person `cash_isa_balance` and
+`stocks_and_shares_isa_balance`. The household `cash_isa` and
+`stocks_and_shares_isa` sum them, but a stored household column takes
+precedence, so existing datasets that store only the household totals keep
+them, projected with `savings` and `corporate_wealth` through
+`uprating_indices.yaml`. A producer that exports the person balances should
+either stop exporting the household totals or keep them equal to the sums;
+the model does not reconcile the two.
+
+`cash_isa_subscriptions` and `stocks_and_shares_isa_subscriptions` are
+annual person flows that count towards the ISA subscription limits, with
+`lifetime_isa_payments` for Lifetime ISAs. Projection carries them flat,
+since the limits are fixed in cash terms. They are not capped at the limits:
+a producer should export subscriptions as observed, so that data from before
+the 6 April 2027 cash limit shows what that limit leaves out. Absent columns
+default to zero, so a change to an ISA limit changes nothing on such data. See
+[issue #2710](https://github.com/PolicyEngine/policyengine-uk/issues/2710).
+
 ## Defaults
 
 `policyengine_uk` does not silently choose a default dataset when no situation is
