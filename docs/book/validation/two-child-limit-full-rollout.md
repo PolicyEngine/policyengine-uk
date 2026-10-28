@@ -4,7 +4,9 @@ This page shows how to reproduce published estimates of reforming the
 Universal Credit two-child limit that assume the limit is **fully rolled
 out**, such as the IFS Green Budget 2025 comment [Options for reforming the
 two-child limit][ifs-2025], and how PolicyEngine UK's results compare. For
-the 2029-30 comparison with DWP, OBR and Resolution Foundation estimates, see
+how PolicyEngine UK estimates removing the limit in 2029-30, with links to
+Scorecard's comparison against DWP, HM Treasury and Resolution Foundation
+estimates, see
 [Child poverty validation: removing the two-child limit](child-poverty-tcl.md).
 
 ## Settings that matter
