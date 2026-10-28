@@ -1,0 +1,1 @@
+Limited Housing Benefit childcare deductions to remaining earnings after the shared applied standard plus tax-credit payments, retaining childcare_expenses and the existing age-based cap approximation; deferred detailed qualifying-care rules without adding an input. Prevented negative overridden net earnings from producing a negative permitted-work applied standard.
