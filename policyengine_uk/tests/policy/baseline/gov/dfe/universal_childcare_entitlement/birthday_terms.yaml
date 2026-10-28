@@ -1,0 +1,143 @@
+# DfE guidance effective 1 April 2026, A1.7 and A1.4; SI 2014/2147 reg 3.
+# https://www.gov.uk/government/publications/early-education-and-childcare--2/early-education-and-childcare-valid-from-1-april-2026
+# https://www.legislation.gov.uk/uksi/2014/2147/regulation/3
+# Each of the model's three terms has 570 / 3 = 190 base hours. The retained
+# 2026 national-average funding proxy is £6.61 for universal hours and £8.90
+# for targeted hours, sampled once for the year, not again in January 2027.
+
+- name: Case 1, a late third birthday starts universal hours in the spring term.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 2
+    date_of_birth: 20231007
+    country: ENGLAND
+    targeted_childcare_entitlement_eligible: true
+    extended_childcare_entitlement_eligible: false
+  output:
+    # Targeted April and September, then universal January: never both in a term.
+    universal_childcare_entitlement: 1_255.90
+    targeted_childcare_entitlement: 3_382
+
+- name: Case 2, a third birthday on 31 March funds all three terms.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 3
+    date_of_birth: 20230331
+    country: ENGLAND
+    targeted_childcare_entitlement_eligible: true
+    extended_childcare_entitlement_eligible: false
+  output:
+    universal_childcare_entitlement: 3_767.70
+    targeted_childcare_entitlement: 0
+
+- name: Case 3, a third birthday on 1 April waits for September.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 3
+    date_of_birth: 20230401
+    country: ENGLAND
+    targeted_childcare_entitlement_eligible: true
+    extended_childcare_entitlement_eligible: false
+  output:
+    universal_childcare_entitlement: 2_511.80
+    targeted_childcare_entitlement: 1_691
+
+- name: Case 4, a third birthday on 31 August starts in September.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 3
+    date_of_birth: 20230831
+    country: ENGLAND
+    targeted_childcare_entitlement_eligible: true
+    extended_childcare_entitlement_eligible: false
+  output:
+    universal_childcare_entitlement: 2_511.80
+    targeted_childcare_entitlement: 1_691
+
+- name: Case 5, a third birthday on 1 September waits for January.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 3
+    date_of_birth: 20230901
+    country: ENGLAND
+    targeted_childcare_entitlement_eligible: true
+    extended_childcare_entitlement_eligible: false
+  output:
+    universal_childcare_entitlement: 1_255.90
+    targeted_childcare_entitlement: 3_382
+
+- name: Case 6, a third birthday on 31 December funds January.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 2
+    date_of_birth: 20231231
+    country: ENGLAND
+    targeted_childcare_entitlement_eligible: true
+    extended_childcare_entitlement_eligible: false
+  output:
+    universal_childcare_entitlement: 1_255.90
+    targeted_childcare_entitlement: 3_382
+
+- name: Case 7, a third birthday on 1 January does not fund that same term.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 2
+    date_of_birth: 20240101
+    country: ENGLAND
+    targeted_childcare_entitlement_eligible: true
+    extended_childcare_entitlement_eligible: false
+  output:
+    universal_childcare_entitlement: 0
+    targeted_childcare_entitlement: 5_073
+
+- name: Case 8, first base hours are allocated once within genuine working parent hours.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 2
+    date_of_birth: 20231007
+    country: ENGLAND
+    targeted_childcare_entitlement_eligible: true
+    extended_childcare_entitlement_eligible: true
+    would_claim_universal_childcare: false
+    would_claim_targeted_childcare: false
+  output:
+    # 380 working hours in each term, at £8.90, £8.90 and £6.61.
+    extended_childcare_entitlement_total_per_child: 9_275.80
+    targeted_childcare_entitlement: 3_382
+    universal_childcare_entitlement: 1_255.90
+    extended_childcare_entitlement_per_child: 4_637.90
+
+- name: Case 9, working parent participation does not duplicate transition hours.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 3
+    date_of_birth: 20230831
+    country: ENGLAND
+    targeted_childcare_entitlement_eligible: true
+    extended_childcare_entitlement_eligible: true
+  output:
+    extended_childcare_entitlement_total_per_child: 8_405.60
+    targeted_childcare_entitlement: 1_691
+    universal_childcare_entitlement: 2_511.80
+    extended_childcare_entitlement_per_child: 4_202.80
+
+- name: Case 10, universal hours remain an England entitlement.
+  period: 2026
+  input:
+    age: 2
+    date_of_birth: 20231007
+    country: WALES
+    targeted_childcare_entitlement_eligible: false
+    extended_childcare_entitlement_eligible: false
+  output:
+    universal_childcare_entitlement_eligible: false
+    universal_childcare_entitlement: 0

@@ -7,6 +7,8 @@ HBAI_HOUSEHOLD_NET_INCOME_ADDS = [
     "employment_income",
     "self_employment_income",
     "savings_interest_income",
+    "tax_free_savings_income",
+    "individual_savings_account_dividend_income",
     "dividend_income",
     "miscellaneous_income",
     # Landlords' profit after mortgage interest: HBAI uses FRS rent from
@@ -58,6 +60,9 @@ HBAI_HOUSEHOLD_NET_INCOME_ADDS = [
     "scottish_child_payment",
     "carer_support_payment",
     "scottish_carer_supplement",
+    # HBAI classifies the Warm Home Discount as miscellaneous income:
+    # https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2025/households-below-average-income-background-information-and-methodology-report-fye-2025
+    "warm_home_discount",
     # Reference for tax-free-childcare: https://assets.publishing.service.gov.uk/media/5e7b191886650c744175d08b/households-below-average-income-1994-1995-2018-2019.pdf
 ]
 
@@ -65,6 +70,7 @@ HBAI_HOUSEHOLD_NET_INCOME_SUBTRACTS = [
     "council_tax",
     "domestic_rates",
     "income_tax",
+    "isa_cash_interest_flat_rate_charge",
     "national_insurance",
     "student_loan_repayments",
     # Self-employment losses count as negative income in HBAI.

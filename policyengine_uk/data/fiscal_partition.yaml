@@ -60,7 +60,8 @@
 #     measure for. With the heads' obr_line values they account for every
 #     tax row of the table.
 #   overlap_guards[]: the places double counting could occur, and the
-#     property the tests check for each. The aggregate-impact report also
+#     property the tests check for each. overlapping_base records a receipt
+#     allocation between heads sharing an imputed base. The report also
 #     checks the geographic_exclusivity guards on the certified dataset.
 #   spending_heads[]: as tax_heads, without obr_line, obr_table_3_1 and
 #     payer, plus caseload (default true): whether reports count recipients.
@@ -87,6 +88,20 @@ sources:
     a forecast of Northern Irish domestic rates to Great Britain's, and are
     net of discounts and reduction schemes. Read 2026-10-11 from
     https://obr.uk/forecasts-in-depth/tax-by-tax-spend-by-spend/council-tax/
+  ni_domestic_rates: >-
+    OBR, Economic and fiscal outlook, March 2026, detailed forecast tables:
+    expenditure Table 4.1 ("Council tax receipts"), which its footnote calls
+    a breakdown of Table A.5's council tax line, and receipts Table 3.2
+    ("Other taxes"), which its footnote calls consistent with Table A.5's
+    other taxes line. ONS, Country and regional public sector finances,
+    financial year ending 2025, Northern Ireland revenue rows "Northern
+    Ireland Regional Domestic Rates" and "Northern Ireland District Domestic
+    Rates". Land & Property Services, "Rates paid by District Council and
+    Sector", domestic rates paid. Cells read 2026-10-25. Published at
+    https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/,
+    https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance/datasets/countryandregionalpublicsectorfinancesrevenuetables
+    and
+    https://www.data.gov.uk/dataset/30535a44-0a05-4bff-98cf-001301a6b4d6/rates-paid-by-district-council-and-sector
   student_loans: >-
     Student loan repayments are not a row of Table A.5. In the March 2026
     EFO only the interest accrued on the loans enters receipts, in "Interest
@@ -119,9 +134,9 @@ totals:
     label: Taxes borne by the household
     description: >-
       Taxes subtracted from household net income. VAT and employer NI enter
-      only as reform-induced changes (vat_change and the employer NI response
-      incidence), because baseline VAT and employer NI are not deducted from
-      the incomes the model starts from.
+      only as reform-induced changes (vat_change, private_school_vat_change
+      and the employer NI response incidence), because baseline VAT and
+      employer NI are not deducted from the incomes the model starts from.
     dropped_when:
       gov.contrib.abolish_council_tax:
         - council_tax
@@ -142,7 +157,8 @@ totals:
     label: Government spending in respect of the household
     description: >-
       Cash benefits, childcare and student support, and public services in
-      kind (NHS, education, transport subsidies).
+      kind (NHS, education, transport subsidies), and Lifetime ISA bonuses
+      paid into capital accounts.
     dropped_when:
       gov.contrib.abolish_council_tax:
         - council_tax_benefit
@@ -150,13 +166,38 @@ totals:
     label: Benefits received by the household
     description: >-
       The benefit side of household net income. It is gov_spending without the
-      contributed budget-change line, which is not paid to households.
+      contributed budget-change line and Lifetime ISA capital bonuses;
+      neither is part of household current benefit income.
     dropped_when:
       gov.contrib.abolish_council_tax:
         - council_tax_benefit
 
 tax_heads:
   # Income and earnings
+  - id: isa_cash_interest_charge
+    label: Final charge on cash interest in non-cash ISAs
+    variable: isa_cash_interest_flat_rate_charge
+    entity: person
+    obr_line: Income tax
+    obr_table_3_1: Income tax
+    report_group: income_tax
+    payer: household
+    totals: [gov_tax, household_tax]
+    sign: nonnegative
+  - id: lifetime_isa_withdrawal_charge
+    label: Lifetime ISA withdrawal charge
+    variable: lifetime_isa_withdrawal_charge
+    entity: person
+    obr_line: not_an_obr_current_receipt
+    obr_table_3_1: null
+    obr_line_note: >-
+      The model records this payment out of account capital as government
+      revenue, outside current household income taxes. No placement in an
+      OBR current-receipts row is asserted here.
+    report_group: lifetime_isa_capital_transfers
+    payer: household
+    totals: [gov_tax]
+    sign: nonnegative
   - id: income_tax
     label: Income tax
     variable: income_tax
@@ -167,6 +208,10 @@ tax_heads:
     payer: household
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
     sign: nonnegative
+    reads:
+      - head: nics_individual
+        route: income_tax -> winter_fuel_payment_charge -> is_on_pension_credit -> pension_credit -> pension_credit_income -> national_insurance
+        why: Pension Credit receipt exempts a person from the charge, and its means test deducts National Insurance
   - id: nics_individual
     label: National Insurance (employee and self-employed)
     variable: national_insurance
@@ -237,7 +282,7 @@ tax_heads:
 
   # Consumption
   - id: vat
-    label: VAT
+    label: VAT excluding private school fees
     variable: vat
     entity: household
     obr_line: Value added tax
@@ -247,12 +292,16 @@ tax_heads:
     totals: [gov_tax]
     sign: nonnegative
     data_note: >-
-      Negative for 76 households on policyengine-uk-data 1.58.0
-      (enhanced_frs_2024_25) in every year from 2025 to 2030, -£72m weighted
-      in 2026: full_rate_vat_consumption is negative there because the
-      dataset's consumption (44 households) or full_rate_vat_expenditure_rate
-      (32 households) is negative. policyengine-uk-data issue 565. Measured
-      2026-10-11.
+      Grossed-up VAT on recorded consumption less private school fees'
+      official share of VAT receipts, which the separate school head counts,
+      plus VAT on energy bills. The share is below one, so the allocation
+      keeps the sign of the grossed-up amount. Negative for 76 households on
+      policyengine-uk-data 1.58.1 (enhanced_frs_2024_25) in every year from
+      2025 to 2031, -£55.7m weighted in 2026 (Aggregate impact run
+      40116746457, 2026-10-24). On 1.58.0 (measured 2026-10-11) it was also
+      76: full_rate_vat_consumption is negative there because the dataset's
+      consumption (44 households) or full_rate_vat_expenditure_rate (32
+      households) is negative. policyengine-uk-data issue 565.
   - id: vat_change
     label: Change in VAT from its baseline
     variable: vat_change
@@ -268,6 +317,11 @@ tax_heads:
       - head: vat
         route: vat_change adds vat and subtracts baseline_vat
         why: a change measure built from the level; the two are never in the same total
+  # Standard-rated from 1 January 2025: Finance Act 2025 s.47 inserts VATA
+  # 1994 Sch 9 Part 3, taking private school education, vocational training
+  # and closely related board and lodging out of the Group 6 exemption, for
+  # supplies on or after that date (s.49). Before it the head is zero unless
+  # the contributed reform rate is set.
   - id: private_school_vat
     label: VAT on private school fees
     variable: private_school_vat
@@ -276,12 +330,8 @@ tax_heads:
     obr_table_3_1: Value added tax
     report_group: vat
     payer: household
-    totals: [gov_tax, household_tax]
+    totals: [gov_tax]
     sign: nonnegative
-    zero_at_baseline: expected
-    zero_at_baseline_note: >-
-      gov.contrib.labour.private_school_vat is 0 at current law in this
-      model, so the head is reform-only here.
     reads:
       - head: income_tax
         route: private_school_vat -> attends_private_school -> income_tax
@@ -291,6 +341,30 @@ tax_heads:
         why: as above
       - head: council_tax
         route: private_school_vat -> attends_private_school -> household_benefits -> council_tax_benefit -> council_tax
+        why: as above
+  - id: private_school_vat_change
+    label: Change in private school VAT from its baseline
+    variable: private_school_vat_change
+    entity: household
+    obr_line: Value added tax
+    obr_table_3_1: Value added tax
+    report_group: vat
+    payer: household
+    totals: [household_tax]
+    sign: any
+    zero_at_baseline: expected
+    reads:
+      - head: private_school_vat
+        route: private_school_vat_change adds private_school_vat and subtracts baseline_private_school_vat
+        why: a change measure built from the level; the two are never in the same total
+      - head: income_tax
+        route: private_school_vat_change -> private_school_vat -> attends_private_school -> income_tax
+        why: attendance is imputed from income; it decides who attends, not how much tax is counted
+      - head: nics_individual
+        route: private_school_vat_change -> private_school_vat -> attends_private_school -> (net income) -> national_insurance
+        why: as above
+      - head: council_tax
+        route: private_school_vat_change -> private_school_vat -> attends_private_school -> household_benefits -> council_tax_benefit -> council_tax
         why: as above
   - id: fuel_duty
     label: Fuel duties
@@ -375,12 +449,9 @@ tax_heads:
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
     sign: nonnegative
     reads:
-      - head: income_tax
-        route: tv_licence -> tv_licence_discount -> pension_credit -> pension_credit_income -> income_tax
-        why: the over-75 discount depends on Pension Credit receipt, a means test on net income
       - head: nics_individual
         route: tv_licence -> tv_licence_discount -> pension_credit -> pension_credit_income -> national_insurance
-        why: as above
+        why: the over-75 discount depends on Pension Credit receipt, a means test on net income
 
   # Property
   - id: council_tax
@@ -416,8 +487,39 @@ tax_heads:
     obr_line: Council tax
     obr_table_3_1: null
     obr_line_note: >-
-      The OBR adds Northern Irish domestic rates to its council tax receipts
-      (see sources).
+      The head is the whole Northern Ireland domestic bill, the regional rate
+      and the council's district rate together. Land & Property Services
+      (LPS) reports £889.5m of domestic rates paid across NI in 2024-25. The
+      OBR shows NI domestic rates in two places and labels neither as
+      regional or district (see sources): "NI domestic rates" in its council
+      tax receipts, a flat £0.494bn in every year from the 2024-25 outturn to
+      2030-31 (expenditure Table 4.1), which appears to be the district
+      rates; and "Northern Ireland domestic rates" under other taxes, £485.3m
+      in 2024-25 (receipts Table 3.2), which appears to cover the regional
+      rate only. The Office for National Statistics (ONS) records NI
+      regional domestic rates (central government, £498m in 2024-25) and
+      district domestic rates (local government, with council tax, £441m)
+      separately. The reading rests on where each line
+      sits, not on its size: £0.494bn is nearer ONS's regional row than its
+      district row, and the two lines together (£0.979bn in 2024-25) exceed
+      both LPS's figure and ONS's two rows (£0.939bn). The head keeps the
+      Council tax row, where the OBR says its forecast adds NI domestic
+      rates. In the 2024-25 outturn that row (March 2026 Table A.5,
+      £47.417bn) is £0.273bn below Table 4.1's total (£47.690bn), so whether
+      it then includes NI domestic rates is not established; the two agree
+      in the forecast years. If the regional and district reading holds, the
+      head's scope is the two lines together, not either alone. obr_table_3_1 is null because Table
+      3.1's footnotes do not place NI domestic rates and the head appears to
+      span two Table A.5 rows. The
+      comment on gov.economic_assumptions.yoy_growth.finance_ni.domestic_rates
+      gives the evidence for the reading.
+    data_note: >-
+      On the certified dataset (policyengine-uk-data 1.58.1) the head totals
+      £0.52bn in 2024, the Family Resources Survey 2024-25 year, against
+      £0.89bn of LPS domestic
+      rates paid in 2024-25. policyengine-uk-data issue 520 tracks the level
+      and the data build's obr/domestic_rates target, which it reads from the
+      Table 4.1 line alone. Measured 2026-10-25.
     report_group: local_taxes
     payer: household
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
@@ -438,9 +540,13 @@ tax_heads:
       projected with OBR receipts (gov.hmrc.business_rates.statistics). In
       2026-27 the England, Scotland and Wales series total £37.26bn against
       £37.41bn on the OBR's Business rates line (receipts Table 3.8).
-      Northern Ireland's £0.78bn (LPS non-domestic rates paid) compares with
-      £0.40bn on the OBR's "Northern Ireland business rates" line, which the
-      OBR records under other taxes (Table 3.2). Measured 2026-10-11.
+      Northern Ireland's projected £0.78bn (LPS non-domestic rates paid,
+      regional and district rates together) compares with £0.40bn on the
+      OBR's "Northern Ireland business rates" line, which the OBR records
+      under other taxes (Table 3.2) and which appears to cover the regional
+      rate only. ONS records NI regional non-domestic rates (central
+      government, £327m in 2024-25) and district non-domestic rates (local
+      government, £378m) separately. Measured 2026-10-11.
   - id: sdlt_household
     label: Stamp duty land tax on the household's own purchases
     variable: expected_sdlt
@@ -645,6 +751,7 @@ exclusions:
   - {variable: student_loan_repayment, kind: component, head: student_loan_repayments}
   # Consumption
   - {variable: baseline_vat, kind: baseline_measure, head: vat_change, note: "Subtracted inside vat_change."}
+  - {variable: baseline_private_school_vat, kind: baseline_measure, head: private_school_vat_change, note: "Subtracted inside private_school_vat_change."}
   - {variable: beer_duty, kind: component, head: alcohol_duty}
   - {variable: cider_duty, kind: component, head: alcohol_duty}
   - {variable: sparkling_cider_duty, kind: component, head: alcohol_duty}
@@ -697,14 +804,30 @@ overlap_guards:
     property: >-
       Each allocates a different receipt by shareholding; none reads another.
       corporate_tax_incidence sums two of them and is excluded.
+  - id: private_school_vat_level_and_change
+    kind: level_and_change
+    heads: [private_school_vat, private_school_vat_change]
+    property: >-
+      Never in the same total: the level is in gov_tax and the change in
+      household_tax, as for vat and vat_change. private_school_vat_change
+      reads private_school_vat.
   - id: private_school_vat_and_vat
-    kind: possible_base_overlap
+    kind: overlapping_base
     heads: [vat, private_school_vat]
     property: >-
-      vat applies to imputed consumption; if that consumption includes school
-      fees, turning on private_school_vat would tax them twice. The head is
-      zero at baseline, so baseline totals are unaffected; check the
-      consumption imputation before costing a reform that sets it.
+      Grossed-up consumption VAT is fitted to receipts net of energy-bill
+      VAT, which include school-fee VAT. vat keeps gross VAT less the fees'
+      official share of receipts
+      (gov.simulation.vat.private_school_share_of_receipts), plus VAT on
+      energy bills, which bears no share; then gov_tax adds
+      private_school_vat. vat reads neither attendance nor fees, so
+      school-specific exemption and contributed rate reforms move only the
+      school head, and a standard-rate change moves each head on its own
+      base. At current law combined receipts change by the weighted school
+      charge less the share of weighted gross VAT. Both baseline measures
+      hold this simulation's fee, attendance and share assumptions fixed.
+      See test_private_school_vat_receipts.py and
+      docs/engineering/vat-coverage.md.
   - id: council_tax_gross_and_reduction
     kind: gross_and_net
     heads: [council_tax]
@@ -729,11 +852,15 @@ overlap_guards:
       here as well.
   - id: eligibility_reads
     kind: read_not_inclusion
-    heads: [tv_licence, private_school_vat]
+    heads: [tv_licence, private_school_vat, private_school_vat_change]
     property: >-
       These heads reach other heads of the same total only through
       eligibility or imputation (see each head's reads). Raising the other
       head by a small amount leaves them unchanged on the test population.
+      For the private school heads that check is vacuous: attendance is
+      imputed only on a dataset (on a situation it is zero or an input), so
+      a tax change moves them only through re-imputed attendance on the
+      microdata (policyengine-uk-data issue 568).
 
 uncovered_receipts:
   # Rows of Table A.5 with no household measure in the model.
@@ -756,6 +883,13 @@ uncovered_receipts:
   - {obr_line: Other taxes}
 
 spending_heads:
+  - id: lifetime_isa_bonus
+    label: Lifetime ISA bonus
+    variable: lifetime_isa_bonus
+    entity: person
+    report_group: lifetime_isa_capital_transfers
+    totals: [gov_spending]
+    sign: nonnegative
   # Pensioners
   - id: state_pension
     label: State Pension
@@ -1039,6 +1173,13 @@ spending_heads:
     label: Targeted childcare entitlement
     variable: targeted_childcare_entitlement
     entity: person
+    report_group: childcare_and_education
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+  - id: wales_childcare_offer
+    label: Childcare Offer for Wales
+    variable: wales_childcare_offer
+    entity: benunit
     report_group: childcare_and_education
     totals: [gov_spending, household_benefits]
     sign: nonnegative

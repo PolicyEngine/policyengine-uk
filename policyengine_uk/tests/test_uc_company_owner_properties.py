@@ -181,6 +181,10 @@ def situation(variants):
             facts = {**adult["company"], **overrides.get(j, {})}
             people[name] = {
                 "age": {YEAR: adult["age"]},
+                # The drawn adults are the claimant and partner, however far
+                # apart their ages; the age presumption alone would read a
+                # partner 20 or more years younger as the claimant's child.
+                "is_claimant_or_partner": {YEAR: True},
                 "employment_income": {YEAR: adult["employment_income"]},
                 "self_employment_income": {YEAR: adult["self_employment_income"]},
                 "uc_is_in_startup_period": {YEAR: adult["uc_is_in_startup_period"]},
@@ -192,7 +196,10 @@ def situation(variants):
             names.append(name)
         for k in range(unit["children"]):
             name = f"c{i}_{k}"
-            people[name] = {"age": {YEAR: 5 + k}}
+            people[name] = {
+                "age": {YEAR: 5 + k},
+                "is_claimant_or_partner": {YEAR: False},
+            }
             names.append(name)
         benunits[f"b{i}"] = {"members": names, "would_claim_uc": {YEAR: True}}
         households[f"h{i}"] = {
@@ -625,6 +632,8 @@ def test_household_capital_is_allocated_and_conserved_across_benefit_units(pairs
                 c = adult["company"]
                 people[name] = {
                     "age": {YEAR: adult["age"]},
+                    # Each unit's adults are its claimant and partner.
+                    "is_claimant_or_partner": {YEAR: True},
                     **{k: {YEAR: v} for k, v in c.items()},
                 }
                 if applies(c):
@@ -695,12 +704,14 @@ def test_dependant_company_does_not_change_the_award(unit_list, income, capital,
                 name = f"p{i}_{j}"
                 people[name] = {
                     "age": {YEAR: adult["age"]},
+                    "is_claimant_or_partner": {YEAR: True},
                     "employment_income": {YEAR: adult["employment_income"]},
                     "self_employment_income": {YEAR: adult["self_employment_income"]},
                 }
                 names.append(name)
             people[f"d{i}"] = {
                 "age": {YEAR: 17},
+                "is_claimant_or_partner": {YEAR: False},
                 "is_in_non_advanced_education": {YEAR: True},
                 **{k: {YEAR: v} for k, v in facts.items()},
             }
@@ -753,15 +764,22 @@ def test_disregarded_holdings_count_for_no_benefit_unit(
         for h, (family, other) in enumerate(pairs):
             family_names = []
             for j, adult in enumerate(family["adults"]):
-                people[f"h{h}_f{j}"] = {"age": {YEAR: adult["age"]}}
+                people[f"h{h}_f{j}"] = {
+                    "age": {YEAR: adult["age"]},
+                    "is_claimant_or_partner": {YEAR: True},
+                }
                 family_names.append(f"h{h}_f{j}")
             dependant = {
                 "age": {YEAR: 17},
+                "is_claimant_or_partner": {YEAR: False},
                 "is_in_non_advanced_education": {YEAR: True},
             }
             other_names = []
             for j, adult in enumerate(other["adults"]):
-                people[f"h{h}_o{j}"] = {"age": {YEAR: adult["age"]}}
+                people[f"h{h}_o{j}"] = {
+                    "age": {YEAR: adult["age"]},
+                    "is_claimant_or_partner": {YEAR: True},
+                }
                 other_names.append(f"h{h}_o{j}")
             shares = 0.0
             if with_holdings:

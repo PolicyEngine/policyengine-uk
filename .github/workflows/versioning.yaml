@@ -58,12 +58,15 @@ on:
       - .github/actions/**
       - .github/prepare_release.py
       - .github/release_artifacts.py
+      - .github/check_release_build.py
       - .github/publish-git-tag.sh
       - .github/bump_version.py
       - .github/check_test_shards.py
       - .github/pytest_outcome_log.py
       - .github/test_outcome_allowlist.toml
       - .github/build-constraints.txt
+      - hatch_build.py
+      - pyproject.toml
 
 permissions:
   contents: read
@@ -209,11 +212,18 @@ jobs:
         uses: astral-sh/setup-uv@v8.1.0
       - name: Build the wheel and sdist once
         run: |
-          uv build --python 3.13 --out-dir dist \
+          uv build --python 3.13 --sdist --wheel --out-dir dist \
             --build-constraint .github/build-constraints.txt
           # uv writes a .gitignore into its output directory; only the
           # wheel and sdist are release files.
           rm -f dist/.gitignore
+      - name: Check build provenance and the sdist round trip
+        env:
+          SHA: ${{ needs.Versioning.outputs.sha }}
+        run: |
+          uv build --python 3.13 --wheel --out-dir "$RUNNER_TEMP/from-sdist" \
+            --build-constraint .github/build-constraints.txt dist/*.tar.gz
+          python3 .github/check_release_build.py dist "$SHA" "$RUNNER_TEMP/from-sdist"
       - name: Check they hold exactly the version commit's files
         id: check
         env:
@@ -259,7 +269,7 @@ jobs:
     name: Release lint
     needs: Versioning
     if: needs.Versioning.outputs.release == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER_X64 != '' && (vars.CI_RUNNER_EVENTS == '' || contains(format(',{0},', vars.CI_RUNNER_EVENTS), format(',{0},', github.event_name))) && vars.CI_RUNNER_X64 || 'ubuntu-latest' }}
     timeout-minutes: 10
     steps:
       - name: Checkout the version commit
@@ -296,7 +306,7 @@ jobs:
     # on each supported Python.
     needs: Build
     name: Release install (py${{ matrix.python-version }})
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER_X64 != '' && (vars.CI_RUNNER_EVENTS == '' || contains(format(',{0},', vars.CI_RUNNER_EVENTS), format(',{0},', github.event_name))) && vars.CI_RUNNER_X64 || 'ubuntu-latest' }}
     timeout-minutes: 15
     strategy:
       fail-fast: false
@@ -331,7 +341,7 @@ jobs:
     # build backend pinned as Build pins it.
     name: Release install (sdist)
     needs: [Versioning, Build]
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER_X64 != '' && (vars.CI_RUNNER_EVENTS == '' || contains(format(',{0},', vars.CI_RUNNER_EVENTS), format(',{0},', github.event_name))) && vars.CI_RUNNER_X64 || 'ubuntu-latest' }}
     timeout-minutes: 15
     steps:
       - name: Checkout the version commit
