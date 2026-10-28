@@ -270,8 +270,9 @@ class UKSingleYearDataset:
             energy_price_basis=energy_price_basis,
             isa_income_contract=simulation_contract(simulation, fiscal_year),
             savings_income_projection=(
-                savings_income_projection
-                or getattr(simulation, "_savings_income_projection", None)
+                getattr(simulation, "_savings_income_projection", None)
+                if savings_income_projection is None
+                else savings_income_projection
             ),
         )
 

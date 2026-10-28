@@ -87,6 +87,19 @@ variable. Multi-year datasets and input-frame exports use per-year envelopes:
 ```
 
 A uniform single contract is also accepted when importing multiple years.
+Every materialized year must be covered. Unknown versions, malformed metadata
+and conflicting explicit object/file declarations fail with an `ISA income
+contract` error. Omitted metadata means legacy data; the presence or relative
+size of financial columns never chooses the representation.
+
+UK copy, clone, household extraction, `from_simulation`, input-frame export and
+single-/multi-year H5 round trips retain the projection origin and mark
+normalized values as additive so they cannot be subtracted twice. Core Dataset
+objects can carry the same `isa_income_contract` attribute; UK reads H5 root
+metadata before Core's value loader discards it. External writers which
+discard H5 attributes must explicitly preserve this declaration before their
+output can be reloaded safely. Test routing and migration on synthetic frames
+and small H5 fixtures, without downloading private datasets.
 
 ## Savings income projection
 
@@ -110,19 +123,6 @@ Multi-year datasets hold one rule for every year and refuse mixed rules.
 Copies, filtered households, simulation exports and input frames
 (`frame.attrs["policyengine_uk.savings_income_projection"]`) keep the rule. A
 rule's name fixes its years, so a later window needs a new rule.
-Every materialized year must be covered. Unknown versions, malformed metadata
-and conflicting explicit object/file declarations fail with an `ISA income
-contract` error. Omitted metadata means legacy data; the presence or relative
-size of financial columns never chooses the representation.
-
-UK copy, clone, household extraction, `from_simulation`, input-frame export and
-single-/multi-year H5 round trips retain the projection origin and mark
-normalized values as additive so they cannot be subtracted twice. Core Dataset
-objects can carry the same `isa_income_contract` attribute; UK reads H5 root
-metadata before Core's value loader discards it. External writers which
-discard H5 attributes must explicitly preserve this declaration before their
-output can be reloaded safely. Test routing and migration on synthetic frames
-and small H5 fixtures, without downloading private datasets.
 
 ## Apprenticeship status and tenure
 

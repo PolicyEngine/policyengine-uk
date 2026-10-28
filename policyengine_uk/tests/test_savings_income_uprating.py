@@ -31,8 +31,11 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
+from policyengine_core.data import Dataset
+
 from policyengine_uk import Microsimulation
 from policyengine_uk.data.dataset_schema import UKMultiYearDataset, UKSingleYearDataset
+from policyengine_uk.data.filter_dataset import filter_dataset
 from policyengine_uk.data.savings_income_projection import (
     DEFAULT_SAVINGS_INCOME_PROJECTION,
     GDP_PER_HEAD,
@@ -47,6 +50,7 @@ from policyengine_uk.data.economic_assumptions import (
     SAVINGS_INCOME_GROWTH,
     SAVINGS_INCOME_GROWTH_FIRST_YEAR,
     SAVINGS_INCOME_GROWTH_LAST_YEAR,
+    _uprating_index_map,
     apply_single_year_uprating,
     extend_single_year_dataset,
     growth_rate,
@@ -130,11 +134,13 @@ def test_growth_rate_uses_gdp_per_head_outside_2022_23_to_2025_26(year, rule):
     assert growth_rate(PARAMETERS, SAVINGS_INCOME_GROWTH, str(year), rule) == at(
         series, year
     )
-    # Every other series reads its own values.
-    for name in (
+    # Every other series uprating_indices.yaml maps reads its own values.
+    others = set(_uprating_index_map()) - {SAVINGS_INCOME_GROWTH}
+    assert {
         GDP_PER_HEAD_GROWTH,
         "gov.economic_assumptions.yoy_growth.ons.population",
-    ):
+    } <= (others)
+    for name in sorted(others):
         assert growth_rate(PARAMETERS, name, str(year), rule) == PARAMETERS.get_child(
             name
         )(str(year))
@@ -382,8 +388,9 @@ def test_a_declaration_that_contradicts_the_file_is_refused(tmp_path):
 
 
 def test_an_unknown_rule_is_refused(tmp_path):
-    with pytest.raises(ValueError, match="unknown rule"):
-        dataset(2023, ADDITIVE, PEOPLE, rule="cpi")
+    for rule in ("cpi", "", False, 0):
+        with pytest.raises(ValueError, match="unknown rule"):
+            dataset(2023, ADDITIVE, PEOPLE, rule=rule)
     path = tmp_path / "bad.h5"
     dataset(2023, ADDITIVE, PEOPLE).save(str(path))
     with h5py.File(path, "a") as file:
@@ -434,6 +441,44 @@ def test_core_datasets_declare_through_an_attribute_or_their_file(tmp_path):
     )
 
 
+# Data that goes into a simulation and comes back out declares the rule it
+# went in with, and projects by it.
+
+
+def projected_factor(rule, start, end):
+    """What projection multiplies each person's savings income by from
+    ``start`` to ``end`` under ``rule``."""
+    factor = 1.0
+    for year in range(start + 1, end + 1):
+        factor *= 1 + growth_rate(PARAMETERS, SAVINGS_INCOME_GROWTH, str(year), rule)
+    return factor
+
+
+def test_the_rules_project_2023_24_to_2025_26_differently():
+    """So each round trip below tells a kept rule from a dropped one."""
+    assert projected_factor(OBR_SAVINGS_INCOME_2022_2025, 2023, 2025) != pytest.approx(
+        projected_factor(GDP_PER_HEAD, 2023, 2025), rel=0.01
+    )
+
+
+def assert_grows_by(projected, rule, start=2023, end=2025):
+    # Data that has been through a simulation holds float32 amounts.
+    for name in ("non_cash_isa_cash_interest", "other_investment_income"):
+        np.testing.assert_allclose(
+            projected[end].person[name].values,
+            projected[start].person[name].values * projected_factor(rule, start, end),
+            rtol=1e-6,
+        )
+
+
+def assert_projects_by(single_year, rule):
+    """A single-year dataset declares ``rule`` and projects by it."""
+    assert single_year.savings_income_projection == rule
+    projected = extend_single_year_dataset(single_year, PARAMETERS, end_year=2025)
+    assert projected.savings_income_projection == rule
+    assert_grows_by(projected, rule, start=int(single_year.time_period))
+
+
 @pytest.mark.parametrize("rule", [None, OBR_SAVINGS_INCOME_2022_2025])
 def test_a_simulation_projects_by_and_exports_the_rule(rule):
     """A simulation built from the data projects by its rule, and its clones,
@@ -445,9 +490,89 @@ def test_a_simulation_projects_by_and_exports_the_rule(rule):
     assert sim.to_input_dataframe().attrs[SAVINGS_INCOME_PROJECTION_KEY] == expected
     exported = UKSingleYearDataset.from_simulation(sim, fiscal_year=2025)
     assert exported.savings_income_projection == expected
-    factor = (1 + growth_rate(PARAMETERS, SAVINGS_INCOME_GROWTH, "2024", expected)) * (
-        1 + growth_rate(PARAMETERS, SAVINGS_INCOME_GROWTH, "2025", expected)
-    )
-    before = sim.dataset[2023].person.other_investment_income.values
-    after = sim.dataset[2025].person.other_investment_income.values
-    np.testing.assert_allclose(after, before * factor, rtol=1e-12)
+    assert_grows_by(sim.dataset, expected)
+
+
+@pytest.mark.parametrize("rule", ["", False, 0, "cpi"])
+def test_an_invalid_rule_given_to_an_export_is_refused_not_ignored(rule):
+    sim = Microsimulation(dataset=dataset(2023, ADDITIVE, PEOPLE))
+    with pytest.raises(ValueError, match="unknown rule"):
+        UKSingleYearDataset.from_simulation(
+            sim, fiscal_year=2023, savings_income_projection=rule
+        )
+
+
+@pytest.mark.parametrize("rule", [None, OBR_SAVINGS_INCOME_2022_2025])
+def test_an_input_frame_reloads_with_its_rule(rule):
+    exported = Microsimulation(
+        dataset=dataset(2023, ADDITIVE, PEOPLE, rule=rule)
+    ).to_input_dataframe()
+    reloaded = Microsimulation(dataset=exported)
+    expected = rule or GDP_PER_HEAD
+    assert reloaded._savings_income_projection == expected
+    assert_projects_by(reloaded.dataset[2023], expected)
+
+
+@pytest.mark.parametrize("rule", [None, OBR_SAVINGS_INCOME_2022_2025])
+def test_a_filtered_household_keeps_its_rule(rule):
+    sim = Microsimulation(dataset=dataset(2023, ADDITIVE, PEOPLE, rule=rule))
+    extract = filter_dataset(sim, household_id=1, year=2023)
+    expected = rule or GDP_PER_HEAD
+    assert_projects_by(extract, expected)
+    assert Microsimulation(dataset=extract)._savings_income_projection == expected
+
+
+@pytest.mark.parametrize("rule", [None, OBR_SAVINGS_INCOME_2022_2025])
+def test_the_full_variable_export_keeps_the_rule(rule):
+    sim = Microsimulation(dataset=dataset(2023, ADDITIVE, PEOPLE, rule=rule))
+    assert_projects_by(sim.calculate_all(2023), rule or GDP_PER_HEAD)
+
+
+def core_arrays(source):
+    """A dataset's arrays as a policyengine-core Dataset holds them."""
+    arrays = {}
+    for table in source.tables:
+        for name in table.columns:
+            values = table[name].to_numpy()
+            possible_values = getattr(system.variables[name], "possible_values", None)
+            if possible_values is not None:
+                values = np.asarray(possible_values.encode(values))
+            arrays[name] = {source.time_period: values}
+    return arrays
+
+
+class InMemoryCore(Dataset):
+    """A fixture-scale policyengine-core Dataset."""
+
+    def __init__(self, arrays):
+        self.arrays = arrays
+
+    def load_dataset(self):
+        return self.arrays
+
+
+@pytest.mark.parametrize("rule", [None, OBR_SAVINGS_INCOME_2022_2025])
+@pytest.mark.parametrize("source_kind", ["core-h5", "core"])
+def test_a_core_dataset_projects_by_its_rule(source_kind, rule, tmp_path):
+    """A Core-format file declares the rule in the same H5 root attribute,
+    and a Core Dataset object through a savings_income_projection
+    attribute."""
+    arrays = core_arrays(dataset(2023, LEGACY, PEOPLE, rule=None))
+    if source_kind == "core-h5":
+        source = tmp_path / "core.h5"
+        with h5py.File(source, "w") as file:
+            for name, periods in arrays.items():
+                for period, values in periods.items():
+                    file.create_dataset(f"{name}/{period}", data=values)
+        if rule is not None:
+            write_savings_income_projection(source, rule)
+        source = str(source)
+    else:
+        source = InMemoryCore(arrays)
+        if rule is not None:
+            source.savings_income_projection = rule
+    sim = Microsimulation(dataset=source)
+    expected = rule or GDP_PER_HEAD
+    assert sim._savings_income_projection == expected
+    assert sim.dataset.savings_income_projection == expected
+    assert_grows_by(sim.dataset, expected)
