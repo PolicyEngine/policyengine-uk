@@ -11,7 +11,10 @@ from policyengine_uk.parameters.gov.dwp.pension_credit.savings_credit.create_sav
 from policyengine_uk.parameters.gov.dwp.pension_credit.pension_age_projection_base import (
     projection_base_year,
 )
-from policyengine_uk.tax_benefit_system import CountryTaxBenefitSystem
+from policyengine_uk.tax_benefit_system import (
+    CountryTaxBenefitSystem,
+    process_parameter_tree,
+)
 
 
 PENSIONER = {
@@ -146,13 +149,21 @@ NEXT_YEAR_RATES = {
 
 
 def _system_with_rates(rates, year=2027):
+    """Process an edited raw YAML fixture, rather than a runtime modifier."""
     tax_benefit_system = CountryTaxBenefitSystem()
     tax_benefit_system.reset_parameters()
     for path, value in rates.items():
         tax_benefit_system.parameters.get_child(path).update(
             start=instant(f"{year}-04-01"), stop=None, value=value
         )
-    tax_benefit_system.process_parameters()
+    raw = tax_benefit_system.parameters
+    # Later reforms of this fixture must retain its complete enacted base.
+    tax_benefit_system._enacted_parameters = raw.clone()
+    tax_benefit_system._raw_parameters = raw.clone()
+    (
+        tax_benefit_system.parameters,
+        tax_benefit_system._projected_timelines,
+    ) = process_parameter_tree(raw)
     return tax_benefit_system
 
 

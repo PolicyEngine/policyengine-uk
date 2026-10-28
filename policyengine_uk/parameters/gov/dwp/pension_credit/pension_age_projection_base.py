@@ -30,8 +30,9 @@ def last_enacted_year(parameter: Parameter) -> int:
 def projection_base_year(parameters: ParameterNode) -> int:
     """The last year with enacted rates for every projected parameter.
 
-    Read it from the enacted tree, not a reformed one: a reform's later
-    values are anchors for uprating, not a new projection base.
+    Callers supply the YAML as loaded, before any modifier or dated reform:
+    later reform values anchor uprating, not a new projection base. The
+    consistency guard therefore validates YAML rates updates alone.
     """
     years = {
         path: last_enacted_year(parameters.get_child(path)) for path in BASE_PARAMETERS

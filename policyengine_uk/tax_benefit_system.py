@@ -148,18 +148,19 @@ def _add_generated_parameters(
     parameters: ParameterNode,
     generated: Optional[List[ParameterAssignment]] = None,
     unreformed: Optional[ParameterNode] = None,
+    enacted: Optional[ParameterNode] = None,
 ) -> ParameterNode:
     """Run the generation steps, writing changes to generated parameters.
 
     Each change in ``generated`` is written onto its parameter just after
     the step that generates it, so the later steps, and uprating, read it.
-    ``unreformed`` supplies the enacted base year and independent Pension
-    Credit and Housing Benefit component bases.
+    ``enacted`` supplies the YAML as loaded, before any modifier edits, for
+    the Pension Credit and Housing Benefit projection bases.
     """
     pending = list(generated or [])
     for step in GENERATION_STEPS:
         if step in (project_savings_credit_threshold, project_pension_age_allowances):
-            parameters = step(parameters, unreformed=unreformed)
+            parameters = step(parameters, unreformed=unreformed, enacted=enacted)
         else:
             parameters = step(parameters)
         if pending:
@@ -181,6 +182,7 @@ def process_parameter_tree(
     unreformed: Optional[ParameterNode] = None,
     annualise: bool = True,
     generated: Optional[List[ParameterAssignment]] = None,
+    enacted: Optional[ParameterNode] = None,
 ) -> Tuple[ParameterNode, Dict[str, Timeline]]:
     """Project and annualise a statutory parameter tree.
 
@@ -211,16 +213,19 @@ def process_parameter_tree(
     ``generated`` holds the reform's changes to generated parameters, each
     written just after the step that generates it (see
     ``_add_generated_parameters``).
+    ``enacted`` retains the YAML projection bases separately from runtime
+    modifier edits. When omitted, the input tree supplies those bases, so
+    an incomplete YAML rates update is still rejected.
     """
     validate_ni_scale_compatibility(parameters)
-    parameters = _add_generated_parameters(parameters, generated, unreformed)
+    parameters = _add_generated_parameters(parameters, generated, unreformed, enacted)
 
     # Create baseline parameters for reform comparisons
     if annualise:
         baseline = (
             parameters.clone()
             if unreformed is None
-            else _add_generated_parameters(unreformed)
+            else _add_generated_parameters(unreformed, enacted=enacted)
         )
         parameters.add_child("baseline", baseline)
 
@@ -304,6 +309,8 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
             self._parameters_before_reset = current
         self.load_parameters(self.parameters_dir)
         _install_parameters(self, add_removed_parameter_aliases(self.parameters))
+        # Keep the YAML anchors before a simulation modifier can edit them.
+        self._enacted_parameters = self.parameters.clone()
 
     def process_parameters(self) -> None:
         """Process and transform parameters with UK-specific adjustments.
@@ -493,7 +500,9 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
             # reloaded parameters are part of it.
             self._raw_parameters = raw.clone()
         if not assignments:
-            parameters, self._projected_timelines = process_parameter_tree(raw)
+            parameters, self._projected_timelines = process_parameter_tree(
+                raw, enacted=self._enacted_parameters
+            )
             _install_parameters(self, parameters)
             return
         # Changes to parameters processing generates are written as each is
@@ -511,7 +520,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         for assignment in on_timeline:
             write_assignment(raw.get_child(assignment.path), assignment, projected)
         parameters, self._projected_timelines = process_parameter_tree(
-            raw, unreformed, generated=generated
+            raw, unreformed, generated=generated, enacted=self._enacted_parameters
         )
         _install_parameters(self, parameters)
 
@@ -547,6 +556,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         global _processed_parameters_cache, _statutory_parameters_cache
         global _projected_timelines_cache
         if _processed_parameters_cache is not None:
+            self._enacted_parameters = _statutory_parameters_cache.clone()
             # Fast path: clone pre-processed parameters rather than re-running
             # the full pipeline (saves ~0.5s from convert_to_fiscal_year_parameters).
             # Reforms rebuild the parameters from the statutory tree through

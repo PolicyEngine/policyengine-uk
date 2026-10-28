@@ -210,6 +210,7 @@ def _projection_parameter(
 def project_pension_age_allowances(
     parameters: ParameterNode,
     unreformed: ParameterNode | None = None,
+    enacted: ParameterNode | None = None,
 ) -> ParameterNode:
     """Add a protected-allowance forecast index for each allowance.
 
@@ -229,7 +230,11 @@ def project_pension_age_allowances(
     projected, as before.
     """
     allowances = parameters.gov.dwp.housing_benefit.allowances
-    projection_base = parameters if unreformed is None else unreformed
+    projection_base = (
+        enacted
+        if enacted is not None
+        else (parameters if unreformed is None else unreformed)
+    )
     base_year = projection_base_year(projection_base)
     start = base_instant(base_year)
     base_allowances = projection_base.gov.dwp.housing_benefit.allowances

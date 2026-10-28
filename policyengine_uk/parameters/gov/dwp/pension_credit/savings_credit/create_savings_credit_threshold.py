@@ -345,6 +345,7 @@ def enacted_maximum(
 def project_savings_credit_threshold(
     parameters: ParameterNode,
     unreformed: ParameterNode | None = None,
+    enacted: ParameterNode | None = None,
 ) -> ParameterNode:
     """Add forecast indices for each Savings Credit threshold.
 
@@ -361,7 +362,11 @@ def project_savings_credit_threshold(
     base takes precedence: its own reformed gap is projected, as before.
     """
     savings_credit = parameters.gov.dwp.pension_credit.savings_credit
-    projection_base = parameters if unreformed is None else unreformed
+    projection_base = (
+        enacted
+        if enacted is not None
+        else (parameters if unreformed is None else unreformed)
+    )
     base_year = projection_base_year(projection_base)
     base_instant = projection_instant(base_year)
     enacted_savings_credit = projection_base.gov.dwp.pension_credit.savings_credit

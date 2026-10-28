@@ -99,6 +99,55 @@ def _simulation(couple, changes, years, route="reform"):
     return Simulation(situation=_situation(couple, years), **options)
 
 
+def _modifier_simulation(couple, changes, start="2026-04-01", stop=None):
+    """Reload YAML, apply open or bounded updates, then reprocess it."""
+
+    def modify(simulation):
+        tax_benefit_system = simulation.tax_benefit_system
+        tax_benefit_system.reset_parameters()
+        for path, value in changes.items():
+            tax_benefit_system.parameters.get_child(path).update(
+                start=instant(start), stop=instant(stop) if stop else None, value=value
+            )
+        tax_benefit_system.process_parameters()
+
+    return Simulation(
+        situation=_situation(couple, range(2026, 2031)),
+        scenario=Scenario(simulation_modifier=modify, applied_before_data_load=True),
+    )
+
+
+@pytest.mark.parametrize(
+    "path,value",
+    [
+        (f"{GUARANTEE}.SINGLE", 250),
+        (f"{SAVINGS_CREDIT}.threshold.SINGLE", 200),
+        (f"{HB_ALLOWANCES}.single.aged", 260),
+    ],
+)
+@pytest.mark.parametrize(
+    "start,stop",
+    [
+        ("2026-04-01", "2100-12-31"),
+        ("2027-04-01", "2100-12-31"),
+        ("2027-04-01", None),
+    ],
+)
+def test_reprocessing_modifier_keeps_the_yaml_base_and_its_explicit_update(
+    path, value, start, stop
+):
+    parameters = _modifier_simulation(
+        False, {path: value}, start, stop
+    ).tax_benefit_system.parameters
+    assert parameters.get_child(path)(f"{start[:4]}-04-30") == value
+    for index in (
+        f"{SAVINGS_CREDIT}.threshold_uprating.SINGLE",
+        f"{HB_ALLOWANCES}.protected_pension_age_uprating.single",
+    ):
+        assert parameters.get_child(index)("2026-04-30") == 1
+        assert parameters.get_child(index)("2028-04-30") > 0
+
+
 def _assert_projections_unchanged(simulation):
     parameters = simulation.tax_benefit_system.parameters
     for path in PROJECTION_PATHS:
@@ -343,20 +392,19 @@ def _earnings_growth(parameters, year=2027):
     return earnings(f"{year}-04-30") / earnings(f"{year - 1}-04-30")
 
 
-@pytest.mark.parametrize("route", ["reform", "scenario"])
 @pytest.mark.parametrize(
     "relationship,allowance_name", [("SINGLE", "single"), ("COUPLE", "couple")]
 )
 def test_completed_joint_reform_below_the_guarantee_projects_with_the_guarantee(
-    route, relationship, allowance_name
+    relationship, allowance_name
 ):
     """An allowance cut below a cut guarantee no longer stops the build: with
     no retained Savings Credit, it follows the guarantee's earnings path."""
     changes = {
-        f"{GUARANTEE}.{relationship}": {"year:2026-01-01:1": 230},
-        f"{HB_ALLOWANCES}.{allowance_name}.aged": {"year:2026-01-01:1": 220},
+        f"{GUARANTEE}.{relationship}": 230,
+        f"{HB_ALLOWANCES}.{allowance_name}.aged": 220,
     }
-    simulation = _simulation(relationship == "COUPLE", changes, [2026], route)
+    simulation = _modifier_simulation(relationship == "COUPLE", changes)
     parameters = simulation.tax_benefit_system.parameters
 
     allowance = parameters.get_child(f"{HB_ALLOWANCES}.{allowance_name}.aged")
@@ -364,6 +412,12 @@ def test_completed_joint_reform_below_the_guarantee_projects_with_the_guarantee(
     assert _index_growth(parameters, allowance_name) == pytest.approx(
         _earnings_growth(parameters)
     )
+    earnings = parameters.gov.economic_assumptions.indices.earnings_uprating
+    for year in range(2027, 2031):
+        at = f"{year}-04-30"
+        assert allowance(at) == pytest.approx(
+            220 * earnings(at) / earnings("2026-04-30")
+        )
 
 
 @pytest.mark.parametrize("offset", [-100, -0.01, 0, 0.01])
@@ -374,10 +428,8 @@ def test_allowance_reform_at_the_guarantee_boundary_is_continuous(offset):
     above, the penny of retained Savings Credit grows by CPI, so the growth
     lies between the two."""
     guarantee = float(system.parameters.get_child(f"{GUARANTEE}.SINGLE")("2026-04-30"))
-    changes = {
-        f"{HB_ALLOWANCES}.single.aged": {"year:2026-01-01:1": guarantee + offset}
-    }
-    parameters = _simulation(False, changes, [2026]).tax_benefit_system.parameters
+    changes = {f"{HB_ALLOWANCES}.single.aged": guarantee + offset}
+    parameters = _modifier_simulation(False, changes).tax_benefit_system.parameters
 
     growth = _index_growth(parameters, "single")
     earnings_growth = _earnings_growth(parameters)
@@ -393,6 +445,17 @@ def test_allowance_reform_at_the_guarantee_boundary_is_continuous(offset):
         assert _index_growth(parameters, name) == pytest.approx(
             _index_growth(system.parameters, name)
         )
+    earnings = parameters.gov.economic_assumptions.indices.earnings_uprating
+    prices = parameters.gov.economic_assumptions.indices.september_cpi_uprating
+    for year in range(2027, 2031):
+        at = f"{year}-04-30"
+        expected = (
+            min(guarantee, guarantee + offset) * earnings(at) / earnings("2026-04-30")
+        )
+        expected += max(0, offset) * prices(at) / prices("2026-04-30")
+        assert parameters.gov.dwp.housing_benefit.allowances.single.aged(
+            at
+        ) == pytest.approx(expected)
 
 
 @pytest.mark.parametrize(
