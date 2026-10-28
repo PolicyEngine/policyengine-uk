@@ -56,6 +56,7 @@ policyengine_uk/calibration/*.h5
 !docs/**/*.ipynb
 !uprating_growth_factors.csv
 !policyengine_uk/parameters/gov/dwp/LHA/lha_published_rates_sources.csv
+!policyengine_uk/tests/fixtures/energy_prices/*.csv
 
 # Virtual environments
 .venv/

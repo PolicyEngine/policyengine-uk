@@ -52,6 +52,7 @@ AVERAGE_EARNINGS = f"{GROWTH}.obr.average_earnings"
 TRIPLE_LOCK = f"{GROWTH}.triple_lock"
 LAGGED_CPI = f"{GROWTH}.obr.lagged_cpi"
 INDICES = "gov.economic_assumptions.indices"
+ENERGY_PRICES = "gov.economic_assumptions.energy_prices"
 CPI_INDEX = f"{INDICES}.obr.consumer_price_index"
 INPUTS = "gov.economic_assumptions.statutory_uprating_inputs"
 AWE = f"{INPUTS}.awe_total_pay_may_july"
@@ -313,7 +314,9 @@ def test_calendar_year_series_are_the_growth_rates_indices_and_household_tree():
     for path in paths:
         if path.startswith("baseline."):
             continue
-        expected = path.startswith((f"{GROWTH}.", f"{INDICES}.", "household."))
+        expected = path.startswith(
+            (f"{GROWTH}.", f"{INDICES}.", f"{ENERGY_PRICES}.", "household.")
+        )
         assert reads(path) is expected, path
     assert not reads("gov.not.a.parameter")
 
@@ -396,7 +399,15 @@ def test_generated_parameters_are_the_series_processing_builds():
         ):
             assert not generates(path), path
             continue
-        built = path.startswith((f"{INDICES}.", f"{GROWTH}.")) and not statutory(path)
+        built = (
+            path.startswith((f"{INDICES}.", f"{GROWTH}."))
+            or path.startswith(
+                tuple(
+                    f"{ENERGY_PRICES}.{kind}."
+                    for kind in ("quarterly", "calendar_year", "fiscal_year")
+                )
+            )
+        ) and not statutory(path)
         assert generates(path) is built, path
     assert generates(TRIPLE_LOCK)
     assert generates(f"{INDICES}.uc_standard_allowance")

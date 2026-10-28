@@ -168,37 +168,40 @@ class EnergyPriceInputs:
 def quarterly_levels(inputs: EnergyPriceInputs, key: str) -> dict:
     """Quarterly levels at the basis rate, 2015 = 100 before the adjustment."""
     monthly = inputs.monthly[key]
+    quarters = _quarters((FIRST_YEAR, 1), (LAST_YEAR + 1, 1))
+    outturn = []
+    for quarter in quarters:
+        if not all(month in monthly for month in _months(quarter)):
+            break
+        outturn.append(quarter)
+    if not outturn:
+        raise ValueError(f"ONS {key} prices must start in January {FIRST_YEAR}.")
+    # Months of the quarter after the outturn may be published; later ones
+    # mean a month is missing.
+    later = [month for month in monthly if month > _months(_next(outturn[-1]))[-1]]
+    if later:
+        raise ValueError(
+            f"ONS {key} prices skip a month before {max(later)[0]}-{max(later)[1]:02d}."
+        )
     levels = {}
-    projected_from = None
-    for quarter in _quarters((FIRST_YEAR, 1), (LAST_YEAR + 1, 1)):
-        months = _months(quarter)
-        if projected_from is None and all(month in monthly for month in months):
-            share = inputs.electricity_share(key, quarter[0])
-            levels[quarter] = (
-                sum(
-                    monthly[month]
-                    / (1 + share * (inputs.electricity_vat_factor(*month) - 1))
-                    for month in months
-                )
-                / 3
+    for quarter in outturn:
+        share = inputs.electricity_share(key, quarter[0])
+        levels[quarter] = (
+            sum(
+                monthly[month]
+                / (1 + share * (inputs.electricity_vat_factor(*month) - 1))
+                for month in _months(quarter)
             )
-            continue
-        projected_from = projected_from or quarter
+            / 3
+        )
+    for quarter in quarters[len(outturn) :]:
         earlier = _year_earlier(quarter)
         if earlier not in levels:
             raise ValueError(
-                f"ONS {key} prices must cover every month from January "
-                f"{FIRST_YEAR} to a year before the OBR forecast starts."
+                f"ONS {key} prices must cover the four quarters before "
+                f"{quarter[0]}Q{quarter[1]}."
             )
         levels[quarter] = levels[earlier] * (1 + inputs.utilities_growth(quarter))
-    later = [
-        month for month in monthly if (month[0], (month[1] + 2) // 3) > projected_from
-    ]
-    if later:
-        raise ValueError(
-            f"ONS {key} prices skip a month before {projected_from[0]}Q"
-            f"{projected_from[1]} but continue to {max(later)[0]}-{max(later)[1]:02d}."
-        )
     return levels
 
 
