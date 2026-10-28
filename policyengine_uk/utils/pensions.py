@@ -27,9 +27,9 @@ def relevant_uk_earnings(person, period, hmrc):
     """FA 2004 s.189(2) relevant UK earnings.
 
     Employment income chargeable to income tax is net taxable earnings
-    (ITEPA 2003 ss.9(2) and 11): pay and employer-paid taxable SSP/SMP, which
-    the model holds separately from wages, less the allowable expenses in
-    s.327(3). s.327(5) also lists the deductions for pension contributions
+    (ITEPA 2003 ss.9(2) and 11): pay and employer-paid taxable SSP, SMP and
+    SPP (employment_benefits), which the model holds separately from wages,
+    less the allowable expenses in s.327(3). s.327(5) also lists the deductions for pension contributions
     (FA 2004 ss.188-194), but those are the relief that these earnings limit,
     so they are not taken off; the limit would otherwise depend on itself.
     Trading income is the profit chargeable under ITTOIA 2005 Part 2, before
