@@ -250,7 +250,10 @@ def test_the_growth_shown_for_a_year_is_the_growth_used_for_it(baseline):
     gap = value(baseline, AWE_GAP, "2027-07-01")
     assert value(reformed, AWE, "2027-07-01") == pytest.approx(0.2 + gap)
     assert value(reformed, AWE, "2028-07-01") == value(baseline, AWE, "2028-07-01")
-    assert value(reformed, TRIPLE_LOCK, "2028-01-01") == pytest.approx(0.2)
+    # The triple lock rounds May-July earnings, 20% plus the OBR gap, to 0.1pp.
+    assert value(reformed, TRIPLE_LOCK, "2028-01-01") == pytest.approx(
+        round(0.2 + gap, 3)
+    )
     assert value(reformed, TRIPLE_LOCK, "2029-01-01") == value(
         baseline, TRIPLE_LOCK, "2029-01-01"
     )

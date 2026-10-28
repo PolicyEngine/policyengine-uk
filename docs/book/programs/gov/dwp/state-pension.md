@@ -250,9 +250,9 @@ growth in the matching OBR series (`yoy_growth.obr.consumer_price_index` or
 statutory-basis forecast minus the calendar-year growth stored in
 `yoy_growth.yaml`, so that in the baseline the input equals the OBR's figure:
 
-- September CPI: the OBR's September CPI forecast (receipts Table 3.19, the
-  CPI used to uprate tax thresholds), or Q3 CPI (economy Table 1.7) in years
-  that table does not cover;
+- September CPI: the OBR's September CPI forecast (receipts Table 4.19 in
+  the October 2026 EFO, the CPI used to uprate tax thresholds), or Q3 CPI
+  (economy Table 1.7) in years that table does not cover;
 - May-July earnings: Q2 average earnings growth (economy Table 1.6). The
   OBR does not forecast the ONS AWE series; its measure is wages and
   salaries per employee, and Q2 is the quarter nearest May to July.
@@ -263,8 +263,11 @@ minimum guarantee, with a zero floor on earnings growth. See
 [Pension Credit uprating](./pension-credit.ipynb#uprating) for its Savings Credit
 and pension-age Housing Benefit projections and reform behaviour.
 
-After the EFO horizon the gap is zero, so the inputs follow calendar-year
-growth. Smooth forecasts pay the higher of earnings, CPI and 2.5% each year,
+With the October 2026 EFO the baseline rises are 3.9% in April 2027 (the
+published May-July 2026 earnings), 3.4% in April 2028 (September 2027 CPI),
+2.5% in April 2029 to 2031 and 2.6% in April 2032, as in the OBR's triple
+lock row (EFO Table A.3). After the EFO horizon the gap is zero, so the
+inputs follow calendar-year growth. Smooth forecasts pay the higher of earnings, CPI and 2.5% each year,
 so the baseline has none of the extra cost the triple lock builds up when
 September CPI and May-July earnings take turns to spike; the OBR's long-run
 projections add 0.56 percentage points a year over earnings for it (Fiscal

@@ -151,22 +151,29 @@ def test_forecasts_are_calendar_growth_plus_the_obr_gap(
         assert statutory(observed) == pytest.approx(
             calendar(f"{year}-01-01") + gap(observed), abs=1e-12
         ), year
-        if year > 2030:
+        if year > 2031:
             # After the EFO horizon the forecast is calendar-year growth.
             assert gap(observed) == 0
     assert statutory(f"{last_year + 1}-{month_day}") is None
 
 
-# OBR March 2026 EFO: September CPI from receipts Table 3.19 ("CPI used to
-# uprate thresholds"), Q3 CPI from economy Table 1.7 for 2030, and Q2 average
+# OBR October 2026 EFO: September CPI from receipts Table 4.19 ("CPI used to
+# uprate thresholds"), Q3 CPI from economy Table 1.7 for 2031, and Q2 average
 # earnings growth on a year earlier from economy Table 1.6.
 OBR_SEPTEMBER_CPI = {
-    2027: 0.020719,
-    2028: 0.020299,
-    2029: 0.020480,
-    2030: 0.019996,
+    2027: 0.034400,
+    2028: 0.020420,
+    2029: 0.021727,
+    2030: 0.020146,
+    2031: 0.019997,
 }
-OBR_Q2_EARNINGS = {2027: 0.024266, 2028: 0.020795, 2029: 0.021852, 2030: 0.023890}
+OBR_Q2_EARNINGS = {
+    2027: 0.032961,
+    2028: 0.021251,
+    2029: 0.022559,
+    2030: 0.024586,
+    2031: 0.026141,
+}
 
 
 def test_baseline_forecasts_reproduce_the_obr_statutory_forecasts():
@@ -184,31 +191,12 @@ def test_baseline_forecasts_reproduce_the_obr_statutory_forecasts():
 
 
 def test_rule_reproduces_the_obr_triple_lock_forecast_from_its_own_inputs():
-    """OBR Long-term economic determinants (March 2026 EFO), 'Triple Lock'
-    row: 3.7% in April 2027 and 2.5% in April 2028-2031. With the published
-    May-July 2026 figure removed, so earnings follow the OBR forecast, the
-    rule gives the same rates."""
-
-    def drop_may_july_2026(simulation):
-        system_ = simulation.tax_benefit_system
-        system_.reset_parameters()
-        statutory_inputs(system_.parameters).awe_total_pay_may_july.update(
-            period="year:2026-07-01:1", value=None
-        )
-        system_.process_parameters()
-
-    simulation = Simulation(
-        situation=PENSIONER,
-        scenario=Scenario(
-            simulation_modifier=drop_may_july_2026, applied_before_data_load=True
-        ),
-    )
-    parameters = simulation.tax_benefit_system.parameters
-    assert statutory_inputs(parameters).awe_total_pay_may_july(
-        "2026-07-01"
-    ) == pytest.approx(0.036736, abs=1e-5)
-    assert [uprating(parameters, year) for year in range(2027, 2032)] == (
-        pytest.approx([0.037, 0.025, 0.025, 0.025, 0.025])
+    """OBR October 2026 EFO, Table A.3, 'Triple-lock' guarantee: 3.9% in April
+    2027 (May-July 2026 earnings, published before the forecast closed),
+    3.4% in April 2028 (September 2027 CPI), 2.5% in April 2029-2031 and 2.6%
+    in April 2032 (May-July 2031 earnings). The rule gives the same rates."""
+    assert [uprating(system.parameters, year) for year in range(2027, 2033)] == (
+        pytest.approx([0.039, 0.034, 0.025, 0.025, 0.025, 0.026])
     )
 
 
@@ -224,8 +212,8 @@ def test_horizon_runs_to_the_end_of_the_economic_assumptions():
 
 
 def test_macro_scenario_on_calendar_growth_moves_the_uprating():
-    """Raising 2027 earnings growth from 2.4% to 5% moves May-July 2027
-    earnings with it (plus the OBR gap, 0.027pp) and so the April 2028 rise.
+    """Raising 2027 earnings growth from 2.99% to 5% moves May-July 2027
+    earnings with it (plus the OBR gap, 0.306pp) and so the April 2028 rise.
 
     Calendar-year series are keyed to 1 January, so the change is keyed
     year:2027-01-01:1; a bare "2027" names the fiscal year from 6 April 2027
@@ -235,9 +223,9 @@ def test_macro_scenario_on_calendar_growth_moves_the_uprating():
     )
     assert statutory_inputs(parameters).awe_total_pay_may_july(
         "2027-07-01"
-    ) == pytest.approx(0.05 + 0.00027)
-    assert uprating(parameters, 2028) == pytest.approx(0.05)
-    assert uprating(system.parameters, 2028) == pytest.approx(0.025)
+    ) == pytest.approx(0.05 + 0.00306)
+    assert uprating(parameters, 2028) == pytest.approx(0.053)
+    assert uprating(system.parameters, 2028) == pytest.approx(0.034)
     assert new_state_pension_weekly(parameters, 2028) > new_state_pension_weekly(
         system.parameters, 2028
     )
@@ -283,10 +271,10 @@ def test_macro_scenario_moves_the_state_pension_in_a_microsimulation():
     full_rate_2027 = 241.30 * 1.039
     # Uprating indices are stored to 5 decimal places.
     assert baseline_pension == pytest.approx(
-        full_rate_2027 * 1.025 * WEEKS_IN_YEAR, rel=1e-5
+        full_rate_2027 * 1.034 * WEEKS_IN_YEAR, rel=1e-5
     )
     assert reformed_pension == pytest.approx(
-        full_rate_2027 * 1.05 * WEEKS_IN_YEAR, rel=1e-5
+        full_rate_2027 * 1.053 * WEEKS_IN_YEAR, rel=1e-5
     )
 
 

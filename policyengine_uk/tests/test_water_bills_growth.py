@@ -47,8 +47,8 @@ def test_stored_bills_reach_the_pr24_final_determination_in_real_terms():
 
 @pytest.mark.parametrize(
     "year, growth",
-    # 1.02833 real growth times 1 + CPIH t-1 (2.55%, 2.11%, 2.04%).
-    [(2027, 0.055), (2028, 0.050), (2029, 0.049)],
+    # 1.02833 real growth times 1 + CPIH t-1 (3.24%, 3.30%, 2.14%).
+    [(2027, 0.062), (2028, 0.062), (2029, 0.050)],
 )
 def test_projected_water_bill_growth(year, growth):
     assert WATER_BILLS(f"{year}-01-01") == pytest.approx(growth)
