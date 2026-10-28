@@ -300,22 +300,22 @@ obr:
       # net of non-road fuel receipts (OBR April 2024 vehicle-type release,
       # "Other fuels", held at GBP 0.3bn after 2028-29), divided by the
       # fiscal-year average petrol/diesel duty rate on the Budget 2026 path
-      # behind that forecast: 52.95p to 30 June 2027, 60.59p from 1 July
-      # 2027, then raised each 1 April by Q1 RPI growth (OBR economy
-      # Table 1.7), the convention that gives 60.59p. That path is policy,
-      # not the current law in gov.hmrc.fuel_duty.petrol_and_diesel, which
-      # also uses another RPI convention: calculate_fuel_duty_rates.py applies
-      # the previous calendar year's RPI growth (60.03p from April 2027), so
-      # the model's rates differ from this path by up to 0.6p a litre in
-      # 2027-28 and by 0.3p or less from 2028-29. Aligning the two belongs
-      # with the current-law schedule (#2715). The derivation is
-      # policyengine-uk-data's sources/road_fuel_volume.py.
+      # behind that forecast: 52.95p to 30 June 2027 and 60.59p from 1 July
+      # 2027 (57.95p raised by Q1 2027 RPI growth, OBR economy Table 1.7),
+      # then 63.21p, 65.13p, 67.07p and 68.61p from 1 April 2028 to 2031,
+      # each raised by the previous calendar year's RPI growth in obr.rpi.
+      # That is the schedule PolicyEngine/policyengine-uk#2719 puts into
+      # gov.hmrc.fuel_duty.petrol_and_diesel, so once it is law the model's
+      # duty on these volumes reproduces the OBR's road fuel receipts. Until
+      # then current law there is the Budget 2025 schedule (60.03p from April
+      # 2027). The derivation is policyengine-uk-data's
+      # sources/road_fuel_volume.py.
       2026-01-01: -0.02315665811165113
       2027-01-01: -0.030554808261277322
-      2028-01-01: -0.03089248062672023
-      2029-01-01: -0.03954082422617977
-      2030-01-01: -0.05402149170377035
-      2031-01-01: -0.06452057525352783
+      2028-01-01: -0.0397847818644439
+      2029-01-01: -0.041064621128607315
+      2030-01-01: -0.05572027407818414
+      2031-01-01: -0.06577310603942343
       # Hold the final OBR forecast volume flat after 2031-32.
       2032-01-01: 0.0
       2033-01-01: 0.0
@@ -374,16 +374,16 @@ obr:
     description: Unleaded-petrol spending proxy growth that preserves weighted road-fuel litres after dividing by model pump prices. Derived as (1 + road_fuel_volume) x (price_t / price_t-1) / (1 + population) - 1, using household.consumption.fuel.prices; re-derive whenever those prices change.
     values:
       2021-01-01: 0.42818201287701263
-      2022-01-01: 0.32048914761975955
-      2023-01-01: -0.11986709923501582
-      2024-01-01: -0.05406513567003335
-      2025-01-01: -0.06053614112047978
-      2026-01-01: 0.08688748446453687
-      2027-01-01: -0.033358069858687056
-      2028-01-01: -0.0339837326821375
-      2029-01-01: -0.04279532013771159
-      2030-01-01: -0.05741479842942443
-      2031-01-01: -0.0667603504125377
+      2022-01-01: 0.31957440996183406
+      2023-01-01: -0.12004079824838954
+      2024-01-01: -0.05284723399267499
+      2025-01-01: -0.060817053268056864
+      2026-01-01: 0.08851456153708859
+      2027-01-01: -0.031813450775269536
+      2028-01-01: -0.041414377422825166
+      2029-01-01: -0.043074165381306595
+      2030-01-01: -0.058075086362278316
+      2031-01-01: -0.06800988232185101
       2032-01-01: -0.0021951706246258196
       2033-01-01: -0.0020955992415926383
       2034-01-01: -0.0018963968459926317
@@ -441,16 +441,16 @@ obr:
     description: Diesel spending proxy growth that preserves weighted road-fuel litres after dividing by model pump prices. Derived as (1 + road_fuel_volume) x (price_t / price_t-1) / (1 + population) - 1, using household.consumption.fuel.prices; re-derive whenever those prices change.
     values:
       2021-01-01: 0.4041527984732878
-      2022-01-01: 0.38539703418341165
-      2023-01-01: -0.12622295394260497
-      2024-01-01: -0.07372422161516101
-      2025-01-01: -0.0543311074029702
-      2026-01-01: 0.16474156463748946
-      2027-01-01: -0.033358069858687056
-      2028-01-01: -0.0339837326821375
-      2029-01-01: -0.04279532013771159
-      2030-01-01: -0.05741479842942432
-      2031-01-01: -0.0667603504125377
+      2022-01-01: 0.3844373331206423
+      2023-01-01: -0.12639539859349447
+      2024-01-01: -0.07253163122999695
+      2025-01-01: -0.05461387493788428
+      2026-01-01: 0.16648518973425208
+      2027-01-01: -0.031813450775269536
+      2028-01-01: -0.04141437742282528
+      2029-01-01: -0.043074165381306595
+      2030-01-01: -0.05807508636227843
+      2031-01-01: -0.0680098823218509
       2032-01-01: -0.0021951706246258196
       2033-01-01: -0.0020955992415926383
       2034-01-01: -0.0018963968459926317
@@ -877,15 +877,15 @@ obr:
         # ons.population: (1 + nominal) / (1 + population) - 1, rounded to 4
         # decimals. 2021-2025 are outturn, 2026-2031 forecast.
         2021-01-01: 0.0892
-        2022-01-01: 0.1004
-        2023-01-01: 0.0524
-        2024-01-01: 0.0387
-        2025-01-01: 0.0465
-        2026-01-01: 0.0384
-        2027-01-01: 0.0294
-        2028-01-01: 0.0328
-        2029-01-01: 0.0347
-        2030-01-01: 0.0331
+        2022-01-01: 0.0997
+        2023-01-01: 0.0522
+        2024-01-01: 0.0401
+        2025-01-01: 0.0462
+        2026-01-01: 0.0400
+        2027-01-01: 0.0310
+        2028-01-01: 0.0344
+        2029-01-01: 0.0360
+        2030-01-01: 0.0343
         2031-01-01: 0.0332
       metadata:
         unit: /1
@@ -902,15 +902,15 @@ obr:
         # (1 + growth) / (1 + population) - 1, rounded to 4 decimals.
         # 2021-2025 are outturn, 2026-2031 forecast.
         2021-01-01: 0.0636
-        2022-01-01: 0.0288
-        2023-01-01: -0.0060
-        2024-01-01: 0.0267
-        2025-01-01: 0.0049
-        2026-01-01: 0.0282
-        2027-01-01: 0.0307
-        2028-01-01: 0.0340
-        2029-01-01: 0.0367
-        2030-01-01: 0.0393
+        2022-01-01: 0.0281
+        2023-01-01: -0.0062
+        2024-01-01: 0.0280
+        2025-01-01: 0.0046
+        2026-01-01: 0.0297
+        2027-01-01: 0.0323
+        2028-01-01: 0.0355
+        2029-01-01: 0.0380
+        2030-01-01: 0.0404
         2031-01-01: 0.0400
       metadata:
         unit: /1
@@ -926,15 +926,15 @@ obr:
         # (1 + growth) / (1 + population) - 1, rounded to 4 decimals.
         # 2021-2025 are outturn, 2026-2031 forecast.
         2021-01-01: 0.0831
-        2022-01-01: 0.0880
-        2023-01-01: 0.1069
-        2024-01-01: 0.0363
-        2025-01-01: 0.0261
-        2026-01-01: 0.0266
-        2027-01-01: 0.0438
-        2028-01-01: 0.0386
-        2029-01-01: 0.0374
-        2030-01-01: 0.0345
+        2022-01-01: 0.0873
+        2023-01-01: 0.1067
+        2024-01-01: 0.0376
+        2025-01-01: 0.0258
+        2026-01-01: 0.0281
+        2027-01-01: 0.0454
+        2028-01-01: 0.0401
+        2029-01-01: 0.0387
+        2030-01-01: 0.0356
         2031-01-01: 0.0307
       metadata:
         unit: /1
@@ -1069,36 +1069,38 @@ obr:
 ons:
   population:
     description: Population year-on-year growth.
-    # One vintage, consistent with the OBR's March 2026 EFO. The fiscal year
-    # starting in year t is stored at t-01-01, as growth over the year before,
-    # rounded to four decimals (2025-26's 0.2973% is 2025-01-01: 0.0030). The
-    # OBR reads population at the start of the fiscal year (Q2).
-    # - 2023-2073: the population growth row of the OBR's long-term economic
-    #   determinants for the March 2026 EFO (28 May 2026). To 2030-31 it is
-    #   the OBR's March 2026 forecast; after that it is the principal
-    #   projection of the ONS 2024-based national population projections.
-    # - 2021-2022: that release starts at 2023-24, so these two years are
-    #   the same OBR population series read from the March 2026 EFO economy
-    #   tables: Q2 real GDP (Table 1.1) over Q2 real GDP per person, total
-    #   population (Table 1.5), against the Q2 a year earlier. The same
-    #   calculation gives the release's 2023-24, 2024-25 and 2025-26 values
-    #   exactly (policyengine_uk/tests/test_population_vintage.py).
-    # The per_capita series under obr are derived from this series; re-derive
-    # them, and the petrol and diesel spending proxies, whenever it changes.
-    # The long-term determinants for the October 2026 EFO are not yet
-    # published, so this stays on the March 2026 vintage until they are; the
-    # per_capita series meanwhile divide October 2026 aggregates by it.
+    # The OBR's October 2026 population, then the ONS principal projection.
+    # The fiscal year starting in year t is stored at t-01-01, as growth over
+    # the year before, rounded to four decimals (2025-26's 0.3335% is
+    # 2025-01-01: 0.0033). The OBR reads population at the start of the
+    # fiscal year (Q2).
+    # - 2021-2031: the OBR's population series read from the October 2026
+    #   EFO economy tables: Q2 real GDP (Table 1.1) over Q2 real GDP per
+    #   person, total population (Table 1.5), against the Q2 a year earlier.
+    #   The long-term economic determinants for the October 2026 EFO are not
+    #   yet published; for the March 2026 EFO the same calculation gave the
+    #   determinants' 2023-24 to 2030-31 values to 1e-6 per cent
+    #   (policyengine_uk/tests/test_population_vintage.py).
+    # - 2032-2073: the population growth row of the OBR's long-term economic
+    #   determinants for the March 2026 EFO (28 May 2026), which from 2031-32
+    #   is the principal projection of the ONS 2024-based national population
+    #   projections. The October 2026 EFO follows the same projection
+    #   (paragraph 2.37). Replace it with the October determinants' row once
+    #   published.
+    # The per_capita series under obr and orr are derived from this series;
+    # re-derive them, and the petrol and diesel spending proxies, whenever it
+    # changes.
     values:
       2021-01-01: 0.0036
-      2022-01-01: 0.0098
-      2023-01-01: 0.0132
-      2024-01-01: 0.0110
-      2025-01-01: 0.0030
-      2026-01-01: 0.0035
-      2027-01-01: 0.0029
-      2028-01-01: 0.0032
-      2029-01-01: 0.0034
-      2030-01-01: 0.0036
+      2022-01-01: 0.0105
+      2023-01-01: 0.0134
+      2024-01-01: 0.0097
+      2025-01-01: 0.0033
+      2026-01-01: 0.0020
+      2027-01-01: 0.0013
+      2028-01-01: 0.0017
+      2029-01-01: 0.0021
+      2030-01-01: 0.0025
       2031-01-01: 0.0024
       2032-01-01: 0.0022
       2033-01-01: 0.0021
@@ -1146,10 +1148,10 @@ ons:
       unit: /1
       label: Population growth
       reference:
-        - title: OBR, "Long-term economic determinants - March 2026 Economic and fiscal outlook" (28 May 2026), population growth row
+        - title: OBR EFO October 2026 (detailed forecast tables, economy, Tables 1.1 and 1.5), 2021-22 to 2031-32
+          href: https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/
+        - title: OBR, "Long-term economic determinants - March 2026 Economic and fiscal outlook" (28 May 2026), population growth row, 2032-33 onwards
           href: https://obr.uk/supplementary-forecast-information-release-long-term-economic-determinants-march-2026/
-        - title: OBR EFO March 2026 (detailed forecast tables, economy, Tables 1.1 and 1.5), for 2021-22 and 2022-23
-          href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
         - title: ONS, "National population projections - 2024-based" (28 April 2026; principal projection, used by the OBR from 2031-32)
           href: https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationprojections/bulletins/nationalpopulationprojections/2024based
   household_interest_income:
@@ -1665,15 +1667,15 @@ orr:
       # changes (policyengine_uk/tests/test_rail_usage_uprating.py checks).
       values:
         2021-01-01: 1.5433  # 2.5525 / 1.0036 - 1
-        2022-01-01: 0.3851  # (3.5700 / 2.5525) / 1.0098 - 1
-        2023-01-01: 0.1490  # (4.1559 / 3.5700) / 1.0132 - 1
-        2024-01-01: 0.0607  # (4.4567 / 4.1559) / 1.0110 - 1
-        2025-01-01: 0.0551  # (4.7165 / 4.4567) / 1.0030 - 1
-        2026-01-01: -0.0035  # 1 / 1.0035 - 1
-        2027-01-01: -0.0029  # 1 / 1.0029 - 1
-        2028-01-01: -0.0032  # 1 / 1.0032 - 1
-        2029-01-01: -0.0034  # 1 / 1.0034 - 1
-        2030-01-01: -0.0036  # 1 / 1.0036 - 1
+        2022-01-01: 0.3841  # (3.5700 / 2.5525) / 1.0105 - 1
+        2023-01-01: 0.1487  # (4.1559 / 3.5700) / 1.0134 - 1
+        2024-01-01: 0.0621  # (4.4567 / 4.1559) / 1.0097 - 1
+        2025-01-01: 0.0548  # (4.7165 / 4.4567) / 1.0033 - 1
+        2026-01-01: -0.0020  # 1 / 1.0020 - 1
+        2027-01-01: -0.0013  # 1 / 1.0013 - 1
+        2028-01-01: -0.0017  # 1 / 1.0017 - 1
+        2029-01-01: -0.0021  # 1 / 1.0021 - 1
+        2030-01-01: -0.0025  # 1 / 1.0025 - 1
         2031-01-01: -0.0024  # 1 / 1.0024 - 1
         2032-01-01: -0.0022  # 1 / 1.0022 - 1
         2033-01-01: -0.0021  # 1 / 1.0021 - 1

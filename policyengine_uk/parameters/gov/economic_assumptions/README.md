@@ -489,11 +489,22 @@ uv run python -m policyengine_uk.utils.import_obr_forecasts \
 
 The October 2026 import also needed, by hand: 2031 entries added to
 `house_prices` and `rent` before the run, the 2032+ joins above, and the
-series the importer does not cover (per-capita GDP, mixed and non-labour
-income, household interest income, council tax, social and private rents,
-the AHC deflator, Ofwat water bills, road fuel volumes and the litre proxies,
-and the fuel duty RPI path in `gov.hmrc.fuel_duty`). Each series' comments
-name its source and method.
+series the importer does not cover (population, per-capita GDP, mixed and
+non-labour income, household interest income, rail journeys per person,
+council tax, social and private rents, the AHC deflator, Ofwat water bills,
+road fuel volumes and the litre proxies, and the fuel duty RPI path in
+`gov.hmrc.fuel_duty`). Each series' comments name its source and method.
+The rail fare indices (`gov.dft.rail.fare_index` and `prior_law_fare_index`),
+Bank Rate (`gov.boe.base_rate`, economy Table 1.9) and households' financial
+assets (`household.wealth.financial_assets`, Table 1.11) also take October
+2026 values.
+
+The national living wage forecast (economy Table 1.13) is not read here. Until
+PolicyEngine/policyengine-uk#2700 adds it as `obr.national_living_wage`, the
+minimum wage rates, and the rules built on them, stay at their April 2026
+levels; #2721 tracks teaching the importer to read the table. Whichever of
+#2700 and the October 2026 update merges second copies the 2032+ earnings path
+into that series.
 
 The EFO refresh does not touch `finance_ni.domestic_rates`; OBR does not
 publish a Northern Ireland domestic rates bill series (see below).

@@ -142,6 +142,8 @@ GENERATION_STEPS = (
     add_september_cpi_uprating,
     create_economic_assumption_indices,
     add_energy_price_indices,
+    project_savings_credit_threshold,
+    project_pension_age_allowances,
     add_threshold_indexation,
     add_uc_standard_allowance_uprating,
     add_uc_health_element_uprating,
@@ -152,15 +154,22 @@ GENERATION_STEPS = (
 def _add_generated_parameters(
     parameters: ParameterNode,
     generated: Optional[List[ParameterAssignment]] = None,
+    unreformed: Optional[ParameterNode] = None,
+    enacted: Optional[ParameterNode] = None,
 ) -> ParameterNode:
     """Run the generation steps, writing changes to generated parameters.
 
     Each change in ``generated`` is written onto its parameter just after
     the step that generates it, so the later steps, and uprating, read it.
+    ``enacted`` supplies the YAML as loaded, before any modifier edits, for
+    the Pension Credit and Housing Benefit projection bases.
     """
     pending = list(generated or [])
     for step in GENERATION_STEPS:
-        parameters = step(parameters)
+        if step in (project_savings_credit_threshold, project_pension_age_allowances):
+            parameters = step(parameters, unreformed=unreformed, enacted=enacted)
+        else:
+            parameters = step(parameters)
         if pending:
             defines = tree_defines(parameters)
             for assignment in [a for a in pending if defines(a.path)]:
@@ -180,6 +189,7 @@ def process_parameter_tree(
     unreformed: Optional[ParameterNode] = None,
     annualise: bool = True,
     generated: Optional[List[ParameterAssignment]] = None,
+    enacted: Optional[ParameterNode] = None,
 ) -> Tuple[ParameterNode, Dict[str, Timeline]]:
     """Project and annualise a statutory parameter tree.
 
@@ -190,13 +200,13 @@ def process_parameter_tree(
     - triple lock calculations for state pensions
     - earnings and September CPI uprating
     - economic assumption indices
+    - Pension Credit threshold and protected Housing Benefit forecast indices
     - income tax and NICs threshold indexation after the freeze
     - Universal Credit standard allowance uprating (UC Act 2025 s. 1)
     - Universal Credit LCWRA element uprating (UC Act 2025 s. 3 freeze)
     - parameter uprating and backdating
-    - projections derived from other parameters after uprating: the
-      Savings Credit threshold, the pension-age Housing Benefit allowances
-      and the Carer's Allowance earnings limit
+    - the Carer's Allowance earnings limit, projected from the uprated
+      national living wage
     - conversion to fiscal year parameters
 
     Returns the tree and each parameter's timeline after projection (for gov
@@ -212,16 +222,19 @@ def process_parameter_tree(
     ``generated`` holds the reform's changes to generated parameters, each
     written just after the step that generates it (see
     ``_add_generated_parameters``).
+    ``enacted`` retains the YAML projection bases separately from runtime
+    modifier edits. When omitted, the input tree supplies those bases, so
+    an incomplete YAML rates update is still rejected.
     """
     validate_ni_scale_compatibility(parameters)
-    parameters = _add_generated_parameters(parameters, generated)
+    parameters = _add_generated_parameters(parameters, generated, unreformed, enacted)
 
     # Create baseline parameters for reform comparisons
     if annualise:
         baseline = (
             parameters.clone()
             if unreformed is None
-            else _add_generated_parameters(unreformed)
+            else _add_generated_parameters(unreformed, enacted=enacted)
         )
         parameters.add_child("baseline", baseline)
 
@@ -230,12 +243,12 @@ def process_parameter_tree(
         propagate_parameter_metadata(parameters)
         with canonical_ni_uprating_references(parameters):
             uprate_parameters(parameters)
-    project_savings_credit_threshold(parameters)
-    project_pension_age_allowances(parameters)
+    # The Savings Credit threshold and pension-age Housing Benefit
+    # allowances are generation steps (GENERATION_STEPS); the Carer's
+    # Allowance earnings limit is still projected from the uprated
+    # national living wage here.
     project_carers_allowance_earnings_limit(parameters)
     if annualise:
-        project_savings_credit_threshold(parameters.baseline)
-        project_pension_age_allowances(parameters.baseline)
         project_carers_allowance_earnings_limit(parameters.baseline)
     parameters = backdate_parameters(parameters, BACKDATED_FROM)
     # Prior law's projected path for every parameter a reform can change: the
@@ -312,6 +325,8 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
             self._parameters_before_reset = current
         self.load_parameters(self.parameters_dir)
         _install_parameters(self, add_removed_parameter_aliases(self.parameters))
+        # Keep the YAML anchors before a simulation modifier can edit them.
+        self._enacted_parameters = self.parameters.clone()
 
     def process_parameters(self) -> None:
         """Process and transform parameters with UK-specific adjustments.
@@ -501,7 +516,9 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
             # reloaded parameters are part of it.
             self._raw_parameters = raw.clone()
         if not assignments:
-            parameters, self._projected_timelines = process_parameter_tree(raw)
+            parameters, self._projected_timelines = process_parameter_tree(
+                raw, enacted=self._enacted_parameters
+            )
             _install_parameters(self, parameters)
             return
         # Changes to parameters processing generates are written as each is
@@ -515,11 +532,17 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
                 # Not generated either: the error the lookup gives.
                 raw.get_child(assignment.path)
         unreformed = raw.clone()
-        projected = prior_law_projection(on_timeline, unreformed, statutory, generated)
+        projected = prior_law_projection(
+            on_timeline,
+            unreformed,
+            statutory,
+            generated,
+            enacted=self._enacted_parameters,
+        )
         for assignment in on_timeline:
             write_assignment(raw.get_child(assignment.path), assignment, projected)
         parameters, self._projected_timelines = process_parameter_tree(
-            raw, unreformed, generated=generated
+            raw, unreformed, generated=generated, enacted=self._enacted_parameters
         )
         _install_parameters(self, parameters)
 
@@ -555,6 +578,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         global _processed_parameters_cache, _statutory_parameters_cache
         global _projected_timelines_cache
         if _processed_parameters_cache is not None:
+            self._enacted_parameters = _statutory_parameters_cache.clone()
             # Fast path: clone pre-processed parameters rather than re-running
             # the full pipeline (saves ~0.5s from convert_to_fiscal_year_parameters).
             # Reforms rebuild the parameters from the statutory tree through
@@ -703,6 +727,7 @@ def prior_law_projection(
     unreformed: ParameterNode,
     statutory: bool = True,
     generated: Optional[List[ParameterAssignment]] = None,
+    enacted: Optional[ParameterNode] = None,
 ) -> Callable[[str], Optional[Timeline]]:
     """Prior law's projected timeline, by parameter name, for a reform.
 
@@ -717,7 +742,8 @@ def prior_law_projection(
     an error. ``unreformed`` is the tree the changes are written onto;
     ``statutory`` says it is the YAML as loaded, whose projection without
     changes is cached. ``generated`` holds the reform's changes to generated
-    parameters, which every pass makes too.
+    parameters, which every pass makes too. ``enacted`` keeps the YAML bases
+    separate from modifier edits through these intermediate projections too.
     """
     needing = sorted(
         {
@@ -732,7 +758,11 @@ def prior_law_projection(
         projected_timelines()
         if statutory and not generated
         else process_parameter_tree(
-            unreformed.clone(), annualise=False, generated=generated
+            unreformed.clone(),
+            unreformed=unreformed,
+            annualise=False,
+            generated=generated,
+            enacted=enacted,
         )[1]
     )
     environment = {path: start.get(path) for path in needing}
@@ -751,7 +781,11 @@ def prior_law_projection(
                         tree.get_child(assignment.path), assignment, lookup
                     )
             updated[path] = process_parameter_tree(
-                tree, annualise=False, generated=generated
+                tree,
+                unreformed=unreformed,
+                annualise=False,
+                generated=generated,
+                enacted=enacted,
             )[1].get(path)
         if _same_timelines(updated, environment):
             return lookup
