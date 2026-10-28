@@ -15,8 +15,10 @@ class uc_benefit_cap_reduction(Variable):
         "Credit (reg. 78(1)), so there is no reduction without one. This is the "
         "amount reg. 81 takes off, which can exceed the award before the cap; "
         "the award goes no lower than nil, so the amount actually removed, "
-        "uc_benefit_cap_reduction_after_floor, is the smaller of the two, and "
-        "that is the Universal Credit part of benefit_cap_reduction."
+        "uc_benefit_cap_reduction_after_floor, is the smaller of the two "
+        "under current law. A binding protected floor can lower that amount "
+        "further. That applied amount is the Universal Credit part of "
+        "benefit_cap_reduction."
     )
     definition_period = YEAR
     unit = GBP

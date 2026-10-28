@@ -11,8 +11,11 @@ policyengine-uk-data calibrates against it.
 ``REFERENCE_TOTAL`` restores the parent commit's ``benefit_cap_reduction``,
 which added the reg. 81 amount itself (verbatim ``adds``).
 
-Invariants, over generated benefit units and the explicit examples, under
-current law and under protected floors of 0.5, 0.85, 1 and 1.2:
+Properties 1-6 are checked over generated coherent benefit units and
+``EXAMPLE_UNITS`` under current law and protected floors of 0.5, 0.85, 1 and
+1.2. Coherent inputs have no positive pre-cap UC award without a UC claim.
+The separate override regression documents behavior outside that domain.
+Property 7 checks current law, with a zero protected floor:
 
 1. Definition. ``benefit_cap_reduction`` is
    ``uc_benefit_cap_reduction_after_floor`` plus
@@ -21,24 +24,24 @@ current law and under protected floors of 0.5, 0.85, 1 and 1.2:
    before the cap, 0))``, and equals it under current law (WRA 2012 s.
    96(2): a reduction "up to or equalling the excess"; the award goes to nil
    and no lower).
-3. Incidence. Under current law ``benefit_cap_reduction > 0`` exactly where
-   the parent commit's total is positive, so uk-data's count of capped
-   households cannot move; under a floor it is positive only where that
-   total is.
+3. Incidence, for coherent inputs. Under current law
+   ``benefit_cap_reduction > 0`` exactly where the parent commit's total is
+   positive, so uk-data's count of capped households cannot move for these
+   inputs; under a floor it is positive only where that total is.
 4. Differential. ``universal_credit``, ``uc_deductions``,
    ``uc_has_deduction``, ``housing_benefit`` and ``household_net_income``
    equal the parent commit's for every floor: nothing in the model reads the
-   reported total. The parent's total is never smaller, and is equal
-   wherever the reg. 81 amount fits in the award.
+   reported total. The parent's total is never smaller. Under current law
+   the totals are equal wherever the reg. 81 amount fits in the award.
 5. Conservation, for every floor. ``benefit_cap_reduction`` equals what the
    two caps take from the awards: ``max(award before the cap, 0) -
    uc_deductions - universal_credit`` plus ``housing benefit before the cap -
    housing_benefit``.
 6. A protected floor never raises the reduction reported above its
    current-law amount for the same family.
-7. Monotonicity. With the award before the cap fixed, the reduction reported
-   does not fall as the welfare benefits rise, and does not rise as the
-   childcare costs element rises.
+7. Current-law monotonicity (zero protected floor). With the award before
+   the cap fixed, the reduction reported does not fall as the welfare
+   benefits rise, and does not rise as the childcare costs element rises.
 """
 
 import numpy as np
@@ -176,6 +179,8 @@ EXAMPLE_UNITS = example_units()
 
 
 def situation(population, year=PERIOD):
+    # Keep the generated claim and award inputs coherent: only UC claimants
+    # receive a pre-cap UC award. Explicit overrides are tested separately.
     people, benunits, households = {}, {}, {}
     for i, u in enumerate(population):
         on_uc, on_hb = u["scheme"] == "UC", u["scheme"] == "HB"
@@ -338,7 +343,7 @@ def test_reduction_reported_is_what_the_cap_removes(population, floor):
     more_childcare=st.floats(0.01, 10_000),
 )
 def test_reduction_reported_is_monotone(population, more_benefits, more_childcare):
-    # 7. Each unit, with more welfare benefits, and with more childcare.
+    # 7. Current law (zero floor), with more welfare benefits or childcare.
     richer = [
         dict(u, other_benefits=u["other_benefits"] + more_benefits) for u in population
     ]
@@ -394,6 +399,27 @@ def test_examples_reach_the_cases():
     assert v["housing_benefit_benefit_cap_reduction"][hb] == 4_974
     assert v["benefit_cap_reduction"][hb] == 4_974
     assert v["benefit_cap_reduction"][exempt] == 0
+
+
+def test_non_claimant_override_masks_applied_reduction():
+    """An explicit false claim masks applied UC despite a positive award override.
+
+    These incoherent boundary inputs are outside the generated invariants:
+    the gross amount remains positive, while the applied amount and total
+    are zero because uc_benefit_cap_reduction_after_floor requires a claim.
+    """
+    sit = situation([unit(award=100.0, other_benefits=29_900.0)])
+    sit["benunits"]["b0"]["claims_universal_credit"] = {PERIOD: False}
+    new = simulation(sit, floor=0.0)
+    old = simulation(sit, floor=0.0, reference=True)
+
+    assert not new.calculate("claims_universal_credit", PERIOD)[0]
+    assert new.calculate("universal_credit_pre_benefit_cap", PERIOD)[0] == 100
+    assert new.calculate("uc_benefit_cap_reduction", PERIOD)[0] == 7_980
+    assert old.calculate("benefit_cap_reduction", PERIOD)[0] == 7_980
+    assert new.calculate("uc_benefit_cap_reduction_after_floor", PERIOD)[0] == 0
+    assert new.calculate("benefit_cap_reduction", PERIOD)[0] == 0
+    assert new.calculate("universal_credit", PERIOD)[0] == 0
 
 
 def test_a_binding_floor_reports_the_cap_reduction_it_leaves():
