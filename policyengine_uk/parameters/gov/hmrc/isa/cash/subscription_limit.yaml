@@ -7,6 +7,9 @@ description: >
   limit for all savers, with secondary legislation to be laid in November
   2026, so cash keeps no limit of its own here. Set this to 12,000 to model the
   lower limit.
+# From 6 April 2027 this rests on Budget 2026 (OOTLAR para 2.5) until the
+# November 2026 instrument is laid: tracked in
+# https://github.com/PolicyEngine/policyengine-uk/issues/2728.
 values:
   2014-07-01: .inf
 metadata:
