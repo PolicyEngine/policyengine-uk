@@ -257,6 +257,12 @@ statutory-basis forecast minus the calendar-year growth stored in
   OBR does not forecast the ONS AWE series; its measure is wages and
   salaries per employee, and Q2 is the quarter nearest May to July.
 
+The State Pension triple lock consumes both statutory inputs. The shared
+`indices.earnings_uprating` series also projects the Pension Credit standard
+minimum guarantee, with a zero floor on earnings growth. See
+[Pension Credit uprating](./pension-credit.ipynb#uprating) for its Savings Credit
+and pension-age Housing Benefit projections and reform behaviour.
+
 After the EFO horizon the gap is zero, so the inputs follow calendar-year
 growth. Smooth forecasts pay the higher of earnings, CPI and 2.5% each year,
 so the baseline has none of the extra cost the triple lock builds up when
