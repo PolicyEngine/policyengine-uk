@@ -75,24 +75,30 @@ And for the amounts the deductions start from:
 
 11. Class 1 is the amount the model calculates: where it calculated
     ni_class_1_employee with its own formula, as it does in every year from
-    2015 to the horizon, including under a parameter reform, the deduction
-    is that formula worked exactly. Where Class 1 (for the year or month by
-    month) or its primary part was supplied as an input, or a reform
-    neutralized or replaced the formula, the deduction is the stored amount,
-    as the amount deducted (reg. 10(4)(a)), even within a fraction of a penny
-    of what the formula would give.
+    2015 to the horizon, including under a parameter reform or with a
+    variable a reform puts in place of a part but calculates the same way,
+    the deduction is that formula worked exactly. Where Class 1 (for the
+    year or month by month) or its primary part was supplied as an input,
+    or a reform neutralized, abolished, replaced, ended or re-dated the
+    formula, or changed how it reads liability or NI income, the deduction
+    is the amount calculated or entered, as the amount deducted (reg.
+    10(4)(a)), even within a fraction of a penny of what the formula would
+    give. Class 1 entered in whole pence, for the year or by month, is
+    deducted to the penny, though float32 sums the months to more or less.
 12. Sums the model forms are read in whole pence: pay, NI income, and
     employee and all pension contributions, which the model adds from other
     amounts in float32, are the exact sums of their whole-penny parts, and
     net earnings follow exact arithmetic on them. Only sums the simulation
     formed are summed again: a total entered directly is read as entered,
-    even when it is the very float32 its parts would sum to.
+    even when it is the very float32 its parts would sum to. Whether the
+    simulation's cache policy keeps a sum, or Class 1, changes nothing.
 13. An amount calculated by a formula in place of a sum is read as stored
     (policyengine-core allows no formula beside a sum).
 """
 
 import datetime
 import math
+import types
 from fractions import Fraction
 from pathlib import Path
 
@@ -105,8 +111,12 @@ from hypothesis import strategies as st
 import policyengine_uk
 from policyengine_uk import Simulation
 from policyengine_uk.model_api import GBP, MONTH, YEAR, Person, Reform, Variable, add
+from policyengine_core.parameters import ParameterNode
 from policyengine_uk.system import system
 from policyengine_uk.utils.class_2 import class_2_contribution_weeks
+from policyengine_uk.variables.gov.hmrc.national_insurance.class_1.ni_class_1_employee_primary import (
+    ni_class_1_employee_primary,
+)
 
 LIMIT = 204
 RATE = 86.45
@@ -837,10 +847,11 @@ def test_trading_profit_takes_the_basic_rate_in_every_year(year, country):
     )
 
 
-def _earnings_of(rows, reform=None, year=2026):
+def _earnings_of(rows, reform=None, year=2026, uncached=()):
     """Net earnings in whole pence, and whether each is over the limit, for
     one carer in England per dict in ``rows``: inputs by variable, each an
-    amount for ``year`` or a dict of amounts by period."""
+    amount for ``year`` or a dict of amounts by period. The simulation keeps
+    no value of the variables named in ``uncached``."""
     people = {}
     for i, row in enumerate(rows):
         person = {"age": {year: 45}, "care_hours": {year: 40}}
@@ -860,6 +871,9 @@ def _earnings_of(rows, reform=None, year=2026):
         },
         reform=reform,
     )
+    if uncached:
+        simulation.opt_out_cache = True
+        simulation.tax_benefit_system.cache_blacklist = list(uncached)
     earnings = simulation.calculate("carers_allowance_earnings", year)
     gainful = simulation.calculate("is_gainfully_employed_for_carers_allowance", year)
     return [int(round(float(e) * 100)) for e in earnings], [bool(g) for g in gainful]
@@ -918,6 +932,57 @@ def test_class_1_supplied_near_its_formula_is_deducted_as_supplied():
     assert supplied == [pay - paye - 59_440]
 
 
+@pytest.mark.parametrize(
+    "class_1_input",
+    [
+        {"ni_class_1_employee": 1.20},
+        {"ni_class_1_employee": {month: 0.10 for month in MONTHS_2026}},
+    ],
+    ids=["year", "months"],
+)
+def test_class_1_entered_in_whole_pence_is_deducted_in_whole_pence(class_1_input):
+    """Invariant 11 (found in review): £1.20 of Class 1, entered for the
+    year or as 10p a month, is £1.20 deducted. policyengine-core divides the
+    year's £1.20 among the months, and either way sums twelve float32 months
+    to 1.2000001669, which rounded up would deduct £1.21: £10,609.72 of pay
+    leaves £10,608.52, a penny a week over the limit, not £10,608.51."""
+    net, over = _earnings_of([{"employment_income": 10_609.72, **class_1_input}])
+    assert net == [1_060_852] and over == [True]
+
+
+@pytest.mark.parametrize("entry", ["year", "months"])
+def test_whole_pence_of_class_1_entered_are_deducted_exactly(entry):
+    """Invariant 11: Class 1 entered in whole pence, for the year (which
+    policyengine-core divides among the months in float32) or month by
+    month, is deducted to the penny. With pay below the personal allowance,
+    so no PAYE, net earnings are the pay less the Class 1 entered, exactly,
+    for 400 carers with pay and Class 1 drawn at random."""
+    rng = np.random.default_rng(2541)
+    pays = rng.integers(0, 1_257_000, 400)
+    pays[:4] = [1_060_972, 1_060_972, 1_119_992, 1_257_000 - 1]
+    if entry == "year":
+        class_1 = [rng.integers(0, pay + 1, 1) for pay in pays]
+        class_1[:4] = [[120], [121], [59_440], [1_257_000 - 1]]
+    else:
+        class_1 = [rng.integers(0, pay // 12 + 1, 12) for pay in pays]
+        class_1[:4] = [[10] * 12, [10] * 11 + [11], [4_953] * 11 + [4_957], [0] * 12]
+    rows = [
+        {
+            "employment_income": pay / 100,
+            "ni_class_1_employee": (
+                pence[0] / 100
+                if entry == "year"
+                else {month: p / 100 for month, p in zip(MONTHS_2026, pence)}
+            ),
+        }
+        for pay, pence in zip(pays, class_1)
+    ]
+    net, _ = _earnings_of(rows)
+    expected = [int(pay) - int(sum(pence)) for pay, pence in zip(pays, class_1)]
+    wrong = [(row, n, e) for row, n, e in zip(rows, net, expected) if n != e]
+    assert not wrong, wrong[:5]
+
+
 class _NoClass1(Reform):
     def apply(self):
         self.neutralize_variable("ni_class_1_employee")
@@ -940,14 +1005,142 @@ class _NoPrimaryClass1(Reform):
         self.replace_variable(ni_class_1_employee_primary)
 
 
-@pytest.mark.parametrize("reform", [_NoClass1, _NoPrimaryClass1])
-def test_class_1_under_a_reform_of_its_formula_is_the_amount_calculated(reform):
-    """Invariant 11, for a reform: with Class 1 neutralized, or its primary
-    part replaced by a nil formula, nothing is deducted, not the 0.08p (a
-    penny) the model's own formula gives at £12,569.97 of pay."""
+def _primary_class_1_reform(formula_name="formula", **attributes):
+    """A reform replacing the primary part with a variable calculated by the
+    model's own formula, named ``formula_name`` (giving the date it applies
+    from), with ``attributes`` (a date it ends, say)."""
+    variable = type(
+        "ni_class_1_employee_primary",
+        (Variable,),
+        {
+            "label": ni_class_1_employee_primary.label,
+            "entity": Person,
+            "definition_period": MONTH,
+            "value_type": float,
+            "unit": GBP,
+            formula_name: ni_class_1_employee_primary.formula,
+            **attributes,
+        },
+    )
+
+    class reform(Reform):
+        def apply(self):
+            self.replace_variable(variable)
+
+    return reform
+
+
+# The model's primary formula, run with 53 weeks in a year: the same code
+# reading another value of a global it names.
+_PRIMARY_IN_53_WEEKS = types.FunctionType(
+    ni_class_1_employee_primary.formula.__code__,
+    {**ni_class_1_employee_primary.formula.__globals__, "WEEKS_IN_YEAR": 53},
+)
+
+
+class _AbolishedPrimaryClass1(Reform):
+    """The primary part abolished by a gov.abolitions parameter, which
+    policyengine-core reads in place of calculating it."""
+
+    def apply(self):
+        def abolish(parameters):
+            parameters.gov.add_child(
+                "abolitions",
+                ParameterNode(
+                    "gov.abolitions",
+                    data={
+                        "ni_class_1_employee_primary": {"values": {"2015-01-01": True}}
+                    },
+                ),
+            )
+            return parameters
+
+        self.modify_parameters(abolish)
+
+
+class _NoLiabilityInDecember(Reform):
+    """Liability month by month, ending in December."""
+
+    def apply(self):
+        class ni_liable(Variable):
+            label = "age-liable for primary Class 1 and Class 2 NI"
+            entity = Person
+            definition_period = MONTH
+            value_type = bool
+
+            def formula(person, period, parameters):
+                return (
+                    person("over_16", period)
+                    & ~person("is_SP_age", period)
+                    & (period.start.month < 12)
+                )
+
+        self.replace_variable(ni_liable)
+
+
+class _NoNIIncomeInDecember(Reform):
+    """NI income month by month, nil in December."""
+
+    def apply(self):
+        class ni_class_1_income(Variable):
+            label = "NI Class 1 income"
+            entity = Person
+            definition_period = MONTH
+            value_type = float
+            unit = GBP
+
+            def formula(person, period, parameters):
+                return person("employment_income", period) * (period.start.month < 12)
+
+        self.replace_variable(ni_class_1_income)
+
+
+@pytest.mark.parametrize(
+    "reform, net",
+    [
+        (_NoClass1, 1_060_852),
+        (_NoPrimaryClass1, 1_060_852),
+        (_primary_class_1_reform(end="2025-12-31"), 1_060_852),
+        (_primary_class_1_reform("formula_2027_01_01"), 1_060_852),
+        (_AbolishedPrimaryClass1, 1_060_852),
+        (_primary_class_1_reform(value_type=int), 1_060_852),
+        (_primary_class_1_reform(formula=_PRIMARY_IN_53_WEEKS), 1_060_852),
+        (_NoLiabilityInDecember, 1_060_851),
+        (_NoNIIncomeInDecember, 1_060_851),
+        (_primary_class_1_reform(), 1_060_851),
+    ],
+    ids=[
+        "neutralized",
+        "nil formula",
+        "ended",
+        "from 2027",
+        "abolished",
+        "whole pounds",
+        "53 weeks",
+        "no liability in December",
+        "no NI income in December",
+        "the model's formula",
+    ],
+)
+def test_class_1_under_a_reform_of_its_formula_is_the_amount_calculated(reform, net):
+    """Invariant 11, for a reform (the dates and abolition found in review).
+    At £12,569.97 of pay, a penny above the primary threshold, the model's
+    own formula gives Class 1 of 0.08p, which counts as a penny, so with a
+    £3,922.90 contribution £10,608.51 is left, within the limit. With Class
+    1 neutralized, its primary part replaced by a nil formula, ended before
+    2026, applying only from 2027 or abolished, there is none to deduct, and
+    £10,608.52 is a penny a week over: the formula is not worked in place of
+    the amount calculated. So it is with the primary part held in whole
+    pounds (0.08p is nil), or its formula's code run with 53 weeks in a
+    year (raising the threshold above this pay). With liability or NI income
+    month by month and ending in December, the model's Class 1 is eleven
+    months of it, still a penny, though the year's liability (December's) or
+    a twelfth of the year's NI income would give none. The model's own
+    formula, in a variable a reform puts in its place, is still worked
+    exactly."""
     row = {"employment_income": 12_569.97, "employee_pension_contributions": 3_922.90}
-    net, gainful = _earnings_of([row], reform=reform)
-    assert net == [1_060_852] and gainful == [True]
+    result, over = _earnings_of([row], reform=reform)
+    assert result == [net] and over == [net == THRESHOLD_2026]
 
 
 @pytest.mark.parametrize(
@@ -1106,6 +1299,46 @@ def test_an_entered_total_is_read_as_entered_even_as_its_parts_float32_sum():
     assert np.float32(3_242.6401) == np.float32(1_807.49) + np.float32(1_435.15)
     assert summed_net + entered_net == [1_222_984 - 162_132, 1_222_984 - 162_133]
     assert summed_over + entered_over == [True, False]
+
+
+@pytest.mark.parametrize(
+    "row, uncached, net",
+    [
+        (
+            {
+                "employment_income_before_lsr": 10_608.96,
+                "salary_sacrifice_returned_to_income": 0.20,
+                "employee_pension_contributions_reported": 1.08,
+            },
+            ["employee_pension_contributions"],
+            1_060_852,
+        ),
+        (
+            {
+                "employment_income": 12_569.97,
+                "employee_pension_contributions": 3_922.90,
+            },
+            [
+                "ni_class_1_employee",
+                "ni_class_1_employee_primary",
+                "ni_class_1_employee_additional",
+            ],
+            1_060_851,
+        ),
+    ],
+    ids=["employee pension contributions", "Class 1"],
+)
+def test_what_the_simulation_keeps_does_not_change_earnings(row, uncached, net):
+    """Invariants 11 and 12 (found in review): a simulation whose cache policy
+    keeps no value of a sum, or of Class 1, still calculated them, so reads
+    them as one that keeps them does. Employee contributions of £1.08 and
+    20p of salary sacrifice returned to pay are £1.28, though float32 sums
+    them to 1.2800001, so half of them is 64p off £10,609.16 of pay, leaving
+    £10,608.52, over (CA Case 34); and Class 1 at £12,569.97 is still worked
+    exactly, 0.08p counting as a penny."""
+    kept = _earnings_of([row])
+    not_kept = _earnings_of([row], uncached=uncached)
+    assert kept == not_kept == ([net], [net == THRESHOLD_2026])
 
 
 def _natural_rows(rng, count, regime):
