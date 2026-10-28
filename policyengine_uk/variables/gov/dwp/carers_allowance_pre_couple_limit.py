@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.utils.carers_allowance_taper import (
+    carers_allowance_annual_award,
     carers_allowance_weekly_by_part_of_year,
 )
 
@@ -25,4 +26,4 @@ class carers_allowance_pre_couple_limit(Variable):
 
     def formula(person, period, parameters):
         parts = carers_allowance_weekly_by_part_of_year(person, period, parameters)
-        return sum(share * weekly * WEEKS_IN_YEAR for share, weekly in parts)
+        return carers_allowance_annual_award(parts)

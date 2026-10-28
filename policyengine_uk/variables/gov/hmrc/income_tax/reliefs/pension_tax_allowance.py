@@ -12,7 +12,11 @@ class pension_tax_allowance(Variable):
         "in the tax year, from 2027-28 to 2029-30. The full allowance is 20% of "
         "the full new State Pension above the Personal Allowance, rounded up to "
         "the pound (£94 in 2027-28). It falls by £1 for every £3 of total "
-        "income above the full new State Pension. It is non-refundable: it is "
+        "income above the full new State Pension, which is the tax year's 52 "
+        "weeks at the weekly rate, so it follows any change to that rate. The "
+        "rate is projected unrounded, so the threshold is £13,036.97 in "
+        "2027-28 where HM Treasury's explainer gives £13,036.40. It is "
+        "non-refundable: it is "
         "deducted at Step 6 after the reductions listed before it in "
         "income_tax_subtractions, only so far as there is Step 5 tax left, "
         "and it does not change the Personal Allowance."
@@ -37,7 +41,11 @@ class pension_tax_allowance(Variable):
     def formula(person, period, parameters):
         income_tax = parameters(period).gov.hmrc.income_tax
         p = income_tax.reliefs.pension_tax_allowance
-        threshold = p.state_pension_threshold
+        # The explainer's threshold is the full annual value of the new State
+        # Pension, "the total income you are entitled to receive within the
+        # tax year": 52 weeks at the weekly rate.
+        new_state_pension = parameters(period).gov.dwp.state_pension.new_state_pension
+        threshold = WEEKS_IN_YEAR * new_state_pension.amount
         personal_allowance = income_tax.allowances.personal_allowance.amount
         # The explainer rounds 20% of £466.40 (£93.28) up to £94, and tapers
         # from £94: Jonathan, £150 above the threshold, gets £94 - £50 = £44.

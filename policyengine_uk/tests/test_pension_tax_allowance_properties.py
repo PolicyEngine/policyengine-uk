@@ -14,7 +14,10 @@ identities that hold for every input:
 - Income Tax falls by exactly the allowance relative to the same law without
   it, and never goes below zero;
 - the taper has no cliff edge: each extra pound of pension income takes at
-  most a third of a pound off the allowance.
+  most a third of a pound off the allowance;
+- the threshold is 52 weeks of the new State Pension at its weekly rate, so
+  someone on the full new State Pension and nothing else pays no Income Tax,
+  whatever the rate.
 """
 
 import numpy as np
@@ -101,7 +104,7 @@ def run(sims, drawn, year):
 
 def full_allowance(sim, year):
     p = sim.tax_benefit_system.parameters.gov.hmrc.income_tax
-    threshold = p.reliefs.pension_tax_allowance.state_pension_threshold(f"{year}-04-30")
+    threshold = 52 * new_state_pension(sim, year)
     allowance = p.allowances.personal_allowance.amount(f"{year}-04-30")
     return threshold, np.ceil(round(0.2 * (threshold - allowance), 6))
 
@@ -167,33 +170,56 @@ def test_the_allowance_falls_by_at_most_a_third_of_extra_income(sims, drawn, yea
     assert (base - more <= STEP / 3 + 0.01).all()
 
 
-def threshold(sim, year):
-    pta = sim.tax_benefit_system.parameters.gov.hmrc.income_tax.reliefs
-    return pta.pension_tax_allowance.state_pension_threshold(f"{year}-04-06")
-
-
 def new_state_pension(sim, year):
     nsp = sim.tax_benefit_system.parameters.gov.dwp.state_pension.new_state_pension
-    return nsp.amount(f"{year}-04-06")
+    return nsp.amount(f"{year}-04-30")
 
 
-def test_the_threshold_rises_in_line_with_the_new_state_pension():
-    sim = Simulation(situation=situation())
-    for year in YEARS[1:]:
-        assert threshold(sim, year) / threshold(sim, YEARS[0]) == pytest.approx(
-            new_state_pension(sim, year) / new_state_pension(sim, YEARS[0]),
-            rel=1e-9,
-        )
+def pensioner(year, state_pension):
+    return {
+        "people": {
+            "pensioner": {"age": {year: 70}, "state_pension": {year: state_pension}}
+        },
+        "benunits": {"benunit": {"members": ["pensioner"]}},
+        "households": {
+            "household": {"members": ["pensioner"], "region": {year: "LONDON"}}
+        },
+    }
 
 
-@pytest.mark.parametrize("weekly_rate", [0.0, 300.0])
-def test_a_new_state_pension_rate_reform_leaves_the_threshold(weekly_rate):
-    # The threshold follows the triple lock index, as the new State Pension
-    # does without a reform, so a rate of nil does not divide by zero.
-    rate = "gov.dwp.state_pension.new_state_pension.amount"
-    sim = Simulation(situation=situation())
-    reformed = Simulation(situation=situation(), reform={rate: weekly_rate})
-    for year in YEARS:
-        assert new_state_pension(reformed, year) == weekly_rate
-        assert threshold(reformed, year) == threshold(sim, year)
-        assert np.isfinite(reformed.calculate("pension_tax_allowance", year)).all()
+RATE = "gov.dwp.state_pension.new_state_pension.amount"
+
+
+def tax_on_the_full_new_state_pension(year, reform):
+    weekly = new_state_pension(
+        Simulation(situation=pensioner(year, 0), reform=reform), year
+    )
+    sim = Simulation(situation=pensioner(year, 52 * weekly), reform=reform)
+    return (
+        float(sim.calculate("income_tax", year)[0]),
+        float(sim.calculate("pension_tax_allowance", year)[0]),
+    )
+
+
+@SETTINGS
+@given(st.floats(min_value=0, max_value=400), years)
+def test_the_full_new_state_pension_pays_no_income_tax_at_any_rate(weekly, year):
+    # The threshold is 52 weeks at the weekly rate, so it follows a reform to
+    # the rate, and a rate of nil gives nothing rather than dividing by zero.
+    income_tax, pta = tax_on_the_full_new_state_pension(year, {RATE: weekly})
+    assert income_tax == pytest.approx(0, abs=0.01)
+    assert np.isfinite(pta) and pta >= 0
+
+
+@pytest.mark.parametrize(
+    "year, reform",
+    [(2027, None), (2028, None), (2029, None), (2028, {RATE: {"2028": 300}})],
+)
+def test_the_full_new_state_pension_pays_no_income_tax(year, reform):
+    # Without a reform, and with the rate raised to £300 for 2028-29 only:
+    # the allowance there is 20% x (15,600 - 12,570) = £606.
+    income_tax, pta = tax_on_the_full_new_state_pension(year, reform)
+    assert income_tax == pytest.approx(0, abs=0.01)
+    assert pta > 0
+    if reform:
+        assert pta == pytest.approx(606, abs=0.01)

@@ -1,7 +1,9 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.utils.carers_allowance_taper import (
+    carers_allowance_annual_award,
     carers_allowance_shares_of_year,
     carers_allowance_weekly_by_part_of_year,
+    is_the_parts_award,
 )
 from policyengine_uk.utils.couple_carer_award import limit_carer_benefit_to_one_partner
 from policyengine_uk.utils.supplied_inputs import supplied_input
@@ -24,9 +26,11 @@ class carers_allowance_pre_overlap(Variable):
         "year the Budget 2026 earnings taper starts, the couple restriction "
         "picks a partner separately for the weeks before the taper and the "
         "weeks under it, so a partner below the earnings limit keeps the "
-        "award for the weeks before the other becomes eligible. A supplied "
-        "carers_allowance_pre_couple_limit carries no dates, so the "
-        "restriction applies to it for the whole year."
+        "award for the weeks before the other becomes eligible. A "
+        "carers_allowance_pre_couple_limit that is supplied, or that a reform "
+        "makes other than the award the two parts of the year add up to, "
+        "carries no dates, so the restriction applies to it, and to the rest "
+        "of the benefit unit's, for the whole year."
     )
     definition_period = YEAR
     unit = GBP
@@ -43,10 +47,13 @@ class carers_allowance_pre_overlap(Variable):
         if len(parts) == 1 or supplied is not None:
             return whole_year
         # In the year the earnings taper starts, a person keeps their award
-        # for the parts of the year the restriction picks them in.
-        candidate_share, kept_share = carers_allowance_shares_of_year(
+        # for the parts of the year the restriction picks them in, where every
+        # award in the benefit unit is the one its parts add up to.
+        _, candidate_share, kept_share = carers_allowance_shares_of_year(
             person, period, parts
         )
-        has_candidate = candidate_share > 0
-        kept = kept_share / where(has_candidate, candidate_share, 1)
-        return where(has_candidate, candidate * kept, whole_year)
+        by_parts = person.benunit.all(
+            is_the_parts_award(candidate, carers_allowance_annual_award(parts))
+        ) & (candidate_share > 0)
+        kept = kept_share / where(by_parts, candidate_share, 1)
+        return where(by_parts, candidate * kept, whole_year)

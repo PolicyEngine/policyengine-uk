@@ -16,10 +16,10 @@ then identities that hold for every input:
 - in 2030-31 the allowance paid is the weekly overlap rule over the weeks it
   is paid, for single carers and for couples caring for the same person, where
   the couple restriction picks a partner separately before and under the taper;
-- an award supplied or neutralized before the couple limit or the overlap
-  rule is what reaches the payment;
+- an award supplied, neutralized or replaced by a reform before the couple
+  limit or the overlap rule is what reaches the payment;
 - an overlapping benefit equal to the award leaves nothing paid or received,
-  and anything paid is at least a penny.
+  a penny left over is paid, and anything paid is at least half a penny.
 """
 
 import numpy as np
@@ -287,8 +287,8 @@ def test_2030_31_allowance_is_the_weekly_overlap_rule_over_the_paid_weeks(
     # Scotland pays Carer Support Payment instead.
     england_wales_ni = regions != "SCOTLAND"
     assert (np.abs(paid - expected)[england_wales_ni] <= 0.05).all()
-    # Anything paid is at least a penny.
-    assert ((paid == 0) | (paid >= 0.01)).all()
+    # Anything paid is at least half a penny.
+    assert ((paid == 0) | (paid >= 0.005)).all()
 
 
 # A couple caring for the same person gets one award at a time. In 2030-31
@@ -429,6 +429,83 @@ def test_a_neutralized_award_is_not_paid(year, neutralized):
     assert not sim.calculate("receives_carers_allowance", year).any()
 
 
+def both_caring_couple(year, weekly_state_pension=0, head_weekly_excess=0):
+    def member(age, weekly_excess=0):
+        return {
+            "age": {year: age},
+            "care_hours": {year: 40},
+            "state_pension": {year: 52 * weekly_state_pension},
+            "carers_allowance_weekly_earnings_above_limit": {year: weekly_excess},
+        }
+
+    situation = one_carer_couple(year)
+    situation["people"] = {
+        "head": member(71, head_weekly_excess),
+        "partner": member(70),
+    }
+    return situation
+
+
+def replaced(name, values):
+    """A reform giving a variable's formula fixed values for the two people."""
+    from policyengine_core.reforms import Reform
+
+    base = Simulation(situation=both_caring_couple(START_YEAR)).tax_benefit_system
+    variable = type(base.variables[name])
+
+    class Replaced(variable):
+        def formula(person, period, parameters):
+            return np.array(values, dtype=float)
+
+    Replaced.__name__ = name
+
+    class Replace(Reform):
+        def apply(self):
+            self.update_variable(Replaced)
+
+    return Replace
+
+
+@pytest.mark.parametrize("year", [START_YEAR, FULL_YEAR])
+def test_a_reform_replacing_the_award_before_the_couple_limit_is_paid(year):
+    # Both partners are eligible, so the parts of the year would pick the
+    # head; the reform gives the award to the partner instead.
+    reform = replaced("carers_allowance_pre_couple_limit", [0, 1_000])
+    sim = Simulation(situation=both_caring_couple(year), reform=reform)
+    for name in ("carers_allowance_pre_overlap", "carers_allowance"):
+        assert sim.calculate(name, year).astype(float) == pytest.approx([0, 1_000])
+
+
+@pytest.mark.parametrize("year", [START_YEAR, FULL_YEAR])
+def test_a_reform_replacing_the_award_before_overlap_meets_the_whole_years_pension(
+    year,
+):
+    # The head is £46 a week over the earnings limit, so in 2030-31 the parts
+    # of the year would pay them only under the taper. The replaced £1,000
+    # carries no dates, so £400 a year of State Pension comes off it in full.
+    reform = replaced("carers_allowance_pre_overlap", [1_000, 0])
+    situation = both_caring_couple(year, 400 / 52, head_weekly_excess=46)
+    sim = Simulation(situation=situation, reform=reform)
+    paid = sim.calculate("carers_allowance", year).astype(float)
+    assert paid == pytest.approx([600, 0], abs=0.01)
+
+
+@pytest.mark.parametrize("year", [START_YEAR, FULL_YEAR])
+@pytest.mark.parametrize("award", [1_000.01, 5_000.01])
+def test_a_penny_left_after_overlap_is_paid(year, award):
+    # Float32 stores 5,000.01 as 5,000.0098, so the penny left over is 0.98p.
+    situation = carer(0, year, "NORTH_WEST")
+    person = situation["people"]["carer"]
+    person["age"] = {year: 70}
+    person["carers_allowance_pre_overlap"] = {year: award}
+    person["state_pension"] = {year: round(award - 0.01, 2)}
+    sim = Simulation(situation=situation)
+    assert float(sim.calculate("carers_allowance", year)[0]) == pytest.approx(
+        0.01, abs=0.001
+    )
+    assert sim.calculate("receives_carers_allowance", year)[0]
+
+
 # An overlapping benefit equal to the weekly award extinguishes it. In
 # float32 the annual amounts can leave a fraction of a penny, which is not a
 # payment and is not received.
@@ -563,4 +640,4 @@ def test_2030_31_couple_allowance_is_the_weekly_rule_on_each_part_of_the_year(
     # Scotland pays Carer Support Payment instead.
     england_wales_ni = regions != "SCOTLAND"
     assert (np.abs(paid - expected)[england_wales_ni] <= 0.05).all()
-    assert ((paid == 0) | (paid >= 0.01)).all()
+    assert ((paid == 0) | (paid >= 0.005)).all()

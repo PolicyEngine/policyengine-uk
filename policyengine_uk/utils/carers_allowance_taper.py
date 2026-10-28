@@ -14,11 +14,20 @@ tapered rate, which only the part under the taper pays, where they are above
 it. So the annual amounts carry the parts as shares of the year: the
 pre-overlap award is the candidate award scaled by the share the couple
 restriction keeps, and the overlapping benefits come off for that share.
+
+The shares describe an annual award only where it is the one the parts add
+up to. An award supplied as an input or set by a reform carries no dates, so
+it gets the whole-year treatment.
 """
 
 import numpy as np
+from policyengine_core.commons.formulas import WEEKS_IN_YEAR
 
 from policyengine_uk.utils.couple_carer_award import limit_carer_benefit_to_one_partner
+
+# Annual amounts are float32, which at these sizes is good to about a
+# thousandth of a pound, so a penny tells the parts' own award from another.
+PENNY = 0.01
 
 
 def carers_allowance_weekly_by_part_of_year(person, period, parameters):
@@ -59,13 +68,25 @@ def carers_allowance_weekly_by_part_of_year(person, period, parameters):
     return [(share, eligible * weekly) for share, weekly in parts if share > 0]
 
 
+def carers_allowance_annual_award(parts):
+    """The annual award the parts of the year add up to."""
+    return sum(share * weekly * WEEKS_IN_YEAR for share, weekly in parts)
+
+
 def carers_allowance_shares_of_year(person, period, parts):
-    """The share of the year in which the person has an award before the
-    couple restriction, and the share in which the restriction leaves it
-    with them, from carers_allowance_weekly_by_part_of_year's parts."""
-    candidate = kept = 0
+    """From carers_allowance_weekly_by_part_of_year's parts: the annual award
+    the couple restriction keeps, the share of the year in which the person
+    has an award before the restriction, and the share in which the
+    restriction leaves it with them."""
+    kept_award = candidate = kept = 0
     for share, weekly in parts:
-        candidate = candidate + share * (weekly > 0)
         selected = limit_carer_benefit_to_one_partner(person, period, weekly)
+        kept_award = kept_award + share * selected * WEEKS_IN_YEAR
+        candidate = candidate + share * (weekly > 0)
         kept = kept + share * (selected > 0)
-    return candidate, kept
+    return kept_award, candidate, kept
+
+
+def is_the_parts_award(amount, award):
+    """Whether an annual amount is the award the parts give, to the penny."""
+    return np.abs(amount - award) < PENNY

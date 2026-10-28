@@ -2,6 +2,7 @@ from policyengine_uk.model_api import *
 from policyengine_uk.utils.carers_allowance_taper import (
     carers_allowance_shares_of_year,
     carers_allowance_weekly_by_part_of_year,
+    is_the_parts_award,
 )
 from policyengine_uk.utils.supplied_inputs import supplied_input
 
@@ -21,10 +22,12 @@ class carers_allowance(Variable):
         "of the year, the annual comparison pays less than the weekly rule "
         "would; annual inputs carry no dates to do better. In the year the "
         "Budget 2026 earnings taper starts, overlapping benefits come off "
-        "only for the share of the year the allowance is paid in. A supplied "
+        "only for the share of the year the allowance is paid in. A "
         "carers_allowance_pre_overlap or carers_allowance_pre_couple_limit "
-        "carries no dates, so the whole year's overlapping benefits come off "
-        "it. Less than a penny for the year is nil."
+        "that is supplied, or that a reform makes other than the award the "
+        "parts of the year give, carries no dates, so the whole year's "
+        "overlapping benefits come off it. Less than half a penny for the "
+        "year is nil."
     )
     definition_period = YEAR
     unit = GBP
@@ -50,12 +53,16 @@ class carers_allowance(Variable):
         else:
             # The overlap rule works week by week, so in the year the
             # earnings taper starts, the overlapping benefits come off only
-            # for the share of the year the person is paid in.
-            candidate_share, kept_share = carers_allowance_shares_of_year(
+            # for the share of the year the person is paid in, where the
+            # pre-overlap award is the one the parts of the year give.
+            kept_award, candidate_share, kept_share = carers_allowance_shares_of_year(
                 person, period, parts
             )
-            share_paid = where(candidate_share > 0, kept_share, 1)
+            by_parts = is_the_parts_award(pre_overlap, kept_award) & (
+                candidate_share > 0
+            )
+            share_paid = where(by_parts, kept_share, 1)
         paid = max_(pre_overlap - share_paid * overlapping, 0)
-        # Less than a penny for the year is in practice float32 residue where
-        # an overlapping benefit equals the award, not a payment.
-        return where(paid < 0.01, 0, paid)
+        # Where an overlapping benefit equals the award, float32 leaves about a
+        # thousandth of a pound, which is not a payment; a penny is.
+        return where(paid < 0.005, 0, paid)
