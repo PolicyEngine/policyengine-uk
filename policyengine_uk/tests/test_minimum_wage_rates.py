@@ -37,13 +37,14 @@ Properties:
 2. For every year from 2015 to 2040, no rate falls as age rises, and the
    apprenticeship rate is never above the rate for any age from 16.
 3. No rate falls from one year to the next, 2015 to 2040. This holds for
-   every rate set from October 2010 to April 2026; it is a property of the
-   enacted rates, not a rule in the Act, so a future cut would need this test
-   changing.
+   every rate set from October 2010 to April 2026 and every rate announced
+   for April 2027; it is a property of the rates, not a rule in the Act, so
+   a future cut would need this test changing.
 
-Rates dated after the last row of ``RATES_FROM_COMMENCEMENT`` (for example
-announced rates whose S.I. is not yet made) need a reference but are not
-checked against the tables until a row is added for them.
+Rates announced but not yet set by an S.I. are in ``ANNOUNCED_RATES``, checked
+against the parameter files and the model from the date they take effect.
+They need a reference, but not to an S.I.; move a row to
+``RATES_FROM_COMMENCEMENT``, citing the S.I., once it is made.
 """
 
 import datetime
@@ -163,6 +164,16 @@ RATES_FROM_COMMENCEMENT = [
         "2026-04-01",
         "S.I. 2026/357 reg. 2(2), 2(3)",
         (8.00, 8.00, 10.85, 12.71, 12.71, 12.71),
+    ),
+]
+
+# (date in force, announcement, rates by band) for rates announced whose
+# amending S.I. is not yet made.
+ANNOUNCED_RATES = [
+    (
+        "2027-04-01",
+        "Budget 2026, paragraph 6.128",
+        (8.31, 8.31, 11.27, 13.21, 13.21, 13.21),
     ),
 ]
 
@@ -317,17 +328,37 @@ def test_parameter_files_match_each_instrument_from_commencement(
             )
 
 
+@pytest.mark.parametrize(
+    "start, announcement, row",
+    ANNOUNCED_RATES,
+    ids=[announcement for _, announcement, _ in ANNOUNCED_RATES],
+)
+def test_parameter_files_and_model_match_each_announced_rate(start, announcement, row):
+    date = datetime.date.fromisoformat(start)
+    expected = _rates(row)
+    assert _in_force(RAW_APPRENTICE, date) == pytest.approx(expected["apprentice"])
+    assert _model_apprentice_rate(date.year) == pytest.approx(expected["apprentice"])
+    for band, ages in BAND_AGES.items():
+        for age in ages:
+            assert _raw_rate(date, age) == pytest.approx(expected[band]), (
+                f"{announcement}, age {age} ({band})"
+            )
+            assert _model_rate(date.year, age) == pytest.approx(expected[band]), (
+                f"{announcement}, {date.year}, age {age} ({band})"
+            )
+
+
 def test_parameter_files_change_only_on_commencement_dates():
     commencements = {
-        datetime.date.fromisoformat(date) for date, _, _ in RATES_FROM_COMMENCEMENT
+        datetime.date.fromisoformat(date)
+        for date, _, _ in [*RATES_FROM_COMMENCEMENT, *ANNOUNCED_RATES]
     }
     series = [RAW_APPRENTICE]
     for thresholds, amounts in RAW_BRACKETS:
         series += [thresholds, amounts]
     for pairs in series:
         for start, _ in pairs:
-            if start <= LAST_TRANSCRIBED:
-                assert start in commencements, f"{start} is not a commencement date"
+            assert start in commencements, f"{start} is not a commencement date"
 
 
 def test_30_april_table_agrees_with_commencement_table():

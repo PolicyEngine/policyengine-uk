@@ -20,7 +20,9 @@ description: Minimum wage rate for non-apprentices by age.
 # Rates take effect on the commencement date of each amending S.I. Until
 # October 2015 all rate changes took effect on 1 October. The national living
 # wage has changed each 1 April since 2016; the other rates changed on
-# 1 October 2016 and each 1 April from 2017.
+# 1 October 2016 and each 1 April from 2017. The 1 April 2027 rates are the
+# ones Budget 2026 announced (paragraph 6.128); the amending S.I. is not yet
+# made.
 #
 # Rates after the last one set here are a projection, not law. Each is the
 # last rate set times the growth since then in
@@ -31,9 +33,10 @@ description: Minimum wage rate for non-apprentices by age.
 # April up-rating of the Pension Credit guarantee. The Low Pay Commission
 # remit 2026 says two-thirds of median hourly earnings "should continue to be
 # the key reference point for future rates" of the national living wage, so
-# the projection moves that rate with earnings. May-July 2026 growth was 3.9%,
-# so the April 2027 national living wage is projected at
-# £12.71 x 1.039 = £13.21.
+# the projection moves that rate with earnings. The index rose 3.9% for April
+# 2027 (May-July 2026 growth), as did each rate Budget 2026 announced, so
+# projecting the April 2026 rates gives the April 2027 ones to the penny:
+# £12.71 x 1.039 = £13.21, £10.85 x 1.039 = £11.27 and £8.00 x 1.039 = £8.31.
 #
 # The index is dated 1 January, so before annualisation a projected rate
 # starts on 1 January. Each year's figure is read at 30 April, the rate for
@@ -152,6 +155,11 @@ brackets:
         reference:
           - title: The National Minimum Wage (Amendment) Regulations 2026, regulation 2(3)(b)
             href: https://www.legislation.gov.uk/uksi/2026/357/made
+      2027-04-01:
+        value: 8.31
+        reference:
+          - title: Budget 2026, paragraph 6.128 (announced 28 October 2026; the amending S.I. is not yet made)
+            href: https://www.gov.uk/government/publications/budget-2026-document/budget-2026-html
 - threshold:
     2010-10-01: 18
   amount:
@@ -252,6 +260,11 @@ brackets:
         reference:
           - title: The National Minimum Wage (Amendment) Regulations 2026, regulation 2(3)(a)
             href: https://www.legislation.gov.uk/uksi/2026/357/made
+      2027-04-01:
+        value: 11.27
+        reference:
+          - title: Budget 2026, paragraph 6.128 (announced 28 October 2026; the amending S.I. is not yet made)
+            href: https://www.gov.uk/government/publications/budget-2026-document/budget-2026-html
 - threshold:
     2010-10-01: 21
   amount:
@@ -352,6 +365,11 @@ brackets:
         reference:
           - title: The National Minimum Wage (Amendment) Regulations 2026, regulation 2(2)
             href: https://www.legislation.gov.uk/uksi/2026/357/made
+      2027-04-01:
+        value: 13.21
+        reference:
+          - title: Budget 2026, paragraph 6.128 (announced 28 October 2026; the amending S.I. is not yet made)
+            href: https://www.gov.uk/government/publications/budget-2026-document/budget-2026-html
 - threshold:
     2010-10-01: 23
   amount:
@@ -452,6 +470,11 @@ brackets:
         reference:
           - title: The National Minimum Wage (Amendment) Regulations 2026, regulation 2(2)
             href: https://www.legislation.gov.uk/uksi/2026/357/made
+      2027-04-01:
+        value: 13.21
+        reference:
+          - title: Budget 2026, paragraph 6.128 (announced 28 October 2026; the amending S.I. is not yet made)
+            href: https://www.gov.uk/government/publications/budget-2026-document/budget-2026-html
 - threshold:
     2010-10-01: 25
   amount:
@@ -547,6 +570,11 @@ brackets:
         reference:
           - title: The National Minimum Wage (Amendment) Regulations 2026, regulation 2(2)
             href: https://www.legislation.gov.uk/uksi/2026/357/made
+      2027-04-01:
+        value: 13.21
+        reference:
+          - title: Budget 2026, paragraph 6.128 (announced 28 October 2026; the amending S.I. is not yet made)
+            href: https://www.gov.uk/government/publications/budget-2026-document/budget-2026-html
 
 metadata:
   amount_unit: currency-GBP

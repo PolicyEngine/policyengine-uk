@@ -102,6 +102,11 @@ values:
     reference:
       - title: The National Minimum Wage (Amendment) Regulations 2026, regulation 2(3)(c)
         href: https://www.legislation.gov.uk/uksi/2026/357/made
+  2027-04-01:
+    value: 8.31
+    reference:
+      - title: Budget 2026, paragraph 6.128 (announced 28 October 2026; the amending S.I. is not yet made)
+        href: https://www.gov.uk/government/publications/budget-2026-document/budget-2026-html
 metadata:
   economy: false
   household: false

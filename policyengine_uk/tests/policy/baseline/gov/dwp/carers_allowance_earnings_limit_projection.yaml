@@ -2,10 +2,10 @@
 # week from 6 April 2026, SI 2026/218). From April 2025 the Government sets
 # the limit at 16 times the hourly national living wage, rounded up to the
 # nearest pound (Explanatory Memorandum to SI 2025/352, paragraph 5.6), and
-# the model projects later years that way. The model projects the April 2027
-# national living wage by May-July 2026 earnings growth, 3.9% (published), to
-# £12.71 x 1.039 = £13.21, so the limit is 16 x £13.21 = £211.36, rounded up
-# to £212. Later years rest on OBR forecasts, so they are tested in
+# the model projects later years that way. Budget 2026 (paragraph 6.128) sets
+# the April 2027 national living wage at £13.21, so the limit is
+# 16 x £13.21 = £211.36, rounded up to £212. Later years rest on the model's
+# projection of the national living wage, so they are tested in
 # test_carers_allowance_earnings_limit_projection.py against whatever the
 # model's wage is. Earnings are entered net, as carers_allowance_earnings, so
 # the cases do not depend on tax or NI.

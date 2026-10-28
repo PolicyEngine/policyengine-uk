@@ -1,8 +1,9 @@
 """Minimum wage rates after the last one set (#2537).
 
 Each rate is set by an amending S.I. (National Minimum Wage Regulations 2015
-regs. 4, 4A and 5). Later years are a projection, not law: from the last rate
-set, each rate rises each April with
+regs. 4, 4A and 5); the April 2027 rates are the ones Budget 2026 announced
+(paragraph 6.128), ahead of their S.I. Later years are a projection, not law:
+from the last rate set, each rate rises each April with
 gov.economic_assumptions.indices.earnings_uprating (the May-July growth in
 average weekly earnings of the year before, rounded to 0.1 percentage points
 and never negative) and is rounded to the nearest penny.
@@ -104,31 +105,42 @@ def test_rates_are_the_last_rate_set_uprated_by_earnings(year):
         assert amount >= rate
 
 
-def test_april_2027_national_living_wage_follows_may_to_july_2026_earnings():
-    """May-July 2026 average weekly earnings grew 3.9% (ONS KAC3, 20 October
-    2026), so the April 2027 national living wage is £12.71 x 1.039 =
-    £13.2057, £13.21 to the nearest penny."""
+def test_projecting_april_2026_gives_the_april_2027_rates_announced():
+    """Backtest of the index for one year. It rose 3.9% for April 2027
+    (May-July 2026 average weekly earnings, ONS KAC3, 20 October 2026), and
+    Budget 2026 raised each rate by 3.9% (paragraph 6.128). Projecting each
+    April 2026 rate gives the rate announced, to the penny: £12.71 x 1.039 =
+    £13.2057, £10.85 x 1.039 = £11.2732 and £8.00 x 1.039 = £8.312."""
     p = system.parameters
     assert p("2027-01-01").gov.economic_assumptions.yoy_growth.earnings_uprating == (
         pytest.approx(0.039)
     )
-    assert p("2026-01-01").gov.hmrc.minimum_wage.non_apprentice.amounts[-1] == 12.71
-    assert p("2027-01-01").gov.hmrc.minimum_wage.non_apprentice.amounts[-1] == (
-        pytest.approx(13.21, abs=1e-9)
+    april_2026 = p("2026-01-01").gov.hmrc.minimum_wage
+    april_2027 = p("2027-01-01").gov.hmrc.minimum_wage
+    assert list(april_2026.non_apprentice.amounts) == [8.00, 10.85, 12.71, 12.71, 12.71]
+    assert list(april_2027.non_apprentice.amounts) == pytest.approx(
+        [8.31, 11.27, 13.21, 13.21, 13.21], abs=1e-9
     )
+    assert april_2027.apprentice == pytest.approx(8.31, abs=1e-9)
+    pairs = [
+        *zip(april_2026.non_apprentice.amounts, april_2027.non_apprentice.amounts),
+        (april_2026.apprentice, april_2027.apprentice),
+    ]
+    for before, announced in pairs:
+        assert _projected(before, p, 2026, 2027) == pytest.approx(announced, abs=1e-9)
 
 
 def test_a_rate_set_later_takes_precedence_and_the_projection_continues():
-    """Invariant 4: a national living wage of £13.50 from 1 April 2027, added
-    as a rate set by an S.I. would be, holds in 2027-28, and later years are
-    £13.50 times the earnings growth since. The Carer's Allowance earnings
-    limit follows it: 16 x £13.50 = £216 (the projection alone gives £212)."""
+    """Invariant 4: a national living wage of £14.00 from 1 April 2028, added
+    as a rate set by an S.I. would be, holds in 2028-29, and later years are
+    £14.00 times the earnings growth since. The Carer's Allowance earnings
+    limit follows it: 16 x £14.00 = £224, above the projection's own limit."""
     tree = statutory_parameters()
     scale = tree.gov.hmrc.minimum_wage.non_apprentice
     for bracket in scale.brackets[2:]:
         amount = bracket.amount
         amount.values_list.append(
-            ParameterAtInstant(amount.name, "2027-04-01", data=13.50)
+            ParameterAtInstant(amount.name, "2028-04-01", data=14.00)
         )
         amount.values_list.sort(key=lambda entry: entry.instant_str, reverse=True)
     tree, _ = process_parameter_tree(tree)
@@ -136,23 +148,24 @@ def test_a_rate_set_later_takes_precedence_and_the_projection_continues():
     def wage(year):
         return tree(f"{year}-01-01").gov.hmrc.minimum_wage.non_apprentice
 
-    assert wage(2026).amounts[-1] == 12.71
-    assert wage(2027).amounts[-1] == pytest.approx(13.50, abs=1e-9)
-    for year in range(2028, 2031):
+    assert wage(2027).amounts[-1] == pytest.approx(13.21, abs=1e-9)
+    assert wage(2028).amounts[-1] == pytest.approx(14.00, abs=1e-9)
+    for year in range(2029, 2032):
         assert wage(year).amounts[-1] == pytest.approx(
-            _projected(13.50, tree, 2027, year), abs=1e-9
+            _projected(14.00, tree, 2028, year), abs=1e-9
         ), year
     # Adding a national living wage rate leaves the younger bands' projection
     # unchanged.
-    assert wage(2027).amounts[0] == pytest.approx(
-        system.parameters("2027-01-01").gov.hmrc.minimum_wage.non_apprentice.amounts[0]
+    assert wage(2028).amounts[0] == pytest.approx(
+        system.parameters("2028-01-01").gov.hmrc.minimum_wage.non_apprentice.amounts[0]
     )
 
     def limit(year):
         return tree(f"{year}-01-01").gov.dwp.carers_allowance.earnings_limit
 
-    assert limit(2026) == 204
-    assert limit(2027) == 216
+    assert limit(2027) == 212
+    assert limit(2028) == 224
+    assert system.parameters("2028-01-01").gov.dwp.carers_allowance.earnings_limit < 224
 
 
 def _round_up_to_50p(amount):
@@ -166,8 +179,9 @@ BANDS = {"adult": 4, "aged_23": 3, "aged_21": 2, "aged_19": 1, "aged_16": 0}
 
 @pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 def test_rules_that_read_the_national_living_wage_follow_its_projection():
-    """Invariant 5, in every projected year to 2040."""
-    years = list(PROJECTED)
+    """Invariant 5, in the year of the last rate set (April 2027, announced)
+    and every projected year to 2040."""
+    years = list(range(LAST_YEAR, LAST_CHECKED + 1))
     simulation = Simulation(
         situation={
             "people": {
