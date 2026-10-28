@@ -3,8 +3,9 @@ The petrol and diesel fuel duty rate follows its dated schedule.
 
 Each rate is keyed to the date it takes effect, and `fiscal_year_blend`
 day-weights the schedule across each model year (6 April to 5 April).
-Budget 2026 keeps the 5p cut to 1 July 2027; rates from then are an RPI
-forecast. Both are Budget 2026 policy, not yet law.
+Budget 2026 keeps the 5p cut to 1 July 2027; the rate from then is the
+OBR's forecast, and later rates an RPI forecast. Both are Budget 2026 policy,
+not yet law.
 """
 
 import datetime
@@ -22,9 +23,12 @@ from policyengine_uk.model_api import Scenario
 from policyengine_uk.system import system
 
 PATH = "gov.hmrc.fuel_duty.petrol_and_diesel"
-# The 1 July 2027 step, then each 1 April. Each applies the previous calendar
-# year's RPI growth.
-FORECAST_DATES = ["2027-07-01"] + [f"{year}-04-01" for year in range(2028, 2032)]
+# The 1 July 2027 step is the OBR's 60.59p (EFO October 2026, paragraph
+# 3.19). Each 1 April step from 2028 applies the previous calendar year's RPI
+# growth.
+CUT_END_DATE = "2027-07-01"
+CUT_END_RATE = 0.6059
+FORECAST_DATES = [f"{year}-04-01" for year in range(2028, 2032)]
 LAST_FORECAST_YEAR = 2031
 CONVERTED_YEARS = range(2015, 2041)
 
@@ -77,16 +81,16 @@ def test_scheduled_rate_on_each_date(date, rate):
     assert schedule(date) == pytest.approx(rate, abs=1e-12)
 
 
-# Model year Y runs from 6 April Y to 5 April Y+1. Rates: 59.75p from 1 July
-# 2027, then 61.54p (2028), 63.26p (2029), 65.09p (2030), 66.59p (2031).
+# Model year Y runs from 6 April Y to 5 April Y+1. Rates: 60.59p from 1 July
+# 2027, then 62.41p (2028), 64.16p (2029), 66.02p (2030), 67.54p (2031).
 HAND_COMPUTED = {
     2025: 0.5295,
     2026: 0.5295,
     # 6 Apr to 30 Jun 2027, then to 31 Mar 2028 (a leap year), then 5 days.
-    2027: (0.5295 * 86 + 0.5975 * 275 + 0.6154 * 5) / 366,
-    2028: (0.6154 * 360 + 0.6326 * 5) / 365,
-    2029: (0.6326 * 360 + 0.6509 * 5) / 365,
-    2030: (0.6509 * 360 + 0.6659 * 5) / 365,
+    2027: (0.5295 * 86 + 0.6059 * 275 + 0.6241 * 5) / 366,
+    2028: (0.6241 * 360 + 0.6416 * 5) / 365,
+    2029: (0.6416 * 360 + 0.6602 * 5) / 365,
+    2030: (0.6602 * 360 + 0.6754 * 5) / 365,
 }
 
 
@@ -104,8 +108,8 @@ def test_forecast_steps_use_current_rpi_forecast():
     parameters = raw_parameters()
     rpi = parameters.gov.economic_assumptions.yoy_growth.obr.rpi
     schedule = parameters.gov.hmrc.fuel_duty.petrol_and_diesel
-    # The 57.95p pre-cut rate (Finance Act 2011 s. 19).
-    rate = Decimal("0.5795")
+    assert schedule(CUT_END_DATE) == pytest.approx(CUT_END_RATE, abs=1e-12)
+    rate = Decimal(str(CUT_END_RATE))
     for date in FORECAST_DATES:
         day_before = (
             datetime.date.fromisoformat(date) - datetime.timedelta(days=1)
@@ -173,8 +177,8 @@ def fuel_duty_simulation(parameter_changes=None):
 def test_holding_52_95p_for_2027_removes_the_full_2027_28_rate_rise():
     """Regression: calendar-year averaging diluted annual overrides.
 
-    The 2027-28 baseline averages 58.18p, so holding 52.95p for the whole
-    model year saves 5.23p a litre.
+    The 2027-28 baseline averages 58.82p, so holding 52.95p for the whole
+    model year saves 5.87p a litre.
     """
     baseline = fuel_duty_simulation()
     reformed = fuel_duty_simulation({PATH: {"2027": 0.5295}})
@@ -182,7 +186,8 @@ def test_holding_52_95p_for_2027_removes_the_full_2027_28_rate_rise():
         baseline.calculate("fuel_duty", 2027).values[0]
         - reformed.calculate("fuel_duty", 2027).values[0]
     )
-    assert saving == pytest.approx(1_000 * (HAND_COMPUTED[2027] - 0.5295))
+    # fuel_duty is float32: about £590 each side, so allow a tenth of a penny.
+    assert saving == pytest.approx(1_000 * (HAND_COMPUTED[2027] - 0.5295), abs=1e-3)
 
 
 @settings(max_examples=8, deadline=None)

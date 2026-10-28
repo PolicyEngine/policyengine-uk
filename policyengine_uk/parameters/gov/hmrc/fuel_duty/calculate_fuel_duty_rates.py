@@ -4,13 +4,16 @@ Generates the forecast RPI uprating steps in petrol_and_diesel.yaml.
 Budget 2026 keeps the 5p cut to 1 July 2027. Its policy costing (page 13)
 says that "On 1 July 2027, fuel duty rates will increase by 5ppl and will be
 uprated in line with the Retail Prices Index (RPI). From 1 April 2028, fuel
-duty rates will be uprated annually in line with RPI." This script takes the
-57.95p pre-cut rate (Finance Act 2011 s. 19), applies 2026 RPI growth on
-1 July 2027, then each previous calendar year's RPI growth on 1 April from
-2028, using economic_assumptions/yoy_growth.yaml. It rounds to the nearest
-hundredth of a penny and writes the results between the BEGIN and END
-markers in petrol_and_diesel.yaml. Run it with --update whenever the RPI
-forecast changes; test_fuel_duty_schedule.py fails until you do.
+duty rates will be uprated annually in line with RPI." The 1 July 2027
+rate is the OBR's forecast in the EFO (CUT_END_RATE): 60.59p in October
+2026, the 57.95p pre-cut rate (Finance Act 2011 s. 19) uprated by RPI growth
+in the year to 2027 Q1. This script applies each previous calendar year's
+RPI growth to it on 1 April from 2028, using
+economic_assumptions/yoy_growth.yaml. It rounds to the nearest hundredth of
+a penny and writes the results between the BEGIN and END markers in
+petrol_and_diesel.yaml. After a new EFO, set CUT_END_RATE to its fuel duty
+forecast, and run it with --update whenever that or the RPI forecast
+changes; test_fuel_duty_schedule.py fails until you do.
 
 Usage:
     uv run python calculate_fuel_duty_rates.py           # print the steps
@@ -27,11 +30,16 @@ FUEL_DUTY_DIR = Path(__file__).resolve().parent
 PARAMETER_FILE = FUEL_DUTY_DIR / "petrol_and_diesel.yaml"
 YOY_GROWTH_FILE = FUEL_DUTY_DIR.parents[1] / "economic_assumptions" / "yoy_growth.yaml"
 
-# The pre-cut rate the first step uprates, the date the cut ends, and the
-# first and last 1 April steps written out. Later steps come from the
+# The pre-cut rate, the date the cut ends and the OBR's rate from then, and
+# the first and last 1 April steps written out. Later steps come from the
 # parameter's uprating metadata.
 BASE_DATE = "2011-03-23"
 CUT_END_DATE = "2027-07-01"
+# OBR EFO October 2026, paragraph 3.19: "from 52.95 pence per litre to 60.59
+# pence per litre" on 1 July 2027. It is 57.95p times one plus RPI growth in
+# 2027 Q1 on a year earlier (4.5565%, economy Table 1.7).
+CUT_END_RATE = Decimal("0.6059")
+EFO = "https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/"
 FIRST_APRIL_YEAR = 2028
 LAST_UPRATING_YEAR = 2031
 
@@ -61,20 +69,17 @@ def base_rate() -> Decimal:
 
 
 def forecast_steps() -> list:
-    """(date, rate, previous rate, RPI growth) for each forecast step."""
+    """(date, rate, previous rate, RPI growth) for each forecast step. The
+    1 July 2027 step is the OBR's rate, so it has no RPI growth of its own."""
     growth = rpi_growth_by_year()
-    dates = [CUT_END_DATE] + [
-        f"{year}-04-01" for year in range(FIRST_APRIL_YEAR, LAST_UPRATING_YEAR + 1)
-    ]
-    rate = base_rate()
-    steps = []
-    for date in dates:
-        year = int(date[:4])
+    rate = CUT_END_RATE
+    steps = [(CUT_END_DATE, rate, base_rate(), None)]
+    for year in range(FIRST_APRIL_YEAR, LAST_UPRATING_YEAR + 1):
         previous = rate
         rate = (previous * (1 + growth[year - 1])).quantize(
             PENNY_HUNDREDTH, rounding=ROUND_HALF_UP
         )
-        steps.append((date, rate, previous, growth[year - 1]))
+        steps.append((f"{year}-04-01", rate, previous, growth[year - 1]))
     return steps
 
 
@@ -83,19 +88,35 @@ def render(steps: list) -> str:
     forecast = rpi_series()["metadata"]["reference"][0]
     lines = []
     for date, rate, previous, growth in steps:
+        if growth is None:
+            note = (
+                f"OBR forecast. {previous} uprated by RPI growth in the year "
+                "to 2027 Q1."
+            )
+            source = [
+                "        - title: OBR EFO October 2026, paragraph 3.19 (60.59p on 1 July 2027)",
+                f"          href: {EFO}",
+            ]
+        else:
+            note = (
+                f"Forecast. {previous} uprated by {int(date[:4]) - 1} RPI "
+                f"growth of {growth * 100:.1f}%."
+            )
+            source = [
+                f"        - title: {forecast['title']} (RPI forecast)",
+                f"          href: {forecast['href']}",
+            ]
         lines += [
             f"  {date}:",
             f"    value: {rate}",
             "    metadata:",
-            f"      note: Forecast. {previous} uprated by {int(date[:4]) - 1} RPI "
-            f"growth of {growth * 100:.1f}%.",
+            f"      note: {note}",
             "      reference:",
             "        - title: Budget 2026, paragraph 6.211 (5p cut ends and RPI uprating from 1 July 2027)",
             f"          href: {BUDGET_2026}",
             "        - title: HM Treasury, Budget 2026 policy costings, page 13 (RPI on 1 July 2027, then each 1 April from 2028)",
             f"          href: {COSTING_2026}",
-            f"        - title: {forecast['title']} (RPI forecast)",
-            f"          href: {forecast['href']}",
+            *source,
         ]
     return "\n".join(lines) + "\n"
 
@@ -119,7 +140,8 @@ def main():
     steps = forecast_steps()
     print(f"{BASE_DATE}: {base_rate()} (pre-cut rate)")
     for date, rate, previous, growth in steps:
-        print(f"{date}: {rate} ({previous} x (1 + {growth}))")
+        how = "OBR forecast" if growth is None else f"{previous} x (1 + {growth})"
+        print(f"{date}: {rate} ({how})")
     if args.update:
         update(steps)
 

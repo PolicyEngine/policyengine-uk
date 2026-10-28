@@ -1,1 +1,1 @@
-Keep the 5p fuel duty cut to 1 July 2027, as announced at Budget 2026. On that date petrol and diesel return to 57.95p uprated by 2026 RPI growth, then rise by RPI each 1 April from 2028; LPG and natural gas return to their full rates.
+Keep the 5p fuel duty cut to 1 July 2027, as announced at Budget 2026. On that date petrol and diesel rise to the OBR's forecast of 60.59p (57.95p uprated by RPI), then by RPI each 1 April from 2028; LPG and natural gas return to their full rates.
