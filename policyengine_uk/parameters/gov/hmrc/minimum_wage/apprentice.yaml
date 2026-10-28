@@ -6,11 +6,11 @@ description: Minimum wage rate for apprentices.
 # amending S.I.: on 1 October until 2016, then on 1 April from 2017.
 # Rates after the last one set here are a projection, not law: the last rate
 # set times the growth since then in
-# gov.economic_assumptions.indices.earnings_uprating, rounded to the nearest
-# penny, as for the other minimum wage rates (non_apprentice.yaml). Growing it
-# by the national living wage's index, which keeps its ratio to that rate to
-# the penny, is an assumption: the Low Pay Commission is asked to set it to
-# support apprentices' employment prospects (remit 2026).
+# gov.economic_assumptions.indices.obr.national_living_wage, rounded to the
+# nearest penny, as for the other minimum wage rates (non_apprentice.yaml).
+# Growing it by the national living wage's index, which keeps its ratio to
+# that rate to the penny, is an assumption: the Low Pay Commission is asked
+# to set it to support apprentices' employment prospects (remit 2026).
 values:
   2010-10-01:
     value: 2.5
@@ -113,7 +113,7 @@ metadata:
   label: Apprentice minimum wage
   unit: currency-GBP
   uprating:
-    parameter: gov.economic_assumptions.indices.earnings_uprating
+    parameter: gov.economic_assumptions.indices.obr.national_living_wage
     rounding:
       type: nearest
       interval: 0.01

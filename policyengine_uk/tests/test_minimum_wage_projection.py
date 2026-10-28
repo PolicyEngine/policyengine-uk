@@ -4,9 +4,9 @@ Each rate is set by an amending S.I. (National Minimum Wage Regulations 2015
 regs. 4, 4A and 5); the April 2027 rates are the ones Budget 2026 announced
 (paragraph 6.128), ahead of their S.I. Later years are a projection, not law:
 from the last rate set, each rate rises each April with
-gov.economic_assumptions.indices.earnings_uprating (the May-July growth in
-average weekly earnings of the year before, rounded to 0.1 percentage points
-and never negative) and is rounded to the nearest penny.
+gov.economic_assumptions.indices.obr.national_living_wage (the OBR's forecast
+of the national living wage, EFO economy Table 1.13, to the end of the EFO,
+then average earnings growth) and is rounded to the nearest penny.
 
 Invariants, from the year after each rate's last one set to 2040:
 
@@ -69,15 +69,13 @@ LAST_YEAR = max(date.year for date, _ in [*LAST_BRACKET_RATES, LAST_APPRENTICE_R
 FIRST_LAST_YEAR = min(
     date.year for date, _ in [*LAST_BRACKET_RATES, LAST_APPRENTICE_RATE]
 )
-# Years after every rate's last one set: the national living wage is projected.
-PROJECTED = range(LAST_YEAR + 1, LAST_CHECKED + 1)
 NLW = "gov.hmrc.minimum_wage.non_apprentice[{}].amount"
 
 
 def _index(parameters, year):
     return parameters(
         f"{year}-01-01"
-    ).gov.economic_assumptions.indices.earnings_uprating
+    ).gov.economic_assumptions.indices.obr.national_living_wage
 
 
 def _projected(rate, parameters, base_year, year):
@@ -86,7 +84,7 @@ def _projected(rate, parameters, base_year, year):
 
 
 @pytest.mark.parametrize("year", range(FIRST_LAST_YEAR + 1, LAST_CHECKED + 1))
-def test_rates_are_the_last_rate_set_uprated_by_earnings(year):
+def test_rates_are_the_last_rate_set_uprated_by_the_index(year):
     """Invariants 1 to 3, for each rate in the years after its own last one
     set."""
     p = system.parameters
@@ -105,35 +103,69 @@ def test_rates_are_the_last_rate_set_uprated_by_earnings(year):
         assert amount >= rate
 
 
-def test_projecting_april_2026_gives_the_april_2027_rates_announced():
-    """Backtest of the index for one year. It rose 3.9% for April 2027
-    (May-July 2026 average weekly earnings, ONS KAC3, 20 October 2026), and
-    Budget 2026 raised each rate by 3.9% (paragraph 6.128). Projecting each
-    April 2026 rate gives the rate announced, to the penny: £12.71 x 1.039 =
-    £13.2057, £10.85 x 1.039 = £11.2732 and £8.00 x 1.039 = £8.312."""
+# OBR EFO October 2026, detailed forecast tables (economy), Table 1.13: the
+# national living wage in April of each year, £ an hour. "The NLW has been set
+# by the Government up until 2027 ... Figures beyond 2027 are OBR estimates
+# consistent with the rest of our economy forecast."
+OBR_NATIONAL_LIVING_WAGE = {
+    2020: 8.72,
+    2021: 8.91,
+    2022: 9.5,
+    2023: 10.42,
+    2024: 11.44,
+    2025: 12.21,
+    2026: 12.71,
+    2027: 13.21,
+    2028: 13.513623297578135,
+    2029: 13.854853379339588,
+    2030: 14.23293930734993,
+    2031: 14.617023376183901,
+}
+GROWTH = yaml.safe_load(
+    (PARAMETER_DIR.parents[1] / "economic_assumptions/yoy_growth.yaml").read_text()
+)["obr"]
+
+
+def _growth(series, year):
+    return GROWTH[series]["values"][datetime.date(year, 1, 1)]
+
+
+def test_the_series_reproduces_the_obr_table():
+    """Differential against the published table. The growth series is each
+    year's rate over the year before's, to six decimals, from 2021 to the end
+    of the EFO, and the model's national living wage in each April is the
+    table's, rounded to the nearest penny: the rates set to 2027 (£13.21 from
+    Budget 2026), then the OBR's estimates of £13.51, £13.85, £14.23 and
+    £14.62 from 2028 to 2031."""
     p = system.parameters
-    assert p("2027-01-01").gov.economic_assumptions.yoy_growth.earnings_uprating == (
-        pytest.approx(0.039)
-    )
-    april_2026 = p("2026-01-01").gov.hmrc.minimum_wage
-    april_2027 = p("2027-01-01").gov.hmrc.minimum_wage
-    assert list(april_2026.non_apprentice.amounts) == [8.00, 10.85, 12.71, 12.71, 12.71]
-    assert list(april_2027.non_apprentice.amounts) == pytest.approx(
-        [8.31, 11.27, 13.21, 13.21, 13.21], abs=1e-9
-    )
-    assert april_2027.apprentice == pytest.approx(8.31, abs=1e-9)
-    pairs = [
-        *zip(april_2026.non_apprentice.amounts, april_2027.non_apprentice.amounts),
-        (april_2026.apprentice, april_2027.apprentice),
-    ]
-    for before, announced in pairs:
-        assert _projected(before, p, 2026, 2027) == pytest.approx(announced, abs=1e-9)
+    for year in range(2021, max(OBR_NATIONAL_LIVING_WAGE) + 1):
+        expected = OBR_NATIONAL_LIVING_WAGE[year] / OBR_NATIONAL_LIVING_WAGE[year - 1]
+        assert _growth("national_living_wage", year) == pytest.approx(
+            round(expected - 1, 6), abs=1e-12
+        ), year
+    for year, rate in OBR_NATIONAL_LIVING_WAGE.items():
+        wage = p(f"{year}-01-01").gov.hmrc.minimum_wage.non_apprentice.amounts[-1]
+        assert wage == pytest.approx(round(rate, 2), abs=1e-9), year
+
+
+def test_after_the_efo_the_series_is_average_earnings_growth():
+    """The Low Pay Commission's reference point is two-thirds of median hourly
+    earnings (remit 2026), so after the OBR's last estimate the series takes
+    average_earnings' growth, year for year, to the end of both series."""
+    last = max(OBR_NATIONAL_LIVING_WAGE)
+    wage = {d.year for d in GROWTH["national_living_wage"]["values"] if d.year > last}
+    earnings = {d.year for d in GROWTH["average_earnings"]["values"] if d.year > last}
+    assert wage == earnings
+    for year in sorted(wage):
+        assert _growth("national_living_wage", year) == _growth(
+            "average_earnings", year
+        ), year
 
 
 def test_a_rate_set_later_takes_precedence_and_the_projection_continues():
     """Invariant 4: a national living wage of £14.00 from 1 April 2028, added
     as a rate set by an S.I. would be, holds in 2028-29, and later years are
-    £14.00 times the earnings growth since. The Carer's Allowance earnings
+    £14.00 times the index's growth since. The Carer's Allowance earnings
     limit follows it: 16 x £14.00 = £224, above the projection's own limit."""
     tree = statutory_parameters()
     scale = tree.gov.hmrc.minimum_wage.non_apprentice
@@ -218,7 +250,7 @@ def test_rules_that_read_the_national_living_wage_follow_its_projection():
 def test_a_reform_rate_is_not_projected():
     """Invariant 6 (intended): £13.50 for 2027-28 alone leaves 2028-29 on
     the baseline's path, where projecting from the reform's rate would give
-    £13.50 x 1.024. £13.50 from 6 April 2027 onwards documents the disclosed
+    £13.50 x 1.023. £13.50 from 6 April 2027 onwards documents the disclosed
     behaviour rather than testing projection: the reform sets every year to
     2100, so nothing is left to project, and the baseline passes it."""
     baseline = system.parameters

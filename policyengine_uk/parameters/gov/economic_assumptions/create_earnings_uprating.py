@@ -14,9 +14,7 @@ triple lock and rounds to the 0.1 percentage points published by the ONS.
 ``gov.economic_assumptions.indices.earnings_uprating``. The yearly series
 starts from a 2010 base and runs to one year past the statutory inputs; the
 index, like the others built there, stops in 2039. Published
-benefit amounts remain explicit; the index projects later years. The
-minimum wage rates (``gov.hmrc.minimum_wage``) also use it after the last
-rate set.
+benefit amounts remain explicit; the index projects later years.
 """
 
 from typing import Dict, Iterable

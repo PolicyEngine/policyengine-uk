@@ -26,17 +26,16 @@ description: Minimum wage rate for non-apprentices by age.
 #
 # Rates after the last one set here are a projection, not law. Each is the
 # last rate set times the growth since then in
-# gov.economic_assumptions.indices.earnings_uprating, rounded to the nearest
-# penny (the rounding is not repeated each year). Each year's rise in that
-# index is the May-July growth in average weekly earnings of the year before,
-# rounded to 0.1 percentage points and never negative; it also projects the
-# April up-rating of the Pension Credit guarantee. The Low Pay Commission
-# remit 2026 says two-thirds of median hourly earnings "should continue to be
-# the key reference point for future rates" of the national living wage, so
-# the projection moves that rate with earnings. The index rose 3.9% for April
-# 2027 (May-July 2026 growth), as did each rate Budget 2026 announced, so
-# projecting the April 2026 rates gives the April 2027 ones to the penny:
-# £12.71 x 1.039 = £13.21, £10.85 x 1.039 = £11.27 and £8.00 x 1.039 = £8.31.
+# gov.economic_assumptions.indices.obr.national_living_wage, rounded to the
+# nearest penny (the rounding is not repeated each year). To the end of the
+# EFO that index follows the OBR's own forecast of the national living wage
+# (detailed economy tables, Table 1.13), so the projected national living
+# wage is the OBR's estimate to the penny: £13.51, £13.85, £14.23 and £14.62
+# from April 2028 to April 2031 (October 2026 EFO). HM Treasury costed the
+# Budget 2026 Carer's Allowance taper on these projections. After the EFO the
+# index grows with average earnings: the Low Pay Commission remit 2026 says
+# two-thirds of median hourly earnings "should continue to be the key
+# reference point for future rates" of the national living wage.
 #
 # The index is dated 1 January, so before annualisation a projected rate
 # starts on 1 January. Each year's figure is read at 30 April, the rate for
@@ -60,7 +59,7 @@ brackets:
   amount:
     metadata:
       uprating:
-        parameter: gov.economic_assumptions.indices.earnings_uprating
+        parameter: gov.economic_assumptions.indices.obr.national_living_wage
         rounding:
           type: nearest
           interval: 0.01
@@ -165,7 +164,7 @@ brackets:
   amount:
     metadata:
       uprating:
-        parameter: gov.economic_assumptions.indices.earnings_uprating
+        parameter: gov.economic_assumptions.indices.obr.national_living_wage
         rounding:
           type: nearest
           interval: 0.01
@@ -270,7 +269,7 @@ brackets:
   amount:
     metadata:
       uprating:
-        parameter: gov.economic_assumptions.indices.earnings_uprating
+        parameter: gov.economic_assumptions.indices.obr.national_living_wage
         rounding:
           type: nearest
           interval: 0.01
@@ -375,7 +374,7 @@ brackets:
   amount:
     metadata:
       uprating:
-        parameter: gov.economic_assumptions.indices.earnings_uprating
+        parameter: gov.economic_assumptions.indices.obr.national_living_wage
         rounding:
           type: nearest
           interval: 0.01
@@ -480,7 +479,7 @@ brackets:
   amount:
     metadata:
       uprating:
-        parameter: gov.economic_assumptions.indices.earnings_uprating
+        parameter: gov.economic_assumptions.indices.obr.national_living_wage
         rounding:
           type: nearest
           interval: 0.01

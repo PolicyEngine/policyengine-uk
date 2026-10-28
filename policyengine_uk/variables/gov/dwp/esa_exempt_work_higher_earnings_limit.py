@@ -15,7 +15,8 @@ class esa_exempt_work_higher_earnings_limit(Variable):
         "rate in reg 11 of the National Minimum Wage Regulations 1999, now "
         "the national living wage, the adult rate (DMG 41190), so the "
         "limit moves with gov.hmrc.minimum_wage.non_apprentice, including "
-        "its projection by earnings growth after the last rate set. From "
+        "its projection after the last rate set (the OBR's national living "
+        "wage forecast). From "
         "April 2027 it is 16 x £13.21 (the rate Budget 2026 announced) = "
         "£211.36, rounded up to £211.50."
     )

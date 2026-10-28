@@ -25,6 +25,7 @@ GDP and population assumptions remain supported.
 | `consumer_price_index_ahc` | CPI excluding rents/maintenance/water (AHC measure)   | ONS ad hoc 3582; forecast derived by `utils/create_ahc_deflator.py` |
 | `rpi`                   | Retail Price Index year-on-year growth                   | EFO Table 1.7           |
 | `average_earnings`      | Average weekly earnings growth                           | EFO Table 1.6           |
+| `national_living_wage`  | National living wage growth, for April of each year      | EFO economy Table 1.13  |
 | `non_labour_income`     | Non-labour household income growth                       | derived from EFO        |
 | `road_fuel_volume`      | Petrol + diesel road-fuel clearances                     | HMRC Hydrocarbon Oils + OBR fuel-duty forecast |
 | `petrol_spending_litre_proxy` | Spending growth that preserves road-fuel litres    | HMRC + OBR              |
@@ -43,6 +44,18 @@ growth for the EFO's outturn year (its outturn over the year before's outturn
 in an earlier EFO), the EFO's forecast years, and after them the
 `average_earnings` path. Years before the outturn year are kept, so each
 index keeps its base year.
+
+`national_living_wage` projects the minimum wage rates
+(`gov.hmrc.minimum_wage`) after the last rate set. It is the growth of the
+rates set to 2027, then the OBR's estimates in Table 1.13 of the detailed
+economy tables, then `average_earnings`' long-run growth. The checked-in
+estimates are the October 2026 EFO's, ahead of the other series' March 2026
+vintage, because HM Treasury costed Budget 2026's Carer's Allowance taper on
+them. `utils/import_obr_forecasts.py` doesn't read Table 1.13, so the series
+is updated by hand with each EFO. `test_minimum_wage_projection.py` holds the
+table and fails if the series stops reproducing it, or if its long-run years
+stop matching `average_earnings`. Each rate is set by an S.I., so this is a projection, not
+a formula.
 
 ## Time horizons
 
@@ -261,10 +274,6 @@ require the guarantee to rise at least with earnings; they impose no CPI or
 amounts to reflect discretionary increases. For April 2027, May-July 2026
 earnings growth of 3.9% gives £238 × 1.039 = £247.282 a week for a single
 person and £363.25 × 1.039 = £377.41675 for a couple, before benefit rounding.
-
-The minimum wage rates (`gov.hmrc.minimum_wage`) also use this index after
-the last rate set. That is a projection: each rate is set by an S.I., not by
-a formula.
 
 The Savings Credit maximum rises by September CPI, as stated in
 [HCWS1101](https://questions-statements.parliament.uk/written-statements/detail/2025-11-26/hcws1101).

@@ -14,8 +14,9 @@ class uc_benefit_cap_earnings_exception_threshold(Variable):
         "Regulations, multiplied by 52 and divided by 12, with any fraction "
         "of a pound disregarded (reg. 6(1A)(za)). Before then it was a fixed "
         "£430 a month. In years after the last rate set, the threshold "
-        "follows gov.hmrc.minimum_wage.non_apprentice's projection by "
-        "earnings growth, as the minimum income floor does."
+        "follows gov.hmrc.minimum_wage.non_apprentice's projection (the "
+        "OBR's national living wage forecast), as the minimum income floor "
+        "does."
     )
     definition_period = YEAR
     unit = GBP
