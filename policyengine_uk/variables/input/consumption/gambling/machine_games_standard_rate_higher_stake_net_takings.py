@@ -11,11 +11,12 @@ class machine_games_standard_rate_higher_stake_net_takings(Variable):
     documentation = (
         "The part of machine_games_standard_rate_net_takings that comes from "
         "machines with a maximum charge to play above GBP 1 or a maximum prize "
-        "above GBP 100. Under the Gambling Commission's stake and prize limits "
-        "these are the Category B machines (B1 to B4). This input is a subset "
-        "of the standard-rate input, not an addition to it: the duty caps it "
-        "at that input. Machine Games Duty charges it at the standard rate "
-        "until 31 March 2027 and at the higher rate from 1 April 2027."
+        "above GBP 100. The class corresponds closely to the Gambling "
+        "Commission's Category B, whose stake or prize limits exceed those "
+        "thresholds; Category C and D limits stay within them. This input is "
+        "a subset of the standard-rate input, not an addition to it: the duty "
+        "caps it at that input. Machine Games Duty charges it at the standard "
+        "rate until 31 March 2027 and at the higher rate from 1 April 2027."
     )
     reference = (
         "https://www.gov.uk/government/publications/budget-2026-overview-of-tax-legislation-and-rates-ootlar/budget-2026-overview-of-tax-legislation-and-rates-ootlar",
