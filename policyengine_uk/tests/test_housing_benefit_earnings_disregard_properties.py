@@ -66,7 +66,6 @@ from April 2010, with SI 2020/371's £37.10 for 2020-21.
 import numpy as np
 from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
-from policyengine_core.simulations import Simulation as CoreSimulation
 
 from policyengine_uk import Simulation
 from policyengine_uk.system import system
@@ -196,11 +195,7 @@ VARIABLES = [
 
 
 def calculate(units, special_eligible=None, **kwargs):
-    # Fixed-earnings fixtures share the read-only rules, with fresh holders.
-    # Avoid rebuilding the UK model and cloning a baseline for every draw.
-    sim = CoreSimulation(
-        tax_benefit_system=system, situation=situation(units, **kwargs)
-    )
+    sim = Simulation(situation=situation(units, **kwargs))
     if special_eligible is not None:
         sim.set_input(
             "housing_benefit_special_earnings_disregard_eligible",

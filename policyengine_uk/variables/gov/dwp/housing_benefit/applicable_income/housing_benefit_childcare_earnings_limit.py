@@ -45,7 +45,12 @@ class housing_benefit_childcare_earnings_limit(Variable):
         "WTC entitlement "
         "and its components (including the WTC childcare element) do not "
         "read the HB childcare deduction, limit or applicable income, so "
-        "neither this edge nor the direct WTC addition creates a cycle."
+        "neither this edge nor the direct WTC addition creates a cycle. "
+        "Earnings are fixed when the simulation has no baseline or the "
+        "labour supply income and substitution elasticities are zero, as "
+        "they are by default. Labour supply responses can make earnings "
+        "depend on benefits, so this note does not cover a reform that "
+        "turns them on."
     )
     reference = (
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/27",
