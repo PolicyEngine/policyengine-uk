@@ -31,7 +31,8 @@ class domestic_energy_vat(Variable):
     documentation = (
         "VAT on the household's electricity and gas bills. Electricity is "
         "charged at its own rate, which is zero in Great Britain from 1 October "
-        "2026 to 31 March 2027; gas is charged at the reduced rate."
+        "2026 and in Northern Ireland from 1 April 2027, to 30 June 2027; gas "
+        "is charged at the reduced rate."
     )
     entity = Household
     definition_period = YEAR

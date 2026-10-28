@@ -1,7 +1,23 @@
-description: VAT rate on supplies of domestic electricity in Northern Ireland. The temporary zero rate from 1 October 2026 does not apply there.
+description: VAT rate on supplies of domestic electricity in Northern Ireland. The temporary zero rate from 1 October 2026 does not apply there; Budget 2026 expects the extended zero rate to apply from 1 April to 30 June 2027.
 values:
   1994-04-01: 0.08
   1997-09-01: 0.05
+  # Budget 2026 expects the extended relief to apply UK-wide from April 2027.
+  # That is policy, not yet law, and the document says "expected".
+  2027-04-01:
+    value: 0
+    metadata:
+      reference:
+        - title: Budget 2026, paragraph 6.210 ("expected to apply UK-wide from April 2027")
+          href: https://assets.publishing.service.gov.uk/media/6ae1ec57bdb574cf1c9b3f12/E03668986_HMT_Budget_2026_ELAY__2_.pdf#page=138
+        - title: Budget 2026, section 4.3 ("Extended VAT relief is expected to apply in Northern Ireland from April 2027")
+          href: https://www.gov.uk/government/publications/budget-2026-document/budget-2026-html
+  2027-07-01:
+    value: 0.05
+    metadata:
+      reference:
+        - title: Budget 2026 policy costings, page 12 (until 1 July 2027)
+          href: https://assets.publishing.service.gov.uk/media/6ae1883fe4367e5c8b0467df/AB26_Policy_Costing.pdf#page=12
 metadata:
   unit: /1
   period: year
@@ -11,4 +27,6 @@ metadata:
       href: https://www.legislation.gov.uk/ukpga/1994/23/schedule/7A
     - title: HMRC Revenue and Customs Brief 10 (2026)
       href: https://www.gov.uk/government/publications/revenue-and-customs-brief-10-2026-temporary-zero-rate-of-vat-for-domestic-electricity-in-great-britain/temporary-zero-rate-of-vat-for-domestic-electricity-in-great-britain
+  # FY 2026-27 has 360 days at 5% and 5 at 0%; FY 2027-28 has 86 at 0% and
+  # 280 at 5%.
   fiscal_year_blend: true
