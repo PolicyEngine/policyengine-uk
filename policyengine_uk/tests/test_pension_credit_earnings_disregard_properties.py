@@ -8,9 +8,10 @@ Invariants, over generated benefit units in England and Scotland:
    - each person's own earnings, each source floored at nil, less their
      primary Class 1 contributions, half of their pension contributions and,
      on self-employed profit, the notional tax and contributions of CER 1996
-     reg. 14 (basic rate on the profit less the personal allowance and any
-     marriage allowance; main-rate Class 4 under State Pension age), floored
-     at nil;
+     reg. 14 (basic rate on the profit less the personal allowance, itself
+     cut by any Marriage Allowance the person gives up (ITA 2007 s. 55B(6)),
+     and less any Marriage Allowance they receive; main-rate Class 4 under
+     State Pension age), floored at nil;
    - less the income tax payable on the claimant's and partner's employed
      earnings, measured as the fall in their income tax when the household
      is simulated again with nobody's employment income.
@@ -35,7 +36,7 @@ Invariants, over generated benefit units in England and Scotland:
 """
 
 import numpy as np
-from hypothesis import HealthCheck, assume, given, settings
+from hypothesis import HealthCheck, assume, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -155,14 +156,19 @@ def weekly_amount(people):
     return 20 if (disabled or carer or lone_parent) else (10 if couple else 5)
 
 
-def notional_deductions(person, marriage_allowance):
-    """CER 1996 reg. 14 on the person's profit, from the inputs: no
-    generated adult is blind-person's-allowance relieved, born before 1935
-    or liable for Class 2 (abolished in 2024-25)."""
+def notional_deductions(person, relinquished, marriage_allowance):
+    """CER 1996 reg. 14 on the person's profit, from the inputs and the
+    couple's Marriage Allowance election: no generated adult is
+    blind-person's-allowance relieved, born before 1935 or liable for Class 2
+    (abolished in 2024-25). The relief appropriate to the person's
+    circumstances is their personal allowance less any allowance they give up
+    (ITA 2007 s. 55B(6)). The allowance they receive comes off the profit
+    here, which at the basic rate is the same as the s. 55B(1) reduction."""
     profit = max(0, person.get("self_employment_income", 0))
     if profit == 0:
         return 0.0
-    tax = BASIC_RATE * max(0, profit - PERSONAL_ALLOWANCE - marriage_allowance)
+    allowance = PERSONAL_ALLOWANCE - relinquished
+    tax = BASIC_RATE * max(0, profit - allowance - marriage_allowance)
     class_4 = 0.0
     if person["age"] < STATE_PENSION_AGE:
         class_4 = CLASS_4_MAIN_RATE * min(
@@ -172,7 +178,43 @@ def notional_deductions(person, marriage_allowance):
     return tax + class_4
 
 
+# A couple over State Pension age with £12,000 and £15,000 of profit (2024-25),
+# who would claim. If the first gives up £1,260 of allowance they pay 20% x
+# (12,000 - 11,310) = 138 for the partner's 252 reduction, so they elect. The
+# transferor's notional tax is 138, not 0; the recipient's is 20% x (15,000 -
+# 12,570 - 1,260) = 234.
+ELECTING_COUPLE = {
+    "people": {
+        "claimant": {
+            "age": 67,
+            "self_employment_income": 12_000,
+            "would_claim_marriage_allowance": True,
+        },
+        "partner": {
+            "age": 67,
+            "self_employment_income": 15_000,
+            "would_claim_marriage_allowance": True,
+        },
+    },
+    "country": "ENGLAND",
+}
+
+
+def test_the_transferor_s_notional_tax_uses_the_cut_allowance():
+    sim = simulate(ELECTING_COUPLE)
+    assert person_values(sim, "marriage_allowance_relinquished").tolist() == [
+        1_260,
+        0,
+    ]
+    assert person_values(sim, "marriage_allowance").tolist() == [0, 1_260]
+    assert person_values(sim, "pension_credit_self_employment_deductions").tolist() == [
+        138,
+        234,
+    ]
+
+
 @SETTINGS
+@example(ELECTING_COUPLE)
 @given(units())
 def test_statute_bounds_differential_and_monotonicity(case):
     people = case["people"]
@@ -186,10 +228,11 @@ def test_statute_bounds_differential_and_monotonicity(case):
         [max(0, people[n].get("self_employment_income", 0)) for n in names],
         dtype=float,
     )
+    relinquished = person_values(sim, "marriage_allowance_relinquished")
     marriage_allowance = person_values(sim, "marriage_allowance")
     notional = np.array(
         [
-            notional_deductions(people[n], marriage_allowance[i])
+            notional_deductions(people[n], relinquished[i], marriage_allowance[i])
             for i, n in enumerate(names)
         ]
     )

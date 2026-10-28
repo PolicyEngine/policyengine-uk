@@ -42,9 +42,13 @@ class pension_credit_self_employment_deductions(Variable):
             scottish_basic_rate,
             rates.uk.rates[0],
         )
-        # Chapter 2 (personal and blind person's allowances) and Chapter 3A
-        # (marriage allowance, which the model deducts from income) relieve
-        # income; Chapter 3 (married couple's allowance) reduces the tax.
+        # Chapter 2 (personal and blind person's allowances) relieves income;
+        # the personal allowance is already cut by any Marriage Allowance the
+        # person gives up (Chapter 3A, s. 55B(6)). The Marriage Allowance the
+        # person receives is a Chapter 3A tax reduction at the basic rate on
+        # that amount (s. 55B(1), (3)), the same as relieving the amount here
+        # at the basic rate. Chapter 3 (married couple's allowance) reduces
+        # the tax.
         reliefs = add(
             person,
             period,

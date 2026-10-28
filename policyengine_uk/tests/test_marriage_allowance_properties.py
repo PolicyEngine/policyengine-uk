@@ -4,7 +4,11 @@ An election by one spouse or civil partner cuts their own personal allowance
 by the transferable amount (s. 55B(6)) and gives the other a Step 6 tax
 reduction of the appropriate percentage of it, capped at their Step 5 tax
 (s. 55A(2), s. 55B(1), (3), s. 29(2)). The couple elects only when the
-conditions allow it and it lowers their combined income tax.
+conditions allow it and it lowers their combined income tax before the winter
+fuel payment charge, which is what the election weighs: the charge can differ
+between the two positions only through benefits, which the election does not
+weigh (an intended modelling choice; WINTER_FUEL_COUPLE pins a case where
+electing starts the charge). "Income tax" below means that tax.
 
 Invariants, for any generated population of couples with every kind of
 taxable income, some with residential finance costs, in England, Wales or
@@ -102,6 +106,28 @@ SMALL_LETTINGS_COUPLE = [
     )
 ]
 ELECTION = "makes_marriage_allowance_election"
+# The tax the election weighs (makes_marriage_allowance_election.COMPARED_TAX).
+TAX = "income_tax_before_winter_fuel_payment_charge"
+# A mixed-age couple with children (2026). Electing saves 114 before the
+# charge, which ends their £1 of Universal Credit, a relevant benefit (ITEPA
+# 2003 s. 681I(4)), so the elder's £200 winter fuel payment is charged back:
+# income tax including the charge rises from 7,002.26 to 7,088.26.
+WINTER_FUEL_COUPLE = [
+    dict(
+        adults=[
+            dict(
+                age=70,
+                employment_income=28_581.31818,
+                savings_interest_income=20_000.0,
+            ),
+            dict(age=45, employment_income=12_000.0),
+        ],
+        married=True,
+        children=[12, 8],
+        region="LONDON",
+        married_couples_allowance=0.0,
+    )
+]
 VARIABLES = [
     ELECTION,
     "is_marriage_allowance_spouse",
@@ -113,6 +139,7 @@ VARIABLES = [
     "marriage_allowance_tax_reduction_limit",
     "meets_marriage_allowance_income_conditions",
     "personal_allowance",
+    TAX,
     "income_tax",
 ]
 TOLERANCE = 0.01
@@ -250,11 +277,12 @@ couple_populations = populations()
 @given(units=couple_populations, year=st.sampled_from(YEARS))
 @example(units=LANDLORD_COUPLE, year=2026)
 @example(units=SMALL_LETTINGS_COUPLE, year=2026)
+@example(units=WINTER_FUEL_COUPLE, year=2026)
 def test_election_never_raises_the_couples_tax(units, year):
     model = calculate(units, year)
     none = calculate(units, year, election=np.zeros_like(model[ELECTION]))
-    model_tax = couple_total(model, "income_tax")
-    none_tax = couple_total(none, "income_tax")
+    model_tax = couple_total(model, TAX)
+    none_tax = couple_total(none, TAX)
     assert np.all(model_tax <= none_tax + TOLERANCE), units
     # A couple that elects saves at least a penny.
     elects = couple_total(model, ELECTION) > 0
@@ -265,6 +293,7 @@ def test_election_never_raises_the_couples_tax(units, year):
 @given(units=couple_populations, year=st.sampled_from(YEARS))
 @example(units=LANDLORD_COUPLE, year=2026)
 @example(units=SMALL_LETTINGS_COUPLE, year=2026)
+@example(units=WINTER_FUEL_COUPLE, year=2026)
 def test_election_is_the_best_allowed_choice(units, year):
     model = calculate(units, year)
     none = calculate(units, year, election=np.zeros_like(model[ELECTION]))
@@ -291,11 +320,11 @@ def test_election_is_the_best_allowed_choice(units, year):
         ) & no_mca
         options.append(run)
         allowed.append(couple_ok)
-    best = couple_total(none, "income_tax")
+    best = couple_total(none, TAX)
     for run, ok in zip(options[1:], allowed[1:]):
-        best = np.where(ok, np.minimum(best, couple_total(run, "income_tax")), best)
+        best = np.where(ok, np.minimum(best, couple_total(run, TAX)), best)
     np.testing.assert_allclose(
-        couple_total(model, "income_tax"), best, atol=TOLERANCE, err_msg=str(units)
+        couple_total(model, TAX), best, atol=TOLERANCE, err_msg=str(units)
     )
 
 
@@ -328,7 +357,7 @@ def test_gaining_partner_is_independent_of_the_electors_income(case, year):
         "marriage_allowance",
         "marriage_allowance_tax_reduction",
         "personal_allowance",
-        "income_tax",
+        TAX,
     ]:
         np.testing.assert_allclose(
             high[variable_name][others],
@@ -380,15 +409,13 @@ def test_marriage_allowance_accounting(units, year):
     # The gaining partner's tax falls by exactly the reduction.
     gainer = received > 0
     np.testing.assert_allclose(
-        model["income_tax"][gainer],
-        none["income_tax"][gainer] - reduction[gainer],
+        model[TAX][gainer],
+        none[TAX][gainer] - reduction[gainer],
         atol=TOLERANCE,
         err_msg=str(units),
     )
     # The elector pays at least as much as without the election.
-    assert np.all(
-        model["income_tax"][elects] >= none["income_tax"][elects] - TOLERANCE
-    ), units
+    assert np.all(model[TAX][elects] >= none[TAX][elects] - TOLERANCE), units
 
 
 @PROPERTY_SETTINGS
@@ -397,9 +424,26 @@ def test_couples_tax_never_falls_with_more_income(case, year):
     units, bump = case
     low = calculate(units, year)
     high = calculate(units, year, bump=bump)
-    assert np.all(
-        couple_total(high, "income_tax") >= couple_total(low, "income_tax") - TOLERANCE
-    ), (bump, units)
+    assert np.all(couple_total(high, TAX) >= couple_total(low, TAX) - TOLERANCE), (
+        bump,
+        units,
+    )
+
+
+def test_electing_can_start_the_winter_fuel_payment_charge():
+    # Intended: the election weighs tax before the charge, and does not weigh
+    # what it does to benefits (see the module docstring).
+    model = calculate(WINTER_FUEL_COUPLE, 2026)
+    none = calculate(WINTER_FUEL_COUPLE, 2026, election=np.zeros_like(model[ELECTION]))
+    assert model[ELECTION].tolist() == [False, True, False, False]
+    np.testing.assert_allclose(couple_total(model, TAX)[0], 6_888.26, atol=TOLERANCE)
+    np.testing.assert_allclose(couple_total(none, TAX)[0], 7_002.26, atol=TOLERANCE)
+    np.testing.assert_allclose(
+        couple_total(model, "income_tax")[0], 7_088.26, atol=TOLERANCE
+    )
+    np.testing.assert_allclose(
+        couple_total(none, "income_tax")[0], 7_002.26, atol=TOLERANCE
+    )
 
 
 # A married couple aged 18 and 100 with no income: the review's

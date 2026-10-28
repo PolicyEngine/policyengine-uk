@@ -13,10 +13,13 @@ or without children, across the four UK nations, in which one adult receives
 statutory paternity pay:
 
 1. Monotonic: raising the recipient's statutory paternity pay, with
-   everything else fixed, never lowers the recipient's income tax or the
-   family's total income tax. A Child Benefit opt-out can lower the family's
-   tax as income rises (the High Income Child Benefit Charge stops when the
-   benefit stops), for wages too, so the generated families do not opt out.
+   everything else fixed, never lowers the family's total income tax, nor the
+   recipient's while the couple's Marriage Allowance election stays the same.
+   A Child Benefit opt-out can lower the family's tax as income rises (the
+   High Income Child Benefit Charge stops when the benefit stops), for wages
+   too, so the generated families do not opt out. A couple can stop electing
+   as the recipient's income rises, and the recipient's own tax then falls
+   while the couple's rises (intended; ITA 2007 s. 55B(6)).
 2. Bounds: a pound more of statutory paternity pay raises the family's
    income tax, before the winter fuel payment charge and less the High
    Income Child Benefit Charge, by at most a pound, for families that do not
@@ -59,7 +62,7 @@ an input for everyone.
 """
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -256,6 +259,51 @@ class Results:
         return float(self.members(variable, i, version).sum())
 
 
+ELECTION = "makes_marriage_allowance_election"
+
+# Intended exception to invariant 1 for the recipient alone (2026-27). The
+# recipient has no wages; their spouse earns £24,000 and pays 2,286. On
+# £12,000 of statutory paternity pay the recipient gives up £1,260 of
+# allowance, paying 20% x (12,000 - 11,310) = 138 for the spouse's 252
+# reduction. On £12,570 giving it up would cost 252 for 252, so no one
+# elects: the recipient pays nothing and the couple 114 more.
+STOPS_ELECTING = dict(
+    adults=[
+        dict(
+            age=33,
+            wages=0.0,
+            profit=0.0,
+            pension_income=0.0,
+            savings=0.0,
+            dividends=0.0,
+            pension_contributions=0.0,
+            student_loan_plan="NONE",
+            claims_marriage_allowance=True,
+        ),
+        dict(
+            age=33,
+            wages=24_000.0,
+            profit=0.0,
+            pension_income=0.0,
+            savings=0.0,
+            dividends=0.0,
+            pension_contributions=0.0,
+            student_loan_plan="NONE",
+            claims_marriage_allowance=True,
+        ),
+    ],
+    married=True,
+    child_ages=[],
+    region="NORTH_EAST",
+    tenure="RENT_PRIVATELY",
+    rent=0.0,
+    would_claim_uc=False,
+    recipient=0,
+    low=12_000.0,
+    high=12_570.0,
+)
+
+
 def claims_marriage_allowance(family):
     return family["married"] and any(
         adult["claims_marriage_allowance"] for adult in family["adults"]
@@ -263,15 +311,19 @@ def claims_marriage_allowance(family):
 
 
 @PROPERTY_SETTINGS
+@example(population=[STOPS_ELECTING])
 @given(population=populations())
 def test_income_tax_never_falls_as_statutory_paternity_pay_rises(population):
     results = Results(population)
     for i, family in enumerate(population):
         # Invariant 1.
+        same_election = np.array_equal(
+            results.members(ELECTION, i, HIGH), results.members(ELECTION, i, LOW)
+        )
         recipient_gain = results.recipient("income_tax", i, HIGH) - results.recipient(
             "income_tax", i, LOW
         )
-        assert recipient_gain >= -TOLERANCE, family
+        assert recipient_gain >= -TOLERANCE or not same_election, family
         family_gain = results.family_total(
             "income_tax", i, HIGH
         ) - results.family_total("income_tax", i, LOW)
@@ -295,6 +347,14 @@ def test_income_tax_never_falls_as_statutory_paternity_pay_rises(population):
             # 388.64 -> 389 pair cannot cross a personal-allowance
             # taper-rounding step.
             assert gain <= family["high"] - family["low"] + TOLERANCE, family
+
+
+def test_a_couple_can_stop_electing_as_statutory_paternity_pay_rises():
+    results = Results([STOPS_ELECTING])
+    assert results.members(ELECTION, 0, LOW).tolist() == [1.0, 0.0]
+    assert results.members(ELECTION, 0, HIGH).tolist() == [0.0, 0.0]
+    assert results.members("income_tax", 0, LOW).tolist() == [138, 2_034]
+    assert results.members("income_tax", 0, HIGH).tolist() == [0, 2_286]
 
 
 @PROPERTY_SETTINGS
