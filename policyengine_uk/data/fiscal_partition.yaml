@@ -720,6 +720,7 @@ exclusions:
   - {variable: married_couples_allowance_deduction, kind: component, head: income_tax, note: "Inside capped_mcad."}
   - {variable: other_tax_credits, kind: component, head: income_tax, note: "A tax reduction, subtracted inside income_tax."}
   - {variable: property_finance_cost_relief, kind: component, head: income_tax, note: "A tax reduction, subtracted inside income_tax."}
+  - {variable: pension_tax_allowance, kind: component, head: income_tax, note: "A tax reduction, subtracted inside income_tax."}
   - {variable: basic_rate_earned_income_tax, kind: assessment, head: income_tax, note: "Earned income tax by band; earned_income_tax does not read it."}
   - {variable: higher_rate_earned_income_tax, kind: assessment, head: income_tax, note: "As above."}
   - {variable: add_rate_earned_income_tax, kind: assessment, head: income_tax, note: "As above."}

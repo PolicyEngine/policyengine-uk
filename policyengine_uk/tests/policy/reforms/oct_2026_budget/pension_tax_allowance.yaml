@@ -1,0 +1,197 @@
+# Budget 2026 Pension Tax Allowance (Table 6.1, item 52; paragraph 6.182).
+#
+# A non-refundable Income Tax reduction for people over State Pension age, or
+# reaching it within the tax year, from 6 April 2027 to 5 April 2030. The full
+# allowance is 20% of the full new State Pension above the Personal Allowance,
+# rounded up to the pound: 20% x (13,036.40 - 12,570) = 93.28, so 94 in
+# 2027-28. It tapers by 1 for every 3 of total income above 13,036.40, so it
+# is gone from 13,318.40 (the explainer's "13,319 or more").
+#
+# The first five cases are the worked examples in HM Treasury's Pension Tax
+# Allowance explainer.
+
+- name: Tom, below the Personal Allowance, has no tax to remove
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    age: 75
+    state_pension: 10_300
+  output:
+    pension_tax_allowance: 0
+    income_tax: 0
+
+- name: Steph, on the full new State Pension, has her 93.28 of tax removed
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    state_pension: 13_036.40
+  output:
+    # (13,036.40 - 12,570) x 20%
+    income_tax_pre_charges: 93.28
+    pension_tax_allowance: 93.28
+    income_tax: 0
+
+- name: Anne, on a partial State Pension and a private pension, has her 80 removed
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    age: 72
+    state_pension: 9_000
+    private_pension_income: 3_970
+  output:
+    # (12,970 - 12,570) x 20%; the 94 allowance is capped at the tax due
+    income_tax_pre_charges: 80
+    pension_tax_allowance: 80
+    income_tax: 0
+
+- name: Jonathan, deferring his pension with income in the taper, gets 44
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    age: 68
+    employment_income: 12_000
+    property_income: 1_186.40
+  output:
+    total_income: 13_186.40
+    # 94 - (13,186.40 - 13,036.40) / 3
+    pension_tax_allowance: 44
+    # The Personal Allowance covers the salary and 570 of the property
+    # profit; 616.40 x 24% (the Budget 2026 property basic rate) = 147.94
+    income_tax_pre_charges: 147.94
+    income_tax: 103.94
+
+- name: Nadia, above 13,319, gets no allowance
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    age: 71
+    # The explainer's Nadia also has some savings income. The 166 it quotes
+    # is 20% of everything above the Personal Allowance, so this case puts
+    # all 13,400 in her private pension: savings inside the starting rate for
+    # savings would bring her tax below 166.
+    private_pension_income: 13_400
+  output:
+    pension_tax_allowance: 0
+    # (13,400 - 12,570) x 20%
+    income_tax: 166
+
+- name: The allowance runs out at three times the full allowance above the threshold
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    # 13,036.40 + 3 x 94
+    state_pension: 13_318.40
+  output:
+    pension_tax_allowance: 0
+    income_tax: 149.68
+
+- name: A pound before the end of the taper leaves a third of a pound
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    state_pension: 13_317.40
+  output:
+    pension_tax_allowance: 0.33
+    # 747.40 x 20% = 149.48, less the allowance
+    income_tax: 149.15
+
+- name: Scottish taxpayers get the allowance at 20%, capped at their starter-rate tax
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    state_pension: 13_036.40
+    region: SCOTLAND
+  output:
+    pays_scottish_income_tax: true
+    # 466.40 x 19% starter rate
+    income_tax_pre_charges: 88.62
+    pension_tax_allowance: 88.62
+    income_tax: 0
+
+- name: In the taper, a Scottish taxpayer's allowance is still worked out at 20%
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    private_pension_income: 13_186.40
+    region: SCOTLAND
+  output:
+    # 94 - 150 / 3; at the 19% starter rate the full allowance would have
+    # been 89, leaving 39
+    pension_tax_allowance: 44
+    # 616.40 x 19% = 117.12
+    income_tax: 73.12
+
+- name: Someone under State Pension age with the same income gets nothing
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    age: 60
+    employment_income: 13_036.40
+  output:
+    pension_tax_allowance: 0
+    income_tax_pre_charges: 93.28
+
+- name: Reaching State Pension age on the last day of the tax year qualifies
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    # State Pension age is 67 for people born after 5 March 1961, so this
+    # person reaches it on 5 April 2028
+    age: 66
+    date_of_birth: 19610405
+    state_pension: 13_036.40
+  output:
+    is_SP_age: false
+    pension_tax_allowance: 93.28
+    income_tax: 0
+
+- name: Reaching State Pension age on the first day of the next tax year does not
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    # Reaches 67 on 6 April 2028, in 2028-29
+    age: 66
+    date_of_birth: 19610406
+    state_pension: 13_036.40
+  output:
+    pension_tax_allowance: 0
+    income_tax: 93.28
+
+- name: There is no allowance in 2026-27
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    state_pension: 13_036.40
+  output:
+    pension_tax_allowance: 0
+    income_tax: 93.28
+
+- name: There is no allowance in 2030-31, after it ends on 5 April 2030
+  period: 2030
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    private_pension_income: 13_000
+  output:
+    pension_tax_allowance: 0
+    income_tax: 86
+
+- name: In 2028-29 the threshold follows the new State Pension and the allowance is recomputed
+  period: 2028
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    # The threshold is 13,036.40 uprated with the new State Pension: 13,362.33
+    # on the current forecast, so 20% x (13,362.33 - 12,570) = 158.47 and the
+    # full allowance is 159. 300 above the threshold takes 100 off it.
+    private_pension_income: 13_662.33
+  output:
+    pension_tax_allowance: 59
+    # 1,092.33 x 20% = 218.47, less the allowance
+    income_tax: 159.47
