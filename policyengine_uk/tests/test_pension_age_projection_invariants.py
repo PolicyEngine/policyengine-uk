@@ -480,7 +480,7 @@ def test_reconciled_builders_agree_with_main_where_its_behavior_is_retained(path
         for year in range(FIRST_PROJECTION_YEAR - 1, LAST_INDEX_YEAR + 1):
             at = f"{year}-04-30"
             assert reconciled.get_child(name)(at) == pytest.approx(
-                main.get_child(name)(at), abs=1e-9
+                main.get_child(name)(at), rel=0, abs=1e-9
             ), (name, year, path)
 
 
