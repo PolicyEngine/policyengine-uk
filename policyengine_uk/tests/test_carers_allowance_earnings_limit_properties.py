@@ -70,6 +70,22 @@ in whole pence:
    float32 ni_class_1_employee, which can lie a hundredth of a penny from it.
 10. A pension total entered directly as pension_contributions comes off
     earnings as the same amount entered as a programme does.
+
+And for the amounts the deductions start from:
+
+11. Class 1 is the amount the model calculates: where it calculated
+    ni_class_1_employee with its own formula, as it does in every year from
+    2015 to the horizon, including under a parameter reform, the deduction
+    is that formula worked exactly. Where Class 1 (for the year or month by
+    month) or its primary part was supplied as an input, or a reform
+    neutralized or replaced the formula, the deduction is the stored amount,
+    as the amount deducted (reg. 10(4)(a)), even within a fraction of a penny
+    of what the formula would give.
+12. Sums the model forms are read in whole pence: pay, NI income and pension
+    contributions, which the model adds from other amounts in float32, are
+    the exact sums of their whole-penny parts, and net earnings follow
+    exact arithmetic on them.
+13. An amount calculated by a formula in place of a sum is read as stored.
 """
 
 import datetime
@@ -85,6 +101,7 @@ from hypothesis import strategies as st
 
 import policyengine_uk
 from policyengine_uk import Simulation
+from policyengine_uk.model_api import GBP, MONTH, YEAR, Person, Reform, Variable
 from policyengine_uk.system import system
 from policyengine_uk.utils.class_2 import class_2_contribution_weeks
 
@@ -815,3 +832,315 @@ def test_trading_profit_takes_the_basic_rate_in_every_year(year, country):
     assert simulation.calculate("carers_allowance_earnings", year)[0] == pytest.approx(
         expected, abs=0.01
     )
+
+
+def _earnings_of(rows, reform=None, year=2026):
+    """Net earnings in whole pence, and whether each is over the limit, for
+    one carer in England per dict in ``rows``: inputs by variable, each an
+    amount for ``year`` or a dict of amounts by period."""
+    people = {}
+    for i, row in enumerate(rows):
+        person = {"age": {year: 45}, "care_hours": {year: 40}}
+        for name, value in row.items():
+            person[name] = value if isinstance(value, dict) else {year: value}
+        people[f"carer_{i}"] = person
+    simulation = Simulation(
+        situation={
+            "people": people,
+            "benunits": {
+                f"b{i}": {"members": [f"carer_{i}"]} for i in range(len(rows))
+            },
+            "households": {
+                f"h{i}": {"members": [f"carer_{i}"], "country": {year: "ENGLAND"}}
+                for i in range(len(rows))
+            },
+        },
+        reform=reform,
+    )
+    earnings = simulation.calculate("carers_allowance_earnings", year)
+    gainful = simulation.calculate("is_gainfully_employed_for_carers_allowance", year)
+    return [int(round(float(e) * 100)) for e in earnings], [bool(g) for g in gainful]
+
+
+# The 2026-27 threshold: 52 x (£204 + 1p) a year, a penny a week over.
+THRESHOLD_2026 = WEEKS * (LIMIT * 100 + 1)
+MONTHS_2026 = [f"2026-{month:02d}" for month in range(1, 13)]
+
+
+def _class_1(pence):
+    """Class 1 at 8% of pay above the model's £12,569.96 in 2026, exactly."""
+    return Fraction(8, 100) * max(0, pence - WEEKS * 24_173)
+
+
+@pytest.mark.parametrize(
+    "class_1_input",
+    [
+        {"ni_class_1_employee": 0},
+        {"ni_class_1_employee": {month: 0 for month in MONTHS_2026}},
+        {"ni_class_1_employee_primary": {month: 0 for month in MONTHS_2026}},
+    ],
+    ids=["year", "months", "primary part"],
+)
+def test_class_1_supplied_as_an_input_is_deducted_as_supplied(class_1_input):
+    """Invariant 11, for an input. £12,569.97 of pay is a penny above the
+    model's primary threshold, so its formula gives Class 1 of 0.08p, which
+    counts as a penny. Entered as nil, nil is deducted (reg. 10(4)(a)): with
+    a £3,922.90 contribution, £12,569.97 less £1,961.45 leaves £10,608.52, a
+    penny a week over the limit."""
+    pay, contribution = 1_256_997, 392_290
+    row = {
+        "employment_income": pay / 100,
+        "employee_pension_contributions": contribution / 100,
+    }
+    # Separate simulations: an input set for one person is set for each.
+    calculated, calculated_over = _earnings_of([row])
+    supplied, supplied_over = _earnings_of([{**row, **class_1_input}])
+    assert calculated == [pay - math.ceil(_class_1(pay)) - contribution // 2]
+    assert supplied == [pay - contribution // 2]
+    assert calculated + supplied == [1_060_851, 1_060_852]
+    assert calculated_over + supplied_over == [False, True]
+
+
+def test_class_1_supplied_near_its_formula_is_deducted_as_supplied():
+    """Invariant 11: £594.40 of Class 1 entered with £20,000 of pay, within a
+    third of a penny of what the formula gives (£594.4032), is the amount
+    deducted, not the formula's rounded up."""
+    pay = 2_000_000
+    paye = math.ceil(Fraction(20, 100) * (pay - 1_257_000))
+    calculated, _ = _earnings_of([{"employment_income": pay / 100}])
+    supplied, _ = _earnings_of(
+        [{"employment_income": pay / 100, "ni_class_1_employee": 594.40}]
+    )
+    assert calculated == [pay - paye - math.ceil(_class_1(pay))]
+    assert supplied == [pay - paye - 59_440]
+
+
+class _NoClass1(Reform):
+    def apply(self):
+        self.neutralize_variable("ni_class_1_employee")
+
+
+class _NoPrimaryClass1(Reform):
+    """The primary part replaced by a formula giving nil."""
+
+    def apply(self):
+        class ni_class_1_employee_primary(Variable):
+            label = "NI Class 1 employee-side primary contributions"
+            entity = Person
+            definition_period = MONTH
+            value_type = float
+            unit = GBP
+
+            def formula(person, period, parameters):
+                return person("ni_class_1_income", period) * 0
+
+        self.replace_variable(ni_class_1_employee_primary)
+
+
+@pytest.mark.parametrize("reform", [_NoClass1, _NoPrimaryClass1])
+def test_class_1_under_a_reform_of_its_formula_is_the_amount_calculated(reform):
+    """Invariant 11, for a reform: with Class 1 neutralized, or its primary
+    part replaced by a nil formula, nothing is deducted, not the 0.08p (a
+    penny) the model's own formula gives at £12,569.97 of pay."""
+    row = {"employment_income": 12_569.97, "employee_pension_contributions": 3_922.90}
+    net, gainful = _earnings_of([row], reform=reform)
+    assert net == [1_060_852] and gainful == [True]
+
+
+@pytest.mark.parametrize(
+    "reform, rate",
+    [
+        # The upper earnings limit moved far above this pay: Class 1 is still
+        # £175.56, which the model's float32 sum holds as 175.5600128.
+        (
+            {
+                "gov.hmrc.national_insurance.class_1.employee_scale[2].threshold": {
+                    "2026-01-01.2100-12-31": 1_000
+                }
+            },
+            Fraction(8, 100),
+        ),
+        # A main rate of 10%: £219.45 exactly.
+        (
+            {
+                "gov.hmrc.national_insurance.class_1.employee_scale[1].rate": {
+                    "2026-01-01.2100-12-31": 0.1
+                }
+            },
+            Fraction(10, 100),
+        ),
+    ],
+    ids=["upper earnings limit", "main rate"],
+)
+def test_class_1_under_a_parameter_reform_is_worked_exactly(reform, rate):
+    """Invariant 11: a parameter reform changes the formula's parameters, not
+    the formula, so Class 1 is still worked exactly, with them."""
+    pay = 1_476_446
+    paye = math.ceil(Fraction(20, 100) * (pay - 1_257_000))
+    class_1 = math.ceil(rate * (pay - WEEKS * 24_173))
+    net, _ = _earnings_of([{"employment_income": pay / 100}], reform=reform)
+    assert net == [pay - paye - class_1]
+
+
+class _NIIncomeFormula(Reform):
+    """ni_class_1_income calculated by a formula rather than as a sum."""
+
+    def apply(self):
+        class ni_class_1_income(Variable):
+            label = "NI Class 1 income"
+            entity = Person
+            definition_period = YEAR
+            value_type = float
+            unit = GBP
+
+            def formula(person, period, parameters):
+                return person("employment_income", period)
+
+        self.replace_variable(ni_class_1_income)
+
+
+def test_a_formula_in_place_of_a_sum_is_read_as_stored():
+    """Invariant 13 (found in review): with ni_class_1_income calculated by a
+    formula giving the same amount, £14,764.46 of pay still leaves
+    £14,764.46 less PAYE of £438.90 and Class 1 of £175.56."""
+    net, _ = _earnings_of([{"employment_income": 14_764.46}], reform=_NIIncomeFormula)
+    assert net == [1_415_000]
+
+
+def test_the_model_calculates_class_1_with_its_own_formula_in_every_year():
+    """Invariant 11, for the baseline: in every year from 2015 to the
+    horizon, no reform the model applies by default changes how Class 1 is
+    calculated, so the deduction is its formula worked exactly. The formula
+    is restated here in exact arithmetic, month by month, from the same
+    parameters: the main rate between the primary threshold and the upper
+    earnings limit and the additional rate above it, weekly thresholds as
+    52 / 12 of a week a month. NI income is the pay entered plus the
+    haircut the model calculates from 2029 (salary sacrifice cap costs
+    spread over all pay), read as stored."""
+    from policyengine_core.periods import MONTH as month_unit
+    from policyengine_core.periods import period as make_period
+
+    from policyengine_uk.variables.gov.dwp.carers_allowance_earnings import (
+        _class_1_calculated,
+        _primary_class_1,
+    )
+
+    pays = [1_476_446, 6_000_000, 15_000_017]
+    for year in range(2015, HORIZON + 1):
+        simulation = _carers("employment_income", {year: [p / 100 for p in pays]})
+        person = simulation.populations["person"]
+        period = make_period(year)
+        simulation.calculate("ni_class_1_employee", year)
+        assert _class_1_calculated(person, period), year
+        worked = _primary_class_1(
+            person, period, simulation.tax_benefit_system.parameters
+        )
+        haircuts = simulation.calculate("salary_sacrifice_broad_base_haircut", year)
+        for pay, haircut, value in zip(pays, haircuts, worked):
+            income = pay + Fraction(float(haircut)) * 100
+            exact = Fraction(0)
+            for month in period.get_subperiods(month_unit):
+                scale = simulation.tax_benefit_system.parameters(
+                    month
+                ).gov.hmrc.national_insurance.class_1.employee_scale
+                monthly = income / 12
+                pt, uel = (
+                    Fraction(str(scale.components[i].threshold)) * 100 * WEEKS / 12
+                    for i in (1, 2)
+                )
+                main, additional = (
+                    Fraction(str(scale.components[i].rate)) for i in (1, 2)
+                )
+                exact += main * (min(max(monthly, pt), uel) - pt) + additional * max(
+                    monthly - uel, 0
+                )
+            # Within 10^-5p: a haircut within half a float32 step of a whole
+            # penny is read as that penny, which moves Class 1 by far less.
+            assert abs(Fraction(float(value)) - exact) < Fraction(1, 10**5), (
+                year,
+                pay,
+                float(value),
+                float(exact),
+            )
+
+
+def _natural_rows(rng, count, above_threshold):
+    """Inputs the model sums, in whole pence, chosen so that the legal net
+    earnings lie within 3p of the 2026-27 threshold: pay before labour supply
+    responses a, salary sacrifice returned to pay b (also a member
+    contribution), reported employee contributions r, personal contributions
+    q and statutory sick pay s (NI income, not pay). Below the primary
+    threshold there is no PAYE or Class 1; above it, Class 1 on a + b + s."""
+    rows, nets = [], []
+    while len(rows) < count:
+        b, s = int(rng.integers(0, 200_000)), int(rng.integers(0, 50_000))
+        r, q = int(rng.integers(0, 300_000)), int(rng.integers(0, 100_000))
+        target = THRESHOLD_2026 + int(rng.integers(-3, 4))
+        # Pay that leaves net earnings at the target, given the deductions.
+        half = math.ceil(Fraction(r + b + q, 2))
+        pay = target + half
+        if above_threshold:
+            # Net = pay - ceil(8% of (pay + s - PT)) - half, with no PAYE
+            # while pay less member contributions stays below the allowance.
+            pay = math.ceil(
+                (target + half - Fraction(8, 100) * (WEEKS * 24_173 - s))
+                / Fraction(92, 100)
+            )
+        a = pay - b
+        if a <= 0:
+            continue
+        employee = r + b
+        if above_threshold and not (
+            pay + s > WEEKS * 24_173 and pay - employee < 1_257_000
+        ):
+            continue
+        if not above_threshold and (pay + s > WEEKS * 24_173 or pay > 1_257_000):
+            continue
+        net = pay - math.ceil(_class_1(pay + s)) - half
+        rows.append(
+            {
+                "employment_income_before_lsr": a / 100,
+                "salary_sacrifice_returned_to_income": b / 100,
+                "employee_pension_contributions_reported": r / 100,
+                "personal_pension_contributions": q / 100,
+                "statutory_sick_pay": s / 100,
+            }
+        )
+        nets.append(net)
+    return rows, nets
+
+
+@pytest.mark.parametrize("above_threshold", [False, True], ids=["no NI", "Class 1"])
+def test_sums_the_model_forms_are_read_in_whole_pence(above_threshold):
+    """Invariant 12: pay (employment_income, which adds pay before labour
+    supply responses and returned salary sacrifice), NI income (which adds
+    statutory sick pay), employee pension contributions (reported plus
+    returned salary sacrifice) and pension_contributions (the programmes) are
+    the exact sums of their whole-penny parts, however float32 rounds the
+    model's sums, and the limit test follows net earnings exactly."""
+    rows, nets = _natural_rows(np.random.default_rng(2543), 600, above_threshold)
+    if not above_threshold:
+        # From review: returned pay and contributions of 20p, and of £1,435.15.
+        rows += [
+            {
+                "employment_income_before_lsr": 10_608.96,
+                "salary_sacrifice_returned_to_income": 0.20,
+                "employee_pension_contributions_reported": 1.08,
+            },
+            {
+                "employment_income_before_lsr": 10_794.69,
+                "salary_sacrifice_returned_to_income": 1_435.15,
+                "employee_pension_contributions_reported": 1_807.49,
+            },
+            # Pay of £11,692.11, which float32 holds as 11,692.109375.
+            {
+                "employment_income_before_lsr": 10_276.42,
+                "salary_sacrifice_returned_to_income": 1_415.69,
+                "employee_pension_contributions_reported": 751.49,
+            },
+        ]
+        nets += [THRESHOLD_2026] * 3
+    net, gainful = _earnings_of(rows)
+    wrong = [(row, n, e) for row, n, e in zip(rows, net, nets) if n != e]
+    assert not wrong, wrong[:3]
+    assert gainful == [n >= THRESHOLD_2026 for n in nets]

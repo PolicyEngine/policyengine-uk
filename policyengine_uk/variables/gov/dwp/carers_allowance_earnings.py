@@ -1,11 +1,28 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.utils.class_2 import class_2_contribution_weeks, class_2_liable
-from policyengine_uk.utils.pence import stored_pence, stored_sum_pence
+from policyengine_uk.utils.pence import amount_pence, stored_pence
+from policyengine_uk.variables.gov.hmrc.national_insurance.class_1.ni_class_1_employee import (
+    ni_class_1_employee,
+)
+from policyengine_uk.variables.gov.hmrc.national_insurance.class_1.ni_class_1_employee_additional import (
+    ni_class_1_employee_additional,
+)
+from policyengine_uk.variables.gov.hmrc.national_insurance.class_1.ni_class_1_employee_primary import (
+    ni_class_1_employee_primary,
+)
+
+# The model's Class 1 variables, whose calculation _primary_class_1 works out
+# exactly.
+_CLASS_1 = (
+    ni_class_1_employee,
+    ni_class_1_employee_primary,
+    ni_class_1_employee_additional,
+)
 
 
-def _earned(amount):
+def _earned(pence):
     """Pay or profit in whole pence, a fraction of a penny disregarded (reg. 5)."""
-    return np.floor(stored_pence(amount))
+    return np.floor(pence)
 
 
 def _deducted(pence):
@@ -16,27 +33,64 @@ def _deducted(pence):
     return np.ceil(pence - 1e-6)
 
 
+def _formula_codes(variable):
+    """The code of each of a variable's formulas, in date order. ``variable``
+    is a Variable or a Variable class."""
+    if isinstance(variable, type):
+        formulas = [
+            vars(variable)[name]
+            for name in sorted(vars(variable))
+            if name.startswith("formula")
+        ]
+    else:
+        formulas = list(variable.formulas.values())
+    return [formula.__code__ for formula in formulas]
+
+
+def _class_1_calculated(person, period):
+    """Whether the model calculated ni_class_1_employee for each month of
+    ``period`` with its own formula: no reform changed how it or its primary
+    and additional parts are calculated, and no month of any of them was
+    supplied as an input or stored by a scenario."""
+    simulation = person.simulation
+    for model_variable in _CLASS_1:
+        name = model_variable.__name__
+        variable = simulation.tax_benefit_system.get_variable(name)
+        if (
+            variable.is_neutralized
+            or variable.definition_period != model_variable.definition_period
+            or variable.adds != model_variable.adds
+            or variable.subtracts != model_variable.subtracts
+            or variable.defined_for != model_variable.defined_for
+            or _formula_codes(variable) != _formula_codes(model_variable)
+        ):
+            return False
+        holder = person.get_holder(name)
+        if not all(
+            holder.is_derived(month, simulation.branch_name)
+            for month in period.get_subperiods(MONTH)
+        ):
+            return False
+    return True
+
+
 def _primary_class_1(person, period, parameters):
-    """ni_class_1_employee in float64 pence: its formula (the primary and
-    additional parts, month by month) worked exactly on the year's NI income
-    in whole pence, where that agrees with the stored total to within the
-    error of the model's float32 arithmetic; otherwise, as under a reform
-    that replaces the formula, the stored total.
+    """ni_class_1_employee in float64 pence.
 
     The model works out each month's Class 1 in float32 and sums the twelve,
     which can leave a whole-penny total further from it than stored_pence
     recovers: £175.56 (8% of £14,764.46 less £12,569.96) is stored as
-    175.5600128, and rounding that up would deduct a penny too much.
+    175.5600128, and rounding that up would deduct a penny too much. So where
+    the model calculated it with its own formula, the formula (the primary
+    and additional parts, month by month) is worked exactly on the year's NI
+    income. Otherwise, the deduction is the stored amount: one supplied as
+    an input, or calculated under a reform that changes the formula, is the
+    amount deducted (reg. 10(4)(a)), whatever the formula would give.
     """
-    income = stored_sum_pence(
-        person("ni_class_1_income", period),
-        [
-            person(name, period)
-            for name in person.simulation.tax_benefit_system.variables[
-                "ni_class_1_income"
-            ].adds
-        ],
-    )
+    stored = person("ni_class_1_employee", period)
+    if not _class_1_calculated(person, period):
+        return stored_pence(stored)
+    income = amount_pence(person, "ni_class_1_income", period)
     director = person("is_full_year_category_a_director", period)
     exact = 0
     for month in period.get_subperiods(MONTH):
@@ -68,8 +122,10 @@ def _primary_class_1(person, period, parameters):
         exact = exact + contribution
     exact = exact * person("ni_liable", period)
     # The twelve float32 months and their sum err by less than one float32
-    # step of the year's NI income plus 64 steps of the contribution.
-    stored = person("ni_class_1_employee", period)
+    # step of the year's NI income plus 64 steps of the contribution. A
+    # larger disagreement would mean the formula worked out here no longer
+    # matches the model's, and then the stored total, the one calculated, is
+    # deducted.
     tolerance = 100 * (
         np.spacing(np.abs(person("ni_class_1_income", period))).astype(np.float64)
         + 64 * np.spacing(np.abs(stored)).astype(np.float64)
@@ -120,9 +176,13 @@ class carers_allowance_earnings(Variable):
         "favour. Net earnings are therefore whole pence. They are worked in "
         "double precision from the whole pence each amount was entered as, "
         "since the model stores amounts in single precision, which holds most "
-        "sums of money only to within a fraction of a penny. Class 1, which the "
-        "model sums from twelve single-precision months, is worked out again "
-        "from its formula. The model holds each pension programme as one "
+        "sums of money only to within a fraction of a penny; an amount the "
+        "model sums from others (pay, pension contributions, NI income) is the "
+        "exact sum of its parts, read the same way. Class 1, which the model "
+        "sums from twelve single-precision months, is worked out again from "
+        "its formula where the model calculated it with that formula; Class 1 "
+        "entered as an input, or calculated under a reform of its formula, is "
+        "deducted as stored. The model holds each pension programme as one "
         "amount for the year, so half of the year's total is deducted, rounded "
         "up once.\n\n"
         "The Scottish Carer Support Payment reads these earnings too "
@@ -170,15 +230,16 @@ class carers_allowance_earnings(Variable):
         personal_allowance = income_tax.allowances.personal_allowance.amount
 
         # Work in float64 pence from the whole pence each amount was entered
-        # as (stored_pence), taking pay and profit down to a whole penny and
-        # each deduction up to one (reg. 5 for the calculated deductions; for
-        # PAYE and Class 1, which the law takes as deducted, the same rounding
-        # in the claimant's favour). Scales and thresholds are in pounds.
+        # as, and sums of them worked exactly (amount_pence), taking pay and
+        # profit down to a whole penny and each deduction up to one (reg. 5
+        # for the calculated deductions; for PAYE and Class 1, which the law
+        # takes as deducted, the same rounding in the claimant's favour).
+        # Scales and thresholds are in pounds.
 
         # Employment: PAYE on the pay alone (reg. 10(4)(a)).
-        pay = _earned(person("employment_income", period))
-        employee_pension = stored_pence(
-            person("employee_pension_contributions", period)
+        pay = _earned(amount_pence(person, "employment_income", period))
+        employee_pension = amount_pence(
+            person, "employee_pension_contributions", period
         )
         taxable_pay = max_(0, pay - employee_pension) / 100
         pay_tax = where(
@@ -193,7 +254,9 @@ class carers_allowance_earnings(Variable):
         # Self-employment: notional basic-rate tax and main-rate Class 4
         # (reg. 14(1)-(2)). The tax is on the profit as if it were the only
         # income, less the full personal allowance.
-        profit = _earned(max_(0, person("self_employment_income", period)))
+        profit = _earned(
+            stored_pence(max_(0, person("self_employment_income", period)))
+        )
         profit_pounds = profit / 100
         # The basic rate is the first band of the rest-of-UK scale (ITA 2007
         # s. 6(2)). The Scottish basic rate is the second bracket of the
@@ -234,14 +297,11 @@ class carers_allowance_earnings(Variable):
         # as one amount for the year, not the payments the law halves one by
         # one, so the half is of the year's total, rounded up once. The total
         # is pension_contributions, whether entered or summed from its
-        # programmes; a sum is redone in float64 pence.
+        # programmes (and theirs).
         pension_share = parameters(
             period
         ).gov.dwp.carers_allowance.pension_contribution_deduction_rate
-        contributions = stored_sum_pence(
-            person("pension_contributions", period),
-            [person(program, period) for program in p.pensions.pensions_programs],
-        )
+        contributions = amount_pence(person, "pension_contributions", period)
         pension_deduction = pension_share * contributions
         net = (
             pay

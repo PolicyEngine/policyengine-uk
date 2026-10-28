@@ -525,3 +525,81 @@
     carers_allowance_earnings: 10_608.52
     is_gainfully_employed_for_carers_allowance: true
     carers_allowance: 0
+
+- name: Case 33, Class 1 entered as nil is deducted as nil, not as the formula would work it.
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    age: 45
+    employment_income: 12_569.97
+    employee_pension_contributions: 3_922.90
+    ni_class_1_employee: 0
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # The model's formula would charge 8% of the penny over its £12,569.96
+    # primary threshold, 0.0008, counted as a penny. Entered as nil, nil is
+    # what was deducted (reg. 10(4)(a)): 12,569.97 - 3,922.90 / 2 = 10,608.52,
+    # or £204.01 a week, over the limit.
+    carers_allowance_earnings: 10_608.52
+    is_gainfully_employed_for_carers_allowance: true
+    carers_allowance: 0
+
+- name: Case 34, a pension total the model sums from two inputs is read in whole pence.
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    age: 45
+    employment_income_before_lsr: 10_608.96
+    salary_sacrifice_returned_to_income: 0.20
+    employee_pension_contributions_reported: 1.08
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # Pay is 10,608.96 + 0.20 = 10,609.16; employee contributions are
+    # 1.08 + 0.20 = 1.28, which float32 adds to 1.28000009, so that half of
+    # it read alone would count as 0.65. Summed in whole pence, half is 0.64:
+    # 10,609.16 - 0.64 = 10,608.52, or £204.01 a week, over the limit.
+    carers_allowance_earnings: 10_608.52
+    is_gainfully_employed_for_carers_allowance: true
+    carers_allowance: 0
+
+- name: Case 35, pay the model sums from two inputs is read in whole pence.
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    age: 45
+    employment_income_before_lsr: 10_276.42
+    salary_sacrifice_returned_to_income: 1_415.69
+    employee_pension_contributions_reported: 751.49
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # Pay is 10,276.42 + 1,415.69 = 11,692.11, which float32 adds to
+    # 11,692.109375: more than half a float32 step out, so read alone it would
+    # count as 11,692.10. Contributions are 751.49 + 1,415.69 = 2,167.18, half
+    # 1,083.59. Pay is under the primary threshold and pay less contributions
+    # under the personal allowance: 11,692.11 - 1,083.59 = 10,608.52, or
+    # £204.01 a week, over the limit.
+    carers_allowance_earnings: 10_608.52
+    is_gainfully_employed_for_carers_allowance: true
+    carers_allowance: 0
+
+- name: Case 36, pay and pension both summed by the model are read in whole pence.
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    age: 45
+    employment_income_before_lsr: 10_794.69
+    salary_sacrifice_returned_to_income: 1_435.15
+    employee_pension_contributions_reported: 1_807.49
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # Pay is 10,794.69 + 1,435.15 = 12,229.84 (float32: 12,229.8408203125)
+    # and contributions 1,807.49 + 1,435.15 = 3,242.64 (3,242.64013671875),
+    # each more than half a float32 step out of its pence. Summed in whole
+    # pence: 12,229.84 - 3,242.64 / 2 = 10,608.52, or £204.01 a week, over.
+    carers_allowance_earnings: 10_608.52
+    is_gainfully_employed_for_carers_allowance: true
+    carers_allowance: 0
