@@ -16,8 +16,7 @@ class income_support_earnings_disregard(Variable):
         "share one £10 (paragraph 6(a)). Not modelled: the £20 disregards for "
         "a disability premium (paragraph 4), a carer premium (paragraphs 6A "
         "and 6B) and the listed part-time occupations (paragraphs 7 and 8), "
-        "and the full disregards of paragraphs 1 to 3 for employment that has "
-        "ended."
+        "and the full disregards for past employment under paragraphs 1 to 3."
     )
     definition_period = YEAR
     unit = GBP

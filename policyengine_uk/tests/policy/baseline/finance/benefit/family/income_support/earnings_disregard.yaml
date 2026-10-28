@@ -7,10 +7,10 @@
 # (para 9). Regulations 36(2) and 38(2) take them from net earnings and net
 # profit. Statutory sick, maternity and paternity pay are not earnings (reg
 # 35(2)(b)); they, pensions, benefits and maintenance are income other than
-# earnings (reg 40), so none of them is disregarded. The disregard is therefore
+# earnings (reg 40), so none gets a Schedule 8 disregard. The disregard is therefore
 # capped at the claimant's and partner's net earnings: gross earnings less
 # income tax, primary Class 1 contributions and half of pension contributions
-# (reg 36(3)); net profit less tax and Class 4 contributions (regs 38(3), 39).
+# (reg 36(3)); net profit less tax and Class 2 and 4 contributions (regs 38(3), 39).
 # https://www.legislation.gov.uk/uksi/1987/1967/schedule/8
 # https://www.legislation.gov.uk/uksi/1987/1967/regulation/35
 # https://www.legislation.gov.uk/uksi/1987/1967/regulation/36
@@ -363,7 +363,7 @@
     income_support_applicable_income: 2_000
     income_support: 2_786.60
 
-- name: Income tax is attributed to earnings by their share of income.
+- name: The annual model approximates earnings tax by their share of income.
   # A single claimant in England with £13,000 of pension and £200 of
   # earnings. Income tax: (£13,200 - £12,570) x 20% = £126. The earnings'
   # share of it is £126 x 200 / 13,200 = £1.9091, and £200 is below the
@@ -396,8 +396,9 @@
     income_support_earnings_disregard: 198.09
     income_support_applicable_income: 12_875.91
 
-- name: Class 1 on statutory pay does not come off the earnings.
-  # A lone parent in England with £500 of earnings and £13,000 of SMP. Class
+- name: The annual model allocates Class 1 between earnings and statutory pay.
+  # This proportional split approximates payroll deductions. A lone parent
+  # in England has £500 of earnings and £13,000 of SMP. Class
   # 1 is due on the £13,500 together: (£13,500 - £12,570) x 8% = £74.40, of
   # which the wages' share is £74.40 x 500 / 13,500 = £2.7556. Income tax:
   # (£13,500 - £12,570) x 20% = £186, of which the earnings' share is

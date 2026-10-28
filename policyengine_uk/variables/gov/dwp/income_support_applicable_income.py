@@ -43,7 +43,7 @@ class income_support_applicable_income(Variable):
             "self_employment_income",
             "property_income_after_finance_costs",
             "private_pension_income",
-            # Employer statutory pay counts as other income (reg 40(4)(a)).
+            # Employer statutory pay is other income (regs 35(2)(b), 40(1)).
             "statutory_sick_pay",
             "statutory_maternity_pay",
             "statutory_paternity_pay",

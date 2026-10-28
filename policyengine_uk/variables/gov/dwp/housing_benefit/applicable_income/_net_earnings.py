@@ -27,13 +27,15 @@ def person_net_earnings(
     pension-contribution deduction rate.
 
     Income Support passes statutory_pay_is_earnings=False: IS Regs 1987 reg
-    35(2)(b) excludes remuneration paid while the claimant is on maternity,
-    paternity or other parental leave or absent from work because ill, and
-    reg 40(4)(a) counts it as income other than earnings. Earnings are then
-    employment income and self-employment profit only, and the primary Class 1
-    contributions deducted are those on the wages: Class 1 is levied on wages
-    and statutory pay together (ni_class_1_income), so it is attributed to the
-    wages by their share of that base, as income tax is attributed below.
+    35(2)(b) excludes remuneration paid in respect of periods throughout which
+    the claimant is on specified parental leave or absent because of illness;
+    reg 40(1) treats it as income other than earnings. Earnings are then
+    employment income and self-employment profit only. Reg 36(3)(a)(ii)
+    deducts Class 1 actually deducted from earnings; Schedule 9 paragraph 4
+    separately allows deductions against sick/leave pay. Without payroll
+    detail, the model approximates the split using the non-statutory share
+    of the Class 1 base (ni_class_1_income). Pension
+    contributions are not split between earnings and sick/leave pay.
 
     The existing tax-attribution approximation uses earnings' share of an
     explicit raw income base including statutory pay, before losses, and tax
@@ -86,8 +88,8 @@ def person_net_earnings(
             person, period, ["ni_class_1_employee", "ni_class_2", "ni_class_4"]
         )
     else:
-        # Class 1 on the wages alone: the contributions times the share of
-        # the Class 1 base that is not statutory pay, between nil and one.
+        # Approximate the wages' Class 1 deduction by the non-statutory share.
+        # This is not a separate payroll calculation on wages alone.
         class_1_income = person("ni_class_1_income", period)
         statutory_pay_share = np.divide(
             statutory_pay,
