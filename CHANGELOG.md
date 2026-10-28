@@ -1,3 +1,10 @@
+## [2.162.18] - 2026-10-28
+
+### Changed
+
+- Documented that the Universal Credit route for pension-age Working Tax Credit migrants (SI 2014/1230 reg 60A) reads reported Pension Credit receipt, not Pension Credit entitlement.
+
+
 ## [2.162.17] - 2026-10-28
 
 ### Fixed
