@@ -1,3 +1,10 @@
+## [2.162.21] - 2026-10-28
+
+### Changed
+
+- Moved the two-child limit child-poverty comparison from the validation page to PolicyEngine Scorecard, which recomputes it on a certified release; the page now documents the method and links to each Scorecard row.
+
+
 ## [2.162.20] - 2026-10-28
 
 ### Fixed
