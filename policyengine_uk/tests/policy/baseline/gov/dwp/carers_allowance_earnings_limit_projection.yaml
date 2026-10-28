@@ -67,5 +67,7 @@
     care_hours: 40
     country: ENGLAND
   output:
+    # Over the limit, but from 6 October 2030 the Budget 2026 taper pays the
+    # rate less the £1 above it in England and Wales, so the allowance is not
+    # zero. test_carers_allowance_earnings_taper.py checks the amounts.
     is_gainfully_employed_for_carers_allowance: true
-    carers_allowance: 0
