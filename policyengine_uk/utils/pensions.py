@@ -123,7 +123,7 @@ def annual_allowance_net_income(person, period, parameters):
     cap = hmrc.income_tax.reliefs.cap
     loss_cap = np.maximum(cap.amount, cap.rate * adjusted_total)
     loss = np.where(
-        person("trading_allowance_deduction", period) > 0,
+        person("uses_trading_allowance", period),
         0,
         person("trading_loss", period),
     )

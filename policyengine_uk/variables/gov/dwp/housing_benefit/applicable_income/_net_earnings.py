@@ -70,7 +70,7 @@ def person_net_earnings(
             "savings_interest_income",
             "other_investment_income",
             "dividend_income",
-            "taxable_miscellaneous_income",
+            "miscellaneous_income_before_trading_allowance",
         ]
     )
     earnings_share = np.divide(
