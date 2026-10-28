@@ -139,11 +139,11 @@ def _uprated_council_tax(regions, council_tax, year):
 def test_uprate_council_tax_holds_northern_ireland_flat():
     # In 2025-26 OBR's council tax receipts grow 7.02% in England, 7.73% in
     # Wales and 3.86% in Scotland (October 2026 EFO, Table 5.1, over the March
-    # 2026 EFO's 2024-25 outturn), and household weights grow 0.30%, with
+    # 2026 EFO's 2024-25 outturn), and household weights grow 0.33%, with
     # population. So a £1,000 bill becomes
-    # £1,000 x 1.0702 / 1.0030 = £1,067.00 in London,
-    # £1,000 x 1.0773 / 1.0030 = £1,074.08 in Wales and
-    # £1,000 x 1.0386 / 1.0030 = £1,035.49 in Scotland. Northern Ireland has
+    # £1,000 x 1.0702 / 1.0033 = £1,066.68 in London,
+    # £1,000 x 1.0773 / 1.0033 = £1,073.76 in Wales and
+    # £1,000 x 1.0386 / 1.0033 = £1,035.18 in Scotland. Northern Ireland has
     # no council tax series and keeps £1,000; it used to fall through to
     # England's growth, because the code compared the region with
     # "NORTHERN IRELAND" (a space) while the dataset label is NORTHERN_IRELAND.
@@ -152,27 +152,27 @@ def test_uprate_council_tax_holds_northern_ireland_flat():
     )
 
     assert council_tax == pytest.approx(
-        [1_067.00, 1_074.08, 1_035.49, 1_000.0], abs=0.005
+        [1_066.68, 1_073.76, 1_035.18, 1_000.0], abs=0.005
     )
 
 
 def test_uprate_council_tax_gives_unknown_region_england_growth():
     council_tax = _uprated_council_tax(["UNKNOWN"], [1_000.0], 2025)
 
-    assert council_tax == pytest.approx([1_067.00], abs=0.005)
+    assert council_tax == pytest.approx([1_066.68], abs=0.005)
 
 
 def test_scottish_bills_grow_with_the_amount_billed_in_2024_25():
     # Scotland's average Band D rose 0.1% in 2024-25, from £1,416.50 to
     # £1,418.11 (Scottish Government, Band D Council Tax 1996-97 to 2026-27),
     # but the net amount billed rose 2.36%, from £3,005.8m to £3,076.8m, and
-    # household weights grow 1.10%. So a £1,000 bill becomes
-    # £1,000 x 1.0236 / 1.0110 = £1,012.46. Dividing the Band D growth the
+    # household weights grow 0.97%. So a £1,000 bill becomes
+    # £1,000 x 1.0236 / 1.0097 = £1,013.77. Dividing the Band D growth the
     # series used to hold for 2024 (0.001) by the weights' growth would have
-    # cut it to £990.11, and Scotland's total would have grown 0.1%, not 2.36%.
+    # cut it to £991.38, and Scotland's total would have grown 0.1%, not 2.36%.
     council_tax = _uprated_council_tax(["SCOTLAND"], [1_000.0], 2024)
 
-    assert council_tax == pytest.approx([1_012.46], abs=0.005)
+    assert council_tax == pytest.approx([1_013.77], abs=0.005)
 
 
 @pytest.mark.parametrize("region", ["NORTHERN IRELAND", "ATLANTIS", ""])

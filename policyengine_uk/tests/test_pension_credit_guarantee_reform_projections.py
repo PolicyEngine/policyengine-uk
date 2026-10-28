@@ -641,12 +641,17 @@ def test_zero_phase_in_modifier_preserves_a_reformed_own_threshold():
 
 @pytest.mark.parametrize(
     "weekly_guarantee,expected_threshold,expected_allowance,expected_step",
-    [(None, 221.585186, 272.195717, 1.01), (300, 268.368418, 318.978949, 1.38)],
+    [(None, 223.407952, 274.662918, 0.87), (300, 267.965646, 319.220612, 1.38)],
 )
 def test_guarantee_credit_boundary_matches_main(
     weekly_guarantee, expected_threshold, expected_allowance, expected_step
 ):
-    """Frozen origin/main (6030cbc0b) cliff-probe values, including current law."""
+    """Frozen origin/main (6030cbc0b) cliff-probe values, including current law,
+    re-based on the October 2026 EFO. Current law: a 2028-29 standard minimum
+    guarantee of 238 x 1.039 x 1.033 = 255.4423 (May-July 2026 and 2027
+    earnings) less a maximum Savings Credit of 17.96 x 1.035 x 1.034 =
+    19.2207 (September 2026 and 2027 CPI) over 0.6 gives the threshold; the
+    Housing Benefit allowance is the sum of the two."""
     year = 2028
     situation = {
         "people": {"claimant": {"age": {year: 85}}},

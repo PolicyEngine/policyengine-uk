@@ -101,7 +101,7 @@ We derive these rates as calendar-year nominal GDP growth from the OBR's October
 
 | Year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 |
 |-------------|------|------|------|------|------|------|------|------|------|------|
-| Growth rate | 10.0% | 5.2% | 3.9% | 4.7% | 3.8% | 2.9% | 3.3% | 3.5% | 3.3% | 3.3% |
+| Growth rate | 10.0% | 5.2% | 4.0% | 4.6% | 4.0% | 3.1% | 3.4% | 3.6% | 3.4% | 3.3% |
 
 We use per capita GDP for these variables: `benunit_reported_capital`, `capital_gains`, `capital_gains_badr`, `capital_gains_before_response`, `capital_gains_carried_interest`, `capital_gains_residential_property`, `cash_isa`, `corporate_wealth`, `directly_held_shares`, `dividend_income`, `gross_financial_wealth`, `household_lifetime_isa_balance`, `lifetime_isa_balance`, `lump_sum_income`, `main_residence_value`, `maintenance_income`, `miscellaneous_income`, `mortgage_capital_repayment`, `net_financial_wealth`, `non_residential_property_value`, `other_investment_income`, `other_residential_property_value`, `owned_land`, `pension_credit_reported_capital`, `pension_income`, `private_pension_wealth`, `private_transfer_income`, `property_income`, `property_rental_income`, `savings`, `savings_interest_income`, `spousal_maintenance_income`, `stocks_and_shares_isa`, `sublet_income`, `uc_reported_capital`, `unit_and_investment_trusts`
 
@@ -153,16 +153,16 @@ We derive these rates as calendar-year mixed income growth from the OBR's Octobe
 
 | Year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 |
 |-------------|------|------|------|------|------|------|------|------|------|------|
-| Growth rate | 2.9% | -0.6% | 2.7% | 0.5% | 2.8% | 3.1% | 3.4% | 3.7% | 3.9% | 4.0% |
+| Growth rate | 2.8% | -0.6% | 2.8% | 0.5% | 3.0% | 3.2% | 3.5% | 3.8% | 4.0% | 4.0% |
 
 We apply this to: `self_employment_income`
 
 ## Population
 
-We use the population growth in the OBR's [long-term economic determinants for the March 2026 EFO](https://obr.uk/supplementary-forecast-information-release-long-term-economic-determinants-march-2026/): the OBR's forecast to 2030-31, then the principal projection of the [ONS 2024-based national population projections](https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationprojections/bulletins/nationalpopulationprojections/2024based). 2021-22 and 2022-23 are the same OBR series, read from the March 2026 EFO economy tables. The determinants for the October 2026 EFO are not yet published, so population stays on the March 2026 vintage until they are.
+We use the OBR's October 2026 population forecast to 2031-32, read from its economy tables (Table 1.1 real GDP over Table 1.5 real GDP per person, at Q2), and after that the population growth in the OBR's [long-term economic determinants for the March 2026 EFO](https://obr.uk/supplementary-forecast-information-release-long-term-economic-determinants-march-2026/), which follows the principal projection of the [ONS 2024-based national population projections](https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationprojections/bulletins/nationalpopulationprojections/2024based). On the March 2026 EFO the same reading of the tables reproduces the determinants' forecast years, so the October determinants, once published, should change only the later years.
 
 | Fiscal year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 |
 |-------------|------|------|------|------|------|------|------|------|------|------|
-| Growth rate | 1.0% | 1.3% | 1.1% | 0.3% | 0.4% | 0.3% | 0.3% | 0.3% | 0.4% | 0.2% |
+| Growth rate | 1.1% | 1.3% | 1.0% | 0.3% | 0.2% | 0.1% | 0.2% | 0.2% | 0.2% | 0.2% |
 
 We apply this to: `household_weight`

@@ -371,10 +371,11 @@ uv run python -m policyengine_uk.utils.import_obr_forecasts \
 
 The October 2026 import also needed, by hand: 2031 entries added to
 `house_prices` and `rent` before the run, the 2032+ joins above, and the
-series the importer does not cover (per-capita GDP, mixed and non-labour
-income, household interest income, council tax, social and private rents,
-the AHC deflator, Ofwat water bills, road fuel volumes and the litre proxies,
-and the fuel duty RPI path in `gov.hmrc.fuel_duty`). Each series' comments
+series the importer does not cover (population, per-capita GDP, mixed and
+non-labour income, household interest income, rail journeys per person,
+council tax, social and private rents, the AHC deflator, Ofwat water bills,
+road fuel volumes and the litre proxies, and the fuel duty RPI path in
+`gov.hmrc.fuel_duty`). Each series' comments
 name its source and method.
 
 The EFO refresh does not touch `finance_ni.domestic_rates`; OBR does not
