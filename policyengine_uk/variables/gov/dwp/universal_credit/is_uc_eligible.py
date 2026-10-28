@@ -60,10 +60,12 @@ class is_uc_eligible(Variable):
         # the qualifying age for State Pension Credit, is entitled to an
         # award of Working Tax Credit and is not entitled to an award of
         # State Pension Credit. The model reads the year's reported receipt
-        # instead. legacy_award_is_closed puts a family whose claimant or
-        # partner reports Pension Credit (pension_credit_reported) on the
-        # Pension Credit route, so legacy_benefits_closed is false and it
-        # makes no closure claim; reg_60a reads reported Working Tax Credit.
+        # instead. legacy_award_is_closed never closes the legacy awards of a
+        # family whose claimant or partner reports Pension Credit
+        # (pension_credit_reported), so legacy_benefits_closed is false and it
+        # makes no closure claim. reg_60a reads reported Working Tax Credit,
+        # so a family whose Working Tax Credit tapered to nil, which reg
+        # 60A(2) also covers, is not modelled as a reg 60A migrant.
         # Any other pension-age Working Tax Credit recipient can make the
         # reg 60A claim, whether or not it would claim Pension Credit in the
         # model (would_claim_pc). Except in prescribed cases, no one is
