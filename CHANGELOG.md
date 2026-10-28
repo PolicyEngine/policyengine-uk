@@ -1,3 +1,38 @@
+## [2.162.19] - 2026-10-28
+
+### Changed
+
+- Corrected comments, docstrings and citations from reviews of recently merged pull requests, and added property tests for claimant roles and the Childcare Offer for Wales income sources.
+
+
+## [2.162.18] - 2026-10-28
+
+### Changed
+
+- Documented that the Universal Credit route for pension-age Working Tax Credit migrants (SI 2014/1230 reg 60A) reads reported Pension Credit receipt, not Pension Credit entitlement.
+
+
+## [2.162.17] - 2026-10-28
+
+### Fixed
+
+- Project the Carer's Allowance earnings limit after its last legislated amount as 16 hours at the national living wage, rounded up to the next pound, as the Government sets it from April 2025, instead of holding £204 in every later year.
+
+
+## [2.162.16] - 2026-10-28
+
+### Changed
+
+- Documented that the OBR shows Northern Ireland domestic rates in two places, a council tax line that appears to be the district rates and an other taxes line that appears to be the regional rate, while `domestic_rates` charges both.
+
+
+## [2.162.15] - 2026-10-28
+
+### Fixed
+
+- Uprate the Scottish Carer Supplement each April by the previous September's CPI, rounded to the nearest 5p, instead of holding it at £11.70 a week from 2027-28, and round the Carer Support Payment component's projected rate to the nearest 5p in the same way.
+
+
 ## [2.162.14] - 2026-10-27
 
 ### Changed

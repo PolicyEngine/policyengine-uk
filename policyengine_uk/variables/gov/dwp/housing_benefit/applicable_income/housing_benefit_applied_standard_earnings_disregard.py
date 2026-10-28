@@ -25,7 +25,9 @@ class housing_benefit_applied_standard_earnings_disregard(Variable):
 
     def formula(benunit, period, parameters):
         net_earnings = benunit("housing_benefit_net_earnings", period)
-        # Working age Sch 4 paras 4, 7 and 10; pension age Sch 4 paras 2 and 7.
+        # Working age Sch 4 paras 3, 4, 7 and 10; pension age Sch 4 paras 2,
+        # 4, 5 and 7. Other full-amount £20 routes are pre-assessed
+        # (housing_benefit_special_earnings_disregard_eligible).
         standard = benunit("housing_benefit_special_earnings_disregard", period)
         # Working-age para 10A(2) / pension-age para 5A(2): replace the
         # ordinary amount, except for a higher lone-parent amount. The input
