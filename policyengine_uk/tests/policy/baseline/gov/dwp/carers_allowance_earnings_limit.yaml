@@ -603,3 +603,21 @@
     carers_allowance_earnings: 10_608.52
     is_gainfully_employed_for_carers_allowance: true
     carers_allowance: 0
+
+- name: Case 37, Class 1 entered for the year in whole pence is deducted in whole pence.
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    age: 45
+    employment_income: 10_609.72
+    ni_class_1_employee: 1.20
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # The model divides the year's 1.20 among the months in float32 and
+    # sums them to 1.2000002, which rounded up would deduct 1.21. The Class
+    # 1 deducted is the 1.20 entered (reg. 10(4)(a)): 10,609.72 - 1.20 =
+    # 10,608.52, or £204.01 a week, over the limit.
+    carers_allowance_earnings: 10_608.52
+    is_gainfully_employed_for_carers_allowance: true
+    carers_allowance: 0
