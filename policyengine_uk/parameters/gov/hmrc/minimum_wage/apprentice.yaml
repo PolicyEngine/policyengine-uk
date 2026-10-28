@@ -7,10 +7,10 @@ description: Minimum wage rate for apprentices.
 # Rates after the last one set here are a projection, not law: the last rate
 # set times the growth since then in
 # gov.economic_assumptions.indices.earnings_uprating, rounded to the nearest
-# penny, as for the other minimum wage rates (non_apprentice.yaml). Keeping the
-# rate's April 2026 ratio to the national living wage is an assumption: the
-# Low Pay Commission is asked to set it to support apprentices' employment
-# prospects (remit 2026).
+# penny, as for the other minimum wage rates (non_apprentice.yaml). Growing it
+# by the national living wage's index, which keeps its ratio to that rate to
+# the penny, is an assumption: the Low Pay Commission is asked to set it to
+# support apprentices' employment prospects (remit 2026).
 values:
   2010-10-01:
     value: 2.5

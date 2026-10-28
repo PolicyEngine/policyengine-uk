@@ -142,7 +142,8 @@ def test_a_rate_set_later_takes_precedence_and_the_projection_continues():
         assert wage(year).amounts[-1] == pytest.approx(
             _projected(13.50, tree, 2027, year), abs=1e-9
         ), year
-    # The younger bands keep their own last rates' projection.
+    # Adding a national living wage rate leaves the younger bands' projection
+    # unchanged.
     assert wage(2027).amounts[0] == pytest.approx(
         system.parameters("2027-01-01").gov.hmrc.minimum_wage.non_apprentice.amounts[0]
     )
@@ -202,8 +203,10 @@ def test_rules_that_read_the_national_living_wage_follow_its_projection():
 @pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 def test_a_reform_rate_is_not_projected():
     """Invariant 6 (intended): £13.50 for 2027-28 alone leaves 2028-29 on
-    the baseline's path; £13.50 from 6 April 2027 onwards holds at £13.50,
-    below the baseline from the year the baseline passes it."""
+    the baseline's path, where projecting from the reform's rate would give
+    £13.50 x 1.024. £13.50 from 6 April 2027 onwards documents the disclosed
+    behaviour rather than testing projection: the reform sets every year to
+    2100, so nothing is left to project, and the baseline passes it."""
     baseline = system.parameters
     one_year = {NLW.format(b): {"2027": 13.50} for b in (2, 3, 4)}
     onwards = {NLW.format(b): {"2027-04-06.2100-12-31": 13.50} for b in (2, 3, 4)}

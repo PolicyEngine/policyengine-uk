@@ -255,13 +255,16 @@ the projection holds amounts unchanged.
 
 The Pension Credit standard minimum guarantee and the three lower Housing
 Benefit pension-age personal allowances, which equal it, use this index after
-their last published amounts. The minimum wage rates
-(`gov.hmrc.minimum_wage`) use it after the last rate set, as a projection. [SSAA 1992 s150A(1)(d) and (2)](https://www.legislation.gov.uk/ukpga/1992/5/section/150A)
+their last published amounts. [SSAA 1992 s150A(1)(d) and (2)](https://www.legislation.gov.uk/ukpga/1992/5/section/150A)
 require the guarantee to rise at least with earnings; they impose no CPI or
 2.5% floor. This projection uses that earnings minimum, allowing published
 amounts to reflect discretionary increases. For April 2027, May-July 2026
 earnings growth of 3.9% gives £238 × 1.039 = £247.282 a week for a single
 person and £363.25 × 1.039 = £377.41675 for a couple, before benefit rounding.
+
+The minimum wage rates (`gov.hmrc.minimum_wage`) also use this index after
+the last rate set. That is a projection: each rate is set by an S.I., not by
+a formula.
 
 The Savings Credit maximum rises by September CPI, as stated in
 [HCWS1101](https://questions-statements.parliament.uk/written-statements/detail/2025-11-26/hcws1101).

@@ -25,20 +25,26 @@ description: Minimum wage rate for non-apprentices by age.
 # Rates after the last one set here are a projection, not law. Each is the
 # last rate set times the growth since then in
 # gov.economic_assumptions.indices.earnings_uprating, rounded to the nearest
-# penny (the rounding is not repeated each April). Each April's rise in that
+# penny (the rounding is not repeated each year). Each year's rise in that
 # index is the May-July growth in average weekly earnings of the year before,
 # rounded to 0.1 percentage points and never negative; it also projects the
-# April up-rating of the Pension Credit guarantee. The Government keeps
-# two-thirds of median hourly earnings for workers aged 21 and over as "the key
-# reference point for future rates" of the national living wage (Low Pay
-# Commission remit 2026), so that rate moves with earnings. May-July 2026
-# growth was 3.9%, so the April 2027 national living wage is projected at
+# April up-rating of the Pension Credit guarantee. The Low Pay Commission
+# remit 2026 says two-thirds of median hourly earnings "should continue to be
+# the key reference point for future rates" of the national living wage, so
+# the projection moves that rate with earnings. May-July 2026 growth was 3.9%,
+# so the April 2027 national living wage is projected at
 # £12.71 x 1.039 = £13.21.
 #
-# The younger bands' projection is an assumption: each keeps its April 2026
-# ratio to the national living wage. The Government "remains committed to"
-# aligning the 18 to 20 rate with the national living wage, at a pace the Low
-# Pay Commission sets (remit 2026), which this does not model.
+# The index is dated 1 January, so before annualisation a projected rate
+# starts on 1 January. Each year's figure is read at 30 April, the rate for
+# the fiscal year that starts that April. Like the model's other indices, this
+# one ends in 2039, so projected rates hold flat from 2040.
+#
+# The younger bands' projection is an assumption: each grows from its own
+# last rate by the same index, so it keeps its ratio to the national living
+# wage to the penny. The Government "remains committed to" aligning the 18 to
+# 20 rate with the national living wage, at a pace the Low Pay Commission sets
+# (remit 2026), which this does not model.
 #
 # A rate added to this file takes precedence, and the projection continues
 # from it. A reform does not: a rate a reform sets for some years is not
