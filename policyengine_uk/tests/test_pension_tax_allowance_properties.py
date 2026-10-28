@@ -165,3 +165,35 @@ def test_the_allowance_falls_by_at_most_a_third_of_extra_income(sims, drawn, yea
     # no faster than the 1-in-3 taper: no cliff edge at the threshold or at
     # the point where the cap stops binding.
     assert (base - more <= STEP / 3 + 0.01).all()
+
+
+def threshold(sim, year):
+    pta = sim.tax_benefit_system.parameters.gov.hmrc.income_tax.reliefs
+    return pta.pension_tax_allowance.state_pension_threshold(f"{year}-04-06")
+
+
+def new_state_pension(sim, year):
+    nsp = sim.tax_benefit_system.parameters.gov.dwp.state_pension.new_state_pension
+    return nsp.amount(f"{year}-04-06")
+
+
+def test_the_threshold_rises_in_line_with_the_new_state_pension():
+    sim = Simulation(situation=situation())
+    for year in YEARS[1:]:
+        assert threshold(sim, year) / threshold(sim, YEARS[0]) == pytest.approx(
+            new_state_pension(sim, year) / new_state_pension(sim, YEARS[0]),
+            rel=1e-9,
+        )
+
+
+@pytest.mark.parametrize("weekly_rate", [0.0, 300.0])
+def test_a_new_state_pension_rate_reform_leaves_the_threshold(weekly_rate):
+    # The threshold follows the triple lock index, as the new State Pension
+    # does without a reform, so a rate of nil does not divide by zero.
+    rate = "gov.dwp.state_pension.new_state_pension.amount"
+    sim = Simulation(situation=situation())
+    reformed = Simulation(situation=situation(), reform={rate: weekly_rate})
+    for year in YEARS:
+        assert new_state_pension(reformed, year) == weekly_rate
+        assert threshold(reformed, year) == threshold(sim, year)
+        assert np.isfinite(reformed.calculate("pension_tax_allowance", year)).all()

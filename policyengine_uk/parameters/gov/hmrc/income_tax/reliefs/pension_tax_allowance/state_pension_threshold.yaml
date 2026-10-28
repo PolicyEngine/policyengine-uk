@@ -11,8 +11,12 @@ metadata:
   label: Pension Tax Allowance State Pension threshold
   # "For tax years 2028-29 and 2029-30, the value of the Pension Tax
   # Allowance will be uprated in line with the full annual value of the new
-  # State Pension." Later years follow the weekly new State Pension rate.
-  uprating: gov.dwp.state_pension.new_state_pension.amount
+  # State Pension." The new State Pension is projected with the triple lock
+  # index, so this follows it in the baseline. Uprating by the pension's own
+  # amount would divide by zero under a reform that sets it to nil, so a
+  # reform to the new State Pension rate leaves this threshold alone unless
+  # the threshold is reformed with it.
+  uprating: gov.economic_assumptions.indices.triple_lock
   reference:
     - title: HM Treasury, Pension Tax Allowance explainer, section 1 and FAQ
       href: https://www.gov.uk/government/publications/pension-tax-allowance-explainer/pension-tax-allowance-explainer
