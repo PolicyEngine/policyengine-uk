@@ -2,11 +2,11 @@ from policyengine_uk.model_api import *
 
 # The election is weighed on income tax before the winter fuel payment charge.
 # The charge is Step 7 tax on a person whose own total income (ITA 2007 s.23
-# Step 1) is over the threshold, which the election does not change; it can
-# differ between the two positions only where the election's tax change ends
-# or starts a relevant benefit (ITEPA 2003 s.681I(4)), and the election does
-# not weigh effects on benefits. Leaving it out keeps the benefits that decide
-# the charge out of these branches.
+# Step 1) is over the threshold, which the election does not change. So it can
+# differ between the two positions only through the benefits that the charge
+# and the payment read (ITEPA 2003 s.681I(4)), and the election does not weigh
+# effects on benefits. Leaving the charge out keeps benefits out of these
+# branches.
 COMPARED_TAX = "income_tax_before_winter_fuel_payment_charge"
 BRANCH_OUTPUTS = [
     COMPARED_TAX,

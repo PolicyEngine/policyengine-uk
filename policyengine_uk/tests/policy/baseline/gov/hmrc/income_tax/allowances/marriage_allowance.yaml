@@ -551,13 +551,17 @@
 - name: Pensioner transferor with State Pension, as in the UC State Pension test
   period: 2026
   input:
+    # A couple 25 years apart is read as a parent and adult child unless the
+    # roles are supplied (is_claimant_or_partner).
     people:
       pensioner:
         age: 70
         state_pension: 12_000
+        is_claimant_or_partner: true
       partner:
         age: 45
         employment_income: 20_000
+        is_claimant_or_partner: true
     benunits:
       benunit:
         members: [pensioner, partner]
