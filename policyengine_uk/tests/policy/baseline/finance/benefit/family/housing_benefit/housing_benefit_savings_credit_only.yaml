@@ -441,17 +441,18 @@
 # entitled to PC/HB on 14 May 2019 and continuously entitled to either since.
 # Grandchild normally lives here and they are responsible; no tax-credit award.
 # Claimant: gross earnings 125/week, tax 25/week, net 100/week; gross private
-# pension 14,732.50/year, tax 432.50/year, net pension 275/week. No Class 1 at80.
+# pension 14,732.50/year, tax 432.50/year, net pension 275/week. No Class 1 at 80.
 # Partner: assessment-phase contributory ESA 90.50/week, actual unsupported
 # self-employment 16 hours/week, net earnings 10/week. Not main phase, no other
-# special-HB route, and no reg7 ESA assessment exception. ESA reg45(2) applies;
-# precisely16hours excludes45(4). HB5A amount=10+min(100,20-10,20)=20/week.
-# PC SchVI4 already excludes20/week. AIF=275+100+10+90.50-20=455.50/week.
-# Child16hour route adds17.10 HB disregard. PC: minimum332.95+76.79=409.74,
-# qualifying income365, SavingsCredit19.04-18.30=0.74/week (PCreg7(4)).
+# special-HB route, and no reg 7 ESA assessment exception. ESA reg 45(2) applies;
+# precisely 16 hours excludes 45(4). HB para 5A amount
+# = 10 + min(100, 20 - 10, 20) = 20/week. PC Sch VI para 4 already excludes
+# 20/week. AIF = 275 + 100 + 10 + 90.50 - 20 = 455.50/week. The child 16-hour
+# route adds the 17.10 HB disregard. PC: minimum 332.95 + 76.79 = 409.74,
+# qualifying income 365, Savings Credit 19.04 - 18.30 = 0.74/week (PC reg 7(4)).
 # All AIF/net-earnings inputs are external component assessments.
-# Expected:23686+38.48-17.10*52=22835.28. Current head incorrectly subtracts
-# (37.10-10)*52=1409.20, producing22315.28.
+# Expected: 23686 + 38.48 - 17.10 * 52 = 22835.28. Pre-fix a67175429 incorrectly
+# subtracts (37.10 - 10) * 52 = 1409.20, producing 22315.28.
 - name: Protected Savings Credit family offsets the existing PC earnings disregard
   period: 2024
   absolute_error_margin: 0.01
