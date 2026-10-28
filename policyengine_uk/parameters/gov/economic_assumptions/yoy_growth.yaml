@@ -1520,7 +1520,8 @@ finance_ni:
     # 2019-20, the first year not published). It is a national average: it
     # does not reproduce any one council's bill or changes in reliefs.
     #
-    # Neither OBR March 2026 line covers the whole bill, and OBR labels
+    # Neither OBR March 2026 line is large enough to cover the whole bill
+    # (each is about half of LPS's £889.5m paid in 2024-25), and OBR labels
     # neither as regional or district; the attribution here is inferred.
     # Expenditure Table 4.1 holds "NI domestic rates" at £0.494bn in every
     # year to 2030-31 inside its council tax total, and ONS classes district
@@ -1529,9 +1530,11 @@ finance_ni:
     # taxes") appears to be the regional rate: ONS classes the regional
     # domestic rate as a central government tax, and with Table 3.2's NI
     # business rates line it sums to £0.914bn in 2026-27, against DoF's
-    # "just over £900million" from the regional rate that year. Receipts
-    # growth is not bill growth either: Table 3.2 grows 2.0% in 2026-27, a
-    # year whose domestic regional rate rose 5.0%.
+    # "just over £900million" from the regional rate that year. The reading
+    # rests on where the lines sit, not on their size: the £0.494bn line is
+    # nearer ONS's 2024-25 regional domestic row (£498m) than its district
+    # row (£441m). Receipts growth is not bill growth either: Table 3.2
+    # grows 2.0% in 2026-27, a year whose domestic regional rate rose 5.0%.
     values:
       # Outturn: published poundages. Regional rate 0.4574p in 2019-20 to
       # 2022-23, then 0.4848p, 0.5042p, 0.5294p and 0.5559p (2026-27). The
