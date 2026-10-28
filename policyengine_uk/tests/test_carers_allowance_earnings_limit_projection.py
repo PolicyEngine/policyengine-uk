@@ -114,7 +114,10 @@ def _stated_limit(year):
 
 
 def _rule(hours, wage):
-    return math.ceil(Fraction(str(hours)) * Fraction(str(wage)))
+    """ceil(hours x wage) in exact arithmetic, on the wage in whole pence: a
+    rate is set in pence, and uprating can hold £14.45 as 14.450000000000001,
+    which exactly x 20 would round up to £290 rather than £289."""
+    return math.ceil(Fraction(str(hours)) * Fraction(str(round(wage, 2))))
 
 
 def _check_invariants(limits, wages, hours):

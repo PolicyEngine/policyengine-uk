@@ -11,8 +11,8 @@ living wage in force on 30 April, as the April up-rating sets the limit.
 
 Each projected year is the rule alone. A reform that lowers the national
 living wage or the hours lowers the limit, and one that changes a single year
-changes that year only. While the national living wage never falls below its
-April 2026 rate, no projected year is below £204.
+changes that year only. While the national living wage stays at or above its
+April 2026 rate and the hours at or above 16, no projected year is below £204.
 
 Run after general uprating and before fiscal-year conversion, on both the
 main tree and its baseline copy, as the Savings Credit threshold projection
