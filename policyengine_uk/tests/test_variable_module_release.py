@@ -142,8 +142,8 @@ def test_dead_systems_modules_are_released_while_a_test_runs(request, monkeypatc
     # system during the loop, a later system can reuse its address and
     # overwrite its modules rather than add an owner, so no release falls due:
     # with a collection after each build, owners stopped at live + 6 and no
-    # release ran. Building with automatic collection off keeps the addresses
-    # distinct; the release still collects.
+    # release ran. With automatic collection off, the dead systems wait for the
+    # release's own collection, so each build adds an owner.
     collecting = gc.isenabled()
     gc.disable()
     try:
