@@ -102,7 +102,9 @@ def _simulation(couple, changes, years, route="reform"):
     return Simulation(situation=_situation(couple, years), **options)
 
 
-def _modifier_simulation(couple, changes, start="2026-04-01", stop=None, dated_changes=None):
+def _modifier_simulation(
+    couple, changes, start="2026-04-01", stop=None, dated_changes=None
+):
     """Reload YAML, apply open or bounded updates, then reprocess it."""
 
     def modify(simulation):
@@ -154,15 +156,25 @@ def test_reprocessing_modifier_keeps_the_yaml_base_and_its_explicit_update(
 
 @pytest.mark.parametrize(
     "path,value",
-    [(f"{GUARANTEE}.SINGLE", 250), (f"{SAVINGS_CREDIT}.threshold.SINGLE", 200), (f"{HB_ALLOWANCES}.single.aged", 260)],
+    [
+        (f"{GUARANTEE}.SINGLE", 250),
+        (f"{SAVINGS_CREDIT}.threshold.SINGLE", 200),
+        (f"{HB_ALLOWANCES}.single.aged", 260),
+    ],
 )
 def test_reprocessing_modifier_composes_with_dated_projection_reforms(path, value):
     parameters = _modifier_simulation(
-        False, {path: value}, "2027-04-01", "2100-12-31",
+        False,
+        {path: value},
+        "2027-04-01",
+        "2100-12-31",
         dated_changes={f"{HB_ALLOWANCES}.lone_parent.aged": {"2028": 280}},
     ).tax_benefit_system.parameters
     assert parameters.get_child(path)("2027-04-30") == value
-    assert parameters.gov.dwp.housing_benefit.allowances.lone_parent.aged("2028-04-30") == 280
+    assert (
+        parameters.gov.dwp.housing_benefit.allowances.lone_parent.aged("2028-04-30")
+        == 280
+    )
 
 
 def _assert_projections_follow_main(simulation):

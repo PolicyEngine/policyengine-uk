@@ -517,7 +517,11 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
                 raw.get_child(assignment.path)
         unreformed = raw.clone()
         projected = prior_law_projection(
-            on_timeline, unreformed, statutory, generated, enacted=self._enacted_parameters
+            on_timeline,
+            unreformed,
+            statutory,
+            generated,
+            enacted=self._enacted_parameters,
         )
         for assignment in on_timeline:
             write_assignment(raw.get_child(assignment.path), assignment, projected)
@@ -761,7 +765,10 @@ def prior_law_projection(
                         tree.get_child(assignment.path), assignment, lookup
                     )
             updated[path] = process_parameter_tree(
-                tree, unreformed=unreformed, annualise=False, generated=generated,
+                tree,
+                unreformed=unreformed,
+                annualise=False,
+                generated=generated,
                 enacted=enacted,
             )[1].get(path)
         if _same_timelines(updated, environment):
