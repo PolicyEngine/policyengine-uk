@@ -300,22 +300,22 @@ obr:
       # net of non-road fuel receipts (OBR April 2024 vehicle-type release,
       # "Other fuels", held at GBP 0.3bn after 2028-29), divided by the
       # fiscal-year average petrol/diesel duty rate on the Budget 2026 path
-      # behind that forecast: 52.95p to 30 June 2027, 60.59p from 1 July
-      # 2027, then raised each 1 April by Q1 RPI growth (OBR economy
-      # Table 1.7), the convention that gives 60.59p. That path is policy,
-      # not the current law in gov.hmrc.fuel_duty.petrol_and_diesel, which
-      # also uses another RPI convention: calculate_fuel_duty_rates.py applies
-      # the previous calendar year's RPI growth (60.03p from April 2027), so
-      # the model's rates differ from this path by up to 0.6p a litre in
-      # 2027-28 and by 0.3p or less from 2028-29. Aligning the two belongs
-      # with the current-law schedule (#2715). The derivation is
-      # policyengine-uk-data's sources/road_fuel_volume.py.
+      # behind that forecast: 52.95p to 30 June 2027 and 60.59p from 1 July
+      # 2027 (57.95p raised by Q1 2027 RPI growth, OBR economy Table 1.7),
+      # then 63.21p, 65.13p, 67.07p and 68.61p from 1 April 2028 to 2031,
+      # each raised by the previous calendar year's RPI growth in obr.rpi.
+      # That is the schedule PolicyEngine/policyengine-uk#2719 puts into
+      # gov.hmrc.fuel_duty.petrol_and_diesel, so once it is law the model's
+      # duty on these volumes reproduces the OBR's road fuel receipts. Until
+      # then current law there is the Budget 2025 schedule (60.03p from April
+      # 2027). The derivation is policyengine-uk-data's
+      # sources/road_fuel_volume.py.
       2026-01-01: -0.02315665811165113
       2027-01-01: -0.030554808261277322
-      2028-01-01: -0.03089248062672023
-      2029-01-01: -0.03954082422617977
-      2030-01-01: -0.05402149170377035
-      2031-01-01: -0.06452057525352783
+      2028-01-01: -0.0397847818644439
+      2029-01-01: -0.041064621128607315
+      2030-01-01: -0.05572027407818414
+      2031-01-01: -0.06577310603942343
       # Hold the final OBR forecast volume flat after 2031-32.
       2032-01-01: 0.0
       2033-01-01: 0.0
@@ -380,10 +380,10 @@ obr:
       2025-01-01: -0.06053614112047978
       2026-01-01: 0.08688748446453687
       2027-01-01: -0.033358069858687056
-      2028-01-01: -0.0339837326821375
-      2029-01-01: -0.04279532013771159
-      2030-01-01: -0.05741479842942443
-      2031-01-01: -0.0667603504125377
+      2028-01-01: -0.04284766932261164
+      2029-01-01: -0.044313953686074714
+      2030-01-01: -0.05910748712453573
+      2031-01-01: -0.06800988232185101
       2032-01-01: -0.0021951706246258196
       2033-01-01: -0.0020955992415926383
       2034-01-01: -0.0018963968459926317
@@ -447,10 +447,10 @@ obr:
       2025-01-01: -0.0543311074029702
       2026-01-01: 0.16474156463748946
       2027-01-01: -0.033358069858687056
-      2028-01-01: -0.0339837326821375
-      2029-01-01: -0.04279532013771159
-      2030-01-01: -0.05741479842942432
-      2031-01-01: -0.0667603504125377
+      2028-01-01: -0.04284766932261175
+      2029-01-01: -0.044313953686074714
+      2030-01-01: -0.05910748712453584
+      2031-01-01: -0.0680098823218509
       2032-01-01: -0.0021951706246258196
       2033-01-01: -0.0020955992415926383
       2034-01-01: -0.0018963968459926317
@@ -1087,7 +1087,12 @@ ons:
     # them, and the petrol and diesel spending proxies, whenever it changes.
     # The long-term determinants for the October 2026 EFO are not yet
     # published, so this stays on the March 2026 vintage until they are; the
-    # per_capita series meanwhile divide October 2026 aggregates by it.
+    # per_capita series meanwhile divide October 2026 aggregates by it. The
+    # October 2026 economy tables, read the same way, put growth at 0.33%,
+    # 0.20%, 0.13%, 0.17%, 0.21%, 0.25% and 0.24% for 2025-26 to 2031-32,
+    # against 0.30%, 0.35%, 0.29%, 0.32%, 0.34%, 0.36% and 0.24% here. So
+    # this path, and the household weights it grows, run about 0.7% above
+    # the October forecast by 2030-31.
     values:
       2021-01-01: 0.0036
       2022-01-01: 0.0098
