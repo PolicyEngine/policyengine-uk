@@ -11,7 +11,7 @@ values:
 metadata:
   unit: bool
   period: year
-  label: machine games duty higher rate on higher-stake machines
+  label: Machine Games Duty higher rate on higher-stake machines
   reference:
     - title: Finance Act 2012, Schedule 24, paragraph 5
       href: https://www.legislation.gov.uk/ukpga/2012/14/schedule/24/paragraph/5

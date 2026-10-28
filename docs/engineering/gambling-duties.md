@@ -120,15 +120,24 @@ prize thresholds that set each machine's type, and with it the rate
 ([OOTLAR paragraph 1.50](https://www.gov.uk/government/publications/budget-2026-overview-of-tax-legislation-and-rates-ootlar/budget-2026-overview-of-tax-legislation-and-rates-ootlar)).
 Today, Finance Act 2012 Schedule 24 paragraph 5(3) puts every machine outside
 the lower-rate class with a highest charge of at most £5 in the standard-rate
-type. Exactly £1 per play, or a £100 maximum prize, stays at the standard rate.
+type. From 1 April 2027, such a machine stays at the standard rate only if its
+maximum charge is at most £1 and its maximum prize at most £100: a machine at
+exactly £1 and £100 stays at 20%, while £1 with a £500 prize, or £2 with a
+£100 prize, moves to 25%.
 
 `machine_games_standard_rate_higher_stake_net_takings` is a subset of
 `machine_games_standard_rate_net_takings`, not a separate amount:
 
 - The standard-rate input keeps its meaning: takings from every machine with a
-  highest charge of at most £5 outside the lower-rate class. A standard-rate
-  input built from HMRC's standard-rate liabilities needs no change. A dataset
-  without the new input gives the duty before Budget 2026 in every year.
+  highest charge of at most £5 outside the lower-rate class. A dataset without
+  the new input gives the duty before Budget 2026 in every year.
+- HMRC's standard-rate liabilities for periods before 1 April 2027 include the
+  higher-stake machines, so a standard-rate input built from them needs no
+  change. From that date HMRC reports those machines at the higher rate. A
+  standard-rate input built from later liabilities must add their takings
+  back, and the higher-rate input must leave them out. Otherwise, for £100 of
+  remaining standard-rate takings and £100 of higher-stake takings, the duty
+  comes to £25 rather than £45.
 - A data provider supplies the higher-stake share of that base, for example
   from the Gambling Commission's machine yield by category. The class
   corresponds closely to Category B, whose limits ([B1: £5 stakes; B2, B3 and
