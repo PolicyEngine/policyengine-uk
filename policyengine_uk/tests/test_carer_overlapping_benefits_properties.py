@@ -338,6 +338,9 @@ def pinned(age, country, mode, pension, additional=0.0, gender="MALE"):
     ]
 )
 @example(people=[pinned(80, "WALES", "reported", 3_000)])
+# A reported old State Pension from 80 in Scotland: the 25p addition is part
+# of the report and overlaps Carer Support Payment, so 2,987 + 13 overlaps.
+@example(people=[pinned(80, "SCOTLAND", "reported", 3_000, gender="FEMALE")])
 @example(people=[pinned(70, "ENGLAND", "direct", 4_495.4)])
 def test_overlap_bounds_and_reference(people):
     sim = build(people)
