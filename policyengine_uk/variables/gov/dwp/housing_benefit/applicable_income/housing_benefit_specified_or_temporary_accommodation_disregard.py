@@ -1,6 +1,7 @@
 from policyengine_uk.model_api import *
 from policyengine_core.parameters import ParameterNode
 from policyengine_uk.utils.excise import fiscal_year_segments
+from policyengine_uk.utils.supplied_inputs import _visible_branch_names
 
 
 def hb_uses_annual_override(benunit, period, variable_name, default_formula):
@@ -16,11 +17,7 @@ def hb_uses_annual_override(benunit, period, variable_name, default_formula):
         return True
     # Core records set_input separately from computed caches. Reading those
     # records avoids treating a cached formula result as an explicit override.
-    branch = simulation
-    visible = {"default"}
-    while branch is not None:
-        visible.add(branch.branch_name)
-        branch = getattr(branch, "parent_branch", None)
+    visible = set(_visible_branch_names(simulation))
     holder = benunit.get_holder(variable_name)
     return any(
         name == variable_name
