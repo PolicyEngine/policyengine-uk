@@ -2,14 +2,23 @@
 
 A comparison that concerns a few households can run in a branch holding only
 them, at a cost in proportion to those households rather than to the whole
-population. Each household is worked out from its own members' values: a
-formula reads other households only to impute detail across the whole
-population (months_since_last_birthday, which spreads birthdays by weight,
-and attends_private_school, which ranks incomes). In a household subset,
-months_since_last_birthday takes each person's value in the whole population
-(whole_population_value). attends_private_school does not: it ranks incomes
-after tax and benefits, so nothing that income tax or a benefit needs reads
-it.
+population. Each household is worked out from its own members' values,
+except in the formulas that read the whole population:
+
+- months_since_last_birthday spreads birthdays by weight. In a household
+  subset it takes each person's value in the whole population
+  (whole_population_value).
+- attends_private_school ranks incomes after tax and benefits.
+- shareholding, corporate_land_value and consumption_shareholding divide by
+  a weighted total over the dataset.
+
+In a subset the last four would give other values. Neither they nor what
+reads them (private school VAT, corporate tax incidence, business rates,
+corporate stamp duty land tax, carbon tax and land value tax) feeds income
+tax or any benefit, so the property allowance election never reads them. A
+formula that reads the whole population and comes to feed income tax or a
+benefit needs to take its whole-population value in a subset, as
+months_since_last_birthday does.
 
 The branch starts from every value the simulation holds for those
 households, inputs and calculated values alike, so what the simulation has
