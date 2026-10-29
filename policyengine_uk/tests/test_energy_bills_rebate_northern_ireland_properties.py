@@ -9,16 +9,19 @@ domestic electricity customer on 2 January 2023 (EBSS AFP NI Direction,
 23 December 2022, paragraph 3 and footnote 1).
 
 Invariants, each checked over many generated households in one simulation
-covering 2015 to 2030:
+covering 2015 to 2030. Some households stay in one nation; others draw a
+nation for each year, so they move between 2022 and 2023:
 
-1. No Northern Ireland household receives the Council Tax Rebate, in any
-   year or band.
+1. No household receives the Council Tax Rebate in a year it lives in
+   Northern Ireland, in any band.
 2. The Alternative Fuel Payment is £200, paid once, in January 2023, to each
-   Northern Ireland household with a qualifying electricity supply that
-   month, and never in Great Britain.
-3. Over the whole scheme, a Northern Ireland household eligible in January
-   2023 receives exactly the direction's £600, and one that isn't receives
-   nothing.
+   household in Northern Ireland in 2023 with a qualifying electricity supply
+   that month, and never to a household in Great Britain in 2023.
+3. A household in Northern Ireland in 2022 receives no rebate that year. One
+   in Northern Ireland in 2023 receives exactly the direction's £600 that year
+   if it had a qualifying electricity supply in January 2023, and nothing
+   otherwise. So a household in Northern Ireland in both years receives £600
+   over the whole scheme.
 4. In every year, energy_bills_rebate is the sum of its three parts, and
    none is negative.
 """
@@ -42,9 +45,15 @@ PARTS = [
     "ebr_alternative_fuel_payment",
 ]
 
+# A household's nation in each year: either the same nation throughout or an
+# independent draw for each year.
+yearly_countries = st.one_of(
+    st.sampled_from(COUNTRIES).map(lambda country: [country] * len(YEARS)),
+    st.lists(st.sampled_from(COUNTRIES), min_size=len(YEARS), max_size=len(YEARS)),
+)
 household = st.tuples(
     st.sampled_from(BANDS),
-    st.sampled_from(COUNTRIES),
+    yearly_countries,
     # Whether the household has a qualifying electricity supply in each month
     # of 2022 and 2023.
     st.lists(st.booleans(), min_size=24, max_size=24),
@@ -52,8 +61,19 @@ household = st.tuples(
 households = st.lists(household, min_size=HOUSEHOLDS, max_size=HOUSEHOLDS)
 
 
+def in_northern_ireland(drawn, year):
+    return (
+        np.array([countries[YEARS.index(year)] for _, countries, _ in drawn])
+        == "NORTHERN_IRELAND"
+    )
+
+
+def eligible_in_january_2023(drawn):
+    return np.array([months[12] for _, _, months in drawn])
+
+
 def simulation(drawn):
-    """One household per drawn case, in the same nation and band each year."""
+    """One household per drawn case, in the same band each year."""
     bands, countries, months = zip(*drawn)
 
     def each_year(value):
@@ -68,7 +88,7 @@ def simulation(drawn):
         f"household_{i}": {
             "members": [f"adult_{i}"],
             "council_tax_band": each_year(bands[i]),
-            "country": each_year(countries[i]),
+            "country": dict(zip(YEARS, countries[i])),
             "ebr_energy_bills_credit_eligible": {
                 f"{year}-{month:02d}": months[i][12 * (year - 2022) + month - 1]
                 for year in [2022, 2023]
@@ -92,22 +112,17 @@ SETTINGS = settings(
 @SETTINGS
 @given(households)
 def test_northern_ireland_never_gets_the_council_tax_rebate(drawn):
-    northern_ireland = np.array([country for _, country, _ in drawn]) == (
-        "NORTHERN_IRELAND"
-    )
     sim = simulation(drawn)
     for year in YEARS:
         rebate = sim.calculate("ebr_council_tax_rebate", year)
-        np.testing.assert_array_equal(rebate[northern_ireland], 0)
+        np.testing.assert_array_equal(rebate[in_northern_ireland(drawn, year)], 0)
 
 
 @SETTINGS
 @given(households)
 def test_the_alternative_fuel_payment_is_paid_once_in_northern_ireland(drawn):
-    northern_ireland = np.array([country for _, country, _ in drawn]) == (
-        "NORTHERN_IRELAND"
-    )
-    eligible_in_january_2023 = np.array([months[12] for _, _, months in drawn])
+    northern_ireland = in_northern_ireland(drawn, 2023)
+    eligible = eligible_in_january_2023(drawn)
     sim = simulation(drawn)
     for year in YEARS:
         for month in range(1, 13):
@@ -115,7 +130,7 @@ def test_the_alternative_fuel_payment_is_paid_once_in_northern_ireland(drawn):
                 "monthly_ebr_alternative_fuel_payment", f"{year}-{month:02d}"
             )
             if (year, month) == (2023, 1):
-                expected = np.where(northern_ireland & eligible_in_january_2023, 200, 0)
+                expected = np.where(northern_ireland & eligible, 200, 0)
                 np.testing.assert_array_equal(payment, expected)
             else:
                 np.testing.assert_array_equal(payment, 0)
@@ -123,18 +138,22 @@ def test_the_alternative_fuel_payment_is_paid_once_in_northern_ireland(drawn):
 
 @SETTINGS
 @given(households)
-def test_northern_ireland_receives_the_directions_600_in_total(drawn):
-    northern_ireland = np.array([country for _, country, _ in drawn]) == (
-        "NORTHERN_IRELAND"
-    )
-    eligible_in_january_2023 = np.array([months[12] for _, _, months in drawn])
+def test_northern_ireland_receives_the_directions_600(drawn):
+    in_2022 = in_northern_ireland(drawn, 2022)
+    in_2023 = in_northern_ireland(drawn, 2023)
+    expected = np.where(eligible_in_january_2023(drawn), 600, 0)
     sim = simulation(drawn)
-    total = sum(sim.calculate("energy_bills_rebate", year) for year in YEARS)
+    np.testing.assert_array_equal(
+        sim.calculate("energy_bills_rebate", 2022)[in_2022], 0
+    )
     np.testing.assert_allclose(
-        total[northern_ireland],
-        np.where(eligible_in_january_2023, 600, 0)[northern_ireland],
+        sim.calculate("energy_bills_rebate", 2023)[in_2023],
+        expected[in_2023],
         atol=0.01,
     )
+    total = sum(sim.calculate("energy_bills_rebate", year) for year in YEARS)
+    stayed = in_2022 & in_2023
+    np.testing.assert_allclose(total[stayed], expected[stayed], atol=0.01)
 
 
 @SETTINGS

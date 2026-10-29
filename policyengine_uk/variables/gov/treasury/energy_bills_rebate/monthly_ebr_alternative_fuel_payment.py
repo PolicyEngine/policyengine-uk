@@ -8,8 +8,8 @@ class monthly_ebr_alternative_fuel_payment(Variable):
         "Electricity suppliers paid it with the £400 Energy Bills Support "
         "Scheme amount, as one £600 payment to each eligible domestic "
         "customer, whatever fuel the household heats with. Great Britain's "
-        "Alternative Fuel Payment, for households off the gas grid, is not "
-        "modelled."
+        "Alternative Fuel Payment, for households that heat with heating oil, "
+        "LPG, biomass and other alternative fuels, is not modelled."
     )
     entity = Household
     definition_period = MONTH
@@ -19,6 +19,7 @@ class monthly_ebr_alternative_fuel_payment(Variable):
     reference = (
         "https://assets.publishing.service.gov.uk/media/63a59ed48fa8f5654fe0a812/ebss-ni-direction.pdf#page=2",
         "https://www.gov.uk/government/news/households-across-northern-ireland-to-start-receiving-600-uk-government-energy-support",
+        "https://www.gov.uk/government/news/increased-flexibility-of-alternative-fuel-payments-so-more-households-will-be-supported-with-their-energy-bills",
     )
 
     def formula(household, period, parameters):

@@ -1,8 +1,10 @@
 # Northern Ireland's £600 Energy Bills Support Scheme payment combined £400
 # of support with a £200 Alternative Fuel Payment (EBSS AFP NI Direction,
-# 23 December 2022, paragraph 3 and footnote 1). Suppliers paid it to each
-# domestic electricity customer on 2 January 2023, from 16 January 2023. Great
-# Britain's Alternative Fuel Payment is not modelled.
+# 23 December 2022, paragraph 3 and footnote 1). Each domestic electricity
+# customer at 08:00 on 2 January 2023, the qualifying date, qualified, and
+# suppliers started paying on 16 January 2023 (GOV.UK announcement that day).
+# The model pays it in January 2023, on the household's nation that year.
+# Great Britain's Alternative Fuel Payment is not modelled.
 
 - name: Case 1, Northern Ireland receives the payment in January 2023.
   period: 2023
@@ -70,3 +72,37 @@
     ebr_energy_bills_credit: 400
     ebr_alternative_fuel_payment: 200
     energy_bills_rebate: 600
+
+- name: Case 7, a household that moves to Northern Ireland in 2023 receives the payment.
+  period: 2023
+  input:
+    country:
+      2022: ENGLAND
+      2023: NORTHERN_IRELAND
+  output:
+    monthly_ebr_alternative_fuel_payment:
+      2023-01: 200
+    ebr_alternative_fuel_payment: 200
+    energy_bills_rebate: 600
+
+- name: Case 8, a household that leaves Northern Ireland before 2023 receives no payment.
+  period: 2023
+  input:
+    country:
+      2022: NORTHERN_IRELAND
+      2023: ENGLAND
+  output:
+    monthly_ebr_alternative_fuel_payment:
+      2023-01: 0
+    ebr_alternative_fuel_payment: 0
+    energy_bills_rebate: 201
+
+- name: Case 9, a Northern Ireland input for 2022 alone leaves 2023 in England, the default.
+  period: 2023
+  input:
+    country:
+      2022: NORTHERN_IRELAND
+  output:
+    country: ENGLAND
+    ebr_alternative_fuel_payment: 0
+    energy_bills_rebate: 201

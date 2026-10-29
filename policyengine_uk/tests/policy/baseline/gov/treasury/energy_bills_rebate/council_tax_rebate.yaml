@@ -120,3 +120,24 @@
   output:
     council_tax_band: D
     ebr_council_tax_rebate: 0
+
+# The rebate follows the household's nation in 2022, whatever it is in 2023.
+- name: A household in England in 2022 gets the rebate, though it moves to Northern Ireland in 2023.
+  period: 2022
+  input:
+    council_tax_band: A
+    country:
+      2022: ENGLAND
+      2023: NORTHERN_IRELAND
+  output:
+    ebr_council_tax_rebate: 150
+
+- name: A household in Northern Ireland in 2022 gets no rebate, though it moves to England in 2023.
+  period: 2022
+  input:
+    council_tax_band: A
+    country:
+      2022: NORTHERN_IRELAND
+      2023: ENGLAND
+  output:
+    ebr_council_tax_rebate: 0
