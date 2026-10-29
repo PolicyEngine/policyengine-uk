@@ -16,8 +16,12 @@ then identities that hold for every input:
 - in 2030-31 the allowance paid is the weekly overlap rule over the weeks it
   is paid, for single carers and for couples caring for the same person, where
   the couple restriction picks a partner separately before and under the taper;
-- an award supplied, neutralized or replaced by a reform before the couple
-  limit or the overlap rule is what reaches the payment;
+- an award that an input supplies, or that a reform neutralizes or calculates
+  with a formula of its own, before the couple limit or the overlap rule is
+  what reaches the payment, with the whole year's restriction and overlap,
+  even where it equals the model's; so 2030-31 pays such an award as
+  2031-32 does, while a reform that keeps the model's formulas keeps the
+  parts of the year;
 - an overlapping benefit equal to the award leaves nothing paid or received,
   a penny left over is paid, and anything paid is at least half a penny.
 """
@@ -488,6 +492,206 @@ def test_a_reform_replacing_the_award_before_overlap_meets_the_whole_years_pensi
     sim = Simulation(situation=situation, reform=reform)
     paid = sim.calculate("carers_allowance", year).astype(float)
     assert paid == pytest.approx([600, 0], abs=0.01)
+
+
+def reformed(name, change):
+    """A reform whose formula for a variable changes the model's amounts."""
+    from policyengine_core.reforms import Reform
+
+    base = Simulation(situation=both_caring_couple(START_YEAR)).tax_benefit_system
+    variable = type(base.variables[name])
+    model = variable.formula
+
+    class Reformed(variable):
+        def formula(person, period, parameters):
+            return change(model(person, period, parameters))
+
+    Reformed.__name__ = name
+
+    class Reform_(Reform):
+        def apply(self):
+            self.update_variable(Reformed)
+
+    return Reform_
+
+
+def relabelled(*names):
+    """A reform that updates variables but keeps the model's formulas."""
+    from policyengine_core.reforms import Reform
+
+    base = Simulation(situation=both_caring_couple(START_YEAR)).tax_benefit_system
+    classes = [
+        type(name, (type(base.variables[name]),), {"label": f"{name}, relabelled"})
+        for name in names
+    ]
+
+    class Relabel(Reform):
+        def apply(self):
+            for variable in classes:
+                self.update_variable(variable)
+
+    return Relabel
+
+
+def couple_with_pension(year):
+    # The head is £46 a week over the earnings limit and the partner within
+    # it, each with £400 a year of State Pension.
+    return both_caring_couple(year, 400 / 52, head_weekly_excess=46)
+
+
+@pytest.mark.parametrize("year", [START_YEAR, FULL_YEAR])
+@pytest.mark.parametrize(
+    "change",
+    [
+        lambda award: award * np.array([1, 0]),
+        lambda award: award * np.array([1, 1.0001]),
+        lambda award: award + np.array([0, 0.01]),
+    ],
+    ids=["partner_nil", "partner_scaled", "partner_penny"],
+)
+def test_a_reform_changing_only_the_partners_award_meets_the_whole_years_pension(
+    year, change
+):
+    # A reform's formula for the award before the couple limit carries no
+    # dates, even where it leaves the head's amount as the model's: the
+    # restriction keeps the head's award for the whole year, and the whole
+    # year's State Pension comes off it.
+    model = Simulation(situation=couple_with_pension(year))
+    head = float(model.calculate("carers_allowance_pre_couple_limit", year)[0])
+    reform = reformed("carers_allowance_pre_couple_limit", change)
+    sim = Simulation(situation=couple_with_pension(year), reform=reform)
+    pre_overlap = sim.calculate("carers_allowance_pre_overlap", year).astype(float)
+    assert pre_overlap == pytest.approx([head, 0])
+    paid = sim.calculate("carers_allowance", year).astype(float)
+    assert paid == pytest.approx([head - 400, 0], abs=0.01)
+
+
+@pytest.mark.parametrize("year", [START_YEAR, FULL_YEAR])
+def test_a_reform_setting_the_models_own_award_before_overlap_meets_the_whole_years_pension(
+    year,
+):
+    # A value can't show where it came from: an award a reform sets carries
+    # no dates even where it equals the model's.
+    model = Simulation(situation=couple_with_pension(year))
+    award = model.calculate("carers_allowance_pre_overlap", year).astype(float)
+    reform = replaced("carers_allowance_pre_overlap", award)
+    sim = Simulation(situation=couple_with_pension(year), reform=reform)
+    paid = sim.calculate("carers_allowance", year).astype(float)
+    assert paid == pytest.approx(np.maximum(award - 400, 0), abs=0.01)
+
+
+@pytest.mark.parametrize("year", [START_YEAR, FULL_YEAR])
+def test_a_reform_keeping_the_models_formulas_keeps_the_parts_of_the_year(year):
+    model = Simulation(situation=couple_with_pension(year))
+    expected = model.calculate("carers_allowance", year).astype(float)
+    reform = relabelled(
+        "carers_allowance_pre_couple_limit", "carers_allowance_pre_overlap"
+    )
+    sim = Simulation(situation=couple_with_pension(year), reform=reform)
+    assert sim.calculate("carers_allowance", year).astype(float) == pytest.approx(
+        expected
+    )
+    if year == START_YEAR:
+        # The head is paid only under the taper, so less than the whole
+        # year's pension comes off.
+        award = float(model.calculate("carers_allowance_pre_overlap", year)[0])
+        assert expected[0] > award - 400 + 100
+
+
+# An award a reform sets before the couple limit carries no dates, so 2030-31
+# restricts it and takes overlapping benefits off it as 2031-32 does, picking
+# the head where the head has an award and the partner otherwise.
+
+reform_award = st.one_of(
+    st.just(0.0), st.floats(min_value=0.01, max_value=6_000).map(lambda x: round(x, 2))
+)
+reform_award_cases = st.lists(
+    st.tuples(
+        reform_award,
+        reform_award,
+        st.floats(min_value=0, max_value=150),
+        st.floats(min_value=0, max_value=150),
+    ),
+    min_size=CASES,
+    max_size=CASES,
+)
+
+
+def reform_award_situation():
+    people, benunits, households = {}, {}, {}
+    years = (START_YEAR, FULL_YEAR)
+    for i in range(CASES):
+        members = [f"head_{i}", f"partner_{i}"]
+        for name, age in zip(members, (71, 70)):
+            people[name] = {
+                "age": {year: age + year - START_YEAR for year in years},
+                "care_hours": {year: 40 for year in years},
+            }
+        benunits[f"benunit_{i}"] = {
+            "members": members,
+            "would_claim_uc": {year: False for year in years},
+        }
+        households[f"household_{i}"] = {
+            "members": members,
+            "country": {year: "ENGLAND" for year in years},
+        }
+    return {"people": people, "benunits": benunits, "households": households}
+
+
+@pytest.fixture(scope="module")
+def reform_award_sim():
+    from policyengine_core.reforms import Reform
+    from policyengine_uk.model_api import YEAR, Person, Variable
+
+    class award_set_by_reform(Variable):
+        value_type = float
+        entity = Person
+        label = "Carer's Allowance before the couple limit, as a reform sets it"
+        definition_period = YEAR
+
+    base = Simulation(situation=both_caring_couple(START_YEAR)).tax_benefit_system
+    variable = type(base.variables["carers_allowance_pre_couple_limit"])
+
+    class carers_allowance_pre_couple_limit(variable):
+        def formula(person, period, parameters):
+            return person("award_set_by_reform", period)
+
+    class SetAward(Reform):
+        def apply(self):
+            self.add_variable(award_set_by_reform)
+            self.update_variable(carers_allowance_pre_couple_limit)
+
+    return Simulation(situation=reform_award_situation(), reform=SetAward)
+
+
+@SETTINGS
+@given(reform_award_cases)
+def test_2030_31_pays_an_award_a_reform_sets_as_2031_32_does(reform_award_sim, drawn):
+    head_award, partner_award, head_pension, partner_pension = map(
+        np.array, zip(*drawn)
+    )
+    award = np.column_stack([head_award, partner_award]).ravel()
+    pension = np.column_stack([head_pension, partner_pension]).ravel()
+    sim = reform_award_sim
+    for year in (START_YEAR, FULL_YEAR):
+        sim.set_input("award_set_by_reform", year, award)
+        sim.set_input("state_pension", year, 52 * pension)
+    sim.reset_calculations()
+    paid = {
+        year: sim.calculate("carers_allowance", year).astype(float).reshape(-1, 2)
+        for year in (START_YEAR, FULL_YEAR)
+    }
+    assert paid[START_YEAR] == pytest.approx(paid[FULL_YEAR], abs=0.01)
+    for year in (START_YEAR, FULL_YEAR):
+        assert sim.calculate(
+            "partners_care_for_same_severely_disabled_person", year
+        ).all()
+    award = award.reshape(-1, 2)
+    head = award[:, 0] > 0
+    kept = np.column_stack([head, ~head]) * award
+    expected = np.maximum(0, kept - 52 * pension.reshape(-1, 2))
+    expected = np.where(expected < 0.005, 0, expected)
+    assert paid[START_YEAR] == pytest.approx(expected, abs=0.01)
 
 
 @pytest.mark.parametrize("year", [START_YEAR, FULL_YEAR])

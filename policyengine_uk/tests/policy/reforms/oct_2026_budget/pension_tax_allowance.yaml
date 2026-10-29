@@ -10,7 +10,8 @@
 # projects the April 2027 rate unrounded, 241.30 x 1.039 = 250.71, so the
 # threshold is 13,036.97, where HM Treasury's explainer gives 13,036.40
 # (250.70 a week). The full allowance is 94 on either: 20% x (13,036.97 -
-# 12,570) = 93.39. It is gone from 13,036.97 + 3 x 94 = 13,318.97 (the
+# 12,570) = 93.39. The allowance runs out at 13,036.973 + 3 x 94 =
+# 13,318.973, so 13,318.98 is the first income in whole pence with none (the
 # explainer's "13,319 or more").
 #
 # The first five cases are the worked examples in HM Treasury's Pension Tax

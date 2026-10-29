@@ -101,19 +101,22 @@ the weeks under it. A partner below the earnings limit then keeps the award
 for the weeks before the other becomes eligible. The parts of the year reach
 the payment as shares of the year: `carers_allowance_pre_overlap` is the
 amount from `carers_allowance_pre_couple_limit` that the restriction keeps,
-and overlapping benefits come off for the share of the year it is kept.
+and overlapping benefits come off for the share of the year in which the
+restriction keeps it.
 
-The shares describe an amount only where it is the one the parts of the year
-add up to, to the penny. A `carers_allowance_pre_couple_limit` that is
-supplied, or that a reform sets to anything else, carries no dates: the
-couple restriction applies to the benefit unit's awards for the whole year,
-and the whole year's overlapping benefits come off what it keeps. A
-`carers_allowance_pre_overlap` that is supplied or set by a reform is past
-the couple restriction, so only the whole year's overlapping benefits come
-off it. Either way, the value supplied or set is what the payment starts
-from. Less than half a penny for the year, which in practice is
-floating-point residue where an overlapping benefit equals the award, is
-treated as nil; a penny is paid.
+The shares describe an amount only where the model's own formulas calculate
+it from the parts of the year. An amount that an input supplies, or that a
+reform neutralizes or calculates with a formula of its own, carries no dates,
+even where it equals the model's: a value cannot show where it came from. A
+`carers_allowance_pre_couple_limit` of that kind gets the couple restriction
+for the whole year, and the whole year's overlapping benefits come off what
+the restriction keeps. A `carers_allowance_pre_overlap` of that kind comes
+after the couple restriction, so only the whole year's overlapping benefits
+come off it. Either way, the payment starts from that value.
+A reform that updates either variable but keeps the model's formula keeps
+the parts of the year. The model treats less than half a penny for the year,
+which in practice is floating-point residue where an overlapping benefit
+equals the award, as nil, and pays a penny.
 
 The convention does not maximise the couple's payment. It can select a partner
 whose overlapping benefits reduce CA or CSP to zero, while suppressing a
