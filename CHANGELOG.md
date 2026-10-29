@@ -1,3 +1,24 @@
+## [2.164.4] - 2026-10-29
+
+### Fixed
+
+- Count `other_investment_income` (National Savings, gilt and other securities interest, and trust interest) in `capital_income`, as market and HBAI income now do. Nothing reads `capital_income`, so income tax, benefits and the other income measures are unchanged.
+
+
+## [2.164.3] - 2026-10-29
+
+### Fixed
+
+- Count `other_investment_income` in `market_income`, `household_market_income` and `hbai_household_net_income`. Income tax already charged it as savings income, so household net income carried the tax on it without the income.
+
+
+## [2.164.2] - 2026-10-29
+
+### Fixed
+
+- The property allowance election (`uses_property_allowance`) now compares routes in a branch holding only the households where someone has a choice, so its cost follows those households rather than the whole population. Every election is unchanged. A branch holding only some households (`utils.household_subset`) takes `months_since_last_birthday` and the labour supply response (`employment_income_behavioral_response`) from the whole population.
+
+
 ## [2.164.1] - 2026-10-29
 
 ### Changed

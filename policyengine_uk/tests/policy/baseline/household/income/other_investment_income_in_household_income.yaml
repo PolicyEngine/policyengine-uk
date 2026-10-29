@@ -1,0 +1,47 @@
+# Other investment income (National Savings, gilt and other securities
+# interest) is savings income for income tax (taxable_savings_interest_income),
+# so market, capital, gross, net and HBAI income count it as they count bank
+# interest. 2026-27: personal allowance £12,570, basic rate 20%, personal
+# savings allowance £1,000 for a basic rate taxpayer, starting rate for savings
+# £5,000 less non-savings income above the personal allowance (here nil),
+# employee NI 8% from £12,570 to £50,270, TV licence £180.
+
+- name: Other investment income counts in market, capital, net and HBAI income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 40_000
+    other_investment_income: 2_000
+  output:
+    # 40,000 + 2,000.
+    market_income: 42_000
+    household_market_income: 42_000
+    household_gross_income: 42_000
+    capital_income: 2_000
+    # (40,000 - 12,570) x 20% = 5,486, plus (2,000 - 1,000 PSA) x 20% = 200.
+    income_tax: 5_686
+    # (40,000 - 12,570) x 8%.
+    national_insurance: 2_194.40
+    # 42,000 - 5,686 - 2,194.40.
+    hbai_household_net_income: 34_119.60
+    # Less the 180 TV licence. Without the interest it is 32,139.60, so the
+    # interest raises net income by 2,000 less its 200 of tax.
+    household_net_income: 33_939.60
+
+- name: The same amount as bank interest gives the same incomes
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 40_000
+    savings_interest_income: 2_000
+  output:
+    market_income: 42_000
+    household_market_income: 42_000
+    household_gross_income: 42_000
+    capital_income: 2_000
+    income_tax: 5_686
+    national_insurance: 2_194.40
+    hbai_household_net_income: 34_119.60
+    household_net_income: 33_939.60
