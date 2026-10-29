@@ -132,12 +132,14 @@ exactly £1 and £100 stays at 20%, while £1 with a £500 prize, or £2 with a
   highest charge of at most £5 outside the lower-rate class. A dataset without
   the new input gives the duty before Budget 2026 in every year.
 - HMRC's standard-rate liabilities for periods before 1 April 2027 include the
-  higher-stake machines, so a standard-rate input built from them needs no
-  change. From that date HMRC reports those machines at the higher rate. A
-  standard-rate input built from later liabilities must add their takings
-  back, and the higher-rate input must leave them out. Otherwise, for £100 of
-  remaining standard-rate takings and £100 of higher-stake takings, the duty
-  comes to £25 rather than £45.
+  higher-stake machines, so a provider that builds the standard-rate input
+  from them needs no change. From that date HMRC reports those machines at the
+  higher rate. A provider that builds the inputs from later liabilities must
+  add their takings back to the standard-rate input and leave them out of the
+  higher-rate input. Take £100 of remaining standard-rate takings and £100 of
+  higher-stake takings: the duty comes to £45. A provider that leaves the £100
+  out of the higher-rate input but doesn't add it back gets £25; one that does
+  neither gets £50.
 - A data provider supplies the higher-stake share of that base, for example
   from the Gambling Commission's machine yield by category. The class
   corresponds closely to Category B, whose limits ([B1: £5 stakes; B2, B3 and
