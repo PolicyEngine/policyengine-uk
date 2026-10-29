@@ -2,6 +2,10 @@ from policyengine_uk.model_api import *
 from policyengine_uk.utils.dates import birth_day
 
 
+# UC Regs 2013 reg. 5(1)(a); SPC Regs 2002 reg. 4A(1)(a).
+NO_EDUCATION_ROUTE_BIRTHDAY_AGE = 16
+
+
 class is_before_first_september_following_16th_birthday(Variable):
     value_type = bool
     entity = Person
@@ -36,12 +40,14 @@ class is_before_first_september_following_16th_birthday(Variable):
 
     def formula(person, period, parameters):
         date_of_birth = birth_day(person, period)
-        # The 16th birthday falls in the birth year plus 16; the 1 September
+        # The statutory birthday falls in the birth year plus its age; the 1 September
         # following it is in that year if the birthday is before 1 September,
         # and otherwise in the next.
         born_on_or_after_first_september = date_of_birth % 10_000 >= 901
         year_of_first_september = (
-            date_of_birth // 10_000 + 16 + born_on_or_after_first_september
+            date_of_birth // 10_000
+            + NO_EDUCATION_ROUTE_BIRTHDAY_AGE
+            + born_on_or_after_first_september
         )
         # The year starts on 6 April, before 1 September of the same calendar
         # year and after 1 September of the one before.
