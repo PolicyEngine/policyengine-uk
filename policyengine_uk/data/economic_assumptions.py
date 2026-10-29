@@ -114,7 +114,7 @@ COUNTRY_UPRATED_INPUTS = frozenset({"water_and_sewerage_charges"})
 # obr_savings_income_2022_2025 rule that is the OBR's savings income forecast
 # per person from 2022-23 to 2025-26, and GDP per head in other years, like
 # dividends and the other capital incomes. The OBR's series rises 35.0% in
-# 2024-25 and 0.6% in 2025-26, where GDP per head rises 3.9% and 4.7%. It
+# 2024-25 and 0.6% in 2025-26, where GDP per head rises 4.0% and 4.6%. It
 # starts in 2022-23, so earlier years keep GDP per head rather than the
 # parameter's backdated first value. A dataset that declares no rule grows
 # savings income by GDP per head in every year, as before.
