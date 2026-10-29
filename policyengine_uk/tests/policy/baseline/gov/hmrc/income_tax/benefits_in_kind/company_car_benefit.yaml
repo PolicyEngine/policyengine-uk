@@ -1,0 +1,318 @@
+# The company car benefit (ITEPA 2003 s. 121) on HMRC's worked examples.
+# HMRC 480 Appendix 1 (company car benefit examples) gives Examples 6 and 7
+# for 2020-21. Examples 3 to 5 are for 2018-19, before the model's first
+# year, so their cars are valued here with the appropriate percentages in
+# HMRC 480 Appendix 2's 2026-27 table:
+# https://www.gov.uk/guidance/company-car-benefit-examples-480-appendix-1
+# https://www.gov.uk/guidance/company-car-benefit-the-appropriate-percentage-480-appendix-2
+
+- name: No company car gives no benefit
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    employment_income: 40_000
+  output:
+    company_car_benefit: 0
+    car_fuel_benefit: 0
+    benefits_in_kind: 0
+    taxable_employment_income: 40_000
+
+- name: HMRC 480 Appendix 1 Example 6, a hybrid first registered before 6 April 2020, in 2020-21
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    company_car_list_price: 32_000
+    company_car_co2_emissions: 50
+    company_car_electric_range: 77
+  output:
+    # First registered on 22 March 2020, so the NEDC figures: 1-50 g/km
+    # with an electric range of 70-129 miles is 5%. £32,000 x 5% = £1,600.
+    company_car_appropriate_percentage: 0.05
+    company_car_benefit: 1_600
+
+- name: HMRC 480 Appendix 1 Example 7, a hybrid first registered on 6 April 2020, in 2020-21
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    company_car_list_price: 22_000
+    company_car_co2_emissions: 50
+    company_car_electric_range: 65
+    company_car_registered_from_6_april_2020: true
+  output:
+    # WLTP figures, so the s. 139A rates: 40-69 miles is 6%.
+    # £22,000 x 6% = £1,320.
+    company_car_appropriate_percentage: 0.06
+    company_car_benefit: 1_320
+
+- name: The s. 139A rates end after 2021-22
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    company_car_list_price: 22_000
+    company_car_co2_emissions: 50
+    company_car_electric_range: 65
+    company_car_registered_from_6_april_2020: true
+  output:
+    # HMRC 480 Appendix 2, 2022-23: 40-69 miles is 8% for NEDC and WLTP
+    # cars alike. £22,000 x 8% = £1,760.
+    company_car_appropriate_percentage: 0.08
+    company_car_benefit: 1_760
+
+- name: Petrol car, HMRC 480 Appendix 1 Example 5's car, in 2026-27
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    company_car_list_price: 18_000
+    company_car_co2_emissions: 104
+  output:
+    # 104 rounds down to 100 g/km: 26% (Appendix 2, 2026-27).
+    # £18,000 x 26% = £4,680.
+    company_car_appropriate_percentage: 0.26
+    company_car_benefit: 4_680
+
+- name: Petrol car at the maximum, HMRC 480 Appendix 1 Example 3's car, in 2026-27
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    company_car_list_price: 15_000
+    company_car_co2_emissions: 173
+  output:
+    # 173 rounds down to 170 g/km: 37% (Appendix 2, 2026-27, 170 and
+    # above). £15,000 x 37% = £5,550.
+    company_car_appropriate_percentage: 0.37
+    company_car_benefit: 5_550
+
+- name: Diesel car not meeting RDE2 takes the 4-point supplement, in 2026-27
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    company_car_list_price: 18_000
+    company_car_co2_emissions: 104
+    company_car_fuel_type: DIESEL_NON_RDE2
+  output:
+    # 26% for 100 g/km plus the 4-point diesel supplement (HMRC 480
+    # paragraph 12.29). £18,000 x 30% = £5,400.
+    company_car_appropriate_percentage: 0.3
+    company_car_benefit: 5_400
+
+- name: Diesel car meeting RDE2 takes no supplement, in 2026-27
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    company_car_list_price: 18_000
+    company_car_co2_emissions: 104
+    company_car_fuel_type: DIESEL_RDE2
+  output:
+    company_car_appropriate_percentage: 0.26
+    company_car_benefit: 4_680
+
+- name: Diesel supplement stops at the maximum, HMRC 480 Appendix 1 Example 4's car, in 2026-27
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    company_car_list_price: 15_000
+    company_car_co2_emissions: 156
+    company_car_fuel_type: DIESEL_NON_RDE2
+  output:
+    # 156 rounds down to 155 g/km: 37% (Appendix 2, 2026-27). Adding 4
+    # points would pass the 37% maximum (paragraph 12.29, note 2).
+    # £15,000 x 37% = £5,550.
+    company_car_appropriate_percentage: 0.37
+    company_car_benefit: 5_550
+
+- name: 1-50 g/km cars in each electric range band, in 2026-27
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      range_130:
+        company_car_list_price: 32_000
+        company_car_co2_emissions: 50
+        company_car_electric_range: 130
+      range_77:
+        company_car_list_price: 32_000
+        company_car_co2_emissions: 50
+        company_car_electric_range: 77
+      range_65:
+        company_car_list_price: 32_000
+        company_car_co2_emissions: 50
+        company_car_electric_range: 65
+      range_35:
+        company_car_list_price: 32_000
+        company_car_co2_emissions: 50
+        company_car_electric_range: 35
+      range_20:
+        company_car_list_price: 32_000
+        company_car_co2_emissions: 50
+        company_car_electric_range: 20
+      range_29_point_2:
+        company_car_list_price: 32_000
+        company_car_co2_emissions: 50
+        company_car_electric_range: 29.2
+    benunits:
+      benunit:
+        members: [range_130, range_77, range_65, range_35, range_20, range_29_point_2]
+    households:
+      household:
+        members: [range_130, range_77, range_65, range_35, range_20, range_29_point_2]
+  output:
+    # Appendix 2, 2026-27: 130 and above 4%, 70-129 7%, 40-69 10%,
+    # 30-39 14%, less than 30 16%. 29.2 miles rounds up to 30 (s. 139(2)(b)).
+    company_car_appropriate_percentage: [0.04, 0.07, 0.1, 0.14, 0.16, 0.14]
+    company_car_benefit: [1_280, 2_240, 3_200, 4_480, 5_120, 4_480]
+
+- name: 1-50 g/km cars take one rate from 2028-29 whatever their electric range
+  period: 2029
+  absolute_error_margin: 0.01
+  input:
+    people:
+      range_130:
+        company_car_list_price: 32_000
+        company_car_co2_emissions: 50
+        company_car_electric_range: 130
+      range_20:
+        company_car_list_price: 32_000
+        company_car_co2_emissions: 1
+        company_car_electric_range: 20
+    benunits:
+      benunit:
+        members: [range_130, range_20]
+    households:
+      household:
+        members: [range_130, range_20]
+  output:
+    # Finance Act 2025 s. 6(2): 19% for 1-50 g/km in 2029-30.
+    company_car_appropriate_percentage: [0.19, 0.19]
+    company_car_benefit: [6_080, 6_080]
+
+- name: Zero-emission car in 2026-27
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    company_car_list_price: 40_000
+    company_car_co2_emissions: 0
+    company_car_fuel_type: ELECTRIC
+  output:
+    # Appendix 2, 2026-27: 4%. £40,000 x 4% = £1,600.
+    company_car_appropriate_percentage: 0.04
+    company_car_benefit: 1_600
+
+- name: 2029-30 rates, the baseline for 2030-31
+  period: 2029
+  absolute_error_margin: 0.01
+  input:
+    people:
+      electric:
+        company_car_list_price: 40_000
+        company_car_co2_emissions: 0
+      band_65_74:
+        company_car_list_price: 40_000
+        company_car_co2_emissions: 74
+      band_75:
+        company_car_list_price: 40_000
+        company_car_co2_emissions: 79
+      high:
+        company_car_list_price: 40_000
+        company_car_co2_emissions: 200
+    benunits:
+      benunit:
+        members: [electric, band_65_74, band_75, high]
+    households:
+      household:
+        members: [electric, band_65_74, band_75, high]
+  output:
+    # Finance Act 2025 s. 6: 9% for 0 g/km, 23% for 65-74 g/km, 23% at
+    # 75-79 g/km, and a 39% maximum.
+    company_car_appropriate_percentage: [0.09, 0.23, 0.23, 0.39]
+    company_car_benefit: [3_600, 9_200, 9_200, 15_600]
+
+- name: 2030-31 keeps 2029-30's rates in the baseline
+  period: 2030
+  absolute_error_margin: 0.01
+  input:
+    people:
+      electric:
+        company_car_list_price: 40_000
+        company_car_co2_emissions: 0
+      hybrid:
+        company_car_list_price: 40_000
+        company_car_co2_emissions: 30
+        company_car_electric_range: 40
+      high:
+        company_car_list_price: 40_000
+        company_car_co2_emissions: 200
+    benunits:
+      benunit:
+        members: [electric, hybrid, high]
+    households:
+      household:
+        members: [electric, hybrid, high]
+  output:
+    company_car_appropriate_percentage: [0.09, 0.19, 0.39]
+
+- name: Capital contributions above £5,000 are capped
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    company_car_list_price: 40_000
+    company_car_capital_contributions: 7_000
+    company_car_co2_emissions: 120
+  output:
+    # s. 132(3): the deduction is the lesser of the contributions and
+    # £5,000. 120 g/km is 30% (Appendix 2, 2026-27).
+    # (£40,000 - £5,000) x 30% = £10,500.
+    company_car_benefit: 10_500
+
+- name: Capital contributions below the cap are deducted in full
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    company_car_list_price: 40_000
+    company_car_capital_contributions: 3_000
+    company_car_co2_emissions: 120
+  output:
+    # (£40,000 - £3,000) x 30% = £11,100.
+    company_car_benefit: 11_100
+
+- name: Car available for part of the year
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    company_car_list_price: 40_000
+    company_car_co2_emissions: 120
+    company_car_availability: 0.5
+  output:
+    # s. 143(3) deducts A x U / Y: £12,000 x 0.5 = £6,000.
+    company_car_benefit: 6_000
+
+- name: Payments for private use come off after the reduction for unavailability
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    company_car_list_price: 40_000
+    company_car_co2_emissions: 120
+    company_car_availability: 0.5
+    company_car_private_use_payments: 1_200
+  output:
+    # Steps 7 then 8 of s. 121(1): £12,000 x 0.5 - £1,200 = £4,800.
+    company_car_benefit: 4_800
+
+- name: Payments for private use above the benefit reduce it to nil
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    company_car_list_price: 40_000
+    company_car_co2_emissions: 120
+    company_car_private_use_payments: 13_000
+  output:
+    # s. 144(2).
+    company_car_benefit: 0
+
+- name: No benefit before 2020-21, the model's first year
+  period: 2019
+  absolute_error_margin: 0
+  input:
+    company_car_list_price: 40_000
+    company_car_co2_emissions: 120
+  output:
+    company_car_benefit: 0

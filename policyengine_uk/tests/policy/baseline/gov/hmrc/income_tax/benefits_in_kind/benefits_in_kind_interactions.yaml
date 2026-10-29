@@ -1,0 +1,104 @@
+# Where the company car benefit goes. A person paid £20,000 in 2026-27 has
+# a zero-emission company car with a list price of £75,000, so a benefit of
+# £75,000 x 4% = £3,000. The benefit is employment income for income tax
+# (ITEPA 2003 s. 120) and so counts in adjusted net income. It is not
+# earnings for employee Class 1 NICs, nor for Universal Credit (UC
+# Regulations 2013 reg. 55(2)(a)), Housing Benefit (HB Regulations 2006
+# reg. 35(2)(a)) or Council Tax Reduction. Those earnings tests do deduct the
+# income tax on it, which is tax paid in respect of the employment (UC reg.
+# 55(5)(b)); PAYE collects it from the person's pay.
+
+- name: Without the company car
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 20_000
+  output:
+    taxable_employment_income: 20_000
+    adjusted_net_income: 20_000
+    # (£20,000 - £12,570) x 20% = £1,486.
+    income_tax: 1_486
+    # (£20,000 - £12,570) x 8% = £594.40.
+    ni_class_1_employee: 594.4
+    uc_income_tax_on_earnings: 1_486
+    # £20,000 - £1,486 - £594.40 = £17,919.60.
+    uc_individual_earned_income_before_mif: 17_919.6
+    housing_benefit_net_earnings: 17_919.6
+    council_tax_reduction_net_earnings: 17_919.6
+    # (£20,000 - £5,000) x 15% = £2,250.
+    ni_employer: 2_250
+
+- name: With the company car
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 20_000
+    company_car_list_price: 75_000
+    company_car_co2_emissions: 0
+    company_car_fuel_type: ELECTRIC
+  output:
+    company_car_benefit: 3_000
+    # Income tax and adjusted net income include the benefit.
+    taxable_employment_income: 23_000
+    adjusted_net_income: 23_000
+    # (£23,000 - £12,570) x 20% = £2,086.
+    income_tax: 2_086
+    # Pay, statutory pay and Class 1 earnings leave the benefit out.
+    employment_income: 20_000
+    employment_benefits: 0
+    ni_class_1_income: 20_000
+    ni_class_1_employee: 594.4
+    # The earnings tests leave the benefit out and deduct the income tax on
+    # it: £20,000 - £2,086 - £594.40 = £17,319.60.
+    uc_income_tax_on_earnings: 2_086
+    uc_individual_earned_income_before_mif: 17_319.6
+    housing_benefit_net_earnings: 17_319.6
+    council_tax_reduction_net_earnings: 17_319.6
+    # Class 1A of £3,000 x 15% = £450 on top of secondary Class 1.
+    ni_class_1a: 450
+    ni_employer: 2_700
+
+- name: The benefit reaches the personal allowance taper
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 100_000
+    company_car_list_price: 40_000
+    company_car_co2_emissions: 120
+  output:
+    # 120 g/km is 30%: a £12,000 benefit takes adjusted net income to
+    # £112,000, so the allowance falls by £12,000 / 2 to £6,570
+    # (Income Tax Act 2007 s. 35).
+    adjusted_net_income: 112_000
+    personal_allowance: 6_570
+
+- name: The benefit counts towards the High Income Child Benefit Charge
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        employment_income: 58_000
+        company_car_list_price: 40_000
+        company_car_co2_emissions: 120
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_child_benefit: true
+    households:
+      household:
+        members: [parent, child]
+  output:
+    # Adjusted net income of £70,000 is above the £60,000 to £80,000 taper
+    # midpoint, so the charge is half the Child Benefit
+    # (Income Tax (Earnings and Pensions) Act 2003 s. 681C).
+    adjusted_net_income: [70_000, 0]
+    # Child Benefit of £27.05 a week for 52 weeks is £1,406.60, rounded
+    # down to £1,406; half of it is £703 (s. 681C(3)).
+    CB_HITC: [703, 0]
