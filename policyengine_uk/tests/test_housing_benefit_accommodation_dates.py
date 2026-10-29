@@ -6,6 +6,7 @@ import pytest
 
 from policyengine_uk import CountryTaxBenefitSystem, Simulation
 from policyengine_uk.model_api import Variable, BenUnit, YEAR
+from policyengine_uk.utils.supplied_inputs import set_model_value
 
 
 PREFIX = (
@@ -156,6 +157,26 @@ def test_only_supplied_period_overrides_recalculation():
     assert simulation.calculate("housing_benefit_entitlement", 2026)[
         0
     ] == pytest.approx((before * 182 + 10_400 * 183) / 365, abs=0.01)
+
+
+def test_rebuilt_populations_leave_no_supplied_income_behind():
+    data = situation()
+    data["benunits"]["family"]["housing_benefit_applicable_income"] = {2026: 2_000}
+    simulation = Simulation(situation=data)
+    simulation.build_from_populations(Simulation(situation=situation()).populations)
+    simulation.calculate("housing_benefit_applicable_income", 2026)
+    before = 10_400 - 0.65 * (1_000 - 260 - 500)
+    assert simulation.calculate("housing_benefit_entitlement", 2026)[
+        0
+    ] == pytest.approx((before * 182 + 10_400 * 183) / 365, abs=0.01)
+
+
+def test_scenario_adjusted_income_keeps_its_value():
+    simulation = Simulation(situation=situation())
+    set_model_value(simulation, "housing_benefit_applicable_income", 2026, [2_000])
+    assert simulation.calculate("housing_benefit_entitlement", 2026)[
+        0
+    ] == pytest.approx(10_400 - 0.65 * (2_000 - 500), abs=0.01)
 
 
 def test_replaced_income_formula_is_not_bypassed():

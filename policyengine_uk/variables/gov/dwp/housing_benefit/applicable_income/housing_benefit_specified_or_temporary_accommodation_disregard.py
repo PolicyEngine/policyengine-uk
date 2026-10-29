@@ -1,7 +1,7 @@
 from policyengine_uk.model_api import *
 from policyengine_core.parameters import ParameterNode
 from policyengine_uk.utils.excise import fiscal_year_segments
-from policyengine_uk.utils.supplied_inputs import _visible_branch_names
+from policyengine_uk.utils.supplied_inputs import stored_as_input
 
 
 def hb_uses_annual_override(benunit, period, variable_name, default_formula):
@@ -15,19 +15,13 @@ def hb_uses_annual_override(benunit, period, variable_name, default_formula):
         or formula.__code__ != default_formula.__code__
     ):
         return True
-    # Core records set_input separately from computed caches. Reading those
-    # records avoids treating a cached formula result as an explicit override.
-    visible = set(_visible_branch_names(simulation))
-    holder = benunit.get_holder(variable_name)
-    return any(
-        name == variable_name
-        and input_period == period
-        and branch_name in visible
-        and holder._get_array_from_storage(input_period, branch_name) is not None
-        for name, branch_name, input_period in getattr(
-            simulation, "_user_input_keys", ()
-        )
-    )
+    # A value set as an input for this period overrides recalculation, and so
+    # does a scenario's own value (set_model_value), which the variable then
+    # reads; a cached formula result does not. SUPPLIED_INPUT_VARIABLES lists
+    # each name passed here, so Simulation.calculate forgets an input record
+    # that a population rebuild left without its value before the formula
+    # refills the period.
+    return stored_as_input(benunit, variable_name, period)
 
 
 def hb_accommodation_segments(benunit, period, parameters):

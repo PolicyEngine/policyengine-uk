@@ -56,6 +56,11 @@ SUPPLIED_INPUT_VARIABLES = frozenset(
         "extended_childcare_entitlement_term_share",
         "extended_childcare_entitlement_total_per_child",
         "gas_consumption_kwh",
+        "housing_benefit_applicable_income",
+        "housing_benefit_applicable_income_childcare_element",
+        "housing_benefit_applicable_income_disregard",
+        "housing_benefit_childcare_earnings_limit",
+        "housing_benefit_specified_or_temporary_accommodation_disregard",
         "in_HE",
         "other_local_bus_trips",
         "pip_dl_category",
@@ -164,6 +169,22 @@ def supplied_by(population, variable_name: str, period: Period) -> bool:
     return any(
         supplied_period.start <= period.start
         for supplied_period in supplied_input_periods(population, variable_name)
+    )
+
+
+def stored_as_input(population, variable_name: str, period: Period) -> bool:
+    """Whether a value set as an input for ``period``, supplied or the
+    model's own (``set_model_value``), is stored for ``variable_name`` on
+    this branch or one it was made from. A value the engine carried over from
+    an earlier period, or cached after a calculation, is not."""
+    _check_registered(variable_name)
+    simulation = population.simulation
+    input_keys = getattr(simulation, "_user_input_keys", None) or ()
+    holder = population.get_holder(variable_name)
+    return any(
+        (variable_name, branch_name, period) in input_keys
+        and holder._get_array_from_storage(period, branch_name) is not None
+        for branch_name in _visible_branch_names(simulation)
     )
 
 
