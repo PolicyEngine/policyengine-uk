@@ -1,3 +1,10 @@
+## [2.164.4] - 2026-10-29
+
+### Fixed
+
+- Count `other_investment_income` (National Savings, gilt and other securities interest, and trust interest) in `capital_income`, as market and HBAI income now do. Nothing reads `capital_income`, so income tax, benefits and the other income measures are unchanged.
+
+
 ## [2.164.3] - 2026-10-29
 
 ### Fixed
