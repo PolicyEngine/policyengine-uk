@@ -270,9 +270,10 @@ def test_macro_scenario_moves_the_state_pension_in_a_microsimulation():
     # Each April's rate is the year before's, uprated, to the nearest 5p:
     # £241.30 x 1.039 = £250.7107 gives £250.70 for April 2027, then
     # £250.70 x 1.034 = £259.2238 gives £259.20 and £250.70 x 1.053 =
-    # £263.9871 gives £264.00 for April 2028.
-    assert baseline_pension == pytest.approx(259.20 * WEEKS_IN_YEAR, abs=1e-6)
-    assert reformed_pension == pytest.approx(264.00 * WEEKS_IN_YEAR, abs=1e-6)
+    # £263.9871 gives £264.00 for April 2028. Simulations hold float32, so
+    # compare to half a penny.
+    assert baseline_pension == pytest.approx(259.20 * WEEKS_IN_YEAR, abs=0.005)
+    assert reformed_pension == pytest.approx(264.00 * WEEKS_IN_YEAR, abs=0.005)
 
 
 def test_setting_a_statutory_input_directly_overrides_its_forecast():

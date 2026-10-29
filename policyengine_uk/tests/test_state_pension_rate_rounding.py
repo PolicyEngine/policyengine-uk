@@ -20,8 +20,9 @@ Invariants, for both rates:
    Pension Tax Allowance explainer (52 weeks at £250.70), and the £93.28 of
    tax it says that income would otherwise bear.
 5. A pensioner whose only income is the full new State Pension has total
-   income of exactly 52 weeks at the projected rate, the explainer's Pension
-   Tax Allowance threshold, in every projected year.
+   income of 52 weeks at the projected rate, the explainer's Pension Tax
+   Allowance threshold, in 2027-28 to 2029-30 (to the float32 precision
+   simulations hold).
 6. The rounding is a parameter: each reform route moves the projection by
    it, zero gives the unrounded chain, and the baseline stays current law.
 7. A changed triple lock rate or index moves the projection.
@@ -38,7 +39,7 @@ import pytest
 import yaml
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
-from policyengine_core.parameters import Parameter
+from policyengine_core.parameters import ParameterNode
 
 from policyengine_uk import Simulation
 from policyengine_uk.data.dataset_schema import UKSingleYearDataset
@@ -64,6 +65,9 @@ LAST_PUBLISHED = 2026
 PROJECTED = range(LAST_PUBLISHED + 1, 2040)
 FIVE_PENCE = Decimal("0.05")
 WEEKS_IN_YEAR = 52
+# Simulations hold float32, which at £13,000 resolves about a tenth of a
+# penny; the unrounded rates put these incomes 57p to £1.86 off.
+HALF_PENNY = 0.005
 
 PROPERTY_SETTINGS = settings(
     max_examples=200,
@@ -200,14 +204,13 @@ def test_april_2027_is_the_pension_tax_allowance_explainer_figure(pensioner):
     and Steph, whose only income it is, "would have £93.28 of income tax to
     pay" without the allowance. The unrounded rate gave £13,036.97 and
     £93.39."""
-    assert float(pensioner.calculate("state_pension", 2027)[0]) == pytest.approx(
-        13_036.40, abs=1e-6
-    )
-    assert float(pensioner.calculate("total_income", 2027)[0]) == pytest.approx(
-        13_036.40, abs=1e-6
-    )
+    # Simulations hold float32, a thousandth of a pound apart at this size.
+    for variable in ("state_pension", "total_income"):
+        assert float(pensioner.calculate(variable, 2027)[0]) == pytest.approx(
+            13_036.40, abs=HALF_PENNY
+        )
     assert float(pensioner.calculate("income_tax", 2027)[0]) == pytest.approx(
-        93.28, abs=1e-6
+        93.28, abs=0.001
     )
 
 
@@ -220,11 +223,10 @@ def test_full_new_state_pension_income_is_the_pension_tax_allowance_threshold(
     line with" that value for 2028-29 and 2029-30. A pensioner with only that
     pension has exactly that income, a whole number of 5p a week, so sits at
     the threshold, not a few pence above it."""
-    threshold = weekly(pensioner.tax_benefit_system.parameters, RATES["new"], year)
-    threshold *= WEEKS_IN_YEAR
+    rate = weekly(pensioner.tax_benefit_system.parameters, RATES["new"], year)
+    assert on_grid(rate)
     income = float(pensioner.calculate("total_income", year)[0])
-    assert income == pytest.approx(threshold, abs=1e-6)
-    assert on_grid(income / WEEKS_IN_YEAR)
+    assert income == pytest.approx(rate * WEEKS_IN_YEAR, abs=HALF_PENNY)
     assert float(pensioner.calculate("additional_state_pension", year)[0]) == 0
 
 
@@ -365,13 +367,19 @@ def test_a_projected_path_is_the_chained_rule(start, path):
     for offset, rise in enumerate(path, start=1):
         level *= 1 + rise
         levels[f"{2026 + offset}-01-01"] = level
-    index = Parameter("index", data={"values": levels})
-    rounding = Parameter("rounding", data={"values": {"2011-01-01": 0.05}})
-    rate = Parameter(
-        "rate",
-        data={"values": {"2026-04-01": start}, "metadata": {"uprating": "index"}},
+    root = ParameterNode(
+        "",
+        data={
+            "index": {"values": levels},
+            "rounding": {"values": {"2011-01-01": 0.05}},
+            "rate": {
+                "values": {"2026-04-01": start},
+                "metadata": {"uprating": "index"},
+            },
+        },
     )
-    project_weekly_rate(rate, index, rounding)
+    rate = root.rate
+    project_weekly_rate(rate, root.index, root.rounding)
     values = {entry.instant_str: entry.value for entry in rate.values_list}
     assert values.pop("2026-04-01") == start
     expected = start
