@@ -16,6 +16,8 @@ from it. So:
 2. In a subset, each person has the value the whole simulation gives them,
    in its baseline too, and a data-built population's birthdays keep their
    places in the whole population's spread.
+3. Each route the election compares is set on a branch holding only the
+   households with a choice (PolicyEngine/policyengine-uk#2707).
 """
 
 import numpy as np
@@ -146,6 +148,25 @@ def test_the_election_does_not_depend_on_other_households(households, year):
     for k, name in enumerate(TAX):
         expected = np.concatenate([values[k] for values in alone])
         assert np.allclose(together[k], expected, atol=0.01), (name, households)
+
+
+def test_routes_are_compared_on_only_the_households_with_a_choice(monkeypatch):
+    # The pensioner landlord's choice turns on the winter fuel payment charge,
+    # so comparing it works out the benefits the charge reads. Each route is
+    # set on a branch of the one household with a choice, not of all three.
+    routes_set = []
+    set_input = Simulation.set_input
+
+    def recording(simulation, variable_name, period, value):
+        if variable_name == "uses_property_allowance":
+            routes_set.append(len(value))
+        return set_input(simulation, variable_name, period, value)
+
+    monkeypatch.setattr(Simulation, "set_input", recording)
+    households = [NO_CHOICE, NO_CHOICE, ELECTING[1]]
+    simulation = Simulation(situation=situation(households, 2026))
+    assert simulation.calculate("uses_property_allowance", 2026)[-1]
+    assert routes_set and set(routes_set) == {1}, routes_set
 
 
 def test_a_subset_gives_its_people_the_whole_simulations_values():
