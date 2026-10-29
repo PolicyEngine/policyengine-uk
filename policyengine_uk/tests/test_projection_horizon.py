@@ -25,6 +25,7 @@ from policyengine_uk import Microsimulation, parameters
 from policyengine_uk.data import UKSingleYearDataset
 from policyengine_uk.data import economic_assumptions
 from policyengine_uk.data.economic_assumptions import (
+    COUNTRY_UPRATED_INPUTS,
     DATASET_UPRATING_EXCLUSIONS,
     LEGACY_PROJECTION_END_YEAR,
     PROJECTION_END_YEAR,
@@ -54,6 +55,7 @@ FALLBACK_INDEX_OF = {
     and variable.value_type in (int, float)
     and name not in INDEX_OF
     and name not in DATASET_UPRATING_EXCLUSIONS
+    and name not in COUNTRY_UPRATED_INPUTS
 }
 # These survey inputs already use FY2026-27 prices, so projection must not
 # apply their class-level CPI index a second time.
@@ -78,6 +80,14 @@ COUNCIL_TAX_SERIES = {
     "NORTH_EAST": "england",
     "SCOTLAND": "scotland",
     "WALES": "wales",
+}
+# Water and sewerage charges grow by country (#2501): Northern Ireland has
+# none to grow.
+WATER_SERIES = {
+    "LONDON": "ofwat.water_bills",
+    "NORTH_EAST": "ofwat.water_bills",
+    "SCOTLAND": "scottish_water.water_bills",
+    "WALES": "ofwat.water_bills",
 }
 
 
@@ -110,6 +120,7 @@ def _dataset(amount=1_000.0, base_year=BASE_YEAR):
             "tenure_type": [tenure for _, tenure in HOUSEHOLDS],
             "rent": amounts,
             "council_tax": amounts,
+            "water_and_sewerage_charges": amounts,
         },
     }
     for variable in (*INDEX_OF, *FALLBACK_INDEX_OF, *ENERGY_VARIABLES):
@@ -135,8 +146,14 @@ def _rent_growth(region, tenure, year):
 
 
 def _council_tax_growth(region, year):
+    # Bills grow by their country's receipts growth net of the growth in
+    # household weights, so each country's total tracks its receipts (#2067).
     series = COUNCIL_TAX_SERIES.get(region)
-    return 0.0 if series is None else GROWTH.obr.council_tax.get_child(series)(year)
+    if series is None:
+        return 0.0
+    receipts = GROWTH.obr.council_tax.get_child(series)(year)
+    weights = parameters.get_child(INDEX_OF["household_weight"])(year)
+    return (1 + receipts) / (1 + weights) - 1
 
 
 RESIDENTIAL_STOCKS = (
@@ -177,7 +194,8 @@ def test_every_year_to_the_horizon_is_a_dataset_year(projected, sim):
 def test_each_singly_indexed_input_grows_by_its_index_every_year(projected):
     """For every variable uprating_indices.yaml lists and every projected
     year, check its index: residential stocks use the original observation
-    and cumulative HPI; other inputs grow from the previous year's raw YoY."""
+    and cumulative HPI. This fixture stores the completed bereavement split,
+    so BSP stays flat; other inputs grow from the previous year's raw YoY."""
     observed = _dataset()
     for year in range(BASE_YEAR + 1, PROJECTION_END_YEAR + 1):
         for variable, index in INDEX_OF.items():
@@ -188,28 +206,22 @@ def test_each_singly_indexed_input_grows_by_its_index_every_year(projected):
             else:
                 previous = _table(projected[year - 1], variable)[variable].to_numpy()
                 growth = parameters.get_child(index)(year)
-                expected = previous * (1 + growth)
+                expected = (
+                    previous if variable == "bsp_reported" else previous * (1 + growth)
+                )
             assert current == pytest.approx(expected), (variable, year)
 
 
 def test_unmapped_inputs_preserve_legacy_years_and_grow_after_2030(projected):
     """Previously unmapped columns keep their old values through 2030, then
     grow by the same cumulative-index ratio Core used beyond that year.
+    Columns uprating_indices.yaml now lists (the debts, ISAs, lodger and
+    boarder rent, gross receipts, salary sacrifice, service charges and rail
+    usage), and water bills, which grow by country, grow every year instead,
+    so they are no longer fallbacks.
     """
-    assert {
-        "mortgage_debt",
-        "consumer_debt",
-        "rent_paid_as_boarder",
-        "self_employment_gross_receipts",
-        "rent_paid_as_lodger",
-        "rail_usage",
-        "stocks_and_shares_isa",
-        "cash_isa",
-        "water_and_sewerage_charges",
-        "employee_pension_contributions_reported",
-        "pension_contributions_via_salary_sacrifice",
-        "housing_service_charges",
-    } <= set(FALLBACK_INDEX_OF)
+    assert "employee_pension_contributions_reported" in FALLBACK_INDEX_OF
+    assert "rail_usage" not in FALLBACK_INDEX_OF
     for year in range(BASE_YEAR + 1, PROJECTION_END_YEAR + 1):
         for variable, index_name in FALLBACK_INDEX_OF.items():
             previous = _table(projected[year - 1], variable)[variable].to_numpy()
@@ -235,10 +247,23 @@ def test_reset_growthfactor_uprating_restores_unmapped_inputs(projected):
     reset = projected.copy()
     reset_growthfactor_uprating(reset)
     for year in range(BASE_YEAR + 1, PROJECTION_END_YEAR + 1):
-        for variable in (*INDEX_OF, *FALLBACK_INDEX_OF):
+        for variable in (*INDEX_OF, *FALLBACK_INDEX_OF, *COUNTRY_UPRATED_INPUTS):
             base = _table(projected[BASE_YEAR], variable)[variable].to_numpy()
             current = _table(reset[year], variable)[variable].to_numpy()
             np.testing.assert_array_equal(current, base, err_msg=f"{variable}, {year}")
+
+
+def test_water_charges_grow_by_country_every_projected_year(projected):
+    # Through the old horizon and after it, each country's own series grows
+    # the charge once a year; Northern Ireland's stays flat.
+    for year in range(BASE_YEAR + 1, PROJECTION_END_YEAR + 1):
+        previous, current = projected[year - 1].household, projected[year].household
+        for i, (region, _) in enumerate(HOUSEHOLDS):
+            series = WATER_SERIES.get(region)
+            growth = 0.0 if series is None else GROWTH.get_child(series)(year)
+            assert current["water_and_sewerage_charges"].iloc[i] == pytest.approx(
+                previous["water_and_sewerage_charges"].iloc[i] * (1 + growth)
+            ), (region, year)
 
 
 def test_rent_and_council_tax_grow_every_projected_year(projected):
@@ -278,7 +303,8 @@ def test_growth_ratio_is_one_plus_the_index(amounts, year, variable):
     """For any positive amounts, any projected year and any singly indexed
     variable, check its annual growth record by record. Residential ratios
     come from original-observation cumulative HPI levels at storage precision;
-    every other variable retains its raw one-plus-YoY growth expectation."""
+    split BSP stays flat; every other variable retains its raw one-plus-YoY
+    growth expectation."""
     projected = extend_single_year_dataset(
         _dataset(np.array(amounts)), parameters, end_year=year
     )
@@ -291,6 +317,8 @@ def test_growth_ratio_is_one_plus_the_index(amounts, year, variable):
         assert current == pytest.approx(expected_current)
         assert previous == pytest.approx(expected_previous)
         expected_ratio = expected_current / expected_previous
+    elif variable == "bsp_reported":
+        expected_ratio = np.ones(len(amounts))
     else:
         index = parameters.get_child(INDEX_OF[variable])(year)
         expected_ratio = np.full(len(amounts), 1 + index)
@@ -393,6 +421,15 @@ def test_tax_free_savings_formula_takes_over_after_the_horizon():
     """
     dataset = _dataset()
     dataset.person["tax_free_savings_income"] = 1_000.0
+    # The generic fixture includes indexed ISA-interest total and detail inputs.
+    # This legacy case omits both sources of the formula's ISA-interest default.
+    dataset.person = dataset.person.drop(
+        columns=[
+            "individual_savings_account_interest_income",
+            "non_cash_isa_cash_interest",
+        ],
+        errors="ignore",
+    )
     # Enhanced FRS 2024-25 does not store the formula's ISA-interest source.
     simulation = Microsimulation(dataset=dataset)
     assert simulation.calculate(

@@ -1,0 +1,375 @@
+# Child Tax Credit Regulations 2002 regs 7(2A) and 9 to 14, as in force on 6
+# April 2025. In 2024-25 the individual element is 3,455 a child (reg 7(4)).
+# Every child here is born after 6 April 2017. Reg 9(1)(b) includes the
+# element for the first and second children in the reg 9(5) order; reg
+# 9(1)(a) includes it for a third or later child if any of regs 10 to 14
+# applies, or if all, or all but one, of the other children are adopted or
+# under a non-parental caring arrangement. Unlike Universal Credit, a child
+# with an exception keeps their place in the order.
+#
+# Each benefit unit has a continuing tax credit claim (reported Child Tax
+# Credit above zero, and no Universal Credit claim), so it is eligible for
+# Child Tax Credit.
+
+- name: Without an exception, the CTC individual element is limited to two children
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        child_tax_credit_reported: 1_000
+      child_1:
+        age: 6
+        date_of_birth: 20180501
+      child_2:
+        age: 5
+        date_of_birth: 20190601
+      child_3:
+        age: 4
+        date_of_birth: 20200701
+      child_4:
+        age: 3
+        date_of_birth: 20210801
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, child_3, child_4]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+  output:
+    ctc_child_limit_position: [-1, 1, 2, 3, 4]
+    is_CTC_child_element_included: [false, true, true, false, false]
+    # 2 x 3,455.
+    CTC_child_element: 6_910
+
+- name: Multiple births (reg 10) - twins second and third in the order and a younger child get three elements
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        child_tax_credit_reported: 1_000
+      child_1:
+        age: 6
+        date_of_birth: 20180501
+      # Listed first, but with the exception it is ordered after its twin
+      # (reg 9(6)).
+      twin_with_exception:
+        age: 4
+        date_of_birth: 20200701
+        child_limit_multiple_birth_exception: true
+      twin:
+        age: 4
+        date_of_birth: 20200701
+      child_4:
+        age: 2
+        date_of_birth: 20220801
+    benunits:
+      benunit:
+        members: [parent, child_1, twin_with_exception, twin, child_4]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+  output:
+    ctc_child_limit_position: [-1, 1, 3, 2, 4]
+    is_CTC_child_element_included: [false, true, true, true, false]
+    # 3 x 3,455.
+    CTC_child_element: 10_365
+
+- name: Adoption (reg 11) - an adopted third child gets the element
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        child_tax_credit_reported: 1_000
+      child_1:
+        age: 6
+        date_of_birth: 20180501
+      child_2:
+        age: 5
+        date_of_birth: 20190601
+      adopted:
+        age: 4
+        date_of_birth: 20200701
+        child_limit_adoption_exception: true
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, adopted]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+  output:
+    CTC_child_element: 10_365
+
+- name: Adoption (reg 9(1)(a)(ii)) - with two adopted children, each birth child also gets the element
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        child_tax_credit_reported: 1_000
+      adopted_1:
+        age: 6
+        date_of_birth: 20180101
+        child_limit_adoption_exception: true
+      adopted_2:
+        age: 5
+        date_of_birth: 20190101
+        child_limit_adoption_exception: true
+      child_3:
+        age: 4
+        date_of_birth: 20200701
+      child_4:
+        age: 2
+        date_of_birth: 20220801
+    benunits:
+      benunit:
+        members: [parent, adopted_1, adopted_2, child_3, child_4]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+  output:
+    # For child_3 and for child_4, all but one of the other three children
+    # are adopted. 4 x 3,455 = 13,820.
+    # The adopted children are first and second, so reg 9(1)(b) covers them.
+    is_CTC_child_limit_exception: [false, false, false, true, true]
+    CTC_child_element: 13_820
+
+- name: Adoption (reg 9(1)(a)(ii)) - with one adopted child among four, the third birth child gets no element
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        child_tax_credit_reported: 1_000
+      child_1:
+        age: 6
+        date_of_birth: 20180501
+      child_2:
+        age: 5
+        date_of_birth: 20190601
+      child_3:
+        age: 4
+        date_of_birth: 20200701
+      adopted:
+        age: 2
+        date_of_birth: 20220801
+        child_limit_adoption_exception: true
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, child_3, adopted]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+  output:
+    # Two of child_3's other children are not adopted. The adopted child has
+    # its own reg 11 exception. 3 x 3,455 = 10,365.
+    is_CTC_child_element_included: [false, true, true, false, true]
+    CTC_child_element: 10_365
+
+- name: Non-parental caring arrangements (reg 12) - a third child in kinship care gets the element
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        child_tax_credit_reported: 1_000
+      child_1:
+        age: 6
+        date_of_birth: 20180501
+      child_2:
+        age: 5
+        date_of_birth: 20190601
+      kinship_child:
+        age: 4
+        date_of_birth: 20200701
+        child_limit_non_parental_caring_exception: true
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, kinship_child]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+  output:
+    CTC_child_element: 10_365
+
+- name: Non-consensual conception (reg 13) - the third child gets the element, the fourth does not
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        child_tax_credit_reported: 1_000
+      child_1:
+        age: 6
+        date_of_birth: 20180501
+      child_2:
+        age: 5
+        date_of_birth: 20190601
+      child_3:
+        age: 4
+        date_of_birth: 20200701
+        child_limit_non_consensual_conception_exception: true
+      child_4:
+        age: 2
+        date_of_birth: 20220801
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, child_3, child_4]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+  output:
+    is_CTC_child_element_included: [false, true, true, true, false]
+    CTC_child_element: 10_365
+
+- name: Continuation of an exception (reg 14) - a step-parent's third child gets the element
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        child_tax_credit_reported: 1_000
+      child_1:
+        age: 6
+        date_of_birth: 20180501
+      child_2:
+        age: 5
+        date_of_birth: 20190601
+      stepchild:
+        age: 4
+        date_of_birth: 20200701
+        child_limit_continuation_exception: true
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, stepchild]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+  output:
+    CTC_child_element: 10_365
+
+# Reg 9(1)(a)(ii) came into force on 28 November 2018 (SI 2018/1130 regs 1
+# and 3(a)). Before then a third or later child got the element only through
+# their own exception under regs 10 to 14. In 2017-18 the individual element
+# is 2,780 a child.
+
+- name: Before 28 November 2018 - with two adopted children, a third birth child gets no element
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        child_tax_credit_reported: 1_000
+      adopted_1:
+        age: 6
+        date_of_birth: 20110301
+        child_limit_adoption_exception: true
+      adopted_2:
+        age: 4
+        date_of_birth: 20130301
+        child_limit_adoption_exception: true
+      child:
+        age: 0
+        date_of_birth: 20170501
+    benunits:
+      benunit:
+        members: [parent, adopted_1, adopted_2, child]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+  output:
+    is_CTC_child_limit_exception: [false, false, false, false]
+    is_CTC_child_element_included: [false, true, true, false]
+    # 2 x 2,780.
+    CTC_child_element: 5_560
+
+- name: From 2019-20 - with two adopted children, the third birth child gets the element (reg 9(1)(a)(ii))
+  period: 2019
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 37
+        child_tax_credit_reported: 1_000
+      adopted_1:
+        age: 8
+        date_of_birth: 20110301
+        child_limit_adoption_exception: true
+      adopted_2:
+        age: 6
+        date_of_birth: 20130301
+        child_limit_adoption_exception: true
+      child:
+        age: 2
+        date_of_birth: 20170501
+    benunits:
+      benunit:
+        members: [parent, adopted_1, adopted_2, child]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+  output:
+    is_CTC_child_limit_exception: [false, false, false, true]
+    is_CTC_child_element_included: [false, true, true, true]
+    # 3 x 2,780.
+    CTC_child_element: 8_340
+
+# Reg 9(6): children with the same date are ordered so that the element is
+# included for as many as possible, whatever the exception and whatever the
+# order they are listed in.
+
+- name: Same-day children from different pregnancies, the one with the non-consensual conception exception listed first
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        child_tax_credit_reported: 1_000
+      child_1:
+        age: 6
+        date_of_birth: 20180501
+      with_exception:
+        age: 4
+        date_of_birth: 20200701
+        child_limit_non_consensual_conception_exception: true
+      without_exception:
+        age: 4
+        date_of_birth: 20200701
+    benunits:
+      benunit:
+        members: [parent, child_1, with_exception, without_exception]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+  output:
+    ctc_child_limit_position: [-1, 1, 3, 2]
+    # 3 x 3,455.
+    CTC_child_element: 10_365
+
+- name: Same-day children from different pregnancies, the one with the non-consensual conception exception listed second
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        child_tax_credit_reported: 1_000
+      child_1:
+        age: 6
+        date_of_birth: 20180501
+      without_exception:
+        age: 4
+        date_of_birth: 20200701
+      with_exception:
+        age: 4
+        date_of_birth: 20200701
+        child_limit_non_consensual_conception_exception: true
+    benunits:
+      benunit:
+        members: [parent, child_1, without_exception, with_exception]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+  output:
+    ctc_child_limit_position: [-1, 1, 2, 3]
+    CTC_child_element: 10_365

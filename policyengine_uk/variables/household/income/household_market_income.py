@@ -7,12 +7,19 @@ HOUSEHOLD_MARKET_INCOME_VARIABLES = [
     "employment_income",
     "self_employment_income",
     "savings_interest_income",
+    # National Savings, gilt and other securities interest, which income
+    # tax charges as savings income (taxable_savings_interest_income).
+    "other_investment_income",
+    "tax_free_savings_income",
+    "individual_savings_account_dividend_income",
     "dividend_income",
     "miscellaneous_income",
-    "property_income",
+    # Landlords' profit after mortgage interest, as in HBAI income.
+    "property_income_after_finance_costs",
     "private_pension_income",
     "private_transfer_income",
     "maintenance_income",
+    "spousal_maintenance_income",
     "capital_gains",
 ]
 

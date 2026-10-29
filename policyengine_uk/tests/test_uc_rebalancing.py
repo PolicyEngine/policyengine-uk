@@ -408,3 +408,290 @@ def test_a_branch_can_state_its_own_status():
         _new_claimant_rate(sim, 2026)
     )
     assert sim.calculate("uc_LCWRA_element", 2026)[0] == pytest.approx(parent)
+
+
+# The inactive health-component counterfactual starts from pre-Act 2025 law,
+# independently of the new/protected claimant split (issue #2283).
+# The independently sourced 2026 CPI-only monthly-penny anchor is £439.35.
+def _inactive_lcwra_expected(sim, year):
+    parameters = sim.tax_benefit_system.parameters
+
+    def index(y):
+        return float(parameters(str(y)).gov.benefit_uprating_cpi)
+
+    return 439.35 * index(year) / index(2026) * 12
+
+
+@pytest.mark.parametrize("year", [2026, 2027])
+def test_inactive_health_element_restores_pre_act_uprated_amount(year):
+    sim = Simulation(
+        situation=_uc_claimant(30),
+        scenario=Scenario(
+            parameter_changes={
+                "gov.dwp.universal_credit.rebalancing.active": False,
+            },
+            applied_before_data_load=True,
+        ),
+    )
+    actual = sim.calculate("uc_LCWRA_element", year)[0]
+    # Nonzero verifies that this is the explicit-year claimant, not the
+    # nondiagnostic scalar-input/default-2025 situation from preflight.
+    assert actual > 0
+    assert actual == pytest.approx(_inactive_lcwra_expected(sim, year), rel=0, abs=1e-3)
+
+
+@pytest.mark.parametrize("new_claimant", [False, True])
+def test_inactive_health_amount_is_independent_of_claimant_cohort(new_claimant):
+    situation = _uc_claimant(30)
+    situation["benunits"]["benunit"]["uc_receives_new_claimant_health_element"] = {
+        year: new_claimant for year in YEARS
+    }
+    sim = Simulation(
+        situation=situation,
+        scenario=Scenario(
+            parameter_changes={
+                "gov.dwp.universal_credit.rebalancing.active": False,
+            },
+            applied_before_data_load=True,
+        ),
+    )
+    assert sim.calculate("uc_LCWRA_element", 2026)[0] == pytest.approx(
+        _inactive_lcwra_expected(sim, 2026), rel=0, abs=1e-3
+    )
+
+
+def test_mixed_toggle_uses_independent_inactive_years_and_retains_active_path():
+    baseline = Simulation(situation=_uc_claimant(30))
+    sim = Simulation(
+        situation=_uc_claimant(30),
+        scenario=Scenario(
+            parameter_changes={
+                "gov.dwp.universal_credit.rebalancing.active": {
+                    "2026": False,
+                    "2027": True,
+                    "2028": False,
+                },
+            },
+            applied_before_data_load=True,
+        ),
+    )
+    for year in [2026, 2028]:
+        assert sim.calculate("uc_LCWRA_element", year)[0] == pytest.approx(
+            _inactive_lcwra_expected(sim, year), rel=0, abs=1e-3
+        )
+    assert sim.calculate("uc_LCWRA_element", 2027)[0] == pytest.approx(
+        baseline.calculate("uc_LCWRA_element", 2027)[0], rel=0, abs=1e-3
+    )
+
+
+@pytest.mark.parametrize("route", ["scenario", "legacy_reform"])
+def test_inactive_health_element_keeps_explicit_parameter_amount(route):
+    changes = {
+        "gov.dwp.universal_credit.rebalancing.active": False,
+        "gov.dwp.universal_credit.elements.disabled.amount": {"2026": 300},
+    }
+    kwargs = {
+        "scenario": Scenario(parameter_changes=changes, applied_before_data_load=True)
+    }
+    if route == "legacy_reform":
+        kwargs = {
+            "reform": {
+                "gov.dwp.universal_credit.rebalancing.active": {"2026": False},
+                "gov.dwp.universal_credit.elements.disabled.amount": {
+                    "2026-01-01": 300
+                },
+            }
+        }
+    sim = Simulation(situation=_uc_claimant(30), **kwargs)
+    assert sim.calculate("uc_LCWRA_element", 2026)[0] == pytest.approx(300 * 12)
+
+
+def test_inactive_health_element_keeps_directly_supplied_award():
+    situation = _uc_claimant(30)
+    situation["benunits"]["benunit"]["uc_LCWRA_element"] = {"2026": 7_200}
+    sim = Simulation(
+        situation=situation,
+        scenario=Scenario(
+            parameter_changes={
+                "gov.dwp.universal_credit.rebalancing.active": False,
+            },
+            applied_before_data_load=True,
+        ),
+    )
+    assert sim.calculate("uc_LCWRA_element", 2026)[0] == 7_200
+
+
+def test_inactive_health_element_reaches_final_uc_without_forced_intermediates():
+    sim = Simulation(
+        situation=_uc_claimant(30),
+        scenario=Scenario(
+            parameter_changes={
+                "gov.dwp.universal_credit.rebalancing.active": False,
+            },
+            applied_before_data_load=True,
+        ),
+    )
+    # No earnings, other benefits, housing or children: the standard allowance
+    # plus the independent inactive health amount is the whole UC award.
+    expected = STANDARD_ALLOWANCE_2026["SINGLE_OLD"] * 12 + _inactive_lcwra_expected(
+        sim, 2026
+    )
+    assert sim.calculate("universal_credit", 2026)[0] == pytest.approx(
+        expected, rel=0, abs=1e-3
+    )
+
+
+def test_inactive_health_modifier_is_idempotent():
+    sim = Simulation(
+        situation=_uc_claimant(30),
+        scenario=Scenario(
+            parameter_changes={
+                "gov.dwp.universal_credit.rebalancing.active": False,
+            },
+            applied_before_data_load=True,
+        ),
+    )
+    expected = _inactive_lcwra_expected(sim, 2026)
+    uc_reform.add_universal_credit_reform(sim)
+    assert sim.calculate("uc_LCWRA_element", 2026)[0] == pytest.approx(
+        expected, rel=0, abs=1e-3
+    )
+
+
+def test_inactive_health_amount_reform_on_a_built_simulation_keeps_precedence():
+    sim = Simulation(
+        situation=_uc_claimant(30),
+        scenario=Scenario(
+            parameter_changes={
+                "gov.dwp.universal_credit.rebalancing.active": False,
+            },
+            applied_before_data_load=True,
+        ),
+    )
+    Scenario(
+        parameter_changes={
+            "gov.dwp.universal_credit.elements.disabled.amount": 300,
+        }
+    ).apply(sim)
+    uc_reform.add_universal_credit_reform(sim)
+    assert sim.calculate("uc_LCWRA_element", 2026)[0] == pytest.approx(300 * 12)
+
+
+@pytest.mark.parametrize("repeat_modifier", [False, True])
+def test_inactive_cached_awards_follow_public_late_amount_reform(repeat_modifier):
+    sim = Simulation(
+        situation=_uc_claimant(30),
+        scenario=Scenario(
+            parameter_changes={
+                "gov.dwp.universal_credit.rebalancing.active": False,
+            },
+            applied_before_data_load=True,
+        ),
+    )
+    # Prime both caches before using the public parameter-change lifecycle.
+    assert sim.calculate("uc_LCWRA_element", 2026)[0] > 3_600
+    assert sim.calculate("universal_credit", 2026)[0] > 8_698.80
+    Scenario(
+        parameter_changes={
+            "gov.dwp.universal_credit.elements.disabled.amount": 300,
+        }
+    ).apply(sim)
+    if repeat_modifier:
+        uc_reform.add_universal_credit_reform(sim)
+    # The 2026 single-25+ standard allowance is £424.90/month (SI 2026/113),
+    # plus the explicitly reformed £300/month LCWRA amount, with no reductions.
+    assert [
+        sim.calculate("uc_LCWRA_element", 2026)[0],
+        sim.calculate("universal_credit", 2026)[0],
+    ] == pytest.approx([3_600, 8_698.80], rel=0, abs=0.01)
+
+
+def test_inactive_2026_uses_penny_rounded_september_cpi_anchor():
+    # Declared CPI-only counterfactual: DWP 2025 LCWRA £423.27, September
+    # 2025 CPI 3.8%; round the monthly £439.35426 to £439.35, then annualise.
+    # SSAA 1992 s.150 permits discretion; this is not an enacted LCWRA rate.
+    sim = Simulation(
+        situation=_uc_claimant(30),
+        scenario=Scenario(
+            parameter_changes={
+                "gov.dwp.universal_credit.rebalancing.active": False,
+            },
+            applied_before_data_load=True,
+        ),
+    )
+    actual = sim.calculate("uc_LCWRA_element", 2026)[0]
+    assert actual > 0
+    assert actual == pytest.approx(5_272.20, rel=0, abs=0.01)
+    assert actual / 12 == pytest.approx(439.35, rel=0, abs=0.001)
+    # Existing legislated SA stays separate: single25+ £424.90/month.
+    assert sim.calculate("uc_standard_allowance", 2026)[0] == pytest.approx(
+        424.90 * 12, rel=0, abs=0.01
+    )
+    assert sim.calculate("universal_credit", 2026)[0] == pytest.approx(
+        10_371.00, rel=0, abs=0.01
+    )
+
+
+@pytest.mark.parametrize("protected_floor", [0, 0.85])
+def test_inactive_health_cash_reconciles_with_currentmain_deductions(protected_floor):
+    # Natural LCWRA circumstances make this claimant benefit-cap exempt.
+    # The 15% deduction rate is an explicit interface input, not imputed
+    # debt incidence. A protected floor is a separate modeled reform.
+    situation = _uc_claimant(30)
+    situation["benunits"]["benunit"]["uc_deduction_rate"] = {2026: 0.15}
+    sim = Simulation(
+        situation=situation,
+        scenario=Scenario(
+            parameter_changes={
+                "gov.dwp.universal_credit.rebalancing.active": False,
+                "gov.dwp.universal_credit.deductions.protected_floor": protected_floor,
+            },
+            applied_before_data_load=True,
+        ),
+    )
+    # Declared CPI-only monthly-penny counterfactual, not an enacted rate:
+    # LCWRA 5272.20 + legislated SA 5098.80 = 10371; debt is 764.82.
+    assert sim.calculate("uc_LCWRA_element", 2026)[0] == pytest.approx(
+        5_272.20, rel=0, abs=0.01
+    )
+    assert sim.calculate("uc_standard_allowance", 2026)[0] == pytest.approx(
+        5_098.80, rel=0, abs=0.01
+    )
+    assert sim.calculate("uc_benefit_cap_reduction", 2026)[0] == 0
+    assert sim.calculate("uc_benefit_cap_reduction_after_floor", 2026)[0] == 0
+    assert sim.calculate("universal_credit_pre_benefit_cap", 2026)[0] == pytest.approx(
+        10_371.00, rel=0, abs=0.01
+    )
+    assert sim.calculate("uc_deductions", 2026)[0] == pytest.approx(
+        764.82, rel=0, abs=0.01
+    )
+    assert sim.calculate("universal_credit", 2026)[0] == pytest.approx(
+        9_606.18, rel=0, abs=0.01
+    )
+    assert (
+        sim.calculate("uc_deductions", 2026)[0]
+        + sim.calculate("uc_benefit_cap_reduction_after_floor", 2026)[0]
+    ) == pytest.approx(
+        sim.calculate("universal_credit_pre_benefit_cap", 2026)[0]
+        - sim.calculate("universal_credit", 2026)[0],
+        rel=0,
+        abs=0.01,
+    )
+    # Both caches are now primed. The public late amount reform retains
+    # precedence while the new deduction components still reconcile.
+    Scenario(
+        parameter_changes={
+            "gov.dwp.universal_credit.elements.disabled.amount": 300,
+        }
+    ).apply(sim)
+    assert sim.calculate("uc_LCWRA_element", 2026)[0] == pytest.approx(
+        3_600, rel=0, abs=0.01
+    )
+    assert sim.calculate("uc_deductions", 2026)[0] == pytest.approx(
+        764.82, rel=0, abs=0.01
+    )
+    assert sim.calculate("universal_credit", 2026)[0] == pytest.approx(
+        7_933.98, rel=0, abs=0.01
+    )
+    assert sim.calculate("uc_benefit_cap_reduction", 2026)[0] == 0
+    assert sim.calculate("uc_benefit_cap_reduction_after_floor", 2026)[0] == 0

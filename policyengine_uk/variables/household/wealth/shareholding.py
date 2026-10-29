@@ -7,7 +7,7 @@ class shareholding(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = GBP
+    unit = "/1"
 
     def formula(household, period, parameters):
         wealth = household("corporate_sector_wealth", period)

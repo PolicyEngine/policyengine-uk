@@ -9,7 +9,10 @@ class income_tax_charges(Variable):
         "The charges to Income Tax added at Step 7 of the Income Tax "
         "calculation, after the tax reductions, such as the High Income Child "
         "Benefit Charge and the pension annual allowance charge. Tax "
-        "reductions do not offset them."
+        "reductions do not offset them. The winter fuel payment charge is also "
+        "a Step 7 charge (Finance Act 2026 Sch. 10 para. 4(3)), but income_tax "
+        "adds it separately after income_tax_before_winter_fuel_payment_charge "
+        "to avoid the cycle through benefit means tests."
     )
     definition_period = YEAR
     unit = GBP

@@ -23,8 +23,9 @@ and 25 or over. The national living wage applied from age 25 from 1 April 2016
 the parameters used to get wrong: with no 1 April 2023 entry, 2023 read the
 April 2022 rates, for example £9.50 instead of the £10.42 national living wage.
 
-The model reads ``is_apprentice`` as "the apprenticeship rate applies"
-(2015 Regs reg. 5: an apprentice under 19 or in the first 12 months). Ages
+The apprenticeship rate applies to an apprentice under 19 or in the first
+12 months (2015 Regs reg. 5). The adult apprenticeship-rate fixture therefore
+sets both ``is_apprentice`` and ``is_in_first_year_of_apprenticeship``. Ages
 under 16 are not checked: the Act does not cover workers of compulsory school
 age, and the model gives them the under-18 rate.
 
@@ -36,7 +37,7 @@ Properties:
 2. For every year from 2015 to 2040, no rate falls as age rises, and the
    apprenticeship rate is never above the rate for any age from 16.
 3. No rate falls from one year to the next, 2015 to 2040. This holds for
-   every rate set from October 2011 to April 2026; it is a property of the
+   every rate set from October 2010 to April 2026; it is a property of the
    enacted rates, not a rule in the Act, so a future cut would need this test
    changing.
 
@@ -86,6 +87,11 @@ BAND_AGES = {
 # (commencement date, S.I. and provisions, rates by band). Where an S.I. left a
 # rate unchanged the row repeats the rate then in force.
 RATES_FROM_COMMENCEMENT = [
+    # 1999 Regs reg. 11 (21 and over) and reg. 13 as substituted by reg. 5:
+    # 13(1) 18 to 20 (the adult rate now starts at 21, not 22), 13(2) under
+    # 18 and 13(3) the new apprenticeship rate.
+    ("2010-10-01", "S.I. 2010/1901 regs. 3, 5", (2.50, 3.64, 4.92, 5.93, 5.93, 5.93)),
+    ("2011-10-01", "S.I. 2011/2345 regs. 3, 5", (2.60, 3.68, 4.98, 6.08, 6.08, 6.08)),
     # 1999 Regs reg. 11 (21 and over) and reg. 13(3) (apprentices); the
     # 18 to 20 and under 18 rates (reg. 13(1), (2)) stayed at the levels set
     # by S.I. 2011/2345 reg. 5 from 1 October 2011.
@@ -258,10 +264,11 @@ def test_minimum_wage_variable_matches_statutory_instruments():
         for age in ages
     }
     # The apprenticeship rate displaces the age rates (2015 Regs reg. 4A(2)).
-    # is_apprentice stands for "the apprenticeship rate applies" (reg. 5).
+    # At age 19, the first-12-month condition is needed (reg. 5).
     people["apprentice_19"] = {
         "age": {str(year): 19 for year in years},
         "is_apprentice": {str(year): True for year in years},
+        "is_in_first_year_of_apprenticeship": {str(year): True for year in years},
     }
     names = list(people)
     sim = Simulation(
@@ -369,3 +376,51 @@ def test_rates_do_not_fall_with_age(year, younger, older):
 def test_rates_do_not_fall_from_year_to_year(year, age):
     assert _model_rate(year, age) <= _model_rate(year + 1, age)
     assert _model_apprentice_rate(year) <= _model_apprentice_rate(year + 1)
+
+
+@pytest.mark.parametrize("instant", ["2010-10-01", "2011-01-01", "2012-01-01"])
+def test_apprentice_age_limit_covers_the_extended_wage_history(instant):
+    # S.I. 2010/1901 reg. 5 inserted the under-19/first-12-month rule into
+    # the 1999 Regulations from 1 October 2010, before the 2015 restatement.
+    assert system.parameters(instant).gov.hmrc.minimum_wage.apprentice_age_limit == 19
+
+
+@pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
+@pytest.mark.parametrize(
+    "year, expected_rates",
+    [
+        # January 2011 still reads S.I. 2010/1901 regs. 3 and 5; January
+        # 2012 reads the rates introduced by S.I. 2011/2345 regs. 3 and 5.
+        (2011, [3.64, 4.92, 5.93, 5.93, 2.50]),
+        (2012, [3.68, 4.98, 6.08, 6.08, 2.60]),
+    ],
+)
+def test_historical_minimum_wage_and_category_remain_available(year, expected_rates):
+    people = {
+        "under_18": {"age": 16},
+        "young_adult": {"age": 20},
+        "adult_21": {"age": 21},
+        "adult_40": {"age": 40},
+        "apprentice": {"age": 18, "is_apprentice": True},
+    }
+    names = list(people)
+    simulation = Simulation(
+        situation={
+            "people": {
+                name: {variable: {year: value} for variable, value in inputs.items()}
+                for name, inputs in people.items()
+            },
+            "benunits": {f"b_{name}": {"members": [name]} for name in names},
+            "households": {"household": {"members": names}},
+        }
+    )
+    np.testing.assert_allclose(
+        simulation.calculate("minimum_wage", year), expected_rates, rtol=0, atol=0.001
+    )
+    categories = simulation.calculate("minimum_wage_category", year)
+    if hasattr(categories, "decode_to_str"):
+        categories = categories.decode_to_str()
+    np.testing.assert_array_equal(
+        categories,
+        ["UNDER_18", "BETWEEN_18_20", "BETWEEN_21_22", "OVER_24", "APPRENTICE"],
+    )

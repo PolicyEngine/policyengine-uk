@@ -44,11 +44,14 @@ def simulation(people, benunit=None):
     return Simulation(
         situation={
             "people": people,
+            # Legacy claimants: a Universal Credit claim would end the
+            # carer's income-related ESA (esa_income_report_closed).
             "benunits": {
                 "b": {
                     "members": names,
                     "income_support_assessable_capital": {YEAR: 0},
                     "esa_income_assessable_capital": {YEAR: 0},
+                    "would_claim_uc": {YEAR: False},
                     **(benunit or {}),
                 }
             },
@@ -170,7 +173,7 @@ def test_the_plain_reported_total_is_read_through_the_reports():
         {"carer": CARER, "partner": partner, "other_adult": EXCLUDED_ADULT},
         {"esa_income_assessable_capital": {YEAR: 10_000}},
     )
-    assert sim.calculate("esa_income", YEAR)[0] == 2_368
+    assert sim.calculate("esa_income", YEAR)[0] == 2_168
     assert eligible(sim)
     sim.set_input("esa_income", YEAR, np.array([3_200.0]))
     assert not eligible(sim)
@@ -256,7 +259,7 @@ def test_an_entered_amount_within_half_a_penny_of_zero_is_no_award():
 
 
 def test_the_couples_residual_is_no_award_beside_another_members_report():
-    # An excluded adult's £3,000 makes esa_income a real award, but on the
+    # An excluded adult's £3,000 less £52 tariff makes esa_income a real award, but on the
     # couple's own reports (£10.01 + £41.99 against £52 of tariff income) the
     # award is only a float residual, so it does not bar the claim. A real
     # penny of award (£52.01 against £52) still does.
@@ -270,7 +273,7 @@ def test_the_couples_residual_is_no_award_beside_another_members_report():
     residual = simulation(
         {"carer": carer, "partner": partner, "other_adult": EXCLUDED_ADULT}, capital
     )
-    assert residual.calculate("esa_income", YEAR)[0] > 2_999
+    assert residual.calculate("esa_income", YEAR)[0] > 2_947
     assert eligible(residual)
     penny = simulation(
         {"carer": {**CARER, "esa_income_reported": {YEAR: 52.01}}}, capital
@@ -280,7 +283,7 @@ def test_the_couples_residual_is_no_award_beside_another_members_report():
 
 
 def test_the_couples_award_tolerance_is_half_a_penny():
-    # Beside an excluded adult's £3,000, esa_income is a real award that the
+    # Beside an excluded adult's net £2,948, esa_income is a real award that the
     # reports explain, so the couple's own award decides. £52.004 against
     # £52 of tariff income leaves them £0.004, which is no award; £52.006
     # leaves £0.006, which bars the claim.
@@ -291,9 +294,9 @@ def test_the_couples_award_tolerance_is_half_a_penny():
         return simulation({"carer": carer, "other_adult": EXCLUDED_ADULT}, capital)
 
     below, above = couple_award(52.004), couple_award(52.006)
-    assert below.calculate("esa_income", YEAR)[0] > 2_999
+    assert below.calculate("esa_income", YEAR)[0] > 2_947
     assert eligible(below)
-    assert above.calculate("esa_income", YEAR)[0] > 2_999
+    assert above.calculate("esa_income", YEAR)[0] > 2_947
     assert not eligible(above)
 
 

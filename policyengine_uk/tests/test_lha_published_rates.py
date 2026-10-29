@@ -240,14 +240,24 @@ def test_statutory_percentile_positions():
 def reformed_parameters(
     freeze: dict, percentile: float, maximum_scale: float, minimum: bool
 ):
-    """Copies of the LHA parameters with reforms applied by year."""
+    """Copies of the LHA parameters with reforms applied by year.
+
+    Every reform applies in Great Britain and, through gov.dfc.LHA, in
+    Northern Ireland alike.
+    """
     lha = SYSTEM.parameters.gov.dwp.LHA.clone()
+    ni_lha = SYSTEM.parameters.gov.dfc.LHA.clone()
     for year, frozen in freeze.items():
-        lha.freeze.update(period=str(year), value=frozen)
+        for node in (lha, ni_lha):
+            node.freeze.update(period=str(year), value=frozen)
     for year in range(2020, 2041):
-        lha.percentile.update(period=str(year), value=percentile)
-        lha.march_2020_minimum.update(period=str(year), value=minimum)
-        for node in (lha.maximum, lha.maximum_monthly):
+        for node in (lha, ni_lha):
+            node.percentile.update(period=str(year), value=percentile)
+        for node in (lha, ni_lha):
+            node.march_2020_minimum.update(period=str(year), value=minimum)
+        maxima = (lha.maximum, lha.maximum_monthly)
+        maxima += (ni_lha.maximum, ni_lha.maximum_monthly)
+        for node in maxima:
             for category in CATEGORIES:
                 parameter = node.children[category]
                 parameter.update(
@@ -257,6 +267,7 @@ def reformed_parameters(
     return SimpleNamespace(
         gov=SimpleNamespace(
             dwp=SimpleNamespace(LHA=lha),
+            dfc=SimpleNamespace(LHA=ni_lha),
             indices=SYSTEM.parameters.gov.indices,
         )
     )
@@ -543,10 +554,95 @@ def test_northern_ireland_uc_keeps_the_march_2020_minimum():
 
     NI's monthly rates were not published before April 2024, so the floor is
     the April 2020 weekly rate (Belfast shared room, GBP 53.58) converted to
-    a month: GBP 232.82.
+    a month: 53.58 x 365 / 7 / 12 = GBP 232.82.
     """
-    reform = {"gov.dwp.LHA.maximum_monthly.A": {"2024": 100}}
+    reform = {"gov.dfc.LHA.maximum_monthly.A": {"2024": 100}}
     assert _monthly(2024, "BELFAST", "A", reform) == pytest.approx(232.82, abs=0.001)
+
+
+# Northern Ireland sets its own maxima and minimum: SR 2008/100 Schedule
+# paras 2(2)(b) and 3A (weekly, Housing Benefit) and SR 2016/222 Schedule 1
+# paras 2(2)(b) and 6 (monthly, Universal Credit), in gov.dfc.LHA. The
+# Housing Executive's April 2024 Belfast shared room rate is GBP 75.75 a
+# week (nidirect: GBP 329.15 a month); its April 2020 one, the 31 March 2020
+# minimum, is GBP 53.58 a week, or 53.58 x 365 / 7 / 12 = GBP 232.82 a month.
+# Category A is used because no smaller category can lift it (para 3).
+
+BELFAST_SHARED_2024 = (75.75, 329.15)
+BELFAST_SHARED_MARCH_2020 = (53.58, 232.82)
+
+
+def _belfast_shared(reform=None) -> tuple:
+    return (
+        _weekly(2024, "BELFAST", "A", reform),
+        _monthly(2024, "BELFAST", "A", reform),
+    )
+
+
+@pytest.mark.parametrize(
+    "reform",
+    [
+        {"gov.dwp.LHA.maximum.A": {"2024": 50}},
+        {"gov.dwp.LHA.maximum_monthly.A": {"2024": 100}},
+        {
+            "gov.dwp.LHA.maximum.A": {"2024": 50},
+            "gov.dwp.LHA.maximum_monthly.A": {"2024": 100},
+            "gov.dwp.LHA.march_2020_minimum": {"2024": False},
+        },
+    ],
+)
+def test_great_britain_maxima_and_minimum_leave_northern_ireland_unchanged(reform):
+    """A Rent Officers Order reform does not reach the Housing Executive."""
+    assert _belfast_shared(reform) == pytest.approx(BELFAST_SHARED_2024, abs=0.001)
+
+
+def test_northern_ireland_keeps_its_minimum_when_great_britain_ends_its_own():
+    """Both nations' shared room maxima cut to GBP 50 a week and GBP 100 a
+    month, and only Great Britain's minimum ended: Belfast stays at its 31
+    March 2020 rates, Maidstone falls to the maximum."""
+    reform = {
+        "gov.dwp.LHA.maximum.A": {"2024": 50},
+        "gov.dwp.LHA.maximum_monthly.A": {"2024": 100},
+        "gov.dfc.LHA.maximum.A": {"2024": 50},
+        "gov.dfc.LHA.maximum_monthly.A": {"2024": 100},
+        "gov.dwp.LHA.march_2020_minimum": {"2024": False},
+    }
+    assert _belfast_shared(reform) == pytest.approx(
+        BELFAST_SHARED_MARCH_2020, abs=0.001
+    )
+    assert _weekly(2024, "MAIDSTONE", "A", reform) == pytest.approx(50, abs=0.001)
+    assert _monthly(2024, "MAIDSTONE", "A", reform) == pytest.approx(100, abs=0.001)
+
+
+def test_northern_ireland_maxima_and_minimum_change_only_northern_ireland():
+    """Ending Northern Ireland's minimum lets its maximum bind in full."""
+    reform = {
+        "gov.dfc.LHA.maximum.A": {"2024": 50},
+        "gov.dfc.LHA.maximum_monthly.A": {"2024": 100},
+        "gov.dfc.LHA.march_2020_minimum": {"2024": False},
+    }
+    assert _belfast_shared(reform) == pytest.approx((50, 100), abs=0.001)
+    for measure in (_weekly, _monthly):
+        assert measure(2024, "MAIDSTONE", "A", reform) == pytest.approx(
+            measure(2024, "MAIDSTONE", "A"), abs=0.001
+        )
+
+
+def test_northern_ireland_maxima_and_minimum_match_great_britain_in_baseline():
+    """SR 2008/100 and SR 2016/222 set the same figures as the Rent Officers
+    Orders, so the baseline has one table for both nations."""
+    great_britain = SYSTEM.parameters.gov.dwp.LHA
+    northern_ireland = SYSTEM.parameters.gov.dfc.LHA
+    for year in range(2020, 2031):
+        instant = str(year)
+        assert great_britain.march_2020_minimum(
+            instant
+        ) == northern_ireland.march_2020_minimum(instant)
+        for node in ("maximum", "maximum_monthly"):
+            for category in CATEGORIES:
+                assert getattr(great_britain, node).children[category](
+                    instant
+                ) == getattr(northern_ireland, node).children[category](instant)
 
 
 def test_a_cap_binds_through_a_restated_held_rate():

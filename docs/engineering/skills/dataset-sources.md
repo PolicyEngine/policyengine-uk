@@ -43,6 +43,118 @@ When debugging dataset failures, distinguish these stages:
 
 Errors at those stages require different fixes.
 
+## ISA income input contracts
+
+Calculator situations use additive savings inputs: `savings_interest_income`
+is ordinary interest, while `tax_free_savings_income` is a separate cash-income
+component. Its default is `individual_savings_account_interest_income`; an
+explicit aggregate override, including zero, remains authoritative.
+
+Existing unmarked datasets use the legacy contract: their savings-interest
+column already includes the tax-free component. UK loads those records as
+signed ordinary interest `N = G - T`, preserving explicit ISA and aggregate
+inputs. There is no floor: `G < T` remains an override whose taxable result is
+`max(0, N + other_investment_income)`, exactly as before. The adapter does not
+infer an ISA amount from a tax-free aggregate.
+
+`UKSingleYearDataset` accepts an optional `isa_income_contract` argument and
+exposes a detached dictionary with exactly these fields:
+
+```json
+{"version": 1, "representation": "additive", "projection": "additive"}
+```
+
+The other valid pairs are `legacy_gross`/`legacy_gross` for raw legacy data
+and `additive`/`legacy_gross` for normalized legacy data. Representation and
+projection origin are separate: legacy projection grows the original gross
+amount before subtracting the effective exemption. It must not grow the
+already-normalized ordinary amount instead. New additive dataset projections
+grow ISA interest alongside ordinary interest by the dataset's GDP-per-capita
+rule; outside the stored horizon new inputs use their variable's own index.
+Legacy-origin fallback retains the old gross-index calculation and unindexed
+ISA carry-over, while explicit inputs and applicable ISA detail formulas take
+priority. Legacy files containing only an aggregate exemption still have that
+old exemption treatment; no ISA detail is invented during migration.
+
+DataFrames carry this declaration in
+`frame.attrs["policyengine_uk.isa_income_contract"]`. H5 files store UTF-8 JSON
+under the same namespaced **root attribute**, never as an extra table or model
+variable. Multi-year datasets and input-frame exports use per-year envelopes:
+
+```json
+{"version": 1, "years": {"2025": {"version": 1, "representation": "additive", "projection": "legacy_gross"}}}
+```
+
+A uniform single contract is also accepted when importing multiple years.
+Every materialized year must be covered. Unknown versions, malformed metadata
+and conflicting explicit object/file declarations fail with an `ISA income
+contract` error. Omitted metadata means legacy data; the presence or relative
+size of financial columns never chooses the representation.
+
+UK copy, clone, household extraction, `from_simulation`, input-frame export and
+single-/multi-year H5 round trips retain the projection origin and mark
+normalized values as additive so they cannot be subtracted twice. Core Dataset
+objects can carry the same `isa_income_contract` attribute; UK reads H5 root
+metadata before Core's value loader discards it. External writers which
+discard H5 attributes must explicitly preserve this declaration before their
+output can be reloaded safely. Test routing and migration on synthetic frames
+and small H5 fixtures, without downloading private datasets.
+
+## Apprenticeship status and tenure
+
+Dataset producers should export `is_apprentice` and
+`is_in_first_year_of_apprenticeship` as separate annual person columns.
+Apprentice status alone cannot establish entitlement to the apprentice
+minimum wage at age 19 or over. The first-year column records the first
+12 months of the current apprenticeship employment, including any period
+covered by statutory continuity; it is not an academic-year flag. See the
+[calculator input contract](../../book/usage/simulations.md#apprenticeship-inputs).
+
+An absent first-year column uses the variable's `False` default. This can
+change minimum-wage and dependent childcare income-condition results for
+existing data whose `is_apprentice` flag is true at age 19 or over. It does
+not change the existing under-25 apprentice employer National Insurance
+relief. A missing column is not evidence that every apprentice is in a
+later year.
+
+The producer work in [Microcosm PR #1373](https://github.com/PolicyEngine/microcosm/pull/1373)
+must supply an explicit first-year classification alongside apprentice
+status before that status can also identify older apprentices who receive
+the lower minimum wage. This UK change supplies no first-year imputation,
+prevalence estimate or migration of existing releases. Projection does not
+advance apprenticeship tenure, so a producer or caller must supply changed
+classifications for later years rather than rely on a carried input to
+expire automatically.
+
+## ISA balances and subscriptions
+
+Producers can export per-person `cash_isa_balance` and
+`stocks_and_shares_isa_balance`. The household `cash_isa` and
+`stocks_and_shares_isa` sum them, but a stored household column takes
+precedence, so existing datasets that store only the household totals keep
+them, projected with `savings` and `corporate_wealth` through
+`uprating_indices.yaml`. A producer that exports the person balances should
+either stop exporting the household totals or keep them equal to the sums;
+the model does not reconcile the two.
+
+`cash_isa_subscriptions` and `stocks_and_shares_isa_subscriptions` are
+annual person flows, summed over all of a person's accounts of each type, that
+count towards the ISA subscription limits, with `lifetime_isa_payments` for
+Lifetime ISAs. Projection carries them flat, because growing them would put
+people who pay in exactly the annual limit above it in the baseline. Nominal
+subscriptions grow, so flat amounts understate how much a lowered limit leaves
+out in later years; a producer can grow them itself and cap each person at the
+limit in force. The model does not cap them at the limits: a producer should
+export subscriptions as observed, so a reform that lowers a limit shows what
+it leaves out. Observed subscriptions stay within the £20,000 annual
+limit, which the three inputs share, so an imputation should draw them
+jointly. Drawn separately, for example from tables that leave Lifetime ISAs
+out, they can sum above the limit and put people above it in the baseline,
+where `isa_subscriptions_above_limit` should be zero. Absent columns default
+to zero, so a change to an ISA limit changes nothing on such data.
+[Microcosm issue 1415](https://github.com/PolicyEngine/microcosm/issues/1415)
+covers imputing the subscriptions and balances.
+
 ## Defaults
 
 `policyengine_uk` does not silently choose a default dataset when no situation is
@@ -52,6 +164,111 @@ configured environment variable.
 Keep default dataset behavior explicit so calculator-style simulations,
 microsimulations, and API workers do not accidentally diverge.
 
+## Energy price declarations
+
+Unlabelled dataset energy spending stays flat through the projection horizon.
+Do not infer its price year from the dataset year, filename, URL or file format.
+Legacy builds can hold FY2026-27 energy prices in a dataset labelled 2024.
+
+An explicit declaration opts only `domestic_energy_consumption`,
+`electricity_consumption` and `gas_consumption` into the existing generic annual
+OBR consumer-price-index assumption as an interim price proxy. Other generic
+uprating exclusions do not join this declaration or its reset group. For an
+input whose producer receipt declares calendar-2024 prices, a caller can label
+a local UK single-year H5 before constructing a simulation:
+
+```python
+from policyengine_uk import Microsimulation
+from policyengine_uk.data import UKSingleYearDataset
+
+dataset = UKSingleYearDataset(
+    file_path="verified-input.h5",
+    energy_price_basis={"period_type": "calendar_year", "period_value": 2024},
+)
+simulation = Microsimulation(dataset=dataset)
+```
+
+Use `fiscal_year` with the starting year when the receipt describes a UK
+financial year. Both keys are required. The year must be an integer from 1
+through 9999; malformed or conflicting caller/file declarations raise a clear
+error. A caller's `None` leaves an existing file declaration intact.
+
+The model retains the period kind as provenance but uses the January 1 index
+level of the starting year for both calendar and fiscal price periods.
+Projection multiplies the supplied amount by `I[target year] / I[price year]`.
+This shared start-year convention approximates calendar/fiscal alignment;
+generic CPI does not establish constant-consumption energy-price outturns or
+an energy-specific forecast. Open [issue #2526](https://github.com/PolicyEngine/policyengine-uk/issues/2526)
+tracks energy-specific index alignment and a sourced future assumption. The
+original observation remains unchanged; a projected child's declaration records
+its effective fiscal-year price basis so later extension does not apply the
+original ratio twice.
+
+When a declaration projects stored energy inputs, both January 1 dates must
+fall on or after the selected index's earliest non-null value. An earlier
+basis or target, including January 1 before a midyear start, raises a clear
+error rather than using Core's backward first-value fallback. An index with
+no usable history also raises an error for that projection. Unlabelled
+observations and declarations with no relevant stored inputs retain their
+existing behaviour without requiring index history.
+
+Single-year H5 files store a JSON declaration in the root attribute
+`energy_price_basis`. Multi-year files store it on each `/time_period/<year>`
+group. Copy, save/load and filtering preserve the declaration. A Core Dataset
+can declare the same named field or H5 attribute before UK conversion. HF/GCS
+materializers retain the existing local-file routing. External multi-year
+amounts and DataFrame inputs remain authoritative when loaded.
+
+Disabling economic assumptions resets energy amounts and their declaration as
+one group. A base year that supplies every stored later energy column replaces
+those amounts and their declaration. With no overlapping base energy, later
+amounts and metadata stay intact. A partial overlap resets shared columns only
+when both declarations match exactly; otherwise the entire later energy group
+and its declaration remain authoritative. Missing columns are never created.
+
+Existing metadata-free private Microcosm releases stay flat under this
+compatibility rule. They require an explicit caller migration based on a
+verified receipt, or a producer release that exports the canonical declaration
+matching that receipt. The producer must carry both period kind and year into
+the H5 artifact; this consumer change does not retrofit that metadata or verify
+the released private file.
+
+## Bereavement-benefit split
+
+Bereavement Support Payment rates remain unchanged under the
+[2026 up-rating order, article 19](https://www.legislation.gov.uk/uksi/2026/148/article/19/made).
+Older datasets combine it with CPI-uprated Widowed Parent's Allowance and
+War Widow's Pension in `bsp_reported`. They keep CPI projection until the
+producer separates those benefits.
+
+Explicitly supplied `widowed_parents_allowance_reported` and
+`war_widows_pension_reported` person columns together declare the completed
+split used by the merged
+[Microcosm PR #1383](https://github.com/PolicyEngine/microcosm/pull/1383),
+including when every value in either column is zero. The automatic projector
+then holds `bsp_reported` nominally flat; the separate allowance and
+war-widow inputs still grow by CPI. Either column alone leaves BSP on the
+legacy CPI path. Unclassified off-rate amounts that the producer retains in
+`bsp_reported` receive the same nominal treatment. These can include Widowed
+Parent's Allowance with an inherited additional pension above its rate;
+freezing that CPI-linked component understates it.
+
+Beyond the materialized projection horizon, the model holds BSP flat only
+when its latest earlier input has both explicitly stored split inputs for
+the same period. A calculated or carried default does not count, nor do
+inputs supplied in different periods.
+This also preserves the distinction when an external multi-year dataset
+changes schema between observations. Supplied annual BSP amounts remain
+authoritative. Disabling economic assumptions preserves those amounts when
+either observation declares the split, rather than replacing separate BSP
+with an older combined report.
+
+UK single-year files, materialized Core datasets and their projected children
+preserve both columns. Household situations retain their existing CPI behavior,
+even when they supply the separate benefits. The change follows dataset
+semantics, without inferring a split from a filename, model version or the
+amount received. See [issue #2381](https://github.com/PolicyEngine/policyengine-uk/issues/2381).
+
 ## Tests
 
 For dataset source routing, prefer stubbed tests that prove dispatch behavior
@@ -60,3 +277,95 @@ without downloading or opening private survey files.
 Use real H5 files only when the test specifically needs schema or data behavior.
 If the artifact is private, large, or credential-dependent, skip cleanly or keep
 the verification outside the ordinary PR test suite.
+
+## Data provenance and benefit take-up
+
+`policyengine_uk.utils.data_source.built_from_data` distinguishes dataset-built
+simulations from hand-entered situations, including supported clones, branches
+and UK `build_from_situation` rebuilds. Council Tax Reduction and Housing Benefit
+use this distinction for their take-up defaults: data-built simulations use
+positive reported claims only (d1390 and d1455); situations also use their
+per-benefit-unit `claims_all_entitled_benefits` flag. That flag is itself false
+for every family on data-built simulations, as it was on main for any dataset
+with a reporting family, so Child Tax Credit, Working Tax Credit and Income
+Support take-up also follow reported claims there. Explicit inputs override
+these defaults, including a future calibrated dataset column (uk-data#448).
+
+Do not rebuild an existing data-built simulation by calling core's
+`SimulationBuilder.build_from_dict` directly. In core 3.33.2 this leaves stale
+dataset provenance, which copies inherit. Use UK `build_from_situation` instead.
+
+## Reported Council Tax Reduction projection
+
+Dataset projection grows existing `council_tax_benefit_reported` person inputs
+by their household's council tax bill factor, using `person_household_id` to
+map the factor. The factor uses each country's council tax receipts growth
+net of household weight growth; UNKNOWN uses England's series. Reported
+reductions therefore retain their share of the bill. Northern Ireland's
+factor remains one, so both its supplied bill and reduction stay flat. This
+does not classify any Northern Ireland report as domestic rate relief.
+
+The projector requires the reported column in both years and creates no
+missing reports. Resetting economic assumptions restores the base reported
+amount alongside the bill when both years store it. No generic CPI index is
+added, and hand-entered situations retain their existing behavior. Beyond the
+materialized projection horizon, Core carries the latest reported reduction
+and council tax bill at their last stored cash values.
+
+## Student loan plan projection
+
+Student loan projection preserves each existing holder's recorded non-`NONE`
+plan and the repayment amount passed to `uprate_student_loan_plans`. The
+enclosing dataset uprating separately grows stored `student_loan_repayments`
+with average earnings; preserving an amount in this helper does not hold its
+nominal value flat throughout a projection or change reported-versus-modelled
+repayment precedence.
+
+The available inputs do not identify the course start, first loan payment,
+first April due to repay, or funding agency. Age and current household region
+cannot establish those dates or an existing holder's cancellation deadline.
+The helper therefore does not relabel or cancel an observed loan from an
+assumed course start at 18. It retains recorded Plan 4 and Postgraduate
+categories even where present residence differs from the funding nation.
+This fallback does not certify that every recorded plan is legally correct.
+See the official [plan rules](https://www.gov.uk/repaying-your-student-loan/which-repayment-plan-you-are-on)
+and [cancellation rules](https://www.gov.uk/repaying-your-student-loan/when-your-student-loan-gets-written-off-or-cancelled).
+
+Projection holds ages fixed and retains existing holders' base plans across
+future cohort boundaries. It leaves the England and Wales Plan 1 to Plan 2
+transition at the 2012 intake and the England Plan 2 to Plan 5 transition at
+the 2023 intake unimplemented. It can also retain older plans too long.
+
+Vahid Ahmadi's [25 October 2026 review audit](https://github.com/PolicyEngine/policyengine-uk/pull/2650#issuecomment-6396818516)
+used `enhanced_frs_2024_25` at revision `2526edbb` and the intake-at-18 proxy.
+The audit reported these approximate counts of recorded holders whose proxy
+intakes crossed the relevant boundary:
+
+| Recorded plan and funding-region proxy | Boundary | Projection year | Audit count | Recorded-plan denominator |
+| --- | --- | --- | --- | --- |
+| Plan 2, England | 2023 intake, Plan 5 | 2026 | 0.53 million | 7.14 million Plan 2 holders |
+| Plan 2, England | 2023 intake, Plan 5 | 2028 | 1.57 million | 7.14 million Plan 2 holders |
+| Plan 2, England | 2023 intake, Plan 5 | 2031 | 2.99 million | 7.14 million Plan 2 holders |
+| Plan 1, England and Wales | 2012 intake, Plan 2 | 2025 | None | 1.52 million Plan 1 holders |
+| Plan 1, England and Wales | 2012 intake, Plan 2 | 2028 | 0.30 million | 1.52 million Plan 1 holders |
+| Plan 1, England and Wales | 2012 intake, Plan 2 | 2031 | 0.68 million | 1.52 million Plan 1 holders |
+
+These are the reviewer's dataset audit counts. This change does not reproduce
+that audit or estimate national population accuracy or revenue effects. The
+reviewer [accepted documenting the residual gap and tracking the boundary moves
+separately](https://github.com/PolicyEngine/policyengine-uk/pull/2650#issuecomment-6397144626).
+The intake-at-18 proxy cannot identify mature starters' actual course dates,
+and present residence cannot identify their funding agency.
+
+This fallback does not model longitudinal ageing or exact cancellation dates.
+A retained Plan 1 at age 65 does not establish that a known pre-2006 loan
+remains legally outstanding. Date-aware cohort and write-off work remains open
+in [issue #2636](https://github.com/PolicyEngine/policyengine-uk/issues/2636).
+
+The existing new-holder rules remain separate: they use an intake-at-18
+approximation, a deterministic draw keyed on `person_id`, and current region
+as a funding-nation proxy. These assumptions cannot identify cross-border
+movers and are not newly validated by the existing-holder fallback. A single
+plan enum also cannot represent simultaneous undergraduate and postgraduate
+loans. This change supplies no new date schema, producer migration, Microcosm
+remeasurement or population accuracy estimate.

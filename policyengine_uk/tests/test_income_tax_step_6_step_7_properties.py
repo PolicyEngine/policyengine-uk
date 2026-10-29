@@ -3,16 +3,21 @@
 Step 6 deducts the tax reductions from the tax calculated at Step 5, and only so
 far as there is Step 5 tax to deduct them from, counting the reductions already
 deducted (s. 29(2) and (3)). Step 7 adds the s. 30 charges, here the High Income
-Child Benefit Charge and the annual allowance charge, to the tax left.
+Child Benefit Charge, the annual allowance charge and the winter fuel payment
+charge, to the tax left. The last is added separately from the other Step 7
+charges to avoid a cycle through the benefit means tests.
 
 Invariants, for every drawn case:
 
 1. Bounds: 0 <= Step 6 deduction <= Step 5 tax.
 2. Accounting: the Step 6 deduction is the sum of the reductions on the Step 6
    list, limited to the Step 5 tax; income tax is the Step 5 tax less the Step 6
-   deduction plus the Step 7 charges.
-3. Income tax >= the Step 7 charges, so reductions never offset a charge.
-4. Income tax <= the Step 5 tax plus the Step 7 charges.
+   deduction plus the non-winter-fuel Step 7 charges.
+3. Tax before the winter fuel payment charge >= the other Step 7 charges, so
+   reductions never offset a charge.
+4. Tax before the winter fuel payment charge <= the Step 5 tax plus the other
+   Step 7 charges. Total tax is that tax plus the winter fuel payment charge,
+   and is never less than all the charges together.
 5. The married couple's allowance reduction is at most the Step 5 tax left
    after other_tax_credits, and the finance-cost reduction at most the tax left
    after both. s. 27(5) deducts the VCT, EIS, SEIS, social investment,
@@ -25,15 +30,20 @@ Invariants, for every drawn case:
 7. Differential, against a simulation of the rules before this fix (main at
    76cfc9e79: max(0, additions - subtractions), with the married couple's
    allowance capped at the Step 5 tax plus the High Income Child Benefit
-   Charge): income tax is never lower, since it is never lower on either
+   Charge): total income tax is never lower, since it is never lower on either
    property allowance route and the election takes the cheaper one. Where both
-   take the same route, the Step 5 tax, the charges and the finance-cost
-   reduction are unchanged, and income tax rises by exactly the part of the
-   Step 7 charges the old netting let the excess reductions offset.
+   take the same route, the Step 5 tax, the other charges and the finance-cost
+   reduction are unchanged, and tax before the winter fuel payment charge
+   rises by exactly the part of the other Step 7 charges the old netting let
+   the excess reductions offset. Comparisons across routes use total tax,
+   because the winter fuel payment charge can change the election.
 
 The cases run in reusable simulations of single-person households, a third of
-them Scottish taxpayers and a third over State Pension age: each case is
-simulated twice, as drawn and with more other_tax_credits.
+them Scottish taxpayers and ages including State Pension age: each case is
+simulated twice, as drawn and with more other_tax_credits. Charge-exempting
+benefit entitlements stay fixed at false. Otherwise a lower tax deduction in
+a means test can end an award and introduce the winter fuel payment charge,
+so a monotonic tax comparison would not isolate the reductions being tested.
 """
 
 import numpy as np
@@ -52,8 +62,15 @@ YEAR = 2026
 CASES = 24
 PEOPLE = 2 * CASES  # As drawn, then with more other_tax_credits.
 SCOTTISH = [i % 3 == 2 for i in range(CASES)]
-# The liability built from Steps 5 to 7.
-INCOME_TAX = "income_tax"
+# The liability built from Steps 5 to 7 before the separately added WFP charge.
+INCOME_TAX = "income_tax_before_winter_fuel_payment_charge"
+CHARGE_EXEMPTIONS = [
+    "is_on_income_support",
+    "is_on_income_based_jsa",
+    "is_on_pension_credit",
+    "is_on_income_related_esa",
+    "is_on_universal_credit",
+]
 
 
 def amount(maximum, points=()):
@@ -136,6 +153,7 @@ def build(reform=None):
     people = {
         f"person_{i}": {
             **{v: {YEAR: 0} for v in INPUTS},
+            **{v: {YEAR: False} for v in CHARGE_EXEMPTIONS},
             "age": {YEAR: 45},
             "property_rental_income": {YEAR: 0},
         }
@@ -209,6 +227,8 @@ def run(sim, drawn):
         * calc("property_finance_costs_relieved"),
         uses_property_allowance=sim.calculate("uses_property_allowance", YEAR),
         income_tax=calc(INCOME_TAX),
+        winter_fuel_payment_charge=calc("winter_fuel_payment_charge"),
+        total_income_tax=calc("income_tax"),
     )
 
 
@@ -254,6 +274,17 @@ def test_income_tax_is_step_5_less_step_6_plus_step_7(sim, drawn):
 
 @SETTINGS
 @given(cases)
+def test_total_tax_adds_the_winter_fuel_payment_charge_after_the_reductions(sim, drawn):
+    r = run(sim, drawn)
+    charge = r["winter_fuel_payment_charge"]
+    tol = tolerance(r["income_tax"], charge)
+    expected = r["income_tax"] + charge
+    assert (np.abs(r["total_income_tax"] - expected) <= tol).all()
+    assert (r["total_income_tax"] >= r["step_7"] + charge - tol).all()
+
+
+@SETTINGS
+@given(cases)
 def test_each_reduction_is_limited_to_the_tax_left_before_it(sim, drawn):
     r = run(sim, drawn)
     tol = tolerance(r["step_5"], r["other_tax_credits"])
@@ -274,7 +305,8 @@ def test_each_reduction_is_limited_to_the_tax_left_before_it(sim, drawn):
 @given(cases)
 def test_more_other_tax_credits_never_raise_income_tax(sim, drawn):
     r = run(sim, drawn)
-    drawn_tax, with_more = r["income_tax"][:CASES], r["income_tax"][CASES:]
+    drawn_tax = r["total_income_tax"][:CASES]
+    with_more = r["total_income_tax"][CASES:]
     assert (with_more <= drawn_tax + tolerance(drawn_tax)).all()
 
 
@@ -296,7 +328,7 @@ def test_against_the_rules_before_the_fix(sim, pre_fix_sim, drawn):
     )
     assert (np.abs(old["income_tax"] - old_expected) <= tol).all()
     # Never lower, whichever route each election takes.
-    assert (new["income_tax"] >= old["income_tax"] - tol).all()
+    assert (new["total_income_tax"] >= old["total_income_tax"] - tol).all()
     # On the same route, only the offset charges come back.
     same = new["uses_property_allowance"] == old["uses_property_allowance"]
     for variable in ["step_5", "step_7", "finance_cost_reduction"]:
@@ -305,6 +337,18 @@ def test_against_the_rules_before_the_fix(sim, pre_fix_sim, drawn):
     restored = np.minimum(old["step_7"], excess)
     raised = new["income_tax"] - old["income_tax"]
     assert (np.abs(raised - restored)[same] <= tol[same]).all()
+
+
+def test_the_fix_restores_exactly_the_charges_the_old_netting_offset(sim, pre_fix_sim):
+    # A pension-age recipient owes both the High Income Child Benefit Charge
+    # and an annual allowance charge. Excess credits can offset neither those
+    # charges nor the separately added winter fuel payment charge.
+    drawn = [(100_000, 0, 0, 0, 0, 50_000, 0, 70_000, 70, 1_406.6, 0)] * CASES
+    new, old = run(sim, drawn), run(pre_fix_sim, drawn)
+    assert (new["winter_fuel_payment_charge"] > 0).all()
+    assert np.allclose(old["income_tax"], 0)
+    assert np.allclose(new["income_tax"], new["step_7"])
+    assert np.allclose(new["total_income_tax"] - old["total_income_tax"], new["step_7"])
 
 
 def test_the_step_lists_are_disjoint_and_hold_the_modelled_provisions():

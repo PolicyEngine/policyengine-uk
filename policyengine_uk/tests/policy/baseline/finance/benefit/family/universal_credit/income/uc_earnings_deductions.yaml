@@ -105,9 +105,11 @@
       pensioner:
         age: 70
         state_pension: 16_000
+        is_claimant_or_partner: true
       partner:
         age: 45
         employment_income: 13_000
+        is_claimant_or_partner: true
     benunits:
       benunit:
         members: [pensioner, partner]
@@ -117,6 +119,7 @@
         tenure_type: RENT_FROM_COUNCIL
         rent: 20_000
   output:
+    relation_type: COUPLE
     # Pensioner: (16,000 - 12,570) x 20% = 686, on State Pension.
     # Partner: (13,000 - 12,570) x 20% = 86 and (13,000 - 12,569.96) x 8%
     # = 34.40. Both are above the personal allowance, so there is no
@@ -304,9 +307,11 @@
         employment_income: 20_000
         married_couples_allowance: 11_000
         would_claim_marriage_allowance: false
+        is_claimant_or_partner: true
       partner:
         age: 45
         would_claim_marriage_allowance: false
+        is_claimant_or_partner: true
     benunits:
       benunit:
         members: [older, partner]
@@ -314,6 +319,7 @@
       household:
         members: [older, partner]
   output:
+    relation_type: COUPLE
     # Married couple's allowance reduction: 10% x 11,000 = 1,100.
     capped_mcad: [1_100, 0]
     # (20,000 - 12,570) x 20% = 1,486, less 1,100.
@@ -331,9 +337,11 @@
         private_pension_income: 5_000
         married_couples_allowance: 11_000
         would_claim_marriage_allowance: false
+        is_claimant_or_partner: true
       partner:
         age: 45
         would_claim_marriage_allowance: false
+        is_claimant_or_partner: true
     benunits:
       benunit:
         members: [older, partner]
@@ -341,6 +349,7 @@
       household:
         members: [older, partner]
   output:
+    relation_type: COUPLE
     # 1,486 on earnings + 5,000 x 20% on the pension - 1,100.
     income_tax: [1_386, 0]
     # The reduction still comes off the earnings slice: 1,486 - 1,100.
@@ -355,11 +364,15 @@
         age: 92
         employment_income: 20_000
         employer_pension_contributions: 65_000
+        # No allowance carried forward, so the whole excess is charged.
+        unused_pension_annual_allowance: 0
         married_couples_allowance: 11_000
         would_claim_marriage_allowance: false
+        is_claimant_or_partner: true
       partner:
         age: 45
         would_claim_marriage_allowance: false
+        is_claimant_or_partner: true
     benunits:
       benunit:
         members: [older, partner]
@@ -367,6 +380,7 @@
       household:
         members: [older, partner]
   output:
+    relation_type: COUPLE
     # Contributions of 65,000 exceed the 60,000 annual allowance by 5,000,
     # charged at the basic rate: 1,000.
     personal_pension_contributions_tax: [1_000, 0]

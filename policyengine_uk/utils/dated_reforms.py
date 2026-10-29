@@ -185,6 +185,12 @@ from policyengine_uk.parameters.gov.hmrc.create_threshold_indexation import (
     last_stated_tax_year,
 )
 
+from policyengine_uk.utils.ni_parameter_scales import (
+    LegacyNIParameter,
+    canonical_descendants,
+    canonicalize_ni_parameter_path,
+)
+
 from policyengine_uk.utils.parameters import (
     BACKDATED_VALUE,
     check_parameter_not_removed,
@@ -348,6 +354,7 @@ def read_reform_dict(
     legacy: List[LegacyOverride] = []
     order = order_start
     for path, spec in reform.items():
+        path = canonicalize_ni_parameter_path(path)
         _check_path(path)
         statutory = defines(path)
         if not isinstance(spec, Mapping):
@@ -428,6 +435,7 @@ def read_parameter_changes(
     assignments: List[ParameterAssignment] = []
     order = order_start
     for path, spec in changes.items():
+        path = canonicalize_ni_parameter_path(path)
         _check_path(path)
         if not isinstance(spec, Mapping):
             start, stop = period_bounds(CORE_SCALAR_PERIOD)
@@ -463,6 +471,7 @@ def read_reform_from_dict(
     legacy: List[LegacyOverride] = []
     order = order_start
     for path, spec in parameter_values.items():
+        path = canonicalize_ni_parameter_path(path)
         _check_path(path)
         if not defines(path):
             if isinstance(spec, Mapping):
@@ -616,6 +625,7 @@ def read_override_reform(changes, reading, defines, calendar_years=None, warn=Fa
     except (ValueError, TypeError, KeyError) as original:
         errors = []
         for path, spec in changes.items():
+            path = canonicalize_ni_parameter_path(path)
             entries = spec.items() if isinstance(spec, Mapping) else [(None, spec)]
             for key, value in entries:
                 try:
@@ -706,16 +716,23 @@ def _statutory_values_are_current(assignments, system):
         wanted = [entry for entry in assignments if entry.path == path]
         windows = [(entry.start, entry.stop) for entry in wanted]
         if annualised:
-            for year in range(2015, 2041):
-                sample = instant(f"{year}-04-30")
-                start, stop = uk_fiscal_year_bounds(year)
-                if any(
-                    (entry.start <= stop and start <= entry.stop)
-                    if expected.metadata.get("fiscal_year_blend", False)
-                    else entry.start <= sample <= entry.stop
-                    for entry in wanted
-                ):
-                    windows.append(calendar_year_bounds(year))
+            # Cover every calendar label affected by these finite writes,
+            # including January prefixes beyond the old 2040 window. This
+            # follows the same sampling/intersection rule without imposing
+            # another fixed last year or inspecting unrelated parameters.
+            years = set()
+            blend = expected.metadata.get("fiscal_year_blend", False)
+            for entry in wanted:
+                first_day = (entry.start.month, entry.start.day)
+                last_day = (entry.stop.month, entry.stop.day)
+                if blend:
+                    first = entry.start.year - (first_day < (4, 6))
+                    last = entry.stop.year - (last_day < (4, 6))
+                else:
+                    first = entry.start.year + (first_day > (4, 30))
+                    last = entry.stop.year - (last_day < (4, 30))
+                years.update(range(max(2015, first), last + 1))
+            windows.extend(calendar_year_bounds(year) for year in sorted(years))
         points = _assignment_boundaries(wanted) | {
             instant(entry.instant_str)
             for entry in target.values_list + expected.values_list
@@ -805,6 +822,7 @@ def unwritten_reform_overrides(
         return pending, bool(pending)
     overrides = []
     for path, spec in changes.items():
+        path = canonicalize_ni_parameter_path(path)
         change = {path: spec}
         assignments, legacy = read(change, defines)
         if _reform_writes_are_effective(assignments, legacy, system, written):
@@ -986,7 +1004,7 @@ def snapshot_timelines(node: ParameterNode) -> Dict[str, Timeline]:
     """
     return {
         parameter.name: parameter.values_list
-        for parameter in node.get_descendants()
+        for parameter in canonical_descendants(node)
         if isinstance(parameter, Parameter)
     }
 
@@ -1014,6 +1032,8 @@ def graft_missing_nodes(
     """
     added = []
     for key, child in source.children.items():
+        if isinstance(child, LegacyNIParameter):
+            continue
         if root and key == "baseline":
             continue
         existing = target.children.get(key)

@@ -54,8 +54,11 @@
         employment_income: 100_000
         other_tax_credits: 27_200
         married_couples_allowance: 4_360
+        # Keep this case focused on the Married Couple's Allowance.
+        winter_fuel_payment: 0
       spouse:
         age: 88
+        winter_fuel_payment: 0
       grandchild:
         age: 10
     benunit:
@@ -157,3 +160,29 @@
     personal_pension_contributions_tax: 4_000
     income_tax_charges: 4_000
     income_tax: 4_000
+
+# Finance Act 2026 Sch. 10 para. 4(3) adds the winter fuel payment charge
+# (ITEPA 2003 Part 10 Chapter 9) to ITA 2007 s. 30(1), so it is also a
+# Step 7 charge. A single eligible recipient under 80 receives £200 under
+# SI 2025/969 reg. 3. Income above £35,000 makes the whole payment chargeable
+# under ITEPA 2003 s. 681I; the charge does not use the tax left after credits.
+# https://www.legislation.gov.uk/ukpga/2026/11/schedule/10/paragraph/4
+# https://www.legislation.gov.uk/uksi/2025/969/regulation/3
+# https://www.legislation.gov.uk/ukpga/2003/1/section/681I
+- name: Excess tax reductions do not offset the winter fuel payment or annual allowance charges.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 70
+    employment_income: 100_000
+    employer_pension_contributions: 70_000
+    other_tax_credits: 50_000
+  output:
+    income_tax_pre_charges: 27_432
+    income_tax_reductions: 27_432
+    personal_pension_contributions_tax: 4_000
+    income_tax_charges: 4_000
+    income_tax_before_winter_fuel_payment_charge: 4_000
+    winter_fuel_payment: 200
+    winter_fuel_payment_charge: 200
+    income_tax: 4_200

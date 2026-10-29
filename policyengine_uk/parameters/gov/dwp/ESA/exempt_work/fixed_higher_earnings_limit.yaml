@@ -1,0 +1,26 @@
+description: Fixed weekly earnings limit of Employment and Support Allowance permitted work before 11 April 2011. Work done for less than the exempt work hours limit, for which a claimant's earnings in any week did not exceed this amount, was exempt work. From 11 April 2011 the limit is a number of hours a week at the National Minimum Wage instead.
+values:
+  2008-10-27:
+    value: 92
+    reference:
+      - title: Employment and Support Allowance Regulations 2008 reg. 45(4) (as made)
+        href: https://www.legislation.gov.uk/uksi/2008/794/regulation/45/2008-10-27
+  2009-10-01:
+    value: 93
+    reference:
+      - title: Social Security (Miscellaneous Amendments) (No. 3) Regulations 2009 (SI 2009/2343) reg. 5(2)
+        href: https://www.legislation.gov.uk/uksi/2008/794/regulation/45/2009-10-01
+  2010-10-01:
+    value: 95
+    reference:
+      - title: Social Security (Miscellaneous Amendments) (No. 4) Regulations 2010 (SI 2010/2126) reg. 5(2)
+        href: https://www.legislation.gov.uk/uksi/2010/2126/regulation/5/made
+metadata:
+  unit: currency-GBP
+  period: week
+  label: ESA exempt work fixed higher earnings limit
+  reference:
+    - title: Employment and Support Allowance Regulations 2008 reg. 45(4)
+      href: https://www.legislation.gov.uk/uksi/2008/794/regulation/45
+    - title: Social Security (Miscellaneous Amendments) Regulations 2011 (SI 2011/674) reg. 16(5)
+      href: https://www.legislation.gov.uk/uksi/2008/794/regulation/45/2011-04-11

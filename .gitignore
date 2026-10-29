@@ -84,3 +84,4 @@ cover/
 
 # Docs
 **/_build/
+!policyengine_uk/utils/water/pr24_final_determination_bills.csv

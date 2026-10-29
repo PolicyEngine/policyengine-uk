@@ -4,6 +4,12 @@ from typing import NamedTuple
 from policyengine_core.model_api import *
 from policyengine_core import periods
 
+from policyengine_uk.utils.ni_parameter_scales import (
+    add_ni_scale_compatibility,
+    canonicalize_ni_parameter_path,
+    canonical_descendants,
+)
+
 from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases import (
     canonicalize_lsr_parameter_path,
 )
@@ -25,7 +31,7 @@ BACKDATED_VALUE = "backdated_value"
 def backdate_parameters(root: str = None, first_instant: str = "2021-01-01") -> Reform:
     first_instant = str_to_instant(first_instant)
     node = root
-    for param in node.get_descendants():
+    for param in canonical_descendants(node):
         if isinstance(param, Parameter):
             earliest = param.values_list[-1]
             earliest_value = earliest.value
@@ -91,16 +97,41 @@ def uk_fiscal_year_period(time_period):
     return periods.Period(("day", start, days))
 
 
-def convert_to_fiscal_year_parameters(parameters):
+def _fiscal_year_conversion_years(param):
+    """Finite annual steps needed by this leaf's stated timeline.
+
+    Keep the 26 legacy annual records and the first following boundary. A
+    stated change then adds the annual labels it can affect, without filling
+    an arbitrary projection horizon. Raw keys before 2015, including year 0000,
+    remain opaque and are retained by Parameter.update.
     """
-    Convert parameters to use UK fiscal year values.
+    years = set(range(2015, 2042))
+    blend = (param.metadata or {}).get("fiscal_year_blend", False)
+    for point in param.values_list:
+        year = int(point.instant_str[:4])
+        if year < 2015:
+            continue
+        month_day = point.instant_str[5:]
+        if blend:
+            fiscal_year = year if month_day >= "04-06" else year - 1
+            years.update((fiscal_year, fiscal_year + 1))
+        else:
+            years.add(year if month_day <= "04-30" else year + 1)
+    last_representable = 9998 if blend else 9999
+    if max(years) > last_representable:
+        raise ValueError(
+            f"Cannot annualise {param.name}: its fiscal conversion needs a "
+            "date beyond the supported Gregorian year 9999"
+        )
+    return sorted(year for year in years if year >= 2015)
 
-    The UK fiscal year runs April 6 to April 5. When querying a parameter
-    for a year (e.g., param("2026")), we want the value at April 30 of
-    that year (which represents the fiscal year starting April 6).
 
-    This function samples each parameter at April 30 of each year and
-    sets that as the value for the entire year period.
+def convert_to_fiscal_year_parameters(parameters):
+    """Give each calendar-labelled year its UK fiscal parameter value.
+
+    Ordinary leaves take their 30 April value. Opt-in ``fiscal_year_blend``
+    leaves retain the existing day-weighted average from 6 April to 5 April
+    and its single-date fallback. ``preserve_calendar_dates`` leaves are untouched.
 
     Sampling a single date drops any change taking effect later in the fiscal
     year. Parameters carrying `fiscal_year_blend: true` in their metadata are
@@ -109,30 +140,41 @@ def convert_to_fiscal_year_parameters(parameters):
     flag off where the value at a point in time is what applies, as for a tax
     charged on a transaction at the rate in force on its date.
 
-    Parameters with ``preserve_calendar_dates: true`` retain statutory dates.
-    Their formulas must explicitly annualise the underlying transactions.
+    Ordinary Parameter histories retain all 2015–2040 annual records, an
+    explicit 2041 boundary and finite later steps induced by stated changes.
+    Dates within a calendar label therefore read the same annual value even
+    beyond 2040. This annualises known values; it does not project new values.
 
-    Values are computed for every year before any are written, so that
-    rewriting one year cannot affect the reading of another.
+    Domain checks and snapshot sampling finish before any live write.
+    Start-only writes remove intervening raw dates and retain the original
+    entries before 2015.
     """
-    # Cover years from 2015 through 2040 for long-term projections
-    YEARS = list(range(2015, 2041))
-    for param in parameters.get_descendants():
-        if isinstance(param, Parameter):
-            if (param.metadata or {}).get("preserve_calendar_dates", False):
-                continue
-            blend = (param.metadata or {}).get("fiscal_year_blend", False)
-            values = {}
-            for year in YEARS:
-                value = fiscal_year_average(param, year) if blend else None
-                if value is None:
-                    value = param(f"{year}-04-30")
-                values[year] = value
-            for year, value in values.items():
-                param.update(
-                    period=f"{year}",
-                    value=value,
-                )
+    planned = []
+    for param in canonical_descendants(parameters):
+        if not isinstance(param, Parameter):
+            continue
+        if (param.metadata or {}).get("preserve_calendar_dates", False):
+            continue
+        planned.append((param, _fiscal_year_conversion_years(param)))
+
+    # No live Parameter, list or root cache is changed during preflight or
+    # snapshot sampling. In particular a late invalid leaf cannot follow an
+    # already-rewritten earlier one.
+    sampled = []
+    for param, years in planned:
+        snapshot = param.clone()
+        blend = (snapshot.metadata or {}).get("fiscal_year_blend", False)
+        values = []
+        for year in years:
+            value = fiscal_year_average(snapshot, year) if blend else None
+            if value is None:
+                value = snapshot(f"{year}-04-30")
+            values.append((year, value))
+        sampled.append((param, values))
+
+    for param, values in sampled:
+        for year, value in values:
+            param.update(start=f"{year}-01-01", value=value)
     return parameters
 
 
@@ -186,6 +228,32 @@ REMOVED_PARAMETERS = {
         "income that is not qualifying income for Savings Credit (SPC Regs "
         "2002 reg 9), instead.",
     ),
+    "gov.dft.bus.reference_year": RemovedParameter(
+        "removed bus fare reference year",
+        "Bus fares now follow gov.dft.bus.local_bus_fares_index from the "
+        "benchmark year gov.dft.bus.benchmark_year, and the cap term compares "
+        "gov.dft.bus.fares.cap with gov.dft.bus.reference_fares.cap in the same "
+        "year. Change gov.dft.bus.fares.cap to model a cap.",
+    ),
+    "gov.dft.bus.uncapped_single_fare": RemovedParameter(
+        "removed single uncapped bus fare",
+        "Cap changes are priced from a table of uncapped single fares, "
+        "gov.dft.bus.uncapped_single_fares, with the share of single tickets "
+        "and the mean fare of each band (LOW, MIDDLE, HIGH). To price every "
+        "single ticket at one fare, set that band's share to 1 and the others "
+        "to 0, or supply local_bus_uncapped_single_fare for each person.",
+    ),
+    "gov.dwp.ESA.exempt_work.higher_earnings_limit": RemovedParameter(
+        "removed ESA exempt work higher earnings limit",
+        "From 11 April 2011 the limit is 16 x the national living wage, "
+        "rounded up to the next 50p (ESA Regs 2008 reg 45(4) and (9A)), "
+        "calculated by esa_exempt_work_higher_earnings_limit. Change "
+        "gov.hmrc.minimum_wage.non_apprentice (the national living wage is "
+        "its top rate) or "
+        "gov.dwp.ESA.exempt_work.higher_earnings_limit_minimum_wage_hours "
+        "(the 16), or gov.dwp.ESA.exempt_work.fixed_higher_earnings_limit "
+        "for dates before 11 April 2011.",
+    ),
 }
 
 
@@ -225,7 +293,7 @@ class RemovedParameterRoot(ParameterNode):
 
     def get_child(self, path: str):
         check_parameter_not_removed(path)
-        return super().get_child(path)
+        return super().get_child(canonicalize_ni_parameter_path(path))
 
 
 def add_removed_parameter_aliases(parameters: ParameterNode) -> ParameterNode:
@@ -265,4 +333,4 @@ def add_removed_parameter_aliases(parameters: ParameterNode) -> ParameterNode:
         parent.children[name] = alias
         setattr(parent, name, alias)
         alias.parent = parent
-    return parameters
+    return add_ni_scale_compatibility(parameters)
