@@ -1,3 +1,10 @@
+## [2.164.3] - 2026-10-29
+
+### Fixed
+
+- Count `other_investment_income` in `market_income`, `household_market_income` and `hbai_household_net_income`. Income tax already charged it as savings income, so household net income carried the tax on it without the income.
+
+
 ## [2.164.2] - 2026-10-29
 
 ### Fixed
