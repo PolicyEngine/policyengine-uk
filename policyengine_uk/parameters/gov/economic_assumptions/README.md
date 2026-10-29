@@ -6,6 +6,21 @@ calibrate the input dataset. The source of the default economic series is
 generated from it by
 [`create_economic_assumption_indices.py`](./create_economic_assumption_indices.py).
 
+An index is 1 in its series' first listed year by default, so that year's
+growth is not in it. A series that sets `index_base_year` to the year before
+is 1 there instead, and its first step is the first listed growth (#2692).
+`ons.per_capita.household_interest_income`, `obr.per_capita.gdp`,
+`obr.per_capita.mixed_income`, `obr.house_prices`, `obr.mortgage_interest`,
+`obr.petrol_spending_litre_proxy`, `obr.diesel_spending_litre_proxy`,
+`orr.per_capita.rail_passenger_journeys` and `ons.population` set it to 2020,
+`obr.private_pension_index` to 2019 and `obr.lagged_average_earnings` to
+2021. Only a direct input dated before the first growth year reads that step.
+Dataset projection mostly uses the growth rates themselves, so it is
+unchanged. The exception is residential property, which reads the
+`obr.house_prices` index, rounded to five decimals, so its year-to-year
+ratios can move slightly (2021 to 2022: 1.0926 before, about 1.0925970
+now).
+
 The dedicated `capital_gains` growth/index paths copy GDP per capita by
 default. A simulation can instead supply a versioned aggregate gains
 projection, converted to per-record factors using population growth after

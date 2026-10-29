@@ -17,6 +17,9 @@ def add_private_pension_uprating_factor(
         "gov.economic_assumptions.yoy_growth.obr.private_pension_index",
         data={
             "values": values,
+            # Anchor the index at 1 on 1 January 2019 so it includes the
+            # 2020 growth, the first listed (#2692).
+            "metadata": {"index_base_year": YEARS[0] - 1},
         },
     )
 
