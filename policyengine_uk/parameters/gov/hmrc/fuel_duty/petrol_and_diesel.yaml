@@ -95,9 +95,9 @@ values:
   # duty rates will increase by 5ppl and will be uprated in line with the
   # Retail Prices Index (RPI). From 1 April 2028, fuel duty rates will be
   # uprated annually in line with RPI." That is policy, not law. The 1 July
-  # 2027 step is the OBR's forecast (EFO October 2026, paragraph 3.19): the
-  # 57.95p pre-cut rate (Finance Act 2011 s. 19) uprated by RPI growth in the
-  # year to 2027 Q1, 60.59p. Each 1 April from 2028 applies the previous
+  # 2027 step is the OBR's forecast (EFO October 2026, paragraph 3.19): RPI
+  # growth in the year to 2027 Q1 on the 57.95p pre-cut rate (Finance Act 2011
+  # s. 19), 60.59p. Each 1 April from 2028 applies the previous
   # calendar year's RPI growth from
   # gov.economic_assumptions.yoy_growth.obr.rpi, rounding to the nearest
   # hundredth of a penny. After the last entry, the uprating metadata below

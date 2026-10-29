@@ -19,10 +19,10 @@ complete 2023/24 calculation are outside this implementation. Tobacco rates
 start on 22 November 2023. The new alcohol, tobacco and car formulas return their
 default zero before 2024; that is an unmodelled period, not a statutory exemption.
 Gas duty covers 2022/23 onwards. SI 2026/555 removed the September 2026 step
-announced at Budget 2025 and moved the December 2026 step to 1 January 2027.
+that Budget 2025 announced and moved the December 2026 step to 1 January 2027.
 Budget 2026 then kept the proportionate cut to 1 July 2027, when the gas rates
-return to their full levels uprated by RPI, and rise by RPI each 1 April from
-2028, as petrol and diesel do (see below).
+return to their full levels with RPI growth on top, and rise by RPI each 1 April
+from 2028, as petrol and diesel do (see below).
 
 For alcohol and tobacco, a model year such as `2026` represents 6 April 2026 to
 5 April 2027. Quantities and cigarette retail prices are constant across that
@@ -184,8 +184,8 @@ cut to 1 July 2027. Its costing (page 13) says: "On 1 July 2027, fuel duty rates
 will increase by 5ppl and will be uprated in line with the Retail Prices Index
 (RPI). From 1 April 2028, fuel duty rates will be uprated annually in line with
 RPI." That is policy, not law. The OBR's October 2026 EFO (paragraph 3.19)
-puts the rate at 60.59p from 1 July 2027: the 57.95p pre-cut rate uprated by
-RPI growth in the year to 2027 Q1 (4.5565%, economy Table 1.7). The model
+puts the rate at 60.59p from 1 July 2027: RPI growth in the year to 2027 Q1
+(4.5565%, economy Table 1.7) on the 57.95p pre-cut rate. The model
 uses that figure, and `calculate_fuel_duty_rates.py` refuses to write any
 other July rate. From 1 April 2028, each step applies the previous calendar
 year's RPI growth from the OBR forecast in

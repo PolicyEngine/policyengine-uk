@@ -81,10 +81,14 @@ def carers_allowance_annual_award(parts):
 def carers_allowance_shares_of_year(person, period, parts):
     """From carers_allowance_weekly_by_part_of_year's parts: the share of the
     year in which the person has an award before the couple restriction, and
-    the share in which the restriction leaves it with them."""
+    the share in which the restriction leaves it with them. Where both
+    partners have the same weekly award in a part, the restriction prefers the
+    one with the larger award over the year, so a partner below the earnings
+    limit keeps the award all year at any taper rate of zero or more."""
+    annual = carers_allowance_annual_award(parts)
     candidate = kept = 0
     for share, weekly in parts:
-        selected = limit_carer_benefit_to_one_partner(person, period, weekly)
+        selected = limit_carer_benefit_to_one_partner(person, period, weekly, annual)
         candidate = candidate + share * (weekly > 0)
         kept = kept + share * (selected > 0)
     return candidate, kept

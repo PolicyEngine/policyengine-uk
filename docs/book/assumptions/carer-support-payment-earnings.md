@@ -104,17 +104,17 @@ take-up conditions stay as they are.
 
 In 2030-31, the year the taper starts, the model applies the election
 separately to the weeks before the taper and the weeks under it, since the law
-restricts entitlement day by day. A partner below the earnings limit has the
-full rate in both, so the couple elect them for the whole year. Where both
+restricts entitlement day by day. Where the two partners have the same award
+for those weeks, the couple elect the one with the larger award over the year,
+and then the order above applies. A partner below the earnings limit has the
+full rate in both parts and the larger award over the year, so the couple
+elect them for the whole year, even where the other partner's award under the
+taper equals the full rate, as it does at a taper rate of zero. Where both
 partners earn over the limit, neither has an award before the taper, and the
 couple elect the one with the larger award under it. Either way one partner
-has the award for the year: the model reads earnings in whole pence against a
-limit in whole pence, so its own tapered award falls at least a penny short of
-the full rate. An input that supplies the earnings above the limit bypasses
-that reader: a tapered award within a few millionths of a pound of the full
-rate then ties with it once the model stores both as float32, and the tie
-order can pick a different partner for each part of the year. A supplied award
-carries no dates, so the restriction keeps one recipient for the whole year.
+has the award for the year, at any taper rate of zero or more. A
+`carers_allowance_pre_couple_limit` that an input supplies carries no dates,
+so the restriction keeps one partner's award for the whole year.
 The parts of the year reach the payment as shares of the year:
 `carers_allowance_pre_overlap` is the amount from
 `carers_allowance_pre_couple_limit` that the restriction keeps, and
