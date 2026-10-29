@@ -55,3 +55,68 @@
     council_tax_band: A
   output:
     ebr_council_tax_rebate: 0
+
+# England's Council Tax Rebate applied to England only (billing authority
+# guidance, paragraph 2); Scotland and Wales paid their own £150 awards to
+# bands A to D. Northern Ireland levies domestic rates, not council tax, and
+# had no Council Tax Rebate, so a Northern Ireland household gets none in any
+# band, including the default band D.
+- name: Each Great Britain nation pays the rebate in bands A to D.
+  period: 2022
+  input:
+    council_tax_band:
+      - A
+      - D
+      - A
+      - D
+      - A
+      - D
+    country:
+      - ENGLAND
+      - ENGLAND
+      - SCOTLAND
+      - SCOTLAND
+      - WALES
+      - WALES
+  output:
+    ebr_council_tax_rebate:
+      - 150
+      - 150
+      - 150
+      - 150
+      - 150
+      - 150
+
+- name: Northern Ireland households get no rebate, in any band.
+  period: 2022
+  input:
+    council_tax_band:
+      - A
+      - B
+      - C
+      - D
+      - E
+      - I
+    country:
+      - NORTHERN_IRELAND
+      - NORTHERN_IRELAND
+      - NORTHERN_IRELAND
+      - NORTHERN_IRELAND
+      - NORTHERN_IRELAND
+      - NORTHERN_IRELAND
+  output:
+    ebr_council_tax_rebate:
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+
+- name: A Northern Ireland household on the default band gets no rebate.
+  period: 2022
+  input:
+    country: NORTHERN_IRELAND
+  output:
+    council_tax_band: D
+    ebr_council_tax_rebate: 0

@@ -15,7 +15,8 @@ simulation:
    household's energy_bills_rebate, in every year, nation and band.
 2. The rebate is miscellaneous income: hbai_benefits does not change with it.
 3. The Council Tax Rebate is paid once: in 2022 only, at £150, and only in
-   bands A to D.
+   bands A to D outside Northern Ireland, which has domestic rates and had no
+   Council Tax Rebate.
 """
 
 import numpy as np
@@ -113,6 +114,7 @@ def test_hbai_income_rises_by_exactly_the_rebate(drawn, year):
 @given(households)
 def test_the_council_tax_rebate_is_paid_once(drawn):
     bands = np.array([band for band, *_ in drawn])
+    countries = np.array([country for _, country, *_ in drawn])
     years = range(2015, 2031)
     sim = simulation(drawn, years)
     total = np.zeros(HOUSEHOLDS)
@@ -120,7 +122,13 @@ def test_the_council_tax_rebate_is_paid_once(drawn):
         rebate = sim.calculate("ebr_council_tax_rebate", year)
         if year == 2022:
             np.testing.assert_array_equal(
-                rebate, np.where(np.isin(bands, ["A", "B", "C", "D"]), 150, 0)
+                rebate,
+                np.where(
+                    np.isin(bands, ["A", "B", "C", "D"])
+                    & (countries != "NORTHERN_IRELAND"),
+                    150,
+                    0,
+                ),
             )
         else:
             np.testing.assert_array_equal(rebate, 0)
@@ -135,7 +143,11 @@ def test_the_rebate_is_counted_once_and_not_as_state_support():
 
     system = CountryTaxBenefitSystem()
     parts = system.variables["energy_bills_rebate"].adds
-    assert set(parts) == {"ebr_council_tax_rebate", "ebr_energy_bills_credit"}
+    assert set(parts) == {
+        "ebr_council_tax_rebate",
+        "ebr_energy_bills_credit",
+        "ebr_alternative_fuel_payment",
+    }
     assert HBAI_HOUSEHOLD_NET_INCOME_ADDS.count("energy_bills_rebate") == 1
     assert not set(parts) & set(HBAI_HOUSEHOLD_NET_INCOME_ADDS)
     state_support = system.variables["hbai_benefits"].adds
