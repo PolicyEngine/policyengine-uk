@@ -10,7 +10,12 @@ the 1 July 2027 petrol and diesel rate (CUT_END_RATE: 60.59p in the October
 2026 EFO): the 57.95p pre-cut rate (Finance Act 2011 s. 19) uprated by RPI
 growth in the year to 2027 Q1 (CUT_END_RPI_GROWTH). LPG and natural gas
 take the proportionate cut to the same date, so their full rates get the
-same uprating then. From 1 April 2028 the script applies each previous
+same uprating then. HM Treasury publishes the rates from 1 July 2027 in
+Budget 2026's Overview of Tax Legislation and Rates, Annex A
+(PUBLISHED_RATES), and the script writes those: each is within a hundredth
+of a penny of the RPI uprating, and the script stops if one isn't. Natural
+gas is the one that differs: 24.7p x 1.045565 rounds half up to 25.83p, and
+HM Treasury publishes 25.82p. From 1 April 2028 the script applies each previous
 calendar year's RPI growth, using economic_assumptions/yoy_growth.yaml. It
 rounds to the nearest hundredth of a penny and writes the results between
 the BEGIN and END markers in each file. After a new EFO, set CUT_END_RATE
@@ -46,6 +51,14 @@ CUT_END_DATE = "2027-07-01"
 # 2027 Q1 on a year earlier (4.5565%, economy Table 1.7).
 CUT_END_RATE = Decimal("0.6059")
 CUT_END_RPI_GROWTH = Decimal("0.045565")
+# HM Treasury, Budget 2026 Overview of Tax Legislation and Rates, Annex A,
+# fuel duty table: the rates from 1 July 2027.
+ANNEX_A = "https://www.gov.uk/government/publications/budget-2026-overview-of-tax-legislation-and-rates-ootlar/annex-a-rates-and-allowances"
+PUBLISHED_RATES = {
+    "petrol_and_diesel.yaml": Decimal("0.6059"),
+    "lpg.yaml": Decimal("0.3305"),
+    "natural_gas.yaml": Decimal("0.2582"),
+}
 EFO = "https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/"
 FIRST_APRIL_YEAR = 2028
 LAST_UPRATING_YEAR = 2031
@@ -81,11 +94,17 @@ def uprate(rate: Decimal, growth: Decimal) -> Decimal:
 
 def forecast_steps(fuel: str) -> list:
     """(date, rate, previous rate, RPI growth) for each forecast step. The
-    1 July 2027 step applies the OBR's RPI growth to 2027 Q1, so it has no
+    1 July 2027 step is HM Treasury's published rate, which the OBR's RPI
+    growth to 2027 Q1 gives to within a hundredth of a penny, so it has no
     calendar-year growth of its own."""
     growth = rpi_growth_by_year()
     base = base_rate(fuel)
-    rate = uprate(base, CUT_END_RPI_GROWTH)
+    rate = PUBLISHED_RATES[fuel]
+    if abs(rate - uprate(base, CUT_END_RPI_GROWTH)) > PENNY_HUNDREDTH:
+        raise ValueError(
+            f"{fuel}: HM Treasury's {rate} on {CUT_END_DATE} is more than a "
+            f"hundredth of a penny from {base} x (1 + {CUT_END_RPI_GROWTH})"
+        )
     steps = [(CUT_END_DATE, rate, base, None)]
     for year in range(FIRST_APRIL_YEAR, LAST_UPRATING_YEAR + 1):
         previous = rate
@@ -101,21 +120,32 @@ def render(fuel: str, steps: list) -> str:
     for date, rate, previous, growth in steps:
         if growth is None:
             pct = f"{CUT_END_RPI_GROWTH * 100:.2f}%"
+            uprated = uprate(previous, CUT_END_RPI_GROWTH)
+            how = (
+                "the same"
+                if uprated == rate
+                else f"{uprated}, rounded half up; HM Treasury's rate is a "
+                "hundredth of a penny lower"
+            )
             if fuel == "petrol_and_diesel.yaml":
                 note = (
-                    f"OBR forecast. {previous} uprated by RPI growth in the "
-                    f"year to 2027 Q1 ({pct})."
+                    f"HM Treasury's rate from 1 July 2027. The OBR's forecast, "
+                    f"{previous} uprated by RPI growth in the year to 2027 Q1 "
+                    f"({pct}), gives {how}."
                 )
                 title = "OBR EFO October 2026, paragraph 3.19 (60.59p on 1 July 2027)"
             else:
                 note = (
-                    f"Forecast. {previous} uprated by RPI growth in the year "
-                    f"to 2027 Q1 ({pct}), as the OBR uprates petrol and diesel."
+                    f"HM Treasury's rate from 1 July 2027. {previous} uprated "
+                    f"by RPI growth in the year to 2027 Q1 ({pct}), as the OBR "
+                    f"uprates petrol and diesel, gives {how}."
                 )
                 title = (
                     "OBR EFO October 2026, paragraph 3.19 (RPI uprating on 1 July 2027)"
                 )
             source = [
+                "        - title: HM Treasury, Budget 2026 Overview of Tax Legislation and Rates, Annex A (fuel duty rates from 1 July 2027)",
+                f"          href: {ANNEX_A}",
                 f"        - title: {title}",
                 f"          href: {EFO}",
             ]
@@ -169,7 +199,13 @@ def main():
             )
         print(f"{fuel}: {FUELS[fuel]} {base_rate(fuel)} (full rate)")
         for date, rate, previous, growth in steps:
-            how = f"{previous} x (1 + {growth or CUT_END_RPI_GROWTH})"
+            if growth is None:
+                uprated = uprate(previous, CUT_END_RPI_GROWTH)
+                how = (
+                    f"HM Treasury; {previous} x (1 + {CUT_END_RPI_GROWTH}) = {uprated}"
+                )
+            else:
+                how = f"{previous} x (1 + {growth})"
             print(f"  {date}: {rate} ({how})")
         if args.update:
             update(fuel, steps)

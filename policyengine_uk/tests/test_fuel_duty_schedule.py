@@ -125,13 +125,17 @@ def test_forecast_steps_use_current_rpi_forecast():
 
 
 @pytest.mark.parametrize(
-    "fuel, full_rate", [("lpg", "0.3161"), ("natural_gas", "0.2470")]
+    "fuel, full_rate, published",
+    [("lpg", "0.3161", "0.3305"), ("natural_gas", "0.2470", "0.2582")],
 )
-def test_road_fuel_gases_get_the_same_rpi_uprating(fuel, full_rate):
+def test_road_fuel_gases_get_the_same_rpi_uprating(fuel, full_rate, published):
     """LPG and natural gas take the proportionate cut to 1 July 2027 (Budget
     2026, paragraph 6.211; costings page 13). Their full rates then get the
     OBR's 1 July uprating for petrol and diesel, 57.95p to 60.59p, and RPI
-    each 1 April from 2028."""
+    each 1 April from 2028. HM Treasury publishes the 1 July 2027 rates
+    (Overview of Tax Legislation and Rates, Annex A), and the schedule uses
+    them: LPG's is the uprated rate, and natural gas's 25.82p is a hundredth
+    of a penny below the uprated 25.83p."""
     parameters = raw_parameters()
     rpi = parameters.gov.economic_assumptions.yoy_growth.obr.rpi
     schedule = getattr(parameters.gov.hmrc.fuel_duty, fuel)
@@ -139,9 +143,11 @@ def test_road_fuel_gases_get_the_same_rpi_uprating(fuel, full_rate):
     assert (Decimal("0.5795") * (1 + july_growth)).quantize(
         Decimal("0.0001"), ROUND_HALF_UP
     ) == Decimal(str(CUT_END_RATE))
-    rate = (Decimal(full_rate) * (1 + july_growth)).quantize(
+    uprated = (Decimal(full_rate) * (1 + july_growth)).quantize(
         Decimal("0.0001"), ROUND_HALF_UP
     )
+    rate = Decimal(published)
+    assert abs(rate - uprated) <= Decimal("0.0001")
     assert schedule("2027-06-30") < float(full_rate)
     assert schedule(CUT_END_DATE) == pytest.approx(float(rate), abs=1e-12)
     for date in FORECAST_DATES:

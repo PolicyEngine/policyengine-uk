@@ -13,7 +13,7 @@ then identities that hold for every input:
 - the taper never pays less than the cliff edge it replaces;
 - weekly earnings plus the allowance never fall as earnings rise: no cliff;
 - Scotland (Carer Support Payment) and Northern Ireland keep their rules;
-- in 2030-31 the allowance paid is the weekly overlap rule over the weeks the
+- in 2030-31 the payment follows the weekly overlap rule over the weeks the
   allowance pays for, for single carers and for couples caring for the same
   person;
 - a couple caring for the same person elect the larger award, so the taper
@@ -39,6 +39,7 @@ from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
+from policyengine_uk.utils.carers_allowance_taper import matches_parts_of_year
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
@@ -702,6 +703,24 @@ def test_a_reform_masking_a_fraction_of_a_penny_leaves_the_partners_award(year, 
     assert pre_overlap == pytest.approx([0, partner])
     paid = sim.calculate("carers_allowance", year).astype(float)
     assert paid == pytest.approx([0, partner - 400], abs=0.01)
+
+
+def test_a_mask_on_a_fraction_of_a_penny_doesnt_match_the_parts_of_the_year():
+    # The couple restriction chooses only among partners with an award, so an
+    # amount matches what the parts of the year give only where it is
+    # positive exactly where they are: within half a penny isn't enough. The
+    # election gives a head's fraction of a penny nothing beside the
+    # partner's full rate, so no payment shows this check; this tests it
+    # directly.
+    sim = Simulation(situation=tiny_award_couple(START_YEAR))
+    person = sim.populations["person"]
+    parts = np.array([0.0026, 2_000], dtype=np.float32)
+    assert matches_parts_of_year(person, parts, parts).all()
+    nearby = np.array([0.0066, 2_000.004], dtype=np.float32)
+    assert matches_parts_of_year(person, nearby, parts).all()
+    masked = np.array([0, 2_000], dtype=np.float32)
+    assert not matches_parts_of_year(person, masked, parts).any()
+    assert not matches_parts_of_year(person, parts, masked).any()
 
 
 @pytest.mark.parametrize("year", [START_YEAR, FULL_YEAR])

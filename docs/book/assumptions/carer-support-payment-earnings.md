@@ -92,13 +92,15 @@ The couple jointly elect which of them has the entitlement; the Secretary of
 State decides only where they don't. The data don't record the election, so
 the model takes the one that gives the larger award: of the otherwise eligible
 partners, the one whose candidate award is larger has the entitlement. The
-awards differ only under the Budget 2026 Carer's Allowance earnings taper;
-everywhere else each eligible partner has the same rate. Where the awards are
-equal, the model prefers a reported recipient, then an eligible benefit-unit
-head, then the eldest eligible partner, and member order breaks an age tie.
-That order is a modelling convention, not statutory priority. An ineligible
-reported recipient or head cannot displace an eligible partner. The
-caring-hours, earnings, age and take-up conditions stay as they are.
+model's own awards differ only under the Budget 2026 Carer's Allowance
+earnings taper; everywhere else each eligible partner has the same rate. An
+award that an input supplies can differ in any year, and the election then
+follows it. Where the awards are equal, the model prefers a reported
+recipient, then an eligible benefit-unit head, then the eldest eligible
+partner, and member order breaks an age tie. That order is a modelling
+convention, not statutory priority. An ineligible reported recipient or head
+cannot displace an eligible partner. The caring-hours, earnings, age and
+take-up conditions stay as they are.
 
 In 2030-31, the year the taper starts, the model applies the election
 separately to the weeks before the taper and the weeks under it, since the law
@@ -106,8 +108,13 @@ restricts entitlement day by day. A partner below the earnings limit has the
 full rate in both, so the couple elect them for the whole year. Where both
 partners earn over the limit, neither has an award before the taper, and the
 couple elect the one with the larger award under it. Either way one partner
-has the award for the year. The parts of the year reach the payment as shares
-of the year: `carers_allowance_pre_overlap` is the amount from
+has the award for the year: the model reads earnings in whole pence against a
+limit in whole pence, so its own tapered award falls at least a penny short of
+the full rate. An award that an input supplies within a few millionths of a
+pound of the full rate can tie with it once the model stores both as float32,
+and then the tie order can pick a different partner for each part of the year.
+The parts of the year reach the payment as shares of the year:
+`carers_allowance_pre_overlap` is the amount from
 `carers_allowance_pre_couple_limit` that the restriction keeps, and
 overlapping benefits come off for the share of the year in which the
 restriction keeps it.
@@ -134,10 +141,10 @@ amount to the whole-year treatment. The model treats less than half a penny
 for the year, which in practice is floating-point residue where an
 overlapping benefit equals the award, as nil, and pays a penny.
 
-The election compares awards before overlapping benefits, so it doesn't
-always maximise what the couple receive: it can choose a partner whose
-overlapping benefits reduce CA or CSP to zero, where the other partner, if
-chosen, would receive a payment.
+The election compares awards before overlapping benefits, so it doesn't always
+maximise what the couple receive: it can choose a partner whose overlapping
+benefits reduce CA or CSP to zero, where choosing the other partner would pay
+something.
 
 The existing same-person default remains: two qualifying reported awards, or
 awards that caring hours and take-up cannot explain, indicate different care

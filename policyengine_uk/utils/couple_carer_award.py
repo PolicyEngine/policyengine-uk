@@ -45,8 +45,9 @@ def limit_carer_benefit_to_one_partner(person, period, candidate):
     The couple jointly elect which of them has the entitlement (SSCBA 1992
     s.70(7ZA)(a)). The data don't record the election, so the model takes the
     one that gives the larger award, as it does for other elections it models.
-    Awards differ only under the Carer's Allowance earnings taper; where they
-    are equal, prefer an eligible reported recipient, then an eligible
+    The model's own awards differ only under the Carer's Allowance earnings
+    taper, though supplied awards can differ in any year; where they are
+    equal, prefer an eligible reported recipient, then an eligible
     benefit-unit head, then the eldest eligible partner (stable member order
     breaks age ties). Other members and units with other than two
     claimant/partner flags are outside this couple-only restriction.

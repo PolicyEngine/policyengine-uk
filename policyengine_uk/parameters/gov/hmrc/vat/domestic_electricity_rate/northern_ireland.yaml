@@ -10,8 +10,8 @@ values:
       reference:
         - title: Budget 2026, paragraph 6.210 ("expected to apply UK-wide from April 2027")
           href: https://assets.publishing.service.gov.uk/media/6ae1ec57bdb574cf1c9b3f12/E03668986_HMT_Budget_2026_ELAY__2_.pdf#page=138
-        - title: Budget 2026, section 4.3 ("Extended VAT relief is expected to apply in Northern Ireland from April 2027")
-          href: https://www.gov.uk/government/publications/budget-2026-document/budget-2026-html
+        - title: Budget 2026, paragraph 3.4 ("Extended VAT relief is expected to apply in Northern Ireland from April 2027")
+          href: https://assets.publishing.service.gov.uk/media/6ae1ec57bdb574cf1c9b3f12/E03668986_HMT_Budget_2026_ELAY__2_.pdf#page=49
   2027-07-01:
     value: 0.05
     metadata:

@@ -12,12 +12,14 @@ values:
   2027-07-01:
     value: 0.3305
     metadata:
-      note: Forecast. 0.3161 uprated by RPI growth in the year to 2027 Q1 (4.56%), as the OBR uprates petrol and diesel.
+      note: HM Treasury's rate from 1 July 2027. 0.3161 uprated by RPI growth in the year to 2027 Q1 (4.56%), as the OBR uprates petrol and diesel, gives the same.
       reference:
         - title: Budget 2026, paragraph 6.211 (5p cut ends and RPI uprating from 1 July 2027)
           href: https://assets.publishing.service.gov.uk/media/6ae1ec57bdb574cf1c9b3f12/E03668986_HMT_Budget_2026_ELAY__2_.pdf#page=138
         - title: HM Treasury, Budget 2026 policy costings, page 13 (RPI on 1 July 2027, then each 1 April from 2028)
           href: https://assets.publishing.service.gov.uk/media/6ae1883fe4367e5c8b0467df/AB26_Policy_Costing.pdf#page=13
+        - title: HM Treasury, Budget 2026 Overview of Tax Legislation and Rates, Annex A (fuel duty rates from 1 July 2027)
+          href: https://www.gov.uk/government/publications/budget-2026-overview-of-tax-legislation-and-rates-ootlar/annex-a-rates-and-allowances
         - title: OBR EFO October 2026, paragraph 3.19 (RPI uprating on 1 July 2027)
           href: https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/
   2028-04-01:

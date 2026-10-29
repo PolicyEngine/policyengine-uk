@@ -158,8 +158,11 @@ Budget 2026's costing says that on 1 July 2027 "fuel duty rates will increase
 by 5ppl and will be uprated in line with the Retail Prices Index (RPI)", and
 applies the cut to other fuels in proportion. So on 1 July 2027 the gas rates
 return to their full rates before the 2022 cut (LPG £0.3161/kg, natural gas
-£0.2470/kg) uprated by the same RPI growth as petrol and diesel: £0.3305/kg
-and £0.2583/kg. Each 1 April from 2028 they rise by the previous calendar
+£0.2470/kg) uprated by the same RPI growth as petrol and diesel. HM
+Treasury publishes the rates from 1 July 2027 in Annex A of Budget 2026's
+Overview of Tax Legislation and Rates: £0.3305/kg and £0.2582/kg (the
+uprating gives £0.2583/kg for natural gas, and the model uses HM Treasury's
+rate). Each 1 April from 2028 they rise by the previous calendar
 year's RPI growth. `calculate_fuel_duty_rates.py` writes these steps to
 1 April 2031, as it does for petrol and diesel, and the parameters' uprating
 metadata continues them. That is policy, not law.
