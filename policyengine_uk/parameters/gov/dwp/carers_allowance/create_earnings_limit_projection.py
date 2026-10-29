@@ -15,22 +15,44 @@ changes that year only. While the national living wage stays at or above its
 April 2026 rate and the hours at or above 16, no projected year is below £204.
 
 Run after general uprating and before fiscal-year conversion, on both the
-main tree and its baseline copy, as the Savings Credit threshold projection
-is. Reprocessing a reform then reads its changed national living wage or
-hours. The exceptions edit the processed parameters, so they do not move the
+main tree and its baseline copy. Reprocessing a reform then reads its changed
+national living wage or hours. The exceptions edit the processed parameters, so they do not move the
 limit: ``Scenario.apply`` on an already-built simulation, and a reform-dict
 key naming a single day or month.
 """
 
 import math
+from typing import Any, Callable
 
-from policyengine_core.parameters import ParameterNode
+from policyengine_core.parameters import Parameter, ParameterNode
+from policyengine_core.parameters.parameter_at_instant import ParameterAtInstant
 from policyengine_core.periods import instant
 
 from policyengine_uk.parameters.gov.dwp.pension_credit.savings_credit.create_savings_credit_threshold import (
-    extend_after_last_stated,
     last_projected_year,
 )
+
+
+def extend_after_last_stated(
+    parameter: Parameter,
+    last_year: int,
+    derive: Callable[[str, Any], Any],
+) -> None:
+    """Add a value for each year after the parameter's last stated value.
+
+    ``derive(sample, previous)`` gives the year's value from the other
+    parameters at its 30 April ``sample``; ``previous`` is the value in force
+    before it. Each value applies from 1 January, as uprating's do.
+    """
+    last = max(parameter.values_list, key=lambda entry: entry.instant_str)
+    previous = last.value
+    for year in range(int(last.instant_str[:4]) + 1, last_year + 1):
+        previous = derive(f"{year}-04-30", previous)
+        parameter.values_list.append(
+            ParameterAtInstant(parameter.name, f"{year}-01-01", data=previous)
+        )
+    parameter.values_list.sort(key=lambda entry: entry.instant_str, reverse=True)
+    parameter.mark_as_modified()
 
 
 def national_living_wage_limit(hours: float, national_living_wage: float) -> float:

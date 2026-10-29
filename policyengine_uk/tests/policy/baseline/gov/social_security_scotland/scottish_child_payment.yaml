@@ -299,7 +299,7 @@
     # [parent, child_1]
     scottish_child_payment: [0, 1518.40]
 
-- name: SCP with 2028 September CPI projection (£29.80/week)
+- name: SCP with 2028 September CPI projection (£30.20/week)
   period: 2028
   absolute_error_margin: 10
   input:
@@ -317,9 +317,10 @@
         members: [parent, child_1]
         region: SCOTLAND
   output:
-    # £29.20 * 1.021 rounded to 5p = £29.80/week; annualised over 52 weeks = £1,549.60
+    # £29.20 * 1.034 (OBR October 2026 September 2027 CPI) rounded to 5p = £30.20/week;
+    # annualised over 52 weeks = £1,570.40
     # [parent, child_1]
-    scottish_child_payment: [0, 1549.60]
+    scottish_child_payment: [0, 1570.40]
 
 - name: CTC no longer qualifies from 2025 (after April 2024)
   period: 2025

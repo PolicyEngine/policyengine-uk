@@ -202,7 +202,7 @@ share of single tickets and its mean uncapped fare at FY2024–25 prices:
 |---|---:|---:|
 | `LOW`, at or below £2 | 0.56 | £1.70 |
 | `MIDDLE`, above £2 and up to £3 | 0.31 | £2.21 |
-| `HIGH`, above £3 | 0.13 | £3.96 |
+| `HIGH`, above £3 | 0.13 | £3.95 |
 
 The fares rise with the OBR CPI after FY2024–25 and the shares stay, so a fixed
 cap saves more as fares rise. The model caps each band's mean fare under both
@@ -214,22 +214,24 @@ mean needs more bands.
 `scripts/fit_bus_cap_savings.py` fits the table by least squares to the facts
 below, each scaled by its tolerance. It searches shares in steps of one point
 and fares in steps of one penny, keeps each band's mean at least 10% above its
-lower edge, and sets the low band's fare so all singles average £2.15:
+lower edge, and sets the low band's fare so all singles average £2.15. The
+last column is each fact under the fitted table, on the OBR's October 2026 CPI
+path:
 
 | Fact | Source | Target | Table gives |
 |---|---|---:|---:|
-| A full year at £2, 2023–24 | Fare cap support, DfT BUS05bi | £278.95m ± 10% | £282.8m |
+| A full year at £2, 2023–24 | Fare cap support, DfT BUS05bi | £278.95m ± 10% | £281.5m |
 | Part of the December 2024 to March 2025 index step outside London due to the £3 cap | BUS0415a: +11.0%; neighbouring quarters 0.1% to 2.3% | 10% ± 1 point of the yield | 9.8% |
-| The £3 cap in 2025 | ["over £150 million"](https://www.gov.uk/government/speeches/national-bus-fare-cap) | £150m ± 20% | £144.2m |
-| The £2 cap in 2027, against no cap | ["£400 million"](https://www.gov.uk/government/speeches/2-bus-fares-from-january-2027) | £400m ± 20% | £420.2m |
+| The £3 cap in 2025 | ["over £150 million"](https://www.gov.uk/government/speeches/national-bus-fare-cap) | £150m ± 20% | £142.7m |
+| The £2 cap in 2027, against no cap | ["£400 million"](https://www.gov.uk/government/speeches/2-bus-fares-from-january-2027) | £400m ± 20% | £447.1m |
 | Mean pre-cap price of single tickets | [DfT evaluation](https://www.gov.uk/government/publications/evaluation-of-the-2-bus-fare-cap), Table 6 | £2.15 ± £0.10 | £2.15 |
 | Share of single tickets above £2 | Table 6: £0.32 / (£2.73 − £2.00) | 0.44 ± 0.05 | 0.44 |
-| Their mean pre-cap price | Table 6 | £2.73 ± £0.10 | £2.73 |
-| 2024–25: £2 for 270 days, then £3 | Fare cap support, DfT BUS05bi | £515.69m, not fitted | £272.7m |
+| Their mean pre-cap price | Table 6 | £2.73 ± £0.10 | £2.72 |
+| 2024–25: £2 for 270 days, then £3 | Fare cap support, DfT BUS05bi | £515.69m, not fitted | £271.4m |
 
 The £400 million is read as £2 against no cap: the £3 scheme is funded only to
 December 2026, and the £2 scheme replaces it. Read as £2 against a continued
-£3 cap, the table gives £252.5m, 37% below. The script prints both.
+£3 cap, the table gives £268.7m, 33% below. The script prints both.
 
 The 2024–25 grant, for the benchmark year itself, is reported and not fitted;
 the table puts it at about half. Grant per priced boarding rose 77.5% on
@@ -253,7 +255,7 @@ cap's first ten months paid £210m against £245m planned. The table is a fitted
 central estimate, not an observed fare distribution.
 
 At FY2025–26 prices the table saves £0.36 per single ticket for a full year at
-£2 against no cap, and £0.14 at £3: about £0.37bn and £0.14bn a year at
+£2 against no cap, and £0.14 at £3: about £0.36bn and £0.14bn a year at
 2024–25 boardings.
 
 A dataset or calculator can supply `local_bus_uncapped_single_fare` for each

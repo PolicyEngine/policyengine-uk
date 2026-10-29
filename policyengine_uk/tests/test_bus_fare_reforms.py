@@ -131,14 +131,14 @@ def test_a_three_pound_cap_binds_and_cap_reforms_follow_the_table():
     uncapped = spending_2025(**{cap: np.inf})
     two_pounds = spending_2025(**{cap: 2})
     assert uncapped > baseline > two_pounds
-    # FY2025-26 fares are the FY2024-25 table times CPI (1.034). Only the 13%
-    # at GBP 3.96 is above GBP 3; a GBP 2 cap also takes the 31% at GBP 2.21
+    # FY2025-26 fares are the FY2024-25 table times CPI (1.0337). Only the 13%
+    # at GBP 3.95 is above GBP 3; a GBP 2 cap also takes the 31% at GBP 2.21
     # down to GBP 2.
     assert uncapped - baseline == pytest.approx(
-        SINGLES * 0.13 * (3.96 * 1.034 - 3), rel=1e-3
+        SINGLES * 0.13 * (3.95 * 1.0337 - 3), rel=1e-3
     )
     assert baseline - two_pounds == pytest.approx(
-        SINGLES * (0.31 * (2.21 * 1.034 - 2) + 0.13 * 1), rel=1e-3
+        SINGLES * (0.31 * (2.21 * 1.0337 - 2) + 0.13 * 1), rel=1e-3
     )
 
 
@@ -186,11 +186,11 @@ def test_a_supplied_uncapped_fare_replaces_the_table():
         dataset=projected_dataset(other_trips=(100, 0), fares=(4, 4)),
         scenario=Scenario(parameter_changes={"gov.dft.bus.fares.cap": {2025: 2}}),
     )
-    # The dataset's fare rises with CPI like other prices (2025: +3.4%).
+    # The dataset's fare rises with CPI like other prices (2025: +3.37%).
     assert simulation.calculate("local_bus_uncapped_single_fare", 2025)[
         0
-    ] == pytest.approx(4 * 1.034)
-    # Every single ticket costs GBP 4.14, so a GBP 2 cap in place of GBP 3
+    ] == pytest.approx(4 * 1.0337)
+    # Every single ticket costs GBP 4.13, so a GBP 2 cap in place of GBP 3
     # saves GBP 1 on each, against GBP 0.22 on average with the table.
     reformed = simulation.calculate("person_bus_fare_spending", 2025)[0]
     baseline = simulation.baseline.calculate("person_bus_fare_spending", 2025)[0]
@@ -213,8 +213,8 @@ def test_loaded_total_does_not_mask_journeys_or_cap_reforms():
     priced_boardings = 1_850_509_887.26131 - 402_846_350.14539
     benchmark = 2_069_953_713.42079 / priced_boardings
     # In 2024-25 the cap was GBP 2 for 270 days and GBP 3 for 95. Without it,
-    # the 31% of singles at GBP 2.21 and the 13% at GBP 3.96 pay in full.
-    saving = 0.31 * 0.21 * 270 / 365 + 0.13 * (1.96 * 270 / 365 + 0.96 * 95 / 365)
+    # the 31% of singles at GBP 2.21 and the 13% at GBP 3.95 pay in full.
+    saving = 0.31 * 0.21 * 270 / 365 + 0.13 * (1.95 * 270 / 365 + 0.95 * 95 / 365)
     uncapped_yield = benchmark + 0.7 * saving
     baseline_people = np.array([100, 20]) * k * benchmark
     reformed_people = np.array([100, 20]) * k * uncapped_yield

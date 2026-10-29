@@ -1,3 +1,41 @@
+## [2.164.2] - 2026-10-29
+
+### Fixed
+
+- The property allowance election (`uses_property_allowance`) now compares routes in a branch holding only the households where someone has a choice, so its cost follows those households rather than the whole population. Every election is unchanged. A branch holding only some households (`utils.household_subset`) takes `months_since_last_birthday` and the labour supply response (`employment_income_behavioral_response`) from the whole population.
+
+
+## [2.164.1] - 2026-10-29
+
+### Changed
+
+- Update the economic assumptions to the OBR's October 2026 Economic and fiscal outlook, including its revised 2025 outturn and its new 2031 forecast, with a smooth join to the long-run paths from 2032. Population to 2031-32 is the OBR's October forecast, read from its economy tables; it grows more slowly than the March forecast, so household weights are about 0.7% lower by 2030-31. Bank Rate, which caps Plan 1 and Plan 4 student loan interest, is the calendar-year average from the October economy Table 1.9 in every year, so 2026-2031 follow the OBR's market path. The regulated rail fare indices rise by July 2026 RPI plus 1 point in 2027 and by the October RPI forecast plus 1 point to 2031, which raises rail_subsidy_spending from 2028. Households' financial assets follow October Table 1.11 to 2031; the October tables revise 2020 onwards down, so the property wealth, corporate wealth and land value totals they grow are about 10% lower in 2026, which moves land value tax and wealth tax reform results.
+
+### Fixed
+
+- Limited Housing Benefit childcare deductions to remaining earnings after the shared applied standard plus tax-credit payments, retaining childcare_expenses and the existing age-based cap approximation; deferred detailed qualifying-care rules without adding an input. Prevented negative overridden net earnings from producing a negative permitted-work applied standard.
+
+
+## [2.164.0] - 2026-10-28
+
+### Added
+
+- Added the 20% Lifetime ISA withdrawal charge for a first-home purchase above the £450,000 property price cap that meets every other condition, for withdrawals from 29 October 2026 (ISA Regulations 1998 Schedule paragraphs 5 and 6A, inserted by SI 2026/1130); the annual model applies it from fiscal 2027-28.
+- Added the ISA annual subscription limit (ISA Regulations 1998 reg 4ZA: £15,240 from 2015-16 and £20,000 from 2017-18), a cash ISA limit for people under an age at the end of the tax year that current law leaves unset (Budget 2026 retains £20,000 for cash, so SI 2026/1018's £12,000 for under-65s is a reform setting), per-person cash and stocks-and-shares ISA subscription inputs, and `cash_isa_subscriptions_above_limit` and `isa_subscriptions_above_limit`, the subscriptions a limit leaves out.
+
+### Changed
+
+- The household `cash_isa` and `stocks_and_shares_isa` now sum new per-person `cash_isa_balance` and `stocks_and_shares_isa_balance` inputs. A dataset or situation that stores a household total keeps it, and stored totals still project with savings, but a household total given for one year no longer carries into later years.
+
+
+## [2.163.2] - 2026-10-28
+
+### Fixed
+
+- Made the test that dead systems' variable modules are released during a test independent of automatic garbage-collection timing.
+- Made Pension Credit and pension-age Housing Benefit projections non-negative and safe under reforms, validated their common enacted base year from the YAML as loaded, and preserved Guarantee Credit boundary continuity. Forecast thresholds and protected Housing Benefit allowances follow the reformed guarantee and maximum as uprated, as on main.
+
+
 ## [2.163.1] - 2026-10-28
 
 ### Fixed
