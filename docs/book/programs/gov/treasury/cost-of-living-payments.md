@@ -47,7 +47,8 @@ HBAI counts both strands by financial year, all in FYE 2023, and classifies
 them as miscellaneous income, not state support; DWP imputes receipt
 because the FRS did not ask about them. So `hbai_household_net_income` adds
 `hbai_energy_bills_rebate`, which sums the credit from April of the year to
-the next March: the whole £400 (Northern Ireland's January 2023 payment
+the next March, on the scheme of the nation the household lives in that
+financial year: the whole £400 (Northern Ireland's January 2023 payment
 included) in 2022-23 and nothing in 2023-24. It is not in `hbai_benefits`.
 No FRS income field behind `miscellaneous_income` holds the rebates, so
 they are not counted twice.

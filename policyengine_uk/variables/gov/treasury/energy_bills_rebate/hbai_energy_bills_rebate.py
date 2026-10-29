@@ -1,9 +1,7 @@
 from policyengine_uk.model_api import *
-
-# The months of the financial year that starts in April of the model year.
-FINANCIAL_YEAR_MONTHS = [(0, month) for month in range(4, 13)] + [
-    (1, month) for month in range(1, 4)
-]
+from policyengine_uk.variables.gov.treasury.energy_bills_rebate.monthly_ebr_energy_bills_credit import (
+    ebss_credit,
+)
 
 
 class hbai_energy_bills_rebate(Variable):
@@ -13,7 +11,9 @@ class hbai_energy_bills_rebate(Variable):
         "Council Tax Rebate and the Energy Bills Support Scheme credit paid "
         "from April of the year to the next March. HBAI counts the whole "
         "October 2022 to March 2023 credit in FYE 2023. energy_bills_rebate "
-        "sums the credit by calendar year instead."
+        "sums the credit by calendar year instead. The household's nation "
+        "is the financial year's, so the January to March instalments follow "
+        "the scheme of the year they belong to."
     )
     entity = Household
     definition_period = YEAR
@@ -22,12 +22,13 @@ class hbai_energy_bills_rebate(Variable):
     reference = "https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2023/households-below-average-income-series-quality-and-methodology-information-report-fye-2023"
 
     def formula(household, period, parameters):
+        country = household("country", period)
         credit = 0
-        for years_ahead, month in FINANCIAL_YEAR_MONTHS:
-            credit = credit + household(
-                "monthly_ebr_energy_bills_credit",
-                f"{period.start.year + years_ahead}-{month:02d}",
-            )
+        # April of the year to March of the next.
+        for months_after_january in range(3, 15):
+            month = period.first_month.offset(months_after_january, MONTH)
+            eligible = household("ebr_energy_bills_credit_eligible", month)
+            credit = credit + eligible * ebss_credit(parameters, month, country)
         annual_top_up = parameters(
             period
         ).gov.treasury.energy_bills_rebate.energy_bills_credit

@@ -129,3 +129,69 @@
   output:
     hbai_energy_bills_rebate: 550
     hbai_benefits: 0
+
+# The financial year's nation picks the scheme for all its months, even
+# where the household's nation differs in the next model year (or isn't set
+# for it: country, unlike region, does not carry over to the next year).
+- name: Case 8, Northern Ireland given for 2022 only still gets its January 2023 credit.
+  period: 2022
+  input:
+    people:
+      adult:
+        age: 40
+    benunits:
+      unit:
+        members: [adult]
+        would_claim_uc: false
+    households:
+      household:
+        members: [adult]
+        country: NORTHERN_IRELAND
+        council_tax_band: E
+        council_tax: 0
+  output:
+    hbai_energy_bills_rebate: 400
+
+- name: Case 9, a move to Northern Ireland in 2023-24 leaves 2022-23 on the Great Britain scheme.
+  period: 2022
+  input:
+    people:
+      adult:
+        age: 40
+    benunits:
+      unit:
+        members: [adult]
+        would_claim_uc: false
+    households:
+      household:
+        members: [adult]
+        country:
+          2022: ENGLAND
+          2023: NORTHERN_IRELAND
+        council_tax_band: E
+        council_tax: 0
+  output:
+    ebr_energy_bills_credit: 199
+    hbai_energy_bills_rebate: 400
+
+- name: Case 10, a move from Northern Ireland in 2023-24 leaves 2022-23 on Northern Ireland's scheme.
+  period: 2022
+  input:
+    people:
+      adult:
+        age: 40
+    benunits:
+      unit:
+        members: [adult]
+        would_claim_uc: false
+    households:
+      household:
+        members: [adult]
+        country:
+          2022: NORTHERN_IRELAND
+          2023: ENGLAND
+        council_tax_band: E
+        council_tax: 0
+  output:
+    ebr_energy_bills_credit: 0
+    hbai_energy_bills_rebate: 400

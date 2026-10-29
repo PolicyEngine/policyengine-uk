@@ -20,7 +20,8 @@ simulation:
    bands A to D.
 4. HBAI counts the credit by financial year: in 2022 it is the household's
    eligible months of the October 2022 to March 2023 schedule (Northern
-   Ireland's January 2023 payment), and in every other year nil.
+   Ireland's January 2023 payment) of the nation it lives in that financial
+   year, whatever its nation the next year, and in every other year nil.
 5. Financial and calendar years count the same payments: over 2021 to 2024,
    hbai_energy_bills_rebate and energy_bills_rebate add up to the same total.
 """
@@ -56,6 +57,7 @@ NORTHERN_IRELAND_CREDIT = {"2023-01": 400}
 household = st.tuples(
     st.sampled_from(BANDS),
     st.sampled_from(COUNTRIES),
+    st.sampled_from(COUNTRIES),  # the nation from 2023, if it moves
     st.sampled_from([0.0, 6_000.0, 18_000.0, 45_000.0]),  # employment income
     st.booleans(),  # claims Universal Credit
     st.lists(st.booleans(), min_size=24, max_size=24),  # EBSS months eligible
@@ -70,10 +72,11 @@ def eligible(months, month):
     return months[(year - 2022) % 2 * 12 + number - 1]
 
 
-def simulation(drawn, years, without_rebate=False):
+def simulation(drawn, years, without_rebate=False, moves=False):
     """One household per drawn case, with the same circumstances in each of
-    ``years``."""
-    bands, countries, pay, claims_uc, months = zip(*drawn)
+    ``years``, except that with ``moves`` it lives in its second drawn nation
+    from 2023."""
+    bands, countries, next_countries, pay, claims_uc, months = zip(*drawn)
 
     def each_year(value):
         return {year: value for year in years}
@@ -93,7 +96,10 @@ def simulation(drawn, years, without_rebate=False):
         f"household_{i}": {
             "members": [f"adult_{i}"],
             "council_tax_band": each_year(bands[i]),
-            "country": each_year(countries[i]),
+            "country": {
+                year: next_countries[i] if moves and year > 2022 else countries[i]
+                for year in years
+            },
             "ebr_energy_bills_credit_eligible": {
                 f"{year}-{month:02d}": eligible(months[i], f"{year}-{month:02d}")
                 for year in years
@@ -157,7 +163,7 @@ def test_the_council_tax_rebate_is_paid_once(drawn):
 @SETTINGS
 @given(households)
 def test_hbai_counts_the_credit_by_financial_year(drawn):
-    sim = simulation(drawn, range(2021, 2026))
+    sim = simulation(drawn, range(2021, 2026), moves=True)
     expected = np.array(
         [
             sum(
@@ -169,7 +175,7 @@ def test_hbai_counts_the_credit_by_financial_year(drawn):
                 ).items()
                 if eligible(months, month)
             )
-            for _, country, _, _, months in drawn
+            for _, country, _, _, _, months in drawn
         ]
     )
     for year in YEARS:
