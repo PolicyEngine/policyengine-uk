@@ -27,6 +27,9 @@ from policyengine_uk.data.capital_gains_projection import (
 from policyengine_uk.parameters.gov.contrib.create_private_pension_uprating import (
     add_private_pension_uprating_factor,
 )
+from policyengine_uk.parameters.gov.dwp.state_pension.create_rate_projection import (
+    project_state_pension_rates,
+)
 from policyengine_uk.parameters.gov.dwp.state_pension.triple_lock.create_triple_lock import (
     add_triple_lock,
 )
@@ -138,6 +141,7 @@ GENERATION_STEPS = (
     add_triple_lock,
     add_september_cpi_uprating,
     create_economic_assumption_indices,
+    project_state_pension_rates,
     project_savings_credit_threshold,
     project_pension_age_allowances,
     add_threshold_indexation,
@@ -196,6 +200,8 @@ def process_parameter_tree(
     - triple lock calculations for state pensions
     - earnings and September CPI uprating
     - economic assumption indices
+    - State Pension weekly rates, projected each April from the year before
+      and rounded to the nearest 5p, as each Up-rating Order rounds them
     - Pension Credit threshold and protected Housing Benefit forecast indices
     - income tax and NICs threshold indexation after the freeze
     - Universal Credit standard allowance uprating (UC Act 2025 s. 1)

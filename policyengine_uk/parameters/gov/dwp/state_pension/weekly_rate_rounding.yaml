@@ -1,0 +1,29 @@
+description: The full new State Pension and basic State Pension weekly rates are projected each April from the previous year's rate and rounded to the nearest multiple of this amount; zero leaves them unrounded.
+values:
+  2011-01-01: 0.05
+metadata:
+  unit: currency-GBP
+  label: State Pension weekly rate rounding
+  documentation: |
+    Applies only to projected years, after the last published rate; the
+    published rates are stated in the amount parameters. Social Security
+    Administration Act 1992 s.150A(4) lets the Secretary of State round each
+    increase "up or down to such extent as he thinks appropriate". DWP
+    applies the review's percentage to the current full weekly rates and
+    rounds the results to the nearest 5p (HL10770), and HM Treasury's
+    forecast baseline projects them the same way. The previous year's
+    published rate, uprated and rounded to the nearest 5p, gives every
+    published basic State Pension rate from April 2011 and every full new
+    State Pension rate from April 2017; rounding always up or always down
+    to 5p, or to the nearest 10p, misses at least five of those years each.
+    Every reform route reprocesses the parameters, so a change to this
+    amount moves the projected rates.
+  reference:
+    - title: Social Security Administration Act 1992, section 150A(4)
+      href: https://www.legislation.gov.uk/ukpga/1992/5/section/150A
+    - title: Written question HL10770, State Retirement Pensions - Uprating (DWP answer, 20 October 2025)
+      href: https://questions-statements.parliament.uk/written-questions/detail/2025-10-06/HL10770
+    - title: Explanatory Memorandum to the Social Security Benefits Up-rating Order 2020 (SI 2020/234), paragraph 7.17
+      href: https://www.legislation.gov.uk/uksi/2020/234/pdfs/uksiem_20200234_en.pdf
+    - title: HM Treasury, Budget 2026 policy costings, Annex A (indexation in the public finance forecast baseline), page 114
+      href: https://assets.publishing.service.gov.uk/media/6ae1883fe4367e5c8b0467df/AB26_Policy_Costing.pdf

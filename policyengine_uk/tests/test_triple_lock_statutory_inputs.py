@@ -67,7 +67,8 @@ def test_april_2027_uses_published_may_july_2026_earnings():
     """ONS confirmed May-July 2026 total pay growth at 3.9% on 20 October,
     unchanged from September. April 2027's triple lock is max(3.5% CPI,
     3.9% earnings, 2.5%), so the new State Pension rises from £241.30 to
-    £250.71 (before rounding to 5p)."""
+    £250.7107, £250.70 to the nearest 5p: 52 weeks of it is the £13,036.40
+    of HM Treasury's Pension Tax Allowance explainer."""
     parameters = system.parameters
     inputs = statutory_inputs(parameters)
     assert inputs.cpi_september("2026-09-01") == pytest.approx(0.035)
@@ -76,9 +77,7 @@ def test_april_2027_uses_published_may_july_2026_earnings():
         "2027-04-30"
     ) == pytest.approx(0.025)
     assert uprating(parameters, 2027) == pytest.approx(0.039)
-    assert new_state_pension_weekly(parameters, 2027) == pytest.approx(
-        241.30 * 1.039, abs=0.005
-    )
+    assert new_state_pension_weekly(parameters, 2027) == pytest.approx(250.70, abs=1e-9)
 
 
 def test_pension_credit_uses_the_state_pension_statutory_earnings_input():
@@ -268,14 +267,12 @@ def test_macro_scenario_moves_the_state_pension_in_a_microsimulation():
 
     baseline_pension = float(baseline.calculate("new_state_pension", 2028)[0])
     reformed_pension = float(reformed.calculate("new_state_pension", 2028)[0])
-    full_rate_2027 = 241.30 * 1.039
-    # Uprating indices are stored to 5 decimal places.
-    assert baseline_pension == pytest.approx(
-        full_rate_2027 * 1.034 * WEEKS_IN_YEAR, rel=1e-5
-    )
-    assert reformed_pension == pytest.approx(
-        full_rate_2027 * 1.053 * WEEKS_IN_YEAR, rel=1e-5
-    )
+    # Each April's rate is the year before's, uprated, to the nearest 5p:
+    # £241.30 x 1.039 = £250.7107 gives £250.70 for April 2027, then
+    # £250.70 x 1.034 = £259.2238 gives £259.20 and £250.70 x 1.053 =
+    # £263.9871 gives £264.00 for April 2028.
+    assert baseline_pension == pytest.approx(259.20 * WEEKS_IN_YEAR, abs=1e-6)
+    assert reformed_pension == pytest.approx(264.00 * WEEKS_IN_YEAR, abs=1e-6)
 
 
 def test_setting_a_statutory_input_directly_overrides_its_forecast():
