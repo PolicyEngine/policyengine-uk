@@ -62,7 +62,7 @@ def create_modified_cpi_forecast(
     historical_modified_cpi,
     initial_weights,
     forecast_start_year=2026,
-    forecast_end_year=2030,
+    forecast_end_year=2031,
 ):
     cpi_values = get_parameter_values(
         cpi_parameter, forecast_start_year, forecast_end_year

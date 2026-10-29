@@ -25,7 +25,7 @@ Ofwat's [PR24 final determinations](https://www.ofwat.gov.uk/wp-content/uploads/
 
 1. Real growth already realised: the published 2025-26 and 2026-27 nominal increases less CPIH, 1.27 / 1.0327 × 1.054 / 1.0388 = 1.2478.
 2. Real growth left: 1.3568 / 1.2478 = 1.0874, spread evenly over three years, 2.83% a year.
-3. Inflation added back from `yoy_growth.obr.cpih`. Ofwat indexes bills to CPIH in the November before the charging year, so charging year t takes calendar year t-1: 1.0283 × 1.0255 = 5.5% for 2027-28, × 1.0211 = 5.0% for 2028-29, × 1.0204 = 4.9% for 2029-30.
+3. Inflation added back from `yoy_growth.obr.cpih` (the OBR's October 2026 forecast). Ofwat indexes bills to CPIH in the November before the charging year, so charging year t takes calendar year t-1: 1.0283 × 1.0324 = 6.2% for 2027-28, × 1.0330 = 6.2% for 2028-29, × 1.0214 = 5.0% for 2029-30.
 
 ```{note}
 Open assumptions:

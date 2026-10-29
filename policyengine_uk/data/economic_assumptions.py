@@ -151,12 +151,13 @@ def growth_rate(
 # The last year a single-year dataset is projected to: 2032, fiscal year
 # 2032-33. An OBR forecast runs five years past the fiscal year it is made in,
 # so one made in 2026-27 ends in 2031-32 (year 2031). yoy_growth.yaml holds the
-# March 2026 forecast, which ends in 2030-31. Move this on as forecasts move.
+# October 2026 forecast, which ends in 2031-32. Move this on as forecasts move.
 #
 # Every year up to here is a dataset year, grown from the year before by
 # apply_single_year_uprating. A growth series with no value for a year grows
-# at its latest rate, so a series that the March 2026 forecast ends in 2030
-# holds its 2030-31 rate in 2031-32 and 2032-33.
+# at its latest rate, so a series that the October 2026 forecast ends in 2031
+# holds its 2031-32 rate in 2032-33, and one that ends in 2030 (mortgage
+# interest) holds its 2030-31 rate in 2031-32 and 2032-33.
 #
 # Past this year policyengine-core serves each stored input from the last
 # projected year. An input whose variable has a formula is calculated by it
