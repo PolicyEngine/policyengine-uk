@@ -14,8 +14,12 @@ is 1 there instead, and its first step is the first listed growth (#2692).
 `obr.petrol_spending_litre_proxy`, `obr.diesel_spending_litre_proxy`,
 `orr.per_capita.rail_passenger_journeys` and `ons.population` set it to 2020,
 `obr.private_pension_index` to 2019 and `obr.lagged_average_earnings` to
-2021. Only a direct input dated before the first growth year reads that step;
-dataset projection uses the growth rates themselves.
+2021. Only a direct input dated before the first growth year reads that step.
+Dataset projection mostly uses the growth rates themselves, so it is
+unchanged. The exception is residential property, which reads the
+`obr.house_prices` index, rounded to five decimals, so its year-to-year
+ratios can move slightly (2021 to 2022: 1.0926 before, about 1.0925970
+now).
 
 The dedicated `capital_gains` growth/index paths copy GDP per capita by
 default. A simulation can instead supply a versioned aggregate gains

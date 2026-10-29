@@ -4,8 +4,10 @@ The index generator puts an index of 1 in a series' first listed year and
 multiplies growth only from the next year, so the first listed growth was
 never in the index. Each series below sets ``index_base_year`` to the year
 before, so the index is 1 there and its first step is that growth. Only a
-direct input dated before the first growth year read the dropped step;
-dataset projection reads ``yoy_growth`` directly.
+direct input dated before the first growth year read the dropped step.
+Dataset projection reads ``yoy_growth`` directly, except for residential
+property, which reads the five-decimal ``obr.house_prices`` index, so its
+yearly ratios can move slightly.
 """
 
 import pytest
