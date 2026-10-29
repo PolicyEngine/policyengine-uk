@@ -19,7 +19,13 @@ class student_loan_repayment(Variable):
 
     def formula(person, period, parameters):
         plan = person("student_loan_plan", period)
-        income = person("net_income", period)
+        # Benefits in kind are not repayment income: Self Assessment leaves
+        # out the car benefits of ITEPA 2003 Part 3 Chapter 6 (SI 2009/470
+        # reg. 29(4)(e)), and PAYE deducts repayments from Class 1 earnings
+        # only (reg. 41).
+        income = max_(
+            person("net_income", period) - person("benefits_in_kind", period), 0
+        )
         balance = max_(0, person("student_loan_balance", period))
         p = parameters(period).gov.hmrc.student_loans
 

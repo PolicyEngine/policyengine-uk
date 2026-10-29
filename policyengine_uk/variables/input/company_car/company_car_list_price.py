@@ -10,11 +10,16 @@ class company_car_list_price(Variable):
         "their employment and for their private use, on the day before its "
         "first registration, plus the price of its qualifying accessories "
         "(ITEPA 2003 s. 121(1) steps 1 and 2). Zero means the person has no "
-        "company car. This is not car_list_price, which describes the "
-        "person's own car for vehicle excise duty."
+        "company car. Set company_car_co2_emissions with it: a CO2 figure of "
+        "0 means a car that cannot emit CO2. The benefits it gives must not "
+        "also be in employment_income, or they are taxed twice; a dataset "
+        "whose pay includes benefits in kind, as the SPI's EPB does, must take "
+        "the car and car fuel benefits out of it. This is not car_list_price, "
+        "which describes the person's own car for vehicle excise duty."
     )
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.economic_assumptions.indices.obr.consumer_price_index"
     quantity_type = STOCK
     reference = [
         dict(

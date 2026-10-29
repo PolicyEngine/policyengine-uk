@@ -1,4 +1,8 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.company_car import (
+    co2_emissions_figure,
+    share_of_year_available,
+)
 
 
 class car_fuel_benefit(Variable):
@@ -18,6 +22,7 @@ class car_fuel_benefit(Variable):
     )
     definition_period = YEAR
     unit = GBP
+    defined_for = "has_company_car"
     reference = [
         dict(
             title="Income Tax (Earnings and Pensions) Act 2003 s. 149",
@@ -39,9 +44,9 @@ class car_fuel_benefit(Variable):
 
     def formula_2020(person, period, parameters):
         p = parameters(period).gov.hmrc.income_tax.benefits_in_kind.car_fuel
-        has_company_car = person("company_car_list_price", period) > 0
         fuel_provided = person("company_car_private_fuel_provided", period)
-        can_emit_co2 = person("company_car_co2_emissions", period) > 0
+        # s. 149(4): the same test as the zero-emission rate in s. 139.
+        can_emit_co2 = co2_emissions_figure(person, period) > 0
         full_year = p.multiplier * person("company_car_appropriate_percentage", period)
-        availability = min_(max_(person("company_car_availability", period), 0), 1)
-        return has_company_car * fuel_provided * can_emit_co2 * full_year * availability
+        availability = share_of_year_available(person, period)
+        return fuel_provided * can_emit_co2 * full_year * availability

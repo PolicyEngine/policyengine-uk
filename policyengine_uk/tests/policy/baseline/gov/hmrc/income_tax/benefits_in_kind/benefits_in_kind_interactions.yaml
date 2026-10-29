@@ -102,3 +102,117 @@
     # Child Benefit of £27.05 a week for 52 weeks is £1,406.60, rounded
     # down to £1,406; half of it is £703 (s. 681C(3)).
     CB_HITC: [703, 0]
+
+- name: Student loan repayments leave the benefit out
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    employment_income: 40_000
+    student_loan_plan: PLAN_2
+    company_car_list_price: 30_000
+    company_car_co2_emissions: 120
+  output:
+    # A £9,000 benefit (30% of £30,000) is in net income, but not in the
+    # income repayments are due on: Self Assessment leaves out Chapter 6 car
+    # benefits (SI 2009/470 reg. 29(4)(e)) and PAYE deducts repayments from
+    # Class 1 earnings (reg. 41). 9% of (£40,000 - £29,385) = £955.35.
+    net_income: 49_000
+    student_loan_repayment: 955.35
+
+- name: The pension relief limit counts the benefit as relevant UK earnings
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 10_000
+    personal_pension_contributions: 14_000
+    company_car_list_price: 20_000
+    company_car_co2_emissions: 120
+  output:
+    # Taxable benefits in kind are employment income chargeable to tax, so
+    # relevant UK earnings (Finance Act 2004 s. 189(2)(a); HMRC PTM044100):
+    # £10,000 + £6,000 = £16,000 is above the £14,000 contributed, so all of
+    # it is relieved. Without the car the limit would be £10,000.
+    pension_contributions_relief: 14_000
+
+- name: A Scottish taxpayer pays Scottish rates on the benefit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 35_000
+        company_car_list_price: 75_000
+        company_car_co2_emissions: 0
+        company_car_fuel_type: ELECTRIC
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        region: SCOTLAND
+  output:
+    # Taxable income of £35,000 + £3,000 - £12,570 = £25,430, all within
+    # the intermediate band (21%) above £16,956: 19% of £3,967, 20% of
+    # £12,989 and 21% of £8,474 = £5,131.07, of which 21% of the £3,000
+    # benefit is £630.
+    income_tax: 5_131.07
+
+- name: The benefit counts towards the £100,000 limits of Tax-Free Childcare and the extended entitlement
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    employment_income: 95_000
+    company_car_list_price: 40_000
+    company_car_co2_emissions: 120
+  output:
+    # Adjusted net income of £95,000 + £12,000 is above £100,000 (SI
+    # 2015/448 reg. 15; SI 2022/1134 regs. 14(3)(c)(i) and 15(3)(b)(i)).
+    adjusted_net_income: 107_000
+    tax_free_childcare_meets_income_requirements: false
+    extended_childcare_entitlement_meets_income_requirements: false
+
+- name: Earnings tests with other income, without the company car
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 20_000
+    private_pension_income: 20_000
+  output:
+    # (£40,000 - £12,570) x 20% = £5,486.
+    income_tax: 5_486
+    # UC takes earnings as the lowest slice: (£20,000 - £12,570) x 20%.
+    uc_income_tax_on_earnings: 1_486
+    uc_individual_earned_income_before_mif: 17_919.6
+    # HB and CTR take earnings' share of the tax: £5,486 x 20/40 = £2,743;
+    # £20,000 - £2,743 - £594.40 = £16,662.60.
+    housing_benefit_net_earnings: 16_662.6
+    council_tax_reduction_net_earnings: 16_662.6
+
+- name: Earnings tests with other income, with the company car
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 20_000
+    private_pension_income: 20_000
+    company_car_list_price: 75_000
+    company_car_co2_emissions: 0
+    company_car_fuel_type: ELECTRIC
+  output:
+    # The £3,000 benefit adds £600 of tax: (£43,000 - £12,570) x 20%.
+    income_tax: 6_086
+    # UC deducts all £600 from earnings, as the benefit is in the lowest
+    # slice with pay.
+    uc_income_tax_on_earnings: 2_086
+    uc_individual_earned_income_before_mif: 17_319.6
+    # HB and CTR count the benefit with pay in earnings' share of the tax,
+    # though not in the earnings: £6,086 x 23/43 = £3,255.30, so
+    # £20,000 - £3,255.30 - £594.40 = £16,150.30.
+    housing_benefit_net_earnings: 16_150.29
+    council_tax_reduction_net_earnings: 16_150.29

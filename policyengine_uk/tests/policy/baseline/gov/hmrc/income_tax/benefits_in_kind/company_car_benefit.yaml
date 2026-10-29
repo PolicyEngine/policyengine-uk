@@ -1,8 +1,9 @@
-# The company car benefit (ITEPA 2003 s. 121) on HMRC's worked examples.
-# HMRC 480 Appendix 1 (company car benefit examples) gives Examples 6 and 7
-# for 2020-21. Examples 3 to 5 are for 2018-19, before the model's first
-# year, so their cars are valued here with the appropriate percentages in
-# HMRC 480 Appendix 2's 2026-27 table:
+# The company car benefit (ITEPA 2003 s. 121). HMRC 480 Appendix 1 (company
+# car benefit examples) gives worked results for 2020-21 in Examples 6 and 7,
+# tested here. Its Examples 3 to 5 are for 2018-19, before the model's first
+# year, so the cases below that reuse their cars are not HMRC's worked
+# results: they value those cars with the rates in HMRC 480 Appendix 2's
+# 2026-27 table, and so test the transcribed rates.
 # https://www.gov.uk/guidance/company-car-benefit-examples-480-appendix-1
 # https://www.gov.uk/guidance/company-car-benefit-the-appropriate-percentage-480-appendix-2
 
@@ -12,6 +13,8 @@
   input:
     employment_income: 40_000
   output:
+    has_company_car: false
+    company_car_appropriate_percentage: 0
     company_car_benefit: 0
     car_fuel_benefit: 0
     benefits_in_kind: 0
@@ -58,7 +61,7 @@
     company_car_appropriate_percentage: 0.08
     company_car_benefit: 1_760
 
-- name: Petrol car, HMRC 480 Appendix 1 Example 5's car, in 2026-27
+- name: Petrol car at 100 g/km (the car in HMRC 480 Appendix 1 Example 5) at 2026-27 rates
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -70,7 +73,7 @@
     company_car_appropriate_percentage: 0.26
     company_car_benefit: 4_680
 
-- name: Petrol car at the maximum, HMRC 480 Appendix 1 Example 3's car, in 2026-27
+- name: Petrol car at the maximum (the car in HMRC 480 Appendix 1 Example 3) at 2026-27 rates
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -106,7 +109,7 @@
     company_car_appropriate_percentage: 0.26
     company_car_benefit: 4_680
 
-- name: Diesel supplement stops at the maximum, HMRC 480 Appendix 1 Example 4's car, in 2026-27
+- name: Diesel supplement stops at the maximum (the car in HMRC 480 Appendix 1 Example 4) at 2026-27 rates
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -316,3 +319,80 @@
     company_car_co2_emissions: 120
   output:
     company_car_benefit: 0
+
+- name: Out-of-range amounts are floored at zero and availability is kept between 0 and 1
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      negative_price:
+        company_car_list_price: -40_000
+        company_car_co2_emissions: 120
+      negative_amounts:
+        company_car_list_price: 40_000
+        company_car_co2_emissions: 120
+        company_car_capital_contributions: -5_000
+        company_car_private_use_payments: -1_200
+      availability_above_one:
+        company_car_list_price: 40_000
+        company_car_co2_emissions: 120
+        company_car_availability: 1.5
+      availability_below_zero:
+        company_car_list_price: 40_000
+        company_car_co2_emissions: 120
+        company_car_availability: -0.5
+      negative_figures:
+        company_car_list_price: 40_000
+        company_car_co2_emissions: -10
+        company_car_electric_range: -10
+    benunits:
+      benunit:
+        members: [negative_price, negative_amounts, availability_above_one, availability_below_zero, negative_figures]
+    households:
+      household:
+        members: [negative_price, negative_amounts, availability_above_one, availability_below_zero, negative_figures]
+  output:
+    # A negative price is no car; negative contributions and payments are
+    # none; availability is capped at the whole year and floored at none.
+    # Negative CO2 and electric range figures are 0: the zero-emission rate.
+    has_company_car: [false, true, true, true, true]
+    company_car_appropriate_percentage: [0, 0.3, 0.3, 0.3, 0.04]
+    company_car_benefit: [0, 12_000, 12_000, 0, 1_600]
+
+- name: An electric car is zero-emission whatever CO2 figure is entered
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    company_car_list_price: 40_000
+    company_car_co2_emissions: 150
+    company_car_fuel_type: ELECTRIC
+    company_car_private_fuel_provided: true
+  output:
+    # As for vehicle excise duty, the ELECTRIC fuel type gives a CO2 figure
+    # of 0: 4% in 2026-27, and no car fuel benefit (s. 149(4)).
+    company_car_appropriate_percentage: 0.04
+    company_car_benefit: 1_600
+    car_fuel_benefit: 0
+
+- name: A car at 0 g/km takes no diesel supplement
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    company_car_list_price: 40_000
+    company_car_co2_emissions: 0
+    company_car_fuel_type: DIESEL_NON_RDE2
+  output:
+    # A car that cannot emit CO2 is not propelled by diesel (s. 141(3)).
+    company_car_appropriate_percentage: 0.04
+    company_car_benefit: 1_600
+
+- name: A CO2 figure that rounds down to 0 is zero-emission for both benefits
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    company_car_list_price: 40_000
+    company_car_co2_emissions: 0.5
+    company_car_private_fuel_provided: true
+  output:
+    company_car_appropriate_percentage: 0.04
+    car_fuel_benefit: 0

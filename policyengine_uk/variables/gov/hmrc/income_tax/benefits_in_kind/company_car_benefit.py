@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.company_car import share_of_year_available
 
 
 class company_car_benefit(Variable):
@@ -19,6 +20,7 @@ class company_car_benefit(Variable):
     )
     definition_period = YEAR
     unit = GBP
+    defined_for = "has_company_car"
     reference = [
         dict(
             title="Income Tax (Earnings and Pensions) Act 2003 s. 120",
@@ -47,8 +49,7 @@ class company_car_benefit(Variable):
         # Steps 5 and 6: the appropriate percentage of the interim sum.
         full_year = interim_sum * person("company_car_appropriate_percentage", period)
         # Step 7: s. 143(3) deducts A x U / Y for the days unavailable.
-        availability = min_(max_(person("company_car_availability", period), 0), 1)
-        provisional_sum = full_year * availability
+        provisional_sum = full_year * share_of_year_available(person, period)
         # Step 8: payments for private use (s. 144).
         payments = max_(person("company_car_private_use_payments", period), 0)
         return max_(provisional_sum - payments, 0)

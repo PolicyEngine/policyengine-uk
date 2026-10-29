@@ -13,7 +13,10 @@ class ni_class_1a(Variable):
         "the Health and Social Care Levy (Repeal) Act 2022 fixes it at "
         "14.53%. Unlike secondary Class 1, it has no threshold and no zero "
         "rate for earners under 21 or apprentices under 25, and the "
-        "Employment Allowance cannot be set against it."
+        "Employment Allowance cannot be set against it. The employer NI "
+        "incidence variables cover secondary Class 1 only, so no household "
+        "bears Class 1A or a change in it: it stays with the employer as "
+        "revenue in gov_tax."
     )
     definition_period = YEAR
     unit = GBP

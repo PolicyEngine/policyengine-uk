@@ -13,6 +13,7 @@ class company_car_private_use_payments(Variable):
     )
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.economic_assumptions.indices.obr.consumer_price_index"
     quantity_type = FLOW
     reference = dict(
         title="Income Tax (Earnings and Pensions) Act 2003 s. 144",

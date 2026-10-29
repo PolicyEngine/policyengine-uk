@@ -8,8 +8,11 @@ class company_car_co2_emissions(Variable):
     documentation = (
         "The CO2 emissions figure of the person's company car in grams per "
         "kilometre, as on its certificate of conformity: 0 for a car that "
-        "cannot emit CO2 by being driven. For a car first registered on or "
-        "after 6 April 2020 it is the WLTP figure (ITEPA 2003 s. 136(2B)). "
+        "cannot emit CO2 by being driven, and taken as 0 for a car of the "
+        "ELECTRIC fuel type. Set it whenever company_car_list_price is set: "
+        "the model cannot tell a missing figure from 0 g/km, and taxes both "
+        "at the zero-emission rate. For a car first registered on or after "
+        "6 April 2020 it is the WLTP figure (ITEPA 2003 s. 136(2B)). "
         "The model treats every company car as having a CO2 emissions "
         "figure; cars without one (s. 140) and cars first registered before "
         "1 January 1998 (s. 142) are not modelled."

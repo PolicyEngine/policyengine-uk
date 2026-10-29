@@ -11,12 +11,17 @@
 2. Budget 2026: the company_car_tax_rise_2030 scenario raises every
    appropriate percentage for 2030-31 by one point, to a maximum of 40%. It
    changes a company car holder's income tax and their employer's Class 1A,
-   nothing else, and nobody else's tax; 2029-30 is unchanged.
+   nothing else (their student loan repayment included), and nobody else's
+   tax; 2029-30 is unchanged. COMPANY_CAR_TAX_RISE_2030 passed as a reform
+   dict gives the same results.
 3. Employer NI: Class 1A follows the secondary percentage (SSCBA 1992
-   s. 10(5)), so an employer rate reform moves it. The fixed-employer-cost
-   response covers secondary Class 1 only, and baseline_employer_cost and
-   adjusted_employer_cost still equal each simulation's employer_cost for a
-   company car holder, as they do for everyone else.
+   s. 10(5)), so an employer rate reform moves it. The employer NI
+   incidence covers secondary Class 1 only, so no household bears Class 1A:
+   the fixed-employer-cost pay response and the employer cost change that
+   the capital and consumer channels spread leave it out. And
+   baseline_employer_cost and adjusted_employer_cost still equal each
+   simulation's employer_cost for a company car holder, as they do for
+   everyone else.
 
 Comparisons allow float32 rounding.
 """
@@ -26,6 +31,9 @@ import pytest
 
 from policyengine_uk import Simulation
 from policyengine_uk.scenarios import company_car_tax_rise_2030
+from policyengine_uk.scenarios.company_car_tax_rise_2030 import (
+    COMPANY_CAR_TAX_RISE_2030,
+)
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
@@ -226,21 +234,27 @@ def test_2030_31_rise_sets_the_budget_2026_rates():
     np.testing.assert_allclose(baseline, expected_baseline / 100, atol=1e-6)
 
 
-# A company car holder with private fuel, and an employee without a car.
+# A company car holder with private fuel and a Plan 2 student loan, and an
+# employee without a car.
 HOLDER = {
     "company_car_list_price": 40_000,
     "company_car_co2_emissions": 120,
     "company_car_private_fuel_provided": True,
+    "student_loan_plan": "PLAN_2",
 }
-TAX_AND_INCOME = [
-    "income_tax",
-    "ni_class_1a",
+UNCHANGED_FOR_HOLDER = [
     "ni_class_1_employer",
     "ni_class_1_employee",
     "employment_income",
     "employer_ni_fixed_employer_cost_change",
-    "uc_individual_earned_income_before_mif",
+    "student_loan_repayment",
+    "plan_2_interest_rate",
 ]
+TAX_AND_INCOME = [
+    "income_tax",
+    "ni_class_1a",
+    "uc_individual_earned_income_before_mif",
+] + UNCHANGED_FOR_HOLDER
 
 
 @pytest.mark.parametrize("year", [2029, 2030, 2031])
@@ -276,22 +290,20 @@ def test_2030_31_rise_changes_only_holders_income_tax_and_class_1a(year):
     assert change["uc_individual_earned_income_before_mif"][0] == pytest.approx(
         -change["income_tax"][0], abs=0.05
     )
-    for variable in [
-        "ni_class_1_employer",
-        "ni_class_1_employee",
-        "employment_income",
-        "employer_ni_fixed_employer_cost_change",
-    ]:
-        np.testing.assert_allclose(change[variable][0], 0, atol=1e-2, err_msg=variable)
+    for variable in UNCHANGED_FOR_HOLDER:
+        np.testing.assert_allclose(change[variable][0], 0, atol=1e-6, err_msg=variable)
     # Nothing changes for the employee without a car.
     for variable, difference in change.items():
         np.testing.assert_allclose(difference[1], 0, atol=1e-2, err_msg=variable)
 
 
 def test_a_company_car_raises_gov_tax_by_its_income_tax_and_class_1a():
-    cars = [HOLDER]
-    with_car = Simulation(situation=situation(2026, cars))
-    without_car = Simulation(situation=situation(2026, [{}]))
+    # The same employee, with the same student loan, without the car.
+    without_the_car = {
+        name: value for name, value in HOLDER.items() if not name.startswith("company")
+    }
+    with_car = Simulation(situation=situation(2026, [HOLDER]))
+    without_car = Simulation(situation=situation(2026, [without_the_car]))
 
     def change(variable):
         return (values(with_car, variable, 2026) - values(without_car, variable, 2026))[
@@ -299,6 +311,8 @@ def test_a_company_car_raises_gov_tax_by_its_income_tax_and_class_1a():
         ]
 
     assert change("ni_class_1a") > 0
+    # Student loan repayments are in gov_tax but leave the benefit out.
+    assert change("student_loan_repayment") == 0
     assert change("gov_tax") == pytest.approx(
         change("income_tax") + change("ni_class_1a"), abs=0.05
     )
@@ -323,10 +337,15 @@ def test_class_1a_follows_an_employer_rate_reform_outside_the_fixed_cost_respons
         values(reformed, "ni_class_1a", 2026), 0.16 * benefits, rtol=1e-6
     )
     # The pay response holds employer cost before Class 1A, so the holder's
-    # pay moves exactly as the other employee's does.
+    # pay moves exactly as the other employee's does, and so does the cost
+    # change the capital and consumer channels would spread.
     pay_change = values(reformed, "employer_ni_fixed_employer_cost_change", 2026)
     assert pay_change[0] < 0
     assert pay_change[0] == pytest.approx(pay_change[1], abs=0.01)
+    cost_change = values(reformed, "adjusted_employer_cost", 2026) - values(
+        reformed, "baseline_employer_cost", 2026
+    )
+    assert cost_change[0] == pytest.approx(cost_change[1], abs=0.01)
     # Agreement: the incidence variables' costs equal employer_cost in each
     # simulation, for the holder too.
     np.testing.assert_allclose(
@@ -337,5 +356,54 @@ def test_class_1a_follows_an_employer_rate_reform_outside_the_fixed_cost_respons
     np.testing.assert_allclose(
         values(reformed, "adjusted_employer_cost", 2026),
         values(reformed, "employer_cost", 2026),
+        atol=0.01,
+    )
+
+
+@pytest.mark.parametrize("year", [2030, 2031, 2035])
+def test_the_parameter_changes_as_a_reform_dict_match_the_scenario(year):
+    cars = [HOLDER, {}]
+    from_scenario = Simulation(
+        situation=situation(year, cars), scenario=company_car_tax_rise_2030
+    )
+    from_dict = Simulation(
+        situation=situation(year, cars), reform=COMPANY_CAR_TAX_RISE_2030
+    )
+    for variable in ["company_car_appropriate_percentage", "income_tax", "gov_tax"]:
+        np.testing.assert_allclose(
+            values(from_dict, variable, year),
+            values(from_scenario, variable, year),
+            atol=1e-6,
+            err_msg=variable,
+        )
+
+
+INCIDENCE = "gov.contrib.policyengine.employer_ni"
+
+
+def test_no_household_bears_the_class_1a_on_the_2030_31_rise():
+    # With half of an employer NI change borne by employees, the rest would
+    # go to capital and consumers through adjusted_employer_cost less
+    # baseline_employer_cost. Neither covers Class 1A, so the rise's Class 1A
+    # moves no pay and leaves nothing for those channels to spread.
+    reform = {
+        **COMPANY_CAR_TAX_RISE_2030,
+        f"{INCIDENCE}.employee_incidence": {"2030-04-06.2100-12-31": 0.5},
+    }
+    simulation = Simulation(situation=situation(2030, [HOLDER]), reform=reform)
+    class_1a_change = values(simulation, "ni_class_1a", 2030) - values(
+        simulation.baseline, "ni_class_1a", 2030
+    )
+    assert class_1a_change[0] > 0
+    for variable in ["employer_ni_fixed_employer_cost_change", "employment_income"]:
+        np.testing.assert_allclose(
+            values(simulation, variable, 2030),
+            values(simulation.baseline, variable, 2030),
+            atol=1e-6,
+            err_msg=variable,
+        )
+    np.testing.assert_allclose(
+        values(simulation, "adjusted_employer_cost", 2030),
+        values(simulation, "baseline_employer_cost", 2030),
         atol=0.01,
     )

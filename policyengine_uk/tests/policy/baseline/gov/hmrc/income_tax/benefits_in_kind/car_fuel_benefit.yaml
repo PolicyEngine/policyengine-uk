@@ -100,3 +100,32 @@
     company_car_private_fuel_provided: true
   output:
     car_fuel_benefit: 0
+
+- name: Fuel benefit for a 1-50 g/km hybrid, in 2026-27
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    company_car_list_price: 32_000
+    company_car_co2_emissions: 40
+    company_car_electric_range: 35
+    company_car_private_fuel_provided: true
+  output:
+    # 30-39 miles is 14% (HMRC 480 Appendix 2, 2026-27): the petrol it
+    # burns is fuel, the electricity is not (s. 149(4)).
+    # £29,200 x 14% = £4,088.
+    car_fuel_benefit: 4_088
+
+- name: Fuel benefit under the s. 139A rates, in 2021-22
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    company_car_list_price: 22_000
+    company_car_co2_emissions: 50
+    company_car_electric_range: 65
+    company_car_registered_from_6_april_2020: true
+    company_car_private_fuel_provided: true
+  output:
+    # WLTP, 40-69 miles: 7% (HMRC 480 Appendix 2, 2021-22).
+    # £24,600 x 7% = £1,722.
+    company_car_appropriate_percentage: 0.07
+    car_fuel_benefit: 1_722

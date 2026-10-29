@@ -2,8 +2,13 @@ description: Amount to which the company car's appropriate percentage is applied
 # The Treasury sets this by order under ITEPA 2003 s. 170(5); no statute
 # indexes it. The 2027-28 figure is announced: Budget 2026 OOTLAR paragraph
 # 2.6 gives £30,200 (September CPI uprating), and the Treasury order is not
-# yet made. From 2028-29 the values are a CPI projection, as the government
-# has uprated the figure by September CPI each year; none is announced.
+# yet made. It is in the baseline although the Budget 2026 rise in the
+# appropriate percentages for 2030-31 is not: that rise is a policy decision
+# Budget 2026 scores (Table 6.1, row 86), while this is the annual CPI
+# uprating, which the Budget lists among its other announcements and does
+# not score, so a pre-Budget baseline has it too. From 2028-29 the values
+# are a CPI projection, as the government has uprated the figure by
+# September CPI each year; none is announced.
 values:
   2020-04-06:
     value: 24_500
