@@ -44,6 +44,23 @@ above-cap excess are unchanged; their legal classification, maintenance priority
 and annual projection remain separate work under #2410. No maintenance or last
 resort cash interface or new category incidence is introduced.
 
+## Awards a reform creates
+
+The incidence, rates and types describe the existing caseload's debts. A family
+that a reform brings onto Universal Credit has none of them to repay from its
+new award, and an advance on a new claim is a loan it receives first. So no
+deduction comes out of an award that a simulation has and its baseline does
+not (`uc_award_carries_deductions`). This applies whether the dataset supplies
+the deduction attributes or the model draws them. Before, a taper cut gave
+some families a first award that their drawn deduction then mostly took away
+(#2753).
+
+Only a simulation built with a reform is compared with its baseline. A
+simulation built without one keeps every deduction, because its baseline is a
+copy of itself made when it was built; a change made after that, such as a
+simulation modifier, is not compared. The comparison works out the baseline
+award only for the households holding an award, in a branch holding only them.
+
 ## Validation against DWP deductions statistics
 
 Enhanced FRS 2023/24 v1.40.3, against [DWP's Universal Credit deductions statistics](https://www.gov.uk/government/statistics/universal-credit-quarterly-statistics-29-april-2013-to-12-february-2026/universal-credit-deductions-statistics-march-2025-to-february-2026).

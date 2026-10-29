@@ -451,6 +451,10 @@ class Simulation(CoreSimulation):
                 drop_calculated_values(self)
                 self._external_input_change_pending = False
             self.baseline = self.clone()
+        # Whether the baseline is a separate current-law simulation, as for a
+        # reform, rather than a copy of this one made here. Branches copy it.
+        self.built_with_reform = scenario is not None
+        self.baseline.built_with_reform = False
         self.baseline._cgt_warning_enabled = False
         self.baseline._defer_uc_health_warning = False
         self.baseline._building_dated_reforms = None
