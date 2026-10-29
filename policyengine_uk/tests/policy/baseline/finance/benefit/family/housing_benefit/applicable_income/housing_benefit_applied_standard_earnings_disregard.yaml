@@ -1,0 +1,10 @@
+- name: Negative overridden net earnings cannot produce a negative permitted-work standard
+  period: 2026
+  input:
+    housing_benefit_net_earnings: -1
+    housing_benefit_special_earnings_disregard: 0
+    housing_benefit_permitted_work_disregard: 1
+    is_lone_parent: false
+  output:
+    # min(max(-1, 0), max(1, 0 * 0)) = min(0, 1) = 0.
+    housing_benefit_applied_standard_earnings_disregard: 0

@@ -43,7 +43,9 @@ from policyengine_uk.reforms.policyengine.disable_simulated_benefits import (
 )
 from policyengine_uk.utils.benefit_unit import claimant_or_partner_award
 from policyengine_uk.utils.scenario import Scenario
-from policyengine_uk.variables.gov.dwp.esa_income import income_related_esa_award
+from policyengine_uk.variables.gov.dwp.esa_income import (
+    income_related_esa_award_on_reports,
+)
 
 DATASET_YEAR = 2025
 # The dataset year and two later years.
@@ -243,7 +245,7 @@ def test_later_years_need_the_awards_set_explicitly(reformed, year):
         period(year),
         "esa_income",
         "esa_income_reported",
-        income_related_esa_award,
+        income_related_esa_award_on_reports,
     )
     assert by_value_alone[excluded] == 3_000
 
@@ -313,17 +315,31 @@ def test_the_council_tax_reduction_passport(reformed, year):
 
 @pytest.mark.parametrize("year", YEARS)
 def test_no_family_is_moved_off_its_legacy_benefits(reformed, unreformed, year):
-    # Income-based JSA and Income Support close from April 2026, and the
-    # model then moves a working-age family reporting either, unless it is on
-    # Pension Credit, off all its legacy benefits (legacy_benefits_closed), so
-    # their awards end. Every family here reports one of them. The reform pays every reported award in every
-    # year, so it holds the move off; otherwise an adult outside the couple
-    # would stop being on the ESA the reform still pays them, and on its JSA
-    # while income-based JSA is open (test_each_person_is_on_their_own_award).
+    # The annual closure proxy follows each award's owners (SI 2014/1230
+    # regs 44 and 46). Only the excluded adult reports a closing benefit in
+    # excluded_adult_no_award and excluded_income_support, so their reports
+    # never close the claimant's award. The other claimants report Income
+    # Support, which closes from 2026 under the existing model parameters.
     moved = year > DATASET_YEAR
-    assert by_family(unreformed, "legacy_benefits_closed", year) == dict.fromkeys(
-        NAMES, moved
-    )
+    assert by_family(unreformed, "legacy_benefits_closed", year) == {
+        "excluded_adult": moved,
+        "excluded_adult_no_award": False,
+        "own_esa": moved,
+        "own_jsa": moved,
+        "own_esa_over_tariff": moved,
+        "excluded_income_support": False,
+    }
+    assert by_person(unreformed, "person_legacy_benefits_closed", year) == {
+        "excluded_adult_0": moved,
+        "excluded_adult_1": moved,
+        "excluded_adult_no_award_0": False,
+        "excluded_adult_no_award_1": moved,
+        "own_esa_0": moved,
+        "own_jsa_0": moved,
+        "own_esa_over_tariff_0": moved,
+        "excluded_income_support_0": False,
+        "excluded_income_support_1": moved,
+    }
     assert by_family(reformed, "legacy_benefits_closed", year) == dict.fromkeys(
         NAMES, False
     )
@@ -792,3 +808,13 @@ def test_the_claimant_and_partner_are_taken_in_each_year():
             == claimant_or_partner_esa
         )
         assert simulation.calculate("income_support", year)[0] == income_support
+
+
+@pytest.mark.parametrize("year", range(DATASET_YEAR, DATASET_YEAR + YEARS_IN_FUTURE))
+def test_no_person_is_moved_off_their_legacy_benefits(reformed, year):
+    # The reform pays reported awards for all ten years, including an adult's
+    # own award outside the couple. Both award owners' closure controls must
+    # remain false; holding only the claimant's closure leaves that adult's
+    # reported ESA in household income while incorrectly ending their status.
+    closed = by_person(reformed, "person_legacy_benefits_closed", year)
+    assert closed == dict.fromkeys(closed, False)

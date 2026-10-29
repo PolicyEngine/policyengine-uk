@@ -13,18 +13,21 @@
         is_parent: false
         is_disabled_for_benefits: false
         working_tax_credit_reported: 1
+        is_claimant_or_partner: true
       adult_1:
         age: 40
         hours_worked: 1040
         employment_income: 5000
         is_parent: false
         is_disabled_for_benefits: false
+        is_claimant_or_partner: true
     benunits:
       family:
         members:
         - adult_0
         - adult_1
   output:
+    relation_type: COUPLE
     working_tax_credit: 0
     is_WTC_eligible: false
 - name: A worker aged sixty qualifies on their own sixteen hours
@@ -39,18 +42,21 @@
         is_parent: false
         is_disabled_for_benefits: false
         working_tax_credit_reported: 1
+        is_claimant_or_partner: true
       adult_1:
         age: 40
         hours_worked: 0
         employment_income: 0
         is_parent: false
         is_disabled_for_benefits: false
+        is_claimant_or_partner: true
     benunits:
       family:
         members:
         - adult_0
         - adult_1
   output:
+    relation_type: COUPLE
     is_WTC_eligible: true
     working_tax_credit: 4935
 - name: A thirty hour worker cannot borrow a partners age twenty five

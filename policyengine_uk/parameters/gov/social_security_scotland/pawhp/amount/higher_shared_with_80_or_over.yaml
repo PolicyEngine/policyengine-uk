@@ -15,4 +15,20 @@ values:
 metadata:
   unit: currency-GBP
   label: PAWHP shared amount 80 and over, living with 80 and over
-  uprating: gov.economic_assumptions.indices.obr.consumer_price_index
+  # September CPI and nearest-5p rounding follow Scottish Ministers' current
+  # policy; s86A leaves the choice of relevant prices to Ministers.
+  # Apply each year's rise to the previous rounded rate each April.
+  uprating:
+    parameter: gov.benefit_uprating_cpi
+    at_defined_interval:
+      start: "0001-01-01"
+      end: "0002-01-01"
+      enactment: "0002-04-01"
+    rounding:
+      type: nearest
+      interval: 0.05
+  reference:
+    - title: Social Security (Scotland) Act 2018, section 86A (relevant prices chosen by Scottish Ministers)
+      href: https://www.legislation.gov.uk/asp/2018/9/section/86A
+    - title: Social Security Assistance in Scotland - up-rating for inflation 2026-2027, sections 2 and 3 (September CPI and nearest 5p)
+      href: https://www.gov.scot/publications/social-security-assistance-scotland-up-rating-inflation-2026-27/pages/3/

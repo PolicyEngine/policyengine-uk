@@ -1,9 +1,20 @@
 description: Minimum wage rate for apprentices.
 # The apprenticeship rate applies to an apprentice who is under 19 or in the
-# first 12 months of the apprenticeship (NMW Regulations 2015 reg. 5). Rates
-# take effect on the commencement date of each amending S.I.: on 1 October
-# until 2016, then on 1 April from 2017.
+# first 12 months of the apprenticeship (NMW Regulations 2015 reg. 5). The
+# rate began on 1 October 2010 (NMW Regulations 1999 reg. 13(3) as substituted
+# by S.I. 2010/1901 reg. 5). Rates take effect on the commencement date of each
+# amending S.I.: on 1 October until 2016, then on 1 April from 2017.
 values:
+  2010-10-01:
+    value: 2.5
+    reference:
+      - title: The National Minimum Wage Regulations 1999 (Amendment) Regulations 2010, regulation 5 (substituted regulation 13(3))
+        href: https://www.legislation.gov.uk/uksi/2010/1901/made
+  2011-10-01:
+    value: 2.6
+    reference:
+      - title: The National Minimum Wage (Amendment) Regulations 2011, regulation 5(c)
+        href: https://www.legislation.gov.uk/uksi/2011/2345/made
   2012-10-01:
     value: 2.65
     reference:

@@ -110,6 +110,10 @@ def simulate(case):
         name: {k: {str(YEAR): v} for k, v in person.items()}
         for name, person in people.items()
     }
+    # The claimant and partner say so: the age presumption would read a
+    # partner 20 or more years younger (85 and 64) as the claimant's child.
+    for name, person in dated.items():
+        person["is_claimant_or_partner"] = {str(YEAR): name != "child"}
     return Simulation(
         situation={
             "people": dated,
@@ -200,13 +204,15 @@ def test_statute_bounds_differential_and_monotonicity(case):
         0, employment + self_employment - class_1 - notional - contributions
     )
 
-    income_tax = person_values(sim, "income_tax")
+    # Pension Credit's tax deductions exclude recovery of the winter fuel payment.
+    income_tax = person_values(sim, "income_tax_before_winter_fuel_payment_charge")
     no_employment = person_values(
-        simulate(without(case, ["employment_income"])), "income_tax"
+        simulate(without(case, ["employment_income"])),
+        "income_tax_before_winter_fuel_payment_charge",
     )
     no_earnings = person_values(
         simulate(without(case, ["employment_income", "self_employment_income"])),
-        "income_tax",
+        "income_tax_before_winter_fuel_payment_charge",
     )
     employment_tax = max(0.0, float((income_tax - no_employment)[adult].sum()))
     self_employment_tax = max(0.0, float((no_employment - no_earnings)[adult].sum()))
@@ -318,9 +324,9 @@ def test_benefit_lists_follow_amending_instruments():
         return set(p.disability_benefits), set(p.disability_benefit_unit_benefits)
 
     person, unit = lists("2008-10-26")
-    assert "esa_contrib" not in person and "esa_income" not in unit
+    assert "esa_contrib" not in person and "claimant_or_partner_esa_income" not in unit
     person, unit = lists("2008-10-27")
-    assert "esa_contrib" in person and "esa_income" in unit
+    assert "esa_contrib" in person and "claimant_or_partner_esa_income" in unit
     person, _ = lists("2013-04-07")
     assert "pip" not in person and "armed_forces_independence_payment" not in person
     person, _ = lists("2013-04-08")

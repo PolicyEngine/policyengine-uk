@@ -40,8 +40,23 @@ from policyengine_core.periods import Period
 SUPPLIED_INPUT_VARIABLES = frozenset(
     {
         "adjusted_net_income",
+        "carers_allowance",
+        "carers_allowance_pre_overlap",
+        "carer_support_payment",
+        "carer_support_payment_pre_overlap",
+        "is_entitled_to_carer_benefit",
+        "receives_carer_benefit",
+        "receives_carers_allowance",
+        "receives_carer_support_payment",
         "bus_fare_spending",
         "bus_in_london_trips",
+        "current_education",
+        "early_years_term_share_before_school",
+        "electricity_consumption_kwh",
+        "extended_childcare_entitlement_term_share",
+        "extended_childcare_entitlement_total_per_child",
+        "gas_consumption_kwh",
+        "in_HE",
         "other_local_bus_trips",
         "pip_dl_category",
         "pip_dl_points",
@@ -49,11 +64,16 @@ SUPPLIED_INPUT_VARIABLES = frozenset(
         "pip_m_points",
         "local_bus_trips",
         "local_bus_uncapped_single_fare",
+        "monthly_domestic_energy_consumption",
         "ni_class_4_losses_brought_forward",
         "ni_class_4_trading_loss",
+        "ni_epg_full_rate_applies",
+        "tenure_type",
+        "targeted_childcare_entitlement",
         "trading_loss",
         "uc_carer_element",
         "uc_LCWRA_element",
+        "universal_childcare_entitlement",
     }
 )
 
@@ -120,6 +140,30 @@ def supplied_input_periods(population, variable_name: str) -> List[Period]:
             )
         },
         key=lambda period: period.start,
+    )
+
+
+def latest_supplied_input_period(
+    population, variable_name: str, before: Period
+) -> Optional[Period]:
+    """The latest period before ``before`` for which ``variable_name`` was
+    supplied as an input (see ``supplied_input_periods``), or None."""
+    earlier = [
+        period
+        for period in supplied_input_periods(population, variable_name)
+        if period.start < before.start
+    ]
+    return earlier[-1] if earlier else None
+
+
+def supplied_by(population, variable_name: str, period: Period) -> bool:
+    """Whether ``variable_name`` was supplied as an input for ``period`` or an
+    earlier period, so that the value read for ``period`` is supplied data
+    (carried forward from the latest earlier input if need be), not a
+    default."""
+    return any(
+        supplied_period.start <= period.start
+        for supplied_period in supplied_input_periods(population, variable_name)
     )
 
 

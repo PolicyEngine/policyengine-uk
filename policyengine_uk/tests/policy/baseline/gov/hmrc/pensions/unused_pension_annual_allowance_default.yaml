@@ -7,10 +7,10 @@
 # first (s. 228A(7)), and the unused allowance of the three years before this
 # one is carried forward.
 #
-# For 2026 the deflators are average earnings growth of 3.4% (2026), 5.3%
-# (2025), 5.1% (2024), 6.22% (2023) and 6.14% (2022): 0.967118 for 2025,
-# 0.918441 for 2024, 0.873873 for 2023, 0.822701 for 2022 and 0.775109 for
-# 2021. The standard allowance is 40,000 to 2022-23 and 60,000 from 2023-24.
+# For 2026 the deflators are average earnings growth of 3.73% (2026), 4.12%
+# (2025), 5.1% (2024), 6.22% (2023) and 6.14% (2022), from the OBR's October
+# 2026 EFO and earlier outturn: 0.964041 for 2025, 0.925894 for 2024,
+# 0.880965 for 2023, 0.829378 for 2022 and 0.781400 for 2021. The standard allowance is 40,000 to 2022-23 and 60,000 from 2023-24.
 # Every case is a person aged 45 in London with employment income of 100,000.
 # Sources: https://www.legislation.gov.uk/ukpga/2004/12/section/228A
 # https://www.gov.uk/hmrc-internal-manuals/pensions-tax-manual/ptm055100
@@ -23,9 +23,9 @@
     employment_income: 100_000
     employer_pension_contributions: 50_000
   output:
-    # Inputs of 43,693.66 (2023), 45,922.03 (2024) and 48,355.90 (2025)
-    # leave 16,306.34 + 14,077.97 + 11,644.10 of their 60,000 allowances.
-    unused_pension_annual_allowance: 42_028.41
+    # Inputs of 44,048.26 (2023), 46,294.72 (2024) and 48,202.06 (2025)
+    # leave 15,951.74 + 13,705.28 + 11,797.94 of their 60,000 allowances.
+    unused_pension_annual_allowance: 41_454.96
     pension_annual_allowance_chargeable_amount: 0
 
 - name: An excess in a later year uses the earliest unused allowance first
@@ -36,12 +36,12 @@
     employment_income: 100_000
     employer_pension_contributions: 63_000
   output:
-    # 2023 input 55,054.01 leaves 4,945.99 unused and 2024 input 57,861.76
-    # leaves 2,138.24. 2025 input 60,928.43 exceeds 60,000 by 928.43, which
-    # uses 2023's unused allowance (2021 and 2022 have none). 4,017.56 +
-    # 2,138.24 = 6,155.80, against 7,084.23 without that ordering.
-    unused_pension_annual_allowance: 6_155.80
-    # 63,000 - 60,000 is within the 6,155.80 carried forward.
+    # 2023 input 55,500.81 leaves 4,499.19 unused and 2024 input 58,331.35
+    # leaves 1,668.65. 2025 input 60,734.60 exceeds 60,000 by 734.60, which
+    # uses 2023's unused allowance (2021 and 2022 have none). 3,764.59 +
+    # 1,668.65 = 5,433.25, against 6,167.85 without that ordering.
+    unused_pension_annual_allowance: 5_433.25
+    # 63,000 - 60,000 is within the 5,433.25 carried forward.
     pension_annual_allowance_chargeable_amount: 0
 
 - name: Saving above the allowance every year leaves nothing to carry forward
@@ -52,7 +52,7 @@
     employment_income: 100_000
     employer_pension_contributions: 70_000
   output:
-    # Deflated inputs of 54,258 to 67,698 exceed each year's allowance.
+    # Deflated inputs of 54,698 to 67,483 exceed each year's allowance.
     unused_pension_annual_allowance: 0
     pension_annual_allowance_chargeable_amount: 10_000
 

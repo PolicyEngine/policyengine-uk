@@ -53,28 +53,14 @@ def own_report_is_paid(person, period, award, works, capital_limit):
     cannot stand in for theirs, because when the claimant or partner reports
     an award it tests only them.
 
-    The family's legacy benefits must not have closed
-    (legacy_benefits_closed). The model ends every award in the benefit unit
-    once they close, and so the benefit unit's award; this person's status
-    follows it. That is a simplification: in law the migration notice goes
-    to the claimant and partner (SI 2014/1230 reg 44(1), (4)) and ends their
-    awards (reg 46(1)), not the award of a member who claims in their own
-    right. The benefit unit's award must also be in payment: positive, or
-    nil while the benefit unit's screen fails and the award is not
-    neutralised. When the award on this person's report alone is positive
-    and the family's legacy benefits are open, that screen fails only when
-    the claimant or partner reports an award and fails the work tests,
-    which leaves this person's own claim standing; on the formula path that
-    is the only way the award is nil. A zero cannot say why it is zero, so
-    a reform that replaces the award with nil, or a nil award entered
-    directly, removes the status only while the screen passes. A reform
-    that neutralises the benefit always removes it.
-
-    Apart from the closure, on the formula path another member's report or
-    work never changes this. Their own tests read only their own work,
-    their own report and the household's capital, and when the award on
-    their report alone is positive, the benefit unit's award is positive
-    exactly when its screen passes."""
+    Their own legacy benefits must remain open under the existing annual
+    proxy (person_legacy_benefits_closed). A couple's closure does not end
+    this separate claim. The benefit unit's award must also be in payment:
+    positive, or nil while its work/capital screen fails and the award is not
+    neutralised. A directly entered or reformed nil removes status while
+    that screen passes; neutralising the award always removes it. These
+    existing value-based override rules and shared-capital proxy are retained.
+    """
     benunit = person.benunit
     own_award = (
         ~works
@@ -84,10 +70,7 @@ def own_report_is_paid(person, period, award, works, capital_limit):
             > benunit(f"{award}_tariff_income", period)
         )
     )
-    # The screen also fails once the family's legacy benefits have closed;
-    # the model then ends every member's award (a simplification: SI
-    # 2014/1230 reg 46(1) ends only the claimant's and partner's).
-    closed = benunit("legacy_benefits_closed", period)
+    closed = person("person_legacy_benefits_closed", period)
     removed = person.simulation.tax_benefit_system.get_variable(award).is_neutralized
     paid = benunit(award, period) > 0
     screen_fails = ~benunit(f"{award}_eligible", period)

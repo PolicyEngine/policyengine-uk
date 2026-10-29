@@ -1,0 +1,32 @@
+description: Statutory council tax band proportions for Scotland, relative to Band D. Bands A to D have been unchanged since 1993; SSI 2016/368 substituted a new proportion in section 74(1) of the Local Government Finance Act 1992, raising bands E to H with effect for financial years beginning on or after 1 April 2017.
+metadata:
+  economy: false
+  propagate_metadata_to_children: true
+  unit: /1
+  period: year
+  label: Scotland council tax band ratios
+  reference:
+    - title: Local Government Finance Act 1992, section 74 (proportion 6:7:8:9:11:13:15:18 as originally enacted)
+      href: https://www.legislation.gov.uk/ukpga/1992/14/section/74/enacted
+    - title: The Council Tax (Substitution of Proportion) (Scotland) Order 2016 (SSI 2016/368), article 2 (proportion 240:280:320:360:473:585:705:882 for financial years from 1 April 2017)
+      href: https://www.legislation.gov.uk/ssi/2016/368/article/2/made
+A:
+  1993-04-01: 0.666666667  # 6/9, and 240/360 from 2017
+B:
+  1993-04-01: 0.777777778  # 7/9, and 280/360 from 2017
+C:
+  1993-04-01: 0.888888889  # 8/9, and 320/360 from 2017
+D:
+  1993-04-01: 1.000000000  # 9/9, and 360/360 from 2017
+E:
+  1993-04-01: 1.222222222  # 11/9
+  2017-04-01: 1.313888889  # 473/360
+F:
+  1993-04-01: 1.444444444  # 13/9
+  2017-04-01: 1.625000000  # 585/360
+G:
+  1993-04-01: 1.666666667  # 15/9
+  2017-04-01: 1.958333333  # 705/360
+H:
+  1993-04-01: 2.000000000  # 18/9
+  2017-04-01: 2.450000000  # 882/360

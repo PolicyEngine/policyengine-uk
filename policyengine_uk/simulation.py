@@ -2,6 +2,7 @@
 import os
 import copy
 import warnings
+from contextlib import contextmanager, nullcontext
 from importlib.metadata import version
 from typing import Dict, Optional, Union, Type, List
 
@@ -16,6 +17,9 @@ from policyengine_core.periods import Period, period as period_
 from policyengine_core.parameters import Parameter
 from policyengine_core.reforms import Reform
 from policyengine_core.simulations import Simulation as CoreSimulation
+from policyengine_core.simulations.simulation import (
+    _uprating_index_value,
+)
 from policyengine_core.tools.hugging_face import download_huggingface_dataset
 from policyengine_core.tracers import FullTracer, SimpleTracer
 
@@ -30,16 +34,36 @@ from policyengine_uk.data.dataset_schema import (
     UKMultiYearDataset,
     UKSingleYearDataset,
 )
+from policyengine_uk.utils.entity_ids import ENTITY_ID_VARIABLES, check_entity_ids
 from policyengine_uk.utils.scenario import ConstructionReformState, Scenario
 from policyengine_uk.data.economic_assumptions import (
+    BEREAVEMENT_SPLIT_INPUTS,
     extend_single_year_dataset,
     reset_growthfactor_uprating,
     uprating_input_fingerprint,
 )
 from policyengine_uk.data.dataset_sources import materialize_gcs_dataset_url
+from policyengine_uk.data.energy_price_basis import core_dataset_energy_price_basis
 from policyengine_uk.data.input_dataframe import (
     dataset_from_input_dataframe,
+    hold_identifiers_in,
     with_identifiers_in_each_year,
+)
+from policyengine_uk.data.isa_income import (
+    ISA_INCOME_CONTRACT_KEY,
+    MISSING_CONTRACT,
+    ISA_INTEREST,
+    SAVINGS_INTEREST,
+    TAX_FREE_INTEREST,
+    contract_envelope,
+    contracts_for_years,
+    has_isa_interest_detail_input,
+    latest_input,
+    normalized_dataset,
+    read_h5_contract,
+    read_object_contract,
+    resolve_contracts,
+    simulation_contract,
 )
 from policyengine_uk.data.capital_gains_projection import (
     CapitalGainsProjection,
@@ -51,7 +75,12 @@ from policyengine_uk.data.capital_gains_projection import (
     capital_gains_application_metadata,
 )
 from policyengine_uk.utils.dependencies import get_variable_dependencies
+from policyengine_uk.utils.data_source import built_from_data
 from policyengine_uk.utils.input_dataframe_export import input_dataframe
+from policyengine_uk.utils.measurement_branches import (
+    drop_calculated_values,
+    retained_input_variables,
+)
 from policyengine_uk.utils.supplied_inputs import (
     SUPPLIED_INPUT_VARIABLES,
     copy_model_values,
@@ -108,7 +137,7 @@ from microdf import MicroDataFrame
 
 
 class _InputKeyLog(set):
-    """A simulation's record of its inputs while Simulation.apply_reform runs.
+    """A simulation's record of inputs stored by a reform or scenario modifier.
 
     policyengine-core records each input in the simulation's
     ``_user_input_keys`` as (variable, branch, period). ``Holder._set`` adds
@@ -119,10 +148,10 @@ class _InputKeyLog(set):
     variable's end, one for a neutralized variable, or one for a sub-period
     that a ``set_input`` helper skips because it already holds an input.
     This set also adds each key to every set in ``logs``: one for each
-    reform being applied to the simulation, the innermost last.
+    operation being applied to the simulation, the innermost last.
 
     A copy or pickle of it is a plain set, so a simulation deep-copied or
-    pickled while a reform runs logs nothing. A shallow copy of the
+    pickled while an operation runs logs nothing. A shallow copy of the
     simulation shares its record, as it shares its holders.
     """
 
@@ -139,11 +168,11 @@ class _InputKeyLog(set):
         return set, (list(self),)
 
 
-# The logs (see _InputKeyLog) of the reforms Simulation.apply_reform is
-# applying, by the id of the simulation it applies them to, while it does.
+# The logs (see _InputKeyLog) of the reforms or scenario modifiers running,
+# by the id of the simulation they apply to, while they do.
 # Kept outside the simulation, because core's clone copies its __dict__:
 # a clone or branch made while a reform runs must not log for it.
-_reform_logs: Dict[int, list] = {}
+_input_key_logs: Dict[int, list] = {}
 
 
 # Cache for fully-loaded, uprated, enum-pre-encoded multi-year datasets keyed
@@ -279,6 +308,7 @@ class Simulation(CoreSimulation):
         self._cgt_input_provenance = {}
         self._cgt_defaulted_periods = set()
         self._cgt_calculation_depth = 0
+        self._external_input_change_pending = False
         self._cgt_operation_inputs = set()
         self._cgt_warned_unused = False
         self._cgt_warning_enabled = False
@@ -416,6 +446,10 @@ class Simulation(CoreSimulation):
                 capital_gains_projection=capital_gains_projection,
             )
         else:
+            # Finish framework input invalidation before copying the baseline.
+            if self._external_input_change_pending:
+                drop_calculated_values(self)
+                self._external_input_change_pending = False
             self.baseline = self.clone()
         self.baseline._cgt_warning_enabled = False
         self.baseline._defer_uc_health_warning = False
@@ -428,7 +462,10 @@ class Simulation(CoreSimulation):
             if self._construction_reform_state is not None:
                 self._construction_reform_state.refresh_framework(self)
             if after_data_load.simulation_modifier is not None:
-                after_data_load.simulation_modifier(self)
+                with self._preserve_stored_inputs():
+                    after_data_load.simulation_modifier(self)
+                drop_calculated_values(self)
+                self._external_input_change_pending = False
         self._refresh_capital_gains_projection()
         self._capture_cgt_supplied_inputs()
         self._cgt_warning_enabled = True
@@ -451,49 +488,32 @@ class Simulation(CoreSimulation):
         add_capital_gains_projection(self.tax_benefit_system.parameters, projection)
         self.tax_benefit_system.reset_parameter_caches()
 
-    def apply_reform(self, reform: dict | tuple | Type[Reform]) -> None:
-        """Apply a runtime reform while keeping generated CGT assumptions coherent."""
-        # Reforms that set inputs (disable_simulated_benefits, adjust_budgets)
-        # reach the simulation through its tax-benefit system's link. A clone
-        # or branch may share its parent's system, so link the system to this
-        # simulation while the reform is applied, then restore the link.
-        system = self.tax_benefit_system
-        linked = getattr(system, "simulation", None)
-        system.simulation = self
-        # Log the inputs the reform stores (see _InputKeyLog and the
-        # _user_input_keys property). Within another reform applied to this
-        # simulation (a tuple's parts, or a reform that applies one), log
-        # them for that one too.
-        logs = _reform_logs.setdefault(id(self), [])
+    @contextmanager
+    def _record_stored_inputs(self):
+        """Record actual stores, including overwrites and custom input routes."""
+        logs = _input_key_logs.setdefault(id(self), [])
         stored = set()
         logs.append(stored)
         self._user_input_keys = getattr(self, "_user_input_keys", None) or set()
         try:
-            super().apply_reform(reform)
-            self._refresh_capital_gains_projection()
+            yield stored
         finally:
             logs.pop()
             if not logs:
-                del _reform_logs[id(self)]
-            # A plain set again, unless an enclosing reform is still logging.
+                del _input_key_logs[id(self)]
+            # A plain set again, unless an enclosing operation is still logging.
             self._user_input_keys = set(self._user_input_keys)
-            if linked is not None:
-                system.simulation = linked
-        # input_variables is taken when the simulation is built.
-        # reset_calculations deletes the values of every variable it does not
-        # name (as core's derivative did before policyengine-core 3.33.0, from
-        # which it keeps every input), and the marginal rate formulas those of
-        # every such variable that has a formula. A reform applied afterwards
-        # (a Reform class passed as reform=, or one applied to a clone or
-        # branch) can store inputs: new ones, or ones that replace an input
-        # set since the build. Name every variable with an input the reform
-        # stored that this simulation still holds, under a branch name it
-        # reads and a reset deletes, or a reset would delete what the reform
-        # stored and recalculate the formula. input_variables names whole
-        # variables, so a reset then keeps every input of the variable, any
-        # set since the build included. A reform that raises names nothing it
-        # stored itself (a reform it applied first has named its own). Assign
-        # a new list: a clone or branch shares its parent's.
+
+    @contextmanager
+    def _preserve_stored_inputs(self):
+        """Name inputs an operation stores and retains, for later resets."""
+        with self._record_stored_inputs() as stored:
+            yield
+        # Preserve the existing construction/reform input-name contract.
+        # Later direct stores are also retained by retained_input_variables;
+        # calculated values do not become inputs. An operation that raises
+        # names nothing it stored itself (a reform it applied first has named
+        # its own). Assign a new list: a clone or branch shares its parent's.
         input_variables = getattr(self, "input_variables", None)
         if input_variables is not None:
             branches = set(self._get_visible_branch_names())
@@ -506,13 +526,30 @@ class Simulation(CoreSimulation):
             if added:
                 self.input_variables = list(input_variables) + added
 
+    def apply_reform(self, reform: dict | tuple | Type[Reform]) -> None:
+        """Apply a runtime reform while keeping generated CGT assumptions coherent."""
+        # Reforms that set inputs (disable_simulated_benefits, adjust_budgets)
+        # reach the simulation through its tax-benefit system's link. A clone
+        # or branch may share its parent's system, so link the system to this
+        # simulation while the reform is applied, then restore the link.
+        system = self.tax_benefit_system
+        linked = getattr(system, "simulation", None)
+        system.simulation = self
+        try:
+            with self._preserve_stored_inputs():
+                super().apply_reform(reform)
+                self._refresh_capital_gains_projection()
+        finally:
+            if linked is not None:
+                system.simulation = linked
+
     @property
     def _user_input_keys(self) -> set:
         # policyengine-core's record of the simulation's inputs, kept in
-        # __dict__ as core keeps it. While apply_reform applies a reform to
+        # __dict__ as core keeps it. While a reform or scenario modifier runs on
         # this simulation, a set assigned here becomes a log (see
         # _InputKeyLog), so a record core replaces mid-reform still logs: a
-        # branch's, when a reform applied to its parent rebuilds it, or one
+        # branch's, when an operation on its parent rebuilds it, or one
         # rebuilt when the system is rebound.
         try:
             return self.__dict__["_user_input_keys"]
@@ -521,7 +558,7 @@ class Simulation(CoreSimulation):
 
     @_user_input_keys.setter
     def _user_input_keys(self, keys) -> None:
-        logs = _reform_logs.get(id(self))
+        logs = _input_key_logs.get(id(self))
         if logs and keys is not None:
             keys = _InputKeyLog(keys, logs)
         self.__dict__["_user_input_keys"] = keys
@@ -566,10 +603,35 @@ class Simulation(CoreSimulation):
         # stores a value for, and only those. set_model_value records its
         # value as the model's after this call.
         records = model_value_input_records(self, variable_name)
+        # This depth covers every calculate call, including nongains
+        # variables. A formula can write to a new branch whose own depth is
+        # zero while an ancestor is calculating. Core already invalidates
+        # that branch's affected dependencies; keep its unrelated caches.
+        # Direct edits with every ancestor idle must refresh dependent values
+        # before the next outermost calculation.
+        calculation = self
+        while calculation is not None and not getattr(
+            calculation, "_cgt_calculation_depth", 0
+        ):
+            calculation = getattr(calculation, "parent_branch", None)
+        external = (
+            getattr(self, "input_variables", None) is not None and calculation is None
+        )
+        stored = set()
         try:
-            super().set_input(variable_name, period, value)
+            recording = (
+                self._record_stored_inputs() if external else nullcontext(stored)
+            )
+            with recording as stored:
+                super().set_input(variable_name, period, value)
         finally:
             forget_replaced_model_values(self, variable_name, records)
+            if external and stored:
+                self._external_input_change_pending = True
+        # Inputs do not carry back, so give the simulation its identifiers
+        # for the year the input starts in if it holds them only for later
+        # years. See ``policyengine_uk.data.input_dataframe.hold_identifiers_in``.
+        hold_identifiers_in(self, variable_name, period)
         if variable_name in CGT_DATASET_INPUTS:
             self._capture_cgt_supplied_inputs(variable_name, replace_period=period)
 
@@ -585,7 +647,78 @@ class Simulation(CoreSimulation):
         clone._cgt_calculation_depth = 0
         clone._cgt_operation_inputs = set()
         clone._cgt_defaulted_periods = set(getattr(self, "_cgt_defaulted_periods", ()))
+        clone._isa_income_contracts = copy.deepcopy(
+            getattr(self, "_isa_income_contracts", {})
+        )
         return clone
+
+    def _isa_latest_input(self, name, period, *, earlier=False):
+        return latest_input(self, name, period, earlier=earlier)
+
+    def has_isa_interest_detail_input(self, period) -> bool:
+        """Whether this branch supplies an applicable ISA cash-interest detail.
+
+        Computed caches are excluded, as in Core's carry-over input rule. A
+        future detail cannot change an earlier year's aggregate.
+        """
+        return has_isa_interest_detail_input(self, period)
+
+    def _isa_stored_exemption(self, period):
+        # Core can store a rolling year or a longer YEAR input as given. The
+        # latter carries its whole amount into a queried year; it is not a
+        # sum of calendar-year flows. Use the same first definition-year
+        # anchor when translating that stored amount in either direction.
+        return self.calculate(TAX_FREE_INTEREST, period_(period).start.period("year"))
+
+    def _run_formula(self, variable, population, period):
+        result = super()._run_formula(variable, population, period)
+        if (
+            result is not None
+            or variable.name != SAVINGS_INTEREST
+            or period.unit != "year"
+            or simulation_contract(self, period.start.year)["projection"]
+            != "legacy_gross"
+        ):
+            return result
+
+        # This is fallback, after Core's explicit input/abolition checks and
+        # policy formulas. Preserve the old gross history even past the last
+        # materialized dataset year; new additive records use Core normally.
+        history = getattr(self, "_get_store_history", None)
+        if callable(history):
+            # Store-history tracking is available in newer Core releases;
+            # the declared minimum already caches formula results without it.
+            from policyengine_core.data_storage.store_history import (
+                next_sequence_number,
+            )
+
+            history().record_derived(variable.name, next_sequence_number())
+        source = self._isa_latest_input(variable.name, period, earlier=True)
+        if source is None:
+            # Core first uprates strictly earlier annual inputs, then carries
+            # an input starting on the query date if there was none earlier.
+            source = self._isa_latest_input(variable.name, period)
+        holder = self.get_holder(variable.name)
+        if source is None:
+            gross = holder.default_array()
+        else:
+            gross = holder.get_array(source, self.branch_name)
+            if (
+                simulation_contract(self, source.start.year)["representation"]
+                == "additive"
+            ):
+                gross = gross + self._isa_stored_exemption(source)
+            if variable.uprating is not None:
+                index = self.tax_benefit_system.parameters.get_child(variable.uprating)
+                source_index = _uprating_index_value(index, source.start)
+                target_index = _uprating_index_value(index, period.start)
+                factor = (
+                    target_index / source_index
+                    if source_index not in (None, 0) and target_index is not None
+                    else 1
+                )
+                gross = gross * factor
+        return gross - self.calculate(TAX_FREE_INTEREST, period)
 
     @staticmethod
     def _cgt_supplied_record() -> dict:
@@ -835,8 +968,10 @@ class Simulation(CoreSimulation):
         )
 
     def reset_calculations(self):
+        retained = retained_input_variables(self)
+        self._external_input_change_pending = False
         for variable in self.tax_benefit_system.variables:
-            if variable not in self.input_variables:
+            if variable not in retained:
                 self.delete_arrays(variable)
 
     def get_known_variables(self):
@@ -930,9 +1065,9 @@ class Simulation(CoreSimulation):
             cache_key = self._dataset_cache_key(dataset_source)
             if cache_key is not None and cache_key in _url_dataset_cache:
                 multi_year_dataset = _url_dataset_cache[cache_key]
+                self.dataset = multi_year_dataset
                 self.build_from_multi_year_dataset(multi_year_dataset)
                 self._restore_cgt_extension_provenance(multi_year_dataset)
-                self.dataset = multi_year_dataset
                 return
             dataset_file = materialize_gcs_dataset_url(dataset_source)
             self.build_from_file(dataset_file, cache_key=dataset_source)
@@ -964,6 +1099,9 @@ class Simulation(CoreSimulation):
             self.build_from_dataset(dataset)
             return
 
+        # Convert a detached source once, then cache only the canonical object.
+        # Callers holding an old gross dataset retain their original values.
+        multi_year_dataset = normalized_dataset(multi_year_dataset)
         # Pre-encode string enum columns to int16 once before caching so
         # subsequent loads skip the expensive astype(str) + searchsorted path.
         _pre_encode_enum_columns(multi_year_dataset, self.tax_benefit_system)
@@ -971,9 +1109,9 @@ class Simulation(CoreSimulation):
         if key is not None:
             _url_dataset_cache[key] = multi_year_dataset
 
+        self.dataset = multi_year_dataset
         self.build_from_multi_year_dataset(multi_year_dataset)
         self._restore_cgt_extension_provenance(multi_year_dataset)
-        self.dataset = multi_year_dataset
 
     def build_from_url(self, url: str) -> None:
         """Build simulation from a HuggingFace dataset URL.
@@ -992,9 +1130,9 @@ class Simulation(CoreSimulation):
         cache_key = self._dataset_cache_key(url)
         if cache_key is not None and cache_key in _url_dataset_cache:
             multi_year_dataset = _url_dataset_cache[cache_key]
+            self.dataset = multi_year_dataset
             self.build_from_multi_year_dataset(multi_year_dataset)
             self._restore_cgt_extension_provenance(multi_year_dataset)
-            self.dataset = multi_year_dataset
             return
 
         # Parse HuggingFace URL components
@@ -1044,7 +1182,42 @@ class Simulation(CoreSimulation):
         for variable in dict.fromkeys(name for name, _, _ in replayed):
             self.delete_arrays(variable)
         for variable, time_period, values in replayed:
+            if variable == SAVINGS_INTEREST:
+                continue
             self.set_input(variable, time_period, values)
+
+        # Replay savings in the incoming entry's representation. Core decides
+        # which annual slots a month/span stores and what remains after prior
+        # entries. Never subtract an exemption from the requested month or
+        # mix a prior ordinary input into a gross residual calculation.
+        def translate_stored_savings(to_gross):
+            holder = self.get_holder(SAVINGS_INTEREST)
+            translated = [
+                (
+                    stored,
+                    np.array(holder.get_array(stored, self.branch_name))
+                    + (1 if to_gross else -1) * self._isa_stored_exemption(stored),
+                )
+                for stored in holder.get_input_periods(self.branch_name)
+            ]
+            for stored, amount in translated:
+                self.set_input(SAVINGS_INTEREST, stored, amount)
+
+        gross_mode = None
+        for variable, time_period, values in replayed:
+            if variable != SAVINGS_INTEREST:
+                continue
+            year = period_(time_period).start.year
+            contract = contracts_for_years(
+                df.attrs.get(ISA_INCOME_CONTRACT_KEY, MISSING_CONTRACT), [year]
+            )[year]
+            incoming_gross = contract["representation"] == "legacy_gross"
+            if gross_mode is not None and gross_mode != incoming_gross:
+                translate_stored_savings(to_gross=incoming_gross)
+            self.set_input(variable, time_period, values)
+            gross_mode = incoming_gross
+        if gross_mode:
+            translate_stored_savings(to_gross=False)
 
     def to_input_dataframe(
         self, include_computed_variables: bool = False
@@ -1056,8 +1229,9 @@ class Simulation(CoreSimulation):
         for the periods they were set for. Calculated caches and values stored
         by the model itself are not supplied inputs.
         The identifiers are also given for every whole year a column names,
-        where a simulation built from the frame holds them, so that the frame
-        loads back to a simulation that exports the same frame. See
+        where a simulation built from the frame holds them, so that the
+        default export loads back to a simulation that exports the same
+        frame. See
         ``policyengine_uk.data.input_dataframe.with_identifiers_in_each_year``.
 
         Args:
@@ -1069,7 +1243,16 @@ class Simulation(CoreSimulation):
             if include_computed_variables
             else input_dataframe(self)
         )
-        return with_identifiers_in_each_year(frame, self.tax_benefit_system)
+        frame = with_identifiers_in_each_year(frame, self.tax_benefit_system)
+        years = {
+            period_(str(column).split("__", 1)[1]).start.year
+            for column in frame.columns
+            if "__" in str(column)
+        }
+        frame.attrs[ISA_INCOME_CONTRACT_KEY] = contract_envelope(
+            {year: simulation_contract(self, year) for year in years}
+        )
+        return frame
 
     def build_from_dataset(self, dataset: Dataset) -> None:
         """Build simulation from a Dataset object.
@@ -1077,6 +1260,7 @@ class Simulation(CoreSimulation):
         Args:
             dataset: PolicyEngine Dataset object containing simulation data
         """
+        energy_price_basis = core_dataset_energy_price_basis(dataset)
         data: Dict[str, Dict[str, Union[float, int, str]]] = dataset.load_dataset()
 
         first_variable = data[list(data.keys())[0]]
@@ -1099,6 +1283,12 @@ class Simulation(CoreSimulation):
                     "household_id",
                 ],
             )
+        )
+
+        self._isa_income_contracts = resolve_contracts(
+            read_object_contract(dataset),
+            read_h5_contract(getattr(dataset, "file_path", None)),
+            [period_(first_time_period).start.year],
         )
 
         # Populations use sorted group IDs; arrays in a Core dataset follow
@@ -1131,13 +1321,13 @@ class Simulation(CoreSimulation):
         self.dataset = dataset
 
         dataset = UKSingleYearDataset.from_simulation(
-            self, fiscal_year=first_time_period
+            self, fiscal_year=first_time_period, energy_price_basis=energy_price_basis
         )
         multi_year_dataset = self._extend_dataset_with_cgt_provenance(dataset)
 
+        self.dataset = multi_year_dataset
         self.build_from_multi_year_dataset(multi_year_dataset)
         self._restore_cgt_extension_provenance(multi_year_dataset)
-        self.dataset = multi_year_dataset
 
     def build_from_single_year_dataset(self, dataset: UKSingleYearDataset) -> None:
         """Build simulation from a single-year UK dataset.
@@ -1148,9 +1338,9 @@ class Simulation(CoreSimulation):
 
         dataset = self._extend_dataset_with_cgt_provenance(dataset)
         _pre_encode_enum_columns(dataset, self.tax_benefit_system)
+        self.dataset = dataset
         self.build_from_multi_year_dataset(dataset)
         self._restore_cgt_extension_provenance(dataset)
-        self.dataset = dataset
 
     def build_from_multi_year_dataset(self, dataset: UKMultiYearDataset) -> None:
         """Build simulation from a multi-year UK dataset.
@@ -1169,6 +1359,10 @@ class Simulation(CoreSimulation):
                     setattr(dataset[year], entity, table.iloc[order])
             reset_growthfactor_uprating(dataset)
 
+        # The legacy gross projection/reset must finish before conversion.
+        # Work on detached tables: a cached or caller-owned source is reusable.
+        dataset = normalized_dataset(dataset)
+
         # Ensure enum columns are encoded and _enum_columns is populated so
         # that .person/.benunit/.household properties can decode back to strings.
         if not any(dataset[y]._enum_columns for y in dataset.years):
@@ -1182,6 +1376,10 @@ class Simulation(CoreSimulation):
             first_year.benunit.benunit_id,
             first_year.household.household_id,
         )
+        self._isa_income_contracts = {
+            year: copy.deepcopy(dataset[year].isa_income_contract)
+            for year in dataset.years
+        }
 
         # Load variable values for all years
         for year in dataset.years:
@@ -1195,6 +1393,8 @@ class Simulation(CoreSimulation):
                         continue
                     self.set_input(variable, year, table[variable])
 
+        # Retain the dataset actually loaded, including the copied base amounts
+        # and price declaration when economic assumptions were disabled.
         self.dataset = dataset
         if self.disable_economic_assumptions:
             # The loader changed these future amounts even for an external
@@ -1227,6 +1427,7 @@ class Simulation(CoreSimulation):
         self._cgt_defaulted_periods = set()
         self._cgt_operation_inputs = set()
         self._cgt_warned_unused = False
+        self._isa_income_contracts = {}
 
     def build_from_ids(
         self,
@@ -1244,12 +1445,32 @@ class Simulation(CoreSimulation):
             person_household_id: Array mapping persons to households
             benunit_id: Array of benefit unit IDs
             household_id: Array of household IDs
+
+        Warns:
+            EntityIdWarning: If an ID is not a whole number, or is outside the
+                range of the variable that stores it, so that the stored ID
+                differs from the one given.
         """
         # Every data source (DataFrame, dataset, file, URL) builds through here.
         self._start_new_population(built_from_dataset=True)
         from policyengine_core.simulations.simulation_builder import (
             SimulationBuilder,
         )  # Import here to avoid circular dependency
+
+        # The callers store these columns as the variables' values after
+        # building the entities, and exports and rebuilds read them from there.
+        # The populations below take the arrays as given.
+        for variable_name, ids in zip(
+            ENTITY_ID_VARIABLES,
+            (
+                person_id,
+                person_benunit_id,
+                person_household_id,
+                benunit_id,
+                household_id,
+            ),
+        ):
+            check_entity_ids(self.tax_benefit_system.variables[variable_name], ids)
 
         builder = SimulationBuilder()
         builder.populations = self.tax_benefit_system.instantiate_entities()
@@ -1328,6 +1549,50 @@ class Simulation(CoreSimulation):
             fiscal_year=year,
         )
 
+    def _calculate(self, variable_name: str, period: Period = None):
+        # Core requires an indexed input to have no formula. Keep the legacy
+        # CPI declaration, but carry split dataset BSP nominally after the
+        # materialized horizon, including through Core's monthly conversion.
+        if (
+            variable_name == "bsp_reported"
+            and period is not None
+            and period.unit == "year"
+            and period.size == 1
+            and built_from_data(self)
+        ):
+            variable = self.tax_benefit_system.get_variable(variable_name)
+            holder = self.get_holder(variable_name)
+            inputs = holder.get_input_periods(self.branch_name)
+            if (
+                not variable.formulas
+                and not variable.is_neutralized
+                and variable.uprating
+                == "gov.economic_assumptions.indices.obr.consumer_price_index"
+                and period not in inputs
+            ):
+                source = max(
+                    (
+                        known
+                        for known in inputs
+                        if known.unit == "year" and known.start < period.start
+                    ),
+                    key=lambda known: (known.start, known.stop),
+                    default=None,
+                )
+                if source is not None:
+                    split = all(
+                        source
+                        in self.get_holder(name).get_input_periods(self.branch_name)
+                        for name in BEREAVEMENT_SPLIT_INPUTS
+                    )
+                    # Track both dependencies even when either input is absent.
+                    # Calculated defaults do not declare a completed split.
+                    for name in BEREAVEMENT_SPLIT_INPUTS:
+                        self.calculate(name, source)
+                    if split:
+                        return self.calculate(variable_name, source)
+        return super()._calculate(variable_name, period)
+
     def calculate(
         self,
         variable_name: str = None,
@@ -1335,6 +1600,9 @@ class Simulation(CoreSimulation):
         map_to: str = None,
         decode_enums: bool = False,
     ):
+        if self._cgt_calculation_depth == 0 and self._external_input_change_pending:
+            self._external_input_change_pending = False
+            drop_calculated_values(self)
         if variable_name is None:
             return self.calculate_all()
         tracer: SimpleTracer = self.tracer

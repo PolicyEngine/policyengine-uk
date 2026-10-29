@@ -33,3 +33,156 @@
     total_income: 110_000
     adjusted_net_income: 110_000
     personal_allowance: 7_570
+
+- name: "ITA s23 and ITEPA s681I count statutory_sick_pay once while legacy bases retain their values"
+  description: "ITA 2007 s23 Step 1 and ITEPA 2003 s681I(1)(b): GBP34000 wages plus GBP2000 statutory pay exceeds GBP35000. Maintenance is not taxable. Post-tax and UBI bases intentionally preserve their historical definition."
+  period: 2025
+  absolute_error_margin: 0.02
+  input:
+    gov.contrib.ubi_center.basic_income.phase_out.individual.rate: 0.1
+    gov.contrib.ubi_center.basic_income.phase_out.individual.threshold: 0
+    gov.contrib.ubi_center.basic_income.phase_out.household.rate: 0.1
+    gov.contrib.ubi_center.basic_income.phase_out.household.threshold: 0
+    age: 70
+    employment_income: 34000
+    statutory_sick_pay: 2000
+    employee_pension_contributions: 0
+    personal_pension_contributions: 0
+    employment_expenses: 0
+    spousal_maintenance_income: 10000
+    income_tax: 0
+    national_insurance: 0
+    pension_credit: 0
+    winter_fuel_payment: 200
+    bi_maximum: 10000
+    basic_income: 0
+  output:
+    total_income: 36000
+    total_income_charged_to_tax: 36000
+    gross_taxable_inputs: 34000
+    post_tax_income: 34000
+    bi_individual_phaseout: 3400
+    bi_household_phaseout: 3400
+    winter_fuel_payment_charge: 200
+    winter_fuel_payment_eligible: true
+
+- name: "ITA s23 and ITEPA s681I count statutory_maternity_pay once while legacy bases retain their values"
+  description: "ITA 2007 s23 Step 1 and ITEPA 2003 s681I(1)(b): GBP34000 wages plus GBP2000 statutory pay exceeds GBP35000. Maintenance is not taxable. Post-tax and UBI bases intentionally preserve their historical definition."
+  period: 2025
+  absolute_error_margin: 0.02
+  input:
+    gov.contrib.ubi_center.basic_income.phase_out.individual.rate: 0.1
+    gov.contrib.ubi_center.basic_income.phase_out.individual.threshold: 0
+    gov.contrib.ubi_center.basic_income.phase_out.household.rate: 0.1
+    gov.contrib.ubi_center.basic_income.phase_out.household.threshold: 0
+    age: 70
+    employment_income: 34000
+    statutory_maternity_pay: 2000
+    employee_pension_contributions: 0
+    personal_pension_contributions: 0
+    employment_expenses: 0
+    spousal_maintenance_income: 10000
+    income_tax: 0
+    national_insurance: 0
+    pension_credit: 0
+    winter_fuel_payment: 200
+    bi_maximum: 10000
+    basic_income: 0
+  output:
+    total_income: 36000
+    total_income_charged_to_tax: 36000
+    gross_taxable_inputs: 34000
+    post_tax_income: 34000
+    bi_individual_phaseout: 3400
+    bi_household_phaseout: 3400
+    winter_fuel_payment_charge: 200
+    winter_fuel_payment_eligible: true
+
+- name: "ITA s23 and ITEPA s681I count statutory_paternity_pay once while legacy bases retain their values"
+  description: "ITA 2007 s23 Step 1 and ITEPA 2003 s681I(1)(b): GBP34000 wages plus GBP2000 statutory pay exceeds GBP35000. Maintenance is not taxable. Post-tax and UBI bases intentionally preserve their historical definition."
+  period: 2025
+  absolute_error_margin: 0.02
+  input:
+    gov.contrib.ubi_center.basic_income.phase_out.individual.rate: 0.1
+    gov.contrib.ubi_center.basic_income.phase_out.individual.threshold: 0
+    gov.contrib.ubi_center.basic_income.phase_out.household.rate: 0.1
+    gov.contrib.ubi_center.basic_income.phase_out.household.threshold: 0
+    age: 70
+    employment_income: 34000
+    statutory_paternity_pay: 2000
+    employee_pension_contributions: 0
+    personal_pension_contributions: 0
+    employment_expenses: 0
+    spousal_maintenance_income: 10000
+    income_tax: 0
+    national_insurance: 0
+    pension_credit: 0
+    winter_fuel_payment: 200
+    bi_maximum: 10000
+    basic_income: 0
+  output:
+    total_income: 36000
+    total_income_charged_to_tax: 36000
+    gross_taxable_inputs: 34000
+    post_tax_income: 34000
+    bi_individual_phaseout: 3400
+    bi_household_phaseout: 3400
+    winter_fuel_payment_charge: 200
+    winter_fuel_payment_eligible: true
+
+- name: Deprecated WFP eligibility reform tests tax total including statutory_sick_pay
+  description: The reform's GBP35000 proxy for ITEPA 2003 s681I reads ITA s23 total income; GBP34000 wages plus GBP2000 statutory pay exceeds it.
+  period: 2025
+  input:
+    gov.dwp.winter_fuel_payment.eligibility.require_benefits: true
+    gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.use_maximum_taxable_income: true
+    gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.maximum_taxable_income: 35_000
+    age: 70
+    country: ENGLAND
+    employment_income: 34_000
+    statutory_sick_pay: 2_000
+    social_security_income: 0
+    employee_pension_contributions: 0
+    personal_pension_contributions: 0
+    is_on_winter_fuel_payment_relevant_benefit: false
+  output:
+    total_income: 36_000
+    winter_fuel_payment_eligible: false
+
+- name: Deprecated WFP eligibility reform tests tax total including statutory_maternity_pay
+  description: The reform's GBP35000 proxy for ITEPA 2003 s681I reads ITA s23 total income; GBP34000 wages plus GBP2000 statutory pay exceeds it.
+  period: 2025
+  input:
+    gov.dwp.winter_fuel_payment.eligibility.require_benefits: true
+    gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.use_maximum_taxable_income: true
+    gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.maximum_taxable_income: 35_000
+    age: 70
+    country: ENGLAND
+    employment_income: 34_000
+    statutory_maternity_pay: 2_000
+    social_security_income: 0
+    employee_pension_contributions: 0
+    personal_pension_contributions: 0
+    is_on_winter_fuel_payment_relevant_benefit: false
+  output:
+    total_income: 36_000
+    winter_fuel_payment_eligible: false
+
+- name: Deprecated WFP eligibility reform tests tax total including statutory_paternity_pay
+  description: The reform's GBP35000 proxy for ITEPA 2003 s681I reads ITA s23 total income; GBP34000 wages plus GBP2000 statutory pay exceeds it.
+  period: 2025
+  input:
+    gov.dwp.winter_fuel_payment.eligibility.require_benefits: true
+    gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.use_maximum_taxable_income: true
+    gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.maximum_taxable_income: 35_000
+    age: 70
+    country: ENGLAND
+    employment_income: 34_000
+    statutory_paternity_pay: 2_000
+    social_security_income: 0
+    employee_pension_contributions: 0
+    personal_pension_contributions: 0
+    is_on_winter_fuel_payment_relevant_benefit: false
+  output:
+    total_income: 36_000
+    winter_fuel_payment_eligible: false

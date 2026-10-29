@@ -156,8 +156,10 @@
         employment_income: 8_000
         weekly_hours: 30
         working_tax_credit_reported: 2_000
+        is_claimant_or_partner: true
       younger:
         age: 40
+        is_claimant_or_partner: true
     benunits:
       family:
         members: [older, younger]
@@ -172,6 +174,7 @@
         council_tax: 2_000
         savings: 0
   output:
+    relation_type: COUPLE
     legacy_benefits_closed: true
     claims_uc_at_legacy_closure: true
     is_uc_eligible: true
@@ -187,8 +190,10 @@
         employment_income: 8_000
         weekly_hours: 30
         working_tax_credit_reported: 2_000
+        is_claimant_or_partner: true
       younger:
         age: 40
+        is_claimant_or_partner: true
     benunits:
       family:
         members: [older, younger]
@@ -203,6 +208,7 @@
         council_tax: 2_000
         savings: 0
   output:
+    relation_type: COUPLE
     legacy_benefits_closed: true
     claims_uc_at_legacy_closure: true
     is_uc_eligible: true

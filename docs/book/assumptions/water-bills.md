@@ -4,68 +4,9 @@ This documentation describes the water bills projection and uprating methodology
 
 ## Overview
 
-```{note}
-We implement water bills projections through a combination of historical data analysis and regulatory projection data.
-```
+`gov.economic_assumptions.yoy_growth.ofwat.water_bills` is nominal growth in the average household water and sewerage bill in England and Wales. Each year is the charging year starting in April, so 2025 is 2025-26. `policyengine_uk/utils/water/forecast_water_bills.py` derives the values that are not published outturn, and `policyengine_uk/tests/test_water_bills_growth.py` checks the stored values against it.
 
-The system uses:
-
-1. **Historical data** (2021-2025) from Ofwat average bills
-2. **Regulatory projection data** from Ofwat company-specific increases (2025-2030)
-3. **Economic uprating** using Consumer Price Index (CPIH) growth rates
-
-## Implementation
-
-### Data sources
-
-#### Historical data
-The projection uses historical real water bills data from Ofwat:
-- **2021**: £486 (real terms)
-- **2022**: £470 (real terms)  
-- **2023**: £486 (real terms)
-- **2024**: £492 (real terms)
-- **2025**: £503 (real terms)
-
-**Data source**: [Ofwat average bills data for England and Wales](https://www.ofwat.gov.uk/average-bills-press-statement-2024-25/)
-
-#### Regulatory projections
-```{important}
-We source company-specific water bill increases from the Consumer Council for Water (CCW) based on Ofwat's price review data for 2025-2030. The data includes projected bills for 16 water companies covering both water and sewerage services.
-```
-
-**Data source**: [CCW Water Company Bill Increases 2025-30](https://www.ccw.org.uk/our-work/price-review/how-much-will-my-water-and-sewerage-bills-increase-by-2030/breakdown-of-water-companies-bill-increases-2025-30/)
-
-### Projection methodology
- 
-#### Historical period (2021-2025)
-1. We convert real bills to nominal terms using CPIH values
-2. We calculate year-on-year nominal growth rates
-3. We normalize to 2021 baseline (index = 100)
-
-#### Future period (2025-2030)
-1. We calculate average of company-specific projected increases
-2. We apply Consumer Price Index (CPIH) uprating to account for inflation
-3. We compound inflation adjustments year-over-year
-
-```{tip}
-The methodology ensures we preserve real increases from regulatory decisions, apply additional inflation adjustments using CPIH forecasts, and account for both policy changes and economic conditions in future projections.
-```
-
-### Code structure
-
-#### Core implementation
-- **Location**: `policyengine_uk/utils/water/forecast_water_bills.py`
-- **Function**: `project_water_bills()`
-- **Data**: `policyengine_uk/utils/water/ofwat_increases.csv`
-
-#### Parameters integration
-We store water bills year-on-year growth rates in:
-- **Location**: `policyengine_uk/parameters/gov/economic_assumptions/yoy_growth.yaml`
-- **Parameter**: `ofwat.water_bills`
-
-### Growth rates
-
-The model uses these year-on-year growth rates. Each year is the charging year starting in April, so 2025 is 2025-26.
+## Growth rates
 
 | Year | Growth rate | Source |
 |------|-------------|--------|
@@ -74,13 +15,27 @@ The model uses these year-on-year growth rates. Each year is the charging year s
 | 2024 | 4.4% | As above |
 | 2025 | 27% | [Ofwat statement, 29 January 2026](https://www.ofwat.gov.uk/ofwat-responds-to-water-sector-average-bill-figures/) (later figure; Ofwat's [30 January 2025 statement](https://www.ofwat.gov.uk/average-bills-2025-26-press-statement/) forecast 26%) |
 | 2026 | 5.4% | [Water UK, 28 January 2026](https://www.water.org.uk/news-views-publications/news/record-investment-average-household-water-bills-rise-ps33-year-april): national average £639, up £33 |
-| 2027 | 4.6% | Projection from `forecast_water_bills.py` |
-| 2028 | 4.5% | As above |
-| 2029 | 4.5% | As above |
+| 2027 | 5.5% | Projection from the PR24 final determinations, below |
+| 2028 | 5.0% | As above |
+| 2029 | 4.9% | As above |
 
-```{warning}
-The 2027-2029 projections cannot be reproduced from the repository. They take the CCW table, which reflects Ofwat's PR24 *draft* determinations rather than the final ones, weight each company by customer numbers, and add a hardcoded CPIH path. The customer weights were in `ofwat_increases.csv`, which is gitignored and was never committed.
+## Projection for 2027-28 to 2029-30
+
+Ofwat's [PR24 final determinations](https://www.ofwat.gov.uk/wp-content/uploads/2024/12/PR24-FD-sector-summary-revised.pdf) (19 December 2024, sector summary page 21) set the average water and wastewater company bill at £440 in 2024-25 and £597 in 2029-30, before inflation: real growth of 597 / 440 = 1.3568 over five years. The table is committed as `policyengine_uk/utils/water/pr24_final_determination_bills.csv`.
+
+1. Real growth already realised: the published 2025-26 and 2026-27 nominal increases less CPIH, 1.27 / 1.0327 × 1.054 / 1.0388 = 1.2478.
+2. Real growth left: 1.3568 / 1.2478 = 1.0874, spread evenly over three years, 2.83% a year.
+3. Inflation added back from `yoy_growth.obr.cpih` (the OBR's October 2026 forecast). Ofwat indexes bills to CPIH in the November before the charging year, so charging year t takes calendar year t-1: 1.0283 × 1.0324 = 6.2% for 2027-28, × 1.0330 = 6.2% for 2028-29, × 1.0214 = 5.0% for 2029-30.
+
+```{note}
+Open assumptions:
+
+- The final determinations publish only the 2024-25 and 2029-30 averages, so the even real profile over the last three years is an assumption.
+- The Competition and Markets Authority redetermined five companies' price controls in March 2026, and Ofwat's 2026 cost change determinations may add to some bills. Neither is reflected here.
+- The 2025-26 and 2026-27 figures come from Ofwat's and Water UK's own averages, which may not use exactly the same weights as the final determination average.
 ```
+
+After any change to these values, rerun `policyengine_uk/utils/create_ahc_deflator.py`: the after housing costs CPI removes water charges, and `policyengine_uk/tests/test_ahc_deflator.py` fails until its stored values are updated.
 
 ## Scotland and Northern Ireland
 

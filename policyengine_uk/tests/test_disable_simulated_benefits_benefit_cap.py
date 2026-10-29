@@ -19,8 +19,9 @@ Invariants:
    partner, in each of the reform's years, the cap's total, both schemes'
    specified-benefit exemptions and both reductions are the same whether or
    not a member outside the couple reports ESA or JSA in the dataset year.
-2. Differential, reform off: the cap's total equals the code it replaces
-   (policyengine-uk main at b4dbaf57a) to within a penny, and the couple's
+2. Differential, reform off: the cap's total equals the report-reader
+   structure it replaces, using current separate-claim callbacks, to within
+   a penny (not literal historical aggregate semantics), and the couple's
    award the exemptions read equals award_of_members for the couple, except
    that an award within half a penny of zero is none.
 3. For a couple that is not the claimant and partner, award_of_couple is
@@ -53,8 +54,12 @@ from policyengine_uk.variables.gov.dwp.benefit_cap_welfare_benefits import (
     CLAIMANT_OR_PARTNER_BENEFITS,
     FAMILY_BENEFITS,
 )
-from policyengine_uk.variables.gov.dwp.esa_income import income_related_esa_award
-from policyengine_uk.variables.gov.dwp.jsa_income import income_related_jsa_award
+from policyengine_uk.variables.gov.dwp.esa_income import (
+    income_related_esa_award_on_reports,
+)
+from policyengine_uk.variables.gov.dwp.jsa_income import (
+    income_related_jsa_award_on_reports,
+)
 
 REFORM_ON = Scenario(
     applied_before_data_load=True,
@@ -70,8 +75,8 @@ CAP = [
     "benefit_cap_reduction",
 ]
 AWARDS = {
-    "esa_income": ("esa_income_reported", income_related_esa_award),
-    "jsa_income": ("jsa_income_reported", income_related_jsa_award),
+    "esa_income": ("esa_income_reported", income_related_esa_award_on_reports),
+    "jsa_income": ("jsa_income_reported", income_related_jsa_award_on_reports),
 }
 
 
@@ -170,14 +175,14 @@ def replaced_benefit_cap_welfare_benefits(benunit, period):
         period,
         "jsa_income",
         "jsa_income_reported",
-        income_related_jsa_award,
+        income_related_jsa_award_on_reports,
         couple,
     ) + award_of_members(
         benunit,
         period,
         "esa_income",
         "esa_income_reported",
-        income_related_esa_award,
+        income_related_esa_award_on_reports,
         couple,
     )
     return income_based + add_for_members(
@@ -234,7 +239,11 @@ def test_a_couple_that_is_not_the_claimant_and_partner_reads_the_stored_award():
                 "claimant": {"age": 40, "esa_income_reported": 3_000},
                 "partner": {"age": 38, "esa_income_reported": 2_000},
             },
-            "benunits": {"couple": {"members": ["claimant", "partner"]}},
+            # Not claiming Universal Credit, which would end the couple's
+            # income-related ESA (esa_income_report_closed).
+            "benunits": {
+                "couple": {"members": ["claimant", "partner"], "would_claim_uc": False}
+            },
             "households": {"home": {"members": ["claimant", "partner"]}},
         }
     )
@@ -259,7 +268,7 @@ def test_a_couple_that_is_not_the_claimant_and_partner_reads_the_stored_award():
                 period,
                 "esa_income",
                 "esa_income_reported",
-                income_related_esa_award,
+                income_related_esa_award_on_reports,
                 claimant_only,
             )[0]
         )
