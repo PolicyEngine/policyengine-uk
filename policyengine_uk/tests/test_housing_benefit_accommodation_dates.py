@@ -296,6 +296,24 @@ def test_copies_of_rebuilt_populations_keep_a_scenario_adjusted_income(copy):
     )
 
 
+def test_simulations_rebuilt_from_the_same_populations_answer_alone():
+    data = situation()
+    data["benunits"]["family"]["housing_benefit_applicable_income"] = {2026: 3_000}
+    donor = Simulation(situation=data)
+    first = Simulation(situation=situation())
+    second = Simulation(situation=situation())
+    first.build_from_populations(donor.populations)
+    second.build_from_populations(donor.populations)
+    award = pytest.approx(10_400 - 0.65 * (3_000 - 500), abs=0.01)
+    assert second.calculate("housing_benefit_entitlement", 2026)[0] == award
+    first.set_input("housing_benefit_applicable_income", 2026, [4_000])
+    assert first.calculate("housing_benefit_entitlement", 2026)[0] == pytest.approx(
+        10_400 - 0.65 * (4_000 - 500), abs=0.01
+    )
+    assert second.calculate("housing_benefit_entitlement", 2026)[0] == award
+    assert donor.calculate("housing_benefit_entitlement", 2026)[0] == award
+
+
 def test_rebuilt_populations_replace_values_calculated_before():
     # Formulas read the fast cache, which held the income calculated here.
     simulation = Simulation(situation=situation())
@@ -374,9 +392,11 @@ def provenance_and_award(simulation):
 def test_rebuilt_populations_answer_as_the_simulation_that_made_them(
     donor_state, receiver_state
 ):
-    """R1: whatever this simulation held before, populations taken from
-    another simulation give the provenance and award of a fresh copy of that
-    simulation, in this simulation and in its clones and branches."""
+    """R1: for the states generated here (each override variable absent,
+    supplied, set by a scenario or calculated for 2026, on the default
+    branch), whichever of them this simulation held before, populations taken
+    from another simulation give the provenance and award of a fresh copy of
+    that simulation, in this simulation and in its clones and branches."""
     expected = provenance_and_award(simulation_in(donor_state))
     simulation = simulation_in(receiver_state)
     simulation.build_from_populations(simulation_in(donor_state).populations)

@@ -83,11 +83,12 @@ from policyengine_uk.utils.measurement_branches import (
 )
 from policyengine_uk.utils.supplied_inputs import (
     SUPPLIED_INPUT_VARIABLES,
-    adopt_population_records,
     copy_model_values,
+    copy_other_populations,
     drop_missing_model_values,
     drop_missing_supplied_inputs,
     forget_replaced_model_values,
+    keep_population_records,
     model_value_input_records,
 )
 from policyengine_uk.reforms import create_structural_reforms_from_parameters
@@ -591,6 +592,9 @@ class Simulation(CoreSimulation):
                     del records[recorded_period]
 
     def build_from_populations(self, populations) -> None:
+        # Take a copy of what another simulation made, so that neither changes
+        # the other's values or records.
+        populations, adopted = copy_other_populations(self, populations)
         super().build_from_populations(populations)
         # Formulas read the fast cache, so drop what it holds for the replaced
         # populations, as _start_new_population does.
@@ -599,7 +603,7 @@ class Simulation(CoreSimulation):
         # Keep the records of inputs and model values (set_model_value) of
         # the values the new populations hold, and only those: an equal value
         # a rebuild stores later (from a situation or a frame) is supplied.
-        adopt_population_records(self)
+        keep_population_records(self, adopted)
 
     def set_input(self, variable_name: str, period: Period, value) -> None:
         # What is set here is supplied, even a value equal to the model's own,
