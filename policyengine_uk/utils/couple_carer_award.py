@@ -42,14 +42,19 @@ def unlimited_carer_benefit_entitlement(person, period):
 def limit_carer_benefit_to_one_partner(person, period, candidate):
     """One candidate award for a same-target couple, before overlap reductions.
 
-    Election/discretion is not observed. Prefer an eligible reported recipient,
-    then an eligible benefit-unit head, then the eldest eligible partner (stable
-    member order breaks age ties). Other members and units with other than two
+    The couple jointly elect which of them has the entitlement (SSCBA 1992
+    s.70(7ZA)(a)). The data don't record the election, so the model takes the
+    one that gives the larger award, as it does for other elections it models.
+    Awards differ only under the Carer's Allowance earnings taper; where they
+    are equal, prefer an eligible reported recipient, then an eligible
+    benefit-unit head, then the eldest eligible partner (stable member order
+    breaks age ties). Other members and units with other than two
     claimant/partner flags are outside this couple-only restriction.
     """
     benunit = person.benunit
     partner = person("is_claimant_or_partner", period)
-    eligible = partner & (candidate > 0)
+    largest = benunit.max(np.where(partner, candidate, 0))
+    eligible = partner & (candidate > 0) & (candidate >= largest)
     reported = eligible & (person("carers_allowance_reported", period) > 0)
     preferred = np.where(benunit.any(reported), reported, eligible)
     head = preferred & person("is_benunit_head", period)

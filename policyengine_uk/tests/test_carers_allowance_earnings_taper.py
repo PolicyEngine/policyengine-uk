@@ -12,22 +12,25 @@ then identities that hold for every input:
   earnings above the limit, floored at zero;
 - the taper never pays less than the cliff edge it replaces;
 - weekly earnings plus the allowance never fall as earnings rise: no cliff;
-- Scotland (Carer Support Payment) and Northern Ireland are unchanged;
-- in 2030-31 the allowance paid is the weekly overlap rule over the weeks it
-  is paid, for single carers and for couples caring for the same person, where
-  the couple restriction picks a partner separately before and under the taper;
+- Scotland (Carer Support Payment) and Northern Ireland keep their rules;
+- in 2030-31 the allowance paid is the weekly overlap rule over the weeks the
+  allowance pays for, for single carers and for couples caring for the same
+  person;
+- a couple caring for the same person elect the larger award, so the taper
+  never leaves a couple with less than the cliff edge, and one partner has
+  the award for the year, in 2030-31 too, even where a reform masks the
+  other's fraction of a penny;
 - an award that an input supplies, or that a reform neutralizes, calculates
   with a formula of its own or masks with defined_for, before the couple
   limit or the overlap rule is what reaches the payment, with the whole
   year's treatment, even where it equals the model's; so 2030-31 pays such
   an award as 2031-32 does, while a reform that changes only a label keeps
-  the parts of the year; a mask that takes away a fraction of a penny counts,
-  since the couple restriction picks whoever has an award;
+  the parts of the year;
 - the payment reads the award before the couple limit only where the model
   calculates the award before overlap, so a supplied pre-overlap award needs
   nothing before it;
 - an overlapping benefit equal to the award leaves nothing paid or received,
-  a penny left over is paid, and anything paid is at least half a penny.
+  the model pays a penny left over, and any payment is at least half a penny.
 """
 
 import numpy as np
@@ -202,8 +205,8 @@ def test_earnings_plus_the_allowance_never_fall_as_earnings_rise(sims, drawn):
     assert (rise[tapers] >= -0.011).all()
 
 
-# Overlapping benefits come off only in the weeks the allowance is paid. A
-# carer over the limit in 2030-31 is paid from 6 October 2030 only, so only
+# Overlapping benefits come off only in the weeks the allowance pays for. A
+# carer over the limit in 2030-31 gets it from 6 October 2030 only, so only
 # that share of a weekly overlapping benefit reduces it.
 
 
@@ -299,9 +302,11 @@ def test_2030_31_allowance_is_the_weekly_overlap_rule_over_the_paid_weeks(
     assert ((paid == 0) | (paid >= 0.005)).all()
 
 
-# A couple caring for the same person gets one award at a time. In 2030-31
-# the couple restriction picks a partner separately for the weeks before the
-# taper and the weeks under it.
+# A couple caring for the same person get one award at a time, and elect
+# which of them has it: the model takes the larger award, the head's where
+# the two are equal. In 2030-31 the couple restriction works on the weeks
+# before the taper and the weeks under it separately, and a partner below
+# the limit has the larger award in both.
 
 
 def couple(head_weekly_earnings, partner_weekly_earnings, weekly_state_pension):
@@ -333,21 +338,35 @@ def couple(head_weekly_earnings, partner_weekly_earnings, weekly_state_pension):
     }
 
 
-def test_2030_31_couple_keeps_the_partner_award_before_the_taper():
-    # The head is £46 over the limit and gets the tapered allowance from
-    # 6 October; the partner is under it and gets the full rate until then.
+def test_2030_31_couple_elect_the_partner_under_the_limit():
+    # The head is £46 over the limit, so from 6 October the taper gives them
+    # the rate less £46 a week; the partner is under it and has the full rate
+    # all year, the larger award, so the couple elect the partner for the
+    # whole year and only the partner counts as entitled.
     limit, rate = ca_parameters(START_YEAR)
     sim = Simulation(situation=couple(limit + 46, limit - 4, 40))
     assert sim.calculate("partners_care_for_same_severely_disabled_person", START_YEAR)[
         0
     ]
-    head, partner = sim.calculate("carers_allowance", START_YEAR).astype(float)
-    assert head == pytest.approx(
-        START_YEAR_SHARE * max(rate - 46 - 40, 0) * 52, abs=0.05
-    )
-    assert partner == pytest.approx(
-        (1 - START_YEAR_SHARE) * max(rate - 40, 0) * 52, abs=0.05
-    )
+    paid = sim.calculate("carers_allowance", START_YEAR).astype(float)
+    assert paid == pytest.approx([0, max(rate - 40, 0) * 52], abs=0.05)
+    entitled = sim.calculate("is_entitled_to_carer_benefit", START_YEAR)
+    assert list(entitled) == [False, True]
+
+
+@pytest.mark.parametrize("head_over, partner_over", [(46, 60), (60, 46)])
+def test_2030_31_couple_over_the_limit_elect_the_larger_tapered_award(
+    head_over, partner_over
+):
+    # Both earn over the limit, so neither has an award before 6 October.
+    # Under the taper the one with less earnings over it has the larger
+    # award, and the couple elect them, head or partner.
+    limit, rate = ca_parameters(START_YEAR)
+    sim = Simulation(situation=couple(limit + head_over, limit + partner_over, 40))
+    paid = sim.calculate("carers_allowance", START_YEAR).astype(float)
+    larger = START_YEAR_SHARE * max(rate - min(head_over, partner_over) - 40, 0) * 52
+    expected = [larger, 0] if head_over < partner_over else [0, larger]
+    assert paid == pytest.approx(expected, abs=0.05)
 
 
 def test_a_couple_under_the_limit_gets_one_award_all_year():
@@ -536,9 +555,14 @@ def updated(names, attributes):
 
 
 def couple_with_pension(year):
-    # The head is £46 a week over the earnings limit and the partner within
-    # it, each with £400 a year of State Pension.
-    return both_caring_couple(year, 400 / 52, head_weekly_excess=46)
+    # The head is £46 a week over the earnings limit and the partner £60 over
+    # it, so in 2030-31 neither has an award before the taper, and under it
+    # the head has the larger one, which the couple elect. Each has £400 a
+    # year of State Pension.
+    situation = both_caring_couple(year, 400 / 52, head_weekly_excess=46)
+    partner = situation["people"]["partner"]
+    partner["carers_allowance_weekly_earnings_above_limit"] = {year: 60}
+    return situation
 
 
 @pytest.mark.parametrize("year", [START_YEAR, FULL_YEAR])
@@ -595,8 +619,8 @@ def test_a_reform_keeping_the_models_formulas_keeps_the_parts_of_the_year(year):
         expected
     )
     if year == START_YEAR:
-        # The head is paid only under the taper, so less than the whole
-        # year's pension comes off.
+        # The head has the award only under the taper, so less than the
+        # whole year's pension comes off it.
         award = float(model.calculate("carers_allowance_pre_overlap", year)[0])
         assert expected[0] > award - 400 + 100
 
@@ -633,33 +657,39 @@ def tiny_award_couple(year):
     return both_caring_couple(year, 400 / 52, head_weekly_excess=rate - 0.0001)
 
 
-def test_a_fraction_of_a_penny_is_an_award_for_the_parts_of_the_year():
-    # With no reform, the head's award picks the head for the weeks under the
-    # taper, and the partner keeps their award for the weeks before it.
-    sim = Simulation(situation=tiny_award_couple(START_YEAR))
-    candidate = sim.calculate("carers_allowance_pre_couple_limit", START_YEAR)
+@pytest.mark.parametrize("year", [START_YEAR, FULL_YEAR])
+def test_a_fraction_of_a_penny_doesnt_take_the_award_from_the_partner(year):
+    # Under the taper the head keeps a fraction of a penny, but the partner's
+    # full rate is the larger award, so the couple elect the partner for the
+    # whole year. Picking the head for the weeks under the taper, as the
+    # model did before, paid the partner £2,301.24 too little in 2030-31 and
+    # nothing in 2031-32.
+    sim = Simulation(situation=tiny_award_couple(year))
+    candidate = sim.calculate("carers_allowance_pre_couple_limit", year)
     candidate = candidate.astype(float)
     assert 0 < candidate[0] < 0.01 and candidate[1] > 4_000
-    before_taper = 1 - START_YEAR_SHARE
-    pre_overlap = sim.calculate("carers_allowance_pre_overlap", START_YEAR)
-    assert pre_overlap.astype(float) == pytest.approx(
-        [candidate[0], candidate[1] * before_taper]
-    )
-    paid = sim.calculate("carers_allowance", START_YEAR).astype(float)
-    assert paid == pytest.approx([0, pre_overlap[1] - before_taper * 400], abs=0.01)
+    pre_overlap = sim.calculate("carers_allowance_pre_overlap", year)
+    assert pre_overlap.astype(float) == pytest.approx([0, candidate[1]])
+    paid = sim.calculate("carers_allowance", year).astype(float)
+    assert paid == pytest.approx([0, candidate[1] - 400], abs=0.01)
 
 
 @pytest.mark.parametrize("year", [START_YEAR, FULL_YEAR])
 @pytest.mark.parametrize(
     "masked", ["carers_allowance_pre_couple_limit", "carers_allowance_pre_overlap"]
 )
-def test_a_reform_masking_a_fraction_of_a_penny_gets_the_whole_year(year, masked):
+def test_a_reform_masking_a_fraction_of_a_penny_leaves_the_partners_award(year, masked):
     # The reform limits a stage to women, so it takes away the male head's
     # fraction of a penny. That is within half a penny of the parts of the
-    # year, but the couple restriction picks whoever has an award, so the
-    # masked stage carries no dates and the stages after it work on the whole
-    # year: the partner keeps any award they have before overlap, less the
-    # whole year's £400 of State Pension.
+    # year, but the couple restriction chooses only among partners with an
+    # award, so a masked pre-couple-limit stage carries no dates. Either way
+    # the couple elect the partner, who keeps their award less the year's
+    # £400 of State Pension.
+    partner = float(
+        Simulation(situation=tiny_award_couple(year)).calculate(
+            "carers_allowance_pre_couple_limit", year
+        )[1]
+    )
     reform = updated([masked], {"defined_for": "is_female"})
     situation = tiny_award_couple(year)
     situation["people"]["head"]["is_female"] = {year: False}
@@ -668,13 +698,10 @@ def test_a_reform_masking_a_fraction_of_a_penny_gets_the_whole_year(year, masked
     award = sim.calculate("carers_allowance_pre_couple_limit", year).astype(float)
     pre_overlap = sim.calculate("carers_allowance_pre_overlap", year).astype(float)
     if masked == "carers_allowance_pre_couple_limit":
-        assert award[0] == 0 and award[1] > 4_000
-        assert pre_overlap == pytest.approx(award)
-    assert pre_overlap[0] == 0
-    if year == START_YEAR:
-        assert pre_overlap[1] > 2_000
+        assert award == pytest.approx([0, partner])
+    assert pre_overlap == pytest.approx([0, partner])
     paid = sim.calculate("carers_allowance", year).astype(float)
-    assert paid == pytest.approx(np.maximum(pre_overlap - 400, 0), abs=0.01)
+    assert paid == pytest.approx([0, partner - 400], abs=0.01)
 
 
 @pytest.mark.parametrize("year", [START_YEAR, FULL_YEAR])
@@ -705,8 +732,8 @@ def test_a_supplied_pre_overlap_award_needs_no_award_before_the_couple_limit(yea
 
 
 # An award a reform sets before the couple limit carries no dates, so 2030-31
-# restricts it and takes overlapping benefits off it as 2031-32 does, picking
-# the head where the head has an award and the partner otherwise.
+# restricts it and takes overlapping benefits off it as 2031-32 does, keeping
+# the larger award, the head's where the two are equal.
 
 reform_award = st.one_of(
     st.just(0.0), st.floats(min_value=0.01, max_value=6_000).map(lambda x: round(x, 2))
@@ -793,7 +820,7 @@ def test_2030_31_pays_an_award_a_reform_sets_as_2031_32_does(reform_award_sim, d
             "partners_care_for_same_severely_disabled_person", year
         ).all()
     award = award.reshape(-1, 2)
-    head = award[:, 0] > 0
+    head = (award[:, 0] > 0) & (award[:, 0] >= award[:, 1])
     kept = np.column_stack([head, ~head]) * award
     expected = np.maximum(0, kept - 52 * pension.reshape(-1, 2))
     expected = np.where(expected < 0.005, 0, expected)
@@ -873,10 +900,13 @@ def test_an_overlapping_benefit_equal_to_the_award_leaves_nothing_received(
     assert not sim.calculate("receives_carers_allowance", year).any()
 
 
+# Whole pence, so the two partners' awards are equal or at least a penny
+# apart, wherever float32 rounds them.
+pence = weekly.map(lambda earnings: round(earnings, 2))
 couple_cases = st.lists(
     st.tuples(
-        weekly,
-        weekly,
+        pence,
+        pence,
         st.floats(min_value=0, max_value=150),
         st.floats(min_value=0, max_value=150),
     ),
@@ -885,19 +915,22 @@ couple_cases = st.lists(
 )
 
 
-def couples_situation():
+def couples_situation(years=(START_YEAR,)):
     people, benunits, households = {}, {}, {}
     for i in range(CASES):
         members = [f"head_{i}", f"partner_{i}"]
-        people[members[0]] = {"age": {START_YEAR: 71}, "care_hours": {START_YEAR: 40}}
-        people[members[1]] = {"age": {START_YEAR: 70}, "care_hours": {START_YEAR: 40}}
+        for name, age in zip(members, (71, 70)):
+            people[name] = {
+                "age": {year: age + year - START_YEAR for year in years},
+                "care_hours": {year: 40 for year in years},
+            }
         benunits[f"benunit_{i}"] = {
             "members": members,
-            "would_claim_uc": {START_YEAR: False},
+            "would_claim_uc": {year: False for year in years},
         }
         households[f"household_{i}"] = {
             "members": members,
-            "region": {START_YEAR: REGIONS[i % len(REGIONS)]},
+            "region": {year: REGIONS[i % len(REGIONS)] for year in years},
         }
     return {"people": people, "benunits": benunits, "households": households}
 
@@ -943,11 +976,64 @@ def test_2030_31_couple_allowance_is_the_weekly_rule_on_each_part_of_the_year(
             )
         else:
             weekly = np.where(above > 0, 0, rate)
-        # The head when eligible, otherwise the partner.
-        head_paid = weekly[:, 0] > 0
+        # The larger award, the head's where the two are equal.
+        head_paid = (weekly[:, 0] > 0) & (weekly[:, 0] >= weekly[:, 1])
         selected = np.column_stack([head_paid, ~head_paid])
         expected += share * 52 * selected * np.maximum(0, weekly - pension)
     # Scotland pays Carer Support Payment instead.
     england_wales_ni = regions != "SCOTLAND"
     assert (np.abs(paid - expected)[england_wales_ni] <= 0.05).all()
     assert ((paid == 0) | (paid >= 0.005)).all()
+
+
+# The couple elect the larger award, so an award the taper gives one partner
+# never takes the award from the other's larger one: the couple get at least
+# what the cliff edge gave them, one partner has the award for the year, and
+# in 2031-32 that award is the larger of the two before the couple limit.
+
+
+@pytest.fixture(scope="module")
+def couple_years_sims():
+    situation = couples_situation((START_YEAR, FULL_YEAR))
+    return Simulation(situation=situation), Simulation(
+        situation=situation, reform=WITHOUT_TAPER
+    )
+
+
+@SETTINGS
+@given(couple_cases)
+def test_the_taper_never_leaves_a_couple_with_less_than_the_cliff_edge(
+    couple_years_sims, drawn
+):
+    head_earnings, partner_earnings, head_pension, partner_pension = map(
+        np.array, zip(*drawn)
+    )
+    earnings = np.column_stack([head_earnings, partner_earnings]).ravel()
+    pension = np.column_stack([head_pension, partner_pension]).ravel()
+    for sim in couple_years_sims:
+        for year in (START_YEAR, FULL_YEAR):
+            sim.set_input("carers_allowance_earnings", year, 52 * earnings)
+            sim.set_input("state_pension", year, 52 * pension)
+        sim.reset_calculations()
+    taper, cliff = couple_years_sims
+    for year in (START_YEAR, FULL_YEAR):
+        assert taper.calculate(
+            "partners_care_for_same_severely_disabled_person", year
+        ).all()
+        paid, paid_at_cliff = (
+            sim.calculate("carers_allowance", year).astype(float).reshape(-1, 2)
+            for sim in (taper, cliff)
+        )
+        assert (paid.sum(axis=1) >= paid_at_cliff.sum(axis=1) - 0.01).all()
+        pre_overlap = (
+            taper.calculate("carers_allowance_pre_overlap", year)
+            .astype(float)
+            .reshape(-1, 2)
+        )
+        assert ((pre_overlap > 0).sum(axis=1) <= 1).all()
+    candidate = (
+        taper.calculate("carers_allowance_pre_couple_limit", FULL_YEAR)
+        .astype(float)
+        .reshape(-1, 2)
+    )
+    assert pre_overlap.sum(axis=1) == pytest.approx(candidate.max(axis=1))

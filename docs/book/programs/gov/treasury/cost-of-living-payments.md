@@ -56,8 +56,8 @@ follow. The model pays every household in a qualifying band. Survey data
 hold only main homes, so the second homes and empty properties the scheme
 excludes do not arise. The model can't tell which households have a
 landlord liable for council tax (council tax in the rent), so it pays them,
-which slightly overstates recipients. `council_tax_band` defaults to band D, so a household with no
-band recorded qualifies.
+which slightly overstates recipients. `council_tax_band` defaults to band D,
+so a household whose survey record has no band qualifies.
 
 ## Cost-of-Living Payments (2022-23 and 2023-24)
 

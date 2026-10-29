@@ -107,8 +107,8 @@ def matches_parts_of_year(person, amount, parts_amount):
     """Whether, for every member of the benefit unit, amount is parts_amount,
     what the parts of the year give: within half a penny, since annual
     amounts are float32, good to about a thousandth of a pound, and positive
-    exactly where parts_amount is, since the couple restriction picks a
-    partner by whether their award is positive."""
+    exactly where parts_amount is, since the couple restriction chooses only
+    among partners whose award is positive."""
     same = (np.abs(amount - parts_amount) < HALF_PENNY) & (
         (amount > 0) == (parts_amount > 0)
     )
