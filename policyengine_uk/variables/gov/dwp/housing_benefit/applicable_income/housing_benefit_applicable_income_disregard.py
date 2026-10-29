@@ -38,7 +38,7 @@ def hb_segment_deductions(benunit, period, parameters, accommodation):
             childcare_limit = benunit(limit_name, period)
         else:
             childcare_limit = hb_childcare_earnings_limit(
-                benunit, period, accommodation
+                benunit, period, accommodation=accommodation
             )
         childcare = min_(
             hb_capped_childcare_charges(benunit, period, parameters), childcare_limit

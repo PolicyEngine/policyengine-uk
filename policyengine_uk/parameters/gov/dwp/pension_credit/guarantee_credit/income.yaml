@@ -14,10 +14,17 @@ values:
   2002-01-01:
   - pension_credit_earnings
   - working_tax_credit
+  # War pensions (SPCA s.15(1)(g)) and AFCS guaranteed income payments
+  # (reg. 15(5)(aa)) of the claimant and partner, each payment less £10 a
+  # week (Sch. IV para. 1).
+  - pension_credit_war_pension_income
   - state_pension
   - private_pension_income
   - property_income_after_finance_costs
   - pension_credit_deemed_income
+  # Reg. 15(5)(d): maintenance from a spouse, civil partner, former spouse or
+  # former civil partner. Child maintenance is not listed.
+  - spousal_maintenance_income
   - esa_contrib
   - jsa_contrib
   # Reg. 15(1) prescribes all social security benefits except those it lists;
@@ -26,3 +33,21 @@ values:
   # Supplement, which is a separate variable.
   - carers_allowance
   - carer_support_payment
+  # Reg. 15(1) does not list these either. Reg. 15(1)(c) excepts the constant
+  # attendance and exceptionally severe disablement increases of IIDB (SSCBA
+  # ss.104 and 105), but iidb is the whole reported payment and cannot
+  # separate them. Incapacity benefit's increases for a dependant other than
+  # a partner (reg. 15(1)(h)) are not separated either.
+  - iidb
+  - sda
+  - incapacity_benefit
+  - maternity_allowance
+  # Reg. 15(1) does not list widowed parent's allowance either (it excepts
+  # bereavement support payment, at (n)). The claimant's and partner's
+  # allowances count, each less £10 a week (Sch. IV para. 7). SSCBA 1992
+  # s.39A(4) and (5) end the allowance at pensionable age and suspend it
+  # while the recipient lives with a partner, so a lawful award should not
+  # meet a Pension Credit assessment; a reported one counts. It overlaps with
+  # Carer's Allowance and Carer Support Payment, so leaving it out let an
+  # award raise Guarantee Credit by the carer's benefit it displaced.
+  - pension_credit_widowed_parents_allowance_income

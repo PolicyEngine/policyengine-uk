@@ -1,0 +1,337 @@
+# CTC maximum-rate elements require an eligible continuing claim, not merely a
+# preference to claim. Tax Credits Act 2002 ss 8-9 (structural enacted text),
+# HMRC TCM0114020 and Autumn Budget 2024 Annex A (2024/25 rates).
+# Positive reported CTC is the existing model's continuing-claim proxy; no
+# eligibility or tax-credit component is supplied directly. Earnings £4,000 are
+# below the CTC-only threshold £19,995 and working hours are below WTC routes.
+# Disability total £5,850 comprises £4,170 plus the separate £1,680 severe addition.
+# The two downstream cases use a council tenant with no non-dependants, no
+# meals/board, no assets, no other income and no Child Benefit claim. Gross
+# earnings £4,000 are below even the adult allowance £90.50 * 52 = £4,706, before any
+# earnings disregard or child allowance. Thus no excess income exists: HB is
+# the supplied eligible rent £5,200, and Welsh CTR is the supplied net bill £1,000.
+# SSCBA 1992 s 130; HB Regs 2006 regs 70-71; WSI 2013/3029 Sch 6 paras 1, 4, 6.
+# This is a public household regression, not a population score or a complete
+# audit of the inherited HB/CTR applicable-amount implementation.
+
+- name: "Case 1, claiming preference does not create Child Tax Credit eligibility."
+  period: 2024
+  input:
+    people:
+      person1:
+        age: 35
+        is_parent: true
+        is_benunit_head: true
+        is_claimant_or_partner: true
+        employment_income: 4000
+        weekly_hours: 10
+        child_tax_credit_reported: 0
+      person2:
+        age: 4
+        date_of_birth: 20200101
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: ["person1", "person2"]
+        would_claim_uc: false
+  output:
+    CTC_child_element: 0
+    CTC_family_element: 0
+    CTC_disabled_child_element: 0
+    CTC_severely_disabled_child_element: 0
+    is_CTC_eligible: false
+    child_tax_credit: 0
+    working_tax_credit: 0
+    tax_credits: 0
+    would_claim_CTC: true
+
+- name: "Case 2, an eligible continuing claim keeps the ordinary child element."
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 35
+        is_parent: true
+        is_benunit_head: true
+        is_claimant_or_partner: true
+        employment_income: 4000
+        weekly_hours: 10
+        child_tax_credit_reported: 1000
+      person2:
+        age: 4
+        date_of_birth: 20200101
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: ["person1", "person2"]
+        would_claim_uc: false
+  output:
+    is_CTC_eligible: true
+    CTC_child_element: 3455
+    CTC_family_element: 0
+    child_tax_credit: 3455
+    working_tax_credit: 0
+    tax_credits: 3455
+
+- name: "Case 3, an eligible claim preserves the two-child limit."
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 35
+        is_parent: true
+        is_benunit_head: true
+        is_claimant_or_partner: true
+        employment_income: 4000
+        weekly_hours: 10
+        child_tax_credit_reported: 1000
+      person2:
+        age: 6
+        date_of_birth: 20180101
+        is_claimant_or_partner: false
+      person3:
+        age: 4
+        date_of_birth: 20200101
+        is_claimant_or_partner: false
+      person4:
+        age: 2
+        date_of_birth: 20220101
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: ["person1", "person2", "person3", "person4"]
+        would_claim_uc: false
+  output:
+    CTC_child_element: 6910
+    CTC_family_element: 0
+    child_tax_credit: 6910
+    tax_credits: 6910
+
+- name: "Case 4, an eligible older child keeps the family element."
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 35
+        is_parent: true
+        is_benunit_head: true
+        is_claimant_or_partner: true
+        employment_income: 4000
+        weekly_hours: 10
+        child_tax_credit_reported: 1000
+      person2:
+        age: 10
+        date_of_birth: 20140101
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: ["person1", "person2"]
+        would_claim_uc: false
+  output:
+    CTC_child_element: 3455
+    CTC_family_element: 545
+    child_tax_credit: 4000
+    tax_credits: 4000
+
+- name: "Case 5, an eligible disabled child keeps both disability additions."
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 35
+        is_parent: true
+        is_benunit_head: true
+        is_claimant_or_partner: true
+        employment_income: 4000
+        weekly_hours: 10
+        child_tax_credit_reported: 1000
+      person2:
+        age: 4
+        date_of_birth: 20200101
+        is_claimant_or_partner: false
+        is_disabled_for_benefits: true
+        is_severely_disabled_for_benefits: true
+    benunits:
+      benunit:
+        members: ["person1", "person2"]
+        would_claim_uc: false
+  output:
+    CTC_child_element: 3455
+    CTC_disabled_child_element: 4170
+    CTC_severely_disabled_child_element: 1680
+    child_tax_credit: 9305
+    tax_credits: 9305
+
+- name: "Case 6, an ineligible family receives no ordinary or disability elements."
+  period: 2024
+  input:
+    people:
+      person1:
+        age: 35
+        is_parent: true
+        is_benunit_head: true
+        is_claimant_or_partner: true
+        employment_income: 4000
+        weekly_hours: 10
+        child_tax_credit_reported: 0
+      person2:
+        age: 10
+        date_of_birth: 20140101
+        is_claimant_or_partner: false
+      person3:
+        age: 4
+        date_of_birth: 20200101
+        is_claimant_or_partner: false
+        is_disabled_for_benefits: true
+        is_severely_disabled_for_benefits: true
+    benunits:
+      benunit:
+        members: ["person1", "person2", "person3"]
+        would_claim_uc: false
+  output:
+    CTC_child_element: 0
+    CTC_family_element: 0
+    CTC_disabled_child_element: 0
+    CTC_severely_disabled_child_element: 0
+    is_CTC_eligible: false
+    child_tax_credit: 0
+    working_tax_credit: 0
+    tax_credits: 0
+
+- name: "Case 7, closed tax credits pay no award in annual 2026."
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 35
+        is_parent: true
+        is_benunit_head: true
+        is_claimant_or_partner: true
+        employment_income: 4000
+        weekly_hours: 10
+        child_tax_credit_reported: 1000
+      person2:
+        age: 6
+        date_of_birth: 20200101
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: ["person1", "person2"]
+        would_claim_uc: false
+  output:
+    is_CTC_eligible: false
+    child_tax_credit: 0
+    working_tax_credit: 0
+    tax_credits: 0
+
+- name: "Case 8, a childless family has no child elements."
+  period: 2024
+  input:
+    people:
+      person1:
+        age: 35
+        is_parent: false
+        is_benunit_head: true
+        is_claimant_or_partner: true
+        employment_income: 4000
+        weekly_hours: 10
+        child_tax_credit_reported: 0
+    benunits:
+      benunit:
+        members: ["person1"]
+        would_claim_uc: false
+  output:
+    CTC_child_element: 0
+    CTC_family_element: 0
+    CTC_disabled_child_element: 0
+    CTC_severely_disabled_child_element: 0
+    is_CTC_eligible: false
+    child_tax_credit: 0
+    working_tax_credit: 0
+    tax_credits: 0
+
+- name: "Case 9, an ineligible CTC preference does not reduce Housing Benefit or Welsh Council Tax Reduction."
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 35
+        is_parent: true
+        is_benunit_head: true
+        is_claimant_or_partner: true
+        employment_income: 4000
+        weekly_hours: 10
+        child_tax_credit_reported: 0
+        housing_benefit_reported: 1000
+      person2:
+        age: 4
+        date_of_birth: 20200101
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: ["person1", "person2"]
+        would_claim_uc: false
+        would_claim_CTC: true
+        would_claim_housing_benefit: true
+        would_claim_council_tax_reduction: true
+        would_claim_child_benefit: false
+    households:
+      household:
+        members: ["person1", "person2"]
+        region: "WALES"
+        tenure_type: "RENT_FROM_COUNCIL"
+        rent: 5200
+        council_tax: 1000
+        savings: 0
+  output:
+    housing_benefit: 5200
+    council_tax_reduction: 1000
+    child_tax_credit: 0
+    working_tax_credit: 0
+    tax_credits: 0
+
+- name: "Case 10, declining CTC preserves the same full housing and council tax awards."
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 35
+        is_parent: true
+        is_benunit_head: true
+        is_claimant_or_partner: true
+        employment_income: 4000
+        weekly_hours: 10
+        child_tax_credit_reported: 0
+        housing_benefit_reported: 1000
+      person2:
+        age: 4
+        date_of_birth: 20200101
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: ["person1", "person2"]
+        would_claim_uc: false
+        would_claim_CTC: false
+        would_claim_housing_benefit: true
+        would_claim_council_tax_reduction: true
+        would_claim_child_benefit: false
+    households:
+      household:
+        members: ["person1", "person2"]
+        region: "WALES"
+        tenure_type: "RENT_FROM_COUNCIL"
+        rent: 5200
+        council_tax: 1000
+        savings: 0
+  output:
+    housing_benefit: 5200
+    council_tax_reduction: 1000
+    child_tax_credit: 0
+    working_tax_credit: 0
+    tax_credits: 0

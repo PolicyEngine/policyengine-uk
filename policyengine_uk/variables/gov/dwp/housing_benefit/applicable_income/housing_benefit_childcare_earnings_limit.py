@@ -3,14 +3,7 @@ from policyengine_uk.model_api import *
 
 def hb_standard_earnings_disregard(benunit, period):
     """Selected standard amount, including the permitted-work replacement."""
-    net = max_(benunit("housing_benefit_net_earnings", period), 0)
-    standard = benunit("housing_benefit_special_earnings_disregard", period)
-    permitted = max_(benunit("housing_benefit_permitted_work_disregard", period), 0)
-    return where(
-        permitted > 0,
-        min_(net, max_(permitted, benunit("is_lone_parent", period) * standard)),
-        standard,
-    )
+    return benunit("housing_benefit_applied_standard_earnings_disregard", period)
 
 
 def hb_childcare_earnings_limit(benunit, period, accommodation=None):
@@ -43,7 +36,21 @@ class housing_benefit_childcare_earnings_limit(Variable):
         "disregard is conditional on earnings covering the childcare deduction "
         "as well as that disregard: when it applies the full capped childcare "
         "charge already fits, so this calculation need not depend on it. This "
-        "avoids a circular calculation through the childcare deduction."
+        "avoids a circular calculation through the childcare deduction. The "
+        "WTC edge also runs from this limit through "
+        "housing_benefit_applied_standard_earnings_disregard, "
+        "housing_benefit_special_earnings_disregard and "
+        "housing_benefit_special_earnings_disregard_eligible to "
+        "working_tax_credit and its disability elements. With fixed earnings, "
+        "WTC entitlement "
+        "and its components (including the WTC childcare element) do not "
+        "read the HB childcare deduction, limit or applicable income, so "
+        "neither this edge nor the direct WTC addition creates a cycle. "
+        "Earnings are fixed when the simulation has no baseline or the "
+        "labour supply income and substitution elasticities are zero, as "
+        "they are by default. Labour supply responses can make earnings "
+        "depend on benefits, so this note does not cover a reform that "
+        "turns them on."
     )
     reference = (
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/27",

@@ -53,6 +53,8 @@
     council_tax_reduction: 1_575
 
 - name: Oxford, working-age head and pension-age sharer each claim under their own scheme
+  # Aged 72: State Pension age was reached in 2019, before 1 April 2021, so
+  # the higher personal allowance applies (SI 2012/2885 Sch 2 para 1).
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -61,7 +63,7 @@
         age: 40
         is_household_head: true
       sharer:
-        age: 70
+        age: 72
     benunits:
       head_family:
         members: [head]
@@ -248,7 +250,9 @@
     council_tax_reduction_claimant_benunit: [true, false]
     # The adult child's own scheme (Maidstone's working-age one) is not
     # simulated, but the household's bill is: the head's pensioner claim
-    # covers all of it. The child's report cannot be added on top.
+    # covers all of it (the non-working child has no banding income, so the
+    # work gate leaves the scale's zero). The child's report cannot be added
+    # on top.
     council_tax_reduction_scheme_supported: [true, false]
     council_tax_reduction_household_has_simulated_claim: true
     council_tax_benefit: [1_800, 0]
@@ -969,6 +973,7 @@
   output:
     is_council_tax_reduction_applicant_or_partner: [true, false, false, false]
     council_tax_reduction_head_applies_alone: [true]
-    council_tax_reduction_relevant_income_based_benefit: [true]
+    # Nor does it passport her: the passport is the applicant's award.
+    council_tax_reduction_relevant_income_based_benefit: [false]
     council_tax_reduction_pensioner: [true]
     simulated_council_tax_reduction_benunit: [1_800]

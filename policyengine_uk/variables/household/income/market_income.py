@@ -16,12 +16,20 @@ class market_income(Variable):
             "employment_income",
             "self_employment_income",
             "savings_interest_income",
+            "tax_free_savings_income",
+            "individual_savings_account_dividend_income",
             "dividend_income",
             "miscellaneous_income",
-            "property_income",
+            # Landlords' profit after mortgage interest, as in HBAI income.
+            "property_income_after_finance_costs",
             "private_pension_income",
             "private_transfer_income",
             "maintenance_income",
+            "spousal_maintenance_income",
         ]
         income = add(person, period, INCOME_VARIABLES)
-        return income - person("maintenance_expenses", period)
+        return (
+            income
+            - person("trading_loss", period)
+            - person("maintenance_expenses", period)
+        )

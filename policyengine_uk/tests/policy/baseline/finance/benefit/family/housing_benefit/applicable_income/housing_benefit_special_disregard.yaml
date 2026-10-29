@@ -50,6 +50,276 @@
     housing_benefit_special_earnings_disregard_eligible: [true, true, false, true, false, true, false, false, true, false]
     housing_benefit_special_earnings_disregard: [1040, 1040, 260, 1040, 260, 1040, 260, 260, 1040, 260]
 
+# Cases: SDA; WTC disability; WTC severe disability; AA; DLA mobility;
+# PIP daily living; PIP mobility; AFIP; WTC element without an award;
+# WTC award without either disability element. Each claimant is pension-age,
+# is not a lone parent and has more than £20 a week in net earnings.
+- name: ENGLAND pension-age qualifying receipt matrix
+  period: 2024
+  input:
+    country: [ENGLAND, ENGLAND, ENGLAND, ENGLAND, ENGLAND, ENGLAND, ENGLAND, ENGLAND, ENGLAND, ENGLAND]
+    age: [70, 70, 70, 70, 70, 70, 70, 70, 70, 70]
+    housing_benefit_pension_age_regulations_apply: [true, true, true, true, true, true, true, true, true, true]
+    carer_premium: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    sda: [100, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    working_tax_credit: [0, 100, 100, 0, 0, 0, 0, 0, 0, 100]
+    WTC_disabled_element: [0, 100, 0, 0, 0, 0, 0, 0, 100, 0]
+    WTC_severely_disabled_element: [0, 0, 100, 0, 0, 0, 0, 0, 0, 0]
+    attendance_allowance: [0, 0, 0, 100, 0, 0, 0, 0, 0, 0]
+    dla_sc: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    dla_m: [0, 0, 0, 0, 100, 0, 0, 0, 0, 0]
+    pip_dl: [0, 0, 0, 0, 0, 100, 0, 0, 0, 0]
+    pip_m: [0, 0, 0, 0, 0, 0, 100, 0, 0, 0]
+    armed_forces_independence_payment: [0, 0, 0, 0, 0, 0, 0, 100, 0, 0]
+    is_blind: [false, false, false, false, false, false, false, false, false, false]
+    is_claimant_or_partner: [true, true, true, true, true, true, true, true, true, true]
+    housing_benefit_net_earnings: [5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000]
+    is_lone_parent: [false, false, false, false, false, false, false, false, false, false]
+    is_couple: [false, false, false, false, false, false, false, false, false, false]
+  output:
+    housing_benefit_special_earnings_disregard_eligible: [true, true, true, true, true, true, true, true, false, false]
+    housing_benefit_special_earnings_disregard: [1040, 1040, 1040, 1040, 1040, 1040, 1040, 1040, 260, 260]
+
+- name: ENGLAND pension-age partner SDA qualifies the couple
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 72
+        is_claimant_or_partner: true
+        sda: 0
+      partner:
+        age: 70
+        is_claimant_or_partner: true
+        sda: 100
+    benunits:
+      couple:
+        members: [claimant, partner]
+        housing_benefit_pension_age_regulations_apply: true
+        housing_benefit_net_earnings: 5000
+        carer_premium: 0
+        working_tax_credit: 0
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+  output:
+    is_lone_parent: false
+    is_couple: true
+    housing_benefit_special_earnings_disregard_eligible: true
+    housing_benefit_special_earnings_disregard: 1040
+
+- name: ENGLAND adult non-dependant SDA and disability WTC do not qualify the pension-age couple
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 72
+        is_claimant_or_partner: true
+        sda: 0
+      partner:
+        age: 70
+        is_claimant_or_partner: true
+        sda: 0
+      adult_non_dependant:
+        age: 40
+        # Claimant of their own benefit unit, never of the pensioner couple.
+        is_claimant_or_partner: true
+        sda: 100
+    benunits:
+      couple:
+        members: [claimant, partner]
+        housing_benefit_pension_age_regulations_apply: true
+        housing_benefit_net_earnings: 5000
+        carer_premium: 0
+        working_tax_credit: 0
+        WTC_disabled_element: 0
+        WTC_severely_disabled_element: 0
+      non_dependant:
+        members: [adult_non_dependant]
+        housing_benefit_pension_age_regulations_apply: false
+        housing_benefit_net_earnings: 0
+        disability_premium: 0
+        severe_disability_premium: 0
+        working_tax_credit: 100
+        WTC_disabled_element: 100
+        WTC_severely_disabled_element: 0
+    households:
+      household:
+        members: [claimant, partner, adult_non_dependant]
+        country: ENGLAND
+  output:
+    is_lone_parent: [false, false]
+    is_couple: [true, false]
+    housing_benefit_special_earnings_disregard_eligible: [false, false]
+    housing_benefit_special_earnings_disregard: [520, 0]
+
+- name: ENGLAND qualifying young person's disability receipt does not qualify the pension-age claimant
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 72
+        is_claimant_or_partner: true
+        pip_m: 0
+      qualifying_young_person:
+        age: 18
+        is_claimant_or_partner: false
+        is_in_non_advanced_education: true
+        pip_m: 100
+    benunits:
+      family:
+        members: [claimant, qualifying_young_person]
+        housing_benefit_pension_age_regulations_apply: true
+        housing_benefit_net_earnings: 5000
+        carer_premium: 0
+        working_tax_credit: 0
+        # Isolate receipt scoping from the independent lone-parent route.
+        is_lone_parent: false
+    households:
+      household:
+        members: [claimant, qualifying_young_person]
+        country: ENGLAND
+  output:
+    is_couple: false
+    housing_benefit_special_earnings_disregard_eligible: false
+    housing_benefit_special_earnings_disregard: 260
+
+# Cases: SDA; WTC disability; WTC severe disability; AA; DLA mobility;
+# PIP daily living; PIP mobility; AFIP; WTC element without an award;
+# WTC award without either disability element. Each claimant is pension-age,
+# is not a lone parent and has more than £20 a week in net earnings.
+- name: NORTHERN_IRELAND pension-age qualifying receipt matrix
+  period: 2024
+  input:
+    country: [NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND]
+    age: [70, 70, 70, 70, 70, 70, 70, 70, 70, 70]
+    housing_benefit_pension_age_regulations_apply: [true, true, true, true, true, true, true, true, true, true]
+    carer_premium: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    sda: [100, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    working_tax_credit: [0, 100, 100, 0, 0, 0, 0, 0, 0, 100]
+    WTC_disabled_element: [0, 100, 0, 0, 0, 0, 0, 0, 100, 0]
+    WTC_severely_disabled_element: [0, 0, 100, 0, 0, 0, 0, 0, 0, 0]
+    attendance_allowance: [0, 0, 0, 100, 0, 0, 0, 0, 0, 0]
+    dla_sc: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    dla_m: [0, 0, 0, 0, 100, 0, 0, 0, 0, 0]
+    pip_dl: [0, 0, 0, 0, 0, 100, 0, 0, 0, 0]
+    pip_m: [0, 0, 0, 0, 0, 0, 100, 0, 0, 0]
+    armed_forces_independence_payment: [0, 0, 0, 0, 0, 0, 0, 100, 0, 0]
+    is_blind: [false, false, false, false, false, false, false, false, false, false]
+    is_claimant_or_partner: [true, true, true, true, true, true, true, true, true, true]
+    housing_benefit_net_earnings: [5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000]
+    is_lone_parent: [false, false, false, false, false, false, false, false, false, false]
+    is_couple: [false, false, false, false, false, false, false, false, false, false]
+  output:
+    housing_benefit_special_earnings_disregard_eligible: [true, true, true, true, true, true, true, true, false, false]
+    housing_benefit_special_earnings_disregard: [1040, 1040, 1040, 1040, 1040, 1040, 1040, 1040, 260, 260]
+
+- name: NORTHERN_IRELAND pension-age partner SDA qualifies the couple
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 72
+        is_claimant_or_partner: true
+        sda: 0
+      partner:
+        age: 70
+        is_claimant_or_partner: true
+        sda: 100
+    benunits:
+      couple:
+        members: [claimant, partner]
+        housing_benefit_pension_age_regulations_apply: true
+        housing_benefit_net_earnings: 5000
+        carer_premium: 0
+        working_tax_credit: 0
+    households:
+      household:
+        members: [claimant, partner]
+        country: NORTHERN_IRELAND
+  output:
+    is_lone_parent: false
+    is_couple: true
+    housing_benefit_special_earnings_disregard_eligible: true
+    housing_benefit_special_earnings_disregard: 1040
+
+- name: NORTHERN_IRELAND adult non-dependant SDA and disability WTC do not qualify the pension-age couple
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 72
+        is_claimant_or_partner: true
+        sda: 0
+      partner:
+        age: 70
+        is_claimant_or_partner: true
+        sda: 0
+      adult_non_dependant:
+        age: 40
+        # Claimant of their own benefit unit, never of the pensioner couple.
+        is_claimant_or_partner: true
+        sda: 100
+    benunits:
+      couple:
+        members: [claimant, partner]
+        housing_benefit_pension_age_regulations_apply: true
+        housing_benefit_net_earnings: 5000
+        carer_premium: 0
+        working_tax_credit: 0
+        WTC_disabled_element: 0
+        WTC_severely_disabled_element: 0
+      non_dependant:
+        members: [adult_non_dependant]
+        housing_benefit_pension_age_regulations_apply: false
+        housing_benefit_net_earnings: 0
+        disability_premium: 0
+        severe_disability_premium: 0
+        working_tax_credit: 100
+        WTC_disabled_element: 100
+        WTC_severely_disabled_element: 0
+    households:
+      household:
+        members: [claimant, partner, adult_non_dependant]
+        country: NORTHERN_IRELAND
+  output:
+    is_lone_parent: [false, false]
+    is_couple: [true, false]
+    housing_benefit_special_earnings_disregard_eligible: [false, false]
+    housing_benefit_special_earnings_disregard: [520, 0]
+
+- name: NORTHERN_IRELAND qualifying young person's disability receipt does not qualify the pension-age claimant
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 72
+        is_claimant_or_partner: true
+        pip_m: 0
+      qualifying_young_person:
+        age: 18
+        is_claimant_or_partner: false
+        is_in_non_advanced_education: true
+        pip_m: 100
+    benunits:
+      family:
+        members: [claimant, qualifying_young_person]
+        housing_benefit_pension_age_regulations_apply: true
+        housing_benefit_net_earnings: 5000
+        carer_premium: 0
+        working_tax_credit: 0
+        # Isolate receipt scoping from the independent lone-parent route.
+        is_lone_parent: false
+    households:
+      household:
+        members: [claimant, qualifying_young_person]
+        country: NORTHERN_IRELAND
+  output:
+    is_couple: false
+    housing_benefit_special_earnings_disregard_eligible: false
+    housing_benefit_special_earnings_disregard: 260
+
 - name: Standard replacement, lone-parent precedence and earnings cap
   period: 2024
   input:
@@ -62,6 +332,7 @@
     meets_housing_benefit_additional_earnings_disregard_conditions: [false, false, false, false, false, false]
     housing_benefit_on_passporting_benefit: [false, false, false, false, false, false]
   output:
+    housing_benefit_special_earnings_disregard: [1040, 1040, 1300, 500, 260, 520]
     housing_benefit_applicable_income_disregard: [1040, 1040, 1300, 500, 260, 520]
 
 - name: Special standard amount participates in additional-disregard threshold

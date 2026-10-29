@@ -1,0 +1,70 @@
+description: Weekly earnings above which a person is treated as gainfully employed and so is not entitled to Carer's Allowance. The test uses net earnings in the preceding week.
+# Each value is the amount the up-rating regulations set. From April 2025 the
+# Government sets it at 16 times the hourly national living wage, rounded up
+# to the nearest pound (Explanatory Memorandum to SI 2025/352, paragraph 5.6).
+# Years after the last value here are projected that way, from the national
+# living wage and gov.dwp.carers_allowance.earnings_limit_national_living_wage_hours,
+# by create_earnings_limit_projection.py.
+metadata:
+  economy: false
+  period: week
+  unit: currency-GBP
+  label: Carer's Allowance earnings limit
+  reference:
+    - title: The Social Security (Invalid Care Allowance) Regulations 1976 reg. 8(1)
+      href: https://www.legislation.gov.uk/uksi/1976/409/regulation/8
+    - title: Social Security Contributions and Benefits Act 1992 s. 70(1)(b)
+      href: https://www.legislation.gov.uk/ukpga/1992/4/section/70
+    - title: Explanatory Memorandum to the Social Security Benefits Up-rating Regulations 2025 (SI 2025/352), paragraphs 5.3 and 5.6
+      href: https://www.legislation.gov.uk/uksi/2025/352/pdfs/uksiem_20250352_en_001.pdf
+values:
+  2015-04-06:
+    value: 110
+    reference:
+      - title: The Social Security (Invalid Care Allowance) (Amendment) Regulations 2015 (SI 2015/162)
+        href: https://www.legislation.gov.uk/uksi/1976/409/regulation/8/2015-04-06
+  2017-04-10:
+    value: 116
+    reference:
+      - title: The Social Security (Invalid Care Allowance) (Amendment) Regulations 2017 (SI 2017/386)
+        href: https://www.legislation.gov.uk/uksi/1976/409/regulation/8/2017-04-10
+  2018-04-09:
+    value: 120
+    reference:
+      - title: The Social Security (Invalid Care Allowance) (Amendment) Regulations 2018 (SI 2018/280)
+        href: https://www.legislation.gov.uk/uksi/1976/409/regulation/8/2018-04-09
+  2019-04-08:
+    value: 123
+    reference:
+      - title: The Social Security Benefits Up-rating Regulations 2019 (SI 2019/552)
+        href: https://www.legislation.gov.uk/uksi/1976/409/regulation/8/2019-04-08
+  2020-04-06:
+    value: 128
+    reference:
+      - title: The Social Security Benefits Up-rating Regulations 2020 (SI 2020/266)
+        href: https://www.legislation.gov.uk/uksi/1976/409/regulation/8/2020-04-06
+  2022-04-11:
+    value: 132
+    reference:
+      - title: The Social Security Benefits Up-rating Regulations 2022 (SI 2022/342)
+        href: https://www.legislation.gov.uk/uksi/1976/409/regulation/8/2022-04-11
+  2023-04-10:
+    value: 139
+    reference:
+      - title: The Social Security Benefits Up-rating Regulations 2023 (SI 2023/340)
+        href: https://www.legislation.gov.uk/uksi/1976/409/regulation/8/2023-04-10
+  2024-04-08:
+    value: 151
+    reference:
+      - title: The Social Security Benefits Up-Rating Regulations 2024 (SI 2024/386)
+        href: https://www.legislation.gov.uk/uksi/1976/409/regulation/8/2024-04-08
+  2025-04-07:
+    value: 196
+    reference:
+      - title: The Social Security Benefits Up-rating Regulations 2025 (SI 2025/352)
+        href: https://www.legislation.gov.uk/uksi/1976/409/regulation/8/2025-04-07
+  2026-04-06:
+    value: 204
+    reference:
+      - title: The Social Security Benefits Up-rating Regulations 2026 (SI 2026/218)
+        href: https://www.legislation.gov.uk/uksi/1976/409/regulation/8

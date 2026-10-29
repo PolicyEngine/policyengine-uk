@@ -7,16 +7,15 @@ class shareholding(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = GBP
+    unit = "/1"
 
     def formula(household, period, parameters):
         wealth = household("corporate_sector_wealth", period)
-        if (
-            household.simulation.dataset is not None
-            and household("corporate_sector_wealth", period).sum() != 0
-        ):
+        if household.simulation.dataset is not None:
             weight = household("household_weight", period)
-            return wealth / (wealth * weight).sum()
+            weighted_total = (wealth * weight).sum()
+            if weighted_total != 0:
+                return wealth / weighted_total
         wealth = parameters(period).household.wealth
         nbs = wealth.national_balance_sheet
         wealth = household("corporate_sector_wealth", period)

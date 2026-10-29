@@ -13,7 +13,7 @@
     people:
       adult:
         age: 18
-        total_income: 15_000
+        gross_taxable_inputs: 15_000
       child:
         age: 10
   output:
