@@ -349,7 +349,8 @@ def test_each_year_grows_every_savings_input_by_the_same_rate(
         )
 
 
-# The declaration travels with the data.
+# The declaration travels with the data, and data that comes back from a file
+# or a copy projects by it (assert_projects_by, below).
 
 
 @pytest.mark.parametrize("rule", [GDP_PER_HEAD, OBR_SAVINGS_INCOME_2022_2025])
@@ -359,7 +360,7 @@ def test_a_single_year_file_keeps_its_rule(tmp_path, rule):
     with h5py.File(path, "r") as file:
         assert file.attrs[SAVINGS_INCOME_PROJECTION_KEY] == rule
     assert read_savings_income_projection(path) == rule
-    assert UKSingleYearDataset(str(path)).savings_income_projection == rule
+    assert_projects_by(UKSingleYearDataset(str(path)), rule)
 
 
 def test_a_file_without_the_attribute_reads_as_gdp_per_head(tmp_path):
@@ -408,6 +409,7 @@ def test_projection_copies_and_multi_year_files_keep_the_rule(tmp_path, rule):
         rule
     }
     assert projected.copy().savings_income_projection == rule
+    assert_projects_by(projected.copy()[2023], rule)
     path = tmp_path / "multi.h5"
     projected.save(str(path))
     with h5py.File(path, "r") as file:
@@ -416,6 +418,7 @@ def test_projection_copies_and_multi_year_files_keep_the_rule(tmp_path, rule):
     assert {reloaded[year].savings_income_projection for year in reloaded.years} == {
         rule
     }
+    assert_projects_by(reloaded[2023], rule)
 
 
 def test_a_multi_year_dataset_refuses_mixed_rules():
@@ -481,16 +484,18 @@ def assert_projects_by(single_year, rule):
 
 @pytest.mark.parametrize("rule", [None, OBR_SAVINGS_INCOME_2022_2025])
 def test_a_simulation_projects_by_and_exports_the_rule(rule):
-    """A simulation built from the data projects by its rule, and its clones,
-    exported datasets and input frames declare the same rule."""
+    """A simulation built from the data projects by its rule. Its input
+    frames declare the same rule, and datasets exported from it or from its
+    clones declare it and project by it."""
     sim = Microsimulation(dataset=dataset(2023, ADDITIVE, PEOPLE, rule=rule))
     expected = rule or GDP_PER_HEAD
     assert sim._savings_income_projection == expected
-    assert sim.clone()._savings_income_projection == expected
-    assert sim.to_input_dataframe().attrs[SAVINGS_INCOME_PROJECTION_KEY] == expected
-    exported = UKSingleYearDataset.from_simulation(sim, fiscal_year=2025)
-    assert exported.savings_income_projection == expected
     assert_grows_by(sim.dataset, expected)
+    assert sim.to_input_dataframe().attrs[SAVINGS_INCOME_PROJECTION_KEY] == expected
+    for source in (sim, sim.clone()):
+        assert_projects_by(
+            UKSingleYearDataset.from_simulation(source, fiscal_year=2023), expected
+        )
 
 
 @pytest.mark.parametrize("rule", ["", False, 0, "cpi"])

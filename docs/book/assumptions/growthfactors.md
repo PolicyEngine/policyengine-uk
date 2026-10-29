@@ -112,9 +112,9 @@ When we project a dataset to later years (up to 2032-33), we grow savings income
 | Fiscal year | 2022 | 2023 | 2024 | 2025 |
 |-------------|------|------|------|------|
 | OBR savings income | 50.4% | 129.9% | 35.0% | 0.6% |
-| Per person | 48.9% | 126.9% | 33.5% | 0.4% |
+| Per person | 48.8% | 126.8% | 33.7% | 0.3% |
 
-From 2023-24 to 2025-26 the OBR's savings income rises 35.8%, where per capita GDP and population growth would give 10.3%. After 2025-26 these variables follow per capita GDP under either rule.
+From 2023-24 to 2025-26 the OBR's savings income rises 35.8%, where per capita GDP and population growth would give 10.2%. After 2025-26 these variables follow per capita GDP under either rule.
 
 The declaration matters because a dataset's savings income is fitted to targets its builder moved forward along some path. Growing it by a different path would miss those targets. Datasets store the declaration in the H5 root attribute `policyengine_uk.savings_income_projection`.
 
