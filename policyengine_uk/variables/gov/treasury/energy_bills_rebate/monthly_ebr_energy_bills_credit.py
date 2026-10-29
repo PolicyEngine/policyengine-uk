@@ -18,15 +18,11 @@ class monthly_ebr_energy_bills_credit(Variable):
     )
 
     def formula(household, period, parameters):
-        return ebss_credit(parameters, period, household("country", period.this_year))
-
-
-def ebss_credit(parameters, month, country):
-    """The main-scheme credit for ``month`` to a household in ``country``."""
-    ebr = parameters(month).gov.treasury.energy_bills_rebate
-    is_northern_ireland = country == country.possible_values.NORTHERN_IRELAND
-    return where(
-        is_northern_ireland,
-        ebr.energy_bills_credit_northern_ireland,
-        ebr.energy_bills_credit_monthly,
-    )
+        ebr = parameters(period).gov.treasury.energy_bills_rebate
+        country = household("country", period.this_year)
+        is_northern_ireland = country == country.possible_values.NORTHERN_IRELAND
+        return where(
+            is_northern_ireland,
+            ebr.energy_bills_credit_northern_ireland,
+            ebr.energy_bills_credit_monthly,
+        )

@@ -67,9 +67,11 @@ HBAI_HOUSEHOLD_NET_INCOME_ADDS = [
     # Ireland) and the £150 Council Tax Rebate as miscellaneous income, not
     # state support. DWP imputes receipt, since the FRS did not ask about
     # them, so no FRS income field behind miscellaneous_income holds them.
-    # HBAI counts them by financial year, all in FYE 2023:
+    # HBAI counts the whole credit in FYE 2023; the model sums it by
+    # calendar year here as in household net income (see
+    # docs/book/programs/gov/treasury/cost-of-living-payments.md):
     # https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2023/households-below-average-income-series-quality-and-methodology-information-report-fye-2023
-    "hbai_energy_bills_rebate",
+    "energy_bills_rebate",
     # Reference for tax-free-childcare: https://assets.publishing.service.gov.uk/media/5e7b191886650c744175d08b/households-below-average-income-1994-1995-2018-2019.pdf
 ]
 

@@ -8,10 +8,7 @@ figures are published as suppressed, and descriptions of fewer than
 
 A total that contains a suppressed head or double count is rebuilt that year
 from its other components (``measure.rebuild_protected``), and so are the
-household incomes for deciles, so no published total includes it. Parts of
-HBAI income outside the partition that few records may hold
-(``measure.HBAI_ONLY_COMPONENTS``) are counted and suppressed like heads, and
-HBAI income leaves them out in the same way. Checks
+household incomes for deciles, so no published total includes it. Checks
 whose verdict would depend on its values leave out the households holding it
 (identities, the HBAI reproduction, overlap guards) or aren't run that year
 (the sign check of the suppressed head). A reform's costing and target change

@@ -32,17 +32,6 @@ HOUSEHOLD_TOTALS = {
     "hbai_household_net_income": "Household net income (HBAI definition)",
 }
 
-# Parts of HBAI income outside the partition that, like a head, few records
-# may hold. Each is published with a head's small-cell protection on its own
-# records, and in a year it is suppressed HBAI income, its deciles, poverty
-# and inequality leave it out as they do a suppressed head.
-# hbai_energy_bills_rebate is the Energy Bills Rebate head timed by
-# financial year, so a year can hold it in few records while the head holds
-# none, or the reverse.
-HBAI_ONLY_COMPONENTS = {
-    "hbai_energy_bills_rebate": "Energy Bills Rebate in HBAI income",
-}
-
 
 class Recorder:
     """Collects metric values and check outcomes for one measurement."""
@@ -568,22 +557,6 @@ def measure_year(
                 values != 0, weights[entity_of(sim, dc.variable)]
             ),
         )
-    hbai_only_hh = {}
-    for variable, label in HBAI_ONLY_COMPONENTS.items():
-        if variable not in tbs_variables:
-            continue
-        entity = entity_of(sim, variable)
-        values = array(sim, variable, year).astype(np.float64)
-        hbai_only_hh[variable] = to_household(sim, values, entity)
-        rec.metric(
-            f"household.{variable}",
-            label,
-            "household_totals",
-            "gbp",
-            year,
-            float(np.sum(hw * hbai_only_hh[variable])),
-            records=_weighted_records(values != 0, weights[entity]),
-        )
     hidden = suppressed_components(rec, partition, year)
     # Households holding a suppressed component: no check verdict or detail
     # may depend on them this year.
@@ -591,7 +564,7 @@ def measure_year(
     if hidden:
         holding = np.zeros(len(hw), dtype=bool)
         for variable in hidden:
-            holding |= {**head_hh, **double_count_hh, **hbai_only_hh}[variable] != 0
+            holding |= {**head_hh, **double_count_hh}[variable] != 0
 
     active = active_parameters(sim, partition, year)
     # Geographic exclusivity, on the data. A declared double count is netted
@@ -963,9 +936,8 @@ def _exclude(record: dict, key: str, excludes: Mapping) -> None:
 
 
 def suppressed_components(rec: "Recorder", partition: Partition, year: int) -> dict:
-    """``{variable: (metric id, raw value)}`` for each head, declared double
-    count or part of HBAI income outside the partition (HBAI_ONLY_COMPONENTS)
-    suppressed in ``year``."""
+    """``{variable: (metric id, raw value)}`` for each head or declared double
+    count suppressed in ``year``."""
     key = str(year)
     out = {}
     for head in partition.heads:
@@ -976,10 +948,6 @@ def suppressed_components(rec: "Recorder", partition: Partition, year: int) -> d
         metric_id = f"double_counts.{dc.variable}"
         if (metric_id, key) in rec.hidden:
             out[dc.variable] = (metric_id, rec.hidden[(metric_id, key)])
-    for variable in HBAI_ONLY_COMPONENTS:
-        metric_id = f"household.{variable}"
-        if (metric_id, key) in rec.hidden:
-            out[variable] = (metric_id, rec.hidden[(metric_id, key)])
     return out
 
 

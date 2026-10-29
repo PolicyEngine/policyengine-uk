@@ -32,9 +32,6 @@ Small cells (`privacy.py`):
 - A figure from fewer than 10 records is published as suppressed.
 - A total that holds one is rebuilt from its other components and marked †.
 - Poverty, inequality and deciles are withheld while HBAI income holds one.
-  Parts of HBAI income outside the partition that few records may hold
-  (`measure.HBAI_ONLY_COMPONENTS`, such as the Energy Bills Rebate by
-  financial year) are counted and suppressed like heads.
 - A reform's figures for a year are withheld when they would come from a
   small cell.
 

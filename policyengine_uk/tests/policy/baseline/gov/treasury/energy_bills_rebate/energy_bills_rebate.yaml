@@ -20,11 +20,11 @@
 # Each household below has no other income, does not claim Universal Credit
 # and has no council tax to pay, so its HBAI income is the rebate alone. The
 # Great Britain credit is £66 in October and November 2022 and £67 a month
-# from December 2022 to March 2023. energy_bills_rebate sums it by calendar
-# year (£199 and £201); HBAI counts it by financial year, all £400 in
-# 2022-23, through hbai_energy_bills_rebate.
+# from December 2022 to March 2023, summed by calendar year (£199 and £201).
+# DWP's HBAI counts all £400 in 2022-23; the model keeps the calendar-year
+# sum, as in household net income (docs: cost-of-living-payments.md).
 
-- name: Case 3, a band C household's 2022-23 rebates are HBAI income in full.
+- name: Case 3, a band C household's 2022 rebates are HBAI income.
   period: 2022
   input:
     people:
@@ -42,10 +42,9 @@
   output:
     ebr_council_tax_rebate: 150
     ebr_energy_bills_credit: 199
-    hbai_energy_bills_rebate: 150 + 400
-    hbai_household_net_income: 150 + 400
+    hbai_household_net_income: 150 + 199
 
-- name: Case 4, the January to March 2023 instalments belong to 2022-23, not 2023-24.
+- name: Case 4, in 2023 only the credit's remaining instalments are paid, and counted.
   period: 2023
   input:
     people:
@@ -63,34 +62,9 @@
   output:
     ebr_council_tax_rebate: 0
     energy_bills_rebate: 201
-    hbai_energy_bills_rebate: 0
-    hbai_household_net_income: 0
+    hbai_household_net_income: 201
 
-# Northern Ireland's £400 credit is one payment in January 2023. Band E
-# keeps out the Council Tax Rebate, which the model pays by band in every
-# nation.
-- name: Case 5, Northern Ireland's January 2023 credit is 2022-23 HBAI income.
-  period: 2022
-  input:
-    people:
-      adult:
-        age: 40
-    benunits:
-      unit:
-        members: [adult]
-        would_claim_uc: false
-    households:
-      household:
-        members: [adult]
-        region: NORTHERN_IRELAND
-        council_tax_band: E
-        council_tax: 0
-  output:
-    energy_bills_rebate: 0
-    hbai_energy_bills_rebate: 400
-    hbai_household_net_income: 400
-
-- name: Case 6, in 2023 Northern Ireland's credit counts by calendar year but not in HBAI.
+- name: Case 5, Northern Ireland's January 2023 credit is HBAI income.
   period: 2023
   input:
     people:
@@ -103,15 +77,13 @@
     households:
       household:
         members: [adult]
-        region: NORTHERN_IRELAND
-        council_tax_band: E
+        country: NORTHERN_IRELAND
         council_tax: 0
   output:
     energy_bills_rebate: 400
-    hbai_energy_bills_rebate: 0
-    hbai_household_net_income: 0
+    hbai_household_net_income: 400
 
-- name: Case 7, the rebates are miscellaneous income, not HBAI state support.
+- name: Case 6, the rebates are miscellaneous income, not HBAI state support.
   period: 2022
   input:
     people:
@@ -127,71 +99,5 @@
         council_tax_band: A
         council_tax: 0
   output:
-    hbai_energy_bills_rebate: 550
+    energy_bills_rebate: 349
     hbai_benefits: 0
-
-# The financial year's nation picks the scheme for all its months, even
-# where the household's nation differs in the next model year (or isn't set
-# for it: country, unlike region, does not carry over to the next year).
-- name: Case 8, Northern Ireland given for 2022 only still gets its January 2023 credit.
-  period: 2022
-  input:
-    people:
-      adult:
-        age: 40
-    benunits:
-      unit:
-        members: [adult]
-        would_claim_uc: false
-    households:
-      household:
-        members: [adult]
-        country: NORTHERN_IRELAND
-        council_tax_band: E
-        council_tax: 0
-  output:
-    hbai_energy_bills_rebate: 400
-
-- name: Case 9, a move to Northern Ireland in 2023-24 leaves 2022-23 on the Great Britain scheme.
-  period: 2022
-  input:
-    people:
-      adult:
-        age: 40
-    benunits:
-      unit:
-        members: [adult]
-        would_claim_uc: false
-    households:
-      household:
-        members: [adult]
-        country:
-          2022: ENGLAND
-          2023: NORTHERN_IRELAND
-        council_tax_band: E
-        council_tax: 0
-  output:
-    ebr_energy_bills_credit: 199
-    hbai_energy_bills_rebate: 400
-
-- name: Case 10, a move from Northern Ireland in 2023-24 leaves 2022-23 on Northern Ireland's scheme.
-  period: 2022
-  input:
-    people:
-      adult:
-        age: 40
-    benunits:
-      unit:
-        members: [adult]
-        would_claim_uc: false
-    households:
-      household:
-        members: [adult]
-        country:
-          2022: NORTHERN_IRELAND
-          2023: ENGLAND
-        council_tax_band: E
-        council_tax: 0
-  output:
-    ebr_energy_bills_credit: 0
-    hbai_energy_bills_rebate: 400

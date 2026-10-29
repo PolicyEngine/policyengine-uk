@@ -13,9 +13,9 @@ Announced by the Chancellor in February 2022 to help households with the
 spike in domestic energy prices. Two strands:
 
 - **£150 Council Tax Rebate** for households in Council Tax bands A–D in
-  England, a one-off in 2022-23. Eligibility was fixed on 1 April 2022 and
-  billing authorities made every payment by 30 September 2022. Equivalent
-  payments were made by the devolved administrations.
+  England, a one-off in 2022-23. Households qualified on their band on
+  1 April 2022, and billing authorities made every payment by 30 September
+  2022. The devolved administrations made equivalent payments.
 - **Energy Bills Support Scheme**, a £400 discount on domestic electricity
   bills in Great Britain, paid in six monthly instalments from October 2022
   to March 2023 (£66 for two months, then £67). Announced in February 2022
@@ -40,18 +40,24 @@ PolicyEngine models these via:
 
 `ebr_energy_bills_credit` sums the monthly instalments within each calendar
 year, so a Great Britain household on the scheme throughout gets £199 in
-2022 and £201 in 2023. `energy_bills_rebate`, its sum with the Council Tax
-Rebate, counts in household net income and government spending that way.
+2022 and £201 in 2023, while HBAI counts the whole £400 in 2022-23. Each
+month takes the scheme of the household's `country` in that calendar year.
+A situation that sets Northern Ireland for 2022 only therefore gets the
+Great Britain credit from January to March 2023, because `country` is not
+carried forward and defaults to England.
 
-HBAI counts both strands by financial year, all in FYE 2023, and classifies
-them as miscellaneous income, not state support; DWP imputes receipt
-because the FRS did not ask about them. So `hbai_household_net_income` adds
-`hbai_energy_bills_rebate`, which sums the credit from April of the year to
-the next March, on the scheme of the nation the household lives in that
-financial year: the whole £400 (Northern Ireland's January 2023 payment
-included) in 2022-23 and nothing in 2023-24. It is not in `hbai_benefits`.
-No FRS income field behind `miscellaneous_income` holds the rebates, so
-they are not counted twice.
+HBAI classifies both strands as miscellaneous income, not state support,
+and DWP imputes receipt because the FRS did not ask about them. So
+`energy_bills_rebate` is in `hbai_household_net_income` but not in
+`hbai_benefits`. No FRS income field behind `miscellaneous_income` holds
+the rebates, so the model counts them once.
+
+HBAI income takes the same calendar-year sum as household net income and
+government spending. A Great Britain household in bands A to D on the
+scheme throughout gets £349 in 2022 and £201 in 2023, where HBAI counts
+£550 in 2022-23. `epg_subsidy` sums the Energy Price Guarantee by calendar
+year in the same way. Summing either by financial year would move all
+three measures together, so the model keeps one timing for now.
 
 ## Cost-of-Living Payments (2022-23 and 2023-24)
 
