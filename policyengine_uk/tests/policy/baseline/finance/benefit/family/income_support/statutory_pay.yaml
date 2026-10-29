@@ -1,14 +1,14 @@
 # IS Regs 1987 reg 35(2)(b) excludes sickness and parental-leave remuneration
-# from earnings; reg 40(4)(a) counts it as other income. Schedule 9 paras 1
+# from earnings; reg 40(1) treats it as other income. Schedule 9 paras 1
 # and 4 permit tax, primary Class 1 NI and half of pension contributions.
 # https://www.legislation.gov.uk/uksi/1987/1967/regulation/40
 # https://www.legislation.gov.uk/uksi/1987/1967/schedule/9/paragraph/4
 #
 # Ordinary earnings independently consume the Schedule 8 disregard in these
 # targeted cases: £20 x 52 = £1,040 for lone parents, £10 x 52 = £520 for a
-# couple. Statutory pay then counts in full. The existing model applies its
-# disregard to all income; statutory-only cases with unused earnings disregard
-# require a separate correction and are not asserted here as current law.
+# couple. Statutory pay then counts in full. The disregard is capped at net
+# earnings, so it never reaches statutory pay; earnings_disregard.yaml covers
+# statutory pay with no earnings, or with earnings below the disregard.
 # The 2025/26 lone-parent allowance is £92.05 x 52 = £4,786.60 (DWP rates).
 # https://www.legislation.gov.uk/uksi/1987/1967/schedule/8/paragraph/5
 # https://www.legislation.gov.uk/uksi/1987/1967/schedule/8/paragraph/6

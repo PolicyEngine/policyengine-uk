@@ -550,17 +550,33 @@ BRANCHING_SCENARIOS = {
         "capital_gains_default_response",
     ],
 )
-def test_branching_runs_with_read_only_cache(read_only_cache, case):
+def test_branching_runs_with_read_only_cache(read_only_cache, case, monkeypatch):
     from policyengine_uk import Simulation
     from policyengine_uk.model_api import Scenario
 
     if case == "marginal_rates":
         sim = Simulation(situation=_earning_couple_with_gains())
+        owned = []
+        original_get_branch = Simulation.get_branch
+
+        def capture(owner, name="branch", *args, **kwargs):
+            branch = original_get_branch(owner, name, *args, **kwargs)
+            if owner is sim and name.startswith(
+                ("adult_1_pay_rise", "adult_2_pay_rise")
+            ):
+                owned.append((name, branch))
+            return branch
+
+        monkeypatch.setattr(Simulation, "get_branch", capture)
         for year in YEARS:
             sim.calculate("marginal_tax_rate", year)
             sim.calculate("marginal_tax_rate_on_capital_gains", year)
-        # The branches ran: both earners face a rate, and so do the gains.
-        assert {"adult_1_pay_rise", "adult_2_pay_rise"} <= set(sim.branches)
+        # Both scratch branches ran, and each registration was detached.
+        assert {"adult_1_pay_rise", "adult_2_pay_rise"} <= {
+            name for name, branch in owned
+        }
+        assert all(sim.branches.get(name) is not branch for name, branch in owned)
+        # Both earners face a rate, and so do the gains.
         assert (sim.calculate("marginal_tax_rate", 2026)[:2] > 0).all()
         assert sim.calculate("marginal_tax_rate_on_capital_gains", 2026)[0] > 0
         return

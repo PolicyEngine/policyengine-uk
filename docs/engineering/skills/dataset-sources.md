@@ -100,6 +100,61 @@ discard H5 attributes must explicitly preserve this declaration before their
 output can be reloaded safely. Test routing and migration on synthetic frames
 and small H5 fixtures, without downloading private datasets.
 
+## Apprenticeship status and tenure
+
+Dataset producers should export `is_apprentice` and
+`is_in_first_year_of_apprenticeship` as separate annual person columns.
+Apprentice status alone cannot establish entitlement to the apprentice
+minimum wage at age 19 or over. The first-year column records the first
+12 months of the current apprenticeship employment, including any period
+covered by statutory continuity; it is not an academic-year flag. See the
+[calculator input contract](../../book/usage/simulations.md#apprenticeship-inputs).
+
+An absent first-year column uses the variable's `False` default. This can
+change minimum-wage and dependent childcare income-condition results for
+existing data whose `is_apprentice` flag is true at age 19 or over. It does
+not change the existing under-25 apprentice employer National Insurance
+relief. A missing column is not evidence that every apprentice is in a
+later year.
+
+The producer work in [Microcosm PR #1373](https://github.com/PolicyEngine/microcosm/pull/1373)
+must supply an explicit first-year classification alongside apprentice
+status before that status can also identify older apprentices who receive
+the lower minimum wage. This UK change supplies no first-year imputation,
+prevalence estimate or migration of existing releases. Projection does not
+advance apprenticeship tenure, so a producer or caller must supply changed
+classifications for later years rather than rely on a carried input to
+expire automatically.
+
+## ISA balances and subscriptions
+
+Producers can export per-person `cash_isa_balance` and
+`stocks_and_shares_isa_balance`. The household `cash_isa` and
+`stocks_and_shares_isa` sum them, but a stored household column takes
+precedence, so existing datasets that store only the household totals keep
+them, projected with `savings` and `corporate_wealth` through
+`uprating_indices.yaml`. A producer that exports the person balances should
+either stop exporting the household totals or keep them equal to the sums;
+the model does not reconcile the two.
+
+`cash_isa_subscriptions` and `stocks_and_shares_isa_subscriptions` are
+annual person flows, summed over all of a person's accounts of each type, that
+count towards the ISA subscription limits, with `lifetime_isa_payments` for
+Lifetime ISAs. Projection carries them flat, because growing them would put
+people who pay in exactly the annual limit above it in the baseline. Nominal
+subscriptions grow, so flat amounts understate how much a lowered limit leaves
+out in later years; a producer can grow them itself and cap each person at the
+limit in force. The model does not cap them at the limits: a producer should
+export subscriptions as observed, so a reform that lowers a limit shows what
+it leaves out. Observed subscriptions stay within the £20,000 annual
+limit, which the three inputs share, so an imputation should draw them
+jointly. Drawn separately, for example from tables that leave Lifetime ISAs
+out, they can sum above the limit and put people above it in the baseline,
+where `isa_subscriptions_above_limit` should be zero. Absent columns default
+to zero, so a change to an ISA limit changes nothing on such data.
+[Microcosm issue 1415](https://github.com/PolicyEngine/microcosm/issues/1415)
+covers imputing the subscriptions and balances.
+
 ## Defaults
 
 `policyengine_uk` does not silently choose a default dataset when no situation is
@@ -239,6 +294,23 @@ these defaults, including a future calibrated dataset column (uk-data#448).
 Do not rebuild an existing data-built simulation by calling core's
 `SimulationBuilder.build_from_dict` directly. In core 3.33.2 this leaves stale
 dataset provenance, which copies inherit. Use UK `build_from_situation` instead.
+
+## Reported Council Tax Reduction projection
+
+Dataset projection grows existing `council_tax_benefit_reported` person inputs
+by their household's council tax bill factor, using `person_household_id` to
+map the factor. The factor uses each country's council tax receipts growth
+net of household weight growth; UNKNOWN uses England's series. Reported
+reductions therefore retain their share of the bill. Northern Ireland's
+factor remains one, so both its supplied bill and reduction stay flat. This
+does not classify any Northern Ireland report as domestic rate relief.
+
+The projector requires the reported column in both years and creates no
+missing reports. Resetting economic assumptions restores the base reported
+amount alongside the bill when both years store it. No generic CPI index is
+added, and hand-entered situations retain their existing behavior. Beyond the
+materialized projection horizon, Core carries the latest reported reduction
+and council tax bill at their last stored cash values.
 
 ## Student loan plan projection
 

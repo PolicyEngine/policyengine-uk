@@ -4,10 +4,10 @@
 # publish. All three run the same jobs in the same locked environment.
 #
 # Jobs: the YAML policy tests (which also list every Python test), the Python
-# tests split over five runners, and Result, which fails unless every listed
+# tests split over six runners, and Result, which fails unless every listed
 # Python test ran in exactly one shard and passed, apart from the outcomes
 # accepted in .github/test_outcome_allowlist.toml. A caller that names its job
-# Test gets the checks "Test / YAML", "Test / Python K/5" and "Test / Result";
+# Test gets the checks "Test / YAML", "Test / Python K/6" and "Test / Result";
 # "Test / Result" is the one to require.
 #
 # Runners. These jobs, and the check jobs that pull requests, merge queue
@@ -78,8 +78,15 @@ jobs:
     # queued for hours; the parameter tree and every test result are
     # identical on both.
     runs-on: ${{ vars.CI_RUNNER_ARM != '' && (vars.CI_RUNNER_EVENTS == '' || contains(format(',{0},', vars.CI_RUNNER_EVENTS), format(',{0},', github.event_name))) && vars.CI_RUNNER_ARM || 'ubuntu-24.04-arm' }}
-    # About 4 minutes on 10 October (run 38085920460).
-    timeout-minutes: 30
+    # About 4 minutes on 10 October (run 38085920460). On 27 October 8 of
+    # 16 pull request and merge-queue jobs hit the 30-minute limit, each
+    # after its tests had passed, and the other 8 took 22 to 28 minutes
+    # (two more were cancelled by newer pushes). In merge-queue run
+    # 40541059060 the cancelled job failed Result once the shards had
+    # finished, which took that pull request out of the queue. 45 minutes
+    # leaves room for a slow runner and still stops a hung job; Result
+    # waits about an hour for the shards anyway.
+    timeout-minutes: 45
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
@@ -135,6 +142,13 @@ jobs:
     # shard. N is the number of jobs this matrix makes: to add a shard, add
     # a number to the list.
     #
+    # The slowest tests, listed with their CI durations in
+    # policyengine_uk/tests/shard_durations.toml, are dealt out by duration
+    # instead of hashed. With the hash alone, over 95 runs on 24 October
+    # shard 2/5 averaged 57 minutes (up to 70) and shard 1/5 49: a 22-minute
+    # property test and several of 4 to 7 minutes had hashed to shard 2.
+    # .github/test_durations.py regenerates the table from shard logs.
+    #
     # Four shards, not three, for memory: each pytest-xdist worker's memory
     # grows with the tests it runs, and with three shards of four workers
     # the 16 GB runners peaked at 15.6 GB, 283 MB short of running out
@@ -146,6 +160,16 @@ jobs:
     # request adding about a fifth more parameters (#1855) hit the timeout
     # on shard 1/4 twice, and its other shards took 48 to 59 minutes (run
     # 39568525017).
+    #
+    # Six, not five, for both. On 26 October a pull request's shards took
+    # 63 to 75 minutes, and the 75-minute limit cancelled shard 4/5 (run
+    # 40308966462, first attempt); a merge queue run that evening took 66
+    # to 69 (run 40406434741). The same evening one pull request lost
+    # shards 2/5, 3/5 and 5/5 to memory at 15.6 to 15.9 GB (run
+    # 40393666784), and the merge queue run for #2105 lost shard 2/5 at
+    # 15.5 GB (run 40395541241). With six, the listed slow tests come to
+    # about 134 minutes of worker time per shard instead of 161, and each
+    # worker runs about a sixth fewer tests.
     name: Python ${{ matrix.shard }}/${{ strategy.job-total }}
     if: ${{ !inputs.skip }}
     runs-on: ${{ vars.CI_RUNNER_ARM != '' && (vars.CI_RUNNER_EVENTS == '' || contains(format(',{0},', vars.CI_RUNNER_EVENTS), format(',{0},', github.event_name))) && vars.CI_RUNNER_ARM || 'ubuntu-24.04-arm' }}
@@ -161,7 +185,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4, 5]
+        shard: [1, 2, 3, 4, 5, 6]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6

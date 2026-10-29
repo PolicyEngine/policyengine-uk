@@ -370,8 +370,9 @@ def test_housing_benefit_disregard_is_the_statutory_weekly_sum_in_every_year(
 
 def test_disabled_working_age_single_gets_the_special_hb_disregard():
     # The property above reads special eligibility from the model, so pin it
-    # here. With no hours the additional sum cannot apply, and tax credits
-    # have ended by 2026, so the working tax credit route is off.
+    # here. A disabled working-age single has the disability premium, which
+    # gives the £20 (SI 2006/213 Sch 4 para 3); with no hours the additional
+    # sum cannot apply.
     unit = dict(
         shape="single",
         nation="ENGLAND",

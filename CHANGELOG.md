@@ -1,3 +1,196 @@
+## [2.164.1] - 2026-10-29
+
+### Changed
+
+- Update the economic assumptions to the OBR's October 2026 Economic and fiscal outlook, including its revised 2025 outturn and its new 2031 forecast, with a smooth join to the long-run paths from 2032. Population to 2031-32 is the OBR's October forecast, read from its economy tables; it grows more slowly than the March forecast, so household weights are about 0.7% lower by 2030-31. Bank Rate, which caps Plan 1 and Plan 4 student loan interest, is the calendar-year average from the October economy Table 1.9 in every year, so 2026-2031 follow the OBR's market path. The regulated rail fare indices rise by July 2026 RPI plus 1 point in 2027 and by the October RPI forecast plus 1 point to 2031, which raises rail_subsidy_spending from 2028. Households' financial assets follow October Table 1.11 to 2031; the October tables revise 2020 onwards down, so the property wealth, corporate wealth and land value totals they grow are about 10% lower in 2026, which moves land value tax and wealth tax reform results.
+
+### Fixed
+
+- Limited Housing Benefit childcare deductions to remaining earnings after the shared applied standard plus tax-credit payments, retaining childcare_expenses and the existing age-based cap approximation; deferred detailed qualifying-care rules without adding an input. Prevented negative overridden net earnings from producing a negative permitted-work applied standard.
+
+
+## [2.164.0] - 2026-10-28
+
+### Added
+
+- Added the 20% Lifetime ISA withdrawal charge for a first-home purchase above the £450,000 property price cap that meets every other condition, for withdrawals from 29 October 2026 (ISA Regulations 1998 Schedule paragraphs 5 and 6A, inserted by SI 2026/1130); the annual model applies it from fiscal 2027-28.
+- Added the ISA annual subscription limit (ISA Regulations 1998 reg 4ZA: £15,240 from 2015-16 and £20,000 from 2017-18), a cash ISA limit for people under an age at the end of the tax year that current law leaves unset (Budget 2026 retains £20,000 for cash, so SI 2026/1018's £12,000 for under-65s is a reform setting), per-person cash and stocks-and-shares ISA subscription inputs, and `cash_isa_subscriptions_above_limit` and `isa_subscriptions_above_limit`, the subscriptions a limit leaves out.
+
+### Changed
+
+- The household `cash_isa` and `stocks_and_shares_isa` now sum new per-person `cash_isa_balance` and `stocks_and_shares_isa_balance` inputs. A dataset or situation that stores a household total keeps it, and stored totals still project with savings, but a household total given for one year no longer carries into later years.
+
+
+## [2.163.2] - 2026-10-28
+
+### Fixed
+
+- Made the test that dead systems' variable modules are released during a test independent of automatic garbage-collection timing.
+- Made Pension Credit and pension-age Housing Benefit projections non-negative and safe under reforms, validated their common enacted base year from the YAML as loaded, and preserved Guarantee Credit boundary continuity. Forecast thresholds and protected Housing Benefit allowances follow the reformed guarantee and maximum as uprated, as on main.
+
+
+## [2.163.1] - 2026-10-28
+
+### Fixed
+
+- Corrected the two-child limit full roll-out page: it now describes the modelled exceptions to the limit and uses the FYE 2011 absolute poverty variables instead of overriding the thresholds.
+
+
+## [2.163.0] - 2026-10-28
+
+### Added
+
+- Added a pre-assessed Housing Benefit permitted-work earnings disregard with lone-parent precedence and separate additional-disregard handling.
+
+### Fixed
+
+- Fixed double counting of Housing Benefit standard earnings disregards in savings-credit-only income, including permitted work and the special £20 route.
+
+
+## [2.162.21] - 2026-10-28
+
+### Changed
+
+- Moved the two-child limit child-poverty comparison from the validation page to PolicyEngine Scorecard, which recomputes it on a certified release; the page now documents the method and links to each Scorecard row.
+
+
+## [2.162.20] - 2026-10-28
+
+### Fixed
+
+- Limited the Income Support earnings disregard to the claimant's and partner's net earnings, so unused disregard no longer reduces statutory pay, pensions or other income.
+
+
+## [2.162.19] - 2026-10-28
+
+### Changed
+
+- Corrected comments, docstrings and citations from reviews of recently merged pull requests, and added property tests for claimant roles and the Childcare Offer for Wales income sources.
+
+
+## [2.162.18] - 2026-10-28
+
+### Changed
+
+- Documented that the Universal Credit route for pension-age Working Tax Credit migrants (SI 2014/1230 reg 60A) reads reported Pension Credit receipt, not Pension Credit entitlement.
+
+
+## [2.162.17] - 2026-10-28
+
+### Fixed
+
+- Project the Carer's Allowance earnings limit after its last legislated amount as 16 hours at the national living wage, rounded up to the next pound, as the Government sets it from April 2025, instead of holding £204 in every later year.
+
+
+## [2.162.16] - 2026-10-28
+
+### Changed
+
+- Documented that the OBR shows Northern Ireland domestic rates in two places, a council tax line that appears to be the district rates and an other taxes line that appears to be the regional rate, while `domestic_rates` charges both.
+
+
+## [2.162.15] - 2026-10-28
+
+### Fixed
+
+- Uprate the Scottish Carer Supplement each April by the previous September's CPI, rounded to the nearest 5p, instead of holding it at £11.70 a week from 2027-28, and round the Carer Support Payment component's projected rate to the nearest 5p in the same way.
+
+
+## [2.162.14] - 2026-10-27
+
+### Changed
+
+- Give the YAML test job 45 minutes, not 30, so a slow runner no longer cancels it after its tests have passed and takes the pull request out of the merge queue; passing jobs take 22 to 28 minutes.
+
+
+## [2.162.13] - 2026-10-27
+
+### Changed
+
+- Work out the winter fuel payment charge in the property allowance election only where it can change the choice. Add `winter_fuel_payment_charge_ceiling`, the most the charge could be whatever benefits are received, and settle each election on income tax before the charge wherever the ceilings on the two routes cannot reverse it. Each household's landlords now decide in their own order, and every household's next decision is compared in one pair of branches, so the elections that turn on the charge are compared on income tax including it together rather than once per round and rank. Where an input or a structural reform replaces income tax, the ceiling, the charge, the payments it recovers or entitlement to them, or a reform neutralises income tax or the ceiling, every election is still compared on income tax including the charge. Routes, income tax and household net income are unchanged; a Microcosm UK 2024-25 microsimulation builds and calculates 2026 household net income in about half the time.
+
+
+## [2.162.12] - 2026-10-27
+
+### Changed
+
+- Split the Python tests in CI over six runners instead of five.
+
+
+## [2.162.11] - 2026-10-27
+
+### Changed
+
+- Participation responses now impute non-workers' wages once on the reform simulation and reuse the result for gain-to-work, earnings quintiles and the entry step, halving the imputations per step from four to two. Outputs are unchanged.
+
+
+## [2.162.10] - 2026-10-27
+
+### Changed
+
+- The ESA permitted work higher earnings limit is now calculated as 16 x the national living wage, rounded up to the next 50p (ESA Regs 2008 reg 45(4) and (9A)), so it follows a change to gov.hmrc.minimum_wage instead of being listed year by year and projected with average earnings. The gov.dwp.ESA.exempt_work.higher_earnings_limit parameter is removed, and the minimum wage rates and apprentice age limit now start at 1 October 2010. Regression tests cover historical wage categories and national living wage reforms across ESA claimants. The historical fixed limit now includes £95 from 1 October 2010, and both the model and reference tests use the designated adult wage band.
+
+
+## [2.162.9] - 2026-10-26
+
+### Changed
+
+- - Updated `uv.lock` to the newest dependency releases.
+- Clarified the fractional entity-ID warning for builds that core rejects.
+
+
+## [2.162.8] - 2026-10-26
+
+### Fixed
+
+- Screen income-related ESA and income-based JSA reports separately for people outside the claimant couple, preserving scoped award readers, and use assessed ESA receipt in the 16–19 Bursary Fund own-right signal.
+
+  Use the report-aware ESA callback in the Housing Benefit cap reader, restore ESA/JSA documentation citations and spacing, and clarify bursary test comments.
+
+
+## [2.162.7] - 2026-10-26
+
+### Changed
+
+- Added property and full-person fixture coverage for Housing Benefit's protected family premium. Clarified that the fixed test totals exclude the unmodelled child personal allowance.
+
+### Fixed
+
+- - Preserved each benefit unit's Universal Credit advance repayment fallback when other units supply cash, while retaining explicit zero repayments.
+- - Keep Universal Credit advance repayment cash demand fixed through standard allowance reforms while preserving supplied deduction rates, existing caps, abolition switches and protected-floor allocation.
+- Apply the apprentice minimum wage only to apprentices under 19 or explicitly in their first 12 months, including historical calculations from October 2012, while preserving employer National Insurance relief for later-year apprentices under 25.
+
+
+## [2.162.6] - 2026-10-26
+
+### Changed
+
+- Balance the CI Python test shards: the slowest tests, listed with their measured CI durations, are dealt out by duration instead of by hash, so no shard carries most of them.
+
+
+## [2.162.5] - 2026-10-26
+
+### Fixed
+
+- Uprate reported Council Tax Reduction with household council tax bills and restore base awards when resetting economic assumptions. The historical `enhanced_frs_2024_25` CI comparison at `ea9ee921b` against `fba0c0a53` raises projected CTR spending by about £0.1bn in 2025-26, rising to £0.6bn in 2031-32 ([review](https://github.com/PolicyEngine/policyengine-uk/pull/2680#issuecomment-6413849354)).
+
+
+## [2.162.4] - 2026-10-26
+
+### Fixed
+
+- Extended fiscal parameter annualisation beyond 2040 while preserving legacy annual records and dated reform checks, and rejected unrepresentable dates before changing parameters.
+
+
+## [2.162.3] - 2026-10-26
+
+### Fixed
+
+- Retain every surviving explicit input through `reset_calculations`, including ordinary `set_input` calls made after construction outside any modifier or scenario. A reset alone no longer undoes those overrides: use `delete_arrays(variable, period)`, then reset or recalculate to restore the variable's formula or default. Retain these inputs through dynamics, marginal-rate calculations and exports, including input-only variables absent at construction.
+
+  Refresh dependent values before the next outermost read after every top-level `set_input` on a built simulation, even without a modifier. Preserve selective invalidation for internal formula and framework writes and keep independent baselines. Use collision-safe temporary branches with cleanup on failure for all three marginal rates, and avoid duplicate cleanup after a successful construction-time modifier. Require PolicyEngine Core 3.33.0 or later for the documented public `drop_computed_arrays` method.
+
+
 ## [2.162.2] - 2026-10-25
 
 ### Fixed

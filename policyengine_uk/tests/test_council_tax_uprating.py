@@ -12,15 +12,17 @@ from hypothesis import strategies as st
 from policyengine_uk import Microsimulation, Simulation, parameters
 from policyengine_uk.data import UKSingleYearDataset, economic_assumptions
 from policyengine_uk.data.economic_assumptions import (
+    apply_uprating,
     extend_single_year_dataset,
     household_weight_growth_path,
+    reset_growthfactor_uprating,
     uprate_council_tax,
 )
 from policyengine_uk.variables.household.demographic.geography import Region
 
 
 REGIONS = [region.name for region in Region]
-UPRATED_YEARS = list(range(2023, 2031))
+UPRATED_YEARS = list(range(2023, 2032))
 COUNCIL_TAX_GROWTH = parameters.gov.economic_assumptions.yoy_growth.obr.council_tax
 # Household weights grow by the series uprating_indices.yaml lists them under.
 # It is read from the file here, not from the code under test.
@@ -32,13 +34,15 @@ _UPRATING_INDICES = yaml.safe_load(
 ]
 WEIGHT_GROWTH = parameters.get_child(WEIGHT_GROWTH_PATH)
 
-# OBR March 2026 EFO, detailed forecast tables, expenditure, Table 4.1:
-# council tax receipts in £ billion, 2024-25 (outturn) to 2030-31.
-OBR_RECEIPTS_YEARS = range(2024, 2031)
+# OBR council tax receipts in £ billion: the 2024-25 outturn from the March
+# 2026 EFO (detailed forecast tables, expenditure, Table 4.1), then the
+# 2025-26 outturn and the forecast to 2031-32 from the October 2026 EFO
+# (Table 5.1).
+OBR_RECEIPTS_YEARS = range(2024, 2032)
 OBR_RECEIPTS = {
-    "england": [41.2225, 44.1172, 46.5197, 49.3324, 52.3663, 55.308, 58.3527],
-    "scotland": [2.9384, 3.0512, 3.1684, 3.2901, 3.4164, 3.5476, 3.6839],
-    "wales": [2.2284, 2.4008, 2.5793, 2.771, 2.9771, 3.1984, 3.4362],
+    "england": [41.2225, 44.117, 46.806, 49.2566, 52.0217, 54.9103, 57.8847, 60.9565],
+    "scotland": [2.9384, 3.0519, 3.1699, 3.2924, 3.4196, 3.5518, 3.6891, 3.8316],
+    "wales": [2.2284, 2.4008, 2.5784, 2.7691, 2.9739, 3.1939, 3.4301, 3.6839],
 }
 
 # The liability behind each country's OBR line, net of council tax reduction,
@@ -110,14 +114,23 @@ def _expected_factor(region, year):
 
 
 def _uprated_council_tax(regions, council_tax, year):
+    household_ids = np.arange(1, len(regions) + 1)
     previous_year = SimpleNamespace(
-        household=pd.DataFrame({"council_tax": council_tax}, dtype=float)
+        household=pd.DataFrame(
+            {"household_id": household_ids, "council_tax": council_tax}
+        ),
+        person=pd.DataFrame(),
     )
     current_year = SimpleNamespace(
         time_period=str(year),
         household=pd.DataFrame(
-            {"region": regions, "council_tax": [0.0] * len(council_tax)}
+            {
+                "household_id": household_ids,
+                "region": regions,
+                "council_tax": [0.0] * len(council_tax),
+            }
         ),
+        person=pd.DataFrame(),
     )
     uprate_council_tax(current_year, previous_year, parameters)
     return current_year.household["council_tax"].to_numpy()
@@ -125,11 +138,12 @@ def _uprated_council_tax(regions, council_tax, year):
 
 def test_uprate_council_tax_holds_northern_ireland_flat():
     # In 2025-26 OBR's council tax receipts grow 7.02% in England, 7.73% in
-    # Wales and 3.84% in Scotland (March 2026 EFO, Table 4.1), and household
-    # weights grow 0.30%, with population. So a £1,000 bill becomes
-    # £1,000 x 1.0702 / 1.0030 = £1,067.00 in London,
-    # £1,000 x 1.0773 / 1.0030 = £1,074.08 in Wales and
-    # £1,000 x 1.0384 / 1.0030 = £1,035.29 in Scotland. Northern Ireland has
+    # Wales and 3.86% in Scotland (October 2026 EFO, Table 5.1, over the March
+    # 2026 EFO's 2024-25 outturn), and household weights grow 0.33%, with
+    # population. So a £1,000 bill becomes
+    # £1,000 x 1.0702 / 1.0033 = £1,066.68 in London,
+    # £1,000 x 1.0773 / 1.0033 = £1,073.76 in Wales and
+    # £1,000 x 1.0386 / 1.0033 = £1,035.18 in Scotland. Northern Ireland has
     # no council tax series and keeps £1,000; it used to fall through to
     # England's growth, because the code compared the region with
     # "NORTHERN IRELAND" (a space) while the dataset label is NORTHERN_IRELAND.
@@ -138,27 +152,27 @@ def test_uprate_council_tax_holds_northern_ireland_flat():
     )
 
     assert council_tax == pytest.approx(
-        [1_067.00, 1_074.08, 1_035.29, 1_000.0], abs=0.005
+        [1_066.68, 1_073.76, 1_035.18, 1_000.0], abs=0.005
     )
 
 
 def test_uprate_council_tax_gives_unknown_region_england_growth():
     council_tax = _uprated_council_tax(["UNKNOWN"], [1_000.0], 2025)
 
-    assert council_tax == pytest.approx([1_067.00], abs=0.005)
+    assert council_tax == pytest.approx([1_066.68], abs=0.005)
 
 
 def test_scottish_bills_grow_with_the_amount_billed_in_2024_25():
     # Scotland's average Band D rose 0.1% in 2024-25, from £1,416.50 to
     # £1,418.11 (Scottish Government, Band D Council Tax 1996-97 to 2026-27),
     # but the net amount billed rose 2.36%, from £3,005.8m to £3,076.8m, and
-    # household weights grow 1.10%. So a £1,000 bill becomes
-    # £1,000 x 1.0236 / 1.0110 = £1,012.46. Dividing the Band D growth the
+    # household weights grow 0.97%. So a £1,000 bill becomes
+    # £1,000 x 1.0236 / 1.0097 = £1,013.77. Dividing the Band D growth the
     # series used to hold for 2024 (0.001) by the weights' growth would have
-    # cut it to £990.11, and Scotland's total would have grown 0.1%, not 2.36%.
+    # cut it to £991.38, and Scotland's total would have grown 0.1%, not 2.36%.
     council_tax = _uprated_council_tax(["SCOTLAND"], [1_000.0], 2024)
 
-    assert council_tax == pytest.approx([1_012.46], abs=0.005)
+    assert council_tax == pytest.approx([1_013.77], abs=0.005)
 
 
 @pytest.mark.parametrize("region", ["NORTHERN IRELAND", "ATLANTIS", ""])
@@ -285,11 +299,11 @@ def _weighted_totals(dataset):
 
 
 def test_country_totals_track_obr_receipts():
-    """Project a dataset from 2024-25 to 2030-31 with unequal weights and
+    """Project a dataset from 2024-25 to 2031-32 with unequal weights and
     bills. Each country's weighted council tax total grows as OBR forecasts
     its receipts to grow. Each year's growth is within 0.0001 of OBR's: the
-    series rounds each year to 4 decimals, and holds Wales at 0.0743 from
-    2026, where Table 4.1 implies 0.0743 to 0.0744. Before #2067 the totals
+    series rounds each year to 4 decimals, and holds Wales at 0.0740 from
+    2026, where Table 5.1 implies 0.0739 to 0.0740. Before #2067 the totals
     also grew with the weights, by population, and were 2.8% too high by
     2030-31.
     """
@@ -300,7 +314,7 @@ def test_country_totals_track_obr_receipts():
         weights=[3_000.0, 1_000.0, 2_500.0, 1_200.0, 800.0, 1_500.0],
         fiscal_year=2024,
     )
-    projected = extend_single_year_dataset(dataset, parameters, end_year=2030)
+    projected = extend_single_year_dataset(dataset, parameters, end_year=2031)
     totals = {year: _weighted_totals(projected[year]) for year in OBR_RECEIPTS_YEARS}
 
     for series, receipts in OBR_RECEIPTS.items():
@@ -309,8 +323,8 @@ def test_country_totals_track_obr_receipts():
             growth = totals[year][series] / totals[year - 1][series] - 1
             obr_growth = receipts[year] / receipts[year - 1] - 1
             assert growth == pytest.approx(obr_growth, abs=1e-4), (series, year)
-        assert totals[2030][series] / totals[2024][series] == pytest.approx(
-            receipts[2030] / receipts[2024], rel=5e-4
+        assert totals[2031][series] / totals[2024][series] == pytest.approx(
+            receipts[2031] / receipts[2024], rel=5e-4
         ), series
 
 
@@ -407,3 +421,172 @@ def test_microsimulation_holds_northern_ireland_council_tax_flat():
         council_tax = dict(zip(KNOWN_REGIONS, council_tax))
         assert council_tax["NORTHERN_IRELAND"] == 1_500.0
         assert council_tax["LONDON"] > 1_500.0
+
+
+def _reported_reduction_dataset():
+    """Synthetic reports with person order independent of household order.
+
+    The nonzero NI report is only a mechanical no-growth control, not a
+    classification of any real NI benefit as Council Tax Reduction.
+    """
+    household_ids = [81, 17, 63, 45, 92]
+    person_ids = [601, 230, 815, 407, 122, 944, 508, 736]
+    return UKSingleYearDataset(
+        person=pd.DataFrame(
+            {
+                "person_id": person_ids,
+                "person_benunit_id": person_ids,
+                "person_household_id": [17, 81, 92, 17, 63, 45, 92, 63],
+                "age": 40,
+                "council_tax_benefit_reported": [
+                    1_000.0,
+                    350.0,
+                    600.0,
+                    0.0,
+                    125.0,
+                    900.0,
+                    200.0,
+                    0.0,
+                ],
+            },
+            index=[52, 11, 97, 6, 84, 3, 32, 75],
+        ),
+        benunit=pd.DataFrame({"benunit_id": person_ids}),
+        household=pd.DataFrame(
+            {
+                "household_id": household_ids,
+                "household_weight": [3.0, 2.0, 1.0, 4.0, 5.0],
+                "region": [
+                    "SCOTLAND",
+                    "LONDON",
+                    "NORTHERN_IRELAND",
+                    "UNKNOWN",
+                    "WALES",
+                ],
+                "tenure_type": "OWNED_OUTRIGHT",
+                "rent": 0.0,
+                "council_tax": [1_400.0, 2_000.0, 0.0, 1_800.0, 2_400.0],
+            },
+            index=[40, 12, 60, 8, 23],
+        ),
+        fiscal_year=2024,
+    )
+
+
+def _bill_per_person(dataset):
+    bills = dataset.household.set_index("household_id")["council_tax"]
+    return dataset.person["person_household_id"].map(bills).to_numpy()
+
+
+@pytest.mark.parametrize("year", [2025, 2030])
+def test_reported_reduction_keeps_each_persons_share_of_their_household_bill(year):
+    # Issue #2674: uprating a report by generic CPI, a population-weight
+    # factor, or another household's bill would each change these shares.
+    base = _reported_reduction_dataset()
+    original_people = base.person.copy(deep=True)
+    projected = extend_single_year_dataset(base, parameters, end_year=year)[year]
+    base_bills = _bill_per_person(base)
+    projected_bills = _bill_per_person(projected)
+    reports = base.person["council_tax_benefit_reported"].to_numpy()
+    projected_reports = projected.person["council_tax_benefit_reported"].to_numpy()
+    great_britain = base_bills > 0
+
+    np.testing.assert_allclose(
+        projected_reports[great_britain] / projected_bills[great_britain],
+        reports[great_britain] / base_bills[great_britain],
+        rtol=1e-12,
+    )
+    assert (projected_bills[great_britain] > base_bills[great_britain]).all()
+    np.testing.assert_array_equal(projected_reports[~great_britain], [125.0, 0.0])
+    np.testing.assert_array_equal(projected_bills[~great_britain], [0.0, 0.0])
+    np.testing.assert_array_equal(projected_reports[reports == 0], [0.0, 0.0])
+    pd.testing.assert_frame_equal(base.person, original_people)
+    pd.testing.assert_index_equal(projected.person.index, base.person.index)
+
+
+def test_council_tax_projection_does_not_create_an_absent_reported_reduction():
+    base = _reported_reduction_dataset()
+    base.person = base.person.drop(columns="council_tax_benefit_reported")
+    original_people = base.person.copy(deep=True)
+
+    projected = extend_single_year_dataset(base, parameters, end_year=2027)
+
+    for year in projected.years:
+        assert "council_tax_benefit_reported" not in projected[year].person
+        pd.testing.assert_frame_equal(projected[year].person, original_people)
+    assert projected[2027].household["council_tax"].iloc[1] > 2_000.0
+
+
+@pytest.mark.parametrize(
+    "previous_has_report,current_has_report",
+    [(False, False), (True, False), (False, True)],
+)
+def test_reported_reduction_projection_preserves_sparse_person_tables(
+    previous_has_report, current_has_report
+):
+    previous = _reported_reduction_dataset()
+    current = previous.copy()
+    current.time_period = "2025"
+    if not previous_has_report:
+        previous.person = previous.person.drop(columns="council_tax_benefit_reported")
+    if not current_has_report:
+        current.person = current.person.drop(columns="council_tax_benefit_reported")
+    expected_people = current.person.copy(deep=True)
+
+    uprate_council_tax(current, previous, parameters)
+
+    pd.testing.assert_frame_equal(current.person, expected_people)
+    assert current.household["council_tax"].iloc[1] > 2_000.0
+
+
+def test_reset_restores_reported_reduction_and_reprojection_is_deterministic():
+    base = _reported_reduction_dataset()
+    projected = extend_single_year_dataset(base, parameters, end_year=2027)
+    frozen = reset_growthfactor_uprating(projected.copy())
+
+    for year in frozen.years:
+        np.testing.assert_array_equal(
+            frozen[year].person["council_tax_benefit_reported"],
+            base.person["council_tax_benefit_reported"],
+        )
+        np.testing.assert_array_equal(
+            frozen[year].household["council_tax"], base.household["council_tax"]
+        )
+
+    reprojected = apply_uprating(frozen, parameters, copy=False)
+    for year in projected.years:
+        np.testing.assert_allclose(
+            reprojected[year].person["council_tax_benefit_reported"],
+            projected[year].person["council_tax_benefit_reported"],
+            rtol=1e-12,
+        )
+        np.testing.assert_allclose(
+            reprojected[year].household["council_tax"],
+            projected[year].household["council_tax"],
+            rtol=1e-12,
+        )
+
+
+def test_unsupported_working_age_claim_keeps_half_the_projected_council_tax_bill():
+    # Maidstone has no simulated working-age scheme. The public synthetic
+    # observation pays half its bill; council_tax_benefit must retain that
+    # share via its reported fallback, not merely store an uprated input.
+    dataset = _dataset(["SOUTH_EAST"], [2_000.0], fiscal_year=2024)
+    dataset.person["council_tax_benefit_reported"] = 1_000.0
+    dataset.household["local_authority"] = "MAIDSTONE"
+    simulation = Microsimulation(dataset=dataset)
+
+    for year in (2024, 2027, 2030):
+        np.testing.assert_array_equal(
+            simulation.calculate("council_tax_reduction_scheme_supported", year),
+            [False],
+        )
+        np.testing.assert_array_equal(
+            simulation.calculate("council_tax_reduction_claimant_benunit", year),
+            [True],
+        )
+        bill = simulation.calculate("council_tax", year).values
+        report = simulation.calculate("council_tax_benefit_reported", year).values
+        benefit = simulation.calculate("council_tax_benefit", year).values
+        np.testing.assert_allclose(report, bill / 2, rtol=1e-6)
+        np.testing.assert_allclose(benefit, bill / 2, rtol=1e-6)

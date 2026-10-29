@@ -1,7 +1,7 @@
 # Economic assumptions
 
 ```{note}
-We project economic variables using year-over-year growth rates stored in `parameters/gov/economic_assumptions/yoy_growth.yaml`. We generate index values from these rates to update household variables. We source all values from the OBR's long-term economic determinants and Economic and Fiscal Outlook ([March 2025](https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/)) unless we specify otherwise. The long-term determinants provide extended forecasts beyond the standard forecast horizon.
+We project economic variables using year-over-year growth rates stored in `parameters/gov/economic_assumptions/yoy_growth.yaml`. We generate index values from these rates to update household variables. We source all values from the OBR's long-term economic determinants and Economic and Fiscal Outlook ([October 2026](https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/)) unless we specify otherwise. The long-term determinants provide extended forecasts beyond the standard forecast horizon.
 ```
 
 ## Consumer price index
@@ -10,9 +10,9 @@ We project economic variables using year-over-year growth rates stored in `param
 We use the OBR's CPI projections to drive most benefit and consumption variables.
 ```
 
-| Fiscal year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 |
-|-------------|------|------|------|------|------|------|------|------|
-| Growth rate | 10.0% | 5.7% | 2.3% | 3.2% | 1.9% | 2.0% | 2.0% | 2.0% |
+| Year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 |
+|-------------|------|------|------|------|------|------|------|------|------|------|
+| Growth rate | 9.1% | 7.3% | 2.5% | 3.4% | 3.1% | 3.4% | 2.1% | 2.1% | 2.0% | 2.0% |
 
 We apply CPI to these variables:
 - All reported benefits– `carers_allowance_reported`, `child_benefit_reported`, `child_tax_credit_reported`, `esa_contrib_reported`, `esa_income_reported`, `housing_benefit_reported`, `iidb_reported`, `incapacity_benefit_reported`, `income_support_reported`, `jsa_contrib_reported`, `jsa_income_reported`, `maternity_allowance_reported`, `pension_credit_reported`, `sda_reported`, `state_pension_reported`, `universal_credit_reported`, `winter_fuel_allowance_reported`, `working_tax_credit_reported`
@@ -32,9 +32,9 @@ column missing and household situations retain CPI uprating. See the
 
 We use HMRC road-fuel clearances and OBR-implied forecast volumes for petrol and diesel spending, because PolicyEngine converts these spending fields into litres by dividing by pump prices.
 
-| Fiscal year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 |
-|-------------|------|------|------|------|------|------|------|------|
-| Growth rate | 6.3% | -0.6% | -0.1% | -2.0% | -1.4% | -2.4% | -2.7% | -3.7% |
+| Fiscal year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 |
+|-------------|------|------|------|------|------|------|------|------|------|------|
+| Growth rate | 6.3% | -0.6% | -0.1% | -1.3% | -2.3% | -3.1% | -3.1% | -4.0% | -5.4% | -6.5% |
 
 We apply this to: `diesel_spending`, `petrol_spending`
 
@@ -58,9 +58,9 @@ rates after their last published value.
 We apply the OBR's wage growth forecasts to employment-related variables.
 ```
 
-| Fiscal year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 |
-|-------------|------|------|------|------|------|------|------|------|
-| Growth rate | 6.4% | 6.9% | 4.7% | 3.7% | 2.2% | 2.1% | 2.3% | 2.5% |
+| Year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 |
+|-------------|------|------|------|------|------|------|------|------|------|------|
+| Growth rate | 6.1% | 6.2% | 5.1% | 4.1% | 3.7% | 3.0% | 2.1% | 2.3% | 2.5% | 2.6% |
 
 We use average earnings for these variables: `employee_pension_contributions`, `employer_pension_contributions`, `employment_income`, `employment_income_before_lsr`, `personal_pension_contributions`, `student_loan_repayments`
 
@@ -91,19 +91,19 @@ write-off approximations are unchanged.
 
 We lag earnings growth by one year and use that to uprate housing service charges (including ground rent).
 
-| Fiscal year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 |
-|-------------|------|------|------|------|------|------|------|------|
-| Growth rate | 5.9% | 6.4% | 6.9% | 4.7% | 3.7% | 2.2% | 2.1% | 2.3% |
+| Year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 |
+|-------------|------|------|------|------|------|------|------|------|------|------|
+| Growth rate | 5.9% | 6.1% | 6.2% | 5.1% | 4.1% | 3.7% | 3.0% | 2.1% | 2.3% | 2.5% |
 
 ## Per capita GDP
 
-We derive these rates as calendar-year nominal GDP growth from the OBR's March 2026 EFO divided by population growth: (1 + GDP growth) / (1 + population growth) − 1.
+We derive these rates as calendar-year nominal GDP growth from the OBR's October 2026 EFO divided by population growth: (1 + GDP growth) / (1 + population growth) − 1.
 
-| Year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 |
-|-------------|------|------|------|------|------|------|------|------|
-| Growth rate | 10.0% | 5.2% | 3.9% | 4.7% | 2.9% | 3.3% | 3.2% | 3.1% |
+| Year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 |
+|-------------|------|------|------|------|------|------|------|------|------|------|
+| Growth rate | 10.0% | 5.2% | 4.0% | 4.6% | 4.0% | 3.1% | 3.4% | 3.6% | 3.4% | 3.3% |
 
-We use per capita GDP for these variables: `benunit_reported_capital`, `capital_gains`, `capital_gains_badr`, `capital_gains_before_response`, `capital_gains_carried_interest`, `capital_gains_residential_property`, `cash_isa`, `corporate_wealth`, `directly_held_shares`, `dividend_income`, `gross_financial_wealth`, `household_lifetime_isa_balance`, `lifetime_isa_balance`, `lump_sum_income`, `main_residence_value`, `maintenance_income`, `miscellaneous_income`, `mortgage_capital_repayment`, `net_financial_wealth`, `non_residential_property_value`, `other_investment_income`, `other_residential_property_value`, `owned_land`, `pension_credit_reported_capital`, `pension_income`, `private_pension_wealth`, `private_transfer_income`, `property_income`, `property_rental_income`, `savings`, `spousal_maintenance_income`, `stocks_and_shares_isa`, `sublet_income`, `uc_reported_capital`, `unit_and_investment_trusts`
+We use per capita GDP for these variables: `benunit_reported_capital`, `capital_gains`, `capital_gains_badr`, `capital_gains_before_response`, `capital_gains_carried_interest`, `capital_gains_residential_property`, `cash_isa`, `cash_isa_balance`, `corporate_wealth`, `directly_held_shares`, `dividend_income`, `gross_financial_wealth`, `household_lifetime_isa_balance`, `lifetime_isa_balance`, `lump_sum_income`, `main_residence_value`, `maintenance_income`, `miscellaneous_income`, `mortgage_capital_repayment`, `net_financial_wealth`, `non_residential_property_value`, `other_investment_income`, `other_residential_property_value`, `owned_land`, `pension_credit_reported_capital`, `pension_income`, `private_pension_wealth`, `private_transfer_income`, `property_income`, `property_rental_income`, `savings`, `spousal_maintenance_income`, `stocks_and_shares_isa`, `stocks_and_shares_isa_balance`, `sublet_income`, `uc_reported_capital`, `unit_and_investment_trusts`
 
 ## Interest received per person
 
@@ -113,13 +113,13 @@ We apply this to: `non_cash_isa_cash_interest`, `savings_interest_income`
 
 ## Council tax
 
-We project each country's council tax receipts, net of council tax reduction, with the OBR's forecasts (March 2026 EFO, Expenditure Table 4.1) from 2025-26, and official outturns before then: MHCLG's council tax requirement for England, the Scottish Government's net amount billed and the Welsh Government's net collectable debit.
+We project each country's council tax receipts, net of council tax reduction, with the OBR's figures (October 2026 EFO, Expenditure Table 5.1) from 2025-26, and official outturns before then: MHCLG's council tax requirement for England, the Scottish Government's net amount billed and the Welsh Government's net collectable debit.
 
-| Fiscal year | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 | 2030 |
-|-------------|------|------|------|------|------|------|------|------|
-| England | 6.6% | 6.5% | 7.0% | 5.5% | 6.1% | 6.2% | 5.6% | 5.5% |
-| Scotland | 6.4% | 2.4% | 3.8% | 3.8% | 3.8% | 3.8% | 3.8% | 3.8% |
-| Wales | 7.1% | 9.9% | 7.7% | 7.4% | 7.4% | 7.4% | 7.4% | 7.4% |
+| Fiscal year | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 |
+|-------------|------|------|------|------|------|------|------|------|------|
+| England | 6.6% | 6.5% | 7.0% | 6.1% | 5.2% | 5.6% | 5.5% | 5.4% | 5.3% |
+| Scotland | 6.4% | 2.4% | 3.9% | 3.9% | 3.9% | 3.9% | 3.9% | 3.9% | 3.9% |
+| Wales | 7.1% | 9.9% | 7.7% | 7.4% | 7.4% | 7.4% | 7.4% | 7.4% | 7.4% |
 
 Receipts are the Band D level times the tax base, the number of Band D equivalent dwellings, so they grow with the number of homes as well as with bills. Household weights grow with population, so each household's `council_tax` grows by its country's receipts growth divided by population growth: (1 + receipts growth) / (1 + population growth) − 1. Each country's weighted total then grows with its receipts. Northern Ireland has no council tax (it has domestic rates), so any `council_tax` a dataset gives its households is held flat.
 
@@ -127,9 +127,9 @@ Receipts are the Band D level times the tax base, the number of Band D equivalen
 
 We use the OBR's mortgage interest rate index growth rates.
 
-| Fiscal year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 |
-|-------------|------|------|------|------|------|------|------|------|
-| Growth rate | 26.2% | 48.5% | 22.1% | 13.6% | 12.6% | 8.2% | 4.2% | 4.7% |
+| Year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 |
+|-------------|------|------|------|------|------|------|------|------|------|------|
+| Growth rate | 14.6% | 52.2% | 27.3% | 9.5% | 6.2% | 11.6% | 6.7% | 4.8% | 5.5% | 5.5% |
 
 We apply this to: `mortgage_interest_repayment`, `property_finance_costs`, `property_finance_costs_brought_forward`
 
@@ -137,9 +137,9 @@ We apply this to: `mortgage_interest_repayment`, `property_finance_costs`, `prop
 
 We use RPI year-on-year change from the previous year, capped at 5%.
 
-| Fiscal year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 |
-|-------------|------|------|------|------|------|------|------|------|
-| Growth rate | 5.0% | 5.0% | 5.0% | 4.7% | 3.7% | 2.2% | 2.1% | 2.3% |
+| Year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 |
+|-------------|------|------|------|------|------|------|------|------|------|------|
+| Growth rate | 5.0% | 5.0% | 5.0% | 3.6% | 4.1% | 3.6% | 4.3% | 3.0% | 3.0% | 2.3% |
 
 We apply this to: `private_pension_income`
 
@@ -147,28 +147,28 @@ We apply this to: `private_pension_income`
 
 We use the OBR's rental growth projections.
 
-| Fiscal year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 |
-|-------------|------|------|------|------|------|------|------|------|
-| Growth rate | 4.0% | 6.3% | 7.4% | 5.7% | 3.6% | 2.7% | 2.3% | 2.4% |
+| Year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 |
+|-------------|------|------|------|------|------|------|------|------|------|------|
+| Growth rate | 3.5% | 5.8% | 7.2% | 5.4% | 3.6% | 3.2% | 2.7% | 2.6% | 2.5% | 2.8% |
 
 We apply this to: `rent`
 
 ## Per capita mixed income
 
-We derive these rates as calendar-year mixed income growth from the OBR's March 2026 EFO (Table 1.12) divided by population growth, in the same way.
+We derive these rates as calendar-year mixed income growth from the OBR's October 2026 EFO (Table 1.12) divided by population growth, in the same way.
 
-| Year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 |
-|-------------|------|------|------|------|------|------|------|------|
-| Growth rate | 2.9% | -0.6% | 2.7% | 1.1% | 3.1% | 3.8% | 3.7% | 3.6% |
+| Year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 |
+|-------------|------|------|------|------|------|------|------|------|------|------|
+| Growth rate | 2.8% | -0.6% | 2.8% | 0.5% | 3.0% | 3.2% | 3.5% | 3.8% | 4.0% | 4.0% |
 
 We apply this to: `self_employment_income`
 
 ## Population
 
-We use the population growth in the OBR's [long-term economic determinants for the March 2026 EFO](https://obr.uk/supplementary-forecast-information-release-long-term-economic-determinants-march-2026/): the OBR's forecast to 2030-31, then the principal projection of the [ONS 2024-based national population projections](https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationprojections/bulletins/nationalpopulationprojections/2024based). 2021-22 and 2022-23 are the same OBR series, read from the March 2026 EFO economy tables.
+We use the OBR's October 2026 population forecast to 2031-32, read from its economy tables (Table 1.1 real GDP over Table 1.5 real GDP per person, at Q2), and after that the population growth in the OBR's [long-term economic determinants for the March 2026 EFO](https://obr.uk/supplementary-forecast-information-release-long-term-economic-determinants-march-2026/), which follows the principal projection of the [ONS 2024-based national population projections](https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationprojections/bulletins/nationalpopulationprojections/2024based). On the March 2026 EFO the same reading of the tables reproduces the determinants' forecast years, so the October determinants, once published, should change only the later years.
 
-| Fiscal year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 |
-|-------------|------|------|------|------|------|------|------|------|
-| Growth rate | 1.0% | 1.3% | 1.1% | 0.3% | 0.4% | 0.3% | 0.3% | 0.3% |
+| Fiscal year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 |
+|-------------|------|------|------|------|------|------|------|------|------|------|
+| Growth rate | 1.1% | 1.3% | 1.0% | 0.3% | 0.2% | 0.1% | 0.2% | 0.2% | 0.2% | 0.2% |
 
 We apply this to: `household_weight`

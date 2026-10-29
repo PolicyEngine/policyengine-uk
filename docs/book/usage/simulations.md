@@ -90,6 +90,59 @@ marginal_tax_rate = sim.calculate("marginal_tax_rate", 2025)
 These calculations return arrays because simulations can handle multiple people, benefit units or households simultaneously. Each variable gives you results at the appropriate level - income tax is calculated per person, Universal Credit per benefit unit, and council tax per household.
 ```
 
+## Apprenticeship inputs
+
+Apprentice status and entitlement to the apprentice minimum wage use separate
+annual person inputs:
+
+- `is_apprentice` records apprentice status and continues to determine the
+  apprentice employer National Insurance relief, subject to its age limit.
+- `is_in_first_year_of_apprenticeship` records whether the person is within
+  the first 12 months of the current apprenticeship employment. It defaults
+  to `False`; it does not establish apprentice status on its own.
+
+The apprentice minimum wage applies when `is_apprentice` is true and the
+person is either under 19 or has the first-year input set to true. Both
+`minimum_wage` and `minimum_wage_category` use this rule. At age 19 or over,
+an apprentice with a false or omitted first-year input uses the ordinary
+age-related rate. A later-year apprentice under 25 can therefore retain
+employer National Insurance relief while using the ordinary minimum wage.
+
+The first 12 months refer to the current apprenticeship employment, rather
+than an academic or training-provider year. Employment with a previous
+employer counts where statutory continuity is preserved. A genuinely
+separate apprenticeship contract starts a new period, as explained in
+[HMRC's apprenticeship contract guidance](https://www.gov.uk/hmrc-internal-manuals/national-minimum-wage-manual/nmwm05300)
+and [regulation 5](https://www.legislation.gov.uk/uksi/2015/621/regulation/5).
+
+For example, the person inputs for a 22-year-old in the first 12 months are:
+
+```python
+"parent": {
+    "age": {2026: 22},
+    "is_apprentice": {2026: True},
+    "is_in_first_year_of_apprenticeship": {2026: True},
+    "employment_income": {2026: 8_000},
+}
+```
+
+Previously, setting only `is_apprentice` selected the apprentice minimum
+wage at every age. Existing callers must now supply the first-year input
+for apprentices aged 19 or over who qualify for that rate. Missing tenure
+does not establish that someone has completed 12 months; the false default
+avoids assuming eligibility for the lower rate. The distinction also affects
+the minimum-income conditions for Tax-Free Childcare, extended childcare
+entitlement and the Childcare Offer for Wales.
+
+These inputs classify the model's annual period. The model does not infer
+an apprenticeship start date, change the classification at a birthday or
+anniversary within the year, or advance apprenticeship tenure during dataset
+projection. Callers must supply the classification for each modelled year.
+Annual minimum-wage calculations retain the existing fiscal-year conversion:
+the model uses the rate in force on 30 April for the whole labelled year.
+This change does not introduce a pay-reference-period calculation or alter
+the dated rate parameters.
+
 ## Simulating policy scenarios
 
 To test policy changes, create a scenario and apply it to your simulation. This example shows what happens when we increase Universal Credit's standard allowance for single people over 25 from the current rate to £500 per month:

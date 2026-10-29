@@ -7,9 +7,9 @@
   output:
     # (10,000 x 20% + 1,000 x 5%) / (0.67 x 0.7) = 2,050 / 0.469 = 4,371.00,
     # less private school fees' official share of 2025-26 VAT receipts
-    # (0.008353), which private_school_vat counts separately.
-    vat: 4_334.49
-    baseline_vat: 4_334.49
+    # (0.008368), which private_school_vat counts separately.
+    vat: 4_334.43
+    baseline_vat: 4_334.43
 
 - name: With both factors at one, VAT is the statutory liability on recorded consumption
   period: 2025
@@ -20,8 +20,8 @@
     full_rate_vat_consumption: 10_000
     reduced_rate_vat_consumption: 1_000
   output:
-    # 2,050 x (1 - 0.008353)
-    vat: 2_032.88
+    # 2,050 x (1 - 0.008368)
+    vat: 2_032.85
 
 - name: The household share alone grosses survey-complete VAT up to receipts
   period: 2025
@@ -31,8 +31,8 @@
     full_rate_vat_consumption: 7_000
     reduced_rate_vat_consumption: 0
   output:
-    # 7,000 x 20% / 0.7 x (1 - 0.008353)
-    vat: 1_983.29
+    # 7,000 x 20% / 0.7 x (1 - 0.008368)
+    vat: 1_983.26
 
 - name: A reform to the deprecated combined factor still takes effect
   period: 2025
@@ -42,5 +42,5 @@
     full_rate_vat_consumption: 10_000
     reduced_rate_vat_consumption: 1_000
   output:
-    # 2,050 / 0.5 x (1 - 0.008353)
-    vat: 4_065.75
+    # 2,050 / 0.5 x (1 - 0.008368)
+    vat: 4_065.69

@@ -30,10 +30,10 @@ GDP and population assumptions remain supported.
 | `petrol_spending_litre_proxy` | Spending growth that preserves road-fuel litres    | HMRC + OBR              |
 | `diesel_spending_litre_proxy` | Same, for diesel                                   | HMRC + OBR              |
 | `finance_ni.domestic_rates` | Average Northern Ireland domestic rates bill (regional plus district poundage) | DoF rate poundages, LPS rates paid, NI draft Budget 2026-29 |
-| `stamp_duty_land_tax.residential` | SDLT receipts from residential property          | EFO receipts Table 3.7  |
-| `stamp_duty_land_tax.non_residential` | SDLT receipts from non-residential property  | EFO receipts Table 3.7  |
-| `business_rates.great_britain` | Business rates receipts, England, Scotland and Wales (cash) | EFO receipts, current receipts (cash basis): Table 3.8 in March 2026 |
-| `business_rates.northern_ireland` | Northern Ireland business rates receipts      | EFO receipts Table 3.2  |
+| `stamp_duty_land_tax.residential` | SDLT receipts from residential property          | EFO receipts, property transactions taxes by sector: Table 4.7 in October 2026 |
+| `stamp_duty_land_tax.non_residential` | SDLT receipts from non-residential property  | EFO receipts, property transactions taxes by sector: Table 4.7 in October 2026 |
+| `business_rates.great_britain` | Business rates receipts, England, Scotland and Wales (cash) | EFO receipts, current receipts (cash basis): Table 4.8 in October 2026 |
+| `business_rates.northern_ireland` | Northern Ireland business rates receipts      | EFO receipts, other taxes: Table 4.2 in October 2026 |
 
 The four receipts series project the corporate SDLT and business rates
 statistics (`gov.hmrc.stamp_duty.statistics`,
@@ -49,12 +49,12 @@ index keeps its base year.
 Three horizons are stitched together for each OBR and ONS series (not
 `finance_ni.domestic_rates`, which has its own method, below):
 
-1. **Outturn** (history through 2024): ONS published data, copied from OBR
+1. **Outturn** (history through 2025): ONS published data, copied from OBR
    detailed forecast tables.
-2. **EFO forecast** (2025-2030): latest OBR Economic and Fiscal Outlook
-   supplementary tables. The version currently checked in is **March 2026**;
-   refresh after each new EFO.
-3. **Long-run equilibrium** (2031-2073): constructed from OBR's long-run
+2. **EFO forecast** (2026-2031): latest OBR Economic and Fiscal Outlook
+   supplementary tables. The version currently checked in is **October
+   2026**; refresh after each new EFO.
+3. **Long-run equilibrium** (2032-2073): constructed from OBR's long-run
    assumptions (Fiscal Risks and Sustainability report) and the long-run
    RPI-CPI wedge methodology.
 
@@ -78,12 +78,16 @@ general horizon therefore does not extrapolate the experimental EOT series,
 whose published determinant ends in FY2030–31.
 
 CPI, CPIH, RPI, average earnings, road fuel and population run to 2073, but
-several series end in 2030. Of those the projection uses, per-capita GDP and
-mixed income, mortgage interest, council tax, social and private rents and
-Northern Ireland domestic rates end in 2030. A parameter returns its latest
-value after its last date, so in 2031 and 2032 these hold their 2030 growth
-rate. That is an extrapolation, not an OBR forecast; replace it with the next
-EFO's values once one covers those years.
+several series end with the EFO. Of those the projection uses, per-capita GDP
+and mixed income, council tax, house prices and social and private rents end
+in 2031, the October 2026 EFO's last year. Mortgage interest ends in 2030:
+the OBR stops forecasting RPI mortgage interest payments after 2029, before
+RPI changes method in February 2030. Northern Ireland domestic rates, which
+have their own method (below), also end in 2030.
+A parameter returns its latest value after its last date, so in 2032 the
+first group holds its 2031 growth rate, and in 2031 and 2032 the second holds
+its 2030 rate. That is an extrapolation, not an OBR forecast; replace it with
+the next EFO's values once one covers those years.
 
 After `PROJECTION_END_YEAR`, policyengine-core checks for a formula result
 first, then an `uprating` attribute, then carries the last stored input forward.
@@ -159,7 +163,7 @@ The additional indices have their own source limits:
 | Stored input | Variable index | Source coverage and terminal behavior |
 |---|---|---|
 | Salary-sacrifice pension contributions | `indices.obr.average_earnings` | Earnings growth has source values through 2073; its cumulative index compounds through 2039. |
-| Water and sewerage charges | `indices.ofwat.water_bills` | Raw growth ends in 2029 at 4.5%; that rate carries into later years when the cumulative index is generated, through 2039. |
+| Water and sewerage charges | `indices.ofwat.water_bills` | Raw growth ends in 2029 at 5.0%; that rate carries into later years when the cumulative index is generated, through 2039. |
 | Housing service charges | `indices.obr.lagged_average_earnings` | Lagged growth is generated through 2074 from the preceding year's earnings; its cumulative index compounds through 2039. |
 | Rail usage | `gov.dft.rail.ridership_index` | The source cumulative index ends in 2029 at 1.044. Its terminal level stays flat, so the projection ratio is one in 2031 and 2032. |
 
@@ -168,28 +172,31 @@ The `indices.*` paths in this table are relative to
 added by fiscal-year conversion.
 
 
-## How the 2031+ values were constructed
+## How the 2032+ values were constructed
 
 Issue [#1379](https://github.com/PolicyEngine/policyengine-uk/issues/1379)
-flagged that the year-by-year 2031+ values weren't documented. They are
-constructed as follows:
+flagged that the year-by-year long-run values weren't documented. Since the
+October 2026 EFO they start in 2032 and are constructed as follows:
 
-- **CPI** is pinned to the Bank of England's 2.0% target from 2031-01-01
-  onwards.
-- **RPI** and **CPIH** use the stored convergence assumptions: 2.30% in
-  2031 and 2.37% in 2032, reaching 2.39% in 2035 and then holding that rate
-  through 2073. Their annual steps are not uniform. The 0.39 pp gap above
-  CPI is the OBR's published
-  long-run wedge to account for housing-cost growth ([long-run difference
-  between RPI and CPI inflation][rpi-cpi]).
-- **Average earnings** use 3.32% in 2031 and 3.71% in 2032, reaching 3.83%
-  in 2036 and then holding that rate through 2073. These are existing model
-  convergence assumptions beyond the EFO forecast horizon.
+- **CPI** is at the Bank of England's 2.0% target in the EFO's 2031
+  forecast and is held there from 2032-01-01 onwards.
+- **RPI** and **CPIH** move in equal steps, rounded to four decimals, from
+  the EFO's 2031 forecast of 2.18% to 2.39% in 2035: 2.23% in 2032, 2.29% in
+  2033 and 2.34% in 2034. They then hold 2.39% through 2073. The 0.39 pp gap
+  above CPI is the OBR's published long-run wedge to account for
+  housing-cost growth ([long-run difference between RPI and CPI
+  inflation][rpi-cpi]).
+- **Average earnings** move the same way from the EFO's 2031 forecast of
+  2.60% to 3.83% in 2036: 2.85% in 2032, 3.09% in 2033, 3.34% in 2034 and
+  3.58% in 2035. They then hold 3.83% through 2073. The 3.83% rate is an
+  existing model assumption, unchanged since the November 2025 EFO.
 - **`road_fuel_volume`** is held flat at 0% after the OBR forecast ends —
   i.e. the final EFO forecast volume is held constant in real terms.
 
-Review these stored assumptions when refreshing the EFO or long-run sources.
-They are not annual EFO forecasts for 2031 onwards. The 2031–2032 rates
+The equal steps replace the stored convergence rates that followed the March
+2026 EFO, which would have taken earnings from 2.60% in 2031 to 3.71% in
+2032. Review these assumptions when refreshing the EFO or the OBR's long-term
+economic determinants. They are not annual EFO forecasts. The 2032 rates
 directly affect projections through the dataset horizon.
 
 ## Statutory uprating inputs
@@ -237,9 +244,9 @@ and so do the Universal Credit standard allowance and health element indices
 built from it. Housing Benefit non-dependant deduction income bands, DfE
 funding rates, the Childcare Offer for Wales hourly rate and the council tax
 high value surcharge follow the lagged calendar-year CPI projection through
-`indices.obr.lagged_cpi`, pending their own uprating models. The deduction amounts continue to follow September CPI.
-The savings credit threshold and Housing
-Benefit pension-age allowances are within the s150 review, under
+`indices.obr.lagged_cpi`, pending their own uprating models. The deduction
+amounts continue to follow September CPI. The savings credit threshold and
+Housing Benefit pension-age allowances are within the s150 review, under
 [s150(1)(l) and (h)](https://www.legislation.gov.uk/ukpga/1992/5/section/150),
 even though their increases in practice are linked to earnings rather than
 September CPI.
@@ -293,8 +300,13 @@ threshold by the same rises, up to the last year of
 
 ## Refreshing after a new EFO
 
-1. Replace the 2025-2030 block in each series with values from the new EFO
+1. Replace the forecast block in each series with values from the new EFO
    detailed forecast tables (note the EFO release month in the header comment).
+   An autumn EFO also revises the calendar year before its release, now
+   outturn (October 2026 revised 2025), and forecasts six years after it; the
+   importer's defaults cover only six years from the release year, so pass
+   `--forecast-start-year` and `--forecast-years` (2025 and 7 for October
+   2026).
    The importer converts annual economy growth percentages to decimal rates
    and rounds them to four decimal places. Review the economy-series diff
    deliberately when running a full CLI import: with the real March 2026
@@ -303,7 +315,7 @@ threshold by the same rises, up to the last year of
    earnings −0.0585% and house prices +0.0194%. Receipts-only rendering can
    reproduce the committed YAML byte for byte; a full import also refreshes
    these economy series.
-2. Recompute the 2031-2073 convergence path so the first long-run year
+2. Recompute the long-run convergence path so the first long-run year
    continues smoothly from the new last forecast year (no jump). If the new
    EFO forecasts a year that a series has no entry for, add that entry first:
    the importer only replaces existing entries, and stops naming the series
@@ -346,6 +358,35 @@ uv run python -m policyengine_uk.utils.import_obr_forecasts \
   --receipts-file receipts_tables_march_2026.xlsx \
   --previous-receipts-file receipts_tables_march_2025.xlsx
 ```
+
+and for October 2026, whose receipts tables are numbered 4.x:
+
+```bash
+uv run python -m policyengine_uk.utils.import_obr_forecasts \
+  --file efo-october-2026-detailed-forecast-tables-economy.xlsx \
+  --receipts-file efo-october-2026-detailed-forecast-tables-receipts.xlsx \
+  --previous-receipts-file policyengine_uk/tests/fixtures/obr_receipts/obr_efo_march_2026_receipts.xlsx \
+  --forecast-start-year 2025 --forecast-years 7
+```
+
+The October 2026 import also needed, by hand: 2031 entries added to
+`house_prices` and `rent` before the run, the 2032+ joins above, and the
+series the importer does not cover (population, per-capita GDP, mixed and
+non-labour income, household interest income, rail journeys per person,
+council tax, social and private rents, the AHC deflator, Ofwat water bills,
+road fuel volumes and the litre proxies, and the fuel duty RPI path in
+`gov.hmrc.fuel_duty`). Each series' comments name its source and method.
+The rail fare indices (`gov.dft.rail.fare_index` and `prior_law_fare_index`),
+Bank Rate (`gov.boe.base_rate`, economy Table 1.9) and households' financial
+assets (`household.wealth.financial_assets`, Table 1.11) also take October
+2026 values.
+
+The national living wage forecast (economy Table 1.13) is not read here. Until
+PolicyEngine/policyengine-uk#2700 adds it as `obr.national_living_wage`, the
+minimum wage rates, and the rules built on them, stay at their April 2026
+levels; #2721 tracks teaching the importer to read the table. Whichever of
+#2700 and the October 2026 update merges second copies the 2032+ earnings path
+into that series.
 
 The EFO refresh does not touch `finance_ni.domestic_rates`; OBR does not
 publish a Northern Ireland domestic rates bill series (see below).
