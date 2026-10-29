@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.student_loans import student_loan_income
 import numpy as np
 
 
@@ -18,9 +19,7 @@ class plan_2_interest_rate(Variable):
     def formula(person, period, parameters):
         # Interest income is the repayment income (SI 2009/470 reg. 21A(11)),
         # which leaves out benefits in kind (regs. 29(4)(e) and 41).
-        income = max_(
-            person("net_income", period) - person("benefits_in_kind", period), 0
-        )
+        income = student_loan_income(person, period)
         p = parameters(period).gov.hmrc.student_loans
         rpi = parameters(period).gov.economic_assumptions.yoy_growth.obr.rpi
 

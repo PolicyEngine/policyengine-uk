@@ -120,6 +120,27 @@
     net_income: 49_000
     student_loan_repayment: 955.35
 
+- name: Student loans leave out only the part of the benefit that deductions leave in income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    employment_income: 10_000
+    employment_expenses: 15_000
+    private_pension_income: 30_000
+    student_loan_plan: PLAN_2
+    company_car_list_price: 30_000
+    company_car_co2_emissions: 120
+  output:
+    # Allowable expenses of £15,000 come off pay and the £9,000 benefit
+    # together (ITEPA 2003 s. 11): taxable employment income is £4,000, and
+    # would be nil without the car. So net income of £34,000 holds £4,000
+    # of the benefit, and repayment income is £30,000, the pension:
+    # 9% of (£30,000 - £29,385) = £55.35.
+    taxable_employment_income: 4_000
+    net_income: 34_000
+    student_loan_repayment: 55.35
+
 - name: The pension relief limit counts the benefit as relevant UK earnings
   period: 2026
   absolute_error_margin: 0.01
