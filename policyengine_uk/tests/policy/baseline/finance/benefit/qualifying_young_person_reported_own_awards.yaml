@@ -17,14 +17,13 @@
     benunits:
       benunit:
         members: [parent, young_person]
-        savings: 0
     households:
       household:
         members: [parent, young_person]
         country: ENGLAND
         rent: 0
+        savings: 0
   output:
-    receives_benefits_in_own_right: [false, true]
     is_before_first_september_following_16th_birthday: [false, true]
     is_qualifying_young_person_for_universal_credit: [false, false]
     is_child_or_qualifying_young_person_for_universal_credit: [false, false]
@@ -53,14 +52,13 @@
     benunits:
       benunit:
         members: [parent, young_person]
-        savings: 0
     households:
       household:
         members: [parent, young_person]
         country: ENGLAND
         rent: 0
+        savings: 0
   output:
-    receives_benefits_in_own_right: [false, true]
     is_before_first_september_following_16th_birthday: [false, true]
     is_qualifying_young_person_for_universal_credit: [false, false]
     is_child_or_qualifying_young_person_for_universal_credit: [false, false]
@@ -89,14 +87,13 @@
     benunits:
       benunit:
         members: [parent, young_person]
-        savings: 0
     households:
       household:
         members: [parent, young_person]
         country: ENGLAND
         rent: 0
+        savings: 0
   output:
-    receives_benefits_in_own_right: [false, true]
     is_before_first_september_following_16th_birthday: [false, true]
     is_qualifying_young_person_for_universal_credit: [false, false]
     is_child_or_qualifying_young_person_for_universal_credit: [false, false]
@@ -125,14 +122,13 @@
     benunits:
       benunit:
         members: [parent, young_person]
-        savings: 0
     households:
       household:
         members: [parent, young_person]
         country: ENGLAND
         rent: 0
+        savings: 0
   output:
-    receives_benefits_in_own_right: [false, true]
     is_before_first_september_following_16th_birthday: [false, true]
     is_qualifying_young_person_for_universal_credit: [false, false]
     is_child_or_qualifying_young_person_for_universal_credit: [false, false]
@@ -161,14 +157,13 @@
     benunits:
       benunit:
         members: [parent, young_person]
-        savings: 0
     households:
       household:
         members: [parent, young_person]
         country: ENGLAND
         rent: 0
+        savings: 0
   output:
-    receives_benefits_in_own_right: [false, true]
     is_before_first_september_following_16th_birthday: [false, true]
     is_qualifying_young_person_for_universal_credit: [false, false]
     is_child_or_qualifying_young_person_for_universal_credit: [false, false]
@@ -197,14 +192,13 @@
     benunits:
       benunit:
         members: [parent, young_person]
-        savings: 0
     households:
       household:
         members: [parent, young_person]
         country: ENGLAND
         rent: 0
+        savings: 0
   output:
-    receives_benefits_in_own_right: [false, true]
     is_before_first_september_following_16th_birthday: [false, true]
     is_qualifying_young_person_for_universal_credit: [false, false]
     is_child_or_qualifying_young_person_for_universal_credit: [false, false]
@@ -233,14 +227,13 @@
     benunits:
       benunit:
         members: [parent, young_person]
-        savings: 0
     households:
       household:
         members: [parent, young_person]
         country: ENGLAND
         rent: 0
+        savings: 0
   output:
-    receives_benefits_in_own_right: [false, true]
     is_before_first_september_following_16th_birthday: [false, true]
     is_qualifying_young_person_for_universal_credit: [false, false]
     is_child_or_qualifying_young_person_for_universal_credit: [false, false]
@@ -269,14 +262,13 @@
     benunits:
       benunit:
         members: [parent, young_person]
-        savings: 0
     households:
       household:
         members: [parent, young_person]
         country: ENGLAND
         rent: 0
+        savings: 0
   output:
-    receives_benefits_in_own_right: [false, true]
     is_before_first_september_following_16th_birthday: [false, true]
     is_qualifying_young_person_for_universal_credit: [false, false]
     is_child_or_qualifying_young_person_for_universal_credit: [false, false]
@@ -305,14 +297,13 @@
     benunits:
       benunit:
         members: [parent, young_person]
-        savings: 0
     households:
       household:
         members: [parent, young_person]
         country: ENGLAND
         rent: 0
+        savings: 0
   output:
-    receives_benefits_in_own_right: [false, true]
     is_before_first_september_following_16th_birthday: [false, true]
     is_qualifying_young_person_for_universal_credit: [false, false]
     is_child_or_qualifying_young_person_for_universal_credit: [false, false]
@@ -341,14 +332,13 @@
     benunits:
       benunit:
         members: [parent, young_person]
-        savings: 0
     households:
       household:
         members: [parent, young_person]
         country: ENGLAND
         rent: 0
+        savings: 0
   output:
-    receives_benefits_in_own_right: [false, true]
     is_before_first_september_following_16th_birthday: [false, true]
     is_qualifying_young_person_for_universal_credit: [false, false]
     is_child_or_qualifying_young_person_for_universal_credit: [false, false]
@@ -360,3 +350,76 @@
     is_uc_work_allowance_eligible: false
     uc_work_allowance: 0
     child_minimum_guarantee_addition: 0
+
+- name: A reported award also excludes the education route.
+  period: 2026
+  input:
+    age: [18, 18, 18, 18, 18]
+    current_education: [UPPER_SECONDARY, UPPER_SECONDARY, UPPER_SECONDARY, UPPER_SECONDARY, UPPER_SECONDARY]
+    universal_credit_reported: [5_000, 0, 0, 0, 0]
+    esa_income_reported: [0, 5_000, 0, 0, 0]
+    esa_contrib_reported: [0, 0, 5_000, 0, 0]
+    jsa_income_reported: [0, 0, 0, 5_000, 0]
+    jsa_contrib_reported: [0, 0, 0, 0, 5_000]
+  output:
+    is_qualifying_young_person_for_universal_credit: [false, false, false, false, false]
+    is_qualifying_young_person_for_pension_credit: [false, false, false, false, false]
+
+- name: An explicit false own-right flag does not erase a reported own ESA award.
+  period: 2026
+  input:
+    age: 16
+    current_education: NOT_IN_EDUCATION
+    receives_benefits_in_own_right: false
+    esa_income_reported: 5_000
+  output:
+    is_qualifying_young_person_for_universal_credit: false
+    is_qualifying_young_person_for_pension_credit: false
+
+- name: A parent's report does not identify their child as an own-award recipient.
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_benunit_head: true
+        esa_income_reported: 5_000
+      young_person:
+        age: 16
+        is_benunit_head: false
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      benunit:
+        members: [parent, young_person]
+  output:
+    is_qualifying_young_person_for_universal_credit: [false, true]
+    is_qualifying_young_person_for_pension_credit: [false, true]
+    is_responsible_for_child_or_qualifying_young_person_for_universal_credit: true
+
+- name: Zero reports leave the no-education route available.
+  period: 2026
+  input:
+    age: 16
+    current_education: NOT_IN_EDUCATION
+    universal_credit_reported: 0
+    esa_income_reported: 0
+    esa_contrib_reported: 0
+    jsa_income_reported: 0
+    jsa_contrib_reported: 0
+  output:
+    is_qualifying_young_person_for_universal_credit: true
+    is_qualifying_young_person_for_pension_credit: true
+
+- name: Contribution-based JSA excludes UC and PC QYPs without changing Child Benefit's distinct rule.
+  # Child Benefit (General) Regulations 2006 reg. 8 lists income-based JSA,
+  # but UC reg. 5(5) and SPC reg. 4A(5) also exclude contribution-based JSA.
+  period: 2026
+  input:
+    age: 18
+    current_education: UPPER_SECONDARY
+    jsa_contrib_reported: 5_000
+  output:
+    is_qualifying_young_person_for_universal_credit: false
+    is_qualifying_young_person_for_pension_credit: false
+    is_qualifying_young_person_for_child_benefit: true
