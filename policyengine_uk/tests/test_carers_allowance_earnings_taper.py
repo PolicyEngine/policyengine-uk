@@ -381,9 +381,10 @@ def test_a_couple_under_the_limit_gets_one_award_all_year():
 
 # Under the taper, a head over the limit can have the full rate too: at a
 # taper rate of zero, where an input says they earn over the limit with no
-# earnings above it, or with a millionth of a pound above it, which float32
-# loses. The couple then elect the partner, who has the award all year,
-# rather than giving the head the weeks under the taper.
+# earnings above it, or with a millionth of a pound above it, which rounds
+# away when float32 takes it from the rate. The couple then elect the
+# partner, who has the award all year, rather than giving the head the weeks
+# under the taper.
 
 
 def full_rate_under_the_taper(route):
@@ -1103,9 +1104,10 @@ def test_the_taper_never_leaves_a_couple_with_less_than_the_cliff_edge(
     assert pre_overlap.sum(axis=1) == pytest.approx(candidate.max(axis=1))
 
 
-# At a taper rate of zero, or one small enough that float32 loses it, a
-# partner over the limit has the full rate under the taper, the same award as
-# a partner under it; one partner still has the award for the year.
+# At a taper rate of zero, a partner over the limit has the full rate under
+# the taper, the same award as a partner under it; at 0.0001, so does one a
+# penny over the limit, whose tapered award rounds to the full rate in
+# float32. One partner still has the award for the year.
 
 
 @pytest.fixture(scope="module")
