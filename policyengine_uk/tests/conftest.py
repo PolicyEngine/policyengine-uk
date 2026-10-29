@@ -14,6 +14,10 @@ from typing import Mapping, Optional
 
 import pytest
 from policyengine_core.taxbenefitsystems import TaxBenefitSystem
+from policyengine_core.tools.test_runner import YamlItem
+from policyengine_core.tools.test_runner import (
+    _tax_benefit_system_cache as _yaml_systems,
+)
 
 from policyengine_uk.utils.aggregate_impact.dataset import load_pin, materialise
 
@@ -562,9 +566,40 @@ except (OSError, AttributeError):
     _malloc_trim = None
 
 
+# policyengine-core's YAML runner (``policyengine-core test``, CI's YAML job)
+# keeps every case's simulation and reformed system until the process ends.
+# pytest holds each collected item for the whole session, a YamlItem keeps
+# ``simulation`` and ``tax_benefit_system`` after its case has run, and
+# ``_tax_benefit_system_cache`` keeps a full clone of the system for each
+# combination of dotted parameter inputs (``gov.x.y: value``) without ever
+# evicting one. On 2d437ebba the 5,235 YAML cases peaked at 16.5 GB on a Mac
+# with memory to spare, and the process took 107 s to exit after printing
+# its summary. The 16 GB arm64 runners swap, so the job took 30 to 45 minutes
+# and hit its time limit after its tests had passed (#2698; run 40830740956).
+# Releasing each case's simulation and system after it runs, and a file's
+# dotted-input systems after its last case, the same run peaked at 1.7 GB and
+# took 188 s in all instead of 277: 179 s of tests against 168, and 5 s to
+# exit. Systems without dotted inputs stay cached, since files share them.
+# Remove this once policyengine-core releases the same
+# (PolicyEngine/policyengine-core#569).
+def release_yaml_case(item, nextitem) -> None:
+    """Drop a YAML case's simulation and system, and, after a file's last
+    case, the cached systems built for dotted parameter inputs."""
+    if not isinstance(item, YamlItem):
+        return
+    item.simulation = None
+    item.tax_benefit_system = None
+    if nextitem is None or nextitem.path != item.path:
+        # Keys are (reforms, dotted inputs, extensions).
+        for systems in _yaml_systems.values():
+            for key in [key for key in systems if key[1]]:
+                del systems[key]
+
+
 @pytest.hookimpl(trylast=True)
 def pytest_runtest_teardown(item, nextitem):
     # trylast: after pytest's own teardown, which finalizes the file's fixtures
     # when the next test is in another file.
+    release_yaml_case(item, nextitem)
     if _malloc_trim is not None and (nextitem is None or nextitem.path != item.path):
         _malloc_trim(0)
