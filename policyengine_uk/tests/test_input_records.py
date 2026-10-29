@@ -147,3 +147,17 @@ def test_rebuilt_populations_leave_their_simulation_as_it_was():
     assert donor.calculate("weekly_hours", 2025).tolist() == [20]
     assert donor.to_input_dict()["hours_worked"] == {"2025": [1_040]}
     assert sim.to_input_dict()["hours_worked"] == {"2025": [260]}
+
+
+def test_rebuilt_populations_forget_the_inputs_they_replace():
+    data = situation({2025: 500})
+    data["people"]["person"]["adjusted_net_income"] = {2026: 50_000}
+    sim = Simulation(situation=data)
+    sim.build_from_populations(
+        Simulation(situation=situation({2025: 1_000})).populations
+    )
+    # A value cached in the period is not the input the rebuild replaced.
+    holder = sim.get_holder("adjusted_net_income")
+    holder.put_in_cache(np.array([123.0]), period(2026))
+    person = sim.populations["person"]
+    assert supplied_input(person, "adjusted_net_income", period(2026)) is None
