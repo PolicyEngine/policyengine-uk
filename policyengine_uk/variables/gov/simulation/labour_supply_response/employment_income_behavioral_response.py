@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.household_subset import whole_population_value
 from policyengine_uk.utils.labour_supply_responses import (
     measurement_branches,
     response_source,
@@ -19,6 +20,14 @@ class employment_income_behavioral_response(Variable):
             return 0  # No reform, no impact
         if lsr.income_elasticity == 0 and lsr.substitution_elasticity == 0:
             return 0
+        # A branch holding only some households (utils.household_subset) has
+        # the whole simulation as an ancestor with its rules: it takes the
+        # whole population's response, at its own people.
+        whole = whole_population_value(
+            person, "employment_income_behavioral_response", period
+        )
+        if whole is not None:
+            return whole
         # A branch with its parent's rules takes the parent's response.
         source = response_source(simulation)
         if source is not simulation:
