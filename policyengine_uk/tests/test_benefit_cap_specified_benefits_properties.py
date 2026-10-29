@@ -52,7 +52,8 @@ Invariants:
    earnings exception the claimants (UC Regs 2013 reg 82(1)(a)), so the
    draws give the member State Pension age or earnings at times.
 2. Each scheme's exemption equals its own reference written directly from
-   the regulations, with roles fixed by construction (differential test).
+   the regulations, with claimant roles fixed and young-person status
+   following each scheme's own exclusions (differential test).
    The union of the two equals the former shared reference.
 3. A family exempt under a scheme has no cap and no reduction to that
    scheme's award; any other family has that scheme's statutory cap (UC reg
@@ -121,6 +122,13 @@ CAPPED_REPORTS = {
     "incapacity_benefit": "incapacity_benefit_reported",
     "sda": "sda_reported",
 }
+OWN_RIGHT_REPORTS = (
+    "universal_credit_reported",
+    "esa_contrib_reported",
+    "esa_income_reported",
+    "jsa_contrib_reported",
+    "jsa_income_reported",
+)
 CIRCUMSTANCES = AMOUNTS + [
     "esa_contrib",
     "esa_income",
@@ -267,6 +275,11 @@ def own_esa(m):
     return m["esa_contrib_reported"] > 0 or m["esa_income_reported"] > 0
 
 
+def own_benefits(m):
+    # UC reg 5(5): a personal report identifies an award in the person's own right.
+    return any(m.get(report, 0) > 0 for report in OWN_RIGHT_REPORTS)
+
+
 def reference_specified_benefit(members, benunit_inputs, scheme):
     """UC Regs 2013 reg 83(1) or HB Regs 2006 reg 75F(1), read directly, with
     roles known by construction."""
@@ -277,7 +290,16 @@ def reference_specified_benefit(members, benunit_inputs, scheme):
     # school-leaver role here has no Child Benefit education or terminal-date
     # circumstance, so it is not one.
     young_roles = ("young_person", "sixteen") if scheme == "uc" else ("young_person",)
-    young_persons = [m for m in members if m["_role"] in young_roles]
+    # The UC predicate supplements its qualifying-young-person test with a
+    # separate age-16 approximation, which reads only the explicit own-right
+    # flag. Reported awards remove older UC young persons, but do not change
+    # that approximation or the Housing Benefit test.
+    young_persons = [
+        m
+        for m in members
+        if m["_role"] in young_roles
+        and (scheme != "uc" or m["age"] == 16 or not own_benefits(m))
+    ]
     children = [m for m in members if m["_role"] == "child"]
     # No capital, so the couple's income-related award is their reports.
     couple_award = any(m["esa_income_reported"] > 0 for m in claimants)
@@ -372,16 +394,22 @@ def reference_union(members, benunit_inputs):
     )
 
 
-def reference_cap(members):
+def reference_cap(members, scheme):
     # Each scheme's rate: a single claimant (UC reg 80A(2)(c)) or a claimant
     # who neither has a partner nor is a lone parent (HB regs 2(1), 75CA(2)),
     # with no child or young person. The family-rate helper counts any
     # 16-year-old for the year (UC reg 5(1)(a); for HB, Child Benefit's
     # school-leaver terminal dates, which annual ages cannot place); it does
     # not yet apply reg 5(5) to one receiving benefits in their own right.
+    # Older UC young persons cease to count when they report their own award;
+    # Housing Benefit continues to read the existing Child Benefit test.
     claimants = sum(m["_role"] == "claimant" for m in members)
     dependants = any(
-        m["_role"] in ("child", "young_person", "sixteen", "sixteen_own_right")
+        m["_role"] in ("child", "sixteen", "sixteen_own_right")
+        or (
+            m["_role"] == "young_person"
+            and (scheme != "uc" or m["age"] == 16 or not own_benefits(m))
+        )
         for m in members
     )
     return SINGLE_CAP if claimants == 1 and not dependants else FAMILY_CAP
@@ -516,7 +544,7 @@ def test_exempt_families_have_no_cap_and_others_the_statutory_cap(drawn):
             if exempt[i]:
                 assert np.isinf(cap[i]) and reduction[i] == 0, (scheme, units[i])
             else:
-                assert cap[i] == reference_cap(members), (scheme, units[i])
+                assert cap[i] == reference_cap(members, scheme), (scheme, units[i])
                 excess = max(total[part][i] - cap[i], 0)
                 # UC reg 81: the excess less the childcare element (nil
                 # here). HB reg 75D(2): no more than leaves reg 75's 50p a
