@@ -31,8 +31,8 @@ PolicyEngine models these via:
 ## Household Energy Payment (2026-27)
 
 Budget 2026 (paragraph 6.24) announced a one-off £100 Household Energy
-Payment for households in council tax bands A to D in England, paid into
-bank accounts by local authorities from January 2027. PolicyEngine models it as
+Payment for households in council tax bands A to D in England, which local
+authorities pay into bank accounts from January 2027. PolicyEngine models it as
 `household_energy_payment` (Household, YEAR), with parameters at
 `parameters/gov/treasury/household_energy_payment/`:
 
@@ -46,17 +46,17 @@ Rebate does, and in `hbai_household_net_income`: HBAI counted the 2022
 Council Tax Rebate and the Energy Bills Support Scheme as miscellaneous
 income ([HBAI quality and methodology report FYE 2023](https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2023/households-below-average-income-series-quality-and-methodology-information-report-fye-2023)).
 The devolved governments receive a Barnett share instead, which the model
-does not allocate, and the £100 million of further local-authority funding
-for targeted support is not modelled.
+does not allocate, and the model leaves out the £100 million of further
+local-authority funding for targeted support.
 
 The payment goes to the householder [liable for council tax on their main
 home](https://www.gov.uk/government/news/what-the-autumn-budget-2026-means-for-your-energy-bills),
 including most households exempt from council tax; full criteria are to
 follow. The model pays every household in a qualifying band. Survey data
 hold only main homes, so the second homes and empty properties the scheme
-excludes do not arise. Households whose landlord is liable (council tax in
-the rent) cannot be identified, so they are paid, which slightly overstates
-recipients. `council_tax_band` defaults to band D, so a household with no
+excludes do not arise. The model can't tell which households have a
+landlord liable for council tax (council tax in the rent), so it pays them,
+which slightly overstates recipients. `council_tax_band` defaults to band D, so a household with no
 band recorded qualifies.
 
 ## Cost-of-Living Payments (2022-23 and 2023-24)

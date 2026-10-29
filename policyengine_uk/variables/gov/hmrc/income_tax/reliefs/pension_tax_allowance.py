@@ -14,7 +14,7 @@ class pension_tax_allowance(Variable):
         "the pound (£94 in 2027-28). It falls by £1 for every £3 of total "
         "income above the full new State Pension, which is the tax year's 52 "
         "weeks at the weekly rate, so it follows any change to that rate. The "
-        "rate is projected unrounded, so the threshold is £13,036.97 in "
+        "model projects the rate unrounded, so the threshold is £13,036.97 in "
         "2027-28 where HM Treasury's explainer gives £13,036.40. It is "
         "non-refundable: it is "
         "deducted at Step 6 after the reductions listed before it in "

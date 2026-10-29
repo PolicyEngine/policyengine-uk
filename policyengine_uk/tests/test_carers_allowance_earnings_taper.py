@@ -21,7 +21,11 @@ then identities that hold for every input:
   limit or the overlap rule is what reaches the payment, with the whole
   year's treatment, even where it equals the model's; so 2030-31 pays such
   an award as 2031-32 does, while a reform that changes only a label keeps
-  the parts of the year;
+  the parts of the year; a mask that takes away a fraction of a penny counts,
+  since the couple restriction picks whoever has an award;
+- the payment reads the award before the couple limit only where the model
+  calculates the award before overlap, so a supplied pre-overlap award needs
+  nothing before it;
 - an overlapping benefit equal to the award leaves nothing paid or received,
   a penny left over is paid, and anything paid is at least half a penny.
 """
@@ -516,7 +520,8 @@ def reformed(name, change):
 
 
 def updated(names, attributes):
-    """A reform that updates variables' attributes but keeps their formulas."""
+    """A reform that updates variables' attributes, keeping their formulas
+    unless the attributes give one."""
     from policyengine_core.reforms import Reform
 
     base = Simulation(situation=both_caring_couple(START_YEAR)).tax_benefit_system
@@ -617,6 +622,86 @@ def test_a_reform_masking_the_award_before_the_couple_limit_keeps_the_partners(
     assert pre_overlap == pytest.approx(award)
     paid = sim.calculate("carers_allowance", year).astype(float)
     assert paid == pytest.approx([0, award[1] - 400], abs=0.01)
+
+
+def tiny_award_couple(year):
+    # The head earns a hundredth of a penny a week short of tapering away the
+    # whole rate, so under the taper they keep £0.0001 a week, a fraction of
+    # a penny for the year; the partner is within the limit. Each has £400 a
+    # year of State Pension.
+    rate = ca_parameters(year)[1]
+    return both_caring_couple(year, 400 / 52, head_weekly_excess=rate - 0.0001)
+
+
+def test_a_fraction_of_a_penny_is_an_award_for_the_parts_of_the_year():
+    # With no reform, the head's award picks the head for the weeks under the
+    # taper, and the partner keeps their award for the weeks before it.
+    sim = Simulation(situation=tiny_award_couple(START_YEAR))
+    candidate = sim.calculate("carers_allowance_pre_couple_limit", START_YEAR)
+    candidate = candidate.astype(float)
+    assert 0 < candidate[0] < 0.01 and candidate[1] > 4_000
+    before_taper = 1 - START_YEAR_SHARE
+    pre_overlap = sim.calculate("carers_allowance_pre_overlap", START_YEAR)
+    assert pre_overlap.astype(float) == pytest.approx(
+        [candidate[0], candidate[1] * before_taper]
+    )
+    paid = sim.calculate("carers_allowance", START_YEAR).astype(float)
+    assert paid == pytest.approx([0, pre_overlap[1] - before_taper * 400], abs=0.01)
+
+
+@pytest.mark.parametrize("year", [START_YEAR, FULL_YEAR])
+@pytest.mark.parametrize(
+    "masked", ["carers_allowance_pre_couple_limit", "carers_allowance_pre_overlap"]
+)
+def test_a_reform_masking_a_fraction_of_a_penny_gets_the_whole_year(year, masked):
+    # The reform limits a stage to women, so it takes away the male head's
+    # fraction of a penny. That is within half a penny of the parts of the
+    # year, but the couple restriction picks whoever has an award, so the
+    # masked stage carries no dates and the stages after it work on the whole
+    # year: the partner keeps any award they have before overlap, less the
+    # whole year's £400 of State Pension.
+    reform = updated([masked], {"defined_for": "is_female"})
+    situation = tiny_award_couple(year)
+    situation["people"]["head"]["is_female"] = {year: False}
+    situation["people"]["partner"]["is_female"] = {year: True}
+    sim = Simulation(situation=situation, reform=reform)
+    award = sim.calculate("carers_allowance_pre_couple_limit", year).astype(float)
+    pre_overlap = sim.calculate("carers_allowance_pre_overlap", year).astype(float)
+    if masked == "carers_allowance_pre_couple_limit":
+        assert award[0] == 0 and award[1] > 4_000
+        assert pre_overlap == pytest.approx(award)
+    assert pre_overlap[0] == 0
+    if year == START_YEAR:
+        assert pre_overlap[1] > 2_000
+    paid = sim.calculate("carers_allowance", year).astype(float)
+    assert paid == pytest.approx(np.maximum(pre_overlap - 400, 0), abs=0.01)
+
+
+@pytest.mark.parametrize("year", [START_YEAR, FULL_YEAR])
+def test_a_supplied_pre_overlap_award_needs_no_award_before_the_couple_limit(year):
+    # This reform derives the award before the couple limit from the payment,
+    # which works only because the supplied pre-overlap award breaks the
+    # loop. A supplied pre-overlap award carries no dates, so the payment
+    # doesn't read the stage before it.
+    situation = carer(0, year, "NORTH_WEST")
+    situation["people"]["carer"].update(
+        age={year: 70},
+        state_pension={year: 400},
+        carers_allowance_pre_overlap={year: 1_000},
+    )
+    reform = updated(
+        ["carers_allowance_pre_couple_limit"],
+        {
+            "formula": lambda person, period, parameters: (
+                person("carers_allowance", period)
+                + person("carers_allowance_overlapping_benefits", period)
+            )
+        },
+    )
+    paid = Simulation(situation=situation, reform=reform).calculate(
+        "carers_allowance", year
+    )
+    assert float(paid[0]) == pytest.approx(600)
 
 
 # An award a reform sets before the couple limit carries no dates, so 2030-31

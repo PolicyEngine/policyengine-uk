@@ -106,7 +106,9 @@ restriction keeps it.
 
 The shares describe an amount only where the model's own formulas calculate
 it from the parts of the year and, for every member of the benefit unit, it
-is the amount the parts give. An amount that an input supplies, or that a
+is the amount the parts give: within half a penny, and an award, however
+small, exactly where the parts give one, since the couple restriction picks
+whoever has an award. An amount that an input supplies, or that a
 reform neutralizes or calculates with a formula of its own, carries no dates,
 even where it equals the model's: a value cannot show where it came from. So
 does an amount that a reform changes while keeping the formula, for example
@@ -115,7 +117,9 @@ gets the couple restriction for the whole year, and the whole year's
 overlapping benefits come off what the restriction keeps. A
 `carers_allowance_pre_overlap` of that kind comes after the couple
 restriction, so only the whole year's overlapping benefits come off it.
-Either way, the payment starts from that value. A reform that changes only a
+Either way, the payment starts from that value, and where the
+`carers_allowance_pre_overlap` is of that kind, the payment doesn't read the
+stage before it. A reform that changes only a
 variable's label, say, keeps the parts of the year. The test of the formula
 covers the whole variable, so a reform that wraps the formula to change one
 person's amount moves every amount to the whole-year treatment. The model treats less than half a penny for the year,

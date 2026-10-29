@@ -647,8 +647,10 @@ PENSION_TAX_ALLOWANCE = "gov.hmrc.income_tax.reliefs.pension_tax_allowance.in_ef
     [
         # From 2027-28 the Budget 2026 Pension Tax Allowance takes the
         # claimant out of Income Tax at the boundary, and Pension Credit
-        # counts income net of tax, so guarantee credit ends at £13,280 of
-        # private pension rather than £13,460.
+        # counts income net of tax, so on this £5 grid guarantee credit runs
+        # out between £13,280 and £13,285 of private pension rather than
+        # between £13,460 and £13,465. The step is the gain in household net
+        # income across that £5.
         (None, True, 223.407952, 274.662918, 1.98),
         (None, False, 223.407952, 274.662918, 0.87),
         (300, True, 267.965646, 319.220612, 1.38),

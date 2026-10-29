@@ -3,6 +3,7 @@ from policyengine_uk.utils.benefit_unit import HALF_PENNY
 from policyengine_uk.utils.carers_allowance_taper import (
     carers_allowance_annual_award,
     carers_allowance_shares_of_year,
+    calculated_by_model,
     carers_allowance_weekly_by_part_of_year,
     carries_parts_of_year,
 )
@@ -33,7 +34,10 @@ class carers_allowance(Variable):
         "carers_allowance_pre_overlap or carers_allowance_pre_couple_limit "
         "that an input supplies, or that a reform neutralizes, calculates "
         "with a formula of its own or otherwise changes, carries no dates, so "
-        "the whole year's overlapping benefits come off the award. Less than half a penny for the year is nil."
+        "the whole year's overlapping benefits come off the award; the payment "
+        "reads the stage before the couple restriction only where the model "
+        "calculates the award before overlap. Less than half a penny for the "
+        "year is nil."
     )
     definition_period = YEAR
     unit = GBP
@@ -47,7 +51,12 @@ class carers_allowance(Variable):
         pre_overlap = person("carers_allowance_pre_overlap", period)
         overlapping = person("carers_allowance_overlapping_benefits", period)
         parts = carers_allowance_weekly_by_part_of_year(person, period, parameters)
-        if len(parts) == 1:
+        if len(parts) == 1 or not calculated_by_model(
+            person, period, carers_allowance_pre_overlap
+        ):
+            # A pre-overlap award that an input supplies or a reform
+            # calculates carries no dates, so the payment doesn't read the
+            # stage before it.
             share_paid = 1
         else:
             # The overlap rule works week by week, so in the year the

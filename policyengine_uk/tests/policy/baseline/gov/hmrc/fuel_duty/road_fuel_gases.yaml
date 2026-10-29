@@ -2,8 +2,9 @@
 # 1 July 2027 (paragraph 6.211; policy costings page 13), so FY2026 is all at
 # the cut rates. On 1 July 2027 the full rates return uprated by RPI growth in
 # the year to 2027 Q1 (4.5565%): LPG 33.05p, natural gas 25.83p a kilogram.
-# Each 1 April from 2028 applies the previous calendar year's RPI growth: LPG
-# 34.04p and natural gas 26.60p in 2028, then 34.99p and 27.34p in 2029.
+# Each 1 April from 2028 applies the previous calendar year's RPI growth, on
+# the OBR's October 2026 forecast: LPG 34.48p and natural gas 26.95p in 2028,
+# then 35.52p and 27.77p in 2029.
 # FY2027 (366 days) weights are 86, 275 and 5 days.
 # Rural relief only reduces the petrol/diesel component.
 - name: No road fuel gas consumption

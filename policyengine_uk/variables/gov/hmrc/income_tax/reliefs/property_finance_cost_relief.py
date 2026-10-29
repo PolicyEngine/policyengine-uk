@@ -43,9 +43,9 @@ class property_finance_cost_relief(Variable):
             "property_finance_costs_relieved", period
         )
         # The order of Step 6 reductions does not change their total, so the
-        # reductions listed before this one come first; it is limited to the
-        # Step 5 tax they leave. Step 7 charges (ITA 2007 s. 30), such as the
-        # High Income Child Benefit Charge, are not reduced.
+        # reductions listed before this one come first, and the Step 5 tax they
+        # leave caps it. No reduction comes off Step 7 charges (ITA 2007
+        # s. 30), such as the High Income Child Benefit Charge.
         earlier = earlier_tax_reductions(income_tax, "property_finance_cost_relief")
         tax_left = max_(
             0,

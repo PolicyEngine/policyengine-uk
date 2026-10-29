@@ -2,9 +2,9 @@ description: One-off Household Energy Payment to each eligible household in the 
 values:
   0001-01-01: 0
   # Budget 2026 announces £100 for households in council tax bands A to D in
-  # England, delivered by local authorities from January 2027, within
-  # 2026-27. The model year runs from 6 April, so the payment is keyed to
-  # model year 2026 and ends with it. It is a spending decision, not
+  # England, which local authorities pay from January 2027, within
+  # 2026-27. The model year runs from 6 April, so the payment starts and ends
+  # with model year 2026. It is a spending decision, not
   # legislation.
   2026-04-06:
     value: 100

@@ -304,12 +304,12 @@ obr:
       # 2027 (57.95p raised by Q1 2027 RPI growth, OBR economy Table 1.7),
       # then 63.21p, 65.13p, 67.07p and 68.61p from 1 April 2028 to 2031,
       # each raised by the previous calendar year's RPI growth in obr.rpi.
-      # That is the schedule PolicyEngine/policyengine-uk#2719 puts into
-      # gov.hmrc.fuel_duty.petrol_and_diesel, so once it is law the model's
-      # duty on these volumes reproduces the OBR's road fuel receipts. Until
-      # then current law there is the Budget 2025 schedule (60.03p from April
-      # 2027). The derivation is policyengine-uk-data's
-      # sources/road_fuel_volume.py.
+      # That is the schedule in gov.hmrc.fuel_duty.petrol_and_diesel
+      # (PolicyEngine/policyengine-uk#2719). The OBR's receipts year starts on
+      # 1 April and the model's on 6 April, so a model year takes in five days
+      # of the next April's rate, and the model's duty on these volumes comes
+      # close to the OBR's road fuel receipts rather than matching them. The
+      # derivation is policyengine-uk-data's sources/road_fuel_volume.py.
       2026-01-01: -0.02315665811165113
       2027-01-01: -0.030554808261277322
       2028-01-01: -0.0397847818644439

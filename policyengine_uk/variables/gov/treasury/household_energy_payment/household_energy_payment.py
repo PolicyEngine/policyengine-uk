@@ -5,15 +5,15 @@ class household_energy_payment(Variable):
     label = "Household Energy Payment"
     documentation = (
         "One-off payment to households in the qualifying council tax bands and "
-        "countries, administered by local authorities and paid into bank "
-        "accounts. Budget 2026 sets £100 for bands A to D in England, from "
+        "countries, which local authorities pay into bank accounts. Budget "
+        "2026 sets £100 for bands A to D in England, from "
         "January 2027. It goes to the householder liable for council tax on "
         "their main home, including most households exempt from council tax. "
         "The model pays every household in a qualifying band: survey data "
         "hold only main homes, so second homes and empty properties do not "
-        "arise, but households whose landlord is liable (council tax in the "
-        "rent) cannot be identified and are paid, which slightly overstates "
-        "recipients."
+        "arise, but the model can't tell which households have a landlord "
+        "liable for council tax (council tax in the rent), so it pays them, "
+        "which slightly overstates recipients."
     )
     entity = Household
     definition_period = YEAR

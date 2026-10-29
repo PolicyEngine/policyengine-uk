@@ -10,14 +10,15 @@ year.
 
 A person's weekly award is the same in every part of the year in which it is
 positive: the full rate wherever they are within the earnings limit, and the
-tapered rate, which only the part under the taper pays, where they are above
-it. So the annual amounts carry the parts as shares of the year: the
+tapered rate, which only the part under the taper pays, where their earnings
+exceed it. So the annual amounts carry the parts as shares of the year: the
 pre-overlap award is the candidate award scaled by the share the couple
 restriction keeps, and the overlapping benefits come off for that share.
 
 The shares describe an annual award only where the model's own formulas
 calculate it from the parts of the year, and only where it is, for every
-member of the benefit unit, the amount the parts give. An award that an input
+member of the benefit unit, the amount the parts give, positive exactly where
+they give an award. An award that an input
 supplies, or that a reform neutralizes or calculates with a formula of its
 own, carries no dates even where it equals the model's: a value can't show
 where it came from. And a reform that keeps the formula can still change the
@@ -36,9 +37,9 @@ from policyengine_uk.utils.supplied_inputs import supplied_input
 
 def carers_allowance_weekly_by_part_of_year(person, period, parameters):
     """The weekly award, before the couple and overlap restrictions, in each
-    part of the year, as (share of the year, weekly award) pairs. A part with
-    no share of the year is left out, so outside the year the taper starts in
-    there is one part."""
+    part of the year, as (share of the year, weekly award) pairs. The list leaves
+    out a part with no share of the year, so outside the year the taper
+    starts in there is one part."""
     ca = parameters(period).gov.dwp.carers_allowance
     in_scotland = person.household("country", period).decode_to_str() == "SCOTLAND"
     csp_replaces_ca = period.start.year >= 2025
@@ -89,21 +90,36 @@ def carers_allowance_shares_of_year(person, period, parts):
     return candidate, kept
 
 
-def carries_parts_of_year(person, period, model_variable, amount, parts_amount):
-    """Whether amount, the annual value of model_variable (a stage before the
-    payment), carries the parts of the year: the simulation calculates it with
-    the model's own formula (no input supplies it, and no reform neutralizes
-    it or puts a formula of its own in place of the model's), and for every
-    member of the benefit unit it is parts_amount, what the parts of the year
-    give, so nothing else a reform changes, such as defined_for, has changed
-    it."""
+def calculated_by_model(person, period, model_variable):
+    """Whether the simulation calculates model_variable with the model's own
+    formula: no input supplies it, and no reform neutralizes it or puts a
+    formula of its own in place of the model's."""
     name = model_variable.__name__
     variable = person.simulation.tax_benefit_system.get_variable(name)
-    by_model = (
+    return (
         supplied_input(person, name, period) is None
         and not variable.is_neutralized
         and calculated_by(person, name, period, model_variable)
     )
-    # Annual amounts are float32, good to about a thousandth of a pound.
-    as_parts = person.benunit.all(np.abs(amount - parts_amount) < HALF_PENNY)
-    return by_model & as_parts
+
+
+def matches_parts_of_year(person, amount, parts_amount):
+    """Whether, for every member of the benefit unit, amount is parts_amount,
+    what the parts of the year give: within half a penny, since annual
+    amounts are float32, good to about a thousandth of a pound, and positive
+    exactly where parts_amount is, since the couple restriction picks a
+    partner by whether their award is positive."""
+    same = (np.abs(amount - parts_amount) < HALF_PENNY) & (
+        (amount > 0) == (parts_amount > 0)
+    )
+    return person.benunit.all(same)
+
+
+def carries_parts_of_year(person, period, model_variable, amount, parts_amount):
+    """Whether amount, the annual value of model_variable (a stage before the
+    payment), carries the parts of the year: the simulation calculates it with
+    the model's own formula, and it matches what the parts give, so nothing
+    else a reform changes, such as defined_for, has changed it."""
+    return calculated_by_model(person, period, model_variable) & matches_parts_of_year(
+        person, amount, parts_amount
+    )
