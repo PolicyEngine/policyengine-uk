@@ -5,7 +5,7 @@ from policyengine_uk.utils.supplied_inputs import stored_as_input
 
 
 def hb_uses_annual_override(benunit, period, variable_name, default_formula):
-    """Keep supplied annual values and replacement formulas out of recalculation."""
+    """Keep annual inputs and replacement formulas out of recalculation."""
     simulation = benunit.simulation
     variable = simulation.tax_benefit_system.get_variable(variable_name)
     formula = variable.get_formula(period)
@@ -17,10 +17,9 @@ def hb_uses_annual_override(benunit, period, variable_name, default_formula):
         return True
     # A value set as an input for this period overrides recalculation, and so
     # does a scenario's own value (set_model_value), which the variable then
-    # reads; a cached formula result does not. SUPPLIED_INPUT_VARIABLES lists
-    # each name passed here, so Simulation.calculate forgets an input record
-    # that a population rebuild left without its value before the formula
-    # refills the period.
+    # reads; a cached formula result does not, even in populations taken from
+    # another simulation. SUPPLIED_INPUT_VARIABLES lists each name passed
+    # here, as stored_as_input and set_model_value require.
     return stored_as_input(benunit, variable_name, period)
 
 

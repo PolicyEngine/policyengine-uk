@@ -173,18 +173,21 @@ def supplied_by(population, variable_name: str, period: Period) -> bool:
 
 
 def stored_as_input(population, variable_name: str, period: Period) -> bool:
-    """Whether a value set as an input for ``period``, supplied or the
-    model's own (``set_model_value``), is stored for ``variable_name`` on
-    this branch or one it was made from. A value the engine carried over from
-    an earlier period, or cached after a calculation, is not."""
+    """Whether the value stored for ``variable_name`` and ``period``, on this
+    branch or one it was made from, was set as an input: supplied, or the
+    model's own (``set_model_value``). A value the engine carried over from
+    an earlier period, or cached after a calculation, is not.
+
+    The holder answers from the input record of the simulation it was built
+    in. Populations taken from another simulation (``build_from_populations``)
+    keep their own record, so a value the other simulation calculated stays
+    calculated, and one supplied there stays supplied, whatever this
+    simulation's record says."""
     _check_registered(variable_name)
-    simulation = population.simulation
-    input_keys = getattr(simulation, "_user_input_keys", None) or ()
     holder = population.get_holder(variable_name)
     return any(
-        (variable_name, branch_name, period) in input_keys
-        and holder._get_array_from_storage(period, branch_name) is not None
-        for branch_name in _visible_branch_names(simulation)
+        holder._is_input(period, branch_name)
+        for branch_name in _visible_branch_names(population.simulation)
     )
 
 

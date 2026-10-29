@@ -171,6 +171,39 @@ def test_rebuilt_populations_leave_no_supplied_income_behind():
     ] == pytest.approx((before * 182 + 10_400 * 183) / 365, abs=0.01)
 
 
+@pytest.mark.parametrize(
+    "variable",
+    [
+        "housing_benefit_applicable_income",
+        "housing_benefit_applicable_income_disregard",
+        "housing_benefit_specified_or_temporary_accommodation_disregard",
+    ],
+)
+def test_rebuilt_populations_keep_a_calculated_value_calculated(variable):
+    # The populations come from a simulation that has calculated the value;
+    # this simulation's own record still says it was supplied.
+    data = situation()
+    data["benunits"]["family"][variable] = {2026: 2_000}
+    simulation = Simulation(situation=data)
+    donor = Simulation(situation=situation())
+    donor.calculate(variable, 2026)
+    simulation.build_from_populations(donor.populations)
+    before = 10_400 - 0.65 * (1_000 - 260 - 500)
+    assert simulation.calculate("housing_benefit_entitlement", 2026)[
+        0
+    ] == pytest.approx((before * 182 + 10_400 * 183) / 365, abs=0.01)
+
+
+def test_rebuilt_populations_keep_a_supplied_income():
+    data = situation()
+    data["benunits"]["family"]["housing_benefit_applicable_income"] = {2026: 3_000}
+    simulation = Simulation(situation=situation())
+    simulation.build_from_populations(Simulation(situation=data).populations)
+    assert simulation.calculate("housing_benefit_entitlement", 2026)[
+        0
+    ] == pytest.approx(10_400 - 0.65 * (3_000 - 500), abs=0.01)
+
+
 def test_scenario_adjusted_income_keeps_its_value():
     simulation = Simulation(situation=situation())
     set_model_value(simulation, "housing_benefit_applicable_income", 2026, [2_000])
