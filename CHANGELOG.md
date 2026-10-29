@@ -1,3 +1,10 @@
+## [2.164.2] - 2026-10-29
+
+### Fixed
+
+- The property allowance election (`uses_property_allowance`) now compares routes in a branch holding only the households where someone has a choice, so its cost follows those households rather than the whole population. Every election is unchanged. A branch holding only some households (`utils.household_subset`) takes `months_since_last_birthday` and the labour supply response (`employment_income_behavioral_response`) from the whole population.
+
+
 ## [2.164.1] - 2026-10-29
 
 ### Changed
