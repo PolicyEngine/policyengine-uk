@@ -16,15 +16,19 @@ pre-overlap award is the candidate award scaled by the share the couple
 restriction keeps, and the overlapping benefits come off for that share.
 
 The shares describe an annual award only where the model's own formulas
-calculate it from the parts of the year. An award that an input supplies, or
-that a reform neutralizes or calculates with a formula of its own, carries no
-dates, even where it equals the model's: it gets the whole-year treatment, and
-so does every stage after it.
+calculate it from the parts of the year, and only where it is, for every
+member of the benefit unit, the amount the parts give. An award that an input
+supplies, or that a reform neutralizes or calculates with a formula of its
+own, carries no dates even where it equals the model's: a value can't show
+where it came from. And a reform that keeps the formula can still change the
+amount, for example with defined_for. Either way the award gets the
+whole-year treatment, and so does every stage after it.
 """
 
 import numpy as np
 from policyengine_core.commons.formulas import WEEKS_IN_YEAR
 
+from policyengine_uk.utils.benefit_unit import HALF_PENNY
 from policyengine_uk.utils.couple_carer_award import limit_carer_benefit_to_one_partner
 from policyengine_uk.utils.formula_origin import calculated_by
 from policyengine_uk.utils.supplied_inputs import supplied_input
@@ -85,15 +89,21 @@ def carers_allowance_shares_of_year(person, period, parts):
     return candidate, kept
 
 
-def calculated_from_parts_of_year(person, period, model_variable):
-    """Whether the simulation calculates model_variable, a stage before the
-    payment, with the model's own formula, and so from the parts of the
-    year: no input supplies it, and no reform neutralizes it or puts a
-    formula of its own in place of the model's."""
+def carries_parts_of_year(person, period, model_variable, amount, parts_amount):
+    """Whether amount, the annual value of model_variable (a stage before the
+    payment), carries the parts of the year: the simulation calculates it with
+    the model's own formula (no input supplies it, and no reform neutralizes
+    it or puts a formula of its own in place of the model's), and for every
+    member of the benefit unit it is parts_amount, what the parts of the year
+    give, so nothing else a reform changes, such as defined_for, has changed
+    it."""
     name = model_variable.__name__
     variable = person.simulation.tax_benefit_system.get_variable(name)
-    return (
+    by_model = (
         supplied_input(person, name, period) is None
         and not variable.is_neutralized
         and calculated_by(person, name, period, model_variable)
     )
+    # Annual amounts are float32, good to about a thousandth of a pound.
+    as_parts = person.benunit.all(np.abs(amount - parts_amount) < HALF_PENNY)
+    return by_model & as_parts

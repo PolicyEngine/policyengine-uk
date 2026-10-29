@@ -105,16 +105,20 @@ and overlapping benefits come off for the share of the year in which the
 restriction keeps it.
 
 The shares describe an amount only where the model's own formulas calculate
-it from the parts of the year. An amount that an input supplies, or that a
+it from the parts of the year and, for every member of the benefit unit, it
+is the amount the parts give. An amount that an input supplies, or that a
 reform neutralizes or calculates with a formula of its own, carries no dates,
-even where it equals the model's: a value cannot show where it came from. A
-`carers_allowance_pre_couple_limit` of that kind gets the couple restriction
-for the whole year, and the whole year's overlapping benefits come off what
-the restriction keeps. A `carers_allowance_pre_overlap` of that kind comes
-after the couple restriction, so only the whole year's overlapping benefits
-come off it. Either way, the payment starts from that value.
-A reform that updates either variable but keeps the model's formula keeps
-the parts of the year. The model treats less than half a penny for the year,
+even where it equals the model's: a value cannot show where it came from. So
+does an amount that a reform changes while keeping the formula, for example
+by adding `defined_for`. A `carers_allowance_pre_couple_limit` of that kind
+gets the couple restriction for the whole year, and the whole year's
+overlapping benefits come off what the restriction keeps. A
+`carers_allowance_pre_overlap` of that kind comes after the couple
+restriction, so only the whole year's overlapping benefits come off it.
+Either way, the payment starts from that value. A reform that changes only a
+variable's label, say, keeps the parts of the year. The test of the formula
+covers the whole variable, so a reform that wraps the formula to change one
+person's amount moves every amount to the whole-year treatment. The model treats less than half a penny for the year,
 which in practice is floating-point residue where an overlapping benefit
 equals the award, as nil, and pays a penny.
 

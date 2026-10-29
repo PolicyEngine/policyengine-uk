@@ -1,9 +1,10 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.utils.benefit_unit import HALF_PENNY
 from policyengine_uk.utils.carers_allowance_taper import (
-    calculated_from_parts_of_year,
+    carers_allowance_annual_award,
     carers_allowance_shares_of_year,
     carers_allowance_weekly_by_part_of_year,
+    carries_parts_of_year,
 )
 from policyengine_uk.variables.gov.dwp.carers_allowance_pre_couple_limit import (
     carers_allowance_pre_couple_limit,
@@ -30,10 +31,9 @@ class carers_allowance(Variable):
         "year the Budget 2026 earnings taper starts, overlapping benefits "
         "come off only for the share of the year the allowance pays for. A "
         "carers_allowance_pre_overlap or carers_allowance_pre_couple_limit "
-        "that an input supplies, or that a reform neutralizes or calculates "
-        "with a formula of its own, carries no dates, even where it equals "
-        "the model's, so the whole year's overlapping benefits come off the "
-        "award. Less than half a penny for the year is nil."
+        "that an input supplies, or that a reform neutralizes, calculates "
+        "with a formula of its own or otherwise changes, carries no dates, so "
+        "the whole year's overlapping benefits come off the award. Less than half a penny for the year is nil."
     )
     definition_period = YEAR
     unit = GBP
@@ -47,20 +47,32 @@ class carers_allowance(Variable):
         pre_overlap = person("carers_allowance_pre_overlap", period)
         overlapping = person("carers_allowance_overlapping_benefits", period)
         parts = carers_allowance_weekly_by_part_of_year(person, period, parameters)
-        by_parts = len(parts) > 1 and all(
-            calculated_from_parts_of_year(person, period, stage)
-            for stage in (
-                carers_allowance_pre_couple_limit,
-                carers_allowance_pre_overlap,
-            )
-        )
-        if by_parts:
+        if len(parts) == 1:
+            share_paid = 1
+        else:
             # The overlap rule works week by week, so in the year the
             # earnings taper starts, the overlapping benefits come off only
-            # for the share of the year the person keeps the award in.
-            _, share_paid = carers_allowance_shares_of_year(person, period, parts)
-        else:
-            share_paid = 1
+            # for the share of the year the person keeps the award in, where
+            # both stages before the payment carry the parts of the year.
+            candidate = person("carers_allowance_pre_couple_limit", period)
+            candidate_share, kept_share = carers_allowance_shares_of_year(
+                person, period, parts
+            )
+            kept = kept_share / where(candidate_share > 0, candidate_share, 1)
+            by_parts = carries_parts_of_year(
+                person,
+                period,
+                carers_allowance_pre_couple_limit,
+                candidate,
+                carers_allowance_annual_award(parts),
+            ) & carries_parts_of_year(
+                person,
+                period,
+                carers_allowance_pre_overlap,
+                pre_overlap,
+                candidate * kept,
+            )
+            share_paid = where(by_parts, kept_share, 1)
         paid = max_(pre_overlap - share_paid * overlapping, 0)
         # Where an overlapping benefit equals the award, float32 leaves about a
         # thousandth of a pound, which is not a payment; a penny is.

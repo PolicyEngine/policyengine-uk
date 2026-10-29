@@ -1,8 +1,9 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.utils.carers_allowance_taper import (
-    calculated_from_parts_of_year,
+    carers_allowance_annual_award,
     carers_allowance_shares_of_year,
     carers_allowance_weekly_by_part_of_year,
+    carries_parts_of_year,
 )
 from policyengine_uk.utils.couple_carer_award import limit_carer_benefit_to_one_partner
 from policyengine_uk.variables.gov.dwp.carers_allowance_pre_couple_limit import (
@@ -29,9 +30,9 @@ class carers_allowance_pre_overlap(Variable):
         "weeks under it, so a partner below the earnings limit keeps the "
         "award for the weeks before the other becomes eligible. A "
         "carers_allowance_pre_couple_limit that an input supplies, or that a "
-        "reform neutralizes or calculates with a formula of its own, carries "
-        "no dates, even where it equals the model's, so the restriction "
-        "applies to it for the whole year."
+        "reform neutralizes, calculates with a formula of its own or "
+        "otherwise changes (with defined_for, say), carries no dates, so the "
+        "restriction applies to the benefit unit's awards for the whole year."
     )
     definition_period = YEAR
     unit = GBP
@@ -44,15 +45,19 @@ class carers_allowance_pre_overlap(Variable):
         candidate = person("carers_allowance_pre_couple_limit", period)
         whole_year = limit_carer_benefit_to_one_partner(person, period, candidate)
         parts = carers_allowance_weekly_by_part_of_year(person, period, parameters)
-        if len(parts) == 1 or not calculated_from_parts_of_year(
-            person, period, carers_allowance_pre_couple_limit
-        ):
+        if len(parts) == 1:
             return whole_year
         # In the year the earnings taper starts, a person keeps their award
         # for the parts of the year the restriction picks them in.
         candidate_share, kept_share = carers_allowance_shares_of_year(
             person, period, parts
         )
-        has_award = candidate_share > 0
-        kept = kept_share / where(has_award, candidate_share, 1)
-        return where(has_award, candidate * kept, whole_year)
+        by_parts = carries_parts_of_year(
+            person,
+            period,
+            carers_allowance_pre_couple_limit,
+            candidate,
+            carers_allowance_annual_award(parts),
+        ) & (candidate_share > 0)
+        kept = kept_share / where(by_parts, candidate_share, 1)
+        return where(by_parts, candidate * kept, whole_year)
