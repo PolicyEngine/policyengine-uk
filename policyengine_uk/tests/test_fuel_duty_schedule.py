@@ -134,8 +134,8 @@ def test_road_fuel_gases_get_the_same_rpi_uprating(fuel, full_rate, published):
     OBR's 1 July uprating for petrol and diesel, 57.95p to 60.59p, and RPI
     each 1 April from 2028. HM Treasury publishes the 1 July 2027 rates
     (Overview of Tax Legislation and Rates, Annex A), and the schedule uses
-    them: LPG's is the uprated rate, and natural gas's 25.82p is a hundredth
-    of a penny below the uprated 25.83p."""
+    them: LPG's matches the uprating, and natural gas's 25.82p falls a
+    hundredth of a penny short of the uprating's 25.83p."""
     parameters = raw_parameters()
     rpi = parameters.gov.economic_assumptions.yoy_growth.obr.rpi
     schedule = getattr(parameters.gov.hmrc.fuel_duty, fuel)

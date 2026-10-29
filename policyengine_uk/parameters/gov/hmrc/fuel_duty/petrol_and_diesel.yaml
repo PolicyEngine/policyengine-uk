@@ -106,7 +106,7 @@ values:
   2027-07-01:
     value: 0.6059
     metadata:
-      note: HM Treasury's rate from 1 July 2027. The OBR's forecast, 0.5795 uprated by RPI growth in the year to 2027 Q1 (4.56%), gives the same.
+      note: HM Treasury's rate from 1 July 2027. The OBR's forecast, RPI growth in the year to 2027 Q1 (4.56%) on 0.5795, gives the same.
       reference:
         - title: Budget 2026, paragraph 6.211 (5p cut ends and RPI uprating from 1 July 2027)
           href: https://assets.publishing.service.gov.uk/media/6ae1ec57bdb574cf1c9b3f12/E03668986_HMT_Budget_2026_ELAY__2_.pdf#page=138
@@ -119,7 +119,7 @@ values:
   2028-04-01:
     value: 0.6321
     metadata:
-      note: Forecast. 0.6059 uprated by 2027 RPI growth of 4.3%.
+      note: Forecast. 2027 RPI growth of 4.3% on 0.6059.
       reference:
         - title: Budget 2026, paragraph 6.211 (5p cut ends and RPI uprating from 1 July 2027)
           href: https://assets.publishing.service.gov.uk/media/6ae1ec57bdb574cf1c9b3f12/E03668986_HMT_Budget_2026_ELAY__2_.pdf#page=138
@@ -130,7 +130,7 @@ values:
   2029-04-01:
     value: 0.6513
     metadata:
-      note: Forecast. 0.6321 uprated by 2028 RPI growth of 3.0%.
+      note: Forecast. 2028 RPI growth of 3.0% on 0.6321.
       reference:
         - title: Budget 2026, paragraph 6.211 (5p cut ends and RPI uprating from 1 July 2027)
           href: https://assets.publishing.service.gov.uk/media/6ae1ec57bdb574cf1c9b3f12/E03668986_HMT_Budget_2026_ELAY__2_.pdf#page=138
@@ -141,7 +141,7 @@ values:
   2030-04-01:
     value: 0.6707
     metadata:
-      note: Forecast. 0.6513 uprated by 2029 RPI growth of 3.0%.
+      note: Forecast. 2029 RPI growth of 3.0% on 0.6513.
       reference:
         - title: Budget 2026, paragraph 6.211 (5p cut ends and RPI uprating from 1 July 2027)
           href: https://assets.publishing.service.gov.uk/media/6ae1ec57bdb574cf1c9b3f12/E03668986_HMT_Budget_2026_ELAY__2_.pdf#page=138
@@ -152,7 +152,7 @@ values:
   2031-04-01:
     value: 0.6861
     metadata:
-      note: Forecast. 0.6707 uprated by 2030 RPI growth of 2.3%.
+      note: Forecast. 2030 RPI growth of 2.3% on 0.6707.
       reference:
         - title: Budget 2026, paragraph 6.211 (5p cut ends and RPI uprating from 1 July 2027)
           href: https://assets.publishing.service.gov.uk/media/6ae1ec57bdb574cf1c9b3f12/E03668986_HMT_Budget_2026_ELAY__2_.pdf#page=138

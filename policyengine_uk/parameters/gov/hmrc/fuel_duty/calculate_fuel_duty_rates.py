@@ -7,21 +7,22 @@ says that "On 1 July 2027, fuel duty rates will increase by 5ppl and will be
 uprated in line with the Retail Prices Index (RPI). From 1 April 2028, fuel
 duty rates will be uprated annually in line with RPI." The OBR forecasts
 the 1 July 2027 petrol and diesel rate (CUT_END_RATE: 60.59p in the October
-2026 EFO): the 57.95p pre-cut rate (Finance Act 2011 s. 19) uprated by RPI
-growth in the year to 2027 Q1 (CUT_END_RPI_GROWTH). LPG and natural gas
+2026 EFO) by applying RPI growth in the year to 2027 Q1 (CUT_END_RPI_GROWTH)
+to the 57.95p pre-cut rate (Finance Act 2011 s. 19). LPG and natural gas
 take the proportionate cut to the same date, so their full rates get the
 same uprating then. HM Treasury publishes the rates from 1 July 2027 in
 Budget 2026's Overview of Tax Legislation and Rates, Annex A
-(PUBLISHED_RATES), and the script writes those: each is within a hundredth
-of a penny of the RPI uprating, and the script stops if one isn't. Natural
-gas is the one that differs: 24.7p x 1.045565 rounds half up to 25.83p, and
-HM Treasury publishes 25.82p. From 1 April 2028 the script applies each previous
-calendar year's RPI growth, using economic_assumptions/yoy_growth.yaml. It
-rounds to the nearest hundredth of a penny and writes the results between
-the BEGIN and END markers in each file. After a new EFO, set CUT_END_RATE
-and CUT_END_RPI_GROWTH to its forecast, and run it with --update whenever
-they or the RPI forecast change; test_fuel_duty_schedule.py fails until you
-do.
+(PUBLISHED_RATES), and the script writes those: each must lie within a
+hundredth of a penny of the RPI uprating, and the script stops if one
+doesn't. Natural gas is the one that differs: 24.7p x 1.045565 rounds half
+up to 25.83p, and HM Treasury publishes 25.82p. From 1 April 2028 the
+script applies each previous calendar year's RPI growth, using
+economic_assumptions/yoy_growth.yaml. It rounds to the nearest hundredth of
+a penny and writes the results between the BEGIN and END markers in each
+file. After a new EFO, set CUT_END_RATE and CUT_END_RPI_GROWTH to its
+forecast, and PUBLISHED_RATES to any rates HM Treasury publishes in their
+place, and run it with --update whenever they or the RPI forecast change;
+test_fuel_duty_schedule.py fails until you do.
 
 Usage:
     uv run python calculate_fuel_duty_rates.py           # print the steps
@@ -124,20 +125,20 @@ def render(fuel: str, steps: list) -> str:
             how = (
                 "the same"
                 if uprated == rate
-                else f"{uprated}, rounded half up; HM Treasury's rate is a "
-                "hundredth of a penny lower"
+                else f"{uprated} to the nearest hundredth of a penny; HM "
+                "Treasury's rate falls a hundredth of a penny short"
             )
             if fuel == "petrol_and_diesel.yaml":
                 note = (
                     f"HM Treasury's rate from 1 July 2027. The OBR's forecast, "
-                    f"{previous} uprated by RPI growth in the year to 2027 Q1 "
-                    f"({pct}), gives {how}."
+                    f"RPI growth in the year to 2027 Q1 ({pct}) on {previous}, "
+                    f"gives {how}."
                 )
                 title = "OBR EFO October 2026, paragraph 3.19 (60.59p on 1 July 2027)"
             else:
                 note = (
-                    f"HM Treasury's rate from 1 July 2027. {previous} uprated "
-                    f"by RPI growth in the year to 2027 Q1 ({pct}), as the OBR "
+                    f"HM Treasury's rate from 1 July 2027. RPI growth in the "
+                    f"year to 2027 Q1 ({pct}) on {previous}, as the OBR "
                     f"uprates petrol and diesel, gives {how}."
                 )
                 title = (
@@ -151,8 +152,8 @@ def render(fuel: str, steps: list) -> str:
             ]
         else:
             note = (
-                f"Forecast. {previous} uprated by {int(date[:4]) - 1} RPI "
-                f"growth of {growth * 100:.1f}%."
+                f"Forecast. {int(date[:4]) - 1} RPI growth of "
+                f"{growth * 100:.1f}% on {previous}."
             )
             source = [
                 f"        - title: {forecast['title']} (RPI forecast)",
@@ -191,12 +192,19 @@ def main():
     )
     args = parser.parse_args()
     for fuel in FUELS:
+        if fuel == "petrol_and_diesel.yaml":
+            uprated = uprate(base_rate(fuel), CUT_END_RPI_GROWTH)
+            if uprated != CUT_END_RATE:
+                raise ValueError(
+                    f"CUT_END_RPI_GROWTH gives {uprated} on {CUT_END_DATE}, "
+                    f"not the OBR's {CUT_END_RATE}"
+                )
+            if PUBLISHED_RATES[fuel] != CUT_END_RATE:
+                raise ValueError(
+                    f"PUBLISHED_RATES gives {PUBLISHED_RATES[fuel]} on "
+                    f"{CUT_END_DATE}, not the OBR's {CUT_END_RATE}"
+                )
         steps = forecast_steps(fuel)
-        if fuel == "petrol_and_diesel.yaml" and steps[0][1] != CUT_END_RATE:
-            raise ValueError(
-                f"CUT_END_RPI_GROWTH gives {steps[0][1]} on {CUT_END_DATE}, not "
-                f"the OBR's {CUT_END_RATE}"
-            )
         print(f"{fuel}: {FUELS[fuel]} {base_rate(fuel)} (full rate)")
         for date, rate, previous, growth in steps:
             if growth is None:

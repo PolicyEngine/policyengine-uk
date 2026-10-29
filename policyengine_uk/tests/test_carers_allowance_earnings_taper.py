@@ -29,7 +29,7 @@ then identities that hold for every input:
 - the payment reads the award before the couple limit only where the model
   calculates the award before overlap, so a supplied pre-overlap award needs
   nothing before it;
-- an overlapping benefit equal to the award leaves nothing paid or received,
+- an overlapping benefit equal to the award leaves no payment or receipt,
   the model pays a penny left over, and any payment is at least half a penny.
 """
 
