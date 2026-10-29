@@ -15,11 +15,12 @@ def hb_uses_annual_override(benunit, period, variable_name, default_formula):
         or formula.__code__ != default_formula.__code__
     ):
         return True
-    # A value set as an input for this period overrides recalculation, and so
+    # An input the caller set for this period overrides recalculation, and so
     # does a scenario's own value (set_model_value), which the variable then
     # reads; a cached formula result does not, even in populations taken from
-    # another simulation. SUPPLIED_INPUT_VARIABLES lists each name passed
-    # here, as stored_as_input and set_model_value require.
+    # another simulation or in their clones and branches.
+    # SUPPLIED_INPUT_VARIABLES lists each name passed here, as stored_as_input
+    # and set_model_value require.
     return stored_as_input(benunit, variable_name, period)
 
 

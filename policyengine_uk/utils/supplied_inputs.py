@@ -10,23 +10,26 @@ forgets the record of an input that ``Holder.delete_arrays`` deletes, and each
 clone gets its own copy of the record. The helpers also require a stored
 value, so missing arrays do not count as supplied inputs.
 
-``build_from_situation`` installs fresh populations, and so fresh holders,
-through ``Simulation.build_from_populations``, which keeps the record
+``Simulation.build_from_populations`` installs new populations, and so new
+holders, but core keeps the record of the values they replace
 (policyengine-core#605). The engine could then carry an earlier value into a
 period whose input the rebuild dropped, and the stale record would pass it off
-as supplied. So ``Simulation.calculate`` forgets the records of a variable in
-``SUPPLIED_INPUT_VARIABLES`` whose stored value is gone before the engine can
-refill it, and the helpers only answer for those variables.
-``Simulation.delete_arrays`` forgets such records too, for any variable it
-deletes.
+as supplied. So ``Simulation.build_from_populations`` keeps only the records of
+values the new holders store, taking those of holders from another simulation
+along with them (``adopt_population_records``). ``Simulation.calculate``
+forgets the records of a variable in ``SUPPLIED_INPUT_VARIABLES`` whose stored
+value is gone before the engine can refill it, and the helpers only answer for
+those variables. ``Simulation.delete_arrays`` forgets such records too, for any
+variable it deletes.
 
 A scenario that stores a value the model calculated (``set_model_value``)
 records it as the model's, and the helpers do not return it. The record of
 such a value lasts only while it is the value stored: ``Simulation`` forgets
 it when ``set_input`` stores a value for its period, whatever the value (an
 input set for a longer or shorter period that stores nothing there leaves
-it), when ``delete_arrays`` removes it, and when the populations are
-rebuilt, and a clone or branch gets its own copy of the record.
+it), when ``delete_arrays`` removes it, and when a rebuild installs
+populations that do not hold it, and a clone or branch gets its own copy of
+the record.
 """
 
 from typing import List, Optional
@@ -178,11 +181,13 @@ def stored_as_input(population, variable_name: str, period: Period) -> bool:
     model's own (``set_model_value``). A value the engine carried over from
     an earlier period, or cached after a calculation, is not.
 
-    The holder answers from the input record of the simulation it was built
-    in. Populations taken from another simulation (``build_from_populations``)
-    keep their own record, so a value the other simulation calculated stays
-    calculated, and one supplied there stays supplied, whatever this
-    simulation's record says."""
+    The holder answers from the input record of the simulation bound to it,
+    which also tells a tier's input from a cache in the other tier.
+    ``Simulation.build_from_populations`` binds holders taken from another
+    simulation to this one with their records (``adopt_population_records``),
+    so a value the other simulation calculated stays calculated, and one
+    supplied there stays supplied, in this simulation and its clones and
+    branches."""
     _check_registered(variable_name)
     holder = population.get_holder(variable_name)
     return any(
@@ -244,9 +249,9 @@ def set_model_value(simulation, variable_name: str, period, value) -> None:
     ``supplied_input_periods`` do not return the stored value while it is
     the one stored here. A later ``Simulation.set_input`` for the period is
     supplied, whatever its value, and so is any value stored after
-    ``delete_arrays`` removes this one or the populations are rebuilt (see
-    ``forget_replaced_model_values``, ``drop_missing_model_values`` and
-    ``forget_model_values``). If the value was supplied before (a scenario
+    ``delete_arrays`` removes this one or a rebuild installs populations that
+    do not hold it (see ``forget_replaced_model_values``,
+    ``drop_missing_model_values`` and ``adopt_population_records``). If the value was supplied before (a scenario
     adjusting a user's entry), the new value stays supplied."""
     _check_registered(variable_name)
     period = periods.period(period)
@@ -344,10 +349,64 @@ def drop_missing_model_values(simulation, variable_name: str) -> None:
         del model_values[key]
 
 
-def forget_model_values(simulation) -> None:
-    """Forget every model value: rebuilt populations hold none of them."""
-    if getattr(simulation, "_model_values", None):
-        simulation._model_values = {}
+def adopt_population_records(simulation) -> None:
+    """Bind each holder of the populations ``build_from_populations`` just
+    installed to ``simulation``, and keep its records of inputs and model
+    values for those holders' values only.
+
+    Core points each population at the simulation, but leaves each holder
+    bound to the simulation that made it and keeps this simulation's record
+    of the values it replaced (policyengine-core#605). The other simulation's
+    records then answer for the holder, and a deletion changes them instead
+    of this simulation's. A clone or branch copies this simulation's records
+    and binds the holders it copies to itself (``Simulation.clone``,
+    ``Holder.clone``), so the records must move with the holders. A holder from another simulation brings each input and
+    model value that simulation recorded and the holder still stores, and
+    drops every other value: the other simulation may have calculated or
+    carried it over before an input changed, or under another tax-benefit
+    system, so this simulation calculates it again. A holder this simulation
+    made keeps this simulation's records. Records of values the new
+    populations do not hold go, as do the values. A holder from no
+    simulation, or from one with no input record (core's legacy mode, which
+    no ``Simulation`` constructor leaves), keeps its binding and values."""
+    input_keys = getattr(simulation, "_user_input_keys", None)
+    own_model_values = getattr(simulation, "_model_values", None) or {}
+    kept_keys, model_values = set(), {}
+    for population in simulation.populations.values():
+        for name, holder in population._holders.items():
+            source = holder.simulation
+            if source is simulation:
+                kept_keys.update(key for key in input_keys or () if key[0] == name)
+                model_values.update(
+                    (key, value)
+                    for key, value in own_model_values.items()
+                    if key[0] == name
+                )
+                continue
+            source_keys = getattr(source, "_user_input_keys", None)
+            if source_keys is None:
+                continue
+            # Ask while the holder still reads its source's record.
+            kept_keys.update(
+                key
+                for key in source_keys
+                if key[0] == name and holder._is_input(key[2], key[1])
+            )
+            source_model_values = getattr(source, "_model_values", None) or {}
+            model_values.update(
+                (key, value)
+                for key, value in source_model_values.items()
+                if key[0] == name
+                and _is_model_value(
+                    source, key, holder._get_array_from_storage(key[2], key[1])
+                )
+            )
+            holder._drop_computed()
+            holder.simulation = simulation
+    if input_keys is not None:
+        # A clone may share the record with its original, so replace it.
+        simulation._user_input_keys = kept_keys
+    simulation._model_values = model_values
 
 
 def copy_model_values(simulation, clone) -> None:

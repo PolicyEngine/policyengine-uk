@@ -3,10 +3,19 @@
 from datetime import date
 
 import pytest
+from hypothesis import HealthCheck, example, given, settings
+from hypothesis import strategies as st
+
+from policyengine_core.periods import period
 
 from policyengine_uk import CountryTaxBenefitSystem, Simulation
 from policyengine_uk.model_api import Variable, BenUnit, YEAR
-from policyengine_uk.utils.supplied_inputs import set_model_value
+from policyengine_uk.utils.aggregate_impact.guard import snapshot_inputs
+from policyengine_uk.utils.supplied_inputs import (
+    set_model_value,
+    stored_as_input,
+    supplied_input,
+)
 
 
 PREFIX = (
@@ -210,6 +219,170 @@ def test_scenario_adjusted_income_keeps_its_value():
     assert simulation.calculate("housing_benefit_entitlement", 2026)[
         0
     ] == pytest.approx(10_400 - 0.65 * (2_000 - 500), abs=0.01)
+
+
+def snapshotted(simulation):
+    # The aggregate-impact guard discards formula results before it captures
+    # the inputs, so it must tell them apart from rebuilt populations' inputs.
+    snapshot_inputs(simulation, ["housing_benefit_applicable_income"])
+    return simulation
+
+
+# A clone or branch copies its simulation's records and binds the holders it
+# copies to itself, so it must find the records of rebuilt populations there.
+REBUILT_AND_COPIES = pytest.mark.parametrize(
+    "copy",
+    [
+        lambda simulation: simulation,
+        lambda simulation: simulation.clone(),
+        lambda simulation: simulation.get_branch("after_rebuild"),
+        snapshotted,
+    ],
+    ids=["rebuilt", "clone", "branch", "snapshot"],
+)
+
+
+@REBUILT_AND_COPIES
+def test_copies_of_rebuilt_populations_keep_a_supplied_income(copy):
+    data = situation()
+    data["benunits"]["family"]["housing_benefit_applicable_income"] = {2026: 3_000}
+    simulation = Simulation(situation=situation())
+    simulation.build_from_populations(Simulation(situation=data).populations)
+    copied = copy(simulation)
+    assert copied.calculate("housing_benefit_entitlement", 2026)[0] == pytest.approx(
+        10_400 - 0.65 * (3_000 - 500), abs=0.01
+    )
+    benunit = copied.populations["benunit"]
+    assert supplied_input(
+        benunit, "housing_benefit_applicable_income", period(2026)
+    ).tolist() == [3_000]
+
+
+@REBUILT_AND_COPIES
+def test_copies_of_rebuilt_populations_keep_a_calculated_income_calculated(copy):
+    data = situation()
+    data["benunits"]["family"]["housing_benefit_applicable_income"] = {2026: 2_000}
+    simulation = Simulation(situation=data)
+    donor = Simulation(situation=situation())
+    donor.calculate("housing_benefit_applicable_income", 2026)
+    simulation.build_from_populations(donor.populations)
+    copied = copy(simulation)
+    before = 10_400 - 0.65 * (1_000 - 260 - 500)
+    assert copied.calculate("housing_benefit_entitlement", 2026)[0] == pytest.approx(
+        (before * 182 + 10_400 * 183) / 365, abs=0.01
+    )
+    benunit = copied.populations["benunit"]
+    assert (
+        supplied_input(benunit, "housing_benefit_applicable_income", period(2026))
+        is None
+    )
+
+
+@REBUILT_AND_COPIES
+def test_copies_of_rebuilt_populations_keep_a_scenario_adjusted_income(copy):
+    donor = Simulation(situation=situation())
+    set_model_value(donor, "housing_benefit_applicable_income", 2026, [2_000])
+    simulation = Simulation(situation=situation())
+    simulation.build_from_populations(donor.populations)
+    copied = copy(simulation)
+    assert copied.calculate("housing_benefit_entitlement", 2026)[0] == pytest.approx(
+        10_400 - 0.65 * (2_000 - 500), abs=0.01
+    )
+    # Still the model's value, not a supplied one.
+    benunit = copied.populations["benunit"]
+    assert (
+        supplied_input(benunit, "housing_benefit_applicable_income", period(2026))
+        is None
+    )
+
+
+def test_rebuilt_populations_replace_values_calculated_before():
+    # Formulas read the fast cache, which held the income calculated here.
+    simulation = Simulation(situation=situation())
+    simulation.calculate("housing_benefit_applicable_income", 2026)
+    data = situation()
+    data["benunits"]["family"]["housing_benefit_applicable_income"] = {2026: 3_000}
+    simulation.build_from_populations(Simulation(situation=data).populations)
+    assert simulation.calculate("housing_benefit_entitlement", 2026)[
+        0
+    ] == pytest.approx(10_400 - 0.65 * (3_000 - 500), abs=0.01)
+
+
+# How a simulation comes to hold each override variable's 2026 value.
+OVERRIDE_VARIABLES = (
+    "housing_benefit_applicable_income",
+    "housing_benefit_applicable_income_disregard",
+    "housing_benefit_specified_or_temporary_accommodation_disregard",
+)
+SIMULATION_STATES = st.tuples(
+    *(
+        st.tuples(
+            st.sampled_from(["absent", "supplied", "model", "calculated"]),
+            st.integers(0, 4_000),
+        )
+        for _ in OVERRIDE_VARIABLES
+    )
+)
+
+
+def simulation_in(state):
+    data = situation()
+    for name, (origin, amount) in zip(OVERRIDE_VARIABLES, state):
+        if origin == "supplied":
+            data["benunits"]["family"][name] = {2026: amount}
+    simulation = Simulation(situation=data)
+    for name, (origin, amount) in zip(OVERRIDE_VARIABLES, state):
+        if origin == "model":
+            set_model_value(simulation, name, 2026, [amount])
+        elif origin == "calculated":
+            simulation.calculate(name, 2026)
+    return simulation
+
+
+def provenance_and_award(simulation):
+    benunit = simulation.populations["benunit"]
+    provenance = []
+    for name in OVERRIDE_VARIABLES:
+        supplied = supplied_input(benunit, name, period(2026))
+        provenance.append(
+            (
+                stored_as_input(benunit, name, period(2026)),
+                None if supplied is None else supplied.tolist(),
+            )
+        )
+    award = simulation.calculate("housing_benefit_entitlement", 2026).tolist()
+    return provenance, award
+
+
+@settings(
+    max_examples=5,
+    deadline=None,
+    derandomize=True,
+    suppress_health_check=[HealthCheck.too_slow],
+)
+@given(donor_state=SIMULATION_STATES, receiver_state=SIMULATION_STATES)
+# The other simulation cached income before a scenario set its disregard.
+@example(
+    donor_state=(("calculated", 868), ("model", 0), ("supplied", 0)),
+    receiver_state=(("absent", 0),) * 3,
+)
+# This simulation calculated income before taking supplied income.
+@example(
+    donor_state=(("supplied", 2_589), ("absent", 0), ("absent", 0)),
+    receiver_state=(("calculated", 0), ("absent", 0), ("absent", 0)),
+)
+def test_rebuilt_populations_answer_as_the_simulation_that_made_them(
+    donor_state, receiver_state
+):
+    """R1: whatever this simulation held before, populations taken from
+    another simulation give the provenance and award of a fresh copy of that
+    simulation, in this simulation and in its clones and branches."""
+    expected = provenance_and_award(simulation_in(donor_state))
+    simulation = simulation_in(receiver_state)
+    simulation.build_from_populations(simulation_in(donor_state).populations)
+    copies = [simulation, simulation.clone(), simulation.get_branch("after_rebuild")]
+    for copied in copies:
+        assert provenance_and_award(copied) == expected
 
 
 def test_replaced_income_formula_is_not_bypassed():
