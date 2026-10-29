@@ -647,11 +647,11 @@ PENSION_TAX_ALLOWANCE = "gov.hmrc.income_tax.reliefs.pension_tax_allowance.in_ef
     [
         # From 2027-28 the Budget 2026 Pension Tax Allowance takes the
         # claimant out of Income Tax at the boundary, and Pension Credit
-        # counts income net of tax, so guarantee credit ends at £13,165 of
-        # private pension rather than £13,315.
-        (None, True, 221.585186, 272.195717, 1.61),
-        (None, False, 221.585186, 272.195717, 1.01),
-        (300, True, 268.368418, 318.978949, 1.38),
+        # counts income net of tax, so guarantee credit ends at £13,280 of
+        # private pension rather than £13,460.
+        (None, True, 223.407952, 274.662918, 1.98),
+        (None, False, 223.407952, 274.662918, 0.87),
+        (300, True, 267.965646, 319.220612, 1.38),
     ],
 )
 def test_guarantee_credit_boundary_matches_main(
@@ -662,7 +662,11 @@ def test_guarantee_credit_boundary_matches_main(
     expected_step,
 ):
     """Frozen origin/main (6030cbc0b) cliff-probe values, including current law
-    without the Pension Tax Allowance."""
+    without the Pension Tax Allowance, re-based on the October 2026 EFO.
+    Current law: a 2028-29 standard minimum guarantee of 238 x 1.039 x 1.033 =
+    255.4423 (May-July 2026 and 2027 earnings) less a maximum Savings Credit of
+    17.96 x 1.035 x 1.034 = 19.2207 (September 2026 and 2027 CPI) over 0.6
+    gives the threshold; the Housing Benefit allowance is the sum of the two."""
     year = 2028
     situation = {
         "people": {"claimant": {"age": {year: 85}}},

@@ -81,16 +81,17 @@ def test_scheduled_rate_on_each_date(date, rate):
     assert schedule(date) == pytest.approx(rate, abs=1e-12)
 
 
-# Model year Y runs from 6 April Y to 5 April Y+1. Rates: 60.59p from 1 July
-# 2027, then 62.41p (2028), 64.16p (2029), 66.02p (2030), 67.54p (2031).
+# Model year Y runs from 6 April Y to 5 April Y+1. Rates, on the OBR's October
+# 2026 RPI forecast: 60.59p from 1 July 2027, then 63.21p (2028), 65.13p
+# (2029), 67.07p (2030), 68.61p (2031).
 HAND_COMPUTED = {
     2025: 0.5295,
     2026: 0.5295,
     # 6 Apr to 30 Jun 2027, then to 31 Mar 2028 (a leap year), then 5 days.
-    2027: (0.5295 * 86 + 0.6059 * 275 + 0.6241 * 5) / 366,
-    2028: (0.6241 * 360 + 0.6416 * 5) / 365,
-    2029: (0.6416 * 360 + 0.6602 * 5) / 365,
-    2030: (0.6602 * 360 + 0.6754 * 5) / 365,
+    2027: (0.5295 * 86 + 0.6059 * 275 + 0.6321 * 5) / 366,
+    2028: (0.6321 * 360 + 0.6513 * 5) / 365,
+    2029: (0.6513 * 360 + 0.6707 * 5) / 365,
+    2030: (0.6707 * 360 + 0.6861 * 5) / 365,
 }
 
 
@@ -206,8 +207,8 @@ def fuel_duty_simulation(parameter_changes=None):
 def test_holding_52_95p_for_2027_removes_the_full_2027_28_rate_rise():
     """Regression: calendar-year averaging diluted annual overrides.
 
-    The 2027-28 baseline averages 58.82p, so holding 52.95p for the whole
-    model year saves 5.87p a litre.
+    The 2027-28 baseline averages 58.83p, so holding 52.95p for the whole
+    model year saves 5.88p a litre.
     """
     baseline = fuel_duty_simulation()
     reformed = fuel_duty_simulation({PATH: {"2027": 0.5295}})

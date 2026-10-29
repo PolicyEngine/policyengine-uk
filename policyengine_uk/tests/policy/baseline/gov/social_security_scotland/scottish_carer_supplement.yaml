@@ -6,7 +6,7 @@
 # in 2026-27, sections 2 and 3). From April 2027 the model raises both each
 # April by the previous September's CPI (gov.benefit_uprating_cpi) and rounds
 # to the nearest 5p: 3.5% for April 2027 (ONS, 21 October 2026) and the OBR
-# March 2026 EFO forecast of 2.1% for April 2028.
+# October 2026 EFO forecast of 3.4% for April 2028.
 
 - name: Scottish Carer Supplement is 11.70 a week in 2026
   period: 2026
@@ -41,10 +41,10 @@
     care_hours: 40
     country: SCOTLAND
   output:
-    # 12.10 x 1.021 = 12.3541, to the nearest 5p 12.35; x 52 = 642.20.
-    scottish_carer_supplement: 12.35 * 52
-    # 89.50 x 1.021 = 91.3795, to the nearest 5p 91.40.
-    carer_support_payment: 91.40 * 52
+    # 12.10 x 1.034 = 12.5114, to the nearest 5p 12.50; x 52 = 650.00.
+    scottish_carer_supplement: 12.50 * 52
+    # 89.50 x 1.034 = 92.543, to the nearest 5p 92.55.
+    carer_support_payment: 92.55 * 52
 
 - name: Carer in England gets no Scottish Carer Supplement in 2027
   period: 2027

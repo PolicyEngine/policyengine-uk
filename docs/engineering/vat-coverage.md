@@ -245,15 +245,20 @@ is not grossed up, so a reform to the VAT on energy bills changes `vat` by
 exactly the change in `E`.
 
 `s` is the costing divided by OBR cash-basis VAT receipts for the same
-fiscal year (March 2026 EFO, table 3.8):
+fiscal year (October 2026 EFO, table 4.8; 2025-26 is outturn):
 
 | Fiscal year | School-fee VAT (£m) | VAT receipts (£m) | Share |
 |---|---:|---:|---:|
-| 2025-26 | 1,505 | 180,169 | 0.8353% |
-| 2026-27 | 1,560 | 187,704 | 0.8311% |
-| 2027-28 | 1,610 | 195,923 | 0.8218% |
-| 2028-29 | 1,665 | 204,591 | 0.8138% |
-| 2029-30 | 1,725 | 213,118 | 0.8094% |
+| 2025-26 | 1,505 | 179,861 | 0.8368% |
+| 2026-27 | 1,560 | 186,154 | 0.8380% |
+| 2027-28 | 1,610 | 193,974 | 0.8300% |
+| 2028-29 | 1,665 | 203,284 | 0.8190% |
+| 2029-30 | 1,725 | 211,701 | 0.8148% |
+
+Before the October 2026 EFO the shares used the March 2026 EFO's receipts
+(table 3.8), 0.8353% in 2025-26 to 0.8094% in 2029-30. The coverage
+calibration above still uses the March 2026 EFO's 2024-25 outturn, which the
+October 2026 EFO does not revise.
 
 The 2029-30 share is held after it. Each value starts on 1 April, so a model
 year reads its fiscal year's share. `vat` and `baseline_vat` both read it
@@ -281,7 +286,7 @@ Properties of the split:
 - `s` is a share of total receipts, but `G` is calibrated to receipts net of
   energy-bill VAT. Where `G` matches receipts net of energy-bill VAT exactly,
   `s * sum(w * G)` falls short of the costing by `s` times energy-bill VAT:
-  on `f9d1922c`'s 2025-26 energy-bill VAT, 0.8353% of £2.01bn, about £17m
+  on `f9d1922c`'s 2025-26 energy-bill VAT, 0.8368% of £2.01bn, about £17m
   (arithmetic on the energy table above, not a run).
 
 The earlier design subtracted each household's own school charge from its
