@@ -3,11 +3,12 @@
 policyengine-core's YAML runner keeps every case's simulation, and every
 system it built for dotted parameter inputs, until the process ends. The
 conftest's ``release_yaml_case`` drops a case's simulation and system after
-it runs, and a file's dotted-input systems after its last case, so CI's YAML
-job stays within its runner's memory. If core starts releasing them itself
-(PolicyEngine/policyengine-core#569), the first test skips with a note to
-remove the workaround. If core keeps the cache but changes its keys, the
-last test fails, because the release would then silently do nothing.
+it runs, and a file's dotted-input systems after its last case, so the YAML
+run's peak memory falls from 16.1 GiB to 1.65 GiB. If core starts releasing
+them itself (PolicyEngine/policyengine-core#569), the first test skips with
+a note to remove the workaround. If core keeps the cache but changes its
+keys, the last test fails, because the release would then silently do
+nothing.
 """
 
 from contextlib import contextmanager

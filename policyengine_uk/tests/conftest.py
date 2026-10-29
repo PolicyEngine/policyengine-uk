@@ -572,16 +572,18 @@ except (OSError, AttributeError):
 # ``simulation`` and ``tax_benefit_system`` after its case has run, and
 # ``_tax_benefit_system_cache`` keeps a full clone of the system for each
 # combination of dotted parameter inputs (``gov.x.y: value``) without ever
-# evicting one. On 2d437ebba the 5,235 YAML cases peaked at 16.5 GB on a Mac
-# with memory to spare, and the process took 107 s to exit after printing
-# its summary. The 16 GB arm64 runners swap, so the job took 30 to 45 minutes
-# and hit its time limit after its tests had passed (#2698; run 40830740956).
-# Releasing each case's simulation and system after it runs, and a file's
-# dotted-input systems after its last case, the same run peaked at 1.7 GB and
-# took 188 s in all instead of 277: 179 s of tests against 168, and 5 s to
-# exit. Systems without dotted inputs stay cached, since files share them.
-# Remove this once policyengine-core releases the same
-# (PolicyEngine/policyengine-core#569).
+# evicting one. On 2d437ebba the 5,235 YAML cases peaked at 16.1 GiB of RSS
+# on a Mac with memory to spare, and the process took 107 s to exit after
+# printing its summary. On CI's 16 GB arm64 runners the job took 30 to 45
+# minutes and hit its time limit after every case had passed (#2698; run
+# 40830740956). Those logs record no memory figures, so a shortage of memory
+# is the likely cause rather than a measured one. release_yaml_case drops
+# each case's references to its simulation and system after it runs, and a
+# file's dotted-input systems after its last case. With it the same run
+# peaked at 1.65 GiB and exited 5 s after its summary, and CI's YAML step
+# took 7 min 25 s (run 40851484802). Systems without dotted inputs stay
+# cached, since files share them. Remove this once policyengine-core releases
+# the same (PolicyEngine/policyengine-core#569).
 def release_yaml_case(item, nextitem) -> None:
     """Drop a YAML case's simulation and system, and, after a file's last
     case, the cached systems built for dotted parameter inputs."""
