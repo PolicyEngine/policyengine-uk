@@ -26,7 +26,7 @@ The table below shows how the HBAI income components map to PolicyEngine variabl
 | Income received from dividends (from FYE 2022) |`dividend_income`|
 | State support - all benefits and tax credits |`hbai_benefits`|
 | Income from occupational and private pensions |`private_pension_income` (includes occupational pension income)|
-| Investment income |`dividend_income`, `savings_interest_income`, `property_income_after_finance_costs`|
+| Investment income |`dividend_income`, `savings_interest_income`, `other_investment_income`, `property_income_after_finance_costs`|
 | Maintenance payments |`maintenance_income`, `spousal_maintenance_income`|
 | Income from educational grants and scholarships (including, for students, student loans and parental contributions) |`student_payments`|
 | The cash value of certain forms of income in kind (free school meals, free school breakfast, free school milk, free school fruit and vegetables, Healthy Start vouchers and free TV licences for those aged 75 and over who receive Pension Credit) |`free_school_meals`, `free_school_fruit_veg`, `free_school_milk`, `healthy_start_vouchers`, `free_tv_licence_value`|
