@@ -150,7 +150,10 @@ def test_unmarked_legacy_conversion_preserves_cash_and_supplied_exemptions(
     assert value(
         simulation, "individual_savings_account_interest_income"
     ) == income.get("individual_savings_account_interest_income", 0)
-    assert value(simulation, "capital_income") == income["savings_interest_income"]
+    # Capital income is the legacy gross interest plus other investment income.
+    assert value(simulation, "capital_income") == (
+        income["savings_interest_income"] + income.get("other_investment_income", 0)
+    )
     assert value(simulation, "taxable_savings_interest_income") == expected_taxable
     pd.testing.assert_frame_equal(dataset.person, original)
 
