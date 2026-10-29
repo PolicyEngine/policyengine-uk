@@ -1,0 +1,362 @@
+# UC reg. 5(5) and SPC reg. 4A(5) exclude own awards from both QYP routes.
+# Omit receives_benefits_in_own_right: the reports identify the recipient.
+
+- name: A 16-year-old reporting income-related ESA does not attract child additions for a parent aged 40.
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_benunit_head: true
+      young_person:
+        age: 16
+        is_benunit_head: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [parent, young_person]
+        savings: 0
+    households:
+      household:
+        members: [parent, young_person]
+        country: ENGLAND
+        rent: 0
+  output:
+    receives_benefits_in_own_right: [false, true]
+    is_before_first_september_following_16th_birthday: [false, true]
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    is_child_or_qualifying_young_person_for_universal_credit: [false, false]
+    is_qualifying_young_person_for_pension_credit: [false, false]
+    is_child_or_qualifying_young_person_for_pension_credit: [false, false]
+    uc_individual_child_element: [0, 0]
+    uc_child_element: 0
+    is_responsible_for_child_or_qualifying_young_person_for_universal_credit: false
+    is_uc_work_allowance_eligible: false
+    uc_work_allowance: 0
+    child_minimum_guarantee_addition: 0
+
+- name: A 16-year-old reporting income-based JSA does not attract child additions for a parent aged 40.
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_benunit_head: true
+      young_person:
+        age: 16
+        is_benunit_head: false
+        current_education: NOT_IN_EDUCATION
+        jsa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [parent, young_person]
+        savings: 0
+    households:
+      household:
+        members: [parent, young_person]
+        country: ENGLAND
+        rent: 0
+  output:
+    receives_benefits_in_own_right: [false, true]
+    is_before_first_september_following_16th_birthday: [false, true]
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    is_child_or_qualifying_young_person_for_universal_credit: [false, false]
+    is_qualifying_young_person_for_pension_credit: [false, false]
+    is_child_or_qualifying_young_person_for_pension_credit: [false, false]
+    uc_individual_child_element: [0, 0]
+    uc_child_element: 0
+    is_responsible_for_child_or_qualifying_young_person_for_universal_credit: false
+    is_uc_work_allowance_eligible: false
+    uc_work_allowance: 0
+    child_minimum_guarantee_addition: 0
+
+- name: A 16-year-old reporting Universal Credit does not attract child additions for a parent aged 40.
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_benunit_head: true
+      young_person:
+        age: 16
+        is_benunit_head: false
+        current_education: NOT_IN_EDUCATION
+        universal_credit_reported: 5_000
+    benunits:
+      benunit:
+        members: [parent, young_person]
+        savings: 0
+    households:
+      household:
+        members: [parent, young_person]
+        country: ENGLAND
+        rent: 0
+  output:
+    receives_benefits_in_own_right: [false, true]
+    is_before_first_september_following_16th_birthday: [false, true]
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    is_child_or_qualifying_young_person_for_universal_credit: [false, false]
+    is_qualifying_young_person_for_pension_credit: [false, false]
+    is_child_or_qualifying_young_person_for_pension_credit: [false, false]
+    uc_individual_child_element: [0, 0]
+    uc_child_element: 0
+    is_responsible_for_child_or_qualifying_young_person_for_universal_credit: false
+    is_uc_work_allowance_eligible: false
+    uc_work_allowance: 0
+    child_minimum_guarantee_addition: 0
+
+- name: A 16-year-old reporting contributory ESA does not attract child additions for a parent aged 40.
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_benunit_head: true
+      young_person:
+        age: 16
+        is_benunit_head: false
+        current_education: NOT_IN_EDUCATION
+        esa_contrib_reported: 5_000
+    benunits:
+      benunit:
+        members: [parent, young_person]
+        savings: 0
+    households:
+      household:
+        members: [parent, young_person]
+        country: ENGLAND
+        rent: 0
+  output:
+    receives_benefits_in_own_right: [false, true]
+    is_before_first_september_following_16th_birthday: [false, true]
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    is_child_or_qualifying_young_person_for_universal_credit: [false, false]
+    is_qualifying_young_person_for_pension_credit: [false, false]
+    is_child_or_qualifying_young_person_for_pension_credit: [false, false]
+    uc_individual_child_element: [0, 0]
+    uc_child_element: 0
+    is_responsible_for_child_or_qualifying_young_person_for_universal_credit: false
+    is_uc_work_allowance_eligible: false
+    uc_work_allowance: 0
+    child_minimum_guarantee_addition: 0
+
+- name: A 16-year-old reporting contribution-based JSA does not attract child additions for a parent aged 40.
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_benunit_head: true
+      young_person:
+        age: 16
+        is_benunit_head: false
+        current_education: NOT_IN_EDUCATION
+        jsa_contrib_reported: 5_000
+    benunits:
+      benunit:
+        members: [parent, young_person]
+        savings: 0
+    households:
+      household:
+        members: [parent, young_person]
+        country: ENGLAND
+        rent: 0
+  output:
+    receives_benefits_in_own_right: [false, true]
+    is_before_first_september_following_16th_birthday: [false, true]
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    is_child_or_qualifying_young_person_for_universal_credit: [false, false]
+    is_qualifying_young_person_for_pension_credit: [false, false]
+    is_child_or_qualifying_young_person_for_pension_credit: [false, false]
+    uc_individual_child_element: [0, 0]
+    uc_child_element: 0
+    is_responsible_for_child_or_qualifying_young_person_for_universal_credit: false
+    is_uc_work_allowance_eligible: false
+    uc_work_allowance: 0
+    child_minimum_guarantee_addition: 0
+
+- name: A 16-year-old reporting income-related ESA does not attract child additions for a parent aged 70.
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 70
+        is_parent: true
+        is_benunit_head: true
+      young_person:
+        age: 16
+        is_benunit_head: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [parent, young_person]
+        savings: 0
+    households:
+      household:
+        members: [parent, young_person]
+        country: ENGLAND
+        rent: 0
+  output:
+    receives_benefits_in_own_right: [false, true]
+    is_before_first_september_following_16th_birthday: [false, true]
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    is_child_or_qualifying_young_person_for_universal_credit: [false, false]
+    is_qualifying_young_person_for_pension_credit: [false, false]
+    is_child_or_qualifying_young_person_for_pension_credit: [false, false]
+    uc_individual_child_element: [0, 0]
+    uc_child_element: 0
+    is_responsible_for_child_or_qualifying_young_person_for_universal_credit: false
+    is_uc_work_allowance_eligible: false
+    uc_work_allowance: 0
+    child_minimum_guarantee_addition: 0
+
+- name: A 16-year-old reporting income-based JSA does not attract child additions for a parent aged 70.
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 70
+        is_parent: true
+        is_benunit_head: true
+      young_person:
+        age: 16
+        is_benunit_head: false
+        current_education: NOT_IN_EDUCATION
+        jsa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [parent, young_person]
+        savings: 0
+    households:
+      household:
+        members: [parent, young_person]
+        country: ENGLAND
+        rent: 0
+  output:
+    receives_benefits_in_own_right: [false, true]
+    is_before_first_september_following_16th_birthday: [false, true]
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    is_child_or_qualifying_young_person_for_universal_credit: [false, false]
+    is_qualifying_young_person_for_pension_credit: [false, false]
+    is_child_or_qualifying_young_person_for_pension_credit: [false, false]
+    uc_individual_child_element: [0, 0]
+    uc_child_element: 0
+    is_responsible_for_child_or_qualifying_young_person_for_universal_credit: false
+    is_uc_work_allowance_eligible: false
+    uc_work_allowance: 0
+    child_minimum_guarantee_addition: 0
+
+- name: A 16-year-old reporting Universal Credit does not attract child additions for a parent aged 70.
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 70
+        is_parent: true
+        is_benunit_head: true
+      young_person:
+        age: 16
+        is_benunit_head: false
+        current_education: NOT_IN_EDUCATION
+        universal_credit_reported: 5_000
+    benunits:
+      benunit:
+        members: [parent, young_person]
+        savings: 0
+    households:
+      household:
+        members: [parent, young_person]
+        country: ENGLAND
+        rent: 0
+  output:
+    receives_benefits_in_own_right: [false, true]
+    is_before_first_september_following_16th_birthday: [false, true]
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    is_child_or_qualifying_young_person_for_universal_credit: [false, false]
+    is_qualifying_young_person_for_pension_credit: [false, false]
+    is_child_or_qualifying_young_person_for_pension_credit: [false, false]
+    uc_individual_child_element: [0, 0]
+    uc_child_element: 0
+    is_responsible_for_child_or_qualifying_young_person_for_universal_credit: false
+    is_uc_work_allowance_eligible: false
+    uc_work_allowance: 0
+    child_minimum_guarantee_addition: 0
+
+- name: A 16-year-old reporting contributory ESA does not attract child additions for a parent aged 70.
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 70
+        is_parent: true
+        is_benunit_head: true
+      young_person:
+        age: 16
+        is_benunit_head: false
+        current_education: NOT_IN_EDUCATION
+        esa_contrib_reported: 5_000
+    benunits:
+      benunit:
+        members: [parent, young_person]
+        savings: 0
+    households:
+      household:
+        members: [parent, young_person]
+        country: ENGLAND
+        rent: 0
+  output:
+    receives_benefits_in_own_right: [false, true]
+    is_before_first_september_following_16th_birthday: [false, true]
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    is_child_or_qualifying_young_person_for_universal_credit: [false, false]
+    is_qualifying_young_person_for_pension_credit: [false, false]
+    is_child_or_qualifying_young_person_for_pension_credit: [false, false]
+    uc_individual_child_element: [0, 0]
+    uc_child_element: 0
+    is_responsible_for_child_or_qualifying_young_person_for_universal_credit: false
+    is_uc_work_allowance_eligible: false
+    uc_work_allowance: 0
+    child_minimum_guarantee_addition: 0
+
+- name: A 16-year-old reporting contribution-based JSA does not attract child additions for a parent aged 70.
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 70
+        is_parent: true
+        is_benunit_head: true
+      young_person:
+        age: 16
+        is_benunit_head: false
+        current_education: NOT_IN_EDUCATION
+        jsa_contrib_reported: 5_000
+    benunits:
+      benunit:
+        members: [parent, young_person]
+        savings: 0
+    households:
+      household:
+        members: [parent, young_person]
+        country: ENGLAND
+        rent: 0
+  output:
+    receives_benefits_in_own_right: [false, true]
+    is_before_first_september_following_16th_birthday: [false, true]
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    is_child_or_qualifying_young_person_for_universal_credit: [false, false]
+    is_qualifying_young_person_for_pension_credit: [false, false]
+    is_child_or_qualifying_young_person_for_pension_credit: [false, false]
+    uc_individual_child_element: [0, 0]
+    uc_child_element: 0
+    is_responsible_for_child_or_qualifying_young_person_for_universal_credit: false
+    is_uc_work_allowance_eligible: false
+    uc_work_allowance: 0
+    child_minimum_guarantee_addition: 0
