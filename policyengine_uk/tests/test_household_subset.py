@@ -4,7 +4,7 @@ The property allowance election (uses_property_allowance) compares routes in
 a branch holding only the households with someone choosing
 (utils.household_subset), so that the comparisons cost in proportion to those
 households. Households do not move each other's tax or benefits, except
-through the formulas that read the whole population
+through the formulas that read beyond their own households
 (WHOLE_POPULATION_VARIABLES). So:
 
 1. Each person's election and income tax are the same whether their household
@@ -12,30 +12,37 @@ through the formulas that read the whole population
    households are pensioners and landlords either side of the winter fuel
    payment charge's threshold, with finance costs near the property
    allowance, claiming Pension Credit and Universal Credit or not, so that
-   some elections turn on the charge and so on benefits.
+   some elections turn on the charge and so on benefits. The same holds with
+   labour supply responses.
 2. In a subset, each person has the value the whole simulation gives them,
    in its baseline too, and a data-built population's birthdays keep their
    places in the whole population's spread.
 3. Each route the election compares is set on a branch holding only the
    households with a choice (PolicyEngine/policyengine-uk#2707).
-4. WHOLE_POPULATION_VARIABLES lists exactly the formulas that read a
-   population weight, and income tax, with the winter fuel payment charge and
-   the benefits it reads, computes none of them but those a subset takes from
-   the whole population.
+4. WHOLE_POPULATION_VARIABLES lists exactly the formulas that read beyond
+   their own households directly, every walk up to an ancestor simulation
+   has been reviewed, and a subset works out none of the listed formulas but
+   those it takes from the whole population, under current law or with
+   labour supply responses.
 """
 
+import ast
 import inspect
 import re
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
+import policyengine_uk
 from policyengine_uk import CountryTaxBenefitSystem, Microsimulation, Simulation
 from policyengine_uk.data import UKMultiYearDataset, UKSingleYearDataset
 from policyengine_uk.utils.household_subset import (
     TAKEN_FROM_WHOLE_POPULATION,
+    WHOLE_POPULATION,
     WHOLE_POPULATION_VARIABLES,
     household_subset,
 )
@@ -257,24 +264,86 @@ def test_a_subset_keeps_birthdays_placed_in_the_whole_population():
     assert np.array_equal(in_subset, whole[people])
 
 
-# Reading a population weight, or ranking, taking a median or spreading
-# records by weight, reads the whole population. A person's or benefit unit's
-# weight is their household's, so the weights themselves read only it.
-READS_POPULATION = re.compile(
+# Two people at work: a Scottish couple, one past State Pension age, who
+# claim Pension Credit and Universal Credit, and someone on £30,000 alone.
+COUPLE = dict(
+    families=[
+        dict(
+            adults=[
+                dict(age=40, employment_income=20_000),
+                dict(age=67, private_pension_income=9_000, employment_income=6_000),
+            ],
+            claims_pc=True,
+            claims_uc=True,
+        )
+    ],
+    country="SCOTLAND",
+)
+EMPLOYED = dict(
+    families=[
+        dict(
+            adults=[dict(age=40, employment_income=30_000)],
+            claims_pc=False,
+            claims_uc=False,
+        )
+    ],
+    country="ENGLAND",
+)
+LABOUR_SUPPLY_RESPONSES = {
+    "gov.simulation.labour_supply_responses.income_elasticity": {
+        "2026-01-01.2100-12-31": -0.05
+    },
+    "gov.simulation.labour_supply_responses.substitution_elasticity": {
+        "2026-01-01.2100-12-31": 0.25
+    },
+    "gov.hmrc.income_tax.rates.uk[0].rate": {"2026-01-01.2100-12-31": 0.21},
+}
+
+
+def test_labour_supply_responses_give_each_household_its_tax_alone():
+    # The working landlord's earnings respond to the reform, and a subset
+    # takes that response from the whole population.
+    households = [EMPLOYED] + ELECTING
+    year = 2026
+    together = results(
+        Simulation(
+            situation=situation(households, year), reform=LABOUR_SUPPLY_RESPONSES
+        ),
+        year,
+    )
+    alone = [
+        results(
+            Simulation(
+                situation=situation([home], year), reform=LABOUR_SUPPLY_RESPONSES
+            ),
+            year,
+        )
+        for home in households
+    ]
+    for k, name in enumerate(TAX):
+        expected = np.concatenate([values[k] for values in alone])
+        assert np.allclose(together[k], expected, atol=0.01), name
+
+
+# Reading a population weight, ranking, taking a median or spreading records
+# by weight reads the whole population, and response_source reads an ancestor
+# simulation. A person's or benefit unit's weight is their household's, so
+# the weights themselves read only it.
+READS_BEYOND_HOUSEHOLDS = re.compile(
     r"""["'](household_weight|person_weight|benunit_weight)["']"""
-    r"|stratified_uniform\(|decile_rank\(|\.median\(|percentile\("
+    r"|stratified_uniform\(|decile_rank\(|\.median\(|percentile\(|response_source\("
 )
 WEIGHTS = {"household_weight", "person_weight", "benunit_weight"}
 
 
-def test_every_formula_that_reads_the_whole_population_is_listed():
+def test_every_formula_that_reads_beyond_its_households_is_listed():
     reading = set()
     for name, variable in CountryTaxBenefitSystem().variables.items():
         for formula in variable.formulas.values():
-            if READS_POPULATION.search(inspect.getsource(formula)):
+            if READS_BEYOND_HOUSEHOLDS.search(inspect.getsource(formula)):
                 reading.add(name)
     assert reading - WEIGHTS == WHOLE_POPULATION_VARIABLES, (
-        "Add a formula that reads the whole population to "
+        "Add a formula that reads beyond its own households to "
         "utils.household_subset.WHOLE_POPULATION_VARIABLES, or drop one that "
         "no longer does: missing "
         f"{sorted(reading - WEIGHTS - WHOLE_POPULATION_VARIABLES)}, stale "
@@ -282,37 +351,76 @@ def test_every_formula_that_reads_the_whole_population_is_listed():
     )
 
 
-def test_income_tax_computes_no_formula_that_reads_the_whole_population():
-    # A pensioner landlord whose choice turns on the winter fuel payment
-    # charge, and a Scottish couple, one past State Pension age, both working,
-    # who claim Pension Credit and Universal Credit: income tax works out the
-    # charge, and so the benefits it reads, in the election's branches too.
-    couple = dict(
-        families=[
-            dict(
-                adults=[
-                    dict(age=40, employment_income=20_000),
-                    dict(age=67, private_pension_income=9_000, employment_income=6_000),
-                ],
-                claims_pc=True,
-                claims_uc=True,
-            )
-        ],
-        country="SCOTLAND",
+# Each function that walks up the parent_branch chain, by file, and what it
+# reads there: a calculation depth (Simulation.set_input) or branch names,
+# which are the same in a household subset, or an ancestor's labour supply
+# response (response_source), which a subset takes from the whole population
+# instead.
+REVIEWED_ANCESTOR_WALKS = {
+    "simulation.py": {"set_input"},
+    "utils/aggregate_impact/guard.py": {"_visible_branches"},
+    "utils/labour_supply_responses.py": {"response_source"},
+    "utils/supplied_inputs.py": {"_visible_branch_names"},
+}
+
+
+def test_every_walk_up_to_an_ancestor_simulation_is_reviewed():
+    package = Path(policyengine_uk.__file__).parent
+    walks = {}
+    for path in sorted(package.rglob("*.py")):
+        relative = path.relative_to(package).as_posix()
+        if relative.startswith("tests/"):
+            continue
+        for function in ast.walk(ast.parse(path.read_text())):
+            if isinstance(function, (ast.FunctionDef, ast.AsyncFunctionDef)) and any(
+                getattr(node, "attr", None) == "parent_branch"
+                or (isinstance(node, ast.Constant) and node.value == "parent_branch")
+                for node in ast.walk(function)
+            ):
+                walks.setdefault(relative, set()).add(function.name)
+    assert walks == REVIEWED_ANCESTOR_WALKS, (
+        "A function walks up to an ancestor simulation. If it reads the "
+        "ancestor's values, a household subset (utils.household_subset) "
+        "gets the whole population's: list the formulas that use it in "
+        "WHOLE_POPULATION_VARIABLES, then add it here. Found "
+        f"{walks}"
     )
-    households = [NO_CHOICE, couple] + ELECTING
-    simulation = Simulation(situation=situation(households, 2026), trace=True)
+
+
+@pytest.mark.parametrize(
+    "reform",
+    [None, LABOUR_SUPPLY_RESPONSES],
+    ids=["current law", "labour supply responses"],
+)
+def test_a_subset_works_out_no_formula_that_reads_beyond_its_households(
+    monkeypatch, reform
+):
+    # The pensioner landlord's choice turns on the winter fuel payment charge,
+    # so the subset works out the charge and the relevant benefits it reads;
+    # the couple claim them, and with labour supply responses earnings
+    # respond to the reform.
+    worked_out = set()
+    run_formula = Simulation._run_formula
+
+    def recording(simulation, variable, population, period):
+        if getattr(simulation, WHOLE_POPULATION, None) is not None:
+            worked_out.add(variable.name)
+        return run_formula(simulation, variable, population, period)
+
+    monkeypatch.setattr(Simulation, "_run_formula", recording)
+    households = [NO_CHOICE, COUPLE, EMPLOYED] + ELECTING
+    simulation = Simulation(situation=situation(households, 2026), reform=reform)
     simulation.calculate("income_tax", 2026)
-    nodes = list(simulation.tracer.browse_trace())
-    computed = {node.name for node in nodes}
-    assert any(node.branch_name.startswith("property_allowance_") for node in nodes)
-    assert {"pension_credit", "universal_credit", "winter_fuel_payment_charge"} <= (
-        computed
-    )
-    read = computed & (WHOLE_POPULATION_VARIABLES - TAKEN_FROM_WHOLE_POPULATION)
+    charge = {
+        "winter_fuel_payment_charge",
+        "is_on_pension_credit",
+        "is_on_universal_credit",
+    }
+    assert charge <= worked_out
+    read = worked_out & (WHOLE_POPULATION_VARIABLES - TAKEN_FROM_WHOLE_POPULATION)
     assert not read, (
-        f"Income tax now computes {sorted(read)}, which read the whole "
-        "population: a household subset would give them other values. Take "
+        f"A household subset now works out {sorted(read)}, which read beyond "
+        "their own households, so it would give them other values. Take "
         "their whole-population value in a subset, as "
         "months_since_last_birthday does, and list them in "
         "TAKEN_FROM_WHOLE_POPULATION."
