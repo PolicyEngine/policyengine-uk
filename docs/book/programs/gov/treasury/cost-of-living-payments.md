@@ -55,9 +55,11 @@ the rebates, so the model counts them once.
 HBAI income takes the same calendar-year sum as household net income and
 government spending. A Great Britain household in bands A to D on the
 scheme throughout gets £349 in 2022 and £201 in 2023, where HBAI counts
-£550 in 2022-23. `epg_subsidy` sums the Energy Price Guarantee by calendar
-year in the same way. Summing either by financial year would move all
-three measures together, so the model keeps one timing for now.
+£550 in 2022-23. Summing the credit by financial year would move all three
+measures together. `epg_subsidy` sums the Energy Price Guarantee by
+calendar year in the same way; it counts in household net income and
+government spending but not in HBAI income. The model keeps one timing for
+both schemes for now.
 
 ## Cost-of-Living Payments (2022-23 and 2023-24)
 
