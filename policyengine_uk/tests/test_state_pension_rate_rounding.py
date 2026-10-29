@@ -25,7 +25,9 @@ Invariants, for both rates:
    simulations hold).
 6. The rounding is a parameter: each reform route moves the projection by
    it, zero gives the unrounded chain, and the baseline stays current law.
-7. A changed triple lock rate or index moves the projection.
+   A rate a reform states for a year stays as stated.
+7. A changed triple lock rate or index moves the projection, at full
+   precision: a half rounds up (£273.675 to £273.70).
 8. Properties (Hypothesis): rounding lands on the grid, within half a unit,
    idempotently and monotonically; a projected path is the chained rule for
    any rates; a rise never lowers the rate.
@@ -75,8 +77,6 @@ PROPERTY_SETTINGS = settings(
     derandomize=True,
     suppress_health_check=[HealthCheck.too_slow],
 )
-# Each example reprocesses the parameters, so as few as the reform tests use.
-SIMULATION_SETTINGS = settings(PROPERTY_SETTINGS, max_examples=10)
 
 
 def weekly(parameters, path, year):
@@ -273,8 +273,9 @@ def test_each_reform_route_moves_the_projection_by_the_rounding(route, unit):
 
 
 def test_without_rounding_the_projection_is_the_unrounded_uprating():
-    """Zero rounding gives what general uprating gave: the last published
-    rate times the triple lock's growth since then."""
+    """Zero rounding gives the unrounded chain: the last published rate
+    times the triple lock's growth since then. (General uprating gave this to
+    within about 0.1p; it read the index stored to five decimal places.)"""
     reformed = ROUTES["parameter-changes"]({ROUNDING: 0})
     parameters = reformed.tax_benefit_system.parameters
     for path in RATES.values():
@@ -304,8 +305,9 @@ def test_a_changed_triple_lock_index_moves_the_projection():
         assert weekly(parameters, path, 2029) > weekly(system.parameters, path, 2029)
 
 
-@SIMULATION_SETTINGS
-@given(rate=st.integers(0, 150).map(lambda n: n / 1000))
+# Each case rebuilds the parameters, so a short list stands in for a
+# Hypothesis search: no rise, the floor, the tie case below, and two others.
+@pytest.mark.parametrize("rate", [0, 0.025, 0.039, 0.053, 0.15])
 def test_a_triple_lock_rate_set_by_reform_is_rounded_into_the_chain(rate):
     reformed = ROUTES["reform-dict"]({TRIPLE_LOCK: {"2028": rate}})
     parameters = reformed.tax_benefit_system.parameters
@@ -314,6 +316,31 @@ def test_a_triple_lock_rate_set_by_reform_is_rounded_into_the_chain(rate):
         assert all(on_grid(r) for r in rates)
         assert rates[1] == pytest.approx(uprated(rates[0], rate), abs=1e-12)
         assert rates[0] == weekly(system.parameters, path, 2027)
+
+
+def test_a_half_rounds_up_and_the_index_keeps_its_precision():
+    """A 3.9% triple lock for April 2028 takes £250.70 to £260.4773, so
+    £260.50; 2.5% then gives £267.0125, so £267.00, and £273.675 exactly for
+    April 2030, which rounds up to £273.70. In floats that product is
+    273.67499999999995, and an index stored to five decimal places gives
+    £273.65."""
+    reformed = ROUTES["reform-dict"]({TRIPLE_LOCK: {"2028": 0.039}})
+    parameters = reformed.tax_benefit_system.parameters
+    assert [triple_lock(parameters, y) for y in (2029, 2030)] == [0.025, 0.025]
+    rates = [weekly(parameters, RATES["new"], y) for y in range(2027, 2031)]
+    assert rates == pytest.approx([250.70, 260.50, 267.00, 273.70], abs=1e-12)
+
+
+def test_a_rate_a_reform_states_is_kept():
+    """A reform that states the full rate for one year keeps it, and the
+    years after return to prior law's rounded path, as dated reforms fill
+    gaps from prior law."""
+    reformed = ROUTES["reform-dict"]({RATES["new"]: {"2028": 300}})
+    parameters = reformed.tax_benefit_system.parameters
+    rates = [weekly(parameters, RATES["new"], y) for y in range(2027, 2031)]
+    prior = [weekly(system.parameters, RATES["new"], y) for y in range(2027, 2031)]
+    assert rates == [prior[0], 300, prior[2], prior[3]]
+    assert all(on_grid(rate) for rate in prior)
 
 
 # 8. Properties of the rule.

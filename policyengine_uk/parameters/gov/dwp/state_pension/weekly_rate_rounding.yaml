@@ -16,8 +16,11 @@ metadata:
     published basic State Pension rate from April 2011 and every full new
     State Pension rate from April 2017; rounding always up or always down
     to 5p, or to the nearest 10p, misses at least five of those years each.
-    Every reform route reprocesses the parameters, so a change to this
-    amount moves the projected rates.
+    No published rate has landed exactly on a half; the model rounds halves
+    up. Each April's rounding is read on 30 April, as the triple lock's
+    inputs are, so a reform to this amount (through a reform dictionary or
+    Scenario(parameter_changes=...)) moves the projected rates for the years
+    it covers, while a key for a single other day leaves them unchanged.
   reference:
     - title: Social Security Administration Act 1992, section 150A(4)
       href: https://www.legislation.gov.uk/ukpga/1992/5/section/150A

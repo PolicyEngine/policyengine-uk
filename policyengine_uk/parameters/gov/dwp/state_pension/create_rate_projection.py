@@ -31,8 +31,10 @@ unrounded path, £259.2357, would round to £259.25.
 So for each rate this step fills the years after its last stated value,
 through the last year of its uprating index, with the previous year's rate
 times the index's growth over the year, to the nearest multiple of
-``gov.dwp.state_pension.weekly_rate_rounding``, halves up. Each value applies
-from 1 January, as uprating's do, so the April uprating sets the fiscal year,
+``gov.dwp.state_pension.weekly_rate_rounding``. No published rate has
+landed exactly on a half, so the sources do not say which way a half goes;
+this step rounds halves up. Each value applies from 1 January, as
+uprating's do, so the April uprating sets the fiscal year,
 and general uprating then has no year left to fill. The growth comes from
 the index named in the rate's ``uprating`` metadata, so a reform to the
 triple lock rate, its inputs or the index moves the projection. The product

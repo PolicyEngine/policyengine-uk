@@ -25,11 +25,11 @@ Invariants:
    read every key exactly as before.
 5. Monotonicity: the April 2028 State Pension is non-decreasing in the
    minimum rate.
+6. Baselines stay current law: ``sim.baseline`` and ``parameters.baseline``.
 
 Each April the State Pension rates are the year before's raised by the
 triple lock rate and rounded to the nearest 5p, so the checks of 1 and 3
 compare them with ``uprated``, exactly.
-6. Baselines stay current law: ``sim.baseline`` and ``parameters.baseline``.
 """
 
 from decimal import ROUND_HALF_UP, Decimal
