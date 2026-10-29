@@ -275,7 +275,8 @@ def test_each_reform_route_moves_the_projection_by_the_rounding(route, unit):
 def test_without_rounding_the_projection_is_the_unrounded_uprating():
     """Zero rounding gives the unrounded chain: the last published rate
     times the triple lock's growth since then. (General uprating gave this to
-    within about 0.1p; it read the index stored to five decimal places.)"""
+    within a third of a penny through 2039; it read the index stored to five
+    decimal places.)"""
     reformed = ROUTES["parameter-changes"]({ROUNDING: 0})
     parameters = reformed.tax_benefit_system.parameters
     for path in RATES.values():
@@ -323,12 +324,16 @@ def test_a_half_rounds_up_and_the_index_keeps_its_precision():
     £260.50; 2.5% then gives £267.0125, so £267.00, and £273.675 exactly for
     April 2030, which rounds up to £273.70. In floats that product is
     273.67499999999995, and an index stored to five decimal places gives
-    £273.65."""
+    £273.65. £273.675 is 5,473.5 units of 5p, which rounding halves to even
+    would also take up, so the last check uses a half above an even count,
+    5,474.5 units, which halves up takes to £273.75 and halves to even would
+    take down."""
     reformed = ROUTES["reform-dict"]({TRIPLE_LOCK: {"2028": 0.039}})
     parameters = reformed.tax_benefit_system.parameters
     assert [triple_lock(parameters, y) for y in (2029, 2030)] == [0.025, 0.025]
     rates = [weekly(parameters, RATES["new"], y) for y in range(2027, 2031)]
     assert rates == pytest.approx([250.70, 260.50, 267.00, 273.70], abs=1e-12)
+    assert round_weekly_rate(Decimal("273.725"), 0.05) == 273.75
 
 
 def test_a_rate_a_reform_states_is_kept():

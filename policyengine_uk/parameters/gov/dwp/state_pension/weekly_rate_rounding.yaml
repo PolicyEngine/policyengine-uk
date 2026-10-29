@@ -17,10 +17,11 @@ metadata:
     State Pension rate from April 2017; rounding always up or always down
     to 5p, or to the nearest 10p, misses at least five of those years each.
     No published rate has landed exactly on a half; the model rounds halves
-    up. Each April's rounding is read on 30 April, as the triple lock's
-    inputs are, so a reform to this amount (through a reform dictionary or
-    Scenario(parameter_changes=...)) moves the projected rates for the years
-    it covers, while a key for a single other day leaves them unchanged.
+    up. Each April's rounding is read on 30 April. A reform that sets this
+    amount for whole fiscal years (a single value, a year key or a date
+    range covering 30 April), through a reform dictionary or
+    Scenario(parameter_changes=...), moves the projected rates for those
+    years.
   reference:
     - title: Social Security Administration Act 1992, section 150A(4)
       href: https://www.legislation.gov.uk/ukpga/1992/5/section/150A
