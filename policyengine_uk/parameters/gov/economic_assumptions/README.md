@@ -452,9 +452,9 @@ the forecast levels, though not their growth.
    economy tables, the MM23 release of the same month and the latest Energy
    Trends tables. The importer records the last quarter ONS publishes in
    full as `last_full_quarter`, takes the OBR forecast from the quarter after
-   it, and stops before writing anything if an MM23 series has a gap, if the
-   series come from different releases or if Table 1.19 has no quarter after
-   the ONS outturn. Then check
+   it, and stops before writing anything if an MM23 series has a gap or a
+   year without its CPI weight, if the series come from different releases or
+   if Table 1.19 has no quarter after the ONS outturn. Then check
    `embedded_electricity_vat.yaml` against the VAT on domestic electricity
    the EFO assumes. Replace the cut-down sources in
    `policyengine_uk/tests/fixtures/energy_prices/` and their SHA-256s, and

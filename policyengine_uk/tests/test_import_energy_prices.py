@@ -94,6 +94,23 @@ def test_a_missing_month_is_an_error():
         render(mm23=to_csv(rows))
 
 
+@pytest.mark.parametrize("cdid", ["CJXA", "CJXB", "A9F4"])
+@pytest.mark.parametrize("year", ["2020", "2026"])
+def test_a_missing_weight_is_an_error(cdid, year):
+    # Generation would otherwise give the year the year before's weight.
+    rows = mm23_rows()
+    column = rows[1].index(cdid)
+    blanked = 0
+    for row in rows:
+        if row[0] == year:
+            assert row[column].strip()
+            row[column] = ""
+            blanked += 1
+    assert blanked == 1
+    with pytest.raises(ValueError, match=f"{cdid} has no weight for {year}"):
+        render(mm23=to_csv(rows))
+
+
 def test_a_missing_series_is_an_error():
     rows = [row[:-1] for row in mm23_rows()]
     with pytest.raises(ValueError, match="A9F4"):

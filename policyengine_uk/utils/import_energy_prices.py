@@ -152,6 +152,18 @@ def read_mm23(text: str) -> Mm23:
         ]
         if months != expected:
             raise ValueError(f"MM23 {series.cdid} has gaps after {FIRST_YEAR}.")
+        # The generation step would give a year without a weight the year
+        # before's, so every year with prices needs its own.
+        unweighted = [
+            str(year)
+            for year in range(FIRST_YEAR, months[-1][0] + 1)
+            if year not in annual[series.weight_cdid]
+        ]
+        if unweighted:
+            raise ValueError(
+                f"MM23 {series.weight_cdid} has no weight for "
+                f"{', '.join(unweighted)}, where {series.cdid} has prices."
+            )
     return Mm23(release=release, monthly=monthly, annual=annual)
 
 
