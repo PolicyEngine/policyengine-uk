@@ -40,7 +40,10 @@ def person_net_earnings(
     The existing tax-attribution approximation uses earnings' share of an
     explicit raw income base including statutory pay, before losses, and tax
     before the Winter Fuel Payment charge. This is independent of the income
-    tax definition of total_income and its component list. Housing Benefit
+    tax definition of total_income and its component list. Benefits in kind
+    are not earnings (reg 35(2)(a)), but PAYE collects the tax on them from
+    the employment's pay, so they count with earnings in that share and in
+    the base, though not in the earnings themselves. Housing Benefit
     (housing_benefit_net_earnings), Council Tax Reduction
     (council_tax_reduction_net_earnings) and Income Support
     (income_support_net_earnings) use these deductions.
@@ -73,10 +76,14 @@ def person_net_earnings(
             "taxable_miscellaneous_income",
         ]
     )
+    # Benefits in kind are taxed with the pay but are not earnings.
+    benefits_in_kind = person("benefits_in_kind", period)
+    income_before_losses = income_before_losses + benefits_in_kind
+    taxed_with_earnings = earnings + benefits_in_kind
     earnings_share = np.divide(
-        earnings,
+        taxed_with_earnings,
         income_before_losses,
-        out=np.zeros_like(earnings),
+        out=np.zeros_like(taxed_with_earnings),
         where=income_before_losses > 0,
     )
     # Tax before the winter fuel payment charge: the charge recovers a

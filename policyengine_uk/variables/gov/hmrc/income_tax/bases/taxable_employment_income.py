@@ -16,4 +16,8 @@ class taxable_employment_income(Variable):
         taxable_earnings = person("employment_income", period)
         deductions = add(person, period, ["employment_deductions"])
         benefits = person("employment_benefits", period)
-        return max_(0, taxable_earnings + benefits - deductions)
+        # Benefits code earnings (ITEPA 2003 s. 63), held apart from pay and
+        # statutory pay because Class 1 NICs and the means tests' earnings
+        # leave them out.
+        benefits_in_kind = person("benefits_in_kind", period)
+        return max_(0, taxable_earnings + benefits + benefits_in_kind - deductions)

@@ -46,6 +46,11 @@ gov.economic_assumptions.yoy_growth.obr.consumer_price_index:
 - childcare_expenses
 - clothing_and_footwear_consumption
 - communication_consumption
+# Company car prices and the payments that go with them. CPI stands in for
+# a new-car price index, which the OBR does not forecast.
+- company_car_capital_contributions
+- company_car_list_price
+- company_car_private_use_payments
 - education_consumption
 - esa_contrib_reported
 - esa_income_reported
