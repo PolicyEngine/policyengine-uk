@@ -541,3 +541,65 @@ def test_lifetime_isa_input_is_preserved_on_its_visible_branch(inherited):
     assert abs(branch.calculate("uc_assessable_capital", YEAR)[0] - 0.19) < 0.004
     expected_main = 0.19 if inherited else 0.20
     assert abs(sim.calculate("uc_assessable_capital", YEAR)[0] - expected_main) < 0.004
+
+
+def lisa_mask_reform():
+    """A reform that keeps the baseline LISA formula and only adds a
+    ``defined_for`` mask, so the formula identity check still passes."""
+
+    class lisa_is_counted(Variable):
+        value_type = bool
+        entity = Person
+        definition_period = YEAR_PERIOD
+        default_value = False
+        label = "Lifetime ISA counted as capital"
+
+    class lifetime_isa_countable_capital(Variable):
+        defined_for = "lisa_is_counted"
+
+    class MaskLifetimeISA(Reform):
+        def apply(self):
+            self.add_variable(lisa_is_counted)
+            self.update_variable(lifetime_isa_countable_capital)
+
+    return MaskLifetimeISA
+
+
+def test_lifetime_isa_exact_valuation_respects_a_defined_for_mask():
+    # Two units hold 0.26 each. Only p1's ISA is counted: Core stores 0 for
+    # p0, so p0 must have no capital, and p1 must be valued as without the
+    # mask (0.195, to the penny under each programme's rule).
+    situation = whole_penny_situation([(0, 0, 26, 30), (0, 0, 26, 30)])
+    unmasked = Simulation(situation=situation)
+    masked = Simulation(situation=situation, reform=lisa_mask_reform())
+    # The reform adds the mask, so the shared situation can't supply it.
+    masked.set_input("lisa_is_counted", YEAR, np.array([False, True]))
+    assert list(masked.calculate("lifetime_isa_countable_capital", YEAR)) == [
+        0,
+        pytest.approx(0.195),
+    ]
+    assert abs(unmasked.calculate("uc_assessable_capital", YEAR)[0] - 0.20) < 0.004
+    for variable in PROGRAMMES:
+        before = np.asarray(unmasked.calculate(variable, YEAR), dtype=float)
+        after = np.asarray(masked.calculate(variable, YEAR), dtype=float)
+        assert abs(after[0]) < 0.004, (variable, after)
+        assert abs(after[1] - before[1]) < 0.004, (variable, before, after)
+
+
+def test_a_masked_lifetime_isa_leaves_universal_credit_eligibility():
+    # 15,999.81 of savings is within the 16,000 limit. A counted 0.26 ISA
+    # (0.195, rounded to 0.20) would take it to 16,000.01; masked, it adds
+    # nothing.
+    sim = Simulation(
+        situation=whole_penny_situation([(1_599_981, 0, 26, 30)]),
+        reform=lisa_mask_reform(),
+    )
+    assert abs(sim.calculate("uc_assessable_capital", YEAR)[0] - 15_999.81) < 0.004
+    assert sim.calculate("is_uc_eligible", YEAR)[0]
+    sim = Simulation(
+        situation=whole_penny_situation([(1_599_981, 0, 26, 30)]),
+        reform=lisa_mask_reform(),
+    )
+    sim.set_input("lisa_is_counted", YEAR, np.array([True]))
+    assert abs(sim.calculate("uc_assessable_capital", YEAR)[0] - 16_000.01) < 0.004
+    assert not sim.calculate("is_uc_eligible", YEAR)[0]
