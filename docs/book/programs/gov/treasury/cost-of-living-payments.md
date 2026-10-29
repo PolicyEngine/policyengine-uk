@@ -13,15 +13,16 @@ Announced by the Chancellor in February 2022 to help households with the
 spike in domestic energy prices. Two strands:
 
 - **£150 Council Tax Rebate** for households in Council Tax bands A–D in
-  England, a one-off in 2022-23. Households qualified on their band on
-  1 April 2022, and billing authorities made every payment by 30 September
-  2022. Scotland and Wales paid their own £150 awards to bands A–D, and also
-  to Council Tax Reduction recipients in any band, which the model leaves
-  out. Northern Ireland levies domestic rates, not council tax, and had no
-  Council Tax Rebate, so the model pays none there whatever the household's
-  council tax band (the enhanced FRS gives every Northern Ireland household
-  band A, the default policyengine-uk-data assigns when the FRS records no
-  band).
+  England, a one-off in 2022-23. Households qualified on their band on 1
+  April 2022. The guidance asked billing authorities to pay from April and
+  set 30 September 2022 as the deadline for the payments the government
+  would reconcile (paragraph 7). Scotland and Wales paid their own £150
+  awards to bands A–D, and also to Council Tax Reduction recipients in any
+  band, which the model leaves out. Northern Ireland levies domestic rates,
+  not council tax, and had no Council Tax Rebate, so the model pays none
+  there whatever the household's council tax band (the enhanced FRS gives
+  every Northern Ireland household band A, the default policyengine-uk-data
+  assigns when the FRS records no band).
 - **Energy Bills Support Scheme**, a £400 discount on domestic electricity
   bills in Great Britain, paid in six monthly instalments from October 2022
   to March 2023 (£66 for two months, then £67). Announced in February 2022
@@ -68,7 +69,7 @@ HBAI income takes the same calendar-year sum as household net income and
 government spending. A Great Britain household in bands A to D on the
 scheme throughout gets £349 in 2022 and £201 in 2023, where HBAI counts
 £550 in 2022-23. A Northern Ireland household gets nothing in 2022 and £600
-in 2023, though suppliers started paying it on 16 January 2023, in 2022-23.
+in 2023, though its main rollout began on 16 January 2023, in 2022-23.
 The direction set 31 March 2023 as the normal deadline for providing it, and
 let suppliers reissue vouchers and cheques that customers could redeem until
 30 June 2023 (paragraph 12(b)). Summing the
