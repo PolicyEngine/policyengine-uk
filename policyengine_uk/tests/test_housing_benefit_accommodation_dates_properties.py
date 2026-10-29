@@ -6,13 +6,15 @@ D2. Convex combination: the annual award is between the segment awards and
     equals their independently calculated elapsed-day-weighted mean.
 D3. Bounds: with nonnegative eligible rent and non-dependant deductions,
     entitlement is between zero and eligible rent.
-D4. Monotonicity: raising accommodation never lowers the annual award.
-    Intended violation: the additional-disregard earnings test can switch
-    off. At net earnings of 1,149.20, standard 260 and no childcare, raising
-    later accommodation from zero to one penny removes the 889.20 additional
-    disregard. The annual award falls from 10,400 to 10,110.22. The strict
-    xfail retains this smallest positive penny increment; a separate property
-    verifies monotonicity with the additional disregard disabled.
+D4. Monotonicity: without the additional disregard, raising accommodation
+    never lowers the annual award. With it, the award can fall, as the law
+    intends: the additional disregard applies only where net earnings reach
+    the standard, accommodation, childcare and additional amounts together
+    (HB Regs 2006 Sch. 4 para. 17(1) and (3), as SI 2026/978 reg. 2 amends
+    them; NI Sch. 5 para. 17 and SR 2026/157 reg. 2). At net earnings of
+    1,149.20, standard 260 and no childcare, raising later accommodation from
+    zero to one penny removes the 889.20 additional disregard, and the annual
+    award falls from 10,400 to 10,110.22. A regression pins that case.
 D5. Day count: 2026-27 has 182 days before 5 October and 183 from that
     date, totalling 365; inspect production segments, not just a calendar.
 
@@ -293,23 +295,26 @@ def test_d4_monotonicity_without_additional_disregard(units, bump):
     assert np.all(after >= before - TOLERANCE)
 
 
-@pytest.mark.xfail(
-    strict=True,
-    raises=AssertionError,
-    reason="D4 intended violation: accommodation can switch off the additional disregard",
-)
-@PROPERTY_SETTINGS
-@given(extra=st.integers(0, 10_000), bump=st.integers(1, 100))
-@example(extra=0, bump=1)
-def test_d4_unrestricted_monotonicity(extra, bump):
-    # Shrink an additional-disregard boundary witness independently of the
-    # current statutory accommodation amount, by reforming the later rate.
-    unit = case(net=1_149.20 + extra, worker=True, applicable=0)
-    low = {key: extra / 52 for key in RATES}
-    high = {key: (extra + bump / 100) / 52 for key in RATES}
-    _, before = calculate([unit], rates=low)
-    _, after = calculate([unit], rates=high)
-    assert after[0] >= before[0] - TOLERANCE, (extra, bump, before[0], after[0])
+def test_d4_a_penny_of_accommodation_can_switch_off_the_additional_disregard():
+    # Net earnings of 1,149.20 equal the 260 standard plus the 889.20
+    # additional disregard, so the additional disregard applies with no
+    # accommodation amount and stops applying with a penny of it. The later
+    # rate is reformed to a penny a year so that only the threshold moves.
+    unit = case(net=1_149.20, worker=True, applicable=0)
+    _, before = calculate([unit], rates={key: 0 for key in RATES})
+    _, after = calculate([unit], rates={key: 0.01 / 52 for key in RATES})
+    assert before[0] == pytest.approx(10_400, abs=TOLERANCE)
+    assert after[0] == pytest.approx(10_110.22, abs=TOLERANCE)
+    # The later segment loses the whole additional disregard: its award is
+    # 10,400 less the 65% taper on 1,149.20 - 260 - 0.01 = 889.19 of income.
+    later = direct_award(unit, 0.01 / 52)
+    assert later == pytest.approx(10_400 - 0.65 * 889.19, abs=TOLERANCE)
+    before_days = (date(2026, 10, 5) - date(2026, 4, 6)).days
+    after_days = (date(2027, 4, 6) - date(2026, 10, 5)).days
+    expected = (direct_award(unit, 0) * before_days + later * after_days) / (
+        before_days + after_days
+    )
+    assert after[0] == pytest.approx(expected, abs=TOLERANCE)
 
 
 @PROPERTY_SETTINGS
