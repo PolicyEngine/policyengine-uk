@@ -586,6 +586,33 @@ def test_lifetime_isa_exact_valuation_respects_a_defined_for_mask():
         assert abs(after[1] - before[1]) < 0.004, (variable, before, after)
 
 
+def test_a_lifetime_isa_masked_for_everyone_runs_no_formula():
+    # Core runs no formula when the mask applies to nobody, so a dependency
+    # only applicable people need is never calculated. A balance formula
+    # that raises shows whether the exact valuation calculates it anyway.
+    class lifetime_isa_balance(Variable):
+        def formula(person, period, parameters):
+            raise AssertionError("A masked Lifetime ISA balance was calculated")
+
+    mask = lisa_mask_reform()
+
+    class MaskWithUnavailableBalance(Reform):
+        def apply(self):
+            mask.apply(self)
+            self.update_variable(lifetime_isa_balance)
+
+    without_lisa = Simulation(situation=whole_penny_situation([(1_599_981, 0, 0, 30)]))
+    situation = whole_penny_situation([(1_599_981, 0, 0, 30)])
+    del situation["people"]["p0"]["lifetime_isa_balance"]
+    sim = Simulation(situation=situation, reform=MaskWithUnavailableBalance)
+    assert list(sim.calculate("lifetime_isa_countable_capital", YEAR)) == [0]
+    for variable in PROGRAMMES:
+        before = without_lisa.calculate(variable, YEAR)[0]
+        after = sim.calculate(variable, YEAR)[0]
+        assert abs(after - before) < 0.004, (variable, before, after)
+    assert abs(sim.calculate("uc_assessable_capital", YEAR)[0] - 15_999.81) < 0.004
+
+
 def test_a_masked_lifetime_isa_leaves_universal_credit_eligibility():
     # 15,999.81 of savings is within the 16,000 limit. A counted 0.26 ISA
     # (0.195, rounded to 0.20) would take it to 16,000.01; masked, it adds

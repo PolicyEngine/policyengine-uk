@@ -61,7 +61,8 @@ def valued_person_capital(benunit, period, parameters, capital, counted):
     (``CALCULATED_PERSON_SOURCES``) is valued to the penny under the
     programme's rule, like any other valuation. The baseline formula is
     worked again in float64, so float32 cannot move the rounding, and only
-    where the variable's ``defined_for`` mask applies it, as Core does.
+    where the variable's ``defined_for`` mask applies it, as Core does. Like
+    Core, it runs no formula when the mask applies to nobody.
     Explicit inputs for this period and branch, and values from a reformed
     formula, are kept as stored: matching a baseline value in float32 does
     not prove where a value came from. Any other source is a stored
@@ -80,19 +81,23 @@ def valued_person_capital(benunit, period, parameters, capital, counted):
                 and variable.get_formula(period) is calculate
                 and supplied_input(person, source, period) is None
             ):
-                exact = calculate(person, period, parameters)
+                applicable = None
                 if variable.defined_for is not None:
                     # Core keeps the formula's result only where the
                     # defined_for variable is above zero and stores the
-                    # default elsewhere; keep that stored default.
+                    # default elsewhere, and runs no formula when it is
+                    # above zero for nobody; do the same.
                     applicable = (
                         person.simulation.calculate(
                             variable.defined_for, period, map_to=variable.entity.key
                         )
                         > 0
                     )
-                    exact = np.where(applicable, exact, value)
-                value = exact
+                if applicable is None or applicable.any():
+                    exact = calculate(person, period, parameters)
+                    if applicable is not None:
+                        exact = np.where(applicable, exact, value)
+                    value = exact
             value = round_to_penny(value, capital.round_down)
         total = total + benunit.sum(value * counted)
     return total
