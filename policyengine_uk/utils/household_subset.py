@@ -3,22 +3,8 @@
 A comparison that concerns a few households can run in a branch holding only
 them, at a cost in proportion to those households rather than to the whole
 population. Each household is worked out from its own members' values,
-except in the formulas that read the whole population:
-
-- months_since_last_birthday spreads birthdays by weight. In a household
-  subset it takes each person's value in the whole population
-  (whole_population_value).
-- attends_private_school ranks incomes after tax and benefits.
-- shareholding, corporate_land_value and consumption_shareholding divide by
-  a weighted total over the dataset.
-
-In a subset the last four would give other values. Neither they nor what
-reads them (private school VAT, corporate tax incidence, business rates,
-corporate stamp duty land tax, carbon tax and land value tax) feeds income
-tax or any benefit, so the property allowance election never reads them. A
-formula that reads the whole population and comes to feed income tax or a
-benefit needs to take its whole-population value in a subset, as
-months_since_last_birthday does.
+except in the formulas that read the whole population
+(WHOLE_POPULATION_VARIABLES), which would give other values in a subset.
 
 The branch starts from every value the simulation holds for those
 households, inputs and calculated values alike, so what the simulation has
@@ -30,6 +16,42 @@ from contextlib import contextmanager
 from typing import Optional
 
 import numpy as np
+
+# Every formula that reads the whole population: a weighted total, a weighted
+# rank or median, or records spread by weight over the dataset. A household
+# subset takes each person's months_since_last_birthday from the whole
+# population (whole_population_value). None of the others feeds income tax or
+# any benefit, so the property allowance election never computes them. Two
+# tests in test_household_subset.py keep it so: one fails if a formula reads a
+# population weight and is not listed here, or is listed and no longer reads
+# one; the other fails if income tax, with the winter fuel payment charge and
+# the benefits the charge reads, computes any of them but those in
+# TAKEN_FROM_WHOLE_POPULATION. A formula that comes to need one of them there
+# has to take its whole-population value, as months_since_last_birthday does.
+WHOLE_POPULATION_VARIABLES = frozenset(
+    {
+        "attends_private_school",
+        "carbon_tax",
+        "consumer_incident_tax_revenue_change",
+        "consumption_shareholding",
+        "corporate_land_value",
+        "education_budget_change",
+        "employer_ni_response_capital_incidence",
+        "employer_ni_response_consumer_incidence",
+        "household_income_decile",
+        "household_income_decile_ahc",
+        "household_wealth_decile",
+        "in_relative_poverty_ahc",
+        "in_relative_poverty_bhc",
+        "months_since_last_birthday",
+        "nhs_budget_change",
+        "other_public_spending_budget_change",
+        "pre_budget_change_ons_household_income_decile",
+        "shareholding",
+    }
+)
+# Those a household subset takes from the whole population.
+TAKEN_FROM_WHOLE_POPULATION = frozenset({"months_since_last_birthday"})
 
 # The attribute of a household subset (and of each branch made from it, which
 # copies its attributes) naming the simulation it was made from and the
