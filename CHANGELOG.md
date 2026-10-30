@@ -1,3 +1,10 @@
+## [2.165.1] - 2026-10-30
+
+### Fixed
+
+- A family no longer takes a Universal Credit award worth less than the Tax-Free Childcare the award would end: it keeps Tax-Free Childcare instead (`forgoes_universal_credit_for_tax_free_childcare`, #2689). The comparison counts the Scottish Child Payment that an award brings in Scotland. No debt deduction comes out of an award that only a reform creates (`uc_award_carries_deductions`), whether the reform is applied when the simulation is built, by `apply_reform`, or by a simulation modifier followed by `drop_computed_arrays`; this is an assumption that slightly raises the cost of reforms that widen Universal Credit. Together these stop a cut in the Universal Credit taper from leaving families worse off (#2753).
+
+
 ## [2.165.0] - 2026-10-29
 
 ### Added
