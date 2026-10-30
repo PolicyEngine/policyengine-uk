@@ -80,6 +80,21 @@ def test_program_agency_and_coverage(program_id, field, expected):
     assert programs[0][field] == expected
 
 
+@pytest.mark.parametrize(
+    "program_id, date",
+    [
+        ("tax_credits", "5 April 2025"),
+        ("winter_fuel_payment", "from winter 2024-25"),
+    ],
+    ids=lambda value: value,
+)
+def test_program_notes_state_when_the_scheme_changed(program_id, date):
+    """The notes keep each programme's sourced end or replacement date (#2696)."""
+    programs = [p for p in PROGRAMS if p["id"] == program_id]
+    assert len(programs) == 1
+    assert date in programs[0]["notes"]
+
+
 @settings(max_examples=len(PROGRAMS), database=None, derandomize=True)
 @given(program_id=st.sampled_from(tuple(p["id"] for p in PROGRAMS)))
 def test_program_metadata_survives_loading(tax_benefit_system, program_id):
