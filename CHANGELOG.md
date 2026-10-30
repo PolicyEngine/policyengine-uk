@@ -1,3 +1,11 @@
+## [2.165.3] - 2026-10-30
+
+### Fixed
+
+- Counted the 2022 Energy Bills Rebate (the Energy Bills Support Scheme credit and the £150 Council Tax Rebate) in HBAI household net income as miscellaneous income, as DWP's HBAI does, and paid the one-off Council Tax Rebate in 2022-23 only rather than again in 2023-24.
+- Applied the trading allowance to income not otherwise charged (ITTOIA 2005 Part 5 Chapter 8), sharing one allowance with trade receipts, through a new optional `income_not_otherwise_charged` input that defaults to zero. Means tests and gross income bases now read `miscellaneous_income_before_trading_allowance`, so the income tax relief does not reach them.
+
+
 ## [2.165.2] - 2026-10-30
 
 ### Changed
