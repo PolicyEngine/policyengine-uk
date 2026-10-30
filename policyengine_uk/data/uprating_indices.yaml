@@ -127,13 +127,16 @@ gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 - miscellaneous_income
 - mortgage_capital_repayment
 - net_financial_wealth
-- non_residential_property_value
 - non_residential_property_secured_debt
+- non_residential_property_value
 - other_investment_income
+- other_property_value
 - other_residential_property_secured_debt
+- overseas_property_value
 # Non-residential purchase prices and land retain GDP-per-capita growth.
 - non_residential_property_purchased
 - owned_land
+- owned_land_secured_debt
 # A formula of benunit_reported_capital; listed so a dataset that stores it
 # directly is uprated like the input.
 - pension_credit_reported_capital

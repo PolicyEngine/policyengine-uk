@@ -20,7 +20,9 @@
         other_residential_property_value: 3_000
         non_residential_property_value: 4_000
   output:
-    esa_income_assessable_capital: 10_500
+    # Savings at face value; land, shares and property less 10% for the
+    # expenses of sale (ESA Regs 2008 reg. 113(a)): 1,000 + 90% of 9,500.
+    esa_income_assessable_capital: 9_550
 
 - name: Income-related ESA has no tariff income at the lower capital threshold
   period: 2026
@@ -222,4 +224,144 @@
         corporate_wealth: 2_000
         private_pension_wealth: 150_000
   output:
-    esa_income_assessable_capital: 3_000
+    # Savings at face value; shares less 10% for the expenses of sale
+    # (ESA Regs 2008 reg. 113(a)): 1,000 + 90% of 2,000.
+    esa_income_assessable_capital: 2_800
+
+- name: Income-related ESA values overseas land and property less sale expenses
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    overseas_property_value: 10_000
+  output:
+    # 10,000 gross less 10% sale expenses; no identified secured debt.
+    esa_income_assessable_capital: 9_000
+
+- name: Income-related ESA preserves household allocation for overseas land and property
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      first:
+        age: 40
+      second:
+        age: 40
+      partner:
+        age: 40
+    benunits:
+      single:
+        members: first
+      couple:
+        members: [second, partner]
+    households:
+      household:
+        members: [first, second, partner]
+        overseas_property_value: 18_000
+  output:
+    # The 16,200 net household value is shared by one and two adults.
+    esa_income_assessable_capital: [5_400, 10_800]
+
+- name: Income-related ESA reported claim path receives full overseas land and property capital
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 1_000
+      unrelated:
+        age: 40
+    benunits:
+      claiming:
+        members: claimant
+      other:
+        members: unrelated
+    households:
+      household:
+        members: [claimant, unrelated]
+        overseas_property_value: 18_000
+  output:
+    # Existing claim-path allocation gives the claimant all net household capital.
+    esa_income_assessable_capital: [16_200, 0]
+
+- name: Income-related ESA values unclassified other real estate less sale expenses
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    other_property_value: 10_000
+  output:
+    # 10,000 gross less 10% sale expenses; no identified secured debt.
+    esa_income_assessable_capital: 9_000
+
+- name: Income-related ESA preserves household allocation for unclassified other real estate
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      first:
+        age: 40
+      second:
+        age: 40
+      partner:
+        age: 40
+    benunits:
+      single:
+        members: first
+      couple:
+        members: [second, partner]
+    households:
+      household:
+        members: [first, second, partner]
+        other_property_value: 18_000
+  output:
+    # The 16,200 net household value is shared by one and two adults.
+    esa_income_assessable_capital: [5_400, 10_800]
+
+- name: Income-related ESA reported claim path receives full unclassified other real estate capital
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 1_000
+      unrelated:
+        age: 40
+    benunits:
+      claiming:
+        members: claimant
+      other:
+        members: unrelated
+    households:
+      household:
+        members: [claimant, unrelated]
+        other_property_value: 18_000
+  output:
+    # Existing claim-path allocation gives the claimant all net household capital.
+    esa_income_assessable_capital: [16_200, 0]
+
+- name: Income-related ESA deducts sale expenses before combined secured debt for second homes and buy-to-let
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    # Second homes of 50,000 and buy-to-let of 70,000 share one component.
+    other_residential_property_value: 120_000
+    other_residential_property_secured_debt: 80_000
+  output:
+    # max(0, 90% of 120,000 - 80,000); no separate buy-to-let input.
+    esa_income_assessable_capital: 28_000
+
+- name: Income-related ESA floors combined property equity at zero for second homes and buy-to-let
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    # Second homes of 50,000 and buy-to-let of 70,000 share one component.
+    other_residential_property_value: 120_000
+    other_residential_property_secured_debt: 120_000
+  output:
+    # max(0, 90% of 120,000 - 120,000); no separate buy-to-let input.
+    esa_income_assessable_capital: 0

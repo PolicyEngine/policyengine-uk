@@ -33,6 +33,12 @@ description: >
   pension wealth that is not separately identified and removed. Asset-specific
   Schedule 10 disregards within these broad financial classes are not
   separately observed.
+  `overseas_property_value` covers overseas land and property, and
+  `other_property_value` covers other real estate with unspecified
+  geography and type. These broad household categories cannot identify
+  individual beneficial ownership or additional statutory disregards.
+  No separate secured-debt input is available for either category. They use
+  the separate property_sources route, independently of financial reports.
 metadata:
   label: Universal Credit financial capital proxy sources
   period: year

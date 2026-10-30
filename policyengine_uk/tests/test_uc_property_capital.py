@@ -285,7 +285,10 @@ def test_missing_financial_and_spi_style_inputs_retain_the_financial_proxy(finan
         },
     )
     situation["people"]["p0_0"]["lifetime_isa_balance"] = {YEAR: 4_000}
-    assert _values(Simulation(situation=situation))[0] == 18_000
+    # 4,000 of savings + 90% of 2,000 of shares and of 10,000 of property
+    # (reg. 49(1)(a)) + 75% of the 4,000 Lifetime ISA: 4,000 + 1,800 + 9,000
+    # + 3,000.
+    assert _values(Simulation(situation=situation))[0] == 17_800
 
 
 @pytest.mark.parametrize("financial", [-1, 0, 6_000])
@@ -559,16 +562,21 @@ def test_complete_override_company_holding_cannot_leak_into_missing_unit_pool(
     # owner's holding. It consumes at least that holding from the pool once,
     # including when zero or smaller than the holding, and supersedes the
     # financial observation.
+    # The holding sits in corporate_wealth, which counts at 90% (reg.
+    # 49(1)(a)), so it is 9,000 of countable capital and the pool is 6,000 +
+    # 9,000 = 15,000.
+    holding = 0.9 * 10_000
     assert _values(simulation, "household_uc_pool_company_holdings")[0] == 0
-    assert _values(simulation, "household_uc_reported_financial_capital")[0] == max(
-        complete_override, 10_000
-    )
+    assert _values(simulation, "household_uc_reported_financial_capital")[
+        0
+    ] == pytest.approx(max(complete_override, holding))
     np.testing.assert_allclose(
         _values(simulation),
         [
-            max(0, complete_override - 10_000),
-            max(0, 16_000 - max(complete_override, 10_000)),
+            max(0, complete_override - holding),
+            max(0, 6_000 + holding - max(complete_override, holding)),
         ],
+        atol=0.01,
     )
 
 
@@ -595,5 +603,8 @@ def test_owner_override_consumes_company_holding_once_in_twenty_thousand_savings
     # £30k household pool less the owner's £10k override leaves £20k. The
     # override includes the holding; removing it again would leave £10k and
     # incorrectly award the other unit £4,263.60 Universal Credit in 2026.
-    np.testing.assert_allclose(_values(simulation, year=year), [0, 20_000])
+    # With corporate_wealth counted at 90% (reg. 49(1)(a)) the pool is 20,000 +
+    # 9,000 = 29,000; the override consumes 10,000, leaving 19,000, and the
+    # owner keeps 10,000 less the 9,000 holding.
+    np.testing.assert_allclose(_values(simulation, year=year), [1_000, 19_000])
     assert _values(simulation, "universal_credit", year=year)[1] == 0

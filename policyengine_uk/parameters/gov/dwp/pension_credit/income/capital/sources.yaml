@@ -12,6 +12,11 @@ description: >
   `unit_and_investment_trusts`, `stocks_and_shares_isa`) where they exceed it
   beyond float32 rounding (see `share_like_capital`), so a household given
   only the components has them counted and no holding counts twice.
+  `overseas_property_value` covers overseas land and property, and
+  `other_property_value` covers other real estate with unspecified
+  geography and type. These broad household categories cannot identify
+  individual beneficial ownership or additional statutory disregards.
+  No separate secured-debt input is available for either category.
 metadata:
   label: Pension Credit capital sources
   unit: list
@@ -33,3 +38,5 @@ values:
     - other_residential_property_value
     - non_residential_property_value
     - share_like_capital
+    - overseas_property_value
+    - other_property_value

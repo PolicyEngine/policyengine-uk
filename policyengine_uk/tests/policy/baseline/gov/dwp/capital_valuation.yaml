@@ -1,0 +1,481 @@
+# Capital is valued at market value less 10% where a sale would incur
+# expenses, and less any encumbrance secured on it: UC Regs 2013 reg. 49(1);
+# HB Regs 2006 reg. 47; IS Regs 1987 reg. 49; JSA Regs 1996 reg. 111; ESA Regs
+# 2008 reg. 113; SPC Regs 2002 reg. 19. A bank or building society account is
+# valued at its balance (ADM H1604-H1607, H1675); land and property always have
+# costs of sale (H1606) and shares are valued less 10% (H1665).
+# Expected values are worked by hand from those provisions.
+
+- name: UC values a mortgaged holiday home as in ADM H1602
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # 125,000 - 10% (12,500) - 100,500 mortgage = 12,000.
+        other_residential_property_value: 125_000
+        other_residential_property_secured_debt: 100_500
+  output:
+    uc_assessable_capital: 12_000
+    is_uc_eligible: true
+    # 24 steps of 250 above 6,000 at 4.35 a month: 24 * 4.35 * 12.
+    uc_tariff_income: 1_252.8
+
+- name: UC counts cash savings at face value
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 15_000
+  output:
+    uc_assessable_capital: 15_000
+    is_uc_eligible: true
+
+- name: UC shares valued less sale expenses bring capital within the limit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # 5,000 + 90% of 12,000 = 15,800, within the 16,000 limit; at full
+        # value the household would hold 17,000.
+        savings: 5_000
+        corporate_wealth: 12_000
+  output:
+    uc_assessable_capital: 15_800
+    is_uc_eligible: true
+    # 9,800 above 6,000 is 40 steps of 250 (rounded up): 40 * 4.35 * 12.
+    uc_tariff_income: 2_088
+
+- name: UC negative equity in a second home does not reduce savings
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # The mortgage is deducted only from the property it is secured on
+        # (ADM H1615-H1616), so the property is valued at nil.
+        savings: 10_000
+        other_residential_property_value: 100_000
+        other_residential_property_secured_debt: 150_000
+  output:
+    uc_assessable_capital: 10_000
+    is_uc_eligible: true
+
+- name: UC deducts sale expenses before the encumbrance on business premises
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # (90% of 40,000 - 20,000) + 90% of 5,000 = 16,000 + 4,500.
+        non_residential_property_value: 40_000
+        non_residential_property_secured_debt: 20_000
+        corporate_wealth: 5_000
+  output:
+    uc_assessable_capital: 20_500
+    is_uc_eligible: false
+
+- name: Housing Benefit values encumbered land less sale expenses
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        in_social_housing: true
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: person
+        would_claim_uc: false
+    households:
+      household:
+        members: person
+        # 1,000 + (90% of 20,000 - 5,000) = 14,000 (HB Regs 2006 reg. 47).
+        savings: 1_000
+        owned_land: 20_000
+        owned_land_secured_debt: 5_000
+  output:
+    housing_benefit_assessable_capital: 14_000
+    # 32 steps of 250 above 6,000 at 1 a week: 32 * 52.
+    housing_benefit_tariff_income: 1_664
+    housing_benefit_eligible: true
+
+- name: Income Support values encumbered land less sale expenses
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # 90% of 20,000 - 5,000 = 13,000 (IS Regs 1987 reg. 49).
+        owned_land: 20_000
+        owned_land_secured_debt: 5_000
+  output:
+    income_support_assessable_capital: 13_000
+
+- name: Income-based JSA values a mortgaged second home less sale expenses
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # 2,000 + (90% of 30,000 - 25,000) = 4,000 (JSA Regs 1996 reg. 111).
+        savings: 2_000
+        other_residential_property_value: 30_000
+        other_residential_property_secured_debt: 25_000
+  output:
+    jsa_income_assessable_capital: 4_000
+
+- name: Income-related ESA values shares less sale expenses
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # 3,000 + 90% of 10,000 = 12,000 (ESA Regs 2008 reg. 113).
+        savings: 3_000
+        corporate_wealth: 10_000
+  output:
+    esa_income_assessable_capital: 12_000
+
+- name: Pension Credit values mortgaged business premises less sale expenses
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 70
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # 2,000 + (90% of 30,000 - 10,000) = 19,000 (SPC Regs 2002 reg. 19).
+        savings: 2_000
+        non_residential_property_value: 30_000
+        non_residential_property_secured_debt: 10_000
+  output:
+    pension_credit_assessable_capital: 19_000
+    # 18 steps of 500 above 10,000 at 1 a week: 18 * 52.
+    pension_credit_deemed_income: 936
+
+- name: UC floors each encumbered source at nil on its own
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # The second home is in negative equity (90,000 - 150,000), so it is
+        # valued at nil; the business premises keep 90% of 10,000. Netting the
+        # debts across both would wrongly give nil.
+        other_residential_property_value: 100_000
+        other_residential_property_secured_debt: 150_000
+        non_residential_property_value: 10_000
+  output:
+    uc_assessable_capital: 9_000
+
+- name: Housing Benefit values mortgaged second homes and premises less sale expenses
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        in_social_housing: true
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: person
+        would_claim_uc: false
+    households:
+      household:
+        members: person
+        # 1,000 + (90% of 50,000 - 30,000) + max(0, 90% of 20,000 - 25,000)
+        # = 1,000 + 15,000 + 0 = 16,000, at the limit (HB Regs 2006 reg. 47).
+        savings: 1_000
+        other_residential_property_value: 50_000
+        other_residential_property_secured_debt: 30_000
+        non_residential_property_value: 20_000
+        non_residential_property_secured_debt: 25_000
+  output:
+    housing_benefit_assessable_capital: 16_000
+    # 40 steps of 250 above 6,000 at 1 a week: 40 * 52.
+    housing_benefit_tariff_income: 2_080
+    housing_benefit_eligible: true
+
+- name: Pension-age Housing Benefit values encumbered land less sale expenses
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 70
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # 90% of 200,000 - 50,000 = 130,000 (HB (SPC) Regs 2006 reg. 45). Its
+        # Pension Credit deemed income, 240 steps of 500 above 10,000 at 1 a
+        # week (12,480 a year), exceeds the 12,376 guarantee, so there is no
+        # guarantee credit to disregard the capital.
+        owned_land: 200_000
+        owned_land_secured_debt: 50_000
+  output:
+    pension_credit_assessable_capital: 130_000
+    pension_credit_deemed_income: 12_480
+    guarantee_credit: 0
+    housing_benefit_assessable_capital: 130_000
+
+- name: UC rounds the share valuation to the nearest penny, at the capital limit
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # 90% of 16,666.67 is 15,000.003, rounded to the nearest penny (UC Regs
+        # 2013 reg. 6(1)): 15,000.00. With 1,000 of savings the capital is
+        # exactly the 16,000 limit, which does not exceed it (WRA 2012 s.
+        # 5(1)(a)).
+        savings: 1_000
+        corporate_wealth: 16_666.67
+  output:
+    uc_assessable_capital: 16_000
+    is_uc_eligible: true
+
+- name: UC values property and shares less sale expenses to the penny
+  period: 2026
+  absolute_error_margin: 0.005
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # 90% of 16,001 is 14,400.90 and 90% of 1,000.10 is 900.09, exactly:
+        # 15,300.99. Float32 arithmetic would give 14,400.8994 and 900.0899.
+        other_residential_property_value: 16_001
+        corporate_wealth: 1_000.10
+  output:
+    uc_assessable_capital: 15_300.99
+    is_uc_eligible: true
+
+- name: UC rounds half a penny up, so the capital is a penny over the limit
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # 90% of 16,666.65 is 14,999.985. UC Regs 2013 reg. 6(1) treats a
+        # fraction of half a penny or more as a penny: 14,999.99, so the capital
+        # is 1,000.02 + 14,999.99 = 16,000.01, over the 16,000 limit. Rounding
+        # down, as ADM H1665 does, would give exactly 16,000.00; the regulation
+        # governs the guidance.
+        savings: 1_000.02
+        corporate_wealth: 16_666.65
+  output:
+    uc_assessable_capital: 16_000.01
+    is_uc_eligible: false
+
+- name: Pension Credit values shares as in the ADM and DMG worked example
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    people:
+      person:
+        age: 70
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # 250 shares at 4.1375 are 1,034.375 (ADM H1665; DMG 84763). Less 10%
+        # for the expenses of sale that is 930.9375, and the fraction of a
+        # penny is disregarded because counting it would not be to the
+        # claimant's advantage (SPC Regs 2002 reg. 24A): 930.93.
+        corporate_wealth: 1_034.375
+  output:
+    pension_credit_assessable_capital: 930.93
+
+- name: UC values the worked-example shares to the nearest penny
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # The same 930.9375 is 930.94 to the nearest penny (UC Regs 2013 reg.
+        # 6(1)), where ADM H1665 gives 930.93.
+        corporate_wealth: 1_034.375
+  output:
+    uc_assessable_capital: 930.94
+
+- name: Income Support rounds a shared capital down to the penny
+  period: 2021
+  absolute_error_margin: 0.001
+  input:
+    people:
+      first:
+        age: 30
+        is_claimant_or_partner: true
+      second:
+        age: 30
+        is_claimant_or_partner: true
+      third:
+        age: 30
+        is_claimant_or_partner: true
+    benunits:
+      first_unit:
+        members: [first]
+        would_claim_IS: false
+      second_unit:
+        members: [second]
+        would_claim_IS: false
+      third_unit:
+        members: [third]
+        would_claim_IS: false
+    households:
+      household:
+        members: [first, second, third]
+        # With no Income Support claim in the household, 10,000.01 of savings
+        # is shared by the three adults: 3,333.3366 each, rounded down at the
+        # last stage (IS Regs 1987 reg. 27): 3,333.33.
+        savings: 10_000.01
+  output:
+    income_support_assessable_capital: [3_333.33, 3_333.33, 3_333.33]
+
+- name: Legacy benefits count 16,000.01 of savings in full, over the limit
+  period: 2026
+  absolute_error_margin: 0.004
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # Stored in float32 as 16,000.0098, which is the penny 16,000.01:
+        # rounding down at the last stage (IS Regs 1987 reg. 27; JSA Regs 1996
+        # reg. 92; ESA Regs 2008 reg. 3(a)) must not turn the storage error
+        # into a lost penny, which would put the capital at the 16,000 limit.
+        savings: 16_000.01
+  output:
+    income_support_assessable_capital: 16_000.01
+    jsa_income_assessable_capital: 16_000.01
+    esa_income_assessable_capital: 16_000.01
+
+- name: A Lifetime ISA counts at 75% of its balance to the penny
+  period: 2026
+  absolute_error_margin: 0.004
+  input:
+    people:
+      person:
+        age: 30
+        lifetime_isa_balance: 1_000.04
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+  output:
+    # 75% of 1,000.04 is 750.03, its surrender value below age 60.
+    lifetime_isa_countable_capital: 750.03
+    income_support_assessable_capital: 750.03
+    esa_income_assessable_capital: 750.03
+    uc_assessable_capital: 750.03

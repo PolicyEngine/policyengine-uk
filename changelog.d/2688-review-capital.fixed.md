@@ -1,0 +1,1 @@
+Retained separately valued overseas and other property alongside financial-only capital reports for Universal Credit and Pension Credit, including Housing Benefit's savings-credit route; preserved complete capital overrides.

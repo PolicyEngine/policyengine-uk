@@ -25,6 +25,11 @@ description: >
   classes are not yet split out separately. Because the dataset only provides
   household-level capital stocks, the model allocates them across benunits
   using an adult-share proxy.
+  `overseas_property_value` covers overseas land and property, and
+  `other_property_value` covers other real estate with unspecified
+  geography and type. These broad household categories cannot identify
+  individual beneficial ownership or additional statutory disregards.
+  No separate secured-debt input is available for either category.
 metadata:
   label: Housing Benefit countable capital sources
   period: year
@@ -52,3 +57,5 @@ values:
     - share_like_capital
     - other_residential_property_value
     - non_residential_property_value
+    - overseas_property_value
+    - other_property_value

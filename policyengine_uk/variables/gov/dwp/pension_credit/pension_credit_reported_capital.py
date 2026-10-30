@@ -6,26 +6,25 @@ class pension_credit_reported_capital(Variable):
     entity = BenUnit
     label = "reported Pension Credit capital"
     documentation = (
-        "Countable capital of the claimant and partner as recorded for this "
-        "benefit unit. Pension Credit counts the claimant's capital, and the "
-        "State Pension Credit Act 2002 s. 5 treats the partner's as the "
-        "claimant's, which a benefit-unit capital record covers, so this is "
-        "the benefit unit's recorded capital (benunit_reported_capital) unless "
-        "set directly. When this is 0 or more it replaces every capital source "
-        "in Pension Credit assessable capital: the household proxy (savings, "
-        "land, property and share_like_capital) and the person-level sources such "
-        "as a Lifetime ISA. The model applies neither the Schedule V disregards "
-        "nor the reg. 19 valuation to it, so it must already be the countable "
-        "figure, and reforms to the capital source parameters do not reach a "
-        "benefit unit that records it. Any negative value, including -1 when "
-        "nothing is recorded, means the household proxy applies. 0 records no "
-        "capital."
+        "Explicit complete countable-capital override for the claimant and "
+        "partner together. A nonnegative value, including zero, replaces "
+        "household and person-level capital sources. It must already reflect "
+        "the regulation 19 valuation and Schedule V disregards. The default "
+        "-1 means no complete override. In that case a nonnegative "
+        "benunit_reported_capital replaces only financial proxies, while "
+        "separately valued land and property remain counted; with neither "
+        "report the household proxy and person-level sources apply. This "
+        "variable does not derive from the financial-only observation. An "
+        "override set directly applies only in the supplied assessment year."
     )
     definition_period = YEAR
     unit = GBP
     quantity_type = STOCK
     default_value = -1
-    reference = "https://www.legislation.gov.uk/ukpga/2002/16/section/5"
+    reference = (
+        "https://www.legislation.gov.uk/ukpga/2002/16/section/5",
+        "https://www.legislation.gov.uk/uksi/2002/1792/regulation/19",
+    )
 
     def formula(benunit, period, parameters):
-        return benunit("benunit_reported_capital", period)
+        return -1
