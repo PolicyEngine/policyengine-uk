@@ -38,6 +38,7 @@ from typing import List, Optional
 import numpy as np
 from policyengine_core import periods
 from policyengine_core.holders.helpers import _is_input as _stored_as_input_in
+from policyengine_core.holders.helpers import get_stored_input
 from policyengine_core.periods import Period
 
 
@@ -381,12 +382,14 @@ def _records_of(holder):
             for tier in ("memory", "disk")
         )
     }
+    # Compare each model value with the stored input, not with what storage
+    # returns first, which can be that cache.
     source_model_values = getattr(source, "_model_values", None) or {}
     model_values = {
         key: value
         for key, value in source_model_values.items()
         if key[0] == name
-        and _is_model_value(source, key, holder._get_array_from_storage(key[2], key[1]))
+        and _is_model_value(source, key, get_stored_input(holder, key[2], key[1]))
     }
     return keys, model_values, False
 
@@ -406,9 +409,13 @@ def copy_other_populations(simulation, populations):
     neither records it nor recalculates what depends on it. So each
     simulation gets its own copy, as ``Simulation.clone`` makes, and the
     other simulation keeps its populations, values and records. A copy holds
-    what the original held when the copy was made, and later changes to
-    either do not reach the other. Populations no simulation has taken yet
-    (from ``instantiate_entities``) are installed as they are."""
+    what the original held when the copy was made, and inputs either stores
+    later do not reach the other. The copy shares each in-memory array with
+    the original until it first reads it (``share_arrays``, see core's
+    ``InMemoryStorage.clone``), so writing in place into the original's
+    array before then changes what the copy reads. Populations no simulation
+    has taken yet (from ``instantiate_entities``) are installed as they
+    are."""
     person_key = simulation.tax_benefit_system.person_entity.key
     copy_all = _made_elsewhere(simulation, populations[person_key].simulation)
     copied = {

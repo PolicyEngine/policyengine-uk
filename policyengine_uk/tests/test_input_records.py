@@ -17,7 +17,7 @@ from policyengine_core.experimental.memory_config import MemoryConfig
 from policyengine_core.periods import period
 
 from policyengine_uk import Simulation
-from policyengine_uk.utils.supplied_inputs import supplied_input
+from policyengine_uk.utils.supplied_inputs import set_model_value, supplied_input
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
@@ -130,6 +130,21 @@ def test_rebuilt_populations_keep_an_input_a_cache_hides():
     sim.build_from_populations(donor.populations)
     assert sim.to_input_dict()["hours_worked"] == {"2025": [1_000]}
     assert sim.calculate("hours_worked", 2025).tolist() == [1_000]
+
+
+def test_rebuilt_populations_keep_a_model_value_a_cache_hides():
+    # The model's own value, stored on disk, under a value cached in memory.
+    donor = disk_backed({2025: 1_000})
+    set_model_value(donor, "adjusted_net_income", period(2026), [50_000])
+    donor.memory_config = MemoryConfig(max_memory_occupation=1)
+    holder = donor.get_holder("adjusted_net_income")
+    holder.put_in_cache(np.array([999.0]), period(2026))
+    sim = Simulation(situation=situation({2025: 500}))
+    sim.build_from_populations(donor.populations)
+    for copy in (sim, sim.clone(), sim.get_branch("copy")):
+        assert copy.calculate("adjusted_net_income", 2026).tolist() == [50_000]
+        person = copy.populations["person"]
+        assert supplied_input(person, "adjusted_net_income", period(2026)) is None
 
 
 def test_rebuilt_populations_leave_their_simulation_as_it_was():
