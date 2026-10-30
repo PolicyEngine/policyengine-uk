@@ -1,5 +1,7 @@
 # UC reg. 5(5) and SPC reg. 4A(5) exclude own awards from both QYP routes.
-# Omit receives_benefits_in_own_right: the reports identify the recipient.
+# The reports identify the recipient whether receives_benefits_in_own_right
+# is omitted or explicitly false. SPC reg. 4A(5) also lists income support,
+# which UC reg. 5(5) does not.
 
 - name: A 16-year-old reporting income-related ESA does not attract child additions for a parent aged 40.
   period: 2026
@@ -423,3 +425,75 @@
     is_qualifying_young_person_for_universal_credit: false
     is_qualifying_young_person_for_pension_credit: false
     is_qualifying_young_person_for_child_benefit: true
+
+- name: A 16-year-old reporting their own Income Support does not attract the Pension Credit child addition, but stays a UC young person.
+  # SPC reg. 4A(5) lists income support; UC reg. 5(5) does not. Income
+  # Support is in payment in 2025 (gov.dwp.income_support.active).
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 70
+        is_parent: true
+        is_benunit_head: true
+      young_person:
+        age: 16
+        is_benunit_head: false
+        current_education: NOT_IN_EDUCATION
+        receives_benefits_in_own_right: false
+        income_support_reported: 5_000
+    benunits:
+      benunit:
+        members: [parent, young_person]
+    households:
+      household:
+        members: [parent, young_person]
+        country: ENGLAND
+        rent: 0
+        savings: 0
+  output:
+    is_before_first_september_following_16th_birthday: [false, true]
+    receives_income_support_in_own_right: [false, true]
+    is_qualifying_young_person_for_pension_credit: [false, false]
+    is_child_or_qualifying_young_person_for_pension_credit: [false, false]
+    child_minimum_guarantee_addition: 0
+    is_qualifying_young_person_for_universal_credit: [false, true]
+
+- name: Reported Income Support excludes the Pension Credit education route only.
+  period: 2025
+  input:
+    age: 18
+    current_education: UPPER_SECONDARY
+    income_support_reported: 5_000
+  output:
+    is_qualifying_young_person_for_pension_credit: false
+    is_qualifying_young_person_for_universal_credit: true
+
+- name: Income Support reported once it is no longer paid leaves the Pension Credit route available.
+  # Income Support stops paying in 2026 (gov.dwp.income_support.active), so a
+  # report then is no award in payment, as is_on_income_support reads it.
+  period: 2026
+  input:
+    age: 16
+    current_education: NOT_IN_EDUCATION
+    income_support_reported: 5_000
+  output:
+    receives_income_support_in_own_right: false
+    is_qualifying_young_person_for_pension_credit: true
+    is_qualifying_young_person_for_universal_credit: true
+
+- name: A report of one penny of any listed own award excludes the young person.
+  # The sixth person reports only Income Support, which UC reg. 5(5) omits.
+  period: 2025
+  input:
+    age: [16, 16, 16, 16, 16, 16]
+    current_education: [NOT_IN_EDUCATION, NOT_IN_EDUCATION, NOT_IN_EDUCATION, NOT_IN_EDUCATION, NOT_IN_EDUCATION, NOT_IN_EDUCATION]
+    universal_credit_reported: [0.01, 0, 0, 0, 0, 0]
+    esa_income_reported: [0, 0.01, 0, 0, 0, 0]
+    esa_contrib_reported: [0, 0, 0.01, 0, 0, 0]
+    jsa_income_reported: [0, 0, 0, 0.01, 0, 0]
+    jsa_contrib_reported: [0, 0, 0, 0, 0.01, 0]
+    income_support_reported: [0, 0, 0, 0, 0, 0.01]
+  output:
+    is_qualifying_young_person_for_universal_credit: [false, false, false, false, false, true]
+    is_qualifying_young_person_for_pension_credit: [false, false, false, false, false, false]

@@ -10,10 +10,10 @@ class is_qualifying_young_person_for_pension_credit(Variable):
         "their 16th birthday, whatever their education (reg. 4A(1)(a)), or in "
         "non-advanced education or approved training that meets the entry "
         "condition (reg. 4A(1)(b), (2) and (3)), and who is not receiving "
-        "benefits in their own right (reg. 4A(5)). The 1 September after the "
-        "19th birthday in reg. 4A(1)(b) is not modelled, and the own-right "
-        "benefits input covers Universal Credit, Employment and Support "
-        "Allowance and Jobseeker's Allowance but not Income Support."
+        "Universal Credit, Employment and Support Allowance, Jobseeker's "
+        "Allowance or Income Support in their own right (reg. 4A(5)), as the "
+        "own-right flag or their own reported award shows. The model does not "
+        "apply reg. 4A(1)(b)'s end at the 1 September after the 19th birthday."
     )
     definition_period = YEAR
     reference = "https://www.legislation.gov.uk/uksi/2002/1792/regulation/4A"
@@ -31,9 +31,10 @@ class is_qualifying_young_person_for_pension_credit(Variable):
             "meets_qualifying_young_person_entry_condition_for_pension_credit",
             period,
         )
-        # The exclusions apply to both routes (UC reg. 5(5); SPC reg. 4A(5)).
-        # Raw person-level reports identify own awards without calculating
-        # family benefits, which depend on QYP status and could recurse.
+        # Reg. 4A(5) applies to both routes. Raw person-level reports identify
+        # own awards without calculating family benefits, which depend on QYP
+        # status and could recurse. Unlike UC reg. 5(5), it lists income
+        # support.
         receives_own_benefits = (
             person("receives_benefits_in_own_right", period)
             | (person("universal_credit_reported", period) > 0)
@@ -41,6 +42,7 @@ class is_qualifying_young_person_for_pension_credit(Variable):
             | (person("esa_contrib_reported", period) > 0)
             | (person("jsa_income_reported", period) > 0)
             | (person("jsa_contrib_reported", period) > 0)
+            | person("receives_income_support_in_own_right", period)
         )
         return (
             person(
