@@ -1,0 +1,284 @@
+# SI 2006/213 reg 27(1) and (2), Sch 4 para 17(1), (3), and Sch 5
+# para 56: apply the standard earnings disregard, select the additional
+# earnings disregard or WTC disregard, then deduct childcare from the
+# remaining earnings and tax credits. These cases supply assessed earnings,
+# the standard disregard, qualifying childcare and the work condition.
+# https://www.legislation.gov.uk/uksi/2006/213/regulation/27
+# https://www.legislation.gov.uk/uksi/2006/213/schedule/4/paragraph/17
+# https://www.legislation.gov.uk/uksi/2006/213/schedule/5/paragraph/56
+
+- name: Reserve all of the issue 2730 WTC award before childcare
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    age: 40
+    employment_income: 5_200
+    self_employment_income: 0
+    property_income_after_finance_costs: 0
+    private_pension_income: 0
+    carers_allowance: 0
+    carer_support_payment: 0
+    esa_contrib: 0
+    jsa_contrib: 0
+    state_pension: 0
+    maternity_allowance: 0
+    statutory_sick_pay: 0
+    statutory_maternity_pay: 0
+    statutory_paternity_pay: 0
+    iidb: 0
+    sda: 0
+    incapacity_benefit: 0
+    spousal_maintenance_income: 0
+    pension_contributions: 0
+    income_tax_before_winter_fuel_payment_charge: 0
+    national_insurance: 0
+    tax_credits: 100
+    income_support: 0
+    claimant_or_partner_jsa_income: 0
+    claimant_or_partner_esa_income: 0
+    housing_benefit_tariff_income: 0
+    housing_benefit_maintenance_disregard: 0
+    housing_benefit_widowed_parents_allowance_income: 0
+    housing_benefit_pension_age_regulations_apply: false
+    in_receipt_of_guarantee_credit: false
+    in_receipt_of_savings_credit_only: false
+    housing_benefit_net_earnings: 5_200
+    housing_benefit_special_earnings_disregard: 1_300
+    housing_benefit_permitted_work_disregard: 0
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_on_passporting_benefit: false
+    meets_housing_benefit_additional_earnings_disregard_conditions: true
+    childcare_expenses: 4_160
+    num_relevant_children_for_housing_benefit_childcare: 1
+    working_tax_credit: 100
+    child_tax_credit: 0
+  output:
+    # Sch 4 para 17: 5,200 < 1,300 + 4,160 + 889.20 = 6,349.20.
+    # Sch 5 para 56: disregard min(100, 17.10 * 52) = 100 WTC.
+    # Reg 27: limit = 5,200 - 1,300 + 100 - 100 = 3,900;
+    # childcare = min(4,160, 3,900) = 3,900.
+    housing_benefit_wtc_disregard: 100
+    housing_benefit_childcare_earnings_limit: 3_900
+    housing_benefit_applicable_income_childcare_element: 3_900
+    housing_benefit_applicable_income_disregard: 1_300
+    # Counted earnings and credits = 5,200 + 100 - 1,300 - 100 - 3,900.
+    housing_benefit_applicable_income: 0
+
+- name: Reserve the weekly limit from a larger WTC award
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    housing_benefit_net_earnings: 5_200
+    housing_benefit_special_earnings_disregard: 1_300
+    housing_benefit_permitted_work_disregard: 0
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_on_passporting_benefit: false
+    meets_housing_benefit_additional_earnings_disregard_conditions: true
+    childcare_expenses: 6_000
+    num_relevant_children_for_housing_benefit_childcare: 1
+    working_tax_credit: 2_000
+    child_tax_credit: 500
+  output:
+    # Sch 4 para 17 fails: 5,200 < 1,300 + 6,000 + 889.20.
+    # Sch 5 para 56 reserves 889.20, leaving WTC 1,110.80.
+    # Reg 27: childcare = min(6,000, 3,900 + 1,110.80 + 500).
+    housing_benefit_wtc_disregard: 889.20
+    housing_benefit_childcare_earnings_limit: 5_510.80
+    housing_benefit_applicable_income_childcare_element: 5_510.80
+
+- name: Claimants without childcare still receive the WTC disregard
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    age: 40
+    employment_income: 500
+    self_employment_income: 0
+    property_income_after_finance_costs: 0
+    private_pension_income: 0
+    carers_allowance: 0
+    carer_support_payment: 0
+    esa_contrib: 0
+    jsa_contrib: 0
+    state_pension: 0
+    maternity_allowance: 0
+    statutory_sick_pay: 0
+    statutory_maternity_pay: 0
+    statutory_paternity_pay: 0
+    iidb: 0
+    sda: 0
+    incapacity_benefit: 0
+    spousal_maintenance_income: 0
+    pension_contributions: 0
+    income_tax_before_winter_fuel_payment_charge: 0
+    national_insurance: 0
+    tax_credits: 2_000
+    income_support: 0
+    claimant_or_partner_jsa_income: 0
+    claimant_or_partner_esa_income: 0
+    housing_benefit_tariff_income: 0
+    housing_benefit_maintenance_disregard: 0
+    housing_benefit_widowed_parents_allowance_income: 0
+    housing_benefit_pension_age_regulations_apply: false
+    in_receipt_of_guarantee_credit: false
+    in_receipt_of_savings_credit_only: false
+    housing_benefit_net_earnings: 500
+    housing_benefit_special_earnings_disregard: 260
+    housing_benefit_permitted_work_disregard: 0
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_on_passporting_benefit: false
+    meets_housing_benefit_additional_earnings_disregard_conditions: true
+    childcare_expenses: 0
+    num_relevant_children_for_housing_benefit_childcare: 0
+    working_tax_credit: 2_000
+    child_tax_credit: 0
+  output:
+    # Sch 4 para 17 fails: 500 < 260 + 0 + 889.20.
+    # Sch 5 para 56 reserves min(2,000, 889.20), with no childcare.
+    housing_benefit_wtc_disregard: 889.20
+    housing_benefit_applicable_income_childcare_element: 0
+    # Reg 27 and Sch 5 para 56: 500 + 2,000 - 260 - 889.20 = 1,350.80.
+    housing_benefit_applicable_income: 1_350.80
+
+- name: Earnings one penny below the additional disregard threshold reserve WTC
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    housing_benefit_net_earnings: 6_349.19
+    housing_benefit_special_earnings_disregard: 1_300
+    housing_benefit_permitted_work_disregard: 0
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_on_passporting_benefit: false
+    meets_housing_benefit_additional_earnings_disregard_conditions: true
+    childcare_expenses: 4_160
+    num_relevant_children_for_housing_benefit_childcare: 1
+    working_tax_credit: 100
+    child_tax_credit: 0
+  output:
+    # Sch 4 para 17: 6,349.19 < 1,300 + 4,160 + 889.20.
+    # Sch 5 para 56 reserves 100; reg 27 still deducts the full 4,160.
+    housing_benefit_wtc_disregard: 100
+    housing_benefit_applicable_income_childcare_element: 4_160
+    housing_benefit_applicable_income_disregard: 1_300
+
+- name: Earnings at the additional disregard threshold use earnings instead of WTC
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    housing_benefit_net_earnings: 6_349.20
+    housing_benefit_special_earnings_disregard: 1_300
+    housing_benefit_permitted_work_disregard: 0
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_on_passporting_benefit: false
+    meets_housing_benefit_additional_earnings_disregard_conditions: true
+    childcare_expenses: 4_160
+    num_relevant_children_for_housing_benefit_childcare: 1
+    working_tax_credit: 100
+    child_tax_credit: 0
+  output:
+    # Sch 4 para 17(3): equality qualifies, so 1,300 + 889.20 is
+    # disregarded from earnings. Sch 5 para 56 then disregards no WTC.
+    housing_benefit_wtc_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 4_160
+    housing_benefit_applicable_income_disregard: 2_189.20
+
+- name: WTC remains available to childcare when the work condition fails
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    housing_benefit_net_earnings: 5_200
+    housing_benefit_special_earnings_disregard: 1_300
+    housing_benefit_permitted_work_disregard: 0
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_on_passporting_benefit: false
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+    childcare_expenses: 4_160
+    num_relevant_children_for_housing_benefit_childcare: 1
+    working_tax_credit: 100
+    child_tax_credit: 0
+  output:
+    # Sch 5 para 56 does not apply without a Sch 4 para 17(2) work
+    # condition. Reg 27: min(4,160, 5,200 - 1,300 + 100) = 4,000.
+    housing_benefit_wtc_disregard: 0
+    housing_benefit_childcare_earnings_limit: 4_000
+    housing_benefit_applicable_income_childcare_element: 4_000
+
+- name: CTC funds childcare after WTC has been reserved
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    housing_benefit_net_earnings: 5_200
+    housing_benefit_special_earnings_disregard: 1_300
+    housing_benefit_permitted_work_disregard: 0
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_on_passporting_benefit: false
+    meets_housing_benefit_additional_earnings_disregard_conditions: true
+    childcare_expenses: 4_160
+    num_relevant_children_for_housing_benefit_childcare: 1
+    working_tax_credit: 100
+    child_tax_credit: 500
+  output:
+    # Sch 5 para 56 reserves only WTC. Reg 27 allows the remaining CTC:
+    # limit = 3,900 + (100 - 100) + 500 = 4,400; childcare = 4,160.
+    housing_benefit_wtc_disregard: 100
+    housing_benefit_childcare_earnings_limit: 4_400
+    housing_benefit_applicable_income_childcare_element: 4_160
+
+- name: The coronavirus increase also raises the WTC disregard in 2020
+  period: 2020
+  absolute_error_margin: 0.02
+  input:
+    housing_benefit_net_earnings: 500
+    housing_benefit_special_earnings_disregard: 260
+    housing_benefit_permitted_work_disregard: 0
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_on_passporting_benefit: false
+    meets_housing_benefit_additional_earnings_disregard_conditions: true
+    childcare_expenses: 0
+    num_relevant_children_for_housing_benefit_childcare: 0
+    working_tax_credit: 2_000
+    child_tax_credit: 0
+  output:
+    # SI 2020/371 reg 5 substitutes 37.10 for 17.10 in Sch 5 para 56:
+    # disregard = min(2,000, 37.10 * 52) = 1,929.20.
+    housing_benefit_wtc_disregard: 1_929.20
+
+- name: The WTC disregard returns to its ordinary amount in 2021
+  period: 2021
+  absolute_error_margin: 0.02
+  input:
+    housing_benefit_net_earnings: 500
+    housing_benefit_special_earnings_disregard: 260
+    housing_benefit_permitted_work_disregard: 0
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_on_passporting_benefit: false
+    meets_housing_benefit_additional_earnings_disregard_conditions: true
+    childcare_expenses: 0
+    num_relevant_children_for_housing_benefit_childcare: 0
+    working_tax_credit: 2_000
+    child_tax_credit: 0
+  output:
+    # SI 2020/371 reg 5 ends the substituted amount on 4 April 2021:
+    # Sch 5 para 56 again reserves min(2,000, 17.10 * 52) = 889.20.
+    housing_benefit_wtc_disregard: 889.20
+
+- name: Tax credits ending prevents a WTC disregard from 2025
+  period: 2025
+  absolute_error_margin: 0.02
+  input:
+    housing_benefit_net_earnings: 5_200
+    housing_benefit_special_earnings_disregard: 1_300
+    housing_benefit_permitted_work_disregard: 0
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_on_passporting_benefit: false
+    meets_housing_benefit_additional_earnings_disregard_conditions: true
+    childcare_expenses: 4_160
+    num_relevant_children_for_housing_benefit_childcare: 1
+    working_tax_credit: 100
+    child_tax_credit: 0
+  output:
+    # HMRC: https://www.gov.uk/tax-credits-have-ended (5 April 2025).
+    # A synthetic award override cannot activate Sch 5 para 56 after
+    # tax_credits.active ends; the existing overridden-credit limit stays.
+    housing_benefit_wtc_disregard: 0
+    housing_benefit_childcare_earnings_limit: 4_000
+    housing_benefit_applicable_income_childcare_element: 4_000
