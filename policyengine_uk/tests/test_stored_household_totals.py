@@ -33,6 +33,7 @@ from policyengine_uk.data.economic_assumptions import (
     _uprating_index_map,
     stored_total_uprating,
 )
+from policyengine_uk.scenarios import no_economic_assumptions
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
@@ -151,11 +152,14 @@ def test_stored_household_totals_grow_past_the_projection_horizon():
         assert capital[year][0] == pytest.approx(6 * savings[year][0], rel=1e-5)
 
 
-def test_stored_totals_project_exactly_like_what_they_are_projected_with():
+@pytest.mark.parametrize(
+    "scenario", [None, no_economic_assumptions], ids=["current_law", "no_growth"]
+)
+def test_stored_totals_project_exactly_like_what_they_are_projected_with(scenario):
     # cash_isa is stored equal to savings, stocks_and_shares_isa to
     # corporate_wealth, and household_lifetime_isa_balance to the one
     # lifetime_isa_balance in the household: Core projects the second of each
-    # pair, Simulation the first.
+    # pair, Simulation the first. Without economic growth both stay flat.
     household = {
         "cash_isa": 1_000.0,
         "stocks_and_shares_isa": 2_345.67,
@@ -164,6 +168,7 @@ def test_stored_totals_project_exactly_like_what_they_are_projected_with():
         "lifetime_isa_balance": 4_321.09,
     }
     simulation = Simulation(
+        scenario=scenario,
         dataset=_dataset(
             [household],
             person_columns=["lifetime_isa_balance"],
@@ -173,7 +178,7 @@ def test_stored_totals_project_exactly_like_what_they_are_projected_with():
                 "corporate_wealth",
                 "household_lifetime_isa_balance",
             ],
-        )
+        ),
     )
     for name, other in (
         ("cash_isa", "savings"),
