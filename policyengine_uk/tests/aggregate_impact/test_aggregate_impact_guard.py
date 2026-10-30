@@ -175,6 +175,18 @@ def test_undeclared_containment_fails_because_another_head_moves():
     assert rows["tax_a"]["status"] == "pass"
 
 
+@pytest.mark.parametrize("tax_level", [0, 490_000, 1e9])
+def test_undeclared_tax_containment_fails_at_any_baseline(tax_level):
+    formulas = model(contains=False)
+    formulas["tax_a"] = lambda f: tax_level + f("tax_b")
+    _, result = run(formulas, partition(["tax_a", "tax_b"]))
+    row = by_variable(result)["tax_b"]
+    assert row["responses"]["gov_tax"]["tax_a"] == pytest.approx(1)
+    assert row["status"] == "fail" and ("tax_a", "moves") in kinds(row)
+    assert row["mediated"] == []
+    assert result["reset_reproduces_baseline"]
+
+
 def test_means_tested_offset_passes_but_a_benefit_rising_with_income_fails():
     _, offset = run(model(interaction=-0.5), partition(["tax_a"], ["ben_c", "ben_d"]))
     row = by_variable(offset)["ben_c"]
@@ -341,6 +353,44 @@ def test_containment_depends_on_the_response_and_perturbation_not_the_tax_level(
         assert bool(direct[0]) == contains
     at_first = breaks_on_slope("contains", where, expected, slack, second - first)
     assert bool(at_first[0]) == contains
+
+
+@pytest.mark.parametrize("response_factor", [0.0, -1.0, 1.0])
+@settings(max_examples=60, deadline=None)
+@given(tax_level=st.floats(0, 1e9), perturbation=st.floats(1e-6, 1e6))
+def test_undeclared_tax_movement_depends_on_the_response_not_the_level(
+    response_factor, tax_level, perturbation
+):
+    """All movement paths reject an observed unit response and accept zero."""
+    expected = np.array([perturbation])
+    response = response_factor * expected
+    scales = np.array([tax_level])
+    where = np.array([True])
+    verdict = judge_total(
+        total="gov_tax",
+        is_tax=True,
+        component="tax_b",
+        own_variable="tax_b",
+        declared_double_count=False,
+        zero_baseline=False,
+        weights=np.ones(1),
+        expected=expected,
+        head_changes={"tax_b": expected, "tax_a": response},
+        head_scales={"tax_b": scales, "tax_a": scales},
+        model_change=None,
+        model_scale=None,
+        allowed_readers=[],
+    )
+    moved = response_factor != 0
+    assert bool(verdict["problems"]) == moved
+    if moved:
+        assert verdict["problems"][0]["head"] == "tax_a"
+        assert verdict["problems"][0]["kind"] == "moves"
+    slack = _slack(scales)
+    direct = still_breaks("moves", where, expected, slack, response)
+    at_first = breaks_on_slope("moves", where, expected, slack, response)
+    assert bool(direct[0]) == moved
+    assert bool(at_first[0]) == moved
 
 
 def test_supplied_inputs_are_restored_after_perturbation():

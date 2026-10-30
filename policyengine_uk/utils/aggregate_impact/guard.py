@@ -251,8 +251,8 @@ def _head_arrays(sim, year, variables) -> dict:
 
 
 # Level comparisons allow this many pounds plus this share of the head's
-# own value: the model stores values as float32. Containment compares the
-# response with the perturbation instead (see ``_response_slack``).
+# own value: the model stores values as float32. Containment and undeclared
+# tax movement use the response and perturbation (see ``_response_slack``).
 ABSOLUTE_SLACK_GBP = 0.02
 RELATIVE_SLACK = 2e-6
 
@@ -385,7 +385,7 @@ def judge_total(
                     problem(variable, "contains", containing, containment(variable))
                 )
         elif is_tax:
-            moved = np.abs(change) > slack
+            moved = np.abs(change) > _response_slack(change, expected)
             if moved.any():
                 problems.append(
                     problem(
@@ -485,7 +485,7 @@ def breaks_on_slope(kind, where, expected, slack, slope):
     if kind == "rises":
         return where & (slope > 2 * slack)
     if kind == "moves":
-        return where & (np.abs(slope) > 2 * slack)
+        return where & (np.abs(slope) > 2 * _response_slack(slope, expected))
     return where
 
 
@@ -506,7 +506,7 @@ def still_breaks(kind, where, expected, slack, first, second=None):
     if kind == "rises":
         return where & (first > slack)
     if kind == "moves":
-        return where & (np.abs(first) > slack)
+        return where & (np.abs(first) > _response_slack(first, expected))
     return where
 
 
