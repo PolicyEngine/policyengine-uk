@@ -80,7 +80,10 @@ def test_later_scottish_projections_compound_the_previous_rounded_amount(name, a
     """Check every projected year, including beyond the former 2030 anchor.
 
     The independent calculation reads annual CPI growth, rather than the
-    cumulative index ratio, and rounds after each year's increase.
+    cumulative index ratio, and rounds after each year's increase. Where the
+    increase lands exactly halfway between two 5p steps (191.25 x 1.02 =
+    195.075 in 2035), the index's five-decimal levels decide the tie, so
+    either step passes and the next year compounds from the model's amount.
     """
     parameters = system.parameters
     parameter = parameters.get_child(name)
@@ -94,10 +97,12 @@ def test_later_scottish_projections_compound_the_previous_rounded_amount(name, a
         expected = (unrounded / increment).quantize(
             Decimal("1"), rounding=ROUND_HALF_UP
         ) * increment
-        assert parameter(f"{year}-04-30") == pytest.approx(float(expected), abs=1e-9), (
-            name,
-            year,
-        )
+        actual = parameter(f"{year}-04-30")
+        if unrounded % increment == increment / 2:
+            assert round(actual, 2) in (float(expected - increment), float(expected))
+            previous = Decimal(str(round(actual, 2)))
+            continue
+        assert actual == pytest.approx(float(expected), abs=1e-9), (name, year)
         previous = expected
 
 

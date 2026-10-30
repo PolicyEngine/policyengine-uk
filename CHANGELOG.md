@@ -1,3 +1,143 @@
+## [2.165.1] - 2026-10-30
+
+### Fixed
+
+- A family no longer takes a Universal Credit award worth less than the Tax-Free Childcare the award would end: it keeps Tax-Free Childcare instead (`forgoes_universal_credit_for_tax_free_childcare`, #2689). The comparison counts the Scottish Child Payment that an award brings in Scotland. No debt deduction comes out of an award that only a reform creates (`uc_award_carries_deductions`), whether the reform is applied when the simulation is built, by `apply_reform`, or by a simulation modifier followed by `drop_computed_arrays`; this is an assumption that slightly raises the cost of reforms that widen Universal Credit. Together these stop a cut in the Universal Credit taper from leaving families worse off (#2753).
+
+
+## [2.165.0] - 2026-10-29
+
+### Added
+
+- Added the company car and car fuel benefits in kind from 2020-21 (ITEPA 2003 ss. 120 to 152), with the s. 139 appropriate percentages to 2029-30, person inputs for the company car, and Class 1A NICs on both benefits in `ni_employer` and `total_national_insurance`; the benefits are taxed through `taxable_employment_income` and kept out of Class 1 earnings, means-tested earnings and student loan repayment income, and the `company_car_tax_rise_2030` scenario applies Budget 2026's one-point rise for 2030-31.
+
+
+## [2.164.4] - 2026-10-29
+
+### Fixed
+
+- Count `other_investment_income` (National Savings, gilt and other securities interest, and trust interest) in `capital_income`, as market and HBAI income now do. Nothing reads `capital_income`, so income tax, benefits and the other income measures are unchanged.
+
+
+## [2.164.3] - 2026-10-29
+
+### Fixed
+
+- Count `other_investment_income` in `market_income`, `household_market_income` and `hbai_household_net_income`. Income tax already charged it as savings income, so household net income carried the tax on it without the income.
+
+
+## [2.164.2] - 2026-10-29
+
+### Fixed
+
+- The property allowance election (`uses_property_allowance`) now compares routes in a branch holding only the households where someone has a choice, so its cost follows those households rather than the whole population. Every election is unchanged. A branch holding only some households (`utils.household_subset`) takes `months_since_last_birthday` and the labour supply response (`employment_income_behavioral_response`) from the whole population.
+
+
+## [2.164.1] - 2026-10-29
+
+### Changed
+
+- Update the economic assumptions to the OBR's October 2026 Economic and fiscal outlook, including its revised 2025 outturn and its new 2031 forecast, with a smooth join to the long-run paths from 2032. Population to 2031-32 is the OBR's October forecast, read from its economy tables; it grows more slowly than the March forecast, so household weights are about 0.7% lower by 2030-31. Bank Rate, which caps Plan 1 and Plan 4 student loan interest, is the calendar-year average from the October economy Table 1.9 in every year, so 2026-2031 follow the OBR's market path. The regulated rail fare indices rise by July 2026 RPI plus 1 point in 2027 and by the October RPI forecast plus 1 point to 2031, which raises rail_subsidy_spending from 2028. Households' financial assets follow October Table 1.11 to 2031; the October tables revise 2020 onwards down, so the property wealth, corporate wealth and land value totals they grow are about 10% lower in 2026, which moves land value tax and wealth tax reform results.
+
+### Fixed
+
+- Limited Housing Benefit childcare deductions to remaining earnings after the shared applied standard plus tax-credit payments, retaining childcare_expenses and the existing age-based cap approximation; deferred detailed qualifying-care rules without adding an input. Prevented negative overridden net earnings from producing a negative permitted-work applied standard.
+
+
+## [2.164.0] - 2026-10-28
+
+### Added
+
+- Added the 20% Lifetime ISA withdrawal charge for a first-home purchase above the £450,000 property price cap that meets every other condition, for withdrawals from 29 October 2026 (ISA Regulations 1998 Schedule paragraphs 5 and 6A, inserted by SI 2026/1130); the annual model applies it from fiscal 2027-28.
+- Added the ISA annual subscription limit (ISA Regulations 1998 reg 4ZA: £15,240 from 2015-16 and £20,000 from 2017-18), a cash ISA limit for people under an age at the end of the tax year that current law leaves unset (Budget 2026 retains £20,000 for cash, so SI 2026/1018's £12,000 for under-65s is a reform setting), per-person cash and stocks-and-shares ISA subscription inputs, and `cash_isa_subscriptions_above_limit` and `isa_subscriptions_above_limit`, the subscriptions a limit leaves out.
+
+### Changed
+
+- The household `cash_isa` and `stocks_and_shares_isa` now sum new per-person `cash_isa_balance` and `stocks_and_shares_isa_balance` inputs. A dataset or situation that stores a household total keeps it, and stored totals still project with savings, but a household total given for one year no longer carries into later years.
+
+
+## [2.163.2] - 2026-10-28
+
+### Fixed
+
+- Made the test that dead systems' variable modules are released during a test independent of automatic garbage-collection timing.
+- Made Pension Credit and pension-age Housing Benefit projections non-negative and safe under reforms, validated their common enacted base year from the YAML as loaded, and preserved Guarantee Credit boundary continuity. Forecast thresholds and protected Housing Benefit allowances follow the reformed guarantee and maximum as uprated, as on main.
+
+
+## [2.163.1] - 2026-10-28
+
+### Fixed
+
+- Corrected the two-child limit full roll-out page: it now describes the modelled exceptions to the limit and uses the FYE 2011 absolute poverty variables instead of overriding the thresholds.
+
+
+## [2.163.0] - 2026-10-28
+
+### Added
+
+- Added a pre-assessed Housing Benefit permitted-work earnings disregard with lone-parent precedence and separate additional-disregard handling.
+
+### Fixed
+
+- Fixed double counting of Housing Benefit standard earnings disregards in savings-credit-only income, including permitted work and the special £20 route.
+
+
+## [2.162.21] - 2026-10-28
+
+### Changed
+
+- Moved the two-child limit child-poverty comparison from the validation page to PolicyEngine Scorecard, which recomputes it on a certified release; the page now documents the method and links to each Scorecard row.
+
+
+## [2.162.20] - 2026-10-28
+
+### Fixed
+
+- Limited the Income Support earnings disregard to the claimant's and partner's net earnings, so unused disregard no longer reduces statutory pay, pensions or other income.
+
+
+## [2.162.19] - 2026-10-28
+
+### Changed
+
+- Corrected comments, docstrings and citations from reviews of recently merged pull requests, and added property tests for claimant roles and the Childcare Offer for Wales income sources.
+
+
+## [2.162.18] - 2026-10-28
+
+### Changed
+
+- Documented that the Universal Credit route for pension-age Working Tax Credit migrants (SI 2014/1230 reg 60A) reads reported Pension Credit receipt, not Pension Credit entitlement.
+
+
+## [2.162.17] - 2026-10-28
+
+### Fixed
+
+- Project the Carer's Allowance earnings limit after its last legislated amount as 16 hours at the national living wage, rounded up to the next pound, as the Government sets it from April 2025, instead of holding £204 in every later year.
+
+
+## [2.162.16] - 2026-10-28
+
+### Changed
+
+- Documented that the OBR shows Northern Ireland domestic rates in two places, a council tax line that appears to be the district rates and an other taxes line that appears to be the regional rate, while `domestic_rates` charges both.
+
+
+## [2.162.15] - 2026-10-28
+
+### Fixed
+
+- Uprate the Scottish Carer Supplement each April by the previous September's CPI, rounded to the nearest 5p, instead of holding it at £11.70 a week from 2027-28, and round the Carer Support Payment component's projected rate to the nearest 5p in the same way.
+
+
+## [2.162.14] - 2026-10-27
+
+### Changed
+
+- Give the YAML test job 45 minutes, not 30, so a slow runner no longer cancels it after its tests have passed and takes the pull request out of the merge queue; passing jobs take 22 to 28 minutes.
+
+
 ## [2.162.13] - 2026-10-27
 
 ### Changed

@@ -12,8 +12,8 @@ class marginal_tax_rate_wrt_employer_cost(Variable):
     label = "Marginal tax rate with respect to employer cost"
     documentation = (
         "Percent of a marginal increase in the employer's cost of employment "
-        "(gross pay plus employer NI, employer pension contributions and "
-        "statutory sick/maternity/paternity pay) that does not flow to "
+        "(gross pay plus secondary Class 1 NI, employer pension contributions "
+        "and statutory sick/maternity/paternity pay) that does not flow to "
         "household net income. Gross pay rises by "
         "gov.simulation.marginal_tax_rate_delta, or 0.1% of employment income "
         "where that is larger, so that float32 rounding stays negligible at any "

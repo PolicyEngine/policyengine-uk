@@ -4,22 +4,23 @@ from policyengine_uk.model_api import *
 class housing_benefit_savings_credit_only_income(Variable):
     value_type = float
     entity = BenUnit
-    label = (
-        "Housing Benefit income where the Pension Credit award is savings credit only"
-    )
+    label = "Housing Benefit income for a savings-credit-only Pension Credit award"
     documentation = (
         "Income for the Housing Benefit means test of a claimant who, or whose "
         "partner, has a Pension Credit award of savings credit only. The "
         "authority takes the Secretary of State's assessment of net income for "
         "that award and modifies it only for the listed items. Modelled: the "
         "savings credit payable is added, and childcare charges and the "
-        "higher Housing Benefit earnings disregards are deducted: a lone "
-        "parent's 25 pounds over the amount disregarded for Pension Credit, "
-        "and the additional 17.10 pounds. The Secretary of State's figure is "
+        "higher Housing Benefit earnings disregards are deducted: any excess "
+        "of the lone-parent or permitted-work amount over the amount already "
+        "disregarded for Pension Credit, and the separate additional 17.10 "
+        "pounds. The Secretary of State's figure is "
         "Pension Credit income, which is already after the Pension Credit "
         "earnings disregards (20 pounds for a lone parent, carer, disabled "
         "or blind earner, otherwise 5 pounds single or 10 pounds couple), so "
-        "Housing Benefit's own 5 and 10 pound amounts are not deducted again. "
+        "standard amounts already disregarded for Pension Credit are not "
+        "deducted again; other special-standard grounds do not independently "
+        "modify that assessment. "
         "Childcare charges are deducted as in the general "
         "route, without the work condition or the cap at earnings. Pension "
         "Credit counts spousal maintenance in full, so Housing Benefit's 15 "
@@ -28,7 +29,7 @@ class housing_benefit_savings_credit_only_income(Variable):
         "Benefit's own income and tariff income rules do not apply to the "
         "Secretary of State's figure, which already counts Pension Credit "
         "deemed income from capital. Not modelled: "
-        "the exempt work disregard, the income and capital of a "
+        "the income and capital of a "
         "partner treated as a household member but not in the Pension Credit "
         "assessment, and income of a non-dependant treated as the claimant's. "
         "War pensions (Great Britain: local schemes under section 134(8) of "
@@ -74,28 +75,24 @@ class housing_benefit_savings_credit_only_income(Variable):
         # Reg 27(4)(c)(i) and (d) (NI: reg 25(4)(c)(i) and (d)): the
         # Secretary of State's figure is after the SPC Regs 2002 Sch VI
         # earnings disregards (pension_credit_earnings_disregard), so only the
-        # higher amounts Housing Benefit allows come off: a lone parent's
-        # Sch 4 para 2 disregard (25 pounds) over the amount disregarded for
-        # Pension Credit, and the additional disregard of Sch 4 para 9(1)
-        # (the para 5A exempt work disregard is not modelled). Housing
-        # Benefit's other grounds do not replace the Pension Credit ones. This
-        # route applies only under the pension-age Regulations, where the
-        # disregard is the standard amount (Sch 4 paras 2 and 7) and the
-        # additional amount (para 9), with no specified-accommodation amount.
-        p = parameters(period).gov.dwp.housing_benefit.means_test.income_disregard
-        net_earnings = benunit("housing_benefit_net_earnings", period)
+        # higher amounts Housing Benefit allows come off: the excess of
+        # the lone-parent (Sch 4 para 2) or permitted-work (para 5A) amount
+        # over the existing Pension Credit deduction, plus the separate
+        # additional disregard (para 9). Read the shared applied standard
+        # before isolating para 9, so replaced or pre-existing disregards
+        # are not deducted again. Other special-standard grounds do not
+        # independently modify the Pension Credit assessment. This route
+        # has no specified-accommodation disregard.
         lone_parent = benunit("is_lone_parent", period)
-        weekly_amount = select(
-            [lone_parent, benunit("is_couple", period)],
-            [p.lone_parent, p.couple],
-            default=p.single,
+        permitted = max_(benunit("housing_benefit_permitted_work_disregard", period), 0)
+        standard = benunit(
+            "housing_benefit_applied_standard_earnings_disregard", period
         )
-        standard = min_(weekly_amount * WEEKS_IN_YEAR, net_earnings)
         additional = max_(
             0, benunit("housing_benefit_applicable_income_disregard", period) - standard
         )
-        higher_lone_parent = where(
-            lone_parent,
+        higher_standard = where(
+            lone_parent | (permitted > 0),
             max_(0, standard - benunit("pension_credit_earnings_disregard", period)),
             0,
         )
@@ -103,7 +100,7 @@ class housing_benefit_savings_credit_only_income(Variable):
         # (SPC Regs 2002 reg 15(5)(d)), so the higher amount Housing Benefit
         # disregards is all of its Sch 5 para 20 disregard.
         maintenance = benunit("housing_benefit_maintenance_disregard", period)
-        disregard = higher_lone_parent + additional + maintenance
+        disregard = higher_standard + additional + maintenance
         return max_(
             0,
             pension_credit_income + savings_credit_payable - childcare - disregard,

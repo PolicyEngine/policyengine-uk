@@ -15,7 +15,7 @@ programs:
     variable: lifetime_isa_bonus
     parameter_prefix: gov.hmrc.isa.lifetime
     verified_start_year: 2017
-    notes: Annual qualifying-payment bonus and gross-withdrawal charge, including individual first-home conditions. Assumes valid account opening and transaction qualification; does not update balances. Late-March 2020 withdrawals are outside the annual timing resolution.
+    notes: Annual qualifying-payment bonus and gross-withdrawal charge, including individual first-home conditions and the 20% charge for purchases above the price cap from 29 October 2026 (fiscal 2027-28 in the model). Assumes valid account opening and transaction qualification; does not update balances. Late-March 2020 withdrawals are outside the annual timing resolution.
 
   - id: isa_cash_interest_charge
     name: Non-cash ISA cash-interest charge
@@ -29,6 +29,17 @@ programs:
     verified_start_year: 2027
     notes: Separate final manager charge at the savings basic rate from 6 April 2027. Requires the cash-interest component as an input; subscription-limit compliance is not modelled.
 
+  - id: isa_subscription_limits
+    name: ISA subscription limits
+    full_name: Individual Savings Account annual and cash subscription limits
+    category: Savings
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: isa_subscriptions_above_limit
+    verified_start_year: 2015
+    notes: The annual limit (gov.hmrc.isa.annual_subscription_limit), and a cash limit for people under an age at the end of the tax year (gov.hmrc.isa.cash) that current law leaves unset, as Budget 2026 retains £20,000 for cash; a reform can restore SI 2026/1018's £12,000 for under-65s. Reports subscriptions above each limit from per-person subscription inputs, not where they go. Innovative finance and Junior ISAs are not modelled.
+
   - id: income_tax
     name: Income tax
     full_name: Income Tax
@@ -39,7 +50,7 @@ programs:
     variable: income_tax
     parameter_prefix: gov.hmrc.income_tax
     verified_start_year: 2019
-    notes: Includes Scottish rates via devolved tax bands, the high income child benefit charge and, from 2025-26, the winter fuel payment charge
+    notes: Includes Scottish rates via devolved tax bands, the high income child benefit charge, from 2025-26 the winter fuel payment charge, and from 2020-21 the company car and car fuel benefits in kind (no other benefits in kind, and no vans)
 
   - id: national_insurance
     name: National Insurance
@@ -51,7 +62,7 @@ programs:
     variable: national_insurance
     parameter_prefix: gov.hmrc.national_insurance
     verified_start_year: 2019
-    notes: Classes 1, 2, 3, and 4
+    notes: Classes 1, 2, 3, and 4, and Class 1A on the company car and car fuel benefits
 
   - id: capital_gains_tax
     name: Capital gains tax

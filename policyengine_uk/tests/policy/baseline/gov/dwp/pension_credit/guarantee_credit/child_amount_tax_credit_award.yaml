@@ -380,7 +380,8 @@
   # SI 2014/1230 reg 60A waives that only for a Working Tax Credit claimant
   # who "is not entitled to an award of state pension credit"
   # (reg 60A(1)(a)(iii)), which this couple is (the first case). The model's
-  # closure routing does not test that condition, so the case enters that the
+  # closure routing reads reported Pension Credit, not the award (see
+  # is_uc_eligible), and this couple reports none, so the case enters that the
   # couple does not claim Universal Credit then.
   period: 2025
   absolute_error_margin: 0.01

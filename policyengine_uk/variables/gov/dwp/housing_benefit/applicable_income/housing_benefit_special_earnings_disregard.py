@@ -11,8 +11,14 @@ class housing_benefit_special_earnings_disregard(Variable):
         "Standard disregard selected before the additional/accommodation "
         "amounts: lone-parent precedence, otherwise the special amount for "
         "a qualifying family, otherwise the ordinary couple/single amount. "
-        "It is a replacement, not £20 added to £5 or £10. The total standard "
-        "deduction is capped at the claimant's and partner's net earnings."
+        "It is a replacement, not £20 added to £5 or £10, and it is capped at "
+        "the claimant's and partner's net earnings. This is the amount before "
+        "permitted work: where housing_benefit_permitted_work_disregard is "
+        "above zero, housing_benefit_applied_standard_earnings_disregard uses that "
+        "amount in place of this one, keeping this amount only for a lone "
+        "parent for whom it is higher (SI 2006/213 Sch 4 para 10A(2), SI "
+        "2006/214 Sch 4 para 5A(2), SR 2006/405 Sch 5 para 10A(2) and SR "
+        "2006/406 Sch 5 para 5A(2))."
     )
     reference = (
         "https://www.legislation.gov.uk/uksi/2006/213/schedule/4",
