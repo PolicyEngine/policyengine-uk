@@ -24,9 +24,12 @@ Invariants, for every drawn case:
    community investment and maintenance reductions before the married couple's
    allowance; other_tax_credits also holds foreign tax relief, which s. 27(6)
    deducts last. The order changes how the total is split, not the total.
-6. Monotonic: more other_tax_credits never raises income tax. The Step 5 tax
-   and the charges can change with them, because the property allowance
-   election weighs the income tax on each route.
+6. Monotonic: on each property allowance route, more other_tax_credits
+   leave the Step 5 tax and every charge unchanged and never raise tax before
+   the winter fuel payment charge. On the route the election takes, they never
+   raise total tax. Tax before the charge can rise there, because the election
+   weighs the charge: more credits can make the allowance route cheaper once
+   the charge counts, though it has more tax before the charge.
 7. Differential, against a simulation of the rules before this fix (main at
    76cfc9e79: max(0, additions - subtractions), with the married couple's
    allowance capped at the Step 5 tax plus the High Income Child Benefit
@@ -187,10 +190,17 @@ def pre_fix_sim():
     return build(PRE_FIX)
 
 
-def run(sim, drawn):
-    # Reset first: it clears inputs the simulation was not built with, such as
-    # Child Benefit, which would otherwise be lost.
+def run(sim, drawn, route=None):
+    """The drawn cases, each as drawn and with more other_tax_credits, on the
+    property allowance route the election takes or, given a route, on that
+    route for everyone."""
+    # Reset first, so no value calculated for the last draw survives. The reset
+    # keeps inputs set through set_input, so each run sets every drawn input
+    # again, and deletes the route a previous run fixed before fixing its own.
     sim.reset_calculations()
+    sim.delete_arrays("uses_property_allowance")
+    if route is not None:
+        sim.set_input("uses_property_allowance", YEAR, np.full(PEOPLE, route))
     columns = [np.array(column, dtype=float) for column in zip(*drawn)]
     *inputs, child_benefit, extra_credits = columns
     supplied = {}
@@ -308,6 +318,67 @@ def test_more_other_tax_credits_never_raise_income_tax(sim, drawn):
     drawn_tax = r["total_income_tax"][:CASES]
     with_more = r["total_income_tax"][CASES:]
     assert (with_more <= drawn_tax + tolerance(drawn_tax)).all()
+
+
+@SETTINGS
+@given(cases)
+def test_more_other_tax_credits_never_raise_tax_on_either_route(sim, drawn):
+    for route in [True, False]:
+        r = run(sim, drawn, route=route)
+        assert (r["uses_property_allowance"] == route).all()
+        drawn_tax, with_more = r["income_tax"][:CASES], r["income_tax"][CASES:]
+        assert (with_more <= drawn_tax + tolerance(drawn_tax)).all()
+        # On a given route the credits reach only Step 6.
+        for variable in ["step_5", "step_7", "winter_fuel_payment_charge"]:
+            as_drawn, with_more = r[variable][:CASES], r[variable][CASES:]
+            assert (np.abs(with_more - as_drawn) <= tolerance(as_drawn)).all()
+
+
+def test_more_credits_can_move_the_election_to_more_tax_before_the_charge(sim):
+    # An English taxpayer aged 70 with £30,500 of pay and £5,000 of property
+    # receipts, all profit, and £5,000 of finance costs, with £3,800 and then
+    # £4,300 of other_tax_credits. The 2026-27 personal allowance is £12,570
+    # and the basic rate 20%.
+    # - Actual expenses: total income £35,500, over the £35,000 at which the
+    #   whole £200 winter fuel payment is charged (ITEPA 2003 s. 681I; SI
+    #   2025/969 reg. 3). Step 5 tax is 20% of £22,930, £4,586, and the
+    #   finance-cost reduction 20% of £5,000, £1,000. Either amount of credits
+    #   leaves no tax for Step 6 to reduce, so total tax is the £200 charge.
+    # - Partial relief (ITTOIA 2005 s. 783BK): profits of £4,000 give total
+    #   income of £34,500 and no charge. Step 5 tax is 20% of £21,930, £4,386,
+    #   with no finance-cost reduction: £586 is left after £3,800 of credits
+    #   and £86 after £4,300.
+    # The election takes actual expenses at £200 against £586, then the
+    # allowance at £86 against £200. Total tax falls from £200 to £86, but
+    # tax before the charge rises from nothing to £86.
+    english = ~np.array(SCOTTISH)
+    drawn = [(30_500, 0, 0, 5_000, 5_000, 3_800, 0, 0, 70, 0, 500)] * CASES
+
+    def on(route=None):
+        r = run(sim, drawn, route=route)
+        return {
+            variable: (r[variable][:CASES][english], r[variable][CASES:][english])
+            for variable in [
+                "uses_property_allowance",
+                "income_tax",
+                "winter_fuel_payment_charge",
+                "total_income_tax",
+            ]
+        }
+
+    def check(r, variable, before, after):
+        assert np.allclose(r[variable][0], before, atol=0.01), variable
+        assert np.allclose(r[variable][1], after, atol=0.01), variable
+
+    allowance, expenses, elected = on(True), on(False), on()
+    check(allowance, "income_tax", 586, 86)
+    check(allowance, "winter_fuel_payment_charge", 0, 0)
+    check(expenses, "income_tax", 0, 0)
+    check(expenses, "winter_fuel_payment_charge", 200, 200)
+    check(elected, "uses_property_allowance", False, True)
+    check(elected, "income_tax", 0, 86)
+    check(elected, "winter_fuel_payment_charge", 200, 0)
+    check(elected, "total_income_tax", 200, 86)
 
 
 @SETTINGS
