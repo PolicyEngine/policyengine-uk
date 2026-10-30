@@ -3,6 +3,13 @@ from policyengine_uk.data.capital_gains_projection import (
     CGT_DATASET_INPUTS,
     CGT_INDEX_PATH,
 )
+from policyengine_uk.data.savings_income_projection import (
+    DEFAULT_SAVINGS_INCOME_PROJECTION,
+    OBR_SAVINGS_INCOME_2022_2025,
+    SAVINGS_INCOME_SERIES_YEARS,
+    uniform_savings_income_projection,
+    validate_savings_income_projection,
+)
 from policyengine_uk.data.isa_income import (
     ISA_INTEREST,
     SAVINGS_INTEREST,
@@ -100,6 +107,45 @@ _WATER_GROWTH_SERIES = {
 # uprating_indices.yaml, so the index their variable declares must not grow
 # them a second time after LEGACY_PROJECTION_END_YEAR.
 COUNTRY_UPRATED_INPUTS = frozenset({"water_and_sewerage_charges"})
+
+# Savings income (savings interest, ISA interest and other investment income)
+# grows in dataset projection by the path the dataset declares it was
+# calibrated to (savings_income_projection.py). Under the
+# obr_savings_income_2022_2025 rule that is the OBR's savings income forecast
+# per person from 2022-23 to 2025-26, and GDP per head in other years, like
+# dividends and the other capital incomes. The OBR's series rises 35.0% in
+# 2024-25 and 0.6% in 2025-26, where GDP per head rises 4.0% and 4.6%. It
+# starts in 2022-23, so earlier years keep GDP per head rather than the
+# parameter's backdated first value. A dataset that declares no rule grows
+# savings income by GDP per head in every year, as before.
+SAVINGS_INCOME_GROWTH = (
+    "gov.economic_assumptions.yoy_growth.obr.per_capita.savings_income"
+)
+GDP_PER_HEAD_GROWTH = "gov.economic_assumptions.yoy_growth.obr.per_capita.gdp"
+SAVINGS_INCOME_GROWTH_FIRST_YEAR, SAVINGS_INCOME_GROWTH_LAST_YEAR = (
+    SAVINGS_INCOME_SERIES_YEARS[OBR_SAVINGS_INCOME_2022_2025]
+)
+
+
+def growth_rate(
+    parameters: ParameterNode,
+    index_name: str,
+    year,
+    savings_income_projection: str = DEFAULT_SAVINGS_INCOME_PROJECTION,
+) -> float:
+    """Growth into ``year`` by the uprating_indices.yaml series ``index_name``.
+
+    The savings income series applies only in the years the dataset's
+    ``savings_income_projection`` rule gives it; GDP per head serves the
+    other years, and every year under the default rule.
+    """
+    if index_name == SAVINGS_INCOME_GROWTH:
+        years = SAVINGS_INCOME_SERIES_YEARS[
+            validate_savings_income_projection(savings_income_projection)
+        ]
+        if years is None or not years[0] <= int(str(year)[:4]) <= years[1]:
+            index_name = GDP_PER_HEAD_GROWTH
+    return parameters.get_child(index_name)(year)
 
 
 # The last year a single-year dataset is projected to: 2032, fiscal year
@@ -350,9 +396,17 @@ def apply_single_year_uprating(
 
     # First, apply standard variable-YoY growth based uprating.
 
+    savings_rule = uniform_savings_income_projection(
+        [
+            previous_year.savings_income_projection,
+            current_year.savings_income_projection,
+        ]
+    )
     uprating = _uprating_index_map()
     for index_name, variables in uprating.items():
-        index_rel_change = parameters.get_child(index_name)(current_year.time_period)
+        index_rel_change = growth_rate(
+            parameters, index_name, current_year.time_period, savings_rule
+        )
         for variable in variables:
             for table_name, df in zip(current_year.table_names, current_year.tables):
                 if variable in df.columns:
@@ -374,23 +428,23 @@ def apply_single_year_uprating(
         current_year.isa_income_contract["projection"] == "legacy_gross"
         and SAVINGS_INTEREST in current_year.person
     ):
-        growth = parameters.get_child(
-            "gov.economic_assumptions.yoy_growth.obr.per_capita.gdp"
-        )(current_year.time_period)
+        growth = growth_rate(
+            parameters, SAVINGS_INCOME_GROWTH, current_year.time_period, savings_rule
+        )
         values = gross_interest(previous_year) * (1 + growth)
         if current_year.isa_income_contract["representation"] == "additive":
             values = values - effective_tax_free(current_year.person)
         current_year.person[SAVINGS_INTEREST] = values
 
-    # New additive ISA receipts use the same dataset GDP rule as ordinary
+    # New additive ISA receipts use the same dataset rule as ordinary
     # interest. Legacy receipts retain their former unindexed treatment.
     if (
         current_year.isa_income_contract["projection"] == "additive"
         and ISA_INTEREST in current_year.person
     ):
-        growth = parameters.get_child(
-            "gov.economic_assumptions.yoy_growth.obr.per_capita.gdp"
-        )(current_year.time_period)
+        growth = growth_rate(
+            parameters, SAVINGS_INCOME_GROWTH, current_year.time_period, savings_rule
+        )
         current_year.person[ISA_INTEREST] = previous_year.person[ISA_INTEREST] * (
             1 + growth
         )

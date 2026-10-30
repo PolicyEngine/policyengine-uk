@@ -103,7 +103,22 @@ We derive these rates as calendar-year nominal GDP growth from the OBR's October
 |-------------|------|------|------|------|------|------|------|------|------|------|
 | Growth rate | 10.0% | 5.2% | 4.0% | 4.6% | 4.0% | 3.1% | 3.4% | 3.6% | 3.4% | 3.3% |
 
-We use per capita GDP for these variables: `benunit_reported_capital`, `capital_gains`, `capital_gains_badr`, `capital_gains_before_response`, `capital_gains_carried_interest`, `capital_gains_residential_property`, `cash_isa`, `cash_isa_balance`, `corporate_wealth`, `directly_held_shares`, `dividend_income`, `gross_financial_wealth`, `household_lifetime_isa_balance`, `lifetime_isa_balance`, `lump_sum_income`, `main_residence_value`, `maintenance_income`, `miscellaneous_income`, `mortgage_capital_repayment`, `net_financial_wealth`, `non_residential_property_value`, `other_investment_income`, `other_residential_property_value`, `owned_land`, `pension_credit_reported_capital`, `pension_income`, `private_pension_wealth`, `private_transfer_income`, `property_income`, `property_rental_income`, `savings`, `savings_interest_income`, `spousal_maintenance_income`, `stocks_and_shares_isa`, `stocks_and_shares_isa_balance`, `sublet_income`, `uc_reported_capital`, `unit_and_investment_trusts`
+We use per capita GDP for these variables: `benunit_reported_capital`, `capital_gains`, `capital_gains_badr`, `capital_gains_before_response`, `capital_gains_carried_interest`, `capital_gains_residential_property`, `cash_isa`, `cash_isa_balance`, `corporate_wealth`, `directly_held_shares`, `dividend_income`, `gross_financial_wealth`, `household_lifetime_isa_balance`, `lifetime_isa_balance`, `lump_sum_income`, `main_residence_value`, `maintenance_income`, `miscellaneous_income`, `mortgage_capital_repayment`, `net_financial_wealth`, `non_residential_property_value`, `other_residential_property_value`, `owned_land`, `pension_credit_reported_capital`, `pension_income`, `private_pension_wealth`, `private_transfer_income`, `property_income`, `property_rental_income`, `savings`, `spousal_maintenance_income`, `stocks_and_shares_isa`, `stocks_and_shares_isa_balance`, `sublet_income`, `uc_reported_capital`, `unit_and_investment_trusts`
+
+## Savings income
+
+When we project a dataset to later years (up to 2032-33), we grow savings income by the path the dataset says its savings income was calibrated to. A dataset that declares the `obr_savings_income_2022_2025` projection grows it by the OBR's savings income forecast per person from 2022-23 to 2025-26 and by per capita GDP in other years. A dataset that declares nothing grows it by per capita GDP in every year, as before. The OBR's series is the "Savings income" row of its receipts table "Self-employed income streams: growth rates" (October 2026 EFO, Table 4.5, from 2024-25; earlier years from the March 2026 and October 2024 EFOs), divided by population growth.
+
+| Fiscal year | 2022 | 2023 | 2024 | 2025 |
+|-------------|------|------|------|------|
+| OBR savings income | 50.4% | 129.9% | 35.0% | 0.6% |
+| Per person | 48.8% | 126.8% | 33.7% | 0.3% |
+
+From 2023-24 to 2025-26 the OBR's savings income rises 35.8%, where per capita GDP and population growth would give 10.2%. After 2025-26 these variables follow per capita GDP under either rule.
+
+The declaration matters because a dataset's savings income is fitted to targets its builder moved forward along some path. Growing it by a different path would miss those targets. Datasets store the declaration in the H5 root attribute `policyengine_uk.savings_income_projection`.
+
+We apply this to `non_cash_isa_cash_interest`, `other_investment_income` and `savings_interest_income`, and to ISA interest in datasets whose ISA income contract projects it additively. Datasets with the legacy gross contract grow gross interest, ISA interest included, and hold the ISA part flat. Inputs given directly to a calculation, and years after the dataset projection, use the index each variable declares: household interest income (ONS D.41) for interest and per capita GDP for other investment income.
 
 ## Council tax
 

@@ -69,8 +69,9 @@ and `additive`/`legacy_gross` for normalized legacy data. Representation and
 projection origin are separate: legacy projection grows the original gross
 amount before subtracting the effective exemption. It must not grow the
 already-normalized ordinary amount instead. New additive dataset projections
-grow ISA interest alongside ordinary interest by the dataset's GDP-per-capita
-rule; outside the stored horizon new inputs use their variable's own index.
+grow ISA interest alongside ordinary interest by the dataset's savings income
+projection rule (see "Savings income projection" below); outside the stored
+horizon new inputs use their variable's own index.
 Legacy-origin fallback retains the old gross-index calculation and unindexed
 ISA carry-over, while explicit inputs and applicable ISA detail formulas take
 priority. Legacy files containing only an aggregate exemption still have that
@@ -99,6 +100,29 @@ metadata before Core's value loader discards it. External writers which
 discard H5 attributes must explicitly preserve this declaration before their
 output can be reloaded safely. Test routing and migration on synthetic frames
 and small H5 fixtures, without downloading private datasets.
+
+## Savings income projection
+
+A dataset's savings income is fitted to targets that its builder moved to the
+dataset year and later along some growth path, so dataset projection must grow
+it along the same path. The dataset declares the path as a plain string in the
+H5 root attribute `policyengine_uk.savings_income_projection`
+(`data/savings_income_projection.py`):
+
+- `gdp_per_head`: GDP per capita in every year. Datasets without the attribute
+  get this rule, which is how savings income was projected before.
+- `obr_savings_income_2022_2025`: the OBR's savings income per person from
+  2022 to 2025 and GDP per capita in other years.
+
+`growth_rate` in `data/economic_assumptions.py` applies the rule to
+`savings_interest_income`, `non_cash_isa_cash_interest`,
+`other_investment_income`, gross interest under the legacy contract and ISA
+interest under the additive contract. `UKSingleYearDataset` takes
+`savings_income_projection` and refuses a value that contradicts its file.
+Multi-year datasets hold one rule for every year and refuse mixed rules.
+Copies, filtered households, simulation exports and input frames
+(`frame.attrs["policyengine_uk.savings_income_projection"]`) keep the rule. A
+rule's name fixes its years, so a later window needs a new rule.
 
 ## Apprenticeship status and tenure
 

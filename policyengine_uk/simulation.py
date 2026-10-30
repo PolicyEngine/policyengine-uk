@@ -44,6 +44,11 @@ from policyengine_uk.data.economic_assumptions import (
 )
 from policyengine_uk.data.dataset_sources import materialize_gcs_dataset_url
 from policyengine_uk.data.energy_price_basis import core_dataset_energy_price_basis
+from policyengine_uk.data.savings_income_projection import (
+    SAVINGS_INCOME_PROJECTION_KEY,
+    core_dataset_savings_income_projection,
+    resolve_savings_income_projection,
+)
 from policyengine_uk.data.input_dataframe import (
     dataset_from_input_dataframe,
     hold_identifiers_in,
@@ -670,6 +675,9 @@ class Simulation(CoreSimulation):
         clone._isa_income_contracts = copy.deepcopy(
             getattr(self, "_isa_income_contracts", {})
         )
+        clone._savings_income_projection = getattr(
+            self, "_savings_income_projection", None
+        )
         return clone
 
     def _isa_latest_input(self, name, period, *, earlier=False):
@@ -1272,6 +1280,9 @@ class Simulation(CoreSimulation):
         frame.attrs[ISA_INCOME_CONTRACT_KEY] = contract_envelope(
             {year: simulation_contract(self, year) for year in years}
         )
+        frame.attrs[SAVINGS_INCOME_PROJECTION_KEY] = resolve_savings_income_projection(
+            getattr(self, "_savings_income_projection", None), None
+        )
         return frame
 
     def build_from_dataset(self, dataset: Dataset) -> None:
@@ -1281,6 +1292,7 @@ class Simulation(CoreSimulation):
             dataset: PolicyEngine Dataset object containing simulation data
         """
         energy_price_basis = core_dataset_energy_price_basis(dataset)
+        savings_income_projection = core_dataset_savings_income_projection(dataset)
         data: Dict[str, Dict[str, Union[float, int, str]]] = dataset.load_dataset()
 
         first_variable = data[list(data.keys())[0]]
@@ -1310,6 +1322,7 @@ class Simulation(CoreSimulation):
             read_h5_contract(getattr(dataset, "file_path", None)),
             [period_(first_time_period).start.year],
         )
+        self._savings_income_projection = savings_income_projection
 
         # Populations use sorted group IDs; arrays in a Core dataset follow
         # the order of that period's supplied identifier array instead.
@@ -1341,7 +1354,10 @@ class Simulation(CoreSimulation):
         self.dataset = dataset
 
         dataset = UKSingleYearDataset.from_simulation(
-            self, fiscal_year=first_time_period, energy_price_basis=energy_price_basis
+            self,
+            fiscal_year=first_time_period,
+            energy_price_basis=energy_price_basis,
+            savings_income_projection=savings_income_projection,
         )
         multi_year_dataset = self._extend_dataset_with_cgt_provenance(dataset)
 
@@ -1400,6 +1416,7 @@ class Simulation(CoreSimulation):
             year: copy.deepcopy(dataset[year].isa_income_contract)
             for year in dataset.years
         }
+        self._savings_income_projection = dataset.savings_income_projection
 
         # Load variable values for all years
         for year in dataset.years:
@@ -1448,6 +1465,7 @@ class Simulation(CoreSimulation):
         self._cgt_operation_inputs = set()
         self._cgt_warned_unused = False
         self._isa_income_contracts = {}
+        self._savings_income_projection = None
 
     def build_from_ids(
         self,
@@ -1567,6 +1585,7 @@ class Simulation(CoreSimulation):
             benunit=benunit,
             household=household,
             fiscal_year=year,
+            savings_income_projection=getattr(self, "_savings_income_projection", None),
         )
 
     def _calculate(self, variable_name: str, period: Period = None):
