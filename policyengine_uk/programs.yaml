@@ -375,13 +375,13 @@ programs:
     name: Tax credits
     full_name: Tax Credits (Working Tax Credit and Child Tax Credit)
     category: Benefits
-    agency: DWP
+    agency: HMRC
     status: complete
     coverage: UK
     variable: tax_credits
     parameter_prefix: gov.dwp.tax_credits
     verified_start_year: 2022
-    notes: Legacy benefit being replaced by Universal Credit
+    notes: HMRC administered Working Tax Credit and Child Tax Credit until they ended on 5 April 2025
 
   - id: sda
     name: SDA
@@ -400,11 +400,11 @@ programs:
     category: Benefits
     agency: DWP
     status: complete
-    coverage: UK
+    coverage: England, Wales and Northern Ireland
     variable: winter_fuel_payment
     parameter_prefix: gov.dwp.winter_fuel_payment
     verified_start_year: 2022
-    notes: Great Britain to winter 2023-24, then England and Wales; Northern Ireland's mirror scheme uses the same parameters. From winter 2025-26 paid to everyone of pensionable age and recovered by the winter fuel payment charge (income tax)
+    notes: Great Britain to winter 2023-24, then England and Wales; Northern Ireland's mirror scheme uses the same parameters. The Scottish Government replaced it with Pension Age Winter Heating Payment from winter 2024-25. From winter 2025-26 HMRC recovers payments from higher-income recipients through the winter fuel payment charge (income tax)
 
   - id: ssmg
     name: Sure Start Maternity Grant
@@ -572,7 +572,7 @@ programs:
     category: Taxes
     agency: Local
     status: complete
-    coverage: UK
+    coverage: Great Britain
     variable: council_tax
     verified_start_year: 2022
 
@@ -582,7 +582,7 @@ programs:
     category: Benefits
     agency: Local
     status: partial
-    coverage: UK
+    coverage: Great Britain
     variable: council_tax_reduction
     parameter_prefix: gov.local_authorities
     verified_start_year: 2013
@@ -606,7 +606,7 @@ programs:
     name: Energy Price Guarantee
     full_name: Energy Price Guarantee
     category: Benefits
-    agency: Ofgem
+    agency: DESNZ
     status: partial
     coverage: UK
     parameter_prefix: gov.ofgem
@@ -635,7 +635,7 @@ programs:
     name: Scottish income tax
     full_name: Scottish Income Tax Rates
     category: Taxes
-    agency: Revenue Scotland
+    agency: HMRC
     status: complete
     coverage: Scotland
     verified_start_year: 2019

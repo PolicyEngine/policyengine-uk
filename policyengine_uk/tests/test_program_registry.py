@@ -2,6 +2,7 @@
 
 import pytest
 import yaml
+from hypothesis import given, settings, strategies as st
 from policyengine_core.parameters import ParameterNode
 
 from policyengine_uk import CountryTaxBenefitSystem
@@ -54,3 +55,44 @@ def test_benefit_cap_does_not_advertise_unrelated_parameters(tax_benefit_system)
         advertised.get_child("non_single.outside_london")
         is benefit_cap.non_single.outside_london
     )
+
+
+@pytest.mark.parametrize(
+    "program_id, field, expected",
+    [
+        ("scottish_income_tax", "agency", "HMRC"),
+        ("tax_credits", "agency", "HMRC"),
+        ("energy_price_guarantee", "agency", "DESNZ"),
+        ("council_tax", "coverage", "Great Britain"),
+        ("council_tax_reduction", "coverage", "Great Britain"),
+        (
+            "winter_fuel_payment",
+            "coverage",
+            "England, Wales and Northern Ireland",
+        ),
+    ],
+    ids=lambda value: value,
+)
+def test_program_agency_and_coverage(program_id, field, expected):
+    """The registry identifies the administering body and nations (#2696)."""
+    programs = [p for p in PROGRAMS if p["id"] == program_id]
+    assert len(programs) == 1
+    assert programs[0][field] == expected
+
+
+@settings(max_examples=len(PROGRAMS), database=None, derandomize=True)
+@given(program_id=st.sampled_from(tuple(p["id"] for p in PROGRAMS)))
+def test_program_metadata_survives_loading(tax_benefit_system, program_id):
+    """Core exposes every program's agency and coverage strings unchanged."""
+    registry_program = next(p for p in PROGRAMS if p["id"] == program_id)
+    loaded_programs = [
+        p
+        for p in tax_benefit_system.modelled_policies["programs"]
+        if p["id"] == program_id
+    ]
+    assert len(loaded_programs) == 1
+    for field in ("agency", "coverage"):
+        value = loaded_programs[0][field]
+        assert isinstance(value, str)
+        assert value
+        assert value == registry_program[field]
