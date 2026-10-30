@@ -23,6 +23,18 @@ LEAVES = {
     "class_4.thresholds.lower_profits_limit": "class_4.contribution_scale[1].threshold",
     "class_4.thresholds.upper_profits_limit": "class_4.contribution_scale[2].threshold",
 }
+# The legacy extraction ended here, with the indices of the day.
+LAST_EXTRACTED_YEAR = 2039
+
+
+def through_extraction(record):
+    """A metadata record without the values dated after the legacy extraction."""
+    values = {
+        date: value
+        for date, value in record["values"].items()
+        if int(date[:4]) <= LAST_EXTRACTED_YEAR
+    }
+    return {**record, "values": values}
 
 
 def test_canonical_marginal_schedules_are_discoverable():
@@ -68,7 +80,7 @@ def test_live_parameter_metadata_preserves_legacy_scalar_records():
     actual = build_parameters(
         SimpleNamespace(tax_benefit_system=CountryTaxBenefitSystem())
     )
-    assert {name: actual[name] for name in expected} == {
+    assert {name: through_extraction(actual[name]) for name in expected} == {
         name: {**record, "household": False, "economy": False}
         for name, record in expected.items()
     }

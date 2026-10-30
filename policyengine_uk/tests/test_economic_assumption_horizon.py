@@ -165,17 +165,17 @@ growth_rates = st.floats(min_value=-0.1, max_value=0.2, allow_nan=False)
 @st.composite
 def growth_trees(draw):
     """A yoy_growth node of Jan-1-dated series, some nested, of mixed lengths."""
-    series = {}
+    series, nested = {}, {}
     for number in range(draw(st.integers(min_value=1, max_value=5))):
         start = draw(st.integers(min_value=2000, max_value=2030))
         length = draw(st.integers(min_value=1, max_value=60))
         values = {
             f"{year}-01-01": draw(growth_rates) for year in range(start, start + length)
         }
-        if draw(st.booleans()):
-            series.setdefault("nested", {})[f"series_{number}"] = {"values": values}
-        else:
-            series[f"series_{number}"] = {"values": values}
+        node = nested if draw(st.booleans()) else series
+        node[f"series_{number}"] = {"values": values}
+    if nested:
+        series["nested"] = nested
     return ParameterNode(
         "",
         data={"gov": {"economic_assumptions": {"yoy_growth": series}}},
