@@ -102,7 +102,9 @@ def test_noncash_isa_interest_charge_reaches_tax_and_final_current_income_once()
 
 
 GDP_INDEX = "gov.economic_assumptions.indices.obr.per_capita.gdp"
-INTEREST_INDEX = "gov.economic_assumptions.indices.ons.household_interest_income"
+INTEREST_INDEX = (
+    "gov.economic_assumptions.indices.ons.per_capita.household_interest_income"
+)
 ISA_INCOME_PAIRS = [
     ("individual_savings_account_dividend_income", "dividend_income", [100, 125, 150]),
     ("non_cash_isa_cash_interest", "savings_interest_income", [100, 150, 200]),

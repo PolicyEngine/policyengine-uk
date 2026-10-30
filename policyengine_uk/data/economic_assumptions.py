@@ -32,6 +32,12 @@ from policyengine_uk.utils.stochastic import splitmix64_uniform
 # below threshold.
 _GRADUATE_LOAN_TAKE_UP = 0.4
 
+# Households' interest received per person (#1862). Gross legacy interest and
+# additive ISA interest totals grow by it, as savings_interest_income does.
+INTEREST_GROWTH = (
+    "gov.economic_assumptions.yoy_growth.ons.per_capita.household_interest_income"
+)
+
 _ENGLAND_REGIONS = {
     "NORTH_EAST",
     "NORTH_WEST",
@@ -374,23 +380,20 @@ def apply_single_year_uprating(
         current_year.isa_income_contract["projection"] == "legacy_gross"
         and SAVINGS_INTEREST in current_year.person
     ):
-        growth = parameters.get_child(
-            "gov.economic_assumptions.yoy_growth.obr.per_capita.gdp"
-        )(current_year.time_period)
+        growth = parameters.get_child(INTEREST_GROWTH)(current_year.time_period)
         values = gross_interest(previous_year) * (1 + growth)
         if current_year.isa_income_contract["representation"] == "additive":
             values = values - effective_tax_free(current_year.person)
         current_year.person[SAVINGS_INTEREST] = values
 
-    # New additive ISA receipts use the same dataset GDP rule as ordinary
-    # interest. Legacy receipts retain their former unindexed treatment.
+    # New additive ISA receipts use the same per-person interest index as
+    # ordinary interest. Legacy receipts retain their former unindexed
+    # treatment.
     if (
         current_year.isa_income_contract["projection"] == "additive"
         and ISA_INTEREST in current_year.person
     ):
-        growth = parameters.get_child(
-            "gov.economic_assumptions.yoy_growth.obr.per_capita.gdp"
-        )(current_year.time_period)
+        growth = parameters.get_child(INTEREST_GROWTH)(current_year.time_period)
         current_year.person[ISA_INTEREST] = previous_year.person[ISA_INTEREST] * (
             1 + growth
         )

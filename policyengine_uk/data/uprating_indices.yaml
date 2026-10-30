@@ -143,8 +143,6 @@ gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 - property_income
 - property_rental_income
 - savings
-- savings_interest_income
-- non_cash_isa_cash_interest
 - spousal_maintenance_income
 - stocks_and_shares_isa
 - stocks_and_shares_isa_balance
@@ -169,6 +167,11 @@ gov.economic_assumptions.yoy_growth.obr.private_pension_index:
 - private_pension_income
 gov.economic_assumptions.yoy_growth.obr.lagged_average_earnings:
 - housing_service_charges
+# Interest received per person, as household weights grow by population
+# (#1862). ISA cash interest in non-cash ISAs follows the same index.
+gov.economic_assumptions.yoy_growth.ons.per_capita.household_interest_income:
+- non_cash_isa_cash_interest
+- savings_interest_income
 # ORR passenger journeys per person, as household weights grow by population
 # (#1862).
 gov.economic_assumptions.yoy_growth.orr.per_capita.rail_passenger_journeys:

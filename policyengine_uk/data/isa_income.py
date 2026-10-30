@@ -91,7 +91,7 @@ def isa_interest_income_default(simulation, period):
     ):
         return values
     index = simulation.tax_benefit_system.parameters.get_child(
-        "gov.economic_assumptions.indices.ons.household_interest_income"
+        "gov.economic_assumptions.indices.ons.per_capita.household_interest_income"
     )
     source_index = _uprating_index_value(index, source.start)
     target_index = _uprating_index_value(index, period.start)

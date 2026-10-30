@@ -30,9 +30,13 @@ LEGACY = {"version": 1, "representation": "legacy_gross", "projection": "legacy_
 NORMALIZED = {"version": 1, "representation": "additive", "projection": "legacy_gross"}
 ADDITIVE = {"version": 1, "representation": "additive", "projection": "additive"}
 GDP_GROWTH = "gov.economic_assumptions.yoy_growth.obr.per_capita.gdp"
+INTEREST_GROWTH = (
+    "gov.economic_assumptions.yoy_growth.ons.per_capita.household_interest_income"
+)
 MACRO = Scenario(
     parameter_changes={
-        GDP_GROWTH: {"year:2026-01-01:1": 0.1, "year:2027-01-01:1": 0.2}
+        GDP_GROWTH: {"year:2026-01-01:1": 0.1, "year:2027-01-01:1": 0.2},
+        INTEREST_GROWTH: {"year:2026-01-01:1": 0.1, "year:2027-01-01:1": 0.2},
     },
     applied_before_data_load=True,
 )
@@ -447,7 +451,7 @@ def test_legacy_origin_core_fallback_after_projection_horizon_preserves_gross_an
             )
         ]
     )
-    index = "gov.economic_assumptions.indices.ons.household_interest_income"
+    index = "gov.economic_assumptions.indices.ons.per_capita.household_interest_income"
     macro = Scenario(
         parameter_changes={index: {"year:2032-01-01:1": 100, "year:2033-01-01:1": 200}},
         applied_before_data_load=True,
@@ -486,7 +490,7 @@ def test_existing_isa_total_keeps_priority_over_its_same_period_of_which_detail(
             )
         ]
     )
-    index = "gov.economic_assumptions.indices.ons.household_interest_income"
+    index = "gov.economic_assumptions.indices.ons.per_capita.household_interest_income"
     macro = Scenario(
         parameter_changes={index: {"year:2032-01-01:1": 100, "year:2033-01-01:1": 200}},
         applied_before_data_load=True,
@@ -508,7 +512,7 @@ def gross_core_reference(savings_entries, exemptions, isa_interest):
     reference_system = system.clone()
     reference_system.parameters = deepcopy(system.parameters)
     reference_system.parameters.get_child(
-        "gov.economic_assumptions.indices.ons.household_interest_income"
+        "gov.economic_assumptions.indices.ons.per_capita.household_interest_income"
     ).update(period="year:2025:5", value=100)
     person = {
         "age": {2026: 35},
@@ -793,6 +797,7 @@ def test_isa_and_energy_contracts_compose_through_reset_export_and_projection(
     for year, level in {2025: 100, 2026: 125, 2027: 150}.items():
         cpi.update(period=str(year), value=level)
     parameters.get_child(GDP_GROWTH).update(period="2027", value=0.2)
+    parameters.get_child(INTEREST_GROWTH).update(period="2027", value=0.2)
     projected = extend_single_year_dataset(reloaded, parameters, end_year=2027)
     projected_simulation = Simulation(dataset=projected)
     assert value(
@@ -882,6 +887,7 @@ def test_split_bsp_isa_and_energy_share_reset_and_projection_boundaries():
         },
         "gov.economic_assumptions.yoy_growth.obr.consumer_price_index": {"2027": 0.2},
         GDP_GROWTH: {"2027": 0.2},
+        INTEREST_GROWTH: {"2027": 0.2},
     }
     parameters = simulation.tax_benefit_system.parameters.clone()
     for name, periods in changes.items():
@@ -938,6 +944,8 @@ def test_new_isa_columns_follow_ordinary_dataset_projection_in_both_contracts(
 ):
     """Both sides of the 2030 map boundary use the ordinary dataset indices.
 
+    Dividends grow by GDP per capita (10%) and all interest by interest
+    received per person (5%), so a column on the wrong index fails.
     Ordinary interest and ISA interest together start at 2000 on either
     contract. Legacy projection grows gross interest before subtracting the
     unchanged 500 exemption; additive projection grows ordinary 1500 and
@@ -948,7 +956,10 @@ def test_new_isa_columns_follow_ordinary_dataset_projection_in_both_contracts(
     """
     projection = Scenario(
         parameter_changes={
-            GDP_GROWTH: {f"year:{year}-01-01:1": 0.1 for year in range(2026, 2033)}
+            GDP_GROWTH: {f"year:{year}-01-01:1": 0.1 for year in range(2026, 2033)},
+            INTEREST_GROWTH: {
+                f"year:{year}-01-01:1": 0.05 for year in range(2026, 2033)
+            },
         },
         applied_before_data_load=True,
     )
@@ -968,14 +979,20 @@ def test_new_isa_columns_follow_ordinary_dataset_projection_in_both_contracts(
 
     for year in (2025, 2028, 2030, 2031, 2032):
         factor = 1.1 ** (year - 2025)
+        interest_factor = 1.05 ** (year - 2025)
+        column_factor = (
+            interest_factor if ordinary_column == "savings_interest_income" else factor
+        )
         ordinary = value(benchmark, ordinary_column, year)
-        assert ordinary == pytest.approx(supplied * factor, abs=0.01)
+        assert ordinary == pytest.approx(supplied * column_factor, abs=0.01)
         assert value(simulation, isa_column, year) == pytest.approx(ordinary, abs=0.01)
         if year > 2025:
             assert ordinary > supplied
-        exempt = 500 if contract == LEGACY else 500 * factor
+        exempt = 500 if contract == LEGACY else 500 * interest_factor
         ordinary_interest = (
-            2_000 * factor - exempt if contract == LEGACY else 1_500 * factor
+            2_000 * interest_factor - exempt
+            if contract == LEGACY
+            else 1_500 * interest_factor
         )
         assert value(
             simulation, "individual_savings_account_interest_income", year
@@ -993,7 +1010,7 @@ def test_new_isa_columns_follow_ordinary_dataset_projection_in_both_contracts(
             200 * factor, abs=0.01
         )
         assert value(simulation, "capital_income", year) == pytest.approx(
-            2_500 * factor, abs=0.01
+            2_000 * interest_factor + 500 * factor, abs=0.01
         )
 
     for actual, before in ((source, original), (benchmark_source, benchmark_original)):

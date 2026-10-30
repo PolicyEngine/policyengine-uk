@@ -10,5 +10,9 @@ class non_cash_isa_cash_interest(Variable):
     unit = GBP
     quantity_type = FLOW
     default_value = 0
-    uprating = "gov.economic_assumptions.indices.ons.household_interest_income"
+    # Same per-person index as savings_interest_income (#1862): household
+    # weights already grow by population.
+    uprating = (
+        "gov.economic_assumptions.indices.ons.per_capita.household_interest_income"
+    )
     reference = "https://www.legislation.gov.uk/uksi/2026/1018/regulation/15/made"

@@ -69,8 +69,8 @@ and `additive`/`legacy_gross` for normalized legacy data. Representation and
 projection origin are separate: legacy projection grows the original gross
 amount before subtracting the effective exemption. It must not grow the
 already-normalized ordinary amount instead. New additive dataset projections
-grow ISA interest alongside ordinary interest by the dataset's GDP-per-capita
-rule; outside the stored horizon new inputs use their variable's own index.
+grow ISA interest alongside ordinary interest by the per-person interest
+series (`yoy_growth.ons.per_capita.household_interest_income`); outside the stored horizon new inputs use their variable's own index.
 Legacy-origin fallback retains the old gross-index calculation and unindexed
 ISA carry-over, while explicit inputs and applicable ISA detail formulas take
 priority. Legacy files containing only an aggregate exemption still have that

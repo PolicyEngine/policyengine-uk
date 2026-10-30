@@ -48,15 +48,15 @@ income a second time.
 
 For household inputs carried into later years, ISA dividends use the same
 nominal GDP-per-capita index as ordinary `dividend_income`.
-`non_cash_isa_cash_interest` uses the same ONS household-interest-income index
-as ordinary `savings_interest_income`. An explicit observation for a later
-year takes priority and provides the starting amount for subsequent years.
-Dataset projections grow stored ISA dividends and non-cash ISA cash interest
-by nominal GDP per capita, matching the dataset rules for ordinary dividends
-and savings interest. This also applies before 2031. The non-cash interest
-detail therefore follows the existing dataset interest rule, while direct
-household inputs use the ONS index above. Alignment of the interest indices
-is tracked separately in [#2638](https://github.com/PolicyEngine/policyengine-uk/pull/2638).
+`non_cash_isa_cash_interest` and an ISA-interest total carried forward under
+the additive contract use the same index as ordinary `savings_interest_income`:
+households' interest received per person
+(`ons.per_capita.household_interest_income`, see
+[#2638](https://github.com/PolicyEngine/policyengine-uk/pull/2638)). An
+explicit observation for a later year takes priority and provides the starting
+amount for subsequent years. Dataset projections grow stored ISA dividends by
+nominal GDP per capita, as for ordinary dividends, and stored non-cash ISA cash
+interest by the per-person interest index, as for ordinary savings interest.
 The legacy and additive interest contracts retain their recorded conventions.
 
 From 6 April 2027, `isa_cash_interest_flat_rate_charge` applies the savings
