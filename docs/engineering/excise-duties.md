@@ -183,7 +183,7 @@ year's RPI growth from the OBR forecast in
 nearest hundredth of a penny. The steps to 1 April 2031 are written out by
 `calculate_fuel_duty_rates.py`, and a test fails when they fall out of date
 with the RPI forecast. Later steps come from the parameter's uprating metadata.
-The RPI index ends in 2039, so the last step is 1 April 2040.
+The RPI index ends with the growth series, in 2074, so the last step is 1 April 2075.
 
 An annual reform names a model year and replaces the rate for all of it. For
 model years to 2030 it leaves other years unchanged. `Scenario.parameter_changes`

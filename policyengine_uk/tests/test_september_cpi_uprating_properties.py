@@ -27,6 +27,7 @@ from policyengine_uk.parameters.gov.economic_assumptions.create_september_cpi_up
 )
 from policyengine_uk.parameters.gov.economic_assumptions.create_economic_assumption_indices import (
     create_economic_assumption_indices,
+    growth_horizon,
 )
 
 # September CPI since 1989 ranged from -0.1% (2015) to 10.1% (2022); draw
@@ -34,8 +35,6 @@ from policyengine_uk.parameters.gov.economic_assumptions.create_economic_assumpt
 any_rate = st.floats(min_value=-0.1, max_value=0.2, allow_nan=False)
 published_rate = st.integers(min_value=-60, max_value=150).map(lambda n: n / 1000)
 FIRST_SEPTEMBER = BASE_YEAR
-# The index builder runs to 2039.
-LAST_INDEX_YEAR = 2039
 PROPERTIES = settings(
     max_examples=200, deadline=None, suppress_health_check=[HealthCheck.too_slow]
 )
@@ -84,12 +83,10 @@ def build(cpi_by_september):
     rates = economic_assumptions.yoy_growth.september_cpi_uprating
     index = economic_assumptions.indices.september_cpi_uprating
     last_rate_year = max(years) + 1
+    horizon = growth_horizon(economic_assumptions.yoy_growth)
     return (
         {year: rates(f"{year}-01-01") for year in range(BASE_YEAR, last_rate_year + 1)},
-        {
-            year: index(f"{year}-01-01")
-            for year in range(BASE_YEAR, LAST_INDEX_YEAR + 1)
-        },
+        {year: index(f"{year}-01-01") for year in range(BASE_YEAR, horizon + 1)},
     )
 
 
@@ -144,7 +141,7 @@ def test_index_compounds_the_rises(cpi):
     last_rate_year = max(cpi) + 1
     reference = Decimal(1)
     assert index[BASE_YEAR] == 1
-    for year in range(BASE_YEAR + 1, LAST_INDEX_YEAR + 1):
+    for year in range(BASE_YEAR + 1, max(index) + 1):
         # Past the inputs the last rise carries forward, as for every series.
         rise = max(published(cpi[min(year, last_rate_year) - 1]), Decimal(0))
         reference *= 1 + rise
@@ -159,7 +156,7 @@ def test_index_compounds_the_rises(cpi):
 @given(cpi=septembers())
 def test_index_never_falls(cpi):
     _, index = build(cpi)
-    for year in range(BASE_YEAR + 1, LAST_INDEX_YEAR + 1):
+    for year in range(BASE_YEAR + 1, max(index) + 1):
         assert index[year] >= index[year - 1], year
 
 
@@ -176,7 +173,7 @@ def test_a_higher_september_raises_the_index_only_from_the_next_april(
     higher = {**cpi, changed_september: cpi[changed_september] + rise}
     _, index = build(cpi)
     _, higher_index = build(higher)
-    for year in range(BASE_YEAR, LAST_INDEX_YEAR + 1):
+    for year in index:
         assert higher_index[year] >= index[year], year
         if year <= changed_september:
             assert higher_index[year] == index[year], year

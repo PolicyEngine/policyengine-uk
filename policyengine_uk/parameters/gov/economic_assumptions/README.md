@@ -107,13 +107,14 @@ benefit-unit capital without overwriting programme-specific countable capital.
 Changing that formula to carry every direct input would alter situation
 semantics.
 
-Source coverage and processed parameter dates are distinct: fiscal-year
-conversion materialises annual values through 2040, while cumulative economic
-indices compound only through 2039. A later parameter lookup retains the final
-scalar; for a raw growth series that repeats the growth rate, but for a
-cumulative index it freezes the level. Extending the dataset to the raw
-series' final year would therefore be both costly and inconsistent with Core
-uprating after the cumulative-index horizon.
+Source coverage and processed parameter dates are distinct. Cumulative
+economic indices compound to the last year any growth series covers, which is
+one year past `yoy_growth.yaml` because the lagged series run a year past
+their source. A series that ends sooner holds its final growth rate to that
+year: that is an extrapolation, and it matters more the further a series
+falls short of the horizon. Past the horizon a parameter lookup retains the
+final scalar; for a raw growth series that repeats the growth rate, but for a
+cumulative index it freezes the level.
 
 From 2031 onward, dataset projection also grows stored columns whose variables
 have a class-level `uprating` index but are absent from `uprating_indices.yaml`.
@@ -162,9 +163,9 @@ The additional indices have their own source limits:
 
 | Stored input | Variable index | Source coverage and terminal behavior |
 |---|---|---|
-| Salary-sacrifice pension contributions | `indices.obr.average_earnings` | Earnings growth has source values through 2073; its cumulative index compounds through 2039. |
-| Water and sewerage charges | `indices.ofwat.water_bills` | Raw growth ends in 2029 at 5.0%; that rate carries into later years when the cumulative index is generated, through 2039. |
-| Housing service charges | `indices.obr.lagged_average_earnings` | Lagged growth is generated through 2074 from the preceding year's earnings; its cumulative index compounds through 2039. |
+| Salary-sacrifice pension contributions | `indices.obr.average_earnings` | Earnings growth has source values through 2073; its cumulative index compounds through 2074. |
+| Water and sewerage charges | `indices.ofwat.water_bills` | Raw growth ends in 2029 at 5.0%; that rate carries into later years when the cumulative index is generated, through 2074. |
+| Housing service charges | `indices.obr.lagged_average_earnings` | Lagged growth is generated through 2074 from the preceding year's earnings; its cumulative index compounds through 2074. |
 | Rail usage | `gov.dft.rail.ridership_index` | The source cumulative index ends in 2029 at 1.044. Its terminal level stays flat, so the projection ratio is one in 2031 and 2032. |
 
 The `indices.*` paths in this table are relative to
