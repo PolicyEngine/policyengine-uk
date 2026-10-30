@@ -39,6 +39,10 @@ class uc_has_deduction(Variable):
             - benunit("uc_benefit_cap_reduction", period),
             0,
         )
-        on_uc = benunit("claims_universal_credit", period) & (award > 0)
+        on_uc = (
+            benunit("claims_universal_credit", period)
+            & (award > 0)
+            & benunit("uc_award_carries_deductions", period)
+        )
         draw = benunit("uc_deduction_random_draw", period)
         return on_uc & (draw < adjusted_incidence)
