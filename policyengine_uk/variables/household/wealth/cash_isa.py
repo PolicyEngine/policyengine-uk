@@ -6,10 +6,11 @@ class cash_isa(Variable):
     documentation = (
         "Amount held in cash Individual Savings Accounts: cash_isa_balance "
         "summed over the household's members. A dataset that stores this "
-        "column keeps the stored value, and projects it with savings: it is "
-        "recomputed only when not stored, so a reform or situation that edits "
-        "cash_isa_balance leaves a stored total unchanged. A household input "
-        "is used for the year it is given for only."
+        "column keeps the stored value, and projects it with savings in every "
+        "year: it is recomputed only when not stored, so a reform or situation "
+        "that edits cash_isa_balance leaves a stored total unchanged. A "
+        "household input in a situation is used for the year it is given for "
+        "only."
     )
     entity = Household
     definition_period = YEAR

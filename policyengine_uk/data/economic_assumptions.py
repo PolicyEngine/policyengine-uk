@@ -165,9 +165,21 @@ def growth_rate(
 # which the Enhanced FRS does not store, so it falls to -1); one whose
 # variable has an `uprating` attribute is scaled by that index; any other,
 # rent and council tax among them, is held at its last projected value.
+# Simulation grows the household totals in STORED_HOUSEHOLD_TOTALS itself.
 # A finite CGT scenario can shorten the whole dataset horizon; it never
 # extends beyond the evidence declared by that scenario.
 PROJECTION_END_YEAR = 2032
+
+# Household totals that sum person inputs (`adds`) but that a dataset can
+# store itself (#2740). For a year with no stored total, Core runs the sum,
+# which falls to zero in data that store only the total, and Core does not
+# let a variable declare both `adds` and `uprating`. So in a simulation built
+# from data, Simulation grows the latest earlier stored total by the index
+# its parts declare, as Core grows the parts, and sums the parts only where
+# no total is stored.
+STORED_HOUSEHOLD_TOTALS = frozenset(
+    {"cash_isa", "stocks_and_shares_isa", "household_lifetime_isa_balance"}
+)
 
 # Before this horizon was extended, Core uprated unmapped inputs from 2030.
 # Preserve that behavior in the newly materialized years without changing
@@ -192,6 +204,24 @@ BEREAVEMENT_SPLIT_INPUTS = frozenset(
 # before this one (Finance Act 2004 s. 228A), a window that moves each year; a
 # projected year uses the variable's own estimate instead (#2523).
 YEAR_SPECIFIC_INPUTS = frozenset({"unused_pension_annual_allowance"})
+
+
+def stored_total_uprating(tax_benefit_system, name: str) -> str | None:
+    """The index that grows a stored household total: its parts' ``uprating``.
+
+    Growing the total like its parts keeps a stored total equal to the sum it
+    replaces. ``None`` means the parts are held flat.
+    """
+    indices = {
+        tax_benefit_system.variables[part].uprating
+        for part in tax_benefit_system.variables[name].adds
+    }
+    if len(indices) != 1:
+        raise ValueError(
+            f"The parts of {name} declare different uprating indices: "
+            f"{sorted(map(str, indices))}."
+        )
+    return indices.pop()
 
 
 def _unmapped_uprating_indices(uprating):

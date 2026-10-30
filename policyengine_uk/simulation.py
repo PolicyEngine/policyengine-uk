@@ -38,8 +38,10 @@ from policyengine_uk.utils.entity_ids import ENTITY_ID_VARIABLES, check_entity_i
 from policyengine_uk.utils.scenario import ConstructionReformState, Scenario
 from policyengine_uk.data.economic_assumptions import (
     BEREAVEMENT_SPLIT_INPUTS,
+    STORED_HOUSEHOLD_TOTALS,
     extend_single_year_dataset,
     reset_growthfactor_uprating,
+    stored_total_uprating,
     uprating_input_fingerprint,
 )
 from policyengine_uk.data.dataset_sources import materialize_gcs_dataset_url
@@ -698,7 +700,60 @@ class Simulation(CoreSimulation):
         # anchor when translating that stored amount in either direction.
         return self.calculate(TAX_FREE_INTEREST, period_(period).start.period("year"))
 
+    def _record_derived(self, variable_name):
+        # The value depends on which other periods hold inputs, as an uprated
+        # one does in Core, so an input set for any period can change it.
+        history = getattr(self, "_get_store_history", None)
+        if callable(history):
+            # Store-history tracking is available in newer Core releases;
+            # the declared minimum already caches formula results without it.
+            from policyengine_core.data_storage.store_history import (
+                next_sequence_number,
+            )
+
+            history().record_derived(variable_name, next_sequence_number())
+
+    def _index_growth(self, index_name, source, period):
+        # Core's uprating factor: the ratio of the index at the two starts,
+        # or 1 where the index has no value or is zero at the source.
+        if index_name is None:
+            return 1
+        index = self.tax_benefit_system.parameters.get_child(index_name)
+        source_index = _uprating_index_value(index, source.start)
+        target_index = _uprating_index_value(index, period.start)
+        return (
+            target_index / source_index
+            if source_index not in (None, 0) and target_index is not None
+            else 1
+        )
+
+    def _latest_source(self, name, period):
+        source = self._isa_latest_input(name, period, earlier=True)
+        if source is None:
+            # Core first uprates strictly earlier annual inputs, then carries
+            # an input starting on the query date if there was none earlier.
+            source = self._isa_latest_input(name, period)
+        return source
+
+    def _stored_household_total(self, variable, period):
+        # A dataset that stores a household total keeps it, projected like
+        # its parts, in every year (#2740). Core serves the stored total for
+        # each year the data hold. For a later year it runs the variable's
+        # sum of person balances, which such data need not hold, so grow the
+        # latest stored total instead, as Core grows an input with `uprating`.
+        self._record_derived(variable.name)
+        source = self._latest_source(variable.name, period)
+        if source is None:
+            return None
+        stored = self.get_holder(variable.name).get_array(source, self.branch_name)
+        index_name = stored_total_uprating(self.tax_benefit_system, variable.name)
+        return stored * self._index_growth(index_name, source, period)
+
     def _run_formula(self, variable, population, period):
+        if variable.name in STORED_HOUSEHOLD_TOTALS and built_from_data(self):
+            stored = self._stored_household_total(variable, period)
+            if stored is not None:
+                return stored
         result = super()._run_formula(variable, population, period)
         if (
             result is not None
@@ -712,20 +767,8 @@ class Simulation(CoreSimulation):
         # This is fallback, after Core's explicit input/abolition checks and
         # policy formulas. Preserve the old gross history even past the last
         # materialized dataset year; new additive records use Core normally.
-        history = getattr(self, "_get_store_history", None)
-        if callable(history):
-            # Store-history tracking is available in newer Core releases;
-            # the declared minimum already caches formula results without it.
-            from policyengine_core.data_storage.store_history import (
-                next_sequence_number,
-            )
-
-            history().record_derived(variable.name, next_sequence_number())
-        source = self._isa_latest_input(variable.name, period, earlier=True)
-        if source is None:
-            # Core first uprates strictly earlier annual inputs, then carries
-            # an input starting on the query date if there was none earlier.
-            source = self._isa_latest_input(variable.name, period)
+        self._record_derived(variable.name)
+        source = self._latest_source(variable.name, period)
         holder = self.get_holder(variable.name)
         if source is None:
             gross = holder.default_array()
@@ -736,16 +779,7 @@ class Simulation(CoreSimulation):
                 == "additive"
             ):
                 gross = gross + self._isa_stored_exemption(source)
-            if variable.uprating is not None:
-                index = self.tax_benefit_system.parameters.get_child(variable.uprating)
-                source_index = _uprating_index_value(index, source.start)
-                target_index = _uprating_index_value(index, period.start)
-                factor = (
-                    target_index / source_index
-                    if source_index not in (None, 0) and target_index is not None
-                    else 1
-                )
-                gross = gross * factor
+            gross = gross * self._index_growth(variable.uprating, source, period)
         return gross - self.calculate(TAX_FREE_INTEREST, period)
 
     @staticmethod
