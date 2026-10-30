@@ -1,5 +1,5 @@
 - name: CT bands A-D get full rebate, others don't.
-  period: 2023
+  period: 2022
   input:
     council_tax:
       - 150
@@ -32,3 +32,26 @@
       - 0
       - 0
       - 0
+
+# The rebate was a one-off in 2022-23: billing authorities made every payment
+# by 30 September 2022 (billing authority guidance, paragraph 7). It was not
+# paid again in 2023-24 or before 2022-23.
+- name: No rebate in 2023-24, in any band.
+  period: 2023
+  input:
+    council_tax_band:
+      - A
+      - D
+      - E
+  output:
+    ebr_council_tax_rebate:
+      - 0
+      - 0
+      - 0
+
+- name: No rebate in 2021-22.
+  period: 2021
+  input:
+    council_tax_band: A
+  output:
+    ebr_council_tax_rebate: 0

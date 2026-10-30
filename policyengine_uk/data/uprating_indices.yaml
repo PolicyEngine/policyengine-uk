@@ -125,6 +125,8 @@ gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 - lump_sum_income
 - maintenance_income
 - miscellaneous_income
+# Part of miscellaneous_income, so it grows with it.
+- income_not_otherwise_charged
 - mortgage_capital_repayment
 - net_financial_wealth
 - non_residential_property_value
