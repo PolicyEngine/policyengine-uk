@@ -11,17 +11,23 @@ class uc_award_carries_deductions(Variable):
         "Credit award: true unless the family has an award here but none "
         "in the simulation's baseline. The deduction incidence, rates and "
         "types describe the existing caseload's debts, such as advances, "
-        "benefit overpayments and third-party arrears. A family a reform "
-        "brings onto Universal Credit has no such debt to repay from the "
-        "new award; an advance on a new claim is a loan paid out first. "
-        "Only a simulation built with a reform is compared with its "
-        "baseline, the current-law simulation. In one built without, every "
-        "award carries deductions: its baseline is a copy of itself, so "
-        "the comparison could only miss changes made after it was built, "
-        "such as a simulation modifier, and would cost a second "
-        "Universal Credit calculation."
+        "benefit overpayments and third-party arrears. That a family a "
+        "reform brings onto Universal Credit repays none of them from the "
+        "new award is an assumption, and it holds in every year compared. "
+        "For an advance it is a fair first-year view, since the advance is "
+        "a loan paid out first; but third-party deductions (SI 2013/380 "
+        "Schedule 6) and overpayment recovery apply to any claimant with "
+        "those debts. So it slightly raises the cost of reforms that widen "
+        "Universal Credit. A simulation is compared with its baseline only "
+        "where it may differ from it (changed_from_baseline): one built "
+        "with a reform, or changed after it was built by apply_reform or a "
+        "step that ends with drop_computed_arrays, as policyengine.py's "
+        "simulation modifiers do. Its baseline is then the current-law "
+        "simulation, or the copy made when it was built. In any other "
+        "simulation every award carries deductions."
     )
     definition_period = YEAR
+    reference = "https://www.legislation.gov.uk/uksi/2013/380/schedule/6"
 
     def formula(benunit, period, parameters):
         simulation = benunit.simulation
@@ -29,7 +35,7 @@ class uc_award_carries_deductions(Variable):
         award = benunit("universal_credit_pre_benefit_cap", period) > 0
         person = benunit.members
         if (
-            not getattr(simulation, "built_with_reform", False)
+            not getattr(simulation, "changed_from_baseline", False)
             or baseline is None
             or not award.any()
             or baseline.populations["person"].count != person.count

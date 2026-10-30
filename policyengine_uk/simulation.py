@@ -451,10 +451,13 @@ class Simulation(CoreSimulation):
                 drop_calculated_values(self)
                 self._external_input_change_pending = False
             self.baseline = self.clone()
-        # Whether the baseline is a separate current-law simulation, as for a
-        # reform, rather than a copy of this one made here. Branches copy it.
-        self.built_with_reform = scenario is not None
-        self.baseline.built_with_reform = False
+        # Whether this simulation may differ from its baseline: it was built
+        # with a reform, whose baseline is a separate current-law simulation,
+        # or was changed after it was built (apply_reform,
+        # drop_computed_arrays), when its baseline is the copy made here.
+        # Branches copy it.
+        self.changed_from_baseline = scenario is not None
+        self.baseline.changed_from_baseline = False
         self.baseline._cgt_warning_enabled = False
         self.baseline._defer_uc_health_warning = False
         self.baseline._building_dated_reforms = None
@@ -546,6 +549,19 @@ class Simulation(CoreSimulation):
         finally:
             if linked is not None:
                 system.simulation = linked
+        # A reform applied to a built simulation changes it from its baseline.
+        if getattr(self, "baseline", None) is not None:
+            self.changed_from_baseline = True
+
+    def drop_computed_arrays(self) -> int:
+        """Drop every calculated value, as core does, and mark a built
+        simulation as changed from its baseline: core advises the drop after
+        a change to a simulation's parameters, and policyengine.py drops
+        after each step that changes a built simulation (its _apply_step)."""
+        dropped = super().drop_computed_arrays()
+        if getattr(self, "baseline", None) is not None:
+            self.changed_from_baseline = True
+        return dropped
 
     @property
     def _user_input_keys(self) -> set:

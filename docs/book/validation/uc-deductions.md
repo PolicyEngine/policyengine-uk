@@ -46,20 +46,35 @@ resort cash interface or new category incidence is introduced.
 
 ## Awards a reform creates
 
-The incidence, rates and types describe the existing caseload's debts. A family
-that a reform brings onto Universal Credit has none of them to repay from its
-new award, and an advance on a new claim is a loan it receives first. So no
-deduction comes out of an award that a simulation has and its baseline does
+No deduction comes out of an award that a simulation has and its baseline does
 not (`uc_award_carries_deductions`). This applies whether the dataset supplies
 the deduction attributes or the model draws them. Before, a taper cut gave
-some families a first award that their drawn deduction then mostly took away
-(#2753).
+some families a first award that a deduction drawn for the existing caseload
+then took much of (#2753).
 
-Only a simulation built with a reform is compared with its baseline. A
-simulation built without one keeps every deduction, because its baseline is a
-copy of itself made when it was built; a change made after that, such as a
-simulation modifier, is not compared. The comparison works out the baseline
-award only for the households holding an award, in a branch holding only them.
+This is an assumption. The incidence, rates and types describe the existing
+caseload's debts, and the model takes it that a family a reform brings onto
+Universal Credit repays none of them from its new award. For an advance that is
+a fair first-year view, because the advance is a loan the family receives
+first. But third-party deductions (housing cost arrears, fuel and water among
+others, [SI 2013/380 Schedule 6](https://www.legislation.gov.uk/uksi/2013/380/schedule/6))
+and overpayment recovery apply to any claimant with those debts. The assumption
+also holds in every year compared, so a family a 2027 reform brings on still
+repays nothing from that award in 2030. It therefore slightly raises the cost of
+reforms that widen Universal Credit.
+
+A simulation is compared with its baseline where it may differ from it
+(`Simulation.changed_from_baseline`):
+
+- **Built with a reform.** Its baseline is the current-law simulation.
+- **Changed after it was built,** by `apply_reform` or by a step that ends with
+  `drop_computed_arrays`, as policyengine.py's simulation modifiers do. Its
+  baseline is the copy made when it was built.
+
+In any other simulation every award carries deductions, so a plain current-law
+run does not work out Universal Credit twice. A `set_input` alone does not count
+as a change. The comparison works out the baseline award only for the households
+holding an award, in a branch holding only them.
 
 ## Validation against DWP deductions statistics
 
