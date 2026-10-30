@@ -1,3 +1,14 @@
+## [2.166.0] - 2026-10-30
+
+### Fixed
+
+- - Limited Income Tax reductions to the tax calculated at Step 5, so they no longer offset the High Income Child Benefit Charge or the pension annual allowance charge added at Step 7 (ITA 2007 ss. 23, 29 and 30). The married couple's allowance reduction is no longer capped at the Step 5 tax plus the High Income Child Benefit Charge. The Step 5 components, Step 6 reductions and Step 7 charges are now separate parameter lists: `step_5_tax_components`, `step_6_tax_reductions` and `step_7_additional_tax` replace `income_tax_additions` and `income_tax_subtractions`.
+
+### Removed
+
+- - Removed the `gov.hmrc.income_tax.income_tax_additions` and `gov.hmrc.income_tax.income_tax_subtractions` parameter lists. Use `step_5_tax_components` and `step_7_additional_tax` for the first, and `step_6_tax_reductions` for the second.
+
+
 ## [2.165.3] - 2026-10-30
 
 ### Fixed
