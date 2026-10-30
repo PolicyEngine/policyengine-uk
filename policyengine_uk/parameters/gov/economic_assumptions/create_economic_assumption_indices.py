@@ -6,11 +6,18 @@ from policyengine_core.parameters import (
 
 
 def last_year(parameter: Parameter) -> int:
-    return max(int(value.instant_str[:4]) for value in parameter.values_list)
+    """The first year whose 1 January reads the parameter's final value."""
+    final_instant = max(value.instant_str for value in parameter.values_list)
+    year = int(final_instant[:4])
+    return year if final_instant.endswith("-01-01") else year + 1
 
 
 def growth_horizon(yoy_growth: ParameterNode) -> int:
-    """The last year any growth series covers, where the indices end."""
+    """The last year any growth series covers, where the indices end.
+
+    The indices read each series on 1 January, so a value dated later in a
+    year first reaches them the year after.
+    """
     return max(
         last_year(parameter)
         for parameter in yoy_growth.get_descendants()

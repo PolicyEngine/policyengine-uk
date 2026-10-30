@@ -55,6 +55,8 @@ from policyengine_uk.tax_benefit_system import COUNTRY_DIR
 EARNINGS_INDEX = "gov.economic_assumptions.indices.earnings_uprating"
 FIRST_PROJECTION_YEAR = 2027
 LAST_INDEX_YEAR = growth_horizon(system.parameters.gov.economic_assumptions.yoy_growth)
+# The synthetic growth series end here, well past any generated path.
+LAST_SYNTHETIC_YEAR = 2039
 LAST_PUBLISHED_YEAR = FIRST_PROJECTION_YEAR - 1
 PARAMETERS_DIR = COUNTRY_DIR / "parameters"
 SMG_NAME = "gov.dwp.pension_credit.guarantee_credit.minimum_guarantee"
@@ -116,6 +118,7 @@ def synthetic_parameter_tree(path, phase_ins=()):
     """
     observations = {year: (0.02, 0.02) for year in range(2010, 2026)}
     observations.update({2026 + i: values for i, values in enumerate(path)})
+    final_observation = observations[max(observations)]
     parameters = ParameterNode(
         data={
             "gov": {
@@ -140,6 +143,11 @@ def synthetic_parameter_tree(path, phase_ins=()):
                                 "values": {
                                     f"{year}-01-01": values[position]
                                     for year, values in observations.items()
+                                }
+                                | {
+                                    f"{LAST_SYNTHETIC_YEAR}-01-01": final_observation[
+                                        position
+                                    ]
                                 }
                             }
                             for name, position in (
@@ -287,19 +295,15 @@ def test_projected_threshold_respects_phase_in_and_its_nonnegative_floor(
     path, phase_ins
 ):
     """Invariant 3: zero never divides and small positive rates cannot cut below zero."""
-    # The growth inputs must cover every stated rate: the indices, and so the
-    # projection, end with them.
-    path = path + path[-1:] * (len(phase_ins) - len(path))
     parameters = synthetic_parameters(path, phase_ins)
     assert_published_amounts_kept(parameters)
     pc = parameters.gov.dwp.pension_credit
     phase_in = pc.savings_credit.rate.phase_in
-    last_projected_year = growth_horizon(parameters.gov.economic_assumptions.yoy_growth)
     for relation in ("SINGLE", "COUPLE"):
         guarantee = getattr(pc.guarantee_credit.minimum_guarantee, relation)
         threshold = getattr(pc.savings_credit.threshold, relation)
         maximum = getattr(pc.savings_credit.maximum, relation)
-        for year in range(FIRST_PROJECTION_YEAR, last_projected_year + 1):
+        for year in range(FIRST_PROJECTION_YEAR, LAST_SYNTHETIC_YEAR + 1):
             at, before = f"{year}-04-30", f"{year - 1}-04-30"
             rate = phase_in(at)
             if rate == 0:

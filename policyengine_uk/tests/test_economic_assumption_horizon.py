@@ -9,7 +9,8 @@ Invariants:
 
 1. Horizon: every index ends in the last year any growth series covers, which
    is one year past the raw series because the lagged series run a year past
-   their source.
+   their source. The indices read each series on 1 January, so a value dated
+   later in a year counts from the next year.
 2. Compounding: each index is 1 in its first year and, for every later year to
    the horizon, the previous year's value times one plus that year's growth,
    rounded to 5 decimal places (the earnings index keeps its full precision).
@@ -199,6 +200,28 @@ def test_indices_end_where_any_growth_series_ends(tree):
             # Past its last year a series holds its final growth rate.
             expected = round(index(str(year - 1)) * (1 + series(str(year))), 5)
             assert index(str(year)) == expected
+
+
+def test_a_growth_value_dated_after_1_january_reaches_the_index():
+    tree = ParameterNode(
+        "",
+        data={
+            "gov": {
+                "economic_assumptions": {
+                    "yoy_growth": {
+                        "series": {"values": {"2030-01-01": 0.1, "2030-06-01": 0.2}}
+                    }
+                }
+            }
+        },
+    )
+
+    create_economic_assumption_indices(tree)
+
+    index = tree.gov.economic_assumptions.indices.series
+    assert last_year(index) == 2031
+    assert index("2030") == 1.0
+    assert index("2031") == 1.2
 
 
 def reformed_system(growth):
