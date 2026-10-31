@@ -251,8 +251,8 @@ comes out as follows:
   HMRC's 2024-25 receipts by the Gambling Commission's 2024-25 gross
   gambling yield, held fixed in every year. That split counts all remote
   horse racing as UK horse racing, which keeps 15%, so the part at 25% may
-  be larger, and the 2.70% then overstates the base's growth. Spread betting
-  has no published base and no weight.
+  be larger, and the 2.70% then overstates the base's growth. Microcosm's
+  split gives spread betting no part, so it has no weight.
 - **Machine Games Duty**: the model's three rates do not change. Table
   4.10's line includes Autumn Budget 2026's increase to machine gaming
   rates, which "increases receipts by a further estimated £0.1 billion a year
@@ -263,9 +263,12 @@ comes out as follows:
   £157.6, £155.9 and £156.4 million. The series takes those receipts off.
   The line grows 22.1% into 2027-28; the base grows (826.9 − 144.2) / 677.1
   − 1 = 0.84%. Those receipts also hold the supplier measure's yield, which
-  the base therefore excludes, and the Remote Gaming Duty on the machine
-  stakes the costing moves online, which Table 4.10 counts in the remote
-  gaming line: taking it off this line understates the base by that amount.
+  the base therefore excludes. The rate costing also moves a quarter of the
+  stakes lost from machines to remote gaming. If measure 56's betting
+  receipts count that Remote Gaming Duty and Table 4.10 puts it in the
+  remote gaming line, taking the whole measure off this line understates
+  the base by that amount. Table 1.1 gives only the measure's head,
+  Betting, and Table 4.10 carries no note on it.
   The result is the base before the measure, without the costing's
   behavioural response, on which a static higher-stake rate (#2731) charges
   25%.
@@ -288,11 +291,14 @@ The series rest on these approximations:
   accrued 2026-27 receipts with cash 2025-26 receipts.
 - Model years run from 6 April and the OBR's from 1 April. A model year
   that takes in five days of a 1 April rate change charges them at the new
-  rate, so FY2025 Remote Gaming Duty and FY2026 General Betting Duty sit
-  slightly above the published receipts.
+  rate, so FY2025 Remote Gaming Duty (1.2%) and FY2026 General Betting Duty
+  (0.4%) sit slightly above the published receipts, and FY2025 Bingo Duty
+  (1.4%) slightly below.
 - Two lines fall where no rate changes. Table 4.10's Lottery Duty for
   2026-27, £830.5 million, is 15.3% below HMRC's 2025-26 outturn of £980.1
-  million; the EFO gives no reason in paragraph 4.45. Pool Betting Duty
+  million. The March 2026 Table 3.10 forecast £1,008.6 million for the same
+  year; the October policy table holds no Lottery Duty measure, and the EFO
+  gives no reason in paragraph 4.45. Pool Betting Duty
   receipts fall from £8.1 million in 2024-25 to £4.0 million in 2025-26 and
   a forecast £2.8 million in 2026-27, so its index falls by 65%.
 

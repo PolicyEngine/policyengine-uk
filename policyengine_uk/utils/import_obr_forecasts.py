@@ -729,8 +729,8 @@ RECEIPTS_SERIES_SPECS = (
     # Each part's 2024-25 base (£): HMRC's General Betting Duty receipts over
     # 15%, split by the Gambling Commission's 2024-25 gross gambling yield as
     # Microcosm splits the model's inputs. Fixed odds take remote UK horse
-    # racing, land-based fixed odds and racing pools. Spread betting, which
-    # the Commission does not regulate, has no published base.
+    # racing, land-based fixed odds and racing pools. Microcosm's split gives
+    # spread betting no part, so it has no weight.
     gambling_spec(
         "general_betting",
         "general betting duty",
