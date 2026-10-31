@@ -18,11 +18,11 @@ parameter history starts on 1 August 2023; the preceding alcohol regime and a
 complete 2023/24 calculation are outside this implementation. Tobacco rates
 start on 22 November 2023. The new alcohol, tobacco and car formulas return their
 default zero before 2024; that is an unmodelled period, not a statutory exemption.
-Gas duty covers 2022/23 onwards and includes the 1 January 2027 and 1 March 2027
-increases. SI 2026/555 removed the September 2026 step announced at Budget 2025
-and moved the December 2026 step to 1 January 2027. Rates after the last dated
-entry stay constant; the gas parameters do not forecast future inflation
-increases.
+Gas duty covers 2022/23 onwards. SI 2026/555 removed the September 2026 step
+that Budget 2025 announced and moved the December 2026 step to 1 January 2027.
+Budget 2026 then kept the proportionate cut to 1 July 2027, when the gas rates
+return to their full levels with RPI growth on top, and rise by RPI each 1 April
+from 2028, as petrol and diesel do (see below).
 
 For alcohol and tobacco, a model year such as `2026` represents 6 April 2026 to
 5 April 2027. Quantities and cigarette retail prices are constant across that
@@ -154,35 +154,45 @@ matching the legislation. No universal litre-to-kilogram density is assumed.
 The existing `fuel_duty` output includes these charges. Rural fuel duty relief
 continues to apply only to petrol and diesel.
 
-From 1 March 2027 onwards, the gas parameters hold LPG at £0.3161/kg and natural
-gas at £0.2470/kg. This implementation stops at the last numerical rates in the
-HMRC 2026-to-2027 schedule and does not extrapolate gas rates using an inflation
-forecast. This is a modelling limitation: HMRC states that RPI uprating resumes
-from 2027/28. The petrol and diesel rate includes forecast RPI uprating each
-1 April from 2027, so its rates rise while the gas rates stay flat. Later-year gas duty is therefore lower than it would be
-under the same uprating assumption. Analyses beyond March 2027 that require
-consistent fuel-duty forecasts must supply an uprated gas-rate path explicitly.
+Budget 2026's costing says that on 1 July 2027 "fuel duty rates will increase
+by 5ppl and will be uprated in line with the Retail Prices Index (RPI)", and
+applies the cut to other fuels in proportion. So on 1 July 2027 the gas rates
+return to their full rates before the 2022 cut (LPG £0.3161/kg, natural gas
+£0.2470/kg), with the same RPI growth as petrol and diesel. HM Treasury
+publishes the rates from 1 July 2027 in Annex A of Budget 2026's Overview
+of Tax Legislation and Rates: £0.3305/kg and £0.2582/kg (the uprating gives
+£0.2583/kg for natural gas, and the model uses HM Treasury's rate). Each
+1 April from 2028 they rise by the previous calendar
+year's RPI growth. `calculate_fuel_duty_rates.py` writes these steps to
+1 April 2031, as it does for petrol and diesel, and the parameters' uprating
+metadata continues them. That is policy, not law.
 
 Sources: [HMRC fuel duty rates 2026 to 2027](https://www.gov.uk/government/publications/fuel-duty-rates-for-2026-to-2027/fuel-duty-rates-2026-to-2027)
 (RPI uprating from 2027/28),
 [HMRC amended fuel duty rates 2026 to 2027](https://www.gov.uk/government/publications/amended-fuel-duty-rates-for-2026-to-2027/amended-fuel-duty-rates-2026-to-2027)
-and [SI 2026/164 as amended by SI 2026/555](https://www.legislation.gov.uk/uksi/2026/164).
+[SI 2026/164 as amended by SI 2026/555](https://www.legislation.gov.uk/uksi/2026/164)
+and [Budget 2026 policy costings, page 13](https://assets.publishing.service.gov.uk/media/6ae1883fe4367e5c8b0467df/AB26_Policy_Costing.pdf#page=13).
 
 ## Petrol and diesel rate
 
 The main rate on unleaded petrol and diesel is keyed to each statutory change:
-52.95p a litre from 23 March 2022, continued by annual orders to 31 December 2026;
-55.95p from 1 January 2027 (SI 2026/164 as amended by SI 2026/555); and the Hydrocarbon Oil
-Duties Act 1979 rate of 57.95p from 1 March 2027. Budget 2025 states that rates
-will be uprated by RPI from April 2027, and HM Treasury's Budget 2025 costing
-dates this from 1 April 2027. That uprating is policy, not law: HMRC's amended
-note of 22 May 2026 says final rates will be confirmed at Budget 2026. No
-official source names the RPI measure. The model applies the previous calendar
+52.95p a litre from 23 March 2022, continued by annual orders to 31 December 2026
+(SI 2026/164 as amended by SI 2026/555). Those orders then stepped to 55.95p on
+1 January 2027 and to the Hydrocarbon Oil Duties Act 1979 rate of 57.95p on
+1 March 2027. Budget 2026 (paragraph 6.211) cancelled both steps and kept the
+cut to 1 July 2027. Its costing (page 13) says: "On 1 July 2027, fuel duty rates
+will increase by 5ppl and will be uprated in line with the Retail Prices Index
+(RPI). From 1 April 2028, fuel duty rates will be uprated annually in line with
+RPI." That is policy, not law. The OBR's October 2026 EFO (paragraph 3.19)
+puts the rate at 60.59p from 1 July 2027: RPI growth in the year to 2027 Q1
+(4.5565%, economy Table 1.7) on the 57.95p pre-cut rate. The model
+uses that figure, and `calculate_fuel_duty_rates.py` refuses to write any
+other July rate. From 1 April 2028, each step applies the previous calendar
 year's RPI growth from the OBR forecast in
-`gov.economic_assumptions.yoy_growth.obr.rpi` on each 1 April, rounded to the
-nearest hundredth of a penny. The steps to 1 April 2031 are written out by
-`calculate_fuel_duty_rates.py`, and a test fails when they fall out of date
-with the RPI forecast. Later steps come from the parameter's uprating metadata.
+`gov.economic_assumptions.yoy_growth.obr.rpi`, rounded to the nearest
+hundredth of a penny. The script writes the steps to 1 April 2031, and a test
+fails when they fall out of date with the RPI forecast. After a new EFO, set
+the script's July rate and RPI growth to its forecast and rerun it. Later steps come from the parameter's uprating metadata.
 The RPI index ends with the growth series, in 2074, so the last step is 1 April 2075.
 
 An annual reform names a model year and replaces the rate for all of it. For

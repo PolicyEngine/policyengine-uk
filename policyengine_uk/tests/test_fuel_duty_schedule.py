@@ -2,8 +2,10 @@
 The petrol and diesel fuel duty rate follows its dated schedule.
 
 Each rate is keyed to the date it takes effect, and `fiscal_year_blend`
-day-weights the schedule across each model year (6 April to 5 April). Rates
-from 1 April 2027 are an RPI forecast: Budget 2025 policy, not yet law.
+day-weights the schedule across each model year (6 April to 5 April).
+Budget 2026 keeps the 5p cut to 1 July 2027; the rate from then is the
+OBR's forecast, and later rates an RPI forecast. Both are Budget 2026 policy,
+not yet law.
 """
 
 import datetime
@@ -21,7 +23,13 @@ from policyengine_uk.model_api import Scenario
 from policyengine_uk.system import system
 
 PATH = "gov.hmrc.fuel_duty.petrol_and_diesel"
-FORECAST_YEARS = range(2027, 2032)
+# The 1 July 2027 step is the OBR's 60.59p (EFO October 2026, paragraph
+# 3.19). Each 1 April step from 2028 applies the previous calendar year's RPI
+# growth.
+CUT_END_DATE = "2027-07-01"
+CUT_END_RATE = 0.6059
+FORECAST_DATES = [f"{year}-04-01" for year in range(2028, 2032)]
+LAST_FORECAST_YEAR = 2031
 CONVERTED_YEARS = range(2015, 2041)
 
 
@@ -57,33 +65,33 @@ def model_year_days(year: int) -> list:
         ("2022-03-22", 0.5795),
         ("2022-03-23", 0.5295),
         # SI 2026/555 removed the 1 September 2026 step and moved the
-        # 1 December 2026 step to 1 January 2027.
+        # 1 December 2026 step to 1 January 2027; Budget 2026 cancelled the
+        # January and March 2027 steps and kept the cut to 1 July 2027.
         ("2026-09-01", 0.5295),
         ("2026-12-01", 0.5295),
         ("2026-12-31", 0.5295),
-        ("2027-01-01", 0.5595),
-        ("2027-02-28", 0.5595),
-        ("2027-03-01", 0.5795),
-        ("2027-03-31", 0.5795),
+        ("2027-01-01", 0.5295),
+        ("2027-03-01", 0.5295),
+        ("2027-04-01", 0.5295),
+        ("2027-06-30", 0.5295),
     ],
 )
-def test_statutory_rate_on_each_date(date, rate):
+def test_scheduled_rate_on_each_date(date, rate):
     schedule = raw_parameters().gov.hmrc.fuel_duty.petrol_and_diesel
     assert schedule(date) == pytest.approx(rate, abs=1e-12)
 
 
-# Model year Y runs from 6 April Y to 5 April Y+1. Rates from 1 April 2027,
-# on the OBR's October 2026 RPI forecast: 60.03p, then 62.62p (2028),
-# 64.52p (2029), 66.44p (2030), 67.96p (2031).
+# Model year Y runs from 6 April Y to 5 April Y+1. Rates, on the OBR's October
+# 2026 RPI forecast: 60.59p from 1 July 2027, then 63.21p (2028), 65.13p
+# (2029), 67.07p (2030), 68.61p (2031).
 HAND_COMPUTED = {
     2025: 0.5295,
-    # 6 Apr to 31 Dec 2026, Jan to Feb 2027, Mar 2027, 1 to 5 Apr 2027.
-    2026: (0.5295 * 270 + 0.5595 * 59 + 0.5795 * 31 + 0.6003 * 5) / 365,
-    # 2028 is a leap year: 361 days to 31 March, then 5 days.
-    2027: (0.6003 * 361 + 0.6262 * 5) / 366,
-    2028: (0.6262 * 360 + 0.6452 * 5) / 365,
-    2029: (0.6452 * 360 + 0.6644 * 5) / 365,
-    2030: (0.6644 * 360 + 0.6796 * 5) / 365,
+    2026: 0.5295,
+    # 6 Apr to 30 Jun 2027, then to 31 Mar 2028 (a leap year), then 5 days.
+    2027: (0.5295 * 86 + 0.6059 * 275 + 0.6321 * 5) / 366,
+    2028: (0.6321 * 360 + 0.6513 * 5) / 365,
+    2029: (0.6513 * 360 + 0.6707 * 5) / 365,
+    2030: (0.6707 * 360 + 0.6861 * 5) / 365,
 }
 
 
@@ -93,7 +101,7 @@ def test_model_year_rate_is_hand_computed_day_weighted_average(year, rate):
 
 
 def test_forecast_steps_use_current_rpi_forecast():
-    """The written 1 April steps match the RPI series they claim to use.
+    """The written steps match the RPI series they claim to use.
 
     Fails when the RPI forecast in yoy_growth.yaml changes. Regenerate with
     `uv run python policyengine_uk/parameters/gov/hmrc/fuel_duty/calculate_fuel_duty_rates.py --update`.
@@ -101,21 +109,60 @@ def test_forecast_steps_use_current_rpi_forecast():
     parameters = raw_parameters()
     rpi = parameters.gov.economic_assumptions.yoy_growth.obr.rpi
     schedule = parameters.gov.hmrc.fuel_duty.petrol_and_diesel
-    rate = Decimal("0.5795")
-    for year in FORECAST_YEARS:
-        growth = Decimal(str(rpi(f"{year - 1}-01-01")))
+    assert schedule(CUT_END_DATE) == pytest.approx(CUT_END_RATE, abs=1e-12)
+    rate = Decimal(str(CUT_END_RATE))
+    for date in FORECAST_DATES:
+        day_before = (
+            datetime.date.fromisoformat(date) - datetime.timedelta(days=1)
+        ).isoformat()
+        growth = Decimal(str(rpi(f"{int(date[:4]) - 1}-01-01")))
         rate = (rate * (1 + growth)).quantize(Decimal("0.0001"), ROUND_HALF_UP)
-        assert schedule(f"{year}-04-01") == pytest.approx(float(rate), abs=1e-12), (
-            f"{year}-04-01 is stale against the RPI forecast; run "
+        assert schedule(date) == pytest.approx(float(rate), abs=1e-12), (
+            f"{date} is stale against the RPI forecast; run "
             "calculate_fuel_duty_rates.py --update"
         )
-        assert schedule(f"{year}-03-31") != schedule(f"{year}-04-01")
+        assert schedule(day_before) != schedule(date)
+
+
+@pytest.mark.parametrize(
+    "fuel, full_rate, published",
+    [("lpg", "0.3161", "0.3305"), ("natural_gas", "0.2470", "0.2582")],
+)
+def test_road_fuel_gases_get_the_same_rpi_uprating(fuel, full_rate, published):
+    """LPG and natural gas take the proportionate cut to 1 July 2027 (Budget
+    2026, paragraph 6.211; costings page 13). Their full rates then get the
+    OBR's 1 July uprating for petrol and diesel, 57.95p to 60.59p, and RPI
+    each 1 April from 2028. HM Treasury publishes the 1 July 2027 rates
+    (Overview of Tax Legislation and Rates, Annex A), and the schedule uses
+    them: LPG's matches the uprating, and natural gas's 25.82p falls a
+    hundredth of a penny short of the uprating's 25.83p."""
+    parameters = raw_parameters()
+    rpi = parameters.gov.economic_assumptions.yoy_growth.obr.rpi
+    schedule = getattr(parameters.gov.hmrc.fuel_duty, fuel)
+    july_growth = Decimal("0.045565")
+    assert (Decimal("0.5795") * (1 + july_growth)).quantize(
+        Decimal("0.0001"), ROUND_HALF_UP
+    ) == Decimal(str(CUT_END_RATE))
+    uprated = (Decimal(full_rate) * (1 + july_growth)).quantize(
+        Decimal("0.0001"), ROUND_HALF_UP
+    )
+    rate = Decimal(published)
+    assert abs(rate - uprated) <= Decimal("0.0001")
+    assert schedule("2027-06-30") < float(full_rate)
+    assert schedule(CUT_END_DATE) == pytest.approx(float(rate), abs=1e-12)
+    for date in FORECAST_DATES:
+        growth = Decimal(str(rpi(f"{int(date[:4]) - 1}-01-01")))
+        rate = (rate * (1 + growth)).quantize(Decimal("0.0001"), ROUND_HALF_UP)
+        assert schedule(date) == pytest.approx(float(rate), abs=1e-12), (
+            f"{fuel} {date} is stale against the RPI forecast; run "
+            "calculate_fuel_duty_rates.py --update"
+        )
 
 
 def test_uprating_continues_each_april_after_the_written_steps():
     schedule = dated_schedule()
     rpi = system.parameters.baseline.gov.economic_assumptions.yoy_growth.obr.rpi
-    for year in range(max(FORECAST_YEARS) + 1, 2041):
+    for year in range(LAST_FORECAST_YEAR + 1, 2041):
         previous = schedule(f"{year - 1}-04-01")
         assert schedule(f"{year}-03-31") == previous
         expected = previous * (1 + rpi(f"{year - 1}-01-01"))
@@ -163,18 +210,20 @@ def fuel_duty_simulation(parameter_changes=None):
     return Microsimulation(situation=situation, scenario=scenario)
 
 
-def test_holding_55_95p_for_2027_removes_the_full_2027_28_rate_rise():
-    """Regression: calendar-year averaging cut this effect to 3.30p a litre.
+def test_holding_52_95p_for_2027_removes_the_full_2027_28_rate_rise():
+    """Regression: calendar-year averaging diluted annual overrides.
 
-    The 2027-28 baseline is 60.07p, so holding 55.95p saves 4.12p a litre.
+    The 2027-28 baseline averages 58.83p, so holding 52.95p for the whole
+    model year saves 5.88p a litre.
     """
     baseline = fuel_duty_simulation()
-    reformed = fuel_duty_simulation({PATH: {"2027": 0.5595}})
+    reformed = fuel_duty_simulation({PATH: {"2027": 0.5295}})
     saving = (
         baseline.calculate("fuel_duty", 2027).values[0]
         - reformed.calculate("fuel_duty", 2027).values[0]
     )
-    assert saving == pytest.approx(1_000 * (HAND_COMPUTED[2027] - 0.5595))
+    # fuel_duty is float32: about £590 each side, so allow a tenth of a penny.
+    assert saving == pytest.approx(1_000 * (HAND_COMPUTED[2027] - 0.5295), abs=1e-3)
 
 
 @settings(max_examples=8, deadline=None)

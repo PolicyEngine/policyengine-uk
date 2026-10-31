@@ -195,8 +195,10 @@ Do not infer its price year from the dataset year, filename, URL or file format.
 Legacy builds can hold FY2026-27 energy prices in a dataset labelled 2024.
 
 An explicit declaration opts only `domestic_energy_consumption`,
-`electricity_consumption` and `gas_consumption` into the existing generic annual
-OBR consumer-price-index assumption as an interim price proxy. Other generic
+`electricity_consumption` and `gas_consumption` into the household energy
+price indices, `gov.economic_assumptions.energy_prices`: ONS CPI electricity
+and gas prices to the latest outturn, then the OBR's utilities forecast,
+holding VAT at the rate the inputs assume. Other generic
 uprating exclusions do not join this declaration or its reset group. For an
 input whose producer receipt declares calendar-2024 prices, a caller can label
 a local UK single-year H5 before constructing a simulation:
@@ -217,22 +219,23 @@ financial year. Both keys are required. The year must be an integer from 1
 through 9999; malformed or conflicting caller/file declarations raise a clear
 error. A caller's `None` leaves an existing file declaration intact.
 
-The model retains the period kind as provenance but uses the January 1 index
-level of the starting year for both calendar and fiscal price periods.
-Projection multiplies the supplied amount by `I[target year] / I[price year]`.
-This shared start-year convention approximates calendar/fiscal alignment;
-generic CPI does not establish constant-consumption energy-price outturns or
-an energy-specific forecast. Open [issue #2526](https://github.com/PolicyEngine/policyengine-uk/issues/2526)
-tracks energy-specific index alignment and a sourced future assumption. The
-original observation remains unchanged; a projected child's declaration records
-its effective fiscal-year price basis so later extension does not apply the
-original ratio twice.
+The period kind selects the index: a `calendar_year` basis reads the January to
+December level of its year, a `fiscal_year` basis the April to March level
+starting in its year. The target is always the fiscal year level, since model
+year Y is fiscal year Y–(Y+1). Projection multiplies the supplied amount by
+`I[target year] / I[price year]`, holding consumption fixed. The economic
+assumptions
+[README](../../../policyengine_uk/parameters/gov/economic_assumptions/README.md#household-energy-prices)
+describes the indices, their sources and the VAT adjustment.
+The original observation remains unchanged; a projected child's declaration
+records its effective fiscal-year price basis so later extension does not apply
+the original ratio twice.
 
 When a declaration projects stored energy inputs, both January 1 dates must
-fall on or after the selected index's earliest non-null value. An earlier
-basis or target, including January 1 before a midyear start, raises a clear
-error rather than using Core's backward first-value fallback. An index with
-no usable history also raises an error for that projection. Unlabelled
+fall on or after the selected index's first stated value (1 January 2015). An
+earlier basis or target raises a clear error rather than using Core's backward
+first-value fallback. An index with no values also raises an error for that
+projection. Unlabelled
 observations and declarations with no relevant stored inputs retain their
 existing behaviour without requiring index history.
 

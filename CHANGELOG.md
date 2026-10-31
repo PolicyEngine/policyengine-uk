@@ -1,3 +1,48 @@
+## [2.170.0] - 2026-10-31
+
+### Added
+
+- Add the Household Energy Payment announced at Budget 2026: £100 in 2026-27 for households in council tax bands A to D in England, counted in household benefits, government spending and HBAI income (as HBAI counted the 2022 Council Tax Rebate).
+- Add the Pension Tax Allowance announced at Budget 2026: from 6 April 2027 to 5 April 2030, people over State Pension age (or reaching it within the tax year) get a non-refundable Income Tax reduction of 20% of the full new State Pension above the Personal Allowance, rounded up to the pound (£94 in 2027-28), tapered by £1 for every £3 of total income above the full new State Pension (52 weeks at the weekly rate, so it follows any change to that rate). Universal Credit's deduction for tax on earnings sees it.
+
+### Changed
+
+- Replace the cliff edge at the Carer's Allowance earnings limit with the 100% taper that Budget 2026 announced, in England and Wales: the weekly allowance falls by £1 for each £1 of weekly earnings above the limit. The taper starts within 2030-31; until DWP confirms the date the model starts it on 6 October 2030, so 2030-31 carries 182 of its 365 days. In that year the weeks before the taper and the weeks under it each get their own couple restriction and overlapping-benefit reduction, so State Pension reduces the allowance only in the weeks the allowance pays for. A couple caring for the same person elect which of them has the allowance, and the model gives it to the partner with the larger award (before, it preferred the benefit-unit head), so the taper never leaves a couple with less than the cliff edge did, and one partner has the award for the year: where the two have the same award for some weeks, the couple elect the one with the larger award over the year. An amount before the couple restriction or the overlap rule that an input supplies, or that a reform neutralizes, calculates with a formula of its own or otherwise changes, reaches the payment with the whole year's treatment for the stages after it, even where it equals the model's. The payment ignores the stage before the couple restriction wherever an input supplies, or a reform calculates, the amount before overlap. A mask that takes away a fraction of a penny counts as a change, since the couple restriction chooses only among partners with an award. A payment of less than half a penny for the year is nil.
+- Extend the temporary zero rate of VAT on domestic electricity to 30 June 2027, and apply it in Northern Ireland from 1 April 2027, as announced at Budget 2026.
+- Keep the 5p fuel duty cut, and the proportionate cut for LPG and natural gas, to 1 July 2027, as announced at Budget 2026. On that date petrol and diesel rise to the OBR's forecast of 60.59p (57.95p uprated by RPI growth to 2027 Q1), and LPG and natural gas return to their full rates with the same uprating, at the rates HM Treasury publishes (natural gas 25.82p a kilogram); all three then rise by RPI each 1 April from 2028.
+- Raise the savings and property income rates to 24%, 44% and 49% from 6 April 2027 (Budget 2026).
+- Raise the trading allowance to £3,000 from 6 April 2027 (Budget 2026).
+
+
+## [2.169.0] - 2026-10-31
+
+### Added
+
+- Added Northern Ireland's £200 Alternative Fuel Payment (`ebr_alternative_fuel_payment`), paid with the £400 Energy Bills Support Scheme amount in January 2023, so a Northern Ireland household's Energy Bills Rebate totals the £600 the December 2022 direction set.
+
+### Fixed
+
+- Stopped paying the 2022 £150 Council Tax Rebate in Northern Ireland, which levies domestic rates rather than council tax and had no rebate. The enhanced FRS gives every Northern Ireland household band A, so the model had paid it to all of them.
+
+
+## [2.168.1] - 2026-10-31
+
+### Changed
+
+- Project household electricity and gas spending with retail energy price indices instead of headline CPI. The indices follow the ONS CPI electricity, gas and solid fuel indices to the latest month and the OBR's utilities inflation forecast after it, and leave out the electricity VAT cut and its extension, so a VAT reform no longer moves projected spending.
+
+
+## [2.168.0] - 2026-10-31
+
+### Added
+
+- Add the April 2027 minimum wage rates Budget 2026 announced (paragraph 6.128): £13.21 for the national living wage, £11.27 for ages 18 to 20, and £8.31 for ages 16 to 17 and apprentices. The projection by earnings growth now starts from them.
+
+### Fixed
+
+- Project the minimum wage rates, including the national living wage, after the last rate set by the OBR's national living wage forecast (EFO economy Table 1.13) and average earnings growth after it, so the Universal Credit benefit cap earnings exception, the minimum income floor, ESA permitted work, the childcare earnings tests and the Carer's Allowance earnings limit rise with them instead of holding April 2026 rates. A reform that sets a minimum wage rate from some year onwards now holds that rate flat against a rising baseline, where before it was an uplift on a flat one.
+
+
 ## [2.167.0] - 2026-10-31
 
 ### Added
