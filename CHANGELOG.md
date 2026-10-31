@@ -1,3 +1,22 @@
+## [2.167.0] - 2026-10-31
+
+### Added
+
+- Machine Games Duty charges the new `machine_games_standard_rate_higher_stake_net_takings` input, the part of standard-rate takings from machines with a maximum charge to play above £1 or a maximum prize above £100, at the higher rate of 25% from 1 April 2027 (Budget 2026, OOTLAR paragraph 1.50). The dated parameter `gov.hmrc.gambling_duty.machine_games.higher_stake_machines_at_higher_rate` switches the change on.
+
+
+## [2.166.1] - 2026-10-31
+
+### Changed
+
+- The YAML test run releases each case's simulation and its file's reformed systems once they have run, so its peak memory falls from 16.1 GiB to 1.65 GiB and CI's YAML job finishes well within its time limit.
+
+### Fixed
+
+- Applied Housing Benefit accommodation earnings disregards from their statutory commencement within the first fiscal year, calculating awards before combining date segments.
+- Fixed `Simulation.build_from_populations` with another simulation's populations: the simulation, its clones and its branches now treat the values that simulation supplied as supplied and the values the model set itself as the model's, record inputs set afterwards, and calculate again the values that simulation calculated or this one cached for the replaced populations.
+
+
 ## [2.166.0] - 2026-10-30
 
 ### Fixed

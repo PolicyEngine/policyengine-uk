@@ -36,3 +36,70 @@
     machine_games_higher_rate_net_takings: 1_000
   output:
     machine_games_duty: 250 # Only the higher-rate base: 1,000 * 25%.
+
+- name: Case 6, before April 2027 higher-stake takings stay at the standard rate.
+  period: 2025
+  input:
+    machine_games_standard_rate_net_takings: 1_000
+    machine_games_standard_rate_higher_stake_net_takings: 400
+  output:
+    machine_games_duty: 200 # 1,000 * 20%; the higher-stake part is within it.
+
+- name: Case 7, FY2026 charges five of its 365 days at the higher rate.
+  period: 2026
+  input:
+    machine_games_standard_rate_net_takings: 36_500
+    machine_games_standard_rate_higher_stake_net_takings: 7_300
+  output:
+    # OOTLAR 1.50 from 1 April 2027: 36,500 * 20% + 7,300 * 5% * 5 / 365.
+    machine_games_duty: 7_305
+
+- name: Case 8, from FY2027 higher-stake takings use twenty-five percent.
+  period: 2027
+  input:
+    machine_games_standard_rate_net_takings: 1_000
+    machine_games_standard_rate_higher_stake_net_takings: 400
+  output:
+    machine_games_duty: 220 # 600 * 20% + 400 * 25%.
+
+- name: Case 9, the higher rate continues in later years.
+  period: 2029
+  input:
+    machine_games_standard_rate_net_takings: 1_000
+    machine_games_standard_rate_higher_stake_net_takings: 400
+  output:
+    machine_games_duty: 220
+
+- name: Case 10, the duty caps higher-stake takings at the standard-rate base.
+  period: 2027
+  input:
+    machine_games_standard_rate_net_takings: 1_000
+    machine_games_standard_rate_higher_stake_net_takings: 1_500
+  output:
+    machine_games_duty: 250 # 1,000 * 25%; the extra 500 is not in the base.
+
+- name: Case 11, higher-stake takings without a standard-rate base give no duty.
+  period: 2027
+  input:
+    machine_games_standard_rate_higher_stake_net_takings: 1_000
+  output:
+    machine_games_duty: 0
+
+- name: Case 12, negative higher-stake takings leave the standard rate on the whole base.
+  period: 2027
+  input:
+    machine_games_standard_rate_net_takings: 1_000
+    machine_games_standard_rate_higher_stake_net_takings: -500
+  output:
+    machine_games_duty: 200
+
+- name: Case 13, all four bases in FY2027 reach gambling duty and household tax.
+  period: 2027
+  input:
+    machine_games_lower_rate_net_takings: 1_000
+    machine_games_standard_rate_net_takings: 2_000
+    machine_games_standard_rate_higher_stake_net_takings: 1_000
+    machine_games_higher_rate_net_takings: 3_000
+  output:
+    machine_games_duty: 1_250 # 50 + 1,000 * 20% + 1,000 * 25% + 750.
+    gambling_duty: 1_250
