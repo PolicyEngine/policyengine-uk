@@ -1096,3 +1096,46 @@ def test_the_published_guard_strips_a_few_unit_double_count_coefficient():
         assert shown in text and "NO LONGER contained" in text
         if units == 3:
             assert "0.43" not in text
+
+
+@pytest.mark.parametrize("units", [3, 500])
+def test_a_double_count_whose_container_is_not_finite_is_not_called_stale(units):
+    """Issue #2759: the check cannot show a container that is not finite
+    still contains the component, and its detail holds no figures."""
+    from policyengine_uk.utils.aggregate_impact.measure import publishable_guard
+    from policyengine_uk.utils.aggregate_impact.render import _guard
+
+    detail = (
+        "expected_sdlt is not finite when corporate_sdlt rises, so the check "
+        "cannot show that it still contains corporate_sdlt"
+    )
+    guard = {
+        "status": "ran",
+        "year": 2026,
+        "components": [
+            {"variable": "corporate_sdlt", "units": units, "status": "fail"}
+        ],
+        "double_counts": [
+            {
+                "variable": "corporate_sdlt",
+                "contained_in": "expected_sdlt",
+                "coefficient": float("nan"),
+                "issue": "#2159",
+                "status": "fail",
+                "not_finite": True,
+                "detail": detail,
+            }
+        ],
+    }
+    published = publishable_guard(guard)
+    (row,) = published["double_counts"]
+    assert row["status"] == "fail" and row["detail"] == detail
+    if units == 3:
+        assert row["coefficient"] is None
+    text = _guard({"head": {"guard": {**published, "components": []}}})
+    assert (
+        "- declared double count `corporate_sdlt`: `expected_sdlt` is NOT FINITE "
+        "when it rises, so the check cannot show that `expected_sdlt` still "
+        "contains it (#2159)"
+    ) in text
+    assert "NO LONGER contained" not in text and "fewer than 10 units" not in text

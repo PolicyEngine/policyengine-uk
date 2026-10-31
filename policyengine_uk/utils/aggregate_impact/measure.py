@@ -1192,7 +1192,8 @@ def publishable_guard(guard: dict) -> dict:
         row = dict(row)
         if small(units.get(row.get("variable")) or 0):
             row["coefficient"] = None
-            if row.get("status") != "pass":
+            # A container that is not finite has a detail with no figures.
+            if row.get("status") != "pass" and not row.get("not_finite"):
                 row["detail"] = (
                     f"{row['contained_in']} no longer moves one for one with "
                     f"{row['variable']} (fewer than {MIN_CELL} units): the model "

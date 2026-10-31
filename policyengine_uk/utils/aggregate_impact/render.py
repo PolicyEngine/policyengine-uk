@@ -277,7 +277,8 @@ def _guard(summary) -> str:
         f"{fiscal_year_label(guard['year'])}, and every head of its totals was "
         "read household by household: its own head must rise by exactly £1, no "
         "other tax head may move, no other benefit may rise, and the model's own "
-        "total must move by what its heads moved. A head that breaks a rule is "
+        "total must move by what its heads moved. A response that is not finite "
+        "breaks every rule. A head that breaks a rule is "
         "measured again twice: with every other head held at its baseline value, "
         "and with every other head held at its value after the first £1 while the "
         "component rises again. It fails where either still shows the response. "
@@ -304,6 +305,13 @@ def _guard(summary) -> str:
                 f"{m['total']}; not a failure)"
             )
     for dc in guard.get("double_counts", []):
+        if dc.get("not_finite"):
+            lines.append(
+                f"- declared double count `{dc['variable']}`: `{dc['contained_in']}` "
+                "is NOT FINITE when it rises, so the check cannot show that "
+                f"`{dc['contained_in']}` still contains it ({dc['issue']})"
+            )
+            continue
         state = "still contained" if dc["status"] == "pass" else "NO LONGER contained"
         # The published guard drops the coefficient of a double count from
         # fewer than 10 units (measure.publishable_guard).
