@@ -13,10 +13,14 @@ additional earnings and WTC disregards, including when a dataset,
 Childcare uses only the remaining earnings and credits, and assessed income
 equals, and never falls below, the independent scalar legal calculation.
 That calculation settles paragraph 17 by trying both outcomes, rather than
-assuming the full-charge shortcut the model uses. Where paragraph 56 does not
-apply, the model agrees with the previous path, reproduced by a reform that
-sets the new disregard to zero. Supplying the deduction the model calculates
-leaves every result unchanged.
+testing the whole capped charge, as the model's earnings and tax-credit limit
+does; wherever the model calculates the deduction, the WTC that limit keeps
+back equals the WTC disregard, which tests the deduction in force. Where
+paragraph 56 does not apply, the model agrees with the previous
+path, which a reform reproduces by neutralizing the new disregard. Supplying
+the deduction the model calculates leaves every result unchanged, and so
+does a reform that replaces the childcare deduction, its limit or the WTC
+disregard with a formula that only calls the model's own.
 
 The annual model uses 52 weeks, with the SI 2020/371 reg 5 temporary amount
 in 2020 and no ongoing tax-credit awards from model year 2025. Accommodation
@@ -34,7 +38,6 @@ import pandas as pd
 import pytest
 from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
-from policyengine_core.errors import CycleError
 from policyengine_core.periods import period as period_
 from policyengine_core.reforms import Reform
 from policyengine_core.simulations import Simulation
@@ -45,6 +48,13 @@ from policyengine_uk.model_api import BenUnit, Variable, YEAR, min_
 from policyengine_uk.system import system
 from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_applicable_income_childcare_element import (
     hb_capped_childcare_charges,
+    housing_benefit_applicable_income_childcare_element,
+)
+from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_childcare_earnings_limit import (
+    housing_benefit_childcare_earnings_limit,
+)
+from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_wtc_disregard import (
+    housing_benefit_wtc_disregard,
 )
 
 
@@ -145,6 +155,16 @@ EDGE_CASES = [
     case(net=8_000, accommodation=1_000, childcare=4_160, wtc=500),
     *(case(region=region) for region in REGIONS),
 ]
+# The issue's family with and without the work condition and WTC: no WTC
+# disregard can apply in the first three.
+WITNESSES = [
+    case(worker=False, wtc=0),
+    case(worker=False),
+    case(wtc=0),
+    case(),
+]
+
+
 SUPPLIED_EDGE_CASES = [
     # Earnings cover a supplied nil deduction and the additional amount.
     case(supplied=0),
@@ -194,6 +214,9 @@ def legal_components(unit, year, active=None):
     def limit(reserve):
         if unit["supplied_limit"] is not None:
             return unit["supplied_limit"]
+        if unit["supplied"] is not None:
+            # A supplied deduction reads no limit, so the law sets none.
+            return None
         return earnings + unit["wtc"] - reserve + unit["ctc"]
 
     def covers(reserve):
@@ -233,21 +256,43 @@ def legal_components(unit, year, active=None):
     )
 
 
-class previous_wtc_disregard(Variable):
-    value_type = float
-    entity = BenUnit
-    definition_period = YEAR
-
-    def formula(benunit, period, parameters):
-        return benunit.empty_array()
-
-
-previous_wtc_disregard.__name__ = "housing_benefit_wtc_disregard"
-
-
 class without_wtc_reservation(Reform):
+    """The previous path: no WTC disregard, and childcare draws on all WTC."""
+
     def apply(self):
-        self.update_variable(previous_wtc_disregard)
+        self.neutralize_variable("housing_benefit_wtc_disregard")
+
+
+def forwarding_reform(original):
+    """A reform that replaces the variable's formula with one that only
+    calls the model's own."""
+
+    class forwarded(Variable):
+        value_type = float
+        entity = BenUnit
+        definition_period = YEAR
+
+        def formula(benunit, period, parameters):
+            return original.formula(benunit, period, parameters)
+
+    forwarded.__name__ = original.__name__
+
+    class forward(Reform):
+        def apply(self):
+            self.update_variable(forwarded)
+
+    return forward
+
+
+FORWARDING_REFORMS = {
+    variable.__name__: forwarding_reform(variable)
+    for variable in (
+        housing_benefit_applicable_income_childcare_element,
+        housing_benefit_childcare_earnings_limit,
+        housing_benefit_wtc_disregard,
+    )
+}
+FORWARDED = {name: reform(system) for name, reform in FORWARDING_REFORMS.items()}
 
 
 def simulation(
@@ -377,6 +422,20 @@ def results(sim, year):
     }
 
 
+def assert_matches(actual, expected):
+    """Compare each output with the scalar calculation, skipping a limit the
+    law does not set."""
+    for key, values in actual.items():
+        wanted = [unit[key] for unit in expected]
+        known = np.array([value is not None for value in wanted])
+        np.testing.assert_allclose(
+            values[known],
+            np.array([value for value in wanted if value is not None], dtype=float),
+            rtol=0,
+            atol=TOLERANCE,
+        )
+
+
 def calculate(units, year, previous=False):
     return results(simulation(units, year, previous), year)
 
@@ -459,10 +518,7 @@ def test_savings_credit_only_uses_the_corrected_childcare_modification(region):
 def test_assessed_income_equals_and_never_falls_below_the_regulations(units, year):
     actual = calculate(units, year)
     expected = [legal_components(unit, year) for unit in units]
-    for key, values in actual.items():
-        np.testing.assert_allclose(
-            values, [unit[key] for unit in expected], rtol=0, atol=TOLERANCE
-        )
+    assert_matches(actual, expected)
     assert np.all(
         actual["income"] + TOLERANCE >= np.array([unit["income"] for unit in expected])
     )
@@ -522,6 +578,11 @@ def test_previous_path_agrees_where_paragraph_56_does_not_apply(units, year):
     actual = calculate(unchanged, year)
     previous = calculate(unchanged, year, previous=True)
     for variable in actual:
+        if variable == "limit" and units[0]["supplied"] is not None:
+            # A supplied deduction reads no limit. The limit still keeps back
+            # the WTC para 56 would disregard with the whole capped charge,
+            # where the previous path keeps back none.
+            continue
         np.testing.assert_allclose(
             actual[variable], previous[variable], rtol=0, atol=TOLERANCE
         )
@@ -532,9 +593,9 @@ def test_previous_path_agrees_where_paragraph_56_does_not_apply(units, year):
 @example(units=EDGE_CASES, year=2024)
 @example(units=EDGE_CASES, year=2020)
 def test_supplying_the_calculated_deduction_changes_nothing(units, year):
-    """The full-charge test and a test reading the supplied deduction are two
-    implementations of Sch 4 para 17(3)(b): supplying the deduction the
-    model calculates must leave every result unchanged."""
+    """A deduction a dataset or set_input supplies takes the calculated
+    one's place in both para 17 tests and in income, so supplying the
+    deduction the model calculates must leave every result unchanged."""
     calculated = calculate(units, year)
     supplied = [
         {**unit, "supplied": float(value)}
@@ -545,6 +606,34 @@ def test_supplying_the_calculated_deduction_changes_nothing(units, year):
         np.testing.assert_allclose(
             replayed[variable], calculated[variable], rtol=0, atol=TOLERANCE
         )
+
+
+@PROPERTY_SETTINGS
+@given(units=st.lists(families(), min_size=1, max_size=12), year=st.sampled_from(YEARS))
+@example(units=EDGE_CASES, year=2024)
+@example(units=EDGE_CASES, year=2020)
+@example(units=WITNESSES, year=2024)
+def test_limit_keeps_back_the_wtc_disregard_in_force(units, year):
+    """The limit tests Sch 4 para 17 with the whole capped charge, and the
+    WTC disregard tests it with the deduction in force. Where the model
+    calculates the deduction, the two agree: the limit keeps back exactly
+    the WTC that the disregard takes."""
+    actual = calculate(units, year)
+    net = np.array([unit["net"] for unit in units])
+    standard = np.minimum(net, [unit["standard"] for unit in units])
+    accommodation = np.minimum(
+        [unit["accommodation"] for unit in units], net - standard
+    )
+    wtc = np.array([unit["wtc"] for unit in units])
+    ctc = np.array([unit["ctc"] for unit in units])
+    np.testing.assert_allclose(
+        actual["limit"],
+        np.maximum(net - standard - accommodation, 0)
+        + np.maximum(wtc - actual["reserve"], 0)
+        + np.maximum(ctc, 0),
+        rtol=0,
+        atol=TOLERANCE,
+    )
 
 
 @pytest.mark.parametrize("offset", [-0.01, 0, 0.01])
@@ -770,19 +859,140 @@ class limit_reading_reform(Reform):
         self.update_variable(limit_reading_childcare)
 
 
-def test_replacement_deduction_reading_the_limit_stops_with_a_cycle():
+@pytest.mark.parametrize(
+    "unit,expected",
+    [
+        # The limit keeps back the 100 of WTC, since 5,200 < 1,300 + 4,160 +
+        # 889.20, and comes to 3,900; the deduction is min(2,080, 3,900).
+        # 5,200 >= 1,300 + 2,080 + 889.20, so para 17(1) applies and para 56
+        # does not: 5,200 + 100 - 2,189.20 - 2,080.
+        (
+            case(),
+            dict(
+                childcare=2_080,
+                reserve=0,
+                earnings_disregard=2_189.20,
+                limit=3_900,
+                income=1_030.80,
+            ),
+        ),
+        # The limit binds. 2,000 < 260 + 9,100 + 889.20, so it keeps back
+        # 889.20 of WTC: 1,740 of earnings and 110.80 of WTC, 1,850.80. The
+        # deduction is min(4,550, 1,850.80), and 2,000 < 260 + 1,850.80 +
+        # 889.20, so para 56 disregards 889.20. Income: 2,000 + 1,000 + 1,000
+        # - 260 - 889.20 - 1,850.80.
+        (
+            case(net=2_000, standard=260, childcare=9_100, wtc=1_000, other=1_000),
+            dict(
+                childcare=1_850.80,
+                reserve=889.20,
+                earnings_disregard=260,
+                limit=1_850.80,
+                income=1_000,
+            ),
+        ),
+    ],
+)
+def test_replacement_deduction_can_read_the_limit(unit, expected):
     """A replacement deduction that reads the earnings and tax-credit limit
-    depends on the WTC disregard, which reads that deduction: the engine
-    stops rather than return figures that grant both disregards. Without
-    active tax credits the disregard reads nothing, so the reform runs."""
-    reformed = limit_reading_reform(system)
-    with pytest.raises(CycleError):
-        simulation([case()], 2024, tax_benefit_system=reformed).calculate(
-            "housing_benefit_applicable_income", 2024
-        )
-    actual = results(simulation([case()], 2025, tax_benefit_system=reformed), 2025)
+    runs: the limit tests para 17 with the whole capped charge, so it reads
+    neither the deduction nor the WTC disregard."""
+    sim = simulation([unit], 2024, tax_benefit_system=limit_reading_reform(system))
+    actual = results(sim, 2024)
+    for key, value in expected.items():
+        assert actual[key][0] == pytest.approx(value, abs=TOLERANCE), key
+
+
+def test_neutralizing_the_wtc_disregard_restores_the_previous_path():
+    """Childcare draws on all WTC again: 5,200 - 1,300 + 100 = 4,000 of the
+    4,160 charge. 5,200 < 1,300 + 4,000 + 889.20, so the additional earnings
+    disregard does not apply. Income: 5,200 + 100 + 1,000 - 1,300 - 4,000."""
+    actual = calculate([case(other=1_000)], 2024, previous=True)
     assert actual["reserve"][0] == 0
-    assert actual["childcare"][0] == pytest.approx(2_080, abs=TOLERANCE)
+    assert actual["limit"][0] == pytest.approx(4_000, abs=TOLERANCE)
+    assert actual["childcare"][0] == pytest.approx(4_000, abs=TOLERANCE)
+    assert actual["earnings_disregard"][0] == pytest.approx(1_300, abs=TOLERANCE)
+    assert actual["income"][0] == pytest.approx(1_000, abs=TOLERANCE)
+
+
+def test_supplied_wtc_disregard_reaches_the_limit():
+    sim = simulation([case(other=1_000)], 2024)
+    sim.set_input("housing_benefit_wtc_disregard", 2024, [50])
+    actual = results(sim, 2024)
+    # Childcare draws on 5,200 - 1,300 = 3,900 of earnings and the 100 - 50
+    # = 50 of WTC the supplied disregard leaves: 3,950 of the 4,160 charge.
+    # 5,200 < 1,300 + 3,950 + 889.20, so the additional earnings disregard
+    # does not apply. Income: 5,200 + 100 + 1,000 - 1,300 - 50 - 3,950.
+    assert actual["reserve"][0] == 50
+    assert actual["limit"][0] == pytest.approx(3_950, abs=TOLERANCE)
+    assert actual["childcare"][0] == pytest.approx(3_950, abs=TOLERANCE)
+    assert actual["earnings_disregard"][0] == pytest.approx(1_300, abs=TOLERANCE)
+    assert actual["income"][0] == pytest.approx(1_000, abs=TOLERANCE)
+
+
+def test_supplied_deduction_leaves_the_limit_on_the_whole_charge():
+    """A supplied deduction reads no limit. The limit still tests para 17
+    with the whole capped charge: 5,200 < 1,300 + 4,160 + 889.20, so it keeps
+    back the 100 of WTC and comes to 3,900, though with the supplied nil
+    deduction para 17(1) applies and para 56 disregards nothing."""
+    sim = simulation([case()], 2024)
+    sim.set_input(CHILDCARE, 2024, [0])
+    actual = results(sim, 2024)
+    assert actual["limit"][0] == pytest.approx(3_900, abs=TOLERANCE)
+    assert actual["reserve"][0] == 0
+    assert actual["earnings_disregard"][0] == pytest.approx(2_189.20, abs=TOLERANCE)
+
+
+def assert_forwarding_changes_nothing(build, systems, outputs):
+    """Each forwarding reform alone leaves every output as the model's.
+    ``build`` makes the population's simulation under a system."""
+    expected = outputs(build(systems[None]))
+    for name, reformed in systems.items():
+        if name is None:
+            continue
+        actual = outputs(build(reformed))
+        for key, values in expected.items():
+            np.testing.assert_allclose(
+                actual[key], values, rtol=0, atol=TOLERANCE, err_msg=f"{name}: {key}"
+            )
+
+
+@PROPERTY_SETTINGS
+@given(units=POPULATIONS)
+@example(units=WITNESSES)
+@example(units=EDGE_CASES)
+@example(units=SUPPLIED_EDGE_CASES)
+@example(units=SUPPLIED_LIMIT_EDGE_CASES)
+def test_forwarding_reforms_change_nothing(units):
+    """A reform that replaces the childcare deduction, its limit or the WTC
+    disregard with a formula that only calls the model's own runs without a
+    circular definition and changes no output, with and without WTC."""
+    assert_forwarding_changes_nothing(
+        lambda tax_benefit_system: simulation(
+            units, 2024, tax_benefit_system=tax_benefit_system
+        ),
+        {None: system, **FORWARDED},
+        lambda sim: results(sim, 2024),
+    )
+
+
+@pytest.mark.parametrize("name", sorted(FORWARDING_REFORMS))
+def test_forwarding_reform_runs_for_an_adult_without_income(name):
+    """One adult aged 40, with no income, children, childcare or WTC, and
+    every other value left to the model."""
+    situation = {
+        "people": {"adult": {"age": {2024: 40}}},
+        "benunits": {"family": {"members": ["adult"]}},
+        "households": {"home": {"members": ["adult"]}},
+    }
+    baseline = Simulation(tax_benefit_system=system, situation=situation)
+    reformed = Simulation(tax_benefit_system=FORWARDED[name], situation=situation)
+    for variable in (*OUTPUTS.values(), "housing_benefit_entitlement"):
+        assert (
+            reformed.calculate(variable, 2024)[0]
+            == baseline.calculate(variable, 2024)[0]
+        ), variable
+    assert baseline.calculate(CHILDCARE, 2024)[0] == 0
 
 
 def test_revived_tax_credits_with_the_accommodation_disregard():

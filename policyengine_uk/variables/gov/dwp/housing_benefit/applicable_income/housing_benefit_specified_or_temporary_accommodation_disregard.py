@@ -6,14 +6,18 @@ from policyengine_uk.utils.supplied_inputs import stored_as_input
 
 def hb_uses_annual_override(benunit, period, variable_name, default_formula):
     """Keep annual inputs and replacement formulas out of recalculation."""
-    simulation = benunit.simulation
-    variable = simulation.tax_benefit_system.get_variable(variable_name)
+    variable = benunit.simulation.tax_benefit_system.get_variable(variable_name)
     formula = variable.get_formula(period)
-    if (
-        variable.is_neutralized
-        or formula is None
-        or formula.__code__ != default_formula.__code__
-    ):
+    if formula is not None and formula.__code__ != default_formula.__code__:
+        return True
+    return hb_runs_no_formula(benunit, period, variable_name)
+
+
+def hb_runs_no_formula(benunit, period, variable_name):
+    """Whether reading the variable for this period runs no formula: a reform
+    neutralized it or left it without one, or an input supplies it."""
+    variable = benunit.simulation.tax_benefit_system.get_variable(variable_name)
+    if variable.is_neutralized or variable.get_formula(period) is None:
         return True
     # An input the caller set for this period overrides recalculation, and so
     # does a scenario's own value (set_model_value), which the variable then

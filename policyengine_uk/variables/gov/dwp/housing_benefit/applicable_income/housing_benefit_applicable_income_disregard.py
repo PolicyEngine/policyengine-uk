@@ -1,9 +1,6 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_applicable_income_childcare_element import (
-    hb_capped_childcare_charges,
-)
 from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_childcare_earnings_limit import (
-    hb_childcare_earnings_limit,
+    hb_covers_additional_disregard,
     hb_standard_earnings_disregard,
 )
 from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_specified_or_temporary_accommodation_disregard import (
@@ -11,8 +8,7 @@ from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing
     hb_uses_annual_override,
 )
 from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_wtc_disregard import (
-    hb_covers_additional_disregard,
-    hb_fixed_childcare_deduction,
+    hb_segment_childcare_deduction,
     hb_segment_wtc_disregard,
 )
 
@@ -24,18 +20,12 @@ def hb_segment_deductions(benunit, period, parameters, accommodation):
     net = max_(benunit("housing_benefit_net_earnings", period), 0)
     standard = hb_standard_earnings_disregard(benunit, period)
     accommodation = min_(max_(accommodation, 0), max_(net - standard, 0))
-    wtc_disregard = hb_segment_wtc_disregard(benunit, period, parameters, accommodation)
-    childcare = hb_fixed_childcare_deduction(benunit, period, parameters)
-    if childcare is None:
-        childcare = min_(
-            hb_capped_childcare_charges(benunit, period, parameters),
-            hb_childcare_earnings_limit(
-                benunit,
-                period,
-                accommodation=accommodation,
-                wtc_disregard=wtc_disregard,
-            ),
-        )
+    childcare = hb_segment_childcare_deduction(
+        benunit, period, parameters, accommodation
+    )
+    wtc_disregard = hb_segment_wtc_disregard(
+        benunit, period, parameters, accommodation, childcare
+    )
     name = "housing_benefit_applicable_income_disregard"
     if hb_uses_annual_override(
         benunit, period, name, housing_benefit_applicable_income_disregard.formula

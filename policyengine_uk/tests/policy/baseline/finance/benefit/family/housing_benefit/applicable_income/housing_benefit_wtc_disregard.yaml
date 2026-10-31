@@ -359,3 +359,27 @@
     housing_benefit_applicable_income_childcare_element: 1_000
     housing_benefit_applicable_income_disregard: 2_189.20
     housing_benefit_wtc_disregard: 0
+
+- name: A supplied WTC disregard sets the WTC the childcare limit keeps back
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    housing_benefit_net_earnings: 5_200
+    housing_benefit_special_earnings_disregard: 1_300
+    housing_benefit_permitted_work_disregard: 0
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_on_passporting_benefit: false
+    meets_housing_benefit_additional_earnings_disregard_conditions: true
+    childcare_expenses: 4_160
+    num_relevant_children_for_housing_benefit_childcare: 1
+    working_tax_credit: 100
+    child_tax_credit: 0
+    housing_benefit_wtc_disregard: 50
+  output:
+    # Reg 27(1)(c), (2): childcare draws on 5,200 - 1,300 = 3,900 of
+    # earnings and the 100 - 50 = 50 of WTC the supplied disregard leaves.
+    housing_benefit_childcare_earnings_limit: 3_950
+    housing_benefit_applicable_income_childcare_element: 3_950
+    # Sch 4 para 17: 5,200 < 1,300 + 3,950 + 889.20, so the additional
+    # earnings disregard does not apply.
+    housing_benefit_applicable_income_disregard: 1_300

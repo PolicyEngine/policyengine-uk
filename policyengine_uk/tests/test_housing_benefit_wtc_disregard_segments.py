@@ -13,8 +13,11 @@ award equals the independent statutory calculation made within each
 segment and combined by days, and no segment gives a benefit unit both the
 additional earnings disregard and a positive WTC disregard. The annual WTC
 disregard combines the segments' amounts. Where para 56 applies in no
-segment, the award equals the previous path's, with the new disregard set to
-zero; under current law that holds for every family.
+segment, the award equals the previous path's, with the new disregard
+neutralized; under current law that holds for every family. Outside
+specified or temporary accommodation, a reform that replaces the childcare
+deduction, its limit or the WTC disregard with a formula that only calls the
+model's own changes no output.
 """
 
 import numpy as np
@@ -26,18 +29,25 @@ from policyengine_core.reforms import Reform
 
 from policyengine_uk.system import system
 from policyengine_uk.tests.test_housing_benefit_wtc_disregard import (
+    FORWARDING_REFORMS,
     PROPERTY_SETTINGS,
     RENT,
     TOLERANCE,
+    WITNESSES,
+    assert_forwarding_changes_nothing,
     case,
     families,
     legal_components,
+    results,
     same_supply,
     simulation,
     without_wtc_reservation,
 )
 from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_applicable_income_disregard import (
     hb_segment_deductions,
+)
+from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_childcare_earnings_limit import (
+    hb_childcare_wtc_reserve,
 )
 from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_specified_or_temporary_accommodation_disregard import (
     hb_accommodation_segments,
@@ -73,6 +83,7 @@ PREVIOUS = {
     True: without_wtc_reservation(TAX_CREDITS),
     False: without_wtc_reservation(system),
 }
+FORWARDED = {name: reform(TAX_CREDITS) for name, reform in FORWARDING_REFORMS.items()}
 
 
 def legal_segments(unit, active):
@@ -111,8 +122,9 @@ def segmented(units, active, previous=False):
 
 
 def model_segments(sim):
-    """Each segment's share of the year, additional earnings disregard and
-    WTC disregard, as the model applies them."""
+    """Each segment's share of the year, additional earnings disregard, WTC
+    disregard and the WTC its childcare limit keeps back, as the model
+    applies them."""
     benunit = sim.populations["benunit"]
     year = period_(YEAR)
     parameters = sim.tax_benefit_system.parameters
@@ -131,6 +143,10 @@ def model_segments(sim):
                 share=share,
                 additional=np.asarray(disregard - standard - capped, dtype=float),
                 reserve=np.asarray(reserve, dtype=float),
+                kept_back=np.asarray(
+                    hb_childcare_wtc_reserve(benunit, year, parameters, accommodation),
+                    dtype=float,
+                ),
             )
         )
     return result
@@ -276,13 +292,102 @@ def test_each_segment_limits_childcare_with_its_own_wtc_disregard():
     )
 
 
-def test_supplied_annual_wtc_disregard_applies_in_every_segment():
+@pytest.mark.parametrize(
+    "supplied,award",
+    [
+        # Before: 10,400 - 0.65 * 2,850.80 = 8,546.98. After: 10,400 - 0.65 *
+        # (4,000 - 2,000) = 9,100. (182 * 8,546.98 + 183 * 9,100) / 365.
+        (0, 8_824.25),
+        # Before 5 October, 2,000 >= 260 + 889.20, so the additional earnings
+        # disregard applies alongside the supplied 100: income 4,000 -
+        # 1,149.20 - 100 = 2,750.80, and the award 10,400 - 0.65 * 2,750.80 =
+        # 8,611.98. After it, income 4,000 - 2,000 - 100 = 1,900, and the
+        # award 9,165. (182 * 8,611.98 + 183 * 9,165) / 365.
+        (100, 8_889.25),
+    ],
+)
+def test_supplied_annual_wtc_disregard_applies_in_every_segment(supplied, award):
     sim = segmented([specified_claimant(net=2_000)], active=True)
-    sim.set_input("housing_benefit_wtc_disregard", YEAR, [0])
-    # Before: 10,400 - 0.65 * 2,850.80 = 8,546.98. After: 10,400 - 0.65 *
-    # (4,000 - 2,000) = 9,100. (182 * 8,546.98 + 183 * 9,100) / 365.
+    sim.set_input("housing_benefit_wtc_disregard", YEAR, [supplied])
     assert sim.calculate("housing_benefit_entitlement", YEAR)[0] == pytest.approx(
-        8_824.25, abs=TOLERANCE
+        award, abs=TOLERANCE
+    )
+
+
+def test_supplied_wtc_disregard_reaches_each_segment_limit():
+    """The lone parent of the childcare test above, with an annual WTC
+    disregard of £500 supplied."""
+    unit = case(specified=True, net=8_000, wtc=2_000, other=3_000)
+    sim = segmented([unit], active=True)
+    sim.set_input("housing_benefit_wtc_disregard", YEAR, [500])
+    # Before 5 October the limit is 6,700 + 1,500 = 8,200, so childcare
+    # takes the whole 4,160 charge, and 8,000 >= 1,300 + 4,160 + 889.20:
+    # income is 13,000 - 2,189.20 - 500 - 4,160 = 6,150.80, and the award
+    # 10,400 - 0.65 * 6,150.80 = 6,401.98. After it, childcare draws on
+    # 8,000 - 1,300 - 4,041.96 = 2,658.04 of earnings and 2,000 - 500 =
+    # 1,500 of WTC, 4,158.04 in all: income is 13,000 - 5,341.96 - 500 -
+    # 4,158.04 = 3,000, and the award 8,450.
+    # (182 * 6,401.98 + 183 * 8,450) / 365 = 7,428.80.
+    assert sim.calculate("housing_benefit_entitlement", YEAR)[0] == pytest.approx(
+        7_428.80, abs=TOLERANCE
+    )
+
+
+def segment_outputs(sim):
+    return {
+        **results(sim, YEAR),
+        "award": np.asarray(
+            sim.calculate("housing_benefit_entitlement", YEAR), dtype=float
+        ),
+    }
+
+
+def outside_specified_accommodation(units):
+    return [{**unit, "specified": False} for unit in units]
+
+
+@PROPERTY_SETTINGS
+@given(units=segment_populations().map(outside_specified_accommodation))
+@example(units=WITNESSES)
+@example(units=outside_specified_accommodation(SEGMENT_EDGE_CASES))
+@example(units=outside_specified_accommodation(SUPPLIED_SEGMENT_EDGE_CASES))
+def test_forwarding_reforms_change_nothing_with_tax_credits_kept(units):
+    """In 2026-27, under a reform that keeps tax credits, a reform that
+    replaces the childcare deduction, its limit or the WTC disregard with a
+    formula that only calls the model's own changes no output, award
+    included, for families outside specified or temporary accommodation."""
+    assert_forwarding_changes_nothing(
+        lambda tax_benefit_system: simulation(
+            units, YEAR, tax_benefit_system=tax_benefit_system, dated_accommodation=True
+        ),
+        {None: TAX_CREDITS, **FORWARDED},
+        segment_outputs,
+    )
+
+
+def test_replacement_wtc_disregard_applies_its_annual_amount_in_every_segment():
+    """A replacement formula gives one annual amount, which every segment
+    deducts, as a replacement for the childcare deduction, its limit or the
+    earnings disregard does. That matches the
+    model's segments while both stay on the taper, so even a formula that
+    only calls the model's own can move the award once a segment leaves it.
+    The model's segments give 10,124.25. With the annual 445.82 in each:
+    before 5 October, income is 4,000 - 1,149.20 - 445.82 = 2,404.98, and
+    the award 10,400 - 0.65 * 404.98 = 10,136.76. After it, income is 4,000
+    - 2,000 - 445.82 = 1,554.18, below the 2,000 applicable amount, so the
+    award is 10,400. (182 * 10,136.76 + 183 * 10,400) / 365 = 10,268.74."""
+    unit = specified_claimant(net=2_000, applicable_amount=2_000)
+    sim = simulation(
+        [unit],
+        YEAR,
+        tax_benefit_system=FORWARDED["housing_benefit_wtc_disregard"],
+        dated_accommodation=True,
+    )
+    assert sim.calculate("housing_benefit_wtc_disregard", YEAR)[0] == pytest.approx(
+        445.82, abs=TOLERANCE
+    )
+    assert sim.calculate("housing_benefit_entitlement", YEAR)[0] == pytest.approx(
+        10_268.74, abs=TOLERANCE
     )
 
 
@@ -301,9 +406,16 @@ def test_segmented_award_equals_the_regulations_with_one_additional_disregard(
         award, [legal_award(unit, active) for unit in units], rtol=0, atol=TOLERANCE
     )
     segments = model_segments(sim)
+    calculated = units[0]["supplied"] is None and units[0]["supplied_limit"] is None
     for segment in segments:
         both = (segment["additional"] > TOLERANCE) & (segment["reserve"] > 0)
         assert not both.any(), [unit for unit, b in zip(units, both) if b]
+        if calculated:
+            # The whole-charge test and the test of the deduction in force
+            # agree wherever the model calculates the deduction.
+            np.testing.assert_allclose(
+                segment["kept_back"], segment["reserve"], rtol=0, atol=TOLERANCE
+            )
     np.testing.assert_allclose(
         sim.calculate("housing_benefit_wtc_disregard", YEAR),
         sum(segment["share"] * segment["reserve"] for segment in segments),
