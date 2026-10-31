@@ -20,6 +20,7 @@ from policyengine_uk.data.isa_income import (
 )
 
 import hashlib
+from types import MappingProxyType
 
 import yaml
 from policyengine_core.parameters import ParameterNode
@@ -171,15 +172,21 @@ def growth_rate(
 PROJECTION_END_YEAR = 2032
 
 # Household totals that sum person inputs (`adds`) but that a dataset can
-# store itself (#2740). For a year with no stored total, Core runs the sum,
-# which falls to zero in data that store only the total, and Core does not
-# let a variable declare both `adds` and `uprating`. So in a simulation built
-# from data, Simulation grows the latest earlier stored total by the index
-# its parts declare, as Core grows the parts. It sums the parts where the
-# data hold no total for that year or an earlier one, or hold the parts for
-# a later year than the total.
-STORED_HOUSEHOLD_TOTALS = frozenset(
-    {"cash_isa", "stocks_and_shares_isa", "household_lifetime_isa_balance"}
+# store itself (#2740), each with the parts it stands for. For a year with no
+# stored total, Core runs the sum, which falls to zero in data that store
+# only the total, and Core does not let a variable declare both `adds` and
+# `uprating`. So in a simulation built from data, Simulation grows the latest
+# earlier stored total by the index its parts declare, as Core grows the
+# parts, while the total still means what the data stored: a sum of exactly
+# these parts, each a plain input. Core sums the parts where the variable
+# differs, where the data hold no total for that year or an earlier one, or
+# where they hold the parts for a later year than the total.
+STORED_HOUSEHOLD_TOTALS = MappingProxyType(
+    {
+        "cash_isa": frozenset({"cash_isa_balance"}),
+        "stocks_and_shares_isa": frozenset({"stocks_and_shares_isa_balance"}),
+        "household_lifetime_isa_balance": frozenset({"lifetime_isa_balance"}),
+    }
 )
 
 # Before this horizon was extended, Core uprated unmapped inputs from 2030.

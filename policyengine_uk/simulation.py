@@ -85,6 +85,7 @@ from policyengine_uk.utils.dependencies import get_variable_dependencies
 from policyengine_uk.utils.data_source import built_from_data
 from policyengine_uk.utils.input_dataframe_export import input_dataframe
 from policyengine_uk.utils.measurement_branches import (
+    drop_calculated_totals,
     drop_calculated_values,
     retained_input_variables,
 )
@@ -743,6 +744,36 @@ class Simulation(CoreSimulation):
             source = self._isa_latest_input(name, period)
         return source
 
+    def _stands_for_stored_parts(self, variable, period) -> bool:
+        # A stored total means the sum of the parts STORED_HOUSEHOLD_TOTALS
+        # names for it, each a plain input. Grow it only while the variable
+        # still sums exactly those parts, each once, with nothing subtracted,
+        # and each part still reads its inputs: no formula, sum or subtraction
+        # for this period, no defined_for mask, not neutralized. Anything a
+        # reform changes there leaves the total to Core, as in data with no
+        # stored total.
+        parts = STORED_HOUSEHOLD_TOTALS.get(variable.name)
+        if (
+            parts is None
+            or not built_from_data(self)
+            or variable.get_formula(period) is not None
+            or variable.subtracts
+            or sorted(variable.adds or ()) != sorted(parts)
+        ):
+            return False
+        for name in parts:
+            part = self.tax_benefit_system.variables.get(name)
+            if (
+                part is None
+                or part.get_formula(period) is not None
+                or part.adds
+                or part.subtracts
+                or part.defined_for is not None
+                or part.is_neutralized
+            ):
+                return False
+        return True
+
     def _stored_household_total(self, variable, period):
         # A dataset that stores a household total keeps it, projected like
         # its parts, in every year (#2740). Core serves the stored total for
@@ -750,6 +781,8 @@ class Simulation(CoreSimulation):
         # sum of person balances, which such data need not hold, so grow the
         # latest stored total instead, as Core grows an input with `uprating`.
         # Which years hold the total or its parts decides the result.
+        if not self._stands_for_stored_parts(variable, period):
+            return None
         self._record_derived(variable.name)
         source = self._latest_source(variable.name, period)
         if source is None:
@@ -763,8 +796,8 @@ class Simulation(CoreSimulation):
         try:
             index_name = stored_total_uprating(self.tax_benefit_system, variable.name)
         except ValueError:
-            # A reform whose parts grow by different indices gives the total
-            # no index of its own, so its sum stands.
+            # Parts that grow by different indices give the total no index of
+            # its own, so their sum stands.
             return None
         # The grown total reads none of the parts, so record them: a part
         # input that a branch sets later for a later year then replaces it.
@@ -774,18 +807,7 @@ class Simulation(CoreSimulation):
         return stored * self._index_growth(index_name, source, period)
 
     def _run_formula(self, variable, population, period):
-        # Only a sum of listed variables, with nothing subtracted: a reform
-        # that gives the variable a formula, sums a parameter or its list,
-        # subtracts, or makes the variable a plain input, leaves it to Core.
-        if (
-            variable.name in STORED_HOUSEHOLD_TOTALS
-            and variable.adds
-            and not variable.subtracts
-            and not isinstance(variable.adds, str)
-            and all(part in self.tax_benefit_system.variables for part in variable.adds)
-            and variable.get_formula(period) is None
-            and built_from_data(self)
-        ):
+        if variable.name in STORED_HOUSEHOLD_TOTALS:
             stored = self._stored_household_total(variable, period)
             if stored is not None:
                 return stored
@@ -1070,6 +1092,8 @@ class Simulation(CoreSimulation):
         for variable in self.tax_benefit_system.variables:
             if variable not in retained:
                 self.delete_arrays(variable)
+            elif variable in STORED_HOUSEHOLD_TOTALS:
+                drop_calculated_totals(self, variable)
 
     def get_known_variables(self):
         variables = []

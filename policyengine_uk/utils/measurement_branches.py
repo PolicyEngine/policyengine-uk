@@ -42,14 +42,35 @@ def retained_input_variables(simulation) -> set:
     return retained
 
 
+def drop_calculated_totals(simulation, name: str) -> None:
+    """Delete the values of a stored household total that the simulation
+    calculated, keeping those the data or a caller supplied.
+
+    A total in STORED_HOUSEHOLD_TOTALS that the data store counts as an input
+    by name, but the simulation calculates it for the years the data do not
+    hold, from the stored years and the parts. Core's own record of inputs
+    (``_user_input_keys``, checked by ``Holder._stores_user_input``) decides
+    which values go, as it does for ``drop_computed_arrays``.
+    """
+    simulation.get_holder(name)._drop_computed()
+    cache = getattr(simulation, "_fast_cache", None)
+    if cache:
+        simulation._fast_cache = {
+            key: value for key, value in cache.items() if key[0] != name
+        }
+
+
 def drop_calculated_values(simulation) -> None:
     """Delete the values a simulation has calculated, keeping its inputs.
 
     Inputs are variables without a formula, variables the simulation was built
     from, and variables set since through set_input, as a scenario's
-    simulation modifier does to formula variables. Only variables the
-    simulation holds values for are visited.
+    simulation modifier does to formula variables. A stored household total
+    keeps only the years supplied for it (see drop_calculated_totals). Only
+    variables the simulation holds values for are visited.
     """
+    from policyengine_uk.data.economic_assumptions import STORED_HOUSEHOLD_TOTALS
+
     supplied = retained_input_variables(simulation)
     variables = simulation.tax_benefit_system.variables
     held = {
@@ -59,7 +80,11 @@ def drop_calculated_values(simulation) -> None:
     }
     for name in held:
         variable = variables.get(name)
-        if variable is None or name in supplied or variable.is_input_variable():
+        if variable is None:
+            continue
+        if name in supplied or variable.is_input_variable():
+            if name in STORED_HOUSEHOLD_TOTALS:
+                drop_calculated_totals(simulation, name)
             continue
         simulation.delete_arrays(name)
 
