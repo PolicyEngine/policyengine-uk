@@ -1,23 +1,26 @@
 """Property tests for the 2022 £150 and Council Tax Reduction.
 
-England's Council Tax Rebate went to bands A to D (billing authority guidance,
-paragraph 11). Scotland's Cost of Living Award and Wales's Cost of Living
-Support Scheme also paid Council Tax Reduction recipients in any band (Local
-Government Finance Circular 2/2022, paragraphs 6, 10 and 12; Welsh guide,
-conditions A and B). Each nation paid one £150 per dwelling. Northern Ireland
-levies domestic rates and had no such payment.
+English billing authorities paid the Council Tax Rebate to bands A to D
+(billing authority guidance, paragraph 11). Scottish councils paid the Cost of
+Living Award and Welsh councils the Cost of Living Support Scheme to those
+bands and to Council Tax Reduction recipients in any band (Local Government
+Finance Circular 2/2022, paragraphs 6, 10 and 12; Welsh guide, conditions A and
+B). Councils in each nation paid one £150 per dwelling. Northern Ireland levies
+domestic rates and had no such payment.
 
 Invariants, each checked over many generated households:
 
-1. No household in Northern Ireland is paid, whatever its band or reduction.
+1. The model pays no household in Northern Ireland, whatever its band or
+   reduction.
 2. Every household in Great Britain gets £150 or nothing.
 3. Every household in Great Britain in bands A to D gets £150, whatever its
    reduction.
 4. A household in band E or above gets £150 exactly when it lives in Scotland
    or Wales and receives Council Tax Reduction.
-5. Nobody is paid in any year but 2022, whatever the reduction.
-6. A larger reduction never lowers the payment.
-7. Where the model works out the reduction itself, the same rule holds on its
+5. The model pays nobody in any year but 2022, whatever the reduction.
+6. A reduction in another year never qualifies a household out of band.
+7. A larger reduction never lowers the payment.
+8. Where the model works out the reduction itself, the same rule holds on its
    result, and the payment reaches household net income.
 """
 
@@ -38,7 +41,11 @@ PAYS_RECIPIENTS = ["SCOTLAND", "WALES"]
 HOUSEHOLDS = 16
 AMOUNT = 150
 
-reductions = st.one_of(st.just(0.0), st.floats(0.01, 5_000, allow_nan=False))
+reductions = st.one_of(
+    st.just(0.0),
+    st.sampled_from([0.01, 1.0]),
+    st.floats(0.01, 5_000, allow_nan=False),
+)
 household = st.tuples(st.sampled_from(BANDS), st.sampled_from(COUNTRIES), reductions)
 households = st.lists(household, min_size=HOUSEHOLDS, max_size=HOUSEHOLDS)
 
@@ -57,7 +64,7 @@ def people_and_units(count):
     )
 
 
-def simulation(drawn):
+def simulation(drawn, reduction_years=YEARS):
     """One household per drawn case, with its reduction given as an input."""
     bands, countries, amounts = zip(*drawn)
     people, benunits = people_and_units(len(drawn))
@@ -70,7 +77,10 @@ def simulation(drawn):
                     "members": [f"adult_{i}"],
                     "council_tax_band": each_year(bands[i]),
                     "country": each_year(countries[i]),
-                    "council_tax_reduction": each_year(amounts[i]),
+                    "council_tax_reduction": {
+                        year: amounts[i] if year in reduction_years else 0.0
+                        for year in YEARS
+                    },
                 }
                 for i in range(len(drawn))
             },
@@ -132,6 +142,15 @@ def test_only_2022_is_paid(drawn):
     sim = simulation(drawn)
     for year in [2021, 2023]:
         np.testing.assert_array_equal(sim.calculate("ebr_council_tax_rebate", year), 0)
+
+
+@SETTINGS
+@given(households)
+def test_a_reduction_in_another_year_does_not_qualify(drawn):
+    bands, _, _ = fields(drawn)
+    sim = simulation(drawn, reduction_years=[2021, 2023])
+    rebate = sim.calculate("ebr_council_tax_rebate", 2022)
+    np.testing.assert_array_equal(rebate[~np.isin(bands, IN_BAND)], 0)
 
 
 @SETTINGS

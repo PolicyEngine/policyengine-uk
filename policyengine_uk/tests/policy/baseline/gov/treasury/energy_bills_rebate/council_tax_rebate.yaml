@@ -143,13 +143,13 @@
   output:
     ebr_council_tax_rebate: 0
 
-# Scotland's Cost of Living Award and Wales's Cost of Living Support Scheme
-# paid £150 to bands A to D and to Council Tax Reduction recipients in any
-# band (Local Government Finance Circular 2/2022, paragraphs 6, 10 and 12;
-# Welsh guide, conditions A and B). England's Council Tax Rebate went by band
-# alone (billing authority guidance, paragraph 11). Each row below gives the
-# band and the year's Council Tax Reduction.
-- name: Scotland pays bands A to D, and any band with Council Tax Reduction.
+# Scottish councils paid the Cost of Living Award and Welsh councils the Cost
+# of Living Support Scheme, £150 each, to bands A to D and to Council Tax
+# Reduction recipients in any band (Local Government Finance Circular 2/2022,
+# paragraphs 6, 10 and 12; Welsh guide, conditions A and B). English billing
+# authorities paid by band alone (billing authority guidance, paragraph 11).
+# Each row below gives the band and the year's Council Tax Reduction.
+- name: The model pays Scottish bands A to D, and any band with Council Tax Reduction.
   period: 2022
   input:
     country:
@@ -182,7 +182,7 @@
       - 150
       - 150
 
-- name: Wales pays bands A to D, and any band with Council Tax Reduction.
+- name: The model pays Welsh bands A to D, and any band with Council Tax Reduction.
   period: 2022
   input:
     country:
@@ -215,7 +215,7 @@
       - 150
       - 150
 
-- name: England pays bands A to D whatever the Council Tax Reduction, and no other band.
+- name: The model pays English bands A to D whatever the Council Tax Reduction, and no other band.
   period: 2022
   input:
     country:
@@ -244,7 +244,7 @@
       - 0
       - 0
 
-- name: Northern Ireland pays nothing, with or without Council Tax Reduction.
+- name: The model pays nothing in Northern Ireland, with or without Council Tax Reduction.
   period: 2022
   input:
     country:
@@ -269,7 +269,8 @@
       - 0
       - 0
 
-# Scotland paid "a person in receipt of any amount of CTR" (paragraph 10).
+# Scottish councils paid "a person in receipt of any amount of CTR" (paragraph
+# 10).
 - name: Any amount of Council Tax Reduction qualifies out of band.
   period: 2022
   input:
@@ -287,7 +288,7 @@
       - 150
       - 150
 
-- name: Scotland and Wales pay out of band only in 2022.
+- name: The model pays Scotland and Wales out of band only in 2022.
   period: 2023
   input:
     country:
@@ -304,7 +305,7 @@
       - 0
       - 0
 
-- name: Scotland and Wales pay nothing out of band in 2021.
+- name: The model pays Scotland and Wales nothing out of band in 2021.
   period: 2021
   input:
     country:
@@ -321,8 +322,8 @@
       - 0
       - 0
 
-# The test reads the same year as the payment, and the household's nation in
-# that year.
+# The model reads the reduction in the payment's year, and the household's
+# nation in that year.
 - name: Council Tax Reduction in another year doesn't qualify a household out of band.
   period: 2022
   input:
@@ -358,8 +359,9 @@
     ebr_council_tax_rebate: 0
 
 # The model works out Council Tax Reduction itself in the cases below. Each
-# household has one working-age adult, no income and a band F bill; it claims
-# the reduction unless a case says otherwise.
+# household has one adult, no income and a band F bill; it claims the
+# reduction unless a case says otherwise. The English case uses a pensioner,
+# because the model simulates England's pension-age scheme for every council.
 - name: A Scottish band F household's simulated Council Tax Reduction qualifies it.
   period: 2022
   input:
@@ -378,6 +380,7 @@
         council_tax_band: F
         council_tax: 2400
   output:
+    council_tax_reduction: 2400
     ebr_council_tax_rebate: 150
     energy_bills_rebate: 349
 
@@ -399,6 +402,7 @@
         council_tax_band: F
         council_tax: 2400
   output:
+    council_tax_reduction: 2400
     ebr_council_tax_rebate: 150
     energy_bills_rebate: 349
 
@@ -463,4 +467,5 @@
         council_tax_band: F
         council_tax: 2400
   output:
+    council_tax_reduction: 2400
     ebr_council_tax_rebate: 0

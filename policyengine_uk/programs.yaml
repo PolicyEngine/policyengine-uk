@@ -617,10 +617,13 @@ programs:
       D in Great Britain and for Council Tax Reduction recipients in any band
       in Scotland and Wales (none in Northern Ireland, which has domestic
       rates), the £400 Energy Bills Support Scheme, and Northern Ireland's
-      £200 Alternative Fuel Payment. Leaves out band E homes charged at band D
-      under the disabled band reduction, Scotland's rules for exempt
-      dwellings, England's discretionary fund, Great Britain's Alternative
-      Fuel Payment and the alternative funding schemes.
+      £200 Alternative Fuel Payment. Has no input for the disabled band
+      reduction, so it pays band E homes charged at band D only when they also
+      receive Council Tax Reduction in Scotland and Wales, and never in
+      England. Leaves out Scotland's Council Tax Reduction for bands E to H,
+      Scotland's rules for exempt dwellings, England's discretionary fund,
+      Great Britain's Alternative Fuel Payment and the alternative funding
+      schemes.
 
   - id: household_energy_payment
     name: Household Energy Payment
