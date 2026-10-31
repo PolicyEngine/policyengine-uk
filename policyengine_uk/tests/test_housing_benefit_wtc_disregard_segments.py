@@ -71,6 +71,14 @@ TAX_CREDITS = tax_credits_kept()
 SYSTEMS = {True: TAX_CREDITS, False: system}
 
 
+@pytest.fixture(scope="module", autouse=True)
+def release_caches():
+    yield
+    forwarded.cache_clear()
+    tax_credits_kept.cache_clear()
+    previous_system.cache_clear()
+
+
 @cache
 def previous_system(active):
     return without_wtc_reservation(SYSTEMS[active])

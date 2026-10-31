@@ -259,6 +259,14 @@ class without_wtc_reservation(Reform):
         self.neutralize_variable("housing_benefit_wtc_disregard")
 
 
+@pytest.fixture(scope="module", autouse=True)
+def release_caches():
+    yield
+    forwarded.cache_clear()
+    tax_credits_kept.cache_clear()
+    model_replacement_outputs.cache_clear()
+
+
 FORWARDED_VARIABLES = (CHILDCARE, LIMIT, "housing_benefit_wtc_disregard")
 
 
