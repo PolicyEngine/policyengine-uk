@@ -685,6 +685,39 @@ def test_core_sums_a_total_whose_sum_or_part_a_reform_changes(sum_change, part_c
             assert total != pytest.approx(grown, rel=1e-3), (name, year)
 
 
+def _abolish_part_after_the_horizon(system):
+    system.parameters.gov.add_child(
+        "abolitions",
+        ParameterNode(
+            "gov.abolitions",
+            data={
+                "cash_isa_balance": {
+                    "values": {f"{PROJECTION_END_YEAR + 1}-01-01": True}
+                }
+            },
+        ),
+    )
+
+
+def test_a_total_stops_growing_from_the_year_a_reform_abolishes_its_part():
+    # Core reads an abolished part as zero from the year the abolition starts,
+    # so the stored total stands until then and Core's sum takes over from it.
+    simulation = Simulation(
+        reform=_reform(_abolish_part_after_the_horizon),
+        dataset=_dataset(
+            [{"cash_isa": 5_000.0, "cash_isa_balance": 400.0}],
+            person_columns=["cash_isa_balance"],
+            household_columns=["cash_isa"],
+        ),
+    )
+    stored = simulation.calculate("cash_isa", PROJECTION_END_YEAR)[0]
+    assert stored == simulation.baseline.calculate("cash_isa", PROJECTION_END_YEAR)[0]
+    assert stored > 5_000.0
+    for year in (PROJECTION_END_YEAR + 1, YEARS[-1]):
+        assert simulation.calculate("cash_isa_balance", year).sum() == 0, year
+        assert simulation.calculate("cash_isa", year)[0] == 0, year
+
+
 def test_a_part_formula_takes_over_from_the_year_it_starts():
     # Until its formula starts, the part reads its inputs, so the stored
     # total stands; a part with no index holds it flat, as Core holds the

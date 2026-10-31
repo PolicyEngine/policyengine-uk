@@ -744,14 +744,22 @@ class Simulation(CoreSimulation):
             source = self._isa_latest_input(name, period)
         return source
 
+    def _abolished(self, name, period) -> bool:
+        # Core's own test for gov.abolitions, which a reform may supply and
+        # the baseline does not: without the node, nothing is abolished.
+        try:
+            return bool(self.tax_benefit_system.parameters(period).gov.abolitions[name])
+        except Exception:
+            return False
+
     def _stands_for_stored_parts(self, variable, period) -> bool:
         # A stored total means the sum of the parts STORED_HOUSEHOLD_TOTALS
         # names for it, each a plain input. Grow it only while the variable
         # still sums exactly those parts, each once, with nothing subtracted,
         # and each part still reads its inputs: no formula, sum or subtraction
-        # for this period, no defined_for mask, not neutralized. Anything a
-        # reform changes there leaves the total to Core, as in data with no
-        # stored total.
+        # for this period, no defined_for mask, not neutralized or abolished.
+        # Anything a reform changes there leaves the total to Core, as in data
+        # with no stored total.
         parts = STORED_HOUSEHOLD_TOTALS.get(variable.name)
         if (
             parts is None
@@ -770,6 +778,7 @@ class Simulation(CoreSimulation):
                 or part.subtracts
                 or part.defined_for is not None
                 or part.is_neutralized
+                or self._abolished(name, period)
             ):
                 return False
         return True
