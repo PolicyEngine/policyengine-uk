@@ -113,10 +113,11 @@ and [HMRC Notice 452](https://www.gov.uk/guidance/machine-games-duty-excise-noti
 
 ### Higher-stake machines from 1 April 2027
 
-Budget 2026 moves machines with a maximum charge to play of more than £1, or
-a maximum prize of more than £100, from the standard rate of 20% to the higher
-rate of 25% from 1 April 2027. Finance Bill 2026-27 will amend the stake and
-prize thresholds that set each machine's type, and with it the rate
+In Budget 2026 the government said it would move machines with a maximum
+charge to play of more than £1, or a maximum prize of more than £100, from the
+standard rate of 20% to the higher rate of 25% from 1 April 2027. In Finance
+Bill 2026-27 the government will amend the stake and prize thresholds that set each machine's
+type, and with it the rate
 ([OOTLAR paragraph 1.50](https://www.gov.uk/government/publications/budget-2026-overview-of-tax-legislation-and-rates-ootlar/budget-2026-overview-of-tax-legislation-and-rates-ootlar)).
 Today, Finance Act 2012 Schedule 24 paragraph 5(3) puts every machine outside
 the lower-rate class with a highest charge of at most £5 in the standard-rate
@@ -166,10 +167,10 @@ change, or move its date to delay it. It shares fiscal-year segments with the
 rates, so a rate reform applies to the higher-stake part at whichever rate the
 switch selects.
 
-The policy costing puts the measure at £135 million in 2027-28 and £130
-million a year to 2031-32
+The Treasury puts the measure at £135 million in 2027-28 and £130 million a
+year to 2031-32
 ([Budget 2026 policy costings, page 67](https://assets.publishing.service.gov.uk/media/6ae1883fe4367e5c8b0467df/AB26_Policy_Costing.pdf#page=67)).
-That costing grows its base with the OBR's Machine Games Duty forecast and nets
+The Treasury grows its base with the OBR's Machine Games Duty forecast and nets
 off a behavioural response: an elasticity of -0.95, a quarter of lost stakes
 moving to Remote Gaming Duty, general attrition and lower Corporation Tax. The
 model applies the rates statically to supplied takings and reproduces none of
@@ -296,9 +297,11 @@ over one plus `ons.population` growth, minus one, to six decimals. Dataset
 projection grows every household weight by `ons.population`, so each
 weighted input grows with its duty's national base. Past
 `PROJECTION_END_YEAR`, policyengine-core scales each input by its index and
-each weight by the population index, so the weighted input keeps that path. Grown by
-the base's own growth, the weighted bases would count population growth
-twice and exceed Table 4.10 by 1.54% in 2031-32. `uprate_council_tax`
+each weight by the population index, so the weighted input keeps that path
+until `create_economic_assumption_indices` stops compounding, and both hold
+from then on. Grown by the base's own growth, the weighted bases would count
+population growth twice and exceed Table 4.10 by 1.54% in 2031-32.
+`uprate_council_tax`
 divides each council tax bill's growth by the growth in household weights
 for the same reason.
 
@@ -311,12 +314,14 @@ for the same reason.
 
 After 2031-32 the importer divides the base's growth by one plus
 population growth in every year to 2073, the last year `ons.population`
-states, and the model holds both series' 2073 values after that.
+states. Each series' last value stays in force after that, as population's
+does.
 
 `policyengine_uk/utils/import_obr_forecasts.py` writes the series from
 `RECEIPTS_SERIES_SPECS`. It reads each rate from the model's parameter file
-and averages it over the OBR's April-to-March year by days. Each duty's rate
-comes out as follows:
+and averages it over the OBR's April-to-March year by days. The equations
+below round receipts and rates for display, and each result comes from the
+unrounded figures. Each duty's rate comes out as follows:
 
 - **Remote Gaming Duty**: 21% to 31 March 2026, 40% from 1 April 2026.
   Receipts grow 108.3% into 2026-27 (£2,752.0 million against HMRC's
@@ -334,11 +339,11 @@ comes out as follows:
   split gives spread betting no part, so it has no weight.
 - **Machine Games Duty**: from 1 April 2027 the model charges the
   higher-stake part of the standard-rate base at the higher rate (see
-  [higher-stake machines](#higher-stake-machines-from-1-april-2027)), and
-  Table 4.10's line includes that rise: the forecast incorporates the
-  measures announced since March (EFO paragraph 3.2), and the rise
-  "increases receipts by a further estimated £0.1 billion a year from
-  2027-28" (paragraph 4.45). The series divides the line by a rate that
+  [higher-stake machines](#higher-stake-machines-from-1-april-2027)). The
+  OBR includes that rise and the measures announced since March in
+  Table 4.10 (EFO paragraph 3.2), and says the rise "increases receipts by a
+  further estimated £0.1 billion a year from 2027-28" (paragraph 4.45). The
+  series divides the line by a rate that
   charges the higher-stake share of the standard-rate base, 90.78% (see
   [the higher-stake share](#the-higher-stake-share)), at 25% from 2027-28.
   The importer weights each band by HMRC's 2024-25 liabilities over its
@@ -350,12 +355,13 @@ comes out as follows:
   and the rates from their parameter files, so the series and the formula
   read the same dates and rates.
 
-  The OBR's policy Table 1.1 joins two costings as measure 56, under the
-  head Betting: the 25% rate and the move of liability to machine
-  suppliers from April 2028. The rate costing nets off a behavioural
-  response: an elasticity of −0.95, with a quarter of the stakes lost
-  moving to Remote Gaming Duty, and a general attrition assumption. The
-  supplier costing comes from reduced non-compliance and earlier payment
+  The OBR joins the Treasury's two costings as measure 56 in policy
+  Table 1.1, under the head Betting: the 25% rate and the move of liability
+  to machine suppliers from April 2028. The Treasury nets off a behavioural
+  response in its rate costing: an elasticity of −0.95, with a quarter of the
+  stakes lost moving to Remote Gaming Duty, and a general attrition
+  assumption. It estimates that moving liability to suppliers reduces
+  non-compliance and brings payments forward
   ([Budget 2026 policy costings, pages 67 and 68](https://assets.publishing.service.gov.uk/media/6ae1883fe4367e5c8b0467df/AB26_Policy_Costing.pdf#page=67)).
   Dividing the line by the rate that produced it keeps all of these in the
   base, as receipts over the rate does for every other duty. Taking the
@@ -363,11 +369,12 @@ comes out as follows:
   rates restore none of them.
 - **Gaming Duty**: the household formula charges one effective rate, which
   does not change, so the base grows with receipts. The statutory bands do
-  not enter: any change in the duty's effective rate that the OBR's
-  forecast includes stays in the base.
-- **Bingo Duty**: 10% until its abolition on 1 April 2026. A zero rate
-  leaves no base to divide out, so the base holds its 2025-26 level from
-  2026-27. Per person the series falls as population grows, and the
+  not enter: any change in the duty's effective rate that the OBR
+  forecasts stays in the base.
+- **Bingo Duty**: 10% until Parliament abolished the duty from 1 April 2026.
+  A zero rate leaves no base to divide out, so the importer holds the base
+  at its 2025-26 level while the rate stays at zero. Per person the series
+  falls as population grows, and the
   weighted base holds. Current law charges nothing whatever the base; a
   reform that charges Bingo Duty again charges that 2025-26 base in cash
   terms.
@@ -376,23 +383,25 @@ comes out as follows:
 
 The series rest on these approximations:
 
-- HMRC reports cash receipts. Table 4.10 measures accrued receipts: its
-  totals equal the "Betting and gaming taxes" row of the October 2026 Table
-  4.1, whose note reads "All taxes are on an accrued basis." Growth into
+- HMRC reports cash receipts, while the OBR forecasts accrued receipts in
+  Table 4.10: its totals equal the "Betting and gaming taxes" row of the
+  October 2026 Table 4.1, whose note reads "All taxes are on an accrued
+  basis." Growth into
   2026-27 compares accrued 2026-27 receipts with cash 2025-26 receipts.
 - Model years run from 6 April and the OBR's from 1 April. A model year
   that takes in five days of a 1 April rate change charges them at the new
-  rate, so FY2025 Remote Gaming Duty (1.2%) and FY2026 General Betting Duty
-  (0.4%) sit slightly above the published receipts, and FY2025 Bingo Duty
-  (1.4%) slightly below. With the higher-stake input at its share, FY2026
-  Machine Games Duty sits 0.31% above Table 4.10 for the same reason: the
-  OBR's 2026-27 charges no higher-stake machine at 25%, while model year
-  2026 charges 1 to 5 April 2027 at 25%.
-- Two lines fall where no rate changes. Table 4.10's Lottery Duty for
-  2026-27, £830.5 million, falls short of HMRC's 2025-26 outturn of £980.1
-  million by 15.3%. The March 2026 Table 3.10 forecast £1,008.6 million for the same
-  year; the October policy table holds no Lottery Duty measure, and the EFO
-  gives no reason in paragraph 4.45. Pool Betting Duty
+  rate, so FY2025 Remote Gaming Duty and FY2026 General Betting Duty exceed
+  the published receipts by 1.2% and 0.4%, and FY2025 Bingo Duty falls short
+  of them by 1.4%. With the higher-stake input at its share, FY2026 Machine
+  Games Duty exceeds Table 4.10 by 0.31% for the same reason: the OBR charges
+  no higher-stake machine at 25% in 2026-27, while the model charges 1 to
+  5 April 2027 at 25% in model year 2026.
+- Two lines fall where no rate changes. The OBR forecasts Lottery Duty
+  receipts of £830.5 million for 2026-27, which fall short of HMRC's 2025-26
+  outturn of £980.1 million by 15.3%. It forecast £1,008.6 million for the
+  same year in March 2026's Table 3.10, lists no Lottery Duty measure in
+  October's policy table, and gives no reason in EFO paragraph 4.45. Pool
+  Betting Duty
   receipts fall from £8.1 million in 2024-25 to £4.0 million in 2025-26 and
   a forecast £2.8 million in 2026-27, so its index falls by 65%.
 
