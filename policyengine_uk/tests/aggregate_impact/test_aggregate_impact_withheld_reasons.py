@@ -248,9 +248,9 @@ def test_a_reform_that_changes_few_target_records_names_the_target():
 
 
 def test_a_small_change_in_another_reforms_target_names_that_target():
-    """measure() checks every costed reform's target: a reform aimed at
-    income tax is withheld when it moves Pension Credit, another reform's
-    target, in three records."""
+    """measure() checks every costed reform's target: the tool withholds a
+    reform aimed at income tax when it moves Pension Credit, another
+    reform's target, in three records."""
     world = _world(np.full(N, 100.0), np.full(N, 100.0), pension_credit=np.zeros(N))
     reformed = _world(
         np.full(N, 110.0), np.full(N, 100.0), pension_credit=_first(3, 25.0)
@@ -458,7 +458,7 @@ def test_the_comment_says_why_each_reform_year_is_suppressed():
         "receipts.dividend_tax with fewer than 10 records."
     )
     assert line in text
-    # Once, under the costings, though the targets are withheld too.
+    # Once, under the costings, though the tool withholds the targets too.
     assert text.count("receipts.dividend_tax with fewer than 10") == 1
     assert text.index(line) > text.index("### Standard reform costings")
 
@@ -591,10 +591,10 @@ def _direct_reasons(base, reformed, weight, target):
 @settings(max_examples=300, deadline=None)
 @given(world=worlds())
 def test_a_year_is_withheld_exactly_when_it_has_a_reason(world):
-    """For every world: the figures are withheld exactly when a reason is
-    recorded; the reasons are the conditions computed directly; the years
-    withheld match main's reform_withheld; and the published figures are
-    the direct weighted changes."""
+    """For every world: the tool withholds the figures exactly when it
+    records a reason; the reasons match the conditions computed directly;
+    the years withheld match main's reform_withheld; and the published
+    figures equal the direct weighted changes."""
     base, reformed, weight, target = world
     rec = _measure(base, reformed, weight, target)
     reasons = _reasons(rec)

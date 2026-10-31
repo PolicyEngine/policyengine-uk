@@ -1374,8 +1374,8 @@ def withheld_reasons(
 def reform_withheld(
     reformed, year: int, baseline: Optional[Mapping], components
 ) -> bool:
-    """Whether a reform's costing and target change for ``year`` are withheld:
-    whether any condition of ``withheld_reasons`` holds."""
+    """Whether the tool withholds a reform's costing and target change for
+    ``year``: whether any condition of ``withheld_reasons`` holds."""
     return bool(withheld_reasons(reformed, year, baseline, components))
 
 

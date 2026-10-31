@@ -1,8 +1,8 @@
 """Frozen reform withholding from main (da31e8698), with commentary omitted.
 
 Keep this independent of the production tool: it is the differential oracle
-for #2654, which records why a reform year is withheld and must not change
-which years are withheld.
+for #2654, which records why the tool withholds a reform year and must not
+change which years it withholds.
 """
 
 from typing import Mapping, Optional
