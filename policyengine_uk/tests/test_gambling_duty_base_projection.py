@@ -454,7 +454,7 @@ def test_without_the_higher_stake_input_the_duty_falls_short_of_table_4_10(
         if year == 2026:
             expected = TABLE_4_10["machine_games"][0] * 1e9
         if year >= 2027:
-            expected *= MACHINE_GAMES_BEFORE / MACHINE_GAMES_AFTER
+            expected = expected * MACHINE_GAMES_BEFORE / MACHINE_GAMES_AFTER
         assert model == pytest.approx(expected, rel=2e-4, abs=1), year
 
 
