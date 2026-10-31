@@ -540,8 +540,8 @@ def render(summary: Mapping, spec: Spec, context: Optional[Mapping] = None) -> s
                 ]
             parts += [
                 "",
-                "The report suppresses a reform's costing and target change for "
-                "a year when they would come from a small cell (`privacy.py`):",
+                "The report suppresses a reform's costing and target change in "
+                "these years, for the reasons below (`privacy.py`):",
                 "",
                 *notes,
             ]
