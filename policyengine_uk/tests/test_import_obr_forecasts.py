@@ -3330,10 +3330,16 @@ def test_render_writes_set_rates_estimates_then_average_earnings():
 
 
 def test_the_series_lists_every_average_earnings_year_after_the_table():
+    flat = FLAT_SERIES_FIXTURE.format(key="average_earnings")
     content = YOY_GROWTH_FIXTURE.replace(
-        "      2031-01-01: 0.0200\n",
-        "      2031-01-01: 0.0200\n      2032-01-01: 0.0200\n      2033-01-01: 0.0300\n",
+        flat,
+        flat.replace(
+            "      2031-01-01: 0.0200\n",
+            "      2031-01-01: 0.0200\n      2032-01-01: 0.0200\n"
+            "      2033-01-01: 0.0300\n",
+        ),
     )
+    assert content != YOY_GROWTH_FIXTURE
     values = _values(render_nlw(content), NLW_PATH)
     earnings = _values(content, ("average_earnings",))
     assert {y for y in values if y > 2027} == {2028} | {y for y in earnings if y > 2027}
