@@ -13,9 +13,9 @@ Invariants, each over generated benefit units and explicit examples:
 
 1. Flag gate. Where uc_has_deduction is false, uc_deductions is zero, for
    any supplied latent rate, combination, benefit cap reduction and floor.
-   The documented exception: an explicitly supplied
-   uc_advance_repayment_amount describes a known advance and applies
-   whatever the flag says.
+   The documented exceptions: an explicitly supplied
+   uc_advance_repayment_amount or uc_deduction_rate describes a known
+   deduction and applies whatever the flag says.
 2. Substitution. A supplied latent rate gives the same deductions, applied
    cap reduction and award as where(uc_has_deduction, rate, 0), the rate
    the formula's rule leaves.
@@ -288,6 +288,63 @@ def test_the_issue_example_takes_no_deductions_without_the_flag():
     assert values(sim, "universal_credit")[0] == pytest.approx(
         1_000 - 0.15 * STANDARD_ALLOWANCE, abs=0.01
     )
+
+
+def known_deduction_situation(age=30, **benunit_inputs):
+    """One claimant with a £6,000 award and no cap, in a household in London,
+    who supplies only ``benunit_inputs`` towards deductions."""
+    return {
+        "people": {"person": {"age": {YEAR: age}}},
+        "benunits": {
+            "benunit": {
+                "members": ["person"],
+                "would_claim_uc": {YEAR: True},
+                "universal_credit_pre_benefit_cap": {YEAR: 6_000.0},
+                "uc_benefit_cap_reduction": {YEAR: 0.0},
+                **{name: {YEAR: value} for name, value in benunit_inputs.items()},
+            }
+        },
+        "households": {"household": {"members": ["person"]}},
+    }
+
+
+def test_a_supplied_deduction_rate_applies_whatever_the_flag_says():
+    sim = Simulation(
+        situation=known_deduction_situation(
+            uc_has_deduction=False, uc_deduction_rate=0.1
+        )
+    )
+    assert not values(sim, "uc_has_deduction")[0]
+    assert values(sim, "uc_deductions")[0] == pytest.approx(
+        0.1 * STANDARD_ALLOWANCE, abs=0.01
+    )
+
+
+def test_a_draw_equal_to_the_incidence_assigns_no_deductions():
+    # Situations default to a draw of 1, and a factor of 3 clips London's
+    # incidence to 1.
+    sim = Simulation(
+        situation=known_deduction_situation(), reform=incidence_reform(3.0)
+    )
+    assert not values(sim, "uc_has_deduction")[0]
+    assert values(sim, "uc_deductions")[0] == 0
+
+
+def test_a_floor_uses_a_young_claimants_standard_allowance():
+    # £316.98 a month under 25, and an 85% floor limits what the cap and
+    # deductions take to 15% of that year's allowance, met from deductions
+    # first.
+    situation_under_25 = known_deduction_situation(
+        age=24,
+        uc_deduction_random_draw=0.1,
+        uc_latent_deduction_rate=0.25,
+        uc_deduction_combination="ADVANCE_ONLY",
+    )
+    benunit = situation_under_25["benunits"]["benunit"]
+    benunit["universal_credit_pre_benefit_cap"] = {YEAR: 600.0}
+    benunit["uc_benefit_cap_reduction"] = {YEAR: 600.0}
+    sim = Simulation(situation=situation_under_25, reform=floor_reform(0.85))
+    assert values(sim, "uc_deductions")[0] == pytest.approx(0.15 * 3_803.76, abs=0.01)
 
 
 # Datasets: hashed draws, so the flag, rate and combination come from their
