@@ -58,8 +58,8 @@ class oxford_council_tax_reduction_universal_credit_income(Variable):
         # claimant who cares (reg. 29) and a disabled child addition for each
         # disabled child (reg. 24(2)), and the two amounts are the 2026-27
         # carer and disabled child premiums, one for each carer and each
-        # disabled child, so each element has its own disregard, up to the
-        # element. They come off the award, which cannot fall below nil.
+        # disabled child (SI 2006/213 Sch 3 para 20(7) and (8)), so each
+        # element has its own disregard, up to the element. They come off the award, which cannot fall below nil.
         carers = add(benunit, period, ["uc_carer_element_included_for_claimant"])
         carer_disregard = min_(
             benunit("uc_carer_element", period),

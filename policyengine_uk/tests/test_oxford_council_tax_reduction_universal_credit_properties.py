@@ -37,9 +37,9 @@ over the families whose applicant has a Universal Credit award:
    family, recovered from each council's award.
 
 The differential against origin/main for families without Universal Credit
-lives outside the suite (see the pull request); here the paragraphs 14 to 27
-route is pinned by the YAML cases in
-policy/baseline/gov/local_authorities/oxford/council_tax_reduction/.
+lives outside the suite (see the pull request); here the YAML cases in
+policy/baseline/gov/local_authorities/oxford/council_tax_reduction/ pin the
+paragraphs 14 to 27 route.
 """
 
 import numpy as np
@@ -94,8 +94,8 @@ def families(draw):
                 ),
             )
         )
-    # Partners within five years of each other, so neither is presumed the
-    # other's child.
+    # Partners within five years of each other, so the model presumes neither
+    # the other's child.
     if len(adults) == 2:
         adults[1]["age"] = min(55, max(25, adults[0]["age"] + 3))
     children = [
@@ -273,7 +273,7 @@ def test_appendix_3_income_and_band(units):
         )
         disabled_children = sum(c["disability"] is not None for c in unit["children"])
         # Invariant 2: the disregards come off the award only, not below nil,
-        # and are bounded by the elements and the weekly amounts.
+        # and never exceed the elements or the weekly amounts.
         ignored = earned + unearned + award - income
         assert income >= max(0.0, earned + unearned) - TOLERANCE, case
         assert ignored >= -TOLERANCE, case
@@ -349,7 +349,7 @@ OTHER_COUNCILS = {
     "WESTMINSTER": ("westminster", "westminster_council_tax_reduction"),
 }
 # Council tax high enough that the other councils' awards stay above nil, so
-# the income behind each award can be read back from it.
+# the test can read back from each award the income behind it.
 LARGE_COUNCIL_TAX = 50_000
 
 

@@ -279,8 +279,9 @@
 # "£84.46 of the Universal Credit disabled child element". An award includes
 # a carer element for each claimant who cares (UC Regs 2013 reg 29) and a
 # disabled child addition for each disabled child (reg 24(2)). The amounts
-# are DWP's 2026-27 carer premium and disabled child premium, which are paid
-# for each carer and each disabled child, so the model ignores up to each
+# are the 2026-27 carer premium and disabled child premium, which Housing
+# Benefit gives for each carer and each disabled child (HB Regs 2006 Sch 3
+# para 20(7) and (8)), so the model ignores up to each
 # amount for each element, taking it off the award but not below nil. DWP's
 # 2026-27 monthly amounts: carer 209.34 (48.31 a week); disabled child
 # addition, lower rate 164.79 (38.03 a week), higher rate 514.71 (118.78 a
@@ -289,7 +290,7 @@
 - name: Oxford ignores 48.15 a week of a Universal Credit carer element
   # As the first case, with the carer element: maximum amount 17,598.80 +
   # 209.34 x 12 = 20,110.88, award 20,110.88 - 8,711.78 = 11,399.10. The
-  # element is 48.31 a week, so 48.15 x 52 = 2,503.80 of it is ignored.
+  # element is 48.31 a week, so Oxford ignores 48.15 x 52 = 2,503.80 of it.
   # Appendix 3: 15,839.60 + 11,399.10 - 2,503.80 = 24,734.90 a year, 475.67 a
   # week: band 1, 100% of 1,800. Counting the whole award it would be 523.82
   # a week, band 2.
@@ -356,7 +357,7 @@
 - name: Oxford ignores the whole lower-rate disabled child addition
   # As the lone-parent case, with a disabled child: maximum amount 15,746.08
   # + 164.79 x 12 = 17,723.56, award 17,723.56 - 5,893.58 = 11,829.98. The
-  # addition, 38.03 a week, is under 84.46, so all 1,977.48 of it is ignored.
+  # addition, 38.03 a week, is under 84.46, so Oxford ignores all 1,977.48.
   # Appendix 3: 15,839.60 + 11,829.98 - 1,977.48 = 25,692.10 a year, 494.08 a
   # week: band 2, 75% of 1,800. Counting the whole award it would be 532.11 a
   # week, band 3.
@@ -392,8 +393,8 @@
 
 - name: Oxford ignores 84.46 a week of a higher-rate disabled child addition
   # Maximum amount 15,746.08 + 514.71 x 12 = 21,922.60, award 21,922.60 -
-  # 5,893.58 = 16,029.02. The addition is 118.78 a week, so 84.46 x 52 =
-  # 4,391.92 of it is ignored. Appendix 3: 15,839.60 + 16,029.02 - 4,391.92 =
+  # 5,893.58 = 16,029.02. The addition is 118.78 a week, so Oxford ignores
+  # 84.46 x 52 = 4,391.92 of it. Appendix 3: 15,839.60 + 16,029.02 - 4,391.92 =
   # 27,476.70 a year, 528.40 a week: band 2, 75% of 1,800. Counting the whole
   # award it would be 612.86 a week, band 4.
   period: 2026
