@@ -321,8 +321,8 @@ def _finite(values) -> bool:
 
 
 def _containment_text(head, component, finite=True):
-    """A containment problem's text; ``finite`` is False where a response
-    found containing is not finite."""
+    """A containment problem's text; ``finite`` is False when a response in
+    its households is not finite."""
     if finite:
         return f"{head} rises one for one with {component}, so it contains it,"
     return f"{head} rises one for one with {component}, or is not finite,"
