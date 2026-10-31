@@ -16,7 +16,18 @@ from typing import Callable, Mapping, Optional, Sequence
 
 import numpy as np
 
-from .privacy import MIN_CELL, count_text, small
+from .privacy import (
+    MIN_CELL,
+    NO_BASELINE,
+    SMALL_BALANCE_CHANGE,
+    SMALL_COMPONENT_LEFT,
+    SMALL_TARGET_CHANGE,
+    SUPPRESSED_COMPONENT_CHANGED,
+    count_text,
+    small,
+    withheld_reason,
+    withheld_text,
+)
 from . import TOOL_SCHEMA
 from .guard import counted_once, snapshot_inputs
 from .partition import Partition, closure_problems, group_label, read_model_lists
@@ -1233,14 +1244,33 @@ def weighted_total(sim, variable: str, year: int) -> float:
 CHANGE_GBP = 0.005
 
 
+def component_metric_ids(partition: Partition) -> dict:
+    """``{variable: published metric id}`` for each head and declared double
+    count."""
+    out = {}
+    for head in partition.heads:
+        section = "receipts" if head.kind == "tax" else "spending"
+        out.setdefault(head.variable, f"{section}.{head.id}")
+    for dc in partition.double_counts:
+        out.setdefault(dc.variable, f"double_counts.{dc.variable}")
+    return out
+
+
 def baseline_records(sim, partition: Partition, rec: "Recorder", year: int, targets):
     """What the reform checks need from the baseline run in ``year``: each
     suppressed component's values, each household's gov_balance and each
-    target variable's values. Kept in memory only, never written."""
+    target variable's values, and each component's published metric id, so
+    that a reason for withholding can name it. Kept in memory only, never
+    written."""
+    hidden = suppressed_components(rec, partition, year)
     return {
         "hidden": {
             variable: array(sim, variable, year).astype(np.float64).copy()
-            for variable in suppressed_components(rec, partition, year)
+            for variable in hidden
+        },
+        "metric_ids": {
+            **component_metric_ids(partition),
+            **{variable: metric_id for variable, (metric_id, _) in hidden.items()},
         },
         "household_weight": array(sim, "household_weight", year)
         .astype(np.float64)
@@ -1257,10 +1287,11 @@ def baseline_records(sim, partition: Partition, rec: "Recorder", year: int, targ
     }
 
 
-def reform_withheld(
+def withheld_reasons(
     reformed, year: int, baseline: Optional[Mapping], components
-) -> bool:
-    """Whether a reform's costing and target change for ``year`` are withheld.
+) -> list:
+    """Why a reform's costing and target change for ``year`` are withheld:
+    empty when they are published.
 
     They would be built from a small cell (Sol re-review 7 of #2335) when the
     reform:
@@ -1270,22 +1301,33 @@ def reform_withheld(
       figures (the tax on one recipient's pension, say). An unchanged record
       compares equal, because a rebuilt baseline reproduces the first run
       exactly (``determinism:rebuilt_baseline``); noise could only withhold
-      more;
+      more (``suppressed_component_changed``);
     - leaves any other component with 1 to 9 records (``privacy.small``),
-      whose change would give that new small cell back;
-    - changes gov_balance in 1 to 9 households, or a target variable in 1 to
-      9 records, by more than ``CHANGE_GBP``: the change is theirs alone, as
-      for a decile row.
+      whose change would give that new small cell back
+      (``small_component_left``);
+    - changes gov_balance in 1 to 9 households (``small_balance_change``), or
+      a target variable in 1 to 9 records (``small_target_change``), by more
+      than ``CHANGE_GBP``: the change is theirs alone, as for a decile row.
 
-    Withheld too when there is no baseline record for the year.
+    Withheld too when there is no baseline record for the year
+    (``no_baseline``). It tests every condition and gives one reason for
+    each component or variable a condition holds for
+    (``privacy.withheld_reason``): the reason names it and gives no count or
+    amount (#2654).
     """
     if baseline is None:
-        return True
+        return [withheld_reason(NO_BASELINE)]
+    metric_ids = baseline.get("metric_ids") or {}
+    reasons = []
     for variable, before in baseline["hidden"].items():
         if not np.array_equal(
             array(reformed, variable, year).astype(np.float64), before
         ):
-            return True
+            reasons.append(
+                withheld_reason(
+                    SUPPRESSED_COMPONENT_CHANGED, variable, metric_ids.get(variable)
+                )
+            )
     weights = {}
 
     def weight(variable):
@@ -1301,7 +1343,11 @@ def reform_withheld(
             continue
         values = array(reformed, variable, year).astype(np.float64)
         if small(_weighted_records(values != 0, weight(variable))):
-            return True
+            reasons.append(
+                withheld_reason(
+                    SMALL_COMPONENT_LEFT, variable, metric_ids.get(variable)
+                )
+            )
     balance = to_household(
         reformed,
         array(reformed, "gov_balance", year).astype(np.float64),
@@ -1309,14 +1355,36 @@ def reform_withheld(
     )
     changed = np.abs(balance - baseline["balance"]) > CHANGE_GBP
     if small(_weighted_records(changed, baseline["household_weight"])):
-        return True
+        reasons.append(withheld_reason(SMALL_BALANCE_CHANGE, "gov_balance"))
     for variable, before in baseline["targets"].items():
         after = array(reformed, variable, year).astype(np.float64)
         if small(
             _weighted_records(np.abs(after - before) > CHANGE_GBP, weight(variable))
         ):
-            return True
-    return False
+            reasons.append(withheld_reason(SMALL_TARGET_CHANGE, variable))
+    return reasons
+
+
+def reform_withheld(
+    reformed, year: int, baseline: Optional[Mapping], components
+) -> bool:
+    """Whether a reform's costing and target change for ``year`` are withheld:
+    whether any condition of ``withheld_reasons`` holds."""
+    return bool(withheld_reasons(reformed, year, baseline, components))
+
+
+def _record_reasons(record: dict, year: int, reasons: list) -> None:
+    """Keep a withheld year's reasons on a reform figure's record.
+
+    Every reform figure carries ``withheld_because``; it lists exactly the
+    years its ``suppressed`` lists, so a year is withheld exactly when it
+    has a reason.
+    """
+    # Rebound rather than written through, as for _exclude.
+    record["withheld_because"] = {
+        **(record.get("withheld_because") or {}),
+        **({str(year): list(reasons)} if reasons else {}),
+    }
 
 
 def as_standard_reforms(reforms) -> list:
@@ -1350,7 +1418,9 @@ def measure_reforms(
     (``reform_withheld``) publishes neither the costing nor the target
     change, and its responsiveness detail gives no amount: a 10% uplift's
     cost of £100 would give back a suppressed £1,000 (Sol re-reviews 6 and 7
-    of #2335). Without ``baseline``, every year is withheld.
+    of #2335). Without ``baseline``, every year is withheld. Both figures
+    keep each withheld year's reasons (``withheld_reasons``) under
+    ``withheld_because``, and a failing responsiveness detail gives them.
 
     First rebuilds an unreformed simulation the same way, which must
     reproduce the baseline exactly: otherwise reform costings would include
@@ -1391,19 +1461,20 @@ def measure_reforms(
             "error": None,
         }
         target_changes = {}
-        hidden_years = set()
+        # The reasons for each withheld year (withheld_reasons).
+        hidden_years = {}
         try:
             parameters = reform_parameters(reform, baseline_parameters, years)
             outcome["parameters"] = parameters
             reformed = factory(reform=parameters)
             for year in years:
-                withheld = reform_withheld(
+                reasons = withheld_reasons(
                     reformed, year, (baseline or {}).get(year), components
                 )
-                if withheld:
-                    hidden_years.add(year)
+                if reasons:
+                    hidden_years[year] = reasons
                 # records=1 publishes the figure as suppressed (privacy.py).
-                records = 1 if withheld else None
+                records = 1 if reasons else None
                 rec.metric(
                     f"reforms.{reform.id}",
                     reform.name,
@@ -1414,6 +1485,7 @@ def measure_reforms(
                     - baseline_balance[year],
                     records=records,
                 )
+                _record_reasons(rec.metrics[f"reforms.{reform.id}"], year, reasons)
                 if reform.responds is not None:
                     variable = reform.responds.variable
                     change = (
@@ -1429,6 +1501,9 @@ def measure_reforms(
                         year,
                         change,
                         records=records,
+                    )
+                    _record_reasons(
+                        rec.metrics[f"reform_targets.{reform.id}"], year, reasons
                     )
             del reformed
         except Exception as error:  # noqa: BLE001 - one reform's failure is reported, not fatal
@@ -1464,8 +1539,8 @@ def measure_reforms(
                     if year in hidden_years and not ok:
                         detail = (
                             f"{fiscal_year_label(year)}: {reform.responds.variable} did "
-                            "not move enough (the amount is withheld: it comes from "
-                            f"fewer than {MIN_CELL} records)"
+                            "not move enough (the amount is withheld: "
+                            f"{withheld_text(hidden_years[year])})"
                         )
                     rec.check(
                         f"responsive:{reform.id}",

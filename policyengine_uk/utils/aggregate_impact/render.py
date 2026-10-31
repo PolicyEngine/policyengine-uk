@@ -6,6 +6,7 @@ import math
 from typing import Mapping, Optional
 
 from . import COMMENT_MARKER
+from .privacy import withheld_text
 from .spec import Spec, fiscal_year_label
 
 SECTIONS = (
@@ -124,6 +125,43 @@ def _change_cell(row, year) -> str:
     if cell.get("withheld"):
         return _WITHHELD_CELL + _mark(cell)
     return fmt_change(cell["delta"], row["kind"]) + _mark(cell)
+
+
+def _spans(years) -> str:
+    """Years as runs of consecutive years: "2025-26, 2027-28 to 2030-31"."""
+    runs = []
+    for year in sorted(years):
+        if runs and year == runs[-1][-1] + 1:
+            runs[-1].append(year)
+        else:
+            runs.append([year])
+    return ", ".join(
+        fiscal_year_label(run[0])
+        if len(run) == 1
+        else f"{fiscal_year_label(run[0])} to {fiscal_year_label(run[-1])}"
+        for run in runs
+    )
+
+
+def _withheld_notes(rows, years) -> list:
+    """Why each side withholds a reform figure, one line per figure, reasons
+    and run of years (measure.withheld_reasons)."""
+    grouped = {}
+    for row in rows:
+        for side in ("base", "head"):
+            by_reasons = {}
+            for year in years:
+                cell = row["values"].get(str(year)) or {}
+                reasons = (cell.get("withheld_because") or {}).get(side)
+                if reasons:
+                    by_reasons.setdefault(withheld_text(reasons), []).append(int(year))
+            for text, withheld_years in by_reasons.items():
+                key = (row["label"], text, tuple(withheld_years))
+                grouped.setdefault(key, []).append(side)
+    return [
+        f"- {label}, {_spans(withheld_years)} ({' and '.join(sides)}): {text}."
+        for (label, text, withheld_years), sides in grouped.items()
+    ]
 
 
 # A figure from fewer than 10 records is not published (privacy.py).
@@ -474,6 +512,7 @@ def render(summary: Mapping, spec: Spec, context: Optional[Mapping] = None) -> s
     parts += ["", "### Moves flagged for review", "", _flags(summary)]
 
     unchanged = []
+    explained = False
     for section, title in SECTIONS:
         rows = _section_rows(summary, section)
         if not rows:
@@ -482,6 +521,23 @@ def render(summary: Mapping, spec: Spec, context: Optional[Mapping] = None) -> s
             unchanged.append(title[:1].lower() + title[1:])
             continue
         parts += ["", f"### {title}", "", _changes_table(rows, years)]
+        notes = (
+            _withheld_notes(rows, years)
+            if section in ("reforms", "reform_targets") and not explained
+            else []
+        )
+        if notes:
+            # Once, under the first reform table shown: a reform's costing
+            # and target change are withheld in the same years, for the same
+            # reasons.
+            explained = True
+            parts += [
+                "",
+                "The report suppresses a reform's costing and target change for "
+                "a year when they would come from a small cell (`privacy.py`):",
+                "",
+                *notes,
+            ]
     parts += ["", "### Household net income by decile", "", _deciles(summary, years)]
     if unchanged:
         parts += ["", "**No change in any year:** " + "; ".join(unchanged) + "."]
