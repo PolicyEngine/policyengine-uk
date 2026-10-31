@@ -688,10 +688,10 @@ class ClearanceSeriesSpec(ReceiptsSeriesSpec):
     """A line of the OBR's tobacco or alcohol clearance tables, which grows
     household quantity inputs per head (#2596).
 
-    The line counts quantities, not pounds, so its table has no "£ billion"
-    cell. ``unit`` is the unit as the table states it, in a row label or a
-    note, and the importer requires it in exactly one cell of the table in
-    both EFOs. Dataset projection grows household weights by
+    The OBR counts clearances in quantities, not pounds, so a clearance
+    table has no "£ billion" cell. ``unit`` is the unit as the OBR states it
+    in the table, in a row label or a note, and the importer requires it in
+    exactly one cell of the table in both EFOs (``validate_clearance_unit``). Dataset projection grows household weights by
     ``ons.population``, so ``render_receipts_growth_yaml`` writes the
     clearances' growth over one plus that growth (``per_head_growth``) and
     the weighted total grows with the clearances. After the OBR's forecast
@@ -707,23 +707,25 @@ class ClearanceSeriesSpec(ReceiptsSeriesSpec):
         # per_head_growth reads the previous EFO's line and the raw levels.
         if self.rates or self.outturn is not None:
             raise ValueError(
-                f"{name}: a clearance line counts quantities, so it takes no "
-                "rates and links to the previous EFO, not its own outturn"
+                f"{name}: the OBR counts clearances in quantities, so a "
+                "clearance line takes no rates and links to the previous EFO, "
+                "not its own outturn"
             )
 
 
 TOBACCO_CLEARANCES = "tobacco clearances"
 ALCOHOL_CLEARANCES = "alcohol clearance forecasts"
-# Table 4.11 (3.11 in March 2026) states each unit in a row label: the
-# hand-rolled and other tobacco lines split "Non-cigarette clearances ('000s
-# kg)". Table 4.12 (3.12) states its unit in a note.
+# The OBR states each unit in Table 4.11 (3.11 in March 2026) in a row
+# label, and splits "Non-cigarette clearances ('000s kg)" into the
+# hand-rolled and other tobacco lines. It states Table 4.12's (3.12's) unit
+# in a note.
 TOBACCO_STICKS = "(million sticks)"
 TOBACCO_KILOGRAMS = "('000s kg)"
 ALCOHOL_HECTOLITRES = "thousands of hectolitres of alcohol"
 
-# The product groups the OBR forecasts. Table 4.12's wine line includes other
-# fermented products and its spirits line spirit-based ready-to-drinks (its
-# footnotes 1 and 2).
+# The product groups the OBR forecasts. The OBR includes other fermented
+# products in Table 4.12's wine line and spirit-based ready-to-drinks in its
+# spirits line (the table's footnotes 1 and 2).
 CLEARANCE_SERIES_SPECS = (
     ClearanceSeriesSpec(
         path=("per_capita", "tobacco_clearances", "cigarettes"),
@@ -1033,9 +1035,9 @@ def growth_ratio(
 
 @dataclass(frozen=True)
 class ReceiptsLine:
-    """A receipts line as one EFO publishes it: £bn, or a clearance line's own
-    unit, by the calendar year in which each fiscal year starts, and which of
-    those years are outturn."""
+    """A receipts line as the OBR publishes it in one EFO: £bn, or a
+    clearance line's own unit, by the calendar year in which each fiscal year
+    starts, and which of those years are outturn."""
 
     table: str
     label: str
@@ -1248,8 +1250,9 @@ def validate_clearance_unit(
     ):
         return
     raise ValueError(
-        f'{where} states the unit "{spec.unit}" of {name} in {text!r}, which is '
-        "not the line's label, the label of the total it breaks down, or a note"
+        f'{where} gives the unit "{spec.unit}" of {name} in {text!r}, outside '
+        "the line's label, the label of the total it breaks down and the "
+        "table's notes"
     )
 
 
@@ -1258,9 +1261,9 @@ def find_receipts_line(
 ) -> ReceiptsLine:
     """The one row labelled ``spec.row`` in a table titled ``spec.title``.
 
-    Only that table's rows are read: its cash unit, or a clearance line's
-    unit, its year headers and its "Outturn" and "Forecast" markers, which
-    may sit on one row or several.
+    The importer reads only that table's rows: its cash unit, or a clearance
+    line's unit, its year headers and its "Outturn" and "Forecast" markers,
+    which may sit on one row or several.
     """
     matches = []
     for sheet, rows in sheets.items():
@@ -1346,9 +1349,9 @@ def find_receipts_line(
             f"{where} heads more than one column "
             + ", ".join(fiscal_year_label(y) for y in repeated)
         )
-    # The line's row holds its label and a value under each year, nothing
-    # else: a unit or note beside it would describe its values, and the
-    # importer would read them as if in the table's unit.
+    # The importer reads a line's label and a value under each year and
+    # refuses anything else on the row: a unit or note beside the label would
+    # describe the values, which the importer would read in the table's unit.
     beside = {
         column: value
         for column, value in row.items()
@@ -1360,9 +1363,9 @@ def find_receipts_line(
             "a unit or note on the row needs deliberate importer support"
         )
     if isinstance(spec, ClearanceSeriesSpec):
-        # A clearance table states each unit in a label or a note, so a cell
-        # beside its years, such as a unit column's heading, is a layout the
-        # importer does not read.
+        # The OBR states each clearance unit in a label or a note, so the
+        # importer does not read a cell beside the years, such as a unit
+        # column's heading.
         heading = {
             column: value
             for column, value in year_row.items()
@@ -1370,8 +1373,8 @@ def find_receipts_line(
         }
         if heading:
             raise ValueError(
-                f"{where} holds {heading} in its fiscal-year row; a clearance "
-                "table states each unit in a label or a note"
+                f"{where} holds {heading} in its fiscal-year row; the OBR "
+                "states each clearance unit in a label or a note"
             )
         validate_clearance_unit(table_rows, line_index, spec, where)
     else:
@@ -1516,9 +1519,9 @@ def per_head_growth(
     """A series' growth per head, to six decimals: one plus each year's
     growth, over one plus that year's ``ons.population`` growth, minus one.
 
-    The growth is the series' own, before rounding where ``growth.ratios``
-    holds it: a duty's base for a line with rates, whether it links to the
-    previous EFO or has its own outturn. Dataset projection grows each
+    It divides the series' own growth, before rounding where
+    ``growth.ratios`` holds it: a duty's base for a line with rates, whether
+    the importer links the line to the previous EFO or to its own outturn. Dataset projection grows each
     household's input by this and its weight by the population growth, so
     the weighted input grows by their product, the series' growth.
     """
@@ -1844,13 +1847,13 @@ def render_receipts_growth_yaml(
     """Rewrite each receipts series' values and references in a
     yoy_growth.yaml.
 
-    Years before this EFO's first year are kept, so a series' index keeps
-    its base year. Years after the OBR's receipts forecast follow
-    average_earnings as ``content`` holds it. A series under ``per_capita``
-    is written per head of ``ons.population`` as ``content`` holds it, in
-    every year to the last that population or the tail states; a clearance
-    series holds the clearances flat after the forecast. The result is
-    checked to differ from ``content`` only in those values and references.
+    It keeps the years before this EFO's first year, so a series' index
+    keeps its base year, and follows average_earnings as ``content`` holds
+    it after the OBR's receipts forecast. It writes a series under
+    ``per_capita`` per head of ``ons.population`` as ``content`` holds it,
+    in every year to the last that population or the tail states, and holds
+    a clearance series' clearances flat after the forecast. It checks that
+    the result differs from ``content`` only in those values and references.
     """
     before = yaml.safe_load(content)
     expected = copy.deepcopy(before)

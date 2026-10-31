@@ -185,7 +185,7 @@ def test_every_quantity_input_declares_its_product_group_index():
 
 
 def test_strengths_shares_and_the_cigarette_price_stay_as_they_are():
-    """Strengths and draught shares are ratios, and the cigarette price is a
+    """Strengths and draught shares measure ratios, and the cigarette price a
     price, not a quantity (#2596 leaves its forward path out): none of them
     declares an index or appears in the uprating map."""
     from policyengine_uk.system import system
@@ -234,8 +234,8 @@ def test_each_series_is_its_clearances_per_head(parameters):
 
 
 def test_cigarettes_per_head_halve_by_2031(parameters):
-    """The October 2026 EFO forecasts 2031-32 cigarette clearances 47.2%
-    below the March 2026 EFO's 2024-25 outturn. Population grows 1.5% over
+    """In its October 2026 EFO the OBR forecasts 2031-32 cigarette clearances
+    47.2% below its March 2026 EFO's 2024-25 outturn. Population grows 1.5% over
     those years, so clearances per head fall 48.0%, and the index stands at
     0.520."""
     levels = CLEARANCES["tobacco_clearances.cigarettes"]
@@ -349,7 +349,7 @@ def test_a_later_year_charges_duty_on_the_uprated_quantity(parameters):
 
 def rate_leaves(parameters):
     """Every alcohol and tobacco duty rate the duty formulas read, without
-    the wine strength easement's switch, which is true or false."""
+    the wine strength easement's true-or-false switch."""
     leaves = [
         leaf
         for node in (ALCOHOL_RATES, TOBACCO_RATES)
@@ -371,9 +371,8 @@ def rate_leaves(parameters):
 def test_a_duty_rate_reform_moves_receipts_by_the_rate_alone(factor, year, scale):
     """Scaling every alcohol and tobacco duty rate in a year from 2027-28,
     when the current-law rates hold flat, leaves every projected quantity as
-    it was and multiplies each duty by the factor: the duties are linear in
-    their rates, and the rates are not among the parameters the dataset
-    projection reads."""
+    it was and multiplies each duty by the factor: each duty scales linearly
+    with its rates, and the dataset projection reads no rate."""
     parameters = current_law()
     inputs = {
         name: value * scale if name in GROUP else value
@@ -416,7 +415,7 @@ UNTOUCHED = (
 def test_the_change_touches_only_the_quantity_inputs(parameters):
     """Differential against the projection without this change, which
     leaves the quantity inputs out of the uprating map and out of Core's
-    fallback: every other stored input is the same in every year, the
+    fallback: every other stored input keeps its value in every year, the
     quantity inputs differ by their index alone, and outputs differ only
     through the two duties."""
     households = [

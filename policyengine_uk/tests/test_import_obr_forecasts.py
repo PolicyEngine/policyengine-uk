@@ -541,8 +541,8 @@ def clearance_table(
     """A table laid out as the OBR's Tables 4.11 and 4.12: title in column B,
     the "Outturn" and "Forecast" markers on the next row, fiscal years on the
     row after, then one row per line and any notes. A clearance table has no
-    unit cell, since a label or a note states the unit; ``unit`` adds one on
-    a row of its own below the title, as a receipts table has."""
+    unit cell, since the OBR states the unit in a label or a note; ``unit``
+    adds one on a row of its own below the title, as a receipts table has."""
     years = max(len(levels) for _, levels in rows)
     columns = [column_letter(3 + i) for i in range(years)]
     sheet = {start: [make_inline_cell(f"B{start}", title)]}
@@ -606,8 +606,9 @@ def tobacco_table(chapter, first_year, levels, outturn_years=1):
 
 def alcohol_table(chapter, first_year, levels, outturn_years=1, note=None):
     """Table 4.12 (3.12 to March 2026): clearances in thousand hectolitres of
-    alcohol, which a note states, then the duties' receipts in £ billion
-    under the same labels, which the clearance lines must not read."""
+    alcohol, which the OBR states in a note, then the duties' receipts in
+    £ billion under the same labels, which the importer must not read for
+    the clearance lines."""
     labels = {
         "beer_and_cider": " Beer and cider",
         "wine": " Wine1",
@@ -1754,7 +1755,7 @@ MARCH_2026_RECEIPTS = {
     "great_britain": ("32.376814327646052", "34.051963932489258", "37.413586572144581", "38.240930947824609", "39.111850954748434", "42.419067764546902", "42.463193622519263"),
     "northern_ireland": ("0.38233350730688931", "0.39471664406441903", "0.40263364127921164", "0.41045270712298504", "0.41810894612429189", "0.42590403232705243", "0.43449009714292341"),
 }  # fmt: skip
-# Published clearances as the workbooks hold them, from each EFO's outturn
+# Clearances as the OBR publishes them in the workbooks, from each EFO's outturn
 # year: October 2026 Tables 4.11 (rows 5, 8 and 9) and 4.12 (rows 5 to 7)
 # from 2025-26, and March 2026 Tables 3.11 and 3.12 from 2024-25.
 OCTOBER_2026_CLEARANCES = {
@@ -3049,8 +3050,8 @@ TOBACCO_HEADER = [
 @pytest.mark.parametrize(
     "rows, message",
     [
-        # The cigarette label states the unit; hand-rolled tobacco takes it
-        # from the non-cigarette row.
+        # The OBR states the unit in the cigarette label, and in the
+        # non-cigarette total for hand-rolled tobacco.
         (
             [{"B": "Hand rolled tobacco clearances", "C": "3338", "D": "3113"}],
             r"must state the unit \"\('000s kg\)\" .* found \[\]",
@@ -3079,7 +3080,8 @@ def test_a_clearance_line_needs_its_unit_stated_once(rows, message):
 
 
 def test_a_cigarette_line_in_another_unit_is_not_read():
-    # The unit sits in the cigarette label, so a new unit renames the row.
+    # The OBR states the unit in the cigarette label, so a new unit renames
+    # the row.
     rows = [TOBACCO_TITLE, *TOBACCO_HEADER]
     rows.append({"B": "Cigarette clearances (billion sticks)", "C": "12", "D": "11"})
     with pytest.raises(ValueError, match="found none"):
@@ -3337,14 +3339,15 @@ def test_a_unit_beside_a_clearance_line_is_refused_not_borrowed():
             ],
             "in its fiscal-year row",
         ),
-        # The total states the unit, but the line is not one of its parts.
+        # The OBR states the unit in the non-cigarette total, but no "of
+        # which:" row puts the line among its parts.
         (
             [
                 {"C": "2025-26", "D": "2026-27"},
                 {"B": "Non-cigarette clearances ('000s kg)", "C": "3940", "D": "3683"},
                 {"B": "Hand rolled tobacco clearances", "C": "3338", "D": "3113"},
             ],
-            "not the line's label, the label of the total it breaks down",
+            "outside the line's label, the label of the total it breaks down",
         ),
         # A total below the line describes other lines.
         (
@@ -3355,9 +3358,9 @@ def test_a_unit_beside_a_clearance_line_is_refused_not_borrowed():
                 {"B": "of which:"},
                 {"B": "Other tobacco products", "C": "602", "D": "571"},
             ],
-            "not the line's label",
+            "outside the line's label",
         ),
-        # A row between the "of which:" row and the line that is not a part.
+        # A row without values between the "of which:" row and the line.
         (
             [
                 {"C": "2025-26", "D": "2026-27"},
@@ -3366,16 +3369,16 @@ def test_a_unit_beside_a_clearance_line_is_refused_not_borrowed():
                 {"B": "Heated tobacco is counted elsewhere"},
                 {"B": "Hand rolled tobacco clearances", "C": "3338", "D": "3113"},
             ],
-            "not the line's label",
+            "outside the line's label",
         ),
-        # Text that states the unit but is not a note.
+        # Text that states the unit without opening "Note:".
         (
             [
                 {"C": "2025-26", "D": "2026-27"},
                 {"B": "Hand rolled tobacco clearances", "C": "3338", "D": "3113"},
                 {"B": "Source: HMRC, cigars in ('000s kg)"},
             ],
-            "not the line's label",
+            "outside the line's label",
         ),
         # A unit after the line's last year.
         (
@@ -3401,8 +3404,8 @@ def test_a_clearance_unit_must_describe_its_line(rows, message):
 
 
 def test_a_unit_note_beside_a_receipts_line_is_refused():
-    """A pound line's row holds its label and values alone too: a "£ million"
-    cell beside it would put its values in another magnitude."""
+    """The importer refuses a cell beside a pound line's label and values too:
+    a "£ million" cell there would put its values in another magnitude."""
     rows = [
         {"B": "4.7 Property transactions taxes: receipts by sector"},
         {"C": "£ billion"},
@@ -3593,9 +3596,9 @@ def test_a_clearance_line_reads_only_in_the_unit_its_table_states(
     )
 
 
-# per_head_growth divides the growth a series holds, a duty's base for a line
-# with rates, whether the line links to the previous EFO or has its own
-# outturn.
+# per_head_growth divides each series' own growth, a duty's base for a line
+# with rates, whether the importer links the line to the previous EFO or to
+# its own outturn.
 
 REMOTE_GAMING = next(
     spec for spec in RECEIPTS_SERIES_SPECS if spec.path[-1] == "remote_gaming"
@@ -3711,8 +3714,8 @@ def test_a_series_growth_before_rounding_must_round_to_its_values():
 def test_population_growth_before_its_first_entry_is_that_entry():
     """The model backdates a parameter's first value, so a year before
     ons.population's first entry takes that entry, not zero: wine flat in
-    2025 falls 1 / 1.02 - 1 per head when population's first entry, 2026,
-    is 2%."""
+    2025 falls 1 / 1.02 - 1 per head when population grows 2% in its first
+    entry, 2026."""
     assert growth_in_effect({2026: 0.02, 2030: -0.005}, 2025) == 0.02
     assert growth_in_effect({2026: 0.02, 2030: -0.005}, 2029) == 0.02
     assert growth_in_effect({2026: 0.02, 2030: -0.005}, 2031) == -0.005

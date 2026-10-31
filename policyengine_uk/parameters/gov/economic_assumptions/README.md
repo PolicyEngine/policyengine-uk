@@ -67,16 +67,17 @@ base. See
 for each duty's rates, the higher-stake share Machine Games Duty's rate
 assumes, and the approximations.
 
-The six clearance series under `per_capita` grow the alcohol and tobacco
-quantity inputs (#2596): `tobacco_clearances.cigarettes`,
-`hand_rolling_tobacco` and `other_tobacco_products`, and
-`alcohol_clearances.beer_and_cider`, `wine` and `spirits`. Each is the
-growth in the OBR's clearances of a product group over one plus
-`ons.population` growth, to six decimals, because dataset projection grows
-household weights by `ons.population`. They link their outturn year to the
-previous EFO's outturn, as the four receipts series do, and hold the
-clearances flat after the forecast. The importer reads `ons.population` from
-the `yoy_growth.yaml` it rewrites. See
+Dataset projection grows the alcohol and tobacco quantity inputs (#2596)
+by the six clearance series under `per_capita`:
+`tobacco_clearances.cigarettes`, `hand_rolling_tobacco` and
+`other_tobacco_products`, and `alcohol_clearances.beer_and_cider`, `wine`
+and `spirits`. The importer writes each as the growth in the OBR's
+clearances of a product group over one plus `ons.population` growth, to six
+decimals, because dataset projection grows household weights by
+`ons.population`. It links each series' outturn year to the previous EFO's
+outturn, as it does for the four receipts series, and holds the clearances
+flat after the OBR's forecast. It reads `ons.population` from the
+`yoy_growth.yaml` it rewrites. See
 [household excise duties](../../../../docs/engineering/excise-duties.md#projecting-alcohol-and-tobacco-quantities)
 for the mapping of inputs to groups, the arithmetic and the sources.
 
@@ -485,8 +486,9 @@ the forecast levels, though not their growth.
    each workbook's release from its contents sheet, or else its file name or
    URL, and refuses receipts tables from another EFO or of unknown release.
    Every selected receipts table in both releases must declare `£ billion`
-   in its header (`£bn` and `£ bn` are also accepted, ignoring case and
-   whitespace); the clearance tables state their own units (below).
+   in its header (the importer also accepts `£bn` and `£ bn`, ignoring case
+   and whitespace); the OBR states each clearance line's unit in a label or
+   a note (below).
    Other units, including `£m`, and missing or ambiguous declarations stop
    the import before any file is written, so different cash magnitudes
    cannot be combined across releases.
@@ -507,15 +509,20 @@ the forecast levels, though not their growth.
    The same run also refreshes the six alcohol and tobacco clearance series
    under `per_capita` from the new EFO's tobacco clearances and alcohol
    clearance forecasts, and the previous EFO's for the outturn year's base.
-   Each line's table must state its unit, in a row label or a note, in both
-   EFOs: million sticks for cigarettes, thousand kilograms for the other
-   tobacco lines, and thousand hectolitres of alcohol for alcohol. The
-   importer stops on any other. It does not read the lines' footnotes, so
-   check that each alcohol line covers the same products in both EFOs:
-   March 2026 added "Includes other fermented products" to the wine line,
-   which March 2025's lacked. It divides each year's growth by
-   `ons.population` as `yoy_growth.yaml` holds it, so rerun it whenever
-   that series changes. Then update the published levels in
+   The importer finds each line's unit in both EFOs where the OBR states
+   it: in the line's own label, in the label of the total the line breaks
+   down, or in a note. It takes million sticks for cigarettes, thousand
+   kilograms for the other tobacco lines, and thousand hectolitres of
+   alcohol for alcohol. It stops before writing on any other unit, and on
+   any cell beside a line's label and values, such as a unit column. It
+   does not read the lines' footnotes, so check that each alcohol line
+   covers the same products in both EFOs: in March 2026 the OBR added
+   "Includes other fermented products" to the wine line. The importer
+   divides each year's growth by `ons.population` as `yoy_growth.yaml`
+   holds it, so rerun it whenever that series changes. Until then the six
+   clearance series and the seven gambling bases keep the values written
+   for the old population, and the byte-for-byte test fails. Then update
+   the published levels in
    `policyengine_uk/tests/test_excise_quantity_projection.py`
    (`CLEARANCES`) and `policyengine_uk/tests/test_import_obr_forecasts.py`
    (`OCTOBER_2026_CLEARANCES` and `MARCH_2026_CLEARANCES`, renamed for the

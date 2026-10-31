@@ -198,8 +198,9 @@ affected.
 Each alcohol and tobacco quantity input declares its product group's index,
 and dataset projection grows it by the same group's series in
 `gov.economic_assumptions.yoy_growth.obr.per_capita`
-(`policyengine_uk/data/uprating_indices.yaml`). Each series is the growth in
-the OBR's clearances of the group per person (#2596):
+(`policyengine_uk/data/uprating_indices.yaml`). The importer writes each
+series as the growth in the OBR's clearances of the group per person
+(#2596):
 
 | Inputs | Series | OBR line |
 | --- | --- | --- |
@@ -210,11 +211,12 @@ the OBR's clearances of the group per person (#2596):
 | `wine_litres`, `other_fermented_litres` | `alcohol_clearances.wine` | Table 4.12, "Wine", which includes other fermented products |
 | `spirits_litres` | `alcohol_clearances.spirits` | Table 4.12, "Spirits", which includes spirit-based ready-to-drinks |
 
-Table 4.11 splits non-cigarette clearances into hand-rolled tobacco and other
-tobacco products only, so the cigar, other tobacco and heated tobacco inputs
-share one series. The strengths (`<product>_abv`) and draught shares are
-ratios, and `cigarette_price_per_pack` is a price, so they keep their values;
-a forward path for the cigarette price is a separate change.
+The OBR splits Table 4.11's non-cigarette clearances into hand-rolled tobacco
+and other tobacco products only, so the cigar, other tobacco and heated
+tobacco inputs share one series. Dataset projection keeps the strengths
+(`<product>_abv`), the draught shares and `cigarette_price_per_pack` at their
+base-year values, since the first two measure ratios and the third a price.
+A forward path for the cigarette price needs its own change.
 
 ### Population
 
@@ -236,10 +238,10 @@ Q(t) = (1 + p(t)) × (1 + c(t)) × Q(t - 1) and count population growth twice.
 `ons.population` grows 1.54% from 2024-25 to 2031-32, so totals grown that
 way would end 1.54% above the clearances.
 
-For cigarettes in 2025-26, the October 2026 EFO's outturn of 12,224.6 million
-sticks against the March 2026 EFO's 2024-25 outturn of 13,578.2 million is a
-fall of 9.97%. Population grows 0.33%, so the series holds
-12,224.6 / 13,578.2 / 1.0033 - 1 = -10.27% (-0.102653).
+In the OBR's outturn, cigarette clearances fell 9.97%, from 13,578.2 million
+sticks in 2024-25 (March 2026 EFO) to 12,224.6 million in 2025-26 (October
+2026 EFO). Population grows 0.33% in 2025, so the importer writes
+12,224.6 / 13,578.2 / 1.0033 - 1 = -10.27% (-0.102653) for that year.
 
 ### Years
 
@@ -251,7 +253,8 @@ fall of 9.97%. Population grows 0.33%, so the series holds
 | 2032 on | Clearances held flat: 1 / (1 + p(t)) - 1 | As `road_fuel_volume` after the OBR's forecast |
 
 The OBR's years run from 1 April and the model's from 6 April. As for road
-fuel, each series stores the fiscal year that starts in year t at t-01-01.
+fuel, the importer stores the fiscal year that starts in year t at
+t-01-01.
 The indices, `gov.economic_assumptions.indices.obr.per_capita.*`, start at 1
 in 2024 and stand at:
 
@@ -269,16 +272,20 @@ the index it declares.
 
 `policyengine_uk/utils/import_obr_forecasts.py` writes the six series from
 `CLEARANCE_SERIES_SPECS` in the same run as the other receipts series (see
-the steps for a new EFO in the economic assumptions README). It requires each
-table to state its unit, in a row label or a note, and reads `ons.population`
-from the `yoy_growth.yaml` it rewrites.
+the steps for a new EFO in the economic assumptions README), and reads
+`ons.population` from the `yoy_growth.yaml` it rewrites. It finds each line's
+unit in exactly one cell, where the OBR states it: the line's own label, the
+label of the total the line breaks down, or a note. It stops before writing
+anything if a line's row holds a cell beside its label and values, such as a
+unit, so it never reads a line's values in a unit that another row states.
 
 ### Budget measures and reforms
 
-The October 2026 forecast incorporates the measures announced at Budget 2026
-and since the March forecast (EFO paragraph 3.2). The OBR's policy Table 1.1
-holds no change to an alcohol or tobacco duty rate. Three measures reach the
-two duties, and none moves either by more than £13 million a year:
+The OBR incorporates in its October 2026 forecast the measures the
+government announced at Budget 2026 and since the March forecast (EFO
+paragraph 3.2). It lists no change to an alcohol or tobacco duty rate in its
+policy Table 1.1, and three measures that change the two duties' receipts,
+none by more than £13 million a year:
 
 - measure 19, more generous Small Producer Relief from 1 February 2027:
   alcohol duty £1.5 million lower in 2026-27 and £9.2 million to £9.9
@@ -290,21 +297,22 @@ two duties, and none moves either by more than £13 million a year:
   imports from October 2028: tobacco duty up to £0.8 million and alcohol
   duty up to £0.4 million lower a year.
 
-The forecast still assumes rising duty rates. The OBR expects alcohol
-receipts to grow, "driven by increases to the duty rate that offset an
-assumed average 1 per cent decline in alcohol consumption in each year"
-(paragraph 4.43), and tobacco receipts to fall "as higher duty rates only
-partly offset falling consumption" (paragraph 4.44). The clearances carry
-that consumption trend under the OBR's own rate path, not a Budget change.
+The OBR still assumes rising duty rates. It expects alcohol receipts to
+grow, "driven by increases to the duty rate that offset an assumed average 1
+per cent decline in alcohol consumption in each year" (paragraph 4.43), and
+tobacco receipts to fall "as higher duty rates only partly offset falling
+consumption" (paragraph 4.44). So the OBR forecasts the clearances along
+that consumption trend, under rate rises it assumes rather than ones the
+government announced at the Budget.
 
 The dataset projection reads no duty rate (`uprating_input_paths` in
-`policyengine_uk/data/economic_assumptions.py`), so the indices grow
-quantities whatever rates the model charges. A reform to alcohol or tobacco
-duty rates therefore moves receipts through the rates alone: the model
-applies no consumption response to it. Current law in the model holds the
-alcohol rates at their 1 February 2026 values, the tobacco rates at their
-1 October 2026 values and the default cigarette price at its 2024 average,
-while the OBR's volumes come with the rates it expects.
+`policyengine_uk/data/economic_assumptions.py`), so it grows quantities by
+the indices whatever rates the model charges. When a reform changes alcohol
+or tobacco duty rates, the model therefore moves receipts through the rates
+alone and applies no consumption response. Under current law the model holds
+the alcohol rates at their 1 February 2026 values, the tobacco rates at
+their 1 October 2026 values and the default cigarette price at its 2024
+average, while the OBR forecasts its volumes with the rates it expects.
 
 ### Receipts against the OBR's forecast
 
@@ -319,13 +327,18 @@ with the rate rises of February 2025 and February 2026 for alcohol and of
 October 2024, November 2025 and October 2026 for tobacco, each of which
 reaches its first full model year after 2024-25, and then holds. The OBR's
 receipts per unit cleared keep rising, by 22.1% for alcohol and 48.2% for
-tobacco by 2031-32. From 2027-28 the model's duty therefore falls short of
-the OBR's forecast by more each year: on this construct, alcohol duty goes
-from 7.6% above the OBR's 2024-25 receipts to 6.8% below its 2031-32
-forecast, and tobacco duty from 1.9% above to 18.0% below. The construct's
-product mix sets the 2024-25 gaps: charging all beer and cider at the beer
-rate with no draught relief puts that line 22.4% above its receipts. A
-dataset replaces the mix with its own. The later fall comes from the rates.
+tobacco by 2031-32.
+
+On this construct, the model's alcohol duty exceeds the OBR's receipts by
+7.6% in 2024-25 and 7.9% in 2026-27, then by less each year: by 3.5% in
+2027-28 and 0.3% in 2028-29. It first falls short in 2029-30, by 2.5%, and
+by 6.8% in 2031-32. The model's tobacco duty exceeds the OBR's 2024-25
+receipts by 1.9%, falls short by 0.8% in 2025-26 and 0.4% in 2026-27, and
+then by more each year, to 18.0% in 2031-32. Charging all beer and cider at
+the beer rate with no draught relief lifts that line 22.4% above its
+2024-25 receipts, and a dataset brings its own product mix. From 2027-28
+the model holds its rates while the OBR assumes rising ones, and each gap
+moves with that difference.
 
 ### Sources
 
