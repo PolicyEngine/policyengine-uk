@@ -17,7 +17,17 @@ from policyengine_uk.utils.supplied_inputs import supplied_input
 def _data_year(person, period):
     """The year the input data were measured, as the State Pension
     variables read it: a dataset's first year, which the engine projects to
-    later years, or without a dataset the year simulated."""
+    later years, or without a dataset the year simulated.
+
+    Known limitation: a situation does not record when its inputs were
+    measured, so the year simulated stands in even for inputs supplied for
+    an earlier year and carried forward. A claimant whose inputs are given
+    for 2025-26 and simulated in 2027-28 is read as having deducted
+    2027-28's £3,000 allowance, not the £1,000 they claimed against, and
+    gets nothing from the raise between them. Datasets are not affected. To
+    read inputs as measured in an earlier year, build a dataset for that
+    year, as test_trading_allowance_claim_status_data_year.py does.
+    """
     dataset = getattr(person.simulation, "dataset", None)
     try:
         return min(dataset.years)
@@ -77,7 +87,9 @@ def trading_allowance_reliefs(person, period, parameters):
     describe, and a claimant is then read as unknown.
     - A claimant's profit is their receipts less the allowance legislated
       for the year the input data were measured (the input allowance),
-      which reforms do not move. Their claim was the election for partial
+      which reforms do not move. Without a dataset that year is the year
+      simulated, even for inputs carried from an earlier year: a known
+      limitation (see _data_year). Their claim was the election for partial
       relief (s. 783AM), so they take the allowance at any level above nil,
       which keeps their current losses given up, and it replaced their
       expenses and capital allowances (s. 783AI): capital_allowances

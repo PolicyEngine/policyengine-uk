@@ -114,10 +114,32 @@ def test_the_status_carries_forward_from_the_year_supplied():
     assert status.tolist() == ["CLAIMANT"]
 
 
+def test_a_situation_reads_carried_inputs_as_measured_in_the_year_simulated():
+    # Pins a known limitation (utils/trading_allowance.py, _data_year).
+    # Without a dataset the year simulated stands in for the year the inputs
+    # were measured, even for inputs supplied for an earlier year. This
+    # claimant's profit was net of 2025-26's £1,000, but in 2027-28 it is
+    # read as net of £3,000, so the raise gives nothing. The same inputs in a
+    # dataset measured in 2025 get £2,000
+    # (test_the_budget_raise_reaches_claimants_measured_at_1000). If this
+    # convention changes, update the docs that describe the limitation.
+    simulation = Simulation(
+        situation=situation(
+            {
+                "age": {2025: 40},
+                "self_employment_income": {2025: 5_000},
+                "trading_allowance_claim_status": {2025: "CLAIMANT"},
+            }
+        )
+    )
+    assert deduction(simulation, 2027) == [0]
+
+
 def test_a_raise_leaves_a_situation_claimants_carried_loss():
-    # Without a dataset the data year is the year simulated, so this
-    # claimant's 2027 profit already deducts £3,000, and keeping £1,000 is a
-    # cut. Either way they keep the allowance and give up the loss.
+    # Without a dataset the data year is the year simulated (the limitation
+    # above), so this claimant's 2027 profit already deducts £3,000, and
+    # keeping £1,000 is a cut. Either way they keep the allowance and give
+    # up the loss.
     person = {
         "age": {2025: 40},
         "employment_income": {2025: 30_000},
