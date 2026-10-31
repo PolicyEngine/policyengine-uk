@@ -327,6 +327,36 @@
     uc_benefit_cap_reduction_after_floor: 1_000
     universal_credit: 0
 
+- name: A floor that leaves a family the cap takes to nil no award leaves it without the flag
+  # The 85% floor allowance, 0.15 x 400.14 x 12 = 720.25, exceeds the £500
+  # award, so the cap still takes all of it and the floor does not bind.
+  # Nothing is left for deductions to come from.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.dwp.universal_credit.deductions.protected_floor: 0.85
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+        would_claim_uc: true
+        universal_credit_pre_benefit_cap: 500
+        uc_benefit_cap_reduction: 1_000
+        uc_deduction_random_draw: 0.1
+        uc_latent_deduction_rate: 0.30
+        uc_deduction_combination: ADVANCE_ONLY
+    households:
+      household:
+        members: person
+  output:
+    uc_maximum_reduction: 720.25
+    uc_has_deduction: false
+    uc_deductions: 0
+    uc_benefit_cap_reduction_after_floor: 500
+    universal_credit: 0
+
 - name: An explicitly supplied advance amount applies whatever the flag says
   # uc_advance_repayment_amount describes a known advance, so the flag does
   # not gate it.
