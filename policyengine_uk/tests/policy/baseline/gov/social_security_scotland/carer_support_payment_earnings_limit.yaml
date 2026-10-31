@@ -441,3 +441,33 @@
   output:
     carers_allowance_earnings: 6146.6
     carer_support_payment_pre_overlap: 0
+
+- name: Each self-employed deduction rounded up a penny leaves earnings within the limit
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    age: 45
+    self_employment_income: 12576.76
+    personal_pension_contributions: 3932.96
+    care_hours: 40
+    country: SCOTLAND
+  output:
+    # Sch2para4: notional tax 20% x 6.76 = 1.352 and Class 4 6% x 6.76 =
+    # 0.4056 count as 1.36 and 0.41; half the premium is 1,966.48:
+    # 12,576.76 - 1.36 - 0.41 - 1,966.48 = 10,608.51, or 204.00 a week.
+    carers_allowance_earnings: 10608.51
+    carer_support_payment_pre_overlap: 4495.4
+
+- name: A penny more profit leaves earnings a penny a week over the limit
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    age: 45
+    self_employment_income: 12576.77
+    personal_pension_contributions: 3932.96
+    care_hours: 40
+    country: SCOTLAND
+  output:
+    # 12,576.77 - 1.36 - 0.41 - 1,966.48 = 10,608.52, or 204.01 a week.
+    carers_allowance_earnings: 10608.52
+    carer_support_payment_pre_overlap: 0

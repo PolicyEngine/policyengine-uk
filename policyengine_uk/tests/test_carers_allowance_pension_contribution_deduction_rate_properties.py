@@ -14,19 +14,25 @@ employee and personal pension contributions of at most 30% of earnings, so
 that no floor binds:
 
 1. Exactness: when the share moves from 0.5 to r, carers_allowance_earnings
-   falls by exactly the person's contributions x (r - 0.5).
+   falls by exactly the person's contributions x (r - 0.5), give or take the
+   penny that rounding each deduction up to a whole penny (reg. 5) can add.
 2. Locality: the Housing Benefit share is reformed at the same time to a
    different value, so earnings that read Housing Benefit's share would miss
    invariant 1.
 3. Eligibility follows earnings through the limit: on both sides the person
    is gainfully employed exactly when weekly earnings, with a fraction of a
    penny disregarded (reg. 5), exceed the limit, and then has no underlying
-   entitlement. The pence are counted in the precision the model stores
-   earnings in (float32), as the formula counts them. A lower share can only end entitlement and a higher share can
-   only restore it.
+   entitlement. The pence are counted as the formula counts them: the stored
+   (float32) annual earnings are read as the whole pence they lie within
+   half a float32 step of, or else with the fraction disregarded, and spread
+   over 52 weeks in whole pence. A lower share can only end entitlement and a
+   higher share can only restore it.
 4. Current law: the share is 0.5 in every year from 2015 (the first year the
    model simulates) to 2030.
 """
+
+import math
+from fractions import Fraction
 
 import numpy as np
 from hypothesis import HealthCheck, example, given, settings
@@ -45,7 +51,8 @@ YEARS = [2016, 2020, 2024, 2026, 2030]
 SHARES = [i / 20 for i in range(21) if i != 10]
 # The model stores amounts as float32, whose spacing is about 0.008 at the
 # largest earnings drawn (up to 120,000), so two stored values can differ from
-# the exact difference by more than a penny.
+# the exact difference by more than a penny; reg. 5's rounding of the pension
+# deduction adds up to a penny more.
 TOLERANCE = 0.05
 
 PROPERTY_SETTINGS = settings(
@@ -111,21 +118,27 @@ VARIABLES = [
 
 def calculate(people, year, reform=None):
     sim = Simulation(situation=situation(people, year), reform=reform)
-    # Keep each variable's stored dtype: the rounding check below must count
-    # pence in the precision the formula does.
+    # Keep each stored value as the formula reads it: the rounding check below
+    # must start from the same float32 amount.
     return {v: np.asarray(sim.calculate(v, year)) for v in VARIABLES}
 
 
 def over_limit(earnings, limit):
-    # Reg. 5: a fraction of a penny is disregarded. ``earnings`` is the stored
-    # array, so this counts the pence as is_gainfully_employed_for_carers_allowance
-    # does, in float32: promoting to float64 first floors 10,608.52 a year,
-    # stored as 10,608.51953125, to 204.00 a week instead of 204.01.
-    return np.floor(earnings / 52 * 100 + 1e-6) / 100 > limit
+    # Reg. 5, as is_gainfully_employed_for_carers_allowance applies it, in
+    # exact rational arithmetic: the whole pence a year the stored amount lies
+    # within half a float32 step of, or else its pence with the fraction
+    # disregarded, then whole pence a week, the fraction disregarded.
+    # 10,608.52 a year, stored as 10,608.51953125, is 1,060,852 pence and
+    # 20,401 pence (204.01) a week.
+    pence = Fraction(float(earnings)) * 100
+    whole = round(pence)
+    half_step = Fraction(float(np.spacing(np.float32(earnings)))) * 50
+    annual = whole if abs(pence - whole) <= half_step else math.floor(pence)
+    return annual // 52 > Fraction(str(limit)) * 100
 
 
-# A carer one penny a week over the 2026-27 limit (10,608.52 / 52 = 204.01), on
-# the float32 boundary described in over_limit.
+# A carer one penny a week over the 2026-27 limit (10,608.52 / 52 = 204.01),
+# stored just below 10,608.52 as described in over_limit.
 PENNY_OVER = dict(
     country="ENGLAND",
     age=45,
