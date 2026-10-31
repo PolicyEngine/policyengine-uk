@@ -1075,9 +1075,8 @@ def test_supplied_deduction_leaves_the_limit_on_the_whole_charge():
 
 
 def assert_forwarding_changes_nothing(build, systems, outputs):
-    """Each forwarding reform alone leaves every output as the model's, which
-    this returns. ``build`` makes the population's simulation under a
-    system."""
+    """Each forwarding reform alone leaves every output as the model's.
+    ``build`` makes the population's simulation under a system."""
     expected = outputs(build(systems[None]))
     for name, reformed in systems.items():
         if name is None:
@@ -1087,7 +1086,6 @@ def assert_forwarding_changes_nothing(build, systems, outputs):
             np.testing.assert_allclose(
                 actual[key], values, rtol=0, atol=TOLERANCE, err_msg=f"{name}: {key}"
             )
-    return expected
 
 
 @PROPERTY_SETTINGS
@@ -1128,6 +1126,38 @@ def test_forwarding_reform_runs_for_an_adult_without_income(name):
     assert baseline.calculate(CHILDCARE, 2024)[0] == 0
 
 
+# The issue's family with and without the work condition and WTC, a family
+# whose limit binds, one whose earnings fund the additional disregard, a
+# pension-age claimant and a Northern Ireland family.
+REPLACEMENT_UNITS = [
+    *WITNESSES,
+    case(net=2_000, standard=260, childcare=9_100, wtc=1_000, other=1_000),
+    case(net=10_000),
+    case(pension_age=True),
+    case(region="NORTHERN_IRELAND"),
+]
+
+
+def replacement_outputs(tax_benefit_system, year):
+    """Every output, award included, for ``REPLACEMENT_UNITS``, with the model
+    dating the accommodation disregard."""
+    sim = simulation(
+        REPLACEMENT_UNITS,
+        year,
+        tax_benefit_system=tax_benefit_system,
+        dated_accommodation=True,
+    )
+    award = sim.calculate("housing_benefit_entitlement", year)
+    return {**results(sim, year), "award": np.asarray(award, dtype=float)}
+
+
+@cache
+def model_replacement_outputs(year):
+    """The model's outputs for ``REPLACEMENT_UNITS``, with tax credits kept in
+    2026-27."""
+    return replacement_outputs(system if year == 2024 else tax_credits_kept(), year)
+
+
 @pytest.mark.parametrize("year", [2024, 2026])
 @pytest.mark.parametrize("mode", COMPUTED_REPLACEMENTS)
 def test_computed_replacements_of_the_wtc_disregard_change_nothing(mode, year):
@@ -1137,35 +1167,19 @@ def test_computed_replacements_of_the_wtc_disregard_change_nothing(mode, year):
     circular definition and changes no output, award included. In 2026-27
     tax credits stay in payment, and the model dates the accommodation
     disregard for families outside specified or temporary accommodation."""
-    baseline = system if year == 2024 else tax_credits_kept()
-    reformed = computed_replacement(mode, baseline)
+    reformed = computed_replacement(
+        mode, system if year == 2024 else tax_credits_kept()
+    )
     # Core computes adds and subtracts only where no formula runs.
     assert (reformed.get_variable(WTC_DISREGARD).get_formula(year) is None) == (
         mode != "formula"
     )
-    units = [
-        *WITNESSES,
-        case(net=2_000, standard=260, childcare=9_100, wtc=1_000, other=1_000),
-        case(net=10_000),
-        case(pension_age=True),
-        case(region="NORTHERN_IRELAND"),
-    ]
-
-    def outputs(sim):
-        return {
-            **results(sim, year),
-            "award": np.asarray(
-                sim.calculate("housing_benefit_entitlement", year), dtype=float
-            ),
-        }
-
-    expected = assert_forwarding_changes_nothing(
-        lambda tax_benefit_system: simulation(
-            units, year, tax_benefit_system=tax_benefit_system, dated_accommodation=True
-        ),
-        {None: baseline, mode: reformed},
-        outputs,
-    )
+    expected = model_replacement_outputs(year)
+    actual = replacement_outputs(reformed, year)
+    for key, values in expected.items():
+        np.testing.assert_allclose(
+            actual[key], values, rtol=0, atol=TOLERANCE, err_msg=f"{mode}: {key}"
+        )
     # Para 56 applies to the issue's family, and to the family whose limit
     # binds: the lesser of 1,000 of WTC and 889.20.
     np.testing.assert_allclose(
