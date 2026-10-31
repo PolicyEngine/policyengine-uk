@@ -277,6 +277,43 @@ def example_families():
     ]
 
 
+def couple_and_debt_families():
+    """The YAML cases' couple who both care, and a single claimant repaying
+    debts out of the award."""
+    carer = dict(
+        employment_income=0.0,
+        employee_pension_contributions=0.0,
+        spousal_maintenance_income=0.0,
+        maintenance_income=0.0,
+        savings_interest_income=0.0,
+        uc_carer_element_included_for_claimant=True,
+    )
+    return [
+        dict(
+            adults=[
+                dict(carer, age=35, employment_income=12_570.0),
+                dict(carer, age=36),
+            ],
+            children=[],
+            housing=10_500.0,
+        ),
+        dict(
+            adults=[
+                dict(
+                    carer,
+                    age=35,
+                    employment_income=20_000.0,
+                    employee_pension_contributions=2_600.0,
+                    uc_carer_element_included_for_claimant=False,
+                )
+            ],
+            children=[],
+            housing=12_500.0,
+            deduction_rate=0.25,
+        ),
+    ]
+
+
 LOCALITY_VARIABLES = [
     "universal_credit",
     "council_tax_reduction_head_applies_alone",
@@ -350,6 +387,7 @@ def disregards(values, i, unit):
 @PROPERTY_SETTINGS
 @given(st.lists(families(), min_size=1, max_size=8))
 @example(units=example_families())
+@example(units=couple_and_debt_families())
 def test_appendix_3_income_and_band(units):
     values = calculate(units, INCOME_VARIABLES)
     for i, unit in enumerate(units):
