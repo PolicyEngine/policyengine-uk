@@ -184,15 +184,18 @@ SEGMENT_EDGE_CASES = [
     specified_claimant(net=2_000, pension_age=True),
     case(specified=True),
     case(specified=True, net=8_000, wtc=500),
+    case(specified=True, net=8_000, wtc=2_000, other=3_000),
 ]
 SUPPLIED_SEGMENT_EDGE_CASES = [
     {**unit, "supplied": value}
-    for unit, value in zip(SEGMENT_EDGE_CASES, [0, 0, 100, 0, 1_000, 0, 0, 0, 0, 3_900])
+    for unit, value in zip(
+        SEGMENT_EDGE_CASES, [0, 0, 100, 0, 1_000, 0, 0, 0, 0, 3_900, 3_000]
+    )
 ]
 SUPPLIED_LIMIT_SEGMENT_EDGE_CASES = [
     {**unit, "supplied_limit": value}
     for unit, value in zip(
-        SEGMENT_EDGE_CASES, [0, 10_000, 100, 0, 1_000, 0, 0, 0, 10_000, 3_900]
+        SEGMENT_EDGE_CASES, [0, 10_000, 100, 0, 1_000, 0, 0, 0, 10_000, 3_900, 3_000]
     )
 ]
 
@@ -251,6 +254,25 @@ def test_each_segment_settles_paragraph_56_with_its_own_earnings_test(
     )
     assert sim.calculate("housing_benefit_entitlement", YEAR)[0] == pytest.approx(
         award, abs=TOLERANCE
+    )
+
+
+def test_each_segment_limits_childcare_with_its_own_wtc_disregard():
+    """A lone parent aged 40 in specified accommodation earns £8,000, has
+    £3,000 of other income and £2,000 of WTC, and pays £4,160 for
+    childcare. Income before deductions is £13,000."""
+    unit = case(specified=True, net=8_000, wtc=2_000, other=3_000)
+    sim = segmented([unit], active=True)
+    # Before 5 October, 8,000 >= 1,300 + 4,160 + 889.20, so para 17(1)
+    # applies: income is 13,000 - 2,189.20 - 4,160 = 6,650.80, and the
+    # award 10,400 - 0.65 * 6,650.80 = 6,076.98. After it, 8,000 < 1,300 +
+    # 4,041.96 + 4,160 + 889.20, so para 56 disregards 889.20. Childcare
+    # then draws on 8,000 - 1,300 - 4,041.96 = 2,658.04 of earnings and
+    # 2,000 - 889.20 = 1,110.80 of WTC, 3,768.84 in all: income is 13,000 -
+    # 5,341.96 - 889.20 - 3,768.84 = 3,000, and the award 8,450.
+    # (182 * 6,076.98 + 183 * 8,450) / 365 = 7,266.74.
+    assert sim.calculate("housing_benefit_entitlement", YEAR)[0] == pytest.approx(
+        7_266.74, abs=TOLERANCE
     )
 
 
