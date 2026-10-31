@@ -58,6 +58,7 @@ from policyengine_core.reforms import Reform
 from policyengine_uk import Simulation
 from policyengine_uk.model_api import GBP, YEAR as YEAR_PERIOD, Person, Variable
 from policyengine_uk.model_api import add, max_, min_
+from policyengine_uk.utils.income_tax_reductions import earlier_tax_reductions
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
@@ -445,3 +446,116 @@ def test_the_step_lists_are_disjoint_and_hold_the_modelled_provisions():
     every = step_5 + step_6 + step_7
     assert len(every) == len(set(every))
     assert all(variable in system.variables for variable in every)
+
+
+@pytest.mark.parametrize("year", [2026, 2027, 2028, 2029, 2030])
+def test_step_6_puts_the_pension_tax_allowance_after_every_other_reduction(sim, year):
+    income_tax = sim.tax_benefit_system.parameters(year).gov.hmrc.income_tax
+    reductions = list(income_tax.step_6_tax_reductions)
+    assert reductions[-1] == "pension_tax_allowance"
+    for index, reduction in enumerate(reductions):
+        assert earlier_tax_reductions(income_tax, reduction) == reductions[:index]
+
+
+PENSION_ALLOWANCE_YEARS = [2027, 2028, 2029]
+
+
+@pytest.fixture(scope="module")
+def pension_age_landlords():
+    # Elect actual expenses on a valid property-income route so both reliefs
+    # can apply. These pensioners have income at or just above each year's
+    # Pension Tax Allowance threshold, with small or tax-exhausting finance
+    # costs, some other tax credits, and English or Scottish income tax.
+    cases = [
+        (excess, finance_costs, credits, region)
+        for excess in (0, 50)
+        for finance_costs in (100, 1_000)
+        for credits in (0, 25)
+        for region in ("LONDON", "SCOTLAND")
+    ]
+    people = {
+        f"landlord_{i}": {
+            variable: {year: value for year in PENSION_ALLOWANCE_YEARS}
+            for variable, value in {
+                "age": 70,
+                "private_pension_income": 0,
+                "property_rental_income": 4_000,
+                "property_income": 2_000,
+                "property_finance_costs": finance_costs,
+                "other_tax_credits": credits,
+                "uses_property_allowance": False,
+            }.items()
+        }
+        for i, (_, finance_costs, credits, _) in enumerate(cases)
+    }
+    simulation = Simulation(
+        situation={
+            "people": people,
+            "benunits": {
+                f"benunit_{i}": {"members": [f"landlord_{i}"]}
+                for i in range(len(cases))
+            },
+            "households": {
+                f"household_{i}": {
+                    "members": [f"landlord_{i}"],
+                    "region": {year: region for year in PENSION_ALLOWANCE_YEARS},
+                }
+                for i, (_, _, _, region) in enumerate(cases)
+            },
+        }
+    )
+    for year in PENSION_ALLOWANCE_YEARS:
+        parameters = simulation.tax_benefit_system.parameters(year)
+        threshold = 52 * parameters.gov.dwp.state_pension.new_state_pension.amount
+        simulation.set_input(
+            "private_pension_income",
+            year,
+            [threshold + excess - 2_000 for excess, _, _, _ in cases],
+        )
+    return simulation
+
+
+@pytest.mark.parametrize("year", PENSION_ALLOWANCE_YEARS)
+def test_step_6_stays_within_step_5_with_the_pension_tax_allowance(
+    pension_age_landlords, year
+):
+    simulation = pension_age_landlords
+    simulation.reset_calculations()
+    income_tax = simulation.tax_benefit_system.parameters(year).gov.hmrc.income_tax
+    assert income_tax.reliefs.pension_tax_allowance.in_effect
+    reductions = {
+        variable: simulation.calculate(variable, year).astype(float)
+        for variable in income_tax.step_6_tax_reductions
+    }
+    pension_allowance = reductions["pension_tax_allowance"]
+    finance_relief = reductions["property_finance_cost_relief"]
+    # Both reductions are exercised together, including a binding tax cap.
+    assert ((pension_allowance > 0) & (finance_relief > 0)).any()
+    step_5 = simulation.calculate("income_tax_pre_charges", year).astype(float)
+    step_6 = simulation.calculate("income_tax_reductions", year).astype(float)
+    listed_reductions = sum(reductions.values())
+    tol = tolerance(step_5)
+    assert (listed_reductions <= step_5 + tol).all()
+    assert (step_6 <= step_5 + tol).all()
+    assert (np.abs(step_6 - listed_reductions) <= tol).all()
+    assert (np.abs(step_6 - step_5) <= tol).any()
+
+
+@pytest.mark.parametrize("year", PENSION_ALLOWANCE_YEARS)
+def test_pension_and_finance_cost_reductions_calculate_in_either_order(
+    pension_age_landlords, year
+):
+    simulation = pension_age_landlords
+    reductions = ("pension_tax_allowance", "property_finance_cost_relief")
+    results = []
+    for order in (reductions, reductions[::-1]):
+        simulation.reset_calculations()
+        results.append(
+            {name: simulation.calculate(name, year).copy() for name in order}
+        )
+    for reduction in reductions:
+        np.testing.assert_array_equal(results[0][reduction], results[1][reduction])
+    assert (
+        (results[0]["pension_tax_allowance"] > 0)
+        & (results[0]["property_finance_cost_relief"] > 0)
+    ).any()
