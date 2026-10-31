@@ -6,7 +6,8 @@ situation supplies, and so does the advance estimate built from that rate.
 uc_has_deduction reads the award the benefit cap leaves; a protected floor
 reform limits the cap to the floor allowance (uc_maximum_reduction, infinite
 under current law). ``MAIN_RULE`` re-adds origin/main's flag, rate and
-advance formulas at 7ed52038a, verbatim, so one dataset gives both rules.
+advance formulas as of 7ed52038a, less their comments, so one dataset gives
+both rules.
 
 Invariants, each over generated benefit units and explicit examples:
 
@@ -35,6 +36,12 @@ Invariants, each over generated benefit units and explicit examples:
    the draw assigns (claimant or not), the formula's latent rate and
    combination, as Microcosm does, gives the formula path's flag,
    deductions, applied cap and award under any floor.
+8. Stored attributes against main. On that dataset, deductions, the applied
+   cap and the award equal origin/main's under current law and under any
+   floor.
+9. Incidence reforms on stored rates. A cut in incidence drops the
+   deductions of the units the flag no longer assigns. A rise flags more
+   units, but the dataset stores no rate for them, so it adds none.
 """
 
 import numpy as np
@@ -275,7 +282,8 @@ def test_the_issue_example_takes_no_deductions_without_the_flag():
 
 def _main_rule():
     """origin/main's uc_has_deduction, uc_deduction_rate and
-    uc_advance_repayment_amount formulas at 7ed52038a, verbatim."""
+    uc_advance_repayment_amount formulas as of 7ed52038a, less their
+    comments."""
 
     def estimated_advance_repayment_amount(benunit, period, parameters):
         p = parameters(period).gov.simulation.uc_deductions
@@ -550,21 +558,55 @@ def test_stored_attributes_give_the_formula_path(units, floor):
         )
 
 
-def test_lowering_incidence_reaches_stored_rates():
-    # A dataset that stores latent rates still answers a cut in incidence:
-    # the reformed flag drops some units, and their stored rates no longer
-    # count. On origin/main the stored rates kept every deduction.
-    _, stored_dataset = microcosm_style(DATA_EXAMPLE, 0.0)
-    stored = Microsimulation(dataset=stored_dataset())
-    cut = {
+@data_settings
+@given(
+    units=st.lists(data_unit_strategy, min_size=1, max_size=24),
+    floor=floor_strategy,
+)
+@example(units=DATA_EXAMPLE, floor=0.85)
+@example(units=DATA_EXAMPLE, floor=0.0)
+def test_stored_attributes_give_mains_deductions(units, floor):
+    # Under a floor, main's flag stays false for an assigned family the cap
+    # takes to nil, but its stored rate gave it deductions anyway; head's
+    # flag is true there, so the same rate counts.
+    _, stored_dataset = microcosm_style(units, floor)
+    head = Microsimulation(dataset=stored_dataset(), reform=floor_reform(floor))
+    main = Microsimulation(
+        dataset=stored_dataset(),
+        reform=(floor_reform(floor), MAIN_RULE) if floor else MAIN_RULE,
+    )
+    for variable in DEDUCTION_OUTPUTS:
+        np.testing.assert_allclose(
+            values(head, variable),
+            values(main, variable),
+            rtol=0,
+            atol=1e-6,
+            err_msg=variable,
+        )
+
+
+def incidence_reform(factor):
+    return {
         f"gov.simulation.uc_deductions.region_incidence_factor.{region}": {
-            f"{YEAR}-01-01.{YEAR}-12-31": 0.3
+            f"{YEAR}-01-01.{YEAR}-12-31": factor
         }
         for region in REGIONS
     }
-    reformed = Microsimulation(dataset=stored_dataset(), reform=cut)
-    before = values(stored, "uc_deductions") > 0
-    after = values(reformed, "uc_deductions") > 0
-    flag = values(reformed, "uc_has_deduction").astype(bool)
-    assert np.all(flag[after])
-    assert after.sum() < before.sum()
+
+
+def test_stored_rates_follow_a_cut_in_incidence_but_not_a_rise():
+    # On origin/main the stored rates kept every deduction whatever the
+    # incidence.
+    _, stored_dataset = microcosm_style(DATA_EXAMPLE, 0.0)
+    stored = Microsimulation(dataset=stored_dataset())
+    before = values(stored, "uc_deductions")
+    flagged = values(stored, "uc_has_deduction").astype(bool)
+
+    cut = Microsimulation(dataset=stored_dataset(), reform=incidence_reform(0.3))
+    after = values(cut, "uc_deductions") > 0
+    assert np.all(values(cut, "uc_has_deduction").astype(bool)[after])
+    assert after.sum() < (before > 0).sum()
+
+    rise = Microsimulation(dataset=stored_dataset(), reform=incidence_reform(2.0))
+    assert values(rise, "uc_has_deduction").astype(bool).sum() > flagged.sum()
+    np.testing.assert_array_equal(values(rise, "uc_deductions"), before)
