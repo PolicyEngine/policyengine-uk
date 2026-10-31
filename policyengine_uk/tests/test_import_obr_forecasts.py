@@ -3199,6 +3199,20 @@ def test_main_writes_nothing_without_a_readable_table(tmp_path, workbook, messag
     assert {path: path.read_text() for path in before} == before
 
 
+def test_the_summary_marks_a_growth_that_keeps_the_penny(capsys):
+    """The summary main prints marks a year whose growth differs from its
+    levels' ratio: £13.525001 for 2028 after £13.21 set for 2027."""
+    workbook = nlw_workbook(nlw_rows((13.21, 13.525001000000001), 2027, 2027))
+    growth = import_obr_forecasts.penny_preserving_level_growth(
+        EARLY_EARNINGS_FIXTURE, compute_level_growth(workbook)
+    )
+    import_obr_forecasts.print_level_summary(growth)
+    assert (
+        "2028: 0.023848 (not the levels' ratio, which projects another penny)"
+        in capsys.readouterr().out
+    )
+
+
 def test_main_can_leave_the_national_living_wage_alone(tmp_path):
     yoy, _ = write_tree(tmp_path)
     no_table = rebuild_workbook(make_test_xlsx(), drop={"1.13"})
