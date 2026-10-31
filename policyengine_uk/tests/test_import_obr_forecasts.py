@@ -18,6 +18,10 @@ from policyengine_uk.utils.import_obr_forecasts import (
     STATUTORY_GAP_SPECS,
     _sheet_paths,
     ForecastGap,
+    RateComponent,
+    ReceiptsMeasure,
+    ReceiptsSeriesSpec,
+    measure_receipts,
     average_earnings_path,
     compute_receipts_growth,
     find_receipts_line,
@@ -472,6 +476,28 @@ PREVIOUS_RECEIPTS_LEVELS = {
     "great_britain": (29.0, 30.1, 31.0),
     "northern_ireland": (0.39, 0.395, 0.4),
 }
+# Synthetic betting and gaming duty receipts, £bn, from the year after each
+# EFO's first (outturn) year, as the OBR's forecast breakdown starts. Remote
+# Gaming Duty doubles in 2026-27 (2.8 = 1.4 x 40% / 21% x 1.05), when its
+# rate rises from 21% to 40%, so its base grows 5%.
+GAMBLING_LEVELS = {
+    "remote_gaming": (1.4, 2.8, 2.94),
+    "lottery": (1.0, 1.05, 1.1),
+    "general_betting": (0.7, 0.72, 0.9),
+    "machine_games": (0.65, 0.66, 0.8),
+    "gaming": (0.17, 0.18, 0.19),
+    "bingo": (0.03, 0.0001, 0.0),
+    "pool_betting": (0.004, 0.0042, 0.0044),
+}
+GAMBLING_LABELS = {
+    "remote_gaming": "Remote gaming duty",
+    "lottery": "Lottery duty",
+    "general_betting": "General betting duty",
+    "machine_games": "Machine games duty",
+    "gaming": "Gaming duty",
+    "bingo": "Bingo duty",
+    "pool_betting": "Pool betting duty",
+}
 
 
 def make_receipts_xlsx(
@@ -483,10 +509,12 @@ def make_receipts_xlsx(
     outturn_years: int = 1,
     sdlt_rows: list[tuple[str, tuple]] | None = None,
     chapter: int = 3,
+    gambling_levels: dict[str, tuple] | None = None,
 ) -> bytes:
     """Receipts tables numbered in ``chapter``: 3 to March 2026, 4 from
     October 2026."""
     levels = levels or RECEIPTS_LEVELS
+    gambling_levels = gambling_levels or GAMBLING_LEVELS
     sheet_318 = make_sheet({2: [make_inline_cell("B2", "Other table")]})
     sheet_319 = make_sheet(
         {
@@ -570,6 +598,24 @@ def make_receipts_xlsx(
         ],
         first_column=4,
         outturn_years=outturn_years,
+    )
+    # The betting and gaming breakdown publishes forecasts only, from the
+    # year after the outturn year, under a total and an "of which" row.
+    sheets[f"{chapter}.10"] = receipts_table(
+        f"{chapter}.10 Betting and gaming duties forecast breakdown",
+        first_year + 1,
+        [
+            (
+                "Betting and gaming duties",
+                tuple(
+                    sum(float(level) for level in year)
+                    for year in zip(*gambling_levels.values())
+                ),
+            ),
+            ("of which:", ()),
+            *((GAMBLING_LABELS[key], gambling_levels[key]) for key in GAMBLING_LABELS),
+        ],
+        outturn_years=0,
     )
     sheets[f"{chapter}.18"] = sheet_318
     sheets[f"{chapter}.19"] = sheet_319
@@ -751,6 +797,19 @@ RECEIPTS_FIXTURE = (
     + "  business_rates:\n"
     + RECEIPTS_SERIES_FIXTURE.format(key="great_britain")
     + RECEIPTS_SERIES_FIXTURE.format(key="northern_ireland")
+    + "  gambling_duty_bases:\n"
+    + "".join(
+        RECEIPTS_SERIES_FIXTURE.format(key=key)
+        for key in (
+            "remote_gaming",
+            "lottery",
+            "general_betting",
+            "machine_games",
+            "gaming",
+            "bingo",
+            "pool_betting",
+        )
+    )
     + "\n"
 )
 YOY_GROWTH_FIXTURE = (
@@ -951,9 +1010,18 @@ def test_a_failed_restore_keeps_the_original_and_never_empties_a_file(
     assert list(tmp_path.rglob("*.staged")) == []
 
 
-# Receipts growth series: stamp_duty_land_tax and business_rates under obr.
+# Receipts growth series: stamp_duty_land_tax and business_rates under obr,
+# which link their first year to the previous EFO's outturn, and the
+# gambling_duty_bases, which grow a duty's base from HMRC's outturn.
 
-RECEIPTS_PATHS = {spec.path[-1]: spec.path for spec in RECEIPTS_SERIES_SPECS}
+RECEIPTS_SPECS = tuple(spec for spec in RECEIPTS_SERIES_SPECS if spec.outturn is None)
+RECEIPTS_PATHS = {spec.path[-1]: spec.path for spec in RECEIPTS_SPECS}
+GAMBLING_PATHS = {
+    spec.path[-1]: spec.path
+    for spec in RECEIPTS_SERIES_SPECS
+    if spec.outturn is not None
+}
+ALL_RECEIPTS_PATHS = {**RECEIPTS_PATHS, **GAMBLING_PATHS}
 
 
 def _series(tree, path):
@@ -994,7 +1062,7 @@ def test_receipts_lines_are_found_by_title_and_label_not_table_number():
             find_receipts_line(current, spec),
             find_receipts_line(previous, spec),
         )
-        for spec in RECEIPTS_SERIES_SPECS
+        for spec in RECEIPTS_SPECS
     }
 
     great_britain, great_britain_before = tables[RECEIPTS_PATHS["great_britain"]]
@@ -1019,7 +1087,11 @@ def test_receipts_growth_is_the_ratio_of_published_levels():
     )
     # The first year is this EFO's outturn over the previous EFO's outturn,
     # e.g. residential 10.0 / 8.0; later years are this EFO's own ratios.
-    assert {path[-1]: series.values for path, series in growth.items()} == {
+    assert {
+        path[-1]: series.values
+        for path, series in growth.items()
+        if path in RECEIPTS_PATHS.values()
+    } == {
         "residential": {2024: 0.25, 2025: 0.1, 2026: 0.1},
         "non_residential": {2024: 0.25, 2025: 0.25, 2026: -0.1},
         "great_britain": {2024: 0.034483, 2025: 0.05, 2026: 0.05},
@@ -1232,7 +1304,7 @@ def test_render_changes_only_the_receipts_values_and_references():
     rendered = render()
     before, after = yaml.safe_load(YOY_GROWTH_FIXTURE), yaml.safe_load(rendered)
     for tree in (before, after):
-        for path in RECEIPTS_PATHS.values():
+        for path in ALL_RECEIPTS_PATHS.values():
             del _series(tree, path)["values"]
             del _series(tree, path)["metadata"]["reference"]
     assert after == before
@@ -1371,7 +1443,7 @@ def test_read_calendar_values_includes_nested_series(tmp_path):
         2031: 0.02,
     }
     assert set(values) == set(SERIES_KEYS) | {
-        ".".join(path) for path in RECEIPTS_PATHS.values()
+        ".".join(path) for path in ALL_RECEIPTS_PATHS.values()
     }
 
 
@@ -1422,6 +1494,17 @@ OCTOBER_2026_RECEIPTS = {
     "great_britain": ("33.929814327646056", "35.43608032863263", "37.21735218338801", "38.66510919685915", "41.462982206056644", "42.42035811098974", "43.447399285510656"),
     "northern_ireland": ("0.3955394050104385", "0.40595301023058955", "0.414556055466312", "0.4226801104356366", "0.43095512116333085", "0.4394491849889923", "0.44783993918412923"),
 }  # fmt: skip
+# The October 2026 EFO's betting and gaming duties (£bn, Table 4.10) from
+# 2026-27, which publishes forecasts only.
+OCTOBER_2026_GAMBLING = {
+    "remote_gaming": ("2.7520296250837784", "2.7812750734699425", "2.8416867878041874", "2.9053716896455919", "2.9446821891345443", "2.963204761653297"),
+    "lottery": ("0.83052038459597621", "0.84965566898040046", "0.87574553838772884", "0.90350845044750805", "0.92958587301870155", "0.95685079671453654"),
+    "general_betting": ("0.65560522982822456", "0.87744453968275893", "0.91694664204685206", "0.94862995017184315", "0.97646741817020943", "1.0041740187990271"),
+    "machine_games": ("0.67707068705786499", "0.82692873727074745", "0.85695449075649544", "0.86524127517297356", "0.87550370868921701", "0.89631020781238802"),
+    "gaming": ("0.17422987982556123", "0.18488058456996015", "0.18523427331264838", "0.18548069649974164", "0.18650974968911124", "0.18568125218312026"),
+    "bingo": ("1.8867652000000002E-4", "0", "0", "0", "0", "0"),
+    "pool_betting": ("2.8288821260900035E-3", "2.6802893699237468E-3", "2.85842704577818E-3", "2.8371447589557743E-3", "2.9959073747097458E-3", "3.1258296515431082E-3"),
+}  # fmt: skip
 MARCH_2026_RECEIPTS = {
     "residential": ("10.379999999999999", "11.731471524432562", "13.428906667032589", "14.984943814530874", "16.673948133476184", "17.964513468126285", "19.057301113969185"),
     "non_residential": ("3.5049999999999999", "3.6750451743530199", "4.72127759316189", "5.3288288104799904", "5.9009139798817092", "6.5330695355310402", "7.1046581772762902"),
@@ -1432,9 +1515,9 @@ MARCH_2026_RECEIPTS = {
 
 def test_october_2026_tables_reproduce_the_committed_series():
     """yoy_growth.yaml holds exactly what the importer writes from the
-    October 2026 receipts tables (Tables 4.7, 4.8 and 4.2) and the March 2026
-    ones (3.7, 3.8 and 3.2): rerunning it on the committed file changes
-    nothing."""
+    October 2026 receipts tables (Tables 4.7, 4.8, 4.2 and 4.10) and the
+    March 2026 ones (3.7, 3.8 and 3.2): rerunning it on the committed file
+    changes nothing."""
     committed = get_yoy_growth_path().read_text()
     rendered = render(
         committed,
@@ -1444,6 +1527,7 @@ def test_october_2026_tables_reproduce_the_committed_series():
             levels=OCTOBER_2026_RECEIPTS,
             cash_table="4.8",
             chapter=4,
+            gambling_levels=OCTOBER_2026_GAMBLING,
         ),
         previous=make_previous_receipts_xlsx(
             release="March 2026",
@@ -1709,7 +1793,7 @@ def test_main_requires_the_previous_receipts_tables(tmp_path):
     )
     content = yoy.read_text()
     assert "2026-01-01: 0.0248" in content
-    for path in RECEIPTS_PATHS.values():
+    for path in ALL_RECEIPTS_PATHS.values():
         assert _values(content, path) == _values(YOY_GROWTH_FIXTURE, path)
 
 
@@ -1927,3 +2011,278 @@ def test_main_writes_receipts_growth_to_the_output_path(tmp_path):
     )
     assert yoy.read_text() == YOY_GROWTH_FIXTURE
     assert _values(output.read_text(), RECEIPTS_PATHS["residential"])[2024] == 0.25
+
+
+# Gambling duty bases (#2738): each line's receipts, less the measures they
+# include, over the rate the model charges, after HMRC's outturn.
+
+GAMBLING_SPECS = tuple(spec for spec in RECEIPTS_SERIES_SPECS if spec.outturn)
+# HMRC's 2024-25 and 2025-26 receipts, £bn (July 2026 Betting and Gaming
+# tables, Table_1_BG_receipts rows 45 and 46).
+HMRC_RECEIPTS = {
+    "remote_gaming": (1.162539, 1.320966),
+    "lottery": (0.931887, 0.980132),
+    "general_betting": (0.713858, 0.684502),
+    "machine_games": (0.609245, 0.641010),
+    "gaming": (0.165397, 0.173902),
+    "bingo": (0.025233, 0.026073),
+    "pool_betting": (0.008125, 0.003970),
+}
+# The remote part of the General Betting Duty base, which pays 25% from
+# 1 April 2027; the rest pays 15% throughout.
+REMOTE_BETTING_SHARE = 2_163_978_657 / (2_471_124_767 + 2_163_978_657 + 123_949_909)
+# Autumn Budget 2026 measure 56's betting receipts, £m (OBR October 2026
+# policy Table 1.1).
+MEASURE_56 = {2026: 0.0, 2027: 144.15331361978284, 2028: 162.30500845324954}
+
+
+def gambling_growth(**overrides):
+    growth = compute_receipts_growth(
+        make_receipts_xlsx(**overrides), b"not read", specs=GAMBLING_SPECS
+    )
+    return {path[-1]: series.values for path, series in growth.items()}
+
+
+def ratio(new, old):
+    return round(new / old - 1, 6)
+
+
+def test_gambling_bases_take_out_the_rates_the_model_charges():
+    """Synthetic March 2026 tables: growth from HMRC's 2024-25 receipts into
+    the table's first year (2025-26), then the table's own years. Remote
+    Gaming Duty's rise from 21% to 40% (1 April 2026) and the remote betting
+    rise from 15% to 25% (1 April 2027) come out of the base; Bingo Duty's
+    abolition (1 April 2026) holds its base flat."""
+    growth = gambling_growth()
+    hmrc = {key: values[0] for key, values in HMRC_RECEIPTS.items()}
+    remote = 0.15 * (1 - REMOTE_BETTING_SHARE) + 0.25 * REMOTE_BETTING_SHARE
+    expected = {
+        "remote_gaming": {
+            2025: ratio(1.4, hmrc["remote_gaming"]),
+            # Receipts double (1.4 to 2.8), the base grows 5%.
+            2026: ratio(2.8 / 0.40, 1.4 / 0.21),
+            2027: ratio(2.94, 2.8),
+        },
+        "general_betting": {
+            2025: ratio(0.7, hmrc["general_betting"]),
+            2026: ratio(0.72, 0.7),
+            2027: ratio(0.9 / remote, 0.72 / 0.15),
+        },
+        "bingo": {2025: ratio(0.03, hmrc["bingo"]), 2026: 0.0, 2027: 0.0},
+        # A March 2026 EFO includes no Autumn Budget 2026 measure.
+        "machine_games": {
+            2025: ratio(0.65, hmrc["machine_games"]),
+            2026: ratio(0.66, 0.65),
+            2027: ratio(0.8, 0.66),
+        },
+    }
+    for key in ("lottery", "gaming", "pool_betting"):
+        levels = (hmrc[key], *GAMBLING_LEVELS[key])
+        expected[key] = {2025 + i: ratio(levels[i + 1], levels[i]) for i in range(3)}
+    assert growth.keys() == expected.keys()
+    for key, values in expected.items():
+        assert growth[key] == pytest.approx(values, abs=1.5e-6), key
+    # Without the rate taken out, Remote Gaming Duty's 2026 growth would be
+    # the receipts' 100%.
+    assert growth["remote_gaming"][2026] == pytest.approx(0.05, abs=1e-6)
+
+
+def test_efos_from_october_2026_take_off_the_machine_games_measure():
+    growth = gambling_growth(release="October 2026")["machine_games"]
+    assert growth == pytest.approx(
+        {
+            2025: ratio(0.65, HMRC_RECEIPTS["machine_games"][0]),
+            2026: ratio(0.66 - MEASURE_56[2026] / 1000, 0.65),
+            2027: ratio(0.8 - MEASURE_56[2027] / 1000, 0.66),
+        },
+        abs=1.5e-6,
+    )
+
+
+def test_real_october_2026_gambling_series():
+    """The committed series, from Table 4.10 of the real October 2026 tables
+    and HMRC's outturn, by hand."""
+    growth = compute_receipts_growth(
+        REAL_OCTOBER_2026_RECEIPTS, b"not read", specs=GAMBLING_SPECS
+    )
+    values = {path[-1]: series.values for path, series in growth.items()}
+    # Remote Gaming Duty: 2026-27 at 40% over HMRC's 2025-26 at 21%.
+    assert values["remote_gaming"][2026] == round(
+        (2.7520296250837784 / 0.40) / (1.320966 / 0.21) - 1, 6
+    )
+    assert values["remote_gaming"][2026] == 0.093757
+    # General Betting Duty: 2027-28 with its remote part at 25%.
+    remote = 0.15 + 0.10 * REMOTE_BETTING_SHARE
+    assert values["general_betting"][2027] == round(
+        (0.87744453968275893 / remote) / (0.65560522982822456 / 0.15) - 1, 6
+    )
+    assert values["general_betting"][2027] == 0.027038
+    # Machine Games Duty: 2027-28 less measure 56's GBP 144.2m.
+    assert values["machine_games"][2027] == round(
+        (0.82692873727074745 - MEASURE_56[2027] / 1000) / 0.67707068705786499 - 1, 6
+    )
+    assert values["machine_games"][2027] == 0.008426
+    assert values["bingo"] == dict.fromkeys(range(2026, 2032), 0.0) | {2025: 0.03329}
+    for series in values.values():
+        assert sorted(series) == list(range(2025, 2032))
+
+
+def test_gambling_lines_read_no_previous_efo():
+    # March 2025's tables have no betting and gaming breakdown; the gambling
+    # lines take 2024-25 and 2025-26 from HMRC instead.
+    real = compute_receipts_growth(REAL_RECEIPTS[2026], REAL_RECEIPTS[2025])
+    alone = compute_receipts_growth(REAL_RECEIPTS[2026], b"", specs=GAMBLING_SPECS)
+    assert {path: real[path].values for path in alone} == {
+        path: series.values for path, series in alone.items()
+    }
+    assert all(series.previous_line is None for series in alone.values())
+
+
+def test_gambling_outturn_must_reach_the_year_before_the_table():
+    # A table from 2027-28 needs 2026-27 receipts, which HMRC has not
+    # published in the July 2026 tables.
+    with pytest.raises(ValueError, match="have no 2026-27, the year before Table"):
+        compute_receipts_growth(
+            make_receipts_xlsx(first_year=2026), b"", specs=GAMBLING_SPECS
+        )
+
+
+def test_a_measure_covers_every_year_from_its_first():
+    spec = ReceiptsSeriesSpec(
+        path=("x",),
+        title="t",
+        row="r",
+        rates=(RateComponent("gov.hmrc.gambling_duty.lottery.rate"),),
+        measures=(
+            ReceiptsMeasure("m", ("October", 2026), ((2027, 100.0), (2028, 50.0))),
+        ),
+    )
+    # No receipts before its first year; none in an EFO before its own.
+    assert measure_receipts(spec, [2026, 2027, 2028], None) == {
+        2026: 0.0,
+        2027: 0.1,
+        2028: 0.05,
+    }
+    assert measure_receipts(spec, [2027], ("March", 2026)) == {2027: 0.0}
+    with pytest.raises(ValueError, match="m has no receipts for 2029-30"):
+        measure_receipts(spec, [2028, 2029], ("March", 2027))
+
+
+def test_bingo_holds_its_base_flat_after_the_forecast():
+    rendered = render()
+    start = rendered.index("    bingo:")
+    block = rendered[start : rendered.index("    pool_betting:")]
+    assert "# Beyond the OBR forecast: held flat, as the rate is zero" in block
+    assert _values(rendered, GAMBLING_PATHS["bingo"])[2028] == 0.0
+    assert max(_values(rendered, GAMBLING_PATHS["bingo"])) == 2028
+    # Remote Gaming Duty follows average earnings, as the receipts lines do.
+    remote_gaming = _values(rendered, GAMBLING_PATHS["remote_gaming"])
+    assert {year: remote_gaming[year] for year in (2028, 2031)} == {
+        2028: 0.0,
+        2031: 0.02,
+    }
+
+
+def test_gambling_comments_and_references_name_hmrc_and_the_rates():
+    rendered = render()
+    block = rendered[
+        rendered.index("    remote_gaming:") : rendered.index("    lottery:")
+    ]
+    # March 2026's table starts in 2025-26, so no year comes from HMRC alone.
+    assert "# Outturn (2025" not in block
+    assert (
+        "# Forecast (2025-26 over 2024-25) from OBR EFO March 2026, receipts "
+        'Table 3.10 "Remote gaming duty", over HMRC\'s receipts (July 2026 '
+        "Betting and Gaming tables, Table_1_BG_receipts); base growth: receipts "
+        "over the rate the model charges"
+    ) in block
+    references = _series(yaml.safe_load(rendered), GAMBLING_PATHS["remote_gaming"])[
+        "metadata"
+    ]["reference"]
+    assert [reference["title"] for reference in references] == [
+        "OBR EFO March 2026 (detailed forecast tables, receipts, Table 3.10)",
+        "HMRC UK Betting and Gaming Statistics, July 2026 tables "
+        "(Table_1_BG_receipts, 2024-25 and 2025-26 receipts)",
+    ]
+
+
+GAMBLING_RATE_PARAMETERS = sorted(
+    {component.parameter for spec in GAMBLING_SPECS for component in spec.rates}
+)
+RATE = st.floats(min_value=0.01, max_value=0.6, allow_nan=False)
+
+
+@st.composite
+def rate_schedules(draw):
+    """Dated rates for every gambling rate parameter: a first value, then
+    perhaps a change on any day from 2024 to 2028, to zero or not."""
+    schedules = {}
+    for parameter in GAMBLING_RATE_PARAMETERS:
+        entries = [(date(2015, 1, 1), draw(RATE))]
+        if draw(st.booleans()):
+            day = draw(st.dates(date(2024, 1, 1), date(2028, 12, 31)))
+            entries.append((day, draw(st.one_of(st.just(0.0), RATE))))
+        schedules[parameter] = tuple(entries)
+    return schedules
+
+
+def oracle_rate(spec, schedules, year):
+    """The weighted mean of each part's daily rate over 1 April to 31 March."""
+    days = [
+        date.fromordinal(day)
+        for day in range(date(year, 4, 1).toordinal(), date(year + 1, 4, 1).toordinal())
+    ]
+    total = sum(component.weight for component in spec.rates)
+    mean = 0.0
+    for component in spec.rates:
+        entries = schedules[component.parameter]
+        daily = [
+            max((e for e in entries if e[0] <= day), default=entries[0])[1]
+            for day in days
+        ]
+        mean += component.weight * sum(daily) / len(daily)
+    return mean / total
+
+
+@settings(max_examples=40, deadline=None, derandomize=True)
+@given(
+    levels=st.fixed_dictionaries(
+        {key: st.tuples(LEVELS, LEVELS, LEVELS) for key in GAMBLING_LABELS}
+    ),
+    schedules=rate_schedules(),
+    factor=st.floats(min_value=0.1, max_value=10, allow_nan=False),
+)
+def test_base_growth_is_receipts_growth_over_rate_growth(levels, schedules, factor):
+    """For any positive receipts and dated rates: one plus each year's growth
+    times the rate's growth is the receipts' growth (to the six decimals
+    written); a year whose rate, or the year before's, is zero holds the base
+    flat; and one factor on every rate, a rate reform the model applies
+    itself, changes no growth."""
+    module = import_obr_forecasts
+    workbook = make_receipts_xlsx(gambling_levels=levels)
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(module, "rate_values", lambda parameter: schedules[parameter])
+        growth = compute_receipts_growth(workbook, b"", specs=GAMBLING_SPECS)
+        scaled = {
+            parameter: tuple((day, value * factor) for day, value in entries)
+            for parameter, entries in schedules.items()
+        }
+        patch.setattr(module, "rate_values", lambda parameter: scaled[parameter])
+        growth_scaled = compute_receipts_growth(workbook, b"", specs=GAMBLING_SPECS)
+    for spec in GAMBLING_SPECS:
+        key = spec.path[-1]
+        values = growth[spec.path].values
+        receipts = {2024: HMRC_RECEIPTS[key][0], 2025: levels[key][0]}
+        receipts |= {2026: levels[key][1], 2027: levels[key][2]}
+        rates = {year: oracle_rate(spec, schedules, year) for year in receipts}
+        assert sorted(values) == [2025, 2026, 2027]
+        for year, value in values.items():
+            if rates[year] < 1e-12 or rates[year - 1] < 1e-12:
+                assert value == 0.0
+            else:
+                exact = (receipts[year] / rates[year]) / (
+                    receipts[year - 1] / rates[year - 1]
+                )
+                assert value == pytest.approx(exact - 1, abs=1e-6, rel=1e-9)
+                assert 1 + value > 0
+        assert growth_scaled[spec.path].values == pytest.approx(values, abs=1.5e-6)

@@ -8,6 +8,7 @@ import shutil
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
+from functools import lru_cache
 from io import BytesIO
 from pathlib import Path
 from urllib.parse import unquote
@@ -592,6 +593,44 @@ VALUE_LINE_RE = re.compile(r"^\s*(\d{4})-\d{2}-\d{2}:")
 
 
 @dataclass(frozen=True)
+class RateComponent:
+    """A part of a duty's base and the rate parameter the model charges on it.
+
+    ``parameter`` is the rate's path in the model's parameter tree, such as
+    ``gov.hmrc.gambling_duty.remote_gaming.rate``. ``weight`` is the part's
+    size, in any unit: divided by the total of a line's weights, it is the
+    part's share of the base, held at that share in every year.
+    """
+
+    parameter: str
+    weight: float = 1.0
+
+
+@dataclass(frozen=True)
+class ReceiptsMeasure:
+    """Receipts a policy measure adds to a line, in £ million (as the OBR's
+    policy tables publish them) by the calendar year in which each fiscal
+    year starts. EFOs from ``release`` on include them, and so does outturn
+    once the measure starts: it has no receipts before its first year."""
+
+    description: str
+    release: tuple[str, int]
+    receipts_millions: tuple[tuple[int, float], ...]
+
+
+@dataclass(frozen=True)
+class ReceiptsOutturn:
+    """A line's outturn receipts from outside the EFOs, in £ thousand (as
+    published) by the calendar year in which each fiscal year starts.
+    ``source`` names them in comments and ``title`` in references."""
+
+    source: str
+    title: str
+    href: str
+    receipts_thousands: tuple[tuple[int, float], ...]
+
+
+@dataclass(frozen=True)
 class ReceiptsSeriesSpec:
     """A line of the OBR receipts tables, grown by a yoy_growth.yaml series.
 
@@ -600,11 +639,56 @@ class ReceiptsSeriesSpec:
     receipts on a cash basis are Table 3.8 in March 2026 and 3.9 in March
     2025. Titles and row labels are compared lowercased, without footnote
     markers.
+
+    A line with ``rates`` grows a duty's base rather than its receipts, so a
+    rate change the model applies itself moves receipts only once. Each
+    year's base is its receipts, less the ``measures`` they include, over
+    the rate the model charges in that fiscal year (see ``line_rate``). A
+    year whose rate is zero has no base, so the series holds the base flat
+    into and out of it. A line with ``outturn`` takes the years before the
+    EFO's first from it, not from the previous EFO, which it does not read.
+    ``references`` are cited after the sources of the levels.
     """
 
     path: tuple[str, ...]
     title: str
     row: str
+    rates: tuple[RateComponent, ...] = ()
+    measures: tuple[ReceiptsMeasure, ...] = ()
+    outturn: ReceiptsOutturn | None = None
+    references: tuple[tuple[str, str], ...] = ()
+
+
+GAMBLING_RATES = "gov.hmrc.gambling_duty"
+
+
+def gambling_spec(
+    key: str,
+    row: str,
+    rates: tuple[RateComponent, ...],
+    receipts_thousands: tuple[tuple[int, float], ...],
+    **extra,
+) -> ReceiptsSeriesSpec:
+    """A betting and gaming duty's base (#2738): its line in the receipts
+    tables' forecast breakdown (Table 4.10 in October 2026, 3.10 in March
+    2026), which publishes forecasts only, after HMRC's outturn. The model's
+    gambling inputs start in 2024-25, the first year here."""
+    return ReceiptsSeriesSpec(
+        path=("gambling_duty_bases", key),
+        title="betting and gaming duties forecast breakdown",
+        row=row,
+        rates=rates,
+        outturn=ReceiptsOutturn(
+            source="HMRC's receipts (July 2026 Betting and Gaming tables, "
+            "Table_1_BG_receipts)",
+            title="HMRC UK Betting and Gaming Statistics, July 2026 tables "
+            "(Table_1_BG_receipts, 2024-25 and 2025-26 receipts)",
+            href="https://assets.publishing.service.gov.uk/media/"
+            "6ab54fd9fe72ed1e2b02f06b/2026_Jul_Bet_and_Gam_Tab.ods",
+            receipts_thousands=receipts_thousands,
+        ),
+        **extra,
+    )
 
 
 RECEIPTS_SERIES_SPECS = (
@@ -628,7 +712,187 @@ RECEIPTS_SERIES_SPECS = (
         title="other taxes",
         row="northern ireland business rates",
     ),
+    # The seven betting and gaming duties' bases. HMRC's receipts are row 45
+    # (2024-25) and row 46 (2025-26) of Table_1_BG_receipts, £ thousand.
+    gambling_spec(
+        "remote_gaming",
+        "remote gaming duty",
+        (RateComponent(f"{GAMBLING_RATES}.remote_gaming.rate"),),
+        ((2024, 1_162_539), (2025, 1_320_966)),
+    ),
+    gambling_spec(
+        "lottery",
+        "lottery duty",
+        (RateComponent(f"{GAMBLING_RATES}.lottery.rate"),),
+        ((2024, 931_887), (2025, 980_132)),
+    ),
+    # Each part's 2024-25 base (£): HMRC's General Betting Duty receipts over
+    # 15%, split by the Gambling Commission's 2024-25 gross gambling yield as
+    # Microcosm splits the model's inputs. Fixed odds take remote UK horse
+    # racing, land-based fixed odds and racing pools. Spread betting, which
+    # the Commission does not regulate, has no published base.
+    gambling_spec(
+        "general_betting",
+        "general betting duty",
+        (
+            RateComponent(
+                f"{GAMBLING_RATES}.general_betting.rates.fixed_odds", 2_471_124_767
+            ),
+            RateComponent(
+                f"{GAMBLING_RATES}.general_betting.rates.remote", 2_163_978_657
+            ),
+            RateComponent(
+                f"{GAMBLING_RATES}.general_betting.rates.exchange_commission",
+                123_949_909,
+            ),
+        ),
+        ((2024, 713_858), (2025, 684_502)),
+        references=(
+            (
+                "Microcosm, FY2024-25 General Betting Duty bases split by the "
+                "Gambling Commission's gross gambling yield (docs/evidence/"
+                "uk-excise-quantities-1359/outputs/national_reconciliation.json)",
+                "https://github.com/PolicyEngine/microcosm/blob/main/docs/evidence/"
+                "uk-excise-quantities-1359/outputs/national_reconciliation.json",
+            ),
+            (
+                "Gambling Commission, industry statistics, April 2024 to March 2025",
+                "https://www.gamblingcommission.gov.uk/statistics-and-research/"
+                "publication/industry-statistics-annual-report-financial-year-april-"
+                "2024-to-march-2025",
+            ),
+        ),
+    ),
+    # Each band's 2024-25 base (£): HMRC's Machine Games Duty liabilities
+    # (Table_2_MGD row 20) over its rate. The October 2026 line includes
+    # Autumn Budget 2026's Machine Games Duty measures (paragraph 4.45),
+    # which come off before the rates.
+    gambling_spec(
+        "machine_games",
+        "machine games duty",
+        (
+            RateComponent(f"{GAMBLING_RATES}.machine_games.rates.lower", 138_420_000),
+            RateComponent(
+                f"{GAMBLING_RATES}.machine_games.rates.standard", 3_023_740_000
+            ),
+            RateComponent(f"{GAMBLING_RATES}.machine_games.rates.higher", 2_384_000),
+        ),
+        ((2024, 609_245), (2025, 641_010)),
+        measures=(
+            ReceiptsMeasure(
+                "Autumn Budget 2026 measure 56 (Machine Games Duty on higher-stake "
+                "machines and supplier liability)",
+                ("October", 2026),
+                (
+                    (2026, 0.0),
+                    (2027, 144.15331361978284),
+                    (2028, 162.30500845324954),
+                    (2029, 157.57136998103317),
+                    (2030, 155.90187446314559),
+                    (2031, 156.40657502685724),
+                ),
+            ),
+        ),
+        references=(
+            (
+                "OBR EFO October 2026 (detailed forecast tables, policy, Table 1.1, "
+                "measure 56, Betting)",
+                "https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/",
+            ),
+        ),
+    ),
+    # The household Gaming Duty formula charges one effective rate, not the
+    # statutory bands.
+    gambling_spec(
+        "gaming",
+        "gaming duty",
+        (RateComponent("household.consumption.gambling.casino_effective_rate"),),
+        ((2024, 165_397), (2025, 173_902)),
+    ),
+    gambling_spec(
+        "bingo",
+        "bingo duty",
+        (RateComponent(f"{GAMBLING_RATES}.bingo.rate"),),
+        ((2024, 25_233), (2025, 26_073)),
+    ),
+    gambling_spec(
+        "pool_betting",
+        "pool betting duty",
+        (RateComponent(f"{GAMBLING_RATES}.pool_betting.rate"),),
+        ((2024, 8_125), (2025, 3_970)),
+    ),
 )
+
+
+@lru_cache(maxsize=None)
+def rate_values(parameter: str) -> tuple[tuple[date, float], ...]:
+    """A rate parameter's dated values, earliest first, from its file in the
+    model's parameter tree."""
+    path = get_repo_root() / "policyengine_uk/parameters" / Path(*parameter.split("."))
+    values = yaml.safe_load(path.with_suffix(".yaml").read_text())["values"]
+    entries = []
+    for instant, value in values.items():
+        if isinstance(value, dict):
+            value = value["value"]
+        entries.append((date.fromisoformat(str(instant)), float(value)))
+    if not entries:
+        raise ValueError(f"{parameter} has no values")
+    return tuple(sorted(entries))
+
+
+def fiscal_year_rate(parameter: str, year: int) -> float:
+    """A rate's mean over the OBR's fiscal year ``year``, 1 April to 31 March,
+    weighted by days. Before the rate's first value it takes that value, as
+    the model does: it backdates each parameter's first value."""
+    start, end = date(year, 4, 1), date(year + 1, 4, 1)
+    entries = rate_values(parameter)
+    segments = []
+    for index, (instant, value) in enumerate(entries):
+        lower = start if index == 0 else max(instant, start)
+        upper = min(entries[index + 1][0], end) if index + 1 < len(entries) else end
+        if upper > lower:
+            segments.append((value, (upper - lower).days))
+    if len({value for value, _ in segments}) == 1:
+        return segments[0][0]
+    return sum(value * days for value, days in segments) / (end - start).days
+
+
+def line_rate(spec: ReceiptsSeriesSpec, year: int) -> float:
+    """The rate the model charges on a line's base in fiscal year ``year``:
+    its parts' fiscal-year rates, averaged by their weights."""
+    total = sum(component.weight for component in spec.rates)
+    return (
+        sum(
+            component.weight * fiscal_year_rate(component.parameter, year)
+            for component in spec.rates
+        )
+        / total
+    )
+
+
+def measure_receipts(
+    spec: ReceiptsSeriesSpec, years: list[int], release: tuple[str, int] | None
+) -> dict[int, float]:
+    """The receipts (£bn) of ``spec``'s measures in each of ``years``, as an
+    EFO of ``release`` includes them, or outturn if ``release`` is None.
+    A measure has none before its first year, and must cover every later
+    year it is included in."""
+    total = dict.fromkeys(years, 0.0)
+    for measure in spec.measures:
+        if release is not None and release_order(release) < release_order(
+            measure.release
+        ):
+            continue
+        receipts = dict(measure.receipts_millions)
+        missing = [year for year in years if year > max(receipts)]
+        if missing:
+            raise ValueError(
+                f"{'.'.join(spec.path)}: {measure.description} has no receipts "
+                "for " + ", ".join(fiscal_year_label(year) for year in missing)
+            )
+        for year in years:
+            total[year] += receipts.get(year, 0.0) / 1000
+    return total
 
 
 @dataclass(frozen=True)
@@ -648,12 +912,15 @@ class ReceiptsGrowth:
 
     The first year is outturn growth: this EFO's first (outturn) year over
     the year before in the previous EFO, where it is outturn. Each later
-    year is the ratio of this EFO's consecutive levels.
+    year is the ratio of this EFO's consecutive levels. A line with its own
+    outturn starts at that outturn's second year and has no previous line;
+    one with rates grows its base instead (see ``ReceiptsSeriesSpec``).
     """
 
     values: dict[int, float]
     line: ReceiptsLine
-    previous_line: ReceiptsLine
+    previous_line: ReceiptsLine | None
+    spec: ReceiptsSeriesSpec | None = None
 
 
 def fiscal_year_label(year: int) -> str:
@@ -860,48 +1127,93 @@ def find_receipts_line(
 
 
 def compute_receipts_growth(
-    xlsx_bytes: bytes, previous_xlsx_bytes: bytes
+    xlsx_bytes: bytes,
+    previous_xlsx_bytes: bytes,
+    release: tuple[str, int] | None = None,
+    specs: tuple[ReceiptsSeriesSpec, ...] = RECEIPTS_SERIES_SPECS,
 ) -> dict[tuple[str, ...], ReceiptsGrowth]:
     """Growth in each receipts line, from an EFO's receipts tables and an
     earlier EFO's, whose outturn is the base for the first year's growth.
 
     The first year must be outturn in this EFO, and the year before it
-    outturn in the earlier one (March 2025 for March 2026).
+    outturn in the earlier one (March 2025 for March 2026). A line with its
+    own outturn needs that outturn to reach the year before this EFO's
+    first instead. ``release``, which says which measures this EFO
+    includes, defaults to the one its contents sheet names.
     """
     sheets = read_workbook_sheets(xlsx_bytes)
-    previous_sheets = read_workbook_sheets(previous_xlsx_bytes)
+    previous_sheets = None
     result = {}
-    for spec in RECEIPTS_SERIES_SPECS:
+    for spec in specs:
         name = ".".join(spec.path)
         line = find_receipts_line(sheets, spec)
-        previous = find_receipts_line(previous_sheets, spec)
         first_year = min(line.levels)
         base_year = first_year - 1
-        if first_year not in line.outturn_years:
-            raise ValueError(
-                f"{name}: {fiscal_year_label(first_year)}, the first year in "
-                f"Table {line.table}, is not outturn"
-            )
-        if base_year not in previous.outturn_years:
-            raise ValueError(
-                f"{name}: the previous receipts tables have no "
-                f"{fiscal_year_label(base_year)} outturn; pass the EFO whose "
-                f"outturn year is {fiscal_year_label(base_year)}"
-            )
-        levels = {base_year: previous.levels[base_year], **line.levels}
+        if spec.outturn is not None:
+            previous = None
+            outturn = {
+                year: value / 1e6
+                for year, value in spec.outturn.receipts_thousands
+                if year < first_year
+            }
+            if base_year not in outturn:
+                raise ValueError(
+                    f"{name}: {spec.outturn.source} have no "
+                    f"{fiscal_year_label(base_year)}, the year before Table "
+                    f"{line.table}'s first; add them"
+                )
+            levels = {**outturn, **line.levels}
+            if sorted(levels) != list(range(min(levels), max(levels) + 1)):
+                raise ValueError(f"{name}: the outturn skips a year: {sorted(levels)}")
+        else:
+            if previous_sheets is None:
+                previous_sheets = read_workbook_sheets(previous_xlsx_bytes)
+            previous = find_receipts_line(previous_sheets, spec)
+            if first_year not in line.outturn_years:
+                raise ValueError(
+                    f"{name}: {fiscal_year_label(first_year)}, the first year in "
+                    f"Table {line.table}, is not outturn"
+                )
+            if base_year not in previous.outturn_years:
+                raise ValueError(
+                    f"{name}: the previous receipts tables have no "
+                    f"{fiscal_year_label(base_year)} outturn; pass the EFO whose "
+                    f"outturn year is {fiscal_year_label(base_year)}"
+                )
+            levels = {base_year: previous.levels[base_year], **line.levels}
+        if spec.measures:
+            efo = release or infer_workbook_release(xlsx_bytes)
+            if efo is None:
+                raise ValueError(
+                    f"{name}: could not tell which EFO the receipts tables are "
+                    "from, so which measures they include"
+                )
+            outturn_years = sorted(year for year in levels if year < first_year)
+            for years, source in ((outturn_years, None), (sorted(line.levels), efo)):
+                for year, receipts in measure_receipts(spec, years, source).items():
+                    levels[year] -= receipts
+        rates = {year: line_rate(spec, year) for year in levels} if spec.rates else {}
         # Growth to or from a level at or below zero means nothing, and a
-        # zero last level would zero the series' index from then on.
+        # zero last level would zero the series' index from then on. A year
+        # whose rate is zero has no base to grow, whatever its receipts.
         for year, level in sorted(levels.items()):
-            if level <= 0:
+            if level <= 0 and rates.get(year) != 0:
                 raise ValueError(
                     f"{name}: {fiscal_year_label(year)} receipts of {level} are "
                     "not positive, so there is no growth to or from them"
                 )
-        values = {
-            year: round(levels[year] / levels[year - 1] - 1, 6) + 0.0
-            for year in sorted(line.levels)
-        }
-        result[spec.path] = ReceiptsGrowth(values, line, previous)
+        values = {}
+        for year in sorted(levels)[1:]:
+            if not spec.rates:
+                values[year] = round(levels[year] / levels[year - 1] - 1, 6) + 0.0
+            elif rates[year] == 0 or rates[year - 1] == 0:
+                values[year] = 0.0
+            else:
+                base_growth = (levels[year] / rates[year]) / (
+                    levels[year - 1] / rates[year - 1]
+                )
+                values[year] = round(base_growth - 1, 6) + 0.0
+        result[spec.path] = ReceiptsGrowth(values, line, previous, spec)
     return result
 
 
@@ -974,6 +1286,7 @@ def render_receipts_values(
     tail: dict[int, float],
     release: tuple[str, int],
     previous_release: tuple[str, int],
+    tail_comment: str = "the average_earnings long-run path above",
 ) -> list[str]:
     """A series' values entries: earlier years as they were, then this
     EFO's growth, then the average_earnings path."""
@@ -994,17 +1307,44 @@ def render_receipts_values(
     month, year = release
     previous_month, previous_year = previous_release
     published, previous = growth.line, growth.previous_line
-    table = f"Table {published.table}"
-    if previous.table != published.table:
-        table += f" ({previous_month} {previous_year}: Table {previous.table})"
+    efo_first = min(published.levels)
     pad = " " * indent
-    lines = kept + [
-        f"{pad}# Outturn ({fiscal_year_label(first_year)} over "
-        f"{fiscal_year_label(first_year - 1)}) from OBR EFO {month} {year} over "
-        f'{previous_month} {previous_year}, receipts {table} "{published.label}"',
-        f"{pad}{first_year}-01-01: {format_growth(growth.values[first_year])}",
-    ]
-    later = sorted(y for y in growth.values if y > first_year)
+    first_kind = "Outturn" if efo_first in published.outturn_years else "Forecast"
+    basis = receipts_basis(growth.spec)
+    lines = list(kept)
+    if previous is None:
+        # The years before the EFO's first, and the base of its first, are
+        # the line's own outturn.
+        source = growth.spec.outturn.source
+        years = sorted(y for y in growth.values if y < efo_first)
+        if years:
+            span = (
+                f"{fiscal_year_label(years[0])} over {fiscal_year_label(years[0] - 1)}"
+                if len(years) == 1
+                else f"{years[0]}-{years[-1]}"
+            )
+            lines.append(f"{pad}# Outturn ({span}) from {source}{basis}")
+            lines += [
+                f"{pad}{y}-01-01: {format_growth(growth.values[y])}" for y in years
+            ]
+        lines.append(
+            f"{pad}# {first_kind} ({fiscal_year_label(efo_first)} over "
+            f"{fiscal_year_label(efo_first - 1)}) from OBR EFO {month} {year}, "
+            f'receipts Table {published.table} "{published.label}", over '
+            f"{source}{basis}"
+        )
+    else:
+        table = f"Table {published.table}"
+        if previous.table != published.table:
+            table += f" ({previous_month} {previous_year}: Table {previous.table})"
+        lines.append(
+            f"{pad}# {first_kind} ({fiscal_year_label(efo_first)} over "
+            f"{fiscal_year_label(efo_first - 1)}) from OBR EFO {month} {year} over "
+            f'{previous_month} {previous_year}, receipts {table} "{published.label}"'
+            f"{basis}"
+        )
+    lines.append(f"{pad}{efo_first}-01-01: {format_growth(growth.values[efo_first])}")
+    later = sorted(y for y in growth.values if y > efo_first)
     for kind in ("Outturn", "Forecast"):
         years = [
             y for y in later if (y in published.outturn_years) == (kind == "Outturn")
@@ -1014,14 +1354,57 @@ def render_receipts_values(
         span = f"{years[0]}" if len(years) == 1 else f"{years[0]}-{years[-1]}"
         lines.append(
             f"{pad}# {kind} ({span}) from OBR EFO {month} {year}, receipts "
-            f"Table {published.table}"
+            f"Table {published.table}{basis}"
         )
         lines += [f"{pad}{y}-01-01: {format_growth(growth.values[y])}" for y in years]
-    lines.append(
-        f"{pad}# Beyond the OBR forecast: the average_earnings long-run path above"
-    )
+    lines.append(f"{pad}# Beyond the OBR forecast: {tail_comment}")
     lines += [f"{pad}{y}-01-01: {format_growth(v)}" for y, v in sorted(tail.items())]
     return lines
+
+
+def receipts_basis(spec: ReceiptsSeriesSpec | None) -> str:
+    """How a line's growth is measured, for its comments: nothing for
+    receipts, the measures and rates taken out for a base."""
+    if spec is None or not spec.rates:
+        return ""
+    measures = "".join(f" less {measure.description}," for measure in spec.measures)
+    return f"; base growth: receipts{measures} over the rate the model charges"
+
+
+def receipts_tail(content: str, growth: ReceiptsGrowth) -> tuple[dict[int, float], str]:
+    """A series' growth after the OBR's forecast, and its comment: the
+    average_earnings path, held at zero in years a base's rate is zero in or
+    comes from."""
+    last = max(growth.values)
+    path = average_earnings_path(content, last)
+    spec = growth.spec
+    if spec is None or not spec.rates:
+        return path, "the average_earnings long-run path above"
+    # Rates hold their last value after their last change, as the path does.
+    changes = [
+        instant.year
+        for component in spec.rates
+        for instant, _ in rate_values(component.parameter)
+    ]
+    end = max(max(path), max(changes) + 1, last + 1)
+    yearly = {}
+    for year in range(last + 1, end + 1):
+        if line_rate(spec, year) == 0 or line_rate(spec, year - 1) == 0:
+            yearly[year] = 0.0
+        else:
+            yearly[year] = path[max(y for y in path if y <= year)]
+    tail = {
+        year: value
+        for year, value in yearly.items()
+        if year == last + 1 or value != yearly[year - 1]
+    }
+    if all(value == 0 for value in yearly.values()):
+        return tail, "held flat, as the rate is zero"
+    if any(value == 0 for value in yearly.values()):
+        return tail, (
+            "the average_earnings long-run path above, held flat where the rate is zero"
+        )
+    return tail, "the average_earnings long-run path above"
 
 
 def receipts_references(
@@ -1031,19 +1414,29 @@ def receipts_references(
 ) -> list[dict[str, str]]:
     month, year = release
     previous_month, previous_year = previous_release
+    current = {
+        "title": f"OBR EFO {month} {year} (detailed forecast tables, receipts, "
+        f"Table {growth.line.table})",
+        "href": build_efo_href(month, year),
+    }
+    spec = growth.spec
+    extra = [
+        {"title": title, "href": href}
+        for title, href in (spec.references if spec is not None else ())
+    ]
+    if growth.previous_line is None:
+        outturn = {"title": spec.outturn.title, "href": spec.outturn.href}
+        return [current, outturn, *extra]
     base_year = min(growth.values) - 1
     return [
-        {
-            "title": f"OBR EFO {month} {year} (detailed forecast tables, receipts, "
-            f"Table {growth.line.table})",
-            "href": build_efo_href(month, year),
-        },
+        current,
         {
             "title": f"OBR EFO {previous_month} {previous_year} (detailed forecast "
             f"tables, receipts, Table {growth.previous_line.table}; "
             f"{fiscal_year_label(base_year)} outturn)",
             "href": build_efo_href(previous_month, previous_year),
         },
+        *extra,
     ]
 
 
@@ -1065,7 +1458,7 @@ def render_receipts_growth_yaml(
     expected = copy.deepcopy(before)
     lines = content.split("\n")
     for path, series in growth.items():
-        tail = average_earnings_path(content, max(series.values))
+        tail, tail_comment = receipts_tail(content, series)
         references = receipts_references(series, release, previous_release)
 
         start, end = _series_block(lines, ("obr", *path))
@@ -1077,7 +1470,13 @@ def render_receipts_growth_yaml(
             indent + 2,
         )
         new_values = render_receipts_values(
-            old_values, entry_indent, series, tail, release, previous_release
+            old_values,
+            entry_indent,
+            series,
+            tail,
+            release,
+            previous_release,
+            tail_comment,
         )
         lines = [*lines[: values_start + 1], *new_values, *lines[values_end:]]
 
@@ -1392,7 +1791,9 @@ def build_arg_parser() -> argparse.ArgumentParser:
         action="store_true",
         help=(
             "Do not update the receipts growth series (stamp_duty_land_tax, "
-            "business_rates) that project corporate SDLT and business rates"
+            "business_rates) that project corporate SDLT and business rates, "
+            "or the gambling_duty_bases series that project the gambling "
+            "duty inputs"
         ),
     )
     parser.add_argument(
@@ -1580,7 +1981,9 @@ def main(argv: list[str] | None = None) -> int:
                 f"({previous_release[0]} {previous_release[1]}) must come from "
                 f"an EFO before {month} {year}"
             )
-        receipts_growth = compute_receipts_growth(receipts_bytes, previous_bytes)
+        receipts_growth = compute_receipts_growth(
+            receipts_bytes, previous_bytes, (month, year)
+        )
         print_receipts_summary(receipts_growth)
     calendar_values = (
         read_calendar_values(source_yaml_path) if args.gaps_only else series_values

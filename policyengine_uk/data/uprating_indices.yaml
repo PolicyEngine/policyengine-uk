@@ -170,6 +170,31 @@ gov.economic_assumptions.yoy_growth.obr.per_capita.mixed_income:
 - self_employment_gross_receipts
 - trading_loss
 - owned_company_income_share
+# Gambling duty bases grow with the OBR's receipts forecast for their duty,
+# divided by the rates the model charges, so the model applies its own rate
+# changes to them once (#2738).
+gov.economic_assumptions.yoy_growth.obr.gambling_duty_bases.general_betting:
+- betting_exchange_commission
+- financial_spread_betting_net_losses
+- horse_and_dog_pool_betting_net_losses
+- land_based_fixed_odds_betting_net_losses
+- other_spread_betting_net_losses
+- remote_other_betting_net_losses
+- remote_uk_horseracing_betting_net_losses
+gov.economic_assumptions.yoy_growth.obr.gambling_duty_bases.pool_betting:
+- pool_betting_net_receipts
+gov.economic_assumptions.yoy_growth.obr.gambling_duty_bases.remote_gaming:
+- remote_gaming_net_losses
+gov.economic_assumptions.yoy_growth.obr.gambling_duty_bases.machine_games:
+- machine_games_higher_rate_net_takings
+- machine_games_lower_rate_net_takings
+- machine_games_standard_rate_net_takings
+gov.economic_assumptions.yoy_growth.obr.gambling_duty_bases.gaming:
+- land_based_casino_net_losses
+gov.economic_assumptions.yoy_growth.obr.gambling_duty_bases.bingo:
+- bingo_net_receipts
+gov.economic_assumptions.yoy_growth.obr.gambling_duty_bases.lottery:
+- national_lottery_ticket_spending
 gov.economic_assumptions.yoy_growth.obr.private_pension_index:
 - private_pension_income
 gov.economic_assumptions.yoy_growth.obr.lagged_average_earnings:
