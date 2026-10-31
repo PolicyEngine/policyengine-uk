@@ -43,7 +43,16 @@ class oxford_council_tax_reduction(Variable):
             "council_tax_reduction_head_applies_alone", period
         )
         weekly_income = max_(0, annual_income - child_benefit) / WEEKS_IN_YEAR
-        weekly_income += where(has_uc_award, 0, weekly_tariff_income)
+        # Paragraphs 14 to 27 assess an applicant without Universal Credit;
+        # Appendix 3 assesses one with it on DWP's net earned income, the
+        # award and other income instead (scheme para. 9).
+        uc_weekly_income = (
+            benunit("oxford_council_tax_reduction_universal_credit_income", period)
+            / WEEKS_IN_YEAR
+        )
+        weekly_income = where(
+            has_uc_award, uc_weekly_income, weekly_income + weekly_tariff_income
+        )
         relevant_income_based_benefit = benunit(
             "council_tax_reduction_relevant_income_based_benefit",
             period,
