@@ -505,3 +505,98 @@
     tax_band: HIGHER
     meets_marriage_allowance_income_conditions: false
     earned_income_tax: 6_700
+
+# The same rules in 2026-27, with the Scottish limits of S6M-20844: £3,967,
+# £16,956, £31,092, £62,430 and £125,140 of taxable income. The personal
+# allowance stays £12,570 and the basic rate limit £37,700.
+
+- name: Scottish 2026 pay of 40000 and dividends of 5000 is intermediate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 40_000
+        dividend_income: 5_000
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+  output:
+    # Pay: 27,430 taxable, intermediate. 3,967 x 19% + 12,989 x 20%
+    # + 10,474 x 21% = 753.73 + 2,597.80 + 2,199.54 = 5,551.07.
+    # Dividends: 27,430 to 32,430, below 37,700.
+    tax_band: INTERMEDIATE
+    meets_marriage_allowance_income_conditions: true
+    earned_income_tax: 5_551.07
+
+- name: Scottish 2026 pay of 60000 and savings of 20000 is higher
+  period: 2026
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 60_000
+        savings_interest_income: 20_000
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+  output:
+    # Pay: 47,430 taxable, higher, below 62,430. Savings: 47,430 to 67,430,
+    # above 37,700 and below 125,140.
+    tax_band: HIGHER
+    meets_marriage_allowance_income_conditions: false
+
+- name: Scottish 2026 income at both limits stays intermediate
+  period: 2026
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 43_662
+        dividend_income: 6_608
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+  output:
+    # Pay: 31,092 taxable, the intermediate rate's limit. Dividends: 31,092
+    # to 37,700, the basic rate limit.
+    tax_band: INTERMEDIATE
+    meets_marriage_allowance_income_conditions: true
+
+- name: Scottish 2026 dividends one pound above the basic rate limit are higher
+  period: 2026
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 43_662
+        dividend_income: 6_609
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+  output:
+    tax_band: HIGHER
+    meets_marriage_allowance_income_conditions: false
+
+- name: Scottish 2026 allowance beyond pay goes to dividends, which are basic
+  period: 2026
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 5_000
+        dividend_income: 30_000
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+  output:
+    # 22,430 of dividends remain after the allowance, below 37,700, and no
+    # income is charged at the Scottish rates.
+    tax_band: BASIC
+    meets_marriage_allowance_income_conditions: true
