@@ -281,10 +281,11 @@ def _guard(summary) -> str:
         "every rule. The check measures a head that breaks a rule twice more: "
         "once holding every other head at its baseline value, and once holding "
         "every other head at its value after the first £1 while the component "
-        "rises again. It skips the second measurement when one of those values "
-        "is not finite. A head fails where either measurement still shows the "
-        f"response, or where the second did not run. {len(failed)} failed and "
-        f"the check skipped {len(skipped)}."
+        "rises again. The head fails where either measurement still shows the "
+        "response. If one of those values is not finite in any household, the "
+        "second measurement does not run, and the head fails wherever it first "
+        f"broke a rule. {len(failed)} failed and the check skipped "
+        f"{len(skipped)}."
     ]
     for c in failed:
         problems = c.get("problems") or [{"message": c.get("detail", "")}]
@@ -294,16 +295,24 @@ def _guard(summary) -> str:
     for c in skipped:
         lines.append(f"- `{c['variable']}` skipped: {c.get('detail', '')}")
     for c in tested:
+        failing = {p.get("head") for p in c.get("problems") or []}
         for head, heads in (c.get("heads_not_held") or {}).items():
             names = [f"`{v}`" for v in heads]
             if len(names) == 1:
                 listed, verb = names[0], "is"
             else:
                 listed, verb = f"{', '.join(names[:-1])} and {names[-1]}", "are"
+            # A head with no problem left read as a possible containment that
+            # only the second measurement could have confirmed.
+            outcome = (
+                f"it measured `{head}` again only with the other heads at their "
+                "baseline values"
+                if head in failing
+                else f"it could not confirm whether `{head}` contains `{c['variable']}`"
+            )
             lines.append(
                 f"- `{c['variable']}`: the check could not hold {listed}, which "
-                f"{verb} not finite once `{c['variable']}` rises, so it measured "
-                f"`{head}` again only with the other heads at their baseline values"
+                f"{verb} not finite once `{c['variable']}` rises, so {outcome}"
             )
     for c in tested:
         for m in c.get("mediated") or []:
@@ -323,7 +332,8 @@ def _guard(summary) -> str:
             lines.append(
                 f"- declared double count `{dc['variable']}`: `{dc['contained_in']}` "
                 f"is NOT FINITE when `{dc['variable']}` rises, so the check cannot "
-                f"show that it still contains `{dc['variable']}` ({dc['issue']})"
+                f"show that `{dc['contained_in']}` still contains `{dc['variable']}` "
+                f"({dc['issue']})"
             )
             continue
         state = "still contained" if dc["status"] == "pass" else "NO LONGER contained"

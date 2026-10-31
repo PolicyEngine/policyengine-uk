@@ -46,11 +46,12 @@ change household by household (see ``judge_total``):
   response, and its message then says so. The second measurement does not
   run when another head's response is not finite, since it would hold that
   head there; it then clears no problem and confirms no screen. The
-  component's result names those heads (``heads_not_held``). A problem
-  that the baseline hold alone would have cleared names them too: the
-  check could not show that its head responds only through other heads. A
-  declared double count whose container's response is not finite fails:
-  the check cannot show that the container still contains it.
+  component's result names those heads (``heads_not_held``), and so does
+  a problem when the baseline hold alone would have cleared any of its
+  households: the check could not show that its head responds only through
+  other heads there. A declared double count whose container's response is
+  not finite fails: the check cannot show that the container still
+  contains it.
 
 What it cannot see: a head that adds a component back while tapering it away
 pound for pound (``max(0, a - c) + c``) does not move at the margin, so it is
@@ -430,9 +431,9 @@ def judge_total(
 
     Returns per-unit responses (for reports) and a list of problems, each a
     mapping with ``total``, ``head``, ``kind``, ``households`` (count),
-    ``share`` (of the weight perturbed), ``message``, ``not_finite``, the
-    households' mask ``where`` and the mask ``nan`` of households whose
-    judged response is not finite.
+    ``share`` (of the weight perturbed), ``message``, ``not_finite``,
+    ``heads_not_held`` (empty here), the households' mask ``where`` and the
+    mask ``nan`` of households whose judged response is not finite.
     """
     added = float(np.sum(weights * expected))
     allowed = set(allowed_readers)
@@ -985,7 +986,8 @@ def counted_once(
                     # Not a stale declaration: the check cannot tell.
                     row["detail"] = (
                         f"{dc.contained_in} is not finite when {variable} rises, "
-                        f"so the check cannot show that it still contains {variable}"
+                        f"so the check cannot show that {dc.contained_in} still "
+                        f"contains {variable}"
                     )
                 double_count_results.append(row)
             if problems:
