@@ -1,0 +1,26 @@
+description: Trading allowance already deducted in the self-employment profit of a person whose trading_allowance_claim_status is claimant. Their receipts are that profit plus this amount, so the trading allowance relieves them by its excess over this amount, up to their profit. This describes the input data, not policy, so reforms to the trading allowance do not move it and it is not uprated. Change it only for input data measured under a different allowance, such as data for 2027-28 or later.
+# Survey data from 2017-18 to 2026-27 were measured under the £1,000
+# allowance, which the model keeps here past the April 2027 raise to £3,000
+# (gov.hmrc.income_tax.allowances.trading_allowance): a claimant flagged in
+# such data and projected to a later year still deducted £1,000. Before
+# 2017-18 there was no allowance to deduct.
+values:
+  2005-04-01:
+    value: 0
+    reference:
+      - title: Finance (No. 2) Act 2017 Sch. 3 para. 13 (allowance has effect from 2017-18)
+        href: https://www.legislation.gov.uk/ukpga/2017/32/schedule/3/paragraph/13
+  2017-04-06:
+    value: 1_000
+    reference:
+      - title: Income Tax (Trading and Other Income) Act 2005 s. 783AD
+        href: https://www.legislation.gov.uk/ukpga/2005/5/section/783AD
+      - title: Finance (No. 2) Act 2017 Sch. 3
+        href: https://www.legislation.gov.uk/ukpga/2017/32/schedule/3
+metadata:
+  label: Trading allowance deducted in input profits
+  period: year
+  unit: currency-GBP
+  reference:
+    - title: Income Tax (Trading and Other Income) Act 2005 s. 783AI (partial relief)
+      href: https://www.legislation.gov.uk/ukpga/2005/5/section/783AI

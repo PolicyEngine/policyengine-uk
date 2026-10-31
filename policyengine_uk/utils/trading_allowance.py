@@ -60,6 +60,26 @@ def trading_allowance_reliefs(person, period, parameters):
     income. A larger profit is taken to reflect the better of actual
     expenses and the allowance already, which leaves none of it.
 
+    trading_allowance_claim_status, when known, takes precedence over gross
+    receipts:
+    - A claimant's profit is their receipts less the allowance deducted in
+      the input data (gov.simulation.trading_allowance_in_input_profits),
+      so their receipts are their profit plus it, and the model reads that
+      amount as their actual expenses. The relief is then the allowance's
+      excess over it, less capital allowances (nil for a consistent
+      claimant, since partial relief replaces them), capped at profit. A
+      cut below it gives nil: their actual expenses are below the input
+      allowance but unknown, so their taxable profit would rise by between
+      nil and the input allowance less the new one, and the model takes
+      nil, keeping the deduction a relief beyond what the input profit
+      deducts. Their receipts take up the allowance before income not
+      otherwise charged, as other receipts do.
+    - A non-claimant's actual expenses and capital allowances exceed the
+      input allowance, and their receipts are unknown. Electing for partial
+      relief after a raise is a change in behaviour, so neither deduction
+      applies at any allowance. Full relief needs no election, but needs
+      relevant income within the allowance, which the data cannot show.
+
     The miscellaneous income is income_not_otherwise_charged, up to the
     person's miscellaneous_income when that is positive (it is part of it).
     The model holds no expenses against it. Not modelled: the exclusions in
@@ -67,21 +87,34 @@ def trading_allowance_reliefs(person, period, parameters):
     from the person's employer, firm or close company), and a loss created
     by capital allowances, which the model never sets against other income.
     """
-    allowance = parameters(period).gov.hmrc.income_tax.allowances.trading_allowance
+    p = parameters(period)
+    allowance = p.gov.hmrc.income_tax.allowances.trading_allowance
+    input_allowance = p.gov.simulation.trading_allowance_in_input_profits
+    claim_status = person("trading_allowance_claim_status", period)
+    claimant = claim_status == claim_status.possible_values.CLAIMANT
+    non_claimant = claim_status == claim_status.possible_values.NON_CLAIMANT
     profit = person("self_employment_income", period)
-    receipts = person("self_employment_gross_receipts", period)
     capital_allowances = person("capital_allowances", period)
-    # Receipts below profit (including the default zero) mean unknown.
-    receipts_known = (receipts > 0) & (receipts >= profit)
+    # A claimant's receipts are their profit plus the allowance it deducts.
+    receipts = where(
+        claimant,
+        max_(profit, 0) + input_allowance,
+        person("self_employment_gross_receipts", period),
+    )
+    # Otherwise receipts below profit (including the default zero) mean
+    # unknown.
+    receipts_known = claimant | ((receipts > 0) & (receipts >= profit))
     expenses = max_(receipts - profit, 0)
     # Full relief (receipts within the allowance, s. 783AE-783AF) makes
     # the profit nil; partial relief (s. 783AI) replaces expenses and
     # capital allowances with the allowance. Both come to the allowance's
-    # excess over actual deductions, capped at profit.
+    # excess over actual deductions, capped at profit. For a claimant the
+    # input allowance stands in for their expenses.
     relief_with_receipts = min_(profit, allowance - expenses) - capital_allowances
     relief_without_receipts = where(profit <= allowance, profit - capital_allowances, 0)
     trade_relief = where(receipts_known, relief_with_receipts, relief_without_receipts)
-    trade_relief = max_(trade_relief, 0)
+    # A non-claimant deducts actual expenses above the input allowance.
+    trade_relief = where(non_claimant, 0, max_(trade_relief, 0))
 
     # The trade receipts that use the allowance first. Unknown receipts are
     # the profit within the allowance, and otherwise use all of it.
@@ -94,8 +127,11 @@ def trading_allowance_reliefs(person, period, parameters):
         max_(person("income_not_otherwise_charged", period), 0),
         max_(person("miscellaneous_income", period), 0),
     )
-    miscellaneous_relief = min_(
-        miscellaneous_income, max_(allowance - trade_receipts, 0)
+    # A non-claimant takes ordinary treatment of all their relevant income.
+    miscellaneous_relief = where(
+        non_claimant,
+        0,
+        min_(miscellaneous_income, max_(allowance - trade_receipts, 0)),
     )
 
     # Full relief makes every relevant trade's current profit AND loss
