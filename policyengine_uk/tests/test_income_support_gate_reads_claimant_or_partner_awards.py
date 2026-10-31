@@ -62,6 +62,9 @@ def reference_report_awards(benunit, period, award):
         "pension_credit_reported",
         "esa_income_reported",
         "jsa_income_reported",
+        # The ESA reference reads the model's pensionable age (WRA 2007
+        # s.1(3)(c)).
+        "is_SP_age",
     ]
     arrays = {name: person(name, period) for name in names}
     roles = person("is_claimant_or_partner", period)
@@ -76,6 +79,23 @@ def reference_report_awards(benunit, period, award):
     is_esa = award == "esa_income"
     rules = parameters.gov.dwp.ESA.income if is_esa else parameters.gov.dwp.JSA.income
     screen = reference.esa_screen if is_esa else reference.jsa_screen
+    # Sch 1 para 6(1)(c) and (d), through the model's proxy for the couple
+    # being on State Pension Credit. It never bars an outside member's claim.
+    on_pension_credit = benunit("meets_pension_credit_age_conditions", period) & (
+        benunit("would_claim_pc", period)
+    )
+
+    def passes(members, unit, couple):
+        if not is_esa:
+            return screen(members, [], capitals[unit], parameters)
+        return screen(
+            members,
+            [],
+            capitals[unit],
+            parameters,
+            on_pension_credit=couple and on_pension_credit[unit],
+        )
+
     full, scoped = [], []
     for unit in range(benunit.count):
         ids = np.flatnonzero(benunit.members_entity_id == unit)
@@ -92,13 +112,13 @@ def reference_report_awards(benunit, period, award):
         active = is_esa or parameters.gov.dwp.JSA.income.active
         couple_amount = (
             max(0, sum(member[f"{award}_reported"] for member in couple) - tariff)
-            if active and screen(couple, [], capital, parameters)
+            if active and passes(couple, unit, couple=True)
             else 0
         )
         outside_amount = sum(
             max(0, member[f"{award}_reported"] - tariff)
             for member in others
-            if active and screen([member], [], capital, parameters)
+            if active and passes([member], unit, couple=False)
         )
         full.append(couple_amount + outside_amount)
         scoped.append(couple_amount)

@@ -3,8 +3,8 @@ from policyengine_uk.model_api import *
 
 def income_related_esa_award(benunit, period, reported_award):
     """Income-related ESA paid on a reported award: the award less tariff
-    income from capital, or nothing if the benefit unit fails the screen in
-    esa_income_eligible."""
+    income from capital, or nothing if the benefit unit fails the age, Pension
+    Credit, work and capital screen in esa_income_eligible."""
     tariff_income = benunit("esa_income_tariff_income", period)
     eligible = benunit("esa_income_eligible", period)
     return where(eligible, max_(0, reported_award - tariff_income), 0)
@@ -14,7 +14,9 @@ def income_related_esa_award_on_reports(benunit, period, reported, members=None)
     """Screen open person reports, retaining each original claim's ownership.
 
     The claimant and partner share one claim. Other reporters have separate
-    claims, each using the existing own-work and shared-capital/tariff proxy.
+    claims, each using the existing own-work and shared-capital/tariff proxy,
+    and barred once the reporter reaches pensionable age (Welfare Reform Act
+    2007 s.1(3)(c)).
     Selecting members changes only reports, never the original couple or
     the work/capital screen. This helper must not read payable-person status,
     which itself depends on the aggregate award.
@@ -28,9 +30,10 @@ def income_related_esa_award_on_reports(benunit, period, reported, members=None)
         benunit, period, benunit.sum(reported * couple)
     )
     works = person("esa_income_claimant_remunerative_work", period)
+    pensionable_age = person("is_SP_age", period)
     capital = benunit("esa_income_assessable_capital", period)
     limit = rules.income.capital.limit
-    own_claim = ~couple & ~works & benunit.project(capital <= limit)
+    own_claim = ~couple & ~works & ~pensionable_age & benunit.project(capital <= limit)
     tariff = benunit.project(benunit("esa_income_tariff_income", period))
     own_awards = where(own_claim, max_(0, reported - tariff), 0)
     return couple_award + benunit.sum(own_awards)
@@ -41,8 +44,9 @@ class esa_income(Variable):
     entity = BenUnit
     label = "ESA (income-based)"
     documentation = (
-        "Reported income-related ESA screened through bounded capital and "
-        "remunerative work tests (esa_income_eligible). Reports whose award "
+        "Reported income-related ESA screened through bounded pensionable "
+        "age, Pension Credit, capital and remunerative work tests "
+        "(esa_income_eligible). Reports whose award "
         "has ended are left out (esa_income_report_closed): the owner's "
         "legacy benefits have closed, or the owner is the claimant or "
         "partner of a family that claims Universal Credit. "

@@ -15,7 +15,8 @@ def is_payee_of_couple_award(person, period, reported, can_claim=None, couple=No
 
     can_claim, if given, limits the payee to the members of the couple who
     can be the claimant (for Pension Credit, those who have attained the
-    qualifying age). Where neither can, both are considered, so a positive
+    qualifying age; for income-related ESA, those who have not reached
+    pensionable age). Where neither can, both are considered, so a positive
     award entered for the couple is still paid to one of them.
 
     couple, if given (a person-level mask), replaces the claimant and
@@ -39,15 +40,17 @@ def is_payee_of_couple_award(person, period, reported, can_claim=None, couple=No
     return where(person.benunit.any(reports), reports, claimant)
 
 
-def own_report_is_paid(person, period, award, works, capital_limit):
+def own_report_is_paid(person, period, award, barred, capital_limit):
     """Whether income-related ESA or income-based JSA (award: "esa_income" or
     "jsa_income") is paid on this person's own report, for a member who is
     neither the claimant nor the partner and so claims in their own right.
 
-    Their claim is screened on them alone. They must not be engaged in
-    remunerative work as its claimant (works), and the award on their report
-    alone must be positive: the report exceeds the tariff income from the
-    benefit unit's capital, within the capital limit (capital_limit). Their
+    Their claim is screened on them alone. No condition of their own may bar
+    it (barred): they must not be engaged in remunerative work as its
+    claimant, and, for income-related ESA, must not have reached pensionable
+    age (Welfare Reform Act 2007 s.1(3)(c)). The award on their report alone
+    must be positive: the report exceeds the tariff income from the benefit
+    unit's capital, within the capital limit (capital_limit). Their
     own capital is not observed, so the benefit unit's stands in for it.
     The benefit unit's screen (esa_income_eligible or jsa_income_eligible)
     cannot stand in for theirs, because when the claimant or partner reports
@@ -63,7 +66,7 @@ def own_report_is_paid(person, period, award, works, capital_limit):
     """
     benunit = person.benunit
     own_award = (
-        ~works
+        ~barred
         & (benunit(f"{award}_assessable_capital", period) <= capital_limit)
         & (
             person(f"{award}_reported", period)

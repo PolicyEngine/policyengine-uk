@@ -25,6 +25,23 @@ reported awards.
   against pay (reg 98(11)).
 - ESA partner (para 6(1)(f), reg 42(1)): 24 hours or more, unless a carer
   (reg 43(2)(c)).
+- ESA age (WRA 2007 s.1(3)(c)): no claimant may have reached pensionable age,
+  their own State Pension age (s.1(6); Pensions Act 1995 Sch 4 para 1). A
+  caller that reads the model's pensionable age passes it as is_SP_age;
+  otherwise ages avoid 65 to 69. In the years tested (2025 and 2026) anyone
+  aged 64 or under was born after 5 October 1960 and reaches it at 66 and
+  some months or at 67 (rules 8 and 9), and anyone aged 70 or over was born
+  before 6 April 1960 and reached it at 66 or earlier.
+- ESA and State Pension Credit (para 6(1)(c) and (d)): neither the claimant
+  nor the other member of the couple may be entitled to it. The model reads
+  this as the couple meeting the Pension Credit age conditions and claiming
+  it; a caller passes the model's reading (on_pension_credit). Otherwise no
+  member reports Pension Credit or Housing Benefit, so no mixed-age couple
+  keeps the SI 2019/37 art 4 saving, the exclusion of mixed-age couples is in
+  force (SPCA 2002 s.4(1A)) and every couple would claim, and a couple is on
+  it when every member has reached the qualifying age, which from 2019-20 is
+  pensionable age for everyone (SPCA 2002 s.1(6)). It bars only the couple's
+  claim, not that of a member claiming in their own right.
 - JSA claimant (s.1(2)(e), reg 51(1)(a)): 16 hours or more, with no
   exception for carers doing unrelated paid work. The other member of the
   couple: 24 hours or more (s.3(1)(e), reg 51(1)(b)). In a joint-claim
@@ -153,6 +170,26 @@ def esa_claimant_in_remunerative_work(adult, parameters):
     return not (within_lower_limit or permitted_work)
 
 
+def reached_pensionable_age(adult):
+    """WRA 2007 s.1(3)(c): whether the adult has reached pensionable age."""
+    if "is_SP_age" in adult:
+        return bool(adult["is_SP_age"])
+    assert not 65 <= adult["age"] < 70, adult
+    return adult["age"] >= 70
+
+
+def couple_on_pension_credit(couple):
+    """Para 6(1)(c) and (d), for a couple with no Pension Credit or Housing
+    Benefit reports in 2025 or 2026: every member has reached the qualifying
+    age, so the couple meets the age conditions and would claim."""
+    assert not any(
+        adult.get("pension_credit_reported", 0)
+        or adult.get("housing_benefit_reported", 0)
+        for adult in couple
+    ), couple
+    return len(couple) > 0 and all(reached_pensionable_age(a) for a in couple)
+
+
 def legacy_benefits_closed(couple, others, parameters):
     """Annual closure proxy for the claimant's and partner's own award.
 
@@ -202,11 +239,24 @@ def candidates(couple, others, reported, parameters):
     ]
 
 
-def esa_screen(couple, others, capital, parameters):
+def esa_screen(couple, others, capital, parameters, on_pension_credit=None):
     """esa_income_eligible for a claimant and partner (couple) and other
-    members of the benefit unit outside the family (others)."""
+    members of the benefit unit outside the family (others). on_pension_credit
+    is whether the couple is taken to be on State Pension Credit, if the
+    caller reads it from the model."""
     ESA = parameters.gov.dwp.ESA.income
     members = couple + others
+
+    def barred(i):
+        # WRA 2007 s.1(3)(c), for every claimant.
+        if reached_pensionable_age(members[i]):
+            return True
+        # Sch 1 para 6(1)(c) and (d), for the couple's claim only.
+        if i >= len(couple):
+            return False
+        if on_pension_credit is not None:
+            return bool(on_pension_credit)
+        return couple_on_pension_credit(couple)
 
     def other_member_works(i):
         if i >= len(couple):
@@ -219,7 +269,8 @@ def esa_screen(couple, others, capital, parameters):
         )
 
     passes = any(
-        not esa_claimant_in_remunerative_work(members[i], parameters)
+        not barred(i)
+        and not esa_claimant_in_remunerative_work(members[i], parameters)
         and not other_member_works(i)
         for i in candidates(couple, others, "esa_income_reported", parameters)
     )
