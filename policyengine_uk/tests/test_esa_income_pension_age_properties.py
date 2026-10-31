@@ -38,7 +38,7 @@ builds many families in one simulation, in separate benefit units.
 """
 
 import numpy as np
-from hypothesis import HealthCheck, event, given, settings
+from hypothesis import HealthCheck, event, example, given, settings
 from hypothesis import strategies as st
 
 from legacy_award_work_reference import esa_screen
@@ -111,6 +111,32 @@ def label(units, year):
             event("member outside the couple")
 
 
+NO_REPORT = {"months_since_last_birthday": 0, "esa_income_reported": 0}
+# A member outside the couple who reports income-related ESA beside a
+# single claimant aged 70 on Pension Credit, and one aged 70 themselves.
+OUTSIDE_REPORTERS = [
+    (
+        [{"age": 70, "gender": "FEMALE", "hours_worked": 0, **NO_REPORT}],
+        [
+            {
+                "age": age,
+                "months_since_last_birthday": 0,
+                "gender": "MALE",
+                "esa_income_reported": 3_000,
+                "hours_worked": 0,
+                "current_education": "NOT_IN_EDUCATION",
+            }
+        ],
+        {
+            "esa_income_assessable_capital": 0,
+            "has_mixed_age_couple_pension_credit_saving": False,
+            "would_claim_pc": True,
+        },
+    )
+    for age in [40, 70]
+]
+
+
 SETTINGS = settings(
     max_examples=12,
     deadline=None,
@@ -144,6 +170,7 @@ def test_no_family_gets_pension_credit_and_income_related_esa(units, year):
 
 @SETTINGS
 @given(FAMILIES, st.sampled_from(YEARS))
+@example(OUTSIDE_REPORTERS, 2026)
 def test_nobody_over_pensionable_age_is_on_income_related_esa(units, year):
     label(units, year)
     sim = Simulation(situation=situation(units, year))
@@ -167,6 +194,8 @@ def test_nobody_over_pensionable_age_is_on_income_related_esa(units, year):
 
 @SETTINGS
 @given(FAMILIES, st.sampled_from(YEARS))
+@example(OUTSIDE_REPORTERS[:1], 2026)
+@example(OUTSIDE_REPORTERS[1:], 2026)
 def test_screen_matches_a_family_by_family_reading(units, year):
     label(units, year)
     sim = Simulation(situation=situation(units, year))
@@ -197,6 +226,7 @@ def test_screen_matches_a_family_by_family_reading(units, year):
 
 @SETTINGS
 @given(FAMILIES, st.sampled_from(YEARS))
+@example(OUTSIDE_REPORTERS, 2026)
 def test_claiming_pension_credit_never_raises_income_related_esa(units, year):
     label(units, year)
     n = len(units)
