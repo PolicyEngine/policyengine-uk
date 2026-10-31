@@ -142,3 +142,330 @@
       2023: ENGLAND
   output:
     ebr_council_tax_rebate: 0
+
+# Scottish councils paid the Cost of Living Award and Welsh councils the Cost
+# of Living Support Scheme, £150 each, to bands A to D and to Council Tax
+# Reduction recipients in any band (Local Government Finance Circular 2/2022,
+# paragraphs 6, 10 and 12; Welsh guide, conditions A and B). English billing
+# authorities paid by band alone (billing authority guidance, paragraph 11).
+- name: The model pays Scottish bands A to D, and any band with Council Tax Reduction.
+  period: 2022
+  input:
+    country:
+      - SCOTLAND
+      - SCOTLAND
+      - SCOTLAND
+      - SCOTLAND
+      - SCOTLAND
+      - SCOTLAND
+    council_tax_band:
+      - A
+      - D
+      - D
+      - E
+      - E
+      - H
+    council_tax_reduction:
+      - 0
+      - 0
+      - 500
+      - 0
+      - 500
+      - 500
+  output:
+    ebr_council_tax_rebate:
+      - 150
+      - 150
+      - 150
+      - 0
+      - 150
+      - 150
+
+- name: The model pays Welsh bands A to D, and any band with Council Tax Reduction.
+  period: 2022
+  input:
+    country:
+      - WALES
+      - WALES
+      - WALES
+      - WALES
+      - WALES
+      - WALES
+    council_tax_band:
+      - A
+      - D
+      - D
+      - E
+      - E
+      - I
+    council_tax_reduction:
+      - 0
+      - 0
+      - 500
+      - 0
+      - 500
+      - 500
+  output:
+    ebr_council_tax_rebate:
+      - 150
+      - 150
+      - 150
+      - 0
+      - 150
+      - 150
+
+- name: The model pays English bands A to D whatever the Council Tax Reduction, and no other band.
+  period: 2022
+  input:
+    country:
+      - ENGLAND
+      - ENGLAND
+      - ENGLAND
+      - ENGLAND
+      - ENGLAND
+    council_tax_band:
+      - A
+      - D
+      - E
+      - E
+      - H
+    council_tax_reduction:
+      - 500
+      - 500
+      - 0
+      - 500
+      - 500
+  output:
+    ebr_council_tax_rebate:
+      - 150
+      - 150
+      - 0
+      - 0
+      - 0
+
+- name: The model pays nothing in Northern Ireland, with or without Council Tax Reduction.
+  period: 2022
+  input:
+    country:
+      - NORTHERN_IRELAND
+      - NORTHERN_IRELAND
+      - NORTHERN_IRELAND
+      - NORTHERN_IRELAND
+    council_tax_band:
+      - A
+      - D
+      - E
+      - I
+    council_tax_reduction:
+      - 500
+      - 500
+      - 500
+      - 0
+  output:
+    ebr_council_tax_rebate:
+      - 0
+      - 0
+      - 0
+      - 0
+
+# Scottish councils paid "a person in receipt of any amount of CTR" (paragraph
+# 10).
+- name: Any amount of Council Tax Reduction qualifies out of band.
+  period: 2022
+  input:
+    country:
+      - SCOTLAND
+      - WALES
+    council_tax_band:
+      - F
+      - F
+    council_tax_reduction:
+      - 1
+      - 1
+  output:
+    ebr_council_tax_rebate:
+      - 150
+      - 150
+
+- name: The model pays Scotland and Wales out of band only in 2022.
+  period: 2023
+  input:
+    country:
+      - SCOTLAND
+      - WALES
+    council_tax_band:
+      - F
+      - F
+    council_tax_reduction:
+      - 500
+      - 500
+  output:
+    ebr_council_tax_rebate:
+      - 0
+      - 0
+
+- name: The model pays Scotland and Wales nothing out of band in 2021.
+  period: 2021
+  input:
+    country:
+      - SCOTLAND
+      - WALES
+    council_tax_band:
+      - F
+      - F
+    council_tax_reduction:
+      - 500
+      - 500
+  output:
+    ebr_council_tax_rebate:
+      - 0
+      - 0
+
+# The model reads the reduction in the payment's year, and the household's
+# nation in that year.
+- name: Council Tax Reduction in another year doesn't qualify a household out of band.
+  period: 2022
+  input:
+    country: SCOTLAND
+    council_tax_band: F
+    council_tax_reduction:
+      2021: 500
+      2022: 0
+      2023: 500
+  output:
+    ebr_council_tax_rebate: 0
+
+- name: A Scottish household with Council Tax Reduction in 2022 gets the award, though it moves to England in 2023.
+  period: 2022
+  input:
+    council_tax_band: F
+    council_tax_reduction: 500
+    country:
+      2022: SCOTLAND
+      2023: ENGLAND
+  output:
+    ebr_council_tax_rebate: 150
+
+- name: An English household with Council Tax Reduction in 2022 gets nothing out of band, though it moves to Wales in 2023.
+  period: 2022
+  input:
+    council_tax_band: F
+    council_tax_reduction: 500
+    country:
+      2022: ENGLAND
+      2023: WALES
+  output:
+    ebr_council_tax_rebate: 0
+
+# The model works out Council Tax Reduction itself in the cases below. Each
+# household has one adult and a band F bill. The adult has no income and
+# claims the reduction unless a case says otherwise. The English case uses a
+# pensioner, because the model simulates England's pension-age scheme for
+# every council.
+- name: A Scottish band F household's simulated Council Tax Reduction qualifies it.
+  period: 2022
+  input:
+    people:
+      adult:
+        age: 40
+    benunits:
+      unit:
+        members: [adult]
+        would_claim_uc: false
+        would_claim_council_tax_reduction: true
+    households:
+      household:
+        members: [adult]
+        country: SCOTLAND
+        council_tax_band: F
+        council_tax: 2400
+  output:
+    council_tax_reduction: 2400
+    ebr_council_tax_rebate: 150
+    energy_bills_rebate: 349
+
+- name: A Welsh band F household's simulated Council Tax Reduction qualifies it.
+  period: 2022
+  input:
+    people:
+      adult:
+        age: 40
+    benunits:
+      unit:
+        members: [adult]
+        would_claim_uc: false
+        would_claim_council_tax_reduction: true
+    households:
+      household:
+        members: [adult]
+        country: WALES
+        council_tax_band: F
+        council_tax: 2400
+  output:
+    council_tax_reduction: 2400
+    ebr_council_tax_rebate: 150
+    energy_bills_rebate: 349
+
+- name: A Scottish band F household that doesn't claim Council Tax Reduction gets nothing.
+  period: 2022
+  input:
+    people:
+      adult:
+        age: 40
+    benunits:
+      unit:
+        members: [adult]
+        would_claim_uc: false
+        would_claim_council_tax_reduction: false
+    households:
+      household:
+        members: [adult]
+        country: SCOTLAND
+        council_tax_band: F
+        council_tax: 2400
+  output:
+    council_tax_reduction: 0
+    ebr_council_tax_rebate: 0
+
+- name: A Scottish band F household with earnings that end its Council Tax Reduction gets nothing.
+  period: 2022
+  input:
+    people:
+      adult:
+        age: 40
+        employment_income: 100_000
+    benunits:
+      unit:
+        members: [adult]
+        would_claim_uc: false
+        would_claim_council_tax_reduction: true
+    households:
+      household:
+        members: [adult]
+        country: SCOTLAND
+        council_tax_band: F
+        council_tax: 2400
+  output:
+    council_tax_reduction: 0
+    ebr_council_tax_rebate: 0
+
+- name: An English band F household's simulated Council Tax Reduction doesn't qualify it.
+  period: 2022
+  input:
+    people:
+      adult:
+        age: 70
+    benunits:
+      unit:
+        members: [adult]
+        would_claim_uc: false
+        would_claim_council_tax_reduction: true
+    households:
+      household:
+        members: [adult]
+        country: ENGLAND
+        council_tax_band: F
+        council_tax: 2400
+  output:
+    council_tax_reduction: 2400
+    ebr_council_tax_rebate: 0
