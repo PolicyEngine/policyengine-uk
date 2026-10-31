@@ -71,4 +71,5 @@ def filter_dataset(
         fiscal_year=year,
         energy_price_basis=new_dataset.energy_price_basis,
         isa_income_contract=new_dataset.isa_income_contract,
+        savings_income_projection=new_dataset.savings_income_projection,
     )

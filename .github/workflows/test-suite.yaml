@@ -84,9 +84,13 @@ jobs:
     # (two more were cancelled by newer pushes). In merge-queue run
     # 40541059060 the cancelled job failed Result once the shards had
     # finished, which took that pull request out of the queue. 45 minutes
-    # leaves room for a slow runner and still stops a hung job; Result
-    # waits about an hour for the shards anyway.
-    timeout-minutes: 45
+    # was then not enough either: on 29 October jobs were cancelled at it
+    # after every test had passed, with the process still alive 11 and 18
+    # minutes after pytest's summary (runs 40895005971 and 40917254004).
+    # The runner most likely runs short of memory, because every case's
+    # simulation is kept to the end (#2741). 75 minutes matches the Python
+    # shards, which Result waits for anyway, until the cases are released.
+    timeout-minutes: 75
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6

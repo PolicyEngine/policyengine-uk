@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.income_tax_reductions import earlier_tax_reductions
 
 
 class property_finance_cost_relief(Variable):
@@ -11,8 +12,9 @@ class property_finance_cost_relief(Variable):
         "rate before 2027-28) times the finance costs relieved this year. "
         "The rate is the same for Scottish taxpayers, whose property income "
         "is taxed at Scottish rates. It is deducted at Step 6 of the income "
-        "tax calculation after the person's other tax reductions, and only "
-        "so far as there is tax left to deduct it from."
+        "tax calculation after the reductions listed before it in "
+        "step_6_tax_reductions, and only so far as there is tax left to "
+        "deduct it from."
     )
     definition_period = YEAR
     unit = GBP
@@ -41,17 +43,12 @@ class property_finance_cost_relief(Variable):
             "property_finance_costs_relieved", period
         )
         # The order of Step 6 reductions does not change their total, so the
-        # person's other reductions come first; this one is limited to the
-        # Step 5 tax they leave. Step 7 charges (ITA 2007 s. 30), such as the
-        # High Income Child Benefit Charge, are not reduced.
-        other_reductions = [
-            variable
-            for variable in income_tax.income_tax_subtractions
-            if variable != "property_finance_cost_relief"
-        ]
+        # reductions listed before this one come first, and the Step 5 tax they
+        # leave caps it. No reduction comes off Step 7 charges (ITA 2007
+        # s. 30), such as the High Income Child Benefit Charge.
+        earlier = earlier_tax_reductions(income_tax, "property_finance_cost_relief")
         tax_left = max_(
             0,
-            person("income_tax_pre_charges", period)
-            - add(person, period, other_reductions),
+            person("income_tax_pre_charges", period) - add(person, period, earlier),
         )
         return min_(reduction, tax_left)

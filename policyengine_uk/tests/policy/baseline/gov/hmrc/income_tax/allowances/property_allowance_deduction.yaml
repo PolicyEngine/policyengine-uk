@@ -13,8 +13,8 @@
     property_allowance_deduction: 0
     taxable_property_income: 25_000
     adjusted_net_income: 25_000
-    # (25,000 - 12,570) * 22% (property basic rate from 2027-28)
-    income_tax: 2_734.60
+    # (25,000 - 12,570) * 24% (property basic rate from 2027-28)
+    income_tax: 2_983.20
 
 - name: Profit within the allowance, receipts unknown, is fully relieved
   period: 2027

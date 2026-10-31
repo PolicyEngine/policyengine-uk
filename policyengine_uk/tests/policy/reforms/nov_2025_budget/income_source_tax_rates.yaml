@@ -16,6 +16,10 @@
 # - Basic rate: 20% -> 22% (+2pp)
 # - Higher rate: 40% -> 42% (+2pp)
 # - Additional rate: 45% -> 47% (+2pp)
+#
+# Budget 2026 (paragraphs 6.246 and 6.247) adds a further 2pp to the savings
+# and property rates from the same date, so current law from 2027-28 is
+# 24%, 44% and 49%; the post-reform cases below use those rates.
 
 # =============================================================================
 # DIVIDEND TAX RATE TESTS
@@ -103,7 +107,7 @@
     # Additional rate taxpayers get £0 savings allowance, so £2000 at 45%
     savings_income_tax: 2000 * 0.45
 
-# Test savings rates AFTER April 2027 (should be +2pp: 22/42/47)
+# Test savings rates AFTER April 2027 (+4pp from Budgets 2025 and 2026: 24/44/49)
 - name: Savings tax at higher rate - 2028 (post-reform)
   period: 2028
   absolute_error_margin: 1
@@ -111,8 +115,8 @@
     employment_income: 60000
     savings_interest_income: 2000
   output:
-    # £1500 at NEW rate 42%
-    savings_income_tax: 1500 * 0.42
+    # £1500 at NEW rate 44%
+    savings_income_tax: 1500 * 0.44
 
 - name: Savings tax at additional rate - 2028 (post-reform)
   period: 2028
@@ -121,8 +125,8 @@
     employment_income: 200000
     savings_interest_income: 2000
   output:
-    # £2000 at NEW rate 47%
-    savings_income_tax: 2000 * 0.47
+    # £2000 at NEW rate 49%
+    savings_income_tax: 2000 * 0.49
 
 # =============================================================================
 # PROPERTY INCOME TAX RATE TESTS
@@ -154,7 +158,7 @@
     # has already used up basic rate band
     property_income_tax: 1000 * 0.40
 
-# Test property rates AFTER April 2027 (should be +2pp: 22/42/47)
+# Test property rates AFTER April 2027 (+4pp from Budgets 2025 and 2026: 24/44/49)
 - name: Property tax at basic rate - 2028 (post-reform)
   period: 2028
   absolute_error_margin: 1
@@ -163,8 +167,8 @@
     property_rental_income: 2000
     property_income: 2000
   output:
-    # £1000 at NEW rate 22%
-    property_income_tax: 1000 * 0.22
+    # £1000 at NEW rate 24%
+    property_income_tax: 1000 * 0.24
 
 - name: Property tax at higher rate - 2028 (post-reform)
   period: 2028
@@ -174,8 +178,8 @@
     property_rental_income: 2000
     property_income: 2000
   output:
-    # £1000 at NEW rate 42%
-    property_income_tax: 1000 * 0.42
+    # £1000 at NEW rate 44%
+    property_income_tax: 1000 * 0.44
 
 - name: Property tax at additional rate - 2028 (post-reform)
   period: 2028
@@ -185,8 +189,8 @@
     property_rental_income: 2000
     property_income: 2000
   output:
-    # £1000 at NEW rate 47%
-    property_income_tax: 1000 * 0.47
+    # £1000 at NEW rate 49%
+    property_income_tax: 1000 * 0.49
 
 # =============================================================================
 # INTEGRATION TESTS - verify income_tax includes source-specific taxes
@@ -202,11 +206,11 @@
     property_rental_income: 2000
     property_income: 2000
   output:
-    # Property allowance is £1000, so £1000 taxable at 22%
-    property_income_tax: 220
+    # Property allowance is £1000, so £1000 taxable at 24%
+    property_income_tax: 240
     # Total income_tax should include property_income_tax
-    # Employment: £0 (covered by PA), Property: £220
-    income_tax: 220
+    # Employment: £0 (covered by PA), Property: £240
+    income_tax: 240
 
 - name: Property tax flows into income_tax - higher rate - 2028
   period: 2028
@@ -216,16 +220,16 @@
     property_rental_income: 2000
     property_income: 2000
   output:
-    # £1000 at 42%
-    property_income_tax: 420
+    # £1000 at 44%
+    property_income_tax: 440
     # income_tax = earned_income_tax + savings_income_tax + dividend_income_tax + property_income_tax
     # Earned income tax on £60000: PA=£12570, taxable=£47430
     # Basic rate (20%): £37700 at 20% = £7540
     # Higher rate (40%): £9730 at 40% = £3892
     # Total earned: £11432
-    # Property: £420
-    # Total: £11852
-    income_tax: 11852
+    # Property: £440
+    # Total: £11872
+    income_tax: 11872
 
 - name: Savings tax flows into income_tax - higher rate - 2028
   period: 2028
@@ -234,9 +238,9 @@
     employment_income: 60000
     savings_interest_income: 2000
   output:
-    # £1500 at 42% (after £500 savings allowance)
-    savings_income_tax: 630
+    # £1500 at 44% (after £500 savings allowance)
+    savings_income_tax: 660
     # Earned: £11432 (same as above)
-    # Savings: £630
-    # Total: £12062
-    income_tax: 12062
+    # Savings: £660
+    # Total: £12092
+    income_tax: 12092

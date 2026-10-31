@@ -1,0 +1,64 @@
+description: Amount to which the company car's appropriate percentage is applied to give the cash equivalent of fuel provided for its private use (the car fuel benefit charge multiplier).
+# The Treasury sets this by order under ITEPA 2003 s. 170(5); no statute
+# indexes it. The 2027-28 figure is announced: Budget 2026 OOTLAR paragraph
+# 2.6 gives £30,200 (September CPI uprating), and the Treasury order is not
+# yet made. It is in the baseline although the Budget 2026 rise in the
+# appropriate percentages for 2030-31 is not: that rise is a policy decision
+# Budget 2026 scores (Table 6.1, row 86), while this is the annual CPI
+# uprating, which the Budget lists among its other announcements and does
+# not score, so a pre-Budget baseline has it too. From 2028-29 the values
+# are a CPI projection, as the government has uprated the figure by
+# September CPI each year; none is announced.
+values:
+  2020-04-06:
+    value: 24_500
+    metadata:
+      reference:
+        - title: The Van Benefit and Car and Van Fuel Benefit Order 2020 (SI 2020/199) art. 2
+          href: https://www.legislation.gov.uk/uksi/2020/199/article/2/made
+  2021-04-06:
+    value: 24_600
+    metadata:
+      reference:
+        - title: The Van Benefit and Car and Van Fuel Benefit Order 2021 (SI 2021/248) art. 2
+          href: https://www.legislation.gov.uk/uksi/2021/248/article/2/made
+  2022-04-06:
+    value: 25_300
+    metadata:
+      reference:
+        - title: The Van Benefit and Car and Van Fuel Benefit (No. 2) Order 2021 (SI 2021/1422) art. 2
+          href: https://www.legislation.gov.uk/uksi/2021/1422/article/2/made
+  2023-04-06:
+    value: 27_800
+    metadata:
+      reference:
+        - title: The Van Benefit and Car and Fuel Benefit Order 2022 (SI 2022/1288) art. 2 (tax year 2023-24 and subsequent tax years)
+          href: https://www.legislation.gov.uk/uksi/2022/1288/article/2/made
+  2025-04-06:
+    value: 28_200
+    metadata:
+      reference:
+        - title: The Van Benefit and Car and Van Fuel Benefit Order 2024 (SI 2024/1349) art. 2(2)
+          href: https://www.legislation.gov.uk/uksi/2024/1349/article/2/made
+  2026-04-06:
+    value: 29_200
+    metadata:
+      reference:
+        - title: The Van Benefit and Car and Van Fuel Benefit Order 2025 (SI 2025/1254) art. 2(2)
+          href: https://www.legislation.gov.uk/uksi/2025/1254/article/2/made
+  2027-04-06:
+    value: 30_200
+    metadata:
+      reference:
+        - title: Budget 2026, overview of tax legislation and rates, paragraph 2.6
+          href: https://www.gov.uk/government/publications/budget-2026-overview-of-tax-legislation-and-rates-ootlar/budget-2026-overview-of-tax-legislation-and-rates-ootlar
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Car fuel benefit charge multiplier
+  uprating: gov.economic_assumptions.indices.obr.consumer_price_index
+  reference:
+    - title: Income Tax (Earnings and Pensions) Act 2003 s. 150(1)
+      href: https://www.legislation.gov.uk/ukpga/2003/1/section/150
+    - title: Income Tax (Earnings and Pensions) Act 2003 s. 170(5)
+      href: https://www.legislation.gov.uk/ukpga/2003/1/section/170

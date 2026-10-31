@@ -1,0 +1,81 @@
+description: Appropriate percentage for a company car with a CO2 emissions figure of 1 to 50 g/km, by its electric range figure in miles (the distance it can be driven in electric mode without recharging), rounded up to a whole number.
+# Finance Act 2025 s. 5 replaces the electric range bands with one rate for
+# 1 to 50 g/km from 2028-29 (18%, then 19% from 2029-30 under s. 6), so
+# every bracket has the same amount from then. s. 5(10) and (11) omit the
+# electric range figure from s. 139 from 2028-29.
+# For 2020-21 and 2021-22 these are the rates for cars first registered
+# before 6 April 2020; registered_from_6_april_2020 holds the s. 139A rates.
+# The tax year 2030-31 keeps 2029-30's 19%. Budget 2026 announced 20%; the
+# company_car_tax_rise_2030 scenario applies it.
+metadata:
+  type: single_amount
+  threshold_unit: mile
+  amount_unit: /1
+  period: year
+  label: Company car appropriate percentage by electric range
+  reference:
+    - title: Income Tax (Earnings and Pensions) Act 2003 s. 139(1) and (2)(b)
+      href: https://www.legislation.gov.uk/ukpga/2003/1/section/139
+    - title: Finance (No. 2) Act 2017 s. 2(2) (tax years 2020-21 to 2024-25)
+      href: https://www.legislation.gov.uk/ukpga/2017/32/section/2/enacted
+    - title: Finance Act 2020 s. 8(4)(a) (electric range figure rounded up, from 2020-21)
+      href: https://www.legislation.gov.uk/ukpga/2020/14/section/8/enacted
+    - title: Finance Act 2023 s. 11 (tax years 2025-26, 2026-27 and 2027-28)
+      href: https://www.legislation.gov.uk/ukpga/2023/1/section/11/enacted
+    - title: Finance Act 2025 s. 5(2) (tax year 2028-29)
+      href: https://www.legislation.gov.uk/ukpga/2025/8/section/5/enacted
+    - title: Finance Act 2025 s. 6(2) (tax year 2029-30 and subsequent tax years)
+      href: https://www.legislation.gov.uk/ukpga/2025/8/section/6/enacted
+    - title: "HMRC 480 Appendix 2: appropriate percentages for 2020-21 to 2026-27"
+      href: https://www.gov.uk/guidance/company-car-benefit-the-appropriate-percentage-480-appendix-2
+brackets:
+  # Electric range figure of less than 30 miles.
+  - threshold:
+      2020-04-06: 0
+    amount:
+      2020-04-06: 0.14
+      2025-04-06: 0.15
+      2026-04-06: 0.16
+      2027-04-06: 0.17
+      2028-04-06: 0.18
+      2029-04-06: 0.19
+  # 30 to 39 miles.
+  - threshold:
+      2020-04-06: 30
+    amount:
+      2020-04-06: 0.12
+      2025-04-06: 0.13
+      2026-04-06: 0.14
+      2027-04-06: 0.15
+      2028-04-06: 0.18
+      2029-04-06: 0.19
+  # 40 to 69 miles.
+  - threshold:
+      2020-04-06: 40
+    amount:
+      2020-04-06: 0.08
+      2025-04-06: 0.09
+      2026-04-06: 0.10
+      2027-04-06: 0.11
+      2028-04-06: 0.18
+      2029-04-06: 0.19
+  # 70 to 129 miles.
+  - threshold:
+      2020-04-06: 70
+    amount:
+      2020-04-06: 0.05
+      2025-04-06: 0.06
+      2026-04-06: 0.07
+      2027-04-06: 0.08
+      2028-04-06: 0.18
+      2029-04-06: 0.19
+  # 130 miles or more.
+  - threshold:
+      2020-04-06: 130
+    amount:
+      2020-04-06: 0.02
+      2025-04-06: 0.03
+      2026-04-06: 0.04
+      2027-04-06: 0.05
+      2028-04-06: 0.18
+      2029-04-06: 0.19

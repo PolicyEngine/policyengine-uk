@@ -1,9 +1,9 @@
 # Energy variables use the declaration-aware projector in economic_assumptions.py,
 # rather than an unconditional mapping here. Unlabelled dataset inputs remain
 # flat: legacy builds can already carry FY2026-27 prices despite a 2024 data year.
-# An explicit energy_price_basis opts into the variables' existing annual OBR-CPI
-# assumption from the declared price year. This does not supply an energy-specific
-# forecast or automatically label existing private Microcosm artifacts.
+# An explicit energy_price_basis opts into the household energy price indices
+# (gov.economic_assumptions.energy_prices) from the declared price year. This does
+# not automatically label existing private Microcosm artifacts.
 # liquid_fuel_consumption and solid_fuel_consumption (heating oil, LPG, coal
 # and wood) are not in that group: Ofgem's price cap does not cover them, so
 # they are uprated by CPI from the data year below, like other LCFS spending.
@@ -46,6 +46,11 @@ gov.economic_assumptions.yoy_growth.obr.consumer_price_index:
 - childcare_expenses
 - clothing_and_footwear_consumption
 - communication_consumption
+# Company car prices and the payments that go with them. CPI stands in for
+# a new-car price index, which the OBR does not forecast.
+- company_car_capital_contributions
+- company_car_list_price
+- company_car_private_use_payments
 - education_consumption
 - esa_contrib_reported
 - esa_income_reported
@@ -120,11 +125,12 @@ gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 - lump_sum_income
 - maintenance_income
 - miscellaneous_income
+# Part of miscellaneous_income, so it grows with it.
+- income_not_otherwise_charged
 - mortgage_capital_repayment
 - net_financial_wealth
-- non_residential_property_secured_debt
 - non_residential_property_value
-- other_investment_income
+- non_residential_property_secured_debt
 - other_residential_property_secured_debt
 # Non-residential purchase prices and land retain GDP-per-capita growth.
 - non_residential_property_purchased
@@ -139,8 +145,6 @@ gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 - property_income
 - property_rental_income
 - savings
-- savings_interest_income
-- non_cash_isa_cash_interest
 - spousal_maintenance_income
 - stocks_and_shares_isa
 - stocks_and_shares_isa_balance
@@ -156,6 +160,12 @@ gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 # financial input; its default no longer derives from that input.
 - uc_reported_capital
 - unit_and_investment_trusts
+# Savings income: the OBR's savings income forecast per person to 2025-26,
+# then GDP per head (growth_rate in economic_assumptions.py).
+gov.economic_assumptions.yoy_growth.obr.per_capita.savings_income:
+- non_cash_isa_cash_interest
+- other_investment_income
+- savings_interest_income
 gov.economic_assumptions.yoy_growth.obr.per_capita.mixed_income:
 - self_employment_income
 - self_employment_gross_receipts
