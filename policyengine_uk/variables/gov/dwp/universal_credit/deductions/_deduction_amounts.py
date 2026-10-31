@@ -3,6 +3,21 @@
 from policyengine_uk.model_api import *
 
 
+def assigned_latent_deduction_rate(benunit, period):
+    """The latent rate of a unit flagged as having deductions, else zero.
+
+    uc_latent_deduction_rate's own formula already returns zero without the
+    flag. This applies the same rule to a rate a dataset or situation
+    supplies, so a supplied rate cannot give deductions to a unit whose
+    uc_has_deduction is False (#2739).
+    """
+    return where(
+        benunit("uc_has_deduction", period),
+        benunit("uc_latent_deduction_rate", period),
+        0,
+    )
+
+
 def deduction_type_shares(benunit, period, parameters):
     """Split the legacy total by its existing marginal-mean approximation."""
     m = parameters(period).gov.simulation.uc_deductions.mean_monthly_amount_by_type
@@ -66,7 +81,7 @@ def estimated_advance_repayment_amount(benunit, period, parameters):
     """Convert the legacy advance share to same-year unreformed cash."""
     p = parameters(period).gov.simulation.uc_deductions
     advance_share, _, _ = deduction_type_shares(benunit, period, parameters)
-    latent = max_(benunit("uc_latent_deduction_rate", period), 0)
+    latent = max_(assigned_latent_deduction_rate(benunit, period), 0)
     return (
         min_(latent, p.calibration_cap)
         * advance_share
