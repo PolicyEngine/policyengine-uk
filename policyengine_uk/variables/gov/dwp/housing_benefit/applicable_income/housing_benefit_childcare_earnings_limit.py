@@ -4,7 +4,7 @@ from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing
 )
 from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_specified_or_temporary_accommodation_disregard import (
     hb_accommodation_segments,
-    hb_runs_no_formula,
+    hb_reads_no_other_variable,
 )
 
 
@@ -57,7 +57,7 @@ def hb_childcare_wtc_reserve(benunit, period, parameters, accommodation=None):
     disregard. By default the accommodation disregard has its annual
     segments; an accommodation segment passes its own amount."""
     name = "housing_benefit_wtc_disregard"
-    if hb_runs_no_formula(benunit, period, name):
+    if hb_reads_no_other_variable(benunit, period, name):
         return benunit(name, period)
     # Sch 4 para 17(3)(b) counts the childcare deduction, which this limit
     # caps, so the limit tests para 17 with the whole capped charge instead.
@@ -66,8 +66,10 @@ def hb_childcare_wtc_reserve(benunit, period, parameters, accommodation=None):
     # disregards, the whole charge and the additional amount, they cover any
     # smaller deduction; if not, either the deduction is the whole charge, or
     # this limit caps it and it takes at least all the earnings left, so para
-    # 17(1) fails whatever credits remain. A replacement formula for the WTC
-    # disregard does not reach this limit, since it could read the deduction.
+    # 17(1) fails whatever credits remain. A replacement for the WTC
+    # disregard that can read other variables (through a formula, an adds or
+    # subtracts aggregate, or a defined_for mask) does not reach this limit,
+    # since it could read the deduction.
     charge = hb_capped_childcare_charges(benunit, period, parameters)
     if accommodation is not None:
         return hb_wtc_disregard(benunit, period, parameters, accommodation, charge)
@@ -119,8 +121,10 @@ class housing_benefit_childcare_earnings_limit(Variable):
         "which gives the disregard the model's own deduction leads to, so it "
         "reads neither the deduction nor the housing_benefit_wtc_disregard "
         "formula. A WTC disregard that a dataset, set_input or a scenario "
-        "supplies, or that a reform neutralizes, applies instead; a "
-        "replacement formula for it does not reach this limit. Where a "
+        "supplies, or that a reform neutralizes or leaves as an input, "
+        "applies instead. A replacement that can read other variables, "
+        "through a formula, an adds or subtracts aggregate or a defined_for "
+        "mask, does not reach this limit. Where a "
         "dataset, set_input or a reform supplies or replaces the deduction, "
         "the limit still tests the whole charge, and can keep back WTC that "
         "paragraph 56 does not disregard with the deduction in force. The "

@@ -5,19 +5,37 @@ from policyengine_uk.utils.supplied_inputs import stored_as_input
 
 
 def hb_uses_annual_override(benunit, period, variable_name, default_formula):
-    """Keep annual inputs and replacement formulas out of recalculation."""
+    """Keep annual inputs, replacement formulas and computed aggregates out of
+    recalculation."""
     variable = benunit.simulation.tax_benefit_system.get_variable(variable_name)
     formula = variable.get_formula(period)
-    if formula is not None and formula.__code__ != default_formula.__code__:
+    if formula is None or formula.__code__ != default_formula.__code__:
         return True
-    return hb_runs_no_formula(benunit, period, variable_name)
+    return hb_reads_no_other_variable(benunit, period, variable_name)
 
 
-def hb_runs_no_formula(benunit, period, variable_name):
-    """Whether reading the variable for this period runs no formula: a reform
-    neutralized it or left it without one, or an input supplies it."""
+def hb_can_read_other_variables(variable, period):
+    """Whether core, reading the variable for a period it holds no value
+    for, can read another variable. It first calculates any ``defined_for``
+    mask, then runs the formula for the period or, without one, computes
+    ``adds`` and ``subtracts``, each a list of variable and parameter names
+    or the path of a parameter that lists them. Otherwise it uprates or
+    carries over the variable's own earlier inputs, or returns its
+    default."""
+    return bool(
+        variable.defined_for is not None
+        or variable.get_formula(period) is not None
+        or variable.adds
+        or variable.subtracts
+    )
+
+
+def hb_reads_no_other_variable(benunit, period, variable_name):
+    """Whether reading the variable for this period reads no other variable:
+    a reform neutralized it, or left it with no formula, aggregate or
+    ``defined_for`` mask, or an input supplies it."""
     variable = benunit.simulation.tax_benefit_system.get_variable(variable_name)
-    if variable.is_neutralized or variable.get_formula(period) is None:
+    if variable.is_neutralized or not hb_can_read_other_variables(variable, period):
         return True
     # An input the caller set for this period overrides recalculation, and so
     # does a scenario's own value (set_model_value), which the variable then

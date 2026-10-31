@@ -27,17 +27,18 @@ import pytest
 from hypothesis import example, given
 from hypothesis import strategies as st
 from policyengine_core.periods import period as period_
-from policyengine_core.reforms import Reform
 
 from policyengine_uk.system import system
 from policyengine_uk.tests.test_housing_benefit_wtc_disregard import (
     CHILDCARE,
+    COMPUTED_REPLACEMENTS,
     PROPERTY_SETTINGS,
     RENT,
     TOLERANCE,
     WITNESSES,
     assert_forwarding_changes_nothing,
     case,
+    computed_replacement,
     families,
     forwarded,
     forwarded_systems,
@@ -45,6 +46,7 @@ from policyengine_uk.tests.test_housing_benefit_wtc_disregard import (
     results,
     same_supply,
     simulation,
+    tax_credits_kept,
     without_wtc_reservation,
 )
 from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_applicable_income_disregard import (
@@ -65,20 +67,7 @@ FULL_ACCOMMODATION = 77.73 * 52
 WITHDRAWAL_RATE = 0.65
 
 
-class keep_tax_credits(Reform):
-    """Keep tax credits in 2026-27, so the two disregards coexist."""
-
-    def apply(self):
-        def modify(parameters):
-            parameters.gov.dwp.tax_credits.active.update(
-                period="year:2026:2", value=True
-            )
-            return parameters
-
-        self.modify_parameters(modify)
-
-
-TAX_CREDITS = keep_tax_credits(system)
+TAX_CREDITS = tax_credits_kept()
 SYSTEMS = {True: TAX_CREDITS, False: system}
 
 
@@ -392,23 +381,26 @@ def test_forwarding_reforms_change_nothing_with_tax_credits_kept(units):
     )
 
 
-def test_replacement_wtc_disregard_applies_its_annual_amount_in_every_segment():
-    """A replacement formula gives one annual amount, which every segment
-    deducts, as a replacement for the childcare deduction, its limit or the
-    earnings disregard does. That matches the
-    model's segments while both stay on the taper, so even a formula that
-    only calls the model's own can move the award once a segment leaves it.
+@pytest.mark.parametrize("mode", ["forwarded", *COMPUTED_REPLACEMENTS])
+def test_replacement_wtc_disregard_applies_its_annual_amount_in_every_segment(mode):
+    """A replacement that core computes, through a formula or through adds
+    or subtracts, gives one annual amount, which every segment deducts, as a
+    replacement for the childcare deduction, its limit or the earnings
+    disregard does. That matches the model's segments while both stay on the
+    taper, so even a replacement that only calls the model's own can move
+    the award once a segment leaves it.
     The model's segments give 10,124.25. With the annual 445.82 in each:
     before 5 October, income is 4,000 - 1,149.20 - 445.82 = 2,404.98, and
     the award 10,400 - 0.65 * 404.98 = 10,136.76. After it, income is 4,000
     - 2,000 - 445.82 = 1,554.18, below the 2,000 applicable amount, so the
     award is 10,400. (182 * 10,136.76 + 183 * 10,400) / 365 = 10,268.74."""
     unit = specified_claimant(net=2_000, applicable_amount=2_000)
+    if mode == "forwarded":
+        reformed = forwarded("housing_benefit_wtc_disregard", TAX_CREDITS)
+    else:
+        reformed = computed_replacement(mode, TAX_CREDITS)
     sim = simulation(
-        [unit],
-        YEAR,
-        tax_benefit_system=forwarded("housing_benefit_wtc_disregard", TAX_CREDITS),
-        dated_accommodation=True,
+        [unit], YEAR, tax_benefit_system=reformed, dated_accommodation=True
     )
     assert sim.calculate("housing_benefit_wtc_disregard", YEAR)[0] == pytest.approx(
         445.82, abs=TOLERANCE

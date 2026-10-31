@@ -40,6 +40,7 @@ import pandas as pd
 import pytest
 from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
+from policyengine_core.parameters import Parameter, ParameterNode
 from policyengine_core.periods import period as period_
 from policyengine_core.reforms import Reform
 from policyengine_core.simulations import Simulation
@@ -289,6 +290,131 @@ def forwarded_systems(baseline=system):
         None: baseline,
         **{name: forwarded(name, baseline) for name in FORWARDED_VARIABLES},
     }
+
+
+class keep_tax_credits(Reform):
+    """Keep tax credits in 2026-27, so the two disregards coexist."""
+
+    def apply(self):
+        def modify(parameters):
+            parameters.gov.dwp.tax_credits.active.update(
+                period="year:2026:2", value=True
+            )
+            return parameters
+
+        self.modify_parameters(modify)
+
+
+@cache
+def tax_credits_kept():
+    return keep_tax_credits(system)
+
+
+WTC_DISREGARD = "housing_benefit_wtc_disregard"
+MODELLED = "housing_benefit_wtc_disregard_as_modelled"
+TEST_PARAMETERS = "gov.housing_benefit_wtc_disregard_test"
+# Ways a reform can have core compute the WTC disregard from another
+# variable: a formula, or adds or subtracts, each listing the variable or
+# naming a parameter that lists it.
+COMPUTED_REPLACEMENTS = (
+    "formula",
+    "adds",
+    "subtracts",
+    "adds parameter",
+    "subtracts parameter",
+)
+
+
+def add_test_parameters(**values):
+    """A modify_parameters function that adds each dated value under
+    ``TEST_PARAMETERS``."""
+
+    def modify(parameters):
+        node = ParameterNode(TEST_PARAMETERS, data={})
+        for name, dated in values.items():
+            node.add_child(
+                name, Parameter(f"{TEST_PARAMETERS}.{name}", data={"values": dated})
+            )
+        parameters.gov.add_child(TEST_PARAMETERS.split(".")[-1], node)
+        return parameters
+
+    return modify
+
+
+@cache
+def computed_replacement(mode, baseline=system):
+    """``baseline`` under a reform that adds ``MODELLED``, which runs the
+    model's WTC disregard formula, and replaces the WTC disregard with a
+    variable core computes from it, as ``mode`` names: a formula that reads
+    it, or adds or subtracts. Subtracting reads the negated amount."""
+    original = system.get_variable(WTC_DISREGARD).get_formula()
+    sign = -1 if mode.startswith("subtracts") else 1
+    names = f"{TEST_PARAMETERS}.names" if mode.endswith("parameter") else [MODELLED]
+
+    class modelled(Variable):
+        value_type = float
+        entity = BenUnit
+        label = "Housing Benefit WTC disregard as the model calculates it"
+        definition_period = YEAR
+
+        def formula(benunit, period, parameters):
+            return sign * original(benunit, period, parameters)
+
+    modelled.__name__ = MODELLED
+
+    class replacement(Variable):
+        value_type = float
+        entity = BenUnit
+        label = "Housing Benefit WTC disregard"
+        definition_period = YEAR
+        if mode == "formula":
+
+            def formula(benunit, period, parameters):
+                return benunit(MODELLED, period)
+
+        elif mode.startswith("adds"):
+            adds = names
+        else:
+            subtracts = names
+
+    replacement.__name__ = WTC_DISREGARD
+
+    class replace(Reform):
+        def apply(self):
+            self.modify_parameters(
+                add_test_parameters(names={"2015-01-01": [MODELLED]})
+            )
+            self.add_variable(modelled)
+            self.replace_variable(replacement)
+
+    return replace(baseline)
+
+
+@cache
+def input_replacement(masked):
+    """A reform that leaves the WTC disregard as an input, which core uprates
+    by a fifth from 2023 to 2024. With ``masked`` it applies only where the
+    childcare deduction is positive, so reading it reads the deduction."""
+
+    class replacement(Variable):
+        value_type = float
+        entity = BenUnit
+        label = "Housing Benefit WTC disregard"
+        definition_period = YEAR
+        uprating = f"{TEST_PARAMETERS}.uprating"
+        if masked:
+            defined_for = CHILDCARE
+
+    replacement.__name__ = WTC_DISREGARD
+
+    class replace(Reform):
+        def apply(self):
+            self.modify_parameters(
+                add_test_parameters(uprating={"2023-01-01": 100, "2024-01-01": 120})
+            )
+            self.replace_variable(replacement)
+
+    return replace(system)
 
 
 def simulation(
@@ -950,8 +1076,9 @@ def test_supplied_deduction_leaves_the_limit_on_the_whole_charge():
 
 
 def assert_forwarding_changes_nothing(build, systems, outputs):
-    """Each forwarding reform alone leaves every output as the model's.
-    ``build`` makes the population's simulation under a system."""
+    """Each forwarding reform alone leaves every output as the model's, which
+    this returns. ``build`` makes the population's simulation under a
+    system."""
     expected = outputs(build(systems[None]))
     for name, reformed in systems.items():
         if name is None:
@@ -961,6 +1088,7 @@ def assert_forwarding_changes_nothing(build, systems, outputs):
             np.testing.assert_allclose(
                 actual[key], values, rtol=0, atol=TOLERANCE, err_msg=f"{name}: {key}"
             )
+    return expected
 
 
 @PROPERTY_SETTINGS
@@ -999,6 +1127,87 @@ def test_forwarding_reform_runs_for_an_adult_without_income(name):
             == baseline.calculate(variable, 2024)[0]
         ), variable
     assert baseline.calculate(CHILDCARE, 2024)[0] == 0
+
+
+@pytest.mark.parametrize("year", [2024, 2026])
+@pytest.mark.parametrize("mode", COMPUTED_REPLACEMENTS)
+def test_computed_replacements_of_the_wtc_disregard_change_nothing(mode, year):
+    """A reform that replaces the WTC disregard with a variable core computes
+    from the model's own, through a formula or through adds or subtracts,
+    each listing it or naming a parameter that lists it, runs without a
+    circular definition and changes no output, award included. In 2026-27
+    tax credits stay in payment, and the model dates the accommodation
+    disregard for families outside specified or temporary accommodation."""
+    baseline = system if year == 2024 else tax_credits_kept()
+    reformed = computed_replacement(mode, baseline)
+    # Core computes adds and subtracts only where no formula runs.
+    assert (reformed.get_variable(WTC_DISREGARD).get_formula(year) is None) == (
+        mode != "formula"
+    )
+    units = [
+        *WITNESSES,
+        case(net=2_000, standard=260, childcare=9_100, wtc=1_000, other=1_000),
+        case(net=10_000),
+        case(pension_age=True),
+        case(region="NORTHERN_IRELAND"),
+    ]
+
+    def outputs(sim):
+        return {
+            **results(sim, year),
+            "award": np.asarray(
+                sim.calculate("housing_benefit_entitlement", year), dtype=float
+            ),
+        }
+
+    expected = assert_forwarding_changes_nothing(
+        lambda tax_benefit_system: simulation(
+            units, year, tax_benefit_system=tax_benefit_system, dated_accommodation=True
+        ),
+        {None: baseline, mode: reformed},
+        outputs,
+    )
+    # Para 56 applies to the issue's family, and to the family whose limit
+    # binds: the lesser of 1,000 of WTC and 889.20.
+    np.testing.assert_allclose(
+        expected["reserve"][3:5], [100, 889.20], rtol=0, atol=TOLERANCE
+    )
+
+
+@pytest.mark.parametrize(
+    "masked,limit,income",
+    [
+        # Core uprates the 2023 input of 50 to 60 and reads no other
+        # variable, so the limit keeps back 60: 3,900 of earnings and 40 of
+        # WTC, 3,940. 5,200 < 1,300 + 3,940 + 889.20, so the additional
+        # earnings disregard does not apply. Income: 5,200 + 100 + 1,000 -
+        # 1,300 - 60 - 3,940.
+        (False, 3_940, 1_000),
+        # Core calculates the mask, and so the deduction, before it uprates
+        # the input. The limit tests para 17 with the whole capped charge
+        # instead: 5,200 < 1,300 + 4,160 + 889.20, so it keeps back the 100
+        # of WTC and comes to 3,900. The deduction is positive, so the WTC
+        # disregard is the uprated 60. Income: 5,200 + 100 + 1,000 - 1,300 -
+        # 60 - 3,900.
+        (True, 3_900, 1_040),
+    ],
+)
+def test_input_replacement_reaches_the_limit_unless_reading_it_reads_more(
+    masked, limit, income
+):
+    """A reform that leaves the WTC disregard as an input reaches the limit,
+    including an amount core uprates from an earlier year's input. One with
+    a defined_for mask does not."""
+    sim = simulation(
+        [case(other=1_000)], 2024, tax_benefit_system=input_replacement(masked)
+    )
+    sim.set_input(WTC_DISREGARD, 2023, [50])
+    actual = results(sim, 2024)
+    assert actual["reserve"][0] == pytest.approx(60, abs=TOLERANCE)
+    assert actual["limit"][0] == pytest.approx(limit, abs=TOLERANCE)
+    assert actual["childcare"][0] == pytest.approx(limit, abs=TOLERANCE)
+    assert actual["earnings_disregard"][0] == pytest.approx(1_300, abs=TOLERANCE)
+    assert actual["income"][0] == pytest.approx(income, abs=TOLERANCE)
 
 
 def test_revived_tax_credits_with_the_accommodation_disregard():
