@@ -18,9 +18,9 @@ class ebr_council_tax_rebate(Variable):
         "for the disabled band reduction, so it doesn't pay band E homes "
         "charged at band D (England's paragraph 11(i), Scotland's paragraph "
         "12, Wales's condition B) unless they qualify through Council Tax "
-        "Reduction. It also leaves out Scotland's payments to exempt dwellings "
-        "(paragraphs 16 to 18), and second adult rebate, which it doesn't "
-        "simulate."
+        "Reduction. It has no council tax exemption input, so it can't apply "
+        "Scotland's rules for exempt dwellings (paragraphs 15 to 18), and it "
+        "doesn't simulate second adult rebate."
     )
     entity = Household
     definition_period = YEAR

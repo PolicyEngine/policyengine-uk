@@ -53,6 +53,9 @@ PolicyEngine models these via:
   - `energy_bills_credit.yaml` — a yearly top-up, zero by default, kept for
     reforms
   - `council_tax_rebate/bands.yaml` — qualifying CT bands (A–D)
+  - `council_tax_rebate/council_tax_reduction_countries.yaml` — countries
+    that also paid Council Tax Reduction recipients in any band (Scotland
+    and Wales)
   - `council_tax_rebate/amount.yaml` — £150 in 2022-23 and nothing in any
     other year
 
