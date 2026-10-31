@@ -32,6 +32,7 @@ from policyengine_uk.tests.test_housing_benefit_wtc_disregard import (
     case,
     families,
     legal_components,
+    same_supply,
     simulation,
     without_wtc_reservation,
 )
@@ -152,9 +153,9 @@ def specified_claimant(**overrides):
 
 
 @st.composite
-def segment_families(draw, supplied=False):
+def segment_families(draw, supplied=False, supplied_limit=False):
     return {
-        **draw(families(supplied)),
+        **draw(families(supplied, supplied_limit)),
         "specified": draw(st.booleans()),
         "applicable_amount": draw(st.sampled_from([0, 2_000, 5_000])),
     }
@@ -162,8 +163,14 @@ def segment_families(draw, supplied=False):
 
 @st.composite
 def segment_populations(draw):
-    supplied = draw(st.booleans())
-    return draw(st.lists(segment_families(supplied), min_size=1, max_size=8))
+    supplied = draw(st.sampled_from([None, "deduction", "limit"]))
+    return draw(
+        st.lists(
+            segment_families(supplied == "deduction", supplied == "limit"),
+            min_size=1,
+            max_size=8,
+        )
+    )
 
 
 SEGMENT_EDGE_CASES = [
@@ -181,6 +188,12 @@ SEGMENT_EDGE_CASES = [
 SUPPLIED_SEGMENT_EDGE_CASES = [
     {**unit, "supplied": value}
     for unit, value in zip(SEGMENT_EDGE_CASES, [0, 0, 100, 0, 1_000, 0, 0, 0, 0, 3_900])
+]
+SUPPLIED_LIMIT_SEGMENT_EDGE_CASES = [
+    {**unit, "supplied_limit": value}
+    for unit, value in zip(
+        SEGMENT_EDGE_CASES, [0, 10_000, 100, 0, 1_000, 0, 0, 0, 10_000, 3_900]
+    )
 ]
 
 
@@ -256,6 +269,7 @@ def test_supplied_annual_wtc_disregard_applies_in_every_segment():
 @example(units=SEGMENT_EDGE_CASES, active=True)
 @example(units=SEGMENT_EDGE_CASES, active=False)
 @example(units=SUPPLIED_SEGMENT_EDGE_CASES, active=True)
+@example(units=SUPPLIED_LIMIT_SEGMENT_EDGE_CASES, active=True)
 def test_segmented_award_equals_the_regulations_with_one_additional_disregard(
     units, active
 ):
@@ -291,8 +305,7 @@ def test_segmented_previous_path_agrees_where_paragraph_56_does_not_apply(
     ]
     if not active:
         assert len(unchanged) == len(units)
-    supplied = units[0]["supplied"] is not None
-    unchanged.append(specified_claimant(net=8_000, supplied=0 if supplied else None))
+    unchanged.append(specified_claimant(net=8_000, **same_supply(units, 0)))
     current = segmented(unchanged, active).calculate(
         "housing_benefit_entitlement", YEAR
     )

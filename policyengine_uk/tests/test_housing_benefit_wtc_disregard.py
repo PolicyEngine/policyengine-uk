@@ -70,6 +70,7 @@ def case(**overrides):
         accommodation=0,
         childcare=4_160,
         supplied=None,
+        supplied_limit=None,
         children=1,
         wtc=100,
         ctc=0,
@@ -90,13 +91,14 @@ def pounds(maximum):
 
 
 @st.composite
-def families(draw, supplied=False):
+def families(draw, supplied=False, supplied_limit=False):
     return case(
         net=draw(pounds(40_000)),
         standard=draw(st.sampled_from([260, 520, 1_040, 1_300])),
         accommodation=draw(st.one_of(st.just(0), pounds(6_500))),
         childcare=draw(pounds(25_000)),
         supplied=draw(pounds(25_000)) if supplied else None,
+        supplied_limit=draw(pounds(25_000)) if supplied_limit else None,
         children=draw(st.integers(0, 2)),
         wtc=draw(pounds(10_000)),
         ctc=draw(pounds(10_000)),
@@ -109,14 +111,23 @@ def families(draw, supplied=False):
 
 @st.composite
 def populations(draw):
-    # A supplied deduction is set for the whole population, as a dataset
-    # column or a set_input call sets it.
-    supplied = draw(st.booleans())
-    return draw(st.lists(families(supplied), min_size=1, max_size=12))
+    # A dataset column or a set_input call supplies the deduction or its
+    # limit for the whole population.
+    supplied = draw(st.sampled_from([None, "deduction", "limit"]))
+    return draw(
+        st.lists(
+            families(supplied == "deduction", supplied == "limit"),
+            min_size=1,
+            max_size=12,
+        )
+    )
 
 
 POPULATIONS = populations()
-SUPPLIED_POPULATIONS = st.lists(families(supplied=True), min_size=1, max_size=12)
+SUPPLIED_POPULATIONS = st.one_of(
+    st.lists(families(supplied=True), min_size=1, max_size=12),
+    st.lists(families(supplied_limit=True), min_size=1, max_size=12),
+)
 EDGE_CASES = [
     case(),
     case(net=0),
@@ -146,6 +157,17 @@ SUPPLIED_EDGE_CASES = [
     case(childcare=25_000, children=2, supplied=100, wtc=5_000),
     case(worker=False, supplied=0),
 ]
+SUPPLIED_LIMIT_EDGE_CASES = [
+    # 8,000 >= 1,300 + 4,160 + 889.20: the deduction takes the capped
+    # charge, not the larger limit, and para 17(1) applies.
+    case(net=8_000, supplied_limit=10_000),
+    case(supplied_limit=0),
+    case(supplied_limit=4_000),
+    case(net=6_349.20, supplied_limit=4_160),
+    case(net=6_349.19, supplied_limit=9_000),
+    case(net=2_000, standard=260, accommodation=1_000, childcare=0, supplied_limit=0),
+    case(worker=False, supplied_limit=0),
+]
 
 
 def legal_components(unit, year, active=None):
@@ -167,7 +189,12 @@ def legal_components(unit, year, active=None):
             return unit["supplied"]
         # Reg 27(1)(c), (2): earnings, then the credits that remain after
         # the Sch 5 disregards.
-        return min(charge, earnings + unit["wtc"] - reserve + unit["ctc"])
+        return min(charge, limit(reserve))
+
+    def limit(reserve):
+        if unit["supplied_limit"] is not None:
+            return unit["supplied_limit"]
+        return earnings + unit["wtc"] - reserve + unit["ctc"]
 
     def covers(reserve):
         # Sch 4 para 17(1), (3): the other disregards, the deductible
@@ -185,7 +212,6 @@ def legal_components(unit, year, active=None):
         assert not covers(reserve), "no consistent paragraph 17 outcome"
     additional = additional_amount if unit["worker"] and covers(reserve) else 0
     childcare = deduction(reserve)
-    limit = earnings + unit["wtc"] - reserve + unit["ctc"]
     income = max(
         0,
         net
@@ -202,7 +228,7 @@ def legal_components(unit, year, active=None):
         childcare=childcare,
         reserve=reserve,
         earnings_disregard=standard + accommodation + additional,
-        limit=limit,
+        limit=limit(reserve),
         income=income,
     )
 
@@ -230,8 +256,9 @@ def simulation(
     """Build the population. With ``dated_accommodation`` the model dates
     the accommodation disregard itself, and the population pays rent of
     ``RENT``; otherwise each unit supplies its annual accommodation amount."""
-    supplied = [unit["supplied"] is not None for unit in units]
-    assert all(supplied) or not any(supplied), "supply the deduction for all"
+    for key in ("supplied", "supplied_limit"):
+        supplied = [unit[key] is not None for unit in units]
+        assert all(supplied) or not any(supplied), f"{key} for all or none"
     people, benunits, households = {}, {}, {}
     for index, unit in enumerate(units):
         adult = f"adult_{index}"
@@ -320,6 +347,8 @@ def simulation(
             family[ACCOMMODATION] = {year: unit["accommodation"]}
         if unit["supplied"] is not None:
             family[CHILDCARE] = {year: unit["supplied"]}
+        if unit["supplied_limit"] is not None:
+            family[LIMIT] = {year: unit["supplied_limit"]}
         households[f"household_{index}"] = {
             "members": members,
             "region": {year: unit["region"]},
@@ -350,6 +379,14 @@ def results(sim, year):
 
 def calculate(units, year, previous=False):
     return results(simulation(units, year, previous), year)
+
+
+def same_supply(units, amount):
+    """Supply ``amount`` as the population supplies its deduction or limit."""
+    return {
+        key: None if units[0][key] is None else amount
+        for key in ("supplied", "supplied_limit")
+    }
 
 
 def assert_one_additional_disregard(units, actual):
@@ -418,6 +455,7 @@ def test_savings_credit_only_uses_the_corrected_childcare_modification(region):
 @example(units=EDGE_CASES, year=2020)
 @example(units=EDGE_CASES, year=2025)
 @example(units=SUPPLIED_EDGE_CASES, year=2024)
+@example(units=SUPPLIED_LIMIT_EDGE_CASES, year=2024)
 def test_assessed_income_equals_and_never_falls_below_the_regulations(units, year):
     actual = calculate(units, year)
     expected = [legal_components(unit, year) for unit in units]
@@ -457,10 +495,11 @@ def test_wtc_disregard_is_bounded_and_does_not_stack_with_earnings(units, year):
     year=2024,
 )
 @example(units=SUPPLIED_EDGE_CASES, year=2024)
+@example(units=SUPPLIED_LIMIT_EDGE_CASES, year=2024)
 def test_additional_earnings_and_wtc_disregards_never_both_apply(units, year):
     """Earnings, WTC, the standard and accommodation disregards and a
-    supplied childcare deduction never give a benefit unit both additional
-    disregards."""
+    supplied childcare deduction or limit never give a benefit unit both
+    additional disregards."""
     assert_one_additional_disregard(units, calculate(units, year))
 
 
@@ -471,14 +510,13 @@ def test_additional_earnings_and_wtc_disregards_never_both_apply(units, year):
 @example(units=SUPPLIED_EDGE_CASES, year=2024)
 def test_previous_path_agrees_where_paragraph_56_does_not_apply(units, year):
     unchanged = [unit for unit in units if legal_components(unit, year)["reserve"] == 0]
-    supplied = units[0]["supplied"] is not None
     # Always include a work-condition failure, no WTC, and sufficient
     # earnings, so every population exercises the differential check.
     unchanged.extend(
         [
-            case(worker=False, supplied=0 if supplied else None),
-            case(wtc=0, supplied=3_000 if supplied else None),
-            case(net=20_000, childcare=1_000, supplied=1_000 if supplied else None),
+            case(worker=False, **same_supply(units, 0)),
+            case(wtc=0, **same_supply(units, 3_000)),
+            case(net=20_000, childcare=1_000, **same_supply(units, 1_000)),
         ]
     )
     actual = calculate(unchanged, year)
@@ -582,6 +620,19 @@ def test_supplied_childcare_deduction_keeps_one_additional_disregard():
     assert actual["reserve"][0] == 0
     # 5,200 + 100 - 2,189.20 - 0, as without the WTC disregard.
     assert actual["income"][0] == pytest.approx(3_110.80, abs=TOLERANCE)
+
+
+def test_supplied_limit_above_the_charge_leaves_the_capped_charge():
+    sim = simulation([case(net=8_000)], 2024)
+    sim.set_input(LIMIT, 2024, [10_000])
+    actual = results(sim, 2024)
+    # Reg 27(1)(c), (3): the deduction stops at the 4,160 charge, and
+    # 8,000 >= 1,300 + 4,160 + 889.20, so para 17(1) applies and para 56
+    # does not: 8,000 + 100 - 2,189.20 - 4,160.
+    assert actual["childcare"][0] == pytest.approx(4_160, abs=TOLERANCE)
+    assert actual["earnings_disregard"][0] == pytest.approx(2_189.20, abs=TOLERANCE)
+    assert actual["reserve"][0] == 0
+    assert actual["income"][0] == pytest.approx(1_750.80, abs=TOLERANCE)
 
 
 def test_supplied_childcare_limit_keeps_one_additional_disregard():
