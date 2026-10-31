@@ -1,1 +1,0 @@
-Added Northern Ireland's £200 Alternative Fuel Payment (`ebr_alternative_fuel_payment`), paid with the £400 Energy Bills Support Scheme amount in January 2023, so a Northern Ireland household's Energy Bills Rebate totals the £600 the December 2022 direction set.

@@ -1,1 +1,0 @@
-Stopped paying the 2022 £150 Council Tax Rebate in Northern Ireland, which levies domestic rates rather than council tax and had no rebate. The enhanced FRS gives every Northern Ireland household band A, so the model had paid it to all of them.
