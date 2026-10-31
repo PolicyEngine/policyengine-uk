@@ -26,22 +26,26 @@ Invariants, each over generated benefit units and explicit examples:
 4. Accounting. For a claimant with an award, uc_deductions plus
    uc_benefit_cap_reduction_after_floor plus universal_credit equals the
    award before the cap.
-5. Current law. With no floor, a dataset without stored attributes (the
+5. The flag's award. For a claimant whose incidence draw assigns
+   deductions, uc_has_deduction holds exactly where an award remains after
+   the cap reduction that allocate_uc_reductions applies to the same family
+   with no deductions, under any floor.
+6. Current law. With no floor, a dataset without stored attributes (the
    formula path) gives the same flag, rates, deductions, applied cap and
    award as origin/main's rule, bit for bit.
-6. Floor. Under a floor, the formula path moves only the split between
+7. Floor. Under a floor, the formula path moves only the split between
    deductions and the applied cap for families the cap takes to nil; their
    award rises by less than the 12p a year the penny rule keeps.
-7. Stored attributes. A dataset that stores the draws and, for every unit
+8. Stored attributes. A dataset that stores the draws and, for every unit
    the draw assigns (claimant or not), the formula's latent rate and
    combination, as Microcosm does, gives the formula path's flag,
    deductions, applied cap and award under any floor.
-8. Stored attributes against main. On that dataset, deductions, the applied
+9. Stored attributes against main. On that dataset, deductions, the applied
    cap and the award equal origin/main's under current law and under any
    floor.
-9. Incidence reforms on stored rates. A cut in incidence drops the
-   deductions of the units the flag no longer assigns. A rise flags more
-   units, but the dataset stores no rate for them, so it adds none.
+10. Incidence reforms on stored rates. A cut in incidence drops the
+    deductions of the units the flag no longer assigns. A rise flags more
+    units, but the dataset stores no rate for them, so it adds none.
 """
 
 import numpy as np
@@ -180,11 +184,14 @@ EXAMPLE_UNITS = [
     # Supplied flags: the issue's family flagged by hand, known advance cash
     # without the flag (the documented exception), and a non-claimant
     # flagged by hand. Drawn: the issue's family, which a floor leaves an
-    # award, and a rate whose draw assigns nothing.
+    # award, a rate whose draw assigns nothing, and the family below.
     family(pre_cap=1_000.0, gross_cap=1_000.0, latent=0.30, flag=True),
     family(advance=360.0),
     family(latent=0.30, combination="GOVERNMENT_ONLY", flag=True, claims=False),
     family(combination="ALL_THREE"),
+    # The cap takes this family's whole £500 award, and an 85% floor's
+    # £720.25 allowance exceeds it: the floor does not bind, nothing is left.
+    family(pre_cap=500.0, gross_cap=1_000.0, latent=0.30, draw=0.1),
 ]
 
 
@@ -236,16 +243,23 @@ def test_the_flag_gates_a_supplied_latent_rate(units, drawn, floor):
         demand = values(ungated, "uc_deduction_rate") * values(
             ungated, "uc_standard_allowance"
         )
+        gross_cap = values(sim, "uc_benefit_cap_reduction")
+        max_reduction = values(sim, "uc_maximum_reduction")
         expected, _ = allocate_uc_reductions(
-            pre_cap,
-            values(sim, "uc_benefit_cap_reduction"),
-            demand,
-            values(sim, "uc_maximum_reduction"),
-            PENNY_A_YEAR,
+            pre_cap, gross_cap, demand, max_reduction, PENNY_A_YEAR
         )
         assigned = np.array([unit["draw"] < 0.4 for unit in units]) & claims
         np.testing.assert_allclose(
             deductions[assigned], expected[assigned], rtol=0, atol=1e-3
+        )
+
+        # 5. The flag marks an assigned claimant exactly where the cap, as
+        # the allocation applies it with no deductions, leaves an award.
+        _, cap_alone = allocate_uc_reductions(
+            pre_cap, gross_cap, np.zeros_like(pre_cap), max_reduction, PENNY_A_YEAR
+        )
+        np.testing.assert_array_equal(
+            flag[assigned], (pre_cap - cap_alone)[assigned] > 0
         )
 
     # 4. The components sum to the award before the cap.
