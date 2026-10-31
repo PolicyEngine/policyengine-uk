@@ -1000,8 +1000,8 @@ def line_rate(spec: ReceiptsSeriesSpec, year: int) -> float:
 
 @dataclass(frozen=True)
 class ReceiptsLine:
-    """A receipts line as one EFO publishes it: £bn (a clearance line's own
-    unit) by the calendar year in which each fiscal year starts, and which of
+    """A receipts line as one EFO publishes it: £bn, or a clearance line's own
+    unit, by the calendar year in which each fiscal year starts, and which of
     those years are outturn."""
 
     table: str
@@ -1165,9 +1165,9 @@ def find_receipts_line(
 ) -> ReceiptsLine:
     """The one row labelled ``spec.row`` in a table titled ``spec.title``.
 
-    Only that table's rows are read: its cash unit (a clearance line's unit),
-    year headers and its "Outturn" and "Forecast" markers, which may sit on
-    one row or several.
+    Only that table's rows are read: its cash unit, or a clearance line's
+    unit, its year headers and its "Outturn" and "Forecast" markers, which
+    may sit on one row or several.
     """
     matches = []
     for sheet, rows in sheets.items():
