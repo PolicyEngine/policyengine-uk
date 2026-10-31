@@ -384,8 +384,10 @@
       claimant:
         age: 70
         employment_income: 1_000
+        is_claimant_or_partner: true
       partner:
         age: 50
+        is_claimant_or_partner: true
     benunits:
       benunit:
         members: [claimant, partner]
@@ -395,6 +397,7 @@
         members: [claimant, partner]
         country: ENGLAND
   output:
+    relation_type: COUPLE
     # SI 2012/2885 reg 3(2): not a pensioner where the applicant or partner
     # is on income-related ESA, so the pensioner schedule does not apply.
     council_tax_reduction_pensioner: false

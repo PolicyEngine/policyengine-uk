@@ -56,7 +56,7 @@ class pension_credit_income(Variable):
                     person,
                     period,
                     [
-                        "income_tax",
+                        "income_tax_before_winter_fuel_payment_charge",
                         "national_insurance",
                         "pension_credit_self_employment_deductions",
                     ],

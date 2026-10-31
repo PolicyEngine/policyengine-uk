@@ -1,4 +1,8 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.childcare import (
+    childcare_term_value,
+    uses_legacy_childcare_inputs,
+)
 
 
 class extended_childcare_entitlement_per_child(Variable):
@@ -17,7 +21,15 @@ class extended_childcare_entitlement_per_child(Variable):
         "becoming eligible never removes the universal or targeted hours. A "
         "participating child has its first funded hours allocated to the "
         "applicable universal or targeted programme even when standalone "
-        "take-up of that programme is false; only the remaining hours count here."
+        "take-up of that programme is false; only the remaining hours count "
+        "here. The comparison is term by term: a child old enough for only "
+        "some of the year's terms (extended_childcare_entitlement_term_share) "
+        "has the working parent total for those terms, set against the "
+        "universal or targeted hours in the same terms. Base entitlements "
+        "also start by birthday term, so their prorated annual values are "
+        "not multiplied by a second annual share. Explicit legacy annual "
+        "shares or amounts retain the original annual calculation and "
+        "actual supplied downstream amounts."
     )
     definition_period = YEAR
     unit = GBP
@@ -32,6 +44,9 @@ class extended_childcare_entitlement_per_child(Variable):
     )
 
     def formula(person, period, parameters):
+        if not uses_legacy_childcare_inputs(person, period):
+            return childcare_term_value(person, period, parameters, "extended")
+        # Opaque annual inputs retain the complete original valuation route.
         total_value = person("extended_childcare_entitlement_total_per_child", period)
 
         # Childcare Act 2016 s.1(6)(a) and SI 2022/1134 reg 44(3): the
@@ -44,9 +59,20 @@ class extended_childcare_entitlement_per_child(Variable):
         # part of the total above the universal and targeted hours. Their
         # award formulas allocate those first funded hours even when their
         # standalone take-up flags are false (2014 regs 3-4; guidance A1.11).
-        universal_or_targeted = person(
-            "universal_childcare_entitlement", period
-        ) + person("targeted_childcare_entitlement", period)
+        # The total covers the terms the child is old enough for. Universal
+        # or targeted hours claimed on their own run all year, so only those
+        # terms' share of them counts; hours allocated from working parent
+        # participation fall in those terms already. Terms after the child
+        # starts school are already out of both the total and the universal
+        # hours: a child starting school is years past the minimum age.
+        term_share = person("extended_childcare_entitlement_term_share", period)
+        universal = person("universal_childcare_entitlement", period)
+        targeted = person("targeted_childcare_entitlement", period)
+        claims_universal = person.benunit("would_claim_universal_childcare", period)
+        claims_targeted = person.benunit("would_claim_targeted_childcare", period)
+        universal_or_targeted = where(
+            claims_universal, term_share * universal, universal
+        ) + where(claims_targeted, term_share * targeted, targeted)
         # Rounded to the penny: the universal and targeted values are stored
         # in single precision, so a total equal to them would otherwise leave
         # a fraction of a penny.

@@ -165,15 +165,16 @@ def _situation(people, year, overrides=None):
 
 
 # Without receipts supplied, the model reads a trading profit within the
-# trading allowance (£1,000 from 2017-18, so in every year here) as fully
-# relieved (ITTOIA 2005 s. 783AF). It is then not chargeable under Part 2 and
-# so is not relevant UK earnings (FA 2004 s. 189(2)(b)).
-TRADING_ALLOWANCE = 1_000
+# trading allowance as fully relieved (ITTOIA 2005 s. 783AF). It is then not
+# chargeable under Part 2 and so is not relevant UK earnings (FA 2004
+# s. 189(2)(b)). The allowance is £1,000 from 2017-18 and £3,000 from 2027-28
+# (Budget 2026, paragraph 6.254).
+TRADING_ALLOWANCE = {2020: 1_000, 2024: 1_000, 2026: 1_000, 2027: 3_000}
 
 
-def _relevant_earnings(person):
+def _relevant_earnings(person, year):
     profit = max(0, person["self_employment_income"])
-    chargeable_profit = profit if profit > TRADING_ALLOWANCE else 0
+    chargeable_profit = profit if profit > TRADING_ALLOWANCE[year] else 0
     return person["employment_income"] + chargeable_profit
 
 
@@ -194,18 +195,21 @@ def _calc(people, year, variables):
     return {v: np.array(sim.calculate(v, year), dtype=float) for v in variables}
 
 
-def _base_contributions(people):
-    return [p["contribution_share"] * max(_relevant_earnings(p), 3_600) for p in people]
+def _base_contributions(people, year):
+    return [
+        p["contribution_share"] * max(_relevant_earnings(p, year), 3_600)
+        for p in people
+    ]
 
 
 @PROPERTY_SETTINGS
 @given(population_strategy, st.sampled_from(YEARS))
 def test_relief_is_the_section_190_limit(people, year):
-    people = _with_contributions(people, _base_contributions(people))
+    people = _with_contributions(people, _base_contributions(people, year))
     out = _calc(people, year, ["pension_contributions_relief"])
     basic_amount = 3_600
     for i, person in enumerate(people):
-        earnings = _relevant_earnings(person)
+        earnings = _relevant_earnings(person, year)
         relief_at_source = person["personal_pension_contributions"]
         total = relief_at_source + person["employee_pension_contributions_reported"]
         limit = earnings + min(max(0, basic_amount - earnings), relief_at_source)
@@ -223,7 +227,7 @@ def test_extra_contributions_never_raise_tax_by_more_than_the_charge(
     people, year, step
 ):
     # Two contribution levels, both within relevant earnings.
-    earnings = np.array([max(_relevant_earnings(p), 3_600) for p in people])
+    earnings = np.array([max(_relevant_earnings(p, year), 3_600) for p in people])
     low = np.array([min(p["contribution_share"], 1) for p in people]) * earnings
     high = low + step * (earnings - low)
     variables = ["income_tax", "personal_pension_contributions_tax"]
@@ -318,7 +322,7 @@ def test_contributions_above_the_allowance_are_not_taxed_twice(people, year, ste
         np.array(zero_sim.calculate("net_income", year), dtype=float)
         - restored_allowances,
     )
-    earnings = np.array([_relevant_earnings(p) for p in people], dtype=float)
+    earnings = np.array([_relevant_earnings(p, year) for p in people], dtype=float)
     upper = np.minimum(earnings, taxable_income)
     employer = np.array([p["employer_pension_contributions"] for p in people])
     at_allowance = np.clip(allowance - employer, 0, earnings)
@@ -433,7 +437,7 @@ def _reference_ras_extension_eligibility(
 @PROPERTY_SETTINGS
 @given(reference_population_strategy(), st.sampled_from(YEARS))
 def test_charge_matches_band_by_band_reference(people, year):
-    people = _with_contributions(people, _base_contributions(people))
+    people = _with_contributions(people, _base_contributions(people, year))
     sim = Simulation(situation=_situation(people, year))
     chargeable = np.array(
         sim.calculate("pension_annual_allowance_chargeable_amount", year), dtype=float
@@ -517,7 +521,7 @@ def test_charge_matches_band_by_band_reference(people, year):
 @PROPERTY_SETTINGS
 @given(population_strategy, st.sampled_from(YEARS))
 def test_gift_aid_never_increases_tax_with_stable_ras_eligibility(people, year):
-    people = _with_contributions(people, _base_contributions(people))
+    people = _with_contributions(people, _base_contributions(people, year))
     # Compare the same pension/input amounts with zero, drawn, and larger
     # gifts, across UK and Scottish rates and mixed income sources.
     zero_gift = [{**p, "gift_aid": 0} for p in people]
@@ -557,7 +561,7 @@ def test_gift_aid_never_increases_tax_with_stable_ras_eligibility(people, year):
 @PROPERTY_SETTINGS
 @given(population_strategy, st.sampled_from(YEARS), st.integers(0, 150_000))
 def test_unused_allowance_reduces_chargeable_amount_one_for_one(people, year, extra):
-    people = _with_contributions(people, _base_contributions(people))
+    people = _with_contributions(people, _base_contributions(people, year))
     variables = [
         "pension_annual_allowance_chargeable_amount",
         "personal_pension_contributions_tax",

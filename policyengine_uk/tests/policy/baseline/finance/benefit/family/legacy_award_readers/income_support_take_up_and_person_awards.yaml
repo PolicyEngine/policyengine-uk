@@ -1,7 +1,7 @@
 # would_claim_IS is the family's take-up flag: the claimant or partner
 # reports Income Support. An Income Support report from a member who is neither
 # the claimant, the partner nor their dependant ("other") is that member's own
-# claim. Any report in the simulation turns claims_all_entitled_benefits off.
+# claim. A report turns claims_all_entitled_benefits off for that benefit unit.
 
 - name: Another member's Income Support report is not this family's claim
   period: 2025
@@ -49,7 +49,8 @@
 # unit on the Income Support claim path when anyone in the household is on it,
 # and otherwise shares it by claimants and partners. With no claimant or
 # partner reporting Income Support, £10,000 of savings is shared 1:1 between
-# the two benefit units.
+# the two benefit units. The non-reporting lodger explicitly opts out of
+# claiming all entitled benefits.
 
 - name: Another member's Income Support report does not move household capital to their benefit unit
   period: 2025
@@ -72,6 +73,7 @@
         members: [claimant, other]
       lodger_unit:
         members: [lodger]
+        claims_all_entitled_benefits: false
     households:
       household:
         members: [claimant, other, lodger]
@@ -105,6 +107,7 @@
     benunits:
       benunit:
         members: [claimant, partner, other]
+        would_claim_uc: false
     households:
       household:
         members: [claimant, partner, other]
@@ -146,6 +149,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]

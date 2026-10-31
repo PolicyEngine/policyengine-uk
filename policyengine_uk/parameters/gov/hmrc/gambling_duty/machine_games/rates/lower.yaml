@@ -1,0 +1,15 @@
+description: The UK levies Machine Games Duty at this rate on dutiable net takings from machines on which every dutiable game costs at most 20p and has a maximum cash prize of at most GBP 10.
+values:
+  '2013-02-01': 0.05
+metadata:
+  unit: /1
+  period: year
+  label: machine games duty lower rate
+  reference:
+  - title: Finance Act 2012, Schedule 24, paragraph 9
+    href: https://www.legislation.gov.uk/ukpga/2012/14/schedule/24/paragraph/9
+  - title: HMRC Machine Games Duty Notice 452
+    href: https://www.gov.uk/guidance/machine-games-duty-excise-notice-452
+  - title: HMRC historical gambling duty rates
+    href: https://www.gov.uk/government/statistics/uk-betting-and-gaming-statistics/historical-uk-betting-and-gaming-duty-rates
+  preserve_calendar_dates: true

@@ -1,0 +1,10 @@
+description: Maximum whole-property price for an exempt first-home Lifetime ISA withdrawal.
+values:
+  2017-04-06: 450000
+metadata:
+  label: Lifetime ISA first-home property price cap
+  period: year
+  unit: currency-GBP
+  reference:
+    - title: Individual Savings Account Regulations 1998 Schedule paragraph 6
+      href: https://www.legislation.gov.uk/uksi/1998/1870/schedule/paragraph/6

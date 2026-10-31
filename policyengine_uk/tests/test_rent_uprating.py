@@ -13,14 +13,16 @@ from policyengine_uk.data.economic_assumptions import uprate_rent
 from policyengine_uk.variables.household.demographic.geography import Region
 
 
-PRIVATE_RENTAL_HOUSEHOLDS = 0.188
-SOCIAL_RENTAL_HOUSEHOLDS = 0.164
-PRIVATE_RENT_WEIGHT = PRIVATE_RENTAL_HOUSEHOLDS / (
-    PRIVATE_RENTAL_HOUSEHOLDS + SOCIAL_RENTAL_HOUSEHOLDS
-)
-SOCIAL_RENT_WEIGHT = SOCIAL_RENTAL_HOUSEHOLDS / (
-    PRIVATE_RENTAL_HOUSEHOLDS + SOCIAL_RENTAL_HOUSEHOLDS
-)
+# OBR October 2026 EFO, economy Table 1.7, "Private rentals for housing"
+# (ONS KYHJ), calendar-year growth, per cent.
+OBR_PRIVATE_RENTS = {
+    2026: 3.41321,
+    2027: 2.65158,
+    2028: 1.98206,
+    2029: 2.08464,
+    2030: 2.34856,
+    2031: 2.59541,
+}
 
 
 def test_uprate_rent_uses_tenure_specific_growth():
@@ -44,24 +46,24 @@ def test_uprate_rent_uses_tenure_specific_growth():
     assert current_year.household["rent"][1] == pytest.approx(1_080.0)
 
 
-def test_forecast_private_rent_preserves_obr_aggregate_growth():
-    growth = parameters.gov.economic_assumptions.yoy_growth
-
-    for year in range(2026, 2031):
-        private_rent_growth = growth.ons.private_rental_prices(year)["UNITED_KINGDOM"]
-        social_rent_growth = growth.obr.social_rent(year)
-        aggregate_rent_growth = growth.obr.rent(year)
-
-        weighted_growth = (
-            PRIVATE_RENT_WEIGHT * private_rent_growth
-            + SOCIAL_RENT_WEIGHT * social_rent_growth
-        )
-        assert weighted_growth == pytest.approx(aggregate_rent_growth)
+def test_forecast_private_rent_is_the_obr_private_rents_forecast():
+    """Every region's forecast is the OBR's UK private rents growth, to 4
+    decimals: there is no regional forecast."""
+    growth = parameters.gov.economic_assumptions.yoy_growth.ons.private_rental_prices
+    regions = list(growth.children)
+    assert len(regions) == 14
+    for year, percent in OBR_PRIVATE_RENTS.items():
+        values = growth(f"{year}-01-01")
+        for region in regions:
+            assert values[region] == pytest.approx(round(percent / 100, 4)), (
+                region,
+                year,
+            )
 
 
 REGIONS = [region.name for region in Region]
 TENURES = ["RENT_PRIVATELY", "RENT_FROM_COUNCIL", "RENT_FROM_HA", "OWNED_OUTRIGHT"]
-UPRATED_YEARS = list(range(2022, 2031))
+UPRATED_YEARS = list(range(2022, 2032))
 
 
 def _uprated_rent(regions, tenures, rents, year):

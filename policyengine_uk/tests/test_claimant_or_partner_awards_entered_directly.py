@@ -46,7 +46,11 @@ def family(award):
                     reported: {YEAR: 3_000},
                 },
             },
-            "benunits": {"family": {"members": members}},
+            # Not claiming Universal Credit, which would end the claimant's
+            # income-related ESA (esa_income_report_closed).
+            "benunits": {
+                "family": {"members": members, "would_claim_uc": {YEAR: False}}
+            },
             "households": {"home": {"members": members}},
         }
     )
@@ -132,7 +136,7 @@ def test_the_raw_reported_total_is_read_through_the_reports(award):
     member's report. Here the partner reports £200 and an adult outside the
     couple £3,000, with savings of £10,000. Tariff income of
     ceil(4,000 / 250) x £1 x 52 = £832 a year extinguishes the partner's
-    award. The raw total, £3,200, differs from the screened award, £2,368,
+    award. The raw total, £3,200, differs from the screened award, £2,168,
     but is still what the reports give. As the reform uses reported amounts
     unscreened, the claimant-or-partner award is the partner's raw report,
     £200."""
@@ -154,11 +158,15 @@ def test_the_raw_reported_total_is_read_through_the_reports(award):
                     reported: {YEAR: 3_000},
                 },
             },
-            "benunits": {"family": {"members": members}},
+            # Not claiming Universal Credit, which would end the partner's
+            # income-related ESA (esa_income_report_closed).
+            "benunits": {
+                "family": {"members": members, "would_claim_uc": {YEAR: False}}
+            },
             "households": {"home": {"members": members, "savings": {YEAR: 10_000}}},
         }
     )
-    assert simulation.calculate(award, YEAR)[0] == 2_368
+    assert simulation.calculate(award, YEAR)[0] == 2_168
     assert scoped(simulation, award) == 0
     simulation.set_input(award, YEAR, [3_200])
     assert scoped(simulation, award) == 200

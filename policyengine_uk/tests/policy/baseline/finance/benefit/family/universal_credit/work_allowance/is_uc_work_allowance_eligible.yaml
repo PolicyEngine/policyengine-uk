@@ -116,3 +116,92 @@
   output:
     is_child_or_qualifying_young_person_for_universal_credit: [false, false]
     is_uc_work_allowance_eligible: false
+
+# Reg. 22(1)(b)(i): no work allowance "where a single claimant does not have,
+# or neither of joint claimants has, responsibility for a child or qualifying
+# young person or limited capability for work".
+
+- name: Case 8, a single claimant with limited capability has a work allowance.
+  period: 2026
+  input:
+    age: 40
+    uc_limited_capability_for_WRA: true
+  output:
+    is_uc_work_allowance_eligible: true
+
+- name: Case 9, joint claimants where one has limited capability have a work allowance.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 40
+        uc_limited_capability_for_WRA: false
+      person2:
+        age: 38
+        uc_limited_capability_for_WRA: true
+    benunits:
+      benunit:
+        members: [person1, person2]
+  output:
+    is_uc_work_allowance_eligible: true
+
+- name: Case 10, a nonqualifying 17-year-old's limited capability does not create a work allowance.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 40
+        is_uc_claimant: true
+        uc_limited_capability_for_WRA: false
+      person2:
+        age: 17
+        is_uc_claimant: false
+        is_in_non_advanced_education: false
+        is_in_approved_training: false
+        uc_limited_capability_for_WRA: true
+    benunits:
+      benunit:
+        members: [person1, person2]
+  output:
+    is_uc_assessed_claimant: [true, false]
+    is_child_or_qualifying_young_person_for_universal_credit: [false, false]
+    is_uc_work_allowance_eligible: false
+    uc_work_allowance: 0
+
+- name: Case 11, a third flagged claimant's limited capability does not create a work allowance.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 50
+        is_uc_claimant: true
+      person2:
+        age: 48
+        is_uc_claimant: true
+      person3:
+        age: 22
+        is_uc_claimant: true
+        uc_limited_capability_for_WRA: true
+    benunits:
+      benunit:
+        members: [person1, person2, person3]
+  output:
+    is_uc_assessed_claimant: [true, true, false]
+    is_uc_work_allowance_eligible: false
+
+- name: Case 12, a looked-after child's limited capability does not create a work allowance.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 40
+        is_parent: true
+      person2:
+        age: 5
+        is_looked_after_by_local_authority: true
+        uc_limited_capability_for_WRA: true
+    benunits:
+      benunit:
+        members: [person1, person2]
+  output:
+    is_uc_work_allowance_eligible: false

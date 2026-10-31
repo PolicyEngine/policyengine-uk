@@ -16,10 +16,8 @@ class uc_limited_capability_for_WRA(Variable):
         "does not include the support component (esa_includes_support_"
         "component) is taken not to have it, whatever the flag, though someone "
         "still in the ESA assessment phase may yet be found to. The model does "
-        "not infer it the other way, from the support component alone: the "
-        "Universal Credit LCWRA element and work allowance still read every "
-        "member of the benefit unit, not only the claimants. Users can set it "
-        "directly."
+        "not infer it the other way, from the support component alone. Users "
+        "can set it directly."
     )
     definition_period = YEAR
     reference = (

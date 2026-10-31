@@ -254,7 +254,7 @@ def calculate_labour_substitution_elasticities(
     )
 
     # Lone parents - lower elasticities than partnered women, reflecting different constraints
-    lone_parents = (gender == "FEMALE") & ~is_couple & has_children
+    lone_parents = ~is_couple & has_children
     elasticities[lone_parents & (youngest_child_age <= 4)] = 0.094  # 0-4 years
     elasticities[
         lone_parents & (youngest_child_age >= 5) & (youngest_child_age <= 10)
@@ -330,7 +330,7 @@ def calculate_labour_net_income_elasticities(
     ] = -0.063  # 11+ years
 
     # Lone parents - smaller negative income effects than partnered women
-    lone_parents = (gender == "FEMALE") & ~is_couple & has_children
+    lone_parents = ~is_couple & has_children
     elasticities[lone_parents & (youngest_child_age <= 4)] = -0.037  # 0-4 years
     elasticities[
         lone_parents & (youngest_child_age >= 5) & (youngest_child_age <= 10)

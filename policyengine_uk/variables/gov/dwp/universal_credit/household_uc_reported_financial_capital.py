@@ -1,11 +1,11 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.variables.gov.dwp.universal_credit.household_uc_company_holding_pool_scale import (
-    HOLDINGS_SOURCE,
-)
 from policyengine_uk.utils.capital_valuation import (
     counted_share,
     exact_amount,
     round_to_penny,
+)
+from policyengine_uk.variables.gov.dwp.universal_credit.household_uc_company_holding_pool_scale import (
+    HOLDINGS_SOURCE,
 )
 
 
@@ -26,8 +26,8 @@ class household_uc_reported_financial_capital(Variable):
         "person's holding is first clipped to [0, max(0, "
         "share_like_capital_with_sale_expenses)], with positive infinity "
         "mapped to the upper bound and negative infinity to zero before any "
-        "multiplication. All household holdings share "
-        "one nonnegative share_like_capital_with_sale_expenses budget: if their total exceeds it, "
+        "multiplication. All household holdings share one nonnegative "
+        "share_like_capital_with_sale_expenses budget: if their total exceeds it, "
         "scale each person's holding proportionally before either this "
         "override floor or the separate pool deduction. This is a defensive "
         "rule for inconsistent inputs, not a statutory determination. "

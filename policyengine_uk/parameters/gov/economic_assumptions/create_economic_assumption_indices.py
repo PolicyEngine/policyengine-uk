@@ -42,10 +42,11 @@ def create_economic_assumption_indices(
 
             for year in range(start_year + 1, 2040):
                 yoy_growth = descendant(year)
-                indices_value = round(
-                    values[year - 1] * (1 + yoy_growth),
-                    5,
-                )
+                indices_value = values[year - 1] * (1 + yoy_growth)
+                # Rounding an earnings index down can put the projected
+                # guarantee below its statutory annual earnings floor.
+                if full_name != "gov.economic_assumptions.yoy_growth.earnings_uprating":
+                    indices_value = round(indices_value, 5)
                 values[year] = indices_value
 
             mirror_parameter = Parameter(

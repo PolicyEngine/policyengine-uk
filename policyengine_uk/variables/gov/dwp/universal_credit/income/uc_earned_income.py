@@ -28,11 +28,9 @@ class uc_earned_income(Variable):
         # Reg. 22(1)(b) deducts "the claimant's earned income (or, in the case
         # of joint claimants, their combined earned income)". Each claimant's
         # earned income is net of their own deductions (reg. 55(5), reg.
-        # 57(2)); the work allowance then comes off the combined earned
-        # income before the taper.
-        claimants = benunit.members("is_uc_assessed_claimant", period)
-        earned_income = add_for_members(
-            benunit, period, ["uc_individual_earned_income"], claimants
-        )
+        # 57(2)), summed over the claimants
+        # (uc_earned_income_before_work_allowance); the work allowance then
+        # comes off the combined earned income before the taper.
+        earned_income = benunit("uc_earned_income_before_work_allowance", period)
         work_allowance = benunit("uc_work_allowance", period)
         return max_(0, earned_income - work_allowance)

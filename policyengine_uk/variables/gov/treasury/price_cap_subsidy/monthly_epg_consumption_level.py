@@ -16,16 +16,20 @@ class monthly_epg_consumption_level(Variable):
 
     def formula(household, period, parameters):
         energy_consumption = household("monthly_domestic_energy_consumption", period)
+        country = household("country", period.this_year)
+        countries = country.possible_values
+        in_northern_ireland = country == countries.NORTHERN_IRELAND
+        ni_consumption_level = energy_consumption - household(
+            "monthly_ni_epg_subsidy", period
+        )
         ofgem = parameters.gov.ofgem
         in_effect = ofgem.energy_price_guarantee_in_effect(period)
         if not in_effect:
-            return energy_consumption
+            return where(in_northern_ireland, ni_consumption_level, energy_consumption)
         price_cap = ofgem.energy_price_cap(period)
         price_guarantee = ofgem.energy_price_guarantee(period)
         general_consumption_level = energy_consumption * price_guarantee / price_cap
 
-        country = household("country", period)
-        countries = country.possible_values
         in_great_britain = (
             (country == countries.ENGLAND)
             | (country == countries.SCOTLAND)
@@ -43,8 +47,9 @@ class monthly_epg_consumption_level(Variable):
         receives_prepayment_discount = (
             in_great_britain & uses_prepayment_meter & (annual_prepayment_discount > 0)
         )
-        return where(
+        gb_consumption_level = where(
             receives_prepayment_discount,
             prepayment_consumption_level,
             general_consumption_level,
         )
+        return where(in_northern_ireland, ni_consumption_level, gb_consumption_level)

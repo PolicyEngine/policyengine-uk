@@ -30,6 +30,34 @@
     # 431.6886 x BHCYRDEF 113.1 / 137.1 = 356.12 a week.
     poverty_threshold_bhc: 18_518.2
 
+- name: FYE 2016 (2015) is the FYE 2011 BHC line in FYE 2016 prices, not its FYE 2011 value
+  period: 2015
+  absolute_error_margin: 1
+  input:
+    people:
+      person:
+        age: 40
+    households:
+      household:
+        members: [person]
+  output:
+    # 60% of HBAI's FYE 2011 BHC median in FYE 2016 prices: 278.01 a week.
+    poverty_threshold_bhc: 14_456.52
+
+- name: FYE 2018 (2017) is the FYE 2011 BHC line in FYE 2018 prices, not its FYE 2011 value
+  period: 2017
+  absolute_error_margin: 1
+  input:
+    people:
+      person:
+        age: 40
+    households:
+      household:
+        members: [person]
+  output:
+    # 60% of HBAI's FYE 2011 BHC median in FYE 2018 prices: 288.01 a week.
+    poverty_threshold_bhc: 14_976.52
+
 - name: FYE 2021 (2020) keeps the FYE 2011 BHC reference
   period: 2020
   absolute_error_margin: 1
@@ -41,8 +69,8 @@
       household:
         members: [person]
   output:
-    # 305.70 a week.
-    poverty_threshold_bhc: 15_896.4
+    # 60% of HBAI's FYE 2011 BHC median in FYE 2021 prices: 301.34 a week.
+    poverty_threshold_bhc: 15_669.68
 
 - name: A single adult on 12,000 of earnings is below the BHC absolute line in 2024
   period: 2024

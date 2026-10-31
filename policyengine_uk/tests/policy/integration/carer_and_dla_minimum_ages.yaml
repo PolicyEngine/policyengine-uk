@@ -1,0 +1,484 @@
+# Conditional age-boundary cash cases, with the existing annual age/rate convention.
+# Positive carers otherwise meet the qualifying-care/disability/duration conditions,
+# have no earnings/overlapping personal benefit, and are not in full-time education.
+# Report-only adult cases retain an existing input proxy, not a waiver of care rules.
+# DLA care categories assume the separate needs/duration conditions; infant care is
+# not automatic. No final amount, pre-overlap, earnings or eligibility is supplied.
+- name: Reported Carers Allowance cannot pay a fifteen year old
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      caree:
+        age: 50
+        pip_dl_category: STANDARD
+      carer:
+        age: 15
+        care_hours: 0
+        carers_allowance_reported: 4000
+    benunits:
+      family:
+        members:
+        - caree
+        - carer
+    households:
+      home:
+        members:
+        - caree
+        - carer
+        country: ENGLAND
+  output:
+    carers_allowance:
+    - 0
+    - 0
+    carer_support_payment:
+    - 0
+    - 0
+- name: Thirty five caring hours cannot pay Carers Allowance below sixteen
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      caree:
+        age: 50
+        pip_dl_category: STANDARD
+      carer:
+        age: 15
+        care_hours: 35
+    benunits:
+      family:
+        members:
+        - caree
+        - carer
+    households:
+      home:
+        members:
+        - caree
+        - carer
+        country: ENGLAND
+  output:
+    carers_allowance:
+    - 0
+    - 0
+    carer_support_payment:
+    - 0
+    - 0
+- name: Reported Carers Allowance retains the existing proxy at sixteen
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      caree:
+        age: 50
+        pip_dl_category: STANDARD
+      carer:
+        age: 16
+        care_hours: 0
+        carers_allowance_reported: 4000
+    benunits:
+      family:
+        members:
+        - caree
+        - carer
+    households:
+      home:
+        members:
+        - caree
+        - carer
+        country: ENGLAND
+  output:
+    carers_allowance:
+    - 0
+    - 4495.4
+    carer_support_payment:
+    - 0
+    - 0
+- name: A sixteen year old Northern Ireland carer passes the age floor
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      caree:
+        age: 50
+        pip_dl_category: STANDARD
+      carer:
+        age: 16
+        care_hours: 35
+    benunits:
+      family:
+        members:
+        - caree
+        - carer
+    households:
+      home:
+        members:
+        - caree
+        - carer
+        country: NORTHERN_IRELAND
+  output:
+    carers_allowance:
+    - 0
+    - 4495.4
+    carer_support_payment:
+    - 0
+    - 0
+- name: A fractional age below sixteen is not rounded up for Carers Allowance
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      caree:
+        age: 50
+        pip_dl_category: STANDARD
+      carer:
+        age: 15.5
+        care_hours: 35
+    benunits:
+      family:
+        members:
+        - caree
+        - carer
+    households:
+      home:
+        members:
+        - caree
+        - carer
+        country: WALES
+  output:
+    carers_allowance:
+    - 0
+    - 0
+    carer_support_payment:
+    - 0
+    - 0
+- name: Scottish Carers Allowance also screens age in the retained twenty twenty four route
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      caree:
+        age: 50
+        pip_dl_category: STANDARD
+      carer:
+        age: 15
+        care_hours: 35
+    benunits:
+      family:
+        members:
+        - caree
+        - carer
+    households:
+      home:
+        members:
+        - caree
+        - carer
+        country: SCOTLAND
+  output:
+    carers_allowance:
+    - 0
+    - 0
+    carer_support_payment:
+    - 0
+    - 0
+    scottish_carer_supplement:
+    - 0
+    - 0
+- name: An eligible Scottish carer retains Carers Allowance in twenty twenty four
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      caree:
+        age: 50
+        pip_dl_category: STANDARD
+      carer:
+        age: 16
+        care_hours: 35
+    benunits:
+      family:
+        members:
+        - caree
+        - carer
+    households:
+      home:
+        members:
+        - caree
+        - carer
+        country: SCOTLAND
+  output:
+    carers_allowance:
+    - 0
+    - 4258.8
+    carer_support_payment:
+    - 0
+    - 0
+    scottish_carer_supplement:
+    - 0
+    - 0
+- name: Reported Carers Allowance cannot pay CSP below sixteen
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      caree:
+        age: 50
+        pip_dl_category: STANDARD
+      carer:
+        age: 15
+        care_hours: 0
+        carers_allowance_reported: 4000
+    benunits:
+      family:
+        members:
+        - caree
+        - carer
+    households:
+      home:
+        members:
+        - caree
+        - carer
+        country: SCOTLAND
+  output:
+    carers_allowance:
+    - 0
+    - 0
+    carer_support_payment:
+    - 0
+    - 0
+    scottish_carer_supplement:
+    - 0
+    - 0
+- name: Thirty five caring hours cannot pay CSP below sixteen
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      caree:
+        age: 50
+        pip_dl_category: STANDARD
+      carer:
+        age: 15
+        care_hours: 35
+    benunits:
+      family:
+        members:
+        - caree
+        - carer
+    households:
+      home:
+        members:
+        - caree
+        - carer
+        country: SCOTLAND
+  output:
+    carers_allowance:
+    - 0
+    - 0
+    carer_support_payment:
+    - 0
+    - 0
+    scottish_carer_supplement:
+    - 0
+    - 0
+- name: CSP and its supplement retain the sixteen year old age boundary
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      caree:
+        age: 50
+        pip_dl_category: STANDARD
+      carer:
+        age: 16
+        care_hours: 35
+    benunits:
+      family:
+        members:
+        - caree
+        - carer
+    households:
+      home:
+        members:
+        - caree
+        - carer
+        country: SCOTLAND
+  output:
+    carers_allowance:
+    - 0
+    - 0
+    carer_support_payment:
+    - 0
+    - 4495.4
+    scottish_carer_supplement:
+    - 0
+    - 608.4
+- name: Reported receipt retains the CSP proxy at sixteen in twenty twenty five
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      caree:
+        age: 50
+        pip_dl_category: STANDARD
+      carer:
+        age: 16
+        care_hours: 0
+        carers_allowance_reported: 4000
+    benunits:
+      family:
+        members:
+        - caree
+        - carer
+    households:
+      home:
+        members:
+        - caree
+        - carer
+        country: SCOTLAND
+  output:
+    carers_allowance:
+    - 0
+    - 0
+    carer_support_payment:
+    - 0
+    - 4331.6
+    scottish_carer_supplement:
+    - 0
+    - 0
+- name: A fractional age below sixteen is not rounded up for CSP
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      caree:
+        age: 50
+        pip_dl_category: STANDARD
+      carer:
+        age: 15.5
+        care_hours: 35
+    benunits:
+      family:
+        members:
+        - caree
+        - carer
+    households:
+      home:
+        members:
+        - caree
+        - carer
+        country: SCOTLAND
+  output:
+    carers_allowance:
+    - 0
+    - 0
+    carer_support_payment:
+    - 0
+    - 0
+    scottish_carer_supplement:
+    - 0
+    - 0
+- name: DLA mobility uses each child and categorys own minimum age
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      caregiver:
+        age: 40
+      higher_under:
+        age: 2
+        dla_m_category: HIGHER
+        dla_sc_category: HIGHER
+      higher_at:
+        age: 3
+        dla_m_category: HIGHER
+      lower_under:
+        age: 4
+        dla_m_category: LOWER
+        dla_sc_category: HIGHER
+      lower_at:
+        age: 5
+        dla_m_category: LOWER
+    benunits:
+      family:
+        members:
+        - caregiver
+        - higher_under
+        - higher_at
+        - lower_under
+        - lower_at
+    households:
+      home:
+        members:
+        - caregiver
+        - higher_under
+        - higher_at
+        - lower_under
+        - lower_at
+        country: ENGLAND
+  output:
+    dla_m:
+    - 0
+    - 0
+    - 4160
+    - 0
+    - 1575.6
+    dla_sc:
+    - 0
+    - 5959.2
+    - 0
+    - 5959.2
+    - 0
+    dla:
+    - 0
+    - 5959.2
+    - 4160
+    - 5959.2
+    - 1575.6
+- name: DLA care has no categorical age floor and fractional mobility ages are not rounded
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      caregiver:
+        age: 40
+      infant:
+        age: 1
+        dla_m_category: NONE
+        dla_sc_category: HIGHER
+      higher_under:
+        age: 2.5
+        dla_m_category: HIGHER
+      lower_under:
+        age: 4.5
+        dla_m_category: LOWER
+    benunits:
+      family:
+        members:
+        - caregiver
+        - infant
+        - higher_under
+        - lower_under
+    households:
+      home:
+        members:
+        - caregiver
+        - infant
+        - higher_under
+        - lower_under
+        country: NORTHERN_IRELAND
+  output:
+    dla_m:
+    - 0
+    - 0
+    - 0
+    - 0
+    dla_sc:
+    - 0
+    - 5959.2
+    - 0
+    - 0
+    dla:
+    - 0
+    - 5959.2
+    - 0
+    - 0

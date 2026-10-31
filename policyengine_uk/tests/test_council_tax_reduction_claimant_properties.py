@@ -43,8 +43,12 @@ independently.
    person-level is_household_head flag.
    (Every programme reads the same head; see
    test_household_head_agreement_properties.py.)
-6. Not age: with one head flagged, raising every other member's age above
-   the head's does not change who claims.
+6. Not age: with one head flagged, raising every other adult's age above
+   the head's does not change who claims. Each person's claimant-or-partner
+   role is held at the model's reading of the drawn ages: the age
+   presumption (a member 20 or more years younger than the claimant is their
+   child) would otherwise read the head, or an adult of another family, as
+   a raised member's child.
 7. No-op: where the flagged head is strictly the eldest member and the rent
    is not shared, the claimant family is the eldest adult's family, the
    previous rule.
@@ -352,9 +356,11 @@ def test_claimant_does_not_follow_age(population):
 
     raised, _ = build(population, age_override=older_than_head)
     # 6. Not age.
-    before = calc(
-        Simulation(situation=situation), "council_tax_reduction_claimant_benunit"
-    )
+    drawn = Simulation(situation=situation)
+    before = calc(drawn, "council_tax_reduction_claimant_benunit")
+    roles = calc(drawn, "is_claimant_or_partner")
+    for person, role in zip(raised["people"].values(), roles):
+        person["is_claimant_or_partner"] = {YEAR: bool(role)}
     after = calc(Simulation(situation=raised), "council_tax_reduction_claimant_benunit")
     assert np.array_equal(before, after)
 

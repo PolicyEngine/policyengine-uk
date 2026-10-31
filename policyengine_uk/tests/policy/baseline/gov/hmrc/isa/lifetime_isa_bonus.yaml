@@ -1,0 +1,35 @@
+# ISA Regulations1998 Schedule para1, regs4ZA/10A; SI2017/466.
+# These are qualifying current-year additions, not existing balances, bonuses
+# or LISA-to-LISA transfers. Ages40-49 assume first funding before age40.
+
+- name: Qualifying LISA additions earn 25 percent up to the annual payment limit
+  period: 2026
+  input:
+    age: [30, 30, 30, 30, 30]
+    lifetime_isa_payments: [-100, 0, 2_400, 4_000, 5_000]
+  output:
+    lifetime_isa_bonus: [0, 0, 600, 1_000, 1_000]
+
+- name: Payments qualify from age18 until just before age50
+  period: 2026
+  input:
+    age: [17, 18, 49, 50]
+    lifetime_isa_payments: [4_000, 4_000, 4_000, 4_000]
+  output:
+    lifetime_isa_bonus: [0, 1_000, 1_000, 0]
+
+- name: No LISA bonus exists in fiscal2016-17
+  period: 2016
+  input:
+    age: 30
+    lifetime_isa_payments: 4_000
+  output:
+    lifetime_isa_bonus: 0
+
+- name: LISA bonus begins in fiscal2017-18
+  period: 2017
+  input:
+    age: 30
+    lifetime_isa_payments: 4_000
+  output:
+    lifetime_isa_bonus: 1_000

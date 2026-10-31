@@ -43,17 +43,17 @@ household output explicitly.
 
 ## Published price benchmark
 
-Microcosm prices journeys using FY2024–25 published facts. The model uses the
-same inputs. For each area, receipts `R`, boardings `B`, concessionary
-boardings `C`, annual trips per resident `T` and population `P` give:
+The model uses FY2024–25 published facts. For each area, receipts `R`,
+boardings `B`, concessionary boardings `C`, annual trips per resident `T` and
+population `P` give:
 
-- Fare-paying yield per boarding: `y = R / (B - C)`.
+- Yield per priced boarding: `y = R / (B - C)`.
 - Boardings per resident trip: `k = B / (T * P)`.
 
 | Area | R (£) | B | C | T | P | y (£) | k |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | London | 1,347,434,943.01459 | 1,821,485,000 | 497,523,765.08908 | 13.1155774642333 | 58,620,101 | 1.017729905895 | 2.369144880275 |
-| England outside London | 2,069,953,713.42079 | 1,850,509,887.26131 | 519,107,608.59444 | 28.0685543170643 | 58,620,101 | 1.554716967657 | 1.124669202640 |
+| England outside London | 2,069,953,713.42079 | 1,850,509,887.26131 | 402,846,350.14539 | 28.0685543170643 | 58,620,101 | 1.429858292587 | 1.124669202640 |
 | Scotland | 391,000,000 | 334,000,000 | 183,599,374.01433 | 28.0685543170643 | 5,546,900 | 2.599723222144 | 2.145240985363 |
 | Northern Ireland | 150,082,817.49 | 67,794,551.35 | 8,960,000 | 28.0685543170643 | 1,927,855 | 2.550929922065 | 1.252853758464 |
 
@@ -68,6 +68,26 @@ Ireland use the English other-local-bus trip rate as a proxy, as Microcosm does.
 These translations include interchanges and differences between operator
 boardings and resident trips; they are not counts of legs for a known trip.
 `gov.dft.bus.benchmark_year` (2024) names the fiscal year these facts describe.
+
+Outside London, `C` uses BUS01c's older-and-disabled concessionary journeys.
+The other concessions remain in the priced denominator, so the yield absorbs
+their discounts. BUS01c's total would also remove 116.3 million youth-scheme
+journeys (BUS01c note 4) that the dataset's `bus_pass_eligible` flag does not
+generally make free. The older-and-disabled count approximates that flag:
+Microcosm flags older-person eligibility and under-5s outside London, but does
+not flag disabled pass holders. London uses total concessionary journeys;
+Scotland and Northern Ireland retain their own counts.
+
+Charging disabled pass holders raises modelled spending; making under-5s free
+lowers it. [Microcosm issue 1385](https://github.com/PolicyEngine/microcosm/issues/1385)
+reports that this denominator change moves outside-London fares from 6.8%
+above BUS05ai to about 1.8% below it on the certified build
+`microcosm-uk-2024-25-national-20261019T083323Z-6cba5d71`, using its existing
+weights and model year 2024.
+
+Microcosm's fact selectors and model lock must use the same concessionary
+definition as this benchmark. The companion update follows the model release
+and is tracked in [Microcosm issue 1385](https://github.com/PolicyEngine/microcosm/issues/1385).
 
 ## Fares by year
 
@@ -97,7 +117,7 @@ The CPI projection also raises the fares in the index that the £3 cap holds at
 £3, while the cap term below measures changes from a nominal £3. From January
 2027 a ticket held at a cap therefore costs about £3 times the CPI growth since
 March 2026 more than the cap allows. That overstates the outside-London yield
-by 0.4% in 2027–28 and 0.8% in 2028–29, about 0.3 points more each year after.
+by 0.4% in 2027–28 and 0.7% in 2028–29, about 0.3 points more each year after.
 A cap reform is measured against the same reference as the baseline, so its
 cost does not move.
 
@@ -180,9 +200,9 @@ share of single tickets and its mean uncapped fare at FY2024–25 prices:
 
 | Band | Share | Mean fare |
 |---|---:|---:|
-| `LOW`, at or below £2 | 0.55 | £1.65 |
-| `MIDDLE`, above £2 and up to £3 | 0.30 | £2.21 |
-| `HIGH`, above £3 | 0.15 | £3.87 |
+| `LOW`, at or below £2 | 0.56 | £1.70 |
+| `MIDDLE`, above £2 and up to £3 | 0.31 | £2.21 |
+| `HIGH`, above £3 | 0.13 | £3.95 |
 
 The fares rise with the OBR CPI after FY2024–25 and the shares stay, so a fixed
 cap saves more as fares rise. The model caps each band's mean fare under both
@@ -194,48 +214,49 @@ mean needs more bands.
 `scripts/fit_bus_cap_savings.py` fits the table by least squares to the facts
 below, each scaled by its tolerance. It searches shares in steps of one point
 and fares in steps of one penny, keeps each band's mean at least 10% above its
-lower edge, and sets the low band's fare so all singles average £2.15:
+lower edge, and sets the low band's fare so all singles average £2.15. The
+last column is each fact under the fitted table, on the OBR's October 2026 CPI
+path:
 
 | Fact | Source | Target | Table gives |
 |---|---|---:|---:|
-| A full year at £2, 2023–24 | Fare cap support, DfT BUS05bi | £278.95m ± 10% | £280.9m |
+| A full year at £2, 2023–24 | Fare cap support, DfT BUS05bi | £278.95m ± 10% | £281.5m |
 | Part of the December 2024 to March 2025 index step outside London due to the £3 cap | BUS0415a: +11.0%; neighbouring quarters 0.1% to 2.3% | 10% ± 1 point of the yield | 9.8% |
-| The £3 cap in 2025 | ["over £150 million"](https://www.gov.uk/government/speeches/national-bus-fare-cap) | £150m ± 20% | £140.0m |
-| The £2 cap in 2027, against no cap | ["£400 million"](https://www.gov.uk/government/speeches/2-bus-fares-from-january-2027) | £400m ± 20% | £411.6m |
+| The £3 cap in 2025 | ["over £150 million"](https://www.gov.uk/government/speeches/national-bus-fare-cap) | £150m ± 20% | £142.7m |
+| The £2 cap in 2027, against no cap | ["£400 million"](https://www.gov.uk/government/speeches/2-bus-fares-from-january-2027) | £400m ± 20% | £447.1m |
 | Mean pre-cap price of single tickets | [DfT evaluation](https://www.gov.uk/government/publications/evaluation-of-the-2-bus-fare-cap), Table 6 | £2.15 ± £0.10 | £2.15 |
-| Share of single tickets above £2 | Table 6: £0.32 / (£2.73 − £2.00) | 0.44 ± 0.05 | 0.45 |
-| Their mean pre-cap price | Table 6 | £2.73 ± £0.10 | £2.76 |
-| 2024–25: £2 for 270 days, then £3 | Fare cap support, DfT BUS05bi | £515.69m, not fitted | £268.5m |
+| Share of single tickets above £2 | Table 6: £0.32 / (£2.73 − £2.00) | 0.44 ± 0.05 | 0.44 |
+| Their mean pre-cap price | Table 6 | £2.73 ± £0.10 | £2.72 |
+| 2024–25: £2 for 270 days, then £3 | Fare cap support, DfT BUS05bi | £515.69m, not fitted | £271.4m |
 
 The £400 million is read as £2 against no cap: the £3 scheme is funded only to
 December 2026, and the £2 scheme replaces it. Read as £2 against a continued
-£3 cap, the table gives £247.3m, 38% below. The script prints both.
+£3 cap, the table gives £268.7m, 33% below. The script prints both.
 
 The 2024–25 grant, for the benchmark year itself, is reported and not fitted;
-the table puts it at about half. Grant per fare-paying boarding rose 78% on
-2023–24, while the outside-London index rose 6.7%, receipts per fare-paying
-boarding rose 2.8%, and the cap rose only for the last quarter. The figure may
+the table puts it at about half. Grant per priced boarding rose 77.5% on
+2023–24, while the outside-London index rose 6.7%, receipts per priced
+boarding rose 2.6%, and the cap rose only for the last quarter. The figure may
 therefore hold more than that year's forgone fares (timing or coverage of
 payments, not checked). The 2023–24 grant and the two announced figures all
 put a full year at £2 near £0.3bn, not £0.6bn. The single £2.748 fare this
 table replaced was calibrated to the 2024–25 grant.
 
-The costs use the 0.70 default single share and fare-paying boardings outside
-London (BUS01 journeys less BUS01c concessionary journeys: 1,281m in 2023–24
-and 1,331m in 2024–25, which also stands for 2025 and 2027), with fares moved
-to each year by CPI. Table 6 compares January to October 2022 with the same
-months of 2023 and is read at face value, for the table's shape. Deflated to
-2022 prices it would put the 2023–24 saving about a third above the grant.
+The costs use the 0.70 default single share and priced boardings outside
+London (BUS01a journeys less BUS01c older-and-disabled concessionary journeys:
+1,390m in 2023–24 and 1,448m in 2024–25, which also stands for 2025 and 2027),
+with fares moved to each year by CPI. Table 6 compares January to October 2022
+with the same months of 2023 and is read at face value, for the table's shape.
+Deflated to 2022 prices it would put the 2023–24 saving about 40% above the grant.
 Possible reasons, not checked, are that the grant pays operators for revenue
 lost net of the journeys the cap added, and that Table 6 covers the larger
 participating operators only. The two announced figures are budgets; the £2
 cap's first ten months paid £210m against £245m planned. The table is a fitted
 central estimate, not an observed fare distribution.
 
-At FY2025–26 prices the table saves £0.39 per single ticket for a full year at
-£2 against no cap, and £0.15 at £3: about £0.36bn and £0.14bn a year at
-2024–25 boardings. The single £2.748 fare this replaced saved £0.75 at £2
-(about £0.70bn) and nothing at £3.
+At FY2025–26 prices the table saves £0.36 per single ticket for a full year at
+£2 against no cap, and £0.14 at £3: about £0.36bn and £0.14bn a year at
+2024–25 boardings.
 
 A dataset or calculator can supply `local_bus_uncapped_single_fare` for each
 person. Where it is supplied, that person's single tickets cost that one fare

@@ -1,11 +1,11 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.variables.gov.dwp.universal_credit.household_uc_company_holding_pool_scale import (
-    HOLDINGS_SOURCE,
-)
 from policyengine_uk.utils.capital_valuation import (
     counted_share,
     exact_amount,
     round_to_penny,
+)
+from policyengine_uk.variables.gov.dwp.universal_credit.household_uc_company_holding_pool_scale import (
+    HOLDINGS_SOURCE,
 )
 
 
@@ -31,10 +31,13 @@ class household_uc_pool_company_holdings(Variable):
         "All other holdings leave the pool here, including a dependant's "
         "holding even when their benunit supplies a report or override. "
         "When financial reports and holdings are compatible, no benunit counts "
-        "any part of a disregarded holding. An inconsistent financial report "
-        "that omits a known holding can leave it in the residual pool. A holding "
-        "is shares, held within the household's share_like_capital_with_sale_expenses. Each "
-        "person's holding is first clipped to [0, max(0, share_like_capital_with_sale_expenses)], "
+        "any part of a disregarded holding. A financial report below its "
+        "holder's known holding still consumes the holding at its counted "
+        "value (household_uc_reported_financial_capital), so no report leaves "
+        "a holding in the residual pool. A holding is shares, which have "
+        "expenses of sale, held within the household's "
+        "share_like_capital_with_sale_expenses. Each person's holding is first "
+        "clipped to [0, max(0, share_like_capital_with_sale_expenses)], "
         "with positive infinity mapped to the upper bound and negative infinity "
         "to zero before any multiplication. All household holdings then share "
         "one nonnegative share_like_capital_with_sale_expenses budget "

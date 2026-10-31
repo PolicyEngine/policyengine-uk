@@ -1,7 +1,6 @@
-import os
-
 from policyengine_uk.model_api import *
 from policyengine_uk.utils.benefit_unit import award_of_couple
+from policyengine_uk.utils.formula_origin import calculated_by
 from policyengine_uk.utils.supplied_inputs import supplied_input
 from policyengine_uk.utils.uc_work_related_requirements import (
     other_member_of_single_claim,
@@ -9,7 +8,9 @@ from policyengine_uk.utils.uc_work_related_requirements import (
 from policyengine_uk.variables.gov.dwp._legacy_award_payee import (
     is_payee_of_couple_award,
 )
-from policyengine_uk.variables.gov.dwp.esa_income import income_related_esa_award
+from policyengine_uk.variables.gov.dwp.esa_income import (
+    income_related_esa_award_on_reports,
+)
 from policyengine_uk.variables.gov.dwp.universal_credit.carer_element.uc_carer_element import (
     uc_carer_element,
 )
@@ -45,23 +46,6 @@ QUALIFYING_YOUNG_PERSON_BENEFITS = [
     "pip",
     "is_entitled_to_carer_benefit",
 ]
-
-
-def calculated_by(population, variable_name, period, model_variable):
-    """Whether the simulation calculates ``variable_name`` with the model's own
-    formula (``model_variable``'s), rather than one a reform put in its place.
-    The tax-benefit system loads each variable file as its own module, so the
-    formula is matched by where its code is, not by identity."""
-    from policyengine_uk.scenarios.uc_reform import lcwra_formula_origin
-
-    variable = population.simulation.tax_benefit_system.get_variable(variable_name)
-    formula = lcwra_formula_origin(variable.get_formula(period), period)
-    code = getattr(formula, "__code__", None)
-    model = model_variable.formula.__code__
-    return code is not None and (
-        os.path.realpath(code.co_filename),
-        code.co_firstlineno,
-    ) == (os.path.realpath(model.co_filename), model.co_firstlineno)
 
 
 class is_uc_benefit_cap_exempt_specified_benefit(Variable):
@@ -144,7 +128,7 @@ class is_uc_benefit_cap_exempt_specified_benefit(Variable):
             period,
             "esa_income",
             "esa_income_reported",
-            income_related_esa_award,
+            income_related_esa_award_on_reports,
             couple,
         )
         receiving_income_related_esa = benunit.project(
@@ -163,14 +147,13 @@ class is_uc_benefit_cap_exempt_specified_benefit(Variable):
         # award. An element entered for the award is included exactly when it
         # is positive, whatever the members' circumstances (an entry of nil
         # means the award does not include it). An element a reform's formula
-        # gives is included when positive. The model's own formula still
-        # gives the element for any member's limited capability for work and
-        # work-related activity or caring responsibilities, but the element is
-        # for "a claimant" (regs 27(1), 29(1)). So the element it gives is
-        # included when positive unless the only members with the
-        # circumstance are not claimants. A circumstance entered for the
-        # family alone (benunit_has_carer) names no member, and a nil amount
-        # (benunit_has_carer entered as false, or a nil rate) is not included.
+        # gives is included when positive. The element is for "a claimant"
+        # (regs 27(1), 29(1)), and the model's own formulas give it only for a
+        # claimant's limited capability for work and work-related activity or
+        # caring responsibilities, so the element they give is included when
+        # positive; the check that a claimant has the circumstance guards
+        # against a formula that does not. A nil amount (a nil rate) is not
+        # included.
         # The Universal Credit rebalancing rescales the formula's elements
         # from 2026 (scenarios/uc_reform.py) and is read the same way. The
         # model does not have the reg 28 waiting period or regs 29(5)-(6),

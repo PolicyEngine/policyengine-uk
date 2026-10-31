@@ -1,6 +1,4 @@
 from policyengine_uk.model_api import *
-import datetime
-import numpy as np
 
 
 class MinimumWageCategory(Enum):
@@ -19,12 +17,13 @@ class minimum_wage_category(Variable):
     entity = Person
     label = "Minimum wage category"
     definition_period = YEAR
+    reference = "https://www.legislation.gov.uk/uksi/2015/621/regulation/5"
 
     def formula(person, period, parameters):
         age = person("age", period)
         return select(
             [
-                person("is_apprentice", period),
+                person("qualifies_for_apprentice_minimum_wage", period),
                 age < 18,
                 (age >= 18) & (age <= 20),
                 (age >= 21) & (age <= 22),

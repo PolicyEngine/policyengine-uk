@@ -68,7 +68,7 @@
   output:
     income_support_tariff_income: 104
 
-- name: Income Support counts tariff income above the lower threshold, here absorbed by the lone-parent disregard
+- name: Income Support counts tariff income without an earnings disregard
   period: 2021
   absolute_error_margin: 1
   input:
@@ -89,10 +89,12 @@
   output:
     income_support_eligible: true
     income_support_tariff_income: 104
-    # 74.70 a week (2021-22 lone parent aged 18 or over). The tariff income is
-    # absorbed because the model applies the £20 lone-parent earnings disregard
-    # to all income, not only earnings.
-    income_support: 3884.40
+    income_support_net_earnings: 0
+    income_support_earnings_disregard: 0
+    income_support_applicable_income: 104
+    # £74.70 x 52 = £3,884.40 (2021-22 lone parent aged 18 or over).
+    # No earnings: no Schedule 8 disregard. £3,884.40 - £104 = £3,780.40.
+    income_support: 3780.40
 
 - name: Income Support remains eligible at the upper capital limit
   period: 2021

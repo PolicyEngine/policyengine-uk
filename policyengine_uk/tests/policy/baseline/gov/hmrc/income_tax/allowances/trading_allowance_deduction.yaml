@@ -1,10 +1,12 @@
 # Trading allowance, ITTOIA 2005 Part 6A Chapter 1 (ss. 783A-783AR).
 # self_employment_income is profit after actual expenses. The allowance is an
 # alternative to those expenses (s. 783AI; HMRC BIM86050), so it may only add
-# the part of the £1,000 that actual deductions have not already used.
+# the part of the allowance that actual deductions have not already used.
+# The allowance is £1,000 to 2026-27 and £3,000 from 2027-28 (Budget 2026,
+# paragraph 6.254); the cases above the 2027-28 block use 2026-27.
 
 - name: Sole trader with £25,000 profit gets no allowance on top of expenses
-  period: 2027
+  period: 2026
   absolute_error_margin: 0.01
   input:
     self_employment_income: 25_000
@@ -16,7 +18,7 @@
     income_tax: 2_486
 
 - name: Profit within the allowance, receipts unknown, is fully relieved
-  period: 2027
+  period: 2026
   absolute_error_margin: 0
   input:
     self_employment_income: 600
@@ -25,7 +27,7 @@
     taxable_self_employment_income: 0
 
 - name: Profit equal to the allowance, receipts unknown, is fully relieved
-  period: 2027
+  period: 2026
   absolute_error_margin: 0
   input:
     self_employment_income: 1_000
@@ -34,7 +36,7 @@
     taxable_self_employment_income: 0
 
 - name: Profit above the allowance, receipts unknown, is taxed as reported
-  period: 2027
+  period: 2026
   absolute_error_margin: 0
   input:
     self_employment_income: 1_001
@@ -43,7 +45,7 @@
     taxable_self_employment_income: 1_001
 
 - name: Full relief when receipts are within the allowance (s. 783AE-783AF)
-  period: 2027
+  period: 2026
   absolute_error_margin: 0
   input:
     self_employment_gross_receipts: 800
@@ -53,7 +55,7 @@
     taxable_self_employment_income: 0
 
 - name: Partial relief beats £100 of expenses (s. 783AI)
-  period: 2027
+  period: 2026
   absolute_error_margin: 0
   input:
     self_employment_gross_receipts: 1_200
@@ -64,7 +66,7 @@
     taxable_self_employment_income: 200
 
 - name: Partial relief beats £500 of expenses
-  period: 2027
+  period: 2026
   absolute_error_margin: 0
   input:
     self_employment_gross_receipts: 1_200
@@ -74,7 +76,7 @@
     taxable_self_employment_income: 200
 
 - name: Actual expenses above the allowance leave no extra relief
-  period: 2027
+  period: 2026
   absolute_error_margin: 0
   input:
     self_employment_gross_receipts: 25_000
@@ -84,7 +86,7 @@
     taxable_self_employment_income: 20_000
 
 - name: The allowance replaces capital allowances as well as expenses
-  period: 2027
+  period: 2026
   absolute_error_margin: 0
   input:
     self_employment_gross_receipts: 1_500
@@ -96,7 +98,7 @@
     taxable_self_employment_income: 500
 
 - name: Expenses plus capital allowances above the allowance use the profit method
-  period: 2027
+  period: 2026
   absolute_error_margin: 0
   input:
     self_employment_gross_receipts: 1_500
@@ -117,7 +119,7 @@
     taxable_self_employment_income: 600
 
 - name: Receipts below profit are inconsistent and treated as unknown
-  period: 2027
+  period: 2026
   absolute_error_margin: 0
   input:
     self_employment_gross_receipts: 500
@@ -125,3 +127,66 @@
   output:
     trading_allowance_deduction: 0
     taxable_self_employment_income: 1_500
+
+# 2027-28: £3,000 from 6 April 2027 (Budget 2026, paragraph 6.254; policy
+# costings page 23).
+
+- name: 2026-27 profit of £2,500, receipts unknown, is taxed as reported
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    self_employment_income: 2_500
+  output:
+    trading_allowance_deduction: 0
+    taxable_self_employment_income: 2_500
+
+- name: 2027-28 profit of £2,500, receipts unknown, is fully relieved
+  period: 2027
+  absolute_error_margin: 0
+  input:
+    self_employment_income: 2_500
+  output:
+    trading_allowance_deduction: 2_500
+    taxable_self_employment_income: 0
+
+- name: 2027-28 profit equal to the £3,000 allowance is fully relieved
+  period: 2027
+  absolute_error_margin: 0
+  input:
+    self_employment_income: 3_000
+  output:
+    trading_allowance_deduction: 3_000
+    taxable_self_employment_income: 0
+
+- name: 2027-28 profit above the £3,000 allowance, receipts unknown, is taxed as reported
+  period: 2027
+  absolute_error_margin: 0
+  input:
+    self_employment_income: 3_001
+  output:
+    trading_allowance_deduction: 0
+    taxable_self_employment_income: 3_001
+
+- name: 2027-28 partial relief replaces £1,000 of expenses with £3,000
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 30_000
+    self_employment_gross_receipts: 5_000
+    self_employment_income: 4_000
+  output:
+    trading_allowance_deduction: 2_000
+    # 5,000 receipts - 3,000 allowance
+    taxable_self_employment_income: 2_000
+    # (30,000 + 2,000 - 12,570) * 20%
+    income_tax: 3_886
+
+- name: 2027-28 actual expenses above £3,000 leave no extra relief
+  period: 2027
+  absolute_error_margin: 0
+  input:
+    self_employment_gross_receipts: 6_000
+    self_employment_income: 2_500
+  output:
+    trading_allowance_deduction: 0
+    taxable_self_employment_income: 2_500

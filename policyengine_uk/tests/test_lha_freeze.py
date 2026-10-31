@@ -208,3 +208,19 @@ def test_northern_ireland_lha_unfreeze_changes_only_northern_ireland_rates():
     for variable in NI_LHA_VARIABLES:
         assert unfrozen[variable] != baseline[variable], variable
     assert _lha_values("LONDON", reform) == _lha_values("LONDON")
+
+
+def test_great_britain_lha_maxima_and_minimum_leave_northern_ireland_unchanged():
+    """The maxima and the 31 March 2020 minimum are gov.dfc.LHA's too."""
+    reform = {
+        "gov.dwp.LHA.maximum.C": {"2024": 50},
+        "gov.dwp.LHA.maximum_monthly.C": {"2024": 100},
+        "gov.dwp.LHA.march_2020_minimum": {"2024": False},
+    }
+    assert _lha_values("NORTHERN_IRELAND", reform, 2024) == _lha_values(
+        "NORTHERN_IRELAND", year=2024
+    )
+    london = _lha_values("LONDON", reform, 2024)
+    baseline = _lha_values("LONDON", year=2024)
+    for variable in NI_LHA_VARIABLES:
+        assert london[variable] != baseline[variable], variable

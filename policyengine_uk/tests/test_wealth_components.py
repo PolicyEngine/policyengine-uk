@@ -1,6 +1,10 @@
 """corporate_wealth's components share its entity, quantity type and uprating
 metadata (class uprating and uprating_indices.yaml index), the condition for a
-dataset's identity corporate_wealth == sum of components to survive projection."""
+dataset's identity corporate_wealth == sum of components to survive projection.
+
+A component summed from per-person inputs, such as stocks_and_shares_isa, keeps
+the uprating_indices.yaml index for a stored total; its inputs carry the class
+uprating, since Core does not combine a sum with uprating."""
 
 from pathlib import Path
 
@@ -24,20 +28,30 @@ def _uprating_index(variable):
     return [index for index, names in UPRATING_INDICES.items() if variable in names]
 
 
+def _inputs(name):
+    """The input variables a variable is stored as or summed from."""
+    return system.variables[name].adds or [name]
+
+
 def test_components_match_corporate_wealth():
     corporate_wealth = system.variables["corporate_wealth"]
     for name in COMPONENTS:
         variable = system.variables[name]
-        assert variable.is_input_variable()
         assert variable.entity.key == corporate_wealth.entity.key
         assert variable.quantity_type == corporate_wealth.quantity_type
-        assert variable.uprating == corporate_wealth.uprating
         assert _uprating_index(name) == _uprating_index("corporate_wealth")
+        for source in _inputs(name):
+            assert system.variables[source].is_input_variable()
+            assert system.variables[source].uprating == corporate_wealth.uprating
+            assert _uprating_index(source) == _uprating_index("corporate_wealth")
 
 
 def test_cash_isa_is_uprated_with_savings():
-    assert system.variables["cash_isa"].uprating == system.variables["savings"].uprating
     assert _uprating_index("cash_isa") == _uprating_index("savings")
+    for source in _inputs("cash_isa"):
+        assert system.variables[source].is_input_variable()
+        assert system.variables[source].uprating == system.variables["savings"].uprating
+        assert _uprating_index(source) == _uprating_index("savings")
 
 
 def test_components_are_not_part_of_total_wealth():

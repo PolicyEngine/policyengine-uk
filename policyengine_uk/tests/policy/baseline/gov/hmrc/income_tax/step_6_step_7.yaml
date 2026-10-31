@@ -1,0 +1,188 @@
+# Tax reductions (Step 6) and charges (Step 7) in the Income Tax calculation.
+#
+# ITA 2007 s. 23 deducts the tax reductions at Step 6 from the tax calculated at
+# Step 5, then adds the s. 30 charges at Step 7 to the tax left. A reduction may
+# be deducted only so far as there is Step 5 tax to deduct it from, counting the
+# reductions already deducted (s. 29(2) and (3)). So reductions never offset the
+# High Income Child Benefit Charge (ITEPA 2003 Pt 10 Ch 8) or the annual
+# allowance charge (FA 2004 s. 227), which s. 30(1) adds at Step 7.
+# https://www.legislation.gov.uk/ukpga/2007/3/section/23
+# https://www.legislation.gov.uk/ukpga/2007/3/section/29
+# https://www.legislation.gov.uk/ukpga/2007/3/section/30
+#
+# Step 5 tax on £100,000 of pay in 2026-27 (rest of UK): the £12,570 Personal
+# Allowance leaves £87,430, so £37,700 × 20% + £49,730 × 40% = £27,432.
+# Child Benefit for an only child is £27.05 a week (gov.uk/child-benefit), so
+# £1,406.60 a year, rounded down to £1,406 for the charge (ITEPA s. 681C(3)).
+# Adjusted net income of £100,000 is above £80,000, so the charge is 100%.
+
+- name: Tax reductions above the Step 5 tax do not offset the High Income Child Benefit Charge.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 40
+        employment_income: 100_000
+        # For example VCT or EIS relief.
+        other_tax_credits: 50_000
+      child:
+        age: 5
+    benunit:
+      members: [parent, child]
+  output:
+    income_tax_pre_charges: [27_432, 0]
+    # The £50,000 is deducted only so far as there is Step 5 tax: £27,432.
+    income_tax_reductions: [27_432, 0]
+    CB_HITC: [1_406, 0]
+    income_tax_charges: [1_406, 0]
+    # £27,432 - £27,432 + £1,406.
+    income_tax: [1_406, 0]
+
+# Married Couple's Allowance: a claimant one of whose couple was born before
+# 6 April 1935, here caring for a grandchild. The allowance is a model input;
+# £4,360 gives a reduction of 10% (ITA 2007 s. 46), £436, the smallest gov.uk
+# lists for 2025-26 (gov.uk/married-couples-allowance). s. 27(5) deducts VCT
+# relief before the Married Couple's Allowance.
+- name: The Married Couple's Allowance reduction is limited to the Step 5 tax left, not the tax plus the High Income Child Benefit Charge.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 92
+        employment_income: 100_000
+        other_tax_credits: 27_200
+        married_couples_allowance: 4_360
+        # Keep this case focused on the Married Couple's Allowance.
+        winter_fuel_payment: 0
+      spouse:
+        age: 88
+        winter_fuel_payment: 0
+      grandchild:
+        age: 10
+    benunit:
+      members: [claimant, spouse, grandchild]
+  output:
+    income_tax_pre_charges: [27_432, 0, 0]
+    married_couples_allowance_deduction: [436, 0, 0]
+    # £27,432 - £27,200 of VCT relief leaves £232 for the £436 reduction.
+    capped_mcad: [232, 0, 0]
+    income_tax_reductions: [27_432, 0, 0]
+    CB_HITC: [1_406, 0, 0]
+    # Before the fix the reduction was capped at £27,432 + £1,406, so all
+    # £436 was deducted and income tax was £27,432 + £1,406 - £27,636 = £1,202.
+    income_tax: [1_406, 0, 0]
+
+- name: Tax reductions exactly equal to the Step 5 tax leave only the Step 7 charge.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 40
+        employment_income: 100_000
+        other_tax_credits: 27_432
+      child:
+        age: 5
+    benunit:
+      members: [parent, child]
+  output:
+    income_tax_pre_charges: [27_432, 0]
+    income_tax_reductions: [27_432, 0]
+    income_tax: [1_406, 0]
+
+- name: Tax reductions exactly equal to the Step 5 tax leave no tax without a Step 7 charge.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    employment_income: 100_000
+    other_tax_credits: 27_432
+  output:
+    income_tax_pre_charges: 27_432
+    income_tax_reductions: 27_432
+    income_tax_charges: 0
+    income_tax: 0
+
+- name: Tax reductions just below the Step 5 tax are all deducted.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    employment_income: 100_000
+    other_tax_credits: 27_000
+  output:
+    income_tax_reductions: 27_000
+    income_tax: 432
+
+# A landlord's property allowance election weighs income tax on each route, so it
+# has to see the charges the reductions cannot offset. With the £1,000 property
+# allowance (partial relief, ITTOIA 2005 s. 783BK), £99,000 of income leaves
+# £86,430 after the Personal Allowance: Step 5 tax £37,700 × 20% + £48,730 × 40%
+# = £27,032, all of it taken by the £27,200 of credits, so £1,406 of HICBC is
+# left. Without it, £100,000 of income gives £27,432 of Step 5 tax; the credits
+# and £232 of the £400 finance-cost reduction (20% of £2,000) take all of it,
+# and £1,406 of HICBC is left. Either way the liability is £1,406. Before the
+# fix, the allowance route netted the £168 of excess credits against the HICBC
+# and gave £1,238.
+- name: The property allowance election does not let tax reductions offset the High Income Child Benefit Charge.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      landlord:
+        age: 45
+        employment_income: 90_000
+        property_income: 10_000
+        property_rental_income: 10_000
+        property_finance_costs: 2_000
+        other_tax_credits: 27_200
+      child:
+        age: 5
+    benunit:
+      members: [landlord, child]
+  output:
+    CB_HITC: [1_406, 0]
+    income_tax: [1_406, 0]
+
+# The annual allowance charge on £70,000 of employer contributions: £10,000
+# above the £60,000 annual allowance, taxed at 40% as the slice from £87,430
+# to £97,430 of income after allowances (FA 2004 s. 227(4A)-(4B)).
+- name: Tax reductions above the Step 5 tax do not offset the annual allowance charge.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    employment_income: 100_000
+    employer_pension_contributions: 70_000
+    other_tax_credits: 30_000
+  output:
+    income_tax_pre_charges: 27_432
+    income_tax_reductions: 27_432
+    personal_pension_contributions_tax: 4_000
+    income_tax_charges: 4_000
+    income_tax: 4_000
+
+# Finance Act 2026 Sch. 10 para. 4(3) adds the winter fuel payment charge
+# (ITEPA 2003 Part 10 Chapter 9) to ITA 2007 s. 30(1), so it is also a
+# Step 7 charge. A single eligible recipient under 80 receives £200 under
+# SI 2025/969 reg. 3. Income above £35,000 makes the whole payment chargeable
+# under ITEPA 2003 s. 681I; the charge does not use the tax left after credits.
+# https://www.legislation.gov.uk/ukpga/2026/11/schedule/10/paragraph/4
+# https://www.legislation.gov.uk/uksi/2025/969/regulation/3
+# https://www.legislation.gov.uk/ukpga/2003/1/section/681I
+- name: Excess tax reductions do not offset the winter fuel payment or annual allowance charges.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 70
+    employment_income: 100_000
+    employer_pension_contributions: 70_000
+    other_tax_credits: 50_000
+  output:
+    income_tax_pre_charges: 27_432
+    income_tax_reductions: 27_432
+    personal_pension_contributions_tax: 4_000
+    income_tax_charges: 4_000
+    income_tax_before_winter_fuel_payment_charge: 4_000
+    winter_fuel_payment: 200
+    winter_fuel_payment_charge: 200
+    income_tax: 4_200

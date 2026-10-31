@@ -1,0 +1,156 @@
+# Hand-entered households retain the default and explicit take-up rules.
+# Survey reporters-only behavior is covered with MOCK data in Python tests.
+- name: WALES entitled non-reporting family entered by hand claims CTR by default
+  period: 2026
+  input:
+    age: 35
+    country: WALES
+    local_authority: CARDIFF
+    council_tax: 1800
+    savings: 0
+    would_claim_uc: false
+    claims_all_entitled_benefits: true
+  output:
+    council_tax_benefit_reported: 0
+    would_claim_council_tax_reduction: true
+    simulated_council_tax_reduction_benunit: 1800
+    council_tax_benefit: 1800
+    council_tax_reduction: 1800
+
+- name: WALES entitled non-reporting family under explicit CTR claim
+  period: 2026
+  input:
+    age: 35
+    country: WALES
+    local_authority: CARDIFF
+    council_tax: 1800
+    savings: 0
+    would_claim_uc: false
+    claims_all_entitled_benefits: true
+    would_claim_council_tax_reduction: true
+  output:
+    council_tax_benefit_reported: 0
+    would_claim_council_tax_reduction: true
+    simulated_council_tax_reduction_benunit: 1800
+    council_tax_benefit: 1800
+    council_tax_reduction: 1800
+
+- name: SCOTLAND entitled non-reporting family entered by hand claims CTR by default
+  period: 2026
+  input:
+    age: 35
+    country: SCOTLAND
+    local_authority: CITY_OF_EDINBURGH
+    council_tax: 1800
+    savings: 0
+    would_claim_uc: false
+    claims_all_entitled_benefits: true
+  output:
+    council_tax_benefit_reported: 0
+    would_claim_council_tax_reduction: true
+    simulated_council_tax_reduction_benunit: 1800
+    council_tax_benefit: 1800
+    council_tax_reduction: 1800
+
+- name: SCOTLAND entitled non-reporting family under explicit CTR claim
+  period: 2026
+  input:
+    age: 35
+    country: SCOTLAND
+    local_authority: CITY_OF_EDINBURGH
+    council_tax: 1800
+    savings: 0
+    would_claim_uc: false
+    claims_all_entitled_benefits: true
+    would_claim_council_tax_reduction: true
+  output:
+    council_tax_benefit_reported: 0
+    would_claim_council_tax_reduction: true
+    simulated_council_tax_reduction_benunit: 1800
+    council_tax_benefit: 1800
+    council_tax_reduction: 1800
+
+- name: ENGLAND entitled non-reporting family entered by hand claims CTR by default
+  period: 2026
+  input:
+    age: 70
+    country: ENGLAND
+    local_authority: MAIDSTONE
+    council_tax: 1800
+    savings: 0
+    would_claim_uc: false
+    claims_all_entitled_benefits: true
+  output:
+    council_tax_benefit_reported: 0
+    would_claim_council_tax_reduction: true
+    simulated_council_tax_reduction_benunit: 1800
+    council_tax_benefit: 1800
+    council_tax_reduction: 1800
+
+- name: ENGLAND entitled non-reporting family under explicit CTR claim
+  period: 2026
+  input:
+    age: 70
+    country: ENGLAND
+    local_authority: MAIDSTONE
+    council_tax: 1800
+    savings: 0
+    would_claim_uc: false
+    claims_all_entitled_benefits: true
+    would_claim_council_tax_reduction: true
+  output:
+    council_tax_benefit_reported: 0
+    would_claim_council_tax_reduction: true
+    simulated_council_tax_reduction_benunit: 1800
+    council_tax_benefit: 1800
+    council_tax_reduction: 1800
+
+# Vahid's calculator probes from PR 1831 review 5514292316. These households
+# supply no benefit reports, claimant roles, or take-up inputs.
+- name: North West pensioner calculator household retains full CTR without reports
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    region: NORTH_WEST
+    rent: 8_000
+    tenure_type: RENT_PRIVATELY
+    council_tax: 1_800
+    employment_income: 0
+  output:
+    council_tax_benefit_reported: 0
+    claims_all_entitled_benefits: true
+    would_claim_council_tax_reduction: true
+    council_tax_reduction: 1_800
+
+- name: Welsh pensioner calculator household retains full CTR without reports
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    region: WALES
+    rent: 8_000
+    tenure_type: RENT_PRIVATELY
+    council_tax: 1_800
+    employment_income: 0
+  output:
+    council_tax_benefit_reported: 0
+    claims_all_entitled_benefits: true
+    would_claim_council_tax_reduction: true
+    council_tax_reduction: 1_800
+
+- name: Scottish working-age calculator household retains CTR without reports
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    region: SCOTLAND
+    rent: 8_000
+    tenure_type: RENT_PRIVATELY
+    council_tax: 1_800
+    employment_income: 0
+  output:
+    council_tax_benefit_reported: 0
+    claims_all_entitled_benefits: true
+    would_claim_council_tax_reduction: true
+    council_tax_reduction: 633.96

@@ -1,0 +1,16 @@
+description: The UK levies General Betting Duty at this rate on qualifying remote fixed-odds bets other than bets wholly related to UK horse racing. The new remote rate excludes pool, spread and on-course bets and qualifying licensed-premises self-service betting terminals.
+values:
+  '2014-12-01': 0.15
+  '2027-04-01': 0.25
+metadata:
+  unit: /1
+  period: year
+  label: general betting duty qualifying remote rate
+  reference:
+  - title: Finance Act 2014, section 127
+    href: https://www.legislation.gov.uk/ukpga/2014/26/section/127
+  - title: Finance Act 2026, section 87
+    href: https://www.legislation.gov.uk/ukpga/2026/11/section/87
+  - title: HMRC gambling duty rates
+    href: https://www.gov.uk/government/publications/rates-and-allowance-excise-duty-gambling-duty/excise-duty-gambling-duty-rates
+  preserve_calendar_dates: true

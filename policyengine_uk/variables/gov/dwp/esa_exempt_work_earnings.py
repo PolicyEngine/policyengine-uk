@@ -100,13 +100,17 @@ class esa_exempt_work_earnings(Variable):
         tax_on_pay = max_(0, tax_on_pay - mca_reduction)
         nics = p.gov.hmrc.national_insurance
         class_1 = nics.class_1
-        primary_threshold = class_1.thresholds.primary_threshold * WEEKS_IN_YEAR
-        upper_earnings_limit = class_1.thresholds.upper_earnings_limit * WEEKS_IN_YEAR
+        primary_threshold = (
+            class_1.employee_scale.components[1].threshold * WEEKS_IN_YEAR
+        )
+        upper_earnings_limit = (
+            class_1.employee_scale.components[2].threshold * WEEKS_IN_YEAR
+        )
         pay_above_upper_limit = max_(0, pay - upper_earnings_limit)
         class_1_on_pay = person("ni_liable", period) * (
-            class_1.rates.employee.main
+            class_1.employee_scale.components[1].rate
             * (max_(0, pay - primary_threshold) - pay_above_upper_limit)
-            + class_1.rates.employee.additional * pay_above_upper_limit
+            + class_1.employee_scale.components[2].rate * pay_above_upper_limit
         )
         pension_from_pay = (
             employee_pension + personal_pension - personal_pension_from_profit
@@ -135,11 +139,13 @@ class esa_exempt_work_earnings(Variable):
         class_4 = nics.class_4
         class_4_band = max_(
             0,
-            min_(profit, class_4.thresholds.upper_profits_limit)
-            - class_4.thresholds.lower_profits_limit,
+            min_(profit, class_4.contribution_scale.components[2].threshold)
+            - class_4.contribution_scale.components[1].threshold,
         )
         notional_class_4 = (
-            person("ni_class_4_liable", period) * class_4.rates.main * class_4_band
+            person("ni_class_4_liable", period)
+            * class_4.contribution_scale.components[1].rate
+            * class_4_band
         )
         # Reg 99(3)(a), until 5 April 2024: Class 2 at the weekly rate unless
         # the profit is below the small profits threshold or, from 6 April

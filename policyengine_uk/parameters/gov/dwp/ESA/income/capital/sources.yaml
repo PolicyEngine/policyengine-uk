@@ -1,4 +1,6 @@
 description: >
+  Ordinary cash ISA balances are separate from savings and are included at
+  their accessible cash value, without a generic cash sale-cost deduction.
   Model variables currently mapped to countable income-related Employment and
   Support Allowance capital. The Employment and Support Allowance Regulations
   2008 treat capital as assessable unless it is disregarded under Schedule 9.
@@ -6,7 +8,9 @@ description: >
   held directly, the share-like sources, `other_residential_property_value`
   for residential property other than the home, and
   `non_residential_property_value` for other land and premises.
-  `share_like_capital_with_sale_expenses` and `share_like_capital_without_sale_expenses` split `share_like_capital`, which is `corporate_wealth` as supplied, or the sum of its
+  `share_like_capital_with_sale_expenses` and
+  `share_like_capital_without_sale_expenses` split `share_like_capital`, which
+  is `corporate_wealth` as supplied, or the sum of its
   itemised components (`directly_held_shares`, `unit_and_investment_trusts`,
   `stocks_and_shares_isa`) where they exceed it beyond float32 rounding (see
   `share_like_capital`), so a household given only the components has them
@@ -37,6 +41,7 @@ metadata:
 values:
   2008-10-27:
     - savings
+    - cash_isa
     - owned_land
     - share_like_capital_with_sale_expenses
     - share_like_capital_without_sale_expenses

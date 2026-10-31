@@ -129,6 +129,9 @@
     guarantee_credit: [0, 0]
     has_non_dependant_for_severe_disability_premium: [true, false]
     pension_age_severe_disability_premium: [0, 0]
+    # The resident has no banding income, so the work gate leaves the
+    # scale's zero; reg 55(6) and Sch 1 para 8(6) exempt this claimant's
+    # non-dependants in any case (the AA exemption remains for #2007).
     housing_benefit: [3_898.70, 0]
     council_tax_benefit: [1_279.60, 0]
 
@@ -172,6 +175,9 @@
     # Savings credit only (908.46): HB income is Pension Credit income plus
     # the savings credit (HB (SPC) Regs 2006 reg 27(4)(a)), 0.65 x 908.46 =
     # 590.50 below the figure without it.
+    # Neither non-working resident has banding income, so the work gate
+    # leaves the scale's zero for both; the AA exemption (reg 55(6), Sch 1
+    # para 8(6)) remains for #2007.
     housing_benefit: [3_308.20, 0]
     council_tax_benefit: [1_097.91, 0]
 

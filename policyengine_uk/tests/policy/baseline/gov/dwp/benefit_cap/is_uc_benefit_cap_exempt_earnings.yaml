@@ -161,8 +161,10 @@
         age: 76
         employment_income: 11_000
         employee_pension_contributions: 1_000
+        is_claimant_or_partner: true
       younger_partner:
         age: 40
+        is_claimant_or_partner: true
       child1:
         age: 5
       child2:
@@ -177,6 +179,7 @@
         tenure_type: RENT_FROM_COUNCIL
         rent: 30_000
   output:
+    relation_type: COUPLE
     is_uc_assessed_claimant: [true, true, false, false]
     housing_benefit_pension_age_regulations_apply: false
     uc_individual_earned_income_before_mif: [11_000, 0, 0, 0]

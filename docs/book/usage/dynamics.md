@@ -153,7 +153,7 @@ print("\nElasticities by parental status:")
 print(by_parent)
 ```
 
-Substitution elasticities range from 0.094 to 0.439 depending on demographics, while income elasticities range from -0.185 to 0; lone fathers are assigned neither. The model excludes certain groups from responses: self-employed workers, students, those aged 60+, and adults beyond the two oldest in each household. Their employment income is left unchanged.
+Substitution elasticities range from 0.094 to 0.439 depending on demographics, while income elasticities range from -0.185 to 0. Lone fathers and lone mothers use the same youngest-child age groups and coefficients from [OBR Table A2](https://obr.uk/docs/dlm_uploads/NICS-Cut-Impact-on-Labour-Supply-Note.pdf#page=9). The participation coefficient helper also assigns both sexes to the lone-parent rows in [OBR Table A1](https://obr.uk/docs/dlm_uploads/NICS-Cut-Impact-on-Labour-Supply-Note.pdf#page=8); `apply_dynamics` currently applies only progression responses. The model excludes certain groups from responses: self-employed workers, students, those aged 60+, and adults beyond the two oldest in each household. Their employment income is left unchanged.
 
 ## Validating against OBR estimates
 

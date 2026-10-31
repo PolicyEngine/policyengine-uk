@@ -15,8 +15,8 @@ Invariants, for any generated population of single-adult households:
 
 1. Non-increasing: every programme's assessable capital is at most the same
    household's capital with the deduction switched off (rate 0, no debt).
-2. Cash only: a household holding only savings has the same capital with the
-   deduction on or off.
+2. Cash only: a household holding only savings and a cash ISA has the same
+   capital with the deduction on or off, equal to the two balances.
 3. Differential: capital equals a direct implementation of the regulation,
    savings + sum over sources of max(0, 90% of value - secured debt), where
    the test itself fixes which assets take the 10% (land, property and
@@ -34,17 +34,29 @@ Invariants, for any generated population of single-adult households:
 7. Never rounds the wrong way: for any stored value, whole penny or not, the
    result is within a penny below 90% of the exact stored value when rounding
    down, and within half a penny of it when rounding to the nearest penny.
+   The same holds for a float32 value widened to float64, as a benefit unit's
+   maximum over its household's values is.
+8. Whole pennies through the model: every programme counts whole-penny
+   savings, shares and Lifetime ISA balances to the penny: savings in full,
+   shares at 90% and a Lifetime ISA at 75% below its charge-free age, each
+   rounded by the programme's rule, and a Lifetime ISA in full from that age.
 """
 
 from fractions import Fraction
 from functools import reduce
 
 import numpy as np
+import pytest
 from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
+from policyengine_core.reforms import Reform
 
 from policyengine_uk import Simulation
+from policyengine_uk.model_api import Person, Variable
+from policyengine_uk.model_api import YEAR as YEAR_PERIOD
 from policyengine_uk.utils.capital_valuation import exact_amount, less_sale_expenses
+
+pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
 YEAR = 2026
 PROPERTY_SETTINGS = settings(
@@ -77,28 +89,30 @@ SALE_EXPENSE_ASSETS = {
     "non_residential_property_value",
     "share_like_capital_with_sale_expenses",
 }
-# How each capital source reads an unitemised household's inputs: all of its
-# corporate_wealth has expenses of sale, none is without.
-SHARE_LIKE_SOURCES = {
-    "share_like_capital_with_sale_expenses": lambda assets: assets["corporate_wealth"],
-    "share_like_capital_without_sale_expenses": lambda assets: 0.0,
-}
-
-
-def asset_value(unit, source):
-    if source in SHARE_LIKE_SOURCES:
-        return SHARE_LIKE_SOURCES[source](unit["assets"])
-    return unit["assets"][source]
-
-
 LEGAL_RATE = 0.1
 ASSETS = [
     "savings",
+    "cash_isa",
     "owned_land",
     "corporate_wealth",
     "other_residential_property_value",
     "non_residential_property_value",
 ]
+# Ordinary savings and a cash ISA are both deposit balances, counted in full.
+CASH_ASSETS = ("savings", "cash_isa")
+# The capital sources count shares in share_like_capital's two parts. These
+# households hold share-like wealth only as unitemised corporate_wealth, so
+# all of it is in the part with expenses of sale and none is without.
+INPUT_OF = {"share_like_capital_with_sale_expenses": "corporate_wealth"}
+NIL_SOURCES = {"share_like_capital_without_sale_expenses"}
+
+
+def asset(unit, source):
+    if source in NIL_SOURCES:
+        return 0.0
+    return unit["assets"][INPUT_OF.get(source, source)]
+
+
 DEBTS = {
     "owned_land": "owned_land_secured_debt",
     "other_residential_property_value": "other_residential_property_secured_debt",
@@ -112,7 +126,9 @@ def households(draw, cash_only=False):
     assets = {asset: draw(amount) for asset in ASSETS}
     debts = {debt: draw(amount) for debt in DEBTS.values()}
     if cash_only:
-        assets = {asset: 0.0 for asset in ASSETS} | {"savings": assets["savings"]}
+        assets = {asset: 0.0 for asset in ASSETS} | {
+            cash: assets[cash] for cash in CASH_ASSETS
+        }
         debts = {debt: 0.0 for debt in debts}
     # About half the units do not claim Universal Credit, so the Housing
     # Benefit passport cannot remove every working-age unit from the
@@ -186,11 +202,10 @@ def expected_capital(unit, node, variable=None):
         ]:
             total += max(
                 0.0,
-                unit["assets"][source] * (1 - LEGAL_RATE)
-                - unit["debts"][DEBTS[source]],
+                asset(unit, source) * (1 - LEGAL_RATE) - unit["debts"][DEBTS[source]],
             )
     for source in node.sources:
-        value = asset_value(unit, source)
+        value = asset(unit, source)
         if source in SALE_EXPENSE_ASSETS:
             value *= 1 - LEGAL_RATE
         if source in DEBTS:
@@ -233,7 +248,7 @@ def check_valuation(units):
                     hb_checked["working_age_differential"] += 1
                 # Debt secured on property never reaches the other assets.
                 floor = sum(
-                    asset_value(unit, s) * (1 - LEGAL_RATE * (s in SALE_EXPENSE_ASSETS))
+                    asset(unit, s) * (1 - LEGAL_RATE * (s in SALE_EXPENSE_ASSETS))
                     for s in node.sources
                     if s not in DEBTS
                 )
@@ -286,7 +301,8 @@ def test_cash_only_households_have_no_deduction(units):
                 valued["guarantee_credit"][i],
                 valued["hb_passported"][i],
             ):
-                assert close(valued[variable][i], unit["assets"]["savings"]), variable
+                cash = sum(unit["assets"][asset] for asset in CASH_ASSETS)
+                assert close(valued[variable][i], cash), variable
 
 
 @PROPERTY_SETTINGS
@@ -314,15 +330,18 @@ def test_capital_is_non_increasing_in_rate_and_secured_debt(units, r1, r2, scale
 @example([1_600_100, 100_010, 230, 1_666_665])
 def test_sale_expenses_round_to_the_penny(pence):
     stored = np.asarray(pence, dtype=np.int64).astype(np.float32) / np.float32(100)
-    down = less_sale_expenses(stored, LEGAL_RATE, True)
-    nearest = less_sale_expenses(stored, LEGAL_RATE, False)
-    assert down.dtype == nearest.dtype == np.float64
-    assert np.round(down * 100).astype(np.int64).tolist() == [
-        9 * amount // 10 for amount in pence
-    ]
-    assert np.round(nearest * 100).astype(np.int64).tolist() == [
-        (9 * amount + 5) // 10 for amount in pence
-    ]
+    # A benefit unit's maximum over its household's float32 values is float64.
+    for value in (stored, stored.astype(np.float64)):
+        assert np.round(exact_amount(value) * 100).astype(np.int64).tolist() == pence
+        down = less_sale_expenses(value, LEGAL_RATE, True)
+        nearest = less_sale_expenses(value, LEGAL_RATE, False)
+        assert down.dtype == nearest.dtype == np.float64
+        assert np.round(down * 100).astype(np.int64).tolist() == [
+            9 * amount // 10 for amount in pence
+        ]
+        assert np.round(nearest * 100).astype(np.int64).tolist() == [
+            (9 * amount + 5) // 10 for amount in pence
+        ]
 
 
 def test_share_valuation_matches_the_adm_worked_example():
@@ -341,10 +360,18 @@ def test_share_valuation_matches_the_adm_worked_example():
         st.floats(0, 1_000_000, allow_nan=False, width=32), min_size=1, max_size=500
     )
 )
-@example([1034.375, 10352.055, 0.005, 999_999.875])
+@example([1034.375, 10352.055, 0.005, 999_999.875, 140_000.015625])
 def test_sale_expenses_never_round_the_wrong_way(values):
     stored = np.asarray(values, dtype=np.float32)
     exact = exact_amount(stored)
+    assert np.array_equal(exact, exact_amount(stored.astype(np.float64)))
+    # From 131,072 float32 cannot hold every penny, so no penny is identified
+    # and the value is kept as stored. The result is then within a penny of
+    # the stored value's figure, not of every penny it could have been stored
+    # from: 140,000.01 and 140,000.02 are both stored as 140,000.015625, and
+    # 90% of that rounds down to 126,000.01, a penny above 140,000.01's.
+    large = stored >= 131_072
+    assert np.array_equal(exact[large], stored[large].astype(np.float64))
     # Storage error is removed only within half a unit of the stored value's
     # own precision, so a value is never moved to a penny it was not stored
     # from.
@@ -361,3 +388,252 @@ def test_sale_expenses_never_round_the_wrong_way(values):
         noise = Fraction(1, 100_000_000)
         assert target - Fraction(1, 100) - noise < Fraction(low) <= target + noise
         assert abs(Fraction(near) - target) <= Fraction(1, 200) + noise
+
+
+ROUNDS_DOWN = {
+    "uc_assessable_capital": False,
+    "housing_benefit_assessable_capital": False,
+    "income_support_assessable_capital": True,
+    "jsa_income_assessable_capital": True,
+    "esa_income_assessable_capital": True,
+    "pension_credit_assessable_capital": True,
+}
+
+
+def whole_penny_situation(rows):
+    people, benunits, homes = {}, {}, {}
+    for i, (savings, shares, lisa, age) in enumerate(rows):
+        people[f"p{i}"] = {
+            "age": {YEAR: age},
+            "lifetime_isa_balance": {YEAR: lisa / 100},
+        }
+        benunits[f"b{i}"] = {"members": [f"p{i}"]}
+        homes[f"h{i}"] = {
+            "members": [f"p{i}"],
+            "savings": {YEAR: savings / 100},
+            "corporate_wealth": {YEAR: shares / 100},
+        }
+    return {"people": people, "benunits": benunits, "households": homes}
+
+
+@PROPERTY_SETTINGS
+@given(
+    st.lists(
+        st.tuples(
+            st.integers(0, 6_000_000),
+            st.integers(0, 6_000_000),
+            st.integers(0, 1_500_000),
+            st.sampled_from([30, 70]),
+        ),
+        min_size=20,
+        max_size=100,
+    )
+)
+# 16,000.01 of savings is over every 16,000 limit; 1,000.10 and 12,345.67
+# lose a penny if float32 storage error reaches a floor; a Lifetime ISA of
+# 0.24 or 1,000.04 counts 0.18 or 750.03 under 60. 75% of a 0.26 balance is
+# 0.195 and of 1,000.30 is 750.225, half pennies, which float32 stores just
+# below: with 15,999.81 or 15,249.77 of savings the capital is 16,000.01 or
+# 16,000.00 to the nearest penny, and 16,000.00 or 15,999.99 rounded down.
+@example(
+    [
+        (1_600_001, 0, 0, 30),
+        (100_010, 0, 0, 30),
+        (1_234_567, 0, 0, 70),
+        (159_992, 1_600_010, 0, 30),
+        (0, 0, 24, 30),
+        (0, 0, 100_004, 30),
+        (1_599_981, 0, 26, 30),
+        (1_524_977, 0, 100_030, 30),
+    ]
+    * 3
+)
+def test_whole_pennies_are_counted_to_the_penny(rows):
+    sim = Simulation(situation=whole_penny_situation(rows))
+    values = {v: np.asarray(sim.calculate(v, YEAR), dtype=float) for v in PROGRAMMES}
+    gc = np.asarray(sim.calculate("guarantee_credit", YEAR))
+    passported = np.asarray(
+        sim.calculate("housing_benefit_on_passporting_benefit", YEAR)
+    )
+    savings_credit_only = np.asarray(
+        sim.calculate("in_receipt_of_savings_credit_only", YEAR)
+    )
+    for variable, round_down in ROUNDS_DOWN.items():
+        for i, (savings, shares, lisa, age) in enumerate(rows):
+            if not applies(variable, {"age": age}, gc[i], passported[i]):
+                continue
+            # Housing Benefit takes Pension Credit's capital for a savings
+            # credit only award (HB (SPC) Regs 2006 reg. 27(6)).
+            down = round_down or (
+                variable == "housing_benefit_assessable_capital"
+                and savings_credit_only[i]
+            )
+            share_pence = (9 * shares + (0 if down else 5)) // 10
+            lisa_pence = lisa if age >= 60 else (3 * lisa + (0 if down else 2)) // 4
+            expected = (savings + share_pence + lisa_pence) / 100
+            # The model stores float32, which holds every penny below 131,072.
+            assert abs(values[variable][i] - expected) < 0.004, (
+                variable,
+                rows[i],
+                values[variable][i],
+                expected,
+            )
+
+
+def test_lifetime_isa_reformed_value_is_kept_as_stored():
+    # This reform's value and the baseline's 0.195 are the same float32,
+    # but the reform deliberately values the ISA below the half penny.
+    class lifetime_isa_countable_capital(Variable):
+        value_type = float
+        entity = Person
+        definition_period = YEAR_PERIOD
+
+        def formula(person, period, parameters):
+            return person.filled_array(0.19499999)
+
+    class ReplaceLifetimeISA(Reform):
+        def apply(self):
+            self.update_variable(lifetime_isa_countable_capital)
+
+    sim = Simulation(
+        situation=whole_penny_situation([(0, 0, 26, 30)]),
+        reform=ReplaceLifetimeISA,
+    )
+    assert abs(sim.calculate("uc_assessable_capital", YEAR)[0] - 0.19) < 0.004
+
+
+def test_lifetime_isa_baseline_formula_uses_reformed_parameters():
+    sim = Simulation(
+        situation=whole_penny_situation([(0, 0, 26, 30)]),
+        reform={"gov.hmrc.isa.lifetime.withdrawal_charge": {str(YEAR): 0.5}},
+    )
+    assert abs(sim.calculate("uc_assessable_capital", YEAR)[0] - 0.13) < 0.004
+
+
+@pytest.mark.parametrize("via_holder", [False, True])
+def test_lifetime_isa_input_set_after_construction_is_preserved(via_holder):
+    sim = Simulation(situation=whole_penny_situation([(0, 0, 26, 30)]))
+    # Cache the formula first: a later equal-valued input still has input
+    # provenance, including when the caller uses Holder.set_input directly.
+    sim.calculate("lifetime_isa_countable_capital", YEAR)
+    if via_holder:
+        from policyengine_core import periods
+
+        sim.get_holder("lifetime_isa_countable_capital").set_input(
+            periods.period(YEAR), np.array([0.195])
+        )
+    else:
+        sim.set_input("lifetime_isa_countable_capital", YEAR, np.array([0.195]))
+    assert abs(sim.calculate("uc_assessable_capital", YEAR)[0] - 0.19) < 0.004
+
+
+def test_lifetime_isa_input_for_another_period_does_not_replace_the_formula():
+    situation = whole_penny_situation([(0, 0, 26, 30)])
+    situation["people"]["p0"]["lifetime_isa_countable_capital"] = {YEAR - 1: 0.195}
+    sim = Simulation(situation=situation)
+    # The previous year's supplied value cannot suppress this year's exact
+    # baseline valuation of 75% of 0.26, rounded nearest to 0.20.
+    assert abs(sim.calculate("uc_assessable_capital", YEAR)[0] - 0.20) < 0.004
+
+
+@pytest.mark.parametrize("inherited", [False, True])
+def test_lifetime_isa_input_is_preserved_on_its_visible_branch(inherited):
+    situation = whole_penny_situation([(0, 0, 26, 30)])
+    if inherited:
+        situation["people"]["p0"]["lifetime_isa_countable_capital"] = {YEAR: 0.195}
+    sim = Simulation(situation=situation)
+    branch = sim.get_branch("entered_lisa")
+    if not inherited:
+        branch.set_input("lifetime_isa_countable_capital", YEAR, np.array([0.195]))
+    assert abs(branch.calculate("uc_assessable_capital", YEAR)[0] - 0.19) < 0.004
+    expected_main = 0.19 if inherited else 0.20
+    assert abs(sim.calculate("uc_assessable_capital", YEAR)[0] - expected_main) < 0.004
+
+
+def lisa_mask_reform():
+    """A reform that keeps the baseline LISA formula and only adds a
+    ``defined_for`` mask, so the formula identity check still passes."""
+
+    class lisa_is_counted(Variable):
+        value_type = bool
+        entity = Person
+        definition_period = YEAR_PERIOD
+        default_value = False
+        label = "Lifetime ISA counted as capital"
+
+    class lifetime_isa_countable_capital(Variable):
+        defined_for = "lisa_is_counted"
+
+    class MaskLifetimeISA(Reform):
+        def apply(self):
+            self.add_variable(lisa_is_counted)
+            self.update_variable(lifetime_isa_countable_capital)
+
+    return MaskLifetimeISA
+
+
+def test_lifetime_isa_exact_valuation_respects_a_defined_for_mask():
+    # Two units hold 0.26 each. Only p1's ISA is counted: Core stores 0 for
+    # p0, so p0 must have no capital, and p1 must be valued as without the
+    # mask (0.195, to the penny under each programme's rule).
+    situation = whole_penny_situation([(0, 0, 26, 30), (0, 0, 26, 30)])
+    unmasked = Simulation(situation=situation)
+    masked = Simulation(situation=situation, reform=lisa_mask_reform())
+    # The reform adds the mask, so the shared situation can't supply it.
+    masked.set_input("lisa_is_counted", YEAR, np.array([False, True]))
+    assert list(masked.calculate("lifetime_isa_countable_capital", YEAR)) == [
+        0,
+        pytest.approx(0.195),
+    ]
+    assert abs(unmasked.calculate("uc_assessable_capital", YEAR)[0] - 0.20) < 0.004
+    for variable in PROGRAMMES:
+        before = np.asarray(unmasked.calculate(variable, YEAR), dtype=float)
+        after = np.asarray(masked.calculate(variable, YEAR), dtype=float)
+        assert abs(after[0]) < 0.004, (variable, after)
+        assert abs(after[1] - before[1]) < 0.004, (variable, before, after)
+
+
+def test_a_lifetime_isa_masked_for_everyone_runs_no_formula():
+    # Core runs no formula when the mask applies to nobody, so a dependency
+    # only applicable people need is never calculated. A balance formula
+    # that raises shows whether the exact valuation calculates it anyway.
+    class lifetime_isa_balance(Variable):
+        def formula(person, period, parameters):
+            raise AssertionError("A masked Lifetime ISA balance was calculated")
+
+    mask = lisa_mask_reform()
+
+    class MaskWithUnavailableBalance(Reform):
+        def apply(self):
+            mask.apply(self)
+            self.update_variable(lifetime_isa_balance)
+
+    without_lisa = Simulation(situation=whole_penny_situation([(1_599_981, 0, 0, 30)]))
+    situation = whole_penny_situation([(1_599_981, 0, 0, 30)])
+    del situation["people"]["p0"]["lifetime_isa_balance"]
+    sim = Simulation(situation=situation, reform=MaskWithUnavailableBalance)
+    assert list(sim.calculate("lifetime_isa_countable_capital", YEAR)) == [0]
+    for variable in PROGRAMMES:
+        before = without_lisa.calculate(variable, YEAR)[0]
+        after = sim.calculate(variable, YEAR)[0]
+        assert abs(after - before) < 0.004, (variable, before, after)
+    assert abs(sim.calculate("uc_assessable_capital", YEAR)[0] - 15_999.81) < 0.004
+
+
+def test_a_masked_lifetime_isa_leaves_universal_credit_eligibility():
+    # 15,999.81 of savings is within the 16,000 limit. A counted 0.26 ISA
+    # (0.195, rounded to 0.20) would take it to 16,000.01; masked, it adds
+    # nothing.
+    sim = Simulation(
+        situation=whole_penny_situation([(1_599_981, 0, 26, 30)]),
+        reform=lisa_mask_reform(),
+    )
+    assert abs(sim.calculate("uc_assessable_capital", YEAR)[0] - 15_999.81) < 0.004
+    assert sim.calculate("is_uc_eligible", YEAR)[0]
+    sim = Simulation(
+        situation=whole_penny_situation([(1_599_981, 0, 26, 30)]),
+        reform=lisa_mask_reform(),
+    )
+    sim.set_input("lisa_is_counted", YEAR, np.array([True]))
+    assert abs(sim.calculate("uc_assessable_capital", YEAR)[0] - 16_000.01) < 0.004
+    assert not sim.calculate("is_uc_eligible", YEAR)[0]

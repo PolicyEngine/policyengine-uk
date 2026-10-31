@@ -23,6 +23,7 @@ class hbai_benefits(Variable):
         "afcs",
         "bsp",
         "war_widows_pension",
+        "widowed_parents_allowance",
         "carers_allowance",
         "dla",
         "iidb",

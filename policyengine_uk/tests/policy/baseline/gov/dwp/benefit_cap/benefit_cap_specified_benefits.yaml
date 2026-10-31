@@ -1575,7 +1575,7 @@
     is_housing_benefit_benefit_cap_exempt_specified_benefit: false
     benefit_cap_reduction: 0
 
-- name: A carer element the family's entered carer flag gives lifts the cap, though no member is flagged
+- name: A carer element entered for the award lifts the cap, though no member is flagged as a carer
   period: 2025
   input:
     people:
@@ -1584,20 +1584,20 @@
     benunits:
       family:
         members: [claimant]
-        benunit_has_carer: true
+        uc_carer_element: 2_420.16
         universal_credit_pre_benefit_cap: 18_000
     households:
       home:
         members: [claimant]
         region: NORTH_EAST
   output:
-    # The award includes the carer element (reg 83(1)(j)), and no member who
-    # is not a claimant has caring responsibilities to give it instead.
+    # The award includes the carer element (reg 83(1)(j)): an element
+    # entered for the award is included when it is positive.
     is_uc_benefit_cap_exempt_specified_benefit: true
     is_housing_benefit_benefit_cap_exempt_specified_benefit: false
     benefit_cap_reduction: 0
 
-- name: A nil carer element is not included in the award, though the claimant cares
+- name: A nil carer element entered for the award is not included, though the claimant cares
   period: 2025
   input:
     people:
@@ -1607,15 +1607,15 @@
     benunits:
       family:
         members: [claimant]
-        benunit_has_carer: false
+        uc_carer_element: 0
         universal_credit_pre_benefit_cap: 18_000
     households:
       home:
         members: [claimant]
         region: NORTH_EAST
   output:
-    # Reg 83(1)(j) asks whether the award includes the element; the
-    # family's entered flag gives none. 18,000 - 14,753.
+    # Reg 83(1)(j) asks whether the award includes the element; the entered
+    # award includes none. 18,000 - 14,753.
     uc_carer_element: 0
     is_uc_benefit_cap_exempt_specified_benefit: false
     is_housing_benefit_benefit_cap_exempt_specified_benefit: false

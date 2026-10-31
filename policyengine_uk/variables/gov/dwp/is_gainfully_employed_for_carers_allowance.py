@@ -31,9 +31,4 @@ class is_gainfully_employed_for_carers_allowance(Variable):
     ]
 
     def formula(person, period, parameters):
-        limit = parameters(period).gov.dwp.carers_allowance.earnings_limit
-        weekly = person("carers_allowance_earnings", period) / WEEKS_IN_YEAR
-        # Disregard a fraction of a penny; the tolerance keeps an exact
-        # number of pence from being knocked down by floating-point error.
-        weekly_in_pence = np.floor(weekly * 100 + 1e-6) / 100
-        return weekly_in_pence > limit
+        return person("carers_allowance_weekly_earnings_above_limit", period) > 0

@@ -519,6 +519,7 @@
         members: [carer, partner]
         income_support_assessable_capital: 0
         esa_income_assessable_capital: 0
+        would_claim_uc: false
   output:
     esa_income: 3_000
     income_support_eligible: false
@@ -542,6 +543,7 @@
         income_support_assessable_capital: 0
         # Above the £16,000 ESA capital limit (ESA Regs 2008 reg 110).
         esa_income_assessable_capital: 20_000
+        would_claim_uc: false
   output:
     esa_income: 0
     income_support_eligible: true
@@ -582,6 +584,7 @@
         members: [carer]
         income_support_assessable_capital: 0
         esa_income: 0
+        would_claim_uc: false
   output:
     # The model pays no income-related ESA, so none bars Income Support.
     income_support_eligible: true

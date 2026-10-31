@@ -133,9 +133,12 @@
     people:
       older:
         age: 70
+        is_claimant_or_partner: true
       younger:
         age: 40
+        is_claimant_or_partner: true
   output:
+    relation_type: COUPLE
     uc_work_related_group_apart_from_earnings: [NO_REQUIREMENTS, ALL_REQUIREMENTS]
 
 # Reg. 89(1)(a) reads "the qualifying age for state pension credit": State
@@ -163,10 +166,13 @@
         age: 64
         months_since_last_birthday: 6
         gender: MALE
+        is_claimant_or_partner: true
       younger:
         age: 40
         gender: FEMALE
+        is_claimant_or_partner: true
   output:
+    relation_type: COUPLE
     has_attained_state_pension_credit_qualifying_age: [true, false]
     is_SP_age: [false, false]
     uc_work_related_group_apart_from_earnings: [NO_REQUIREMENTS, ALL_REQUIREMENTS]
@@ -181,10 +187,13 @@
         age: 63
         months_since_last_birthday: 4
         gender: MALE
+        is_claimant_or_partner: true
       younger:
         age: 40
         gender: FEMALE
+        is_claimant_or_partner: true
   output:
+    relation_type: COUPLE
     has_attained_state_pension_credit_qualifying_age: [false, false]
     is_SP_age: [false, false]
     uc_work_related_group_apart_from_earnings: [ALL_REQUIREMENTS, ALL_REQUIREMENTS]
@@ -197,10 +206,13 @@
         age: 64
         months_since_last_birthday: 4
         gender: MALE
+        is_claimant_or_partner: true
       younger:
         age: 41
         gender: FEMALE
+        is_claimant_or_partner: true
   output:
+    relation_type: COUPLE
     has_attained_state_pension_credit_qualifying_age: [true, false]
     is_SP_age: [false, false]
     uc_work_related_group_apart_from_earnings: [NO_REQUIREMENTS, ALL_REQUIREMENTS]
@@ -215,10 +227,13 @@
         age: 64
         months_since_last_birthday: 6
         gender: FEMALE
+        is_claimant_or_partner: true
       younger:
         age: 40
         gender: MALE
+        is_claimant_or_partner: true
   output:
+    relation_type: COUPLE
     has_attained_state_pension_credit_qualifying_age: [true, false]
     is_SP_age: [true, false]
     uc_work_related_group_apart_from_earnings: [NO_REQUIREMENTS, ALL_REQUIREMENTS]
@@ -234,10 +249,13 @@
         age: 64
         months_since_last_birthday: 10
         gender: MALE
+        is_claimant_or_partner: true
       younger:
         age: 40
         gender: FEMALE
+        is_claimant_or_partner: true
   output:
+    relation_type: COUPLE
     has_attained_state_pension_credit_qualifying_age: [false, false]
     is_SP_age: [false, false]
     uc_work_related_group_apart_from_earnings: [ALL_REQUIREMENTS, ALL_REQUIREMENTS]
@@ -253,10 +271,13 @@
         months_since_last_birthday: 6
         gender: MALE
         self_employment_income: 5_000
+        is_claimant_or_partner: true
       younger:
         age: 40
         gender: FEMALE
+        is_claimant_or_partner: true
   output:
+    relation_type: COUPLE
     uc_is_in_gainful_self_employment: [true, false]
     uc_work_related_group_apart_from_earnings: [NO_REQUIREMENTS, ALL_REQUIREMENTS]
     uc_mif_applies: [false, false]

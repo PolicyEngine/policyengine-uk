@@ -435,3 +435,174 @@
         savings: 10_000.01
   output:
     income_support_assessable_capital: [3_333.33, 3_333.33, 3_333.33]
+
+- name: Legacy benefits count 16,000.01 of savings in full, over the limit
+  period: 2026
+  absolute_error_margin: 0.004
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # Stored in float32 as 16,000.0098, which is the penny 16,000.01:
+        # rounding down at the last stage (IS Regs 1987 reg. 27; JSA Regs 1996
+        # reg. 92; ESA Regs 2008 reg. 3(a)) must not turn the storage error
+        # into a lost penny, which would put the capital at the 16,000 limit.
+        savings: 16_000.01
+  output:
+    income_support_assessable_capital: 16_000.01
+    jsa_income_assessable_capital: 16_000.01
+    esa_income_assessable_capital: 16_000.01
+
+- name: A Lifetime ISA counts at 75% of its balance to the penny
+  period: 2026
+  absolute_error_margin: 0.004
+  input:
+    people:
+      person:
+        age: 30
+        lifetime_isa_balance: 1_000.04
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+  output:
+    # 75% of 1,000.04 is 750.03, its surrender value below age 60.
+    lifetime_isa_countable_capital: 750.03
+    income_support_assessable_capital: 750.03
+    esa_income_assessable_capital: 750.03
+    uc_assessable_capital: 750.03
+
+- name: UC rounds a Lifetime ISA's half penny up, a penny over the limit
+  period: 2026
+  absolute_error_margin: 0.004
+  input:
+    people:
+      person:
+        age: 30
+        # Below age 60 the surrender value is 75% of the balance: 0.195, half
+        # a penny, which float32 would store as 0.19499999. UC Regs 2013 reg.
+        # 6(1) treats it as a penny, so the capital is 15,999.81 + 0.20 =
+        # 16,000.01, over the 16,000 limit. The legacy benefits disregard it
+        # (IS Regs 1987 reg. 27; JSA Regs 1996 reg. 92; ESA Regs 2008 reg.
+        # 3(a)): 15,999.81 + 0.19 = 16,000.00.
+        lifetime_isa_balance: 0.26
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 15_999.81
+  output:
+    uc_assessable_capital: 16_000.01
+    is_uc_eligible: false
+    income_support_assessable_capital: 16_000
+    jsa_income_assessable_capital: 16_000
+    esa_income_assessable_capital: 16_000
+
+- name: Each partner's Lifetime ISA is valued to the penny on its own
+  period: 2026
+  absolute_error_margin: 0.004
+  input:
+    people:
+      first:
+        age: 30
+        lifetime_isa_balance: 0.26
+      second:
+        age: 30
+        lifetime_isa_balance: 0.26
+    benunits:
+      benunit:
+        members: [first, second]
+    households:
+      household:
+        members: [first, second]
+        # Each surrender value is 0.195, a calculation of its own: 0.20 to the
+        # nearest penny (UC Regs 2013 reg. 6(1)), so 15,999.62 + 0.40 =
+        # 16,000.02; 0.19 rounded down (IS Regs 1987 reg. 27; JSA Regs 1996
+        # reg. 92; ESA Regs 2008 reg. 3(a)), so 15,999.62 + 0.38 = 16,000.00.
+        savings: 15_999.62
+  output:
+    uc_assessable_capital: 16_000.02
+    income_support_assessable_capital: 16_000
+    jsa_income_assessable_capital: 16_000
+    esa_income_assessable_capital: 16_000
+
+- name: A Lifetime ISA value given as an input is counted as given
+  period: 2026
+  absolute_error_margin: 0.004
+  input:
+    people:
+      person:
+        age: 30
+        # The balance's surrender value would be 0.195, but the value counted
+        # as capital is given directly, so every means test counts that 0.20:
+        # 15,999.81 + 0.20 = 16,000.01.
+        lifetime_isa_balance: 0.26
+        lifetime_isa_countable_capital: 0.20
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 15_999.81
+  output:
+    uc_assessable_capital: 16_000.01
+    is_uc_eligible: false
+    income_support_assessable_capital: 16_000.01
+    jsa_income_assessable_capital: 16_000.01
+    esa_income_assessable_capital: 16_000.01
+
+- name: A Lifetime ISA input is preserved when its float32 value matches the formula
+  period: 2026
+  absolute_error_margin: 0.004
+  input:
+    people:
+      person:
+        age: 30
+        # The formula gives 65,536.005. That and the explicit whole-penny
+        # value 65,536.01 both store as 65,536.0078125, so equality cannot
+        # tell a formula result from an input. Counting the input as given
+        # preserves 65,536.01 even under a programme that rounds down.
+        lifetime_isa_balance: 87_381.34
+        lifetime_isa_countable_capital: 65_536.01
+    benunits:
+      benunit:
+        members: person
+        housing_benefit_on_passporting_benefit: false
+    households:
+      household:
+        members: person
+  output:
+    uc_assessable_capital: 65_536.01
+    housing_benefit_assessable_capital: 65_536.01
+    income_support_assessable_capital: 65_536.01
+    jsa_income_assessable_capital: 65_536.01
+    esa_income_assessable_capital: 65_536.01
+
+- name: Pension Credit preserves an explicit Lifetime ISA value
+  period: 2026
+  absolute_error_margin: 0.004
+  input:
+    people:
+      person:
+        age: 70
+        lifetime_isa_balance: 0.26
+        lifetime_isa_countable_capital: 0.20
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+  output:
+    pension_credit_assessable_capital: 0.20

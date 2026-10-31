@@ -45,6 +45,6 @@ class esa_income_claimant_remunerative_work(Variable):
         within_lower_limit = earnings <= exempt_work.lower_earnings_limit
         # Reg 45(4): permitted work.
         permitted_work = (hours < exempt_work.hours_limit) & (
-            earnings <= exempt_work.higher_earnings_limit
+            earnings <= person("esa_exempt_work_higher_earnings_limit", period)
         )
         return ~(within_lower_limit | permitted_work)

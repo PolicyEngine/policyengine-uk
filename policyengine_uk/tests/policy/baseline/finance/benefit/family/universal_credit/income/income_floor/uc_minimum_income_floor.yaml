@@ -33,6 +33,7 @@
   input:
     age: 30
     is_apprentice: true
+    is_in_first_year_of_apprenticeship: true
   output:
     # Reg. 90(2) names NMW Regs reg. 4 and 4A(1)(a) to (c); the
     # apprenticeship rate of 8.00 (reg. 4A(1)(d)) would give 14,560.

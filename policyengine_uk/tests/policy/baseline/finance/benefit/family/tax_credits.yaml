@@ -129,6 +129,8 @@
     people:
       parent:
         age: 35
+        # A reported award represents an eligible continuing CTC claim.
+        child_tax_credit_reported: 1000
       child_1:
         age: 10
         date_of_birth: 20140301
@@ -141,6 +143,7 @@
     benunits:
       benunit:
         members: [parent, child_1, child_2, child_3]
+        would_claim_uc: false
   output:
     CTC_child_element: 10_365
 - name: CTC child element for a third child born 6 April 2017
@@ -150,6 +153,8 @@
     people:
       parent:
         age: 35
+        # A reported award represents an eligible continuing CTC claim.
+        child_tax_credit_reported: 1000
       child_1:
         age: 10
         date_of_birth: 20140301
@@ -162,5 +167,6 @@
     benunits:
       benunit:
         members: [parent, child_1, child_2, child_3]
+        would_claim_uc: false
   output:
     CTC_child_element: 6_910

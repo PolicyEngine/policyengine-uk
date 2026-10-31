@@ -53,9 +53,29 @@ class is_uc_eligible(Variable):
         # A family DWP moved off its legacy benefits claims Universal Credit
         # even from the pension-age route: a protected mixed-age couple
         # claims jointly (reg 3(2)(a)), leaving the pension-age route only
-        # while entitled, and a
-        # pension-age Working Tax Credit recipient not entitled to Pension
-        # Credit has the upper age condition waived (SI 2014/1230 reg 60A).
+        # while entitled, and a pension-age Working Tax Credit recipient has
+        # the upper age condition waived (SI 2014/1230 reg 60A). Reg 60A(1)
+        # waives it for a qualifying claim if, when the migration notice is
+        # issued, the single claimant, or each joint claimant, has reached
+        # the qualifying age for State Pension Credit, is entitled to an
+        # award of Working Tax Credit and is not entitled to an award of
+        # State Pension Credit. The model reads the year's reported receipt
+        # instead. legacy_award_is_closed never closes the legacy awards of a
+        # family whose claimant or partner reports Pension Credit
+        # (pension_credit_reported), so legacy_benefits_closed is false and it
+        # makes no closure claim. reg_60a reads reported Working Tax Credit,
+        # so a family whose Working Tax Credit tapered to nil, which reg
+        # 60A(2) also covers, is not modelled as a reg 60A migrant.
+        # Any other pension-age Working Tax Credit recipient can make the
+        # reg 60A claim, whether or not it would claim Pension Credit in the
+        # model (would_claim_pc). Except in prescribed cases, no one is
+        # entitled to State Pension Credit without making, or being treated
+        # as making, a claim (SSAA 1992 s.1(1) and (4)(ab)), so for a family
+        # that has not claimed it this matches the regulation. Where the
+        # report and the award differ, it does not: a family with an award it
+        # does not report is treated as a reg 60A migrant, where the
+        # regulation refuses the waiver, and one reporting Pension Credit it
+        # is not awarded makes no closure claim.
         closure_claim = benunit("claims_uc_at_legacy_closure", period)
         on_working_tax_credit = (
             add(benunit, period, ["working_tax_credit_reported"]) > 0

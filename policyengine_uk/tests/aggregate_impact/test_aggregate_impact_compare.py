@@ -639,10 +639,21 @@ def test_decile_impacts_match_a_direct_grouped_calculation(seed, n):
 
 
 @settings(max_examples=30, deadline=None)
-@given(seed=st.integers(0, 2**32 - 1), shift=st.floats(-1e4, 1e4))
-def test_a_uniform_change_shows_in_every_decile(seed, shift):
+@given(
+    seed=st.integers(0, 2**32 - 1),
+    shift_pence=st.one_of(st.integers(-1_000_000, -1), st.integers(1, 1_000_000)),
+)
+def test_a_uniform_change_shows_in_every_decile(seed, shift_pence):
     rng = np.random.default_rng(seed)
-    base = households(200, rng, decile=np.repeat(np.arange(1, 11), 20))
+    # Whole pennies on whole-pound incomes keep this visibility property
+    # clear of the half-penny change boundary and floating £1 crossings.
+    shift = shift_pence / 100
+    base = households(
+        200,
+        rng,
+        decile=np.repeat(np.arange(1, 11), 20),
+        income=rng.integers(1_000, 100_000, 200).astype(float),
+    )
     head = copy.deepcopy(base)
     for columns in head.values():
         columns["income"] = columns["income"] + shift
@@ -1446,6 +1457,74 @@ def test_withheld_decile_years_are_explained_not_called_missing():
     assert note in text and "need household detail" not in text
     text = _deciles({"deciles": {}, "decile_notes": []}, [2026])
     assert "need household detail" in text
+
+
+@pytest.mark.parametrize(
+    "shift, any_change",
+    [
+        (0.0, False),
+        (np.nextafter(0.005, 0.0), False),
+        (0.005, False),
+        (np.nextafter(0.005, np.inf), True),
+        (np.nextafter(-0.005, 0.0), False),
+        (-0.005, False),
+        (np.nextafter(-0.005, -np.inf), True),
+    ],
+)
+def test_uniform_change_respects_half_penny_reporting_boundary(shift, any_change):
+    """Issue #2500: half a penny is unchanged; strictly more is a change."""
+    base = households(
+        200,
+        np.random.default_rng(0),
+        decile=np.repeat(np.arange(1, 11), 20),
+        income=np.zeros(200),
+        weight=np.ones(200),
+    )
+    head = copy.deepcopy(base)
+    for columns in head.values():
+        columns["income"] = columns["income"] + shift
+    impacts, notes = decile_impacts(base, head, YEARS)
+    assert not notes
+    for row in impacts[str(YEARS[0])]:
+        assert not row["suppressed"]
+        assert row["any_change"] == any_change
+        assert row["mean_change"] == 0
+        assert math.isnan(row["relative_change"])
+        assert row["share_gaining"] == 0
+        assert row["share_losing"] == 0
+
+
+@pytest.mark.parametrize(
+    "shift, share_gaining, share_losing",
+    [
+        (-1.01, 0.0, 1.0),
+        (-1.0, 0.0, 0.0),
+        (1.0, 0.0, 0.0),
+        (1.01, 1.0, 0.0),
+    ],
+)
+def test_uniform_change_respects_one_pound_gain_loss_boundary(
+    shift, share_gaining, share_losing
+):
+    """Published gain/loss shares count changes strictly greater than £1."""
+    base = households(
+        200,
+        np.random.default_rng(0),
+        decile=np.repeat(np.arange(1, 11), 20),
+        income=np.zeros(200),
+        weight=np.ones(200),
+    )
+    head = copy.deepcopy(base)
+    for columns in head.values():
+        columns["income"] = columns["income"] + shift
+    impacts, notes = decile_impacts(base, head, YEARS)
+    assert not notes
+    for row in impacts[str(YEARS[0])]:
+        assert not row["suppressed"]
+        assert row["any_change"]
+        assert math.isnan(row["relative_change"])
+        assert row["share_gaining"] == share_gaining
+        assert row["share_losing"] == share_losing
 
 
 @pytest.mark.parametrize(

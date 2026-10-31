@@ -1,0 +1,13 @@
+description: Scotland exempts the grant, assignation or renunciation of a lease of
+  residential property, other than a qualifying long lease, from Land and Buildings
+  Transaction Tax, so no LBTT is charged on residential lease rent.
+values:
+  2015-04-01: true
+metadata:
+  unit: bool
+  economy: false
+  label: LBTT residential lease exemption
+  reference:
+  - title: Land and Buildings Transaction Tax (Scotland) Act 2013 schedule 1 paragraph
+      3(1)(a)
+    href: https://www.legislation.gov.uk/asp/2013/11/schedule/1/paragraph/3

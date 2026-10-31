@@ -1,0 +1,15 @@
+description: The appropriate percentage for council tax discounts in Wales, applied where there is one resident who is not disregarded. Until 31 March 2026 this was the appropriate percentage in section 11(3) of the Local Government Finance Act 1992, which then applied to England and Wales alike. From 1 April 2026 section 11 is England-only and the Welsh discount is prescribed by regulations under section 11E; regulation 3 of the 2026 Regulations prescribes the same 25 per cent, so the value is continuous.
+metadata:
+  economy: false
+  unit: /1
+  period: year
+  label: Wales council tax appropriate percentage
+  reference:
+    - title: "Local Government Finance Act 1992, section 11(3) (applied to England and Wales until 31 March 2026)"
+      href: https://www.legislation.gov.uk/ukpga/1992/14/section/11
+    - title: "Local Government Finance Act 1992, section 11E (Discounts: Wales, in force 1 April 2026)"
+      href: https://www.legislation.gov.uk/ukpga/1992/14/section/11E
+    - title: "The Council Tax (Discounts, Disregards and Exemptions) (Wales) Regulations 2026 (S.I. 2026/8 (W.)), regulation 3"
+      href: https://www.legislation.gov.uk/wsi/2026/8/regulation/3/made
+values:
+  1993-04-01: 0.25

@@ -1,0 +1,156 @@
+# Maintenance from a spouse, civil partner, former spouse or former civil
+# partner (spousal_maintenance_income) counts in the means tests; child
+# maintenance (maintenance_income) does not.
+
+- name: UC counts spousal maintenance as unearned income, but not child maintenance
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    spousal_maintenance_income: 100 * 12
+    maintenance_income: 200 * 12
+  output:
+    # UC Regs 2013 reg. 66(1)(d).
+    uc_unearned_income: 100 * 12
+
+- name: Pension Credit counts spousal maintenance, but not as savings credit qualifying income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 80
+        state_pension: 0
+        private_pension_income: 10_000
+        spousal_maintenance_income: 50 * 52
+        maintenance_income: 30 * 52
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    # SPC Regs 2002 reg. 15(5)(d): 10,000 + 2,600 = 12,600, above the 12,376
+    # standard minimum guarantee.
+    pension_credit_income: 10_000 + 50 * 52
+    guarantee_credit: 0
+    # Reg. 9(f): qualifying income is the 10,000 pension, below the 10,819.64
+    # threshold. Counting the maintenance as qualifying income would give
+    # 0.6 x (12,600 - 10,819.64) - 0.4 x (12,600 - 12,376) = 978.62.
+    savings_credit_income: 10_000
+    savings_credit: 0
+
+- name: Guarantee credit falls by the spousal maintenance
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 80
+        state_pension: 0
+        private_pension_income: 6_000
+        spousal_maintenance_income: 50 * 52
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    pension_credit_income: 6_000 + 50 * 52
+    # 12,376 - 8,600 = 3,776.
+    guarantee_credit: 238 * 52 - (6_000 + 50 * 52)
+
+- name: Pension-age Housing Benefit counts spousal maintenance in full without a child
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 80
+        state_pension: 0
+        private_pension_income: 10_000
+        spousal_maintenance_income: 50 * 52
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_000
+  output:
+    guarantee_credit: 0
+    savings_credit: 0
+    housing_benefit_maintenance_disregard: 0
+    # HB (SPC) Regs 2006 reg. 29(1)(o): 10,000 + 2,600.
+    housing_benefit_applicable_income: 10_000 + 50 * 52
+
+- name: Working-age Housing Benefit disregards £15 a week of spousal maintenance for a family with a child
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        spousal_maintenance_income: 100 * 52
+        maintenance_income: 60 * 52
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, child]
+        # A legacy Housing Benefit claim, so the means test itself applies.
+        claims_universal_credit: false
+        # Held at zero to isolate the maintenance.
+        child_benefit: 0
+        tax_credits: 0
+    households:
+      household:
+        members: [parent, child]
+        country: ENGLAND
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_000
+  output:
+    # HB Regs 2006 Sch 5 para 47(1); the child maintenance is disregarded in
+    # full (para 47A).
+    housing_benefit_maintenance_disregard: 15 * 52
+    housing_benefit_applicable_income: (100 - 15) * 52
+
+- name: Child maintenance alone is not Housing Benefit income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        maintenance_income: 60 * 52
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, child]
+        claims_universal_credit: false
+        child_benefit: 0
+        tax_credits: 0
+    households:
+      household:
+        members: [parent, child]
+        country: ENGLAND
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_000
+  output:
+    housing_benefit_maintenance_disregard: 0
+    housing_benefit_applicable_income: 0
+
+- name: Spousal maintenance is market income
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    spousal_maintenance_income: 5_000
+    maintenance_income: 1_000
+  output:
+    market_income: 6_000

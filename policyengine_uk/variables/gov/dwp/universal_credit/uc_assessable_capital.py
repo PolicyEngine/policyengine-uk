@@ -1,12 +1,13 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.variables.gov.dwp.universal_credit.household_uc_company_holding_pool_scale import (
-    HOLDINGS_SOURCE,
-)
 from policyengine_uk.utils.capital_valuation import (
     counted_share,
     exact_amount,
     round_to_penny,
     valued_capital,
+    valued_person_capital,
+)
+from policyengine_uk.variables.gov.dwp.universal_credit.household_uc_company_holding_pool_scale import (
+    HOLDINGS_SOURCE,
 )
 
 
@@ -68,11 +69,8 @@ class uc_assessable_capital(Variable):
         holding_value = counted_share(p.sale_expenses, HOLDINGS_SOURCE)
         claimant_or_partner = benunit.members("is_uc_claimant", period)
         benunit_claimants = benunit.sum(claimant_or_partner)
-        person_capital = sum(
-            benunit.sum(
-                exact_amount(benunit.members(source, period)) * claimant_or_partner
-            )
-            for source in p.person_sources
+        person_capital = valued_person_capital(
+            benunit, period, parameters, p, claimant_or_partner
         )
         financial_report = exact_amount(benunit("benunit_reported_capital", period))
         complete_override = exact_amount(benunit("uc_reported_capital", period))

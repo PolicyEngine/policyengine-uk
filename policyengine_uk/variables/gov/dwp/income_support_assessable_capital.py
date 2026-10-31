@@ -1,8 +1,8 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.utils.capital_valuation import (
-    exact_amount,
     round_to_penny,
     valued_capital,
+    valued_person_capital,
 )
 
 
@@ -61,9 +61,8 @@ class income_support_assessable_capital(Variable):
             household_capital * benunit_claimants_and_partners / fallback_divisor
         )
         claimant_or_partner = person("is_claimant_or_partner", period)
-        person_capital = sum(
-            benunit.sum(exact_amount(person(source, period)) * claimant_or_partner)
-            for source in IS.means_test.capital.person_sources
+        person_capital = valued_person_capital(
+            benunit, period, parameters, IS.means_test.capital, claimant_or_partner
         )
         household_share = where(
             household_claiming_members > 0, claiming_proxy, fallback_proxy

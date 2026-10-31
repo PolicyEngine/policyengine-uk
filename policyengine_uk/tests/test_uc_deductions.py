@@ -415,3 +415,38 @@ class TestReformLevers:
             },
         )
         assert reform.calculate("uc_deductions", YEAR)[0] == 0
+
+
+def test_allowance_scenario_preserves_the_legacy_advance_cash_reference():
+    """The actual UK dated-reform route must retain the unreformed cash anchor.
+
+    SI 2013/383 reg 10 does not index an advance instalment to the allowance.
+    The existing latent 10% is £40.014/month at the published 2025-26
+    single 25+ allowance, £400.14; both demands are below the 15% cap.
+    """
+    situation = make_situation(
+        uc_latent_deduction_rate={YEAR: 0.1},
+        uc_deduction_combination={YEAR: "ADVANCE_ONLY"},
+    )
+    baseline = Simulation(situation=situation)
+    reformed = Simulation(
+        situation=situation,
+        reform={
+            "gov.dwp.universal_credit.standard_allowance.amount.SINGLE_OLD": {
+                "2025-01-01.2025-12-31": 440
+            }
+        },
+    )
+    assert baseline.calculate("uc_standard_allowance", YEAR)[0] == pytest.approx(
+        400.14 * 12
+    )
+    assert reformed.calculate("uc_standard_allowance", YEAR)[0] == pytest.approx(
+        440 * 12
+    )
+    for simulation in (baseline, reformed):
+        assert simulation.calculate("uc_advance_repayment_amount", YEAR)[
+            0
+        ] == pytest.approx(0.1 * 400.14 * 12)
+        assert simulation.calculate("uc_deductions", YEAR)[0] == pytest.approx(
+            0.1 * 400.14 * 12
+        )

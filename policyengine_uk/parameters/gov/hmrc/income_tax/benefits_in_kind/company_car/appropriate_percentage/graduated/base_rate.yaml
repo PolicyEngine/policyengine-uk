@@ -1,0 +1,37 @@
+description: Appropriate percentage for a company car with a CO2 emissions figure at the graduated threshold of 75 g/km, before the rise for each step of emissions above it.
+# For 2020-21 and 2021-22 this is the rate for cars first registered before
+# 6 April 2020; registered_from_6_april_2020 holds the s. 139A rate.
+# The tax year 2030-31 keeps 2029-30's 23%. Budget 2026 announced 24%; the
+# company_car_tax_rise_2030 scenario applies it.
+values:
+  2020-04-06:
+    value: 0.2
+    metadata:
+      reference:
+        - title: Finance (No. 2) Act 2017 s. 2(2), substituting ITEPA 2003 s. 139(3)(a)
+          href: https://www.legislation.gov.uk/ukpga/2017/32/section/2/enacted
+  2025-04-06:
+    value: 0.21
+    metadata:
+      reference:
+        - title: Finance Act 2023 s. 11(3) and (4) (tax year 2025-26 and subsequent tax years)
+          href: https://www.legislation.gov.uk/ukpga/2023/1/section/11/enacted
+  2028-04-06:
+    value: 0.22
+    metadata:
+      reference:
+        - title: Finance Act 2025 s. 5(3)(a) and (9) (tax year 2028-29)
+          href: https://www.legislation.gov.uk/ukpga/2025/8/section/5/enacted
+  2029-04-06:
+    value: 0.23
+    metadata:
+      reference:
+        - title: Finance Act 2025 s. 6(3)(a) and (9) (tax year 2029-30 and subsequent tax years)
+          href: https://www.legislation.gov.uk/ukpga/2025/8/section/6/enacted
+metadata:
+  unit: /1
+  period: year
+  label: Company car graduated appropriate percentage base rate
+  reference:
+    - title: Income Tax (Earnings and Pensions) Act 2003 s. 139(3)(a)
+      href: https://www.legislation.gov.uk/ukpga/2003/1/section/139

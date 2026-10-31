@@ -1,0 +1,146 @@
+# The statutory Marriage Allowance rate (#2551), for the two couples in the
+# issue, by hand from the 2025-26 parameters: a £12,570 personal allowance, then
+# 20% on the first £37,700 of taxable income and 40% above it.
+#
+# - Earner of £30,000: (30,000 - 12,570) x 20% = 3,486. At the 10% rate the
+#   partner transfers 12,570 x 10% = 1,257, rounded up to the next £10: 1,260,
+#   worth 1,260 x 20% = 252, so 3,234. At 20%, 2,514 rounds up to 2,520, worth
+#   504, so 2,982. At 0 there is no allowance: 3,486.
+# - Earner of £60,000: 37,700 x 20% + (60,000 - 12,570 - 37,700) x 40%
+#   = 7,540 + 3,892 = 11,432. A higher-rate taxpayer gets no allowance at any
+#   statutory rate.
+#
+# These runs apply the parameter change without policyengine_uk.Simulation, so
+# they never run the parameter-switched structural reforms. The CPS reform's
+# switch, which a statutory rate change used to set off, is tested through
+# Simulation in policyengine_uk/tests/test_marriage_allowance_cps_switch.py.
+
+- name: Current law gives the basic-rate earner a 10% Marriage Allowance
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    people:
+      earner:
+        age: 40
+        employment_income: 30_000
+      partner:
+        age: 40
+    benunits:
+      benunit:
+        members: [earner, partner]
+        is_married: true
+    households:
+      household:
+        members: [earner, partner]
+  output:
+    marriage_allowance: [1_260, 0]
+    income_tax: [3_234, 0]
+
+- name: A statutory rate of 0 removes the basic-rate earner's Marriage Allowance
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    gov.hmrc.income_tax.allowances.marriage_allowance.max: 0
+    people:
+      earner:
+        age: 40
+        employment_income: 30_000
+      partner:
+        age: 40
+    benunits:
+      benunit:
+        members: [earner, partner]
+        is_married: true
+    households:
+      household:
+        members: [earner, partner]
+  output:
+    marriage_allowance: [0, 0]
+    income_tax: [3_486, 0]
+
+- name: A statutory rate of 20% doubles the basic-rate earner's Marriage Allowance
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    gov.hmrc.income_tax.allowances.marriage_allowance.max: 0.2
+    people:
+      earner:
+        age: 40
+        employment_income: 30_000
+      partner:
+        age: 40
+    benunits:
+      benunit:
+        members: [earner, partner]
+        is_married: true
+    households:
+      household:
+        members: [earner, partner]
+  output:
+    marriage_allowance: [2_520, 0]
+    income_tax: [2_982, 0]
+
+- name: Current law gives the higher-rate earner no Marriage Allowance
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    people:
+      earner:
+        age: 40
+        employment_income: 60_000
+      partner:
+        age: 40
+    benunits:
+      benunit:
+        members: [earner, partner]
+        is_married: true
+    households:
+      household:
+        members: [earner, partner]
+  output:
+    marriage_allowance: [0, 0]
+    income_tax: [11_432, 0]
+
+- name: A statutory rate of 0 leaves the higher-rate earner's income tax unchanged
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    gov.hmrc.income_tax.allowances.marriage_allowance.max: 0
+    people:
+      earner:
+        age: 40
+        employment_income: 60_000
+      partner:
+        age: 40
+    benunits:
+      benunit:
+        members: [earner, partner]
+        is_married: true
+    households:
+      household:
+        members: [earner, partner]
+  output:
+    marriage_allowance: [0, 0]
+    income_tax: [11_432, 0]
+
+- name: A statutory rate of 20% still gives the higher-rate earner no Marriage Allowance
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    gov.hmrc.income_tax.allowances.marriage_allowance.max: 0.2
+    people:
+      earner:
+        age: 40
+        employment_income: 60_000
+      partner:
+        age: 40
+    benunits:
+      benunit:
+        members: [earner, partner]
+        is_married: true
+    households:
+      household:
+        members: [earner, partner]
+  output:
+    marriage_allowance: [0, 0]
+    income_tax: [11_432, 0]

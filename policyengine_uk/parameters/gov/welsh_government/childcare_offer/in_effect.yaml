@@ -1,0 +1,14 @@
+description: The Welsh Government runs the Childcare Offer for Wales in every local authority when this is true.
+metadata:
+  unit: bool
+  period: year
+  label: Childcare Offer for Wales in effect
+  reference:
+    - title: Welsh Government, Welsh Government childcare offer helping families earn more and boosts childcare businesses (19 December 2019)
+      href: https://gov.wales/welsh-government-childcare-offer-helping-families-earn-more-and-boosts-childcare-businesses
+values:
+  # Seven early implementer areas ran the Offer from September 2017; it was
+  # available in all 22 local authorities by August 2019. The pilot areas are
+  # not modelled.
+  2015-01-01: false
+  2019-08-01: true

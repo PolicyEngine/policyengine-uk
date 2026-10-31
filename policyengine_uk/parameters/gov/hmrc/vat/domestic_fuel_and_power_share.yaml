@@ -1,0 +1,44 @@
+description: Share of household final consumption expenditure that goes on domestic fuel and power (electricity, gas and other fuels). It is subtracted from the reduced-rate share of consumption, because domestic electricity and gas are now taxed from their own bills.
+values:
+  2000-01-01: 0.0213
+  2001-01-01: 0.0203
+  2002-01-01: 0.0197
+  2003-01-01: 0.0189
+  2004-01-01: 0.0215
+  2005-01-01: 0.0219
+  2006-01-01: 0.0263
+  2007-01-01: 0.0259
+  2008-01-01: 0.0299
+  2009-01-01: 0.0305
+  2010-01-01: 0.0309
+  2011-01-01: 0.0291
+  2012-01-01: 0.0319
+  2013-01-01: 0.0323
+  2014-01-01: 0.0275
+  2015-01-01: 0.0274
+  2016-01-01: 0.0264
+  2017-01-01: 0.0249
+  2018-01-01: 0.0258
+  2019-01-01: 0.0264
+  2020-01-01: 0.0286
+  2021-01-01: 0.0290
+  2022-01-01: 0.0351
+  2023-01-01: 0.0363
+  2024-01-01: 0.0283
+  2025-01-01: 0.0279
+metadata:
+  unit: /1
+  period: year
+  label: Domestic fuel and power share of household spending
+  reference:
+    - title: ONS Consumer trends, 04.5 Electricity, gas and other fuels, current prices, not seasonally adjusted (ADFX), release of 30 September 2026
+      href: https://www.ons.gov.uk/economy/nationalaccounts/satelliteaccounts/timeseries/adfx/ct
+    - title: ONS, Household final consumption expenditure, domestic concept, current prices (ABQI)
+      href: https://www.ons.gov.uk/economy/nationalaccounts/satelliteaccounts/timeseries/abqi/ukea
+    - title: OBR, VAT ("Around 2.5 per cent of expenditure is taxed at this reduced rate")
+      href: https://obr.uk/forecasts-in-depth/tax-by-tax-spend-by-spend/vat/
+  # ADFX / ABQI by calendar year. From 2006 the share is 2.49% or more,
+  # against the OBR's 2.5% reduced-rate share, so domestic fuel and power
+  # accounts for all of it to within rounding and the non-energy remainder
+  # (children's car seats, smoking-cessation products and similar) is too
+  # small to separate from published totals.

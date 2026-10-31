@@ -1,7 +1,7 @@
-"""OBR Tables A1/A2 group married and cohabiting couples together.
+"""OBR Tables A1/A2 group couples together and assign lone parents by child age.
 
-The numerical oracles below are the tables' third earnings quintile, not
-estimates from a population dataset. Legal marriage remains a separate input
+The numerical oracles below come from the tables, not estimates from a
+population dataset. Legal marriage remains a separate input
 for tax rules. Relationship membership, not the number of adults, identifies
 the couple used by the labour supply modules.
 
@@ -136,9 +136,8 @@ def test_nonpartner_adult_does_not_turn_a_lone_mother_into_a_couple(kind):
 @pytest.mark.parametrize("kind", KINDS)
 @pytest.mark.parametrize("gender", ["MALE", "FEMALE"])
 def test_single_parent_group_is_independent_of_legal_marriage(kind, gender):
-    # A separated parent can remain legally married. This checks grouping
-    # invariance, without prescribing a new lone-father coefficient: the
-    # inherited male lone-parent treatment is outside this correction.
+    # A separated parent can remain legally married. OBR Tables A1/A2 assign
+    # the same lone-parent coefficient regardless of sex or legal marriage.
     results = []
     for married in [False, True]:
         sim = Simulation(
@@ -154,7 +153,114 @@ def test_single_parent_group_is_independent_of_legal_marriage(kind, gender):
         )
         assert sim.calculate("is_couple", YEAR).tolist() == [False]
         results.append(elasticity(sim, kind)[0])
-    assert results[0] == results[1]
+    expected = {"substitution": 0.094, "income": -0.037, "participation": 0.717}
+    np.testing.assert_allclose(results, expected[kind])
+
+
+def lone_parent_pair_situation(child_age, married=False):
+    people = {}
+    benunits = {}
+    households = {}
+    for gender in ("MALE", "FEMALE"):
+        parent = f"{gender.lower()}_parent"
+        child = f"{gender.lower()}_child"
+        people[parent] = {
+            "age": 35,
+            "gender": gender,
+            "employment_income": 25_000,
+            "hours_worked": 1_500,
+            "employment_status": "FT_EMPLOYED",
+            "is_claimant_or_partner": True,
+        }
+        people[child] = {"age": child_age, "is_claimant_or_partner": False}
+        benunits[gender] = {"members": [parent, child], "is_married": married}
+        households[gender] = {"members": [parent, child], "household_weight": 1}
+    return {"people": people, "benunits": benunits, "households": households}
+
+
+# OBR Table A1, PDF page 8, lists Q1-Q5 for each youngest-child band.
+# Table A2, PDF page 9, uses different progression boundaries.
+@pytest.mark.parametrize("married", [False, True])
+@pytest.mark.parametrize(
+    "child_age,substitution,income,participation_by_quintile",
+    [
+        (0, 0.094, -0.037, [1.195, 0.956, 0.717, 0.478, 0.120]),
+        (2, 0.094, -0.037, [1.195, 0.956, 0.717, 0.478, 0.120]),
+        (3, 0.094, -0.037, [1.554, 1.243, 0.932, 0.621, 0.155]),
+        (4, 0.094, -0.037, [1.554, 1.243, 0.932, 0.621, 0.155]),
+        (5, 0.128, -0.075, [1.554, 1.243, 0.932, 0.621, 0.155]),
+        (6, 0.128, -0.075, [1.195, 0.956, 0.717, 0.478, 0.120]),
+        (10, 0.128, -0.075, [1.195, 0.956, 0.717, 0.478, 0.120]),
+        (11, 0.136, -0.054, [0.797, 0.637, 0.478, 0.319, 0.080]),
+        (17, 0.136, -0.054, [0.797, 0.637, 0.478, 0.319, 0.080]),
+    ],
+)
+def test_lone_parents_use_obr_age_and_quintile_coefficients(
+    child_age, substitution, income, participation_by_quintile, married
+):
+    sim = Simulation(situation=lone_parent_pair_situation(child_age, married))
+    parents = np.asarray(sim.calculate("adult_index", YEAR)) == 1
+    np.testing.assert_allclose(
+        calculate_labour_substitution_elasticities(sim, YEAR)[parents], substitution
+    )
+    np.testing.assert_allclose(
+        calculate_labour_net_income_elasticities(sim, YEAR)[parents], income
+    )
+    for quintile, expected in enumerate(participation_by_quintile, start=1):
+        actual = participation.calculate_participation_elasticities(
+            sim, np.full(len(parents), quintile), YEAR
+        )
+        np.testing.assert_allclose(actual[parents], expected)
+
+
+@pytest.mark.parametrize(
+    "gender,participation_by_quintile",
+    [
+        ("MALE", [0.227, 0.182, 0.136, 0.091, 0.023]),
+        ("FEMALE", [0.216, 0.173, 0.130, 0.086, 0.022]),
+    ],
+)
+def test_childless_single_adults_keep_obr_coefficients(
+    gender, participation_by_quintile
+):
+    # OBR Tables A1/A2 distinguish these rows from the lone-parent rows.
+    sim = Simulation(situation={"people": {"person": {"age": 35, "gender": gender}}})
+    np.testing.assert_allclose(
+        calculate_labour_substitution_elasticities(sim, YEAR), 0.15
+    )
+    np.testing.assert_allclose(
+        calculate_labour_net_income_elasticities(sim, YEAR), -0.05
+    )
+    for quintile, expected in enumerate(participation_by_quintile, start=1):
+        np.testing.assert_allclose(
+            participation.calculate_participation_elasticities(
+                sim, np.array([quintile]), YEAR
+            ),
+            expected,
+        )
+
+
+@pytest.mark.parametrize("child_age", [2, 5, 11])
+def test_lone_parent_progression_reaches_employment_income_for_both_sexes(child_age):
+    sim = Microsimulation(
+        situation=lone_parent_pair_situation(child_age),
+        scenario=Scenario(
+            parameter_changes={
+                "gov.hmrc.income_tax.rates.uk[0].rate": {str(YEAR): 0.25},
+                "gov.dynamic.obr_labour_supply_assumptions": {str(YEAR): True},
+            }
+        ),
+    )
+    parents = np.asarray(sim.calculate("adult_index", YEAR)) == 1
+    before = np.asarray(sim.calculate("employment_income", YEAR)).copy()
+    response = sim.apply_dynamics(YEAR).progression
+    after = np.asarray(sim.calculate("employment_income", YEAR))
+    assert len(response) == 2
+    assert np.all(np.abs(response["total_response"]) > 1)
+    np.testing.assert_allclose(response.iloc[0], response.iloc[1], atol=0.01)
+    np.testing.assert_allclose(
+        after[parents], before[parents] + response["total_response"], atol=0.01
+    )
 
 
 @pytest.mark.parametrize("child_age", [1, 8])

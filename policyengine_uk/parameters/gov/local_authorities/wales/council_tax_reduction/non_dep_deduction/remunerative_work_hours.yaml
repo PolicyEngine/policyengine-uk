@@ -1,0 +1,12 @@
+description: Wales Council Tax Reduction treats a person working at least this many hours a week as in remunerative work, which puts a non-dependant on the income-banded deduction.
+values:
+  2013-04-01: 16
+metadata:
+  label: Wales CTR remunerative work hours
+  unit: hour
+  period: week
+  reference:
+    - title: Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013, reg. 10(1)
+      href: https://www.legislation.gov.uk/wsi/2013/3029/regulation/10
+    - title: Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2012 (2013-14), reg. 10(1)
+      href: https://www.legislation.gov.uk/wsi/2012/3144/regulation/10

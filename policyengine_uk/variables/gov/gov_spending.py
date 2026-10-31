@@ -2,6 +2,7 @@ from policyengine_uk.model_api import *
 
 
 GOV_SPENDING_VARIABLES = [
+    "lifetime_isa_bonus",
     "child_benefit",
     "council_tax_benefit",
     "esa_income",
@@ -18,6 +19,7 @@ GOV_SPENDING_VARIABLES = [
     "afcs",
     "bsp",
     "war_widows_pension",
+    "widowed_parents_allowance",
     "carers_allowance",
     "dla",
     "iidb",
@@ -34,6 +36,7 @@ GOV_SPENDING_VARIABLES = [
     "epg_subsidy",
     "cost_of_living_support_payment",
     "energy_bills_rebate",
+    "household_energy_payment",
     "winter_fuel_allowance",
     "pawhp",
     "other_public_spending_budget_change",
@@ -41,6 +44,7 @@ GOV_SPENDING_VARIABLES = [
     "extended_childcare_entitlement",
     "universal_childcare_entitlement",
     "targeted_childcare_entitlement",
+    "wales_childcare_offer",
     "care_to_learn",
     "childcare_grant",
     "parents_learning_allowance",

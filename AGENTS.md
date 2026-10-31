@@ -38,7 +38,7 @@ documentation, read `docs/engineering/skills/documentation-review.md`.
 ## Non-Negotiable PR Requirements
 
 Every pull request must include a Towncrier changelog fragment under
-`changelog.d/`. See `docs/engineering/skills/github-prs.md` for the naming and
-type rules.
+`changelog.d/`, except dependency-only updates. See
+`docs/engineering/skills/github-prs.md` for the naming, type and exception rules.
 
 Run lint and formatting before committing. The default command is `make format`.

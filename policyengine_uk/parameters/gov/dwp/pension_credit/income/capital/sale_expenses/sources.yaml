@@ -9,7 +9,9 @@ description: >
   sale (DMG 84712-84715 and 84731). `share_like_capital_with_sale_expenses` is
   listed: the part of share-like capital whose sale incurs expenses, namely
   directly held shares, valued less 10% for selling costs (DMG 84763), and all
-  of `corporate_wealth` on datasets that do not itemise it. Unit and
+  of `corporate_wealth` on datasets that do not itemise it (which then still
+  folds in unit trusts, ISAs and, on datasets built before private pension
+  wealth was split out, non-defined-benefit pension wealth). Unit and
   investment trusts and stocks and shares ISAs are valued without the
   deduction; `gov.dwp.share_like_capital.without_sale_expenses` lists them,
   with the guidance and the approximation for investment trusts, which the

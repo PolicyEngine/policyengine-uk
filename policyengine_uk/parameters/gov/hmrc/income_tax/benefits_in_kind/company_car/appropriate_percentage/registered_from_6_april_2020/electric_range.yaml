@@ -1,0 +1,43 @@
+description: Appropriate percentage under ITEPA 2003 s. 139A for a company car first registered on or after 6 April 2020 with a CO2 emissions figure of 1 to 50 g/km, by its electric range figure in miles, while s. 139A is in effect.
+metadata:
+  type: single_amount
+  threshold_unit: mile
+  amount_unit: /1
+  period: year
+  label: Appropriate percentage by electric range, cars first registered from 6 April 2020
+  reference:
+    - title: Finance Act 2020 s. 9(3) (tax year 2020-21)
+      href: https://www.legislation.gov.uk/ukpga/2020/14/section/9/enacted
+    - title: Finance Act 2020 s. 10(3) (tax year 2021-22)
+      href: https://www.legislation.gov.uk/ukpga/2020/14/section/10/enacted
+brackets:
+  # Electric range figure of less than 30 miles.
+  - threshold:
+      2020-04-06: 0
+    amount:
+      2020-04-06: 0.12
+      2021-04-06: 0.13
+  # 30 to 39 miles.
+  - threshold:
+      2020-04-06: 30
+    amount:
+      2020-04-06: 0.1
+      2021-04-06: 0.11
+  # 40 to 69 miles.
+  - threshold:
+      2020-04-06: 40
+    amount:
+      2020-04-06: 0.06
+      2021-04-06: 0.07
+  # 70 to 129 miles.
+  - threshold:
+      2020-04-06: 70
+    amount:
+      2020-04-06: 0.03
+      2021-04-06: 0.04
+  # 130 miles or more.
+  - threshold:
+      2020-04-06: 130
+    amount:
+      2020-04-06: 0
+      2021-04-06: 0.01

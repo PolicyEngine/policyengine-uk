@@ -62,6 +62,19 @@ The response amounts enter `household_tax`; those same variables are not added t
 and [capital](https://github.com/PolicyEngine/policyengine-uk/blob/b4dbaf57a4ebb1d1f0ba5f7a384795422828db75/policyengine_uk/variables/contrib/policyengine/employer_ni/employer_ni_response_capital_incidence.py)
 allocation formulas.
 
+## Secondary Class 1 only
+
+All three channels cover secondary Class 1 contributions. `ni_employer` also
+holds Class 1A contributions on benefits in kind (`ni_class_1a`), but
+`employer_cost`, `baseline_employer_cost` and `adjusted_employer_cost` leave
+them out, as they leave out the benefits themselves. No household bears
+Class 1A or a change in it, whether the change comes from the benefits (as
+with a rise in the company car appropriate percentages) or from the employer
+rate, which Class 1A follows (SSCBA 1992 s. 10(5)). Such a reform raises
+`gov_tax` by its Class 1A change on top of what households pay. Passing
+Class 1A through these channels is
+[#2752](https://github.com/PolicyEngine/policyengine-uk/issues/2752).
+
 ## Measures and aggregation
 
 Report these quantities separately:

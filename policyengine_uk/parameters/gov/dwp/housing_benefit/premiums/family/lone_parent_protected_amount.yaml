@@ -1,0 +1,12 @@
+description: Weekly Housing Benefit family premium for working-age lone-parent awards satisfying the pre-April 1998 protection conditions.
+values:
+  2015-04-01: 22.20
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Housing Benefit historical lone-parent family premium
+  reference:
+    - title: GB working-age Schedule 3 paragraph 3, before abolition, saved by SI 2015/1857
+      href: https://www.legislation.gov.uk/uksi/2006/213/schedule/3/part/2/2015-04-06
+    - title: NI working-age Schedule 4 paragraph 3, before abolition, saved by SR 2016/310
+      href: https://www.legislation.gov.uk/nisr/2006/405/schedule/4/part/II/2015-04-06
