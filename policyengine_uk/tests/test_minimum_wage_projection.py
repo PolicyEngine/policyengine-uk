@@ -157,9 +157,8 @@ TABLE_1_13 = (
 
 
 def test_the_table_here_is_the_one_the_importer_reads():
-    """OBR_NATIONAL_LIVING_WAGE is Table 1.13 as the importer reads it from
-    the real October 2026 workbook, so a refreshed fixture fails here until
-    the table here moves with it."""
+    """OBR_NATIONAL_LIVING_WAGE holds the levels the importer reads from the
+    real October 2026 fixture. Refresh both copies together."""
     line = compute_level_growth(TABLE_1_13.read_bytes())[("national_living_wage",)].line
     assert line.levels == OBR_NATIONAL_LIVING_WAGE
     assert line.set_until == 2027

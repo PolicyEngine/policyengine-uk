@@ -67,29 +67,46 @@ for each duty's rates, the higher-stake share Machine Games Duty's rate
 assumes, and the approximations.
 
 `national_living_wage` projects the minimum wage rates
-(`gov.hmrc.minimum_wage`) after the last rate set. It holds the growth of the
-rates the Government has set, then of the OBR's estimates, both from the
-national living wage table of the detailed economy tables (Table 1.13 in
-October 2026), then `average_earnings`' long-run growth, year for year. HM
-Treasury costed Budget 2026's Carer's Allowance taper on the OBR's estimates.
+(`gov.hmrc.minimum_wage`) after the last rate set. The government sets each
+rate following the Low Pay Commission's recommendations, and the OBR
+publishes the rates the government has set, with its estimates of later
+ones, in the national living wage table of the detailed economy tables
+(Table 1.13 in October 2026). The series holds the growth into each of those
+rates, then `average_earnings`' long-run growth, year for year. HM Treasury
+costed Budget 2026's Carer's Allowance taper on the OBR's estimates.
+
 `utils/import_obr_forecasts.py` writes the series with the other economy
 series. It finds the table by its title, reads the level under each year
 across the table's one row of years, and writes each year's level over the
-year before's, to six decimals. The table's note says up to which year the
-Government has set the rate, and the importer writes those years and the
-OBR's estimates under separate comments. It then projects each estimate as
-the model does, from the last rate set through the index to the nearest
-penny. Where a year's ratio would leave the model a penny off the table, it
-writes the six-decimal growth that keeps the table's penny. The importer stops
-before writing any file if the table declares a unit other than £ per hour,
-or lacks one row of years and one row labelled "National Living Wage (NLW)".
-It also stops if the years skip or repeat, if a year lacks a positive level,
-if a figure has no year above it, if the table lacks that note or its notes
-name different years, or if no six-decimal growth keeps an estimate's penny.
-`test_minimum_wage_projection.py`
-holds the October 2026 table, checks it against the importer's fixture, and
-fails if the series stops reproducing the table to the penny, or if its
-long-run years stop matching `average_earnings`.
+year before's, to six decimals. The OBR identifies in its note the last year
+the government has set, and the importer labels the growth into those years
+and into the OBR's estimates with separate comments. The model projects the
+national living wage, the last bracket of
+`gov/hmrc/minimum_wage/non_apprentice.yaml`, from that bracket's last rate,
+through the index it builds from this series, to the nearest penny. The
+importer projects each later year of the table from the same rate in the same
+way, and where a year's ratio would leave the model a penny off the OBR's
+level, it writes the six-decimal growth that keeps the OBR's penny. It then
+runs the model's own generation steps on the file it would write, and checks
+that the model's index reaches the table's last year and matches the index
+the importer compounded.
+
+The importer stops before writing any file when:
+
+- the unit differs from £ per hour, or the table lacks one row of years or
+  one row labelled "National Living Wage (NLW)";
+- the years skip or repeat, a year lacks a positive level, or a figure has no
+  year above it;
+- the OBR's note names no single calendar year the government has set, or its
+  statements name different years;
+- the OBR's level in the year of the file's last rate differs from that rate
+  at the penny;
+- the table's growth takes the model's index to zero or infinity; or
+- no six-decimal growth keeps an estimate's penny.
+
+`test_minimum_wage_projection.py` holds the October 2026 table, checks it
+against the importer's fixture, and fails if the series stops reproducing the
+table to the penny, or if its long-run years stop matching `average_earnings`.
 
 ## Time horizons
 
@@ -502,9 +519,9 @@ the forecast levels, though not their growth.
    EFO's policy tables for any new measure in the betting and gaming lines.
    Then update the published levels in
    `policyengine_uk/tests/test_gambling_duty_base_projection.py`.
-7. The same run refreshes `national_living_wage` from the new economy
-   tables' national living wage table (Table 1.13 in October 2026), with
-   `average_earnings` after it. Then replace the cut-down table in
+7. The importer refreshes `national_living_wage` in the same run, from the
+   new economy tables' national living wage table (Table 1.13 in October
+   2026), with `average_earnings` after it. Then replace the cut-down table in
    `policyengine_uk/tests/fixtures/obr_economy/` (see its README) and the
    levels in `OBR_NATIONAL_LIVING_WAGE` in
    `policyengine_uk/tests/test_minimum_wage_projection.py`. Pass

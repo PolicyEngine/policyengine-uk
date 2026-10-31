@@ -2977,8 +2977,8 @@ def model_wages(values, set_until, rate):
 
 def wages_in_the_model(content):
     """The national living wage the model projects in April of each year
-    after the rate the parameter file sets last, when ``content`` is its
-    yoy_growth.yaml: the index the model's own generation steps build
+    after the rate the parameter file sets last, when the model reads
+    ``content`` as its yoy_growth.yaml: the index the model's own generation steps build
     (build_model_index), carried from the file's rate by policyengine-core's
     uprate_parameters."""
     return uprated_wages(
@@ -3034,7 +3034,7 @@ def test_levels_laid_out_down_a_column_are_refused():
         **{4 + i: {"B": 2023 + i, "C": level} for i, level in enumerate(NLW_LEVELS)},
         10: {"B": NLW_NOTE.format(set_until=2025, estimates_after=2025)},
     }
-    with pytest.raises(ValueError, match="one row of years across its columns"):
+    with pytest.raises(ValueError, match="one row of years across the columns of"):
         compute_level_growth(nlw_workbook(rows))
 
 
@@ -3418,7 +3418,7 @@ def test_the_importer_index_is_the_models_for_the_committed_series():
 def edit_real_table_1_13(edits):
     """The real October 2026 workbook with cells of sheet 1.13 set: text as
     an inline string, a number as a number, None to empty the cell. It
-    copies every other archive entry as it was."""
+    copies every other archive entry unchanged."""
     output = BytesIO()
     with ZipFile(BytesIO(REAL_TABLE_1_13)) as source, ZipFile(output, "w") as dest:
         path = _sheet_paths(source)["1.13"]
@@ -3458,10 +3458,10 @@ REAL_LAYOUT_CHANGES = {
     ),
     "unit_in_pence": (
         {"C3": "pence per hour"},
-        "must declare its unit as '£ per hour'",
+        "needs the unit '£ per hour', and no other",
     ),
-    "second_unit": ({"D3": "per cent"}, "must declare its unit"),
-    "no_unit": ({"C3": None}, "must declare its unit"),
+    "second_unit": ({"D3": "per cent"}, "needs the unit"),
+    "no_unit": ({"C3": None}, "needs the unit"),
     "row_relabelled": (
         {"B5": "National Living Wage"},
         r'Expected one "national living wage \(nlw\)" row .* found 0',
@@ -3484,11 +3484,11 @@ REAL_LAYOUT_CHANGES = {
     "years_backwards": ({"C4": 2031, "N4": 2020}, "years skip, repeat or run"),
     "second_row_of_years": (
         {"C8": 2020, "D8": 2021},
-        "one row of years across its columns; found 2",
+        "one row of years across the columns of .*; found 2",
     ),
     "labelled_row_of_years": (
         {"B4": "Calendar year"},
-        "one row of years across its columns; found 0",
+        "one row of years across the columns of .*; found 0",
     ),
     "no_note": ({"B6": None}, "needs one note .* found 0"),
     "second_note": (
@@ -3740,7 +3740,7 @@ def test_main_writes_the_national_living_wage_from_the_economy_tables(tmp_path, 
                 drop={"1.13"},
                 first={"1.13": nlw_sheet({**nlw_rows(), 3: {"C": "pence per hour"}})},
             ),
-            "must declare its unit as '£ per hour'",
+            "needs the unit '£ per hour', and no other",
         ),
     ],
     ids=["no_table", "unit_in_pence"],

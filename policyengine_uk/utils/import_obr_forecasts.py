@@ -1700,9 +1700,9 @@ class LevelSeriesSpec:
     growth down a column.
 
     ``path`` names the series under ``obr``. The importer finds the table by
-    its title, as it finds receipts tables. The table's header declares one
-    unit, ``unit``; one row of cells holds consecutive calendar years; and
-    one row below it, labelled ``row``, holds a level under each year and
+    its title, as it finds receipts tables. The OBR gives one unit, ``unit``,
+    in the table's header; one row of cells holds consecutive calendar years;
+    and one row below it, labelled ``row``, holds a level under each year and
     nowhere else. The importer compares titles, units and labels lowercased,
     without a footnote marker: digits or superscript digits after a letter or
     a closing bracket, as in "National Living Wage (NLW)1". The OBR's note
@@ -1712,9 +1712,8 @@ class LevelSeriesSpec:
     name the same calendar year.
 
     ``anchor`` names the scale whose last bracket's amount the series' index
-    uprates. That amount's last dated value is the rate the model projects
-    from, and its uprating rounds each projected rate to the nearest
-    ``rounding``.
+    uprates. The model projects that amount from its last dated value, and
+    its uprating rounds each projected rate to the nearest ``rounding``.
     """
 
     path: tuple[str, ...]
@@ -1731,7 +1730,7 @@ LEVEL_SERIES_SPECS = (
         title="national living wage",
         unit="£ per hour",
         row="national living wage (nlw)",
-        # The national living wage is the scale's last bracket.
+        # The scale's last bracket holds the national living wage.
         anchor="gov.hmrc.minimum_wage.non_apprentice",
         # gov.hmrc.minimum_wage rounds each projected rate to the nearest penny.
         rounding=0.01,
@@ -1774,8 +1773,8 @@ class LevelGrowth:
 
 @dataclass(frozen=True)
 class LevelAnchor:
-    """The rate a level series' index projects from: the last dated value of
-    the parameter it uprates, the date that value takes effect, and that
+    """The rate the model projects a level series' parameter from: that
+    parameter's last dated value, the date it takes effect, and the
     parameter's uprating metadata. policyengine-core's uprate_parameters
     projects each later rate from this value."""
 
@@ -1876,7 +1875,8 @@ def find_level_line(
     year_rows = [index for index, row in enumerate(rows) if _year_columns(row)]
     if len(year_rows) != 1:
         raise ValueError(
-            f"{where} needs one row of years across its columns; found {len(year_rows)}"
+            "The importer needs one row of years across the columns of "
+            f"{where}; found {len(year_rows)}"
         )
     header = year_rows[0]
     years = _year_columns(rows[header])
@@ -1907,8 +1907,8 @@ def find_level_line(
     ]
     if units != [spec.unit]:
         raise ValueError(
-            f"{where} must declare its unit as {spec.unit!r} above its years; "
-            f"found {units}"
+            f"The importer needs the unit {spec.unit!r}, and no other, above the "
+            f"years in {where}; found {units}"
         )
     ordered = [years[column] for column in sorted(years, key=column_index)]
     if ordered != list(range(ordered[0], ordered[0] + len(ordered))):
@@ -2031,8 +2031,8 @@ def projected_rate_units(
 
 
 def _level_growth_series(series: LevelGrowth, kept: dict) -> dict[str, float]:
-    """The growth the model reads for a level series: the years the file
-    keeps before the table, then the table's, keyed by date."""
+    """Return the growth the model reads for a level series, keyed by date:
+    the years the file keeps before the table, then the table's."""
     growth = {str(instant): value for instant, value in kept.items()}
     growth.update({f"{year}-01-01": value for year, value in series.values.items()})
     return growth
@@ -2151,8 +2151,8 @@ def penny_preserving_growth(
 
 
 def _kept_level_values(obr: dict, path: tuple[str, ...], series: LevelGrowth) -> dict:
-    """The values a yoy_growth.yaml's ``obr`` mapping holds for a level
-    series before its table's second year, which a render keeps."""
+    """Return the values a yoy_growth.yaml's ``obr`` mapping holds for a
+    level series before its table's second year, which a render keeps."""
     node = obr
     for key in path:
         node = node[key]
@@ -2168,8 +2168,8 @@ def _level_anchor(
     series: LevelGrowth,
     anchors: dict[tuple[str, ...], LevelAnchor] | None,
 ) -> LevelAnchor:
-    """``anchors[path]`` if given, or else the anchor read_level_anchor
-    reads from the series' parameter file."""
+    """Return ``anchors[path]`` if given, or else the anchor
+    read_level_anchor reads from the series' parameter file."""
     return anchors[path] if anchors is not None else read_level_anchor(series.spec)
 
 
@@ -2195,7 +2195,7 @@ def penny_preserving_level_growth(
 
 def build_model_index(content: str, path: tuple[str, ...]) -> dict[int, float]:
     """Build, by year, the index the model compounds from ``obr.<path>`` when
-    ``content`` is its yoy_growth.yaml.
+    it reads ``content`` as its yoy_growth.yaml.
 
     process_parameter_tree runs its generation steps on the parameters the
     YAML files hold. This runs those steps, up to and including
@@ -2292,7 +2292,7 @@ def render_level_values(
     tail: dict[int, float],
     release: tuple[str, int],
 ) -> list[str]:
-    """Render a level series' values entries: earlier years as they were,
+    """Render a level series' values entries: the earlier years it keeps,
     then the growth into the rates the government has set, then into the
     OBR's estimates, then the average_earnings path."""
     first_year = min(growth.values)
