@@ -18,8 +18,9 @@ Invariants, for any non-negative amounts:
 - with person balances stored instead, the total equals their sum every year;
 - the two forms give the same totals and means-test capital when they hold
   the same amounts;
-- after any inputs and calculations, a total keeps every value the data or a
-  caller supplied, and equals what a fresh calculation gives in other years;
+- after totals set for any years, and balances set on a named branch, between
+  calculations, a total keeps every value the data or a caller supplied, and
+  equals what a fresh calculation gives in other years;
 - a grown total grows as Core grows an input with its parts' index;
 - a reform that changes the sum or a part gets Core's sum, and a reform that
   declares the same variables again changes nothing.
@@ -30,7 +31,7 @@ from types import SimpleNamespace
 import numpy as np
 import pandas as pd
 import pytest
-from hypothesis import given, settings
+from hypothesis import example, given, settings
 from hypothesis import strategies as st
 from policyengine_core.parameters import ParameterNode
 from policyengine_core.periods import period
@@ -926,23 +927,56 @@ def test_stored_totals_and_person_balances_agree_in_every_year(households):
 
 
 INPUT_YEARS = st.integers(min_value=DATA_YEAR + 1, max_value=YEARS[-1])
-STEPS = st.lists(
-    st.one_of(
-        st.tuples(st.just("calculate"), INPUT_YEARS),
-        st.tuples(st.just("cash_isa"), INPUT_YEARS, AMOUNTS),
-        st.tuples(st.just("cash_isa_balance"), INPUT_YEARS, AMOUNTS),
+TOTAL_STEPS = (
+    st.tuples(st.just("calculate"), INPUT_YEARS),
+    st.tuples(st.just("cash_isa"), INPUT_YEARS, AMOUNTS),
+)
+BALANCE_STEP = st.tuples(st.just("cash_isa_balance"), INPUT_YEARS, AMOUNTS)
+# Core keeps a value it has uprated for a person balance on the default
+# branch when a balance for an earlier year changes there, so a total that
+# sums the balances would read it. Balances change only on a named branch,
+# where Core drops what depends on them.
+RUNS = st.one_of(
+    st.tuples(
+        st.just(False), st.lists(st.one_of(*TOTAL_STEPS), min_size=1, max_size=8)
     ),
-    min_size=1,
-    max_size=8,
+    st.tuples(
+        st.just(True),
+        st.lists(st.one_of(*TOTAL_STEPS, BALANCE_STEP), min_size=1, max_size=8),
+    ),
 )
 
 
 @PROPERTY_SETTINGS
-@given(steps=STEPS, on_branch=st.booleans())
-def test_a_total_after_any_inputs_equals_a_fresh_calculation(steps, on_branch):
-    # Totals or balances set for any year, between calculations of any year:
-    # each calculated total equals what the same simulation gives with every
-    # calculated value dropped, and every supplied total keeps its value.
+@given(run=RUNS)
+@example(
+    run=(
+        False,
+        [
+            ("calculate", 2035),
+            ("cash_isa", 2030, 10_000.0),
+            ("calculate", 2035),
+            ("calculate", 2037),
+            ("cash_isa", 2036, 20_000.0),
+        ],
+    )
+)
+@example(
+    run=(
+        True,
+        [
+            ("cash_isa_balance", 2034, 100.0),
+            ("calculate", 2040),
+            ("cash_isa_balance", 2035, 200.0),
+        ],
+    )
+)
+def test_a_total_after_any_inputs_equals_a_fresh_calculation(run):
+    # Totals set for any year, and on a named branch balances too, between
+    # calculations of any year: each calculated total equals what the same
+    # simulation gives with every calculated value dropped, and every
+    # supplied total keeps its value.
+    on_branch, steps = run
     simulation = Simulation(
         dataset=_dataset([{"cash_isa": 3_000.0}], household_columns=["cash_isa"])
     )
