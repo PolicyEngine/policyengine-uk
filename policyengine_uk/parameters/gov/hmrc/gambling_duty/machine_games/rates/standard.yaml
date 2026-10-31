@@ -1,4 +1,4 @@
-description: The UK levies Machine Games Duty at this rate on dutiable net takings from machines outside the lower-rate class on which every dutiable game costs at most GBP 5.
+description: The UK levies Machine Games Duty at this rate on dutiable net takings from machines outside the lower-rate class on which every dutiable game costs at most GBP 5, and, from 1 April 2027, at most GBP 1 with a maximum prize of at most GBP 100.
 values:
   '2013-02-01': 0.2
 metadata:
@@ -12,4 +12,6 @@ metadata:
     href: https://www.gov.uk/guidance/machine-games-duty-excise-notice-452
   - title: HMRC historical gambling duty rates
     href: https://www.gov.uk/government/statistics/uk-betting-and-gaming-statistics/historical-uk-betting-and-gaming-duty-rates
+  - title: Budget 2026 Overview of Tax Legislation and Rates, paragraph 1.50
+    href: https://www.gov.uk/government/publications/budget-2026-overview-of-tax-legislation-and-rates-ootlar/budget-2026-overview-of-tax-legislation-and-rates-ootlar
   preserve_calendar_dates: true

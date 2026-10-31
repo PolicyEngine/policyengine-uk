@@ -63,7 +63,9 @@
     income_tax: 0
     capital_income: 100
     market_income: 100
-    isa_cash_interest_flat_rate_charge: 22
+    # SI 2026/1018 reg. 15 (new reg. 22A(3)): the savings basic rate, 24% in
+    # 2027-28, on 100.
+    isa_cash_interest_flat_rate_charge: 24
 
 - name: Noncash cash interest is an of-which detail of an explicitly supplied ISA total
   period: 2027
@@ -75,7 +77,8 @@
     taxable_savings_interest_income: 0
     capital_income: 500
     market_income: 500
-    isa_cash_interest_flat_rate_charge: 22
+    # 24% savings basic rate on the 100 of cash interest.
+    isa_cash_interest_flat_rate_charge: 24
 
 
 - name: Tax Credits and total taxable income exclude ISA returns without losing ordinary interest or dividends

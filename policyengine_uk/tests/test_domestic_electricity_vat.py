@@ -2,10 +2,13 @@
 Domestic electricity VAT: the temporary GB zero rate (SI 2026/987) and the
 explicit energy VAT base (#2166).
 
-From 1 October 2026 to 31 March 2027 domestic electricity in England, Wales
-and Scotland is zero-rated; Northern Ireland and gas stay at 5%. Model year
-2026 runs 6 April 2026 to 5 April 2027, so with equal daily use it has 183
-days at 5% and 182 at 0%.
+From 1 October 2026 domestic electricity in England, Wales and Scotland is
+zero-rated. Budget 2026 extends the zero rate to 1 July 2027 and expects it to
+apply in Northern Ireland from 1 April 2027 (paragraph 6.210). Gas stays at
+5%. Model year 2026 runs 6 April 2026 to 5 April 2027, so with equal daily use
+Great Britain has 178 days at 5% and 187 at 0%, and Northern Ireland 360 at 5%
+and 5 at 0%. Model year 2027 (366 days) has 86 days at 0% and 280 at 5% in
+every nation.
 """
 
 from pathlib import Path
@@ -19,7 +22,9 @@ from policyengine_uk import Simulation
 from policyengine_uk.model_api import Scenario
 from policyengine_uk.system import system
 
-FY2026_SHARE_AT_5_PERCENT = 183 / 365
+FY2026_SHARE_AT_5_PERCENT = 178 / 365
+NI_FY2026_SHARE_AT_5_PERCENT = 360 / 365
+FY2027_SHARE_AT_5_PERCENT = 280 / 366
 GB_RATE = "gov.hmrc.vat.domestic_electricity_rate.great_britain"
 
 
@@ -57,28 +62,39 @@ def calc(variable, year=2026, scenario=None, **kwargs):
 
 
 @pytest.mark.parametrize(
-    "date, rate",
+    "date, great_britain, northern_ireland",
     [
-        ("2026-09-30", 0.05),
-        ("2026-10-01", 0.0),
-        ("2027-03-31", 0.0),
-        ("2027-04-01", 0.05),
+        ("2026-09-30", 0.05, 0.05),
+        ("2026-10-01", 0.0, 0.05),
+        ("2027-03-31", 0.0, 0.05),
+        ("2027-04-01", 0.0, 0.0),
+        ("2027-06-30", 0.0, 0.0),
+        ("2027-07-01", 0.05, 0.05),
     ],
 )
-def test_gb_rate_changes_on_both_statutory_dates(date, rate):
+def test_rates_change_on_each_scheduled_date(date, great_britain, northern_ireland):
     rates = raw_parameters().gov.hmrc.vat.domestic_electricity_rate
-    assert rates.great_britain(date) == pytest.approx(rate)
-    assert rates.northern_ireland(date) == pytest.approx(0.05)
+    assert rates.great_britain(date) == pytest.approx(great_britain)
+    assert rates.northern_ireland(date) == pytest.approx(northern_ireland)
 
 
-def test_fy2026_gb_rate_is_day_weighted():
+def test_model_year_rates_are_day_weighted():
     rates = system.parameters.gov.hmrc.vat.domestic_electricity_rate
-    assert rates.great_britain("2025") == pytest.approx(0.05)
+    for year in ("2025", "2028"):
+        assert rates.great_britain(year) == pytest.approx(0.05)
+        assert rates.northern_ireland(year) == pytest.approx(0.05)
     assert rates.great_britain("2026") == pytest.approx(
         0.05 * FY2026_SHARE_AT_5_PERCENT
     )
-    assert rates.great_britain("2027") == pytest.approx(0.05)
-    assert rates.northern_ireland("2026") == pytest.approx(0.05)
+    assert rates.northern_ireland("2026") == pytest.approx(
+        0.05 * NI_FY2026_SHARE_AT_5_PERCENT
+    )
+    assert rates.great_britain("2027") == pytest.approx(
+        0.05 * FY2027_SHARE_AT_5_PERCENT
+    )
+    assert rates.northern_ireland("2027") == pytest.approx(
+        0.05 * FY2027_SHARE_AT_5_PERCENT
+    )
 
 
 @pytest.mark.parametrize("region", ["LONDON", "WALES", "SCOTLAND"])
@@ -89,15 +105,24 @@ def test_gb_electricity_vat_in_fy2026(region):
     )
 
 
-def test_northern_ireland_keeps_5_percent():
-    assert calc("domestic_energy_vat", region="NORTHERN_IRELAND") == pytest.approx(50)
+def test_northern_ireland_is_zero_rated_only_from_april_2027():
+    assert calc("domestic_energy_vat", region="NORTHERN_IRELAND") == pytest.approx(
+        50 * NI_FY2026_SHARE_AT_5_PERCENT
+    )
+
+
+@pytest.mark.parametrize("region", ["LONDON", "SCOTLAND", "NORTHERN_IRELAND"])
+def test_every_nation_is_zero_rated_to_1_july_2027(region):
+    assert calc("domestic_energy_vat", year=2027, region=region) == pytest.approx(
+        50 * FY2027_SHARE_AT_5_PERCENT
+    )
 
 
 def test_gas_is_unchanged():
     assert calc("domestic_energy_vat", electricity=0, gas=1_050) == pytest.approx(50)
 
 
-@pytest.mark.parametrize("year", [2025, 2027])
+@pytest.mark.parametrize("year", [2025, 2028])
 def test_years_either_side_are_at_5_percent(year):
     assert calc("domestic_energy_vat", year=year) == pytest.approx(50)
 
@@ -143,27 +168,35 @@ def test_extending_the_zero_rate_to_fy2027():
     # Dated reforms are applied on the statutory timeline and day-weighted
     # into the model year (#2167), so the zero rate must cover all of model
     # year 2027: 6 April 2027 to 5 April 2028. A calendar-2027 window would
-    # leave 96 of 366 days at 5%.
+    # leave 96 of 366 days at 5%. The baseline already zero-rates the first
+    # 86 days, so the reform removes the other 280: 50 x 280 / 366 = £38.25.
     reform = Reform.from_dict(
         {GB_RATE: {"2027-04-06.2028-04-05": 0.0}}, country_id="uk"
     )
     sim = Simulation(situation=household(year=2027), reform=reform)
+    baseline = 50 * FY2027_SHARE_AT_5_PERCENT
     assert sim.calculate("domestic_energy_vat", 2027)[0] == 0
-    assert sim.calculate("baseline_domestic_energy_vat", 2027)[0] == pytest.approx(50)
-    assert sim.calculate("vat_change", 2027)[0] == pytest.approx(-50)
+    assert sim.calculate("baseline_domestic_energy_vat", 2027)[0] == pytest.approx(
+        baseline
+    )
+    # vat_change is a difference of float32 totals, good to about 1p.
+    assert sim.calculate("vat_change", 2027)[0] == pytest.approx(-baseline, abs=0.01)
 
 
 def test_zero_rate_for_half_of_fy2027_is_day_weighted():
     # A reform dated part-way through a model year (#2167, fixed by #2305) is
     # day-weighted on the blended electricity rate. Model year 2027 has 366
     # days (6 April 2027 to 5 April 2028); a zero rate for the first 183
-    # leaves half the year at 5%: 1,000 x 0.05 x 183 / 366 = £25.
+    # leaves half the year at 5%: 1,000 x 0.05 x 183 / 366 = £25. The
+    # baseline has 280 days at 5% (£38.25), so the change is £13.25.
     reform = Reform.from_dict(
         {GB_RATE: {"2027-04-06.2027-10-05": 0.0}}, country_id="uk"
     )
     sim = Simulation(situation=household(year=2027), reform=reform)
     assert sim.calculate("domestic_energy_vat", 2027)[0] == pytest.approx(25)
-    assert sim.calculate("vat_change", 2027)[0] == pytest.approx(-25)
+    assert sim.calculate("vat_change", 2027)[0] == pytest.approx(
+        25 - 50 * FY2027_SHARE_AT_5_PERCENT, abs=0.01
+    )
 
 
 def test_reduced_rate_reform_reaches_gas_not_electricity():
@@ -230,18 +263,19 @@ def test_scalar_zero_gas_rate_leaves_electricity_vat_alone():
 @pytest.mark.parametrize(
     "region, electricity_rate",
     [
-        # GB, model year 2026: 183 of 365 days at 5%, so 0.05 x 183 / 365.
+        # GB, model year 2026: 178 of 365 days at 5%, so 0.05 x 178 / 365.
         ("LONDON", 0.05 * FY2026_SHARE_AT_5_PERCENT),
         ("SCOTLAND", 0.05 * FY2026_SHARE_AT_5_PERCENT),
-        # Northern Ireland is outside the zero rate: 5% all year.
-        ("NORTHERN_IRELAND", 0.05),
+        # Northern Ireland joins the zero rate on 1 April 2027: 360 of 365
+        # days at 5%.
+        ("NORTHERN_IRELAND", 0.05 * NI_FY2026_SHARE_AT_5_PERCENT),
     ],
 )
 def test_baseline_fy2026_window_by_nation_with_gas(region, electricity_rate):
     # £1,050 of electricity and £2,100 of gas, each VAT-exclusive at / 1.05:
-    #   electricity: 1,000 x rate  (GB 25.07, NI 50)
+    #   electricity: 1,000 x rate  (GB 24.38, NI 49.32)
     #   gas:         2,000 x 5%  = £100 in every nation
-    # so GB = 125.07 and NI = 150.
+    # so GB = 124.38 and NI = 149.32.
     vat = calc("domestic_energy_vat", region=region, electricity=1_050, gas=2_100)
     assert vat == pytest.approx(1_000 * electricity_rate + 100, abs=0.01)
     gas_only = calc("domestic_energy_vat", region=region, electricity=0, gas=2_100)

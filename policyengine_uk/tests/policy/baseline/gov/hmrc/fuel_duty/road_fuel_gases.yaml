@@ -1,6 +1,12 @@
-# Gas quantities are kilograms. FY2026 weights are 270/59/36 days: the
-# 5p-equivalent cut runs to 31 Dec 2026, then rates rise on 1 Jan and
-# 1 Mar 2027 (SI 2026/164 as amended by SI 2026/555).
+# Gas quantities are kilograms. Budget 2026 keeps the 5p-equivalent cut to
+# 1 July 2027 (paragraph 6.211; policy costings page 13), so FY2026 is all at
+# the cut rates. On 1 July 2027 the full rates return uprated by RPI growth in
+# the year to 2027 Q1 (4.5565%): HM Treasury publishes LPG at 33.05p and
+# natural gas at 25.82p a kilogram (the uprating gives 25.83p). Each 1 April
+# from 2028 applies the previous calendar year's RPI growth, on the OBR's
+# October 2026 forecast: LPG 34.48p and natural gas 26.94p in 2028, then
+# 35.52p and 27.76p in 2029.
+# FY2027 (366 days) weights are 86, 275 and 5 days.
 # Rural relief only reduces the petrol/diesel component.
 - name: No road fuel gas consumption
   period: 2026
@@ -33,7 +39,7 @@
     in_rural_fuel_duty_relief_area: true
   output:
     fuel_duty: 994
-- name: Fiscal 2026 includes the January and March 2027 gas rate increases
+- name: Fiscal 2026 gas rates stay at the cut rates all year
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -42,6 +48,29 @@
     petrol_litres: 0
     diesel_litres: 0
   output:
-    # 1000 * (0.2888 * 270 + 0.3052 * 59 + 0.3161 * 36) / 365
-    # + 1000 * (0.2257 * 270 + 0.2385 * 59 + 0.2470 * 36) / 365
-    fuel_duty: 524.0134246575342
+    # 1000 * (0.2888 + 0.2257)
+    fuel_duty: 514.5
+- name: Fiscal 2027 gas rates return to the RPI-uprated full rates on 1 July 2027
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    lpg_kg: 1000
+    natural_gas_kg: 1000
+    petrol_litres: 0
+    diesel_litres: 0
+  output:
+    # 1000 * (0.2888 * 86 + 0.3305 * 275 + 0.3448 * 5) / 366
+    # + 1000 * (0.2257 * 86 + 0.2582 * 275 + 0.2694 * 5) / 366
+    fuel_duty: 571.6133879781421
+- name: Fiscal 2028 gas rates rise by 2027 RPI on 1 April 2028
+  period: 2028
+  absolute_error_margin: 0.01
+  input:
+    lpg_kg: 1000
+    natural_gas_kg: 1000
+    petrol_litres: 0
+    diesel_litres: 0
+  output:
+    # 1000 * (0.3448 * 360 + 0.3552 * 5) / 365
+    # + 1000 * (0.2694 * 360 + 0.2776 * 5) / 365
+    fuel_duty: 614.4547945205479
