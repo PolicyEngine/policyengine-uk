@@ -105,9 +105,10 @@ projects a total that a dataset stores with `savings`, `corporate_wealth` or
 `lifetime_isa_balance` in every year, including years after the last one the
 dataset projection reaches, unless the dataset stores the person balances for
 a later year. A household input in a situation applies only to its own year;
-the person balances carry the variable-level uprating to later years. The means tests read the household
-totals, so a person's balance is pooled with the household's other financial
-capital rather than attributed to their own benefit unit.
+the person balances carry the variable-level uprating to later years. The
+means tests read the household totals, so a person's balance is pooled with
+the household's other financial capital rather than attributed to their own
+benefit unit.
 
 Ordinary accessible cash ISA balances enter the capital sources for Universal
 Credit, Housing Benefit, Pension Credit, Income Support, income-based JSA and
