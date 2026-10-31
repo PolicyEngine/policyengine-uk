@@ -32,8 +32,7 @@ spike in domestic energy prices. Two strands:
   customer on 2 January 2023, whatever fuel the household heats with (EBSS
   AFP NI Direction, 23 December 2022, paragraph 3 and footnote 1). The model
   leaves out Great Britain's £200 Alternative Fuel Payment, for households
-  that heat with heating oil, LPG, biomass and other alternative fuels (see
-  below).
+  that heat with heating oil, LPG, biomass and other alternative fuels.
 
 PolicyEngine models these via:
 
@@ -81,29 +80,29 @@ both schemes for now.
 
 ### Great Britain's Alternative Fuel Payment
 
-Electricity suppliers in Great Britain delivered 1,842,760 £200 payments worth
-£368.6 million ([DESNZ supplier data](https://www.gov.uk/government/publications/alternative-fuel-payment-gb-payments-made-by-electricity-suppliers-to-customers)),
+Electricity suppliers in Great Britain paid £200 to 1,842,760 customers,
+£368.6 million in all ([DESNZ supplier data](https://www.gov.uk/government/publications/alternative-fuel-payment-gb-payments-made-by-electricity-suppliers-to-customers)),
 and local authorities paid 89,750 more through the Alternative Fund
 ([DESNZ applications data](https://www.gov.uk/government/publications/energy-bills-support-scheme-alternative-fund-gb-ni-and-alternative-fuel-payment-alternative-fund-applications-made-by-customers)).
 The model leaves out both, so it understates 2023 income and government
-spending for those households. No forecast year changes.
+spending by about £387 million. The omission affects 2023 alone.
 
-Suppliers paid the account holder of each electricity meter the Secretary of
-State named, on a qualifying date of 1 February 2023 ([direction](https://assets.publishing.service.gov.uk/media/63ceba6fe90e071bac7eadce/alternative-fuels-payment-gb-ministerial-direction.pdf),
+Suppliers paid whoever held the account, at the start of 1 February 2023, for
+each electricity meter the Secretary of State named ([direction](https://assets.publishing.service.gov.uk/media/63ceba6fe90e071bac7eadce/alternative-fuels-payment-gb-ministerial-direction.pdf),
 paragraph 6). DESNZ built that list from postcodes not connected to the gas
 grid and removed areas with high use of electric heating
 ([interim evaluation](https://www.gov.uk/government/publications/domestic-energy-affordability-support-schemes-in-great-britain-interim-evaluation),
 page 54).
 
-A rule on positive `liquid_fuel_consumption` or `solid_fuel_consumption` would
-miss that list. The enhanced FRS 2023-24 has neither column, so the rule would
-pay nobody in Great Britain in 2023. Microcosm has both from 2024, and its
-842,000 Great Britain households with spending on either fall 54% short of
-DESNZ's delivered payments. In the Living Costs and Food Survey, the source of
-both inputs, about a third of Great Britain households buying these fuels have
-gas central heating, and about four in ten with oil, solid fuel or bottled gas
-central heating report no purchase. The model needs a dataset input that
-records heating fuel for 2023 before it can pay this strand.
+Spending on liquid and solid fuels does not track that list. In the Living
+Costs and Food Survey, about a third of Great Britain households buying these
+fuels have gas central heating, and more than a third of households with oil,
+solid fuel, calor gas or other gas central heating report no purchase. The
+enhanced FRS 2023-24 carries neither `liquid_fuel_consumption` nor
+`solid_fuel_consumption`. PolicyEngine's Microcosm dataset carries both from
+2024, and its 842,000 Great Britain households with spending on either fall 54%
+short of DESNZ's count. None of the model's datasets with a 2023 year records a
+household's heating fuel or gas connection.
 
 ## Household Energy Payment (2026-27)
 
