@@ -1,0 +1,10 @@
+description: Weekly amount of each Universal Credit disabled child element that the Oxford Council Tax Reduction scheme ignores in the income of a working-age applicant who receives Universal Credit.
+values:
+  2026-04-01: 84.46
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Oxford Council Tax Reduction Universal Credit disabled child element disregard
+  reference:
+    - title: Oxford City Council Council Tax Reduction Scheme 2026 to 2027, Appendix 3 (£84.46 of the Universal Credit disabled child element is ignored)
+      href: https://www.oxford.gov.uk/council-tax-reduction/council-tax-reduction-scheme-2026-27/4

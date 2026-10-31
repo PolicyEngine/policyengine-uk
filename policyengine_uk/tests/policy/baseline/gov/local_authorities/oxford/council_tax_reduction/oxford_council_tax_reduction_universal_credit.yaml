@@ -274,3 +274,199 @@
     universal_credit: 3_687.02
     oxford_council_tax_reduction_universal_credit_income: 24_726.62
     oxford_council_tax_reduction: 1_800
+
+# Appendix 3 also ignores "£48.15 of the Universal Credit carer element" and
+# "£84.46 of the Universal Credit disabled child element". An award includes
+# a carer element for each claimant who cares (UC Regs 2013 reg 29) and a
+# disabled child addition for each disabled child (reg 24(2)). The amounts
+# are DWP's 2026-27 carer premium and disabled child premium, which are paid
+# for each carer and each disabled child, so the model ignores up to each
+# amount for each element, taking it off the award but not below nil. DWP's
+# 2026-27 monthly amounts: carer 209.34 (48.31 a week); disabled child
+# addition, lower rate 164.79 (38.03 a week), higher rate 514.71 (118.78 a
+# week).
+
+- name: Oxford ignores 48.15 a week of a Universal Credit carer element
+  # As the first case, with the carer element: maximum amount 17,598.80 +
+  # 209.34 x 12 = 20,110.88, award 20,110.88 - 8,711.78 = 11,399.10. The
+  # element is 48.31 a week, so 48.15 x 52 = 2,503.80 of it is ignored.
+  # Appendix 3: 15,839.60 + 11,399.10 - 2,503.80 = 24,734.90 a year, 475.67 a
+  # week: band 1, 100% of 1,800. Counting the whole award it would be 523.82
+  # a week, band 2.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 35
+        employment_income: 20_000
+        employee_pension_contributions: 2_600
+        uc_carer_element_included_for_claimant: true
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        uc_housing_costs_element: 12_500
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        local_authority: OXFORD
+        council_tax: 1_800
+        savings: 0
+  output:
+    uc_carer_element: 2_512.08
+    universal_credit: 11_399.10
+    oxford_council_tax_reduction_universal_credit_income: 24_734.90
+    oxford_council_tax_reduction: 1_800
+
+- name: Oxford's carer element disregard takes the award no lower than nil
+  # Housing 2,000: maximum amount 5,098.80 + 2,512.08 + 2,000 = 9,610.88,
+  # award 9,610.88 - 8,711.78 = 899.10, less than the 2,503.80 ignored, so
+  # the award counts nil. Appendix 3: 15,839.60 a year, 304.61 a week: band
+  # 1, 100%.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 35
+        employment_income: 20_000
+        employee_pension_contributions: 2_600
+        uc_carer_element_included_for_claimant: true
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        uc_housing_costs_element: 2_000
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        local_authority: OXFORD
+        council_tax: 1_800
+        savings: 0
+  output:
+    universal_credit: 899.10
+    oxford_council_tax_reduction_universal_credit_income: 15_839.60
+    oxford_council_tax_reduction: 1_800
+
+- name: Oxford ignores the whole lower-rate disabled child addition
+  # As the lone-parent case, with a disabled child: maximum amount 15,746.08
+  # + 164.79 x 12 = 17,723.56, award 17,723.56 - 5,893.58 = 11,829.98. The
+  # addition, 38.03 a week, is under 84.46, so all 1,977.48 of it is ignored.
+  # Appendix 3: 15,839.60 + 11,829.98 - 1,977.48 = 25,692.10 a year, 494.08 a
+  # week: band 2, 75% of 1,800. Counting the whole award it would be 532.11 a
+  # week, band 3.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 35
+        employment_income: 20_000
+        employee_pension_contributions: 2_600
+      person2:
+        age: 5
+        is_disabled_for_benefits: true
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        uc_housing_costs_element: 7_000
+    households:
+      household:
+        members: [person1, person2]
+        country: ENGLAND
+        local_authority: OXFORD
+        council_tax: 1_800
+        savings: 0
+  output:
+    uc_disability_elements: 1_977.48
+    universal_credit: 11_829.98
+    oxford_council_tax_reduction_universal_credit_income: 25_692.10
+    oxford_council_tax_reduction: 1_350
+
+- name: Oxford ignores 84.46 a week of a higher-rate disabled child addition
+  # Maximum amount 15,746.08 + 514.71 x 12 = 21,922.60, award 21,922.60 -
+  # 5,893.58 = 16,029.02. The addition is 118.78 a week, so 84.46 x 52 =
+  # 4,391.92 of it is ignored. Appendix 3: 15,839.60 + 16,029.02 - 4,391.92 =
+  # 27,476.70 a year, 528.40 a week: band 2, 75% of 1,800. Counting the whole
+  # award it would be 612.86 a week, band 4.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 35
+        employment_income: 20_000
+        employee_pension_contributions: 2_600
+      person2:
+        age: 5
+        is_disabled_for_benefits: true
+        meets_uc_higher_disabled_child_condition: true
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        uc_housing_costs_element: 7_000
+    households:
+      household:
+        members: [person1, person2]
+        country: ENGLAND
+        local_authority: OXFORD
+        council_tax: 1_800
+        savings: 0
+  output:
+    uc_disability_elements: 6_176.52
+    universal_credit: 16_029.02
+    oxford_council_tax_reduction_universal_credit_income: 27_476.70
+    oxford_council_tax_reduction: 1_350
+
+- name: Oxford ignores part of each disabled child's addition separately
+  # A lone parent with two disabled children, aged 5 (higher rate) and 8
+  # (lower rate), and 3,000 housing. Maximum amount 424.90 x 12 + 2 x 303.94
+  # x 12 + 514.71 x 12 + 164.79 x 12 + 3,000 = 23,547.36, award 23,547.36 -
+  # 5,893.58 = 17,653.78. Ignored: 4,391.92 of the higher-rate addition and
+  # all 1,977.48 of the lower-rate one, 6,369.40. Appendix 3: 15,839.60 +
+  # 17,653.78 - 6,369.40 = 27,123.98 a year, 521.61 a week: band 2, 75% of
+  # 1,800. One 84.46 a week for the whole award would leave 559.64 a week,
+  # band 3.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 35
+        employment_income: 20_000
+        employee_pension_contributions: 2_600
+      person2:
+        age: 5
+        is_disabled_for_benefits: true
+        meets_uc_higher_disabled_child_condition: true
+      person3:
+        age: 8
+        is_disabled_for_benefits: true
+    benunits:
+      benunit:
+        members: [person1, person2, person3]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        uc_housing_costs_element: 3_000
+    households:
+      household:
+        members: [person1, person2, person3]
+        country: ENGLAND
+        local_authority: OXFORD
+        council_tax: 1_800
+        savings: 0
+  output:
+    uc_disability_elements: 8_154
+    uc_benefit_cap_reduction_after_floor: 0
+    universal_credit: 17_653.78
+    oxford_council_tax_reduction_universal_credit_income: 27_123.98
+    oxford_council_tax_reduction: 1_350

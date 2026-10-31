@@ -1,0 +1,10 @@
+description: Weekly amount of each Universal Credit carer element that the Oxford Council Tax Reduction scheme ignores in the income of a working-age applicant who receives Universal Credit.
+values:
+  2026-04-01: 48.15
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Oxford Council Tax Reduction Universal Credit carer element disregard
+  reference:
+    - title: Oxford City Council Council Tax Reduction Scheme 2026 to 2027, Appendix 3 (£48.15 of the Universal Credit carer element is ignored)
+      href: https://www.oxford.gov.uk/council-tax-reduction/council-tax-reduction-scheme-2026-27/4
