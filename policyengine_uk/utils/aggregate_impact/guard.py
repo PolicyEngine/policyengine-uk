@@ -42,10 +42,11 @@ change household by household (see ``judge_total``):
   those households: candidates for the route, not each shown to carry it;
 - a response that is not finite (infinite or NaN) breaks each rule above,
   for every head and for the model's total, and in both held measurements.
-  A measurement that would hold another head at a value that is not finite
-  does not run, so it clears no problem and confirms no screen. A declared
-  double count whose container's response is not finite fails: the check
-  cannot show that the container still contains it.
+  The second measurement does not run when another head's response is not
+  finite, since it would hold that head there; it then clears no problem
+  and confirms no screen. A declared double count whose container's
+  response is not finite fails: the check cannot show that the container
+  still contains it.
 
 What it cannot see: a head that adds a component back while tapering it away
 pound for pound (``max(0, a - c) + c``) does not move at the margin, so it is
@@ -577,25 +578,18 @@ def still_breaks(kind, where, expected, slack, first, second=None):
     return where
 
 
-def _held_breaks(kind, where, expected, slack, measured, unrun):
+def _held_breaks(kind, where, expected, slack, first, second, slope_held, unrun):
     """Households of ``where`` where either held measurement still breaks
     ``kind`` (see ``still_breaks`` and ``breaks_on_slope``).
 
-    ``measured`` is (first, second, slope with the other heads held after the
-    first point); a measurement that did not run is None and gives ``unrun``.
+    ``slope_held`` is the slope with the other heads held at their values
+    after the first point, or None where that test did not run, which gives
+    ``unrun``.
     """
-    first, second, slope_held = measured
-    at_baseline = (
-        unrun
-        if first is None
-        else still_breaks(kind, where, expected, slack, first, second)
-    )
-    on_slope = (
-        unrun
-        if slope_held is None
-        else breaks_on_slope(kind, where, expected, slack, slope_held)
-    )
-    return at_baseline | on_slope
+    held_at_baseline = still_breaks(kind, where, expected, slack, first, second)
+    if slope_held is None:
+        return held_at_baseline | unrun
+    return held_at_baseline | breaks_on_slope(kind, where, expected, slack, slope_held)
 
 
 DIRECT_KINDS = ("contains", "rises", "moves")
@@ -778,47 +772,46 @@ def counted_once(
                 + [screen["head"] for screen in screens]
             ):
                 held = [v for v in all_heads if v not in (variable, own, head)]
-                # A measurement holds the other heads only at finite values:
-                # the engine refuses NaN as an input, and an infinite amount
-                # is no level to hold. A measurement that cannot hold them
-                # does not run (None below).
-                first = second = slope_held = None
-                if all(_finite(baseline[v]) for v in held):
+                _perturb(
+                    sim,
+                    variable,
+                    year,
+                    baseline,
+                    added,
+                    monthly,
+                    hold=held,
+                    touched=touched,
+                )
+                first = _head_arrays(sim, year, [head])[head] - heads0[head]
+                second = None
+                if any(
+                    p["head"] == head and p["kind"] == "contains"
+                    for p in problems + screens
+                ):
                     _perturb(
                         sim,
                         variable,
                         year,
                         baseline,
-                        added,
+                        2 * added,
                         monthly,
                         hold=held,
                         touched=touched,
                     )
-                    first = _head_arrays(sim, year, [head])[head] - heads0[head]
-                    if any(
-                        p["head"] == head and p["kind"] == "contains"
-                        for p in problems + screens
-                    ):
-                        _perturb(
-                            sim,
-                            variable,
-                            year,
-                            baseline,
-                            2 * added,
-                            monthly,
-                            hold=held,
-                            touched=touched,
-                        )
-                        second = _head_arrays(sim, year, [head])[head] - heads0[head]
-                    for v in held:
-                        _restore(sim, v, snapshot)
+                    second = _head_arrays(sim, year, [head])[head] - heads0[head]
+                for v in held:
+                    _restore(sim, v, snapshot)
                 # Second test: hold the other heads at their values after the
                 # first point, and move the component on to the second. A head
                 # gated by another head (h = c * (b > 0), with b a passport on c)
                 # keeps its own slope here, though holding b at its baseline
-                # switched it off above.
+                # switched it off above. It holds them only at finite values:
+                # the engine refuses NaN as an input, and an infinite amount is
+                # no level to hold. When another head's response is not finite
+                # the test does not run (slope_held stays None).
                 _perturb(sim, variable, year, baseline, added, monthly, touched=touched)
                 at_first = _capture(sim, held, year, baseline)
+                slope_held = None
                 if all(_finite(at_first[v]) for v in held):
                     head_first = _head_arrays(sim, year, [head])[head]
                     _perturb(
@@ -847,7 +840,9 @@ def counted_once(
                         p["where"],
                         expected,
                         slack,
-                        (first, second, slope_held),
+                        first,
+                        second,
+                        slope_held,
                         unrun=p["where"],
                     )
                     cleared = p["where"] & ~direct
@@ -897,7 +892,9 @@ def counted_once(
                         screen["where"],
                         expected,
                         slack,
-                        (first, second, slope_held),
+                        first,
+                        second,
+                        slope_held,
                         unrun=np.zeros_like(screen["where"]),
                     )
                     if not direct.any():

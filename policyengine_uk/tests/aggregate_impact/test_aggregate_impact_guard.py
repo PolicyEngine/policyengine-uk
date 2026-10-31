@@ -680,6 +680,50 @@ def test_a_double_count_whose_container_turns_not_finite_fails(response):
     assert result["reset_reproduces_baseline"]
 
 
+CONTAINS_OR_NOT_FINITE = (
+    "gov_tax: tax_a rises one for one with tax_b, or is not finite, "
+    "in fewer than 10 households"
+)
+
+
+def test_a_reader_that_turns_nan_only_when_held_fails_and_says_so():
+    """tax_a declares reads of tax_b and tax_c, and responds with a slope of
+    0.5 while tax_c moves with tax_b. Holding tax_c at its baseline makes
+    tax_a NaN, so the held measurement fails it."""
+    formulas = model(contains=False)
+    formulas["tax_c"] = lambda f: f("tax_b") + 0 * f("x")
+    formulas["tax_a"] = lambda f: 0.5 * f("tax_b") + np.sqrt(f("tax_c") - f("tax_b"))
+    formulas["gov_tax"] = lambda f: f("tax_a") + f("tax_b") + f("tax_c")
+    part = partition(["tax_a", "tax_b", "tax_c"], reads={"tax_a": ["tax_b", "tax_c"]})
+    _, result = run_not_finite(formulas, part, x=(1,), weights=(1,))
+    row = by_variable(result)["tax_b"]
+    assert messages(row)[("tax_a", "contains")] == CONTAINS_OR_NOT_FINITE
+    assert result["reset_reproduces_baseline"]
+
+
+@pytest.mark.parametrize("response", NOT_FINITE)
+def test_a_containment_found_with_a_response_that_is_not_finite_says_so(response):
+    """In the first household tax_a turns not finite. In the second it
+    responds with a slope of 0.5, which holding tax_c shows is one for one.
+    The one problem covering both households says the response may not be
+    finite."""
+    turn = NOT_FINITE[response]
+    first_only = np.array([True, False])
+    formulas = model(contains=False)
+    formulas["tax_c"] = lambda f: f("tax_b") + 0 * f("x")
+    formulas["tax_a"] = lambda f: np.where(
+        first_only, turn(f("tax_b"), 5.0), f("tax_b") - 0.5 * f("tax_c")
+    )
+    formulas["gov_tax"] = lambda f: f("tax_a") + f("tax_b") + f("tax_c")
+    part = partition(["tax_a", "tax_b", "tax_c"], reads={"tax_a": ["tax_b", "tax_c"]})
+    _, result = run_not_finite(formulas, part, x=(1, 1), weights=(1, 1))
+    row = by_variable(result)["tax_b"]
+    assert messages(row)[("tax_a", "contains")] == CONTAINS_OR_NOT_FINITE
+    (contains,) = [p for p in row["problems"] if p["kind"] == "contains"]
+    assert contains["households"] == 2
+    assert result["reset_reproduces_baseline"]
+
+
 @pytest.mark.parametrize("route", ["direct", "mediated"])
 @pytest.mark.parametrize("response", NOT_FINITE)
 def test_two_heads_that_turn_not_finite_fail_by_name(response, route):
