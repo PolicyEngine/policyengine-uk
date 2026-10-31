@@ -1,0 +1,362 @@
+# trading_allowance_claim_status says whether a person's input profit already
+# deducts the trading allowance, as on a return claiming partial relief
+# (ITTOIA 2005 s. 783AI). The allowance deducted in the input data is
+# gov.simulation.trading_allowance_in_input_profits, £1,000 from 2017-18,
+# which reforms to the trading allowance do not move.
+# - Claimant: receipts are profit + £1,000, so the deduction at allowance A is
+#   min(profit, A - £1,000), and nil at or below £1,000.
+# - Non-claimant: actual expenses above £1,000; no deduction at any A.
+# - Unknown (the default): unchanged.
+# The allowance is £1,000 in 2026-27 and £3,000 from 2027-28 (Budget 2026,
+# paragraph 6.254). Personal allowance £12,570, basic rate 20%, Class 4 main
+# rate 6% above the £12,570 lower profits limit.
+
+- name: A claimant at the input allowance keeps their profit as reported.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    self_employment_income: 2_500
+    trading_allowance_claim_status: CLAIMANT
+  output:
+    trading_allowance_deduction: 0
+    taxable_self_employment_income: 2_500
+
+- name: A claimant's profit below the allowance already deducts it.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    self_employment_income: 600
+    trading_allowance_claim_status: CLAIMANT
+  output:
+    # Receipts of £1,600 are above the allowance, so the £600 is receipts
+    # less the allowance. Unknown status would relieve it in full.
+    trading_allowance_deduction: 0
+    taxable_self_employment_income: 600
+
+- name: The raise to £3,000 gives a claimant £2,000 more.
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 30_000
+    self_employment_income: 2_500
+    trading_allowance_claim_status: CLAIMANT
+  output:
+    # Receipts 2,500 + 1,000 = 3,500, less the £3,000 allowance.
+    trading_allowance_deduction: 2_000
+    taxable_self_employment_income: 500
+    # (30,000 + 500 - 12,570) x 20%
+    income_tax: 3_586
+
+- name: A claimant whose receipts are within £3,000 is fully relieved.
+  period: 2027
+  absolute_error_margin: 0
+  input:
+    self_employment_income: 2_000
+    trading_allowance_claim_status: CLAIMANT
+  output:
+    # Receipts 2,000 + 1,000 = 3,000 (s. 783AF).
+    trading_allowance_deduction: 2_000
+    taxable_self_employment_income: 0
+
+- name: A raise to £5,000 gives a claimant £4,000 more.
+  period: 2027
+  absolute_error_margin: 0
+  input:
+    gov.hmrc.income_tax.allowances.trading_allowance: 5_000
+    self_employment_income: 6_000
+    trading_allowance_claim_status: CLAIMANT
+  output:
+    # Receipts 6,000 + 1,000 = 7,000, less the £5,000 allowance.
+    trading_allowance_deduction: 4_000
+    taxable_self_employment_income: 2_000
+
+- name: A claimant whose receipts are within £5,000 is fully relieved.
+  period: 2027
+  absolute_error_margin: 0
+  input:
+    gov.hmrc.income_tax.allowances.trading_allowance: 5_000
+    self_employment_income: 3_500
+    trading_allowance_claim_status: CLAIMANT
+  output:
+    # Receipts 3,500 + 1,000 = 4,500.
+    trading_allowance_deduction: 3_500
+    taxable_self_employment_income: 0
+
+- name: A cut to £500 leaves a claimant's profit as reported.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    gov.hmrc.income_tax.allowances.trading_allowance: 500
+    people:
+      claimant:
+        self_employment_income: 2_500
+        trading_allowance_claim_status: CLAIMANT
+      unknown:
+        self_employment_income: 800
+    benunits:
+      benunit:
+        members: [claimant, unknown]
+    households:
+      household:
+        members: [claimant, unknown]
+  output:
+    # The claimant's receipts are £3,500 and their actual expenses are below
+    # £1,000 but unknown. Still claiming, the Act would charge
+    # 3,500 - 500 = 3,000; with expenses of £1,000, 2,500. The model takes
+    # the lower figure. The unknown-status £800 profit is above £500 and
+    # loses its full relief.
+    # [claimant, unknown]
+    trading_allowance_deduction: [0, 0]
+    taxable_self_employment_income: [2_500, 800]
+
+- name: Abolishing the allowance leaves a claimant's profit as reported.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    gov.hmrc.income_tax.allowances.trading_allowance: 0
+    people:
+      claimant:
+        self_employment_income: 2_500
+        trading_allowance_claim_status: CLAIMANT
+      unknown:
+        self_employment_income: 800
+    benunits:
+      benunit:
+        members: [claimant, unknown]
+    households:
+      household:
+        members: [claimant, unknown]
+  output:
+    # [claimant, unknown]
+    trading_allowance_deduction: [0, 0]
+    taxable_self_employment_income: [2_500, 800]
+
+- name: Input data measured under the £3,000 allowance gain nothing from it.
+  period: 2027
+  absolute_error_margin: 0
+  input:
+    gov.simulation.trading_allowance_in_input_profits: 3_000
+    self_employment_income: 2_500
+    trading_allowance_claim_status: CLAIMANT
+  output:
+    trading_allowance_deduction: 0
+    taxable_self_employment_income: 2_500
+
+- name: A claimant's status takes precedence over supplied receipts.
+  period: 2027
+  absolute_error_margin: 0
+  input:
+    self_employment_gross_receipts: 6_000
+    self_employment_income: 2_500
+    trading_allowance_claim_status: CLAIMANT
+  output:
+    # Receipts are read as 2,500 + 1,000 = 3,500, not 6,000.
+    trading_allowance_deduction: 2_000
+    taxable_self_employment_income: 500
+
+- name: A non-claimant's profit below the allowance is taxed.
+  period: 2027
+  absolute_error_margin: 0
+  input:
+    self_employment_income: 600
+    trading_allowance_claim_status: NON_CLAIMANT
+  output:
+    # Actual expenses above £1,000 put receipts above £1,600. Unknown status
+    # would relieve the £600 in full.
+    trading_allowance_deduction: 0
+    taxable_self_employment_income: 600
+
+- name: A raise to £5,000 gives a non-claimant nothing.
+  period: 2027
+  absolute_error_margin: 0
+  input:
+    gov.hmrc.income_tax.allowances.trading_allowance: 5_000
+    people:
+      non_claimant:
+        self_employment_income: 2_500
+        trading_allowance_claim_status: NON_CLAIMANT
+      unknown:
+        self_employment_income: 4_000
+    benunits:
+      benunit:
+        members: [non_claimant, unknown]
+    households:
+      household:
+        members: [non_claimant, unknown]
+  output:
+    # The unknown-status £4,000 profit is within £5,000 and relieved in full.
+    # [non_claimant, unknown]
+    trading_allowance_deduction: [0, 4_000]
+    taxable_self_employment_income: [2_500, 0]
+
+- name: A non-claimant's status takes precedence over supplied receipts.
+  period: 2027
+  absolute_error_margin: 0
+  input:
+    self_employment_gross_receipts: 4_000
+    self_employment_income: 2_500
+    trading_allowance_claim_status: NON_CLAIMANT
+  output:
+    # With £1,500 of expenses, electing for the £3,000 allowance would
+    # charge £1,000. That switch is a change in behaviour.
+    trading_allowance_deduction: 0
+    taxable_self_employment_income: 2_500
+
+- name: Unknown status still relieves a profit within the allowance.
+  period: 2027
+  absolute_error_margin: 0
+  input:
+    self_employment_income: 2_500
+    trading_allowance_claim_status: UNKNOWN
+  output:
+    trading_allowance_deduction: 2_500
+    taxable_self_employment_income: 0
+
+- name: Unknown status still applies the allowance to supplied receipts.
+  period: 2027
+  absolute_error_margin: 0
+  input:
+    self_employment_gross_receipts: 5_000
+    self_employment_income: 4_000
+    trading_allowance_claim_status: UNKNOWN
+  output:
+    trading_allowance_deduction: 2_000
+    taxable_self_employment_income: 2_000
+
+- name: Class 4 reads a claimant's deduction.
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    self_employment_income: 20_000
+    trading_allowance_claim_status: CLAIMANT
+  output:
+    trading_allowance_deduction: 2_000
+    ni_class_4_profits_before_losses: 18_000
+    # (18,000 - 12,570) x 6%
+    ni_class_4: 325.80
+    # (18,000 - 12,570) x 20%
+    income_tax: 1_086
+
+- name: Class 4 charges a non-claimant's whole profit.
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    self_employment_income: 20_000
+    trading_allowance_claim_status: NON_CLAIMANT
+  output:
+    trading_allowance_deduction: 0
+    ni_class_4_profits_before_losses: 20_000
+    # (20,000 - 12,570) x 6%
+    ni_class_4: 445.80
+    # (20,000 - 12,570) x 20%
+    income_tax: 1_486
+
+- name: A claimant's £2,000 more beats a smaller current loss.
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 30_000
+    self_employment_income: 2_500
+    trading_loss: 1_500
+    trading_allowance_claim_status: CLAIMANT
+  output:
+    # The allowance saves £2,000 against a £1,500 loss, and makes the loss
+    # nil (ss. 783AF and 783AI).
+    trading_allowance_deduction: 2_000
+    uses_trading_allowance: true
+    trade_loss_relief_against_general_income: 0
+    ni_class_4_trading_loss: 0
+    # (30,000 + 500 - 12,570) x 20%
+    income_tax: 3_586
+
+- name: A current loss larger than a claimant's £2,000 is claimed instead.
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 30_000
+    self_employment_income: 2_500
+    trading_loss: 2_500
+    trading_allowance_claim_status: CLAIMANT
+  output:
+    trading_allowance_deduction: 0
+    uses_trading_allowance: false
+    trade_loss_relief_against_general_income: 2_500
+    ni_class_4_trading_loss: 2_500
+    # (30,000 + 2,500 - 2,500 - 12,570) x 20%
+    income_tax: 3_486
+
+- name: A non-claimant claims a current loss the allowance would have taken.
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 30_000
+    self_employment_income: 600
+    trading_loss: 500
+    trading_allowance_claim_status: NON_CLAIMANT
+  output:
+    # Unknown status would relieve the £600 profit and give up the loss.
+    trading_allowance_deduction: 0
+    uses_trading_allowance: false
+    trade_loss_relief_against_general_income: 500
+    # (30,000 + 600 - 500 - 12,570) x 20%
+    income_tax: 3_506
+
+- name: A claimant's receipts and casual income within £3,000 are both relieved.
+  period: 2027
+  absolute_error_margin: 0
+  input:
+    self_employment_income: 500
+    miscellaneous_income: 900
+    income_not_otherwise_charged: 900
+    trading_allowance_claim_status: CLAIMANT
+  output:
+    # Receipts of £1,500 and casual income of £900 (s. 783AF and 783AG).
+    trading_allowance_deduction: 500
+    taxable_self_employment_income: 0
+    miscellaneous_income_trading_allowance_deduction: 900
+    taxable_miscellaneous_income: 0
+
+- name: Casual income gets what a claimant's receipts leave of £3,000.
+  period: 2027
+  absolute_error_margin: 0
+  input:
+    self_employment_income: 1_800
+    miscellaneous_income: 900
+    income_not_otherwise_charged: 900
+    trading_allowance_claim_status: CLAIMANT
+  output:
+    # Receipts of £2,800 take £2,800 of the allowance first (s. 783AK).
+    trading_allowance_deduction: 1_800
+    taxable_self_employment_income: 0
+    miscellaneous_income_trading_allowance_deduction: 200
+    taxable_miscellaneous_income: 700
+
+- name: At the input allowance a claimant's receipts leave none for casual income.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    self_employment_income: 500
+    miscellaneous_income: 900
+    income_not_otherwise_charged: 900
+    trading_allowance_claim_status: CLAIMANT
+  output:
+    # Receipts of £1,500 are above the £1,000 allowance.
+    trading_allowance_deduction: 0
+    taxable_self_employment_income: 500
+    miscellaneous_income_trading_allowance_deduction: 0
+    taxable_miscellaneous_income: 900
+
+- name: A non-claimant's casual income gets no allowance.
+  period: 2027
+  absolute_error_margin: 0
+  input:
+    self_employment_income: 500
+    miscellaneous_income: 900
+    income_not_otherwise_charged: 900
+    trading_allowance_claim_status: NON_CLAIMANT
+  output:
+    # Not electing for partial relief covers all relevant income (s. 783AM).
+    trading_allowance_deduction: 0
+    miscellaneous_income_trading_allowance_deduction: 0
+    taxable_miscellaneous_income: 900
+    uses_trading_allowance: false
