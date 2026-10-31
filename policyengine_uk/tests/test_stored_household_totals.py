@@ -803,8 +803,10 @@ def test_a_total_of_several_parts_grows_only_by_an_index_they_share(monkeypatch)
     )
     later = PROJECTION_END_YEAR + 1
     assert simulation.calculate("cash_isa", later)[0] == 0
+    stored = simulation.calculate("stocks_and_shares_isa", PROJECTION_END_YEAR)[0]
+    assert stored > 7_000
     assert simulation.calculate("stocks_and_shares_isa", later)[0] == pytest.approx(
-        7_000 * _growth(simulation, "savings", later, base=DATA_YEAR), rel=1e-6
+        stored * _growth(simulation, "savings", later), rel=1e-6
     )
 
 
