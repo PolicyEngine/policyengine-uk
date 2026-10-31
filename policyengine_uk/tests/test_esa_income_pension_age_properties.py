@@ -399,10 +399,12 @@ def combine(*situations):
 def test_no_branch_opens_without_a_couple_that_could_be_on_pension_credit(
     monkeypatch,
 ):
-    """In 2026 no couple here has an open report and meets the Pension Credit
-    age conditions: a working-age claimant reporting the award, a couple aged
-    70 and 60 without the saving (case 4's kind), a pensioner without a report,
-    and a member outside the couple reporting beside a pensioner."""
+    """In 2026 no couple here has a claim that passes the other tests and
+    meets the Pension Credit age conditions: a working-age claimant reporting
+    the award, a couple aged 70 and 60 without the saving (case 4's kind), a
+    pensioner without a report, a member outside the couple reporting beside
+    a pensioner, and a pensioner reporting the award, whose claim pensionable
+    age bars whatever Pension Credit pays."""
     log = BranchLog(monkeypatch)
     year = 2026
     adult = {"is_claimant_or_partner": True}
@@ -426,9 +428,11 @@ def test_no_branch_opens_without_a_couple_that_could_be_on_pension_credit(
                 ],
                 year,
             ),
+            household([dict(adult, age=75, esa_income_reported=5_000)], year),
         )
     )
-    assert sim.calculate("esa_income", year).tolist() == [5_000, 5_000, 0, 5_000]
+    assert sim.calculate("esa_income", year).tolist() == [5_000, 5_000, 0, 5_000, 0]
+    assert sim.calculate("meets_pension_credit_age_conditions", year)[-1]
     sim.calculate("household_net_income", year)
     assert log.bar_branches() == []
 

@@ -75,9 +75,10 @@ class esa_income_eligible(Variable):
         "(pension_credit_without_income_related_esa), which counts the claim "
         "(would_claim_pc) and an entered award, and bars the couple's claim where it "
         "pays more than nil. It works that out only for a population in which some "
-        "couple has an open report, meets the Pension Credit age conditions "
-        "(meets_pension_credit_age_conditions) and would claim, and bars only such a "
-        "couple. Where Pension Credit pays nothing without the award but pays with "
+        "couple's claim passes the other tests and the couple meets the Pension "
+        "Credit age conditions (meets_pension_credit_age_conditions) and would claim, "
+        "and bars only such a couple. Where Pension Credit pays nothing without the "
+        "award but pays with "
         "it, through the higher earnings disregard the award brings (SPC Regs 2002 "
         "Sch VI para 4(1)(a)(vii)), no consistent state exists, and the family gets "
         "both. The couple's Pension Credit bars only the couple's claim, not that of "
@@ -136,24 +137,6 @@ class esa_income_eligible(Variable):
         # which s.1(6) takes from Pensions Act 1995 Sch 4 para 1, so a man
         # born before 6 December 1953 reaches it at 65.
         pensionable_age = person("is_SP_age", period)
-        # Sch 1 para 6(1)(c) and (d): the claimant is not entitled to State
-        # Pension Credit, nor is the other member of the couple. Pension
-        # Credit reads the couple's award, so this reads Pension Credit worked
-        # out without it, for a couple with an open report that meets the
-        # Pension Credit age conditions and would claim, and only where some
-        # couple does. The couple's Pension Credit does not bar a member who
-        # claims in their own right.
-        could_be_on_pension_credit = (
-            couple_reports
-            & benunit("meets_pension_credit_age_conditions", period)
-            & benunit("would_claim_pc", period)
-        )
-        on_pension_credit = could_be_on_pension_credit
-        if could_be_on_pension_credit.any():
-            on_pension_credit = could_be_on_pension_credit & (
-                pension_credit_without_income_related_esa(benunit, period) > 0
-            )
-        pension_credit_bars = claimant_or_partner & benunit.project(on_pension_credit)
         # Para 6(1)(e) and reg 41: the claimant's own remunerative work.
         claimant_works = person("esa_income_claimant_remunerative_work", period)
         # Para 6(1)(f) and reg 42(1): the other member of the couple works 24
@@ -167,11 +150,25 @@ class esa_income_eligible(Variable):
         other_member_works = claimant_or_partner & (
             (benunit.project(benunit.sum(works_as_partner)) - works_as_partner) > 0
         )
-        claimant = (
-            candidate
-            & ~pensionable_age
-            & ~pension_credit_bars
-            & ~claimant_works
-            & ~other_member_works
+        passes = candidate & ~pensionable_age & ~claimant_works & ~other_member_works
+        within_capital = capital <= ESA.capital.limit
+        # Sch 1 para 6(1)(c) and (d): the claimant is not entitled to State
+        # Pension Credit, nor is the other member of the couple. Pension
+        # Credit reads the couple's award, so this reads Pension Credit worked
+        # out without it, for a couple whose claim passes the other tests and
+        # that meets the Pension Credit age conditions and would claim, and
+        # only where some couple does. The couple's Pension Credit does not
+        # bar a member who claims in their own right.
+        could_be_on_pension_credit = (
+            benunit.any(passes & claimant_or_partner)
+            & within_capital
+            & benunit("meets_pension_credit_age_conditions", period)
+            & benunit("would_claim_pc", period)
         )
-        return benunit.any(claimant) & (capital <= ESA.capital.limit)
+        on_pension_credit = could_be_on_pension_credit
+        if could_be_on_pension_credit.any():
+            on_pension_credit = could_be_on_pension_credit & (
+                pension_credit_without_income_related_esa(benunit, period) > 0
+            )
+        pension_credit_bars = claimant_or_partner & benunit.project(on_pension_credit)
+        return benunit.any(passes & ~pension_credit_bars) & within_capital
