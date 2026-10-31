@@ -1664,20 +1664,6 @@ def find_level_line(
         )
     header = year_rows[0]
     years = _year_columns(rows[header])
-    units = [
-        normalise_label(value)
-        for row in rows[:header]
-        for value in row.values()
-        if normalise_label(value)
-    ]
-    if units != [spec.unit]:
-        raise ValueError(
-            f"{where} must declare its unit as {spec.unit!r} above its years; "
-            f"found {units}"
-        )
-    ordered = [years[column] for column in sorted(years, key=column_index)]
-    if ordered != list(range(ordered[0], ordered[0] + len(ordered))):
-        raise ValueError(f"{where}'s years skip, repeat or run backwards: {ordered}")
     first_year_column = min(column_index(column) for column in years)
     matches = []
     for index, row in enumerate(rows):
@@ -1697,6 +1683,20 @@ def find_level_line(
     index, label, row = matches[0]
     if index < header:
         raise ValueError(f'{where} has its "{spec.row}" row above its years')
+    units = [
+        normalise_label(value)
+        for header_row in rows[:header]
+        for value in header_row.values()
+        if normalise_label(value)
+    ]
+    if units != [spec.unit]:
+        raise ValueError(
+            f"{where} must declare its unit as {spec.unit!r} above its years; "
+            f"found {units}"
+        )
+    ordered = [years[column] for column in sorted(years, key=column_index)]
+    if ordered != list(range(ordered[0], ordered[0] + len(ordered))):
+        raise ValueError(f"{where}'s years skip, repeat or run backwards: {ordered}")
     stray = sorted(
         column
         for column, value in row.items()

@@ -45,6 +45,7 @@ from policyengine_uk.tax_benefit_system import (
     process_parameter_tree,
     statutory_parameters,
 )
+from policyengine_uk.utils.import_obr_forecasts import compute_level_growth
 
 PARAMETER_DIR = (
     Path(__file__).resolve().parent.parent / "parameters/gov/hmrc/minimum_wage"
@@ -106,7 +107,8 @@ def test_rates_are_the_last_rate_set_uprated_by_the_index(year):
 # OBR EFO October 2026, detailed forecast tables (economy), Table 1.13: the
 # national living wage in April of each year, £ an hour. "The NLW has been set
 # by the Government up until 2027 ... Figures beyond 2027 are OBR estimates
-# consistent with the rest of our economy forecast."
+# consistent with the rest of our economy forecast." The table is also in
+# tests/fixtures/obr_economy, which the importer reads.
 OBR_NATIONAL_LIVING_WAGE = {
     2020: 8.72,
     2021: 8.91,
@@ -146,6 +148,39 @@ def test_the_series_reproduces_the_obr_table():
     for year, rate in OBR_NATIONAL_LIVING_WAGE.items():
         wage = p(f"{year}-01-01").gov.hmrc.minimum_wage.non_apprentice.amounts[-1]
         assert wage == pytest.approx(round(rate, 2), abs=1e-9), year
+
+
+TABLE_1_13 = (
+    Path(__file__).parent
+    / "fixtures/obr_economy/efo_october_2026_economy_table_1_13.xlsx"
+)
+
+
+def test_the_table_here_is_the_one_the_importer_reads():
+    """OBR_NATIONAL_LIVING_WAGE is Table 1.13 as the importer reads it from
+    the real October 2026 workbook, so a refreshed fixture fails here until
+    the table here moves with it."""
+    line = compute_level_growth(TABLE_1_13.read_bytes())[("national_living_wage",)].line
+    assert line.levels == OBR_NATIONAL_LIVING_WAGE
+    assert line.set_until == 2027
+
+
+def test_the_index_carries_any_year_of_the_table_to_any_later_year():
+    """Invariants of the series: the national living wage index is above
+    zero in every year to 2040, and from any year of Table 1.13 from its
+    second (the index's first) the index's growth carries that year's level
+    to every later year's in the table, to the penny."""
+    p = system.parameters
+    first = min(d.year for d in GROWTH["national_living_wage"]["values"])
+    assert first == min(OBR_NATIONAL_LIVING_WAGE) + 1
+    for year in range(first, LAST_CHECKED + 1):
+        assert _index(p, year) > 0, year
+    for base in range(first, max(OBR_NATIONAL_LIVING_WAGE) + 1):
+        for year in range(base, max(OBR_NATIONAL_LIVING_WAGE) + 1):
+            carried = OBR_NATIONAL_LIVING_WAGE[base] * _index(p, year) / _index(p, base)
+            assert round(carried, 2) == pytest.approx(
+                round(OBR_NATIONAL_LIVING_WAGE[year], 2), abs=1e-9
+            ), (base, year)
 
 
 def test_after_the_efo_the_series_is_average_earnings_growth():
