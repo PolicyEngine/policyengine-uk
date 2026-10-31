@@ -752,14 +752,22 @@ class Simulation(CoreSimulation):
         except Exception:
             return False
 
+    def _carries_over(self, variable) -> bool:
+        # Core's own test for carrying over an input with no index.
+        return (
+            self.tax_benefit_system.auto_carry_over_input_variables
+            and variable.calculate_output is None
+        )
+
     def _stands_for_stored_parts(self, variable, period) -> bool:
         # A stored total means the sum of the parts STORED_HOUSEHOLD_TOTALS
         # names for it, each a plain input. Grow it only while the variable
         # still sums exactly those parts, each once, with nothing subtracted,
-        # and each part still reads its inputs: no formula, sum or subtraction
-        # for this period, no defined_for mask, not neutralized or abolished.
-        # Anything a reform changes there leaves the total to Core, as in data
-        # with no stored total.
+        # and each part still reads its inputs: the total's own period, no
+        # formula, sum or subtraction for this period, no defined_for mask, not
+        # neutralized or abolished, and an index or Core's carry-over to bring
+        # an earlier input forward. Anything a reform changes there leaves the
+        # total to Core, as in data with no stored total.
         parts = STORED_HOUSEHOLD_TOTALS.get(variable.name)
         if (
             parts is None
@@ -773,12 +781,14 @@ class Simulation(CoreSimulation):
             part = self.tax_benefit_system.variables.get(name)
             if (
                 part is None
+                or part.definition_period != variable.definition_period
                 or part.get_formula(period) is not None
                 or part.adds
                 or part.subtracts
                 or part.defined_for is not None
                 or part.is_neutralized
                 or self._abolished(name, period)
+                or not (part.uprating is not None or self._carries_over(part))
             ):
                 return False
         return True

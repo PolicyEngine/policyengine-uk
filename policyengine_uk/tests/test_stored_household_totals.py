@@ -33,11 +33,16 @@ import pandas as pd
 import pytest
 from hypothesis import example, given, settings
 from hypothesis import strategies as st
+from policyengine_core.model_api import (
+    calculate_output_add,
+    set_input_dispatch_by_period,
+)
 from policyengine_core.parameters import ParameterNode
 from policyengine_core.periods import period
 from policyengine_core.reforms import Reform
 from policyengine_core.simulations import Simulation as CoreSimulation
 from policyengine_core.simulations.simulation import _uprating_index_value
+from policyengine_core.variables import QuantityType
 
 from policyengine_uk import Simulation
 from policyengine_uk.data.dataset_schema import (
@@ -50,7 +55,7 @@ from policyengine_uk.data.economic_assumptions import (
     _uprating_index_map,
     stored_total_uprating,
 )
-from policyengine_uk.model_api import YEAR, Household, Person, Variable
+from policyengine_uk.model_api import MONTH, YEAR, Household, Person, Variable
 from policyengine_uk.scenarios import no_economic_assumptions
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
@@ -619,6 +624,7 @@ SUM_CHANGES = {
     ),
 }
 PART = "stocks_and_shares_isa_balance"
+PART_INDEX = "gov.economic_assumptions.indices.obr.per_capita.gdp"
 PART_CHANGES = {
     "a_formula": lambda system: system.replace_variable(
         _redeclared(PART, formula=_a_fixed_balance)
@@ -633,6 +639,22 @@ PART_CHANGES = {
         _updated(PART, defined_for="is_child")
     ),
     "neutralization": lambda system: system.neutralize_variable(PART),
+    "a_monthly_period": lambda system: system.replace_variable(
+        _redeclared(
+            PART,
+            definition_period=MONTH,
+            quantity_type=QuantityType.STOCK,
+            set_input=set_input_dispatch_by_period,
+            uprating=PART_INDEX,
+        )
+    ),
+    "no_index_and_a_calculated_output": lambda system: system.replace_variable(
+        _redeclared(PART, calculate_output=calculate_output_add)
+    ),
+    "no_index_and_no_carry_over": lambda system: (
+        system.replace_variable(_redeclared(PART)),
+        setattr(system, "auto_carry_over_input_variables", False),
+    ),
 }
 CHANGE_PAIRS = [
     (sum_change, list(PART_CHANGES)[index % len(PART_CHANGES)])
@@ -648,9 +670,10 @@ CHANGE_PAIRS = [
 def test_core_sums_a_total_whose_sum_or_part_a_reform_changes(sum_change, part_change):
     # A stored total stands for the sum of exactly the parts
     # STORED_HOUSEHOLD_TOTALS names, each a plain input. A reform that sums
-    # anything else, or that calculates, masks or neutralizes a part, gets
-    # Core's own calculation in each year the data hold no total, as on data
-    # that store no total. Years the data hold keep the stored total.
+    # anything else, or that calculates, masks or neutralizes a part, gives it
+    # another period or stops Core bringing its inputs forward, gets Core's own
+    # calculation in each year the data hold no total, as on data that store no
+    # total. Years the data hold keep the stored total.
     reform = _reform(
         _add_parameters,
         lambda system: system.add_variable(other_isa_holdings),
