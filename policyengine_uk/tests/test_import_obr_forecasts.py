@@ -1,5 +1,6 @@
 import math
 import os
+from contextlib import contextmanager
 from dataclasses import replace
 from datetime import date
 from functools import partial
@@ -902,6 +903,21 @@ def write_tree(tmp_path):
     return yoy, gap_dir
 
 
+@contextmanager
+def synthetic_nlw_model():
+    """Run main on the test files with the national living wage's index from
+    create_economic_assumption_indices on the test file alone, and its
+    anchor from the rate the test table's note sets. The model's other
+    generation steps cannot read the fixture's short growth series (its rpi
+    starts in 2024)."""
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(import_obr_forecasts, "build_model_index", fixture_index)
+        patch.setattr(
+            import_obr_forecasts, "read_level_anchor", lambda spec: CLI_NLW_ANCHOR
+        )
+        yield
+
+
 def run_main(
     tmp_path, workbook, *extra, receipts=None, previous_receipts=None, previous=True
 ):
@@ -911,15 +927,7 @@ def run_main(
     receipts_path.write_bytes(receipts or make_receipts_xlsx())
     previous_path = tmp_path / "previous_receipts.xlsx"
     previous_path.write_bytes(previous_receipts or make_previous_receipts_xlsx())
-    # The model's generation steps cannot read the fixture's short growth
-    # series (its rpi starts in 2024), so main takes the national living
-    # wage's index from create_economic_assumption_indices on the fixture
-    # alone, and its anchor from the rate the test table's note sets.
-    with pytest.MonkeyPatch.context() as patch:
-        patch.setattr(import_obr_forecasts, "build_model_index", fixture_index)
-        patch.setattr(
-            import_obr_forecasts, "read_level_anchor", lambda spec: CLI_NLW_ANCHOR
-        )
+    with synthetic_nlw_model():
         return main(
             [
                 "--file",
@@ -2036,8 +2044,8 @@ def test_main_takes_the_release_from_the_economy_contents_sheet(tmp_path):
     receipts.write_bytes(make_receipts_xlsx())
     previous = tmp_path / "previous_receipts.xlsx"
     previous.write_bytes(make_previous_receipts_xlsx())
-    assert (
-        main(
+    with synthetic_nlw_model():
+        code = main(
             [
                 "--file",
                 str(economy),
@@ -2053,8 +2061,7 @@ def test_main_takes_the_release_from_the_economy_contents_sheet(tmp_path):
                 str(yoy),
             ]
         )
-        == 0
-    )
+    assert code == 0
     assert "OBR EFO March 2026" in yoy.read_text()
 
 
