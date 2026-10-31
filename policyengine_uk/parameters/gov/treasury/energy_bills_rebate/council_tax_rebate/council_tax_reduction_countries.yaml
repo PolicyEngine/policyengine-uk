@@ -1,0 +1,14 @@
+description: Countries that paid the 2022 £150 to Council Tax Reduction recipients in any council tax band. Scotland's Cost of Living Award and Wales's Cost of Living Support Scheme paid them, while England's Council Tax Rebate went by band alone.
+values:
+  0001-01-01:
+    value:
+      - SCOTLAND
+      - WALES
+    reference:
+      - title: Local Government Finance Circular 2/2022, paragraphs 6 and 10
+        href: https://www.gov.scot/publications/local-government-finance-circular-2-2022-guidance-to-local-authorities-april-2022-cost-of-living-award/
+      - title: Cost of Living Support Scheme guide for local authorities, condition A
+        href: https://www.gov.wales/cost-living-support-scheme-guide-local-authorities-html
+metadata:
+  unit: list
+  label: Countries paying Council Tax Reduction recipients in any band

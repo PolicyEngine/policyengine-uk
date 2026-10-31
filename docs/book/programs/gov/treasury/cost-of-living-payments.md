@@ -17,8 +17,13 @@ spike in domestic energy prices. Two strands:
   April 2022. The guidance asked billing authorities to pay from April and
   set 30 September 2022 as the deadline for the payments the government
   would reconcile (paragraph 7). Scotland and Wales paid their own £150
-  awards to bands A–D, and also to Council Tax Reduction recipients in any
-  band, which the model leaves out. Northern Ireland levies domestic rates,
+  awards to bands A–D and to Council Tax Reduction recipients in any band;
+  the model tests `council_tax_reduction` for the year, not receipt on 14
+  February 2022 (Scotland) or 15 February 2022 (Wales). All three nations
+  also paid band E homes charged at band D under the disabled band
+  reduction. The model has no input for that reduction, so it pays those
+  homes only if they qualify through Council Tax Reduction. Northern
+  Ireland levies domestic rates,
   not council tax, and had no Council Tax Rebate, so the model pays none
   there whatever the household's council tax band (the enhanced FRS gives
   every Northern Ireland household band A, the default policyengine-uk-data

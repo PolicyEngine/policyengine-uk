@@ -614,12 +614,13 @@ programs:
     verified_end_year: 2023
     notes: >-
       Temporary program, ended 2023. The £150 Council Tax Rebate in bands A to
-      D in Great Britain (none in Northern Ireland, which has domestic rates),
-      the £400 Energy Bills Support Scheme, and Northern Ireland's £200
-      Alternative Fuel Payment. Leaves out the Scottish and Welsh £150 for
-      Council Tax Reduction recipients in bands E and above, England's
-      discretionary fund, Great Britain's Alternative Fuel Payment and the
-      alternative funding schemes.
+      D in Great Britain and for Council Tax Reduction recipients in any band
+      in Scotland and Wales (none in Northern Ireland, which has domestic
+      rates), the £400 Energy Bills Support Scheme, and Northern Ireland's
+      £200 Alternative Fuel Payment. Leaves out band E homes charged at band D
+      under the disabled band reduction, Scotland's payments to exempt
+      dwellings, England's discretionary fund, Great Britain's Alternative
+      Fuel Payment and the alternative funding schemes.
 
   - id: household_energy_payment
     name: Household Energy Payment
