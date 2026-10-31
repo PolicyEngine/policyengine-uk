@@ -1326,7 +1326,7 @@ obr:
           2029-01-01: -0.092617
           2030-01-01: -0.068657
           2031-01-01: -0.06894
-          # Beyond the OBR forecast: clearances held flat, so per head they fall with ons.population growth
+          # Beyond the OBR forecast: clearances held flat: 1 / (1 + ons.population growth) - 1
           2032-01-01: -0.002195
           2033-01-01: -0.002096
           2034-01-01: -0.001896
@@ -1377,7 +1377,7 @@ obr:
           2029-01-01: -0.064999
           2030-01-01: -0.041711
           2031-01-01: -0.048922
-          # Beyond the OBR forecast: clearances held flat, so per head they fall with ons.population growth
+          # Beyond the OBR forecast: clearances held flat: 1 / (1 + ons.population growth) - 1
           2032-01-01: -0.002195
           2033-01-01: -0.002096
           2034-01-01: -0.001896
@@ -1428,7 +1428,7 @@ obr:
           2029-01-01: -0.050588
           2030-01-01: -0.039029
           2031-01-01: -0.058055
-          # Beyond the OBR forecast: clearances held flat, so per head they fall with ons.population growth
+          # Beyond the OBR forecast: clearances held flat: 1 / (1 + ons.population growth) - 1
           2032-01-01: -0.002195
           2033-01-01: -0.002096
           2034-01-01: -0.001896
@@ -1480,7 +1480,7 @@ obr:
           2029-01-01: -0.007436
           2030-01-01: -0.011936
           2031-01-01: -0.012643
-          # Beyond the OBR forecast: clearances held flat, so per head they fall with ons.population growth
+          # Beyond the OBR forecast: clearances held flat: 1 / (1 + ons.population growth) - 1
           2032-01-01: -0.002195
           2033-01-01: -0.002096
           2034-01-01: -0.001896
@@ -1531,7 +1531,7 @@ obr:
           2029-01-01: -0.008291
           2030-01-01: -0.012466
           2031-01-01: -0.011764
-          # Beyond the OBR forecast: clearances held flat, so per head they fall with ons.population growth
+          # Beyond the OBR forecast: clearances held flat: 1 / (1 + ons.population growth) - 1
           2032-01-01: -0.002195
           2033-01-01: -0.002096
           2034-01-01: -0.001896
@@ -1582,7 +1582,7 @@ obr:
           2029-01-01: -0.006394
           2030-01-01: -0.012237
           2031-01-01: -0.009692
-          # Beyond the OBR forecast: clearances held flat, so per head they fall with ons.population growth
+          # Beyond the OBR forecast: clearances held flat: 1 / (1 + ons.population growth) - 1
           2032-01-01: -0.002195
           2033-01-01: -0.002096
           2034-01-01: -0.001896

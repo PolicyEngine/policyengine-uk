@@ -2824,8 +2824,10 @@ def test_clearance_comments_and_references_name_both_efos_and_the_population():
         "growth\n"
     ) in block
     assert (
-        "          # Beyond the OBR forecast: clearances held flat, so per head "
-        "they fall with ons.population growth\n"
+        "          # Beyond the OBR forecast: clearances held flat: "
+        "1 / (1 + ons.population growth) - 1\n"
+        # Per head the series falls while population grows and rises once it
+        # falls (2030 in the fixture).
         "          2027-01-01: -0.019608\n"
         "          2030-01-01: 0.005025\n"
     ) in block
@@ -2897,9 +2899,14 @@ def test_an_alcohol_table_in_another_unit_is_refused_before_any_write(tmp_path):
     assert {path: path.read_bytes() for path in before} == before
 
 
-def test_a_clearance_spec_needs_a_unit():
+def test_a_clearance_spec_needs_a_unit_and_takes_no_rates_or_outturn():
     with pytest.raises(ValueError, match="needs a unit"):
         ClearanceSeriesSpec(path=("per_capita", "x"), title="t", row="r")
+    spec = CLEARANCE_SPECS["wine"]
+    with pytest.raises(ValueError, match="takes no rates"):
+        replace(spec, rates=GAMBLING_SPECS[0].rates)
+    with pytest.raises(ValueError, match="takes no rates"):
+        replace(spec, outturn=GAMBLING_SPECS[0].outturn)
 
 
 def test_real_october_2026_clearance_series():

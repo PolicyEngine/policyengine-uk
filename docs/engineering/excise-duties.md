@@ -316,7 +316,8 @@ at 4% with no draught relief, wine and other fermented products as wine at
 cigarettes at the default price. On that mix the model's duty per unit
 cleared rises 5.7% for alcohol by 2026-27 and 19.0% for tobacco by 2027-28,
 with the rate rises of February 2025 and February 2026 for alcohol and of
-November 2025 and October 2026 for tobacco, and then holds. The OBR's
+October 2024, November 2025 and October 2026 for tobacco, each of which
+reaches its first full model year after 2024-25, and then holds. The OBR's
 receipts per unit cleared keep rising, by 22.1% for alcohol and 48.2% for
 tobacco by 2031-32. From 2027-28 the model's duty therefore falls short of
 the OBR's forecast by more each year: on this construct, alcohol duty goes
@@ -335,10 +336,10 @@ of the two receipts workbooks unchanged.
 | File | SHA-256 | Sheet and cells |
 | --- | --- | --- |
 | OBR October 2026 EFO, detailed forecast tables zip (`efo-october-2026-detailed-forecast-tables-zipfile.zip`) | `06ac908c69fce7d69dbfda4e16fc3b091a83bd8140ecd2f24990acd13d945fc2` | Holds the two workbooks below |
-| October 2026 receipts tables (`efo-october-2026-detailed-forecast-tables-receipts.xlsx`) | `d115705716d77b11c190385d41cb1924f30080c9331a8a386c04d4e65a368e95` | 4.11: rows 5 (cigarettes, unit in B5), 6 (non-cigarette, unit in B6), 8 (hand-rolled) and 9 (other tobacco products), columns C (2025-26 outturn) to I (2031-32); 4.12: rows 5 to 7 (beer and cider, wine, spirits), columns C to I, unit note B8, footnotes B9 and B10; 4.8: row 27 (tobacco duties, cash) and 4.12 rows 16 to 18 (alcohol receipts, accrued), for the comparison above |
+| October 2026 receipts tables, as published in the zip (`efo-october-2026-detailed-forecast-tables-receipts.xlsx`) | `d115705716d77b11c190385d41cb1924f30080c9331a8a386c04d4e65a368e95` | 4.11: rows 5 (cigarettes, unit in B5), 6 (non-cigarette, unit in B6), 8 (hand-rolled) and 9 (other tobacco products), columns C (2025-26 outturn) to I (2031-32); 4.12: rows 5 to 7 (beer and cider, wine, spirits), columns C to I, unit note B8, footnotes B9 and B10; 4.8: row 27 (tobacco duties, cash) and 4.12 rows 16 to 18 (alcohol receipts, accrued), for the comparison above |
 | October 2026 policy tables (`efo-october-2026-detailed-forecast-tables-policy.xlsx`) | `cdcc2a06b100241bf3010bd159a4e5d43daef2348a3850797b1e88a308fd45fd` | 1.1: rows 95 (measure 19), 203 and 204 (measure 45), 446 and 447 (measure 95), 494 and 515 (totals for alcohol and tobacco duty) |
 | October 2026 EFO (`economic-and-fiscal-outlook-october-2026-web-accessible.pdf`) | `9e0e9c340e35e603066f3124a614fcd68feadb3d5d10d1f76fb536e150e6225e` | Paragraphs 3.2, 4.43 and 4.44 |
-| March 2026 receipts tables (`obr_efo_march_2026_receipts.xlsx`) | `f65b6cb7f96931d4abd85940794eb60f6f65afca8bbf16c74a4548bf92766a28` | 3.11: rows 5, 8 and 9, column C (2024-25 outturn); 3.12: rows 5 to 7, column C, and rows 16 to 18, column C (2024-25 receipts); 3.8: row 27, column D |
+| March 2026 receipts tables, as downloaded (`obr_efo_march_2026_receipts.xlsx`; the parser fixture of that name keeps only some of its sheets) | `f65b6cb7f96931d4abd85940794eb60f6f65afca8bbf16c74a4548bf92766a28` | 3.11: rows 5, 8 and 9, column C (2024-25 outturn); 3.12: rows 5 to 7, column C, and rows 16 to 18, column C (2024-25 receipts); 3.8: row 27, column D |
 
 ## Population data follow-ups
 

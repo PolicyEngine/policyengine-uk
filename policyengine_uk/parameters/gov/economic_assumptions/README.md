@@ -479,8 +479,9 @@ the forecast levels, though not their growth.
    renumbering does not matter, and reads only that table's rows. It takes
    each workbook's release from its contents sheet, or else its file name or
    URL, and refuses receipts tables from another EFO or of unknown release.
-   Every selected table in both releases must declare `£ billion` in its
-   header (`£bn` and `£ bn` are also accepted, ignoring case and whitespace).
+   Every selected receipts table in both releases must declare `£ billion`
+   in its header (`£bn` and `£ bn` are also accepted, ignoring case and
+   whitespace); the clearance tables state their own units (below).
    Other units, including `£m`, and missing or ambiguous declarations stop
    the import before any file is written, so different cash magnitudes
    cannot be combined across releases.
@@ -503,11 +504,17 @@ the forecast levels, though not their growth.
    Each line's table must state its unit, in a row label or a note, in both
    EFOs: million sticks for cigarettes, thousand kilograms for the other
    tobacco lines, and thousand hectolitres of alcohol for alcohol. The
-   importer stops on any other. It divides each year's growth by
+   importer stops on any other. It does not read the lines' footnotes, so
+   check that each alcohol line covers the same products in both EFOs:
+   March 2026 added "Includes other fermented products" to the wine line,
+   which March 2025's lacked. It divides each year's growth by
    `ons.population` as `yoy_growth.yaml` holds it, so rerun it whenever
    that series changes. Then update the published levels in
    `policyengine_uk/tests/test_excise_quantity_projection.py`
-   (`CLEARANCES`) and the real-table fixtures in
+   (`CLEARANCES`) and `policyengine_uk/tests/test_import_obr_forecasts.py`
+   (`OCTOBER_2026_CLEARANCES` and `MARCH_2026_CLEARANCES`, renamed for the
+   new EFOs), the values those tests check by hand, the index table in
+   `docs/engineering/excise-duties.md`, and the real-table fixtures in
    `policyengine_uk/tests/fixtures/obr_receipts/` (see its README).
 7. If the new EFO runs past `PROJECTION_END_YEAR`, move it on (see
    [Dataset projection horizon](#dataset-projection-horizon)).

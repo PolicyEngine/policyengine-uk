@@ -234,9 +234,10 @@ def test_each_series_is_its_clearances_per_head(parameters):
 
 
 def test_cigarettes_per_head_halve_by_2031(parameters):
-    """The October 2026 forecast puts 2031-32 cigarette clearances 47.2%
-    below 2024-25. Population grows 1.5% over those years, so clearances per
-    head fall 48.0%, and the index stands at 0.520."""
+    """The October 2026 EFO forecasts 2031-32 cigarette clearances 47.2%
+    below the March 2026 EFO's 2024-25 outturn. Population grows 1.5% over
+    those years, so clearances per head fall 48.0%, and the index stands at
+    0.520."""
     levels = CLEARANCES["tobacco_clearances.cigarettes"]
     assert levels[-1] / levels[0] - 1 == pytest.approx(-0.4723, abs=1e-4)
     population = np.prod(
@@ -471,7 +472,7 @@ def test_the_change_touches_only_the_quantity_inputs(parameters):
         )
         if year > 2024:
             assert changed[0] < 0
-        for total in ("household_tax", "gov_tax"):
+        for total in ("household_tax", "gov_tax", "gov_balance"):
             difference = new_simulation.calculate(
                 total, year
             ) - old_simulation.calculate(total, year)

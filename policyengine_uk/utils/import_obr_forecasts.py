@@ -690,8 +690,15 @@ class ClearanceSeriesSpec(ReceiptsSeriesSpec):
     unit: str = ""
 
     def __post_init__(self):
+        name = ".".join(self.path)
         if not self.unit:
-            raise ValueError(f"{'.'.join(self.path)}: a clearance line needs a unit")
+            raise ValueError(f"{name}: a clearance line needs a unit")
+        # per_head_growth reads the previous EFO's line and the raw levels.
+        if self.rates or self.outturn is not None:
+            raise ValueError(
+                f"{name}: a clearance line counts quantities, so it takes no "
+                "rates and links to the previous EFO, not its own outturn"
+            )
 
 
 TOBACCO_CLEARANCES = "tobacco clearances"
@@ -1620,9 +1627,7 @@ def clearance_tail(content: str, last: int) -> tuple[dict[int, float], str]:
         for year, value in yearly.items()
         if year == last + 1 or value != yearly[year - 1]
     }
-    return tail, (
-        "clearances held flat, so per head they fall with ons.population growth"
-    )
+    return tail, "clearances held flat: 1 / (1 + ons.population growth) - 1"
 
 
 def receipts_references(
