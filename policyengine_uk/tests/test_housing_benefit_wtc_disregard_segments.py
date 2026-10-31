@@ -54,6 +54,8 @@ WITHDRAWAL_RATE = 0.65
 
 
 class keep_tax_credits(Reform):
+    """Keep tax credits in 2026-27, so the two disregards coexist."""
+
     def apply(self):
         def modify(parameters):
             parameters.gov.dwp.tax_credits.active.update(
@@ -108,8 +110,8 @@ def segmented(units, active, previous=False):
 
 
 def model_segments(sim):
-    """The earnings disregard, WTC disregard and childcare deduction the
-    model applies in each segment, with the capped accommodation amount."""
+    """Each segment's share of the year, additional earnings disregard and
+    WTC disregard, as the model applies them."""
     benunit = sim.populations["benunit"]
     year = period_(YEAR)
     parameters = sim.tax_benefit_system.parameters
@@ -119,7 +121,7 @@ def model_segments(sim):
     )
     result = []
     for accommodation, share in hb_accommodation_segments(benunit, year, parameters):
-        disregard, reserve, childcare = hb_segment_deductions(
+        disregard, reserve, _ = hb_segment_deductions(
             benunit, year, parameters, accommodation
         )
         capped = np.minimum(np.maximum(accommodation, 0), np.maximum(net - standard, 0))
@@ -133,7 +135,7 @@ def model_segments(sim):
     return result
 
 
-def review_case(**overrides):
+def specified_claimant(**overrides):
     """A single claimant aged 40 in specified accommodation with no
     childcare or other income, and a nil applicable amount."""
     return case(
@@ -165,14 +167,14 @@ def segment_populations(draw):
 
 
 SEGMENT_EDGE_CASES = [
-    review_case(),
-    review_case(net=2_000),
-    review_case(net=4_000),
-    review_case(net=2_000, applicable_amount=2_000),
-    review_case(net=8_000),
-    review_case(net=2_000, specified=False),
-    review_case(net=2_000, worker=False),
-    review_case(net=2_000, pension_age=True),
+    specified_claimant(),
+    specified_claimant(net=2_000),
+    specified_claimant(net=4_000),
+    specified_claimant(net=2_000, applicable_amount=2_000),
+    specified_claimant(net=8_000),
+    specified_claimant(net=2_000, specified=False),
+    specified_claimant(net=2_000, worker=False),
+    specified_claimant(net=2_000, pension_age=True),
     case(specified=True),
     case(specified=True, net=8_000, wtc=500),
 ]
@@ -182,8 +184,8 @@ SUPPLIED_SEGMENT_EDGE_CASES = [
 ]
 
 
-def test_review_scenario_keeps_the_wtc_disregard_in_both_segments():
-    sim = segmented([review_case()], active=True)
+def test_wtc_disregard_applies_before_and_after_5_october():
+    sim = segmented([specified_claimant()], active=True)
     # 500 < 260 + 889.20 before 5 October, and 500 < 260 + 240 + 889.20
     # after it, so para 56 disregards 889.20 of WTC in both segments.
     # Income before deductions is 500 + 2,000 = 2,500.
@@ -223,7 +225,7 @@ def test_each_segment_settles_paragraph_56_with_its_own_earnings_test(
     accommodation amount, would give 9,402.23, 10,400 and 8,176.03: it
     grants both additional disregards before 5 October at 2,000, and none
     after it at 4,000."""
-    unit = review_case(net=net, applicable_amount=applicable_amount)
+    unit = specified_claimant(net=net, applicable_amount=applicable_amount)
     sim = segmented([unit], active=True)
     before, after = model_segments(sim)
     assert before["reserve"][0] == 0
@@ -240,7 +242,7 @@ def test_each_segment_settles_paragraph_56_with_its_own_earnings_test(
 
 
 def test_supplied_annual_wtc_disregard_applies_in_every_segment():
-    sim = segmented([review_case(net=2_000)], active=True)
+    sim = segmented([specified_claimant(net=2_000)], active=True)
     sim.set_input("housing_benefit_wtc_disregard", YEAR, [0])
     # Before: 10,400 - 0.65 * 2,850.80 = 8,546.98. After: 10,400 - 0.65 *
     # (4,000 - 2,000) = 9,100. (182 * 8,546.98 + 183 * 9,100) / 365.
@@ -290,7 +292,7 @@ def test_segmented_previous_path_agrees_where_paragraph_56_does_not_apply(
     if not active:
         assert len(unchanged) == len(units)
     supplied = units[0]["supplied"] is not None
-    unchanged.append(review_case(net=8_000, supplied=0 if supplied else None))
+    unchanged.append(specified_claimant(net=8_000, supplied=0 if supplied else None))
     current = segmented(unchanged, active).calculate(
         "housing_benefit_entitlement", YEAR
     )

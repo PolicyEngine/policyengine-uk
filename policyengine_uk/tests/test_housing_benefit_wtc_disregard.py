@@ -135,7 +135,7 @@ EDGE_CASES = [
     *(case(region=region) for region in REGIONS),
 ]
 SUPPLIED_EDGE_CASES = [
-    # The review's case: earnings cover the supplied nil deduction.
+    # Earnings cover a supplied nil deduction and the additional amount.
     case(supplied=0),
     case(supplied=3_900),
     case(supplied=4_160),
