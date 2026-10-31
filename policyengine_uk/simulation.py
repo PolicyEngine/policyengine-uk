@@ -33,6 +33,7 @@ from policyengine_uk.utils.parameters import (
 from policyengine_uk.data.dataset_schema import (
     UKMultiYearDataset,
     UKSingleYearDataset,
+    _validate_integer_enum_positions,
 )
 from policyengine_uk.utils.entity_ids import ENTITY_ID_VARIABLES, check_entity_ids
 from policyengine_uk.utils.scenario import ConstructionReformState, Scenario
@@ -222,15 +223,38 @@ def get_default_dataset_url() -> str:
     )
 
 
+def _validate_integer_enum_columns(dataset, tbs: "CountryTaxBenefitSystem") -> None:
+    """Preflight every raw integer enum column without changing its dataset."""
+    datasets = (
+        [dataset]
+        if isinstance(dataset, UKSingleYearDataset)
+        else [dataset[year] for year in dataset.years]
+    )
+    for single_year in datasets:
+        for table_name in single_year.table_names:
+            table = getattr(single_year, f"_{table_name}")
+            for column in table.columns:
+                variable = tbs.variables.get(column)
+                if variable is None or variable.value_type != CoreEnum:
+                    continue
+                array = np.asarray(table[column].values)
+                _validate_integer_enum_positions(
+                    array, variable.possible_values, column
+                )
+
+
 def _pre_encode_enum_columns(
     dataset: UKMultiYearDataset, tbs: "CountryTaxBenefitSystem"
 ) -> None:
     """Convert string enum columns in a dataset to int16 in-place.
 
-    Run once before caching; subsequent loads use encode()'s fast integer path.
-    Also stores a mapping of column name -> possible_values on each
-    UKSingleYearDataset so callers can decode back to strings when needed.
+    Integer inputs are zero-based enum positions, not survey source codes.
+    Preflight all years before converting any column or publishing a cache
+    entry. Subsequent loads retain encode()'s fast integer path, but still
+    validate positions. Store each year's column -> possible_values mapping
+    so public dataset views can decode back to names.
     """
+    _validate_integer_enum_columns(dataset, tbs)
     for year in dataset.years:
         single_year = dataset[year]
         enum_columns: dict = {}
@@ -837,6 +861,7 @@ class Simulation(CoreSimulation):
 
     def _extend_dataset_with_cgt_provenance(self, dataset):
         """Retain the origin of inputs materialised by this loader only."""
+        _validate_integer_enum_columns(dataset, self.tax_benefit_system)
         source_year = int(dataset.time_period)
         variables = [v for v in CGT_DATASET_INPUTS if v in dataset.person.columns]
         extended = extend_single_year_dataset(
@@ -1392,6 +1417,7 @@ class Simulation(CoreSimulation):
         Args:
             dataset: UKMultiYearDataset containing multiple years of data
         """
+        _validate_integer_enum_columns(dataset, self.tax_benefit_system)
         if self.disable_economic_assumptions:
             dataset = dataset.copy()
             # The reset copies base-year values positionally. Align only the
@@ -1409,8 +1435,7 @@ class Simulation(CoreSimulation):
 
         # Ensure enum columns are encoded and _enum_columns is populated so
         # that .person/.benunit/.household properties can decode back to strings.
-        if not any(dataset[y]._enum_columns for y in dataset.years):
-            _pre_encode_enum_columns(dataset, self.tax_benefit_system)
+        _pre_encode_enum_columns(dataset, self.tax_benefit_system)
         # Use first year to establish entity structure
         first_year = dataset[dataset.years[0]]
         self.build_from_ids(
