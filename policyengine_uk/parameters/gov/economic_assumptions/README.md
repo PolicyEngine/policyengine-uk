@@ -49,16 +49,16 @@ index keeps its base year.
 The seven `gambling_duty_bases` series (`general_betting`, `pool_betting`,
 `remote_gaming`, `machine_games`, `gaming`, `bingo`, `lottery`) grow the
 gambling duty inputs (#2738). They grow a duty's base, not its receipts:
-each year's receipts, less the Budget measures they include, divided by the
-rate the model charges that fiscal year. The model then applies its own rate
-changes, such as Remote Gaming Duty's rise from 21% to 40% on 1 April 2026,
-once. The table publishes forecasts only, so each series starts from HMRC's
-2024-25 receipts, the model's base year, and its 2025-26 outturn, which the
-importer holds in `RECEIPTS_SERIES_SPECS`. A year whose rate is zero, Bingo
-Duty's from 2026-27, holds the base flat. See
+each year's receipts divided by the rate the model charges that fiscal
+year. The model then applies its own rate changes, such as Remote Gaming
+Duty's rise from 21% to 40% on 1 April 2026, once. The table publishes
+forecasts only, so each series starts from HMRC's 2024-25 receipts, the
+model's base year, and its 2025-26 outturn, which the importer holds in
+`RECEIPTS_SERIES_SPECS`. A year whose rate is zero, Bingo Duty's from
+2026-27, holds the base flat. See
 [gambling duties](../../../../docs/engineering/gambling-duties.md#projection)
-for each duty's rates, the measure the Machine Games Duty line includes and
-the approximations.
+for each duty's rates, the higher-stake share Machine Games Duty's rate
+assumes, and the approximations.
 
 `national_living_wage` projects the minimum wage rates
 (`gov.hmrc.minimum_wage`) after the last rate set. It is the growth of the
