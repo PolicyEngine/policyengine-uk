@@ -113,10 +113,11 @@ and [HMRC Notice 452](https://www.gov.uk/guidance/machine-games-duty-excise-noti
 
 ### Higher-stake machines from 1 April 2027
 
-Budget 2026 moves machines with a maximum charge to play of more than £1, or
-a maximum prize of more than £100, from the standard rate of 20% to the higher
-rate of 25% from 1 April 2027. Finance Bill 2026-27 will amend the stake and
-prize thresholds that set each machine's type, and with it the rate
+In Budget 2026 the government said it would move machines with a maximum
+charge to play of more than £1, or a maximum prize of more than £100, from the
+standard rate of 20% to the higher rate of 25% from 1 April 2027. In Finance
+Bill 2026-27 the government will amend the stake and prize thresholds that set each machine's
+type, and with it the rate
 ([OOTLAR paragraph 1.50](https://www.gov.uk/government/publications/budget-2026-overview-of-tax-legislation-and-rates-ootlar/budget-2026-overview-of-tax-legislation-and-rates-ootlar)).
 Today, Finance Act 2012 Schedule 24 paragraph 5(3) puts every machine outside
 the lower-rate class with a highest charge of at most £5 in the standard-rate
@@ -166,10 +167,10 @@ change, or move its date to delay it. It shares fiscal-year segments with the
 rates, so a rate reform applies to the higher-stake part at whichever rate the
 switch selects.
 
-The policy costing puts the measure at £135 million in 2027-28 and £130
-million a year to 2031-32
+The Treasury puts the measure at £135 million in 2027-28 and £130 million a
+year to 2031-32
 ([Budget 2026 policy costings, page 67](https://assets.publishing.service.gov.uk/media/6ae1883fe4367e5c8b0467df/AB26_Policy_Costing.pdf#page=67)).
-That costing grows its base with the OBR's Machine Games Duty forecast and nets
+The Treasury grows its base with the OBR's Machine Games Duty forecast and nets
 off a behavioural response: an elasticity of -0.95, a quarter of lost stakes
 moving to Remote Gaming Duty, general attrition and lower Corporation Tax. The
 model applies the rates statically to supplied takings and reproduces none of
