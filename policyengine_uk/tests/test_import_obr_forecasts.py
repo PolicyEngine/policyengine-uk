@@ -9,7 +9,7 @@ import xml.etree.ElementTree as ET
 
 import pytest
 import yaml
-from hypothesis import event, given, settings
+from hypothesis import event, example, given, settings
 from hypothesis import strategies as st
 from policyengine_core.parameters import ParameterNode
 
@@ -2986,12 +2986,17 @@ def test_main_can_leave_the_national_living_wage_alone(tmp_path):
 
 
 NLW_CHANGES = st.floats(min_value=-0.05, max_value=0.10, allow_nan=False)
-# average_earnings from 2010, so a table ending in any year has a long-run
-# path after it.
-EARLY_EARNINGS_FIXTURE = YOY_GROWTH_FIXTURE.replace(
-    "  average_earnings:\n    values:\n      2024-01-01:",
-    "  average_earnings:\n    values:\n      2010-01-01:",
-)
+
+
+def earnings_fixture(rate):
+    """The fixture with average_earnings from 2010, so a table ending in any
+    year has a long-run path after it, at ``rate`` where it holds 2%."""
+    flat = FLAT_SERIES_FIXTURE.format(key="average_earnings")
+    early = flat.replace("2024-01-01", "2010-01-01").replace("0.0200", f"{rate:.4f}")
+    return YOY_GROWTH_FIXTURE.replace(flat, early)
+
+
+EARLY_EARNINGS_FIXTURE = earnings_fixture(0.02)
 
 
 @settings(max_examples=60, deadline=None, derandomize=True)
@@ -3050,42 +3055,81 @@ def test_the_model_index_reproduces_the_published_levels(
             assert kind == ("set" if year <= set_until else "estimate"), year
 
 
+def test_a_tail_that_rounds_the_level_index_to_zero_is_refused():
+    """The table keeps the index above zero; the average_earnings tail takes
+    it there, so the finished series' check stops the render."""
+    workbook = nlw_workbook(nlw_rows((10.0, 10.0, 0.0001), 2023, 2023))
+    render_nlw(workbook=workbook)
+    flat = FLAT_SERIES_FIXTURE.format(key="average_earnings")
+    content = YOY_GROWTH_FIXTURE.replace(flat, flat.replace("0.0200", "-0.5100"))
+    assert content != YOY_GROWTH_FIXTURE
+    with pytest.raises(
+        ValueError, match="national_living_wage: the index reaches 0.0 in 2031"
+    ):
+        render_nlw(content, workbook)
+
+
+def test_growth_past_every_float_is_refused():
+    with pytest.raises(ValueError, match="takes the index to inf"):
+        compute_level_growth(nlw_workbook(nlw_rows((1e-300, 1e300), 2023, 2023)))
+
+
+# Levels whose ratios stay within a float: the index tracks each level over
+# the first, at most 1e300, so only a fall can stop it.
 TINY_TO_HUGE = st.one_of(
+    st.floats(min_value=0.01, max_value=1, allow_nan=False),
     st.floats(min_value=1e-9, max_value=1e9, allow_nan=False),
-    st.floats(min_value=1e-300, max_value=1e-200, allow_nan=False),
-    st.floats(min_value=1e200, max_value=1e300, allow_nan=False),
+    st.floats(min_value=1e-100, max_value=1e-50, allow_nan=False),
+    st.floats(min_value=1e50, max_value=1e200, allow_nan=False),
 )
 
 
 @settings(max_examples=60, deadline=None, derandomize=True)
-@given(levels=st.lists(TINY_TO_HUGE, min_size=2, max_size=8))
-def test_a_written_level_series_keeps_every_index_positive(levels):
-    """For any positive levels, however far apart: the importer refuses
-    exactly when the six-decimal growth takes the five-decimal index the
-    model compounds through the table (from 1 in its first year) to zero or
-    past every float. Otherwise the index of the series it writes, with
-    average_earnings after the table, stays above zero in every year."""
+@given(
+    levels=st.lists(TINY_TO_HUGE, min_size=2, max_size=8),
+    earnings=st.sampled_from((0.02, -0.51)),
+)
+# A fall to a thousandth passes the table's check; the falling tail then
+# takes the finished index to zero in 2037.
+@example(levels=[1.0, 0.001], earnings=-0.51)
+def test_a_written_level_series_keeps_every_index_positive(levels, earnings):
+    """For any positive levels, however far apart: the importer refuses the
+    table exactly when its six-decimal growth takes the five-decimal index
+    the model compounds through it (from 1 in its first year) to zero, and
+    refuses to write the series exactly when the index of the finished
+    series, with the year kept before it and average_earnings (rising 2% or
+    falling 51% a year) after it, reaches zero. Otherwise that index stays
+    above zero in every year."""
+    content = earnings_fixture(earnings)
     workbook = nlw_workbook(nlw_rows(tuple(levels), 2023, 2023))
     values = {
         2023 + i: round(levels[i] / levels[i - 1] - 1, 6) + 0.0
         for i in range(1, len(levels))
     }
     through_table = model_index({2023: 0.0, **values})
-    compounds = all(
-        math.isfinite(through_table[year]) and through_table[year] > 0
-        for year in values
-    )
     try:
         growth = compute_level_growth(workbook)[NLW_PATH]
     except ValueError as error:
-        event("refused")
+        event("refused: table")
         assert "which the model cannot compound from" in str(error)
-        assert not compounds
+        assert any(through_table[year] <= 0 for year in values)
+        return
+    assert all(through_table[year] > 0 for year in values)
+    assert growth.values == values
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(
+            import_obr_forecasts, "check_index_stays_positive", lambda *_: None
+        )
+        unchecked = render_nlw(content, workbook)
+    finished = model_index(_values(unchecked, NLW_PATH))
+    assert all(math.isfinite(level) for level in finished.values())
+    try:
+        rendered = render_nlw(content, workbook)
+    except ValueError as error:
+        event("refused: finished series")
+        assert "national_living_wage: the index reaches" in str(error)
+        assert any(level <= 0 for level in finished.values())
         return
     event("written")
-    assert compounds
-    assert growth.values == values
-    written = model_index(
-        _values(render_nlw(EARLY_EARNINGS_FIXTURE, workbook), NLW_PATH)
-    )
-    assert all(math.isfinite(level) and level > 0 for level in written.values())
+    assert rendered == unchecked
+    assert all(level > 0 for level in finished.values())

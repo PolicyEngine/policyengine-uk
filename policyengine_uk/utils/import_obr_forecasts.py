@@ -1860,8 +1860,8 @@ def render_level_series_yaml(
     It keeps the years before the table's second year, so the series' index
     keeps its base year, and the series' other references. Years after the
     table follow average_earnings as ``content`` holds it. It checks that
-    the result differs from ``content`` only in those values and that
-    reference.
+    the finished series' index stays above zero, and that the result
+    differs from ``content`` only in those values and that reference.
     """
     month, year = release
     expected = copy.deepcopy(yaml.safe_load(content))
@@ -1919,6 +1919,7 @@ def render_level_series_yaml(
                 for entry_year, value in {**series.values, **tail}.items()
             },
         }
+        check_index_stays_positive(path, node["values"])
         node["metadata"]["reference"][0] = reference
 
     rendered = "\n".join(lines)
