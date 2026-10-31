@@ -519,6 +519,19 @@ def test_additional_earnings_threshold_includes_equality(offset):
     )
 
 
+@pytest.mark.parametrize("offset", [-0.01, 0, 0.01])
+def test_threshold_compares_pence_where_float32_rounds_down(offset):
+    """Float32 stores £1,149.20 as £1,149.19995. Sch 4 para 17(1) compares
+    pence, so earnings of £1,149.20 still cover the £260 standard disregard
+    and the £889.20 additional amount, and para 56 does not apply."""
+    unit = case(net=1_149.20 + offset, standard=260, childcare=0, children=0)
+    actual = calculate([unit], 2024)
+    assert actual["reserve"][0] == (100 if offset < 0 else 0)
+    assert actual["earnings_disregard"][0] == pytest.approx(
+        260 if offset < 0 else 1_149.20, abs=TOLERANCE
+    )
+
+
 @pytest.mark.parametrize("year", YEARS)
 def test_wtc_disregard_honours_the_historical_amount_and_cessation(year):
     unit = case(net=500, standard=260, childcare=0, children=0, wtc=2_000)
