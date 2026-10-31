@@ -6,11 +6,11 @@ class cash_isa(Variable):
     documentation = (
         "Amount held in cash Individual Savings Accounts: cash_isa_balance summed "
         "over the household's members. A dataset that stores this column keeps the "
-        "stored value, and in later years the model grows the latest stored value as "
-        "it grows savings, so a reform that gives cash_isa_balance a formula leaves a "
-        "stored total unchanged. Balances that the data hold for a later year than "
-        "the total replace it with their sum. A household input in a situation "
-        "applies only to its own year."
+        "stored value, and the model grows the latest stored value into later years "
+        "as it grows savings. In a later year the model sums the balances instead "
+        "where the data hold them for a later year than the total, or where a reform "
+        "changes what cash_isa sums or stops cash_isa_balance reading its inputs. A "
+        "household input in a situation applies only to its own year."
     )
     entity = Household
     definition_period = YEAR

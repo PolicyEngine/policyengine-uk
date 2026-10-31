@@ -7,10 +7,11 @@ class household_lifetime_isa_balance(Variable):
         "Lifetime ISA balances summed over the household's members. Like "
         "lifetime_isa_balance, it is a component of gross_financial_wealth and must "
         "never be added to it. A dataset that stores this column keeps the stored "
-        "value, and in later years the model grows the latest stored value as it "
-        "grows lifetime_isa_balance, so a reform that gives lifetime_isa_balance a "
-        "formula leaves it unchanged. Balances that the data hold for a later year "
-        "than the total replace it with their sum. No means test reads it."
+        "value, and the model grows the latest stored value into later years as it "
+        "grows lifetime_isa_balance. In a later year the model sums the balances "
+        "instead where the data hold them for a later year than the total, or where "
+        "a reform changes what household_lifetime_isa_balance sums or stops "
+        "lifetime_isa_balance reading its inputs. No means test reads it."
     )
     entity = Household
     definition_period = YEAR

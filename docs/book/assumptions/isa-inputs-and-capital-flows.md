@@ -104,11 +104,12 @@ keeps it: the model sums the person balances only for a year with no stored
 total. In each later year the model grows the latest total that a dataset
 stores by the index of `savings`, `corporate_wealth` or `lifetime_isa_balance`
 respectively, including years after the dataset projection ends, unless the
-dataset holds the person balances for a later year than the total. A household
-input in a situation applies only to its own year; the person balances carry
-the variable-level uprating to later years. The means tests read the household
-totals, so they pool a person's balance with the household's other financial
-capital rather than attribute it to their own benefit unit.
+dataset holds the person balances for a later year than the total, or a reform
+changes what the total sums or stops a person balance reading its inputs. A
+household input in a situation applies only to its own year; the person
+balances carry the variable-level uprating to later years. The means tests read
+the household totals, so they pool a person's balance with the household's
+other financial capital rather than attribute it to their own benefit unit.
 
 Ordinary accessible cash ISA balances enter the capital sources for Universal
 Credit, Housing Benefit, Pension Credit, Income Support, income-based JSA and

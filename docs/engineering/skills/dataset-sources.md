@@ -161,8 +161,10 @@ them in every year. `uprating_indices.yaml` projects them with `savings` and
 year a data source holds no total for, the simulation grows the latest
 earlier stored total by the index its person balances declare
 (`STORED_HOUSEHOLD_TOTALS` in `data/economic_assumptions.py`, which also covers
-`household_lifetime_isa_balance`). Person balances that the data hold for a
-later year than the total replace it with their sum. A situation differs: a
+`household_lifetime_isa_balance`, with the person balance each total sums).
+Person balances that the data hold for a later year than the total replace it
+with their sum, and so does any reform that changes what a total sums or
+stops one of its person balances reading its inputs. A situation differs: a
 household total given in one applies only to its own year. An input frame is
 data, so a situation reloaded from its input frame grows such a total in
 later years. A producer that exports the person balances should either stop
