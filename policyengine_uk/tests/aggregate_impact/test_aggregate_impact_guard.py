@@ -993,6 +993,36 @@ def test_a_failure_whose_held_measurements_turn_nan_says_so(total):
     assert not row["heads_held_skipped"]
 
 
+# tax_a declares reads of tax_b and tax_c, and tax_c moves with tax_b, so
+# tax_a rises one for one. Its extra term is finite wherever the check reads
+# tax_a without holding tax_c, and infinite in one held measurement alone.
+HELD_TURNS = {
+    # With tax_c at its baseline, at the second point.
+    "baseline hold": lambda b, c: 1 / (c - b + 2),
+    # With tax_c at its value after the first point, at the second point.
+    "hold after the first point": lambda b, c: 1 / ((b - 7) ** 2 + (c - 6) ** 2),
+}
+
+
+@pytest.mark.parametrize("held", HELD_TURNS)
+def test_a_response_that_only_one_held_measurement_sees_not_finite_says_so(held):
+    """The first reading of tax_a is finite and one for one, and one held
+    measurement sees it infinite: the problem says it may not be finite."""
+    term = HELD_TURNS[held]
+    formulas = model(contains=False)
+    formulas["tax_c"] = lambda f: f("tax_b") + 0 * f("x")
+    formulas["tax_a"] = lambda f: f("tax_b") + term(f("tax_b"), f("tax_c"))
+    formulas["gov_tax"] = lambda f: f("tax_a") + f("tax_b") + f("tax_c")
+    part = partition(["tax_a", "tax_b", "tax_c"], reads={"tax_a": ["tax_b", "tax_c"]})
+    _, result = run_not_finite(formulas, part, x=(1,), weights=(1,))
+    row = by_variable(result)["tax_b"]
+    assert np.isfinite(row["responses"]["gov_tax"]["tax_a"])
+    assert messages(row)[("tax_a", "contains")] == CONTAINS_OR_NOT_FINITE
+    (problem,) = [p for p in row["problems"] if p["head"] == "tax_a"]
+    assert problem["not_finite"] and problem["heads_not_held"] == []
+    assert not row["heads_held_skipped"]
+
+
 @pytest.mark.parametrize("response", NOT_FINITE)
 def test_a_screen_the_check_could_not_hold_heads_for_confirms_nothing(response):
     """tax_a declares its read of tax_b and responds with a slope of 0.5, so
