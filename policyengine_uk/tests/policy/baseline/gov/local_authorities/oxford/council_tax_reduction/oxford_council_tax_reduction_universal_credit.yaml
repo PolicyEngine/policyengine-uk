@@ -200,14 +200,16 @@
     council_tax_reduction_applicable_income: 24_479.60
     oxford_council_tax_reduction: 1_800
 
-- name: Oxford counts a lone parent's net earned income before the work allowance and no Child Benefit
+- name: Oxford counts a lone parent's net earned income before the work allowance
   # A lone parent with one child aged 5. UC: maximum amount (424.90 + 303.94)
   # x 12 + 7,000 housing = 15,746.08. Lower work allowance 427 x 12 = 5,124
   # (reg 22(2)). Reduction 55% x (15,839.60 - 5,124) = 5,893.58. Award
   # 15,746.08 - 5,893.58 = 9,852.50.
   # Appendix 3 adds net earned income, not earned income less the work
-  # allowance, and the award; Child Benefit is not Universal Credit's
-  # unearned income: 15,839.60 + 9,852.50 = 25,692.10 a year, 494.08 a week:
+  # allowance, and the award. The model counts Universal Credit's unearned
+  # income, which leaves out Child Benefit (Appendix 3's ignore list does not
+  # name it, so this is a reading): 15,839.60 + 9,852.50 = 25,692.10 a year,
+  # 494.08 a week:
   # band 2, 75% of 1,800. Less the work allowance it would be 395.54 a week,
   # band 1.
   period: 2026
@@ -471,3 +473,37 @@
     universal_credit: 17_653.78
     oxford_council_tax_reduction_universal_credit_income: 27_123.98
     oxford_council_tax_reduction: 1_350
+
+- name: Oxford counts the Universal Credit awarded before deductions for debts
+  # As the first case, with debts the model repays at 25% of the standard
+  # allowance: 0.25 x 424.90 x 12 = 1,274.70 comes out of the payment, which
+  # falls to 8,887.02 - 1,274.70 = 7,612.32. Appendix 3 counts "the amount of
+  # Universal Credit awarded", 8,887.02, so the income stays 24,726.62 a year,
+  # 475.51 a week: band 1, 100%. Counting the payment it would be 23,451.92.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 35
+        employment_income: 20_000
+        employee_pension_contributions: 2_600
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        uc_housing_costs_element: 12_500
+        uc_deduction_rate: 0.25
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        local_authority: OXFORD
+        council_tax: 1_800
+        savings: 0
+  output:
+    uc_deductions: 1_274.70
+    universal_credit: 7_612.32
+    oxford_council_tax_reduction_universal_credit_income: 24_726.62
+    oxford_council_tax_reduction: 1_800

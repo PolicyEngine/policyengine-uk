@@ -20,9 +20,13 @@ class oxford_council_tax_reduction_universal_credit_income(Variable):
         "para. 18) does not reach these applicants. Other income is the "
         "Universal Credit calculation of unearned income (uc_unearned_income, "
         "reg. 66), which already leaves out the benefits Appendix 3 lists as "
-        "ignored. Appendix 3 counts all other unearned income, which can go "
-        "beyond reg. 66 (Child Benefit, for one, is not on its list); the "
-        "model counts the reg. 66 amount only. Appendix 3 also ignores "
+        "ignored and counts Universal Credit's assumed yield from capital "
+        "(uc_tariff_income, reg. 72) in place of Oxford's own tariff income. "
+        "Appendix 3 counts all other unearned income, which can go beyond "
+        "reg. 66 (Child Benefit, for one, is not on its list); the model "
+        "counts the reg. 66 amount only. The award is the amount awarded, "
+        "before deductions for debts (uc_deductions) come out of the "
+        "payment. Appendix 3 also ignores "
         "£48.15 a week of each carer element and £84.46 a week of each "
         "disabled child element, which come off the award (but not below "
         "nil), and, for a disabled applicant, an amount equal to any "
@@ -59,7 +63,8 @@ class oxford_council_tax_reduction_universal_credit_income(Variable):
         # disabled child (reg. 24(2)), and the two amounts are the 2026-27
         # carer and disabled child premiums, one for each carer and each
         # disabled child (SI 2006/213 Sch 3 para 20(7) and (8)), so each
-        # element has its own disregard, up to the element. They come off the award, which cannot fall below nil.
+        # element has its own disregard, up to the element. They come off
+        # the award, which cannot fall below nil.
         carers = add(benunit, period, ["uc_carer_element_included_for_claimant"])
         carer_disregard = min_(
             benunit("uc_carer_element", period),
@@ -80,10 +85,10 @@ class oxford_council_tax_reduction_universal_credit_income(Variable):
                 p.disabled_child_element_disregard * WEEKS_IN_YEAR,
             )
         )
-        award = max_(
-            0,
-            benunit("universal_credit", period)
-            - carer_disregard
-            - disabled_child_disregard,
-        )
+        # Appendix 3 counts "the amount of Universal Credit awarded". The
+        # deductions for debts (uc_deductions) come out of the payment, not
+        # the award, so the model adds them back; the benefit cap reduces
+        # the award itself.
+        award = benunit("universal_credit", period) + benunit("uc_deductions", period)
+        award = max_(0, award - carer_disregard - disabled_child_disregard)
         return max_(0, earned_income + unearned_income + award)

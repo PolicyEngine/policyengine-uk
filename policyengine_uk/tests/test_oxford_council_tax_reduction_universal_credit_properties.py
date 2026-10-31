@@ -16,15 +16,14 @@ housing costs, children with or without a disabled child addition, carers),
 over the families whose applicant has a Universal Credit award:
 
 1. Locality: a reform of Oxford's pension contribution share leaves every
-   such family's Oxford reduction unchanged, while it reaches the paragraphs
-   14 to 27 income of every Oxford family (the share the model reads is the
-   reform's).
+   such family's Oxford reduction unchanged, while every Oxford family reads
+   the reform's share.
 2. Appendix 3 income: it is DWP's net earned income plus unearned income
-   plus the award less the element disregards, never below the first two;
-   the disregards come off the award but not below nil, and are at most the
-   elements themselves and at most 48.15 and 84.46 a week for each carer and
-   each disabled child. With no carer or disabled child it is the sum of the
-   three amounts exactly.
+   plus the award before deductions for debts, less the element disregards,
+   never below the first two. The disregards come off the award but not
+   below nil: the award or, if less, 48.15 a week of each carer element up
+   to the element plus 84.46 a week of each disabled child's addition up to
+   the addition, with the additions at DWP's 2026-27 rates.
 3. Bands: the reduction is the council tax share times the rate that the
    scheme's band table (weekly income up to 480.00, 530.00, 580.00 and
    660.00) gives for a fifty-second of the Appendix 3 income.
@@ -32,9 +31,10 @@ over the families whose applicant has a Universal Credit award:
    family that keeps its award, since each pound contributed lowers DWP's
    net earned income and raises the award by at most the 55% taper.
 5. Differential: for families without a carer or disabled child element,
-   the Appendix 3 income equals the Universal Credit income on which
-   Merton, Kingston upon Thames, Newham and Westminster assess the same
-   family, recovered from each council's award.
+   the Appendix 3 income less any deductions for debts equals the Universal
+   Credit income on which Merton, Kingston upon Thames, Newham and
+   Westminster assess the same family, recovered from each council's award
+   (they count the award after those deductions).
 
 The differential against origin/main for families without Universal Credit
 lives outside the suite (see the pull request); here the YAML cases in
@@ -69,6 +69,8 @@ WEEKS = 52
 BANDS = [(480.01, 1.0), (530.01, 0.75), (580.01, 0.5), (660.01, 0.25)]
 CARER_DISREGARD = 48.15
 DISABLED_CHILD_DISREGARD = 84.46
+# DWP's 2026-27 disabled child additions, 164.79 and 514.71 a month, weekly.
+DISABLED_CHILD_ADDITION = {"lower": 164.79 * 12 / 52, "higher": 514.71 * 12 / 52}
 # Float32 storage: amounts of tens of thousands carry errors of about 0.004.
 TOLERANCE = 0.05
 
@@ -109,6 +111,8 @@ def families(draw):
         adults=adults,
         children=children,
         housing=draw(st.sampled_from([0.0, 3_000.0, 7_000.0, 12_500.0, 15_000.0])),
+        # Deductions for debts, as a share of the standard allowance.
+        deduction_rate=draw(st.sampled_from([0.0, 0.0, 0.15])),
     )
 
 
@@ -137,6 +141,7 @@ def situation(units, local_authorities=None, council_tax=COUNCIL_TAX):
             "would_claim_uc": {YEAR: True},
             "claims_all_entitled_benefits": {YEAR: True},
             "uc_housing_costs_element": {YEAR: unit["housing"]},
+            "uc_deduction_rate": {YEAR: unit.get("deduction_rate", 0.0)},
         }
         households[f"h{i}"] = {
             "members": names,
@@ -242,6 +247,7 @@ def test_oxford_pension_contribution_share_does_not_move_universal_credit_awards
 
 INCOME_VARIABLES = [
     "universal_credit",
+    "uc_deductions",
     "council_tax_reduction_head_applies_alone",
     "uc_earned_income_before_work_allowance",
     "uc_unearned_income",
@@ -266,7 +272,8 @@ def test_appendix_3_income_and_band(units):
         case = unit
         earned = values["uc_earned_income_before_work_allowance"][i]
         unearned = values["uc_unearned_income"][i]
-        award = values["universal_credit"][i]
+        # The award before deductions for debts come out of the payment.
+        award = values["universal_credit"][i] + values["uc_deductions"][i]
         income = values["oxford_council_tax_reduction_universal_credit_income"][i]
         carers = sum(
             a["uc_carer_element_included_for_claimant"] for a in unit["adults"]
@@ -284,8 +291,17 @@ def test_appendix_3_income_and_band(units):
             DISABLED_CHILD_DISREGARD
         )
         assert ignored <= weekly_cap * WEEKS + TOLERANCE, case
-        if carers == 0 and disabled_children == 0:
-            assert abs(ignored) < TOLERANCE, case
+        # The disregards exactly, from DWP's 2026-27 amounts.
+        carer_part = min(
+            values["uc_carer_element"][i], carers * CARER_DISREGARD * WEEKS
+        )
+        child_part = sum(
+            min(DISABLED_CHILD_ADDITION[c["disability"]], DISABLED_CHILD_DISREGARD)
+            * WEEKS
+            for c in unit["children"]
+            if c["disability"] is not None
+        )
+        assert abs(ignored - min(award, carer_part + child_part)) < TOLERANCE, case
         # Invariant 3: the scheme's band table sets the reduction.
         liability = (
             values["council_tax_reduction_maximum_eligible_liability"][i]
@@ -402,16 +418,18 @@ def test_appendix_3_income_matches_the_other_councils_universal_credit_income(
                 * values["council_tax_reduction_joint_liability_share"][j]
             )
             award = values[variable][j]
-            appendix_3_income = values[
-                "oxford_council_tax_reduction_universal_credit_income"
-            ][i]
+            # Those councils count the award after deductions for debts,
+            # which Oxford adds back.
+            council_income = (
+                values["oxford_council_tax_reduction_universal_credit_income"][i]
+                - values["uc_deductions"][i]
+            )
             assert award > 0, case
             if award > liability * ctr.maximum_support_rate - TOLERANCE:
                 # No income above the applicable amount to read back: the
                 # Universal Credit income is at most the maximum amount.
-                assert appendix_3_income < values["uc_maximum_amount"][j] + TOLERANCE, (
-                    case
-                )
+                maximum_amount = values["uc_maximum_amount"][j]
+                assert council_income < maximum_amount + TOLERANCE, case
                 continue
             # award = liability x maximum rate - withdrawal rate x (income -
             # applicable amount), with the Universal Credit maximum amount as
@@ -421,4 +439,4 @@ def test_appendix_3_income_matches_the_other_councils_universal_credit_income(
             ) / (ctr.means_test.withdrawal_rate)
             # Invariant 5. The withdrawal rate scales float32 errors in the
             # award by up to five.
-            assert abs(income - appendix_3_income) < 5 * TOLERANCE, case
+            assert abs(income - council_income) < 5 * TOLERANCE, case
