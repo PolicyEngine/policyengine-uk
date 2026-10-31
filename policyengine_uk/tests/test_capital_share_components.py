@@ -23,6 +23,10 @@ Invariants:
    from the part with sale expenses, whether it was entered within
    corporate_wealth or as directly held shares.
 6. The exempt list exists from the first date any capital list does.
+7. Valuation by type: given only itemised holdings, with the ISAs held as the
+   person's own balances, all six means tests count savings, cash ISAs, unit
+   trusts and stocks and shares ISAs in full and directly held shares less
+   10%, rounded by each programme's rule, to within a penny.
 """
 
 import numpy as np
@@ -127,6 +131,8 @@ def test_lists_name_the_two_parts(variable):
     assert not {"corporate_wealth", "share_like_capital", *COMPONENTS} & set(sources)
     assert WITH in sale and WITHOUT not in sale
     assert not {"corporate_wealth", *COMPONENTS} & set(sale)
+    # Deposit balances have no costs of sale (ADM H1607, H1675).
+    assert "cash_isa" in sources and not {"savings", "cash_isa"} & set(sale)
     without = set(_parameter("gov.dwp.share_like_capital.without_sale_expenses"))
     assert without == {"unit_and_investment_trusts", "stocks_and_shares_isa"}
 
@@ -403,3 +409,81 @@ def test_a_disregarded_company_holding_leaves_the_part_with_sale_expenses():
         # The pool counts the shares at 90%, and the holding leaves it at that.
         assert sim.calculate("household_uc_pool_company_holdings", YEAR)[0] == 27_000
         assert list(sim.calculate("uc_assessable_capital", YEAR)) == [5_000, 5_000]
+
+
+ROUNDS_DOWN = {
+    "uc_assessable_capital": False,
+    "housing_benefit_assessable_capital": False,
+    "income_support_assessable_capital": True,
+    "jsa_income_assessable_capital": True,
+    "esa_income_assessable_capital": True,
+    "pension_credit_assessable_capital": True,
+}
+pennies = st.integers(min_value=0, max_value=2_000_000)
+
+
+@settings(
+    max_examples=10,
+    deadline=None,
+    derandomize=True,
+    suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large],
+)
+@given(
+    st.lists(
+        st.tuples(
+            pennies,
+            pennies,
+            pennies,
+            pennies,
+            pennies,
+            st.sampled_from([30, 70]),
+            st.booleans(),
+        ),
+        min_size=1,
+        max_size=20,
+    )
+)
+# £1,000 of savings, £3,000 in a cash ISA, £3,000 of unit trusts and a £5,000
+# stocks-and-shares ISA in full, and 90% of £4,000 of shares: £15,600.
+@example([(100_000, 300_000, 400_000, 300_000, 500_000, 30, False)])
+def test_itemised_holdings_are_valued_by_type_in_every_means_test(rows):
+    """Given only itemised holdings, with the ISAs held as the person's own
+    balances, every means test counts savings, a cash ISA, unit trusts and a
+    stocks-and-shares ISA in full and directly held shares less 10%, rounded
+    by the programme's rule. The engine adds the holdings in float32, which
+    can move the shares' value by a fraction of a penny before valuation, so
+    each total is checked to within a penny."""
+    people, benunits, homes = {}, {}, {}
+    for i, (savings, cash_isa, shares, trusts, isa, age, claims_uc) in enumerate(rows):
+        people[f"p{i}"] = {
+            "age": {YEAR: age},
+            "cash_isa_balance": {YEAR: cash_isa / 100},
+            "stocks_and_shares_isa_balance": {YEAR: isa / 100},
+        }
+        benunits[f"b{i}"] = {
+            "members": [f"p{i}"],
+            "would_claim_uc": {YEAR: claims_uc},
+        }
+        homes[f"h{i}"] = {
+            "members": [f"p{i}"],
+            "savings": {YEAR: savings / 100},
+            "directly_held_shares": {YEAR: shares / 100},
+            "unit_and_investment_trusts": {YEAR: trusts / 100},
+        }
+    sim = Simulation(
+        situation={"people": people, "benunits": benunits, "households": homes}
+    )
+    passported = sim.calculate("housing_benefit_on_passporting_benefit", YEAR)
+    for variable, round_down in ROUNDS_DOWN.items():
+        values = sim.calculate(variable, YEAR)
+        for i, (savings, cash_isa, shares, trusts, isa, age, _) in enumerate(rows):
+            if variable == "pension_credit_assessable_capital":
+                if age < 67:
+                    continue
+            elif age >= 67 or (
+                variable == "housing_benefit_assessable_capital" and passported[i]
+            ):
+                continue
+            share_pence = (9 * shares + (0 if round_down else 5)) // 10
+            expected = (savings + cash_isa + trusts + isa + share_pence) / 100
+            assert abs(values[i] - expected) <= 0.011, (variable, rows[i], values[i])
