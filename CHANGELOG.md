@@ -1,3 +1,19 @@
+## [2.170.0] - 2026-10-31
+
+### Added
+
+- Add the Household Energy Payment announced at Budget 2026: £100 in 2026-27 for households in council tax bands A to D in England, counted in household benefits, government spending and HBAI income (as HBAI counted the 2022 Council Tax Rebate).
+- Add the Pension Tax Allowance announced at Budget 2026: from 6 April 2027 to 5 April 2030, people over State Pension age (or reaching it within the tax year) get a non-refundable Income Tax reduction of 20% of the full new State Pension above the Personal Allowance, rounded up to the pound (£94 in 2027-28), tapered by £1 for every £3 of total income above the full new State Pension (52 weeks at the weekly rate, so it follows any change to that rate). Universal Credit's deduction for tax on earnings sees it.
+
+### Changed
+
+- Replace the cliff edge at the Carer's Allowance earnings limit with the 100% taper that Budget 2026 announced, in England and Wales: the weekly allowance falls by £1 for each £1 of weekly earnings above the limit. The taper starts within 2030-31; until DWP confirms the date the model starts it on 6 October 2030, so 2030-31 carries 182 of its 365 days. In that year the weeks before the taper and the weeks under it each get their own couple restriction and overlapping-benefit reduction, so State Pension reduces the allowance only in the weeks the allowance pays for. A couple caring for the same person elect which of them has the allowance, and the model gives it to the partner with the larger award (before, it preferred the benefit-unit head), so the taper never leaves a couple with less than the cliff edge did, and one partner has the award for the year: where the two have the same award for some weeks, the couple elect the one with the larger award over the year. An amount before the couple restriction or the overlap rule that an input supplies, or that a reform neutralizes, calculates with a formula of its own or otherwise changes, reaches the payment with the whole year's treatment for the stages after it, even where it equals the model's. The payment ignores the stage before the couple restriction wherever an input supplies, or a reform calculates, the amount before overlap. A mask that takes away a fraction of a penny counts as a change, since the couple restriction chooses only among partners with an award. A payment of less than half a penny for the year is nil.
+- Extend the temporary zero rate of VAT on domestic electricity to 30 June 2027, and apply it in Northern Ireland from 1 April 2027, as announced at Budget 2026.
+- Keep the 5p fuel duty cut, and the proportionate cut for LPG and natural gas, to 1 July 2027, as announced at Budget 2026. On that date petrol and diesel rise to the OBR's forecast of 60.59p (57.95p uprated by RPI growth to 2027 Q1), and LPG and natural gas return to their full rates with the same uprating, at the rates HM Treasury publishes (natural gas 25.82p a kilogram); all three then rise by RPI each 1 April from 2028.
+- Raise the savings and property income rates to 24%, 44% and 49% from 6 April 2027 (Budget 2026).
+- Raise the trading allowance to £3,000 from 6 April 2027 (Budget 2026).
+
+
 ## [2.169.0] - 2026-10-31
 
 ### Added

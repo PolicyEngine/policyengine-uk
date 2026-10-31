@@ -1,4 +1,8 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.carers_allowance_taper import (
+    carers_allowance_annual_award,
+    carers_allowance_weekly_by_part_of_year,
+)
 
 
 class carers_allowance_pre_couple_limit(Variable):
@@ -8,7 +12,10 @@ class carers_allowance_pre_couple_limit(Variable):
     documentation = (
         "The existing age, caring, earnings and take-up calculation before "
         "the same-person couple restriction and overlapping-benefit adjustment. "
-        "This candidate amount is not final entitlement or payment."
+        "This candidate amount is not final entitlement or payment. In the "
+        "year the Budget 2026 earnings taper starts, it adds the award before "
+        "the taper starts and the award under it, each for its share of the "
+        "year."
     )
     definition_period = YEAR
     unit = GBP
@@ -18,25 +25,5 @@ class carers_allowance_pre_couple_limit(Variable):
     )
 
     def formula(person, period, parameters):
-        in_scotland = person.household("country", period).decode_to_str() == "SCOTLAND"
-        csp_replaces_ca = period.start.year >= 2025
-        receives_ca = person("carers_allowance_reported", period) > 0
-        ca = parameters(period).gov.dwp.carers_allowance
-        meets_age_condition = person("age", period) >= ca.min_age
-        weekly_care_hours = person("care_hours", period)
-        meets_work_condition = weekly_care_hours >= ca.min_hours
-        would_claim = person("would_claim_carers_allowance", period)
-        # SSCBA 1992 s. 70(1)(b): no allowance for anyone gainfully employed,
-        # which reg. 8 of the 1976 Regulations defines by an earnings limit.
-        # It applies to reported recipients too.
-        gainfully_employed = person(
-            "is_gainfully_employed_for_carers_allowance", period
-        )
-        eligible = (
-            ~(in_scotland & csp_replaces_ca)
-            & (meets_work_condition | receives_ca)
-            & ~gainfully_employed
-            & would_claim
-            & meets_age_condition
-        )
-        return eligible * ca.rate * WEEKS_IN_YEAR
+        parts = carers_allowance_weekly_by_part_of_year(person, period, parameters)
+        return carers_allowance_annual_award(parts)
