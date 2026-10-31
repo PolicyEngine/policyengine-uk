@@ -757,8 +757,8 @@ def test_the_guard_section_lists_failures_and_mediated_responses():
         "double_counts": [],
     }
     text = _guard({"head": {"guard": guard}})
-    assert "held at its baseline value" in text
-    assert "1 failed; 0 were skipped" in text
+    assert "holding every other head at its baseline value" in text
+    assert "1 failed and the check skipped 0" in text
     assert "pension_credit rises in 2 households" in text
     assert (
         "`universal_credit` responds only through other heads in 72 households "

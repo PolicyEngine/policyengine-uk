@@ -273,16 +273,18 @@ def _guard(summary) -> str:
     failed = [c for c in tested if c["status"] == "fail"]
     skipped = [c for c in components if c["status"] == "skipped"]
     lines = [
-        f"Each of {len(tested)} components was raised by £1 per unit in "
-        f"{fiscal_year_label(guard['year'])}, and every head of its totals was "
-        "read household by household: its own head must rise by exactly £1, no "
-        "other tax head may move, no other benefit may rise, and the model's own "
-        "total must move by what its heads moved. A response that is not finite "
-        "breaks every rule. A head that breaks a rule is "
-        "measured again twice: with every other head held at its baseline value, "
-        "and with every other head held at its value after the first £1 while the "
-        "component rises again. It fails where either still shows the response. "
-        f"{len(failed)} failed; {len(skipped)} were skipped."
+        f"The check raised each of {len(tested)} components by £1 per unit in "
+        f"{fiscal_year_label(guard['year'])} and read every head of its totals "
+        "household by household: its own head must rise by exactly £1, no other "
+        "tax head may move, no other benefit may rise, and the model's own total "
+        "must move by what its heads moved. A response that is not finite breaks "
+        "every rule. The check measures a head that breaks a rule twice more: "
+        "once holding every other head at its baseline value, and once holding "
+        "every other head at its value after the first £1 while the component "
+        "rises again. It skips the second measurement when one of those values "
+        "is not finite. A head fails where either measurement still shows the "
+        f"response, or where the second did not run. {len(failed)} failed and "
+        f"the check skipped {len(skipped)}."
     ]
     for c in failed:
         problems = c.get("problems") or [{"message": c.get("detail", "")}]
@@ -291,6 +293,18 @@ def _guard(summary) -> str:
         )
     for c in skipped:
         lines.append(f"- `{c['variable']}` skipped: {c.get('detail', '')}")
+    for c in tested:
+        for head, heads in (c.get("heads_not_held") or {}).items():
+            names = [f"`{v}`" for v in heads]
+            if len(names) == 1:
+                listed, verb = names[0], "is"
+            else:
+                listed, verb = f"{', '.join(names[:-1])} and {names[-1]}", "are"
+            lines.append(
+                f"- `{c['variable']}`: the check could not hold {listed}, which "
+                f"{verb} not finite once `{c['variable']}` rises, so it measured "
+                f"`{head}` again only with the other heads at their baseline values"
+            )
     for c in tested:
         for m in c.get("mediated") or []:
             moved = ", ".join(f"`{v}`" for v in m["via"]) or "none"
@@ -308,8 +322,8 @@ def _guard(summary) -> str:
         if dc.get("not_finite"):
             lines.append(
                 f"- declared double count `{dc['variable']}`: `{dc['contained_in']}` "
-                "is NOT FINITE when it rises, so the check cannot show that "
-                f"`{dc['contained_in']}` still contains it ({dc['issue']})"
+                f"is NOT FINITE when `{dc['variable']}` rises, so the check cannot "
+                f"show that it still contains `{dc['variable']}` ({dc['issue']})"
             )
             continue
         state = "still contained" if dc["status"] == "pass" else "NO LONGER contained"

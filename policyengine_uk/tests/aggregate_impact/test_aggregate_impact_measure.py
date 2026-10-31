@@ -1135,7 +1135,7 @@ def test_a_double_count_whose_container_is_not_finite_is_not_called_stale(units)
     text = _guard({"head": {"guard": {**published, "components": []}}})
     assert (
         "- declared double count `corporate_sdlt`: `expected_sdlt` is NOT FINITE "
-        "when it rises, so the check cannot show that `expected_sdlt` still "
-        "contains it (#2159)"
+        "when `corporate_sdlt` rises, so the check cannot show that it still "
+        "contains `corporate_sdlt` (#2159)"
     ) in text
     assert "NO LONGER contained" not in text and "fewer than 10 units" not in text

@@ -42,11 +42,15 @@ change household by household (see ``judge_total``):
   those households: candidates for the route, not each shown to carry it;
 - a response that is not finite (infinite or NaN) breaks each rule above,
   for every head and for the model's total, and in both held measurements.
-  The second measurement does not run when another head's response is not
-  finite, since it would hold that head there; it then clears no problem
-  and confirms no screen. A declared double count whose container's
-  response is not finite fails: the check cannot show that the container
-  still contains it.
+  Each problem sets ``not_finite`` when a measurement behind it saw such a
+  response, and its message then says so. The second measurement does not
+  run when another head's response is not finite, since it would hold that
+  head there; it then clears no problem and confirms no screen. The
+  component's result names those heads (``heads_not_held``). A problem
+  that the baseline hold alone would have cleared names them too: the
+  check could not show that its head responds only through other heads. A
+  declared double count whose container's response is not finite fails:
+  the check cannot show that the container still contains it.
 
 What it cannot see: a head that adds a component back while tapering it away
 pound for pound (``max(0, a - c) + c``) does not move at the margin, so it is
@@ -320,33 +324,70 @@ def _finite(values) -> bool:
     return bool(np.isfinite(values).all())
 
 
-def _containment_text(head, component, finite=True):
-    """A containment problem's text; ``finite`` is False when a response in
-    its households is not finite."""
-    if finite:
-        return f"{head} rises one for one with {component}, so it contains it,"
-    return f"{head} rises one for one with {component}, or is not finite,"
+def _problem_text(kind, head, component, not_finite=False):
+    """What a problem of ``kind`` says about ``head`` when ``component``
+    rises. Every kind adds the same clause when a response behind the
+    problem is not finite, and keeps its finite text otherwise; a
+    containment then no longer concludes that the head contains it."""
+    clause = ", or is not finite," if not_finite else ""
+    if kind == "own_head":
+        return f"{head} does not move by exactly what was added to {component}{clause}"
+    if kind == "contains":
+        return f"{head} rises one for one with {component}" + (
+            clause or ", so it contains it,"
+        )
+    if kind == "rises":
+        return f"{head} rises{clause} when {component} does"
+    if kind == "moves":
+        return f"{head} moves{clause} when {component} does"
+    return (
+        f"the model's {head} moves by other than its heads{clause} when "
+        f"{component} does"
+    )
 
 
-def _problem(total, head, kind, where, text, weights, perturbed):
+def _not_held_text(heads, head, component):
+    """Why a problem rests on a held measurement that did not run."""
+    if len(heads) == 1:
+        names, verb = heads[0], "is"
+    else:
+        names, verb = f"{', '.join(heads[:-1])} and {heads[-1]}", "are"
+    return (
+        f" (the check could not hold {names}, which {verb} not finite once "
+        f"{component} rises, so it could not show that {head} responds only "
+        "through other heads)"
+    )
+
+
+def _problem(total, head, kind, component, where, weights, perturbed, nan, not_held=()):
     """One failing (total, head, kind), with the households it fails in.
 
-    ``where`` and ``text`` are kept for the direct-effect step and dropped
+    ``nan`` marks the households where a measurement behind the problem saw
+    a response that is not finite. ``not_held`` names the heads that stopped
+    the second held measurement, where the problem rests on that measurement.
+    ``where`` and ``nan`` are kept for the direct-effect step and dropped
     before the result is reported.
     """
     # Only households with weight count towards a published count.
     count = int(np.count_nonzero(where & (weights > 0)))
     base = float(np.sum(weights * perturbed))
     share = float(np.sum(weights * where)) / base if base else 0.0
+    not_finite = bool((where & nan).any())
+    text = _problem_text(kind, head, component, not_finite)
+    message = f"{total}: {text} in {count_text(count, 'households')}"
+    if not_held:
+        message += _not_held_text(list(not_held), head, component)
     return {
         "total": total,
         "head": head,
         "kind": kind,
         "households": count,
         "share": share,
-        "message": f"{total}: {text} in {count_text(count, 'households')}",
+        "message": message,
+        "not_finite": not_finite,
+        "heads_not_held": list(not_held),
         "where": where,
-        "text": text,
+        "nan": nan,
     }
 
 
@@ -389,20 +430,17 @@ def judge_total(
 
     Returns per-unit responses (for reports) and a list of problems, each a
     mapping with ``total``, ``head``, ``kind``, ``households`` (count),
-    ``share`` (of the weight perturbed), ``message`` and the households'
-    mask ``where``.
+    ``share`` (of the weight perturbed), ``message``, ``not_finite``, the
+    households' mask ``where`` and the mask ``nan`` of households whose
+    judged response is not finite.
     """
     added = float(np.sum(weights * expected))
     allowed = set(allowed_readers)
     perturbed = expected > 0
     responses, problems, screens, own_problem = {}, [], [], None
 
-    def problem(head, kind, where, text):
-        return _problem(total, head, kind, where, text, weights, perturbed)
-
-    def containment(head, response=None, where=None):
-        finite = response is None or bool(np.isfinite(response[where]).all())
-        return _containment_text(head, component, finite)
+    def problem(head, kind, where, nan):
+        return _problem(total, head, kind, component, where, weights, perturbed, nan)
 
     for variable, change in head_changes.items():
         responses[variable] = float(np.sum(weights * change)) / added if added else 0.0
@@ -410,12 +448,7 @@ def judge_total(
         if variable == own_variable:
             off = (np.abs(change - expected) > slack) | ~np.isfinite(change)
             if off.any():
-                own_problem = problem(
-                    variable,
-                    "own_head",
-                    off,
-                    f"{variable} does not move by exactly what was added to {component}",
-                )
+                own_problem = problem(variable, "own_head", off, ~np.isfinite(change))
             continue
         reader = variable in allowed or (zero_baseline and not is_tax)
         if reader:
@@ -432,7 +465,7 @@ def judge_total(
                 linear = perturbed & (np.abs(slope) > 2 * response_slack) & ~containing
                 if linear.any():
                     screens.append(
-                        problem(variable, "contains", linear, containment(variable))
+                        problem(variable, "contains", linear, ~np.isfinite(slope))
                     )
             else:
                 slope = change
@@ -442,38 +475,16 @@ def judge_total(
             containing = containing | ~np.isfinite(slope)
             if containing.any():
                 problems.append(
-                    problem(
-                        variable,
-                        "contains",
-                        containing,
-                        containment(variable, slope, containing),
-                    )
+                    problem(variable, "contains", containing, ~np.isfinite(slope))
                 )
         elif is_tax:
             moved = _moves(change, expected)
             if moved.any():
-                problems.append(
-                    problem(
-                        variable,
-                        "moves",
-                        moved,
-                        f"{variable} moves when {component} does",
-                    )
-                )
+                problems.append(problem(variable, "moves", moved, ~np.isfinite(change)))
         else:
             rises = _rises(change, slack)
             if rises.any():
-                finite = bool(np.isfinite(change[rises]).all())
-                problems.append(
-                    problem(
-                        variable,
-                        "rises",
-                        rises,
-                        f"{variable} rises when {component} does"
-                        if finite
-                        else f"{variable} rises, or is not finite, when {component} does",
-                    )
-                )
+                problems.append(problem(variable, "rises", rises, ~np.isfinite(change)))
     partition_coefficient = float(sum(responses.values()))
     model_coefficient = None
     if model_change is not None:
@@ -487,17 +498,7 @@ def judge_total(
         beyond = np.abs(model_change - heads_change) > _slack(model_scale)
         mismatch = beyond | not_finite
         if mismatch.any():
-            moves = "moves by other than its heads"
-            if not_finite.any():
-                moves += ", or is not finite,"
-            problems.append(
-                problem(
-                    total,
-                    "model_total",
-                    mismatch,
-                    f"the model's {total} {moves} when {component} does",
-                )
-            )
+            problems.append(problem(total, "model_total", mismatch, not_finite))
     return {
         "responses": responses,
         "coefficient": partition_coefficient,
@@ -592,6 +593,13 @@ def _held_breaks(kind, where, expected, slack, first, second, slope_held, unrun)
     return held_at_baseline | breaks_on_slope(kind, where, expected, slack, slope_held)
 
 
+def _held_nan(kind, first, second, slope_held):
+    """Households where a held measurement that judges ``kind`` (see
+    ``_held_breaks``) saw a response that is not finite."""
+    used = [first, slope_held] + ([second] if kind == "contains" else [])
+    return np.logical_or.reduce([~np.isfinite(m) for m in used if m is not None])
+
+
 DIRECT_KINDS = ("contains", "rises", "moves")
 
 
@@ -657,6 +665,8 @@ def counted_once(
                 "responses": {},
                 "problems": [],
                 "mediated": [],
+                "heads_held_skipped": False,
+                "heads_not_held": {},
                 "units": 0,
                 "status": "pass",
                 "detail": "",
@@ -808,11 +818,15 @@ def counted_once(
                 # switched it off above. It holds them only at finite values:
                 # the engine refuses NaN as an input, and an infinite amount is
                 # no level to hold. When another head's response is not finite
-                # the test does not run (slope_held stays None).
+                # the test does not run (slope_held stays None), and the
+                # result names the heads that stopped it.
                 _perturb(sim, variable, year, baseline, added, monthly, touched=touched)
                 at_first = _capture(sim, held, year, baseline)
+                not_held = [v for v in held if not _finite(at_first[v])]
                 slope_held = None
-                if all(_finite(at_first[v]) for v in held):
+                if not_held:
+                    record["heads_not_held"][head] = not_held
+                else:
                     head_first = _head_arrays(sim, year, [head])[head]
                     _perturb(
                         sim,
@@ -835,6 +849,8 @@ def counted_once(
                         kept.append(p)
                         continue
                     # A measurement that did not run clears no household.
+                    # Where the baseline hold alone would clear one, the
+                    # problem rests on that measurement.
                     direct = _held_breaks(
                         p["kind"],
                         p["where"],
@@ -844,6 +860,12 @@ def counted_once(
                         second,
                         slope_held,
                         unrun=p["where"],
+                    )
+                    at_baseline = still_breaks(
+                        p["kind"], p["where"], expected, slack, first, second
+                    )
+                    unresolved = slope_held is None and bool(
+                        (direct & ~at_baseline).any()
                     )
                     cleared = p["where"] & ~direct
                     if cleared.any():
@@ -875,10 +897,13 @@ def counted_once(
                                 p["total"],
                                 head,
                                 p["kind"],
+                                variable,
                                 direct,
-                                p["text"],
                                 hw,
                                 perturbed_units,
+                                p["nan"]
+                                | _held_nan(p["kind"], first, second, slope_held),
+                                not_held if unresolved else (),
                             )
                         )
                 # A linear response that was not one for one may hide a
@@ -899,11 +924,7 @@ def counted_once(
                     )
                     if not direct.any():
                         continue
-                    finite = all(
-                        bool(np.isfinite(measured[direct]).all())
-                        for measured in (first, second, slope_held)
-                        if measured is not None
-                    )
+                    nan, unheld = _held_nan("contains", first, second, slope_held), ()
                     same = next(
                         (
                             k
@@ -916,24 +937,27 @@ def counted_once(
                     if same is not None:
                         kept.remove(same)
                         direct = direct | same["where"]
-                        finite = finite and same["text"] == screen["text"]
+                        nan, unheld = nan | same["nan"], same["heads_not_held"]
                     kept.append(
                         _problem(
                             screen["total"],
                             head,
                             "contains",
+                            variable,
                             direct,
-                            _containment_text(head, variable, finite),
                             hw,
                             perturbed_units,
+                            nan,
+                            unheld,
                         )
                     )
                 problems = kept
             problems = [
-                {k: v for k, v in p.items() if k not in ("where", "text")}
+                {k: v for k, v in p.items() if k not in ("where", "nan")}
                 for p in problems
             ]
             record["mediated"] = mediated
+            record["heads_held_skipped"] = bool(record["heads_not_held"])
             if variable in declared:
                 dc = declared[variable]
                 container_change = heads1[own] - heads0[own]
@@ -948,6 +972,7 @@ def counted_once(
                     "coefficient": k,
                     "issue": dc.issue,
                     "status": "pass" if present else "fail",
+                    "not_finite": not finite,
                     "detail": ""
                     if present
                     else (
@@ -958,13 +983,9 @@ def counted_once(
                 }
                 if not finite:
                     # Not a stale declaration: the check cannot tell.
-                    row.update(
-                        not_finite=True,
-                        detail=(
-                            f"{dc.contained_in} is not finite when {variable} "
-                            "rises, so the check cannot show that it still "
-                            f"contains {variable}"
-                        ),
+                    row["detail"] = (
+                        f"{dc.contained_in} is not finite when {variable} rises, "
+                        f"so the check cannot show that it still contains {variable}"
                     )
                 double_count_results.append(row)
             if problems:

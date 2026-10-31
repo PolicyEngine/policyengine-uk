@@ -12,6 +12,8 @@ from hypothesis import example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk.utils.aggregate_impact.guard import (
+    _finite,
+    _held_breaks,
     _response_slack,
     _slack,
     breaks_on_slope,
@@ -730,7 +732,9 @@ def test_two_heads_that_turn_not_finite_fail_by_name(response, route):
     """Issue #2759: tax_c, and tax_a directly or through tax_c, turn not
     finite when tax_b rises. The engine refuses NaN as an input, so the
     check cannot hold either head at its value after the first point. It
-    names both, and goes on to check tax_c."""
+    names both, and goes on to check tax_c. Holding tax_c at its baseline
+    value stops tax_a responding through tax_c, so that failure rests on the
+    measurement that did not run, and its message says so."""
     turn = NOT_FINITE[response]
     formulas = model(contains=False)
     formulas["tax_c"] = lambda f: turn(f("tax_b"), 5.0)
@@ -746,19 +750,33 @@ def test_two_heads_that_turn_not_finite_fail_by_name(response, route):
     assert list(rows) == ["tax_a", "tax_b", "tax_c"]
     assert rows["tax_b"]["status"] == "fail" and rows["tax_b"]["mediated"] == []
     assert {("tax_a", "moves"), ("tax_c", "moves")} <= kinds(rows["tax_b"])
+    assert rows["tax_b"]["heads_held_skipped"]
+    assert rows["tax_b"]["heads_not_held"] == {"tax_a": ["tax_c"], "tax_c": ["tax_a"]}
+    found = messages(rows["tax_b"])
+    unheld = (
+        " (the check could not hold tax_c, which is not finite once tax_b rises, "
+        "so it could not show that tax_a responds only through other heads)"
+    )
+    assert found[("tax_a", "moves")] == (
+        "gov_tax: tax_a moves, or is not finite, when tax_b does in fewer than 10 "
+        "households" + (unheld if route == "mediated" else "")
+    )
+    assert found[("tax_c", "moves")] == (
+        "gov_tax: tax_c moves, or is not finite, when tax_b does in fewer than 10 "
+        "households"
+    )
+    assert all(p["not_finite"] for p in rows["tax_b"]["problems"])
     assert rows["tax_a"]["status"] == rows["tax_c"]["status"] == "pass"
     assert result["reset_reproduces_baseline"]
 
 
-@pytest.mark.parametrize("monthly", [False, True], ids=["yearly", "monthly"])
-def test_two_heads_that_turn_nan_on_core_fail_by_name_and_the_check_goes_on(
-    monthly,
-):
-    """Issue #2759, on policyengine-core: tax_a and tax_c are each
-    sqrt(5 - tax_b), and tax_b starts at 5 (a year, or each month). Holding
-    one at its NaN value after the first point raised the engine's
-    ValueError; the check now names both heads and checks every other
-    component."""
+def core_counted_once(formulas, part, monthly):
+    """counted_once on a policyengine-core simulation of one household.
+
+    ``formulas`` maps each head to None (an input, 5 in every period) or a
+    function of a reader by name and the period. Heads are monthly or
+    yearly; gov_tax and household_weight are yearly.
+    """
     from policyengine_core.country_template import CountryTaxBenefitSystem
     from policyengine_core.country_template.entities import Household
     from policyengine_core.periods import MONTH, YEAR as YEARLY
@@ -775,23 +793,26 @@ def test_two_heads_that_turn_nan_on_core_fail_by_name_and_the_check_goes_on(
         }
         if formula is not None:
             attributes["formula"] = lambda household, period: formula(
-                lambda other: household(other, period)
+                lambda other: household(other, period), period
             )
         return type(name, (Variable,), attributes)
 
     system = CountryTaxBenefitSystem()
-    for variable in (
-        household_variable("tax_b", default=5.0),
-        household_variable("tax_a", lambda f: np.sqrt(5 - f("tax_b"))),
-        household_variable("tax_c", lambda f: np.sqrt(5 - f("tax_b"))),
+    for name, formula in formulas.items():
+        system.update_variable(
+            household_variable(name, formula, default=5.0 if formula is None else 0.0)
+        )
+    heads = list(formulas)
+    system.update_variable(
         household_variable(
             "gov_tax",
-            lambda f: f("tax_a") + f("tax_b") + f("tax_c"),
+            lambda f, period: sum(f(head) for head in heads),
             definition_period=YEARLY,
-        ),
-        household_variable("household_weight", definition_period=YEARLY),
-    ):
-        system.update_variable(variable)
+        )
+    )
+    system.update_variable(
+        household_variable("household_weight", definition_period=YEARLY)
+    )
     sim = Simulation(
         tax_benefit_system=system,
         situation={
@@ -802,16 +823,285 @@ def test_two_heads_that_turn_nan_on_core_fail_by_name_and_the_check_goes_on(
         },
     )
     with np.errstate(invalid="ignore"):
-        result = counted_once(sim, partition(["tax_a", "tax_b", "tax_c"]), YEAR, 1e-6)
+        return sim, counted_once(sim, part, YEAR, 1e-6)
+
+
+@pytest.mark.parametrize("monthly", [False, True], ids=["yearly", "monthly"])
+def test_two_heads_that_turn_nan_on_core_fail_by_name_and_the_check_goes_on(
+    monthly,
+):
+    """Issue #2759, on policyengine-core: tax_a and tax_c are each
+    sqrt(5 - tax_b), and tax_b starts at 5 (a year, or each month). The
+    engine refuses NaN as an input, so the check cannot hold either head at
+    its value after the first point. It names both heads and checks every
+    other component."""
+    sim, result = core_counted_once(
+        {
+            "tax_b": None,
+            "tax_a": lambda f, period: np.sqrt(5 - f("tax_b")),
+            "tax_c": lambda f, period: np.sqrt(5 - f("tax_b")),
+        },
+        partition(["tax_a", "tax_b", "tax_c"]),
+        monthly,
+    )
     rows = by_variable(result)
     assert list(rows) == ["tax_a", "tax_b", "tax_c"]
     assert rows["tax_b"]["status"] == "fail"
     assert {("tax_a", "moves"), ("tax_c", "moves")} <= kinds(rows["tax_b"])
-    assert "tax_a moves" in rows["tax_b"]["detail"]
-    assert "tax_c moves" in rows["tax_b"]["detail"]
+    assert "tax_a moves, or is not finite," in rows["tax_b"]["detail"]
+    assert "tax_c moves, or is not finite," in rows["tax_b"]["detail"]
+    assert rows["tax_b"]["heads_not_held"] == {"tax_a": ["tax_c"], "tax_c": ["tax_a"]}
     assert rows["tax_a"]["status"] == rows["tax_c"]["status"] == "pass"
     assert result["reset_reproduces_baseline"]
     assert np.isfinite(sim.calculate("tax_a", YEAR)).all()
+
+
+def test_a_head_not_finite_in_one_month_is_not_held():
+    """tax_c is sqrt(5 - tax_b) in January and 0 in every other month, so
+    raising tax_b (by 1/12 each month) makes it NaN in January alone. The
+    check holds no head at a value that is not finite in any month: it
+    measures tax_a again only with tax_c at its baseline, where tax_a still
+    moves, and names tax_c as the head it could not hold."""
+    sim, result = core_counted_once(
+        {
+            "tax_b": None,
+            "tax_a": lambda f, period: 0.5 * f("tax_b"),
+            "tax_c": lambda f, period: (
+                np.sqrt(5 - f("tax_b")) if period.start.month == 1 else 0 * f("tax_b")
+            ),
+        },
+        partition(["tax_a", "tax_b", "tax_c"]),
+        monthly=True,
+    )
+    rows = by_variable(result)
+    assert list(rows) == ["tax_a", "tax_b", "tax_c"]
+    assert rows["tax_b"]["heads_not_held"] == {"tax_a": ["tax_c"]}
+    assert messages(rows["tax_b"]) == {
+        ("tax_a", "moves"): (
+            "gov_tax: tax_a moves when tax_b does in fewer than 10 households"
+        ),
+        ("tax_c", "moves"): (
+            "gov_tax: tax_c moves, or is not finite, when tax_b does in fewer than "
+            "10 households"
+        ),
+        ("gov_tax", "model_total"): (
+            "gov_tax: the model's gov_tax moves by other than its heads, or is not "
+            "finite, when tax_b does in fewer than 10 households"
+        ),
+    }
+    assert result["reset_reproduces_baseline"]
+
+
+def mediated_tax_model(ben_c):
+    """tax_a responds to tax_b only through tax_d, which declares its read
+    of tax_b; ben_c, in the other total, is ``ben_c`` of tax_b."""
+    return {
+        "tax_b": lambda f: 5.0 + 0 * f("x"),
+        "tax_d": lambda f: 0.2 * f("tax_b"),
+        "tax_a": lambda f: 0.5 * f("tax_d"),
+        "gov_tax": lambda f: f("tax_a") + f("tax_b") + f("tax_d"),
+        "ben_c": lambda f: ben_c(f("tax_b")),
+        "gov_spending": lambda f: f("ben_c"),
+    }
+
+
+MEDIATED_TAX = partition(
+    ["tax_a", "tax_b", "tax_d"], ["ben_c"], reads={"tax_d": ["tax_b"]}
+)
+
+
+@pytest.mark.parametrize("households", [1, 12])
+def test_a_failure_that_rests_on_a_held_measurement_that_did_not_run_says_so(
+    households,
+):
+    """ben_c turns NaN once tax_b rises, so the check cannot hold it at its
+    value after the first point. Every tax response stays finite. Holding
+    tax_d at its baseline value stops tax_a moving, but without the second
+    measurement the check cannot show that tax_a responds only through other
+    heads: tax_a still fails, and its message says why."""
+    formulas = mediated_tax_model(lambda tax_b: np.sqrt(5 - tax_b))
+    _, result = run_not_finite(
+        formulas, MEDIATED_TAX, x=(1,) * households, weights=(1,) * households
+    )
+    row = by_variable(result)["tax_b"]
+    assert all(np.isfinite(v) for v in row["responses"]["gov_tax"].values())
+    (problem,) = row["problems"]
+    count = "fewer than 10" if households < 10 else str(households)
+    assert problem["message"] == (
+        f"gov_tax: tax_a moves when tax_b does in {count} households (the check "
+        "could not hold ben_c, which is not finite once tax_b rises, so it could "
+        "not show that tax_a responds only through other heads)"
+    )
+    assert not problem["not_finite"] and problem["heads_not_held"] == ["ben_c"]
+    assert row["mediated"] == []
+    assert row["heads_held_skipped"]
+    assert row["heads_not_held"] == {"tax_a": ["ben_c"], "tax_d": ["ben_c"]}
+    # With ben_c finite, both measurements run and show the route.
+    _, finite = run(
+        mediated_tax_model(lambda tax_b: 0 * tax_b),
+        MEDIATED_TAX,
+        x=(1,) * households,
+        weights=(1,) * households,
+    )
+    row = by_variable(finite)["tax_b"]
+    assert row["status"] == "pass" and not row["heads_held_skipped"]
+    assert row["mediated"] == [
+        {
+            "total": "gov_tax",
+            "head": "tax_a",
+            "kind": "moves",
+            "households": households,
+            "via": ["tax_d"],
+        }
+    ]
+
+
+@pytest.mark.parametrize("total", ["gov_tax", "gov_spending"])
+def test_a_failure_whose_held_measurements_turn_nan_says_so(total):
+    """head_c moves one for one with head_b, and head_a rises one for one
+    with both: a finite response. With head_c held, head_a is the square
+    root of a negative number, so both held measurements see NaN and the
+    message says the response may not be finite. As a tax, head_a declares
+    its reads and the problem is a containment; as a benefit, a rise."""
+    tax = total == "gov_tax"
+    b, c, a = ("tax_b", "tax_c", "tax_a") if tax else ("ben_b", "ben_c", "ben_a")
+    formulas = {
+        b: lambda f: 5.0 + 0 * f("x"),
+        c: lambda f: f(b),
+        a: lambda f: f(c) + np.sqrt(f(c) - f(b)),
+        total: lambda f: f(a) + f(b) + f(c),
+    }
+    heads = [a, b, c]
+    part = partition(heads, reads={a: [b, c]}) if tax else partition(["x_tax"], heads)
+    if not tax:
+        formulas.update(x_tax=lambda f: 0 * f("x"), gov_tax=lambda f: f("x_tax"))
+    _, result = run_not_finite(formulas, part, x=(1,), weights=(1,))
+    row = by_variable(result)[b]
+    assert row["responses"][total][a] == pytest.approx(1)
+    (problem,) = [p for p in row["problems"] if p["head"] == a]
+    assert problem["not_finite"] and problem["heads_not_held"] == []
+    assert problem["message"] == (
+        f"{total}: {a} rises one for one with {b}, or is not finite, in fewer "
+        "than 10 households"
+        if tax
+        else f"{total}: {a} rises, or is not finite, when {b} does in fewer than "
+        "10 households"
+    )
+    # head_c's own response and both held measurements stay finite.
+    (other,) = [p for p in row["problems"] if p["head"] == c]
+    assert not other["not_finite"] and "not finite" not in other["message"]
+    assert not row["heads_held_skipped"]
+
+
+@pytest.mark.parametrize("response", NOT_FINITE)
+def test_a_screen_the_check_could_not_hold_heads_for_confirms_nothing(response):
+    """tax_a declares its read of tax_b and responds with a slope of 0.5, so
+    the check measures it again. ben_c, in the other total, turns not finite,
+    so only the baseline hold runs; it shows a slope of 0.5, and tax_b
+    passes. The result and the report name the head the check could not
+    hold."""
+    from policyengine_uk.utils.aggregate_impact.measure import publishable_guard
+    from policyengine_uk.utils.aggregate_impact.render import _guard
+
+    turn = NOT_FINITE[response]
+    formulas = model(contains=False)
+    formulas["tax_a"] = lambda f: 0.1 * f("x") + 0.5 * f("tax_b")
+    formulas["ben_c"] = lambda f: turn(f("tax_b"), 5.0)
+    formulas["gov_spending"] = lambda f: f("ben_c")
+    part = partition(["tax_a", "tax_b"], ["ben_c"], reads={"tax_a": ["tax_b"]})
+    _, result = run_not_finite(formulas, part, x=(1,), weights=(1,))
+    row = by_variable(result)["tax_b"]
+    assert row["status"] == "pass" and row["problems"] == []
+    assert row["heads_held_skipped"] and row["heads_not_held"] == {"tax_a": ["ben_c"]}
+    text = _guard({"head": {"guard": publishable_guard(result)}})
+    assert (
+        "- `tax_b`: the check could not hold `ben_c`, which is not finite once "
+        "`tax_b` rises, so it measured `tax_a` again only with the other heads at "
+        "their baseline values"
+    ) in text
+    assert "0 failed and the check skipped 0" in text
+
+
+@pytest.mark.parametrize("households", [1, 12])
+def test_the_published_report_keeps_the_heads_not_held_and_no_small_counts(
+    households,
+):
+    """The heads the check could not hold carry no figures, so the published
+    guard keeps them; a problem in fewer than 10 households keeps no count
+    or share."""
+    from policyengine_uk.utils.aggregate_impact.measure import publishable_guard
+    from policyengine_uk.utils.aggregate_impact.render import _guard
+
+    formulas = mediated_tax_model(lambda tax_b: np.sqrt(5 - tax_b))
+    _, result = run_not_finite(
+        formulas, MEDIATED_TAX, x=(1,) * households, weights=(1,) * households
+    )
+    published = by_variable(publishable_guard(result))["tax_b"]
+    (problem,) = published["problems"]
+    assert problem["heads_not_held"] == ["ben_c"] and not problem["not_finite"]
+    assert published["heads_held_skipped"]
+    assert published["heads_not_held"] == {"tax_a": ["ben_c"], "tax_d": ["ben_c"]}
+    if households < 10:
+        assert problem["households"] is None and "share" not in problem
+        assert published["units"] is None and published["responses"] == {}
+    else:
+        assert problem["households"] == households and problem["share"] == 1.0
+    text = _guard({"head": {"guard": publishable_guard(result)}})
+    assert f"- `tax_b`: {problem['message']}" in text
+    for head in ("tax_a", "tax_d"):
+        assert (
+            "- `tax_b`: the check could not hold `ben_c`, which is not finite once "
+            f"`tax_b` rises, so it measured `{head}` again only with the other "
+            "heads at their baseline values"
+        ) in text
+    # tax_d fails too: tax_a moves with it, and nothing stops either hold.
+    assert "2 failed and the check skipped 0" in text
+
+
+MONTH_VALUES = st.lists(
+    st.sampled_from([0.0, 1.5, -2.0, np.inf, -np.inf, np.nan]), min_size=1, max_size=3
+)
+
+
+@settings(max_examples=100, deadline=None)
+@given(months=st.lists(MONTH_VALUES, min_size=1, max_size=12))
+def test_a_layout_is_finite_only_when_every_month_is(months):
+    """A monthly layout holds only finite values exactly when every month
+    does: one month that is not finite stops the second held measurement."""
+    finite = all(np.isfinite(values).all() for values in months)
+    layout = [(f"2026-{i + 1:02d}", np.array(v)) for i, v in enumerate(months)]
+    assert _finite(layout) == finite
+    assert _finite(np.concatenate([np.array(v) for v in months])) == finite
+
+
+@pytest.mark.parametrize("kind", ["contains", "rises", "moves"])
+@settings(max_examples=60, deadline=None)
+@given(
+    households=st.lists(
+        st.tuples(
+            st.booleans(),
+            st.one_of(st.just(0.0), st.floats(1e-6, 1e6)),
+            st.floats(-1e9, 1e9),
+            st.floats(-1e9, 1e9),
+        ),
+        min_size=1,
+        max_size=6,
+    ),
+    two_points=st.booleans(),
+)
+def test_a_held_measurement_that_did_not_run_adds_and_clears_nothing(
+    kind, households, two_points
+):
+    """Without the second held measurement, a problem keeps every household
+    it was given, and a screen keeps only those the baseline hold still
+    breaks."""
+    where, expected, first, second = (np.array(c) for c in zip(*households))
+    second = second if two_points and kind == "contains" else None
+    slack = _slack(np.zeros_like(expected))
+    at_baseline = still_breaks(kind, where, expected, slack, first, second)
+    args = (kind, where, expected, slack, first, second, None)
+    assert np.array_equal(_held_breaks(*args, unrun=where), where)
+    assert np.array_equal(_held_breaks(*args, unrun=np.zeros_like(where)), at_baseline)
 
 
 @settings(max_examples=40, deadline=None)
@@ -859,19 +1149,196 @@ def test_the_check_names_every_head_that_turns_not_finite_and_goes_on(
     assert result["reset_reproduces_baseline"]
 
 
+# Heads for the property below. Tax heads read tax_b (5 at baseline), and
+# tax_d may read tax_c instead; ben_f reads ben_e (100), or turns with tax_b.
+TAX_SHAPES = {
+    "flat": lambda f: 0.1 * f("x"),
+    "half": lambda f: 0.5 * f("tax_b"),
+    "one for one": lambda f: f("tax_b"),
+    **{
+        name: (lambda f, turn=turn: turn(f("tax_b"), 5.0))
+        for name, turn in NOT_FINITE.items()
+    },
+}
+CHAINS = {
+    "twice tax_c": lambda f: 2 * f("tax_c"),
+    "half tax_c": lambda f: 0.5 * f("tax_c"),
+}
+BEN_SHAPES = {
+    "flat": lambda f: 100 + 0 * f("x"),
+    "half": lambda f: 0.5 * f("ben_e"),
+    "one for one": lambda f: f("ben_e"),
+    **{
+        name: (lambda f, turn=turn: turn(f("ben_e"), 100.0))
+        for name, turn in NOT_FINITE.items()
+    },
+    **{
+        f"{name} with tax_b": (lambda f, turn=turn: turn(f("tax_b"), 5.0))
+        for name, turn in NOT_FINITE.items()
+    },
+}
+HEADS_OF = {
+    "gov_tax": ["tax_b", "tax_a", "tax_c", "tax_d"],
+    "gov_spending": ["ben_e", "ben_f"],
+}
+EVERY_HEAD = HEADS_OF["gov_tax"] + HEADS_OF["gov_spending"]
+
+
+class Measurements:
+    """Each measurement behind a problem, computed afresh on the fake
+    simulation of one household: the oracle for the property below. Its
+    responses lie at 0, 0.5, 1, 2 or not finite, far from every rule's
+    boundary, so plain comparisons stand in for the rules."""
+
+    def __init__(self, formulas):
+        self.formulas, self.values = formulas, {}
+        self.base = {v: self.value(v, {}) for v in EVERY_HEAD + list(HEADS_OF)}
+
+    def value(self, variable, inputs):
+        key = (variable, tuple(sorted(inputs.items())))
+        if key not in self.values:
+            inputs = {"x": (1,), **{k: (v,) for k, v in inputs.items()}}
+            with np.errstate(divide="ignore", invalid="ignore"):
+                values = FakeSim(self.formulas, inputs, (1,)).calculate(variable, YEAR)
+            self.values[key] = float(values[0])
+        return self.values[key]
+
+    def raised(self, component, steps, **held):
+        return {component: self.base[component] + steps, **held}
+
+    def not_held(self, component, head):
+        """The heads the second held measurement of ``head`` could not hold."""
+        return [
+            v
+            for v in EVERY_HEAD
+            if v not in (component, head)
+            and not np.isfinite(self.value(v, self.raised(component, 1)))
+        ]
+
+    def problem(self, component, total, head, kind):
+        """Whether a measurement behind the problem saw a response that is
+        not finite, and the heads the problem rests on not holding."""
+        base, value, raised = self.base, self.value, self.raised
+        if kind == "model_total":
+            responses = [value(total, raised(component, 1)) - base[total]] + [
+                value(v, raised(component, 1)) - base[v] for v in HEADS_OF[total]
+            ]
+            return not np.isfinite(responses).all(), []
+        if kind == "own_head":
+            return not np.isfinite(value(head, raised(component, 1))), []
+        at_first = value(head, raised(component, 1))
+        initial = (
+            value(head, raised(component, 2)) - at_first
+            if kind == "contains"
+            else at_first - base[head]
+        )
+        held = {v: base[v] for v in EVERY_HEAD if v not in (component, head)}
+        first = value(head, raised(component, 1, **held)) - base[head]
+        second = value(head, raised(component, 2, **held)) - base[head]
+        not_held = self.not_held(component, head)
+        measured = [initial, first] + ([second] if kind == "contains" else [])
+        if not not_held:
+            held = {v: value(v, raised(component, 1)) for v in held}
+            measured.append(value(head, raised(component, 2, **held)) - at_first)
+        judged = second - first if kind == "contains" else first
+        if not np.isfinite(judged):
+            breaks = True
+        elif kind == "contains":
+            breaks = abs(judged - 1) < 1e-9
+        else:
+            breaks = abs(judged) > 1e-9 if kind == "moves" else judged > 1e-9
+        return not np.isfinite(measured).all(), [] if breaks else not_held
+
+
+@settings(max_examples=120, deadline=None)
+@given(
+    shapes=st.tuples(
+        st.sampled_from(sorted(TAX_SHAPES)),
+        st.sampled_from(sorted(TAX_SHAPES)),
+        st.sampled_from(sorted(TAX_SHAPES) + sorted(CHAINS)),
+        st.sampled_from(sorted(BEN_SHAPES)),
+    ),
+    reads=st.lists(st.booleans(), min_size=6, max_size=6),
+)
+def test_every_problem_says_whether_a_measurement_behind_it_was_not_finite(
+    shapes, reads
+):
+    """For every problem, ``not_finite`` says whether a measurement behind
+    it (the first reading, or a held measurement that ran) saw a response
+    that is not finite, and ``heads_not_held`` names the heads that stopped
+    the second held measurement exactly when the baseline hold alone would
+    have cleared it. Each component names those heads for every head it
+    measured again, and clears nothing through a measurement that did not
+    run. A model whose responses stay finite sets none of these."""
+    formulas = {
+        "tax_b": lambda f: 5.0 + 0 * f("x"),
+        "tax_a": TAX_SHAPES[shapes[0]],
+        "tax_c": TAX_SHAPES[shapes[1]],
+        "tax_d": {**TAX_SHAPES, **CHAINS}[shapes[2]],
+        "ben_e": lambda f: 100 + 0 * f("x"),
+        "ben_f": BEN_SHAPES[shapes[3]],
+        **{
+            total: (lambda f, heads=heads: sum(f(v) for v in heads))
+            for total, heads in HEADS_OF.items()
+        },
+    }
+    candidates = [
+        ("tax_a", "tax_b"),
+        ("tax_a", "tax_c"),
+        ("tax_c", "tax_b"),
+        ("tax_d", "tax_b"),
+        ("tax_d", "tax_c"),
+        ("ben_f", "ben_e"),
+    ]
+    declared = {}
+    for (head, read), on in zip(candidates, reads):
+        if on:
+            declared.setdefault(head, []).append(read)
+    part = partition(HEADS_OF["gov_tax"], HEADS_OF["gov_spending"], reads=declared)
+    _, result = run_not_finite(formulas, part, x=(1,), weights=(1,))
+    oracle = Measurements(formulas)
+    finite = not any(
+        shape in NOT_FINITE or shape.endswith("with tax_b") for shape in shapes
+    )
+    for row in result["components"]:
+        component = row["variable"]
+        assert row["heads_held_skipped"] == bool(row["heads_not_held"])
+        for head, heads in row["heads_not_held"].items():
+            assert heads == oracle.not_held(component, head)
+        for problem in row["problems"]:
+            not_finite, unheld = oracle.problem(
+                component, problem["total"], problem["head"], problem["kind"]
+            )
+            assert problem["not_finite"] == not_finite
+            assert (", or is not finite," in problem["message"]) == not_finite
+            assert problem["heads_not_held"] == unheld
+            assert ("could not hold" in problem["message"]) == bool(unheld)
+            if problem["kind"] in ("contains", "rises", "moves"):
+                stopped = oracle.not_held(component, problem["head"])
+                assert row["heads_not_held"].get(problem["head"], []) == stopped
+        for mediated in row["mediated"]:
+            assert oracle.not_held(component, mediated["head"]) == []
+        if finite:
+            assert not row["heads_held_skipped"]
+            assert not any(p["not_finite"] for p in row["problems"])
+    assert result["reset_reproduces_baseline"]
+
+
 CHECKS = (
     "own_head",
     "contains",
     "contains, first point",
     "contains, second point",
     "rises",
+    "moves",
     "model_total",
 )
 
 
 def judged(check, expected, response, tax_level=0.0):
-    """Households where judge_total finds ``check`` broken, given
-    ``response`` as the change of the head (or total) that check judges.
+    """Households where judge_total finds ``check`` broken, and the problems
+    it reports, given ``response`` as the change of the head (or total) that
+    check judges.
 
     "contains, first point" gives ``response`` as tax_a's change at the first
     point, then 2 per unit added; "contains, second point" gives no change at
@@ -910,16 +1377,19 @@ def judged(check, expected, response, tax_level=0.0):
         )
     if check == "own_head":
         found = verdict["own_problem"]
-        return zeros.astype(bool) if found is None else found["where"]
+        if found is None:
+            return zeros.astype(bool), []
+        return found["where"], [found]
     head, kind = {
         "rises": ("tax_a", "rises"),
+        "moves": ("tax_a", "moves"),
         "model_total": ("gov_tax", "model_total"),
     }.get(check, ("tax_a", "contains"))
     found = zeros.astype(bool)
     for problem in verdict["problems"]:
         assert (problem["head"], problem["kind"]) == (head, kind)
         found = found | problem["where"]
-    return found
+    return found, verdict["problems"]
 
 
 @pytest.mark.parametrize(
@@ -940,11 +1410,52 @@ def test_a_non_finite_response_fails_every_check(
     check, value, households, at, tax_level
 ):
     """Issue #2759: in every household where the judged response is
-    infinite or NaN, the check fails, whatever else the households hold."""
+    infinite or NaN, the check fails, whatever else the households hold, and
+    the problem covering it says the response may not be finite."""
     expected, response = (np.array(column) for column in zip(*households))
     response[at % len(response)] = value
-    found = judged(check, expected, response, tax_level)
+    found, problems = judged(check, expected, response, tax_level)
     assert found[~np.isfinite(response)].all()
+    for problem in problems:
+        not_finite = bool((problem["where"] & ~np.isfinite(response)).any())
+        assert problem["not_finite"] == not_finite
+        assert (", or is not finite," in problem["message"]) == not_finite
+        assert problem["heads_not_held"] == []
+
+
+# What each check says when the response breaks it with a finite value, and
+# when it is not finite.
+TEXTS = {
+    "own_head": (0.0, "tax_b does not move by exactly what was added to tax_b{}"),
+    "contains": (1.0, "tax_a rises one for one with tax_b{}"),
+    "contains, first point": (1.0, "tax_a rises one for one with tax_b{}"),
+    "contains, second point": (1.0, "tax_a rises one for one with tax_b{}"),
+    "rises": (1.0, "tax_a rises{} when tax_b does"),
+    "moves": (1.0, "tax_a moves{} when tax_b does"),
+    "model_total": (
+        5.0,
+        "the model's gov_tax moves by other than its heads{} when tax_b does",
+    ),
+}
+
+
+@pytest.mark.parametrize("value", [np.inf, -np.inf, np.nan, "finite"])
+@pytest.mark.parametrize("check", CHECKS)
+def test_every_check_adds_one_clause_when_a_response_is_not_finite(check, value):
+    """Every check says ", or is not finite," when a response behind its
+    problem is not finite, and keeps its finite text word for word. A
+    containment that may not be finite no longer concludes that it contains
+    the component."""
+    breaking, text = TEXTS[check]
+    _, (problem,) = judged(check, [1.0], [breaking if value == "finite" else value])
+    if value == "finite":
+        clause = ", so it contains it," if check.startswith("contains") else ""
+    else:
+        clause = ", or is not finite,"
+    assert problem["message"] == (
+        f"gov_tax: {text.format(clause)} in fewer than 10 households"
+    )
+    assert problem["not_finite"] == (value != "finite")
 
 
 @pytest.mark.parametrize(
@@ -1111,6 +1622,8 @@ def test_finite_responses_keep_every_verdict(
         assert np.array_equal(verdict["own_problem"]["where"], own_off)
     else:
         assert verdict["own_problem"] is None
+    reported = verdict["problems"] + verdict["screens"] + [verdict["own_problem"]]
+    assert not any(p["not_finite"] or p["heads_not_held"] for p in reported if p)
     added = float(np.sum(weights * expected))
     responses = {
         v: float(np.sum(weights * c)) / added if added else 0.0
