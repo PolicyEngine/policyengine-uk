@@ -34,6 +34,7 @@ PRE_BUDGET_CHANGE_HOUSEHOLD_BENEFIT_VARIABLES = [
     "epg_subsidy",
     "cost_of_living_support_payment",
     "energy_bills_rebate",
+    "household_energy_payment",
     "carer_support_payment",
     "scottish_carer_supplement",
     "disability_basic_income",

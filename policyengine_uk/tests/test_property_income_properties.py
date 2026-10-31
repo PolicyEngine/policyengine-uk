@@ -23,7 +23,6 @@ pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
 YEAR = 2027
 ALLOWANCE = 1_000
-PROPERTY_BASIC_RATE = 0.22
 OTHER_EMPLOYMENT_INCOME = [0, 8_000, 13_000, 30_000, 60_000, 110_000, 200_000]
 # Every third person is a Scottish taxpayer.
 SCOTTISH = [i % 3 == 2 for i in range(7)]
@@ -198,7 +197,13 @@ def test_taxable_profit_matches_statutory_reference(sim, drawn):
     ).all()
 
 
+# Finance costs relieved in full below the tax due: the reduction is the
+# whole property basic rate on them (24% from 2027-28 after Budget 2026).
+UNCAPPED_RELIEF = (1_471.59, 57_327.72, 0.0, 500.0, "below_profit", 0.45, 121.28)
+
+
 @SETTINGS
+@example([UNCAPPED_RELIEF] * CASES)
 @given(cases)
 def test_relief_accounting(sim, drawn):
     r = run(sim, drawn)
@@ -232,11 +237,11 @@ def test_relief_accounting(sim, drawn):
     ).all()
     # The reduction is at most the property basic rate on the costs, and at
     # most the Step 5 tax.
+    rate = sim.tax_benefit_system.parameters.gov.hmrc.income_tax.rates.property.basic(
+        f"{YEAR}-04-30"
+    )
     assert (r["relief"] >= 0).all()
-    assert (
-        r["relief"]
-        <= PROPERTY_BASIC_RATE * r["relievable"] + tolerance(r["relievable"])
-    ).all()
+    assert (r["relief"] <= rate * r["relievable"] + tolerance(r["relievable"])).all()
     assert (r["relief"] <= r["pre_charges"] + tolerance(r["pre_charges"])).all()
     # What is not relieved is carried forward; on the allowance route this
     # year's costs are replaced by the allowance and only the amount brought

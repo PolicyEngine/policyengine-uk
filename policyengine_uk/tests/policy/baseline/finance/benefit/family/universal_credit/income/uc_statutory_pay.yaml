@@ -246,15 +246,17 @@
   output:
     # 424.90 x 12 - 0.55 x 400, with no work allowance.
     universal_credit: 4_878.80
-    # The award plus the pay. Without the pay the household has 5,098.80, so
-    # 400 of pay raises its income by 180.
-    household_benefits: 5_278.80
-    household_net_income: 5_278.80
+    # The award plus the pay, plus the £100 Household Energy Payment: band D
+    # (the default) in England. Without the pay the household has
+    # 424.90 x 12 + 100 = 5,198.80, so 400 of pay raises its income by 180.
+    household_benefits: 5_378.80
+    household_net_income: 5_378.80
     # HBAI also counts the £150 Warm Home Discount the Universal Credit
-    # award brings in England, as miscellaneous income.
+    # award brings in England, as miscellaneous income; the Household Energy
+    # Payment is already in household net income.
     warm_home_discount: 150
-    hbai_household_net_income: 5_428.80
-    gov_spending: 5_278.80
+    hbai_household_net_income: 5_528.80
+    gov_spending: 5_378.80
 
 - name: Taxable statutory paternity pay reduces Universal Credit like wages
   # UC Regs 2013 reg. 55(4)(c) and (5): count SPP before deducting its tax.

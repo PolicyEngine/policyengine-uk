@@ -1,4 +1,4 @@
-description: VAT rate on supplies of domestic electricity in England, Wales and Scotland. It is the reduced rate except while the temporary zero rate applies.
+description: VAT rate on supplies of domestic electricity in England, Wales and Scotland. It is the reduced rate except while the temporary zero rate applies, from 1 October 2026 to 30 June 2027.
 values:
   1994-04-01: 0.08
   1997-09-01: 0.05
@@ -10,7 +10,18 @@ values:
           href: https://www.legislation.gov.uk/uksi/2026/987/contents/made
         - title: HMRC Revenue and Customs Brief 10 (2026)
           href: https://www.gov.uk/government/publications/revenue-and-customs-brief-10-2026-temporary-zero-rate-of-vat-for-domestic-electricity-in-great-britain/temporary-zero-rate-of-vat-for-domestic-electricity-in-great-britain
-  2027-04-01: 0.05
+  # SI 2026/987 ends the zero rate on 31 March 2027. Budget 2026 extends it
+  # by three months, to 1 July 2027; that is policy, not yet law.
+  2027-07-01:
+    value: 0.05
+    metadata:
+      reference:
+        - title: Budget 2026, paragraph 6.210 (zero rate extended to 1 July 2027)
+          href: https://assets.publishing.service.gov.uk/media/6ae1ec57bdb574cf1c9b3f12/E03668986_HMT_Budget_2026_ELAY__2_.pdf#page=138
+        - title: Budget 2026 policy costings, page 12 (from 1 October 2026 until 1 July 2027)
+          href: https://assets.publishing.service.gov.uk/media/6ae1883fe4367e5c8b0467df/AB26_Policy_Costing.pdf#page=12
+        - title: Budget 2026, Table 6.1, item 2
+          href: https://assets.publishing.service.gov.uk/media/6ae187a2779378370fd80a9a/Table_6.1_and_6.2_Budget_2026_Policy_Decisions.xlsx
 metadata:
   unit: /1
   period: year
@@ -22,5 +33,6 @@ metadata:
       href: https://www.legislation.gov.uk/uksi/2026/987/contents/made
   # Liability follows the date the electricity is consumed (Revenue and
   # Customs Brief 10 (2026)). Day-weighting the fiscal year assumes equal
-  # daily use: FY 2026-27 has 183 days at 5% and 182 at 0%.
+  # daily use: FY 2026-27 has 178 days at 5% and 187 at 0%, and FY 2027-28
+  # has 86 days at 0% and 280 at 5%.
   fiscal_year_blend: true

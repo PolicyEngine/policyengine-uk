@@ -37,6 +37,7 @@
         members: [without_loss]
   output:
     income_tax: [3_486, 5_486]
-    # -10,000 of loss + 2,000 of Income Tax saved.
-    hbai_household_net_income: [24_320, 32_320]
-    household_net_income: [24_140, 32_140]
+    # -10,000 of loss + 2,000 of Income Tax saved. Both include the £100
+    # Household Energy Payment (band D, the default, in England).
+    hbai_household_net_income: [24_420, 32_420]
+    household_net_income: [24_240, 32_240]
