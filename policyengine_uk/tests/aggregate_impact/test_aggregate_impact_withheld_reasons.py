@@ -326,11 +326,15 @@ def test_a_small_change_in_another_reforms_target_names_that_target():
 
 
 def test_a_year_without_baseline_records_says_so():
+    """The reform changes one household's income tax, a small change, but
+    with no baseline record the tool tests nothing else: no_baseline alone
+    says nothing about how many records the reform changes."""
     rec = Recorder()
     reform = parse_reforms({"reforms": [{"name": "Any", "parameters": {"a": 1}}]})
     world = {y: _world(np.full(N, 1.0), np.full(N, 1.0)) for y in (2025, 2026)}
+    reformed = {y: dict(w, income_tax=_first(1, 2.0, 1.0)) for y, w in world.items()}
     measure_reforms(
-        lambda reform=None: WorldSim(world, np.ones(N)),
+        lambda reform=None: WorldSim(reformed if reform else world, np.ones(N)),
         None,
         {2025: 0.0, 2026: 0.0},
         {},

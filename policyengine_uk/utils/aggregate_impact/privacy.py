@@ -106,7 +106,9 @@ def withheld_reason(condition: str, variable=None, metric_id=None) -> dict:
 
 
 def withheld_text(reasons) -> str:
-    """Reasons in words, with no count or amount: "fewer than 10" at most."""
+    """Reasons in words, with no count or amount: around the names they
+    quote, which can hold digits (``bursary_fund_16_to_19``) that count
+    nothing, "fewer than 10" at most."""
     return "; ".join(_reason_text(reason) for reason in reasons)
 
 
