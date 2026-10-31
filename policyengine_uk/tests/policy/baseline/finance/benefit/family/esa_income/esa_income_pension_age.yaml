@@ -39,7 +39,7 @@
       household:
         members: [person1]
   output:
-    # Born in 1956: pensionable age 66 (Pensions Act 1995 Sch 4 para 1 rule 7).
+    # Born in 1956: pensionable age 66 (Pensions Act 1995 Sch 4 para 1 rule 6).
     is_SP_age: true
     # s.1(3)(c) bars the claim: 0, not the 5_000 reported.
     esa_income_eligible: false
@@ -70,7 +70,7 @@
         members: [person1, person2]
   output:
     # Both born after 5 October 1954 and before 6 April 1960: pensionable
-    # age 66 (rule 7).
+    # age 66 (rule 6).
     is_SP_age: [true, true]
     meets_pension_credit_age_conditions: true
     # s.1(3)(c) bars the 68-year-old's claim, and para 6(1)(c) and (d) bar it

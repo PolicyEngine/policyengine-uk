@@ -30,7 +30,7 @@ reported awards.
   caller that reads the model's pensionable age passes it as is_SP_age;
   otherwise ages avoid 65 to 69. In the years tested (2025 and 2026) anyone
   aged 64 or under was born after 5 October 1960 and reaches it at 66 and
-  some months or at 67 (rules 8 and 9), and anyone aged 70 or over was born
+  some months or at 67 (rules 7 and 8), and anyone aged 70 or over was born
   before 6 April 1960 and reached it at 66 or earlier.
 - ESA and State Pension Credit (para 6(1)(c) and (d)): neither the claimant
   nor the other member of the couple may be entitled to it. A caller that
