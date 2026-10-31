@@ -2,11 +2,12 @@
 input data were measured (PolicyEngine/policyengine-uk#2764).
 
 A claimant's profit already deducts the allowance legislated for that year:
-a dataset's first year, which Simulation projects to later years, or
-without a dataset the year simulated. These tests build small datasets, so
-the data year and the simulated year differ, as they do for survey data
-projected past the April 2027 raise to £3,000 (Budget 2026, paragraph
-6.254).
+a dataset's first year, which Simulation projects to later years, or in a
+situation the latest year, up to the one simulated, for which the status was
+supplied. These tests build small datasets and situations with earlier
+inputs, so the data year and the simulated year differ, as they do for
+survey data projected past the April 2027 raise to £3,000 (Budget 2026,
+paragraph 6.254).
 """
 
 import pandas as pd
@@ -114,15 +115,10 @@ def test_the_status_carries_forward_from_the_year_supplied():
     assert status.tolist() == ["CLAIMANT"]
 
 
-def test_a_situation_reads_carried_inputs_as_measured_in_the_year_simulated():
-    # Pins a known limitation (utils/trading_allowance.py, _data_year).
-    # Without a dataset the year simulated stands in for the year the inputs
-    # were measured, even for inputs supplied for an earlier year. This
-    # claimant's profit was net of 2025-26's £1,000, but in 2027-28 it is
-    # read as net of £3,000, so the raise gives nothing. The same inputs in a
-    # dataset measured in 2025 get £2,000
-    # (test_the_budget_raise_reaches_claimants_measured_at_1000). If this
-    # convention changes, update the docs that describe the limitation.
+def test_a_situation_reads_carried_inputs_as_measured_in_the_year_supplied():
+    # This claimant's profit was net of 2025-26's £1,000, so in 2027-28 the
+    # raise to £3,000 gives them £2,000, as the same inputs in a dataset
+    # measured in 2025 do (test_the_budget_raise_reaches_claimants_measured_at_1000).
     simulation = Simulation(
         situation=situation(
             {
@@ -132,14 +128,32 @@ def test_a_situation_reads_carried_inputs_as_measured_in_the_year_simulated():
             }
         )
     )
+    assert deduction(simulation, 2027) == pytest.approx([2_000])
+
+
+def test_a_situation_reads_each_year_supplied_as_measured_then():
+    # Inputs supplied for 2027 were measured under 2027-28's £3,000, so they
+    # gain nothing from it; 2026 still reads the 2025 inputs, at £1,000.
+    simulation = Simulation(
+        situation=situation(
+            {
+                "age": {2025: 40},
+                "self_employment_income": {2025: 5_000, 2027: 5_000},
+                "trading_allowance_claim_status": {
+                    2025: "CLAIMANT",
+                    2027: "CLAIMANT",
+                },
+            }
+        )
+    )
+    assert deduction(simulation, 2026) == [0]
     assert deduction(simulation, 2027) == [0]
 
 
-def test_a_raise_leaves_a_situation_claimants_carried_loss():
-    # Without a dataset the data year is the year simulated (the limitation
-    # above), so this claimant's 2027 profit already deducts £3,000, and
-    # keeping £1,000 is a cut. Either way they keep the allowance and give
-    # up the loss.
+def test_a_raise_never_withdraws_a_situation_claimants_loss_relief():
+    # The situation's inputs are for 2025, so in 2027 the raise to £3,000
+    # gives this claimant £2,000. Their claim gave the loss up at £1,000 and
+    # still does at £3,000, so the raise only lowers their tax.
     person = {
         "age": {2025: 40},
         "employment_income": {2025: 30_000},
@@ -150,6 +164,5 @@ def test_a_raise_leaves_a_situation_claimants_carried_loss():
     kept = {ALLOWANCE: {"2027": 1_000}}
     law = Simulation(situation=situation(person))
     at_1000 = Simulation(situation=situation(person), reform=kept)
-    assert law.calculate("income_tax", 2027)[0] == pytest.approx(
-        at_1000.calculate("income_tax", 2027)[0], abs=0.01
-    )
+    tax = law.calculate("income_tax", 2027)[0]
+    assert tax == pytest.approx(at_1000.calculate("income_tax", 2027)[0] - 400, abs=1)

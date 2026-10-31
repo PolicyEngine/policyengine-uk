@@ -3,10 +3,11 @@ Chapter 1).
 
 Survey data hold profit, not receipts. The claim status says which receipts
 lie behind a positive profit. A claimant's profit already deducts the
-allowance legislated for the year the data were measured (here, without a
-dataset, the year simulated: £1,000 in 2026-27), so their receipts are that
-profit plus £1,000. A non-claimant did not elect for partial relief. Unknown,
-the default, keeps the rules for supplied or missing receipts.
+allowance legislated for the year the data were measured (here, a situation
+whose status is supplied for the year simulated: £1,000 in 2026-27), so
+their receipts are that profit plus £1,000. A non-claimant did not elect for
+partial relief. Unknown, the default, keeps the rules for supplied or
+missing receipts.
 
 The reference below is written from the Act's options rather than from the
 model's formula: full relief applies without an election whenever relevant
@@ -14,7 +15,9 @@ income is within the allowance (s. 783AE); partial relief needs an election
 (s. 783AM), which a non-claimant has not made and a claimant has; ordinary
 treatment deducts actual expenses and capital allowances, which for a
 claimant partial relief replaced and are taken as a share of the input
-allowance (gov.simulation.trading_allowance_claimant_expense_share).
+allowance (gov.simulation.trading_allowance_claimant_expense_share), between
+none and all of it. A claimant keeps the allowance while it does at least as
+well for the trade as those expenses.
 
 Invariants, each checked over many generated people in one reusable
 simulation per allowance level and expense share:
@@ -42,9 +45,12 @@ INPUT_ALLOWANCE = 1_000
 ALLOWANCES = [0, 300, 500, 1_000, 2_000, 3_000, 5_000, 10_000]
 # (allowance, claimant expense share): every allowance at the default share,
 # and cuts at lower shares.
-SCENARIOS = [(allowance, 1.0) for allowance in ALLOWANCES] + [
-    (allowance, share) for allowance in (0, 300, 500) for share in (0.0, 0.5)
-]
+SCENARIOS = (
+    [(allowance, 1.0) for allowance in ALLOWANCES]
+    + [(allowance, share) for allowance in (0, 300, 500) for share in (0.0, 0.5)]
+    # A share above 1 would put expenses above the allowance claimed.
+    + [(1_000, 1.5)]
+)
 STATUSES = ["UNKNOWN", "CLAIMANT", "NON_CLAIMANT"]
 PEOPLE = 30
 
@@ -169,8 +175,10 @@ def reference(r, allowance, share):
         profit,
     )
     # Ordinary treatment deducts actual expenses and capital allowances; a
-    # claimant's are the share of the input allowance.
-    ordinary = np.where(claimant, receipts - share * INPUT_ALLOWANCE, profit - capital)
+    # claimant's are a share of the input allowance, between none and all of
+    # it, since they chose the allowance instead.
+    claimant_expenses = min(max(share, 0), 1) * INPUT_ALLOWANCE
+    ordinary = np.where(claimant, receipts - claimant_expenses, profit - capital)
     # Full relief (no election) or partial relief, trades first (s. 783AK).
     full = receipts + chapter_8 <= allowance
     with_allowance = np.where(full, 0, np.maximum(receipts - allowance, 0))
@@ -179,8 +187,14 @@ def reference(r, allowance, share):
     available = full | ~non_claimant
     trade = np.where(available, np.minimum(with_allowance, ordinary), ordinary)
     chapter_8_relief = np.where(available, chapter_8_relief, 0)
-    # A claimant's claim is their election. Anyone else claims a current
-    # loss larger than the allowance's saving instead (ss. 783AL, 783AM).
+    # A claimant's claim is their election: they keep the allowance while
+    # there is one and it does at least as well for the trade as deducting
+    # their expenses, and otherwise take ordinary treatment. A current loss
+    # does not enter: their claim set it aside.
+    claimant_takes = claimant & (allowance > 0) & (with_allowance <= ordinary)
+    chapter_8_relief = np.where(claimant & ~claimant_takes, 0, chapter_8_relief)
+    # Anyone else claims a current loss larger than the allowance's saving
+    # instead (ss. 783AL, 783AM).
     saving = (
         np.maximum(ordinary - brought_forward, 0)
         - np.maximum(trade - brought_forward, 0)
@@ -191,19 +205,20 @@ def reference(r, allowance, share):
     chapter_8_relief = np.where(claims_loss, 0, chapter_8_relief)
     takes_allowance = np.where(
         claimant,
-        allowance > 0,
+        claimant_takes,
         ~claims_loss & ((ordinary - trade > 0) | (chapter_8_relief > 0)),
     )
     # The model sums in float32, so where the reference compares a sum with
     # a threshold it may land on the other side within rounding: a
-    # non-claimant's relevant income against the allowance, a supplied loss
-    # against the saving, and, for whether the allowance is taken, its
-    # advantage on the trade against nil.
+    # non-claimant's relevant income against the allowance, anyone else's
+    # supplied loss against the saving, and, for whether they take the
+    # allowance, its advantage on the trade against nil. A claimant's choice
+    # compares the allowances alone, exactly.
     margin = tolerance(r["receipts"], profit, chapter_8, allowance)
     finite = np.isfinite(receipts)
     near_full = non_claimant & finite
     near_full &= np.abs(np.where(finite, receipts, 0) + chapter_8 - allowance) <= margin
-    near_loss = (loss > 0) & (np.abs(loss - saving) <= margin)
+    near_loss = ~claimant & (loss > 0) & (np.abs(loss - saving) <= margin)
     advantage = np.where(np.isfinite(with_allowance), ordinary - with_allowance, -1)
     return dict(
         taxable=np.maximum(trade - brought_forward, 0),
@@ -211,7 +226,9 @@ def reference(r, allowance, share):
         chapter_8_relief=chapter_8_relief,
         uses=takes_allowance,
         fragile=near_full | near_loss,
-        fragile_uses=near_full | near_loss | (np.abs(advantage) <= margin),
+        fragile_uses=near_full
+        | near_loss
+        | (~claimant & (np.abs(advantage) <= margin)),
     )
 
 

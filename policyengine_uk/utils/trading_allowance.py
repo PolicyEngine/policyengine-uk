@@ -11,28 +11,44 @@ come from one decision.
 
 from policyengine_core.model_api import max_, min_, where
 
-from policyengine_uk.utils.supplied_inputs import supplied_input
+from policyengine_uk.utils.data_source import built_from_data
+from policyengine_uk.utils.supplied_inputs import (
+    supplied_input,
+    supplied_input_periods,
+)
 
 
 def _data_year(person, period):
-    """The year the input data were measured, as the State Pension
-    variables read it: a dataset's first year, which the engine projects to
-    later years, or without a dataset the year simulated.
+    """The year the input data were measured.
 
-    Known limitation: a situation does not record when its inputs were
-    measured, so the year simulated stands in even for inputs supplied for
-    an earlier year and carried forward. A claimant whose inputs are given
-    for 2025-26 and simulated in 2027-28 is read as having deducted
-    2027-28's £3,000 allowance, not the £1,000 they claimed against, and
-    gets nothing from the raise between them. Datasets are not affected. To
-    read inputs as measured in an earlier year, build a dataset for that
-    year, as test_trading_allowance_claim_status_data_year.py does.
+    - Microdata: their first year, which the engine projects to later years,
+      as the State Pension variables read it. The status is stored for every
+      projected year, so the years it was supplied for say nothing here.
+    - A situation: the latest year, up to the one simulated, for which
+      trading_allowance_claim_status was supplied. Inputs supplied for an
+      earlier year and carried forward keep that year's allowance: a
+      claimant given 2025-26 inputs and simulated in 2027-28 deducted £1,000,
+      and gains from the raise to £3,000. One year serves the whole
+      situation, so people whose status was supplied for different years
+      all take the latest. With no status supplied, the year simulated.
+
+    Not handled: a dataset cannot declare the year its incomes were measured
+    in, so a file saved from a later projected year is read as measured in
+    its first year.
     """
-    dataset = getattr(person.simulation, "dataset", None)
-    try:
-        return min(dataset.years)
-    except (AttributeError, TypeError, ValueError):
-        return period.start.year
+    simulation = person.simulation
+    if built_from_data(simulation):
+        years = getattr(getattr(simulation, "dataset", None), "years", None)
+        if years:
+            return min(years)
+    supplied = [
+        supplied_period
+        for supplied_period in supplied_input_periods(
+            person, "trading_allowance_claim_status"
+        )
+        if supplied_period.start <= period.start
+    ]
+    return (supplied[-1] if supplied else period).start.year
 
 
 def trading_allowance_reliefs(person, period, parameters):
@@ -86,26 +102,25 @@ def trading_allowance_reliefs(person, period, parameters):
     profit. A person with no profit has no trade receipts for it to
     describe, and a claimant is then read as unknown.
     - A claimant's profit is their receipts less the allowance legislated
-      for the year the input data were measured (the input allowance),
-      which reforms do not move. Without a dataset that year is the year
-      simulated, even for inputs carried from an earlier year: a known
-      limitation (see _data_year). Their claim was the election for partial
-      relief (s. 783AM), so they take the allowance at any level above nil,
-      which keeps their current losses given up, and it replaced their
-      expenses and capital allowances (s. 783AI): capital_allowances
-      supplied for them are not deducted, and their receipts, profit plus
-      the input allowance, take precedence over gross receipts. The
-      deduction is the allowance's excess over the input allowance, capped
-      at profit. Their actual expenses and capital allowances are below the
-      input allowance but unknown. Under a cut, a claimant whose expenses
-      exceed the new allowance deducts them instead, so their taxable profit
-      rises by the input allowance less the larger of the new allowance and
-      those expenses, which gov.simulation.trading_allowance_claimant_expense_share
-      sets as a share of the input allowance: by default all of it, so a cut
-      leaves their profit as reported, the lower bound of its yield. The
-      deduction is negative where it gives back capital allowances or
-      charges what a cut adds. Their receipts take up the allowance before
-      income not otherwise charged, as other receipts do.
+      for the year the input data were measured (the input allowance, see
+      _data_year), which reforms do not move. Their claim was the election
+      for partial relief (s. 783AM), and it replaced their expenses and
+      capital allowances (s. 783AI): capital_allowances supplied for them
+      are not deducted, and their receipts, profit plus the input
+      allowance, take precedence over gross receipts. Their actual expenses
+      and capital allowances are below the input allowance but unknown;
+      gov.simulation.trading_allowance_claimant_expense_share sets them as
+      a share of it, between 0 and 1, by default all of it. They keep the
+      allowance while it is above nil and at least those expenses, which
+      keeps their current losses given up, and the deduction is the
+      allowance's excess over the input allowance, capped at profit. Below
+      those expenses they deduct them instead: ordinary treatment, which
+      leaves a supplied current loss claimable. So a cut adds the input
+      allowance less the larger of the new allowance and those expenses,
+      by default nothing, the lower bound of its yield. The deduction is
+      negative where it gives back capital allowances or charges what a cut
+      adds. Their receipts take up the allowance before income not
+      otherwise charged, as other receipts do.
     - A non-claimant does not elect for partial relief, which would be a
       change in behaviour after a raise, so takes ordinary treatment unless
       their relevant income is within the allowance: full relief needs no
@@ -128,9 +143,10 @@ def trading_allowance_reliefs(person, period, parameters):
     input_allowance = parameters(
         f"{_data_year(person, period)}-04-30"
     ).baseline.gov.hmrc.income_tax.allowances.trading_allowance
-    claimant_expenses = (
-        p.gov.simulation.trading_allowance_claimant_expense_share * input_allowance
-    )
+    # A claimant's expenses are neither negative nor above the allowance
+    # they chose instead.
+    expense_share = p.gov.simulation.trading_allowance_claimant_expense_share
+    claimant_expenses = min_(max_(expense_share, 0), 1) * input_allowance
     status = person("trading_allowance_claim_status", period)
     profit = person("self_employment_income", period)
     receipts = person("self_employment_gross_receipts", period)
@@ -204,10 +220,12 @@ def trading_allowance_reliefs(person, period, parameters):
         ~trading & (miscellaneous_income <= allowance),
     )
     ordinary = (non_claimant & ~within_allowance) | (current_loss > allowance_saving)
-    # A claimant's election is their claim, not this comparison.
+    # A claimant's election is their claim, not this comparison: they keep
+    # the allowance while it covers their expenses, and otherwise deduct
+    # those, which claimant_relief already charges.
     ordinary = ordinary & ~claimant
     return (
         where(ordinary, 0, trade_relief),
         where(ordinary, 0, miscellaneous_relief),
-        claimant & (allowance > 0),
+        claimant & (allowance > 0) & (allowance >= claimant_expenses),
     )

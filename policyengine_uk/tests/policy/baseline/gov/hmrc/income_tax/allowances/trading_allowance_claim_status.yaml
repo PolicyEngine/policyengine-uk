@@ -1,13 +1,16 @@
 # trading_allowance_claim_status says which receipts lie behind a person's
 # input profit (ITTOIA 2005 Part 6A). The input allowance is the allowance
 # legislated for the year the data were measured: a dataset's first year, or
-# here, without a dataset, the year simulated. Reforms do not move it.
+# in a situation like these the latest year the status was supplied for, here
+# the year simulated. Reforms do not move it.
 # - Claimant: the profit is receipts less the input allowance, as under
 #   partial relief (s. 783AI), so receipts are profit + input allowance and
 #   the deduction at allowance A is min(profit, A - input allowance). Partial
 #   relief replaces capital allowances, so a claimant's are not deducted.
 #   Their claim was the election (s. 783AM), so they keep the allowance, and
-#   give up current losses, at any A above nil.
+#   give up current losses, while A is above nil and at least their expenses
+#   (gov.simulation.trading_allowance_claimant_expense_share of the input
+#   allowance, by default all of it); below those they deduct them instead.
 # - Non-claimant: no election for partial relief; full relief needs none
 #   (s. 783AE) and applies where supplied receipts, or casual income alone
 #   with no profit, are within the allowance.
@@ -166,6 +169,19 @@
     # Expenses of 0.5 x 1,000 = 500 beat a £300 allowance: 3,500 - 500.
     trading_allowance_deduction: -500
     taxable_self_employment_income: 3_000
+
+- name: An expense share above 1 is taken as 1, so today's law gives a claimant nothing more.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    gov.simulation.trading_allowance_claimant_expense_share: 1.5
+    self_employment_income: 2_500
+    trading_allowance_claim_status: CLAIMANT
+  output:
+    # Expenses above the allowance they chose would contradict their claim.
+    trading_allowance_deduction: 0
+    taxable_self_employment_income: 2_500
+    uses_trading_allowance: true
 
 - name: Abolishing the allowance leaves a claimant's profit as reported.
   period: 2026
@@ -332,6 +348,21 @@
     miscellaneous_income_trading_allowance_deduction: 900
     taxable_miscellaneous_income: 0
 
+- name: A non-claimant's relevant income exactly at the allowance is fully relieved.
+  period: 2027
+  absolute_error_margin: 0
+  input:
+    self_employment_gross_receipts: 2_100
+    self_employment_income: 600
+    miscellaneous_income: 900
+    income_not_otherwise_charged: 900
+    trading_allowance_claim_status: NON_CLAIMANT
+  output:
+    # 2,100 + 900 = 3,000 does not exceed the allowance (s. 783AE).
+    trading_allowance_deduction: 600
+    miscellaneous_income_trading_allowance_deduction: 900
+    taxable_miscellaneous_income: 0
+
 - name: A non-claimant's receipts and casual income above the allowance get nothing.
   period: 2027
   absolute_error_margin: 0
@@ -362,6 +393,17 @@
     taxable_miscellaneous_income: 0
     # (30,000 - 12,570) x 20%
     income_tax: 3_486
+
+- name: A non-claimant with no trade has casual income exactly at the allowance relieved.
+  period: 2027
+  absolute_error_margin: 0
+  input:
+    miscellaneous_income: 3_000
+    income_not_otherwise_charged: 3_000
+    trading_allowance_claim_status: NON_CLAIMANT
+  output:
+    miscellaneous_income_trading_allowance_deduction: 3_000
+    taxable_miscellaneous_income: 0
 
 - name: Unknown status still relieves a profit within the allowance.
   period: 2027
@@ -475,6 +517,26 @@
     trading_loss: 1_500
     trading_allowance_claim_status: CLAIMANT
   output:
+    uses_trading_allowance: false
+    trade_loss_relief_against_general_income: 1_500
+    # (30,000 + 2,500 - 1,500 - 12,570) x 20%
+    income_tax: 3_686
+
+- name: A cut below a claimant's expenses lets them claim a current loss.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.income_tax.allowances.trading_allowance: 500
+    employment_income: 30_000
+    self_employment_income: 2_500
+    trading_loss: 1_500
+    trading_allowance_claim_status: CLAIMANT
+  output:
+    # By default their expenses are £1,000, which beat a £500 allowance:
+    # they deduct them, ordinary treatment (s. 783AM), so the loss is
+    # claimable, as it is under abolition.
+    trading_allowance_deduction: 0
+    taxable_self_employment_income: 2_500
     uses_trading_allowance: false
     trade_loss_relief_against_general_income: 1_500
     # (30,000 + 2,500 - 1,500 - 12,570) x 20%

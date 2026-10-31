@@ -82,6 +82,7 @@ SUPPLIED_INPUT_VARIABLES = frozenset(
         "ni_epg_full_rate_applies",
         "tenure_type",
         "targeted_childcare_entitlement",
+        "trading_allowance_claim_status",
         "trading_loss",
         "uc_carer_element",
         "uc_LCWRA_element",

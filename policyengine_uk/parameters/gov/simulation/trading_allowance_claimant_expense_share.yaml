@@ -1,4 +1,15 @@
-description: Actual expenses and capital allowances of a trading allowance claimant, as a share of the allowance their input profit already deducts. It sets how much a cut below that allowance adds to the taxable profit of people the input data mark as claimants (trading_allowance_claim_status). A claimant keeps claiming while the allowance is at least these expenses, and otherwise deducts them instead, so a cut adds the input allowance less the larger of the new allowance and these expenses. The allowance at or above the input allowance is unaffected.
+description: >-
+  Actual expenses and capital allowances of a trading allowance claimant, as a
+  share of the allowance their input profit already deducts. It sets how much
+  a cut below that allowance adds to the taxable profit of people the input
+  data mark as claimants (trading_allowance_claim_status). A claimant keeps
+  claiming while the allowance is at least these expenses, and otherwise
+  deducts them instead, which is ordinary treatment and leaves a supplied
+  current loss claimable, so a cut adds the input allowance less the larger of
+  the new allowance and these expenses. The share is between 0 and 1, and a
+  value outside is taken as the nearer bound: expenses cannot be negative, and
+  above the allowance the claimant would have deducted them instead. An
+  allowance at or above the input allowance is unaffected.
 # A claimant's expenses and capital allowances are below the allowance they
 # claim, or they would deduct them instead, but no survey records them. With
 # a share of 1, the default, they equal it, so a cut leaves a claimant's

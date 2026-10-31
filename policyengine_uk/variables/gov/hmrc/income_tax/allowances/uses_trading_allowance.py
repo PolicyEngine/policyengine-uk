@@ -17,9 +17,11 @@ class uses_trading_allowance(Variable):
         "ordinary treatment and claims it: within the allowance by electing "
         "out of full relief (s. 783AL), above it by not electing for partial "
         "relief (s. 783AM). A claimant in the input data "
-        "(trading_allowance_claim_status) takes it at any allowance above "
-        "nil, even where it relieves nothing beyond their input profit: "
-        "their claim was the election, and it gave up their current losses."
+        "(trading_allowance_claim_status) takes it, even where it relieves "
+        "nothing beyond their input profit, while it is above nil and at "
+        "least their expenses: their claim was the election, and it gave up "
+        "their current losses. Below their expenses they deduct those "
+        "instead, which is ordinary treatment."
     )
     definition_period = YEAR
     reference = [
