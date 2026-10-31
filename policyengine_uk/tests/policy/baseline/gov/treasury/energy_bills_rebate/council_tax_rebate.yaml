@@ -148,7 +148,6 @@
 # Reduction recipients in any band (Local Government Finance Circular 2/2022,
 # paragraphs 6, 10 and 12; Welsh guide, conditions A and B). English billing
 # authorities paid by band alone (billing authority guidance, paragraph 11).
-# Each row below gives the band and the year's Council Tax Reduction.
 - name: The model pays Scottish bands A to D, and any band with Council Tax Reduction.
   period: 2022
   input:
@@ -359,9 +358,10 @@
     ebr_council_tax_rebate: 0
 
 # The model works out Council Tax Reduction itself in the cases below. Each
-# household has one adult, no income and a band F bill; it claims the
-# reduction unless a case says otherwise. The English case uses a pensioner,
-# because the model simulates England's pension-age scheme for every council.
+# household has one adult and a band F bill. The adult has no income and
+# claims the reduction unless a case says otherwise. The English case uses a
+# pensioner, because the model simulates England's pension-age scheme for
+# every council.
 - name: A Scottish band F household's simulated Council Tax Reduction qualifies it.
   period: 2022
   input:

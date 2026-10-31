@@ -8,7 +8,7 @@ Finance Circular 2/2022, paragraphs 6, 10 and 12; Welsh guide, conditions A and
 B). Councils in each nation paid one £150 per dwelling. Northern Ireland levies
 domestic rates and had no such payment.
 
-Invariants, each checked over many generated households:
+Hypothesis generates households and checks these invariants:
 
 1. The model pays no household in Northern Ireland, whatever its band or
    reduction.
@@ -21,7 +21,7 @@ Invariants, each checked over many generated households:
 6. A reduction in another year never qualifies a household out of band.
 7. A larger reduction never lowers the payment.
 8. Where the model works out the reduction itself, the same rule holds on its
-   result, and the payment reaches household net income.
+   result, and the payment raises household net income by its full amount.
 """
 
 import numpy as np
@@ -65,7 +65,7 @@ def people_and_units(count):
 
 
 def simulation(drawn, reduction_years=YEARS):
-    """One household per drawn case, with its reduction given as an input."""
+    """Build one household per drawn case and supply its reduction as an input."""
     bands, countries, amounts = zip(*drawn)
     people, benunits = people_and_units(len(drawn))
     return Simulation(
@@ -192,21 +192,26 @@ def test_the_rule_holds_on_a_simulated_reduction(drawn):
         benunits[f"unit_{i}"]["would_claim_council_tax_reduction"] = each_year(
             claims[i]
         )
-    sim = Simulation(
-        situation={
-            "people": people,
-            "benunits": benunits,
-            "households": {
-                f"household_{i}": {
-                    "members": [f"adult_{i}"],
-                    "council_tax_band": each_year(bands[i]),
-                    "country": each_year(countries[i]),
-                    "council_tax": each_year(2_400),
-                }
-                for i in range(len(drawn))
-            },
-        }
-    )
+
+    def household_simulation(**inputs):
+        return Simulation(
+            situation={
+                "people": people,
+                "benunits": benunits,
+                "households": {
+                    f"household_{i}": {
+                        "members": [f"adult_{i}"],
+                        "council_tax_band": each_year(bands[i]),
+                        "country": each_year(countries[i]),
+                        "council_tax": each_year(2_400),
+                        **inputs,
+                    }
+                    for i in range(len(drawn))
+                },
+            }
+        )
+
+    sim = household_simulation()
     rebate = sim.calculate("ebr_council_tax_rebate", 2022)
     receives = sim.calculate("council_tax_reduction", 2022) > 0
     in_band = np.isin(bands, IN_BAND)
@@ -216,6 +221,10 @@ def test_the_rule_holds_on_a_simulated_reduction(drawn):
         np.where(in_band | (np.isin(countries, PAYS_RECIPIENTS) & receives), AMOUNT, 0),
     )
     np.testing.assert_array_equal(rebate, expected)
-    # The payment reaches net income without a circular dependency.
-    assert np.isfinite(sim.calculate("household_net_income", 2022)).all()
-    assert (sim.calculate("energy_bills_rebate", 2022) >= rebate).all()
+    # The payment raises net income by its full amount, with no circular
+    # dependency between the rebate and the income it feeds.
+    without_rebate = household_simulation(ebr_council_tax_rebate=each_year(0))
+    gain = sim.calculate("household_net_income", 2022) - without_rebate.calculate(
+        "household_net_income", 2022
+    )
+    np.testing.assert_allclose(gain, rebate, atol=0.01)
