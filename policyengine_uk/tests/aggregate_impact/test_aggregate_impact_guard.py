@@ -1307,6 +1307,39 @@ def test_a_gated_containment_fails_wherever_a_nan_elsewhere_leaves_it(
     assert f"- `tax_b`: {shown}" in text.splitlines()
 
 
+def test_a_gate_that_turns_nan_in_one_household_stays_open_in_the_others():
+    """tax_g, the passport that gates tax_h, turns NaN in the first of
+    twelve households once tax_b rises. The check holds tax_g at its
+    baseline value in that household alone, so elsewhere the second held
+    measurement keeps the gate open and finds tax_h's containment."""
+    first = np.arange(12) == 0
+    formulas = gated_taxes()
+    formulas["tax_g"] = lambda f: (
+        40.0 * (f("tax_b") > 5.5) + np.where(first, np.sqrt(5 - f("tax_b")), 0.0)
+    )
+    part = partition(["tax_b", "tax_g", "tax_k", "tax_h"], reads=GATED_READS)
+    _, result = run_not_finite(formulas, part, x=(1,) * 12, weights=(1,) * 12)
+    row = by_variable(result)["tax_b"]
+    assert messages(row) == {
+        ("tax_g", "contains"): (
+            "gov_tax: tax_g rises one for one with tax_b, or is not finite, in "
+            "fewer than 10 households"
+        ),
+        ("tax_h", "contains"): (
+            "gov_tax: tax_h rises one for one with tax_b, so it contains it, in 11 "
+            "households"
+        ),
+        ("tax_h", "unconfirmed"): unconfirmed_message("tax_h", "tax_g"),
+        ("tax_k", "unconfirmed"): unconfirmed_message("tax_k", "tax_g"),
+        ("gov_tax", "model_total"): (
+            "gov_tax: the model's gov_tax moves by other than its heads, or is not "
+            "finite, when tax_b does in fewer than 10 households"
+        ),
+    }
+    assert row["heads_not_held"] == {"tax_k": ["tax_g"], "tax_h": ["tax_g"]}
+    assert result["reset_reproduces_baseline"]
+
+
 def mediated_in_two_totals(nan_in):
     """Twelve households. tax_a responds to tax_b only through tax_d, which
     declares its read of tax_b with a slope of 0.2, in both gov_tax and
