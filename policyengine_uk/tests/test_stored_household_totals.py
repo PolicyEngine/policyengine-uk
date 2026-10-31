@@ -18,6 +18,8 @@ Invariants, for any non-negative amounts:
   the same amounts.
 """
 
+from types import SimpleNamespace
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -47,8 +49,8 @@ pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 DATA_YEAR = 2025
 YEARS = range(DATA_YEAR, 2041)
 CAPITAL_YEARS = (DATA_YEAR, PROJECTION_END_YEAR, PROJECTION_END_YEAR + 1, YEARS[-1])
-# Each total, the person balance it sums, and the variable its documentation
-# says it is projected with.
+# Each total, the person balance it sums, and the variable whose index its
+# documentation says the model grows it with.
 TOTALS = {
     "cash_isa": ("cash_isa_balance", "savings"),
     "stocks_and_shares_isa": ("stocks_and_shares_isa_balance", "corporate_wealth"),
@@ -163,7 +165,7 @@ def test_stored_household_totals_grow_past_the_projection_horizon():
     "scenario", [None, no_economic_assumptions], ids=["current_law", "no_growth"]
 )
 def test_stored_totals_project_exactly_like_what_they_are_projected_with(scenario):
-    # cash_isa is stored equal to savings, stocks_and_shares_isa to
+    # The dataset stores cash_isa equal to savings, stocks_and_shares_isa to
     # corporate_wealth, and household_lifetime_isa_balance to the one
     # lifetime_isa_balance in the household: Core projects the second of each
     # pair, Simulation the first. Without economic growth both stay flat.
@@ -363,7 +365,7 @@ def test_a_total_stored_in_an_input_frame_grows_like_savings():
 
 def test_a_reform_formula_for_a_total_runs_in_years_with_no_stored_total():
     # A reform that gives a total a formula replaces its sum, so Core runs the
-    # formula wherever no total is stored, as for any formula variable.
+    # formula in each year the data hold no total, as for any formula variable.
     class cash_isa(Variable):
         value_type = float
         entity = Household
@@ -389,22 +391,29 @@ def test_a_reform_formula_for_a_total_runs_in_years_with_no_stored_total():
 
 
 @pytest.mark.parametrize(
-    "reform_adds, extra",
+    "reform_adds, reform_subtracts, extra",
     [
-        ("stored_totals_test.parts", 0),
-        (["cash_isa_balance", "stored_totals_test.extra"], 100),
-        (["cash_isa_balance", "other_isa_holdings"], 0),
+        ("stored_totals_test.parts", None, 0),
+        (["cash_isa_balance", "stored_totals_test.extra"], None, 100),
+        (["cash_isa_balance", "other_isa_holdings"], None, 0),
+        (["cash_isa_balance"], ["other_isa_holdings"], 0),
     ],
-    ids=["parameter", "list_with_a_parameter", "parts_with_different_indices"],
+    ids=[
+        "parameter",
+        "list_with_a_parameter",
+        "parts_with_different_indices",
+        "a_subtraction",
+    ],
 )
-def test_a_reform_sum_with_no_index_for_the_total_runs_where_no_total_is_stored(
-    reform_adds, extra
+def test_core_runs_any_other_reform_sum_where_the_data_hold_no_total(
+    reform_adds, reform_subtracts, extra
 ):
-    # Core lets `adds` name a parameter that lists the parts, or list a
-    # parameter beside variables, and a reform can add a part that grows by
-    # another index (other_isa_holdings declares none). None of these gives
-    # the stored total an index to grow by, so Core runs the reform's sum
-    # wherever no total is stored, as it runs a reform formula.
+    # Core lets `adds` name a parameter that lists the parts, list a
+    # parameter beside variables, or come with `subtracts`, and a reform can
+    # add a part that grows by another index (other_isa_holdings declares
+    # none). Simulation grows a stored total only for a plain sum of variables
+    # that share one index, so for any of these Core runs the reform's sum in
+    # each year the data hold no total, as it runs a reform formula.
     class other_isa_holdings(Variable):
         value_type = float
         entity = Person
@@ -417,6 +426,7 @@ def test_a_reform_sum_with_no_index_for_the_total_runs_where_no_total_is_stored(
         label = "cash ISA holdings, summed differently"
         definition_period = YEAR
         adds = reform_adds
+        subtracts = reform_subtracts
 
     class other_sum(Reform):
         def apply(self):
@@ -448,6 +458,16 @@ def test_a_reform_sum_with_no_index_for_the_total_runs_where_no_total_is_stored(
     assert simulation.calculate("cash_isa", later)[0] == pytest.approx(
         balances.sum() + extra, rel=1e-6
     )
+
+
+def test_parts_with_different_indices_give_a_total_no_index():
+    variables = {
+        "total": SimpleNamespace(adds=["first", "second"]),
+        "first": SimpleNamespace(uprating="gov.economic_assumptions.indices.a"),
+        "second": SimpleNamespace(uprating=None),
+    }
+    with pytest.raises(ValueError, match="different uprating indices"):
+        stored_total_uprating(SimpleNamespace(variables=variables), "total")
 
 
 def test_stored_totals_grow_by_the_index_they_are_projected_with():

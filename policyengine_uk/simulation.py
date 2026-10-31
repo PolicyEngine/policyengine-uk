@@ -766,20 +766,21 @@ class Simulation(CoreSimulation):
             # A reform whose parts grow by different indices gives the total
             # no index of its own, so its sum stands.
             return None
-        # The grown total reads none of the parts, but a part input set later
-        # for a later year replaces it.
+        # The grown total reads none of the parts, so record them: a part
+        # input that a branch sets later for a later year then replaces it.
         for part in variable.adds:
             self._record_derived(part)
         stored = self.get_holder(variable.name).get_array(source, self.branch_name)
         return stored * self._index_growth(index_name, source, period)
 
     def _run_formula(self, variable, population, period):
-        # Only a sum of listed variables: a reform that gives the variable a
-        # formula, sums a parameter or its list, or makes the variable a
-        # plain input, leaves it to Core.
+        # Only a sum of listed variables, with nothing subtracted: a reform
+        # that gives the variable a formula, sums a parameter or its list,
+        # subtracts, or makes the variable a plain input, leaves it to Core.
         if (
             variable.name in STORED_HOUSEHOLD_TOTALS
             and variable.adds
+            and not variable.subtracts
             and not isinstance(variable.adds, str)
             and all(part in self.tax_benefit_system.variables for part in variable.adds)
             and variable.get_formula(period) is None
