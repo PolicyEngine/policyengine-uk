@@ -283,13 +283,24 @@ and [Gambling Commission 2024/25 industry statistics](https://www.gamblingcommis
 ## Projection
 
 Each input declares its duty's index,
-`gov.economic_assumptions.indices.obr.gambling_duty_bases.<duty>`, and
-dataset projection grows it by the same duty's series in `yoy_growth.yaml`
-(`policyengine_uk/data/uprating_indices.yaml`). A series grows the duty's
-base, not its receipts: each year's receipts divided by the rate the model
-charges that year. The model then applies its own rate changes once. Grown
-with receipts instead, the base would carry Remote Gaming Duty's rise to 40%
-and the formula would charge 40% on it again.
+`gov.economic_assumptions.indices.obr.per_capita.gambling_duty_bases.<duty>`,
+and dataset projection grows it by the same duty's series in
+`yoy_growth.yaml` (`policyengine_uk/data/uprating_indices.yaml`). A series
+grows the duty's base, not its receipts: each year's receipts divided by the
+rate the model charges that year. The model then applies its own rate
+changes once. Grown with receipts instead, the base would carry Remote
+Gaming Duty's rise to 40% and the formula would charge 40% on it again.
+
+Each series holds the base's growth per person: one plus the base's growth,
+over one plus `ons.population` growth, minus one, to six decimals. Dataset
+projection grows every household weight by `ons.population`, so each
+weighted input grows with its duty's national base. Past
+`PROJECTION_END_YEAR`, policyengine-core scales each input by its index and
+each weight by the population index, so the weighted input keeps that path. Grown by
+the base's own growth, the weighted bases would count population growth
+twice and exceed Table 4.10 by 1.54% in 2031-32. `uprate_council_tax`
+divides each council tax bill's growth by the growth in household weights
+for the same reason.
 
 | Fiscal year | Receipts | Source |
 | --- | --- | --- |
@@ -297,6 +308,10 @@ and the formula would charge 40% on it again.
 | 2025-26 | Outturn | The same table, row 46 |
 | 2026-27 to 2031-32 | Forecast | OBR October 2026 Economic and Fiscal Outlook, receipts Table 4.10, "Betting and gaming duties forecast breakdown" |
 | 2032-33 on | None | The `average_earnings` long-run path, as for the other receipts series |
+
+After 2031-32 the importer divides the base's growth by one plus
+population growth in every year to 2073, the last year `ons.population`
+states, and the model holds both series' 2073 values after that.
 
 `policyengine_uk/utils/import_obr_forecasts.py` writes the series from
 `RECEIPTS_SERIES_SPECS`. It reads each rate from the model's parameter file
@@ -351,9 +366,11 @@ comes out as follows:
   not enter: any change in the duty's effective rate that the OBR's
   forecast includes stays in the base.
 - **Bingo Duty**: 10% until its abolition on 1 April 2026. A zero rate
-  leaves no base to divide out, so the index holds its 2025-26 level from
-  2026-27. Current law charges nothing whatever the base; a reform that
-  charges Bingo Duty again charges that 2025-26 base in cash terms.
+  leaves no base to divide out, so the base holds its 2025-26 level from
+  2026-27. Per person the series falls as population grows, and the
+  weighted base holds. Current law charges nothing whatever the base; a
+  reform that charges Bingo Duty again charges that 2025-26 base in cash
+  terms.
 - **Lottery Duty** (12%) and **Pool Betting Duty** (15%): one rate each, so
   the base grows with receipts.
 
@@ -432,7 +449,9 @@ does, `machine_games_duty` charges the standard rate on the whole
 standard-rate input, the rates before Budget 2026, on a base that grows
 by receipts over the rates after it. From 2027-28 the duty therefore
 falls short of Table 4.10 by 18.3%: the duty equals Table 4.10's line
-times 19.35% / 23.68%. On one constructed household holding the 2024-25 national bases:
+times 19.35% / 23.68%. Two constructed households, weighted 700 and 1,900,
+hold the 2024-25 national bases between them, and their weighted duty
+comes to:
 
 | £ million | 2027-28 | 2028-29 | 2029-30 | 2030-31 | 2031-32 |
 | --- | ---: | ---: | ---: | ---: | ---: |
