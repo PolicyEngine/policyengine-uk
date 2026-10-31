@@ -61,6 +61,8 @@ def to_report(result: dict) -> dict:
     carry ``withheld_because``: for a year the tool withholds, the conditions
     that withheld it, each as ``{"condition", "variable", "metric_id"}``
     (``privacy.WITHHELD_CONDITIONS``); for a published year, an empty list.
+    A ``small_target_change`` names the variable, which can be another
+    reform's target: the tool checks the target of every reform it costs.
     """
     provenance = result.get("provenance") or {}
     report = {

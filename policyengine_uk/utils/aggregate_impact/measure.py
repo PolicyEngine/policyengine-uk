@@ -1308,6 +1308,8 @@ def withheld_reasons(
     - changes gov_balance in 1 to 9 households (``small_balance_change``), or
       a target variable in 1 to 9 records (``small_target_change``), by more
       than ``CHANGE_GBP``: the change is theirs alone, as for a decile row.
+      ``measure`` checks the target of every reform it costs, so the reason
+      names the variable: this reform's own target or another's.
 
     Withheld too when there is no baseline record for the year
     (``no_baseline``). It tests every condition and gives one reason for

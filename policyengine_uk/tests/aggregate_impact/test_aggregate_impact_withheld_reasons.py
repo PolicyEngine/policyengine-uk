@@ -247,6 +247,34 @@ def test_a_reform_that_changes_few_target_records_names_the_target():
     )
 
 
+def test_a_small_change_in_another_reforms_target_names_that_target():
+    """measure() checks every costed reform's target: a reform aimed at
+    income tax is withheld when it moves Pension Credit, another reform's
+    target, in three records."""
+    world = _world(np.full(N, 100.0), np.full(N, 100.0), pension_credit=np.zeros(N))
+    reformed = _world(
+        np.full(N, 110.0), np.full(N, 100.0), pension_credit=_first(3, 25.0)
+    )
+    base_sim = WorldSim({YEAR: world}, np.ones(N))
+    targets = ["income_tax", "pension_credit"]
+    rec = Recorder()
+    measure_reforms(
+        lambda reform=None: WorldSim({YEAR: reformed if reform else world}, np.ones(N)),
+        None,
+        {YEAR: weighted_total(base_sim, "gov_balance", YEAR)},
+        {YEAR: {t: weighted_total(base_sim, t, YEAR) for t in targets}},
+        _reform("income_tax", name="Raise income tax"),
+        [YEAR],
+        rec,
+        baseline={YEAR: baseline_records(base_sim, _partition(), rec, YEAR, targets)},
+        components=_partition().component_variables(),
+    )
+    reasons = rec.metrics["reforms.raise_income_tax"]["withheld_because"]
+    assert _conditions(reasons[str(YEAR)]) == [
+        (SMALL_TARGET_CHANGE, "pension_credit", None)
+    ]
+
+
 def test_a_year_without_baseline_records_says_so():
     rec = Recorder()
     reform = parse_reforms({"reforms": [{"name": "Any", "parameters": {"a": 1}}]})
