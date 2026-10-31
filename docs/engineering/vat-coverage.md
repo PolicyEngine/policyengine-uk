@@ -46,6 +46,13 @@ household VAT. On Enhanced FRS 2024-25 it puts VAT 35% to 44% above receipts,
 depending on the release and year (see the tables below). Re-derive the coverage, with
 the calculation below, whenever the dataset it should match changes.
 
+The Microcosm releases certified since `f9d1922c` record about 10% more
+standard-rated consumption. Before the energy split, 0.67 put VAT 7.5% to
+10.3% above receipts on them (see
+[Later Microcosm cuts](#later-microcosm-cuts-24-october-2026)). The coverage
+has not yet been re-derived on them with energy bills split out; that is
+PolicyEngine/policyengine-uk#2633.
+
 ## Derivation (October 2026)
 
 ### Inputs
@@ -333,3 +340,41 @@ Model year 2024 represents 2024-25 but reads annual policy before the
 January 2025 commencement, so `P0` and the share are both zero for that
 year. The £460m part-year receipt (0.27% of £170,994m) remains in general
 VAT; this change does not model its separate timing.
+
+## Later Microcosm cuts (24 October 2026)
+
+These runs predate the energy split above, so they use the formula in
+[Derivation](#derivation-october-2026). They record why the coverage has to be
+re-derived (PolicyEngine/policyengine-uk#2633). They do not set the parameter.
+
+| Input | Value |
+|---|---|
+| `a133f37a` | Hugging Face `policyengine/populace-uk-private`, tag `microcosm-uk-2024-25-national-20261023T075039Z-a133f37a` (revision `c3a751d9`), SHA-256 `64f83900ca3a1242fb017585234844ce89f743d32e41cd2b6558057777f914aa` |
+| `6cba5d71` | tag `microcosm-uk-2024-25-national-20261019T083323Z-6cba5d71` (revision `bb225848`), SHA-256 `810ba980005a8b907cb51464279fa5e0125464b7af9a4871b7f6744c30951ece` |
+
+The `a133f37a` rows were computed with policyengine-uk 2.152.7 and
+policyengine-core 3.33.2, and again with policyengine-uk 2.147.2 and
+policyengine-core 3.33.3, which give the same totals. The `6cba5d71` rows were
+computed with policyengine-uk 2.147.2 and policyengine-core 3.33.3.
+
+| Dataset | Year | Standard-rated base | Reduced-rated base | Pre-scaling VAT | Receipts | Product | Survey coverage |
+|---|---|---|---|---|---|---|---|
+| Microcosm UK 2024-25 (`a133f37a`) | 2024-25 | £435.60bn | £26.76bn | £88.46bn | £171.0bn | 0.517 | 0.739 |
+| Microcosm UK 2024-25 (`a133f37a`) | 2025-26 | £453.65bn | £27.87bn | £92.12bn | £180.2bn | 0.511 | 0.730 |
+| Microcosm UK 2024-25 (`a133f37a`) | 2026-27 | £465.85bn | £28.62bn | £94.60bn | £187.7bn | 0.504 | 0.720 |
+| Microcosm UK 2024-25 (`6cba5d71`) | 2024-25 | | | £88.51bn | £171.0bn | 0.518 | 0.739 |
+| Microcosm UK 2024-25 (`6cba5d71`) | 2025-26 | | | £92.18bn | £180.2bn | 0.512 | 0.731 |
+| Microcosm UK 2024-25 (`6cba5d71`) | 2026-27 | | | £94.66bn | £187.7bn | 0.504 | 0.720 |
+
+These runs, all before the energy split, show the gap:
+
+- With 0.67, total `vat` on `a133f37a` was 10.3%, 9.0% and 7.5% above receipts
+  in 2024-25 to 2026-27 (£188.61bn, £196.43bn and £201.71bn).
+- On `6cba5d71`, a reform run that raises the standard rate from 20% to 21%
+  changed total `vat` and `gov_balance` by £9.94bn in 2026-27 and £9.68bn in
+  2025-26 (reform minus baseline; policyengine-uk 2.135.7 and 2.152.6 agree).
+  That is 12.9% above HMRC's £8.8bn ready reckoner.
+- With 0.74 (product 0.518), total `vat` on `a133f37a` was 0.1%, 1.3% and 2.7%
+  below receipts.
+- With 0.74, a one-point reform run cost £8.99bn in 2026-27, 2.2% above the
+  ready reckoner.
