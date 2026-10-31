@@ -2604,65 +2604,6 @@ def test_base_growth_is_receipts_growth_over_rate_growth(levels, schedules, fact
         assert growth_scaled[spec.path].values == pytest.approx(values, abs=1.5e-6)
 
 
-def test_a_fall_that_rounds_the_index_to_zero_is_refused():
-    """Receipts that fall from £1,000bn to £0.01bn as the rate rises from 1%
-    to 60% shrink the base by a factor of six million. To six decimals that
-    growth is -100%, which would hold the index at zero in every later year,
-    so the importer refuses it."""
-    spec = next(spec for spec in GAMBLING_SPECS if spec.path[-1] == "remote_gaming")
-    workbook = make_receipts_xlsx(
-        gambling_levels=GAMBLING_LEVELS | {"remote_gaming": (1000.0, 0.01, 0.01)}
-    )
-    schedule = ((date(2015, 1, 1), 0.01), (date(2026, 4, 1), 0.6))
-    with pytest.MonkeyPatch.context() as patch:
-        patch.setattr(import_obr_forecasts, "parameter_values", lambda p: schedule)
-        with pytest.raises(
-            ValueError,
-            match="2026-27 growth of -1.0 takes the index to 0.0 at five decimals",
-        ):
-            compute_receipts_growth(workbook, b"", specs=(spec,))
-
-
-POSITIVE = st.one_of(LEVELS, st.floats(min_value=1e-9, max_value=1e-2, allow_nan=False))
-
-
-@settings(max_examples=60, deadline=None, derandomize=True)
-@given(
-    levels=st.fixed_dictionaries(
-        {key: st.tuples(POSITIVE, POSITIVE, POSITIVE) for key in GAMBLING_LABELS}
-    ),
-    schedules=rate_schedules(),
-)
-def test_a_written_series_keeps_every_index_positive(levels, schedules):
-    """For any positive receipts, however small, and any dated rates: the
-    importer either refuses, when the written growth would round the model's
-    index to zero, or writes series whose index the model compounds to five
-    decimals stays above zero in every year."""
-    workbook = make_receipts_xlsx(gambling_levels=levels)
-    with pytest.MonkeyPatch.context() as patch:
-        patch.setattr(import_obr_forecasts, "parameter_values", lambda p: schedules[p])
-        try:
-            growth = compute_receipts_growth(workbook, b"", specs=GAMBLING_SPECS)
-        except ValueError as error:
-            event("refused")
-            assert "too small to grow from" in str(error)
-            assert any(
-                oracle_growth(
-                    spec,
-                    gambling_receipts(spec.path[-1], levels[spec.path[-1]]),
-                    schedules,
-                )[2]
-                for spec in GAMBLING_SPECS
-            )
-            return
-    event("written")
-    for series in growth.values():
-        index = 1.0
-        for year in sorted(series.values):
-            index = round(index * (1 + series.values[year]), 5)
-            assert index > 0
-
-
 # Per head (#2738): dataset projection grows household weights by
 # ons.population, so each gambling series is its base's growth over one plus
 # population growth, and compounding it with population growth gives back
@@ -2752,3 +2693,62 @@ def test_per_head_series_compound_to_the_aggregate_index(last, data):
                 aggregate_index, rel=tolerance - 1 + 1e-12
             ), (spec.path, year)
     assert render(rendered, current=current) == rendered
+
+
+def test_a_fall_that_rounds_the_index_to_zero_is_refused():
+    """Receipts that fall from £1,000bn to £0.01bn as the rate rises from 1%
+    to 60% shrink the base by a factor of six million. To six decimals that
+    growth is -100%, which would hold the index at zero in every later year,
+    so the importer refuses it."""
+    spec = next(spec for spec in GAMBLING_SPECS if spec.path[-1] == "remote_gaming")
+    workbook = make_receipts_xlsx(
+        gambling_levels=GAMBLING_LEVELS | {"remote_gaming": (1000.0, 0.01, 0.01)}
+    )
+    schedule = ((date(2015, 1, 1), 0.01), (date(2026, 4, 1), 0.6))
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(import_obr_forecasts, "parameter_values", lambda p: schedule)
+        with pytest.raises(
+            ValueError,
+            match="2026-27 growth of -1.0 takes the index to 0.0 at five decimals",
+        ):
+            compute_receipts_growth(workbook, b"", specs=(spec,))
+
+
+POSITIVE = st.one_of(LEVELS, st.floats(min_value=1e-9, max_value=1e-2, allow_nan=False))
+
+
+@settings(max_examples=60, deadline=None, derandomize=True)
+@given(
+    levels=st.fixed_dictionaries(
+        {key: st.tuples(POSITIVE, POSITIVE, POSITIVE) for key in GAMBLING_LABELS}
+    ),
+    schedules=rate_schedules(),
+)
+def test_a_written_series_keeps_every_index_positive(levels, schedules):
+    """For any positive receipts, however small, and any dated rates: the
+    importer either refuses, when the written growth would round the model's
+    index to zero, or writes series whose index the model compounds to five
+    decimals stays above zero in every year."""
+    workbook = make_receipts_xlsx(gambling_levels=levels)
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(import_obr_forecasts, "parameter_values", lambda p: schedules[p])
+        try:
+            growth = compute_receipts_growth(workbook, b"", specs=GAMBLING_SPECS)
+        except ValueError as error:
+            event("refused")
+            assert "too small to grow from" in str(error)
+            assert any(
+                oracle_growth(
+                    spec,
+                    gambling_receipts(spec.path[-1], levels[spec.path[-1]]),
+                    schedules,
+                )[2]
+                for spec in GAMBLING_SPECS
+            )
+            return
+    event("written")
+    for series in growth.values():
+        index = 1.0
+        for year in sorted(series.values):
+            index = round(index * (1 + series.values[year]), 5)
+            assert index > 0

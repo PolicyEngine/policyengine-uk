@@ -933,6 +933,21 @@ def line_rate(spec: ReceiptsSeriesSpec, year: int) -> float:
     )
 
 
+def growth_ratio(
+    spec: ReceiptsSeriesSpec, levels: dict[int, float], year: int
+) -> float:
+    """One plus a line's growth into ``year``, before rounding: the ratio of
+    its levels, or for a line with rates, of its bases, each year's receipts
+    over the rate the model charges (``line_rate``). A year whose rate, or
+    the year before's, is zero has no base, so the base holds flat."""
+    if not spec.rates:
+        return levels[year] / levels[year - 1]
+    rate, previous_rate = line_rate(spec, year), line_rate(spec, year - 1)
+    if rate == 0 or previous_rate == 0:
+        return 1.0
+    return (levels[year] / rate) / (levels[year - 1] / previous_rate)
+
+
 @dataclass(frozen=True)
 class ReceiptsLine:
     """A receipts line as one EFO publishes it: £bn by the calendar year in
@@ -1236,21 +1251,6 @@ def compute_receipts_growth(
     return result
 
 
-def growth_ratio(
-    spec: ReceiptsSeriesSpec, levels: dict[int, float], year: int
-) -> float:
-    """One plus a line's growth into ``year``, before rounding: the ratio of
-    its levels, or for a line with rates, of its bases, each year's receipts
-    over the rate the model charges (``line_rate``). A year whose rate, or
-    the year before's, is zero has no base, so the base holds flat."""
-    if not spec.rates:
-        return levels[year] / levels[year - 1]
-    rate, previous_rate = line_rate(spec, year), line_rate(spec, year - 1)
-    if rate == 0 or previous_rate == 0:
-        return 1.0
-    return (levels[year] / rate) / (levels[year - 1] / previous_rate)
-
-
 def check_index(name: str, values: dict[int, float]) -> None:
     """Refuse growth that zeroes the index the model builds from it.
 
@@ -1319,7 +1319,7 @@ def per_head_growth(
         + 0.0
         for year in growth.values
     }
-    check_index(".".join(spec.path), values)
+    check_index(".".join(growth.spec.path), values)
     return replace(growth, values=values)
 
 
@@ -1482,43 +1482,6 @@ def receipts_basis(spec: ReceiptsSeriesSpec | None) -> str:
     return "; base growth: receipts over the rate the model charges"
 
 
-def receipts_tail(content: str, growth: ReceiptsGrowth) -> tuple[dict[int, float], str]:
-    """A series' growth after the OBR's forecast, and its comment: the
-    average_earnings path, held at zero in years a base's rate is zero in or
-    comes from."""
-    last = max(growth.values)
-    path = average_earnings_path(content, last)
-    spec = growth.spec
-    if spec is None or not spec.rates:
-        return path, "the average_earnings long-run path above"
-    # Rates hold their last value after their last change, as the path does.
-    changes = [
-        instant.year
-        for component in spec.rates
-        for parameter in component.paths
-        for instant, _ in parameter_values(parameter)
-    ]
-    end = max(max(path), max(changes) + 1, last + 1)
-    yearly = {}
-    for year in range(last + 1, end + 1):
-        if line_rate(spec, year) == 0 or line_rate(spec, year - 1) == 0:
-            yearly[year] = 0.0
-        else:
-            yearly[year] = path[max(y for y in path if y <= year)]
-    tail = {
-        year: value
-        for year, value in yearly.items()
-        if year == last + 1 or value != yearly[year - 1]
-    }
-    if all(value == 0 for value in yearly.values()):
-        return tail, "held flat, as the rate is zero"
-    if any(value == 0 for value in yearly.values()):
-        return tail, (
-            "the average_earnings long-run path above, held flat where the rate is zero"
-        )
-    return tail, "the average_earnings long-run path above"
-
-
 def per_head_tail(
     tail: dict[int, float], comment: str, population: dict[int, float]
 ) -> tuple[dict[int, float], str]:
@@ -1546,6 +1509,48 @@ def per_head_tail(
         for year, value in yearly.items()
         if year == first or value != yearly[year - 1]
     }, f"{comment}; per head: (1 + that growth) / (1 + ons.population growth) - 1"
+
+
+def receipts_tail(content: str, growth: ReceiptsGrowth) -> tuple[dict[int, float], str]:
+    """A series' growth after the OBR's forecast, and its comment: the
+    average_earnings path, held at zero in years a base's rate is zero in or
+    comes from. A base under ``per_capita`` divides that growth by one plus
+    ``ons.population`` growth (``per_head_tail``)."""
+    last = max(growth.values)
+    path = average_earnings_path(content, last)
+    spec = growth.spec
+    if spec is None or not spec.rates:
+        return path, "the average_earnings long-run path above"
+    # Rates hold their last value after their last change, as the path does.
+    changes = [
+        instant.year
+        for component in spec.rates
+        for parameter in component.paths
+        for instant, _ in parameter_values(parameter)
+    ]
+    end = max(max(path), max(changes) + 1, last + 1)
+    yearly = {}
+    for year in range(last + 1, end + 1):
+        if line_rate(spec, year) == 0 or line_rate(spec, year - 1) == 0:
+            yearly[year] = 0.0
+        else:
+            yearly[year] = path[max(y for y in path if y <= year)]
+    tail = {
+        year: value
+        for year, value in yearly.items()
+        if year == last + 1 or value != yearly[year - 1]
+    }
+    if all(value == 0 for value in yearly.values()):
+        comment = "held flat, as the rate is zero"
+    elif any(value == 0 for value in yearly.values()):
+        comment = (
+            "the average_earnings long-run path above, held flat where the rate is zero"
+        )
+    else:
+        comment = "the average_earnings long-run path above"
+    if spec.per_head:
+        return per_head_tail(tail, comment, population_growth(content))
+    return tail, comment
 
 
 def receipts_references(
@@ -1618,11 +1623,10 @@ def render_receipts_growth_yaml(
     lines = content.split("\n")
     population = None
     for path, series in growth.items():
-        tail, tail_comment = receipts_tail(content, series)
         if series.spec is not None and series.spec.per_head:
             population = population or population_growth(content)
             series = per_head_growth(series, population)
-            tail, tail_comment = per_head_tail(tail, tail_comment, population)
+        tail, tail_comment = receipts_tail(content, series)
         references = receipts_references(series, release, previous_release)
 
         start, end = _series_block(lines, ("obr", *path))
