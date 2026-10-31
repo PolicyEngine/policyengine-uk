@@ -207,34 +207,34 @@ obr:
 
   national_living_wage:
     description: National living wage year-on-year growth, for the rate from April of each year.
-    # The OBR forecasts the national living wage itself (EFO detailed economy
-    # tables, Table 1.13): rates set to 2027, then "OBR estimates consistent
-    # with the rest of our economy forecast". Each value here is one year's
-    # rate over the year before's, to six decimals, so compounding them from
-    # £13.21 reproduces the table to the penny: £13.51 (2028), £13.85 (2029),
-    # £14.23 (2030) and £14.62 (2031). HM Treasury costed the Budget 2026
-    # Carer's Allowance taper on these "OBR projections for increases in the
-    # National Living Wage" (policy costings, October 2026). After the EFO
-    # horizon the series takes average_earnings' long-run growth: the Low Pay
-    # Commission's reference point for the rate is two-thirds of median
-    # hourly earnings (remit 2026). Refresh 2028 onwards with each EFO.
+    # The OBR forecasts the national living wage itself, in £ an hour, in the
+    # EFO detailed economy tables (Table 1.13 in October 2026): the rates the
+    # Government has set, then "OBR estimates consistent with the rest of our
+    # economy forecast". utils/import_obr_forecasts.py reads the table and
+    # writes each year's rate over the year before's, to six decimals, so
+    # compounding them reproduces the table to the penny. Its comments below
+    # keep the years the Government has set apart from the OBR's estimates;
+    # gov.hmrc.minimum_wage cites the regulations or Budget behind each rate
+    # set. HM Treasury costed the Budget 2026 Carer's Allowance taper on these
+    # "OBR projections for increases in the National Living Wage" (policy
+    # costings, October 2026). After the EFO horizon the series takes
+    # average_earnings' long-run growth: the Low Pay Commission's reference
+    # point for the rate is two-thirds of median hourly earnings (remit 2026).
     values:
-      # Rates set: S.I. 2021/329 to 2026/357, and £13.21 for 2027 (Budget
-      # 2026, paragraph 6.128), from £8.72 in 2020.
+      # Set by the Government (2021-2027) from OBR EFO October 2026, economy Table 1.13 "National Living Wage (NLW)": £8.72 in 2020 to £13.21 in 2027
       2021-01-01: 0.021789
       2022-01-01: 0.066218
       2023-01-01: 0.096842
       2024-01-01: 0.097889
       2025-01-01: 0.067308
-      2026-01-01: 0.040950
+      2026-01-01: 0.04095
       2027-01-01: 0.039339
-      # OBR estimates (2028-2031), EFO October 2026 Table 1.13
+      # OBR estimates (2028-2031) from OBR EFO October 2026, economy Table 1.13 "National Living Wage (NLW)": £13.21 in 2027 to £14.62 in 2031
       2028-01-01: 0.022984
       2029-01-01: 0.025251
       2030-01-01: 0.027289
       2031-01-01: 0.026986
-      # Long run (2032+): average_earnings growth, as refreshed by the
-      # October 2026 EFO (#2717)
+      # Beyond the OBR forecast: the average_earnings long-run path above, year for year
       2032-01-01: 0.0285
       2033-01-01: 0.0309
       2034-01-01: 0.0334
@@ -281,7 +281,7 @@ obr:
       unit: /1
       label: National living wage growth
       reference:
-        - title: OBR EFO October 2026, detailed forecast tables (economy), Table 1.13
+        - title: OBR EFO October 2026 (detailed forecast tables, economy, Table 1.13)
           href: https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/
         - title: HM Treasury, Budget 2026 policy costings, Carer's Allowance taper (cost base)
           href: https://assets.publishing.service.gov.uk/media/6ae1883fe4367e5c8b0467df/AB26_Policy_Costing.pdf

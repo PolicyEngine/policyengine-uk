@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import copy
+import math
 import os
 import re
 import shutil
@@ -1545,6 +1546,370 @@ def render_receipts_growth_yaml(
     return rendered
 
 
+@dataclass(frozen=True)
+class LevelSeriesSpec:
+    """An economy table that publishes a series as levels across a row, not
+    as growth down a column.
+
+    ``path`` is the series' place under ``obr``. The table is found by its
+    title, as receipts tables are. Its header declares one unit, ``unit``;
+    one row of cells holds consecutive calendar years; and one row below it,
+    labelled ``row``, holds a level under each year and nowhere else.
+    Titles, units and labels are compared lowercased, without footnote
+    markers. A note that the rate "has been set by the Government up until"
+    a year, and that figures beyond that year "are OBR estimates", splits
+    the years the Government has set from the OBR's estimates.
+    """
+
+    path: tuple[str, ...]
+    title: str
+    unit: str
+    row: str
+
+
+LEVEL_SERIES_SPECS = (
+    LevelSeriesSpec(
+        path=("national_living_wage",),
+        title="national living wage",
+        unit="£ per hour",
+        row="national living wage (nlw)",
+    ),
+)
+SET_BY_GOVERNMENT_RE = re.compile(r"set by the government up until (\d{4})")
+OBR_ESTIMATES_RE = re.compile(r"figures beyond (\d{4}) are obr estimates")
+
+
+@dataclass(frozen=True)
+class LevelLine:
+    """A level series as one EFO publishes it: levels by calendar year, and
+    the last year whose level the Government has set."""
+
+    table: str
+    label: str
+    levels: dict[int, float]
+    set_until: int
+
+
+@dataclass(frozen=True)
+class LevelGrowth:
+    """Growth in a level series, by year, rounded to six decimals: each
+    year's level over the year before's, from the table's second year to
+    its last."""
+
+    values: dict[int, float]
+    line: LevelLine
+
+
+def _year_columns(row: dict[str, str | None]) -> dict[str, int]:
+    """A row's columns and years, if every non-empty cell holds a year."""
+    cells = {
+        column: str(value).strip()
+        for column, value in row.items()
+        if str(value or "").strip()
+    }
+    if cells and all(YEAR_RE.match(text) for text in cells.values()):
+        return {column: int(text) for column, text in cells.items()}
+    return {}
+
+
+def _set_until(rows: list[dict[str, str | None]], where: str) -> int:
+    """The last year the Government has set, from the table's note."""
+    notes = [
+        normalise_label(value)
+        for row in rows
+        for value in row.values()
+        if SET_BY_GOVERNMENT_RE.search(normalise_label(value))
+    ]
+    if len(notes) != 1:
+        raise ValueError(
+            f"{where} needs one note saying which years the Government has set "
+            f"and which are OBR estimates; found {len(notes)}"
+        )
+    set_until = SET_BY_GOVERNMENT_RE.search(notes[0]).group(1)
+    estimates = OBR_ESTIMATES_RE.search(notes[0])
+    if estimates is None or estimates.group(1) != set_until:
+        raise ValueError(
+            f"{where}'s note does not say the figures beyond {set_until} are "
+            f"OBR estimates: {notes[0]!r}"
+        )
+    return int(set_until)
+
+
+def find_level_line(
+    sheets: dict[str, list[dict[str, str | None]]], spec: LevelSeriesSpec
+) -> LevelLine:
+    """The levels in the one row labelled ``spec.row`` of the one table
+    titled ``spec.title``, read across its row of years.
+
+    Any other layout is refused rather than read: another unit, a second
+    row of years or of the label, a level missing under a year or one with
+    no year above it, or years that skip or repeat.
+    """
+    name = ".".join(spec.path)
+    tables = [
+        (table, sheet, table_rows)
+        for sheet, rows in sheets.items()
+        for table, title, table_rows in sheet_tables(rows)
+        if title == spec.title
+    ]
+    if len(tables) != 1:
+        found = ", ".join(f"sheet {sheet}" for _, sheet, _ in tables) or "none"
+        raise ValueError(f'Expected one "{spec.title}" table for {name}; found {found}')
+    table, sheet, rows = tables[0]
+    where = f"Table {table} (sheet {sheet})"
+    year_rows = [index for index, row in enumerate(rows) if _year_columns(row)]
+    if len(year_rows) != 1:
+        raise ValueError(
+            f"{where} needs one row of years across its columns; found {len(year_rows)}"
+        )
+    header = year_rows[0]
+    years = _year_columns(rows[header])
+    units = [
+        normalise_label(value)
+        for row in rows[:header]
+        for value in row.values()
+        if normalise_label(value)
+    ]
+    if units != [spec.unit]:
+        raise ValueError(
+            f"{where} must declare its unit as {spec.unit!r} above its years; "
+            f"found {units}"
+        )
+    ordered = [years[column] for column in sorted(years, key=column_index)]
+    if ordered != list(range(ordered[0], ordered[0] + len(ordered))):
+        raise ValueError(f"{where}'s years skip, repeat or run backwards: {ordered}")
+    first_year_column = min(column_index(column) for column in years)
+    matches = []
+    for index, row in enumerate(rows):
+        labels = [
+            value
+            for column, value in sorted(
+                row.items(), key=lambda item: column_index(item[0])
+            )
+            if column_index(column) < first_year_column and normalise_label(value)
+        ]
+        if labels and receipts_label(labels[0]) == spec.row:
+            matches.append((index, labels[0], row))
+    if len(matches) != 1:
+        raise ValueError(
+            f'Expected one "{spec.row}" row in {where} for {name}; found {len(matches)}'
+        )
+    index, label, row = matches[0]
+    if index < header:
+        raise ValueError(f'{where} has its "{spec.row}" row above its years')
+    stray = sorted(
+        column
+        for column, value in row.items()
+        if column_index(column) >= first_year_column
+        and column not in years
+        and str(value or "").strip()
+    )
+    if stray:
+        raise ValueError(f"{where} has {name} values with no year above them: {stray}")
+    levels = {}
+    for column, year in years.items():
+        text = row.get(column)
+        try:
+            level = float(text)
+        except (TypeError, ValueError):
+            level = None
+        if level is None or not math.isfinite(level) or level <= 0:
+            raise ValueError(f"{where} has no positive {year} {name} level: {text!r}")
+        levels[year] = level
+    set_until = _set_until(rows, where)
+    if not min(levels) <= set_until <= max(levels):
+        raise ValueError(
+            f"{where} says the Government has set the rate up until "
+            f"{set_until}, outside its years {min(levels)}-{max(levels)}"
+        )
+    if TABLE_NUMBER_RE.fullmatch(sheet):
+        table = sheet
+    return LevelLine(
+        table=table,
+        label=FOOTNOTE_RE.sub("", " ".join(str(label).split())),
+        levels=dict(sorted(levels.items())),
+        set_until=set_until,
+    )
+
+
+def compute_level_growth(
+    xlsx_bytes: bytes, specs: tuple[LevelSeriesSpec, ...] = LEVEL_SERIES_SPECS
+) -> dict[tuple[str, ...], LevelGrowth]:
+    """Growth in each level series from an EFO's economy tables."""
+    sheets = read_workbook_sheets(xlsx_bytes)
+    result = {}
+    for spec in specs:
+        name = ".".join(spec.path)
+        line = find_level_line(sheets, spec)
+        values = {
+            year: round(line.levels[year] / line.levels[year - 1] - 1, 6) + 0.0
+            for year in sorted(line.levels)[1:]
+        }
+        # As for the receipts series: the model compounds the growth into an
+        # index rounded to five decimals, which must stay above zero.
+        index = 1.0
+        for year, value in values.items():
+            index = round(index * (1 + value), 5)
+            if not (math.isfinite(index) and index > 0):
+                raise ValueError(
+                    f"{name}: {year} growth of {value} takes the index to "
+                    f"{index} at five decimals, which the model cannot "
+                    "compound from"
+                )
+        result[spec.path] = LevelGrowth(values, line)
+    return result
+
+
+def average_earnings_years(content: str, after_year: int) -> dict[int, float]:
+    """``average_earnings`` after ``after_year``, year for year: the path
+    ``average_earnings_path`` gives, with an entry in every year
+    average_earnings has one, so the two series list the same years."""
+    values = yaml.safe_load(content)["obr"]["average_earnings"]["values"]
+    later = {
+        int(str(instant)[:4]): float(value)
+        for instant, value in values.items()
+        if int(str(instant)[:4]) > after_year
+    }
+    return dict(sorted({**average_earnings_path(content, after_year), **later}.items()))
+
+
+def render_level_values(
+    old_lines: list[str],
+    indent: int,
+    growth: LevelGrowth,
+    tail: dict[int, float],
+    release: tuple[str, int],
+) -> list[str]:
+    """A level series' values entries: earlier years as they were, then
+    the growth into the rates the Government has set, then into the OBR's
+    estimates, then the average_earnings path."""
+    first_year = min(growth.values)
+    kept: list[str] = []
+    pending: list[str] = []
+    for line in old_lines:
+        match = VALUE_LINE_RE.match(line)
+        if match is None:
+            if line.strip() and not line.strip().startswith("#"):
+                raise ValueError(f"Unexpected line in a values block: {line!r}")
+            pending.append(line)
+            continue
+        if int(match.group(1)) < first_year:
+            kept += pending + [line]
+        pending = []
+
+    month, year = release
+    published = growth.line
+    pad = " " * indent
+    lines = list(kept)
+    source = (
+        f'OBR EFO {month} {year}, economy Table {published.table} "{published.label}"'
+    )
+    for kind, years in (
+        (
+            "Set by the Government",
+            [y for y in growth.values if y <= published.set_until],
+        ),
+        ("OBR estimates", [y for y in growth.values if y > published.set_until]),
+    ):
+        if not years:
+            continue
+        span = f"{years[0]}" if len(years) == 1 else f"{years[0]}-{years[-1]}"
+        start, end = years[0] - 1, years[-1]
+        lines.append(
+            f"{pad}# {kind} ({span}) from {source}: "
+            f"£{published.levels[start]:.2f} in {start} to "
+            f"£{published.levels[end]:.2f} in {end}"
+        )
+        lines += [f"{pad}{y}-01-01: {format_growth(growth.values[y])}" for y in years]
+    lines.append(
+        f"{pad}# Beyond the OBR forecast: the average_earnings long-run path "
+        "above, year for year"
+    )
+    lines += [f"{pad}{y}-01-01: {format_growth(v)}" for y, v in tail.items()]
+    return lines
+
+
+def render_level_series_yaml(
+    content: str,
+    growth: dict[tuple[str, ...], LevelGrowth],
+    release: tuple[str, int],
+) -> str:
+    """Rewrite each level series' values and first reference in a
+    yoy_growth.yaml.
+
+    Years before the table's second year are kept, so the series' index
+    keeps its base year, and its other references stay. Years after the
+    table follow average_earnings as ``content`` holds it. The result is
+    checked to differ from ``content`` only in those values and that
+    reference.
+    """
+    month, year = release
+    expected = copy.deepcopy(yaml.safe_load(content))
+    lines = content.split("\n")
+    for path, series in growth.items():
+        tail = average_earnings_years(content, max(series.values))
+        start, end = _series_block(lines, ("obr", *path))
+        indent = 2 * len(path) + 2
+        values_start, values_end = _yaml_block(lines, "values", indent, start, end)
+        old_values = lines[values_start + 1 : values_end]
+        entry_indent = next(
+            (_indent(line) for line in old_values if VALUE_LINE_RE.match(line)),
+            indent + 2,
+        )
+        new_values = render_level_values(
+            old_values, entry_indent, series, tail, release
+        )
+        lines = [*lines[: values_start + 1], *new_values, *lines[values_end:]]
+
+        start, end = _series_block(lines, ("obr", *path))
+        metadata = _yaml_block(lines, "metadata", indent, start, end)
+        ref_start, ref_end = _yaml_block(
+            lines, "reference", indent + 2, metadata[0], metadata[1]
+        )
+        pad = " " * (indent + 2)
+        title = next(
+            (
+                index
+                for index in range(ref_start + 1, ref_end)
+                if lines[index].startswith(f"{pad}  - title: ")
+            ),
+            None,
+        )
+        if title is None or not lines[title + 1].startswith(f"{pad}    href: "):
+            raise ValueError(f"Could not find the first reference of {'.'.join(path)}")
+        reference = {
+            "title": build_reference_title(month, year, series.line.table),
+            "href": build_efo_href(month, year),
+        }
+        lines[title] = f"{pad}  - title: {reference['title']}"
+        lines[title + 1] = f"{pad}    href: {reference['href']}"
+
+        node = expected["obr"]
+        for key in path:
+            node = node[key]
+        kept = {
+            instant: value
+            for instant, value in node["values"].items()
+            if int(str(instant)[:4]) < min(series.values)
+        }
+        node["values"] = {
+            **kept,
+            **{
+                date(entry_year, 1, 1): value
+                for entry_year, value in {**series.values, **tail}.items()
+            },
+        }
+        node["metadata"]["reference"][0] = reference
+
+    rendered = "\n".join(lines)
+    if yaml.safe_load(rendered) != expected:
+        raise ValueError(
+            "Rewriting the level series changed more than their values and "
+            "first reference"
+        )
+    return rendered
+
+
 def infer_workbook_release(xlsx_bytes: bytes) -> tuple[str, int] | None:
     """The release a detailed forecast tables workbook names on its contents
     sheet, e.g. "March 2026 Economic and fiscal outlook - detailed forecast
@@ -1752,6 +2117,19 @@ def print_receipts_summary(growth: dict[tuple[str, ...], ReceiptsGrowth]) -> Non
         print(f"- {'.'.join(path)} (Table {series.line.table}): {window}")
 
 
+def print_level_summary(growth: dict[tuple[str, ...], LevelGrowth]) -> None:
+    print(f"Updating {len(growth)} OBR level series")
+    for path, series in growth.items():
+        window = ", ".join(
+            f"{year}: {format_growth(value)}"
+            for year, value in sorted(series.values.items())
+        )
+        print(
+            f"- {'.'.join(path)} (Table {series.line.table}, set by the "
+            f"Government up until {series.line.set_until}): {window}"
+        )
+
+
 def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Import OBR economy forecast tables into yoy_growth.yaml.",
@@ -1817,6 +2195,15 @@ def build_arg_parser() -> argparse.ArgumentParser:
             "business_rates) that project corporate SDLT and business rates, "
             "or the gambling_duty_bases series that project the gambling "
             "duty inputs"
+        ),
+    )
+    parser.add_argument(
+        "--skip-national-living-wage",
+        action="store_true",
+        help=(
+            "Do not update national_living_wage, which projects the minimum "
+            "wage rates, from the economy tables' national living wage table "
+            "(Table 1.13 in October 2026)"
         ),
     )
     parser.add_argument(
@@ -2006,6 +2393,12 @@ def main(argv: list[str] | None = None) -> int:
             )
         receipts_growth = compute_receipts_growth(receipts_bytes, previous_bytes)
         print_receipts_summary(receipts_growth)
+    # The economy tables hold the national living wage's levels, so it moves
+    # with the economy series unless skipped.
+    level_growth = None
+    if not args.gaps_only and not args.skip_national_living_wage:
+        level_growth = compute_level_growth(workbook_bytes)
+        print_level_summary(level_growth)
     calendar_values = (
         read_calendar_values(source_yaml_path) if args.gaps_only else series_values
     )
@@ -2044,6 +2437,11 @@ def main(argv: list[str] | None = None) -> int:
         yoy_path = args.output or source_yaml_path
         outputs[yoy_path] = render_receipts_growth_yaml(
             outputs[yoy_path], receipts_growth, (month, year), previous_release
+        )
+    if level_growth is not None:
+        yoy_path = args.output or source_yaml_path
+        outputs[yoy_path] = render_level_series_yaml(
+            outputs[yoy_path], level_growth, (month, year)
         )
     if write_gaps:
         gap_dir = get_forecast_gap_dir(source_yaml_path)
