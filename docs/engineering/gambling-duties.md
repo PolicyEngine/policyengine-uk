@@ -97,7 +97,8 @@ Supply attributed dutiable net takings separately:
 | Input | Rate | Statutory machine class |
 | --- | --- | --- |
 | `machine_games_lower_rate_net_takings` | 5% | Every dutiable game costs at most 20p and has a maximum cash prize of at most £10. |
-| `machine_games_standard_rate_net_takings` | 20% | The machine does not qualify for the lower rate, and every dutiable game costs at most £5. |
+| `machine_games_standard_rate_net_takings` | 20%, except the part below | The machine does not qualify for the lower rate, and every dutiable game costs at most £5. |
+| `machine_games_standard_rate_higher_stake_net_takings` | 20% to 31 March 2027, then 25% | The part of the standard-rate input from machines with a maximum charge to play above £1 or a maximum prize above £100. |
 | `machine_games_higher_rate_net_takings` | 25% | Other dutiable machines. |
 
 Classify the entire machine using all dutiable games it offers. Exactly £5 per
@@ -109,6 +110,69 @@ class's net takings by premises.
 
 Sources: [Finance Act 2012, Schedule 24](https://www.legislation.gov.uk/ukpga/2012/14/schedule/24)
 and [HMRC Notice 452](https://www.gov.uk/guidance/machine-games-duty-excise-notice-452).
+
+### Higher-stake machines from 1 April 2027
+
+Budget 2026 moves machines with a maximum charge to play of more than £1, or
+a maximum prize of more than £100, from the standard rate of 20% to the higher
+rate of 25% from 1 April 2027. Finance Bill 2026-27 will amend the stake and
+prize thresholds that set each machine's type, and with it the rate
+([OOTLAR paragraph 1.50](https://www.gov.uk/government/publications/budget-2026-overview-of-tax-legislation-and-rates-ootlar/budget-2026-overview-of-tax-legislation-and-rates-ootlar)).
+Today, Finance Act 2012 Schedule 24 paragraph 5(3) puts every machine outside
+the lower-rate class with a highest charge of at most £5 in the standard-rate
+type. From 1 April 2027, such a machine stays at the standard rate only if its
+maximum charge is at most £1 and its maximum prize at most £100: a machine at
+exactly £1 and £100 stays at 20%, while £1 with a £500 prize, or £2 with a
+£100 prize, moves to 25%.
+
+`machine_games_standard_rate_higher_stake_net_takings` is a subset of
+`machine_games_standard_rate_net_takings`, not a separate amount:
+
+- The standard-rate input keeps its meaning: takings from every machine with a
+  highest charge of at most £5 outside the lower-rate class. A dataset without
+  the new input gives the duty before Budget 2026 in every year.
+- HMRC's standard-rate liabilities for periods before 1 April 2027 include the
+  higher-stake machines, so a provider that builds the standard-rate input
+  from them needs no change. From that date HMRC reports those machines at the
+  higher rate. A provider that builds the inputs from later liabilities must
+  add their takings back to the standard-rate input and leave them out of the
+  higher-rate input. Take £100 of remaining standard-rate takings and £100 of
+  higher-stake takings: the duty comes to £45. A provider that leaves the £100
+  out of the higher-rate input but doesn't add it back gets £25; one that does
+  neither gets £50.
+- A data provider supplies the higher-stake share of that base, for example
+  from the Gambling Commission's machine yield by category. The class
+  corresponds closely to Category B, whose limits ([B1: £5 stakes; B2, B3 and
+  B3A: £2 and £500; B4: £2 and £400](https://www.gamblingcommission.gov.uk/licensees-and-businesses/guide/gaming-machine-categories))
+  exceed one of the thresholds. Category C (£1 and £100) and Category D stay
+  within them. The tax class turns on the highest charge and prize a machine
+  actually offers, so a category split approximates it.
+- The duty floors the new input at zero and caps it at the standard-rate input.
+  It never taxes takings that the standard-rate input leaves out.
+
+Within the 6 April to 5 April model year, the change splits by day, as
+paragraph 6(6) (a machine that changes type) and paragraph 9(4) (a rate that
+changes) require within an accounting period. Model year 2026 charges the
+higher-stake part at 25% for 5 of its 365 days, 1 to 5 April 2027; model year
+2027 and later charge all of it at 25%. For £1,000 of standard-rate takings,
+£400 of them higher-stake, the duty rises from £200 to £200.27 in 2026 and to
+£220 from 2027.
+
+The dated switch
+`gov.hmrc.gambling_duty.machine_games.higher_stake_machines_at_higher_rate`
+turns on from 1 April 2027. Set it to false for the counterfactual without the
+change, or move its date to delay it. It shares fiscal-year segments with the
+rates, so a rate reform applies to the higher-stake part at whichever rate the
+switch selects.
+
+The policy costing puts the measure at £135 million in 2027-28 and £130
+million a year to 2031-32
+([Budget 2026 policy costings, page 67](https://assets.publishing.service.gov.uk/media/6ae1883fe4367e5c8b0467df/AB26_Policy_Costing.pdf#page=67)).
+That costing grows its base with the OBR's Machine Games Duty forecast and nets
+off a behavioural response: an elasticity of -0.95, a quarter of lost stakes
+moving to Remote Gaming Duty, general attrition and lower Corporation Tax. The
+model applies the rates statically to supplied takings and reproduces none of
+those responses.
 
 ## Bingo Duty
 
@@ -361,7 +425,7 @@ figures, rounded. These are cash receipts for a 1 April to 31 March year, so a
 reconciliation must handle the timing, period and coverage differences
 described for the casino proxy.
 
-The three machine tax-class bases cannot score a betting-shop-only reform
+The machine tax-class bases cannot score a betting-shop-only reform
 without joint tax-class-by-premises yield data. Premises shares alone do not
 identify that allocation, and machine counts do not provide yield weights.
 No assumption of independence between premises and tax class enters the
