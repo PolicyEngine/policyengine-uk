@@ -35,14 +35,14 @@ applicant has a Universal Credit award:
 3. Bands: the reduction is the council tax share times the rate that the
    scheme's band table (weekly income up to 480.00, 530.00, 580.00 and
    660.00) gives for a fifty-second of the Appendix 3 income.
-4. Pound for pound: while the award stays above nil after the disregards
-   and no benefit cap applies, £520 more of spousal maintenance or private
-   pension, which Universal Credit deducts in full, leaves the income
-   unchanged, because the award falls by £520. £520 more of child
-   maintenance or Child Benefit, which Universal Credit does not deduct,
-   raises it by £520. £520 more interest leaves it unchanged. £1,000 more
-   capital lowers it by exactly the rise in Universal Credit's assumed
-   yield, which comes off the award and is not added back.
+4. Pound for pound: while the award stays above nil after the disregards,
+   no benefit cap applies and DWP's net earned income stays the same, £520
+   more of spousal maintenance or private pension, which Universal Credit
+   deducts in full, leaves the income unchanged, because the award falls by
+   £520. £520 more of child maintenance or Child Benefit, which Universal
+   Credit does not deduct, raises it by £520. £520 more interest leaves it
+   unchanged. £1,000 more capital lowers it by the rise in Universal
+   Credit's assumed yield, which comes off the award and is not added back.
 5. Monotonicity: more pension contributions never lower the reduction of a
    family that keeps its award, since each pound contributed lowers DWP's
    net earned income and raises the award by at most the 55% taper.
@@ -481,6 +481,10 @@ POUND_VARIABLES = INCOME_VARIABLES
 @given(st.lists(families(), min_size=1, max_size=4))
 @example(units=example_families())
 def test_pound_for_pound(units):
+    # The Child Benefit variant supplies Child Benefit, and a variable
+    # supplied for some families reads as nil for the rest, so every family
+    # here gets its Child Benefit at HMRC's rates as an input.
+    units = [dict(unit, child_benefit=child_benefit(unit)) for unit in units]
     variants = [make(unit) for _, make, _ in VARIANTS for unit in units]
     capital = [
         dict(unit, savings=unit.get("savings", 0.0) + CAPITAL_STEP) for unit in units
@@ -489,14 +493,18 @@ def test_pound_for_pound(units):
     n = len(units)
     income = values["oxford_council_tax_reduction_universal_credit_income"]
 
+    earned = values["uc_earned_income_before_work_allowance"]
+
     def award_above_nil(j, unit):
-        # The award after the disregards stays above nil, and no benefit cap
-        # applies, so a pound off the award is a pound off the income.
+        # The award after the disregards stays above nil, no benefit cap
+        # applies and DWP's net earned income stays the same, so a pound off
+        # the award is a pound off the income.
         award = values["universal_credit"][j] + values["uc_deductions"][j]
         return (
             has_award(values, j)
             and award - disregards(values, j, unit)[1] > TOLERANCE
             and values["uc_benefit_cap_reduction_after_floor"][j] == 0
+            and abs(earned[j] - earned[j % n]) < TOLERANCE
         )
 
     for i, unit in enumerate(units):
