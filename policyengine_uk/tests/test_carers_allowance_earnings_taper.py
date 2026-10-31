@@ -221,7 +221,7 @@ def final_allowance(weekly_earnings, weekly_state_pension, year, region="NORTH_W
 
 
 def test_2030_31_takes_overlapping_benefits_off_only_the_taper_weeks():
-    # £250 a week is £46 over the £204 limit; £40 a week of State Pension.
+    # £250 a week exceeds the projected limit; £40 a week of State Pension.
     limit, rate = ca_parameters(START_YEAR)
     excess = 250 - limit
     expected = START_YEAR_SHARE * max(rate - excess - 40, 0) * 52

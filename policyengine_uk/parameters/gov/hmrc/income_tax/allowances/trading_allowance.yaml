@@ -14,8 +14,7 @@ values:
         href: https://www.legislation.gov.uk/ukpga/2017/32/schedule/3
   # Budget 2026 raises the allowance to £3,000 from 6 April 2027, to be
   # legislated in Finance Bill 2026-27. The s. 783AD amount also relieves
-  # miscellaneous income (s. 783AB); the model applies it to trading income
-  # and to Chapter 8 miscellaneous income (income_not_otherwise_charged).
+  # miscellaneous income (s. 783AB); the model shares it between both sources.
   2027-04-06:
     value: 3_000
     reference:
