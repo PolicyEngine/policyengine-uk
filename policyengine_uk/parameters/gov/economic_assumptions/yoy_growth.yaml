@@ -223,7 +223,7 @@ obr:
     # earnings "should continue to be the key reference point for future
     # rates".
     values:
-      # Set by the Government (2021-2027) from OBR EFO October 2026, economy Table 1.13 "National Living Wage (NLW)": £8.72 in 2020 to £13.21 in 2027
+      # The government set the rates for 2021-2027: £8.72 in 2020 to £13.21 in 2027 (OBR EFO October 2026, economy Table 1.13 "National Living Wage (NLW)")
       2021-01-01: 0.021789
       2022-01-01: 0.066218
       2023-01-01: 0.096842
@@ -231,12 +231,12 @@ obr:
       2025-01-01: 0.067308
       2026-01-01: 0.04095
       2027-01-01: 0.039339
-      # OBR estimates (2028-2031) from OBR EFO October 2026, economy Table 1.13 "National Living Wage (NLW)": £13.21 in 2027 to £14.62 in 2031
+      # The OBR estimates the rates for 2028-2031: £13.21 in 2027 to £14.62 in 2031 (OBR EFO October 2026, economy Table 1.13 "National Living Wage (NLW)")
       2028-01-01: 0.022984
       2029-01-01: 0.025251
       2030-01-01: 0.027289
       2031-01-01: 0.026986
-      # Beyond the OBR forecast: the average_earnings long-run path above, year for year
+      # After the OBR forecast, the importer copies average_earnings year for year
       2032-01-01: 0.0285
       2033-01-01: 0.0309
       2034-01-01: 0.0334

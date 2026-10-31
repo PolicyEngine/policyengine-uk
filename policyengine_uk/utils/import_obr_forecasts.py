@@ -591,9 +591,10 @@ TABLE_TITLE_RE = re.compile(r"^(\d+\.\d+)\s+(.+)$")
 TABLE_NUMBER_RE = re.compile(r"\d+\.\d+")
 FOOTNOTE_RE = re.compile(r"(?<=[a-z])\d+$", re.IGNORECASE)
 VALUE_LINE_RE = re.compile(r"^\s*(\d{4})-\d{2}-\d{2}:")
-# The last year yoy_growth.yaml states. create_economic_assumption_indices
-# stops at or before it, so a series that stays positive to here stays
-# positive in the model.
+# One year beyond 2073, the last year yoy_growth.yaml states. The model holds
+# each series' last growth in later years, and create_economic_assumption_indices
+# ends the committed file's indices by 2074, so a series whose index stays
+# positive to here stays positive in the model.
 LAST_INDEX_YEAR = 2074
 
 
@@ -1695,8 +1696,8 @@ def render_receipts_growth_yaml(
 
 @dataclass(frozen=True)
 class LevelSeriesSpec:
-    """An economy table that publishes a series as levels across a row, not
-    as growth down a column.
+    """A series the OBR publishes as levels across a row of years, not as
+    growth down a column.
 
     ``path`` names the series under ``obr``. The importer finds the table by
     its title, as it finds receipts tables. The table's header declares one
@@ -1704,18 +1705,23 @@ class LevelSeriesSpec:
     one row below it, labelled ``row``, holds a level under each year and
     nowhere else. The importer compares titles, units and labels lowercased,
     without a footnote marker: digits or superscript digits after a letter or
-    a closing bracket, as in "National Living Wage (NLW)1". A note that the
-    rate "has been set by the Government up until" a year, and that figures
-    beyond that year "are OBR estimates", splits the years the Government has
-    set from the OBR's estimates; every such statement in the table must name
-    the same year. The parameters the series projects round each projected
-    rate to the nearest ``rounding``.
+    a closing bracket, as in "National Living Wage (NLW)1". The OBR's note
+    says the rate "has been set by the Government up until" a year and that
+    "figures beyond" it "are OBR estimates"; the importer labels the years
+    on each side of that year, and every such statement in the table must
+    name the same calendar year.
+
+    ``anchor`` names the scale whose last bracket's amount the series' index
+    uprates. That amount's last dated value is the rate the model projects
+    from, and its uprating rounds each projected rate to the nearest
+    ``rounding``.
     """
 
     path: tuple[str, ...]
     title: str
     unit: str
     row: str
+    anchor: str
     rounding: float
 
 
@@ -1725,22 +1731,28 @@ LEVEL_SERIES_SPECS = (
         title="national living wage",
         unit="£ per hour",
         row="national living wage (nlw)",
+        # The national living wage is the scale's last bracket.
+        anchor="gov.hmrc.minimum_wage.non_apprentice",
         # gov.hmrc.minimum_wage rounds each projected rate to the nearest penny.
         rounding=0.01,
     ),
 )
 # A footnote marker ending a level table's title, unit or label.
-LEVEL_FOOTNOTE_RE = re.compile(
-    r"(?<=[a-z)\]])(?:\d+|[\u2070\u00b9\u00b2\u00b3\u2074-\u2079]+)$", re.IGNORECASE
+LEVEL_FOOTNOTE_RE = re.compile(r"(?<=[a-z)\]])(?:\d+|[⁰¹²³⁴-⁹]+)$", re.IGNORECASE)
+# A statement of the year the government has set the rate up until, with any
+# negation before it and the whole token after it, and a range such as
+# "2027 - 28" with its spaces.
+SET_BY_GOVERNMENT_RE = re.compile(
+    r"(?:\b(not|never)\s+(?:yet\s+)?(?:been\s+)?)?"
+    r"set by the government up until (\S+(?:\s*[-–—]\s*\S+)?)"
 )
-SET_BY_GOVERNMENT_RE = re.compile(r"set by the government up until (\d{4})")
 OBR_ESTIMATES_RE = re.compile(r"figures beyond (\d{4}) are obr estimates")
 
 
 @dataclass(frozen=True)
 class LevelLine:
-    """A level series as one EFO publishes it: levels by calendar year, and
-    the last year whose level the Government has set."""
+    """A level series as the OBR publishes it in one EFO: levels by calendar
+    year, and the last year whose rate the government has set."""
 
     table: str
     label: str
@@ -1752,22 +1764,35 @@ class LevelLine:
 class LevelGrowth:
     """Growth in a level series, by year, to six decimals, from the table's
     second year to its last. compute_level_growth writes each year's level
-    over the year before's; penny_preserving_growth then changes any OBR
-    estimate's growth that would project the wrong penny."""
+    over the year before's; penny_preserving_growth then changes the growth
+    in any year after the anchor's that would project another penny."""
 
     values: dict[int, float]
     line: LevelLine
     spec: LevelSeriesSpec
 
 
+@dataclass(frozen=True)
+class LevelAnchor:
+    """The rate a level series' index projects from: the last dated value of
+    the parameter it uprates, the date that value takes effect, and that
+    parameter's uprating metadata. policyengine-core's uprate_parameters
+    projects each later rate from this value."""
+
+    instant: date
+    rate: float
+    uprating: dict
+
+
 def level_label(value: str | None) -> str:
-    """A level table's title, unit or label as the importer compares it:
-    lowercased, with single spaces and without a footnote marker."""
+    """Return a level table's title, unit or label as the importer compares
+    it: lowercased, with single spaces and without a footnote marker."""
     return LEVEL_FOOTNOTE_RE.sub("", normalise_label(value))
 
 
 def _year_columns(row: dict[str, str | None]) -> dict[str, int]:
-    """A row's columns and years, if every non-empty cell holds a year."""
+    """Return a row's columns and years, if every non-empty cell holds a
+    year."""
     cells = {
         column: str(value).strip()
         for column, value in row.items()
@@ -1779,22 +1804,39 @@ def _year_columns(row: dict[str, str | None]) -> dict[str, int]:
 
 
 def _set_until(rows: list[dict[str, str | None]], where: str) -> int:
-    """The last year the Government has set, from the table's note. Every
-    statement in the table of the year the Government has set the rate up
+    """Read the last year the government has set from the OBR's note. Every
+    statement in the table of the year the government has set the rate up
     until, or of the year beyond which figures are OBR estimates, must name
-    the same year."""
+    the same calendar year, and none may deny it."""
     texts = [normalise_label(value) for row in rows for value in row.values()]
     notes = [text for text in texts if SET_BY_GOVERNMENT_RE.search(text)]
     if len(notes) != 1:
         raise ValueError(
-            f"{where} needs one note saying which years the Government has set "
-            f"and which are OBR estimates; found {len(notes)}"
+            f"The importer needs one note in {where} saying which years the "
+            f"government has set and which the OBR estimates; found {len(notes)}"
         )
-    set_years = sorted({int(year) for year in SET_BY_GOVERNMENT_RE.findall(notes[0])})
+    statements = [
+        (negation, token.rstrip(".,;:)"))
+        for negation, token in SET_BY_GOVERNMENT_RE.findall(notes[0])
+    ]
+    for negation, token in statements:
+        if negation:
+            raise ValueError(
+                f"The OBR's note in {where} says the rate has {negation} been "
+                f"set by the government up until a year, so it names no year "
+                f"the government has set: {notes[0]!r}"
+            )
+        if not re.fullmatch(r"\d{4}", token):
+            raise ValueError(
+                f"The OBR's note in {where} gives {token!r}, not one calendar "
+                f"year, as the year the government has set the rate up until: "
+                f"{notes[0]!r}"
+            )
+    set_years = sorted({int(token) for _, token in statements})
     if len(set_years) != 1:
         raise ValueError(
-            f"{where}'s note names more than one year the Government has set "
-            f"the rate up until, {set_years}: {notes[0]!r}"
+            f"The OBR's note in {where} names more than one year the "
+            f"government has set the rate up until, {set_years}: {notes[0]!r}"
         )
     set_until = set_years[0]
     estimates = sorted(
@@ -1802,9 +1844,9 @@ def _set_until(rows: list[dict[str, str | None]], where: str) -> int:
     )
     if estimates != [set_until]:
         raise ValueError(
-            f"{where} does not say the figures beyond {set_until} are OBR "
-            f"estimates, and no others; it names {estimates or 'no year'}: "
-            f"{notes[0]!r}"
+            f"The importer found no statement in {where} that the figures "
+            f"beyond {set_until}, and no others, are OBR estimates; the OBR "
+            f"names {estimates or 'no year'}: {notes[0]!r}"
         )
     return set_until
 
@@ -1812,8 +1854,8 @@ def _set_until(rows: list[dict[str, str | None]], where: str) -> int:
 def find_level_line(
     sheets: dict[str, list[dict[str, str | None]]], spec: LevelSeriesSpec
 ) -> LevelLine:
-    """The levels in the one row labelled ``spec.row`` of the one table
-    titled ``spec.title``, read across its row of years.
+    """Read the levels in the one row labelled ``spec.row`` of the one table
+    titled ``spec.title``, across its row of years.
 
     It refuses any other layout rather than read it: another unit, a second
     row of years or of the label, a level missing under a year or one with
@@ -1893,8 +1935,9 @@ def find_level_line(
     set_until = _set_until(rows, where)
     if not min(levels) <= set_until <= max(levels):
         raise ValueError(
-            f"{where} says the Government has set the rate up until "
-            f"{set_until}, outside its years {min(levels)}-{max(levels)}"
+            f"The OBR's note in {where} says the government has set the rate up "
+            f"until {set_until}, outside the table's years "
+            f"{min(levels)}-{max(levels)}"
         )
     if TABLE_NUMBER_RE.fullmatch(sheet):
         table = sheet
@@ -1909,7 +1952,8 @@ def find_level_line(
 def compute_level_growth(
     xlsx_bytes: bytes, specs: tuple[LevelSeriesSpec, ...] = LEVEL_SERIES_SPECS
 ) -> dict[tuple[str, ...], LevelGrowth]:
-    """Growth in each level series from an EFO's economy tables."""
+    """Read the growth in each level series from an EFO's economy tables:
+    each year's level over the year before's, less one, to six decimals."""
     sheets = read_workbook_sheets(xlsx_bytes)
     result = {}
     for spec in specs:
@@ -1919,89 +1963,139 @@ def compute_level_growth(
             year: round(line.levels[year] / line.levels[year - 1] - 1, 6) + 0.0
             for year in sorted(line.levels)[1:]
         }
-        # As for the receipts series: the model compounds the growth into an
-        # index rounded to five decimals, which must stay above zero.
-        index = 1.0
         for year, value in values.items():
-            index = round(index * (1 + value), 5)
-            if not (math.isfinite(index) and index > 0):
+            if not math.isfinite(value):
                 raise ValueError(
-                    f"{name}: {year} growth of {value} takes the index to "
-                    f"{index} at five decimals, which the model cannot "
-                    "compound from"
+                    f"{name}: the {year} level over the {year - 1} level gives "
+                    f"growth of {value}, which the importer cannot write"
                 )
         result[spec.path] = LevelGrowth(values, line, spec)
     return result
 
 
-# create_economic_assumption_indices compounds each index to 2039.
-MODEL_INDEX_LAST_YEAR = 2039
+def read_level_anchor(spec: LevelSeriesSpec) -> LevelAnchor:
+    """Read the last dated value of ``spec.anchor``'s last bracket's amount,
+    and its uprating metadata, from its file in the model's parameter tree.
+    It refuses an amount that the series' index does not uprate to the
+    nearest ``spec.rounding``."""
+    path = (
+        get_repo_root() / "policyengine_uk/parameters" / Path(*spec.anchor.split("."))
+    )
+    amount = yaml.safe_load(path.with_suffix(".yaml").read_text())["brackets"][-1][
+        "amount"
+    ]
+    uprating = amount["metadata"]["uprating"]
+    expected = {
+        "parameter": "gov.economic_assumptions.indices.obr." + ".".join(spec.path),
+        "rounding": {"type": "nearest", "interval": spec.rounding},
+    }
+    if uprating != expected:
+        raise ValueError(
+            f"{spec.anchor}'s last bracket must uprate by {expected['parameter']} "
+            f"to the nearest {spec.rounding}; its metadata gives {uprating}"
+        )
+    instant = max(amount["values"])
+    value = amount["values"][instant]
+    return LevelAnchor(
+        instant=date.fromisoformat(str(instant)),
+        rate=float(value["value"] if isinstance(value, dict) else value),
+        uprating=uprating,
+    )
 
 
-def compound_model_index(values: dict) -> dict[int, float]:
-    """The index create_economic_assumption_indices compounds from a growth
-    series: 1 in its first listed year, then each year's index times one plus
-    the growth in force on 1 January, rounded to five decimals, to 2039."""
+def compound_model_index(values: dict, last_year: int) -> dict[int, float]:
+    """Compound a growth series' index as create_economic_assumption_indices
+    does, to ``last_year``: 1 in the series' first listed year, then each
+    year's index times one plus the growth in force on 1 January, rounded to
+    five decimals. The builder decides where an index ends (see
+    check_level_index_in_model)."""
     growth = {str(instant): value for instant, value in values.items()}
     first = int(min(growth)[:4])
     index = {first: 1.0}
-    for year in range(first + 1, MODEL_INDEX_LAST_YEAR + 1):
+    for year in range(first + 1, last_year + 1):
         in_force = max(instant for instant in growth if instant <= f"{year}-01-01")
         index[year] = round(index[year - 1] * (1 + growth[in_force]), 5)
     return index
 
 
 def projected_rate_units(
-    index: dict[int, float], set_until: int, rate: float, year: int, rounding: float
+    index: dict[int, float], start: int, rate: float, year: int, rounding: float
 ) -> float:
-    """The rate uprate_parameters (policyengine-core) projects for ``year``
-    from ``rate``, the last one set, in ``set_until``, as a whole number of
-    ``rounding``: the rate times the index's growth since, over ``rounding``,
-    rounded to the nearest whole number. Infinity if that overflows."""
-    projected = rate * (index[year] / index[set_until]) / rounding
+    """Return the rate uprate_parameters (policyengine-core) projects for
+    ``year`` from ``rate``, in force in ``start``, as a whole number of
+    ``rounding``: the rate times the index's growth since, over
+    ``rounding``, rounded to the nearest whole number. Infinity if that
+    overflows."""
+    projected = rate * (index[year] / index[start]) / rounding
     return round(projected) if math.isfinite(projected) else math.inf
 
 
+def _level_growth_series(series: LevelGrowth, kept: dict) -> dict[str, float]:
+    """The growth the model reads for a level series: the years the file
+    keeps before the table, then the table's, keyed by date."""
+    growth = {str(instant): value for instant, value in kept.items()}
+    growth.update({f"{year}-01-01": value for year, value in series.values.items()})
+    return growth
+
+
+def check_level_index(path: tuple[str, ...], series: LevelGrowth, kept: dict) -> None:
+    """Refuse a table whose growth takes the model's index to zero or
+    infinity. The model compounds ``kept``, the years the file keeps before
+    the table, and then the table's growth (compound_model_index), so the
+    importer compounds the same series."""
+    index = compound_model_index(_level_growth_series(series, kept), max(series.values))
+    for year, value in sorted(series.values.items()):
+        if not (math.isfinite(index[year]) and index[year] > 0):
+            raise ValueError(
+                f"{'.'.join(path)}: {year} growth of {value} takes the index to "
+                f"{index[year]} at five decimals, which the model cannot "
+                "compound from"
+            )
+
+
 def penny_preserving_growth(
-    path: tuple[str, ...], series: LevelGrowth, kept: dict
+    path: tuple[str, ...], series: LevelGrowth, kept: dict, anchor: LevelAnchor
 ) -> LevelGrowth:
-    """``series`` with each OBR estimate's growth chosen so that the model
-    projects the table's level, as both round to the nearest
+    """Choose the growth in each table year after ``anchor``'s so that the
+    model projects the table's level, both rounded to the nearest
     ``series.spec.rounding``.
 
     The model compounds ``kept``, the earlier years the file keeps, and then
-    ``series`` into an index (compound_model_index), and projects each rate
-    after the last one set from it (projected_rate_units). The importer takes
-    the table's level in the year the Government has set the rate up until
-    as that rate. Each later year keeps its growth if the projection rounds
-    to the table's level. Otherwise the importer takes the growth, to six
-    decimals, from the level the index carries the rate to in the year before
-    to the table's level, or else the nearest six-decimal growth to that
-    which does round to the table's level. It refuses a year that no
-    six-decimal growth can reproduce.
+    ``series`` into an index (compound_model_index), and projects each later
+    rate from the anchor's rate (projected_rate_units). The importer refuses
+    a table whose level in the anchor's year differs from the anchor's rate
+    at that rounding, and one whose index starts after the anchor's year.
+    Each later year keeps its growth if the projection rounds to the table's
+    level. Otherwise the importer takes the growth, to six decimals, from
+    the level the index carries the rate to in the year before to the
+    table's level, or else the nearest six-decimal growth to that which does
+    round to the table's level. It refuses a year that no six-decimal growth
+    can reproduce.
     """
     name = ".".join(path)
     line = series.line
     rounding = series.spec.rounding
-    set_until, last = line.set_until, max(line.levels)
-    if last > MODEL_INDEX_LAST_YEAR:
+    start, rate, last = anchor.instant.year, anchor.rate, max(line.levels)
+    if start in line.levels and round(line.levels[start] / rounding) != round(
+        rate / rounding
+    ):
         raise ValueError(
-            f"{name}: the model compounds its indices to {MODEL_INDEX_LAST_YEAR}, "
-            f"so it cannot project the {last} level"
+            f"{name}: the OBR's {start} level, {line.levels[start]!r}, differs "
+            f"to the nearest {rounding} from {rate!r}, the rate "
+            f"{series.spec.anchor} holds from {anchor.instant}"
         )
     values = dict(series.values)
-    growth = {str(instant): value for instant, value in kept.items()}
-    growth.update({f"{year}-01-01": value for year, value in values.items()})
+    growth = _level_growth_series(series, kept)
     first = int(min(growth)[:4])
-    if set_until < first:
+    if start < first:
         raise ValueError(
-            f"{name}: the index starts in {first}, after {set_until}, the last "
-            "year the Government has set, so the model cannot project from it"
+            f"{name}: the index starts in {first}, after {start}, the year of "
+            f"the last rate {series.spec.anchor} holds, so the model cannot "
+            "project from it"
         )
-    rate = line.levels[set_until]
-    for year in range(set_until + 1, last + 1):
-        index = compound_model_index(growth)
-        for base in (set_until, year - 1):
+    for year in [year for year in sorted(line.levels) if year > start]:
+        index = compound_model_index(growth, last)
+        for base in (start, year - 1):
             if not (math.isfinite(index[base]) and index[base] > 0):
                 raise ValueError(
                     f"{name}: the index reaches {index[base]} in {base}, so the "
@@ -2009,8 +2103,8 @@ def penny_preserving_growth(
                 )
         refusal = ValueError(
             f"{name}: no {year} growth to six decimals lets the model project "
-            f"the table's {year} level, {line.levels[year]!r}, from its "
-            f"{set_until} rate to the nearest {rounding}"
+            f"the OBR's {year} level, {line.levels[year]!r}, from the {start} "
+            f"rate to the nearest {rounding}"
         )
         if not math.isfinite(line.levels[year] / rounding):
             raise refusal
@@ -2021,8 +2115,8 @@ def penny_preserving_growth(
                 value = micros / 1_000_000
             except OverflowError:
                 return math.inf
-            trial = compound_model_index({**growth, f"{year}-01-01": value})
-            return projected_rate_units(trial, set_until, rate, year, rounding)
+            trial = compound_model_index({**growth, f"{year}-01-01": value}, last)
+            return projected_rate_units(trial, start, rate, year, rounding)
 
         written = round(Decimal(repr(values[year])) * 1_000_000)
         if units(written) == target:
@@ -2048,7 +2142,7 @@ def penny_preserving_growth(
         lowest, highest = first_above(target - 1), first_above(target) - 1
         if lowest > highest:
             raise refusal
-        carried = rate * (index[year - 1] / index[set_until])
+        carried = rate * (index[year - 1] / index[start])
         ratio = line.levels[year] / carried - 1
         sequential = round(ratio * 1e6) if math.isfinite(ratio * 1e6) else lowest
         values[year] = min(max(sequential, lowest), highest) / 1_000_000 + 0.0
@@ -2069,23 +2163,118 @@ def _kept_level_values(obr: dict, path: tuple[str, ...], series: LevelGrowth) ->
     }
 
 
+def _level_anchor(
+    path: tuple[str, ...],
+    series: LevelGrowth,
+    anchors: dict[tuple[str, ...], LevelAnchor] | None,
+) -> LevelAnchor:
+    """``anchors[path]`` if given, or else the anchor read_level_anchor
+    reads from the series' parameter file."""
+    return anchors[path] if anchors is not None else read_level_anchor(series.spec)
+
+
 def penny_preserving_level_growth(
-    content: str, growth: dict[tuple[str, ...], LevelGrowth]
+    content: str,
+    growth: dict[tuple[str, ...], LevelGrowth],
+    anchors: dict[tuple[str, ...], LevelAnchor] | None = None,
 ) -> dict[tuple[str, ...], LevelGrowth]:
-    """penny_preserving_growth for each level series, given the years before
-    its table that ``content``, a yoy_growth.yaml, keeps."""
+    """Run penny_preserving_growth on each level series, given the years
+    before its table that ``content``, a yoy_growth.yaml, keeps, and its
+    anchor (``anchors``, or by default read_level_anchor)."""
     obr = yaml.safe_load(content)["obr"]
     return {
         path: penny_preserving_growth(
-            path, series, _kept_level_values(obr, path, series)
+            path,
+            series,
+            _kept_level_values(obr, path, series),
+            _level_anchor(path, series, anchors),
         )
         for path, series in growth.items()
     }
 
 
+def build_model_index(content: str, path: tuple[str, ...]) -> dict[int, float]:
+    """Build, by year, the index the model compounds from ``obr.<path>`` when
+    ``content`` is its yoy_growth.yaml.
+
+    process_parameter_tree runs its generation steps on the parameters the
+    YAML files hold. This runs those steps, up to and including
+    create_economic_assumption_indices, on the same parameters with
+    ``content``'s growth series in place of the file's, and reads the index
+    that builder writes. The steps before it add growth series of their own,
+    and the builder decides where each index ends.
+    """
+    from policyengine_core.parameters import ParameterNode, config
+
+    from policyengine_uk.parameters.gov.economic_assumptions.create_economic_assumption_indices import (
+        create_economic_assumption_indices,
+    )
+    from policyengine_uk.tax_benefit_system import (
+        GENERATION_STEPS,
+        statutory_parameters,
+    )
+
+    parameters = statutory_parameters()
+    assumptions = parameters.gov.economic_assumptions
+    del assumptions.children["yoy_growth"]
+    assumptions.add_child(
+        "yoy_growth",
+        ParameterNode(
+            "gov.economic_assumptions.yoy_growth",
+            data=yaml.load(content, Loader=config.Loader),
+        ),
+    )
+    for step in GENERATION_STEPS:
+        parameters = step(parameters)
+        if step is create_economic_assumption_indices:
+            break
+    index = parameters.get_child(
+        "gov.economic_assumptions.indices.obr." + ".".join(path)
+    )
+    return {
+        int(entry.instant_str[:4]): entry.value
+        for entry in sorted(index.values_list, key=lambda entry: entry.instant_str)
+    }
+
+
+def check_level_index_in_model(
+    content: str,
+    path: tuple[str, ...],
+    series: LevelGrowth,
+    build_index=None,
+) -> None:
+    """Check the index the model builds from ``content``'s ``obr.<path>``
+    against the importer's. ``build_index(content, path)`` builds it; by
+    default build_model_index does, as the model does. The index must reach
+    the table's last year, and compound_model_index must compound the same
+    index from the written series in every year the model's has."""
+    name = ".".join(path)
+    model = (build_index or build_model_index)(content, path)
+    last = max(series.line.levels)
+    if max(model) < last:
+        raise ValueError(
+            f"{name}: the model's index ends in {max(model)}, so it cannot "
+            f"project the {last} level"
+        )
+    node = yaml.safe_load(content)["obr"]
+    for key in path:
+        node = node[key]
+    importer = compound_model_index(node["values"], max(model))
+    differ = sorted(
+        year
+        for year in model.keys() | importer.keys()
+        if model.get(year) != importer.get(year)
+    )
+    if differ:
+        raise ValueError(
+            f"{name}: compound_model_index and the model's index differ in "
+            f"{differ}, so the importer cannot check the model's pennies"
+        )
+
+
 def average_earnings_years(content: str, after_year: int) -> dict[int, float]:
-    """``average_earnings`` after ``after_year``, year for year: the path
-    ``average_earnings_path`` gives, with an entry in every year
+    """Return ``average_earnings`` after ``after_year``, year for year: the
+    path ``average_earnings_path`` gives, with an entry in every year
     average_earnings has one, so the two series list the same years."""
     values = yaml.safe_load(content)["obr"]["average_earnings"]["values"]
     later = {
@@ -2103,9 +2292,9 @@ def render_level_values(
     tail: dict[int, float],
     release: tuple[str, int],
 ) -> list[str]:
-    """A level series' values entries: earlier years as they were, then
-    the growth into the rates the Government has set, then into the OBR's
-    estimates, then the average_earnings path."""
+    """Render a level series' values entries: earlier years as they were,
+    then the growth into the rates the government has set, then into the
+    OBR's estimates, then the average_earnings path."""
     first_year = min(growth.values)
     kept: list[str] = []
     pending: list[str] = []
@@ -2129,24 +2318,26 @@ def render_level_values(
     )
     for kind, years in (
         (
-            "Set by the Government",
+            "The government set the rates for",
             [y for y in growth.values if y <= published.set_until],
         ),
-        ("OBR estimates", [y for y in growth.values if y > published.set_until]),
+        (
+            "The OBR estimates the rates for",
+            [y for y in growth.values if y > published.set_until],
+        ),
     ):
         if not years:
             continue
         span = f"{years[0]}" if len(years) == 1 else f"{years[0]}-{years[-1]}"
         start, end = years[0] - 1, years[-1]
         lines.append(
-            f"{pad}# {kind} ({span}) from {source}: "
-            f"£{published.levels[start]:.2f} in {start} to "
-            f"£{published.levels[end]:.2f} in {end}"
+            f"{pad}# {kind} {span}: £{published.levels[start]:.2f} in {start} "
+            f"to £{published.levels[end]:.2f} in {end} ({source})"
         )
         lines += [f"{pad}{y}-01-01: {format_growth(growth.values[y])}" for y in years]
     lines.append(
-        f"{pad}# Beyond the OBR forecast: the average_earnings long-run path "
-        "above, year for year"
+        f"{pad}# After the OBR forecast, the importer copies average_earnings "
+        "year for year"
     )
     lines += [f"{pad}{y}-01-01: {format_growth(v)}" for y, v in tail.items()]
     return lines
@@ -2156,27 +2347,38 @@ def render_level_series_yaml(
     content: str,
     growth: dict[tuple[str, ...], LevelGrowth],
     release: tuple[str, int],
+    anchors: dict[tuple[str, ...], LevelAnchor] | None = None,
+    build_index=None,
 ) -> str:
     """Rewrite each level series' values and first reference in a
     yoy_growth.yaml.
 
     It keeps the years before the table's second year, so the series' index
-    keeps its base year, and the series' other references. It writes the
-    growth penny_preserving_growth chooses, so the model projects each of the
-    OBR's estimates to the table's penny. Years after the table follow
-    average_earnings as ``content`` holds it. It checks that the finished
-    series' index stays above zero, and that the result differs from
-    ``content`` only in those values and that reference.
+    keeps its base year, and the series' other references. It refuses a
+    table whose growth takes the index to zero (check_level_index), and
+    writes the growth penny_preserving_growth chooses from each series'
+    anchor (``anchors``, or by default read_level_anchor), so the model
+    projects each table level after the anchor's year to the table's penny.
+    Years after the table follow average_earnings as ``content`` holds it.
+    It checks that the finished series' index stays above zero, that the
+    result differs from ``content`` only in those values and that reference,
+    and that the index the model builds from the result
+    (check_level_index_in_model, with ``build_index``) matches the
+    importer's.
     """
     month, year = release
     expected = copy.deepcopy(yaml.safe_load(content))
     lines = content.split("\n")
+    written = []
     for path, series in growth.items():
         node = expected["obr"]
         for key in path:
             node = node[key]
         kept = _kept_level_values(expected["obr"], path, series)
-        series = penny_preserving_growth(path, series, kept)
+        check_level_index(path, series, kept)
+        series = penny_preserving_growth(
+            path, series, kept, _level_anchor(path, series, anchors)
+        )
         tail = average_earnings_years(content, max(series.values))
         start, end = _series_block(lines, ("obr", *path))
         indent = 2 * len(path) + 2
@@ -2223,6 +2425,7 @@ def render_level_series_yaml(
         }
         check_index_stays_positive(path, node["values"])
         node["metadata"]["reference"][0] = reference
+        written.append((path, series))
 
     rendered = "\n".join(lines)
     if yaml.safe_load(rendered) != expected:
@@ -2230,6 +2433,8 @@ def render_level_series_yaml(
             "Rewriting the level series changed more than their values and "
             "first reference"
         )
+    for path, series in written:
+        check_level_index_in_model(rendered, path, series, build_index)
     return rendered
 
 
@@ -2453,7 +2658,7 @@ def print_receipts_summary(
 
 
 def print_level_summary(growth: dict[tuple[str, ...], LevelGrowth]) -> None:
-    print(f"Updating {len(growth)} OBR level series")
+    print(f"The importer reads {len(growth)} OBR level series")
     for path, series in growth.items():
         levels = series.line.levels
         window = ", ".join(
@@ -2461,13 +2666,14 @@ def print_level_summary(growth: dict[tuple[str, ...], LevelGrowth]) -> None:
             + (
                 ""
                 if value == round(levels[year] / levels[year - 1] - 1, 6) + 0.0
-                else " (not the levels' ratio, which projects another penny)"
+                else " (the importer moves it off the levels' ratio, which "
+                "projects another penny)"
             )
             for year, value in sorted(series.values.items())
         )
         print(
-            f"- {'.'.join(path)} (Table {series.line.table}, set by the "
-            f"Government up until {series.line.set_until}): {window}"
+            f"- {'.'.join(path)} (Table {series.line.table}; the government "
+            f"has set rates up until {series.line.set_until}): {window}"
         )
 
 
@@ -2736,8 +2942,9 @@ def main(argv: list[str] | None = None) -> int:
         print_receipts_summary(
             receipts_growth, population_growth(source_yaml_path.read_text())
         )
-    # The economy tables hold the national living wage's levels, so it moves
-    # with the economy series unless skipped.
+    # The OBR publishes the national living wage's levels in the economy
+    # tables, so the importer refreshes it with the economy series unless
+    # --skip-national-living-wage leaves it alone.
     level_growth = None
     if not args.gaps_only and not args.skip_national_living_wage:
         level_growth = compute_level_growth(workbook_bytes)
@@ -2782,8 +2989,9 @@ def main(argv: list[str] | None = None) -> int:
         )
     if level_growth is not None:
         yoy_path = args.output or source_yaml_path
-        # The growth that keeps each penny depends on the years the file keeps
-        # before the table, so the summary waits for the file.
+        # The importer chooses the growth that keeps each penny from the years
+        # the rendered file keeps before the table, so it prints the summary
+        # after rendering the other series.
         print_level_summary(
             penny_preserving_level_growth(outputs[yoy_path], level_growth)
         )
