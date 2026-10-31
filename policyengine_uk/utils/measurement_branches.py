@@ -66,8 +66,8 @@ def drop_calculated_values(simulation) -> None:
     Inputs are variables without a formula, variables the simulation was built
     from, and variables set since through set_input, as a scenario's
     simulation modifier does to formula variables. A stored household total
-    keeps only the years supplied for it (see drop_calculated_totals). Only
-    variables the simulation holds values for are visited.
+    keeps only the years supplied for it (see drop_calculated_totals). It
+    visits only the variables the simulation holds values for.
     """
     from policyengine_uk.data.economic_assumptions import STORED_HOUSEHOLD_TOTALS
 

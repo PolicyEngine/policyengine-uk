@@ -178,9 +178,9 @@ PROJECTION_END_YEAR = 2032
 # `uprating`. So in a simulation built from data, Simulation grows the latest
 # earlier stored total by the index its parts declare, as Core grows the
 # parts, while the total still means what the data stored: a sum of exactly
-# these parts, each a plain input. Core sums the parts where the variable
-# differs, where the data hold no total for that year or an earlier one, or
-# where they hold the parts for a later year than the total.
+# these parts, each a plain input. Core sums the parts where a reform changes
+# that sum or a part, where the data hold no total for that year or an
+# earlier one, or where they hold the parts for a later year than the total.
 STORED_HOUSEHOLD_TOTALS = MappingProxyType(
     {
         "cash_isa": frozenset({"cash_isa_balance"}),
