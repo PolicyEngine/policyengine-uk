@@ -23,9 +23,12 @@ from policyengine_uk.utils.aggregate_impact.compare import (
 from policyengine_uk.tests.aggregate_impact.test_aggregate_impact_measure import (
     _rebuilt,
 )
+from policyengine_uk.utils.aggregate_impact.guard import counted_once
 from policyengine_uk.utils.aggregate_impact.measure import (
     Recorder,
     definitions_digest,
+    publishable_guard,
+    record_guard_checks,
     runtime_identity,
     tool_digest,
     weighted_gini,
@@ -1579,3 +1582,146 @@ def test_issue_2499_model_axis_preserves_missing_runtime_identity_behavior():
     summary = compare(base, head, SPEC, axis="model")
 
     assert summary["status"] == "pass", summary["failures"]
+
+
+def _guard_summary(base_failing, head_failing):
+    return compare(
+        result({}, [check("counted_once:tax_b", "fail", base_failing)]),
+        result({}, [check("counted_once:tax_b", "fail", head_failing)]),
+        SPEC,
+    )
+
+
+def _guard_check(summary):
+    return next(c for c in summary["checks"] if c["id"] == "counted_once:tax_b")
+
+
+def test_a_failure_the_base_could_not_confirm_blocks_and_says_so():
+    """The base could not confirm whether tax_h contained tax_b, and the head
+    finds that it does. The failure may predate this change, so the report
+    says so, and the job still fails: a new containment can look the same."""
+    summary = _guard_summary(["gov_tax:tax_h:unconfirmed"], ["gov_tax:tax_h:contains"])
+
+    assert summary["status"] == "fail"
+    found = _guard_check(summary)
+    assert found["classification"] == "regression"
+    assert found["base_unconfirmed"] == ["gov_tax:tax_h:contains"]
+    assert any(
+        "could not confirm this on the base" in failure
+        for failure in summary["failures"]
+    )
+    assert (
+        "**Checks:** 0 broken by this change, 1 failing that the base could not "
+        "confirm, 0 failing on both sides" in render(summary, SPEC)
+    )
+
+
+def test_a_new_failure_beside_an_unconfirmed_one_counts_as_broken():
+    summary = _guard_summary(
+        ["gov_tax:tax_h:unconfirmed"],
+        ["gov_tax:tax_h:contains", "gov_tax:tax_g:contains"],
+    )
+
+    assert _guard_check(summary)["base_unconfirmed"] == []
+    assert "**Checks:** 1 broken by this change, 0 failing on both" in render(
+        summary, SPEC
+    )
+    assert not any("could not confirm" in f for f in summary["failures"])
+
+
+def test_a_head_that_stops_confirming_counts_as_broken():
+    """The change, not the base, took the confirmation away."""
+    summary = _guard_summary(["gov_tax:tax_h:contains"], ["gov_tax:tax_h:unconfirmed"])
+
+    assert _guard_check(summary)["base_unconfirmed"] == []
+
+
+def test_an_unconfirmed_base_for_another_head_confirms_nothing_here():
+    summary = _guard_summary(["gov_tax:tax_g:unconfirmed"], ["gov_tax:tax_h:contains"])
+
+    assert _guard_check(summary)["base_unconfirmed"] == []
+
+
+def test_an_unconfirmed_base_leaves_another_kind_of_failure_broken():
+    summary = _guard_summary(["gov_tax:tax_h:unconfirmed"], ["gov_tax:tax_h:rises"])
+
+    assert _guard_check(summary)["base_unconfirmed"] == []
+
+
+def test_repairing_an_unrelated_nan_reports_no_tax_broken_by_the_change():
+    """A benefit that turns NaN on the base stops the check confirming tax_h,
+    and the head repairs that benefit. tax_h contained tax_b on both sides."""
+    from policyengine_uk.tests.aggregate_impact.test_aggregate_impact_guard import (
+        FakeSim,
+        partition,
+    )
+
+    def measured(nan):
+        formulas = {
+            "tax_b": lambda f: np.array([5.0]),
+            "tax_g": lambda f: 2 * (f("tax_b") - 5),
+            "tax_h": lambda f: f("tax_b") * (f("tax_g") > 0) + 0.25 * f("tax_g"),
+            "ben_c": lambda f: np.sqrt(5 - f("tax_b")) if nan else np.array([0.0]),
+            "gov_tax": lambda f: f("tax_b") + f("tax_g") + f("tax_h"),
+            "gov_spending": lambda f: f("ben_c"),
+        }
+        parts = partition(
+            ["tax_b", "tax_g", "tax_h"],
+            ["ben_c"],
+            reads={"tax_g": ["tax_b"], "tax_h": ["tax_b", "tax_g"]},
+        )
+        with np.errstate(invalid="ignore"):
+            guard = counted_once(
+                FakeSim(formulas, {"x": [0.0]}, [1.0]),
+                parts,
+                2026,
+                1e-6,
+                variables_to_check=["tax_b"],
+            )
+        recorder = Recorder()
+        record_guard_checks(recorder, guard)
+        measurement = result({})
+        measurement["checks"].extend(recorder.checks.values())
+        measurement["guard"] = publishable_guard(guard)
+        return measurement
+
+    summary = compare(measured(True), measured(False), SPEC)
+
+    assert summary["status"] == "fail"
+    assert _guard_check(summary)["base_unconfirmed"]
+    assert "1 broken by this change" not in render(summary, SPEC)
+    assert "1 failing that the base could not confirm" in render(summary, SPEC)
+
+
+_scope = st.sampled_from(["tax_g", "tax_h", "ben_c"]).flatmap(
+    lambda head: st.sampled_from(["contains", "unconfirmed", "rises"]).map(
+        lambda kind: f"gov_tax:{head}:{kind}"
+    )
+)
+
+
+@given(st.sets(_scope, min_size=1), st.sets(_scope, min_size=1))
+@settings(max_examples=120, deadline=None)
+def test_the_report_excuses_only_failures_the_base_could_not_confirm(base, head):
+    """Invariant: the job fails either way. The report moves a failure out of
+    "broken by this change" only when every new scope confirms a containment
+    the base failed as unconfirmed."""
+    summary = _guard_summary(sorted(base), sorted(head))
+    found = _guard_check(summary)
+
+    new = head - base
+    if not new:
+        assert found["classification"] == "pre_existing"
+        assert found["base_unconfirmed"] == []
+        return
+    assert summary["status"] == "fail"
+    assert found["classification"] == "regression"
+    excused = all(
+        scope.endswith(":contains")
+        and scope.replace(":contains", ":unconfirmed") in base
+        for scope in new
+    )
+    assert found["base_unconfirmed"] == (sorted(new) if excused else [])
+    assert ("failing that the base could not confirm" in render(summary, SPEC)) is (
+        excused
+    )

@@ -405,6 +405,7 @@ def render(summary: Mapping, spec: Spec, context: Optional[Mapping] = None) -> s
         return f"{COMMENT_MARKER}\n## Aggregate impact on certified data: skipped\n\n{notes}\n"
     years = summary.get("years") or spec.years
     regressions = [c for c in summary["checks"] if c["classification"] == "regression"]
+    unconfirmed = [c for c in regressions if c.get("base_unconfirmed")]
     pre_existing = [
         c for c in summary["checks"] if c["classification"] == "pre_existing"
     ]
@@ -478,7 +479,13 @@ def render(summary: Mapping, spec: Spec, context: Optional[Mapping] = None) -> s
         intro,
         "",
         (
-            f"**Checks:** {len(regressions)} broken by this change, {len(pre_existing)} failing on "
+            f"**Checks:** {len(regressions) - len(unconfirmed)} broken by this change, "
+            + (
+                f"{len(unconfirmed)} failing that the base could not confirm, "
+                if unconfirmed
+                else ""
+            )
+            + f"{len(pre_existing)} failing on "
             f"both sides, {len(fixed)} fixed. **Moves flagged for review:** {flag_count} "
             "(thresholds in `report_spec.yaml`; a flag does not fail the job)."
         ),

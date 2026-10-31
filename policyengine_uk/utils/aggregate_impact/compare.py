@@ -90,6 +90,24 @@ def classify_check(
     return "pre_existing"
 
 
+def _unconfirmed_on_base(base: Optional[Mapping], head: Optional[Mapping]) -> list:
+    """The head's new failing scopes, if each one confirms a containment the
+    base failed as ``unconfirmed``. The check could not confirm that reader on
+    the base, so the failure may predate this change.
+
+    Empty if any new scope has no such failure behind it: a new failure beside
+    one the base could not confirm still counts as new.
+    """
+    base_failing = (base or {}).get("failing", {})
+    new = set((head or {}).get("failing", {})) - set(base_failing)
+    could_confirm = {
+        f"{scope.rsplit(':', 1)[0]}:contains"
+        for scope in base_failing
+        if scope.endswith(":unconfirmed")
+    }
+    return sorted(new) if new and new <= could_confirm else []
+
+
 def _excludes(metric: Optional[Mapping], key: str) -> dict:
     """The suppressed components a total leaves out in ``key``, with their
     signs."""
@@ -583,12 +601,22 @@ def compare(
                 "classification": classification,
                 "head_details": (h or {}).get("details", []),
                 "base_details": (b or {}).get("details", []),
+                "base_unconfirmed": (
+                    _unconfirmed_on_base(b, h) if classification == "regression" else []
+                ),
             }
         )
     regressions = [c for c in checks if c["classification"] == "regression"]
     for check in regressions:
         failures.append(
-            f"{check['label']} ({check['id']}): " + "; ".join(check["head_details"][:3])
+            f"{check['label']} ({check['id']}): "
+            + "; ".join(check["head_details"][:3])
+            + (
+                ". The check could not confirm this on the base, so this change "
+                "may not have introduced it."
+                if check["base_unconfirmed"]
+                else ""
+            )
         )
 
     rows, flags = compare_metrics(_metric_map(base), _metric_map(head), spec, years)
