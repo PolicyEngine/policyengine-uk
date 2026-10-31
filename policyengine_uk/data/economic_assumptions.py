@@ -3,6 +3,13 @@ from policyengine_uk.data.capital_gains_projection import (
     CGT_DATASET_INPUTS,
     CGT_INDEX_PATH,
 )
+from policyengine_uk.data.savings_income_projection import (
+    DEFAULT_SAVINGS_INCOME_PROJECTION,
+    OBR_SAVINGS_INCOME_2022_2025,
+    SAVINGS_INCOME_SERIES_YEARS,
+    uniform_savings_income_projection,
+    validate_savings_income_projection,
+)
 from policyengine_uk.data.isa_income import (
     ISA_INTEREST,
     SAVINGS_INTEREST,
@@ -101,6 +108,45 @@ _WATER_GROWTH_SERIES = {
 # them a second time after LEGACY_PROJECTION_END_YEAR.
 COUNTRY_UPRATED_INPUTS = frozenset({"water_and_sewerage_charges"})
 
+# Savings income (savings interest, ISA interest and other investment income)
+# grows in dataset projection by the path the dataset declares it was
+# calibrated to (savings_income_projection.py). Under the
+# obr_savings_income_2022_2025 rule that is the OBR's savings income forecast
+# per person from 2022-23 to 2025-26, and GDP per head in other years, like
+# dividends and the other capital incomes. The OBR's series rises 35.0% in
+# 2024-25 and 0.6% in 2025-26, where GDP per head rises 4.0% and 4.6%. It
+# starts in 2022-23, so earlier years keep GDP per head rather than the
+# parameter's backdated first value. A dataset that declares no rule grows
+# savings income by GDP per head in every year, as before.
+SAVINGS_INCOME_GROWTH = (
+    "gov.economic_assumptions.yoy_growth.obr.per_capita.savings_income"
+)
+GDP_PER_HEAD_GROWTH = "gov.economic_assumptions.yoy_growth.obr.per_capita.gdp"
+SAVINGS_INCOME_GROWTH_FIRST_YEAR, SAVINGS_INCOME_GROWTH_LAST_YEAR = (
+    SAVINGS_INCOME_SERIES_YEARS[OBR_SAVINGS_INCOME_2022_2025]
+)
+
+
+def growth_rate(
+    parameters: ParameterNode,
+    index_name: str,
+    year,
+    savings_income_projection: str = DEFAULT_SAVINGS_INCOME_PROJECTION,
+) -> float:
+    """Growth into ``year`` by the uprating_indices.yaml series ``index_name``.
+
+    The savings income series applies only in the years the dataset's
+    ``savings_income_projection`` rule gives it; GDP per head serves the
+    other years, and every year under the default rule.
+    """
+    if index_name == SAVINGS_INCOME_GROWTH:
+        years = SAVINGS_INCOME_SERIES_YEARS[
+            validate_savings_income_projection(savings_income_projection)
+        ]
+        if years is None or not years[0] <= int(str(year)[:4]) <= years[1]:
+            index_name = GDP_PER_HEAD_GROWTH
+    return parameters.get_child(index_name)(year)
+
 
 # The last year a single-year dataset is projected to: 2032, fiscal year
 # 2032-33. An OBR forecast runs five years past the fiscal year it is made in,
@@ -166,7 +212,13 @@ COUNCIL_TAX_GROWTH = "gov.economic_assumptions.yoy_growth.obr.council_tax"
 SOCIAL_RENT_GROWTH = "gov.economic_assumptions.yoy_growth.obr.social_rent"
 PRIVATE_RENT_GROWTH = "gov.economic_assumptions.yoy_growth.ons.private_rental_prices"
 RESIDENTIAL_PROPERTY_INDEX = "gov.economic_assumptions.indices.obr.house_prices"
-ENERGY_PRICE_INDEX = "gov.economic_assumptions.indices.obr.consumer_price_index"
+ENERGY_PRICES = "gov.economic_assumptions.energy_prices"
+# The annual energy price index that projects each declared input.
+ENERGY_PRICE_SERIES = {
+    "electricity_consumption": "electricity",
+    "gas_consumption": "gas",
+    "domestic_energy_consumption": "electricity_gas_and_solid_fuels",
+}
 RESIDENTIAL_PROPERTY_INPUTS = (
     "main_residence_value",
     "other_residential_property_value",
@@ -184,7 +236,7 @@ def uprating_input_paths() -> list:
     ``apply_single_year_uprating`` and the functions it calls read these, and
     no other parameters: the growth rates in ``uprating_indices.yaml``, the
     council tax and rent series, the cumulative residential property index,
-    the conditional energy CPI index, the indices of the input variables that
+    the annual energy price indices, the indices of the input variables that
     file leaves out (after ``LEGACY_PROJECTION_END_YEAR``) and the capital
     gains projection's metadata (``CGT_INDEX_PATH``). A path may name a node
     (the regional private rent series), which covers its parameters.
@@ -201,7 +253,8 @@ def uprating_input_paths() -> list:
             PRIVATE_RENT_GROWTH,
             CGT_INDEX_PATH,
             RESIDENTIAL_PROPERTY_INDEX,
-            ENERGY_PRICE_INDEX,
+            f"{ENERGY_PRICES}.calendar_year",
+            f"{ENERGY_PRICES}.fiscal_year",
         }
         | set(_unmapped_uprating_indices(uprating).values())
     )
@@ -350,9 +403,17 @@ def apply_single_year_uprating(
 
     # First, apply standard variable-YoY growth based uprating.
 
+    savings_rule = uniform_savings_income_projection(
+        [
+            previous_year.savings_income_projection,
+            current_year.savings_income_projection,
+        ]
+    )
     uprating = _uprating_index_map()
     for index_name, variables in uprating.items():
-        index_rel_change = parameters.get_child(index_name)(current_year.time_period)
+        index_rel_change = growth_rate(
+            parameters, index_name, current_year.time_period, savings_rule
+        )
         for variable in variables:
             for table_name, df in zip(current_year.table_names, current_year.tables):
                 if variable in df.columns:
@@ -374,23 +435,23 @@ def apply_single_year_uprating(
         current_year.isa_income_contract["projection"] == "legacy_gross"
         and SAVINGS_INTEREST in current_year.person
     ):
-        growth = parameters.get_child(
-            "gov.economic_assumptions.yoy_growth.obr.per_capita.gdp"
-        )(current_year.time_period)
+        growth = growth_rate(
+            parameters, SAVINGS_INCOME_GROWTH, current_year.time_period, savings_rule
+        )
         values = gross_interest(previous_year) * (1 + growth)
         if current_year.isa_income_contract["representation"] == "additive":
             values = values - effective_tax_free(current_year.person)
         current_year.person[SAVINGS_INTEREST] = values
 
-    # New additive ISA receipts use the same dataset GDP rule as ordinary
+    # New additive ISA receipts use the same dataset rule as ordinary
     # interest. Legacy receipts retain their former unindexed treatment.
     if (
         current_year.isa_income_contract["projection"] == "additive"
         and ISA_INTEREST in current_year.person
     ):
-        growth = parameters.get_child(
-            "gov.economic_assumptions.yoy_growth.obr.per_capita.gdp"
-        )(current_year.time_period)
+        growth = growth_rate(
+            parameters, SAVINGS_INCOME_GROWTH, current_year.time_period, savings_rule
+        )
         current_year.person[ISA_INTEREST] = previous_year.person[ISA_INTEREST] * (
             1 + growth
         )
@@ -460,7 +521,15 @@ def uprate_energy(
     observed_year: UKSingleYearDataset,
     parameters: ParameterNode,
 ) -> UKSingleYearDataset:
-    """Project declared energy prices with the existing annual CPI assumption."""
+    """Project declared energy spending with the energy price indices.
+
+    Each input moves by its fuel's index (``ENERGY_PRICE_SERIES``) from the
+    period its prices describe (the calendar or fiscal year index, by the
+    declared basis) to the projected fiscal year. The indices hold VAT at the
+    rate the inputs assume, so the spending carries no VAT change, and the
+    VAT formulas apply the rate in force. An undeclared basis holds the
+    amounts flat.
+    """
     basis = observed_year.energy_price_basis
     variables = [
         name
@@ -468,44 +537,74 @@ def uprate_energy(
         if name in observed_year.household.columns
         and name in current_year.household.columns
     ]
-    ratio = 1
-    projected = False
-    if basis is not None and variables:
-        index = parameters.get_child(ENERGY_PRICE_INDEX)
-        source_instant = f"{basis['period_value']:04d}-01-01"
-        target_instant = f"{int(current_year.time_period):04d}-01-01"
-        supported_instants = [
-            value.instant_str
-            for value in getattr(index, "values_list", [])
-            if value.value is not None
-        ]
-        if not supported_instants:
-            raise ValueError(
-                f"Energy index {ENERGY_PRICE_INDEX!r} has no non-null history "
-                f"for declared basis {source_instant} and target {target_instant}."
-            )
-        first_supported = min(supported_instants)
-        if source_instant < first_supported or target_instant < first_supported:
-            raise ValueError(
-                f"Energy index {ENERGY_PRICE_INDEX!r} first supports "
-                f"{first_supported}; declared basis {source_instant} and target "
-                f"{target_instant} must be on or after that instant."
-            )
-        source_index = _uprating_index_value(index, source_instant)
-        target_index = _uprating_index_value(index, target_instant)
-        projected = source_index not in (None, 0) and target_index is not None
-        if projected:
-            ratio = target_index / source_index
-    for variable in variables:
+    if basis is None or not variables:
+        for variable in variables:
+            current_year.household[variable] = observed_year.household[
+                variable
+            ].to_numpy()
+        current_year.energy_price_basis = basis
+        return current_year
+    source_instant = f"{basis['period_value']:04d}-01-01"
+    target_instant = f"{int(current_year.time_period):04d}-01-01"
+    # Check every ratio before changing any amount.
+    ratios = {
+        variable: _energy_price_ratio(
+            parameters,
+            f"{ENERGY_PRICES}.{basis['period_type']}.{ENERGY_PRICE_SERIES[variable]}",
+            source_instant,
+            f"{ENERGY_PRICES}.fiscal_year.{ENERGY_PRICE_SERIES[variable]}",
+            target_instant,
+        )
+        for variable in variables
+    }
+    for variable, ratio in ratios.items():
         current_year.household[variable] = (
             observed_year.household[variable].to_numpy() * ratio
         )
-    current_year.energy_price_basis = (
-        {"period_type": "fiscal_year", "period_value": int(current_year.time_period)}
-        if projected
-        else basis
-    )
+    current_year.energy_price_basis = {
+        "period_type": "fiscal_year",
+        "period_value": int(current_year.time_period),
+    }
     return current_year
+
+
+def _energy_price_ratio(
+    parameters: ParameterNode,
+    source_path: str,
+    source_instant: str,
+    target_path: str,
+    target_instant: str,
+) -> float:
+    """Target index level over source level.
+
+    Each instant must be on or after its index's first stated value; after the
+    last, the last value holds, as in Core's variable uprating.
+    """
+    levels = []
+    for path, instant in ((source_path, source_instant), (target_path, target_instant)):
+        index = parameters.get_child(path)
+        stated = [
+            entry.instant_str
+            for entry in getattr(index, "values_list", [])
+            if entry.value is not None
+        ]
+        if not stated:
+            raise ValueError(
+                f"Energy price index {path!r} has no values; the projection "
+                f"needs {instant}."
+            )
+        if instant < min(stated):
+            raise ValueError(
+                f"Energy price index {path!r} starts at {min(stated)}; the "
+                f"projection needs {instant}."
+            )
+        levels.append(_uprating_index_value(index, instant))
+    source, target = levels
+    if not source > 0:
+        raise ValueError(
+            f"Energy price index {source_path!r} is {source} at {source_instant}."
+        )
+    return target / source
 
 
 def uprate_residential_property(

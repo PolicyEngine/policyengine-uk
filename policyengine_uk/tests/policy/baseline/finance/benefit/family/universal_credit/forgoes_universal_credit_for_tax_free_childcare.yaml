@@ -1,0 +1,84 @@
+# A family takes Tax-Free Childcare instead of a Universal Credit award worth
+# less than the top-up that award would end (#2689, #2753).
+- name: An award worth less than the Tax-Free Childcare top-up is forgone
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    uc_maximum_amount: 21_993
+    uc_income_reduction: 20_000
+    tax_free_childcare_without_universal_credit: 2_400
+  output:
+    forgoes_universal_credit_for_tax_free_childcare: true
+    universal_credit_pre_benefit_cap: 0
+
+- name: An award worth more than the top-up is claimed
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    uc_maximum_amount: 23_153
+    uc_income_reduction: 20_000
+    tax_free_childcare_without_universal_credit: 2_400
+  output:
+    forgoes_universal_credit_for_tax_free_childcare: false
+    universal_credit_pre_benefit_cap: 3_153
+
+- name: An award equal to the top-up is claimed
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    uc_maximum_amount: 22_400
+    uc_income_reduction: 20_000
+    tax_free_childcare_without_universal_credit: 2_400
+  output:
+    forgoes_universal_credit_for_tax_free_childcare: false
+    universal_credit_pre_benefit_cap: 2_400
+
+- name: With no award there is nothing to forgo
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    uc_maximum_amount: 20_000
+    uc_income_reduction: 20_000
+    tax_free_childcare_without_universal_credit: 2_400
+  output:
+    forgoes_universal_credit_for_tax_free_childcare: false
+    universal_credit_pre_benefit_cap: 0
+
+- name: A family whose claim would end a legacy award keeps its claim
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    uc_maximum_amount: 21_993
+    uc_income_reduction: 20_000
+    tax_free_childcare_without_universal_credit: 2_400
+    housing_benefit_reported: 5_000
+    legacy_benefits_closed: false
+  output:
+    forgoes_universal_credit_for_tax_free_childcare: false
+    universal_credit_pre_benefit_cap: 1_993
+
+- name: A legacy award DWP has closed ends either way, so the award is still forgone
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    uc_maximum_amount: 21_993
+    uc_income_reduction: 20_000
+    tax_free_childcare_without_universal_credit: 2_400
+    child_tax_credit_reported: 3_000
+    legacy_benefits_closed: true
+  output:
+    forgoes_universal_credit_for_tax_free_childcare: true
+    universal_credit_pre_benefit_cap: 0
+
+- name: A family that does not claim Universal Credit forgoes nothing
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    would_claim_uc: false
+    legacy_benefits_closed: false
+    uc_maximum_amount: 21_993
+    uc_income_reduction: 20_000
+    tax_free_childcare_without_universal_credit: 2_400
+  output:
+    forgoes_universal_credit_for_tax_free_childcare: false
+    universal_credit_pre_benefit_cap: 0

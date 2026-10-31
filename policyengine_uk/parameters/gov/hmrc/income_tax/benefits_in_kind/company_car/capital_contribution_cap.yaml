@@ -1,0 +1,10 @@
+description: Maximum deduction from a company car's price for capital sums the employee has contributed, in the year and earlier years, to the car and its accessories.
+values:
+  2003-04-06: 5_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Company car capital contribution cap
+  reference:
+    - title: Income Tax (Earnings and Pensions) Act 2003 s. 132(3)(b)
+      href: https://www.legislation.gov.uk/ukpga/2003/1/section/132

@@ -61,7 +61,7 @@ values:
   # education_grants residual can still hold Childcare Grant and Disabled
   # Students' Allowance, because the dataset moves those out only through
   # England-only formulas; and the FRS allpay2 amount reaches both
-  # taxable_miscellaneous_income and private_transfer_income
+  # miscellaneous_income_before_trading_allowance and private_transfer_income
   # (policyengine-uk-data#627).
   2019-08-01:
     - employment_income
@@ -92,6 +92,6 @@ values:
     - savings_interest_income
     - other_investment_income
     - dividend_income
-    - taxable_miscellaneous_income
+    - miscellaneous_income_before_trading_allowance
     - maintenance_income
     - spousal_maintenance_income

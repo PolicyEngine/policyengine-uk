@@ -1,0 +1,10 @@
+description: Class 1A percentage for 2022-23, which applies to the whole year's benefits in kind although the secondary Class 1 percentage fell from 15.05% to 13.8% on 6 November 2022.
+values:
+  2022-04-06: 0.1453
+metadata:
+  unit: /1
+  period: year
+  label: Class 1A percentage for 2022-23
+  reference:
+    - title: Health and Social Care Levy (Repeal) Act 2022 Schedule paragraph 1(2)
+      href: https://www.legislation.gov.uk/ukpga/2022/43/schedule/paragraph/1/enacted

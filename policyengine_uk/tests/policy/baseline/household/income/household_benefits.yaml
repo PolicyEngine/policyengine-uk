@@ -22,8 +22,9 @@
         members: [jobseeker]
   output:
     jsa_contrib: 4_000
-    household_benefits: 4_000
-    household_gross_income: 4_000
+    # Plus the £100 Household Energy Payment: band D (the default) in England.
+    household_benefits: 4_100
+    household_gross_income: 4_100
 
 - name: Both partners' contributory JSA each count once
   period: 2026
@@ -45,8 +46,9 @@
         members: [partner_1, partner_2]
   output:
     jsa_contrib: [2_000, 3_000]
-    household_benefits: 5_000
-    household_gross_income: 5_000
+    # Plus the £100 Household Energy Payment: band D (the default) in England.
+    household_benefits: 5_100
+    household_gross_income: 5_100
 
 - name: The benefit uprating reform uprates contributory JSA once
   period: 2026
@@ -65,5 +67,6 @@
       household:
         members: [jobseeker]
   output:
-    # 4,000 plus 10% of it.
-    household_benefits: 4_400
+    # 4,000 plus the £100 Household Energy Payment (band D, the default, in
+    # England), plus 10% of both: the reform uprates every general benefit.
+    household_benefits: 4_510
