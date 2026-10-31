@@ -8,7 +8,7 @@ from types import SimpleNamespace
 
 import numpy as np
 import pytest
-from hypothesis import given, settings
+from hypothesis import example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk.utils.aggregate_impact.guard import (
@@ -457,6 +457,8 @@ def movement(expected, response, tax_level=0.0):
 @pytest.mark.parametrize(
     "added, response, direct, on_slope",
     [
+        (0, 0, False, False),
+        (0, 1e-9, True, True),
         (1, 0, False, False),
         (1, 0.019, False, False),
         (1, 0.021, True, False),
@@ -485,6 +487,8 @@ def test_movement_allowances_are_2_and_4_percent_of_the_addition(
     tax_level=st.floats(0, 1e9),
     sign=st.sampled_from([-1.0, 1.0]),
 )
+@example(perturbation=0.0, tax_level=0.0, sign=1.0)
+@example(perturbation=1.0, tax_level=1e9, sign=-1.0)
 def test_movement_starts_exactly_beyond_the_response_allowance(
     perturbation, tax_level, sign
 ):
