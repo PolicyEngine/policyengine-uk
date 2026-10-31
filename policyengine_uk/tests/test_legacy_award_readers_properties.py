@@ -87,6 +87,7 @@ one simulation, in separate households and benefit units.
 """
 
 import numpy as np
+import pytest
 from hypothesis import HealthCheck, event, example, given, settings
 from hypothesis import strategies as st
 
@@ -238,13 +239,15 @@ def families(draw):
 def other_members(draw):
     """An adult who is neither claimant, partner nor a dependant.
 
-    They are under state pension age and not in education, so a 16 to 19 year
-    old is not a qualifying young person. They may work, and have no income
-    other than their pay and the awards they report.
+    They are under state pension age, not in education and past the 1
+    September following their 16th birthday (UC Regs 2013 reg. 5(1)(a)), so a
+    16 to 19 year old is not a qualifying young person. They may work, and have
+    no income other than their pay and the awards they report.
     """
     return {
         "age": draw(st.integers(16, 60)),
         "current_education": "NOT_IN_EDUCATION",
+        "is_before_first_september_following_16th_birthday": False,
         **draw(work()),
         **draw(award_reports()),
     }
@@ -539,6 +542,7 @@ def other_members_with_awards(draw):
     return {
         "age": draw(st.integers(16, 60)),
         "current_education": "NOT_IN_EDUCATION",
+        "is_before_first_september_following_16th_birthday": False,
         **awards,
     }
 
@@ -653,6 +657,7 @@ def _family_readers_never_change(drawn, enter_is_mixed_age_couple=False):
                 values[starts[i] : starts[i] + n],
                 values[starts[k + i] : starts[k + i] + n],
             ), (variable, drawn[i])
+    return sim
 
 
 @SETTINGS
@@ -677,6 +682,44 @@ def test_other_members_awards_never_change_the_readers_at_pension_age(drawn):
 )
 def test_other_members_awards_never_change_the_readers_for_young_singles(drawn):
     _family_readers_never_change(drawn)
+
+
+@pytest.mark.parametrize("report", ["esa_income_reported", "jsa_income_reported"])
+def test_sixteen_year_old_own_award_leaves_young_single_readers_unchanged(report):
+    # A natural route-(a) case: no route or own-right Boolean is supplied.
+    # UC reg 5(5) and SPC reg 4A(5) still exclude the member's own award.
+    family = (
+        [
+            {
+                "age": 18,
+                "is_benunit_head": True,
+                "current_education": "NOT_IN_EDUCATION",
+                **NO_AWARDS,
+            }
+        ],
+        [],
+        {"country": "SCOTLAND", "savings": 0},
+    )
+    other = outside_adult(16, is_benunit_head=False, **{report: 5_000})
+    sim = _family_readers_never_change([(family, other)])
+    assert sim.calculate("is_before_first_september_following_16th_birthday", YEAR)[-1]
+    assert not sim.calculate("receives_benefits_in_own_right", YEAR).any()
+    for programme in ("universal_credit", "pension_credit"):
+        assert not sim.calculate(f"is_qualifying_young_person_for_{programme}", YEAR)[
+            -1
+        ]
+        assert not sim.calculate(
+            f"is_child_or_qualifying_young_person_for_{programme}", YEAR
+        )[-1]
+    for variable in (
+        "uc_child_element",
+        "is_uc_work_allowance_eligible",
+        "uc_work_allowance",
+    ):
+        assert not sim.calculate(variable, YEAR).any(), variable
+    for variable in ("uc_earned_income", "uc_unearned_income"):
+        values = sim.calculate(variable, YEAR)
+        assert np.isclose(values[0], values[1], atol=0.01), variable
 
 
 @SETTINGS
