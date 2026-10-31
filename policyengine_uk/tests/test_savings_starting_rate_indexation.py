@@ -15,6 +15,9 @@ from policyengine_core.reforms import Reform
 
 import policyengine_uk
 from policyengine_uk import CountryTaxBenefitSystem, Simulation
+from policyengine_uk.parameters.gov.economic_assumptions.create_economic_assumption_indices import (
+    growth_horizon,
+)
 from policyengine_uk.parameters.gov.hmrc import create_threshold_indexation
 from policyengine_uk.utils.scenario import Scenario
 
@@ -82,7 +85,9 @@ def test_starting_rate_uses_the_previous_rounded_annual_limit(system):
         assert limit(indexed, year) == expected
         if year > 2030:
             assert limit(indexed, year, baseline=True) == expected
-    assert limit(indexed, 2040) == limit(indexed, 2039)
+    horizon = growth_horizon(indexed.parameters.gov.economic_assumptions.yoy_growth)
+    assert limit(indexed, horizon) > limit(indexed, 2040) > limit(indexed, 2039)
+    assert limit(indexed, horizon + 1) == limit(indexed, horizon)
     # Reapplying the helper does not append another year's increase.
     create_threshold_indexation.add_threshold_indexation(indexed.parameters)
     assert limit(indexed, 2031) == 5_100

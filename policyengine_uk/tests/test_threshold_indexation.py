@@ -30,10 +30,10 @@ Invariants:
    0.5%, the steps give £12,570 and £37,700, the 2021-22 amounts in the
    Income Tax (Indexation) Order 2021 (SI 2021/111) arts 2 and 3(a).
 3. Freeze: the model's PA is £12,570 and BRL £37,700 in 2022-2030.
-4. Reference path: in 2031-2039 the model's PA and BRL equal the statute
-   applied year by year, in exact rationals, to the model's own September
-   CPI input; 2040 holds 2039, the last year of the economic assumptions.
-5. Alignment in every year 2021-2040: UPL = PA + BRL and 52 x UEL is within
+4. Reference path: from 2031 to the last year of the economic assumptions
+   the model's PA and BRL equal the statute applied year by year, in exact
+   rationals, to the model's own September CPI input; later years hold it.
+5. Alignment in every year from 2021: UPL = PA + BRL and 52 x UEL is within
    £0.26 of the UPL. From 2023: LPL = PA and 52 x PT is within £0.26 of the
    LPL. Intended exceptions, as the law stood: in 2021-22 the PT and LPL
    were £9,568 a year, below the PA; in 2022-23 the PT rose to the PA only
@@ -74,6 +74,9 @@ from policyengine_core.parameters import ParameterNode
 import policyengine_uk
 from policyengine_uk import CountryTaxBenefitSystem, Simulation
 from policyengine_uk.model_api import Scenario
+from policyengine_uk.parameters.gov.economic_assumptions.create_economic_assumption_indices import (
+    growth_horizon,
+)
 from policyengine_uk.parameters.gov.economic_assumptions.create_september_cpi_uprating import (
     september_cpi_uprating_rate,
 )
@@ -85,11 +88,14 @@ from policyengine_uk.parameters.gov.hmrc.create_threshold_indexation import (
     weekly_equivalent,
 )
 from policyengine_uk.scenarios import no_economic_assumptions
+from policyengine_uk.system import system as default_system
 
 PARAMETER_DIR = Path(policyengine_uk.__file__).parent / "parameters"
 FROZEN_YEARS = range(2022, 2031)
-INDEXED_YEARS = range(2031, 2040)
-ALIGNMENT_YEARS = range(2021, 2041)
+# The last year of the economic assumptions.
+HORIZON = growth_horizon(default_system.parameters.gov.economic_assumptions.yoy_growth)
+INDEXED_YEARS = range(2031, HORIZON + 1)
+ALIGNMENT_YEARS = range(2021, HORIZON + 2)
 # 52 weeks of an amount rounded to the nearest penny.
 WEEKLY_ROUNDING = 52 * 0.005
 # The model stores parameter values as Python floats; arrays are float32.
@@ -304,7 +310,7 @@ def test_income_tax_thresholds_follow_the_statute_from_2031_32(system):
 
 
 def test_thresholds_hold_after_the_last_year_of_economic_assumptions(system):
-    assert thresholds(system, 2040) == thresholds(system, 2039)
+    assert thresholds(system, HORIZON + 1) == thresholds(system, HORIZON)
 
 
 def test_indexed_amounts_are_statutory_multiples(system):
@@ -331,7 +337,7 @@ def test_upper_thresholds_align_with_the_higher_rate_threshold(system, year):
 
 # 2023-24 is the first aligned year: NICA 2022 s2 set the LPL to £12,570
 # from 6 April 2023 (#1968, fixed by #2058).
-@pytest.mark.parametrize("year", range(2023, 2041))
+@pytest.mark.parametrize("year", range(2023, HORIZON + 2))
 def test_lower_thresholds_align_with_the_personal_allowance(system, year):
     values = thresholds(system, year)
     assert values["lower_profits_limit"] == pytest.approx(
@@ -657,7 +663,7 @@ def test_a_nics_threshold_stated_above_its_equivalent_realigns():
         assert synthetic_values(root, year)["lower_profits_limit"] == 12_570, year
 
 
-@pytest.mark.parametrize("year", [2030, *INDEXED_YEARS, 2040])
+@pytest.mark.parametrize("year", [2030, *INDEXED_YEARS, HORIZON + 1])
 def test_nested_baseline_reads_the_same_amounts(system, year):
     # parameters.baseline is cloned before fiscal-year conversion, so it is
     # read at 1 January; indexed values keyed to 1 January give it the same

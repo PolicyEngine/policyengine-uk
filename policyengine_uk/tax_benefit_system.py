@@ -118,7 +118,7 @@ COUNTRY_DIR = Path(__file__).parent
 DEFAULT_DATASET_ENV_VAR = "POLICYENGINE_UK_DEFAULT_DATASET"
 
 # Cache for fully-processed parameter tree, so convert_to_fiscal_year_parameters
-# (22,538 param.update() calls) only runs once per process.
+# (about 66,000 param.update() calls) only runs once per process.
 _processed_parameters_cache = None
 # The parameters as loaded from the YAML files, before processing: each
 # parameter's statutory values at their legal dates. Reforms are written

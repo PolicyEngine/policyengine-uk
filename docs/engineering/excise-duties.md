@@ -193,7 +193,7 @@ year's RPI growth from the OBR forecast in
 hundredth of a penny. The script writes the steps to 1 April 2031, and a test
 fails when they fall out of date with the RPI forecast. After a new EFO, set
 the script's July rate and RPI growth to its forecast and rerun it. Later steps come from the parameter's uprating metadata.
-The RPI index ends in 2039, so the last step is 1 April 2040.
+The RPI index ends with the growth series, in 2074, so the last step is 1 April 2075.
 
 An annual reform names a model year and replaces the rate for all of it. For
 model years to 2030 it leaves other years unchanged. `Scenario.parameter_changes`
