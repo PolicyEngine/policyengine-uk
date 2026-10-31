@@ -61,11 +61,11 @@ def hb_wtc_disregard(benunit, period, parameters, accommodation):
     # Where the model calculates the deduction, the whole capped charge
     # settles para 17 instead. That gives the same answer only for the
     # model's formula, the lesser of the capped charge and the earnings and
-    # tax-credit limit: if earnings cover the whole charge and the
-    # additional amount, they cover any smaller deduction; if not, either
-    # the deduction is the whole charge, or the limit caps it and it takes
-    # at least all the earnings left, so para 17 fails whatever credits
-    # remain. Where the deduction or its limit is supplied, neutralized or
+    # tax-credit limit: if earnings cover the other disregards, the whole
+    # charge and the additional amount, they cover any smaller deduction; if
+    # not, either the deduction is the whole charge, or the limit caps it and
+    # it takes at least all the earnings left, so para 17 fails whatever
+    # credits remain. Where the deduction or its limit is supplied, neutralized or
     # replaced, the two can differ, so the test reads the deduction the
     # earnings disregard reads. A replacement deduction that itself reads
     # the limit depends on this disregard, and the engine stops with a
