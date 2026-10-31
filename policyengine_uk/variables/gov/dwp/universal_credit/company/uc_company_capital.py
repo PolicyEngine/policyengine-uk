@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.capital_valuation import exact_amount, round_to_penny
 
 
 class uc_company_capital(Variable):
@@ -47,5 +48,13 @@ class uc_company_capital(Variable):
             person("owned_company_trade_assets", period),
             0,
         )
-        capital = max_(0, person("owned_company_capital", period) - disregarded)
-        return where(applies, capital, 0)
+        # Worked in float64 from the stored amounts and rounded to the nearest
+        # penny (UC Regs 2013 reg. 6(1)): a float32 difference of two large
+        # amounts can be most of a penny out.
+        capital = max_(
+            0,
+            exact_amount(person("owned_company_capital", period))
+            - exact_amount(disregarded),
+        )
+        p = parameters(period).gov.dwp.universal_credit.means_test.capital
+        return where(applies, round_to_penny(capital, p.round_down), 0)

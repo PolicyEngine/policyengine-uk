@@ -1,0 +1,25 @@
+from policyengine_uk.model_api import *
+
+
+class owned_land_secured_debt(Variable):
+    value_type = float
+    entity = Household
+    label = "Debt secured on owned land"
+    documentation = (
+        "Outstanding encumbrances secured specifically on the household's "
+        "land-only plots. Excludes main-home mortgage debt and unsecured debt. "
+        "Deducted after the 10% for sale expenses in the capital valuation of "
+        "the legacy means tests (HB, IS, JSA, ESA and Pension Credit), "
+        "flooring the asset class at nil. UC counts no land, so this input "
+        "leaves UC capital unchanged. The value and the debt are household "
+        "totals across the class, so debt on one asset offsets equity in "
+        "another. The survey lacks reliable property-specific "
+        "debt flags, so the default zero is a modelling approximation unless "
+        "supplied explicitly."
+    )
+    definition_period = YEAR
+    unit = GBP
+    quantity_type = STOCK
+    default_value = 0
+    uprating = "gov.economic_assumptions.indices.obr.per_capita.gdp"
+    reference = "https://www.legislation.gov.uk/uksi/2013/376/regulation/49/1"

@@ -19,7 +19,9 @@
         other_residential_property_value: 3_000
         non_residential_property_value: 4_000
   output:
-    jsa_income_assessable_capital: 10_500
+    # Savings at face value; land, shares and property less 10% for the
+    # expenses of sale (JSA Regs 1996 reg. 111(a)): 1,000 + 90% of 9,500.
+    jsa_income_assessable_capital: 9_550
 
 - name: Income-based JSA has no tariff income at the lower capital threshold
   period: 2025
@@ -184,4 +186,6 @@
         corporate_wealth: 2_000
         private_pension_wealth: 150_000
   output:
-    jsa_income_assessable_capital: 3_000
+    # Savings at face value; shares less 10% for the expenses of sale
+    # (JSA Regs 1996 reg. 111(a)): 1,000 + 90% of 2,000.
+    jsa_income_assessable_capital: 2_800

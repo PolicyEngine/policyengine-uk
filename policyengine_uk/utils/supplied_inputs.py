@@ -76,6 +76,7 @@ SUPPLIED_INPUT_VARIABLES = frozenset(
         "pip_m_points",
         "local_bus_trips",
         "local_bus_uncapped_single_fare",
+        "lifetime_isa_countable_capital",
         "monthly_domestic_energy_consumption",
         "ni_class_4_losses_brought_forward",
         "ni_class_4_trading_loss",

@@ -192,10 +192,13 @@ def test_mock_owner_override_consumes_its_company_holding_once(tmp_path):
         ),
     )
 
-    # The owner's override already contains the holding. The other unit keeps
-    # the £20k residual and is ineligible for UC after the H5 input round trip.
+    # The owner's override already contains the holding, counted at the 90%
+    # at which corporate_wealth is valued (reg. 49(1)(a)): the pool is £20k +
+    # £9k, the override consumes £10k, and the other unit keeps the £19k
+    # residual and is ineligible for UC after the H5 input round trip; the
+    # owner keeps £10k less the £9k holding.
     np.testing.assert_allclose(
-        simulation.calculate("uc_assessable_capital", year), [0, 20_000]
+        simulation.calculate("uc_assessable_capital", year), [1_000, 19_000]
     )
     assert simulation.calculate("universal_credit", year)[1] == 0
 
@@ -363,7 +366,9 @@ def test_mock_property_valuation_uses_the_assessment_year(tmp_path):
     assert simulation.calculate("uc_assessable_capital", 2026)[0] == 24_000
 
 
-@pytest.mark.parametrize("reported, expected", [(6_000, 6_000), (0, 0), (-1, 56_000)])
+# With nothing reported, Pension Credit values the property at 90% (SPC Regs
+# 2002 reg. 19(a)): 6,000 + 45,000.
+@pytest.mark.parametrize("reported, expected", [(6_000, 6_000), (0, 0), (-1, 51_000)])
 def test_mock_pension_credit_keeps_its_existing_reported_capital_contract(
     tmp_path, reported, expected
 ):

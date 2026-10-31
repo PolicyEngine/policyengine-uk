@@ -58,12 +58,15 @@ def _parameter(path):
     return _node(path)(f"{YEAR}-01-01")
 
 
+SALE_LISTS = [
+    path.rsplit(".", 1)[0] + ".sale_expenses.sources" for path in SOURCE_LISTS.values()
+]
 ORIGINAL_LISTS = {
     path: [
         "corporate_wealth" if source == "share_like_capital" else source
         for source in _parameter(path)
     ]
-    for path in SOURCE_LISTS.values()
+    for path in [*SOURCE_LISTS.values(), *SALE_LISTS]
 }
 ORIGINAL_REFORM = {
     path: {f"{YEAR}-01-01.{YEAR + 4}-12-31": sources}
@@ -114,13 +117,14 @@ def test_lists_name_share_like_capital_only(variable):
     assert "share_like_capital" in sources
     assert "corporate_wealth" not in sources
     assert not set(COMPONENTS) & set(sources)
-    # Where a programme lists the sources whose sale incurs expenses, it names
-    # the same share-like variable, or shares would silently lose the
-    # deduction.
+    # Every programme values shares less 10% for the expenses of sale (UC
+    # Regs 2013 reg. 49(1)(a) and the legacy equivalents), so its list of
+    # those sources names the same share-like variable, or shares would
+    # silently lose the deduction.
     node = _node(SOURCE_LISTS[variable].rsplit(".", 1)[0])
-    if "sale_expenses" in node.children:
-        sale = list(node.sale_expenses.sources(f"{YEAR}-01-01"))
-        assert not {"corporate_wealth", *COMPONENTS} & set(sale)
+    sale = list(node.sale_expenses.sources(f"{YEAR}-01-01"))
+    assert "share_like_capital" in sale
+    assert not {"corporate_wealth", *COMPONENTS} & set(sale)
 
 
 @SETTINGS
@@ -244,7 +248,9 @@ def test_components_alone_are_counted():
     ]
     got = _results(households)
     assert got["share_like_capital"][0] == 12_000
-    assert got["uc_assessable_capital"][0] == 13_000
+    # Savings in full and shares less 10% for the expenses of sale (UC Regs
+    # 2013 reg. 49(1)(a)): 1,000 + 90% of 12,000.
+    assert got["uc_assessable_capital"][0] == 11_800
 
 
 def test_a_disregarded_company_holding_leaves_the_capital_that_counts_it():
@@ -281,5 +287,7 @@ def test_a_disregarded_company_holding_leaves_the_capital_that_counts_it():
         }
         sim = Simulation(situation=situation)
         assert sim.calculate("household_uc_company_holding_pool_scale", YEAR)[0] == 1
-        assert sim.calculate("household_uc_pool_company_holdings", YEAR)[0] == 30_000
+        # The pool counts the shares at 90% (reg. 49(1)(a)), so the holding
+        # leaves it at that value.
+        assert sim.calculate("household_uc_pool_company_holdings", YEAR)[0] == 27_000
         assert list(sim.calculate("uc_assessable_capital", YEAR)) == [5_000, 5_000]
