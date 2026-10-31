@@ -45,22 +45,24 @@ change household by household (see ``judge_total``):
   Each problem sets ``not_finite`` when a measurement behind it saw such a
   response in any of its households, since NaN times a weight of zero
   stays NaN, and ``not_finite_weighted`` when one of those households has
-  weight. Its message says the response may not be finite only in the
-  second case; in the first alone it keeps its finite text and adds that
-  the head is not finite in households with no weight. A mediated response
-  carries the same two flags for its first reading;
+  weight. Its message adds ", or is not finite," in the second case;
+  otherwise it keeps its finite text and adds that the head is not finite
+  in households with no weight. A mediated response carries the same two
+  flags for its first reading;
 - the engine refuses NaN as an input, and an infinite amount is no level to
   hold, so the second held measurement holds another head at its baseline
   value in each unit where that head is not finite after the first point,
   and judges no household those units belong to. There a problem keeps
-  every household it had, and a screen fails as ``unconfirmed``: the check
-  could not confirm whether the head contains the component. Every other
-  household gets both measurements. For each head it measured again, the
-  component's result names those heads (``heads_not_held``) and counts
-  the households (``households_not_held``); a problem does the same for
-  the households that rest on the measurement it could not make there. A
-  declared double count whose container's response is not finite fails:
-  the check cannot show that the container still contains it.
+  every household it had. A head that may respond, whose slope was neither
+  0 nor 1 and which the baseline hold did not show rising one for one,
+  fails there as ``unconfirmed``: the check could not confirm whether it
+  contains the component. Every other household gets both measurements.
+  For each head it measured again, the component's result names those
+  heads (``heads_not_held``) and counts the households
+  (``households_not_held``); a problem does the same for the households
+  that rest on the measurement the check could not make. A declared double
+  count whose container's response is not finite fails: the check cannot
+  show that the container still contains it.
 
 What it cannot see: a head that adds a component back while tapering it away
 pound for pound (``max(0, a - c) + c``) does not move at the margin, so it is

@@ -1166,8 +1166,8 @@ def publishable_guard(guard: dict) -> dict:
     A component perturbed in fewer than ``MIN_CELL`` units keeps no count, no
     responses or coefficients, and no weighted shares in its problems. A
     problem or mediated response in fewer than ``MIN_CELL`` households keeps
-    no count and no share, and so does a count of households where the check
-    could not hold a head (``households_not_held``) below ``MIN_CELL``.
+    no count and no share. A count of households where the check could not
+    hold a head (``households_not_held``) below ``MIN_CELL`` goes too.
     Messages already say "fewer than 10". The heads the check could not hold
     (``heads_not_held``) and the ``not_finite`` flags hold no figures, so
     they stay.
