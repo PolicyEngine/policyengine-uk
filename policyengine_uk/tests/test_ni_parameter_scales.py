@@ -91,12 +91,12 @@ def test_live_parameter_metadata_preserves_legacy_scalar_records():
         for name, record in expected.items()
     }
     for name in expected:
-        later = [
+        tail = [
             value
             for date, value in sorted(actual[name]["values"].items())
-            if is_after_extraction(date)
+            if int(date[:4]) >= LAST_EXTRACTED_YEAR
         ]
-        assert later == sorted(later), name
+        assert tail == sorted(tail), name
     json.dumps(actual, allow_nan=False)
 
 
