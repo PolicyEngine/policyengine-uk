@@ -31,8 +31,8 @@ spike in domestic energy prices. Two strands:
   support and a £200 Alternative Fuel Payment, to each domestic electricity
   customer on 2 January 2023, whatever fuel the household heats with (EBSS
   AFP NI Direction, 23 December 2022, paragraph 3 and footnote 1). The model
-  leaves out Great Britain's £200 Alternative Fuel Payment, for households
-  that heat with heating oil, LPG, biomass and other alternative fuels.
+  leaves out Great Britain's £200 Alternative Fuel Payment, which suppliers
+  paid on electricity meters the government listed in areas off the gas grid.
 
 PolicyEngine models these via:
 
@@ -89,16 +89,17 @@ spending by about £387 million. The omission affects 2023 alone.
 
 Suppliers paid whoever held the account, at the start of 1 February 2023, for
 each electricity meter the Secretary of State named ([direction](https://assets.publishing.service.gov.uk/media/63ceba6fe90e071bac7eadce/alternative-fuels-payment-gb-ministerial-direction.pdf),
-paragraph 6). DESNZ built that list from postcodes not connected to the gas
-grid and removed areas with high use of electric heating
+paragraph 6). The department built that list from postcodes not connected to
+the gas grid and removed areas with high use of electric heating
 ([interim evaluation](https://www.gov.uk/government/publications/domestic-energy-affordability-support-schemes-in-great-britain-interim-evaluation),
 page 54).
 
-Spending on liquid and solid fuels does not track that list. In the Living
-Costs and Food Survey, about a third of Great Britain households buying these
-fuels have gas central heating, and more than a third of households with oil,
-solid fuel, calor gas or other gas central heating report no purchase. The
-enhanced FRS 2023-24 carries neither `liquid_fuel_consumption` nor
+Spending on liquid and solid fuels does not pick out the households on that
+list. In the Living Costs and Food Survey, about a third of Great Britain
+households buying these fuels have gas central heating, and more than a third
+of households with oil, solid fuel, calor gas or other gas central heating
+report no purchase. The enhanced FRS 2023-24 carries neither
+`liquid_fuel_consumption` nor
 `solid_fuel_consumption`. PolicyEngine's Microcosm dataset carries both from
 2024, and its 842,000 Great Britain households with spending on either fall 54%
 short of DESNZ's count. None of the model's datasets with a 2023 year records a
