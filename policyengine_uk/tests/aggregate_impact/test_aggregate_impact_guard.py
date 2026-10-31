@@ -816,8 +816,8 @@ def test_the_check_names_every_head_that_turns_not_finite_and_goes_on(
     turns, reads, chained
 ):
     """Whichever tax heads turn not finite, directly or (tax_d through tax_c)
-    by another head, each is named, no finite head is, and every component
-    is checked."""
+    by another head, the check names each and no finite head, and checks
+    every component."""
     heads = ["tax_a", "tax_c", "tax_d"]
     formulas = model(contains=False)
     for head, turn in zip(heads, turns):

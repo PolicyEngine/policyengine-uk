@@ -750,7 +750,7 @@ def counted_once(
                 record["coefficients"][total] = verdict["coefficient"]
                 if verdict["model_coefficient"] is not None:
                     record["model_coefficients"][total] = verdict["model_coefficient"]
-                # A response that is not finite is reported too.
+                # The report keeps a response that is not finite too.
                 record["responses"][total] = {
                     v: r
                     for v, r in verdict["responses"].items()
@@ -758,8 +758,8 @@ def counted_once(
                 }
                 problems += verdict["problems"]
                 screens += verdict["screens"]
-                # A declared double count whose container no longer moves is
-                # reported once, as a stale declaration, below.
+                # The double count's own check below reports a declared double
+                # count whose container no longer moves, or is not finite.
                 if verdict["own_problem"] and variable not in declared:
                     problems.append(verdict["own_problem"])
             # Measure each head that broke a rule again with every other head
