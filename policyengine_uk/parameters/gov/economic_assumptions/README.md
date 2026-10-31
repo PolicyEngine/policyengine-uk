@@ -479,9 +479,8 @@ the forecast levels, though not their growth.
    spec. When the table starts a year later (2027-28 in October 2027), add
    HMRC's outturn for the year before from its latest Betting and Gaming
    tables; the importer stops and names the year until you do. Check the
-   EFO's policy tables for any new measure in the betting and gaming lines,
-   and extend the Machine Games Duty measure's receipts when the forecast
-   runs past 2031-32. Then update the published levels in
+   EFO's policy tables for any new measure in the betting and gaming lines.
+   Then update the published levels in
    `policyengine_uk/tests/test_gambling_duty_base_projection.py`.
 7. If the new EFO runs past `PROJECTION_END_YEAR`, move it on (see
    [Dataset projection horizon](#dataset-projection-horizon)).
