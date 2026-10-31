@@ -25,6 +25,7 @@ GDP and population assumptions remain supported.
 | `consumer_price_index_ahc` | CPI excluding rents/maintenance/water (AHC measure)   | ONS ad hoc 3582; forecast derived by `utils/create_ahc_deflator.py` |
 | `rpi`                   | Retail Price Index year-on-year growth                   | EFO Table 1.7           |
 | `average_earnings`      | Average weekly earnings growth                           | EFO Table 1.6           |
+| `national_living_wage`  | National living wage growth, for April of each year      | EFO economy Table 1.13  |
 | `non_labour_income`     | Non-labour household income growth                       | derived from EFO        |
 | `road_fuel_volume`      | Petrol + diesel road-fuel clearances                     | HMRC Hydrocarbon Oils + OBR fuel-duty forecast |
 | `petrol_spending_litre_proxy` | Spending growth that preserves road-fuel litres    | HMRC + OBR              |
@@ -58,6 +59,18 @@ Duty's from 2026-27, holds the base flat. See
 [gambling duties](../../../../docs/engineering/gambling-duties.md#projection)
 for each duty's rates, the measure the Machine Games Duty line includes and
 the approximations.
+
+`national_living_wage` projects the minimum wage rates
+(`gov.hmrc.minimum_wage`) after the last rate set. It is the growth of the
+rates set to 2027, then the OBR's estimates in Table 1.13 of the detailed
+economy tables, then `average_earnings`' long-run growth. The checked-in
+estimates are the October 2026 EFO's, ahead of the other series' March 2026
+vintage, because HM Treasury costed Budget 2026's Carer's Allowance taper on
+them. `utils/import_obr_forecasts.py` doesn't read Table 1.13, so the series
+is updated by hand with each EFO. `test_minimum_wage_projection.py` holds the
+table and fails if the series stops reproducing it, or if its long-run years
+stop matching `average_earnings`. Each rate is set by an S.I., so this is a projection, not
+a formula.
 
 ## Time horizons
 
@@ -143,30 +156,34 @@ projection through 2030 retains its previous handling; correcting those
 earlier mapping omissions is a separate change.
 
 `domestic_energy_consumption`, `electricity_consumption` and `gas_consumption`
-use a separate declaration-aware projector. Unlabelled datasets retain their
-stored amounts through the projection horizon, preserving legacy inputs that
-already use FY2026-27 prices. A dataset's explicit `energy_price_basis` opts
-into the variables' existing cumulative annual OBR-CPI index as an interim
-price proxy from its declared price year. The declaration covers only these
-three inputs, independently of any other generic uprating exclusions. They
-remain outside both the unconditional growth mapping and fallback, so no
-second index grows them after 2030.
+use a separate declaration-aware projector, `uprate_energy`. Unlabelled
+datasets retain their stored amounts through the projection horizon,
+preserving legacy inputs that already use FY2026-27 prices. A dataset's
+explicit `energy_price_basis` opts into the household energy price indices
+(see [Household energy prices](#household-energy-prices)): electricity
+spending moves with `energy_prices.*.electricity`, gas spending with
+`energy_prices.*.gas` and combined spending with
+`energy_prices.*.electricity_gas_and_solid_fuels`. The declaration covers
+only these three inputs, independently of any other generic uprating
+exclusions. They remain outside both the unconditional growth mapping and
+fallback, so no second index grows them after 2030.
 
-The declaration retains `calendar_year` or `fiscal_year` and its integer year.
-The model uses the January 1 index level for the declared starting year for
-both calendar and fiscal price periods. This shared start-year convention is
-an approximation, rather than precise fiscal/calendar price alignment. The
-projector applies `I[target year] / I[declared price year]` to the supplied
-observation. A requested declared projection raises an error if either
-January 1 precedes the selected index's earliest non-null value, including a
-midyear start, or if the index has no usable history. Unlabelled inputs and
-declarations with no stored energy inputs do not require index history. Each
-projected child records its effective fiscal-year basis, while the source
-observation keeps its original declaration.
-
-Generic CPI does not establish constant-consumption energy-price outturns or
-an energy-specific forecast. Open [issue #2526](https://github.com/PolicyEngine/policyengine-uk/issues/2526)
-tracks energy-specific index alignment and a sourced future assumption.
+The declaration retains `calendar_year` or `fiscal_year` and its integer year,
+and the projector reads the index of that kind: a `calendar_year` 2024 basis
+reads the January to December 2024 level, a `fiscal_year` 2024 basis the
+April 2024 to March 2025 level. The target is always the fiscal year index,
+because model year Y is fiscal year Y–(Y+1). Both annual indices are dated
+1 January of their first year. The projector applies `I[target year] /
+I[declared price year]` to the supplied observation, so each projected year
+is the observation times one ratio, not a chain of yearly ratios. A requested
+declared projection raises an error if either 1 January precedes the selected
+index's first stated value, or if the index has no values. Unlabelled inputs
+and declarations with no stored energy inputs do not require index history.
+Each projected child records its effective fiscal-year basis, while the
+source observation keeps its original declaration. The variables' own
+`uprating` names the same fiscal year indices, so Core's uprating of a
+directly supplied amount after its last period agrees with the dataset
+projection.
 
 See [dataset sources](../../../../docs/engineering/skills/dataset-sources.md)
 for the declaration and migration contract. Existing metadata-free private
@@ -313,6 +330,100 @@ and Class 4 profits limits aligned with them, and raises the secondary
 threshold by the same rises, up to the last year of
 `indices.september_cpi_uprating`.
 
+## Household energy prices
+
+`energy_prices` holds the price indices that project household electricity
+and gas spending (see [Dataset projection horizon](#dataset-projection-horizon)).
+They price each fuel with VAT at the rate the energy inputs assume,
+`gov.simulation.vat.energy_input_price_basis_rate` (5%). `domestic_energy_vat`
+divides the inputs by one plus that rate and applies the rate in force, so an
+index that included a VAT change would count it twice: once in spending and
+again in the tax. Holding VAT at the basis rate takes out every change in VAT
+on domestic electricity that the published prices include, the zero rate
+from 1 October 2026 and its Budget 2026 extension among them, and a reform to
+`gov.hmrc.vat` never moves the indices.
+
+The other Budget 2026 measures that bear on energy bills stay in. The EFO
+gives an inflation effect for the fuel duty changes and the VAT cut
+(paragraph 3.10), and none for abolishing the carbon price support or funding
+lower contracts for difference levies. It says those measures "are intended
+to offset the increase in electricity bills" that the British Industrial
+Competitiveness Scheme brings consumers outside energy-intensive industry
+(paragraph 3.19).
+
+### Inputs
+
+| Parameter | Contents | Source |
+|---|---|---|
+| `ons` | Monthly CPI indices, 2015 = 100, from January 2015: electricity (D7DT), gas (D7DU) and electricity, gas and solid fuels (DK9U, classes 04.5.1, 04.5.2 and 04.5.4); their annual CPI weights (CJXA, CJXB, A9F4); and, as node metadata, `last_full_quarter`, the last quarter ONS publishes all three months of in every series | ONS MM23 |
+| `obr.utilities` | CPI utilities (electricity and gas) inflation, year on year, by quarter, from the first quarter ONS has not published in full | EFO economy tables, CPI category inflation (Table 1.19 in October 2026) |
+| `consumption_shares` | Each calendar quarter's share of a year's domestic electricity and of domestic gas consumption, the mean over the complete years from 2015 | DESNZ Energy Trends ET 5.2 and ET 4.1 |
+| `embedded_electricity_vat` | The VAT rate on domestic electricity that the published prices and forecast include, in Great Britain and in Northern Ireland, and Northern Ireland's share of UK domestic electricity consumption (2.69% in 2024), which weights them | SI 2026/987, Budget 2026 and its policy costings, EFO paragraph 3.10, DESNZ subnational consumption statistics |
+| `held_flat` | Whether the annual indices hold the previous year's level | `no_economic_assumptions` sets it |
+
+`policyengine_uk/utils/import_energy_prices.py` writes the first three;
+maintainers edit the last two by hand. `embedded_electricity_vat` describes the
+source data, not policy: it follows the VAT the ONS prices include and the
+OBR assumed, which a reform to `gov.hmrc.vat` does not change.
+
+### Method
+
+`create_energy_price_indices.py`, a generation step that runs whenever
+policyengine-uk processes the parameters, builds three series for each of
+`electricity`, `gas` and `electricity_gas_and_solid_fuels`:
+
+- `quarterly`, 2015Q1 to 2042Q1. To `last_full_quarter` (2026Q3 in the
+  October 2026 inputs), the mean of the monthly
+  index, each month over the VAT factor its price includes,
+  `1 + s × ((1 + r) / (1 + b) − 1)`. Here `r` is the UK rate on domestic
+  electricity in the published price on the 15th of the month (the mean of
+  the Great Britain and Northern Ireland rates, weighting each by its
+  consumption), `b` the basis
+  rate and `s` electricity's share of the series' CPI weight: 1 for
+  electricity, 0 for gas and CJXA / A9F4 for the combined series. After that,
+  the level a year earlier times one plus the OBR's utilities inflation net
+  of the change in electricity VAT, `(1 + g) × u(q − 4) / u(q) − 1`, where
+  `u` is the same factor for electricity's share of utilities,
+  CJXA / (CJXA + CJXB), as the mean over the quarter's months. After the OBR's
+  last quarter (2032Q1), its last rate holds.
+- `calendar_year`, January to December, and `fiscal_year`, April to March,
+  2015 to 2041, each at 1 January of its first year. Each averages the
+  year's four quarterly levels, weighting each by its share of the year's
+  consumption; the combined series weights the electricity and gas shares by
+  their CPI weights.
+
+Where `held_flat` is true for a year, both annual series take the previous
+year's level. `no_economic_assumptions` sets it from its first input year as
+it zeroes the growth series, and since it is a raw input, every later rebuild
+of the indices keeps it.
+
+The generator reads every input at the month or quarter it applies to, not
+at its stated dates, so a reform can state one value for a year or a span of
+quarters: `{"gov.economic_assumptions.energy_prices.obr.utilities": {"2027":
+0.1}}` sets utilities inflation to 10% in each quarter of 2027 (through
+Core's `Reform.from_dict` a bare year applies from that year onward).
+`Parameter.update` with a start and no end removes the stated values after
+the start, and its value then sets every month or quarter after it. The
+generator reads the ONS prices only to the end of `last_full_quarter` and
+`obr.utilities` only after it, and a reform cannot move that boundary. A month or quarter with no value,
+such as one a reform sets to `None`, stops generation. A forecast quarter
+grows from the level a year earlier, so a reform to the ONS prices also moves
+the forecast levels, though not their growth.
+
+### Limits
+
+- The OBR forecasts utilities only, so after the ONS outturn electricity and
+  gas grow at the same rate: each index is its fuel's own price to there and
+  a utilities proxy after it. The combined series includes solid fuels in its
+  outturn and not in its forecast.
+- The indices are prices, so a projection holds each household's consumption
+  fixed.
+- The seasonal shares are fixed averages, not each year's, and Northern
+  Ireland's share of consumption stays at 2024's. The share matters only
+  while the two VAT rates differ, October 2026 to March 2027.
+- The OBR's rates are year on year, so each forecast quarter rests on the
+  level four quarters before it.
+
 ## Refreshing after a new EFO
 
 1. Replace the forecast block in each series with values from the new EFO
@@ -374,6 +485,27 @@ threshold by the same rises, up to the last year of
    `policyengine_uk/tests/test_gambling_duty_base_projection.py`.
 7. If the new EFO runs past `PROJECTION_END_YEAR`, move it on (see
    [Dataset projection horizon](#dataset-projection-horizon)).
+8. Refresh the household energy price inputs (see
+   [Household energy prices](#household-energy-prices)) from the new EFO's
+   economy tables, the MM23 release of the same month and the latest Energy
+   Trends tables. The importer records the last quarter ONS publishes in
+   full as `last_full_quarter`, takes the OBR forecast from the quarter after
+   it, and stops before writing anything if an MM23 series has a gap or a
+   year without its CPI weight, if the series come from different releases or
+   if Table 1.19 has no quarter after the ONS outturn. Then check
+   `embedded_electricity_vat.yaml` against the VAT on domestic electricity
+   the EFO assumes. Replace the cut-down sources in
+   `policyengine_uk/tests/fixtures/energy_prices/` and their SHA-256s, and
+   update the outturn quarter and the hand-computed 2027Q1 and 2028Q3 checks
+   in `policyengine_uk/tests/test_energy_price_indices.py`.
+
+   ```bash
+   uv run python -m policyengine_uk.utils.import_energy_prices \
+     --mm23 mm23.csv \
+     --obr-economy efo-october-2026-detailed-forecast-tables-economy.xlsx \
+     --electricity-trends ET_5.2_SEP_26.xlsx \
+     --gas-trends ET_4.1_SEP_26.xlsx
+   ```
 
 For example, for March 2026:
 
