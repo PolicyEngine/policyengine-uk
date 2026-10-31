@@ -317,10 +317,12 @@ comes out as follows:
   horse racing as UK horse racing, which keeps 15%, so the part at 25% may
   be larger, and the 2.70% then overstates the base's growth. Microcosm's
   split gives spread betting no part, so it has no weight.
-- **Machine Games Duty**: the model's three rates do not change. Table
-  4.10's line includes Autumn Budget 2026's increase to machine gaming
-  rates, which "increases receipts by a further estimated £0.1 billion a year
-  from 2027-28" (EFO paragraph 4.45). The forecast incorporates every measure
+- **Machine Games Duty**: the three rates do not change, but from 1 April
+  2027 the model charges the higher-stake part of the standard-rate base at
+  the higher rate (see [higher-stake machines](#higher-stake-machines-from-1-april-2027)).
+  Table 4.10's line includes that increase to machine gaming rates, which
+  "increases receipts by a further estimated £0.1 billion a year from
+  2027-28" (EFO paragraph 4.45). The forecast incorporates every measure
   since March (paragraph 3.2), and the OBR's policy Table 1.1 gives this one,
   with the move of liability to machine suppliers from April 2028, as
   measure 56: £144.2 million of betting receipts in 2027-28, then £162.3,
@@ -334,8 +336,9 @@ comes out as follows:
   the base by that amount. Table 1.1 gives only the measure's head,
   Betting, and Table 4.10 carries no note on it.
   The result is the base before the measure, without the costing's
-  behavioural response, on which a static higher-stake rate (#2731) charges
-  25%.
+  behavioural response. The model charges its higher-stake part 25% once,
+  and the higher-stake input takes the same index as the standard-rate
+  input it belongs to.
 - **Gaming Duty**: the household formula charges one effective rate, which
   does not change, so the base grows with receipts. The statutory bands do
   not enter: any change in the duty's effective rate that the OBR's
@@ -366,10 +369,10 @@ The series rest on these approximations:
   receipts fall from £8.1 million in 2024-25 to £4.0 million in 2025-26 and
   a forecast £2.8 million in 2026-27, so its index falls by 65%.
 
-If #2731 lands, its input `machine_games_standard_rate_higher_stake_net_takings`
-needs the Machine Games Duty index too:
-`policyengine_uk/tests/test_gambling_duty_base_projection.py` fails until
-every input in the gambling folder declares one.
+Every input in the gambling folder declares an index, including
+`machine_games_standard_rate_higher_stake_net_takings`;
+`policyengine_uk/tests/test_gambling_duty_base_projection.py` fails for a new
+input that declares none.
 
 Sources: [OBR October 2026 Economic and Fiscal Outlook](https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/)
 (receipts Table 4.10 and policy Table 1.1, in the

@@ -44,6 +44,7 @@ INPUTS = {
     "machine_games": (
         "machine_games_higher_rate_net_takings",
         "machine_games_lower_rate_net_takings",
+        "machine_games_standard_rate_higher_stake_net_takings",
         "machine_games_standard_rate_net_takings",
     ),
     "gaming": ("land_based_casino_net_losses",),
@@ -271,6 +272,28 @@ def test_dataset_projection_matches_core_uprating(parameters):
     assert stored == pytest.approx(
         ALL_INPUTS["remote_gaming_net_losses"] * 1.136277 * 1.093757, rel=1e-6
     )
+
+
+def test_higher_stake_machines_pay_the_april_2027_rise_once():
+    """The Machine Games Duty series takes measure 56 off Table 4.10's line,
+    so the projected base holds no higher-stake rise and the model adds it
+    once (#2731): from model year 2027, 25% on the higher-stake part of the
+    standard-rate base and 20% on the rest, both grown by the one index."""
+    standard = "machine_games_standard_rate_net_takings"
+    higher_stake = "machine_games_standard_rate_higher_stake_net_takings"
+    simulation = Simulation(
+        situation=situation({standard: 1_000.0, higher_stake: 400.0})
+    )
+    without = Simulation(situation=situation({standard: 1_000.0}))
+    for year in range(2027, 2032):
+        base = simulation.calculate(standard, year)[0]
+        part = simulation.calculate(higher_stake, year)[0]
+        assert base > 1_000
+        assert part == pytest.approx(0.4 * base, rel=1e-9)
+        duty = simulation.calculate("machine_games_duty", year)[0]
+        assert duty == pytest.approx(0.20 * (base - part) + 0.25 * part, rel=1e-9)
+        rise = duty - without.calculate("machine_games_duty", year)[0]
+        assert rise == pytest.approx(0.05 * part, rel=1e-6)
 
 
 def national_bases():

@@ -188,6 +188,7 @@ gov.economic_assumptions.yoy_growth.obr.gambling_duty_bases.remote_gaming:
 gov.economic_assumptions.yoy_growth.obr.gambling_duty_bases.machine_games:
 - machine_games_higher_rate_net_takings
 - machine_games_lower_rate_net_takings
+- machine_games_standard_rate_higher_stake_net_takings
 - machine_games_standard_rate_net_takings
 gov.economic_assumptions.yoy_growth.obr.gambling_duty_bases.gaming:
 - land_based_casino_net_losses
