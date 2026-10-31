@@ -689,13 +689,15 @@ class ClearanceSeriesSpec(ReceiptsSeriesSpec):
     household quantity inputs per head (#2596).
 
     The OBR counts clearances in quantities, not pounds, so a clearance
-    table has no "£ billion" cell. ``unit`` is the unit as the OBR states it
-    in the table, in a row label or a note, and the importer requires it in
-    exactly one cell of the table in both EFOs (``validate_clearance_unit``). Dataset projection grows household weights by
-    ``ons.population``, so ``render_receipts_growth_yaml`` writes the
-    clearances' growth over one plus that growth (``per_head_growth``) and
-    the weighted total grows with the clearances. After the OBR's forecast
-    the series holds the clearances flat, as road fuel volume does.
+    table has no "£ billion" cell. ``unit`` holds the unit as the OBR states
+    it in the table, in a row label or a note, and the importer requires it
+    in exactly one cell of the table in both EFOs
+    (``validate_clearance_unit``). Dataset projection grows household
+    weights by ``ons.population``, so ``render_receipts_growth_yaml`` writes
+    the clearances' growth over one plus that growth (``per_head_growth``)
+    and the weighted total grows with the clearances. After the OBR's
+    forecast the importer holds the clearances flat, as ``road_fuel_volume``
+    holds road fuel volume.
     """
 
     unit: str = ""
@@ -1521,9 +1523,10 @@ def per_head_growth(
 
     It divides the series' own growth, before rounding where
     ``growth.ratios`` holds it: a duty's base for a line with rates, whether
-    the importer links the line to the previous EFO or to its own outturn. Dataset projection grows each
-    household's input by this and its weight by the population growth, so
-    the weighted input grows by their product, the series' growth.
+    the importer links the line to the previous EFO or to its own outturn.
+    Dataset projection grows each household's input by this and its weight
+    by the population growth, so the weighted input grows by their product,
+    the series' growth.
     """
     ratios = growth.ratios
     if ratios is None:
