@@ -1,3 +1,39 @@
+## [2.169.0] - 2026-10-31
+
+### Added
+
+- Added Northern Ireland's £200 Alternative Fuel Payment (`ebr_alternative_fuel_payment`), paid with the £400 Energy Bills Support Scheme amount in January 2023, so a Northern Ireland household's Energy Bills Rebate totals the £600 the December 2022 direction set.
+
+### Fixed
+
+- Stopped paying the 2022 £150 Council Tax Rebate in Northern Ireland, which levies domestic rates rather than council tax and had no rebate. The enhanced FRS gives every Northern Ireland household band A, so the model had paid it to all of them.
+
+
+## [2.168.1] - 2026-10-31
+
+### Changed
+
+- Project household electricity and gas spending with retail energy price indices instead of headline CPI. The indices follow the ONS CPI electricity, gas and solid fuel indices to the latest month and the OBR's utilities inflation forecast after it, and leave out the electricity VAT cut and its extension, so a VAT reform no longer moves projected spending.
+
+
+## [2.168.0] - 2026-10-31
+
+### Added
+
+- Add the April 2027 minimum wage rates Budget 2026 announced (paragraph 6.128): £13.21 for the national living wage, £11.27 for ages 18 to 20, and £8.31 for ages 16 to 17 and apprentices. The projection by earnings growth now starts from them.
+
+### Fixed
+
+- Project the minimum wage rates, including the national living wage, after the last rate set by the OBR's national living wage forecast (EFO economy Table 1.13) and average earnings growth after it, so the Universal Credit benefit cap earnings exception, the minimum income floor, ESA permitted work, the childcare earnings tests and the Carer's Allowance earnings limit rise with them instead of holding April 2026 rates. A reform that sets a minimum wage rate from some year onwards now holds that rate flat against a rising baseline, where before it was an uplift on a flat one.
+
+
+## [2.167.0] - 2026-10-31
+
+### Added
+
+- Machine Games Duty charges the new `machine_games_standard_rate_higher_stake_net_takings` input, the part of standard-rate takings from machines with a maximum charge to play above £1 or a maximum prize above £100, at the higher rate of 25% from 1 April 2027 (Budget 2026, OOTLAR paragraph 1.50). The dated parameter `gov.hmrc.gambling_duty.machine_games.higher_stake_machines_at_higher_rate` switches the change on.
+
+
 ## [2.166.1] - 2026-10-31
 
 ### Changed

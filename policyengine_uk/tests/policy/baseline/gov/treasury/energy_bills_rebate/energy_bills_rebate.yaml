@@ -64,7 +64,7 @@
     energy_bills_rebate: 201
     hbai_household_net_income: 201
 
-- name: Case 5, Northern Ireland's January 2023 credit is HBAI income.
+- name: Case 5, Northern Ireland's January 2023 £600 payment is HBAI income.
   period: 2023
   input:
     people:
@@ -80,8 +80,10 @@
         country: NORTHERN_IRELAND
         council_tax: 0
   output:
-    energy_bills_rebate: 400
-    hbai_household_net_income: 400
+    ebr_energy_bills_credit: 400
+    ebr_alternative_fuel_payment: 200
+    energy_bills_rebate: 600
+    hbai_household_net_income: 600
 
 - name: Case 6, the rebates are miscellaneous income, not HBAI state support.
   period: 2022
@@ -101,3 +103,27 @@
   output:
     energy_bills_rebate: 349
     hbai_benefits: 0
+
+# Northern Ireland had no Council Tax Rebate, and its £600 payment came in
+# January 2023, so a Northern Ireland household in band A (the band the
+# enhanced FRS gives every Northern Ireland household) has no rebate in 2022.
+- name: Case 7, a Northern Ireland household has no 2022 rebate in HBAI income.
+  period: 2022
+  input:
+    people:
+      adult:
+        age: 40
+    benunits:
+      unit:
+        members: [adult]
+        would_claim_uc: false
+    households:
+      household:
+        members: [adult]
+        country: NORTHERN_IRELAND
+        council_tax_band: A
+        council_tax: 0
+  output:
+    ebr_council_tax_rebate: 0
+    energy_bills_rebate: 0
+    hbai_household_net_income: 0
