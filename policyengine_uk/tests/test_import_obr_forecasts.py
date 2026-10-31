@@ -2662,6 +2662,17 @@ def model_index(values):
     return {year: index(f"{year}-01-01") for year in range(min(values), 2040)}
 
 
+def compounded(values, last_year):
+    """A growth series' index as the model's rule states it: 1 in the first
+    listed year, then each January's value in force, to five decimals."""
+    years = sorted(values)
+    index = {years[0]: 1.0}
+    for year in range(years[0] + 1, last_year + 1):
+        in_force = values[max(y for y in years if y <= year)]
+        index[year] = round(index[year - 1] * (1 + in_force), 5)
+    return index
+
+
 def test_level_growth_is_the_ratio_of_consecutive_levels():
     growth = compute_level_growth(nlw_workbook())[NLW_PATH]
     assert growth.line.levels == dict(zip(range(2023, 2028), NLW_LEVELS))
@@ -3111,8 +3122,9 @@ def test_a_written_level_series_keeps_every_index_positive(levels, earnings):
     the model compounds through it (from 1 in its first year) to zero, and
     refuses to write the series exactly when the index of the finished
     series, with the year kept before it and average_earnings (rising 2% or
-    falling 51% a year) after it, reaches zero. Otherwise that index stays
-    above zero in every year."""
+    falling 51% a year) after it, reaches zero by the end of the growth
+    file. Otherwise that index stays above zero in every year, and the
+    model's index agrees with it as far as the model compounds."""
     content = earnings_fixture(earnings)
     workbook = nlw_workbook(nlw_rows(tuple(levels), 2023, 2023))
     values = {
@@ -3134,7 +3146,11 @@ def test_a_written_level_series_keeps_every_index_positive(levels, earnings):
             import_obr_forecasts, "check_index_stays_positive", lambda *_: None
         )
         unchecked = render_nlw(content, workbook)
-    finished = model_index(_values(unchecked, NLW_PATH))
+    written = _values(unchecked, NLW_PATH)
+    finished = compounded(written, import_obr_forecasts.LAST_INDEX_YEAR)
+    # The model compounds the same index, as far as 2039.
+    model = model_index(written)
+    assert {year: finished[year] for year in model} == model
     assert all(math.isfinite(level) for level in finished.values())
     try:
         rendered = render_nlw(content, workbook)
