@@ -12,6 +12,9 @@ import yaml
 from hypothesis import event, example, given, settings
 from hypothesis import strategies as st
 from policyengine_core.parameters import ParameterNode
+from policyengine_core.parameters.operations.uprate_parameters import (
+    uprate_parameters,
+)
 
 from policyengine_uk.parameters.gov.economic_assumptions.create_economic_assumption_indices import (
     create_economic_assumption_indices,
@@ -31,12 +34,14 @@ from policyengine_uk.utils.import_obr_forecasts import (
     average_earnings_years,
     compute_level_growth,
     compute_receipts_growth,
+    compound_model_index,
     find_receipts_line,
     format_gap,
     format_growth,
     get_yoy_growth_path,
     infer_workbook_release,
     main,
+    projected_rate_units,
     read_calendar_values,
     read_workbook_sheets,
     render_forecast_gap_yaml,
@@ -2662,6 +2667,48 @@ def model_index(values):
     return {year: index(f"{year}-01-01") for year in range(min(values), 2040)}
 
 
+MINIMUM_WAGE_DIR = Path(__file__).parents[1] / "parameters/gov/hmrc/minimum_wage"
+# The national living wage's uprating metadata: the index, and the rounding to
+# the nearest penny.
+NLW_UPRATING = yaml.safe_load((MINIMUM_WAGE_DIR / "non_apprentice.yaml").read_text())[
+    "brackets"
+][-1]["amount"]["metadata"]["uprating"]
+
+
+def model_wages(values, set_until, rate):
+    """The national living wage the model projects in April of each year
+    after ``set_until`` to 2039, from ``rate`` set in April ``set_until``: the
+    growth series through create_economic_assumption_indices, then a rate
+    with the national living wage's uprating metadata through
+    policyengine-core's uprate_parameters."""
+    tree = ParameterNode(
+        "",
+        data={
+            "gov": {
+                "economic_assumptions": {
+                    "yoy_growth": {
+                        "obr": {
+                            "national_living_wage": {
+                                "values": {
+                                    f"{year}-01-01": value
+                                    for year, value in values.items()
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "wage": {
+                "metadata": {"uprating": NLW_UPRATING},
+                "values": {f"{set_until}-04-01": rate},
+            },
+        },
+    )
+    create_economic_assumption_indices(tree)
+    uprate_parameters(tree)
+    return {year: tree.wage(f"{year}-04-01") for year in range(set_until + 1, 2040)}
+
+
 def compounded(values, last_year):
     """A growth series' index as the model's rule states it: 1 in the first
     listed year, then each January's value in force, to five decimals."""
@@ -2722,9 +2769,10 @@ OCTOBER_2026_NLW = {
     2028: "13.513623297578135", 2029: "13.854853379339588",
     2030: "14.23293930734993", 2031: "14.617023376183901",
 }  # fmt: skip
-# The series as maintainers kept it by hand before the importer read the
-# table (#2700): every year is its level over the year before's.
-HAND_KEPT_NLW_GROWTH = {
+# The growth the importer must write from OCTOBER_2026_NLW: each year's level
+# over the year before's, less one, to six decimals, written out by hand. No
+# year's ratio projects another penny, so every year keeps it.
+OCTOBER_2026_NLW_GROWTH = {
     2021: 0.021789, 2022: 0.066218, 2023: 0.096842, 2024: 0.097889,
     2025: 0.067308, 2026: 0.040950, 2027: 0.039339, 2028: 0.022984,
     2029: 0.025251, 2030: 0.027289, 2031: 0.026986,
@@ -2733,14 +2781,14 @@ HAND_KEPT_NLW_GROWTH = {
 
 def test_the_october_2026_table_is_read_across_its_row():
     """The real Table 1.13: the level under each year, the rates set by the
-    Government up until 2027, and the growth the hand-kept series held."""
+    Government up until 2027, and each year's ratio as growth."""
     growth = compute_level_growth(REAL_TABLE_1_13)[NLW_PATH]
     assert growth.line.levels == {
         year: float(text) for year, text in OCTOBER_2026_NLW.items()
     }
     assert growth.line.set_until == 2027
     assert growth.line.table == "1.13"
-    assert growth.values == HAND_KEPT_NLW_GROWTH
+    assert growth.values == OCTOBER_2026_NLW_GROWTH
     assert infer_workbook_release(REAL_TABLE_1_13) == ("October", 2026)
 
 
@@ -2752,6 +2800,132 @@ def test_october_2026_table_1_13_reproduces_the_committed_series():
         committed.decode(), compute_level_growth(REAL_TABLE_1_13), ("October", 2026)
     )
     assert rendered.encode() == committed
+
+
+def projected_from_committed(workbook):
+    """The national_living_wage values the importer writes from ``workbook``
+    into the committed yoy_growth.yaml, and the national living wage the
+    model projects from them after the £13.21 set for 2027."""
+    rendered = render_level_series_yaml(
+        get_yoy_growth_path().read_text(),
+        compute_level_growth(workbook),
+        ("October", 2026),
+    )
+    values = _values(rendered, NLW_PATH)
+    return values, model_wages(values, 2027, 13.21)
+
+
+def test_an_estimate_a_millionth_above_half_a_penny_keeps_its_penny():
+    """Table 1.13 with £14.625001 in 2031 (cell N5). Its ratio to 2030,
+    0.027546, takes the model to £14.62, so the importer writes the growth
+    from the index's 2030 level to £14.625001, 0.027548, and the model
+    projects £14.63. Every other year keeps its ratio."""
+    values, wages = projected_from_committed(edit_real_table_1_13({"N5": 14.625001}))
+    assert [wages[year] for year in range(2028, 2032)] == pytest.approx(
+        [13.51, 13.85, 14.23, 14.63], abs=1e-9
+    )
+    assert values[2031] == 0.027548
+    assert {year: values[year] for year in range(2021, 2031)} == {
+        year: OCTOBER_2026_NLW_GROWTH[year] for year in range(2021, 2031)
+    }
+
+
+def test_the_smallest_table_with_a_wrong_penny_keeps_its_penny():
+    """£13.21 set for 2027 and an estimate of £13.515001 for 2028: the ratio,
+    0.023089, takes the model to £13.51, so the importer writes 0.023092 and
+    the model projects £13.52."""
+    workbook = nlw_workbook(nlw_rows((13.21, 13.515001), 2027, 2027))
+    assert compute_level_growth(workbook)[NLW_PATH].values == {2028: 0.023089}
+    values, wages = projected_from_committed(workbook)
+    assert values[2028] == 0.023092
+    assert wages[2028] == pytest.approx(13.52, abs=1e-9)
+
+
+def test_a_level_no_six_decimal_growth_can_reach_is_refused():
+    """With £5,000 set for 2024, one step of the five-decimal index moves the
+    projection by about 5p, so no growth projects £5,000.02 for 2025."""
+    workbook = nlw_workbook(nlw_rows((5000.0, 5000.0, 5000.02), 2023, 2024))
+    written = _values(YOY_GROWTH_FIXTURE, NLW_PATH)
+    kept = {date(year, 1, 1): value for year, value in written.items() if year < 2024}
+    for micros in range(-100, 101):
+        index = compound_model_index(
+            {**kept, date(2024, 1, 1): 0.0, date(2025, 1, 1): micros / 1_000_000}
+        )
+        assert projected_rate_units(index, 2024, 5000.0, 2025, 0.01) != 500002
+    with pytest.raises(ValueError, match="no 2025 growth to six decimals"):
+        render_nlw(workbook=workbook)
+
+
+def test_a_table_needs_an_index_in_the_year_set():
+    """Rates set only in the table's first year, with no earlier year kept:
+    the index starts a year later, so the model has no index level to
+    project the rate set from."""
+    workbook = nlw_workbook(nlw_rows(NLW_LEVELS, 2016, 2016))
+    with pytest.raises(ValueError, match="the index starts in 2017, after 2016"):
+        render_nlw(EARLY_EARNINGS_FIXTURE, workbook)
+
+
+def test_a_table_past_the_model_indices_is_refused():
+    workbook = nlw_workbook(nlw_rows(NLW_LEVELS, 2036, 2037))
+    with pytest.raises(
+        ValueError, match="compounds its indices to 2039, so it cannot project the 2040"
+    ):
+        render_nlw(EARLY_EARNINGS_FIXTURE, workbook)
+
+
+def test_the_series_rounds_as_the_rates_it_projects():
+    """Every parameter the national living wage index uprates rounds each
+    projected rate to the nearest penny, the rounding the importer checks."""
+    (spec,) = import_obr_forecasts.LEVEL_SERIES_SPECS
+    index = "gov.economic_assumptions.indices.obr.national_living_wage"
+    found = []
+
+    def visit(node):
+        if isinstance(node, dict):
+            uprating = (node.get("metadata") or {}).get("uprating")
+            if uprating == index:
+                found.append(None)
+            elif isinstance(uprating, dict) and uprating["parameter"] == index:
+                found.append(uprating.get("rounding"))
+            for child in node.values():
+                visit(child)
+        elif isinstance(node, list):
+            for child in node:
+                visit(child)
+
+    for path in (Path(__file__).parents[1] / "parameters").rglob("*.yaml"):
+        if index in path.read_text():
+            visit(yaml.safe_load(path.read_text()))
+    assert len(found) == 6
+    assert all(
+        rounding == {"type": "nearest", "interval": spec.rounding} for rounding in found
+    )
+
+
+@settings(max_examples=60, deadline=None, derandomize=True)
+@given(
+    growth=st.dictionaries(
+        st.integers(2010, 2030),
+        st.integers(-200_000, 300_000).map(lambda micros: micros / 1_000_000),
+        min_size=1,
+        max_size=12,
+    ),
+    offset=st.integers(0, 8),
+    rate=st.floats(min_value=0.5, max_value=2000, allow_nan=False),
+)
+def test_the_importer_projects_rates_as_the_model_does(growth, offset, rate):
+    """Differential: compound_model_index equals the index
+    create_economic_assumption_indices builds from the same series, and
+    projected_rate_units, in pennies, equals the rate uprate_parameters
+    projects with the national living wage's metadata, in every year from
+    the one after the rate set to 2039."""
+    set_until = min(growth) + offset
+    index = compound_model_index({date(year, 1, 1): v for year, v in growth.items()})
+    assert index == model_index(growth)
+    wages = model_wages(growth, set_until, rate)
+    for year in range(set_until + 1, 2040):
+        units = projected_rate_units(index, set_until, rate, year, 0.01)
+        assert units * 0.01 == wages[year], year
 
 
 def edit_real_table_1_13(edits):
@@ -2842,6 +3016,23 @@ REAL_LAYOUT_CHANGES = {
         {"B6": NLW_NOTE.format(set_until=2035, estimates_after=2035)},
         "up until 2035, outside its years 2020-2031",
     ),
+    "set_before_the_table": (
+        {"B6": NLW_NOTE.format(set_until=2019, estimates_after=2019)},
+        "up until 2019, outside its years 2020-2031",
+    ),
+    "note_sets_two_years": (
+        {
+            "B6": "The NLW has been set by the Government up until 2027. Figures "
+            "beyond 2027 are OBR estimates. The NLW has been set by the "
+            "Government up until 2028."
+        },
+        r"names more than one year the Government has set the rate up until, "
+        r"\[2027, 2028\]",
+    ),
+    "estimates_beyond_another_year": (
+        {"B7": "Figures beyond 2028 are OBR estimates."},
+        r"and no others; it names \[2027, 2028\]",
+    ),
 }
 
 
@@ -2853,6 +3044,23 @@ def test_a_changed_layout_of_the_real_table_is_refused(edits, message):
     or year's figure into the series stops the importer instead."""
     with pytest.raises(ValueError, match=message):
         compute_level_growth(edit_real_table_1_13(edits))
+
+
+@pytest.mark.parametrize(
+    "edits",
+    [
+        {"B5": "National Living Wage (NLW)1"},
+        {"B5": "National Living Wage (NLW)\u00b9"},
+        {"B2": "1.13 National Living Wage\u00b2", "C3": "£ per hour\u00b3"},
+    ],
+    ids=["label_digit", "label_superscript", "title_and_unit_superscript"],
+)
+def test_a_footnote_marker_is_read_past(edits):
+    """A footnote marker after the label's closing bracket, as a digit or a
+    superscript, or after the title or unit, leaves the table as it reads."""
+    assert compute_level_growth(edit_real_table_1_13(edits)) == compute_level_growth(
+        REAL_TABLE_1_13
+    )
 
 
 def test_the_real_table_reads_the_same_with_no_cell_changed():
@@ -2875,7 +3083,7 @@ def test_the_labelled_row_is_read_not_the_row_below_the_years():
     }
     assert (
         compute_level_growth(edit_real_table_1_13(edits))[NLW_PATH].values
-        == HAND_KEPT_NLW_GROWTH
+        == OCTOBER_2026_NLW_GROWTH
     )
 
 
@@ -3030,16 +3238,19 @@ EARLY_EARNINGS_FIXTURE = earnings_fixture(0.02)
     first_year=st.integers(2015, 2027),
     data=st.data(),
 )
-def test_the_model_index_reproduces_the_published_levels(
+def test_the_model_projects_the_published_levels_to_the_penny(
     first_level, changes, first_year, data
 ):
     """For any national living wage-like table (£5 to £20 in its first year,
-    up to 12 years, each changing by -5% to +10%): each year's growth is its
-    level over the year before's, to six decimals; the years up to the one
-    the note names fall under the rates set and the rest under the OBR's
-    estimates; and the index the model compounds from the written series
-    exceeds zero and carries the table's second-year level to within half a
-    penny of every later level."""
+    up to 12 years, each changing by -5% to +10%): the importer reads each
+    year's growth as its level over the year before's, to six decimals; the
+    years up to the one the note names fall under the rates set and the rest
+    under the OBR's estimates; the index the model compounds from the
+    written series exceeds zero; and from the table's level in the year the
+    note names, the model projects every later level to the penny. The
+    importer writes another growth only for an estimate whose ratio, after
+    the years before as written, projects another penny. It refuses a table
+    whose index starts after the year the note names."""
     levels = [first_level]
     for change in changes:
         levels.append(levels[-1] * (1 + change))
@@ -3049,19 +3260,36 @@ def test_the_model_index_reproduces_the_published_levels(
     workbook = nlw_workbook(nlw_rows(tuple(levels), first_year, set_until))
     growth = compute_level_growth(workbook)[NLW_PATH]
     assert growth.line.levels == published
-    for year in years[1:]:
-        assert growth.values[year] == round(
-            published[year] / published[year - 1] - 1, 6
-        )
+    ratios = {
+        year: round(published[year] / published[year - 1] - 1, 6) + 0.0
+        for year in years[1:]
+    }
+    assert growth.values == ratios
 
+    kept = _values(EARLY_EARNINGS_FIXTURE, NLW_PATH)
+    start = min([year for year in kept if year < years[1]] + [years[1]])
+    if set_until < start:
+        event("refused: no index in the year set")
+        with pytest.raises(ValueError, match=f"the index starts in {start}"):
+            render_nlw(EARLY_EARNINGS_FIXTURE, workbook)
+        return
     rendered = render_nlw(EARLY_EARNINGS_FIXTURE, workbook)
     values = _values(rendered, NLW_PATH)
-    index = model_index(values)
-    assert all(level > 0 for level in index.values())
-    base = years[1]
+    assert all(level > 0 for level in model_index(values).values())
+    wages = model_wages(values, set_until, published[set_until])
+    for year in years:
+        if year > set_until:
+            assert wages[year] == pytest.approx(round(published[year], 2), abs=1e-9)
     for year in years[1:]:
-        carried = published[base] * index[year] / index[base]
-        assert abs(carried - published[year]) < 0.005, year
+        if values[year] != ratios[year]:
+            event("an estimate's growth changed")
+            assert year > set_until
+            ratio_wages = model_wages(
+                {**values, year: ratios[year]}, set_until, published[set_until]
+            )
+            assert ratio_wages[year] != pytest.approx(
+                round(published[year], 2), abs=1e-9
+            )
 
     block = rendered[rendered.index("  national_living_wage:") :]
     kind = None
@@ -3091,6 +3319,36 @@ def test_a_tail_that_rounds_the_level_index_to_zero_is_refused():
         ValueError, match="national_living_wage: the index reaches 0.0 in 2031"
     ):
         render_nlw(content, workbook)
+
+
+def test_a_finished_index_that_overflows_is_refused():
+    """£0.00001 for 2027 and £1.7e303 for 2028 give finite growth, 1.7e308,
+    which the table's own index check, from 1 in 2027, passes. In the
+    committed file the index exceeds 1 by 2027, so the finished series'
+    index overflows in 2028: the finished-index check refuses that series,
+    and the importer refuses to write the table."""
+    workbook = nlw_workbook(nlw_rows((1e-5, 1.7e303), 2027, 2027))
+    growth = compute_level_growth(workbook)[NLW_PATH]
+    assert math.isfinite(growth.values[2028]) and growth.values[2028] > 1e308
+    committed = get_yoy_growth_path().read_text()
+    finished = {
+        **{
+            date(year, 1, 1): value
+            for year, value in _values(committed, NLW_PATH).items()
+            if year < 2028
+        },
+        date(2028, 1, 1): growth.values[2028],
+        **{
+            date(year, 1, 1): value
+            for year, value in average_earnings_years(committed, 2028).items()
+        },
+    }
+    with pytest.raises(
+        ValueError, match="national_living_wage: the index reaches inf in 2028"
+    ):
+        import_obr_forecasts.check_index_stays_positive(NLW_PATH, finished)
+    with pytest.raises(ValueError, match="national_living_wage: no 2028 growth"):
+        render_level_series_yaml(committed, {NLW_PATH: growth}, ("October", 2026))
 
 
 def test_growth_past_every_float_is_refused():
@@ -3124,7 +3382,9 @@ def test_a_written_level_series_keeps_every_index_positive(levels, earnings):
     series, with the year kept before it and average_earnings (rising 2% or
     falling 51% a year) after it, reaches zero by the end of the growth
     file. Otherwise that index stays above zero in every year, and the
-    model's index agrees with it as far as the model compounds."""
+    model's index agrees with it as far as the model compounds. The property
+    leaves the penny check out, as levels this far apart rarely round to a
+    penny the index can reach."""
     content = earnings_fixture(earnings)
     workbook = nlw_workbook(nlw_rows(tuple(levels), 2023, 2023))
     values = {
@@ -3143,22 +3403,28 @@ def test_a_written_level_series_keeps_every_index_positive(levels, earnings):
     assert growth.values == values
     with pytest.MonkeyPatch.context() as patch:
         patch.setattr(
-            import_obr_forecasts, "check_index_stays_positive", lambda *_: None
+            import_obr_forecasts,
+            "penny_preserving_growth",
+            lambda _, series, __: series,
         )
-        unchecked = render_nlw(content, workbook)
-    written = _values(unchecked, NLW_PATH)
-    finished = compounded(written, import_obr_forecasts.LAST_INDEX_YEAR)
-    # The model compounds the same index, as far as 2039.
-    model = model_index(written)
-    assert {year: finished[year] for year in model} == model
-    assert all(math.isfinite(level) for level in finished.values())
-    try:
-        rendered = render_nlw(content, workbook)
-    except ValueError as error:
-        event("refused: finished series")
-        assert "national_living_wage: the index reaches" in str(error)
-        assert any(level <= 0 for level in finished.values())
-        return
+        with pytest.MonkeyPatch.context() as unchecked_patch:
+            unchecked_patch.setattr(
+                import_obr_forecasts, "check_index_stays_positive", lambda *_: None
+            )
+            unchecked = render_nlw(content, workbook)
+        written = _values(unchecked, NLW_PATH)
+        finished = compounded(written, import_obr_forecasts.LAST_INDEX_YEAR)
+        # The model compounds the same index, as far as 2039.
+        model = model_index(written)
+        assert {year: finished[year] for year in model} == model
+        assert all(math.isfinite(level) for level in finished.values())
+        try:
+            rendered = render_nlw(content, workbook)
+        except ValueError as error:
+            event("refused: finished series")
+            assert "national_living_wage: the index reaches" in str(error)
+            assert any(level <= 0 for level in finished.values())
+            return
     event("written")
     assert rendered == unchecked
     assert all(level > 0 for level in finished.values())

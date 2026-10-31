@@ -107,8 +107,8 @@ def test_rates_are_the_last_rate_set_uprated_by_the_index(year):
 # OBR EFO October 2026, detailed forecast tables (economy), Table 1.13: the
 # national living wage in April of each year, £ an hour. "The NLW has been set
 # by the Government up until 2027 ... Figures beyond 2027 are OBR estimates
-# consistent with the rest of our economy forecast." The table is also in
-# tests/fixtures/obr_economy, which the importer reads.
+# consistent with the rest of our economy forecast." tests/fixtures/obr_economy
+# holds the same table, which the importer reads.
 OBR_NATIONAL_LIVING_WAGE = {
     2020: 8.72,
     2021: 8.91,
