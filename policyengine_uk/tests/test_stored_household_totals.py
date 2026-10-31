@@ -24,6 +24,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 from policyengine_core.periods import period
+from policyengine_core.reforms import Reform
 from policyengine_core.simulations.simulation import _uprating_index_value
 
 from policyengine_uk import Simulation
@@ -37,6 +38,7 @@ from policyengine_uk.data.economic_assumptions import (
     _uprating_index_map,
     stored_total_uprating,
 )
+from policyengine_uk.model_api import YEAR, Household, Variable
 from policyengine_uk.scenarios import no_economic_assumptions
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
@@ -336,6 +338,33 @@ def test_a_total_stored_in_an_input_frame_grows_like_savings():
         assert savings > 1_000
         assert simulation.calculate("cash_isa", year)[0] == pytest.approx(
             3 * savings, rel=1e-6
+        )
+
+
+def test_a_reform_formula_for_a_total_runs_in_years_with_no_stored_total():
+    # A reform that gives a total a formula replaces its sum, so Core runs the
+    # formula wherever no total is stored, as for any formula variable.
+    class cash_isa(Variable):
+        value_type = float
+        entity = Household
+        label = "cash ISA holdings, twice savings"
+        definition_period = YEAR
+
+        def formula(household, period, parameters):
+            return 2 * household("savings", period)
+
+    class twice_savings(Reform):
+        def apply(self):
+            self.update_variable(cash_isa)
+
+    simulation = Simulation(
+        reform=twice_savings,
+        dataset=_dataset([{"cash_isa": 3_000.0}], household_columns=["cash_isa"]),
+    )
+    for year, multiple in ((PROJECTION_END_YEAR, 3), (PROJECTION_END_YEAR + 1, 2)):
+        savings = simulation.calculate("savings", year)[0]
+        assert simulation.calculate("cash_isa", year)[0] == pytest.approx(
+            multiple * savings, rel=1e-6
         )
 
 
