@@ -21,13 +21,13 @@ spike in domestic energy prices. Two strands:
   bands A–D and to Council Tax Reduction recipients in any band. Scottish
   councils tested receipt on 14 February 2022 and Welsh councils on 15
   February 2022. The model reads `council_tax_reduction` for the whole year.
-  Councils in all three nations also paid band E homes charged at band D
-  under the disabled band reduction. The model has no input for that
+  Councils in all three nations also paid band E homes they charged at band
+  D under the disabled band reduction. The model has no input for that
   reduction. In Scotland and Wales it pays those homes only when they also
   receive Council Tax Reduction; in England it never pays them. The model
   doesn't simulate Scotland's separate Council Tax Reduction for bands E to
-  H (regulation 14A, inserted by SSI 2016/253), so a Scottish household on
-  that alone misses the payment. Northern Ireland levies domestic rates, not
+  H (regulation 14A; SSI 2016/253), so a Scottish household on that alone
+  misses the payment. Northern Ireland levies domestic rates, not
   council tax, and had no Council Tax Rebate, so the model pays none there
   whatever the household's council tax band (the enhanced FRS gives every
   Northern Ireland household band A, the default policyengine-uk-data
