@@ -166,7 +166,7 @@ def test_the_table_here_is_the_one_the_importer_reads():
 
 
 def test_the_index_carries_any_year_of_the_table_to_any_later_year():
-    """Invariants of the series: the national living wage index is above
+    """Invariants of the series: the national living wage index exceeds
     zero in every year to 2040, and from any year of Table 1.13 from its
     second (the index's first) the index's growth carries that year's level
     to every later year's in the table, to the penny."""

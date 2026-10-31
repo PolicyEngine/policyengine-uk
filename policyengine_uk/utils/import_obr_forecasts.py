@@ -1551,14 +1551,15 @@ class LevelSeriesSpec:
     """An economy table that publishes a series as levels across a row, not
     as growth down a column.
 
-    ``path`` is the series' place under ``obr``. The table is found by its
-    title, as receipts tables are. Its header declares one unit, ``unit``;
-    one row of cells holds consecutive calendar years; and one row below it,
-    labelled ``row``, holds a level under each year and nowhere else.
-    Titles, units and labels are compared lowercased, without footnote
-    markers. A note that the rate "has been set by the Government up until"
-    a year, and that figures beyond that year "are OBR estimates", splits
-    the years the Government has set from the OBR's estimates.
+    ``path`` is the series' place under ``obr``. The importer finds the
+    table by its title, as it finds receipts tables. The table's header
+    declares one unit, ``unit``; one row of cells holds consecutive calendar
+    years; and one row below it, labelled ``row``, holds a level under each
+    year and nowhere else. The importer compares titles, units and labels
+    lowercased, without footnote markers. A note that the rate "has been set
+    by the Government up until" a year, and that figures beyond that year
+    "are OBR estimates", splits the years the Government has set from the
+    OBR's estimates.
     """
 
     path: tuple[str, ...]
@@ -1641,7 +1642,7 @@ def find_level_line(
     """The levels in the one row labelled ``spec.row`` of the one table
     titled ``spec.title``, read across its row of years.
 
-    Any other layout is refused rather than read: another unit, a second
+    It refuses any other layout rather than read it: another unit, a second
     row of years or of the label, a level missing under a year or one with
     no year above it, or years that skip or repeat.
     """
@@ -1837,10 +1838,10 @@ def render_level_series_yaml(
     """Rewrite each level series' values and first reference in a
     yoy_growth.yaml.
 
-    Years before the table's second year are kept, so the series' index
-    keeps its base year, and its other references stay. Years after the
-    table follow average_earnings as ``content`` holds it. The result is
-    checked to differ from ``content`` only in those values and that
+    It keeps the years before the table's second year, so the series' index
+    keeps its base year, and the series' other references. Years after the
+    table follow average_earnings as ``content`` holds it. It checks that
+    the result differs from ``content`` only in those values and that
     reference.
     """
     month, year = release

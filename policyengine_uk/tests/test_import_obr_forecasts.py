@@ -2697,8 +2697,8 @@ def test_october_2026_table_1_13_reproduces_the_committed_series():
 
 def edit_real_table_1_13(edits):
     """The real October 2026 workbook with cells of sheet 1.13 set: text as
-    an inline string, a number as a number, None to empty the cell. Every
-    other archive entry is unchanged."""
+    an inline string, a number as a number, None to empty the cell. It
+    copies every other archive entry as it was."""
     output = BytesIO()
     with ZipFile(BytesIO(REAL_TABLE_1_13)) as source, ZipFile(output, "w") as dest:
         path = _sheet_paths(source)["1.13"]
@@ -2973,8 +2973,8 @@ def test_the_model_index_reproduces_the_published_levels(
     up to 12 years, each changing by -5% to +10%): each year's growth is its
     level over the year before's, to six decimals; the years up to the one
     the note names fall under the rates set and the rest under the OBR's
-    estimates; and the index the model compounds from the written series is
-    above zero and carries the table's second-year level to within half a
+    estimates; and the index the model compounds from the written series
+    exceeds zero and carries the table's second-year level to within half a
     penny of every later level."""
     levels = [first_level]
     for change in changes:

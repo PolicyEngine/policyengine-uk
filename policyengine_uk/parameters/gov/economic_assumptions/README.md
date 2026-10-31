@@ -62,15 +62,24 @@ assumes, and the approximations.
 
 `national_living_wage` projects the minimum wage rates
 (`gov.hmrc.minimum_wage`) after the last rate set. It is the growth of the
-rates set to 2027, then the OBR's estimates in Table 1.13 of the detailed
-economy tables, then `average_earnings`' long-run growth. The checked-in
-estimates are the October 2026 EFO's, ahead of the other series' March 2026
-vintage, because HM Treasury costed Budget 2026's Carer's Allowance taper on
-them. `utils/import_obr_forecasts.py` doesn't read Table 1.13, so the series
-is updated by hand with each EFO. `test_minimum_wage_projection.py` holds the
-table and fails if the series stops reproducing it, or if its long-run years
-stop matching `average_earnings`. Each rate is set by an S.I., so this is a projection, not
-a formula.
+rates the Government has set, then of the OBR's estimates, both from the
+national living wage table of the detailed economy tables (Table 1.13 in
+October 2026), then `average_earnings`' long-run growth, year for year. HM
+Treasury costed Budget 2026's Carer's Allowance taper on the OBR's estimates.
+`utils/import_obr_forecasts.py` writes the series with the other economy
+series. It finds the table by its title, reads the level under each year
+across the table's one row of years, and writes each year's level over the
+year before's, to six decimals. The table's note says up to which year the
+Government has set the rate, and the series' comments keep those years apart
+from the OBR's estimates. The importer stops before writing any file if the
+table declares a unit other than £ per hour, has more or fewer than one row of
+years or one row labelled "National Living Wage (NLW)", has years that skip or
+repeat, lacks a positive level under a year or has a figure with no year above
+it, or lacks that note. `test_minimum_wage_projection.py` holds the October
+2026 table, checks it against the importer's fixture, and fails if the series
+stops reproducing the table to the penny, or if its long-run years stop
+matching `average_earnings`. An S.I. sets each rate, so this is a
+projection, not a formula.
 
 ## Time horizons
 
@@ -483,9 +492,17 @@ the forecast levels, though not their growth.
    and extend the Machine Games Duty measure's receipts when the forecast
    runs past 2031-32. Then update the published levels in
    `policyengine_uk/tests/test_gambling_duty_base_projection.py`.
-7. If the new EFO runs past `PROJECTION_END_YEAR`, move it on (see
+7. The same run refreshes `national_living_wage` from the new economy
+   tables' national living wage table (Table 1.13 in October 2026), with
+   `average_earnings` after it. Then replace the cut-down table in
+   `policyengine_uk/tests/fixtures/obr_economy/` (see its README) and the
+   levels in `OBR_NATIONAL_LIVING_WAGE` in
+   `policyengine_uk/tests/test_minimum_wage_projection.py`. Pass
+   `--skip-national-living-wage` only to leave the series on the previous
+   EFO.
+8. If the new EFO runs past `PROJECTION_END_YEAR`, move it on (see
    [Dataset projection horizon](#dataset-projection-horizon)).
-8. Refresh the household energy price inputs (see
+9. Refresh the household energy price inputs (see
    [Household energy prices](#household-energy-prices)) from the new EFO's
    economy tables, the MM23 release of the same month and the latest Energy
    Trends tables. The importer records the last quarter ONS publishes in
@@ -538,12 +555,10 @@ Bank Rate (`gov.boe.base_rate`, economy Table 1.9) and households' financial
 assets (`household.wealth.financial_assets`, Table 1.11) also take October
 2026 values.
 
-The national living wage forecast (economy Table 1.13) is not read here. Until
-PolicyEngine/policyengine-uk#2700 adds it as `obr.national_living_wage`, the
-minimum wage rates, and the rules built on them, stay at their April 2026
-levels; #2721 tracks teaching the importer to read the table. Whichever of
-#2700 and the October 2026 update merges second copies the 2032+ earnings path
-into that series.
+The importer did not read the national living wage table (economy Table
+1.13) when PolicyEngine/policyengine-uk#2700 added `obr.national_living_wage`,
+so maintainers first copied the series from the October 2026 table by hand.
+Rerunning the importer on that table reproduces every hand-kept value (#2721).
 
 The EFO refresh does not touch `finance_ni.domestic_rates`; OBR does not
 publish a Northern Ireland domestic rates bill series (see below).
