@@ -49,10 +49,11 @@ Deliberate exceptions:
   value. A ``small_balance_change`` says much the same when the target is
   part of gov_balance and nothing offsets it there. The counting rule above
   already publishes more (one household's £10,000 beside ten pennies).
-  Reasons from several reform rows can together bound a cell, down to an
-  exact count when reforms change disjoint groups of a component's records
-  that together cover it, and the repository's reform list
-  (``standard_reforms.yaml``) decides which rows exist.
+  Reasons from several reform rows can together bound a cell, even to an
+  exact count (ten reforms that each change a separate group of the ten
+  records behind a published count of 10 show one record in each group),
+  and the reform list, in CI the head's ``standard_reforms.yaml``, decides
+  which rows exist.
 
 Threat model. The report defends against disclosure through any combination
 of the figures it publishes, across any number of reports, from honest

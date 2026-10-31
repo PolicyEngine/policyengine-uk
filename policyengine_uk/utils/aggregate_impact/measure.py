@@ -1318,8 +1318,9 @@ def withheld_reasons(
     the reform changes. Otherwise the function tests every condition and
     gives one reason for each component or variable a condition holds for
     (``privacy.withheld_reason``): the reason names it and gives no count or
-    amount (#2654). A variable that fails to compute under the reform
-    therefore fails the reform in every year, whichever conditions hold.
+    amount (#2654). A variable that fails to compute under the reform in
+    any year therefore fails the reform, whichever conditions hold that
+    year.
     """
     if baseline is None:
         return [withheld_reason(NO_BASELINE)]

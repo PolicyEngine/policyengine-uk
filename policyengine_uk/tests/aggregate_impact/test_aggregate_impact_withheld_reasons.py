@@ -462,9 +462,11 @@ def test_a_reform_that_leaves_a_small_double_count_names_it():
 @pytest.mark.parametrize(
     "households, withheld",
     [
-        # Ten weighted benefit units in five households: not a small cell.
+        # Ten weighted benefit units of 12, in five households: not small.
         (6, False),
-        # Four weighted benefit units in two households.
+        # Eight weighted benefit units of 10, in four households.
+        (5, True),
+        # Four weighted benefit units of six, in two households.
         (3, True),
     ],
 )
@@ -689,8 +691,8 @@ def test_the_comment_caps_the_reasons_it_lists():
     listed = [line for line in text.splitlines() if line.startswith("- Reform ")]
     assert len(listed) == MAX_WITHHELD_ROWS
     assert (
-        "- 10 more left out here; the report artifact's `summary.json` gives "
-        "every reason under `withheld_because`." in text
+        "- The report artifact's `summary.json` gives these and 10 more under "
+        "`withheld_because`." in text
     )
 
 
