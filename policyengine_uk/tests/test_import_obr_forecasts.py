@@ -4,6 +4,7 @@ from dataclasses import replace
 from datetime import date
 from pathlib import Path
 from io import BytesIO
+from textwrap import indent
 from zipfile import ZipFile
 import xml.etree.ElementTree as ET
 
@@ -54,6 +55,8 @@ from policyengine_uk.utils.import_obr_forecasts import (
     extract_september_cpi_from_receipts,
     infer_forecast_start_year,
     infer_release,
+    per_head_growth,
+    population_growth,
     update_forecast_gap_yaml,
     update_yoy_growth_yaml,
 )
@@ -813,9 +816,15 @@ RECEIPTS_FIXTURE = (
     + "  business_rates:\n"
     + RECEIPTS_SERIES_FIXTURE.format(key="great_britain")
     + RECEIPTS_SERIES_FIXTURE.format(key="northern_ireland")
-    + "  gambling_duty_bases:\n"
+    + "\n"
+)
+# The gambling duty bases, which the importer writes per head of
+# ons.population under per_capita.
+PER_CAPITA_FIXTURE = (
+    "  per_capita:\n"
+    "    gambling_duty_bases:\n"
     + "".join(
-        RECEIPTS_SERIES_FIXTURE.format(key=key)
+        indent(RECEIPTS_SERIES_FIXTURE.format(key=key), "  ")
         for key in (
             "remote_gaming",
             "lottery",
@@ -845,17 +854,23 @@ LEVEL_SERIES_FIXTURE = """  national_living_wage:
         - title: Kept
           href: https://example.com/kept
 """
+# Population growth changes in 2026 and 2030, so each year's per-head growth
+# must take that year's population growth out.
+POPULATION_FIXTURE = """ons:
+  population:
+    values:
+      2024-01-01: 0.0100
+      2026-01-01: 0.0200
+      2030-01-01: -0.0050
+"""
 YOY_GROWTH_FIXTURE = (
     "obr:\n"
     + "".join(FLAT_SERIES_FIXTURE.format(key=key) for key in SERIES_KEYS[:2])
     + LEVEL_SERIES_FIXTURE
     + RECEIPTS_FIXTURE
+    + PER_CAPITA_FIXTURE
     + "".join(FLAT_SERIES_FIXTURE.format(key=key) for key in SERIES_KEYS[2:])
-    + """ons:
-  population:
-    values:
-      2024-01-01: 0.0100
-"""
+    + POPULATION_FIXTURE
 )
 GAP_FIXTURE = """description: Gap.
 values:
@@ -1046,7 +1061,8 @@ def test_a_failed_restore_keeps_the_original_and_never_empties_a_file(
 
 # Receipts growth series: stamp_duty_land_tax and business_rates under obr,
 # which link their first year to the previous EFO's outturn, and the
-# gambling_duty_bases, which grow a duty's base from HMRC's outturn.
+# gambling_duty_bases under per_capita, which grow a duty's base per head
+# from HMRC's outturn.
 
 RECEIPTS_SPECS = tuple(spec for spec in RECEIPTS_SERIES_SPECS if spec.outturn is None)
 RECEIPTS_PATHS = {spec.path[-1]: spec.path for spec in RECEIPTS_SPECS}
@@ -2222,6 +2238,37 @@ def test_real_october_2026_gambling_series():
         assert sorted(series) == list(range(2025, 2032))
 
 
+def test_committed_gambling_series_are_the_real_bases_per_head():
+    """yoy_growth.yaml holds each real October 2026 base's growth over one
+    plus the committed ons.population growth: Remote Gaming Duty's 2026-27
+    base growth of 9.38% is 9.16% per head as population grows 0.2%. One plus
+    each value, times one plus population growth, is one plus the base's
+    growth, to the rounding of the six decimals both carry."""
+    committed = get_yoy_growth_path().read_text()
+    population = population_growth(committed)
+    assert population[2026] == 0.002
+    growth = compute_receipts_growth(
+        REAL_OCTOBER_2026_RECEIPTS, b"not read", specs=GAMBLING_SPECS
+    )
+    per_head = {
+        path[-1]: per_head_growth(series, population).values
+        for path, series in growth.items()
+    }
+    base_growth = (2.7520296250837784 / 0.40) / (1.320966 / 0.21)
+    assert per_head["remote_gaming"][2026] == round(
+        base_growth / (1 + population[2026]) - 1, 6
+    )
+    for key, values in per_head.items():
+        stored = _values(committed, GAMBLING_PATHS[key])
+        assert stored[2024] == 0.0
+        assert {year: stored[year] for year in values} == values, key
+        aggregate = growth[GAMBLING_PATHS[key]].values
+        for year, value in values.items():
+            assert (1 + value) * (1 + population[year]) == pytest.approx(
+                1 + aggregate[year], abs=1.1e-6
+            ), (key, year)
+
+
 def test_gambling_lines_read_no_previous_efo():
     # March 2025's tables have no betting and gaming breakdown; the gambling
     # lines take 2024-25 and 2025-26 from HMRC instead.
@@ -2243,32 +2290,46 @@ def test_gambling_outturn_must_reach_the_year_before_the_table():
 
 
 def test_bingo_holds_its_base_flat_after_the_forecast():
+    """Bingo Duty's rate is zero from 1 April 2026, so its base holds flat.
+    Per head it falls with population in every year to the last that
+    ons.population states, so the weighted base stays where it was."""
     rendered = render()
-    start = rendered.index("    bingo:")
-    block = rendered[start : rendered.index("    pool_betting:")]
-    assert "# Beyond the OBR forecast: held flat, as the rate is zero" in block
-    assert _values(rendered, GAMBLING_PATHS["bingo"])[2028] == 0.0
-    assert max(_values(rendered, GAMBLING_PATHS["bingo"])) == 2028
-    # Remote Gaming Duty follows average earnings, as the receipts lines do.
+    start = rendered.index("      bingo:")
+    block = rendered[start : rendered.index("      pool_betting:")]
+    assert (
+        "# Beyond the OBR forecast: held flat, as the rate is zero; per head: "
+        "(1 + that growth) / (1 + ons.population growth) - 1"
+    ) in block
+    bingo = _values(rendered, GAMBLING_PATHS["bingo"])
+    population = population_growth(rendered)
+    for year in range(2026, 2040):
+        flat = round(1 / (1 + _in_effect(population, year)) - 1, 6)
+        assert _in_effect(bingo, year) == flat, year
+    # Population last changes in 2030.
+    assert max(bingo) == 2030
+    # Remote Gaming Duty follows average earnings, as the receipts lines do,
+    # over population growth: 2% to 2029, then -0.5%.
     remote_gaming = _values(rendered, GAMBLING_PATHS["remote_gaming"])
-    assert {year: remote_gaming[year] for year in (2028, 2031)} == {
-        2028: 0.0,
-        2031: 0.02,
+    assert {year: remote_gaming[year] for year in (2028, 2030, 2031)} == {
+        2028: round(1 / 1.02 - 1, 6),
+        2030: round(1 / 0.995 - 1, 6),
+        2031: round(1.02 / 0.995 - 1, 6),
     }
 
 
 def test_gambling_comments_and_references_name_hmrc_and_the_rates():
     rendered = render()
     block = rendered[
-        rendered.index("    remote_gaming:") : rendered.index("    lottery:")
+        rendered.index("      remote_gaming:") : rendered.index("      lottery:")
     ]
     # March 2026's table starts in 2025-26, so no year comes from HMRC alone.
     assert "# Outturn (2025" not in block
     assert (
         "# Forecast (2025-26 over 2024-25) from OBR EFO March 2026, receipts "
         'Table 3.10 "Remote gaming duty", over HMRC\'s receipts (July 2026 '
-        "Betting and Gaming tables, Table_1_BG_receipts); base growth: receipts "
-        "over the rate the model charges"
+        "Betting and Gaming tables, Table_1_BG_receipts); per head: base growth "
+        "(receipts over the rate the model charges) over one plus ons.population "
+        "growth"
     ) in block
     references = _series(yaml.safe_load(rendered), GAMBLING_PATHS["remote_gaming"])[
         "metadata"
@@ -2278,6 +2339,54 @@ def test_gambling_comments_and_references_name_hmrc_and_the_rates():
         "HMRC UK Betting and Gaming Statistics, July 2026 tables "
         "(Table_1_BG_receipts, 2024-25 and 2025-26 receipts)",
     ]
+
+
+def test_gambling_series_are_written_per_head():
+    """The importer writes each gambling base's growth over one plus that
+    year's ons.population growth. In the synthetic March 2026 tables Remote
+    Gaming Duty's receipts double into 2026-27 as its rate rises from 21% to
+    40%, so its base grows 5%, and per head 5% over population growth of 2%.
+    Every other year and duty divides the same way."""
+    rendered = render()
+    remote_gaming = _values(rendered, GAMBLING_PATHS["remote_gaming"])
+    assert remote_gaming[2026] == round((2.8 / 0.40) / (1.4 / 0.21) / 1.02 - 1, 6)
+    population = population_growth(YOY_GROWTH_FIXTURE)
+    for key, aggregate in gambling_growth().items():
+        values = _values(rendered, GAMBLING_PATHS[key])
+        assert sorted(aggregate) == [2025, 2026, 2027]
+        for year, growth in aggregate.items():
+            per_head = (1 + growth) / (1 + _in_effect(population, year)) - 1
+            # Both carry six decimals.
+            assert values[year] == pytest.approx(per_head, abs=1.1e-6), (key, year)
+
+
+def test_the_index_check_reads_the_per_head_series():
+    """The model compounds the per-head series, so the index check reads it.
+    Bingo Duty's 2025-26 receipts here leave its index at 0.00002, and its
+    base holds flat from 2026-27, so the aggregate index stays there. If
+    population triples in 2028 and 2029, the per-head index falls to 0.00001
+    and then to zero at five decimals, and the importer refuses it."""
+    bingo = HMRC_RECEIPTS["bingo"][0] * 0.00002
+    workbook = make_receipts_xlsx(
+        gambling_levels=GAMBLING_LEVELS | {"bingo": (bingo, 0.0001, 0.0)}
+    )
+    aggregate = compute_receipts_growth(workbook, b"", specs=GAMBLING_SPECS)
+    assert aggregate[GAMBLING_PATHS["bingo"]].values == {
+        2025: -0.99998,
+        2026: 0.0,
+        2027: 0.0,
+    }
+    render(current=workbook)
+    tripling = YOY_GROWTH_FIXTURE.replace(
+        "      2030-01-01: -0.0050\n",
+        "      2028-01-01: 2.0000\n      2030-01-01: -0.0050\n",
+    )
+    assert population_growth(tripling)[2028] == 2.0
+    with pytest.raises(
+        ValueError,
+        match="per_capita.gambling_duty_bases.bingo: the index reaches 0.0 in 2029",
+    ):
+        render(tripling, current=workbook)
 
 
 def test_the_machine_games_parameters_are_the_oracles():
@@ -2527,6 +2636,97 @@ def test_base_growth_is_receipts_growth_over_rate_growth(levels, schedules, fact
                 assert value == pytest.approx(exact - 1, abs=1e-6, rel=1e-9)
                 assert 1 + value > 0
         assert growth_scaled[spec.path].values == pytest.approx(values, abs=1.5e-6)
+
+
+# Per head (#2738): dataset projection grows household weights by
+# ons.population, so each gambling series is its base's growth over one plus
+# population growth, and compounding it with population growth gives back
+# the aggregate base.
+
+GROWTH_FACTOR = st.floats(min_value=0.5, max_value=2, allow_nan=False)
+POPULATION_GROWTH = st.floats(min_value=-0.02, max_value=0.03, allow_nan=False).map(
+    lambda value: round(value, 4)
+)
+REAL_RATES = {
+    parameter: import_obr_forecasts.parameter_values(parameter)
+    for parameter in GAMBLING_RATE_PARAMETERS
+}
+# The model's gambling rates last change in 2027-28, so each line's rate holds
+# from 2028-29.
+assert max(day.year for entries in REAL_RATES.values() for day, _ in entries) < 2028
+LINE_RATES = {
+    spec.path: {year: oracle_rate(spec, REAL_RATES, year) for year in range(2024, 2029)}
+    for spec in GAMBLING_SPECS
+}
+
+
+@settings(max_examples=40, deadline=None, derandomize=True)
+@given(last=st.integers(2025, 2045), data=st.data())
+def test_per_head_series_compound_to_the_aggregate_index(last, data):
+    """For any gambling receipts and any ons.population series ending in any
+    year: in every year to 2060, one plus a rendered series' growth, times one
+    plus population growth, is one plus the base's growth, to the rounding of
+    the six decimals written. The base grows by receipts over the rate the
+    model charges to the end of the forecast, then with average_earnings, or
+    holds flat while its rate is zero. So the per-head index, compounded with
+    the population index, gives the aggregate index, and a second run changes
+    nothing."""
+    levels = {}
+    for key in GAMBLING_LABELS:
+        level = HMRC_RECEIPTS[key][0]
+        series = []
+        for _ in range(3):
+            level *= data.draw(GROWTH_FACTOR)
+            series.append(level)
+        levels[key] = tuple(series)
+    population = {
+        year: data.draw(POPULATION_GROWTH, label=f"population {year}")
+        for year in range(2024, last + 1)
+    }
+    content = YOY_GROWTH_FIXTURE.replace(
+        POPULATION_FIXTURE,
+        "ons:\n  population:\n    values:\n"
+        + "".join(
+            f"      {year}-01-01: {format_growth(value)}\n"
+            for year, value in population.items()
+        ),
+    )
+    current = make_receipts_xlsx(gambling_levels=levels)
+    rendered = render(content, current=current)
+    earnings = _values(rendered, ("average_earnings",))
+    for spec in GAMBLING_SPECS:
+        values = _values(rendered, spec.path)
+        # Years before the first growth year keep the fixture's values.
+        assert (values[2023], values[2024]) == (0.05, 0.01)
+        receipts = gambling_receipts(spec.path[-1], levels[spec.path[-1]])
+        rates = {
+            year: LINE_RATES[spec.path][min(year, 2028)] for year in range(2024, 2061)
+        }
+        per_head_index = population_index = aggregate_index = tolerance = 1.0
+        for year in range(2025, 2061):
+            if rates[year] < 1e-12 or rates[year - 1] < 1e-12:
+                exact = 1.0
+            elif year in receipts:
+                exact = (receipts[year] / rates[year]) / (
+                    receipts[year - 1] / rates[year - 1]
+                )
+            else:
+                exact = 1 + _in_effect(earnings, year)
+            growth = _in_effect(values, year)
+            people = 1 + _in_effect(population, year)
+            assert growth > -1
+            # Six-decimal rounding moves the product by at most 5e-7 times
+            # one plus the population growth.
+            error = 5e-7 * people + 1e-12
+            assert abs((1 + growth) * people - exact) <= error, (spec.path, year)
+            per_head_index *= 1 + growth
+            population_index *= people
+            aggregate_index *= exact
+            tolerance *= 1 + error / exact
+            assert per_head_index * population_index == pytest.approx(
+                aggregate_index, rel=tolerance - 1 + 1e-12
+            ), (spec.path, year)
+    assert render(rendered, current=current) == rendered
 
 
 def test_a_fall_that_rounds_the_index_to_zero_is_refused():

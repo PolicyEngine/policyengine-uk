@@ -14,8 +14,10 @@ ons.population, 2032-2073: the population growth row of the OBR's
 (28 May 2026), which from 2031-32 is the principal projection of the ONS
 2024-based national population projections.
 
-per_capita.*: (1 + aggregate growth) / (1 + ons.population) - 1, rounded to 4
-decimals, with calendar-year aggregates from the October 2026 EFO tables.
+per_capita.gdp, mixed_income and non_labour_income: (1 + aggregate growth) /
+(1 + ons.population) - 1, rounded to 4 decimals, with calendar-year
+aggregates from the October 2026 EFO tables. The importer writes the
+per_capita gambling series to six decimals (test_import_obr_forecasts.py).
 """
 
 import pytest

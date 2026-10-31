@@ -7,6 +7,6 @@ class pool_betting_net_receipts(Variable):
     definition_period = YEAR
     default_value = 0
     unit = GBP
-    uprating = "gov.economic_assumptions.indices.obr.gambling_duty_bases.pool_betting"
+    uprating = "gov.economic_assumptions.indices.obr.per_capita.gambling_duty_bases.pool_betting"
     label = "Attributed dutiable non-racing pool betting net receipts"
     reference = "https://www.legislation.gov.uk/ukpga/2014/26/section/143"

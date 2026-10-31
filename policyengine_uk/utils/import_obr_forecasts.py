@@ -663,6 +663,8 @@ class ReceiptsSeriesSpec:
     ``outturn`` takes the years before the EFO's first from it, not from the
     previous EFO, which it does not read. ``references`` are cited after the
     sources of the levels.
+
+    A series under ``per_capita`` grows its line per head (``per_head``).
     """
 
     path: tuple[str, ...]
@@ -671,6 +673,15 @@ class ReceiptsSeriesSpec:
     rates: tuple[RateComponent, ...] = ()
     outturn: ReceiptsOutturn | None = None
     references: tuple[tuple[str, str], ...] = ()
+
+    @property
+    def per_head(self) -> bool:
+        """Whether the series sits under ``per_capita``. Dataset projection
+        grows household weights by ``ons.population``, so
+        ``render_receipts_growth_yaml`` writes such a series' growth over one
+        plus that growth (``per_head_growth``, ``per_head_tail``), and the
+        weighted total grows with the line in every year."""
+        return self.path[0] == "per_capita"
 
 
 GAMBLING_RATES = "gov.hmrc.gambling_duty"
@@ -701,12 +712,12 @@ def gambling_spec(
     receipts_thousands: tuple[tuple[int, float], ...],
     **extra,
 ) -> ReceiptsSeriesSpec:
-    """A betting and gaming duty's base (#2738): its line in the receipts
-    tables' forecast breakdown (Table 4.10 in October 2026, 3.10 in March
-    2026), which publishes forecasts only, after HMRC's outturn. The model's
-    gambling inputs start in 2024-25, the first year here."""
+    """A betting and gaming duty's base per head (#2738): its line in the
+    receipts tables' forecast breakdown (Table 4.10 in October 2026, 3.10 in
+    March 2026), which publishes forecasts only, after HMRC's outturn. The
+    model's gambling inputs start in 2024-25, the first year here."""
     return ReceiptsSeriesSpec(
-        path=("gambling_duty_bases", key),
+        path=("per_capita", "gambling_duty_bases", key),
         title="betting and gaming duties forecast breakdown",
         row=row,
         rates=rates,
@@ -921,6 +932,21 @@ def line_rate(spec: ReceiptsSeriesSpec, year: int) -> float:
         )
         / total
     )
+
+
+def growth_ratio(
+    spec: ReceiptsSeriesSpec, levels: dict[int, float], year: int
+) -> float:
+    """One plus a line's growth into ``year``, before rounding: the ratio of
+    its levels, or for a line with rates, of its bases, each year's receipts
+    over the rate the model charges (``line_rate``). A year whose rate, or
+    the year before's, is zero has no base, so the base holds flat."""
+    if not spec.rates:
+        return levels[year] / levels[year - 1]
+    rate, previous_rate = line_rate(spec, year), line_rate(spec, year - 1)
+    if rate == 0 or previous_rate == 0:
+        return 1.0
+    return (levels[year] / rate) / (levels[year - 1] / previous_rate)
 
 
 @dataclass(frozen=True)
@@ -1217,32 +1243,85 @@ def compute_receipts_growth(
                     f"{name}: {fiscal_year_label(year)} receipts of {level} are "
                     "not positive, so there is no growth to or from them"
                 )
-        values = {}
-        for year in sorted(levels)[1:]:
-            if not spec.rates:
-                values[year] = round(levels[year] / levels[year - 1] - 1, 6) + 0.0
-            elif rates[year] == 0 or rates[year - 1] == 0:
-                values[year] = 0.0
-            else:
-                base_growth = (levels[year] / rates[year]) / (
-                    levels[year - 1] / rates[year - 1]
-                )
-                values[year] = round(base_growth - 1, 6) + 0.0
-        # The model compounds the growth into an index rounded to five
-        # decimals (create_economic_assumption_indices), from 1 in a line's
-        # first year when the line has its own outturn. A positive base that
-        # rounds the index to zero would zero it in every later year.
-        index = 1.0
-        for year, value in values.items():
-            index = round(index * (1 + value), 5)
-            if index <= 0:
-                raise ValueError(
-                    f"{name}: {fiscal_year_label(year)} growth of {value} takes "
-                    f"the index to {index} at five decimals, so the base is "
-                    "too small to grow from"
-                )
+        values = {
+            year: round(growth_ratio(spec, levels, year) - 1, 6) + 0.0
+            for year in sorted(levels)[1:]
+        }
+        check_index(name, values)
         result[spec.path] = ReceiptsGrowth(values, line, previous, spec)
     return result
+
+
+def check_index(name: str, values: dict[int, float]) -> None:
+    """Refuse growth that zeroes the index the model builds from it.
+
+    The model compounds the growth into an index rounded to five decimals
+    (create_economic_assumption_indices), from 1 in a line's first year when
+    the line has its own outturn. A positive base that rounds the index to
+    zero would zero it in every later year.
+    """
+    index = 1.0
+    for year, value in values.items():
+        index = round(index * (1 + value), 5)
+        if index <= 0:
+            raise ValueError(
+                f"{name}: {fiscal_year_label(year)} growth of {value} takes "
+                f"the index to {index} at five decimals, so the base is "
+                "too small to grow from"
+            )
+
+
+def population_growth(content: str) -> dict[int, float]:
+    """``ons.population`` growth by year, as a yoy_growth.yaml holds it."""
+    values = yaml.safe_load(content)["ons"]["population"]["values"]
+    return dict(
+        sorted(
+            (int(str(instant)[:4]), float(value)) for instant, value in values.items()
+        )
+    )
+
+
+def growth_in_effect(series: dict[int, float], year: int) -> float:
+    """A growth series' value in ``year`` as the model reads it: its latest
+    entry at or before the year, or its first entry before that, since the
+    model backdates each parameter's first value."""
+    earlier = [entry for entry in series if entry <= year]
+    return series[max(earlier) if earlier else min(series)]
+
+
+def per_head_growth(
+    growth: ReceiptsGrowth, population: dict[int, float]
+) -> ReceiptsGrowth:
+    """A series' growth per head, to six decimals: each year's growth before
+    rounding (``growth_ratio``), over one plus that year's ``ons.population``
+    growth, minus one.
+
+    Dataset projection grows each household's input by this and its weight
+    by the population growth, so the weighted input grows by their product,
+    the line's growth: a duty's base, for a line with rates.
+    """
+    spec = growth.spec
+    first = min(growth.line.levels)
+    if growth.previous_line is None:
+        earlier = {
+            year: value / 1e6
+            for year, value in spec.outturn.receipts_thousands
+            if year < first
+        }
+    else:
+        earlier = {first - 1: growth.previous_line.levels[first - 1]}
+    levels = {**earlier, **growth.line.levels}
+    values = {
+        year: round(
+            growth_ratio(spec, levels, year) / (1 + growth_in_effect(population, year))
+            - 1,
+            6,
+        )
+        + 0.0
+        for year in growth.values
+    }
+    check_index(".".join(growth.spec.path), values)
+    return replace(growth, values=values)
 
 
 def format_growth(value: float) -> str:
@@ -1392,16 +1471,52 @@ def render_receipts_values(
 
 def receipts_basis(spec: ReceiptsSeriesSpec | None) -> str:
     """How a line's growth is measured, for its comments: nothing for
-    receipts, the rates taken out for a base."""
+    receipts, the rates taken out for a base, and population for a base per
+    head."""
     if spec is None or not spec.rates:
         return ""
+    if spec.per_head:
+        return (
+            "; per head: base growth (receipts over the rate the model charges) "
+            "over one plus ons.population growth"
+        )
     return "; base growth: receipts over the rate the model charges"
+
+
+def per_head_tail(
+    tail: dict[int, float], comment: str, population: dict[int, float]
+) -> tuple[dict[int, float], str]:
+    """A series' growth after the OBR's forecast per head, and its comment.
+
+    In each year from the tail's first to the last that it or
+    ``ons.population`` states, (1 + the tail's growth) / (1 + population
+    growth) - 1, to six decimals, written where the value changes. The model
+    holds each series' last value, so the weighted total grows by the tail in
+    every later year too.
+    """
+    first = min(tail)
+    yearly = {
+        year: round(
+            (1 + growth_in_effect(tail, year))
+            / (1 + growth_in_effect(population, year))
+            - 1,
+            6,
+        )
+        + 0.0
+        for year in range(first, max(max(tail), max(population), first) + 1)
+    }
+    return {
+        year: value
+        for year, value in yearly.items()
+        if year == first or value != yearly[year - 1]
+    }, f"{comment}; per head: (1 + that growth) / (1 + ons.population growth) - 1"
 
 
 def receipts_tail(content: str, growth: ReceiptsGrowth) -> tuple[dict[int, float], str]:
     """A series' growth after the OBR's forecast, and its comment: the
     average_earnings path, held at zero in years a base's rate is zero in or
-    comes from."""
+    comes from. A base under ``per_capita`` divides that growth by one plus
+    ``ons.population`` growth (``per_head_tail``)."""
     last = max(growth.values)
     path = average_earnings_path(content, last)
     spec = growth.spec
@@ -1427,12 +1542,16 @@ def receipts_tail(content: str, growth: ReceiptsGrowth) -> tuple[dict[int, float
         if year == last + 1 or value != yearly[year - 1]
     }
     if all(value == 0 for value in yearly.values()):
-        return tail, "held flat, as the rate is zero"
-    if any(value == 0 for value in yearly.values()):
-        return tail, (
+        comment = "held flat, as the rate is zero"
+    elif any(value == 0 for value in yearly.values()):
+        comment = (
             "the average_earnings long-run path above, held flat where the rate is zero"
         )
-    return tail, "the average_earnings long-run path above"
+    else:
+        comment = "the average_earnings long-run path above"
+    if spec.per_head:
+        return per_head_tail(tail, comment, population_growth(content))
+    return tail, comment
 
 
 def receipts_references(
@@ -1496,13 +1615,19 @@ def render_receipts_growth_yaml(
 
     Years before this EFO's first year are kept, so a series' index keeps
     its base year. Years after the OBR's receipts forecast follow
-    average_earnings as ``content`` holds it. The result is checked to
-    differ from ``content`` only in those values and references.
+    average_earnings as ``content`` holds it. A series under ``per_capita``
+    is written per head of ``ons.population`` as ``content`` holds it, in
+    every year to the last that population or the tail states. The result is
+    checked to differ from ``content`` only in those values and references.
     """
     before = yaml.safe_load(content)
     expected = copy.deepcopy(before)
     lines = content.split("\n")
+    population = None
     for path, series in growth.items():
+        if series.spec is not None and series.spec.per_head:
+            population = population or population_growth(content)
+            series = per_head_growth(series, population)
         tail, tail_comment = receipts_tail(content, series)
         references = receipts_references(series, release, previous_release)
 
@@ -2305,14 +2430,26 @@ def print_summary(
         print(f"- {spec.key}: {', '.join(window)}")
 
 
-def print_receipts_summary(growth: dict[tuple[str, ...], ReceiptsGrowth]) -> None:
+def print_receipts_summary(
+    growth: dict[tuple[str, ...], ReceiptsGrowth],
+    population: dict[int, float] | None = None,
+) -> None:
+    """Print each series' growth: a series under ``per_capita`` per head when
+    ``population`` is given, as it is written."""
     print(f"Updating {len(growth)} OBR receipts growth series")
     for path, series in growth.items():
+        basis = ""
+        if series.spec is not None and series.spec.per_head:
+            if population is None:
+                basis = ", aggregate"
+            else:
+                series = per_head_growth(series, population)
+                basis = ", per head"
         window = ", ".join(
             f"{year}: {format_growth(value)}"
             for year, value in sorted(series.values.items())
         )
-        print(f"- {'.'.join(path)} (Table {series.line.table}): {window}")
+        print(f"- {'.'.join(path)} (Table {series.line.table}{basis}): {window}")
 
 
 def print_level_summary(growth: dict[tuple[str, ...], LevelGrowth]) -> None:
@@ -2596,7 +2733,9 @@ def main(argv: list[str] | None = None) -> int:
                 f"an EFO before {month} {year}"
             )
         receipts_growth = compute_receipts_growth(receipts_bytes, previous_bytes)
-        print_receipts_summary(receipts_growth)
+        print_receipts_summary(
+            receipts_growth, population_growth(source_yaml_path.read_text())
+        )
     # The economy tables hold the national living wage's levels, so it moves
     # with the economy series unless skipped.
     level_growth = None

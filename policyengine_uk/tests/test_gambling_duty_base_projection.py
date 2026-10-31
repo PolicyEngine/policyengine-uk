@@ -1,14 +1,17 @@
 """The gambling duty inputs grow with their duty's base, not its receipts (#2738).
 
 Each input declares its duty's index under
-``gov.economic_assumptions.indices.obr.gambling_duty_bases``, and dataset
-projection grows it by the same ``yoy_growth`` series. A series is HMRC's
-2024-25 and 2025-26 receipts, then the OBR's October 2026 forecast (receipts
-Table 4.10), each year over the rate the model charges. For Machine Games
-Duty that rate charges the higher-stake share of the standard-rate base at
-the higher rate from 1 April 2027. Bases that give HMRC's 2024-25 receipts,
-with the higher-stake input at that share, therefore give the OBR's receipts
-in later years, and a rate reform moves receipts through the rate alone.
+``gov.economic_assumptions.indices.obr.per_capita.gambling_duty_bases``, and
+dataset projection grows it by the same ``yoy_growth`` series. A series is the
+growth in HMRC's 2024-25 and 2025-26 receipts, then the OBR's October 2026
+forecast (receipts Table 4.10), each year over the rate the model charges,
+and then over one plus ``ons.population`` growth. Household weights grow by
+``ons.population``, so the weighted inputs grow with the duty's base. For
+Machine Games Duty that rate charges the higher-stake share of the
+standard-rate base at the higher rate from 1 April 2027. Weighted bases that
+give HMRC's 2024-25 receipts, with the higher-stake input at that share,
+therefore give the OBR's receipts in later years, and a rate reform moves
+receipts through the rate alone.
 """
 
 from datetime import date
@@ -34,8 +37,11 @@ from policyengine_uk.utils.import_obr_forecasts import (
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
-GROWTH = "gov.economic_assumptions.yoy_growth.obr.gambling_duty_bases"
-INDEX = "gov.economic_assumptions.indices.obr.gambling_duty_bases"
+GROWTH = "gov.economic_assumptions.yoy_growth.obr.per_capita.gambling_duty_bases"
+INDEX = "gov.economic_assumptions.indices.obr.per_capita.gambling_duty_bases"
+POPULATION = "gov.economic_assumptions.yoy_growth.ons.population"
+POPULATION_INDEX = "gov.economic_assumptions.indices.ons.population"
+AVERAGE_EARNINGS = "gov.economic_assumptions.yoy_growth.obr.average_earnings"
 INPUTS = {
     "general_betting": (
         "betting_exchange_commission",
@@ -154,6 +160,61 @@ def index(parameters, duty, year):
     return parameters.get_child(f"{INDEX}.{duty}")(f"{year}-01-01")
 
 
+def population(parameters, year):
+    """One plus ``ons.population`` growth into ``year``."""
+    return 1 + parameters.get_child(POPULATION)(f"{year}-01-01")
+
+
+def population_index(parameters, year):
+    """The ``ons.population`` index in ``year`` over its 2024 level (the
+    index itself starts at 1 in 2021)."""
+    index = parameters.get_child(POPULATION_INDEX)
+    return index(f"{year}-01-01") / index("2024-01-01")
+
+
+def weighted_index(parameters, duty, year):
+    """The duty's index times the population index: the growth of a
+    weighted input since 2024."""
+    return index(parameters, duty, year) * population_index(parameters, year)
+
+
+def obr_rate(duty, year):
+    """The rate on a duty's 2024-25 base over the OBR's year from 1 April
+    ``year``. Every gambling rate change starts on 1 April."""
+    if duty == "remote_gaming":
+        return 0.21 if year < 2026 else 0.40
+    if duty == "bingo":
+        return 0.10 if year < 2026 else 0.0
+    if duty == "general_betting":
+        return 0.15 if year < 2027 else 0.15 + 0.10 * REMOTE_SHARE
+    if duty == "machine_games":
+        return MACHINE_GAMES_BEFORE if year < 2027 else MACHINE_GAMES_AFTER
+    return {"lottery": 0.12, "pool_betting": 0.15, "gaming": 0.235487}[duty]
+
+
+def aggregate_index(parameters, duty, year):
+    """The duty's national base in ``year`` over its 2024-25 base: HMRC's
+    receipts to 2025-26 and Table 4.10's to 2031-32, each over the rate of
+    the OBR's year, then average earnings growth after the forecast. A base
+    whose rate is zero holds flat."""
+    if year == 2024:
+        return 1.0
+    if obr_rate(duty, year) == 0:
+        return aggregate_index(parameters, duty, year - 1)
+    if year > 2031:
+        earnings = parameters.get_child(AVERAGE_EARNINGS)(f"{year}-01-01")
+        return aggregate_index(parameters, duty, year - 1) * (1 + earnings)
+
+    def base(year):
+        if year < 2026:
+            receipts = HMRC[duty][year - 2024] * 1e3
+        else:
+            receipts = TABLE_4_10[duty][year - 2026] * 1e9
+        return receipts / obr_rate(duty, year)
+
+    return base(year) / base(2024)
+
+
 def test_every_gambling_input_declares_its_duty_index():
     """Every input in the gambling folder declares its duty's index, and
     dataset projection grows it by the same duty's series."""
@@ -183,13 +244,15 @@ def test_indices_are_positive_from_the_2024_base_year(parameters):
 
 def test_remote_gaming_index_takes_out_the_april_2026_rate_rise(parameters):
     """Receipts more than double into 2026-27 as the rate goes from 21% to
-    40%; the base grows 9.4%."""
+    40%; the base grows 9.4%, and per head 9.4% over population growth."""
     receipts_growth = TABLE_4_10["remote_gaming"][0] / (HMRC["remote_gaming"][1] / 1e6)
     assert receipts_growth - 1 == pytest.approx(1.0834, abs=1e-4)
     base_growth = receipts_growth * 0.21 / 0.40
+    assert round(base_growth - 1, 6) == 0.093757
     growth = parameters.get_child(f"{GROWTH}.remote_gaming")
-    assert growth("2026-01-01") == round(base_growth - 1, 6) == 0.093757
-    assert index(parameters, "remote_gaming", 2026) / index(
+    people = population(parameters, 2026)
+    assert growth("2026-01-01") == round(base_growth / people - 1, 6)
+    assert weighted_index(parameters, "remote_gaming", 2026) / weighted_index(
         parameters, "remote_gaming", 2025
     ) == pytest.approx(base_growth, rel=2e-5)
 
@@ -201,8 +264,10 @@ def test_general_betting_index_takes_out_the_april_2027_remote_rise(parameters):
     assert rate_2027 == pytest.approx(0.19547, abs=1e-5)
     receipts = TABLE_4_10["general_betting"]
     base_growth = (receipts[1] / rate_2027) / (receipts[0] / 0.15)
+    assert round(base_growth - 1, 6) == 0.027038
     growth = parameters.get_child(f"{GROWTH}.general_betting")
-    assert growth("2027-01-01") == round(base_growth - 1, 6) == 0.027038
+    people = population(parameters, 2027)
+    assert growth("2027-01-01") == round(base_growth / people - 1, 6)
     # Receipts grow 33.8%.
     assert receipts[1] / receipts[0] - 1 == pytest.approx(0.3384, abs=1e-4)
 
@@ -224,43 +289,102 @@ def test_machine_games_index_takes_out_the_april_2027_higher_stake_rise(paramete
     base_growth = (receipts[1] / MACHINE_GAMES_AFTER) / (
         receipts[0] / MACHINE_GAMES_BEFORE
     )
+    assert round(base_growth - 1, 6) == -0.002319
     growth = parameters.get_child(f"{GROWTH}.machine_games")
-    assert growth("2027-01-01") == round(base_growth - 1, 6) == -0.002319
+    people = population(parameters, 2027)
+    assert growth("2027-01-01") == round(base_growth / people - 1, 6)
 
 
 def test_bingo_base_holds_flat_once_its_rate_is_zero(parameters):
-    """Bingo Duty ends on 1 April 2026; its base stays at its 2025-26 level."""
-    at_2025 = index(parameters, "bingo", 2025)
-    assert at_2025 == pytest.approx(HMRC["bingo"][1] / HMRC["bingo"][0], rel=1e-5)
+    """Bingo Duty ends on 1 April 2026; its base stays at its 2025-26 level.
+    Per head it falls as population grows: in every year to the end of
+    ons.population, one plus its growth, times one plus population growth, is
+    one, so the weighted index holds."""
+    at_2025 = weighted_index(parameters, "bingo", 2025)
+    assert at_2025 == pytest.approx(HMRC["bingo"][1] / HMRC["bingo"][0], rel=2e-5)
+    growth = parameters.get_child(f"{GROWTH}.bingo")
+    for year in range(2026, 2075):
+        people = population(parameters, year)
+        assert (1 + growth(f"{year}-01-01")) * people == pytest.approx(
+            1, abs=5e-7 * people + 1e-12
+        ), year
     for year in range(2026, 2040):
-        assert index(parameters, "bingo", year) == at_2025
+        assert weighted_index(parameters, "bingo", year) == pytest.approx(
+            at_2025, rel=2e-4
+        ), year
 
 
-def household_frame(year, inputs):
-    """One household of one adult, with the given household inputs."""
+def households_frame(year, columns, weights):
+    """Households of one adult each, with the given weights and household
+    columns."""
+    ids = list(range(1, len(weights) + 1))
+    count = len(ids)
     return UKSingleYearDataset(
         person=pd.DataFrame(
             {
-                "person_id": [1],
-                "person_benunit_id": [1],
-                "person_household_id": [1],
-                "age": [40],
+                "person_id": ids,
+                "person_benunit_id": ids,
+                "person_household_id": ids,
+                "age": [40] * count,
             }
         ),
-        benunit=pd.DataFrame({"benunit_id": [1]}),
+        benunit=pd.DataFrame({"benunit_id": ids}),
         household=pd.DataFrame(
             {
-                "household_id": [1],
-                "region": ["LONDON"],
-                "tenure_type": ["OWNED_OUTRIGHT"],
-                "council_tax": [0.0],
-                "rent": [0.0],
-                "household_weight": [1.0],
-                **{name: [value] for name, value in inputs.items()},
+                "household_id": ids,
+                "region": ["LONDON"] * count,
+                "tenure_type": ["OWNED_OUTRIGHT"] * count,
+                "council_tax": [0.0] * count,
+                "rent": [0.0] * count,
+                "household_weight": list(weights),
+                **columns,
             }
         ),
         fiscal_year=year,
     )
+
+
+def household_frame(year, inputs):
+    """One household of one adult, weight 1, with the given household
+    inputs."""
+    return households_frame(
+        year, {name: [value] for name, value in inputs.items()}, (1.0,)
+    )
+
+
+# Two households hold each total between them, 30% at weight 700 and 70% at
+# weight 1,900, as survey households hold the national bases.
+WEIGHTS = (700.0, 1_900.0)
+SHARES = (0.3, 0.7)
+
+
+def weighted_frame(year, totals):
+    """Two households whose weighted inputs sum to ``totals``: each holds
+    its share of a total over its weight."""
+    return households_frame(
+        year,
+        {
+            name: [total * share / weight for share, weight in zip(SHARES, WEIGHTS)]
+            for name, total in totals.items()
+        },
+        WEIGHTS,
+    )
+
+
+def weighted(simulation, variable, year):
+    """``variable``'s total over the households in ``year``, each weighted by
+    its household weight."""
+    values = np.asarray(simulation.calculate(variable, year), dtype=float)
+    weights = np.asarray(simulation.calculate("household_weight", year), dtype=float)
+    return float((values * weights).sum())
+
+
+def weighted_simulation(parameters, totals):
+    """A simulation of ``weighted_frame``'s households, projected as a survey
+    dataset is: by extend_single_year_dataset to its last year, and by Core's
+    uprating after it."""
+    projected = extend_single_year_dataset(weighted_frame(2024, totals), parameters)
+    return Simulation(dataset=projected)
 
 
 def situation(inputs, year=2024):
@@ -295,11 +419,31 @@ def test_dataset_projection_matches_core_uprating(parameters):
             stored = projected[year].household[name].iloc[0]
             uprated = simulation.calculate(name, year)[0]
             assert stored == pytest.approx(uprated, rel=1e-4), (name, year)
-    # Remote gaming grows by the base series, not the receipts'.
+    # Remote gaming grows by its base's growth over population growth.
     stored = projected[2026].household["remote_gaming_net_losses"].iloc[0]
+    people = population(parameters, 2025) * population(parameters, 2026)
+    base_growth = aggregate_index(parameters, "remote_gaming", 2026)
     assert stored == pytest.approx(
-        ALL_INPUTS["remote_gaming_net_losses"] * 1.136277 * 1.093757, rel=1e-6
+        ALL_INPUTS["remote_gaming_net_losses"] * base_growth / people, rel=3e-6
     )
+
+
+def test_weighted_gambling_bases_follow_the_aggregate(parameters):
+    """Household weights grow by ons.population, so each household's input
+    must grow per head for the weighted input to grow as its duty's base
+    does. Projected by extend_single_year_dataset to its last year and by
+    Core's uprating after it, each of the sixteen weighted inputs grows in
+    every year to 2039 as its duty's national base: receipts over the rate
+    to 2031-32, then average earnings, or flat while the rate is zero."""
+    names = [name for names in INPUTS.values() for name in names]
+    totals = {name: 1e6 * (position + 1) for position, name in enumerate(names)}
+    simulation = weighted_simulation(parameters, totals)
+    for duty, duty_inputs in INPUTS.items():
+        for year in range(2024, 2040):
+            expected = aggregate_index(parameters, duty, year)
+            for name in duty_inputs:
+                growth = weighted(simulation, name, year) / totals[name]
+                assert growth == pytest.approx(expected, rel=1e-4), (name, year)
 
 
 def test_higher_stake_machines_pay_the_april_2027_rise_once():
@@ -414,23 +558,24 @@ def expected_receipts(duty, year):
 
 
 @pytest.fixture(scope="module")
-def national_simulation():
-    return Simulation(dataset=household_frame(2024, national_bases()))
+def national_simulation(parameters):
+    return weighted_simulation(parameters, national_bases())
 
 
 @pytest.fixture(scope="module")
-def national_simulation_without_higher_stake():
-    return Simulation(dataset=household_frame(2024, national_bases(None)))
+def national_simulation_without_higher_stake(parameters):
+    return weighted_simulation(parameters, national_bases(None))
 
 
 @pytest.mark.parametrize("duty", sorted(DUTIES))
 def test_bases_that_give_hmrc_receipts_give_the_obr_forecast(national_simulation, duty):
-    """Receipts are each base times its rate, and the bases grow by the
-    OBR's receipts over those rates: so bases that give HMRC's 2024-25
+    """Receipts are each base times its rate. The weighted bases grow by the
+    OBR's receipts over those rates: household inputs per head, and household
+    weights by population. So weighted bases that give HMRC's 2024-25
     receipts give HMRC's 2025-26 receipts and then Table 4.10 in every year
     to 2031-32, with the higher-stake input at its share."""
     for year in range(2024, 2032):
-        model = national_simulation.calculate(DUTIES[duty], year)[0]
+        model = weighted(national_simulation, DUTIES[duty], year)
         assert model == pytest.approx(expected_receipts(duty, year), rel=2e-4, abs=1), (
             duty,
             year,
@@ -449,7 +594,7 @@ def test_without_the_higher_stake_input_the_duty_falls_short_of_table_4_10(
         0.1831, abs=1e-4
     )
     for year in range(2024, 2032):
-        model = simulation.calculate("machine_games_duty", year)[0]
+        model = weighted(simulation, "machine_games_duty", year)
         expected = expected_receipts("machine_games", year)
         if year == 2026:
             expected = TABLE_4_10["machine_games"][0] * 1e9
@@ -587,7 +732,7 @@ def test_each_series_charges_the_rates_the_model_charges(switch):
         rates = {
             spec.path[-1]: line_rate(spec, year)
             for spec in RECEIPTS_SERIES_SPECS
-            if spec.path[0] == "gambling_duty_bases"
+            if "gambling_duty_bases" in spec.path
         }
     assert rates.keys() == DUTIES.keys()
     for duty, names in INPUTS.items():
