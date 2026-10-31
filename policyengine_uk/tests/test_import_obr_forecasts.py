@@ -3041,6 +3041,26 @@ def test_the_smallest_table_with_a_wrong_penny_keeps_its_penny():
     assert wages[2028] == pytest.approx(13.52, abs=1e-9)
 
 
+def test_an_estimate_just_below_half_a_penny_takes_the_nearest_growth():
+    """£13.21 set for 2027 and an estimate of £13.614999 for 2028: the ratio,
+    0.030659, takes the model to £13.62. Every growth from 0.029904 to 0.030658
+    keeps £13.61, and the importer writes the one nearest the growth from the
+    £13.21 rate to £13.614999, 0.030658."""
+    workbook = nlw_workbook(nlw_rows((13.21, 13.614999), 2027, 2027))
+    assert compute_level_growth(workbook)[NLW_PATH].values == {2028: 0.030659}
+    values, wages = projected_from_committed(workbook)
+    for growth, wage in (
+        (0.029903, 13.60),
+        (0.029904, 13.61),
+        (0.030658, 13.61),
+        (0.030659, 13.62),
+    ):
+        projected = model_wages({**values, 2028: growth}, 2027, 13.21)[2028]
+        assert projected == pytest.approx(wage, abs=1e-9), growth
+    assert values[2028] == 0.030658
+    assert wages[2028] == pytest.approx(13.61, abs=1e-9)
+
+
 def test_a_level_no_six_decimal_growth_can_reach_is_refused():
     """With £5,000 set for 2024, one step of the five-decimal index moves the
     projection by about 5p, so no growth projects £5,000.02 for 2025."""
