@@ -6,6 +6,7 @@ import math
 from typing import Mapping, Optional
 
 from . import COMMENT_MARKER
+from .guard import not_held_note, problem_text
 from .spec import Spec, fiscal_year_label
 
 SECTIONS = (
@@ -282,10 +283,13 @@ def _guard(summary) -> str:
         "once holding every other head at its baseline value, and once holding "
         "every other head at its value after the first £1 while the component "
         "rises again. The head fails where either measurement still shows the "
-        "response. If one of those values is not finite in any household, the "
-        "second measurement does not run, and the head fails wherever it first "
-        f"broke a rule. {len(failed)} failed and the check skipped "
-        f"{len(skipped)}."
+        "response. The check cannot hold a head at a value that is not finite. "
+        "In each unit where another head is not finite after the first £1, it "
+        "holds that head at its baseline value, and the second measurement "
+        "judges no household the unit belongs to. There a head fails wherever it "
+        "first broke a rule, or wherever the check could not confirm whether its "
+        f"response contains the component. {len(failed)} failed and the check "
+        f"skipped {len(skipped)}."
     ]
     for c in failed:
         problems = c.get("problems") or [{"message": c.get("detail", "")}]
@@ -294,38 +298,28 @@ def _guard(summary) -> str:
         )
     for c in skipped:
         lines.append(f"- `{c['variable']}` skipped: {c.get('detail', '')}")
+    code = "`{}`".format
     for c in tested:
-        failing = {p.get("head") for p in c.get("problems") or []}
+        counts = c.get("households_not_held") or {}
         for head, heads in (c.get("heads_not_held") or {}).items():
-            names = [f"`{v}`" for v in heads]
-            if len(names) == 1:
-                listed, verb = names[0], "is"
-            else:
-                listed, verb = f"{', '.join(names[:-1])} and {names[-1]}", "are"
-            # Only the second measurement could have confirmed a head with no
-            # problem left as a containment.
-            outcome = (
-                f"it measured `{head}` again only with the other heads at their "
-                "baseline values"
-                if head in failing
-                else f"it could not confirm whether `{head}` contains `{c['variable']}`"
-            )
-            lines.append(
-                f"- `{c['variable']}`: the check could not hold {listed}, which "
-                f"{verb} not finite once `{c['variable']}` rises, so {outcome}"
-            )
+            note = not_held_note(c["variable"], head, heads, counts.get(head), code)
+            lines.append(f"- `{c['variable']}`: {note}")
     for c in tested:
         for m in c.get("mediated") or []:
-            moved = ", ".join(f"`{v}`" for v in m["via"]) or "none"
-            where = (
-                f"{m['households']:,} households"
-                if m.get("households") is not None
-                else "fewer than 10 households"
+            moved = ", ".join(code(v) for v in m["via"]) or "none"
+            # The guard's own wording, so a first reading that is not finite
+            # reads as it does in a problem.
+            text = problem_text(
+                "mediated",
+                code(m["head"]),
+                code(c["variable"]),
+                m.get("households"),
+                m.get("not_finite", False),
+                m.get("not_finite_weighted", True),
             )
             lines.append(
-                f"- `{c['variable']}`: `{m['head']}` responds only through other "
-                f"heads in {where} (other heads that moved there: {moved}; "
-                f"{m['total']}; not a failure)"
+                f"- `{c['variable']}`: {text} (other heads that moved there: "
+                f"{moved}; {m['total']}; not a failure)"
             )
     for dc in guard.get("double_counts", []):
         if dc.get("not_finite"):
