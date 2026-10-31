@@ -5,19 +5,22 @@
 # Sch 1 para 6(1)(c) and (d): the income-related allowance needs that the
 # claimant "is not entitled to state pension credit" and "is not a member of a
 # couple the other member of which is entitled to ... state pension credit".
+# The model reads the couple's Pension Credit worked out with no
+# income-related ESA in the family, B(0), and bars the couple's claim where it
+# pays. B(e) is the Pension Credit the family would get with the award e.
 # A mixed-age couple is not entitled to State Pension Credit from 15 May 2019
 # (State Pension Credit Act 2002 s.4(1A)) unless the SI 2019/37 art 4 saving
-# applies. Northern Ireland's Welfare Reform Act (Northern Ireland) 2007 sets
-# the same conditions in the same words.
+# applies.
 # Everyone here is a legacy claimant (would_claim_uc false), since a Universal
 # Credit claim ends the couple's income-related ESA anyway. No case has
-# capital, so no tariff income: an award that passes is the 5_000 reported.
+# capital, so no tariff income: an award that passes is the amount reported.
 # Pension Credit with no income is the guarantee credit's standard minimum
 # guarantee for 52 weeks: in 2026-27, £238.00 for a single claimant and
 # £363.25 for a couple (SPC Regs 2002 reg 6(1), as amended by the Social
 # Security Benefits Up-rating Order 2026, SI 2026/148, art 29(2)), so
-# 52 x 238.00 = 12_376 and 52 x 363.25 = 18_889. Nobody here reached
-# pensionable age before 6 April 2016, so no savings credit is due.
+# 52 x 238.00 = 12_376 and 52 x 363.25 = 18_889. Nobody here in 2026 reached
+# pensionable age before 6 April 2016, so no savings credit is due (SPCA 2002
+# s.3(1)).
 
 - name: Case 1, a single claimant aged 70 who reports income-related ESA gets Pension Credit and no ESA.
   period: 2026
@@ -79,14 +82,18 @@
     # 52 x 363.25.
     pension_credit: 18_889
 
-- name: Case 3, a saved mixed-age couple aged 70 and 60 get Pension Credit and no ESA on the younger member's report.
+- name: Case 3, a saved mixed-age couple aged 73 and 60 get Pension Credit and no ESA on the younger member's report.
   period: 2026
   absolute_error_margin: 0.01
   input:
     people:
       person1:
-        age: 70
+        age: 73
+        date_of_birth: 19530301
+        gender: MALE
         is_claimant_or_partner: true
+        # The couple has had Pension Credit since before 15 May 2019.
+        pension_credit_reported: 9_000
       person2:
         age: 60
         is_claimant_or_partner: true
@@ -95,24 +102,29 @@
       benunit:
         members: [person1, person2]
         would_claim_uc: false
-        # SI 2019/37 art 4(1): the couple was entitled to Pension Credit on
-        # 14 May 2019 and has been since, so s.4(1A) does not exclude it.
-        has_mixed_age_couple_pension_credit_saving: true
     households:
       household:
         members: [person1, person2]
   output:
+    # SI 2019/37 art 4(1): born 1 March 1953, the older member reached the
+    # qualifying age on 6 January 2016 (Pensions Act 1995 Sch 4 para 1 rule 3,
+    # table 1, via SPCA 2002 s.1(6)), so the couple could be entitled to
+    # Pension Credit on 14 May 2019, and it reports Pension Credit now, so
+    # s.4(1A) does not exclude it.
+    has_mixed_age_couple_pension_credit_saving: true
     # The 60-year-old has not reached pensionable age, so s.1(3)(c) does not
     # bar them.
     is_SP_age: [true, false]
     meets_pension_credit_age_conditions: true
-    # Para 6(1)(d): the other member of the couple is entitled to State
-    # Pension Credit, so the 60-year-old gets no income-related ESA.
+    # Para 6(1)(d): B(0) = 52 x 363.25 = 18_889 is payable, so the other
+    # member of the couple is entitled to State Pension Credit and the
+    # 60-year-old gets no income-related ESA.
     esa_income_eligible: false
     esa_income: 0
     claimant_or_partner_esa_income: 0
     is_on_income_related_esa: [false, false]
-    # 52 x 363.25.
+    # 52 x 363.25. He reached pensionable age at 65 on 1 March 2018 (rule
+    # 1), after 6 April 2016, so no savings credit is due (SPCA 2002 s.3(1)).
     pension_credit: 18_889
 
 - name: Case 4, the same mixed-age couple without the saving keep income-related ESA and get no Pension Credit.
@@ -121,7 +133,9 @@
   input:
     people:
       person1:
-        age: 70
+        age: 73
+        date_of_birth: 19530301
+        gender: MALE
         is_claimant_or_partner: true
       person2:
         age: 60
@@ -131,13 +145,14 @@
       benunit:
         members: [person1, person2]
         would_claim_uc: false
-        has_mixed_age_couple_pension_credit_saving: false
     households:
       household:
         members: [person1, person2]
   output:
-    # SPCA 2002 s.4(1A): the 70-year-old is not entitled to Pension Credit
-    # while the partner is under the qualifying age.
+    # Neither member reports Pension Credit or pension-age Housing Benefit,
+    # so the couple keeps no saving, and SPCA 2002 s.4(1A) excludes the
+    # 73-year-old while the partner is under the qualifying age.
+    has_mixed_age_couple_pension_credit_saving: false
     meets_pension_credit_age_conditions: false
     pension_credit: 0
     # Neither para 6(1)(d) nor s.1(3)(c) bars the 60-year-old: the 5_000.
@@ -152,8 +167,11 @@
   input:
     people:
       person1:
-        age: 70
+        age: 73
+        date_of_birth: 19530301
+        gender: MALE
         is_claimant_or_partner: true
+        pension_credit_reported: 9_000
       person2:
         age: 60
         is_claimant_or_partner: true
@@ -162,12 +180,13 @@
       benunit:
         members: [person1, person2]
         would_claim_uc: false
-        has_mixed_age_couple_pension_credit_saving: true
         would_claim_pc: false
     households:
       household:
         members: [person1, person2]
   output:
+    has_mixed_age_couple_pension_credit_saving: true
+    meets_pension_credit_age_conditions: true
     # Entitlement to Pension Credit needs a claim (Social Security
     # Administration Act 1992 s.1), so para 6(1)(d) does not bar the award.
     pension_credit: 0
@@ -229,10 +248,13 @@
     # February to 5 March 1953 reached it on 6 January 2016 (rule 3, table 1).
     has_attained_state_pension_credit_qualifying_age: true
     meets_pension_credit_age_conditions: true
-    # Para 6(1)(c): he is entitled to State Pension Credit.
+    # Para 6(1)(c): with no income, B(0) is the minimum guarantee, 52 x
+    # 155.60 = 8_091.20 in 2016-17 (SPC Regs 2002 reg 6(1)(b)), so he is
+    # entitled to State Pension Credit.
     esa_income_eligible: false
     esa_income: 0
     is_on_income_related_esa: false
+    pension_credit: 8_091.20
 
 - name: Case 8, the same man in 2016 keeps income-related ESA if he would not claim Pension Credit.
   period: 2016
@@ -391,11 +413,14 @@
       benunit:
         members: [person1, person2]
         would_claim_uc: false
-        has_mixed_age_couple_pension_credit_saving: false
     households:
       household:
         members: [person1, person2]
   output:
+    # Born in 1956, the 70-year-old reached the qualifying age after 14 May
+    # 2019, so the couple keeps no saving (SI 2019/37 art 4(1)).
+    has_mixed_age_couple_pension_credit_saving: false
+    meets_pension_credit_age_conditions: false
     # The 60-year-old can claim; the model makes the couple's two reports one
     # award of 5_000 + 5_000 = 10_000.
     esa_income_eligible: true
@@ -404,3 +429,270 @@
     # s.1(3)(c): the 70-year-old cannot be the claimant, so the award is not
     # payable to them.
     is_on_income_related_esa: [false, true]
+
+- name: Case 14, where only the older member of an unsaved mixed-age couple has the support component, the couple's award brings neither benefit cap exception.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+        esa_includes_support_component: true
+      person2:
+        age: 60
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_uc: false
+    households:
+      household:
+        members: [person1, person2]
+  output:
+    esa_income: 10_000
+    # s.1(3)(c): only the 60-year-old can be the claimant, so the award is
+    # paid to them, without the support component.
+    is_on_income_related_esa: [false, true]
+    # HB Regs 2006 reg 75F(1) and UC Regs 2013
+    # reg 83(1): the exception needs the award's support component, which
+    # belongs to the 70-year-old, who is not its claimant.
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+
+# Cases 15 to 19 take one case for each pairing of B(0) and B(e). Each is a
+# man aged 63 in 2016, born 1 March 1953: over the qualifying age for State
+# Pension Credit (from 6 January 2016) and under his pensionable age (65,
+# on 1 March 2018), with support-group income-related ESA. In 2016-17 the
+# minimum guarantee is £155.60 a week, 52 x 155.60 = 8_091.20 a year (SPC
+# Regs 2002 reg 6(1)(b)), and Pension Credit disregards £5 a week of a single
+# claimant's earnings (Sch VI para 5), or £20 a week while the claimant is on
+# employment and support allowance (para 4(1)(a)(vii)). Below 65 no savings
+# credit is due (SPCA 2002 s.3(1)). His income is below the personal
+# allowance (£11,000) and his earnings below the National Insurance primary
+# threshold (£155 a week), so neither takes anything off.
+
+- name: Case 15, where Pension Credit pays with or without the award, the man gets Pension Credit worked out without it and no income-related ESA.
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 63
+        date_of_birth: 19530301
+        gender: MALE
+        is_claimant_or_partner: true
+        esa_income_reported: 6_011.20
+        esa_includes_support_component: true
+        # £50 a week for 10 hours.
+        employment_income: 2_600
+        hours_worked: 520
+        # £40 a week.
+        private_pension_income: 2_080
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_uc: false
+    households:
+      household:
+        members: [person1]
+  output:
+    # B(0): income 50 + 40 - 5 = 85 a week, so 155.60 - 85 = 70.60 a week.
+    # B(e): 50 + 40 - 20 = 70, so 85.60 a week. B(0) pays, so para 6(1)(c)
+    # bars the award and Pension Credit is B(0): 52 x 70.60.
+    esa_income_eligible: false
+    esa_income: 0
+    pension_credit: 3_671.20
+    pension_credit_earnings_disregard: 260
+
+- name: Case 16, where Pension Credit pays nothing with or without the award, the man keeps income-related ESA.
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 63
+        date_of_birth: 19530301
+        gender: MALE
+        is_claimant_or_partner: true
+        esa_income_reported: 4_919.20
+        esa_includes_support_component: true
+        # £115.50 a week for 15 hours.
+        employment_income: 6_006
+        hours_worked: 780
+        # £61 a week.
+        private_pension_income: 3_172
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_uc: false
+    households:
+      household:
+        members: [person1]
+  output:
+    # B(0): 115.50 + 61 - 5 = 171.50 a week, over 155.60. B(e): 115.50 + 61
+    # - 20 = 156.50, still over it. Pension Credit refuses him either way, so
+    # para 6(1)(c) does not bar the award: 52 x 94.60 = 4_919.20.
+    pension_credit: 0
+    esa_income_eligible: true
+    esa_income: 4_919.20
+    is_on_income_related_esa: true
+
+- name: Case 17, the same man keeps the same income-related ESA if he would not claim Pension Credit.
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 63
+        date_of_birth: 19530301
+        gender: MALE
+        is_claimant_or_partner: true
+        esa_income_reported: 4_919.20
+        esa_includes_support_component: true
+        employment_income: 6_006
+        hours_worked: 780
+        private_pension_income: 3_172
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_uc: false
+        would_claim_pc: false
+    households:
+      household:
+        members: [person1]
+  output:
+    pension_credit: 0
+    esa_income: 4_919.20
+
+- name: Case 18, where Pension Credit pays only with the award, the man keeps income-related ESA and gets that Pension Credit too.
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 63
+        date_of_birth: 19530301
+        gender: MALE
+        is_claimant_or_partner: true
+        esa_income_reported: 5_491.20
+        esa_includes_support_component: true
+        employment_income: 6_006
+        hours_worked: 780
+        # £50 a week.
+        private_pension_income: 2_600
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_uc: false
+    households:
+      household:
+        members: [person1]
+  output:
+    # B(0): 115.50 + 50 - 5 = 160.50 a week, over 155.60, so nil. B(e):
+    # 115.50 + 50 - 20 = 145.50, so 155.60 - 145.50 = 10.10 a week. No state
+    # is consistent: Pension Credit would end the award, and without the
+    # award Pension Credit pays nothing. B(0) pays nothing, so the award
+    # stands, 52 x 105.60 = 5_491.20, beside B(e) = 52 x 10.10 = 525.20.
+    esa_income_eligible: true
+    esa_income: 5_491.20
+    pension_credit_earnings_disregard: 1_040
+    pension_credit: 525.20
+
+- name: Case 19, where working tax credit makes Pension Credit pay only without the award, a couple aged 66 and 58 get Pension Credit and no income-related ESA.
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 66
+        is_claimant_or_partner: true
+        # 20 hours a week.
+        employment_income: 10_000
+        hours_worked: 1_040
+        working_tax_credit_reported: 1
+      person2:
+        age: 58
+        is_claimant_or_partner: true
+        esa_income_reported: 3_000
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_uc: false
+    households:
+      household:
+        members: [person1, person2]
+  output:
+    # Before 15 May 2019 the 66-year-old can claim Pension Credit for the
+    # couple. In 2016-17 the couple minimum guarantee is £237.55 a week,
+    # 52 x 237.55 = 12_352.60, and the couple's standard earnings disregard
+    # is £10 a week (Sch VI para 5), £20 with the award. The 66-year-old has
+    # reached pensionable age, so pays no primary Class 1 contributions
+    # (SSCBA 1992 s.6(3)), and 10_000 is under the £11,000 personal
+    # allowance, so his earnings count in full.
+    # Working tax credit: the basic and couple elements, 1_960 + 2_010 =
+    # 3_970 (WTC (Entitlement and Maximum Rate) Regs 2002 Sch 2), which counts
+    # as Pension Credit income (SPCA 2002 s.15(1)(b)).
+    # B(e): the award lifts the tax credit income test (TCA 2002 s.7(2)), so
+    # working tax credit is 3_970, and 10_000 + 3_970 - 1_040 = 12_930, over
+    # 12_352.60: nil. Savings credit counts no working tax credit (SPC Regs
+    # 2002 reg 9(a)): 10_000 - 1_040 = 8_960, 172.31 a week, under the
+    # £212.97 couple threshold: nil.
+    # B(0): Pension Credit on 3_970 would be nil too, so it gives no
+    # passport. The income test applies: 41% of income over £6,420 comes off,
+    # 3_970 - 0.41 x (10_000 - 6_420) = 2_502.20. Then 10_000 + 2_502.20 -
+    # 520 = 11_982.20, so 12_352.60 - 11_982.20 = 370.40. B(0) pays, so para
+    # 6(1)(d) bars the award, and the couple gets B(0).
+    esa_income_eligible: false
+    esa_income: 0
+    claimant_or_partner_esa_income: 0
+    working_tax_credit: 2_502.20
+    pension_credit: 370.40
+
+- name: Case 20, in 2018 a couple aged 66 and 58 whose income Pension Credit refuses keep support-group ESA and both benefit cap exceptions.
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 66
+        date_of_birth: 19520701
+        gender: MALE
+        is_claimant_or_partner: true
+        # £200 a week.
+        private_pension_income: 10_400
+      person2:
+        age: 58
+        gender: MALE
+        is_claimant_or_partner: true
+        esa_income_reported: 2_537.60
+        esa_includes_support_component: true
+        # £124 a week for 15 hours.
+        employment_income: 6_448
+        hours_worked: 780
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_uc: false
+    households:
+      household:
+        members: [person1, person2]
+  output:
+    # In 2018-19 the couple minimum guarantee is £248.80 a week. B(0): 200 +
+    # 124 - 10 = 314 a week; B(e): 200 + 124 - 20 = 304. Both exceed it, so
+    # nil either way. (Each member's income is under the £11,850 personal
+    # allowance, and £124 a week is under the £162 National Insurance primary
+    # threshold, so neither takes anything off.) Para 6(1)(d) does not bar the
+    # award.
+    pension_credit: 0
+    esa_income: 2_537.60
+    claimant_or_partner_esa_income: 2_537.60
+    is_on_income_related_esa: [false, true]
+    # HB Regs 2006 reg 75F(1) and UC Regs 2013
+    # reg 83(1): the award with its support component.
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: true
+    # So no cap applies: uc_benefit_cap is unlimited.
+    is_uc_benefit_cap_exempt: true
