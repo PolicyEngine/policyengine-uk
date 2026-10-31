@@ -23,7 +23,8 @@ in 2020 and no ongoing tax-credit awards from model year 2025. Accommodation
 amounts are supplied as assessed inputs, so the properties cover the earnings
 test's arithmetic in every year; in law the accommodation disregard (from 5
 October 2026) and WTC (to 5 April 2025) coexist only under a reform that
-keeps tax credits. Populations use core situations with independently
+keeps tax credits. test_housing_benefit_wtc_disregard_segments.py lets the
+model date that disregard. Populations use core situations with independently
 supplied income components; they never load a survey dataset or infer
 tax-credit awards from those incomes.
 """
@@ -58,6 +59,8 @@ PROPERTY_SETTINGS = settings(
 )
 CHILDCARE = "housing_benefit_applicable_income_childcare_element"
 LIMIT = "housing_benefit_childcare_earnings_limit"
+ACCOMMODATION = "housing_benefit_specified_or_temporary_accommodation_disregard"
+RENT = 10_400
 
 
 def case(**overrides):
@@ -74,6 +77,9 @@ def case(**overrides):
         worker=True,
         pension_age=False,
         region="LONDON",
+        # Used only where the model dates the accommodation disregard.
+        specified=False,
+        applicable_amount=0,
     )
     result.update(overrides)
     return result
@@ -142,8 +148,11 @@ SUPPLIED_EDGE_CASES = [
 ]
 
 
-def legal_components(unit, year):
-    """Apply the regulations to scalar assessed inputs in annual pounds."""
+def legal_components(unit, year, active=None):
+    """Apply the regulations to scalar assessed inputs in annual pounds.
+    Tax credits pay awards before model year 2025 unless ``active`` says
+    otherwise."""
+    active = year < 2025 if active is None else active
     net = unit["net"]
     standard = min(net, unit["standard"])
     # Sch 4 para 18 takes the earnings the other disregards leave.
@@ -171,7 +180,7 @@ def legal_components(unit, year):
     # Try para 17(1) with every credit available; where it fails, reserve
     # the WTC and check that the smaller credit pool keeps it failing.
     reserve = 0
-    if unit["worker"] and year < 2025 and not covers(0):
+    if unit["worker"] and active and not covers(0):
         reserve = min(unit["wtc"], additional_amount)
         assert not covers(reserve), "no consistent paragraph 17 outcome"
     additional = additional_amount if unit["worker"] and covers(reserve) else 0
@@ -215,7 +224,12 @@ class without_wtc_reservation(Reform):
         self.update_variable(previous_wtc_disregard)
 
 
-def simulation(units, year, previous=False, tax_benefit_system=None):
+def simulation(
+    units, year, previous=False, tax_benefit_system=None, dated_accommodation=False
+):
+    """Build the population. With ``dated_accommodation`` the model dates
+    the accommodation disregard itself, and the population pays rent of
+    ``RENT``; otherwise each unit supplies its annual accommodation amount."""
     supplied = [unit["supplied"] is not None for unit in units]
     assert all(supplied) or not any(supplied), "supply the deduction for all"
     people, benunits, households = {}, {}, {}
@@ -271,9 +285,6 @@ def simulation(units, year, previous=False, tax_benefit_system=None):
                 year: min(unit["net"], unit["standard"])
             },
             "housing_benefit_permitted_work_disregard": {year: 0},
-            "housing_benefit_specified_or_temporary_accommodation_disregard": {
-                year: unit["accommodation"]
-            },
             "housing_benefit_on_passporting_benefit": {year: False},
             "housing_benefit_pension_age_regulations_apply": {
                 year: unit["pension_age"]
@@ -295,8 +306,20 @@ def simulation(units, year, previous=False, tax_benefit_system=None):
             "housing_benefit_maintenance_disregard": {year: 0},
             "housing_benefit_widowed_parents_allowance_income": {year: 0},
         }
+        family = benunits[f"family_{index}"]
+        if dated_accommodation:
+            family.update(
+                in_specified_or_temporary_accommodation={year: unit["specified"]},
+                housing_benefit_applicable_amount={year: unit["applicable_amount"]},
+                benunit_rent={year: RENT},
+                LHA_eligible={year: False},
+                housing_benefit_meals_deduction={year: 0},
+                housing_benefit_non_dep_deductions={year: 0},
+            )
+        else:
+            family[ACCOMMODATION] = {year: unit["accommodation"]}
         if unit["supplied"] is not None:
-            benunits[f"family_{index}"][CHILDCARE] = {year: unit["supplied"]}
+            family[CHILDCARE] = {year: unit["supplied"]}
         households[f"household_{index}"] = {
             "members": members,
             "region": {year: unit["region"]},

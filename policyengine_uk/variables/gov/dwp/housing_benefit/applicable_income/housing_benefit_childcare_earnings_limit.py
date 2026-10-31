@@ -6,8 +6,12 @@ def hb_standard_earnings_disregard(benunit, period):
     return benunit("housing_benefit_applied_standard_earnings_disregard", period)
 
 
-def hb_childcare_earnings_limit(benunit, period, accommodation=None):
-    """Remaining earnings and tax credits, without an additional-disregard loop."""
+def hb_childcare_earnings_limit(
+    benunit, period, accommodation=None, wtc_disregard=None
+):
+    """Remaining earnings and tax credits, without an additional-disregard loop.
+    By default the accommodation and WTC disregards are the annual variables;
+    an accommodation segment passes its own."""
     net = max_(benunit("housing_benefit_net_earnings", period), 0)
     standard = hb_standard_earnings_disregard(benunit, period)
     if accommodation is None:
@@ -17,11 +21,11 @@ def hb_childcare_earnings_limit(benunit, period, accommodation=None):
     accommodation = min_(max_(accommodation, 0), max_(0, net - standard))
     # Reg 40(2) and Sch 5 para 56 disregard WTC before reg 27(1)(c)
     # deducts childcare. Only the remaining WTC/CTC can fund those charges.
-    credits = max_(
-        benunit("working_tax_credit", period)
-        - benunit("housing_benefit_wtc_disregard", period),
-        0,
-    ) + max_(benunit("child_tax_credit", period), 0)
+    if wtc_disregard is None:
+        wtc_disregard = benunit("housing_benefit_wtc_disregard", period)
+    credits = max_(benunit("working_tax_credit", period) - wtc_disregard, 0) + max_(
+        benunit("child_tax_credit", period), 0
+    )
     return max_(0, net - standard - accommodation) + credits
 
 

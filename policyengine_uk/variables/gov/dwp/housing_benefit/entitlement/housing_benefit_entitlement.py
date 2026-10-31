@@ -21,9 +21,10 @@ class housing_benefit_entitlement(Variable):
         "applies, the eligible rent is the maximum rent (LHA), which is the "
         "lower of the LHA rate and the rent, so the cap applies before the "
         "taper. When accommodation earnings disregards change within the "
-        "fiscal year, calculate income floors, childcare/earnings limits, "
-        "the income threshold, taper and zero-award floor separately in "
-        "each segment, then combine completed awards. Annual earnings, rent, "
+        "fiscal year, calculate income floors, the Working Tax Credit "
+        "disregard, childcare/earnings limits, the income threshold, taper "
+        "and zero-award floor separately in each segment, then combine "
+        "completed awards. Annual earnings, rent, "
         "ages and household status remain constant. Other parameters keep "
         "the model's annual convention. Supplied annual income/deductions "
         "and replacement formulas retain their normal override semantics. "
@@ -55,6 +56,7 @@ class housing_benefit_entitlement(Variable):
         "https://www.legislation.gov.uk/uksi/2026/753/regulation/1",
         "https://www.legislation.gov.uk/uksi/2026/978/regulation/2",
         "https://www.legislation.gov.uk/nisr/2026/157/regulation/2",
+        "https://www.legislation.gov.uk/uksi/2006/213/schedule/5/paragraph/56",
     )
 
     def formula(benunit, period, parameters):
@@ -103,13 +105,18 @@ class housing_benefit_entitlement(Variable):
         ) | benunit("housing_benefit_on_passporting_benefit", period)
         annual_award = benunit.empty_array()
         for accommodation, share in segments:
-            disregard, childcare = hb_segment_deductions(
+            disregard, wtc_disregard, childcare = hb_segment_deductions(
                 benunit, period, parameters, accommodation
             )
+            # Reg 40(2), Sch 5 para 56: each segment's own WTC disregard,
+            # as for the annual income.
             segment_income = where(
                 retain_annual_income,
                 income,
-                max_(0, income_before_deductions - disregard - childcare),
+                max_(
+                    0,
+                    income_before_deductions - disregard - wtc_disregard - childcare,
+                ),
             )
             taper = max_(0, segment_income - applicable_amount) * withdrawal_rate
             annual_award = annual_award + share * max_(

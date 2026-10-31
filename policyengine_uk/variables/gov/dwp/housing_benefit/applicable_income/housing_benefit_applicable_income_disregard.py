@@ -1,65 +1,55 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_applicable_income_childcare_element import (
     hb_capped_childcare_charges,
-    housing_benefit_applicable_income_childcare_element,
 )
 from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_childcare_earnings_limit import (
     hb_childcare_earnings_limit,
     hb_standard_earnings_disregard,
-    housing_benefit_childcare_earnings_limit,
 )
 from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_specified_or_temporary_accommodation_disregard import (
     hb_accommodation_segments,
     hb_uses_annual_override,
 )
+from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_wtc_disregard import (
+    hb_covers_additional_disregard,
+    hb_fixed_childcare_deduction,
+    hb_segment_wtc_disregard,
+)
 
 
 def hb_segment_deductions(benunit, period, parameters, accommodation):
-    """Apply childcare/earnings limits to one full accommodation amount."""
+    """Apply childcare/earnings limits to one full accommodation amount.
+    Return the earnings disregard, the WTC disregard and the childcare
+    deduction."""
     net = max_(benunit("housing_benefit_net_earnings", period), 0)
     standard = hb_standard_earnings_disregard(benunit, period)
     accommodation = min_(max_(accommodation, 0), max_(net - standard, 0))
-    childcare_name = "housing_benefit_applicable_income_childcare_element"
-    if hb_uses_annual_override(
-        benunit,
-        period,
-        childcare_name,
-        housing_benefit_applicable_income_childcare_element.formula,
-    ):
-        childcare = benunit(childcare_name, period)
-    else:
-        limit_name = "housing_benefit_childcare_earnings_limit"
-        if hb_uses_annual_override(
-            benunit,
-            period,
-            limit_name,
-            housing_benefit_childcare_earnings_limit.formula,
-        ):
-            childcare_limit = benunit(limit_name, period)
-        else:
-            childcare_limit = hb_childcare_earnings_limit(
-                benunit, period, accommodation=accommodation
-            )
+    wtc_disregard = hb_segment_wtc_disregard(benunit, period, parameters, accommodation)
+    childcare = hb_fixed_childcare_deduction(benunit, period, parameters)
+    if childcare is None:
         childcare = min_(
-            hb_capped_childcare_charges(benunit, period, parameters), childcare_limit
+            hb_capped_childcare_charges(benunit, period, parameters),
+            hb_childcare_earnings_limit(
+                benunit,
+                period,
+                accommodation=accommodation,
+                wtc_disregard=wtc_disregard,
+            ),
         )
     name = "housing_benefit_applicable_income_disregard"
     if hb_uses_annual_override(
         benunit, period, name, housing_benefit_applicable_income_disregard.formula
     ):
-        return benunit(name, period), childcare
+        return benunit(name, period), wtc_disregard, childcare
     p = parameters(period).gov.dwp.housing_benefit.means_test.income_disregard
-    additional_amount = p.worker * WEEKS_IN_YEAR
-    # Compare in pence, including equality at a float32 earnings boundary.
-    covers_additional = np.round(net.astype(float), 2) >= np.round(
-        (standard + accommodation + childcare + additional_amount).astype(float), 2
-    )
     additional = where(
         benunit(
             "meets_housing_benefit_additional_earnings_disregard_conditions", period
         )
-        & covers_additional,
-        additional_amount,
+        & hb_covers_additional_disregard(
+            benunit, period, parameters, accommodation, childcare
+        ),
+        p.worker * WEEKS_IN_YEAR,
         0,
     )
     disregard = where(
@@ -67,7 +57,7 @@ def hb_segment_deductions(benunit, period, parameters, accommodation):
         net,
         standard + accommodation + additional,
     )
-    return disregard, childcare
+    return disregard, wtc_disregard, childcare
 
 
 class housing_benefit_applicable_income_disregard(Variable):
