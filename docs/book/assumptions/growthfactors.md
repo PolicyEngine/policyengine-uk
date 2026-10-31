@@ -20,7 +20,7 @@ We apply CPI to these variables:
 
 `domestic_energy_consumption`, `electricity_consumption` and `gas_consumption` are deliberately excluded. The data build calibrates them to NEED mean kWh and converts to pounds at Ofgem Q2 2026 unit rates, so the stored values already carry FY26/27 price levels; uprating them from the dataset's data year would re-apply price changes that are already included. See PolicyEngine/policyengine-uk#1867. A dataset that declares its energy price year instead projects them with household electricity and gas price indices (`gov.economic_assumptions.energy_prices`): ONS CPI prices to the latest outturn, then the OBR's utilities inflation forecast, holding VAT on electricity at 5% so the VAT formulas apply any change in the rate. See the economic assumptions README. `liquid_fuel_consumption` and `solid_fuel_consumption` (heating oil, LPG, coal and wood) are not covered by Ofgem's price cap, so they are CPI-uprated from the data year like other LCFS spending.
 
-- Other variables– `afcs_reported`, `bsp_reported`, `childcare_expenses`, `free_school_fruit_veg`, `free_school_meals`, `free_school_milk`, `maintenance_expenses`, `statutory_maternity_pay`, `statutory_paternity_pay`, `statutory_sick_pay`, `state_pension`, `war_widows_pension_reported`, `widowed_parents_allowance_reported`
+- Other variables– `afcs_reported`, `bsp_reported`, `bus_fare_spending`, `bus_fare_spending_reported`, `childcare_expenses`, `company_car_capital_contributions`, `company_car_list_price`, `company_car_private_use_payments`, `free_school_fruit_veg`, `free_school_meals`, `free_school_milk`, `local_bus_uncapped_single_fare`, `maintenance_expenses`, `statutory_maternity_pay`, `statutory_paternity_pay`, `statutory_sick_pay`, `state_pension`, `war_widows_pension_reported`, `widowed_parents_allowance_reported`
 
 `bsp_reported` stays nominally flat when a dataset explicitly supplies both
 `war_widows_pension_reported` and `widowed_parents_allowance_reported` in
@@ -34,7 +34,7 @@ We use HMRC road-fuel clearances and OBR-implied forecast volumes for petrol and
 
 | Fiscal year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 |
 |-------------|------|------|------|------|------|------|------|------|------|------|
-| Growth rate | 6.3% | -0.6% | -0.1% | -1.3% | -2.3% | -3.1% | -3.1% | -4.0% | -5.4% | -6.5% |
+| Growth rate | 6.3% | -0.6% | -0.1% | -1.3% | -2.3% | -3.1% | -4.0% | -4.1% | -5.6% | -6.6% |
 
 We apply this to: `diesel_spending`, `petrol_spending`
 
@@ -62,7 +62,7 @@ We apply the OBR's wage growth forecasts to employment-related variables.
 |-------------|------|------|------|------|------|------|------|------|------|------|
 | Growth rate | 6.1% | 6.2% | 5.1% | 4.1% | 3.7% | 3.0% | 2.1% | 2.3% | 2.5% | 2.6% |
 
-We use average earnings for these variables: `employee_pension_contributions`, `employer_pension_contributions`, `employment_income`, `employment_income_before_lsr`, `personal_pension_contributions`, `student_loan_repayments`
+We use average earnings for these variables: `defined_benefit_pension_input_amount`, `employee_pension_contributions`, `employer_pension_contributions`, `employment_income`, `employment_income_before_lsr`, `pension_contributions_via_bonus_sacrifice`, `pension_contributions_via_salary_sacrifice`, `pension_contributions_via_salary_sacrifice_pre_2015`, `personal_pension_contributions`, `student_loan_repayments`
 
 ### Newly assigned student loan plans
 
@@ -89,7 +89,7 @@ write-off approximations are unchanged.
 
 ## Lagged average earnings
 
-We lag earnings growth by one year and use that to uprate housing service charges (including ground rent).
+We lag earnings growth by one year and use that to uprate housing service charges, including ground rent (`housing_service_charges`).
 
 | Year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 |
 |-------------|------|------|------|------|------|------|------|------|------|------|
@@ -103,7 +103,13 @@ We derive these rates as calendar-year nominal GDP growth from the OBR's October
 |-------------|------|------|------|------|------|------|------|------|------|------|
 | Growth rate | 10.0% | 5.2% | 4.0% | 4.6% | 4.0% | 3.1% | 3.4% | 3.6% | 3.4% | 3.3% |
 
-We use per capita GDP for these variables: `benunit_reported_capital`, `capital_gains`, `capital_gains_badr`, `capital_gains_before_response`, `capital_gains_carried_interest`, `capital_gains_residential_property`, `cash_isa`, `cash_isa_balance`, `corporate_wealth`, `directly_held_shares`, `dividend_income`, `gross_financial_wealth`, `household_lifetime_isa_balance`, `lifetime_isa_balance`, `lump_sum_income`, `main_residence_value`, `maintenance_income`, `miscellaneous_income`, `mortgage_capital_repayment`, `net_financial_wealth`, `non_residential_property_value`, `other_residential_property_value`, `owned_land`, `pension_credit_reported_capital`, `pension_income`, `private_pension_wealth`, `private_transfer_income`, `property_income`, `property_rental_income`, `savings`, `spousal_maintenance_income`, `stocks_and_shares_isa`, `stocks_and_shares_isa_balance`, `sublet_income`, `uc_reported_capital`, `unit_and_investment_trusts`
+We use per capita GDP for these variables: `benunit_reported_capital`, `cash_isa`, `cash_isa_balance`, `consumer_debt`, `corporate_wealth`, `directly_held_shares`, `dividend_income`, `gross_financial_wealth`, `household_lifetime_isa_balance`, `income_not_otherwise_charged`, `individual_savings_account_dividend_income`, `lifetime_isa_balance`, `lump_sum_income`, `maintenance_income`, `miscellaneous_income`, `mortgage_capital_repayment`, `mortgage_debt`, `net_financial_wealth`, `non_residential_property_purchased`, `non_residential_property_secured_debt`, `non_residential_property_value`, `other_residential_property_secured_debt`, `owned_company_capital`, `owned_company_holding_value`, `owned_company_trade_assets`, `owned_land`, `pension_credit_reported_capital`, `pension_income`, `private_pension_wealth`, `private_transfer_income`, `property_income`, `property_rental_income`, `rent_paid_as_boarder`, `rent_paid_as_lodger`, `savings`, `spousal_maintenance_income`, `stocks_and_shares_isa`, `stocks_and_shares_isa_balance`, `sublet_income`, `uc_reported_capital`, `unit_and_investment_trusts`
+
+## Capital gains
+
+By default we grow capital gains at the per capita GDP rates above. A simulation can supply a versioned projection of aggregate gains instead, and we convert it to factors for each record using population growth. See the [capital gains projection guide](https://github.com/PolicyEngine/policyengine-uk/blob/main/docs/capital-gains-projection.md).
+
+We apply this to: `capital_gains`, `capital_gains_badr`, `capital_gains_before_response`, `capital_gains_carried_interest`, `capital_gains_residential_property`
 
 ## Savings income
 
@@ -132,6 +138,33 @@ We project each country's council tax receipts, net of council tax reduction, wi
 
 Receipts are the Band D level times the tax base, the number of Band D equivalent dwellings, so they grow with the number of homes as well as with bills. Household weights grow with population, so each household's `council_tax` grows by its country's receipts growth divided by population growth: (1 + receipts growth) / (1 + population growth) − 1. Each country's weighted total then grows with its receipts. Northern Ireland has no council tax (it has domestic rates), so any `council_tax` a dataset gives its households is held flat.
 
+## Domestic rates
+
+A Northern Ireland household's rates bill equals its home's capital value times the sum of the regional rate and its council's district rate. Domestic capital values stay at the 1 January 2005 valuation list, so the bill grows with those two rates. We grow `domestic_rates` by their combined growth across the 11 councils, weighted by the domestic rates households paid to each council the year before. From 2027-28 we hold the 2026-27 growth, assuming the domestic regional rate rises 5% a year, as the Finance Minister's draft Budget proposed to 2028-29, and district rates keep their 2026-27 growth. Households outside Northern Ireland have no domestic rates.
+
+| Fiscal year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 |
+|-------------|------|------|------|------|------|------|------|------|------|------|
+| Growth rate | 1.3% | 6.3% | 4.9% | 4.7% | 4.3% | 4.3% | 4.3% | 4.3% | 4.3% | 4.3% |
+
+## Water and sewerage
+
+We project `water_and_sewerage_charges` by country. Households in England and Wales follow the average household bill from Ofwat. Households in Scotland follow Scottish Water's charges, which Scottish Water sets within limits from the Water Industry Commission for Scotland. Both series end at 2029-30 and keep that rate in later years. Northern Ireland has no domestic water charges, so any a dataset gives its households stay flat.
+
+| Fiscal year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 |
+|-------------------|------|------|------|------|------|------|------|------|
+| England and Wales | 5.2% | 9.2% | 4.4% | 27.0% | 5.4% | 6.2% | 6.2% | 5.0% |
+| Scotland | 4.2% | 5.0% | 8.8% | 9.9% | 8.7% | 3.9% | 3.9% | 4.1% |
+
+## House prices
+
+We use the OBR's house price growth (October 2026 EFO, economy Table 1.16).
+
+| Year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 |
+|-------------|------|------|------|------|------|------|------|------|------|------|
+| Growth rate | 9.3% | 0.4% | 0.7% | 2.6% | 2.1% | 2.4% | 2.8% | 2.8% | 2.8% | 2.8% |
+
+We apply this to: `additional_residential_property_purchased`, `main_residence_value`, `other_residential_property_value`
+
 ## Mortgage interest
 
 We use the OBR's mortgage interest rate index growth rates.
@@ -154,13 +187,14 @@ We apply this to: `private_pension_income`
 
 ## Rent
 
-We use the OBR's rental growth projections.
+We project `rent` by tenure. Each household that rents privately follows the ONS Price Index of Private Rents for its region to 2025 and then the OBR's UK private rents forecast (October 2026 EFO, economy Table 1.7). With no published regional forecast, every region takes the UK rate from 2026, and a household with no recorded region takes the UK rate in every year.
+
+Every other household follows social rent growth. To 2025 we use the Regulator of Social Housing's stock-average general needs rent growth in England. The OBR publishes no social rent forecast, so from 2026 we apply the England social rent cap: CPI inflation in the previous September plus 1 percentage point.
 
 | Year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 |
-|-------------|------|------|------|------|------|------|------|------|------|------|
-| Growth rate | 3.5% | 5.8% | 7.2% | 5.4% | 3.6% | 3.2% | 2.7% | 2.6% | 2.5% | 2.8% |
-
-We apply this to: `rent`
+|-----------------|------|------|------|------|------|------|------|------|------|------|
+| Private rent, UK | 4.3% | 7.4% | 8.7% | 6.3% | 3.4% | 2.6% | 2.0% | 2.1% | 2.4% | 2.6% |
+| Social rent | 1.6% | 4.1% | 7.2% | 8.0% | 4.8% | 4.5% | 4.4% | 3.0% | 3.2% | 3.0% |
 
 ## Per capita mixed income
 
@@ -170,7 +204,15 @@ We derive these rates as calendar-year mixed income growth from the OBR's Octobe
 |-------------|------|------|------|------|------|------|------|------|------|------|
 | Growth rate | 2.8% | -0.6% | 2.8% | 0.5% | 3.0% | 3.2% | 3.5% | 3.8% | 4.0% | 4.0% |
 
-We apply this to: `self_employment_income`
+We apply this to: `owned_company_income_share`, `self_employment_gross_receipts`, `self_employment_income`, `trading_loss`
+
+## Rail usage
+
+We use passenger journeys in Great Britain from the Office of Rail and Road (Table 1220), and hold journeys flat from 2026-27, with no official forecast to follow. Household weights grow with population, so each household's `rail_usage` grows by journey growth divided by population growth: (1 + journey growth) / (1 + population growth) − 1. The weighted total then follows the journeys.
+
+| Fiscal year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 |
+|-------------|------|------|------|------|------|------|------|------|------|------|
+| Growth rate | 38.4% | 14.9% | 6.2% | 5.5% | -0.2% | -0.1% | -0.2% | -0.2% | -0.2% | -0.2% |
 
 ## Population
 
