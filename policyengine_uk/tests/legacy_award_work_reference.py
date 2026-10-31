@@ -35,8 +35,8 @@ reported awards.
 - ESA and State Pension Credit (para 6(1)(c) and (d)): neither the claimant
   nor the other member of the couple may be entitled to it. A caller that
   knows passes whether the couple is entitled (on_pension_credit): it would
-  claim, and Pension Credit worked out with no income-related ESA in the
-  family pays. Otherwise no member reports Pension Credit or Housing
+  claim, and the Pension Credit it would get with no income-related ESA in
+  the family pays. Otherwise no member reports Pension Credit or Housing
   Benefit, so no mixed-age couple keeps the SI 2019/37 art 4 saving and the
   exclusion of mixed-age couples is in force (SPCA 2002 s.4(1A)). Only a
   couple every member of which has reached the qualifying age can then be

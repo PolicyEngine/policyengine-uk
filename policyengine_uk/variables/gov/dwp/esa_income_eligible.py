@@ -5,11 +5,12 @@ NO_INCOME_RELATED_ESA_BRANCH = "esa_income_pension_credit_bar"
 
 
 def pension_credit_without_income_related_esa(benunit, period):
-    """Pension Credit worked out with no income-related ESA in the family.
+    """The Pension Credit the family would get with no income-related ESA.
 
     Welfare Reform Act 2007 Sch 1 para 6(1)(c) and (d) bar the couple's
     income-related ESA while the claimant, or the other member of the couple,
-    is entitled to State Pension Credit, and Pension Credit reads that award.
+    has an entitlement to State Pension Credit, and Pension Credit reads that
+    award.
     Its higher earnings disregard counts the couple's award
     (claimant_or_partner_esa_income; SPC Regs 2002 Sch VI para
     4(1)(a)(vii)). Working tax credit counts as Pension Credit income, and
@@ -18,18 +19,18 @@ def pension_credit_without_income_related_esa(benunit, period):
     (left_pension_route_at_legacy_closure) reads Universal Credit
     entitlement, whose work capability test reads esa_income
     (has_own_esa_award). Reading Pension Credit in the simulation itself
-    would be circular.
+    would close a cycle.
 
-    This calculates Pension Credit in a branch in which esa_income, the
-    couple's award and esa_income_eligible are nil, so the screen never runs
+    This calculates Pension Credit in a branch that sets esa_income, the
+    couple's award and esa_income_eligible to nil, so the screen never runs
     there. The branch reads pension_credit, so the claim (would_claim_pc)
-    and an entered award count. Where it pays, the bar holds: the couple's
-    award is nil, and the simulation's own Pension Credit then equals the
-    branch's. Where it pays nothing, the award stands. If the award then
-    makes Pension Credit pay, through the higher earnings disregard, no
-    consistent state exists: Pension Credit would end the award, which would
-    end Pension Credit. The award then stands beside the Pension Credit
-    worked out on it.
+    and an entered award count. Where it pays, the bar holds: the screen
+    refuses the couple's award, and the simulation's own Pension Credit then
+    equals the branch's. Where it pays nothing, the award stands. If the
+    award then makes Pension Credit pay, through the higher earnings
+    disregard, no consistent state exists: Pension Credit would end the
+    award, which would end Pension Credit. The award then stands beside the
+    Pension Credit the model works out on it.
 
     In a year with tax credits, this branch reaches the passport branch
     (pension_credit_with_passported_tax_credits), and the passport branch
@@ -70,8 +71,8 @@ class esa_income_eligible(Variable):
         "Pension age (s.1(6)), which is_SP_age places at 6 October of the year. "
         "Neither the claimant nor the other member of the couple may be entitled to "
         "State Pension Credit (Sch 1 para 6(1)(c) and (d)). Pension Credit reads the "
-        "couple's award, so the screen reads Pension Credit worked out with no "
-        "income-related ESA in the family "
+        "couple's award, so the screen reads the Pension Credit the couple would get "
+        "with no income-related ESA in the family "
         "(pension_credit_without_income_related_esa), which counts the claim "
         "(would_claim_pc) and an entered award, and bars the couple's claim where it "
         "pays more than nil. It works that out only for a population in which some "
@@ -154,8 +155,8 @@ class esa_income_eligible(Variable):
         within_capital = capital <= ESA.capital.limit
         # Sch 1 para 6(1)(c) and (d): the claimant is not entitled to State
         # Pension Credit, nor is the other member of the couple. Pension
-        # Credit reads the couple's award, so this reads Pension Credit worked
-        # out without it, for a couple whose claim passes the other tests and
+        # Credit reads the couple's award, so this reads the couple's Pension
+        # Credit without it, for a couple whose claim passes the other tests and
         # that meets the Pension Credit age conditions and would claim, and
         # only where some couple does. The couple's Pension Credit does not
         # bar a member who claims in their own right.

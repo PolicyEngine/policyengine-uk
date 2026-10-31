@@ -5,7 +5,7 @@
 # Sch 1 para 6(1)(c) and (d): the income-related allowance needs that the
 # claimant "is not entitled to state pension credit" and "is not a member of a
 # couple the other member of which is entitled to ... state pension credit".
-# The model reads the couple's Pension Credit worked out with no
+# The model reads the Pension Credit the couple would get with no
 # income-related ESA in the family, B(0), and bars the couple's claim where it
 # pays. B(e) is the Pension Credit the family would get with the award e.
 # A mixed-age couple is not entitled to State Pension Credit from 15 May 2019
@@ -474,7 +474,7 @@
 # allowance (£11,000) and his earnings below the National Insurance primary
 # threshold (£155 a week), so neither takes anything off.
 
-- name: Case 15, where Pension Credit pays with or without the award, the man gets Pension Credit worked out without it and no income-related ESA.
+- name: Case 15, where Pension Credit pays with or without the award, the man gets the Pension Credit due on his income without the award and no income-related ESA.
   period: 2016
   absolute_error_margin: 0.01
   input:

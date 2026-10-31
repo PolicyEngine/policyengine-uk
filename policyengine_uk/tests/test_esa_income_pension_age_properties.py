@@ -4,13 +4,13 @@ Welfare Reform Act 2007 s.1(3)(c) bars ESA for a claimant who has reached
 pensionable age, their own State Pension age (s.1(6)). Sch 1 para 6(1)(c) and
 (d) bar the income-related allowance where the claimant, or the other member
 of the couple, is entitled to State Pension Credit. Pension Credit reads the
-couple's award, so the model reads the couple's Pension Credit worked out with
+couple's award, so the model reads the Pension Credit the couple would get with
 no income-related ESA in the family, B(0), and bars the couple's claim where it
 pays.
 
 Each example builds a second, separate simulation of the same people with no
-income-related ESA reported. Its pension_credit is B(0), worked out with no
-branch. Against it, for every family drawn here:
+income-related ESA reported. Its pension_credit gives B(0) without a branch.
+Against it, for every family drawn here:
 
 - where B(0) pays nothing, whether the couple would claim Pension Credit
   changes neither the couple's income-related ESA
