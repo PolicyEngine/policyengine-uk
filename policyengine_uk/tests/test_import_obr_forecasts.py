@@ -3236,10 +3236,17 @@ EARLY_EARNINGS_FIXTURE = earnings_fixture(0.02)
     first_level=st.floats(min_value=5, max_value=20, allow_nan=False),
     changes=st.lists(NLW_CHANGES, min_size=1, max_size=11),
     first_year=st.integers(2015, 2027),
-    data=st.data(),
+    set_offset=st.integers(0, 11),
+)
+# £13.525001 for 2028: its ratio to the £13.21 set for 2027 projects £13.52.
+@example(
+    first_level=13.21,
+    changes=[0.023845647236941714],
+    first_year=2027,
+    set_offset=0,
 )
 def test_the_model_projects_the_published_levels_to_the_penny(
-    first_level, changes, first_year, data
+    first_level, changes, first_year, set_offset
 ):
     """For any national living wage-like table (£5 to £20 in its first year,
     up to 12 years, each changing by -5% to +10%): the importer reads each
@@ -3249,14 +3256,17 @@ def test_the_model_projects_the_published_levels_to_the_penny(
     written series exceeds zero; and from the table's level in the year the
     note names, the model projects every later level to the penny. The
     importer writes another growth only for an estimate whose ratio, after
-    the years before as written, projects another penny. It refuses a table
-    whose index starts after the year the note names."""
+    the years before as written, projects another penny. The note names a
+    year the series' index covers (test_a_table_needs_an_index_in_the_year_set
+    covers the others)."""
     levels = [first_level]
     for change in changes:
         levels.append(levels[-1] * (1 + change))
     years = range(first_year, first_year + len(levels))
     published = dict(zip(years, levels))
-    set_until = data.draw(st.integers(first_year, years[-1]))
+    kept = _values(EARLY_EARNINGS_FIXTURE, NLW_PATH)
+    start = min([year for year in kept if year < years[1]] + [years[1]])
+    set_until = min(max(first_year, start) + set_offset, years[-1])
     workbook = nlw_workbook(nlw_rows(tuple(levels), first_year, set_until))
     growth = compute_level_growth(workbook)[NLW_PATH]
     assert growth.line.levels == published
@@ -3266,13 +3276,6 @@ def test_the_model_projects_the_published_levels_to_the_penny(
     }
     assert growth.values == ratios
 
-    kept = _values(EARLY_EARNINGS_FIXTURE, NLW_PATH)
-    start = min([year for year in kept if year < years[1]] + [years[1]])
-    if set_until < start:
-        event("refused: no index in the year set")
-        with pytest.raises(ValueError, match=f"the index starts in {start}"):
-            render_nlw(EARLY_EARNINGS_FIXTURE, workbook)
-        return
     rendered = render_nlw(EARLY_EARNINGS_FIXTURE, workbook)
     values = _values(rendered, NLW_PATH)
     assert all(level > 0 for level in model_index(values).values())

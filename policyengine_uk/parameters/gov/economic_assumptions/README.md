@@ -71,11 +71,16 @@ series. It finds the table by its title, reads the level under each year
 across the table's one row of years, and writes each year's level over the
 year before's, to six decimals. The table's note says up to which year the
 Government has set the rate, and the importer writes those years and the
-OBR's estimates under separate comments. The importer stops before writing
-any file if the table declares a unit other than £ per hour, or lacks one row
-of years and one row labelled "National Living Wage (NLW)". It also stops if
-the years skip or repeat, if a year lacks a positive level, if a figure has no
-year above it, or if the table lacks that note. `test_minimum_wage_projection.py`
+OBR's estimates under separate comments. It then projects each estimate as
+the model does, from the last rate set through the index to the nearest
+penny. Where a year's ratio would leave the model a penny off the table, it
+writes the six-decimal growth that keeps the table's penny. The importer stops
+before writing any file if the table declares a unit other than £ per hour,
+or lacks one row of years and one row labelled "National Living Wage (NLW)".
+It also stops if the years skip or repeat, if a year lacks a positive level,
+if a figure has no year above it, if the table lacks that note or its notes
+name different years, or if no six-decimal growth keeps an estimate's penny.
+`test_minimum_wage_projection.py`
 holds the October 2026 table, checks it against the importer's fixture, and
 fails if the series stops reproducing the table to the penny, or if its
 long-run years stop matching `average_earnings`.
