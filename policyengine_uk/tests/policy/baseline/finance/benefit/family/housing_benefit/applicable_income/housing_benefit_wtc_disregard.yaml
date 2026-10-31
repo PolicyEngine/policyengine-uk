@@ -282,3 +282,80 @@
     housing_benefit_wtc_disregard: 0
     housing_benefit_childcare_earnings_limit: 4_000
     housing_benefit_applicable_income_childcare_element: 4_000
+
+- name: A supplied childcare deduction leaves only the additional earnings disregard
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    age: 40
+    employment_income: 5_200
+    self_employment_income: 0
+    property_income_after_finance_costs: 0
+    private_pension_income: 0
+    carers_allowance: 0
+    carer_support_payment: 0
+    esa_contrib: 0
+    jsa_contrib: 0
+    state_pension: 0
+    maternity_allowance: 0
+    statutory_sick_pay: 0
+    statutory_maternity_pay: 0
+    statutory_paternity_pay: 0
+    iidb: 0
+    sda: 0
+    incapacity_benefit: 0
+    spousal_maintenance_income: 0
+    pension_contributions: 0
+    income_tax_before_winter_fuel_payment_charge: 0
+    national_insurance: 0
+    tax_credits: 100
+    income_support: 0
+    claimant_or_partner_jsa_income: 0
+    claimant_or_partner_esa_income: 0
+    housing_benefit_tariff_income: 0
+    housing_benefit_maintenance_disregard: 0
+    housing_benefit_widowed_parents_allowance_income: 0
+    housing_benefit_pension_age_regulations_apply: false
+    in_receipt_of_guarantee_credit: false
+    in_receipt_of_savings_credit_only: false
+    housing_benefit_net_earnings: 5_200
+    housing_benefit_special_earnings_disregard: 1_300
+    housing_benefit_permitted_work_disregard: 0
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_on_passporting_benefit: false
+    meets_housing_benefit_additional_earnings_disregard_conditions: true
+    childcare_expenses: 4_160
+    num_relevant_children_for_housing_benefit_childcare: 1
+    working_tax_credit: 100
+    child_tax_credit: 0
+    housing_benefit_applicable_income_childcare_element: 0
+  output:
+    # The supplied deduction is nil, so Sch 4 para 17 applies:
+    # 5,200 >= 1,300 + 0 + 889.20. Sch 5 para 56 then gives no WTC disregard.
+    housing_benefit_applicable_income_disregard: 2_189.20
+    housing_benefit_wtc_disregard: 0
+    # 5,200 + 100 - 2,189.20 - 0 - 0.
+    housing_benefit_applicable_income: 3_110.80
+
+- name: A supplied earnings and tax-credit limit sets the deduction both tests read
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    housing_benefit_net_earnings: 5_200
+    housing_benefit_special_earnings_disregard: 1_300
+    housing_benefit_permitted_work_disregard: 0
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_on_passporting_benefit: false
+    meets_housing_benefit_additional_earnings_disregard_conditions: true
+    childcare_expenses: 4_160
+    num_relevant_children_for_housing_benefit_childcare: 1
+    working_tax_credit: 100
+    child_tax_credit: 0
+    housing_benefit_childcare_earnings_limit: 1_000
+  output:
+    # Reg 27: childcare = min(4,160, 1,000) = 1,000.
+    # Sch 4 para 17: 5,200 >= 1,300 + 1,000 + 889.20, so para 56 does not
+    # apply.
+    housing_benefit_applicable_income_childcare_element: 1_000
+    housing_benefit_applicable_income_disregard: 2_189.20
+    housing_benefit_wtc_disregard: 0

@@ -56,6 +56,8 @@ SUPPLIED_INPUT_VARIABLES = frozenset(
         "extended_childcare_entitlement_term_share",
         "extended_childcare_entitlement_total_per_child",
         "gas_consumption_kwh",
+        "housing_benefit_applicable_income_childcare_element",
+        "housing_benefit_childcare_earnings_limit",
         "in_HE",
         "other_local_bus_trips",
         "pip_dl_category",
