@@ -13,7 +13,7 @@ triple lock and rounds to the 0.1 percentage points published by the ONS.
 ``create_economic_assumption_indices`` compounds it into
 ``gov.economic_assumptions.indices.earnings_uprating``. The yearly series
 starts from a 2010 base and runs to one year past the statutory inputs; the
-index, like the others built there, stops in 2039. Published
+index, like the others built there, ends with the growth series. Published
 benefit amounts remain explicit; the index projects later years.
 """
 

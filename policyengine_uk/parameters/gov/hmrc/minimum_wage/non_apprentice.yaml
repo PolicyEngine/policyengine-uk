@@ -40,7 +40,7 @@ description: Minimum wage rate for non-apprentices by age.
 # The index is dated 1 January, so before annualisation a projected rate
 # starts on 1 January. Each year's figure is read at 30 April, the rate for
 # the fiscal year that starts that April. Like the model's other indices, this
-# one ends in 2039, so projected rates hold flat from 2040.
+# one ends with the growth series, and projected rates hold flat after it.
 #
 # The younger bands' projection is an assumption: each grows from its own
 # last rate by the same index, so it keeps its ratio to the national living
