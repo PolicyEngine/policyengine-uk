@@ -86,10 +86,10 @@ the same suite,
 tree; a release tests the wheel it is about to publish, installed on its own.
 
 The suite runs the YAML policy tests in one job and splits the Python tests
-over six runners. Each runner runs one shard:
+over seven runners. Each runner runs one shard:
 
 ```bash
-pytest policyengine_uk/tests -n 4 --dist worksteal --shard K/6 -o xfail_strict=true
+pytest policyengine_uk/tests -n 4 --dist worksteal --shard K/7 -o xfail_strict=true
 ```
 
 `--shard K/N` is defined in `policyengine_uk/tests/conftest.py`. It keeps the
