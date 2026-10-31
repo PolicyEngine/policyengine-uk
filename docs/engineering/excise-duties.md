@@ -284,7 +284,7 @@ two duties, and none moves either by more than £13 million a year:
   alcohol duty £1.5 million lower in 2026-27 and £9.2 million to £9.9
   million lower a year after (the model leaves out Small Producer Relief);
 - measure 45, HMRC's measures to close the tax gap: tobacco duty £0.7
-  million higher in 2026-27, rising to £12.7 million in 2031-32, and alcohol
+  million higher in 2026-27 and £12.7 million higher in 2031-32, and alcohol
   duty £0.3 million to £4.8 million higher;
 - measure 95, the removal of the £135 customs duty relief on low-value
   imports from October 2028: tobacco duty up to £0.8 million and alcohol
