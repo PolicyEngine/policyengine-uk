@@ -11,13 +11,15 @@ from its other components (``measure.rebuild_protected``), and so are the
 household incomes for deciles, so no published total includes it. Checks
 whose verdict would depend on its values leave out the households holding it
 (identities, the HBAI reproduction, overlap guards) or aren't run that year
-(the sign check of the suppressed head). A reform's costing and target change
-are withheld in a year they would come from a small cell
-(``measure.reform_withheld``). The report records which conditions withheld
-them (``measure.withheld_reasons``): each reason names the condition and the
+(the sign check of the suppressed head). The tool withholds a reform's
+costing and target change in a year they would come from a small cell
+(``measure.reform_withheld``), and records which conditions withheld them
+(``measure.withheld_reasons``): each reason names the condition and the
 component or variable it holds for, never a count, an amount or a share. A
-reason that a cell is small says "fewer than 10", as a suppressed figure
-already does.
+reason about a group the reform defines (a component's records under the
+reform, or the households or records whose balance or target it changes)
+says only that the group has "fewer than 10", as a decile row's "fewer than
+10 households change" does.
 
 Deliberate exceptions:
 
@@ -40,6 +42,13 @@ Deliberate exceptions:
   component, so a reader can tell a reform whose own change is too small to
   publish from one that only touches another small cell. A published year
   records no reason, so it says nothing new.
+- A withheld year's ``small_target_change`` that names the reform's own
+  target, beside the ``responsive:<id>`` verdict the report publishes for
+  that year, says whether fewer than 10 records together moved the target by
+  at least the reform's minimum: a bound on that cell's total, never its
+  value. A ``small_balance_change`` says much the same when the target is
+  part of gov_balance and nothing offsets it there. The counting rule above
+  already publishes more (one household's £10,000 beside ten pennies).
 
 Threat model. The report defends against disclosure through any combination
 of the figures it publishes, across any number of reports, from honest
@@ -70,7 +79,8 @@ def count_text(count: int, what: str) -> str:
     return f"fewer than {MIN_CELL} {what}" if small(count) else f"{count:,} {what}"
 
 
-# Why a reform's figures for a year are withheld (measure.withheld_reasons).
+# The conditions under which the tool withholds a reform's figures for a
+# year (measure.withheld_reasons).
 NO_BASELINE = "no_baseline"
 SUPPRESSED_COMPONENT_CHANGED = "suppressed_component_changed"
 SMALL_COMPONENT_LEFT = "small_component_left"
@@ -86,8 +96,8 @@ WITHHELD_CONDITIONS = (
 
 
 def withheld_reason(condition: str, variable=None, metric_id=None) -> dict:
-    """One reason a reform year is withheld: the condition and what it holds
-    for. ``metric_id`` is the published id of a partition component."""
+    """One reason the tool withholds a reform year: the condition and what it
+    holds for. ``metric_id`` is the published id of a partition component."""
     return {"condition": condition, "variable": variable, "metric_id": metric_id}
 
 

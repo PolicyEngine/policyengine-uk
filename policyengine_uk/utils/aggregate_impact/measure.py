@@ -1290,10 +1290,11 @@ def baseline_records(sim, partition: Partition, rec: "Recorder", year: int, targ
 def withheld_reasons(
     reformed, year: int, baseline: Optional[Mapping], components
 ) -> list:
-    """Why a reform's costing and target change for ``year`` are withheld:
-    empty when they are published.
+    """Why the tool withholds a reform's costing and target change for
+    ``year``: one reason per condition that holds, none when it publishes
+    them.
 
-    They would be built from a small cell (Sol re-review 7 of #2335) when the
+    They would come from a small cell (Sol re-review 7 of #2335) when the
     reform:
 
     - changes any record of a component suppressed in the baseline, by any
@@ -1315,7 +1316,10 @@ def withheld_reasons(
     (``no_baseline``). It tests every condition and gives one reason for
     each component or variable a condition holds for
     (``privacy.withheld_reason``): the reason names it and gives no count or
-    amount (#2654).
+    amount (#2654). Main's ``reform_withheld`` stopped at the first condition,
+    so a variable that fails to compute under the reform now fails the reform
+    in a year an earlier condition withholds, as it already did in every
+    other year.
     """
     if baseline is None:
         return [withheld_reason(NO_BASELINE)]
@@ -1379,10 +1383,10 @@ def _record_reasons(record: dict, year: int, reasons: list) -> None:
     """Keep a withheld year's reasons on a reform figure's record.
 
     Every reform figure carries ``withheld_because``; it lists exactly the
-    years its ``suppressed`` lists, so a year is withheld exactly when it
-    has a reason.
+    years its ``suppressed`` lists, so the tool withholds a year exactly when
+    it records a reason.
     """
-    # Rebound rather than written through, as for _exclude.
+    # Rebinds rather than writes through, as _exclude does.
     record["withheld_because"] = {
         **(record.get("withheld_because") or {}),
         **({str(year): list(reasons)} if reasons else {}),

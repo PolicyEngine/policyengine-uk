@@ -26,6 +26,7 @@ SECTIONS = (
     ("reform_targets", "Standard reforms: change in each reform's target"),
 )
 MAX_FLAG_ROWS = 40
+MAX_WITHHELD_ROWS = 40
 
 
 def _finite(value) -> bool:
@@ -527,10 +528,15 @@ def render(summary: Mapping, spec: Spec, context: Optional[Mapping] = None) -> s
             else []
         )
         if notes:
-            # Once, under the first reform table shown: a reform's costing
-            # and target change are withheld in the same years, for the same
-            # reasons.
+            # Once, under the first reform table shown: the tool withholds a
+            # reform's costing and target change in the same years, for the
+            # same reasons.
             explained = True
+            if len(notes) > MAX_WITHHELD_ROWS:
+                notes = notes[:MAX_WITHHELD_ROWS] + [
+                    f"- {len(notes) - MAX_WITHHELD_ROWS} more lines are in the "
+                    "report artifact."
+                ]
             parts += [
                 "",
                 "The report suppresses a reform's costing and target change for "

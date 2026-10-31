@@ -105,10 +105,10 @@ def to_report(result: dict) -> dict:
                 "label": metric["label"],
             }
             if "withheld_because" in metric:
-                # A reform figure: why its year is withheld, one reason per
-                # condition and the component or variable it holds for
-                # (measure.withheld_reasons); empty exactly when the year is
-                # published.
+                # A reform figure: why the tool withholds its year, one
+                # reason per condition and the component or variable it
+                # holds for (measure.withheld_reasons); empty exactly when
+                # the tool publishes the year.
                 row["withheld_because"] = [
                     dict(reason)
                     for reason in (metric["withheld_because"].get(year) or [])

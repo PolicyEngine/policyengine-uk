@@ -1,11 +1,11 @@
-"""Why a reform year is withheld (#2654): one reason per condition that holds.
+"""Why the tool withholds a reform year (#2654): one reason per condition.
 
 ``measure.withheld_reasons`` names each condition of reform withholding that
 holds, and the component or variable it holds for. These tests pin one case
-per condition, two conditions together, and, for all small worlds, that a
-year is withheld exactly when it has a reason, that the reasons match a
-direct computation, and that the years withheld and the figures published
-match main's ``reform_withheld`` (the frozen oracle in
+per condition, two conditions together, and, for all small worlds, that the
+tool withholds a year exactly when it records a reason, that the reasons
+match a direct computation, and that the years withheld and the figures
+published match main's ``reform_withheld`` (the frozen oracle in
 ``reform_withheld_main_reference.py``).
 """
 
@@ -489,6 +489,43 @@ def test_the_comment_tells_the_sides_apart():
         "- Change it, 2026-27 (head): the reform changes a record of "
         "spending.state_pension, which the baseline suppresses.",
     ]
+
+
+def test_the_comment_caps_the_reasons_it_lists():
+    """25 reforms, each withheld in a different year on each side, give 50
+    lines: the comment shows 40 and points to the artifact for the rest."""
+    from policyengine_uk.utils.aggregate_impact.render import MAX_WITHHELD_ROWS
+
+    def side(year, variable):
+        reason = [
+            {
+                "condition": SMALL_COMPONENT_LEFT,
+                "variable": variable,
+                "metric_id": f"receipts.{variable}",
+            }
+        ]
+        measured = _side(Recorder())
+        measured["metrics"] = [
+            {
+                "id": f"reforms.reform_{i}",
+                "label": f"Reform {i}",
+                "section": "reforms",
+                "group": None,
+                "kind": "gbp",
+                "unit": None,
+                "values": {str(y): None if y == year else 1.0 for y in SPEC.years},
+                "suppressed": [str(year)],
+                "withheld_because": {str(year): reason},
+            }
+            for i in range(25)
+        ]
+        return measured
+
+    summary = compare(side(2025, "income_tax"), side(2026, "dividend_tax"), SPEC)
+    text = render(summary, SPEC)
+    listed = [line for line in text.splitlines() if line.startswith("- Reform ")]
+    assert len(listed) == MAX_WITHHELD_ROWS
+    assert "- 10 more lines are in the report artifact." in text
 
 
 # For all small worlds.
