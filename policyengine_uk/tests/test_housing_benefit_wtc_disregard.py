@@ -341,12 +341,12 @@ def add_test_parameters(**values):
     return modify
 
 
-@cache
 def computed_replacement(mode, baseline=system):
     """``baseline`` under a reform that adds ``MODELLED``, which runs the
     model's WTC disregard formula, and replaces the WTC disregard with a
     variable core computes from it, as ``mode`` names: a formula that reads
-    it, or adds or subtracts. Subtracting reads the negated amount."""
+    it, or adds or subtracts. Subtracting reads the negated amount. Each
+    test builds its own, so the systems don't stay in memory."""
     original = system.get_variable(WTC_DISREGARD).get_formula()
     sign = -1 if mode.startswith("subtracts") else 1
     names = f"{TEST_PARAMETERS}.names" if mode.endswith("parameter") else [MODELLED]
@@ -390,7 +390,6 @@ def computed_replacement(mode, baseline=system):
     return replace(baseline)
 
 
-@cache
 def input_replacement(masked):
     """A reform that leaves the WTC disregard as an input, which core uprates
     by a fifth from 2023 to 2024. With ``masked`` it applies only where the
