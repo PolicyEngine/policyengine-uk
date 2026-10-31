@@ -79,10 +79,14 @@ def reference_report_awards(benunit, period, award):
     is_esa = award == "esa_income"
     rules = parameters.gov.dwp.ESA.income if is_esa else parameters.gov.dwp.JSA.income
     screen = reference.esa_screen if is_esa else reference.jsa_screen
-    # Sch 1 para 6(1)(c) and (d), through the model's proxy for the couple
-    # being on State Pension Credit. It never bars an outside member's claim.
-    on_pension_credit = benunit("meets_pension_credit_age_conditions", period) & (
-        benunit("would_claim_pc", period)
+    # Sch 1 para 6(1)(c) and (d): the couple would claim State Pension Credit
+    # and it pays. No one here has earnings, and in 2025 no one has tax
+    # credits, so Pension Credit pays the same with the couple's award as
+    # without. It never bars an outside member's claim.
+    on_pension_credit = (
+        benunit("meets_pension_credit_age_conditions", period)
+        & benunit("would_claim_pc", period)
+        & (benunit("pension_credit", period) > 0)
     )
 
     def passes(members, unit, couple):

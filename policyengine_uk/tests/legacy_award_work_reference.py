@@ -33,15 +33,17 @@ reported awards.
   some months or at 67 (rules 8 and 9), and anyone aged 70 or over was born
   before 6 April 1960 and reached it at 66 or earlier.
 - ESA and State Pension Credit (para 6(1)(c) and (d)): neither the claimant
-  nor the other member of the couple may be entitled to it. The model reads
-  this as the couple meeting the Pension Credit age conditions and claiming
-  it; a caller passes the model's reading (on_pension_credit). Otherwise no
-  member reports Pension Credit or Housing Benefit, so no mixed-age couple
-  keeps the SI 2019/37 art 4 saving, the exclusion of mixed-age couples is in
-  force (SPCA 2002 s.4(1A)) and every couple would claim, and a couple is on
-  it when every member has reached the qualifying age, which from 2019-20 is
-  pensionable age for everyone (SPCA 2002 s.1(6)). It bars only the couple's
-  claim, not that of a member claiming in their own right.
+  nor the other member of the couple may be entitled to it. A caller that
+  knows passes whether the couple is entitled (on_pension_credit): it would
+  claim, and Pension Credit worked out with no income-related ESA in the
+  family pays. Otherwise no member reports Pension Credit or Housing
+  Benefit, so no mixed-age couple keeps the SI 2019/37 art 4 saving and the
+  exclusion of mixed-age couples is in force (SPCA 2002 s.4(1A)). Only a
+  couple every member of which has reached the qualifying age can then be
+  entitled, and from 2019-20 that is pensionable age for everyone (SPCA 2002
+  s.1(6)), so s.1(3)(c) bars each of them whether or not Pension Credit
+  pays. It bars only the couple's claim, not that of a member claiming in
+  their own right.
 - JSA claimant (s.1(2)(e), reg 51(1)(a)): 16 hours or more, with no
   exception for carers doing unrelated paid work. The other member of the
   couple: 24 hours or more (s.3(1)(e), reg 51(1)(b)). In a joint-claim
@@ -180,8 +182,9 @@ def reached_pensionable_age(adult):
 
 def couple_on_pension_credit(couple):
     """Para 6(1)(c) and (d), for a couple with no Pension Credit or Housing
-    Benefit reports in 2025 or 2026: every member has reached the qualifying
-    age, so the couple meets the age conditions and would claim."""
+    Benefit reports in 2025 or 2026: a couple every member of which has
+    reached the qualifying age, each of whom has also reached pensionable
+    age, so s.1(3)(c) bars them whether or not Pension Credit pays."""
     assert not any(
         adult.get("pension_credit_reported", 0)
         or adult.get("housing_benefit_reported", 0)
@@ -195,12 +198,13 @@ def legacy_benefits_closed(couple, others, parameters):
 
     Reports by other members neither close nor shield it (SI 2014/1230
     regs 44(1), (4) and 46(1)). This is the existing annual proxy, not a
-    notice/deadline model. No tax-credit reports are generated here. Ages
-    avoid the changing Pension Credit qualifying-age boundary.
+    notice/deadline model. Tax-credit reports are generated only in years
+    with tax credits, in which they close nothing. Ages avoid the changing
+    Pension Credit qualifying-age boundary.
     """
     dwp = parameters.gov.dwp
     members = couple + others
-    assert not any(
+    assert dwp.tax_credits.active or not any(
         member.get("child_tax_credit_reported", 0)
         or member.get("working_tax_credit_reported", 0)
         for member in members
@@ -242,8 +246,8 @@ def candidates(couple, others, reported, parameters):
 def esa_screen(couple, others, capital, parameters, on_pension_credit=None):
     """esa_income_eligible for a claimant and partner (couple) and other
     members of the benefit unit outside the family (others). on_pension_credit
-    is whether the couple is taken to be on State Pension Credit, if the
-    caller reads it from the model."""
+    is whether the couple is entitled to State Pension Credit, if the caller
+    knows it."""
     ESA = parameters.gov.dwp.ESA.income
     members = couple + others
 

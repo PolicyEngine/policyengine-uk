@@ -58,9 +58,12 @@ legal entitlement: caring, work hours, ESA, JSA and Income Support are the
 model's reported or proxy inputs; it reads the qualifying age
 (has_attained_state_pension_credit_qualifying_age) and the model's proxy for
 being on Pension Credit (meets_pension_credit_age_conditions and
-would_claim_pc) from the model, and so, for the income-related ESA screen,
-pensionable age (is_SP_age; WRA 2007 s.1(3)(c)) and the same Pension Credit
-proxy (Sch 1 para 6(1)(c) and (d)); and the means test is out of scope. No
+would_claim_pc) from the model, and, for the income-related ESA screen,
+pensionable age (is_SP_age; WRA 2007 s.1(3)(c)) and whether Pension Credit
+pays the couple (Sch 1 para 6(1)(c) and (d)): no one drawn here has earnings,
+and in 2025 no one has tax credits, so the model's pension_credit is the same
+with or without the couple's income-related ESA; and the means test is out of
+scope. No
 claimant or partner drawn here reports Pension Credit or Housing Benefit
 (only some added adults do), so in 2025 no family with a claimant or partner
 under the qualifying age meets the Pension Credit age conditions. The
@@ -398,8 +401,14 @@ def reference_eligibility(
     attained_qualifying_age,
     on_pension_credit,
     parameters,
+    entitled_to_pension_credit=False,
 ):
-    """The model's Income Support gate, read family by family."""
+    """The model's Income Support gate, read family by family.
+
+    on_pension_credit is the model's proxy for s.124(1)(g);
+    entitled_to_pension_credit is whether Pension Credit pays the couple,
+    which the income-related ESA screen reads (WRA 2007 Sch 1 para 6(1)(c)
+    and (d))."""
     IS = parameters.gov.dwp.income_support
     WORK = IS.eligibility.remunerative_work
     JSA = parameters.gov.dwp.JSA.income
@@ -451,7 +460,11 @@ def reference_eligibility(
             capital,
             parameters.gov.dwp.ESA.income.capital,
         ) and esa_screen(
-            adults, [], capital, parameters, on_pension_credit=on_pension_credit
+            adults,
+            [],
+            capital,
+            parameters,
+            on_pension_credit=entitled_to_pension_credit,
         )
     if jsa_income is not None:
         # Within half a penny of zero is no award.
@@ -515,6 +528,9 @@ def test_is_eligibility_matches_a_family_by_family_reading(drawn, data):
     on_pension_credit = sim.calculate(
         "meets_pension_credit_age_conditions", YEAR
     ) & sim.calculate("would_claim_pc", YEAR)
+    # Entitlement for the ESA screen: Pension Credit pays. Without earnings
+    # or tax credits, it pays the same with the couple's award as without.
+    entitled = on_pension_credit & (sim.calculate("pension_credit", YEAR) > 0)
     pensionable_age = sim.calculate("is_SP_age", YEAR)
     parameters = sim.tax_benefit_system.parameters(YEAR)
     start = 0
@@ -548,7 +564,7 @@ def test_is_eligibility_matches_a_family_by_family_reading(drawn, data):
                     others,
                     capital,
                     parameters,
-                    on_pension_credit=on_pension_credit[i],
+                    on_pension_credit=entitled[i],
                 ),
             ):
                 entered_esa = esa_income[i]
@@ -574,6 +590,7 @@ def test_is_eligibility_matches_a_family_by_family_reading(drawn, data):
             attained_qualifying_age[start : start + len(adults)],
             on_pension_credit[i],
             parameters,
+            entitled_to_pension_credit=entitled[i],
         )
         assert eligible[i] == expected, units[i]
         # The docstring's claim: no family drawn here with a claimant or
