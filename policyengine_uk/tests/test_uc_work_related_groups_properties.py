@@ -72,6 +72,8 @@ from policyengine_uk.tests.test_state_pension_age import (
     reference_attainment_day,
 )
 
+pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
+
 PROPERTY_SETTINGS = settings(
     max_examples=10,
     deadline=None,
