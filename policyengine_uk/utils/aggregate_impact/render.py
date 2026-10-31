@@ -534,8 +534,9 @@ def render(summary: Mapping, spec: Spec, context: Optional[Mapping] = None) -> s
             explained = True
             if len(notes) > MAX_WITHHELD_ROWS:
                 notes = notes[:MAX_WITHHELD_ROWS] + [
-                    f"- {len(notes) - MAX_WITHHELD_ROWS} more lines are in the "
-                    "report artifact."
+                    f"- {len(notes) - MAX_WITHHELD_ROWS} more left out here; the "
+                    "report artifact's `summary.json` gives every reason under "
+                    "`withheld_because`."
                 ]
             parts += [
                 "",

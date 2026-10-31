@@ -5,7 +5,7 @@ holds, and the component or variable it holds for. These tests pin one case
 per condition, two conditions together, and, for all small worlds, that the
 tool withholds a year exactly when it records a reason, that the reasons
 match a direct computation, and that the years withheld and the figures
-published match main's ``reform_withheld`` (the frozen oracle in
+published match the yes-or-no rule frozen at da31e8698 (the oracle in
 ``reform_withheld_main_reference.py``).
 """
 
@@ -23,6 +23,7 @@ from policyengine_uk.tests.aggregate_impact import (
 from policyengine_uk.utils.aggregate_impact.api import to_report
 from policyengine_uk.utils.aggregate_impact.compare import compare
 from policyengine_uk.utils.aggregate_impact.measure import (
+    CHANGE_GBP,
     Recorder,
     _weighted_records,
     baseline_records,
@@ -32,7 +33,11 @@ from policyengine_uk.utils.aggregate_impact.measure import (
     weighted_total,
     withheld_reasons,
 )
-from policyengine_uk.utils.aggregate_impact.partition import parse_partition
+from policyengine_uk.utils.aggregate_impact.partition import (
+    default_partition_path,
+    load_partition,
+    parse_partition,
+)
 from policyengine_uk.utils.aggregate_impact.privacy import (
     MIN_CELL,
     NO_BASELINE,
@@ -41,9 +46,10 @@ from policyengine_uk.utils.aggregate_impact.privacy import (
     SMALL_TARGET_CHANGE,
     SUPPRESSED_COMPONENT_CHANGED,
     WITHHELD_CONDITIONS,
+    withheld_reason,
     withheld_text,
 )
-from policyengine_uk.utils.aggregate_impact.reforms import parse_reforms
+from policyengine_uk.utils.aggregate_impact.reforms import load_reforms, parse_reforms
 from policyengine_uk.utils.aggregate_impact.render import _withheld_notes, render
 from policyengine_uk.utils.aggregate_impact.spec import load_spec
 
@@ -85,6 +91,28 @@ class WorldSim:
         return np.asarray(values.get(variable, np.zeros(N)), dtype=float)
 
 
+class BenunitWorldSim(WorldSim):
+    """A WorldSim whose Child Benefit falls on 40 benefit units, two in each
+    household, each weighted as its household."""
+
+    HOUSEHOLD = np.repeat(np.arange(N), 2)
+
+    def __init__(self, values_by_year, weight):
+        super().__init__(values_by_year, weight)
+        self.tax_benefit_system.variables["child_benefit"] = SimpleNamespace(
+            entity=SimpleNamespace(key="benunit")
+        )
+
+    def calculate(self, variable, period, map_to=None, unweighted=True):
+        if variable == "benunit_weight":
+            return self.weight[self.HOUSEHOLD]
+        return super().calculate(variable, period, map_to, unweighted)
+
+    def map_result(self, values, source, target):
+        assert (source, target) == ("benunit", "household")
+        return np.bincount(self.HOUSEHOLD, weights=values, minlength=N)
+
+
 def _balance(values) -> np.ndarray:
     zero = np.zeros(N)
     return (
@@ -94,7 +122,10 @@ def _balance(values) -> np.ndarray:
     )
 
 
-def _partition():
+def _partition(double_counts=()):
+    """Three heads, and any double counts named, each inside the state
+    pension."""
+
     def head(i, totals):
         return {"id": i, "label": i, "variable": i, "totals": totals}
 
@@ -107,6 +138,14 @@ def _partition():
                 head("dividend_tax", ["gov_tax"]),
             ],
             "spending_heads": [head("state_pension", ["gov_spending"])],
+            "model_double_counts": [
+                {
+                    "variable": variable,
+                    "contained_in": "state_pension",
+                    "totals": ["gov_spending"],
+                }
+                for variable in double_counts
+            ],
         }
     )
 
@@ -129,18 +168,29 @@ def _reform(target="income_tax", name="Change it"):
     )
 
 
-def _measure(base, reformed, weight=None, target="income_tax", years=(YEAR,)):
+def _measure(
+    base,
+    reformed,
+    weight=None,
+    target="income_tax",
+    years=(YEAR,),
+    others=(),
+    double_counts=(),
+    sim=WorldSim,
+):
     """Measure one reform as measure() does: record the baseline's heads,
     with their suppression, then cost the reform against the baseline.
 
     ``base`` and ``reformed`` map variable to household values, or year to
-    such a mapping."""
+    such a mapping. ``others`` are other reforms' targets, which measure()
+    checks too."""
     if not isinstance(next(iter(base)), int):
         base = {year: base for year in years}
         reformed = {year: reformed for year in years}
     weight = np.ones(N) if weight is None else np.asarray(weight, dtype=float)
-    partition = _partition()
-    base_sim = WorldSim(base, weight)
+    partition = _partition(double_counts)
+    targets = [target, *others]
+    base_sim = sim(base, weight)
     rec = Recorder()
     for year in years:
         for head in partition.heads:
@@ -157,15 +207,15 @@ def _measure(base, reformed, weight=None, target="income_tax", years=(YEAR,)):
             )
     reform = _reform(target)
     measure_reforms(
-        lambda reform=None: WorldSim(reformed if reform else base, weight),
+        lambda reform=None: sim(reformed if reform else base, weight),
         None,
         {y: weighted_total(base_sim, "gov_balance", y) for y in years},
-        {y: {target: weighted_total(base_sim, target, y)} for y in years},
+        {y: {t: weighted_total(base_sim, t, y) for t in targets} for y in years},
         reform,
         list(years),
         rec,
         baseline={
-            y: baseline_records(base_sim, partition, rec, y, [target]) for y in years
+            y: baseline_records(base_sim, partition, rec, y, targets) for y in years
         },
         components=partition.component_variables(),
     )
@@ -297,7 +347,7 @@ def test_a_year_without_baseline_records_says_so():
 def test_two_conditions_together_are_both_recorded():
     """The reform raises one suppressed pension and leaves dividend tax with
     five payers; every income tax bill changes, so neither the balance nor
-    the target is a small change. Main stopped at the first condition."""
+    the target is a small change. The tool records both conditions."""
     base = _world(np.full(N, 100.0), _first(2, 1_000.0))
     reformed = _world(
         np.full(N, 110.0),
@@ -353,6 +403,115 @@ def test_component_metric_ids_name_heads_and_double_counts():
         "dla": "spending.disability",
         "sdlt_corporate": "double_counts.sdlt_corporate",
     }
+
+
+def test_two_small_targets_are_both_named():
+    """The reform moves Pension Credit and Child Benefit, two other reforms'
+    targets, in three records each; every income tax bill rises too."""
+    zero = np.zeros(N)
+    base = _world(
+        np.full(N, 100.0), np.full(N, 100.0), pension_credit=zero, child_benefit=zero
+    )
+    reformed = _world(
+        np.full(N, 110.0),
+        np.full(N, 100.0),
+        pension_credit=_first(3, 25.0),
+        child_benefit=_first(3, 10.0),
+    )
+    rec = _measure(base, reformed, others=("pension_credit", "child_benefit"))
+    assert _conditions(_reasons(rec)) == [
+        (SMALL_TARGET_CHANGE, "pension_credit", None),
+        (SMALL_TARGET_CHANGE, "child_benefit", None),
+    ]
+
+
+def test_a_change_of_exactly_half_a_penny_changes_no_record():
+    """Three households hold nothing until the reform pays each of them a
+    state pension of exactly CHANGE_GBP, which moves neither their balance
+    nor the target by more than CHANGE_GBP; a penny does."""
+    base = _world(_first(3, 0.0, 100.0), _first(3, 0.0, 100.0), _first(3, 0.0, 50.0))
+    reformed = dict(base, state_pension=_first(3, CHANGE_GBP, 100.0))
+    rec = _measure(base, reformed, target="state_pension")
+    assert _reasons(rec) == []
+    target = rec.metrics["reform_targets.change_it"]["values"][str(YEAR)]
+    assert target == pytest.approx(3 * CHANGE_GBP)
+    penny = dict(base, state_pension=_first(3, 0.01, 100.0))
+    assert _conditions(_reasons(_measure(base, penny, target="state_pension"))) == [
+        (SMALL_BALANCE_CHANGE, "gov_balance", None),
+        (SMALL_TARGET_CHANGE, "state_pension", None),
+    ]
+
+
+def test_a_reform_that_leaves_a_small_double_count_names_it():
+    """A double count, counted inside the state pension, falls from 20
+    records to 4: a new small cell, named by its published id."""
+    base = _world(np.full(N, 100.0), np.full(N, 100.0), pension_top_up=np.full(N, 5.0))
+    reformed = _world(
+        np.full(N, 110.0), np.full(N, 100.0), pension_top_up=_first(4, 5.0)
+    )
+    rec = _measure(base, reformed, double_counts=("pension_top_up",))
+    assert _conditions(_reasons(rec)) == [
+        (SMALL_COMPONENT_LEFT, "pension_top_up", "double_counts.pension_top_up")
+    ]
+
+
+@pytest.mark.parametrize(
+    "households, withheld",
+    [
+        # Ten weighted benefit units in five households: not a small cell.
+        (6, False),
+        # Four weighted benefit units in two households.
+        (3, True),
+    ],
+)
+def test_a_benefit_unit_target_counts_benefit_units(households, withheld):
+    """Child Benefit falls on 40 benefit units in 20 households, and the
+    first household carries no weight. The reform raises Child Benefit for
+    both benefit units in the first few households and every income tax
+    bill, so the tool counts the target's records with benefit unit
+    weights."""
+    weight = _first(1, 0.0, 1.0)
+    base = _world(np.full(N, 100.0), np.full(N, 100.0), child_benefit=np.zeros(2 * N))
+    reformed = _world(
+        np.full(N, 110.0),
+        np.full(N, 100.0),
+        child_benefit=np.r_[
+            np.full(2 * households, 10.0), np.zeros(2 * (N - households))
+        ],
+    )
+    rec = _measure(base, reformed, weight, "child_benefit", sim=BenunitWorldSim)
+    reasons = _conditions(_reasons(rec))
+    target = rec.metrics["reform_targets.change_it"]["values"][str(YEAR)]
+    if withheld:
+        assert reasons == [(SMALL_TARGET_CHANGE, "child_benefit", None)]
+        assert target is None
+    else:
+        assert reasons == []
+        assert target == pytest.approx(10.0 * 2 * (households - 1))
+
+
+def test_reason_words_add_no_digit_to_the_names_they_quote():
+    """Some component names hold digits, such as bursary_fund_16_to_19's age
+    range; a name counts no records. Around the names, a reason's words add
+    no digit but the 10 in "fewer than 10"."""
+    ids = component_metric_ids(load_partition(default_partition_path()))
+    assert "bursary_fund_16_to_19" in ids
+    for name in {*ids, *ids.values()}:
+        for condition in WITHHELD_CONDITIONS:
+            text = withheld_text([withheld_reason(condition, name)])
+            words = text.replace(name, "").replace(f"fewer than {MIN_CELL}", "")
+            assert not re.search(r"\d", words), text
+
+
+def test_privacy_py_covers_the_stock_reform_rows():
+    """privacy.py's exception for reasons across reform rows rests on the
+    reform list in the repository: a change to that list revisits it."""
+    assert " ".join(r.id for r in load_reforms()) == (
+        "basic_rate_plus_1pp higher_rate_plus_1pp personal_allowance_13000 "
+        "child_benefit_additional_25 uc_taper_20pc employee_nics_main_10pc "
+        "vat_standard_plus_2pp additional_rate_plus_3pp "
+        "uc_standard_allowance_plus_10pc state_pension_plus_10pc"
+    )
 
 
 # The issue's example: two heads suppressed in every year, a reform withheld
@@ -525,13 +684,16 @@ def test_the_comment_caps_the_reasons_it_lists():
     text = render(summary, SPEC)
     listed = [line for line in text.splitlines() if line.startswith("- Reform ")]
     assert len(listed) == MAX_WITHHELD_ROWS
-    assert "- 10 more lines are in the report artifact." in text
+    assert (
+        "- 10 more left out here; the report artifact's `summary.json` gives "
+        "every reason under `withheld_because`." in text
+    )
 
 
 # For all small worlds.
 
 values = st.floats(1.0, 1e4, allow_nan=False)
-deltas = st.sampled_from([0.0, 0.004, 0.006, 1.0, -250.0, 1e3])
+deltas = st.sampled_from([0.0, 0.004, CHANGE_GBP, 0.006, 1.0, -250.0, 1e3])
 
 
 @st.composite
@@ -593,7 +755,7 @@ def _direct_reasons(base, reformed, weight, target):
 def test_a_year_is_withheld_exactly_when_it_has_a_reason(world):
     """For every world: the tool withholds the figures exactly when it
     records a reason; the reasons match the conditions computed directly;
-    the years withheld match main's reform_withheld; and the published
+    the years withheld match the frozen rule; and the published
     figures equal the direct weighted changes."""
     base, reformed, weight, target = world
     rec = _measure(base, reformed, weight, target)
@@ -614,16 +776,16 @@ def test_a_year_is_withheld_exactly_when_it_has_a_reason(world):
     )
     records = baseline_records(base_sim, partition, rec, YEAR, [target])
     components = partition.component_variables()
-    on_main = main_reference.reform_withheld(reformed_sim, YEAR, records, components)
-    assert on_main == bool(reasons)
-    assert reform_withheld(reformed_sim, YEAR, records, components) == on_main
+    frozen = main_reference.reform_withheld(reformed_sim, YEAR, records, components)
+    assert frozen == bool(reasons)
+    assert reform_withheld(reformed_sim, YEAR, records, components) == frozen
     assert withheld_reasons(reformed_sim, YEAR, records, components) == reasons
 
     costing = float(np.sum(weight * (_balance(reformed) - _balance(base))))
     change = float(np.sum(weight * (reformed[target] - base[target])))
     published = rec.metrics["reforms.change_it"]["values"][str(YEAR)]
     target_change = rec.metrics["reform_targets.change_it"]["values"][str(YEAR)]
-    if on_main:
+    if frozen:
         assert published is None and target_change is None
     else:
         assert published == pytest.approx(costing, abs=1e-6)
@@ -633,16 +795,18 @@ def test_a_year_is_withheld_exactly_when_it_has_a_reason(world):
 @settings(max_examples=300, deadline=None)
 @given(world=worlds())
 def test_a_reason_never_gives_a_count_or_an_amount(world):
-    """A reason holds only names; in words it says "fewer than 10" at most,
-    whatever the counts and amounts behind it."""
+    """A reason holds only names; around them, its words say "fewer than
+    10" at most, whatever the counts and amounts behind it."""
     base, reformed, weight, target = world
     rec = _measure(base, reformed, weight, target)
     reasons = _reasons(rec)
+    text = withheld_text(reasons)
+    words = text.replace(f"fewer than {MIN_CELL}", "")
     for reason in reasons:
         assert set(reason) == {"condition", "variable", "metric_id"}
         assert all(value is None or isinstance(value, str) for value in reason.values())
-    text = withheld_text(reasons)
-    assert not re.search(r"\d", text.replace(f"fewer than {MIN_CELL}", ""))
+        words = words.replace(reason["metric_id"] or reason["variable"] or "", "")
+    assert not re.search(r"\d", words)
     assert "£" not in text
     detail = rec.checks["responsive:change_it"]["failing"].get(str(YEAR), "")
     if reasons:

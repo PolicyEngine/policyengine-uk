@@ -1313,13 +1313,13 @@ def withheld_reasons(
       names the variable: this reform's own target or another's.
 
     Withheld too when there is no baseline record for the year
-    (``no_baseline``). It tests every condition and gives one reason for
-    each component or variable a condition holds for
+    (``no_baseline``). With nothing to compare against, the function tests
+    no other condition, so that reason says nothing about how many records
+    the reform changes. Otherwise the function tests every condition and
+    gives one reason for each component or variable a condition holds for
     (``privacy.withheld_reason``): the reason names it and gives no count or
-    amount (#2654). Main's ``reform_withheld`` stopped at the first condition,
-    so a variable that fails to compute under the reform now fails the reform
-    in a year an earlier condition withholds, as it already did in every
-    other year.
+    amount (#2654). A variable that fails to compute under the reform
+    therefore fails the reform in every year, whichever conditions hold.
     """
     if baseline is None:
         return [withheld_reason(NO_BASELINE)]

@@ -1,8 +1,8 @@
-"""Frozen reform withholding from main (da31e8698), with commentary omitted.
+"""Reform withholding as a yes or no, frozen at da31e8698 without commentary.
 
 Keep this independent of the production tool: it is the differential oracle
-for #2654, which records why the tool withholds a reform year and must not
-change which years it withholds.
+for ``measure.withheld_reasons`` (#2654), which must withhold exactly the
+years this rule withholds.
 """
 
 from typing import Mapping, Optional

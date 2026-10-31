@@ -63,6 +63,9 @@ def to_report(result: dict) -> dict:
     (``privacy.WITHHELD_CONDITIONS``); for a published year, an empty list.
     A ``small_target_change`` names the variable, which can be another
     reform's target: the tool checks the target of every reform it costs.
+    A ``no_baseline`` reason stands alone: without a baseline record the
+    tool tests no other condition, so the reason says nothing about the
+    reform's records.
     """
     provenance = result.get("provenance") or {}
     report = {
