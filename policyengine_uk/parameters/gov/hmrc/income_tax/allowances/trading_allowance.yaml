@@ -1,4 +1,4 @@
-description: Amount of trading allowance, which relieves trading receipts in place of deducting actual expenses.
+description: Amount of trading allowance, which relieves trading receipts in place of deducting actual expenses. For people the input data mark as claimants (trading_allowance_claim_status), whose profit already deducts the allowance legislated for the data year, a cut below that allowance adds to their taxable profit only what gov.simulation.trading_allowance_claimant_expense_share sets, by default nothing.
 values:
   2005-04-01:
     value: 0

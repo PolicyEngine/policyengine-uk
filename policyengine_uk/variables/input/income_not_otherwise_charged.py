@@ -19,10 +19,12 @@ class income_not_otherwise_charged(Variable):
         "Part 5 Chapters and, on SPI records, benefits and termination "
         "payments, none of which the allowance relieves. Without "
         "self_employment_gross_receipts, a trade with a loss or no profit is "
-        "taken to have no receipts, so its relevant income is this alone. "
-        "A claimant's trade receipts (trading_allowance_claim_status) take up "
-        "the allowance first, and a non-claimant gets none of it on this "
-        "income."
+        "taken to have no receipts, so its relevant income is this alone, "
+        "whatever the person's trading_allowance_claim_status. A claimant's "
+        "trade "
+        "receipts, profit plus the allowance it deducts, take up the "
+        "allowance first, and a non-claimant gets it on this income only "
+        "through full relief."
     )
     definition_period = YEAR
     unit = GBP

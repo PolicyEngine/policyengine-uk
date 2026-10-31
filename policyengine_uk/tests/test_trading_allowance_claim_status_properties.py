@@ -2,28 +2,29 @@
 Chapter 1).
 
 Survey data hold profit, not receipts. The claim status says which receipts
-lie behind it. A claimant's input profit already deducts the allowance in
-force when it was measured (gov.simulation.trading_allowance_in_input_profits,
-£1,000), so their receipts are that profit plus £1,000. A non-claimant deducts
-actual expenses above £1,000. Unknown, the default, keeps the rules for
-supplied or missing receipts.
+lie behind a positive profit. A claimant's profit already deducts the
+allowance legislated for the year the data were measured (here, without a
+dataset, the year simulated: £1,000 in 2026-27), so their receipts are that
+profit plus £1,000. A non-claimant did not elect for partial relief. Unknown,
+the default, keeps the rules for supplied or missing receipts.
+
+The reference below is written from the Act's options rather than from the
+model's formula: full relief applies without an election whenever relevant
+income is within the allowance (s. 783AE); partial relief needs an election
+(s. 783AM), which a non-claimant has not made and a claimant has; ordinary
+treatment deducts actual expenses and capital allowances, which for a
+claimant partial relief replaced and are taken as a share of the input
+allowance (gov.simulation.trading_allowance_claimant_expense_share).
 
 Invariants, each checked over many generated people in one reusable
-simulation per allowance level, from abolition to well above the £3,000 of
-2027-28:
+simulation per allowance level and expense share:
 
-1. Every status matches a reference written from the Act. A claimant's
-   taxable trade profit is the lower of ordinary treatment (the input profit,
-   with expenses read as £1,000) and the allowance on receipts of profit plus
-   £1,000, whatever receipts are supplied. Their income not otherwise charged
-   gets what those receipts leave of the allowance. A non-claimant gets
-   neither deduction. Unknown status gives what it gave before the status
-   existed. A current loss larger than the allowance's saving is claimed
-   instead.
-2. A claimant's two deductions never exceed the allowance's excess over
-   £1,000, so a cut to £1,000 or below leaves their profit as reported.
+1. Every status matches the reference: taxable trade profit, the Chapter 8
+   deduction, Class 4 profits and whether the person takes the allowance.
+2. A claimant's deductions never exceed the allowance's excess over £1,000,
+   and with the default share a cut leaves their profit as reported.
 3. A larger allowance never raises taxable trade profit, for any status.
-4. Class 4 reads the same deduction as income tax.
+4. A smaller expense share never lowers a claimant's taxable trade profit.
 """
 
 import numpy as np
@@ -35,16 +36,22 @@ from policyengine_uk import Simulation
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
-YEAR = 2027
+YEAR = 2026
+# s. 783AD, the allowance for 2026-27, the year these situations are measured.
 INPUT_ALLOWANCE = 1_000
-ALLOWANCES = [0, 500, 1_000, 2_000, 3_000, 5_000, 10_000]
+ALLOWANCES = [0, 300, 500, 1_000, 2_000, 3_000, 5_000, 10_000]
+# (allowance, claimant expense share): every allowance at the default share,
+# and cuts at lower shares.
+SCENARIOS = [(allowance, 1.0) for allowance in ALLOWANCES] + [
+    (allowance, share) for allowance in (0, 300, 500) for share in (0.0, 0.5)
+]
 STATUSES = ["UNKNOWN", "CLAIMANT", "NON_CLAIMANT"]
 PEOPLE = 30
 
 amount = st.one_of(
     st.floats(min_value=0, max_value=12_000),
     st.floats(min_value=0, max_value=100_000),
-    st.sampled_from([0.0, 500.0, 999.99, 1_000.0, 2_000.0, 3_000.0, 4_000.0]),
+    st.sampled_from([0.0, 300.0, 500.0, 999.99, 1_000.0, 2_000.0, 4_000.0]),
 )
 case = st.tuples(
     st.sampled_from(STATUSES),
@@ -53,7 +60,8 @@ case = st.tuples(
     st.sampled_from(["unknown", "consistent", "below_profit"]),  # receipts
     st.sampled_from([0.0, 0.0, 150.0, 2_500.0]),  # capital allowances
     st.sampled_from([0.0, 0.0, 0.0, 300.0, 2_000.0]),  # losses brought forward
-    st.sampled_from([0.0, 0.0, 400.0, 900.0, 5_000.0]),  # Chapter 8 income
+    st.one_of(amount, st.floats(min_value=-2_000, max_value=0)),  # misc income
+    st.sampled_from([0.0, 0.0, 0.5, 1.0, 1.5]),  # Chapter 8 share of it
     st.sampled_from([0.0, 0.0, 0.0, 0.0, 300.0, 3_000.0]),  # current loss
 )
 cases = st.lists(case, min_size=PEOPLE, max_size=PEOPLE)
@@ -72,22 +80,33 @@ def sims():
         },
     }
     return {
-        allowance: Simulation(
+        (allowance, share): Simulation(
             situation=situation,
             reform={
                 "gov.hmrc.income_tax.allowances.trading_allowance": {
                     str(YEAR): allowance
-                }
+                },
+                "gov.simulation.trading_allowance_claimant_expense_share": {
+                    str(YEAR): share
+                },
             },
         )
-        for allowance in ALLOWANCES
+        for allowance, share in SCENARIOS
     }
 
 
 def run(sim, drawn):
-    status, profit, expenses, mode, capital, brought_forward, chapter_8, loss = (
-        np.array(x) for x in zip(*drawn)
-    )
+    (
+        status,
+        profit,
+        expenses,
+        mode,
+        capital,
+        brought_forward,
+        misc,
+        chapter_8_share,
+        loss,
+    ) = (np.array(x) for x in zip(*drawn))
     receipts = np.select(
         [mode == "consistent", mode == "below_profit"],
         [np.maximum(profit, 0) + expenses, 0.5 * np.maximum(profit, 0)],
@@ -98,8 +117,12 @@ def run(sim, drawn):
     sim.set_input("self_employment_gross_receipts", YEAR, receipts)
     sim.set_input("capital_allowances", YEAR, capital)
     sim.set_input("loss_relief", YEAR, brought_forward)
-    sim.set_input("miscellaneous_income", YEAR, chapter_8)
-    sim.set_input("income_not_otherwise_charged", YEAR, chapter_8)
+    sim.set_input("miscellaneous_income", YEAR, misc)
+    sim.set_input(
+        "income_not_otherwise_charged",
+        YEAR,
+        chapter_8_share * np.maximum(misc, 0),
+    )
     sim.set_input("trading_loss", YEAR, loss)
     sim.reset_calculations()
 
@@ -113,63 +136,83 @@ def run(sim, drawn):
         receipts=stored("self_employment_gross_receipts"),
         capital=stored("capital_allowances"),
         brought_forward=stored("loss_relief"),
+        misc=stored("miscellaneous_income"),
         chapter_8=stored("income_not_otherwise_charged"),
         loss=stored("trading_loss"),
         trade_relief=stored("trading_allowance_deduction"),
         chapter_8_relief=stored("miscellaneous_income_trading_allowance_deduction"),
         taxable=stored("taxable_self_employment_income"),
         class_4_profits=stored("ni_class_4_profits_before_losses"),
+        uses=sim.calculate("uses_trading_allowance", YEAR),
     )
 
 
-def reference(r, allowance):
-    """Taxable trade profit and the Chapter 8 deduction, from the Act.
-
-    Receipts within the allowance are fully relieved (s. 783AF). Above it the
-    person takes the better of actual deductions and the allowance (s.
-    783AI), and Chapter 8 income gets the part of the allowance the trade
-    receipts leave (s. 783AK, trades first). Without receipts, a profit within
-    the allowance is relieved in full and a larger one is taxed as reported.
-    """
+def reference(r, allowance, share):
+    """Taxable trade profit, Class 4 profits, the Chapter 8 deduction and
+    whether the person takes the allowance, from the Act's options."""
     profit, capital = r["profit"], r["capital"]
-    claimant = r["status"] == "CLAIMANT"
+    brought_forward, loss = r["brought_forward"], r["loss"]
+    # Chapter 8 income is part of miscellaneous income.
+    chapter_8 = np.minimum(np.maximum(r["chapter_8"], 0), np.maximum(r["misc"], 0))
+    trading = profit > 0
+    claimant = trading & (r["status"] == "CLAIMANT")
     non_claimant = r["status"] == "NON_CLAIMANT"
     supplied = (r["receipts"] > 0) & (r["receipts"] >= profit)
-    receipts = np.where(
-        claimant, np.maximum(profit, 0) + INPUT_ALLOWANCE, r["receipts"]
+    # Trade receipts. A claimant's profit is receipts less the input
+    # allowance. Otherwise supplied receipts count; without them, no profit
+    # means no receipts, a profit within the allowance means receipts equal
+    # to it, and a non-claimant's profit (their expenses exceed the input
+    # allowance) or a larger profit means receipts above any allowance.
+    receipts = np.select(
+        [claimant, supplied, ~trading, non_claimant | (profit > allowance)],
+        [profit + INPUT_ALLOWANCE, r["receipts"], 0.0, np.inf],
+        profit,
     )
-    known = claimant | supplied
-    # A claimant's input profit is ordinary treatment with expenses of
-    # £1,000: receipts less the input allowance.
-    ordinary = profit - capital
-    with_allowance = np.where(
-        known,
-        np.where(
-            receipts <= allowance,
-            0,
-            np.minimum(ordinary, receipts - allowance),
-        ),
-        np.where(profit <= allowance, 0, ordinary),
-    )
-    with_allowance = np.where(non_claimant, ordinary, with_allowance)
-    trade_saving = np.maximum(ordinary - with_allowance, 0)
-    # The trade receipts that take up the allowance first.
-    used = np.where(known, receipts, np.minimum(np.maximum(profit, 0), allowance))
-    chapter_8_relief = np.where(
-        non_claimant,
-        0,
-        np.minimum(r["chapter_8"], np.maximum(allowance - used, 0)),
-    )
-    # The election: a larger current loss is claimed instead (s. 783AL and
-    # s. 783AM), and then neither deduction applies.
+    # Ordinary treatment deducts actual expenses and capital allowances; a
+    # claimant's are the share of the input allowance.
+    ordinary = np.where(claimant, receipts - share * INPUT_ALLOWANCE, profit - capital)
+    # Full relief (no election) or partial relief, trades first (s. 783AK).
+    full = receipts + chapter_8 <= allowance
+    with_allowance = np.where(full, 0, np.maximum(receipts - allowance, 0))
+    chapter_8_relief = np.minimum(chapter_8, np.maximum(allowance - receipts, 0))
+    # Partial relief needs an election, which a non-claimant has not made.
+    available = full | ~non_claimant
+    trade = np.where(available, np.minimum(with_allowance, ordinary), ordinary)
+    chapter_8_relief = np.where(available, chapter_8_relief, 0)
+    # A claimant's claim is their election. Anyone else claims a current
+    # loss larger than the allowance's saving instead (ss. 783AL, 783AM).
     saving = (
-        np.minimum(trade_saving, np.maximum(ordinary - r["brought_forward"], 0))
+        np.maximum(ordinary - brought_forward, 0)
+        - np.maximum(trade - brought_forward, 0)
         + chapter_8_relief
     )
-    claim_loss = r["loss"] > saving
-    taxable_before_losses = np.where(claim_loss, ordinary, ordinary - trade_saving)
-    taxable = np.maximum(taxable_before_losses - r["brought_forward"], 0)
-    return taxable, np.where(claim_loss, 0, chapter_8_relief)
+    claims_loss = ~claimant & (loss > saving)
+    trade = np.where(claims_loss, ordinary, trade)
+    chapter_8_relief = np.where(claims_loss, 0, chapter_8_relief)
+    takes_allowance = np.where(
+        claimant,
+        allowance > 0,
+        ~claims_loss & ((ordinary - trade > 0) | (chapter_8_relief > 0)),
+    )
+    # The model sums in float32, so where the reference compares a sum with
+    # a threshold it may land on the other side within rounding: a
+    # non-claimant's relevant income against the allowance, a supplied loss
+    # against the saving, and, for whether the allowance is taken, its
+    # advantage on the trade against nil.
+    margin = tolerance(r["receipts"], profit, chapter_8, allowance)
+    finite = np.isfinite(receipts)
+    near_full = non_claimant & finite
+    near_full &= np.abs(np.where(finite, receipts, 0) + chapter_8 - allowance) <= margin
+    near_loss = (loss > 0) & (np.abs(loss - saving) <= margin)
+    advantage = np.where(np.isfinite(with_allowance), ordinary - with_allowance, -1)
+    return dict(
+        taxable=np.maximum(trade - brought_forward, 0),
+        class_4_profits=np.maximum(trade, 0),
+        chapter_8_relief=chapter_8_relief,
+        uses=takes_allowance,
+        fragile=near_full | near_loss,
+        fragile_uses=near_full | near_loss | (np.abs(advantage) <= margin),
+    )
 
 
 def tolerance(*values):
@@ -186,15 +229,20 @@ SETTINGS = settings(
 
 @SETTINGS
 @given(cases)
-def test_every_status_matches_the_act_at_every_allowance(sims, drawn):
-    for allowance, sim in sims.items():
+def test_every_status_matches_the_act(sims, drawn):
+    for (allowance, share), sim in sims.items():
         r = run(sim, drawn)
-        taxable, chapter_8_relief = reference(r, allowance)
-        margin = tolerance(r["receipts"], r["profit"], allowance)
-        assert (np.abs(r["taxable"] - taxable) <= margin).all(), allowance
-        assert (np.abs(r["chapter_8_relief"] - chapter_8_relief) <= margin).all(), (
-            allowance
-        )
+        expected = reference(r, allowance, share)
+        margin = tolerance(r["receipts"], r["profit"], r["chapter_8"], allowance)
+        compared = ~expected["fragile"]
+        for name in ("taxable", "class_4_profits", "chapter_8_relief"):
+            assert (np.abs(r[name] - expected[name]) <= margin)[compared].all(), (
+                name,
+                allowance,
+                share,
+            )
+        compared = ~expected["fragile_uses"]
+        assert (r["uses"] == expected["uses"])[compared].all(), (allowance, share)
 
 
 @SETTINGS
@@ -202,14 +250,15 @@ def test_every_status_matches_the_act_at_every_allowance(sims, drawn):
 def test_a_claimant_gets_only_the_allowances_excess_over_the_input_allowance(
     sims, drawn
 ):
-    for allowance, sim in sims.items():
+    for (allowance, share), sim in sims.items():
         r = run(sim, drawn)
-        claimant = r["status"] == "CLAIMANT"
-        relief = r["trade_relief"] + r["chapter_8_relief"]
+        claimant = (r["status"] == "CLAIMANT") & (r["profit"] > 0)
+        # The deduction gives back the capital allowances deducted separately.
+        relief = r["trade_relief"] + r["capital"] + r["chapter_8_relief"]
         excess = max(allowance - INPUT_ALLOWANCE, 0)
         assert (relief[claimant] <= excess + tolerance(allowance)).all(), allowance
-        if allowance <= INPUT_ALLOWANCE:
-            reported = np.maximum(r["profit"] - r["capital"] - r["brought_forward"], 0)
+        if allowance <= INPUT_ALLOWANCE and share == 1:
+            reported = np.maximum(r["profit"] - r["brought_forward"], 0)
             assert (
                 np.abs(r["taxable"] - reported)[claimant]
                 <= tolerance(r["profit"])[claimant]
@@ -219,17 +268,19 @@ def test_a_claimant_gets_only_the_allowances_excess_over_the_input_allowance(
 @SETTINGS
 @given(cases)
 def test_a_larger_allowance_never_raises_taxable_profit(sims, drawn):
-    taxable = [run(sims[allowance], drawn)["taxable"] for allowance in ALLOWANCES]
-    for smaller, larger in zip(taxable, taxable[1:]):
-        assert (larger <= smaller + tolerance(smaller)).all()
+    for share in (1.0, 0.5, 0.0):
+        levels = sorted(a for a, s in SCENARIOS if s == share)
+        taxable = [run(sims[(a, share)], drawn)["taxable"] for a in levels]
+        for smaller, larger in zip(taxable, taxable[1:]):
+            assert (larger <= smaller + tolerance(smaller)).all(), share
 
 
 @SETTINGS
 @given(cases)
-def test_class_4_reads_the_same_deduction(sims, drawn):
-    for allowance, sim in sims.items():
-        r = run(sim, drawn)
-        expected = np.maximum(r["profit"] - r["capital"] - r["trade_relief"], 0)
-        assert (
-            np.abs(r["class_4_profits"] - expected) <= tolerance(r["profit"])
-        ).all(), allowance
+def test_a_smaller_expense_share_never_lowers_a_claimants_taxable_profit(sims, drawn):
+    for allowance in (0, 300, 500):
+        taxable = [
+            run(sims[(allowance, share)], drawn)["taxable"] for share in (1.0, 0.5, 0.0)
+        ]
+        for larger_share, smaller_share in zip(taxable, taxable[1:]):
+            assert (smaller_share >= larger_share - tolerance(larger_share)).all()

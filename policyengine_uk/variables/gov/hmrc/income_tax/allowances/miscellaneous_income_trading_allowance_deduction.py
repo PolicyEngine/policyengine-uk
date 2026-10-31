@@ -20,14 +20,19 @@ class miscellaneous_income_trading_allowance_deduction(Variable):
         "contributions exceed relevant UK earnings (see "
         "utils/trading_allowance.py). Ordinary treatment to claim a current "
         "trading loss (no full relief, s. 783AL, or no partial relief, s. "
-        "783AM) leaves it unrelieved, as it does for a non-claimant "
-        "(trading_allowance_claim_status). Only "
+        "783AM) leaves it unrelieved. A non-claimant "
+        "(trading_allowance_claim_status) gets it only through full relief, "
+        "and a claimant's receipts, profit plus the allowance it deducts, "
+        "take up the allowance first. Only "
         "income tax reads this deduction, through taxable_miscellaneous_income; "
         "means tests and gross income bases read "
         "miscellaneous_income_before_trading_allowance. Datasets that hold "
-        "income already net of the allowance should set it to zero, as "
-        "policyengine-uk-data does for trading_allowance_deduction on SPI "
-        "records."
+        "this income already net of the allowance should set this deduction "
+        "to zero. For trade profits already net of it, mark claimants and "
+        "non-claimants in trading_allowance_claim_status rather than set "
+        "trading_allowance_deduction to zero, as policyengine-uk-data does on "
+        "SPI records, which keeps any change to the allowance from reaching "
+        "them."
     )
     definition_period = YEAR
     reference = [
@@ -51,5 +56,7 @@ class miscellaneous_income_trading_allowance_deduction(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        _, miscellaneous_relief = trading_allowance_reliefs(person, period, parameters)
+        _, miscellaneous_relief, _ = trading_allowance_reliefs(
+            person, period, parameters
+        )
         return miscellaneous_relief

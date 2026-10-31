@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.trading_allowance import trading_allowance_reliefs
 
 
 class uses_trading_allowance(Variable):
@@ -15,7 +16,10 @@ class uses_trading_allowance(Variable):
         "cannot then be claimed. A person with a larger current loss takes "
         "ordinary treatment and claims it: within the allowance by electing "
         "out of full relief (s. 783AL), above it by not electing for partial "
-        "relief (s. 783AM)."
+        "relief (s. 783AM). A claimant in the input data "
+        "(trading_allowance_claim_status) takes it at any allowance above "
+        "nil, even where it relieves nothing beyond their input profit: "
+        "their claim was the election, and it gave up their current losses."
     )
     definition_period = YEAR
     reference = [
@@ -34,6 +38,11 @@ class uses_trading_allowance(Variable):
     ]
 
     def formula(person, period, parameters):
-        return (person("trading_allowance_deduction", period) > 0) | (
-            person("miscellaneous_income_trading_allowance_deduction", period) > 0
+        _, _, claimant_takes_allowance = trading_allowance_reliefs(
+            person, period, parameters
+        )
+        return (
+            (person("trading_allowance_deduction", period) > 0)
+            | (person("miscellaneous_income_trading_allowance_deduction", period) > 0)
+            | claimant_takes_allowance
         )

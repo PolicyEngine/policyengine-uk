@@ -18,18 +18,20 @@ class trading_allowance_deduction(Variable):
         "it, and a larger profit as already reflecting the better of actual "
         "expenses and the allowance, so taxable profit jumps from nil to the "
         "full profit just above the allowance. Receipts below profit are "
-        "inconsistent and treated as unknown. trading_allowance_claim_status, "
-        "when known, takes precedence over receipts. A claimant's profit "
-        "already deducts the allowance in force when it was measured "
-        "(gov.simulation.trading_allowance_in_input_profits), so their "
-        "receipts are their profit plus it and the deduction is the "
-        "allowance's excess over it, capped at profit. A cut below that "
-        "amount would raise a claimant's taxable profit by up to the "
-        "difference, depending on expenses the data do not hold; the model "
-        "leaves it as reported. A non-claimant deducts actual expenses above "
-        "it and gets no deduction at any allowance, since electing for the "
-        "allowance after a raise is a change in behaviour. "
-        "The model compares the raw loss "
+        "inconsistent and treated as unknown. For a claimant "
+        "(trading_allowance_claim_status) with a profit, the profit already "
+        "deducts the allowance legislated for the year the input data were "
+        "measured, so their receipts are their profit plus it, whatever "
+        "receipts are supplied, and the deduction is the allowance's excess "
+        "over it, capped at profit. It also gives back any capital allowances "
+        "supplied for them, which partial relief replaces, so it can be "
+        "negative. Under a cut below the input allowance it charges the rise "
+        "that gov.simulation.trading_allowance_claimant_expense_share sets "
+        "(by default none). A non-claimant gets the deduction only through "
+        "full relief, where supplied receipts show relevant income within the "
+        "allowance: electing for partial relief after a raise is a change in "
+        "behaviour. A claimant's claim is their election; for everyone else "
+        "the model compares the raw loss "
         "supplied for this tax year, before net-income and relief-cap limits, "
         "with the allowance's effective saving after other deductions, "
         "including its relief on miscellaneous income. "
@@ -71,5 +73,5 @@ class trading_allowance_deduction(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        trade_relief, _ = trading_allowance_reliefs(person, period, parameters)
+        trade_relief, _, _ = trading_allowance_reliefs(person, period, parameters)
         return trade_relief

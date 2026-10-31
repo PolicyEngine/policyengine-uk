@@ -1,0 +1,133 @@
+"""The trading allowance claim status reads the allowance of the year the
+input data were measured (PolicyEngine/policyengine-uk#2764).
+
+A claimant's profit already deducts the allowance legislated for that year:
+a dataset's first year, which Simulation projects to later years, or
+without a dataset the year simulated. These tests build small datasets, so
+the data year and the simulated year differ, as they do for survey data
+projected past the April 2027 raise to £3,000 (Budget 2026, paragraph
+6.254).
+"""
+
+import pandas as pd
+import pytest
+
+from policyengine_uk import Simulation
+from policyengine_uk.data import UKSingleYearDataset
+
+pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
+
+STATUSES = ["CLAIMANT", "NON_CLAIMANT", "UNKNOWN"]
+ALLOWANCE = "gov.hmrc.income_tax.allowances.trading_allowance"
+
+
+def traders(year, *, loss=0.0):
+    """A claimant, a non-claimant and a trader of unknown status, measured in
+    ``year``, each with £30,000 of pay and £5,000 of profit."""
+    count = len(STATUSES)
+    person = pd.DataFrame(
+        {
+            "person_id": range(1, count + 1),
+            "person_benunit_id": range(1, count + 1),
+            "person_household_id": range(1, count + 1),
+            "age": [40] * count,
+            "employment_income": [30_000.0] * count,
+            "self_employment_income": [5_000.0] * count,
+            "trading_loss": [loss] * count,
+            "trading_allowance_claim_status": STATUSES,
+        }
+    )
+    household = pd.DataFrame(
+        {
+            "household_id": range(1, count + 1),
+            "region": ["LONDON"] * count,
+            "tenure_type": ["OWNED_OUTRIGHT"] * count,
+            "council_tax": [0.0] * count,
+            "rent": [0.0] * count,
+            "household_weight": [1.0] * count,
+        }
+    )
+    return UKSingleYearDataset(
+        person=person,
+        benunit=pd.DataFrame({"benunit_id": range(1, count + 1)}),
+        household=household,
+        fiscal_year=year,
+    )
+
+
+def deduction(simulation, year):
+    return simulation.calculate("trading_allowance_deduction", year).tolist()
+
+
+def test_the_budget_raise_reaches_claimants_measured_at_1000():
+    simulation = Simulation(dataset=traders(2025))
+    # 2026-27: £1,000, which the claimant's profit already deducts.
+    assert deduction(simulation, 2026) == [0, 0, 0]
+    # 2027-28: £3,000 on the claimant's receipts of profit + £1,000. The
+    # non-claimant elects nothing, and the unknown profit is above £3,000.
+    assert deduction(simulation, 2027) == pytest.approx([2_000, 0, 0])
+
+
+def test_data_measured_at_3000_gain_nothing_from_it():
+    simulation = Simulation(dataset=traders(2027))
+    for year in (2027, 2028):
+        assert deduction(simulation, year) == [0, 0, 0]
+
+
+def test_a_reform_of_the_data_year_leaves_the_input_allowance():
+    reform = {ALLOWANCE: {str(year): 5_000 for year in range(2025, 2028)}}
+    simulation = Simulation(dataset=traders(2025), reform=reform)
+    # The profit still deducts the £1,000 legislated for 2025-26.
+    assert deduction(simulation, 2026)[0] == pytest.approx(4_000)
+
+
+def test_a_raise_never_withdraws_a_claimants_loss_relief():
+    kept = {ALLOWANCE: {str(year): 1_000 for year in range(2027, 2029)}}
+    law = Simulation(dataset=traders(2025, loss=5_000))
+    at_1000 = Simulation(dataset=traders(2025, loss=5_000), reform=kept)
+    # The claimant's claim gave the loss up at £1,000 and still does at
+    # £3,000, so the raise only adds the £2,000 deduction.
+    tax = law.calculate("income_tax", 2027)[0]
+    assert tax == pytest.approx(at_1000.calculate("income_tax", 2027)[0] - 400, abs=1)
+
+
+def situation(person):
+    return {
+        "people": {"person": person},
+        "benunits": {"benunit": {"members": ["person"]}},
+        "households": {"household": {"members": ["person"]}},
+    }
+
+
+def test_the_status_carries_forward_from_the_year_supplied():
+    simulation = Simulation(
+        situation=situation(
+            {
+                "age": {2025: 40},
+                "self_employment_income": {2025: 2_500},
+                "trading_allowance_claim_status": {2025: "CLAIMANT"},
+            }
+        )
+    )
+    # Simulation.calculate returns enum names.
+    status = simulation.calculate("trading_allowance_claim_status", 2027)
+    assert status.tolist() == ["CLAIMANT"]
+
+
+def test_a_raise_leaves_a_situation_claimants_carried_loss():
+    # Without a dataset the data year is the year simulated, so this
+    # claimant's 2027 profit already deducts £3,000, and keeping £1,000 is a
+    # cut. Either way they keep the allowance and give up the loss.
+    person = {
+        "age": {2025: 40},
+        "employment_income": {2025: 30_000},
+        "self_employment_income": {2025: 5_000},
+        "trading_loss": {2025: 5_000},
+        "trading_allowance_claim_status": {2025: "CLAIMANT"},
+    }
+    kept = {ALLOWANCE: {"2027": 1_000}}
+    law = Simulation(situation=situation(person))
+    at_1000 = Simulation(situation=situation(person), reform=kept)
+    assert law.calculate("income_tax", 2027)[0] == pytest.approx(
+        at_1000.calculate("income_tax", 2027)[0], abs=0.01
+    )
