@@ -9,8 +9,7 @@ class cash_isa(Variable):
         "column keeps the stored value, and projects it with savings in every "
         "year: it is recomputed only when not stored, so a reform or situation "
         "that edits cash_isa_balance leaves a stored total unchanged. A "
-        "household input in a situation is used for the year it is given for "
-        "only."
+        "household input in a situation applies only to its own year."
     )
     entity = Household
     definition_period = YEAR

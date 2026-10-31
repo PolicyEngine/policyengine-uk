@@ -11,8 +11,7 @@ class stocks_and_shares_isa(Variable):
         "projects it with corporate_wealth in every year: it is recomputed "
         "only when not stored, so a reform or situation that edits "
         "stocks_and_shares_isa_balance leaves a stored total unchanged. A "
-        "household input in a situation is used for the year it is given for "
-        "only."
+        "household input in a situation applies only to its own year."
     )
     entity = Household
     definition_period = YEAR

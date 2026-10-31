@@ -157,12 +157,16 @@ Producers can export per-person `cash_isa_balance` and
 `stocks_and_shares_isa` sum them, but a stored household column takes
 precedence, so existing datasets that store only the household totals keep
 them in every year. `uprating_indices.yaml` projects them with `savings` and
-`corporate_wealth` up to `PROJECTION_END_YEAR`; after it, the simulation grows
-the last stored total by the index its person balances declare
-(`STORED_HOUSEHOLD_TOTALS` in `data/economic_assumptions.py`, which also
-covers `household_lifetime_isa_balance`). A producer that exports the person
-balances should either stop exporting the household totals or keep them
-equal to the sums; the model does not reconcile the two.
+`corporate_wealth` through the years the dataset projection covers. In later
+years, and in any year a data source such as an input frame holds no total
+for, the simulation grows the latest stored total by the index its person
+balances declare (`STORED_HOUSEHOLD_TOTALS` in `data/economic_assumptions.py`,
+which also covers `household_lifetime_isa_balance`). Person balances stored
+for a later year than the total replace it with their sum. Situations differ:
+a household total given in one applies only to its own year, so a situation
+reloaded from its input frame carries such a total forward. A producer that
+exports the person balances should either stop exporting the household totals
+or keep them equal to the sums; the model does not reconcile the two.
 
 `cash_isa_subscriptions` and `stocks_and_shares_isa_subscriptions` are
 annual person flows, summed over all of a person's accounts of each type, that

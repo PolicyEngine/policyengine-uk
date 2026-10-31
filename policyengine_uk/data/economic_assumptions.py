@@ -175,8 +175,9 @@ PROJECTION_END_YEAR = 2032
 # which falls to zero in data that store only the total, and Core does not
 # let a variable declare both `adds` and `uprating`. So in a simulation built
 # from data, Simulation grows the latest earlier stored total by the index
-# its parts declare, as Core grows the parts, and sums the parts only where
-# no total is stored.
+# its parts declare, as Core grows the parts. It sums the parts where no
+# total is stored for that year or an earlier one, or where the parts are
+# stored for a later year than the total.
 STORED_HOUSEHOLD_TOTALS = frozenset(
     {"cash_isa", "stocks_and_shares_isa", "household_lifetime_isa_balance"}
 )

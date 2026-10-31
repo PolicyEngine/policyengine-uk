@@ -741,16 +741,31 @@ class Simulation(CoreSimulation):
         # each year the data hold. For a later year it runs the variable's
         # sum of person balances, which such data need not hold, so grow the
         # latest stored total instead, as Core grows an input with `uprating`.
-        self._record_derived(variable.name)
+        # Which years hold the total or its parts decides the result.
+        for name in (variable.name, *variable.adds):
+            self._record_derived(name)
         source = self._latest_source(variable.name, period)
         if source is None:
             return None
+        for part in variable.adds:
+            part_source = self._isa_latest_input(part, period)
+            if part_source is not None and part_source.start > source.start:
+                # Person balances stored for a later year than the total are
+                # the newer observation, so their sum stands.
+                return None
         stored = self.get_holder(variable.name).get_array(source, self.branch_name)
         index_name = stored_total_uprating(self.tax_benefit_system, variable.name)
         return stored * self._index_growth(index_name, source, period)
 
     def _run_formula(self, variable, population, period):
-        if variable.name in STORED_HOUSEHOLD_TOTALS and built_from_data(self):
+        # Only the sum: a reform that gives the variable a formula, or makes
+        # it a plain input, leaves it to Core.
+        if (
+            variable.name in STORED_HOUSEHOLD_TOTALS
+            and variable.adds
+            and variable.get_formula(period) is None
+            and built_from_data(self)
+        ):
             stored = self._stored_household_total(variable, period)
             if stored is not None:
                 return stored

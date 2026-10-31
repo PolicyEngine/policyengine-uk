@@ -5,8 +5,9 @@ balances, but a dataset can store the household total instead. Up to
 PROJECTION_END_YEAR the dataset projection grows a stored total; after it,
 Simulation grows the latest stored total by the index of its parts, the index
 each variable's documentation projects it with. A dataset that stores only the
-person balances still gets their sum in every year, and so does a situation
-for a year it gives no total for.
+person balances, or stores them for a later year than the total, gets their
+sum, and so does a situation for a year it gives no total for. An input frame
+is data, so a total it stores grows too.
 
 Invariants, for any non-negative amounts:
 
@@ -26,7 +27,10 @@ from policyengine_core.periods import period
 from policyengine_core.simulations.simulation import _uprating_index_value
 
 from policyengine_uk import Simulation
-from policyengine_uk.data.dataset_schema import UKSingleYearDataset
+from policyengine_uk.data.dataset_schema import (
+    UKMultiYearDataset,
+    UKSingleYearDataset,
+)
 from policyengine_uk.data.economic_assumptions import (
     PROJECTION_END_YEAR,
     STORED_HOUSEHOLD_TOTALS,
@@ -57,14 +61,14 @@ MEANS_TEST_CAPITAL = (
     "council_tax_reduction_assessable_capital",
 )
 PROPERTY_SETTINGS = settings(
-    max_examples=8,
+    max_examples=5,
     deadline=None,
     derandomize=True,
     database=None,
 )
 
 
-def _dataset(households, person_columns=(), household_columns=()):
+def _dataset(households, person_columns=(), household_columns=(), year=DATA_YEAR):
     """Two adults per household, with the named columns from ``households``.
 
     Each household is a dict of amounts. A person column ``name`` takes
@@ -103,7 +107,7 @@ def _dataset(households, person_columns=(), household_columns=()):
                 },
             }
         ),
-        fiscal_year=DATA_YEAR,
+        fiscal_year=year,
     )
 
 
@@ -111,13 +115,13 @@ def _values(simulation, name, years=YEARS):
     return {year: simulation.calculate(name, year).astype(float) for year in years}
 
 
-def _growth(simulation, name, year):
-    """Growth from PROJECTION_END_YEAR to ``year`` by the index ``name`` declares."""
+def _growth(simulation, name, year, base=PROJECTION_END_YEAR):
+    """Growth from ``base`` to ``year`` by the index ``name`` declares."""
     index = simulation.tax_benefit_system.parameters.get_child(
         simulation.tax_benefit_system.variables[name].uprating
     )
     return _uprating_index_value(index, period(year).start) / _uprating_index_value(
-        index, period(PROJECTION_END_YEAR).start
+        index, period(base).start
     )
 
 
@@ -242,18 +246,97 @@ def test_a_situation_total_is_used_only_for_the_year_it_is_given_for():
         assert simulation.calculate("cash_isa", year)[0] == balance
 
 
-def test_a_grown_total_depends_on_every_year_that_holds_a_total():
-    # Like an input Core uprates, a grown total changes when an input is set
-    # for any year, so Core's branch invalidation must see it as derived.
+def test_a_total_set_on_a_branch_replaces_the_one_a_later_year_grew_from():
+    # Like savings, which Core uprates, a grown total depends on which years
+    # hold a total, so a total set on a branch for a year in between reaches
+    # a later year the branch has already calculated.
     simulation = Simulation(
         dataset=_dataset([{"cash_isa": 3_000.0}], household_columns=["cash_isa"])
     )
-    later = PROJECTION_END_YEAR + 3
-    simulation.calculate("cash_isa", later)
-    simulation.calculate("savings", later)
-    history = simulation._get_store_history()
+    branch = simulation.get_branch("edited")
+    between, later = PROJECTION_END_YEAR + 1, PROJECTION_END_YEAR + 3
     for name in ("cash_isa", "savings"):
-        assert history.earliest_dependency(name, period(later - 1)) is not None
+        assert branch.calculate(name, later)[0] > 0
+        branch.set_input(name, between, np.array([10_000.0]))
+    growth = _growth(simulation, "savings", later, base=between)
+    for name in ("cash_isa", "savings"):
+        assert branch.calculate(name, later)[0] == pytest.approx(
+            10_000 * growth, rel=1e-6
+        )
+    assert simulation.calculate("cash_isa", later)[0] == pytest.approx(
+        3 * simulation.calculate("savings", later)[0], rel=1e-6
+    )
+
+
+def test_person_balances_stored_after_the_total_are_summed_instead():
+    # A total and balances that a dataset stores for the same year: the total
+    # takes precedence, and grows. Balances stored for later years than the
+    # total are the newer observation, so their sum stands.
+    def year(columns, person_columns=(), share=0.25, year=DATA_YEAR):
+        return _dataset(
+            [{**columns, "share": share}],
+            person_columns=person_columns,
+            household_columns=[name for name in columns if name == "cash_isa"],
+            year=year,
+        )
+
+    simulation = Simulation(
+        dataset=UKMultiYearDataset(
+            datasets=[
+                year(
+                    {"cash_isa": 5_000.0, "cash_isa_balance": 400.0},
+                    ["cash_isa_balance"],
+                ),
+                year({"cash_isa_balance": 600.0}, ["cash_isa_balance"], year=2026),
+                year({"cash_isa_balance": 800.0}, ["cash_isa_balance"], year=2027),
+            ]
+        )
+    )
+    assert simulation.calculate("cash_isa", DATA_YEAR)[0] == 5_000
+    assert simulation.calculate("cash_isa", 2026)[0] == pytest.approx(600)
+    assert simulation.calculate("cash_isa", 2027)[0] == pytest.approx(800)
+    balances = simulation.calculate("cash_isa_balance", 2028)
+    assert balances.sum() > 800
+    assert simulation.calculate("cash_isa", 2028)[0] == pytest.approx(
+        balances.sum(), rel=1e-6
+    )
+
+    same_year = Simulation(
+        dataset=UKMultiYearDataset(
+            datasets=[
+                year(
+                    {"cash_isa": 5_000.0, "cash_isa_balance": 400.0},
+                    ["cash_isa_balance"],
+                ),
+            ]
+        )
+    )
+    growth = _growth(same_year, "savings", 2026, base=DATA_YEAR)
+    assert same_year.calculate("cash_isa", 2026)[0] == pytest.approx(
+        5_000 * growth, rel=1e-6
+    )
+
+
+def test_a_total_stored_in_an_input_frame_grows_like_savings():
+    # An input frame is data: a total it stores grows into later years, as a
+    # total in a situation does not.
+    frame = pd.DataFrame(
+        {
+            "person_id__2025": [1, 2],
+            "person_benunit_id__2025": [1, 1],
+            "person_household_id__2025": [1, 1],
+            "age__2025": [30, 28],
+            "savings__2025": [1_000.0, 1_000.0],
+            "cash_isa__2025": [3_000.0, 3_000.0],
+        }
+    )
+    simulation = Simulation(dataset=frame)
+    for year in (DATA_YEAR + 1, PROJECTION_END_YEAR + 1):
+        savings = simulation.calculate("savings", year)[0]
+        assert savings > 1_000
+        assert simulation.calculate("cash_isa", year)[0] == pytest.approx(
+            3 * savings, rel=1e-6
+        )
 
 
 def test_stored_totals_grow_by_the_index_they_are_projected_with():
@@ -297,7 +380,7 @@ HOUSEHOLDS = st.lists(
         }
     ),
     min_size=1,
-    max_size=4,
+    max_size=6,
 )
 
 

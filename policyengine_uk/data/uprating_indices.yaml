@@ -112,8 +112,9 @@ gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 - benunit_reported_capital
 # cash_isa and stocks_and_shares_isa sum the person balances listed with
 # them; they are listed so a dataset that stores the household totals
-# grows them like their parts. Past PROJECTION_END_YEAR, Simulation grows a
-# stored total the same way (STORED_HOUSEHOLD_TOTALS).
+# grows them like their parts. Past the projected years, Simulation grows
+# each stored total in STORED_HOUSEHOLD_TOTALS, household_lifetime_isa_balance
+# among them, the same way.
 - cash_isa
 - cash_isa_balance
 - corporate_wealth
