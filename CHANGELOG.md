@@ -1,3 +1,14 @@
+## [2.169.0] - 2026-10-31
+
+### Added
+
+- Added Northern Ireland's £200 Alternative Fuel Payment (`ebr_alternative_fuel_payment`), paid with the £400 Energy Bills Support Scheme amount in January 2023, so a Northern Ireland household's Energy Bills Rebate totals the £600 the December 2022 direction set.
+
+### Fixed
+
+- Stopped paying the 2022 £150 Council Tax Rebate in Northern Ireland, which levies domestic rates rather than council tax and had no rebate. The enhanced FRS gives every Northern Ireland household band A, so the model had paid it to all of them.
+
+
 ## [2.168.1] - 2026-10-31
 
 ### Changed

@@ -13,25 +13,38 @@ Announced by the Chancellor in February 2022 to help households with the
 spike in domestic energy prices. Two strands:
 
 - **£150 Council Tax Rebate** for households in Council Tax bands A–D in
-  England, a one-off in 2022-23. Households qualified on their band on
-  1 April 2022, and billing authorities made every payment by 30 September
-  2022. The devolved administrations made equivalent payments.
+  England, a one-off in 2022-23. Households qualified on their band on 1
+  April 2022. The guidance asked billing authorities to pay from April and
+  set 30 September 2022 as the deadline for the payments the government
+  would reconcile (paragraph 7). Scotland and Wales paid their own £150
+  awards to bands A–D, and also to Council Tax Reduction recipients in any
+  band, which the model leaves out. Northern Ireland levies domestic rates,
+  not council tax, and had no Council Tax Rebate, so the model pays none
+  there whatever the household's council tax band (the enhanced FRS gives
+  every Northern Ireland household band A, the default policyengine-uk-data
+  assigns when the FRS records no band).
 - **Energy Bills Support Scheme**, a £400 discount on domestic electricity
   bills in Great Britain, paid in six monthly instalments from October 2022
   to March 2023 (£66 for two months, then £67). Announced in February 2022
   as a repayable £200, it became a £400 grant in the May 2022 support
-  package. Northern Ireland paid £400 in one go in January 2023, alongside
-  a £200 Alternative Fuel Payment that the model does not include.
+  package. Northern Ireland paid £600 in one go from January 2023: £400 of
+  support and a £200 Alternative Fuel Payment, to each domestic electricity
+  customer on 2 January 2023, whatever fuel the household heats with (EBSS
+  AFP NI Direction, 23 December 2022, paragraph 3 and footnote 1). Great
+  Britain's £200 Alternative Fuel Payment, for households that heat with
+  heating oil, LPG, biomass and other alternative fuels, is not modelled.
 
 PolicyEngine models these via:
 
 - `energy_bills_rebate` (Household, YEAR) = `ebr_council_tax_rebate` +
-  `ebr_energy_bills_credit`
+  `ebr_energy_bills_credit` + `ebr_alternative_fuel_payment`
 - Parameters at `parameters/gov/treasury/energy_bills_rebate/`:
   - `energy_bills_credit_monthly.yaml` — the Great Britain monthly
     instalments
   - `energy_bills_credit_northern_ireland.yaml` — the Northern Ireland
-    payment in January 2023
+    £400 in January 2023
+  - `alternative_fuel_payment_northern_ireland.yaml` — the Northern Ireland
+    £200 Alternative Fuel Payment, paid with the £400
   - `energy_bills_credit.yaml` — a yearly top-up, zero by default, kept for
     reforms
   - `council_tax_rebate/bands.yaml` — qualifying CT bands (A–D)
@@ -43,8 +56,8 @@ year, so a Great Britain household on the scheme throughout gets £199 in
 2022 and £201 in 2023, while HBAI counts the whole £400 in 2022-23. Each
 month takes the scheme of the household's `country` in that calendar year.
 A situation that sets Northern Ireland for 2022 only therefore gets the
-Great Britain credit from January to March 2023, because `country` is not
-carried forward and defaults to England.
+Great Britain credit from January to March 2023, and no Alternative Fuel
+Payment, because `country` is not carried forward and defaults to England.
 
 HBAI classifies both strands as miscellaneous income, not state support,
 and DWP imputes receipt because the FRS did not ask about them. So
@@ -55,8 +68,12 @@ the rebates, so the model counts them once.
 HBAI income takes the same calendar-year sum as household net income and
 government spending. A Great Britain household in bands A to D on the
 scheme throughout gets £349 in 2022 and £201 in 2023, where HBAI counts
-£550 in 2022-23. Summing the credit by financial year would move all three
-measures together. `epg_subsidy` sums the Energy Price Guarantee by
+£550 in 2022-23. A Northern Ireland household gets nothing in 2022 and £600
+in 2023, though its main rollout began on 16 January 2023, in 2022-23.
+The direction set 31 March 2023 as the normal deadline for providing it, and
+let suppliers reissue vouchers and cheques that customers could redeem until
+30 June 2023 (paragraph 12(b)). Summing the
+credit by financial year would move all three measures together. `epg_subsidy` sums the Energy Price Guarantee by
 calendar year in the same way; it counts in household net income and
 government spending but not in HBAI income. The model keeps one timing for
 both schemes for now.
