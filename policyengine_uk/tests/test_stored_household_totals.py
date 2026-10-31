@@ -23,6 +23,7 @@ import pandas as pd
 import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
+from policyengine_core.parameters import ParameterNode
 from policyengine_core.periods import period
 from policyengine_core.reforms import Reform
 from policyengine_core.simulations.simulation import _uprating_index_value
@@ -366,6 +367,56 @@ def test_a_reform_formula_for_a_total_runs_in_years_with_no_stored_total():
         assert simulation.calculate("cash_isa", year)[0] == pytest.approx(
             multiple * savings, rel=1e-6
         )
+
+
+@pytest.mark.parametrize(
+    "reform_adds",
+    ["stored_totals_test.parts", ["cash_isa_balance", "stored_totals_test.extra"]],
+    ids=["parameter", "list_with_a_parameter"],
+)
+def test_a_reform_sum_through_parameters_runs_in_years_with_no_stored_total(
+    reform_adds,
+):
+    # Core lets `adds` name a parameter that lists the parts, or list a
+    # parameter beside variables. A reform that sums a total that way replaces
+    # its baseline sum, so Core runs it wherever no total is stored.
+    class cash_isa(Variable):
+        value_type = float
+        entity = Household
+        label = "cash ISA holdings, summed through parameters"
+        definition_period = YEAR
+        adds = reform_adds
+
+    class parameter_sum(Reform):
+        def apply(self):
+            self.parameters.add_child(
+                "stored_totals_test",
+                ParameterNode(
+                    "stored_totals_test",
+                    data={
+                        "parts": {"values": {"2000-01-01": ["cash_isa_balance"]}},
+                        "extra": {"values": {"2000-01-01": 100}},
+                    },
+                ),
+            )
+            self.update_variable(cash_isa)
+
+    simulation = Simulation(
+        reform=parameter_sum,
+        dataset=_dataset(
+            [{"cash_isa": 5_000.0, "cash_isa_balance": 400.0, "share": 0.25}],
+            person_columns=["cash_isa_balance"],
+            household_columns=["cash_isa"],
+        ),
+    )
+    extra = 0 if isinstance(reform_adds, str) else 100
+    later = PROJECTION_END_YEAR + 1
+    assert simulation.calculate("cash_isa", PROJECTION_END_YEAR)[0] > 5_000
+    balances = simulation.calculate("cash_isa_balance", later)
+    assert balances.sum() > 400
+    assert simulation.calculate("cash_isa", later)[0] == pytest.approx(
+        balances.sum() + extra, rel=1e-6
+    )
 
 
 def test_stored_totals_grow_by_the_index_they_are_projected_with():

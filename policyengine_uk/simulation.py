@@ -766,11 +766,14 @@ class Simulation(CoreSimulation):
         return stored * self._index_growth(index_name, source, period)
 
     def _run_formula(self, variable, population, period):
-        # Only the sum: a reform that gives the variable a formula, or makes
-        # it a plain input, leaves it to Core.
+        # Only a sum of listed variables: a reform that gives the variable a
+        # formula, sums a parameter or its list, or makes the variable a
+        # plain input, leaves it to Core.
         if (
             variable.name in STORED_HOUSEHOLD_TOTALS
             and variable.adds
+            and not isinstance(variable.adds, str)
+            and all(part in self.tax_benefit_system.variables for part in variable.adds)
             and variable.get_formula(period) is None
             and built_from_data(self)
         ):
