@@ -20,7 +20,9 @@ def hb_childcare_earnings_limit(
         )
     accommodation = min_(max_(accommodation, 0), max_(0, net - standard))
     # Reg 40(2) and Sch 5 para 56 disregard WTC before reg 27(1)(c)
-    # deducts childcare. Only the remaining WTC/CTC can fund those charges.
+    # deducts childcare. DWP BW2 W2.179-W2.182 lets WTC/CTC in payment, not
+    # other income, meet the charges earnings leave; only the WTC left after
+    # that disregard counts. Both amounts are benefit-unit payments.
     if wtc_disregard is None:
         wtc_disregard = benunit("housing_benefit_wtc_disregard", period)
     credits = max_(benunit("working_tax_credit", period) - wtc_disregard, 0) + max_(
