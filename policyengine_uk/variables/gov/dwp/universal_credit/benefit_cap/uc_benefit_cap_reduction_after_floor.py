@@ -13,9 +13,11 @@ class uc_benefit_cap_reduction_after_floor(Variable):
         "award: a cap reduction larger than the award takes the award to "
         "zero and no further. Where a protected minimum floor binds, "
         "deductions are met first, up to the floor allowance, and this takes "
-        "whatever allowance is left. uc_benefit_cap_reduction itself stays "
-        "gross, because benefit_cap_reduction and the deduction incidence "
-        "read it, and the floor is a reform to the award, not to the cap."
+        "whatever allowance is left. benefit_cap_reduction reports this "
+        "amount, the reduction DWP's benefit cap statistics record. "
+        "uc_benefit_cap_reduction itself stays gross, because the deduction "
+        "incidence (uc_has_deduction) reads it, and the floor is a reform to "
+        "the award, not to the cap."
     )
     entity = BenUnit
     definition_period = YEAR

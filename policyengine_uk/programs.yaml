@@ -369,7 +369,7 @@ programs:
     variable: benefit_cap_reduction
     parameter_prefix: gov.dwp.benefit_cap
     verified_start_year: 2022
-    notes: Universal Credit (uc_benefit_cap) and Housing Benefit (housing_benefit_benefit_cap) each apply their own cap; benefit_cap_reduction is the sum of their reductions
+    notes: Universal Credit (uc_benefit_cap) and Housing Benefit (housing_benefit_benefit_cap) each apply their own cap; benefit_cap_reduction is the sum of the reductions actually made to the awards (the UC reg. 81 amount up to the award), the amount DWP's benefit cap statistics measure
 
   - id: tax_credits
     name: Tax credits

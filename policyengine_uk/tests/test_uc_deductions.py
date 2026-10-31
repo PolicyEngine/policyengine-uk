@@ -218,9 +218,13 @@ class TestReformLevers:
         universal_credit = reform.calculate("universal_credit", YEAR)[0]
         assert deductions + cap_reduction == pytest.approx(0.15 * sa)
         assert deductions + cap_reduction == pytest.approx(6_000 - universal_credit)
-        # The gross regulation 81 reduction is unchanged: benefit_cap_reduction
-        # and the deduction incidence read it.
+        # The gross regulation 81 reduction is unchanged: the deduction
+        # incidence reads it. benefit_cap_reduction reports what the floor
+        # leaves of it.
         assert reform.calculate("uc_benefit_cap_reduction", YEAR)[0] == 1_000
+        assert reform.calculate("benefit_cap_reduction", YEAR)[0] == pytest.approx(
+            cap_reduction
+        )
 
     def test_the_benefit_cap_reduction_absorbs_the_floor_first(self):
         # Deductions of 10% of the standard allowance fit inside a 15% floor
