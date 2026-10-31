@@ -33,7 +33,9 @@ Small cells (`privacy.py`):
 - A total that holds one is rebuilt from its other components and marked †.
 - Poverty, inequality and deciles are withheld while HBAI income holds one.
 - A reform's figures for a year are withheld when they would come from a
-  small cell.
+  small cell. `withheld_because` names each condition that withheld them and
+  the component or variable it holds for, never a count, and the comment
+  lists them under the reform costings.
 
 `privacy.py` also states the threat model.
 
