@@ -496,6 +496,11 @@ def test_wtc_disregard_honours_the_historical_amount_and_cessation(year):
     assert actual["income"][0] == pytest.approx(2_240 - expected, abs=TOLERANCE)
 
 
+def test_negative_wtc_gives_no_disregard():
+    actual = calculate([case(net=500, standard=260, childcare=0, wtc=-100)], 2024)
+    assert actual["reserve"][0] == 0
+
+
 @pytest.mark.parametrize(
     "accommodation,reserve,earnings_disregard",
     [
@@ -614,11 +619,27 @@ class halve_capped_childcare(Reform):
         self.update_variable(half_capped_childcare)
 
 
+class input_childcare(Variable):
+    value_type = float
+    entity = BenUnit
+    label = "Housing Benefit childcare deduction without a formula"
+    definition_period = YEAR
+
+
+input_childcare.__name__ = CHILDCARE
+
+
+class childcare_without_formula(Reform):
+    def apply(self):
+        self.replace_variable(input_childcare)
+
+
 @pytest.mark.parametrize(
     "reform,childcare,income",
     [
         # Nil deduction: 5,200 + 100 - (1,300 + 889.20).
         (neutralized_childcare, 0, 3_110.80),
+        (childcare_without_formula, 0, 3_110.80),
         # 2,080 deduction: 5,200 >= 1,300 + 2,080 + 889.20, so para 17(1)
         # applies; 5,200 + 100 - 2,189.20 - 2,080.
         (halve_capped_childcare, 2_080, 1_030.80),

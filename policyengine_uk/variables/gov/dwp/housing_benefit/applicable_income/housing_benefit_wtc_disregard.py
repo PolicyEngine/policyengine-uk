@@ -38,13 +38,15 @@ def hb_wtc_disregard(benunit, period, parameters, accommodation=None):
     p = parameters(period).gov.dwp
     if not p.tax_credits.active:
         return benunit.empty_array()
-    net = max_(benunit("housing_benefit_net_earnings", period), 0)
+    net = benunit("housing_benefit_net_earnings", period)
     standard = benunit("housing_benefit_applied_standard_earnings_disregard", period)
+    # Para 18 takes only the earnings the other disregards leave, but a cap
+    # would not change this test: where it binds, earnings fall short of the
+    # additional amount anyway.
     if accommodation is None:
         accommodation = benunit(
             "housing_benefit_specified_or_temporary_accommodation_disregard", period
         )
-    accommodation = min_(max_(accommodation, 0), max_(0, net - standard))
     additional = p.housing_benefit.means_test.income_disregard.worker * WEEKS_IN_YEAR
     # Sch 4 para 17(3)(b) counts the deductible childcare, which reg
     # 27(1)(c) takes from earnings and then from the credits this disregard
