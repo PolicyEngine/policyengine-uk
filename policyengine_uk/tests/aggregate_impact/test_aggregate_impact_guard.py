@@ -1786,8 +1786,8 @@ def test_the_check_names_every_head_that_turns_not_finite_and_goes_on(
     assert result["reset_reproduces_baseline"]
 
 
-# Heads for the property below. Tax heads read tax_b (5 at baseline), and
-# tax_d may read tax_c instead; ben_f reads ben_e (100), or turns with tax_b.
+# Heads for the properties below. Tax heads read tax_b (5 at baseline), and
+# tax_d may read tax_c too; ben_f reads ben_e (100), or turns with tax_b.
 TAX_SHAPES = {
     "flat": lambda f: 0.1 * f("x"),
     "half": lambda f: 0.5 * f("tax_b"),
@@ -1800,6 +1800,9 @@ TAX_SHAPES = {
 CHAINS = {
     "twice tax_c": lambda f: 2 * f("tax_c"),
     "half tax_c": lambda f: 0.5 * f("tax_c"),
+    # With tax_c one for one with tax_b, NaN at the second point unless the
+    # check holds tax_c.
+    "half tax_b, root of tax_c": lambda f: 0.5 * f("tax_b") + np.sqrt(6 - f("tax_c")),
 }
 BEN_SHAPES = {
     "flat": lambda f: 100 + 0 * f("x"),
@@ -1823,9 +1826,10 @@ EVERY_HEAD = HEADS_OF["gov_tax"] + HEADS_OF["gov_spending"]
 
 class Measurements:
     """Each measurement behind a problem, computed afresh on the fake
-    simulation of one household: the oracle for the property below. Its
-    responses lie at 0, 0.5, 1, 2 or not finite, far from every rule's
-    boundary, so plain comparisons stand in for the rules."""
+    simulation of one household: the oracle for the properties below. Its
+    responses lie at 0 or at least 0.3 from 0 and from 1, or are not
+    finite, far from every rule's boundary, so plain comparisons stand in
+    for the rules."""
 
     def __init__(self, formulas):
         self.formulas, self.values = formulas, {}
@@ -1985,8 +1989,14 @@ def shapes_formulas(shapes, ben_g=None):
     return formulas
 
 
+# tax_d's first reading is NaN, and both holds clear it: a mediated response.
+MEDIATED_NAN = ("flat", "one for one", "half tax_b, root of tax_c", "flat")
+MEDIATED_NAN_READS = [False, False, True, True, True, False]
+
+
 @settings(max_examples=120, deadline=None)
 @given(shapes=SHAPES, reads=READS)
+@example(shapes=MEDIATED_NAN, reads=MEDIATED_NAN_READS)
 def test_every_problem_says_whether_a_measurement_behind_it_was_not_finite(
     shapes, reads
 ):
@@ -2006,7 +2016,8 @@ def test_every_problem_says_whether_a_measurement_behind_it_was_not_finite(
     _, result = run_not_finite(formulas, part, x=(1,), weights=(1,))
     oracle = Measurements(formulas)
     finite = not any(
-        shape in NOT_FINITE or shape.endswith("with tax_b") for shape in shapes
+        shape in NOT_FINITE or shape.endswith(("with tax_b", "root of tax_c"))
+        for shape in shapes
     )
     for row in result["components"]:
         component = row["variable"]
@@ -2096,6 +2107,20 @@ def household_by_household(formulas, part, households):
 
 @settings(max_examples=60, deadline=None)
 @given(shapes=st.lists(SHAPES, min_size=2, max_size=3), reads=READS)
+# The second household leaves tax_d unjudged where the first mediates it.
+@example(
+    shapes=[MEDIATED_NAN, MEDIATED_NAN[:3] + ("not a number with tax_b",)],
+    reads=MEDIATED_NAN_READS,
+)
+# tax_b passes: tax_a's slope of 0.5 in the first household is judged, and
+# ben_f leaves only the second, where tax_a does not respond, unjudged.
+@example(
+    shapes=[
+        ("half", "flat", "flat", "flat"),
+        ("flat", "flat", "flat", "not a number with tax_b"),
+    ],
+    reads=[True, False, False, False, False, False],
+)
 def test_the_check_judges_each_household_as_it_would_alone(shapes, reads):
     """Households do not interact in the model, so in each household of a
     model the check finds what it finds in that household alone: the same
