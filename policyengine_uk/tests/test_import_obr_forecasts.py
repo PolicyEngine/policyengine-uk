@@ -1,4 +1,5 @@
 import os
+import re
 from dataclasses import replace
 from datetime import date
 from pathlib import Path
@@ -23,19 +24,24 @@ from policyengine_uk.utils.import_obr_forecasts import (
     ClearanceSeriesSpec,
     ForecastGap,
     MACHINE_GAMES_HIGHER_STAKE_SHARE,
+    ReceiptsGrowth,
+    ReceiptsLine,
     ReceiptsSeriesSpec,
     machine_games_spec,
     average_earnings_path,
+    check_index,
     compute_receipts_growth,
     find_receipts_line,
     format_gap,
     format_growth,
     get_yoy_growth_path,
+    growth_in_effect,
     infer_workbook_release,
     main,
     per_head_growth,
     population_growth,
     read_calendar_values,
+    receipts_label,
     read_workbook_sheets,
     render_forecast_gap_yaml,
     render_receipts_growth_yaml,
@@ -3135,34 +3141,48 @@ def test_real_october_2026_clearance_series():
         assert {year: stored[year] for year in values} == values, key
 
 
-def test_a_population_change_moves_the_clearance_series_alone():
-    """Editing ons.population without rerunning the importer leaves the
-    committed file different from what the importer writes, so the
-    byte-for-byte test fails until someone reruns it. Only the clearance
-    series move."""
+def test_a_population_change_moves_the_per_head_series_once_the_importer_reruns():
+    """Editing ons.population leaves every per-head series as the importer
+    wrote it for the old population, so from 2026 the weighted cigarette
+    total runs 1.003 / 1.002 = 1.000998 times the clearances' path, and the
+    byte-for-byte test fails until someone reruns the importer. Rerunning
+    rewrites each per-head series' 2026 value, the six clearance series and
+    the seven gambling bases alike, and nothing else."""
     committed = get_yoy_growth_path().read_text()
     edited = committed.replace(
         "      2026-01-01: 0.0020\n      2027-01-01: 0.0013\n",
         "      2026-01-01: 0.0030\n      2027-01-01: 0.0013\n",
     )
     assert population_growth(edited)[2026] == 0.003
+    for path in ALL_RECEIPTS_PATHS.values():
+        assert _values(edited, path) == _values(committed, path), path
+    levels = [float(level) for level in OCTOBER_2026_CLEARANCES["cigarettes"]]
+    cigarettes = _values(edited, CLEARANCE_PATHS["cigarettes"])[2026]
+    weighted = (1 + cigarettes) * 1.003 / (levels[1] / levels[0])
+    assert weighted == pytest.approx(1.003 / 1.002, abs=1e-6)
+    assert round(1.003 / 1.002, 6) == 1.000998
+
     rendered = render(
         edited,
         current=REAL_OCTOBER_2026_RECEIPTS,
         previous=REAL_RECEIPTS[2026],
         **COMMITTED_RELEASES,
     )
+    growth = compute_receipts_growth(REAL_OCTOBER_2026_RECEIPTS, REAL_RECEIPTS[2026])
+    moved = set()
     for path in ALL_RECEIPTS_PATHS.values():
         before, after = _values(committed, path), _values(rendered, path)
-        if path in CLEARANCE_PATHS.values():
-            levels = [float(level) for level in OCTOBER_2026_CLEARANCES[path[-1]]]
-            assert after[2026] == round(levels[1] / levels[0] / 1.003 - 1, 6)
+        if growth[path].spec.per_head:
+            assert after[2026] == round(growth[path].ratios[2026] / 1.003 - 1, 6)
             assert after[2026] != before[2026]
             assert {y: v for y, v in after.items() if y != 2026} == {
                 y: v for y, v in before.items() if y != 2026
             }
+            moved.add(path)
         else:
             assert after == before, path
+    assert moved == set(CLEARANCE_PATHS.values()) | set(GAMBLING_PATHS.values())
+    assert len(moved) == 13
 
 
 CLEARANCE_LEVEL = st.floats(min_value=1, max_value=20_000, allow_nan=False)
@@ -3223,3 +3243,502 @@ def test_rendered_clearances_grow_the_weighted_total_with_the_clearances(years, 
             assert abs(weighted - target) <= 5e-7 * (1 + population[year]) + 1e-12
         assert values[2023] == 0.0
     assert render(rendered, current=current, previous=previous) == rendered
+
+
+# A unit stated beside a line, or anywhere that does not describe it, must
+# stop the run: the importer would otherwise read the line's values in the
+# unit some other cell states.
+
+TOBACCO_UNITS = (
+    "kg",
+    "'000s kg",
+    "('000s kg)",
+    "tonnes",
+    "(million sticks)",
+    "£ billion",
+    "thousands of hectolitres of alcohol",
+)
+
+
+def mixed_unit_workbook(rows):
+    """A one-sheet workbook of inline strings, as Sol's review built it."""
+    table = rows[0]["B"].split()[0]
+    return make_workbook(
+        {
+            table: make_sheet(
+                {
+                    number: [
+                        make_inline_cell(f"{column}{number}", str(value))
+                        for column, value in row.items()
+                    ]
+                    for number, row in enumerate(rows, start=1)
+                }
+            )
+        }
+    )
+
+
+def test_a_unit_beside_a_clearance_line_is_refused_not_borrowed():
+    """Sol's minimal case: the previous release holds other tobacco in
+    thousand kg, the current one in kg in a cell beside the line, while its
+    non-cigarette total still states thousand kg. Read as one unit, the line
+    grows 999-fold; the importer refuses it."""
+    previous = mixed_unit_workbook(
+        [
+            {"B": "3.11 Tobacco clearances"},
+            {"C": "Outturn"},
+            {"C": "2024-25"},
+            {"B": "Non-cigarette clearances ('000s kg)", "C": 4000},
+            {"B": "of which:"},
+            {"B": "Other tobacco products", "C": 600},
+        ]
+    )
+    current = mixed_unit_workbook(
+        [
+            {"B": "4.11 Tobacco clearances"},
+            {"D": "Outturn", "E": "Forecast"},
+            {"D": "2025-26", "E": "2026-27"},
+            {"B": "Non-cigarette clearances ('000s kg)", "D": 4000, "E": 3900},
+            {"B": "of which:"},
+            {"B": "Other tobacco products", "C": "kg", "D": 600000, "E": 570000},
+        ]
+    )
+    spec = CLEARANCE_SPECS["other_tobacco_products"]
+    with pytest.raises(ValueError, match=r"holds \{'C': 'kg'\} beside"):
+        compute_receipts_growth(current, previous, specs=(spec,))
+    # Without the kg cell the same layout reads.
+    reconciled = mixed_unit_workbook(
+        [
+            {"B": "4.11 Tobacco clearances"},
+            {"D": "Outturn", "E": "Forecast"},
+            {"D": "2025-26", "E": "2026-27"},
+            {"B": "Non-cigarette clearances ('000s kg)", "D": 4000, "E": 3900},
+            {"B": "of which:"},
+            {"B": "Other tobacco products", "D": 600, "E": 570},
+        ]
+    )
+    growth = compute_receipts_growth(reconciled, previous, specs=(spec,))[spec.path]
+    assert growth.values == {2025: 0.0, 2026: -0.05}
+    assert per_head_growth(growth, {2025: 0.01, 2026: 0.01}).values[2025] == round(
+        1 / 1.01 - 1, 6
+    )
+
+
+@pytest.mark.parametrize(
+    "rows, message",
+    [
+        # A unit column: its heading sits in the fiscal-year row.
+        (
+            [
+                {"C": "Unit", "D": "2025-26", "E": "2026-27"},
+                {"B": "Non-cigarette clearances ('000s kg)", "D": "3940", "E": "3683"},
+                {"B": "of which:"},
+                {"B": "Hand rolled tobacco clearances", "D": "3338", "E": "3113"},
+            ],
+            "in its fiscal-year row",
+        ),
+        # The total states the unit, but the line is not one of its parts.
+        (
+            [
+                {"C": "2025-26", "D": "2026-27"},
+                {"B": "Non-cigarette clearances ('000s kg)", "C": "3940", "D": "3683"},
+                {"B": "Hand rolled tobacco clearances", "C": "3338", "D": "3113"},
+            ],
+            "not the line's label, the label of the total it breaks down",
+        ),
+        # A total below the line describes other lines.
+        (
+            [
+                {"C": "2025-26", "D": "2026-27"},
+                {"B": "Hand rolled tobacco clearances", "C": "3338", "D": "3113"},
+                {"B": "Non-cigarette clearances ('000s kg)", "C": "3940", "D": "3683"},
+                {"B": "of which:"},
+                {"B": "Other tobacco products", "C": "602", "D": "571"},
+            ],
+            "not the line's label",
+        ),
+        # A row between the "of which:" row and the line that is not a part.
+        (
+            [
+                {"C": "2025-26", "D": "2026-27"},
+                {"B": "Non-cigarette clearances ('000s kg)", "C": "3940", "D": "3683"},
+                {"B": "of which:"},
+                {"B": "Heated tobacco is counted elsewhere"},
+                {"B": "Hand rolled tobacco clearances", "C": "3338", "D": "3113"},
+            ],
+            "not the line's label",
+        ),
+        # Text that states the unit but is not a note.
+        (
+            [
+                {"C": "2025-26", "D": "2026-27"},
+                {"B": "Hand rolled tobacco clearances", "C": "3338", "D": "3113"},
+                {"B": "Source: HMRC, cigars in ('000s kg)"},
+            ],
+            "not the line's label",
+        ),
+        # A unit after the line's last year.
+        (
+            [
+                {"C": "2025-26", "D": "2026-27"},
+                {"B": "Non-cigarette clearances ('000s kg)", "C": "3940", "D": "3683"},
+                {"B": "of which:"},
+                {
+                    "B": "Hand rolled tobacco clearances",
+                    "C": "3338",
+                    "D": "3113",
+                    "E": "tonnes",
+                },
+            ],
+            r"holds \{'E': 'tonnes'\} beside",
+        ),
+    ],
+)
+def test_a_clearance_unit_must_describe_its_line(rows, message):
+    sheet = {"4.11": [TOBACCO_TITLE, {"C": "Outturn", "D": "Forecast"}, *rows]}
+    with pytest.raises(ValueError, match=message):
+        find_receipts_line(sheet, CLEARANCE_SPECS["hand_rolling_tobacco"])
+
+
+def test_a_unit_note_beside_a_receipts_line_is_refused():
+    """A pound line's row holds its label and values alone too: a "£ million"
+    cell beside it would put its values in another magnitude."""
+    rows = [
+        {"B": "4.7 Property transactions taxes: receipts by sector"},
+        {"C": "£ billion"},
+        {"C": "Outturn", "D": "Forecast"},
+        {"C": "2025-26", "D": "2026-27"},
+        {
+            "B": "SDLT from residential property",
+            "C": "11.5",
+            "D": "12.0",
+            "E": "£ million",
+        },
+    ]
+    spec = next(spec for spec in RECEIPTS_SPECS if spec.path[-1] == "residential")
+    with pytest.raises(ValueError, match=r"holds \{'E': '£ million'\} beside"):
+        find_receipts_line({"4.7": rows}, spec)
+
+
+def put_unit_beside_real_line(workbook, table, label, unit, scale=1000):
+    """Sol's change to a real table: shift the sheet's cells from column C,
+    row 3, one column right, put ``unit`` in C beside the line labelled
+    ``label`` and scale that line's values. Every other archive entry,
+    including the shared strings, stays."""
+    output = BytesIO()
+    with ZipFile(BytesIO(workbook)) as source, ZipFile(output, "w") as dest:
+        path = _sheet_paths(source)[table]
+        strings = [
+            "".join(node.itertext())
+            for node in ET.fromstring(source.read("xl/sharedStrings.xml"))
+        ]
+        sheet = ET.fromstring(source.read(path))
+        lines = 0
+        for row in sheet.findall("m:sheetData/m:row", XLSX_NS):
+            number = int(row.get("r"))
+            text = row.find("m:c[@t='s']/m:v", XLSX_NS)
+            line = text is not None and strings[int(text.text)] == label
+            lines += line
+            if number < 3:
+                continue
+            for cell in row.findall("m:c", XLSX_NS):
+                column = cell.get("r").rstrip("0123456789")
+                if len(column) == 1 and column >= "C":
+                    cell.set("r", f"{chr(ord(column) + 1)}{number}")
+                    value = cell.find("m:v", XLSX_NS)
+                    if line and value is not None and cell.get("t") != "s":
+                        value.text = repr(float(value.text) * scale)
+            if line:
+                cell = ET.SubElement(
+                    row, f"{{{XLSX_MAIN}}}c", {"r": f"C{number}", "t": "inlineStr"}
+                )
+                ET.SubElement(
+                    ET.SubElement(cell, f"{{{XLSX_MAIN}}}is"), f"{{{XLSX_MAIN}}}t"
+                ).text = unit
+        assert lines == 1, (table, label, lines)
+        for entry in source.infolist():
+            dest.writestr(
+                entry,
+                ET.tostring(sheet) if entry.filename == path else source.read(entry),
+            )
+    return output.getvalue()
+
+
+def test_real_tables_with_a_kg_cell_beside_a_line_are_refused(tmp_path):
+    """The real October 2026 Table 4.11 changed as Sol's review changed it:
+    other tobacco in kg, stated beside the line, with its values 1,000
+    times larger. Read in the total's thousand kg, the line would grow
+    862-fold. The renderer refuses it, and a run on the real March 2026
+    tables changed the same way stops before it writes anything."""
+    changed = put_unit_beside_real_line(
+        REAL_OCTOBER_2026_RECEIPTS, "4.11", "Other tobacco products", "kg"
+    )
+    (line,) = [
+        row
+        for row in read_workbook_sheets(changed)["4.11"]
+        if receipts_label(row.get("B")) == "other tobacco products"
+    ]
+    assert line["C"] == "kg"
+    assert line["D"] == repr(
+        float(OCTOBER_2026_CLEARANCES["other_tobacco_products"][0]) * 1000
+    )
+    with pytest.raises(ValueError, match=r"holds \{'C': 'kg'\} beside"):
+        render(
+            get_yoy_growth_path().read_text(),
+            current=changed,
+            previous=REAL_RECEIPTS[2026],
+            **COMMITTED_RELEASES,
+        )
+    yoy, gap_dir = write_tree(tmp_path)
+    before = {path: path.read_bytes() for path in [yoy, *gap_dir.iterdir()]}
+    with pytest.raises(ValueError, match=r"holds \{'C': 'kg'\} beside"):
+        run_main(
+            tmp_path,
+            make_test_xlsx(),
+            "--yaml-path",
+            str(yoy),
+            receipts=put_unit_beside_real_line(
+                REAL_RECEIPTS[2026], "3.11", "Other tobacco products", "kg"
+            ),
+            previous_receipts=REAL_RECEIPTS[2025],
+        )
+    assert {path: path.read_bytes() for path in before} == before
+    assert not list(yoy.parent.rglob("*.staged"))
+    # Shifted without the kg cell, the real table reads as before.
+    shifted = put_unit_beside_real_line(
+        REAL_OCTOBER_2026_RECEIPTS, "4.11", "Other tobacco products", "", scale=1
+    )
+    path = CLEARANCE_SPECS["other_tobacco_products"].path
+    assert (
+        compute_receipts_growth(
+            shifted, REAL_RECEIPTS[2026], specs=CLEARANCE_SERIES_SPECS
+        )[path].values
+        == compute_receipts_growth(
+            REAL_OCTOBER_2026_RECEIPTS,
+            REAL_RECEIPTS[2026],
+            specs=CLEARANCE_SERIES_SPECS,
+        )[path].values
+    )
+
+
+REAL_OCTOBER_2026_SHEETS = read_workbook_sheets(REAL_OCTOBER_2026_RECEIPTS)
+
+
+@settings(max_examples=60, deadline=None, derandomize=True)
+@given(
+    key=st.sampled_from(sorted(CLEARANCE_LEVELS)),
+    unit=st.one_of(
+        st.sampled_from(TOBACCO_UNITS),
+        # Any other text, but not a fiscal year or a marker, which would make
+        # the row a heading rather than a line.
+        st.text(min_size=1, max_size=12).filter(
+            lambda text: (
+                text.strip()
+                and not re.fullmatch(r"\s*\d{4}-\d{2}\s*", text)
+                and receipts_label(text) not in ("outturn", "forecast")
+            )
+        ),
+    ),
+    beside=st.sampled_from(["none", "before", "after"]),
+    total=st.sampled_from(["('000s kg)", "(tonnes)", "(kg)", "('000s tonnes)"]),
+)
+def test_a_clearance_line_reads_only_in_the_unit_its_table_states(
+    key, unit, beside, total
+):
+    """For any unit text beside any real October 2026 clearance line, before
+    its years or after them, the importer refuses the line. With nothing
+    beside it, a tobacco part reads only under a non-cigarette total that
+    states thousand kg, and then reads the real values."""
+    spec = CLEARANCE_SPECS[key]
+    table = "4.11" if "tobacco" in spec.path[1] else "4.12"
+    rows = [dict(row) for row in REAL_OCTOBER_2026_SHEETS[table]]
+    for row in rows:
+        label = receipts_label(row.get("B"))
+        if label.startswith("non-cigarette clearances"):
+            row["B"] = f"Non-cigarette clearances {total}"
+    line = next(
+        row
+        for row in rows
+        if receipts_label(row.get("B")) == spec.row
+        and any(column != "B" for column in row)
+    )
+    if beside == "before":
+        for row in rows[1:]:
+            for column in sorted(
+                (column for column in row if len(column) == 1 and column >= "C"),
+                reverse=True,
+            ):
+                row[chr(ord(column) + 1)] = row.pop(column)
+        line["C"] = unit
+    elif beside == "after":
+        line["J"] = unit
+    sheets = {table: rows}
+    if beside != "none":
+        event("refused: beside")
+        with pytest.raises(ValueError, match="beside"):
+            find_receipts_line(sheets, spec)
+        return
+    parts = ("hand_rolling_tobacco", "other_tobacco_products")
+    if key in parts and total != "('000s kg)":
+        event("refused: total in another unit")
+        with pytest.raises(ValueError, match="must state the unit"):
+            find_receipts_line(sheets, spec)
+        return
+    event("read")
+    assert find_receipts_line(sheets, spec).levels == dict(
+        zip(
+            range(2025, 2032),
+            (float(level) for level in OCTOBER_2026_CLEARANCES[key]),
+        )
+    )
+
+
+# per_head_growth divides the growth a series holds, a duty's base for a line
+# with rates, whether the line links to the previous EFO or has its own
+# outturn.
+
+REMOTE_GAMING = next(
+    spec for spec in RECEIPTS_SERIES_SPECS if spec.path[-1] == "remote_gaming"
+)
+
+
+def test_per_head_growth_divides_the_base_growth_the_series_holds():
+    """Sol's minimal case: Remote Gaming Duty receipts double while the base,
+    receipts over the rate, grows 10%, and population grows 1%. Per head
+    the base grows 1.10 / 1.01 - 1, not 2 / 1.01 - 1 (receipts) or the
+    growth the levels and the model's rates give, with or without a previous
+    line."""
+    line = ReceiptsLine(
+        table="4.10",
+        label="Remote Gaming Duty",
+        levels={2025: 100.0, 2026: 200.0},
+        outturn_years=frozenset(),
+    )
+    series = ReceiptsGrowth(
+        values={2025: 0.0, 2026: 0.10},
+        line=line,
+        previous_line=None,
+        spec=REMOTE_GAMING,
+    )
+    population = {2025: 0.01, 2026: 0.01}
+    assert per_head_growth(series, population).values == {
+        2025: round(1 / 1.01 - 1, 6),
+        2026: 0.089109,
+    }
+    previous = ReceiptsLine(
+        table="3.10",
+        label="Remote Gaming Duty",
+        levels={2024: 100.0},
+        outturn_years=frozenset({2024}),
+    )
+    assert (
+        per_head_growth(replace(series, previous_line=previous), population).values[
+            2026
+        ]
+        == 0.089109
+    )
+
+
+def test_real_remote_gaming_base_per_head_rounds_once():
+    """The real line has its own outturn and no previous line. Per head, each
+    year divides the base's growth before rounding by one plus population
+    growth and rounds once, as the committed series holds it."""
+    growth = compute_receipts_growth(
+        REAL_OCTOBER_2026_RECEIPTS, REAL_RECEIPTS[2026], specs=(REMOTE_GAMING,)
+    )[REMOTE_GAMING.path]
+    assert growth.previous_line is None
+    population = population_growth(get_yoy_growth_path().read_text())
+    per_head = per_head_growth(growth, population)
+    for year, ratio in growth.ratios.items():
+        assert per_head.values[year] == round(
+            ratio / (1 + growth_in_effect(population, year)) - 1, 6
+        )
+        assert per_head.ratios[year] == ratio / (1 + growth_in_effect(population, year))
+    stored = _values(get_yoy_growth_path().read_text(), REMOTE_GAMING.path)
+    assert {year: stored[year] for year in per_head.values} == per_head.values
+
+
+@settings(max_examples=60, deadline=None, derandomize=True)
+@given(
+    ratios=st.lists(
+        st.floats(min_value=0.5, max_value=2, allow_nan=False), min_size=1, max_size=8
+    ),
+    population=st.lists(POPULATION_GROWTH, min_size=8, max_size=8),
+)
+def test_per_head_growth_times_population_growth_is_the_series_growth(
+    ratios, population
+):
+    """For any growth before rounding and any population growth: per head,
+    one plus the series times one plus population growth is the growth to
+    within the six-decimal rounding, 5e-7 times one plus population growth;
+    the per-head series rounds its own ratios; and a series without its
+    ratios divides one plus its six-decimal values instead."""
+    years = range(2025, 2025 + len(ratios))
+    by_year = dict(zip(years, ratios))
+    population_by_year = dict(zip(range(2025, 2033), population))
+    values = {year: round(ratio - 1, 6) + 0.0 for year, ratio in by_year.items()}
+    line = ReceiptsLine("4.12", "Wine", {}, frozenset())
+    spec = CLEARANCE_SPECS["wine"]
+    series = ReceiptsGrowth(values, line, None, spec, by_year)
+    per_head = per_head_growth(series, population_by_year)
+    for year, ratio in by_year.items():
+        growth = 1 + population_by_year[year]
+        assert (
+            abs((1 + per_head.values[year]) * growth - ratio) <= 5e-7 * growth + 1e-12
+        )
+        assert per_head.values[year] == round(per_head.ratios[year] - 1, 6) + 0.0
+    rounded = per_head_growth(replace(series, ratios=None), population_by_year)
+    assert rounded.values == {
+        year: round((1 + value) / (1 + population_by_year[year]) - 1, 6) + 0.0
+        for year, value in values.items()
+    }
+
+
+def test_a_series_growth_before_rounding_must_round_to_its_values():
+    line = ReceiptsLine("4.12", "Wine", {}, frozenset())
+    with pytest.raises(ValueError, match="does not round to the growth"):
+        ReceiptsGrowth({2025: 0.01}, line, None, CLEARANCE_SPECS["wine"], {2025: 1.02})
+    with pytest.raises(ValueError, match="does not round to the growth"):
+        ReceiptsGrowth(
+            {2025: 0.01},
+            line,
+            None,
+            CLEARANCE_SPECS["wine"],
+            {2025: 1.01, 2026: 1.0},
+        )
+
+
+def test_population_growth_before_its_first_entry_is_that_entry():
+    """The model backdates a parameter's first value, so a year before
+    ons.population's first entry takes that entry, not zero: wine flat in
+    2025 falls 1 / 1.02 - 1 per head when population's first entry, 2026,
+    is 2%."""
+    assert growth_in_effect({2026: 0.02, 2030: -0.005}, 2025) == 0.02
+    assert growth_in_effect({2026: 0.02, 2030: -0.005}, 2029) == 0.02
+    assert growth_in_effect({2026: 0.02, 2030: -0.005}, 2031) == -0.005
+    before = ReceiptsLine("3.12", "Wine", {2024: 100.0}, frozenset({2024}))
+    current = ReceiptsLine("4.12", "Wine", {2025: 100.0}, frozenset({2025}))
+    series = ReceiptsGrowth(
+        {2025: 0.0}, current, before, CLEARANCE_SPECS["wine"], {2025: 1.0}
+    )
+    assert per_head_growth(series, {2026: 0.02}).values == {2025: -0.019608}
+
+
+def test_per_head_growth_refuses_an_index_that_rounds_to_zero():
+    """Clearances that fall from 1,000,000 to 4.55 leave a raw index of
+    0.00001 at five decimals; divided by 1.03 for population, the per-head
+    index rounds to zero, so the importer refuses the series."""
+    before = ReceiptsLine("3.12", "Wine", {2024: 1e6}, frozenset({2024}))
+    current = ReceiptsLine("4.12", "Wine", {2025: 4.55}, frozenset({2025}))
+    ratio = 4.55 / 1e6
+    series = ReceiptsGrowth(
+        {2025: round(ratio - 1, 6) + 0.0},
+        current,
+        before,
+        CLEARANCE_SPECS["wine"],
+        {2025: ratio},
+    )
+    check_index("raw", series.values)
+    assert round(1 + series.values[2025], 5) == 0.00001
+    with pytest.raises(ValueError, match="too small to grow from"):
+        per_head_growth(series, {2025: 0.03})

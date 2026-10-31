@@ -1054,12 +1054,29 @@ class ReceiptsGrowth:
     one with rates grows its base instead (see ``ReceiptsSeriesSpec``). A
     clearance line holds the clearances' growth, which
     ``render_receipts_growth_yaml`` writes per head (``per_head_growth``).
+
+    ``ratios`` holds one plus each year's growth before rounding, as
+    ``compute_receipts_growth`` finds it, so ``per_head_growth`` rounds the
+    per-head series once. Each ratio must round to its year's value.
     """
 
     values: dict[int, float]
     line: ReceiptsLine
     previous_line: ReceiptsLine | None
     spec: ReceiptsSeriesSpec | None = None
+    ratios: dict[int, float] | None = None
+
+    def __post_init__(self):
+        if self.ratios is None:
+            return
+        if sorted(self.ratios) != sorted(self.values) or any(
+            round(ratio - 1, 6) + 0.0 != self.values[year]
+            for year, ratio in self.ratios.items()
+        ):
+            raise ValueError(
+                f"{self.line.label}: the growth before rounding {self.ratios} "
+                f"does not round to the growth {self.values}"
+            )
 
 
 def fiscal_year_label(year: int) -> str:
@@ -1169,28 +1186,71 @@ def validate_receipts_unit(
         )
 
 
-def validate_clearance_unit(
-    table_rows: list[dict[str, str | None]], spec: ClearanceSeriesSpec, where: str
-) -> None:
-    """Require a clearance line's unit in exactly one cell of its table.
+def row_cells(row: dict[str, str | None]) -> list[tuple[str, str]]:
+    """A row's non-empty cells, left to right, as (column, normalised text)."""
+    return [
+        (column, normalise_label(value))
+        for column, value in sorted(row.items(), key=lambda item: column_index(item[0]))
+        if normalise_label(value)
+    ]
 
-    Table 4.11 states the unit in a row label ("Cigarette clearances
-    (million sticks)") and Table 4.12 in a note below the rows ("All
-    clearances are in thousands of hectolitres of alcohol."). The first
-    year's growth divides one EFO's level by another's, so both must state
-    the same unit; a new unit needs deliberate importer support.
+
+def validate_clearance_unit(
+    table_rows: list[dict[str, str | None]],
+    line_index: int,
+    spec: ClearanceSeriesSpec,
+    where: str,
+) -> None:
+    """Require a clearance line's unit in exactly one cell of its table, and
+    that cell to describe the line.
+
+    The OBR states the unit in one of three places, and only these describe
+    the line:
+
+    - the line's own label, as Table 4.11's "Cigarette clearances (million
+      sticks)";
+    - the label of the total the line breaks down: the row above an "of
+      which:" row, with only the total's other parts between that and the
+      line, as "Non-cigarette clearances ('000s kg)" for hand-rolled and
+      other tobacco;
+    - a note on a row of its own, as Table 4.12's "Note: All clearances are
+      in thousands of hectolitres of alcohol."
+
+    The first year's growth divides one EFO's level by another's, so both
+    must state the same unit there. A unit anywhere else, such as another
+    line's label or a unit column, describes something else; a new unit or
+    layout needs deliberate importer support.
     """
+    name = ".".join(spec.path)
     found = [
-        normalise_label(value)
-        for row in table_rows
-        for value in row.values()
-        if spec.unit in normalise_label(value)
+        (index, text)
+        for index, row in enumerate(table_rows)
+        for _, text in row_cells(row)
+        if spec.unit in text
     ]
     if len(found) != 1:
         raise ValueError(
-            f'{where} must state the unit "{spec.unit}" of '
-            f"{'.'.join(spec.path)} in exactly one cell; found {found}"
+            f'{where} must state the unit "{spec.unit}" of {name} in exactly '
+            f"one cell; found {[text for _, text in found]}"
         )
+    index, text = found[0]
+    cells = row_cells(table_rows[index])
+    if index == line_index:
+        return
+    if len(cells) == 1 and text.startswith("note"):
+        return
+    between = table_rows[index + 2 : line_index]
+    if (
+        index + 1 < line_index
+        and cells[0][1] == text
+        and [cell for _, cell in row_cells(table_rows[index + 1])] == ["of which:"]
+        and all(len(row_cells(row)) > 1 for row in between)
+    ):
+        return
+    raise ValueError(
+        f'{where} states the unit "{spec.unit}" of {name} in {text!r}, which is '
+        "not the line's label, the label of the total it breaks down, or a note"
+    )
 
 
 def find_receipts_line(
@@ -1209,12 +1269,14 @@ def find_receipts_line(
                 continue
             where = f"Table {table} (sheet {sheet})"
             years: dict[str, int] = {}
+            year_row: dict[str, str | None] = {}
             markers: dict[str, int] = {}
             header_rows = []
-            for row in table_rows:
+            for index, row in enumerate(table_rows):
                 row_years = _fiscal_year_columns(row)
                 if row_years:
                     years = row_years
+                    year_row = row
                     continue
                 if not years:
                     header_rows.append(row)
@@ -1235,14 +1297,14 @@ def find_receipts_line(
                     continue
                 first_year_column = min(column_index(column) for column in years)
                 labels = [
-                    value
+                    (column, value)
                     for column, value in sorted(
                         row.items(), key=lambda item: column_index(item[0])
                     )
                     if column_index(column) < first_year_column
                     and normalise_label(value)
                 ]
-                if labels and receipts_label(labels[0]) == spec.row:
+                if labels and receipts_label(labels[0][1]) == spec.row:
                     matches.append(
                         (
                             table,
@@ -1253,6 +1315,8 @@ def find_receipts_line(
                             markers,
                             header_rows,
                             table_rows,
+                            index,
+                            year_row,
                         )
                     )
 
@@ -1263,7 +1327,18 @@ def find_receipts_line(
             f'Expected one "{spec.row}" row in the "{spec.title}" table for '
             f"{name}; found {found}"
         )
-    table, sheet, label, row, years, markers, header_rows, table_rows = matches[0]
+    (
+        table,
+        sheet,
+        (label_column, label),
+        row,
+        years,
+        markers,
+        header_rows,
+        table_rows,
+        line_index,
+        year_row,
+    ) = matches[0]
     where = f"Table {table} (sheet {sheet})"
     repeated = sorted({y for y in years.values() if list(years.values()).count(y) > 1})
     if repeated:
@@ -1271,8 +1346,34 @@ def find_receipts_line(
             f"{where} heads more than one column "
             + ", ".join(fiscal_year_label(y) for y in repeated)
         )
+    # The line's row holds its label and a value under each year, nothing
+    # else: a unit or note beside it would describe its values, and the
+    # importer would read them as if in the table's unit.
+    beside = {
+        column: value
+        for column, value in row.items()
+        if normalise_label(value) and column != label_column and column not in years
+    }
+    if beside:
+        raise ValueError(
+            f"{where} holds {beside} beside the {name} row's label and values; "
+            "a unit or note on the row needs deliberate importer support"
+        )
     if isinstance(spec, ClearanceSeriesSpec):
-        validate_clearance_unit(table_rows, spec, where)
+        # A clearance table states each unit in a label or a note, so a cell
+        # beside its years, such as a unit column's heading, is a layout the
+        # importer does not read.
+        heading = {
+            column: value
+            for column, value in year_row.items()
+            if normalise_label(value) and column not in years
+        }
+        if heading:
+            raise ValueError(
+                f"{where} holds {heading} in its fiscal-year row; a clearance "
+                "table states each unit in a label or a note"
+            )
+        validate_clearance_unit(table_rows, line_index, spec, where)
     else:
         validate_receipts_unit(header_rows, where)
     levels = {}
@@ -1365,12 +1466,10 @@ def compute_receipts_growth(
                     f"{name}: {fiscal_year_label(year)} receipts of {level} are "
                     "not positive, so there is no growth to or from them"
                 )
-        values = {
-            year: round(growth_ratio(spec, levels, year) - 1, 6) + 0.0
-            for year in sorted(levels)[1:]
-        }
+        ratios = {year: growth_ratio(spec, levels, year) for year in sorted(levels)[1:]}
+        values = {year: round(ratio - 1, 6) + 0.0 for year, ratio in ratios.items()}
         check_index(name, values)
-        result[spec.path] = ReceiptsGrowth(values, line, previous, spec)
+        result[spec.path] = ReceiptsGrowth(values, line, previous, spec, ratios)
     return result
 
 
@@ -1414,36 +1513,25 @@ def growth_in_effect(series: dict[int, float], year: int) -> float:
 def per_head_growth(
     growth: ReceiptsGrowth, population: dict[int, float]
 ) -> ReceiptsGrowth:
-    """A series' growth per head, to six decimals: each year's growth before
-    rounding (``growth_ratio``), over one plus that year's ``ons.population``
-    growth, minus one.
+    """A series' growth per head, to six decimals: one plus each year's
+    growth, over one plus that year's ``ons.population`` growth, minus one.
 
-    Dataset projection grows each household's input by this and its weight
-    by the population growth, so the weighted input grows by their product,
-    the line's growth: a duty's base, for a line with rates.
+    The growth is the series' own, before rounding where ``growth.ratios``
+    holds it: a duty's base for a line with rates, whether it links to the
+    previous EFO or has its own outturn. Dataset projection grows each
+    household's input by this and its weight by the population growth, so
+    the weighted input grows by their product, the series' growth.
     """
-    spec = growth.spec
-    first = min(growth.line.levels)
-    if growth.previous_line is None:
-        earlier = {
-            year: value / 1e6
-            for year, value in spec.outturn.receipts_thousands
-            if year < first
-        }
-    else:
-        earlier = {first - 1: growth.previous_line.levels[first - 1]}
-    levels = {**earlier, **growth.line.levels}
-    values = {
-        year: round(
-            growth_ratio(spec, levels, year) / (1 + growth_in_effect(population, year))
-            - 1,
-            6,
-        )
-        + 0.0
-        for year in growth.values
+    ratios = growth.ratios
+    if ratios is None:
+        ratios = {year: 1 + value for year, value in growth.values.items()}
+    per_head = {
+        year: ratio / (1 + growth_in_effect(population, year))
+        for year, ratio in ratios.items()
     }
+    values = {year: round(ratio - 1, 6) + 0.0 for year, ratio in per_head.items()}
     check_index(".".join(growth.spec.path), values)
-    return replace(growth, values=values)
+    return replace(growth, values=values, ratios=per_head)
 
 
 def format_growth(value: float) -> str:
