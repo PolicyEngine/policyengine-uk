@@ -443,12 +443,34 @@ def test_segmented_award_equals_the_regulations_with_one_additional_disregard(
             np.testing.assert_allclose(
                 segment["kept_back"], segment["reserve"], rtol=0, atol=TOLERANCE
             )
+    annual_wtc_disregard = sim.calculate("housing_benefit_wtc_disregard", YEAR)
     np.testing.assert_allclose(
-        sim.calculate("housing_benefit_wtc_disregard", YEAR),
+        annual_wtc_disregard,
         sum(segment["share"] * segment["reserve"] for segment in segments),
         rtol=0,
         atol=TOLERANCE,
     )
+    if calculated:
+        # The annual limit keeps back the annual WTC disregard, from the
+        # earnings the standard and annual accommodation disregards leave.
+        net = np.array([unit["net"] for unit in units])
+        standard = np.minimum(net, [unit["standard"] for unit in units])
+        accommodation = np.minimum(
+            sim.calculate(
+                "housing_benefit_specified_or_temporary_accommodation_disregard", YEAR
+            ),
+            net - standard,
+        )
+        wtc = np.array([unit["wtc"] for unit in units])
+        ctc = np.array([unit["ctc"] for unit in units])
+        np.testing.assert_allclose(
+            sim.calculate("housing_benefit_childcare_earnings_limit", YEAR),
+            np.maximum(net - standard - accommodation, 0)
+            + np.maximum(wtc - annual_wtc_disregard, 0)
+            + np.maximum(ctc, 0),
+            rtol=0,
+            atol=TOLERANCE,
+        )
 
 
 @PROPERTY_SETTINGS
