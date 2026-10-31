@@ -1,3 +1,15 @@
+## [2.166.1] - 2026-10-31
+
+### Changed
+
+- The YAML test run releases each case's simulation and its file's reformed systems once they have run, so its peak memory falls from 16.1 GiB to 1.65 GiB and CI's YAML job finishes well within its time limit.
+
+### Fixed
+
+- Applied Housing Benefit accommodation earnings disregards from their statutory commencement within the first fiscal year, calculating awards before combining date segments.
+- Fixed `Simulation.build_from_populations` with another simulation's populations: the simulation, its clones and its branches now treat the values that simulation supplied as supplied and the values the model set itself as the model's, record inputs set afterwards, and calculate again the values that simulation calculated or this one cached for the replaced populations.
+
+
 ## [2.166.0] - 2026-10-30
 
 ### Fixed

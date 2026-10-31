@@ -1,1 +1,0 @@
-Applied Housing Benefit accommodation earnings disregards from their statutory commencement within the first fiscal year, calculating awards before combining date segments.

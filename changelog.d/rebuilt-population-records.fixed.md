@@ -1,1 +1,0 @@
-Fixed `Simulation.build_from_populations` with another simulation's populations: the simulation, its clones and its branches now treat the values that simulation supplied as supplied and the values the model set itself as the model's, record inputs set afterwards, and calculate again the values that simulation calculated or this one cached for the replaced populations.
