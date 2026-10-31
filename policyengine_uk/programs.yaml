@@ -621,6 +621,19 @@ programs:
       discretionary fund, Great Britain's Alternative Fuel Payment and the
       alternative funding schemes.
 
+  - id: household_energy_payment
+    name: Household Energy Payment
+    full_name: Household Energy Payment (£100 council tax rebate)
+    category: Benefits
+    agency: Treasury
+    status: complete
+    coverage: England
+    variable: household_energy_payment
+    parameter_prefix: gov.treasury.household_energy_payment
+    verified_start_year: 2026
+    verified_end_year: 2026
+    notes: One-off £100 for households in council tax bands A to D in England, paid by local authorities from January 2027 (Budget 2026). The devolved governments' Barnett share and the £100 million local-authority discretionary fund are not modelled.
+
   # --- Ofgem programs ---
   - id: energy_price_guarantee
     name: Energy Price Guarantee
