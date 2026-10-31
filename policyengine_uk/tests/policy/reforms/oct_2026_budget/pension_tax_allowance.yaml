@@ -7,16 +7,14 @@
 # above the full new State Pension.
 #
 # The full new State Pension is 52 weeks at the weekly rate. The model
-# projects the April 2027 rate unrounded, 241.30 x 1.039 = 250.71, so the
-# threshold is 13,036.97, where HM Treasury's explainer gives 13,036.40
-# (250.70 a week). The full allowance is 94 on either: 20% x (13,036.97 -
-# 12,570) = 93.39. The allowance runs out at 13,036.973 + 3 x 94 =
-# 13,318.973, so 13,318.98 is the first income in whole pence with none (the
-# explainer's "13,319 or more").
+# projects the April 2027 rate as the Up-rating Order rounds it, 241.30 x
+# 1.039 = 250.7107 to the nearest 5p, 250.70, so the threshold is 13,036.40,
+# as in HM Treasury's explainer. The full allowance is 94: 20% x (13,036.40 -
+# 12,570) = 93.28, rounded up. The allowance runs out at 13,036.40 + 3 x 94 =
+# 13,318.40 (the explainer's "13,319 or more" in whole pounds).
 #
 # The first five cases are the worked examples in HM Treasury's Pension Tax
-# Allowance explainer, on its inputs. Jonathan's allowance is 19p more than
-# the explainer's 44 because the threshold is 57p higher.
+# Allowance explainer, on its inputs.
 
 - name: Tom, below the Personal Allowance, has no tax to remove
   period: 2027
@@ -53,7 +51,7 @@
     pension_tax_allowance: 80
     income_tax: 0
 
-- name: Jonathan, deferring his pension with income in the taper, gets 44.19
+- name: Jonathan, deferring his pension with income in the taper, gets 44
   period: 2027
   absolute_error_margin: 0.01
   input:
@@ -62,12 +60,12 @@
     property_income: 1_186.40
   output:
     total_income: 13_186.40
-    # 94 - (13,186.40 - 13,036.97) / 3; the explainer, on 13,036.40, gives 44
-    pension_tax_allowance: 44.19
+    # 94 - (13,186.40 - 13,036.40) / 3
+    pension_tax_allowance: 44
     # The Personal Allowance covers the salary and 570 of the property
     # profit; 616.40 x 24% (the Budget 2026 property basic rate) = 147.94
     income_tax_pre_charges: 147.94
-    income_tax: 103.75
+    income_tax: 103.94
 
 - name: Nadia, above 13,319, gets no allowance
   period: 2027
@@ -89,24 +87,24 @@
   absolute_error_margin: 0.01
   input:
     age: 70
-    # Just above 13,036.97 + 3 x 94
-    state_pension: 13_318.98
+    # 13,036.40 + 3 x 94
+    state_pension: 13_318.40
   output:
     pension_tax_allowance: 0
-    # 748.98 x 20%
-    income_tax: 149.80
+    # 748.40 x 20%
+    income_tax: 149.68
 
 - name: A pound before the end of the taper leaves a third of a pound
   period: 2027
   absolute_error_margin: 0.01
   input:
     age: 70
-    state_pension: 13_317.98
+    state_pension: 13_317.40
   output:
-    # 94 - (13,317.98 - 13,036.97) / 3
+    # 94 - (13,317.40 - 13,036.40) / 3
     pension_tax_allowance: 0.33
-    # 747.98 x 20% = 149.60, less the allowance
-    income_tax: 149.27
+    # 747.40 x 20% = 149.48, less the allowance
+    income_tax: 149.15
 
 - name: Scottish taxpayers get the allowance at 20%, capped at their starter-rate tax
   period: 2027
@@ -130,11 +128,11 @@
     private_pension_income: 13_186.40
     region: SCOTLAND
   output:
-    # 94 - 149.43 / 3; at the 19% starter rate the full allowance would have
-    # been 89, leaving 39.19
-    pension_tax_allowance: 44.19
+    # 94 - 150 / 3; at the 19% starter rate the full allowance would have
+    # been 89, leaving 39
+    pension_tax_allowance: 44
     # 616.40 x 19% = 117.12
-    income_tax: 72.93
+    income_tax: 73.12
 
 - name: Someone under State Pension age with the same income gets nothing
   period: 2027
@@ -197,11 +195,12 @@
   absolute_error_margin: 0.01
   input:
     age: 70
-    # The threshold is 52 weeks of the April 2028 new State Pension: 13,480.26
-    # on the October 2026 forecast, so 20% x (13,480.26 - 12,570) = 182.05 and
-    # the full allowance is 183. 300 above the threshold takes 100 off it.
-    private_pension_income: 13_780.26
+    # The threshold is 52 weeks of the April 2028 new State Pension: 13,478.40
+    # (259.20 a week) on the October 2026 forecast, so 20% x (13,478.40 -
+    # 12,570) = 181.68 and the full allowance is 182. 300 above the threshold
+    # takes 100 off it.
+    private_pension_income: 13_778.40
   output:
-    pension_tax_allowance: 83
-    # 1,210.26 x 20% = 242.05, less the allowance
-    income_tax: 159.05
+    pension_tax_allowance: 82
+    # 1,208.40 x 20% = 241.68, less the allowance
+    income_tax: 159.68
