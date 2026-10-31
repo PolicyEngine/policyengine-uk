@@ -252,7 +252,8 @@ def _head_arrays(sim, year, variables) -> dict:
 
 # Level comparisons allow this many pounds plus this share of the head's
 # own value: the model stores values as float32. Containment and undeclared
-# tax movement use the response and perturbation (see ``_response_slack``).
+# tax movement use the response and perturbation (see ``_response_slack``
+# and ``_moves``).
 ABSOLUTE_SLACK_GBP = 0.02
 RELATIVE_SLACK = 2e-6
 
@@ -269,6 +270,19 @@ def _response_slack(response: np.ndarray, expected: np.ndarray) -> np.ndarray:
     the response itself; two-point differences use twice this allowance.
     """
     return ABSOLUTE_SLACK_GBP * np.abs(expected) + RELATIVE_SLACK * np.abs(response)
+
+
+def _moves(
+    response: np.ndarray, expected: np.ndarray, allowances: int = 1
+) -> np.ndarray:
+    """Households where an undeclared tax head's response counts as movement.
+
+    A response moves when it exceeds ``allowances`` response allowances, or
+    when it is not finite: an infinite response gets an infinite allowance,
+    and NaN compares false with any allowance.
+    """
+    beyond = np.abs(response) > allowances * _response_slack(response, expected)
+    return beyond | ~np.isfinite(response)
 
 
 def _problem(total, head, kind, where, text, weights, perturbed):
@@ -385,7 +399,7 @@ def judge_total(
                     problem(variable, "contains", containing, containment(variable))
                 )
         elif is_tax:
-            moved = np.abs(change) > _response_slack(change, expected)
+            moved = _moves(change, expected)
             if moved.any():
                 problems.append(
                     problem(
@@ -485,7 +499,7 @@ def breaks_on_slope(kind, where, expected, slack, slope):
     if kind == "rises":
         return where & (slope > 2 * slack)
     if kind == "moves":
-        return where & (np.abs(slope) > 2 * _response_slack(slope, expected))
+        return where & _moves(slope, expected, allowances=2)
     return where
 
 
@@ -506,7 +520,7 @@ def still_breaks(kind, where, expected, slack, first, second=None):
     if kind == "rises":
         return where & (first > slack)
     if kind == "moves":
-        return where & (np.abs(first) > _response_slack(first, expected))
+        return where & _moves(first, expected)
     return where
 
 
