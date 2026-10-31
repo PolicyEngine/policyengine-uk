@@ -414,10 +414,12 @@ HMRC's 2024-25 standard-rate liabilities, £604.7 million at 20%, give a
 UK base of £3,023.7 million, £501.4 million (16.6%) more than the
 Commission's Category B and C yield. Differences in definition and timing
 between gross gambling yield and dutiable net takings may account for
-part of it. Pubs' machines never pay the higher rate, so leaving them out
-pushes the share up; leaving out clubs' Category B3A and B4 machines
-pushes it down. If the whole difference stayed at 20%,
-the share would be £2,289.8 million over £3,023.7 million, 75.73%, and
+part of it. Pubs' Category C and D machines never pay the higher rate, so
+leaving them out pushes the share up, though skill-with-prize machines there
+fall outside the categories. Clubs' taxable Category B4 machines pay it, so
+leaving them out pushes the share down. Legally operated Category B3A
+lottery machines pay no duty and enter neither side. If the whole
+difference stayed at 20%, the share would be £2,289.8 million over £3,023.7 million, 75.73%, and
 the 2027-28 base index would rise by 3.13% from its level at 90.78%. The
 Commission's provisional 2025-26 figures give 91.41%. The importer holds
 the 2024-25 share in every year, as it does the band weights.
