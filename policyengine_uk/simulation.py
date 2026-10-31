@@ -750,8 +750,7 @@ class Simulation(CoreSimulation):
         # sum of person balances, which such data need not hold, so grow the
         # latest stored total instead, as Core grows an input with `uprating`.
         # Which years hold the total or its parts decides the result.
-        for name in (variable.name, *variable.adds):
-            self._record_derived(name)
+        self._record_derived(variable.name)
         source = self._latest_source(variable.name, period)
         if source is None:
             return None
@@ -761,8 +760,17 @@ class Simulation(CoreSimulation):
                 # Person balances stored for a later year than the total are
                 # the newer observation, so their sum stands.
                 return None
+        try:
+            index_name = stored_total_uprating(self.tax_benefit_system, variable.name)
+        except ValueError:
+            # A reform whose parts grow by different indices gives the total
+            # no index of its own, so its sum stands.
+            return None
+        # The grown total reads none of the parts, but a part input set later
+        # for a later year replaces it.
+        for part in variable.adds:
+            self._record_derived(part)
         stored = self.get_holder(variable.name).get_array(source, self.branch_name)
-        index_name = stored_total_uprating(self.tax_benefit_system, variable.name)
         return stored * self._index_growth(index_name, source, period)
 
     def _run_formula(self, variable, population, period):

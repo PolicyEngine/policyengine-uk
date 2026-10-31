@@ -39,7 +39,7 @@ from policyengine_uk.data.economic_assumptions import (
     _uprating_index_map,
     stored_total_uprating,
 )
-from policyengine_uk.model_api import YEAR, Household, Variable
+from policyengine_uk.model_api import YEAR, Household, Person, Variable
 from policyengine_uk.scenarios import no_economic_assumptions
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
@@ -271,6 +271,25 @@ def test_a_total_set_on_a_branch_replaces_the_one_a_later_year_grew_from():
     )
 
 
+def test_balances_set_on_a_branch_after_a_grown_total_replace_it():
+    # A grown total reads none of the person balances, so a balance set on a
+    # branch for a later year than the stored total must still reach a year
+    # the branch has already calculated.
+    simulation = Simulation(
+        dataset=_dataset([{"cash_isa": 3_000.0}], household_columns=["cash_isa"])
+    )
+    branch = simulation.get_branch("balances")
+    between, later = PROJECTION_END_YEAR + 1, PROJECTION_END_YEAR + 3
+    grown = branch.calculate("cash_isa", later)[0]
+    assert grown > 3_000
+    branch.set_input("cash_isa_balance", between, np.array([600.0, 400.0]))
+    growth = _growth(simulation, "cash_isa_balance", later, base=between)
+    assert branch.calculate("cash_isa", later)[0] == pytest.approx(
+        1_000 * growth, rel=1e-6
+    )
+    assert simulation.calculate("cash_isa", later)[0] == pytest.approx(grown, rel=1e-6)
+
+
 def test_person_balances_stored_after_the_total_are_summed_instead():
     # A total and balances that a dataset stores for the same year: the total
     # takes precedence, and grows. Balances stored for later years than the
@@ -370,24 +389,36 @@ def test_a_reform_formula_for_a_total_runs_in_years_with_no_stored_total():
 
 
 @pytest.mark.parametrize(
-    "reform_adds",
-    ["stored_totals_test.parts", ["cash_isa_balance", "stored_totals_test.extra"]],
-    ids=["parameter", "list_with_a_parameter"],
+    "reform_adds, extra",
+    [
+        ("stored_totals_test.parts", 0),
+        (["cash_isa_balance", "stored_totals_test.extra"], 100),
+        (["cash_isa_balance", "other_isa_holdings"], 0),
+    ],
+    ids=["parameter", "list_with_a_parameter", "parts_with_different_indices"],
 )
-def test_a_reform_sum_through_parameters_runs_in_years_with_no_stored_total(
-    reform_adds,
+def test_a_reform_sum_with_no_index_for_the_total_runs_where_no_total_is_stored(
+    reform_adds, extra
 ):
     # Core lets `adds` name a parameter that lists the parts, or list a
-    # parameter beside variables. A reform that sums a total that way replaces
-    # its baseline sum, so Core runs it wherever no total is stored.
+    # parameter beside variables, and a reform can add a part that grows by
+    # another index (other_isa_holdings declares none). None of these gives
+    # the stored total an index to grow by, so Core runs the reform's sum
+    # wherever no total is stored, as it runs a reform formula.
+    class other_isa_holdings(Variable):
+        value_type = float
+        entity = Person
+        label = "other ISA holdings"
+        definition_period = YEAR
+
     class cash_isa(Variable):
         value_type = float
         entity = Household
-        label = "cash ISA holdings, summed through parameters"
+        label = "cash ISA holdings, summed differently"
         definition_period = YEAR
         adds = reform_adds
 
-    class parameter_sum(Reform):
+    class other_sum(Reform):
         def apply(self):
             self.parameters.add_child(
                 "stored_totals_test",
@@ -399,17 +430,17 @@ def test_a_reform_sum_through_parameters_runs_in_years_with_no_stored_total(
                     },
                 ),
             )
+            self.add_variable(other_isa_holdings)
             self.update_variable(cash_isa)
 
     simulation = Simulation(
-        reform=parameter_sum,
+        reform=other_sum,
         dataset=_dataset(
             [{"cash_isa": 5_000.0, "cash_isa_balance": 400.0, "share": 0.25}],
             person_columns=["cash_isa_balance"],
             household_columns=["cash_isa"],
         ),
     )
-    extra = 0 if isinstance(reform_adds, str) else 100
     later = PROJECTION_END_YEAR + 1
     assert simulation.calculate("cash_isa", PROJECTION_END_YEAR)[0] > 5_000
     balances = simulation.calculate("cash_isa_balance", later)
