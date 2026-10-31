@@ -33,6 +33,8 @@ supplied income components; they never load a survey dataset or infer
 tax-credit awards from those incomes.
 """
 
+from functools import cache
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -48,13 +50,6 @@ from policyengine_uk.model_api import BenUnit, Variable, YEAR, min_
 from policyengine_uk.system import system
 from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_applicable_income_childcare_element import (
     hb_capped_childcare_charges,
-    housing_benefit_applicable_income_childcare_element,
-)
-from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_childcare_earnings_limit import (
-    housing_benefit_childcare_earnings_limit,
-)
-from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_wtc_disregard import (
-    housing_benefit_wtc_disregard,
 )
 
 
@@ -263,36 +258,37 @@ class without_wtc_reservation(Reform):
         self.neutralize_variable("housing_benefit_wtc_disregard")
 
 
-def forwarding_reform(original):
-    """A reform that replaces the variable's formula with one that only
-    calls the model's own."""
+FORWARDED_VARIABLES = (CHILDCARE, LIMIT, "housing_benefit_wtc_disregard")
 
-    class forwarded(Variable):
+
+@cache
+def forwarded(name, baseline=system):
+    """``baseline`` under a reform that replaces the variable's formula with
+    one that only calls the model's own."""
+    original = system.get_variable(name).get_formula()
+
+    class forwarded_variable(Variable):
         value_type = float
         entity = BenUnit
         definition_period = YEAR
 
         def formula(benunit, period, parameters):
-            return original.formula(benunit, period, parameters)
+            return original(benunit, period, parameters)
 
-    forwarded.__name__ = original.__name__
+    forwarded_variable.__name__ = name
 
     class forward(Reform):
         def apply(self):
-            self.update_variable(forwarded)
+            self.update_variable(forwarded_variable)
 
-    return forward
+    return forward(baseline)
 
 
-FORWARDING_REFORMS = {
-    variable.__name__: forwarding_reform(variable)
-    for variable in (
-        housing_benefit_applicable_income_childcare_element,
-        housing_benefit_childcare_earnings_limit,
-        housing_benefit_wtc_disregard,
-    )
-}
-FORWARDED = {name: reform(system) for name, reform in FORWARDING_REFORMS.items()}
+def forwarded_systems(baseline=system):
+    return {
+        None: baseline,
+        **{name: forwarded(name, baseline) for name in FORWARDED_VARIABLES},
+    }
 
 
 def simulation(
@@ -930,6 +926,16 @@ def test_supplied_wtc_disregard_reaches_the_limit():
     assert actual["income"][0] == pytest.approx(1_000, abs=TOLERANCE)
 
 
+def test_supplied_deduction_keeps_its_value():
+    """The childcare bounds cover the deduction the model calculates. A
+    supplied £25,000 stays £25,000, above the £4,160 charge and the £3,900
+    of earnings the standard disregard leaves; with it, income is nil."""
+    actual = calculate([case(supplied=25_000)], 2024)
+    assert actual["childcare"][0] == 25_000
+    assert actual["reserve"][0] == 100
+    assert actual["income"][0] == 0
+
+
 def test_supplied_deduction_leaves_the_limit_on_the_whole_charge():
     """A supplied deduction reads no limit. The limit still tests para 17
     with the whole capped charge: 5,200 < 1,300 + 4,160 + 889.20, so it keeps
@@ -971,12 +977,12 @@ def test_forwarding_reforms_change_nothing(units):
         lambda tax_benefit_system: simulation(
             units, 2024, tax_benefit_system=tax_benefit_system
         ),
-        {None: system, **FORWARDED},
+        forwarded_systems(),
         lambda sim: results(sim, 2024),
     )
 
 
-@pytest.mark.parametrize("name", sorted(FORWARDING_REFORMS))
+@pytest.mark.parametrize("name", FORWARDED_VARIABLES)
 def test_forwarding_reform_runs_for_an_adult_without_income(name):
     """One adult aged 40, with no income, children, childcare or WTC, and
     every other value left to the model."""
@@ -986,7 +992,7 @@ def test_forwarding_reform_runs_for_an_adult_without_income(name):
         "households": {"home": {"members": ["adult"]}},
     }
     baseline = Simulation(tax_benefit_system=system, situation=situation)
-    reformed = Simulation(tax_benefit_system=FORWARDED[name], situation=situation)
+    reformed = Simulation(tax_benefit_system=forwarded(name), situation=situation)
     for variable in (*OUTPUTS.values(), "housing_benefit_entitlement"):
         assert (
             reformed.calculate(variable, 2024)[0]

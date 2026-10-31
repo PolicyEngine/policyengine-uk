@@ -29,7 +29,7 @@ from policyengine_core.reforms import Reform
 
 from policyengine_uk.system import system
 from policyengine_uk.tests.test_housing_benefit_wtc_disregard import (
-    FORWARDING_REFORMS,
+    CHILDCARE,
     PROPERTY_SETTINGS,
     RENT,
     TOLERANCE,
@@ -37,6 +37,8 @@ from policyengine_uk.tests.test_housing_benefit_wtc_disregard import (
     assert_forwarding_changes_nothing,
     case,
     families,
+    forwarded,
+    forwarded_systems,
     legal_components,
     results,
     same_supply,
@@ -45,9 +47,6 @@ from policyengine_uk.tests.test_housing_benefit_wtc_disregard import (
 )
 from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_applicable_income_disregard import (
     hb_segment_deductions,
-)
-from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_childcare_earnings_limit import (
-    hb_childcare_wtc_reserve,
 )
 from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_specified_or_temporary_accommodation_disregard import (
     hb_accommodation_segments,
@@ -83,7 +82,6 @@ PREVIOUS = {
     True: without_wtc_reservation(TAX_CREDITS),
     False: without_wtc_reservation(system),
 }
-FORWARDED = {name: reform(TAX_CREDITS) for name, reform in FORWARDING_REFORMS.items()}
 
 
 def legal_segments(unit, active):
@@ -125,6 +123,10 @@ def model_segments(sim):
     """Each segment's share of the year, additional earnings disregard, WTC
     disregard and the WTC its childcare limit keeps back, as the model
     applies them."""
+    from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_childcare_earnings_limit import (
+        hb_childcare_wtc_reserve,
+    )
+
     benunit = sim.populations["benunit"]
     year = period_(YEAR)
     parameters = sim.tax_benefit_system.parameters
@@ -264,7 +266,12 @@ def test_each_segment_settles_paragraph_56_with_its_own_earnings_test(
     assert before["additional"][0] == pytest.approx(889.20, abs=TOLERANCE)
     assert after["reserve"][0] == pytest.approx(889.20, abs=TOLERANCE)
     assert after["additional"][0] == pytest.approx(0, abs=TOLERANCE)
-    # The annual amount combines the segments: 889.20 * 183 / 365.
+    # The annual amounts combine the segments: 889.20 * 182 / 365 of
+    # additional earnings disregard and 889.20 * 183 / 365 of WTC disregard.
+    # Both are positive, though no segment has both.
+    assert sum(
+        segment["share"] * segment["additional"][0] for segment in (before, after)
+    ) == pytest.approx(443.38, abs=TOLERANCE)
     assert sim.calculate("housing_benefit_wtc_disregard", YEAR)[0] == pytest.approx(
         445.82, abs=TOLERANCE
     )
@@ -289,6 +296,23 @@ def test_each_segment_limits_childcare_with_its_own_wtc_disregard():
     # (182 * 6,076.98 + 183 * 8,450) / 365 = 7,266.74.
     assert sim.calculate("housing_benefit_entitlement", YEAR)[0] == pytest.approx(
         7_266.74, abs=TOLERANCE
+    )
+
+
+def test_supplied_annual_deduction_applies_in_every_segment():
+    """Supplying the lone parent's calculated annual deduction, £4,160,
+    applies it in both segments. From 5 October the WTC disregard is still
+    889.20, so income is 13,000 - 5,341.96 - 889.20 - 4,160 = 2,608.84 and
+    the award 8,704.25 where the model's own deduction gives 8,450:
+    (182 * 6,076.98 + 183 * 8,704.25) / 365 = 7,394.22, not 7,266.74."""
+    unit = case(specified=True, net=8_000, wtc=2_000, other=3_000)
+    calculated = segmented([unit], active=True)
+    deduction = calculated.calculate(CHILDCARE, YEAR)
+    assert deduction[0] == pytest.approx(4_160, abs=TOLERANCE)
+    replayed = segmented([unit], active=True)
+    replayed.set_input(CHILDCARE, YEAR, deduction)
+    assert replayed.calculate("housing_benefit_entitlement", YEAR)[0] == pytest.approx(
+        7_394.22, abs=TOLERANCE
     )
 
 
@@ -360,7 +384,7 @@ def test_forwarding_reforms_change_nothing_with_tax_credits_kept(units):
         lambda tax_benefit_system: simulation(
             units, YEAR, tax_benefit_system=tax_benefit_system, dated_accommodation=True
         ),
-        {None: TAX_CREDITS, **FORWARDED},
+        forwarded_systems(TAX_CREDITS),
         segment_outputs,
     )
 
@@ -380,7 +404,7 @@ def test_replacement_wtc_disregard_applies_its_annual_amount_in_every_segment():
     sim = simulation(
         [unit],
         YEAR,
-        tax_benefit_system=FORWARDED["housing_benefit_wtc_disregard"],
+        tax_benefit_system=forwarded("housing_benefit_wtc_disregard", TAX_CREDITS),
         dated_accommodation=True,
     )
     assert sim.calculate("housing_benefit_wtc_disregard", YEAR)[0] == pytest.approx(
