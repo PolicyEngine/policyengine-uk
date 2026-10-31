@@ -366,8 +366,8 @@ def _problem(total, head, kind, component, where, weights, perturbed, nan, not_h
     ``nan`` marks the households where a measurement behind the problem saw
     a response that is not finite. ``not_held`` names the heads that stopped
     the second held measurement, where the problem rests on that measurement.
-    ``where`` and ``nan`` are kept for the direct-effect step and dropped
-    before the result is reported.
+    The direct-effect step reads ``where`` and ``nan``, and ``counted_once``
+    drops both before it reports the result.
     """
     # Only households with weight count towards a published count.
     count = int(np.count_nonzero(where & (weights > 0)))

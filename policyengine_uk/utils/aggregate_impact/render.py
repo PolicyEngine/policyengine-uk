@@ -302,8 +302,8 @@ def _guard(summary) -> str:
                 listed, verb = names[0], "is"
             else:
                 listed, verb = f"{', '.join(names[:-1])} and {names[-1]}", "are"
-            # A head with no problem left read as a possible containment that
-            # only the second measurement could have confirmed.
+            # Only the second measurement could have confirmed a head with no
+            # problem left as a containment.
             outcome = (
                 f"it measured `{head}` again only with the other heads at their "
                 "baseline values"
