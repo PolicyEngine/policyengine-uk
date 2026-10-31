@@ -20,6 +20,8 @@ deduction, its limit or the WTC disregard with a formula that only calls the
 model's own changes no output.
 """
 
+from functools import cache
+
 import numpy as np
 import pytest
 from hypothesis import example, given
@@ -78,10 +80,11 @@ class keep_tax_credits(Reform):
 
 TAX_CREDITS = keep_tax_credits(system)
 SYSTEMS = {True: TAX_CREDITS, False: system}
-PREVIOUS = {
-    True: without_wtc_reservation(TAX_CREDITS),
-    False: without_wtc_reservation(system),
-}
+
+
+@cache
+def previous_system(active):
+    return without_wtc_reservation(SYSTEMS[active])
 
 
 def legal_segments(unit, active):
@@ -113,9 +116,9 @@ def legal_award(unit, active):
 
 
 def segmented(units, active, previous=False):
-    systems = PREVIOUS if previous else SYSTEMS
+    tax_benefit_system = previous_system(active) if previous else SYSTEMS[active]
     return simulation(
-        units, YEAR, tax_benefit_system=systems[active], dated_accommodation=True
+        units, YEAR, tax_benefit_system=tax_benefit_system, dated_accommodation=True
     )
 
 
