@@ -100,14 +100,15 @@ established by the household tests.
 `cash_isa_balance`, and `stocks_and_shares_isa` sums their
 `stocks_and_shares_isa_balance`, as `household_lifetime_isa_balance` sums
 `lifetime_isa_balance`. A dataset or situation that stores a household total
-keeps it: the total is recomputed only when it is not stored. The model
-projects a total that a dataset stores with `savings`, `corporate_wealth` or
-`lifetime_isa_balance` in every year, including years after the last one the
-dataset projection reaches, unless the dataset stores the person balances for
-a later year. A household input in a situation applies only to its own year;
-the person balances carry the variable-level uprating to later years. The
-means tests read the household totals, so a person's balance is pooled with
-the household's other financial capital rather than attributed to their own
+keeps it: the model sums the person balances only for a year with no stored
+total. In each later year the model grows the latest total that a dataset
+stores with `savings`, `corporate_wealth` or `lifetime_isa_balance`
+respectively, including years after the dataset projection ends, unless the
+dataset holds the person balances for a later year than the total. A
+household input in a situation applies only to its own year; the person
+balances carry the variable-level uprating to later years. The means tests
+read the household totals, so they pool a person's balance with the
+household's other financial capital rather than attribute it to their own
 benefit unit.
 
 Ordinary accessible cash ISA balances enter the capital sources for Universal

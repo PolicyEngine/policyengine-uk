@@ -175,9 +175,9 @@ PROJECTION_END_YEAR = 2032
 # which falls to zero in data that store only the total, and Core does not
 # let a variable declare both `adds` and `uprating`. So in a simulation built
 # from data, Simulation grows the latest earlier stored total by the index
-# its parts declare, as Core grows the parts. It sums the parts where no
-# total is stored for that year or an earlier one, or where the parts are
-# stored for a later year than the total.
+# its parts declare, as Core grows the parts. It sums the parts where the
+# data hold no total for that year or an earlier one, or hold the parts for
+# a later year than the total.
 STORED_HOUSEHOLD_TOTALS = frozenset(
     {"cash_isa", "stocks_and_shares_isa", "household_lifetime_isa_balance"}
 )
@@ -211,7 +211,8 @@ def stored_total_uprating(tax_benefit_system, name: str) -> str | None:
     """The index that grows a stored household total: its parts' ``uprating``.
 
     Growing the total like its parts keeps a stored total equal to the sum it
-    replaces. ``None`` means the parts are held flat.
+    replaces. ``None`` holds the total flat, as Core holds parts with no
+    ``uprating``. Parts that declare different indices raise ``ValueError``.
     """
     indices = {
         tax_benefit_system.variables[part].uprating
