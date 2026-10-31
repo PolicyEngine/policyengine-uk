@@ -1202,6 +1202,41 @@ def test_a_last_level_at_or_below_zero_is_refused(last):
         compute_receipts_growth(levels, make_previous_receipts_xlsx())
 
 
+def test_a_tail_that_rounds_the_index_to_zero_is_refused():
+    # The forecast keeps the index above zero; the average_earnings tail
+    # takes it there, after the forecast's own check has run.
+    levels = make_receipts_xlsx(
+        sdlt_rows=[
+            ("SDLT from residential property", (1.0, 1.0, 0.00005)),
+            ("SDLT from non-residential property", (4.0, 5.0, 4.5)),
+        ]
+    )
+    falling = FLAT_SERIES_FIXTURE.format(key="average_earnings").replace(
+        "0.0200", "-0.5100"
+    )
+    content = YOY_GROWTH_FIXTURE.replace(
+        FLAT_SERIES_FIXTURE.format(key="average_earnings"), falling
+    )
+    assert content != YOY_GROWTH_FIXTURE
+    render(current=levels)
+    with pytest.raises(ValueError, match="stamp_duty_land_tax.residential: the index"):
+        render(content, current=levels)
+
+
+def test_the_index_check_reads_the_value_in_force_each_january():
+    # A value dated mid-year applies from the next January, so it must not
+    # replace that year's January value.
+    with pytest.raises(ValueError, match="in 2023"):
+        import_obr_forecasts.check_index_stays_positive(
+            ("example",),
+            {
+                date(2022, 1, 1): 0.0,
+                date(2023, 1, 1): -1.0,
+                date(2023, 7, 1): 0.0,
+            },
+        )
+
+
 def test_receipts_labels_lose_footnote_markers_only():
     line = find_receipts_line(
         read_workbook_sheets(

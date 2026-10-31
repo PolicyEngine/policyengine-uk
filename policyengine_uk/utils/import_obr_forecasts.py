@@ -591,6 +591,8 @@ TABLE_TITLE_RE = re.compile(r"^(\d+\.\d+)\s+(.+)$")
 TABLE_NUMBER_RE = re.compile(r"\d+\.\d+")
 FOOTNOTE_RE = re.compile(r"(?<=[a-z])\d+$", re.IGNORECASE)
 VALUE_LINE_RE = re.compile(r"^\s*(\d{4})-\d{2}-\d{2}:")
+# The last year create_economic_assumption_indices compounds a series to.
+LAST_INDEX_YEAR = 2039
 
 
 @dataclass(frozen=True)
@@ -1464,6 +1466,22 @@ def receipts_references(
     ]
 
 
+def check_index_stays_positive(path: tuple[str, ...], values: dict) -> None:
+    """Compound a rendered series as create_economic_assumption_indices does,
+    from 1 in its first listed year through 2039, rounding to five decimals.
+    An index that rounds to zero would zero the base in every later year."""
+    growth = {str(instant): value for instant, value in values.items()}
+    index = 1.0
+    for year in range(int(min(growth)[:4]) + 1, LAST_INDEX_YEAR + 1):
+        in_force = max(instant for instant in growth if instant <= f"{year}-01-01")
+        index = round(index * (1 + growth[in_force]), 5)
+        if index <= 0:
+            raise ValueError(
+                f"{'.'.join(path)}: the index reaches {index} in {year} at five "
+                "decimals, so the base is too small to grow from"
+            )
+
+
 def render_receipts_growth_yaml(
     content: str,
     growth: dict[tuple[str, ...], ReceiptsGrowth],
@@ -1535,6 +1553,7 @@ def render_receipts_growth_yaml(
                 for year, value in {**series.values, **tail}.items()
             },
         }
+        check_index_stays_positive(path, node["values"])
         node["metadata"]["reference"] = references
 
     rendered = "\n".join(lines)
