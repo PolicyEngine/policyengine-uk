@@ -27,12 +27,18 @@ LEAVES = {
 LAST_EXTRACTED_YEAR = 2039
 
 
-def through_extraction(record):
-    """A metadata record without the values dated after the legacy extraction."""
+def is_after_extraction(date):
+    return int(date[:4]) > LAST_EXTRACTED_YEAR
+
+
+def through_extraction(name, record):
+    """A record as extracted: only the thresholds follow indices past its end."""
+    if ".thresholds." not in name:
+        return record
     values = {
         date: value
         for date, value in record["values"].items()
-        if int(date[:4]) <= LAST_EXTRACTED_YEAR
+        if not is_after_extraction(date)
     }
     return {**record, "values": values}
 
@@ -80,10 +86,17 @@ def test_live_parameter_metadata_preserves_legacy_scalar_records():
     actual = build_parameters(
         SimpleNamespace(tax_benefit_system=CountryTaxBenefitSystem())
     )
-    assert {name: through_extraction(actual[name]) for name in expected} == {
+    assert {name: through_extraction(name, actual[name]) for name in expected} == {
         name: {**record, "household": False, "economy": False}
         for name, record in expected.items()
     }
+    for name in expected:
+        later = [
+            value
+            for date, value in sorted(actual[name]["values"].items())
+            if is_after_extraction(date)
+        ]
+        assert later == sorted(later), name
     json.dumps(actual, allow_nan=False)
 
 

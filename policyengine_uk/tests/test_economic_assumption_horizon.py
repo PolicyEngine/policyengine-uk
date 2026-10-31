@@ -18,8 +18,8 @@ Invariants:
 3. Uprating: every parameter uprated by an index that still moves after 2039
    moves with it, unless its value is zero.
 4. Reforms: the horizon follows a reformed series. A dated change inside the
-   horizon leaves it where it is; an undated change states the series to 2100,
-   and every index follows it there.
+   horizon leaves it where it is; a dated change past it extends it; an undated
+   change states the series to 2100, and every index follows it there.
 """
 
 from pathlib import Path
@@ -51,6 +51,7 @@ YOY_GROWTH_FILE = (
 OLD_LAST_INDEX_YEAR = 2039
 EARNINGS_UPRATING = "gov.economic_assumptions.yoy_growth.earnings_uprating"
 CPI_GROWTH = "gov.economic_assumptions.yoy_growth.obr.consumer_price_index"
+RPI_GROWTH = "gov.economic_assumptions.yoy_growth.obr.rpi"
 
 
 def _parameters(node: ParameterNode) -> list:
@@ -224,13 +225,24 @@ def test_a_growth_value_dated_after_1_january_reaches_the_index():
     assert index("2031") == 1.2
 
 
-def reformed_system(growth):
+def test_an_empty_growth_node_builds_no_indices():
+    tree = ParameterNode(
+        "",
+        data={"gov": {"economic_assumptions": {"yoy_growth": {"metadata": {}}}}},
+    )
+
+    create_economic_assumption_indices(tree)
+
+    assert _parameters(tree.gov.economic_assumptions.indices) == []
+
+
+def reformed_system(growth, series=CPI_GROWTH):
     situation = {
         "people": {"person": {"age": {2030: 70}}},
         "benunits": {"benunit": {"members": ["person"]}},
         "households": {"household": {"members": ["person"]}},
     }
-    scenario = Scenario(parameter_changes={CPI_GROWTH: growth})
+    scenario = Scenario(parameter_changes={series: growth})
     return Simulation(situation=situation, scenario=scenario).tax_benefit_system
 
 
@@ -239,6 +251,24 @@ def test_a_dated_growth_reform_keeps_the_horizon():
 
     assert growth_horizon(assumptions.yoy_growth) == HORIZON
     assert last_year(assumptions.indices.obr.rpi) == HORIZON
+
+
+def test_a_dated_growth_reform_past_the_data_extends_the_index():
+    """A change ending on 31 March 2080 restores the old rate on 1 April.
+
+    The builder sees that April value, so the index runs to January 2081.
+    Fiscal conversion then moves it to January 2080, so a horizon read from the
+    converted series is a year short of the index, which is right regardless.
+    """
+    reformed = reformed_system({"2080-01-01.2080-03-31": 0.05}, series=RPI_GROWTH)
+    assumptions = reformed.parameters.gov.economic_assumptions
+    index = assumptions.indices.obr.rpi
+    held_rate = ECONOMIC_ASSUMPTIONS.yoy_growth.obr.rpi(str(HORIZON))
+
+    assert last_year(index) == 2081
+    assert growth_horizon(assumptions.yoy_growth) == 2080
+    assert index("2080") == round(index("2079") * 1.05, 5)
+    assert index("2081") == round(index("2080") * (1 + held_rate), 5)
 
 
 def test_an_undated_growth_reform_extends_the_horizon_past_the_data():

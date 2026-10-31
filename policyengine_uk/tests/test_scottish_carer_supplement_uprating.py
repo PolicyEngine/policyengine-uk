@@ -18,7 +18,9 @@ year from 2027 to the last year of the uprating index:
 
 1. Each April's rate is the previous rounded rate times one plus the
    September CPI rise, rounded to the nearest 5p. The reference here compounds
-   the published 2026 rates in Decimal, independently of the index.
+   the published 2026 rates in Decimal, independently of the index. Intended
+   exception: a rise landing exactly on a 2.5p tie, as 28.75 x 1.02 does in
+   2071, may go either way, because the index keeps five decimal places.
 2. Neither rate falls, since the rise is never negative.
 3. Metamorphic: setting the previous September's CPI to a published rate g
    moves that April's rates to the previous rates times 1 + g, rounded to 5p,
@@ -92,8 +94,6 @@ def test_each_april_compounds_the_previous_rounded_rate(name):
         growth = 1 + Decimal(str(rise(f"{year}-01-01")))
         expected = nearest_5p(previous * growth)
         actual = weekly_rate(parameters, name, year)
-        # A rise can land exactly on a 2.5p tie, as 28.75 x 1.02 does, and the
-        # index's five decimal places may then break it down.
         if (previous * growth) % FIVE_PENCE == FIVE_PENCE / 2 and actual < expected:
             expected -= FIVE_PENCE
         assert actual == pytest.approx(float(expected), abs=1e-9), year

@@ -16,12 +16,17 @@ def growth_horizon(yoy_growth: ParameterNode) -> int:
     """The last year any growth series covers, where the indices end.
 
     The indices read each series on 1 January, so a value dated later in a
-    year first reaches them the year after.
+    year first reaches them the year after. Pass the series as the builder
+    sees them: fiscal conversion moves a value dated before May to that year's
+    January, so a converted series can report a year less.
     """
     return max(
-        last_year(parameter)
-        for parameter in yoy_growth.get_descendants()
-        if isinstance(parameter, Parameter)
+        (
+            last_year(parameter)
+            for parameter in yoy_growth.get_descendants()
+            if isinstance(parameter, Parameter)
+        ),
+        default=0,
     )
 
 

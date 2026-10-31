@@ -55,8 +55,9 @@ from policyengine_uk.tax_benefit_system import COUNTRY_DIR
 EARNINGS_INDEX = "gov.economic_assumptions.indices.earnings_uprating"
 FIRST_PROJECTION_YEAR = 2027
 LAST_INDEX_YEAR = growth_horizon(system.parameters.gov.economic_assumptions.yoy_growth)
-# The synthetic growth series end here, well past any generated path.
-LAST_SYNTHETIC_YEAR = 2039
+# The last year the synthetic growth series reach: their lagged series run a
+# year past the final observation, as the real ones do.
+LAST_SYNTHETIC_YEAR = 2040
 LAST_PUBLISHED_YEAR = FIRST_PROJECTION_YEAR - 1
 PARAMETERS_DIR = COUNTRY_DIR / "parameters"
 SMG_NAME = "gov.dwp.pension_credit.guarantee_credit.minimum_guarantee"
@@ -145,7 +146,7 @@ def synthetic_parameter_tree(path, phase_ins=()):
                                     for year, values in observations.items()
                                 }
                                 | {
-                                    f"{LAST_SYNTHETIC_YEAR}-01-01": final_observation[
+                                    f"{LAST_SYNTHETIC_YEAR - 1}-01-01": final_observation[
                                         position
                                     ]
                                 }
@@ -193,6 +194,11 @@ def project_synthetic_parameters(parameters, unreformed=None):
 
 def synthetic_parameters(path, phase_ins=()):
     return project_synthetic_parameters(synthetic_parameter_tree(path, phase_ins))
+
+
+def test_the_synthetic_years_reach_the_end_of_the_generated_indices():
+    indices = synthetic_parameters([(0.039, 0.035)], [0.6]).gov.economic_assumptions
+    assert growth_horizon(indices.indices) == LAST_SYNTHETIC_YEAR
 
 
 def earnings_linked_amounts(parameters):
