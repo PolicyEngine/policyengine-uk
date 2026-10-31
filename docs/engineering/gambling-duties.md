@@ -295,8 +295,8 @@ Each series holds the base's growth per person: one plus the base's growth,
 over one plus `ons.population` growth, minus one, to six decimals. Dataset
 projection grows every household weight by `ons.population`, so each
 weighted input grows with its duty's national base. Past
-`PROJECTION_END_YEAR`, Core scales each input by its index and each weight
-by the population index, so the weighted input keeps that path. Grown by
+`PROJECTION_END_YEAR`, policyengine-core scales each input by its index and
+each weight by the population index, so the weighted input keeps that path. Grown by
 the base's own growth, the weighted bases would count population growth
 twice and exceed Table 4.10 by 1.54% in 2031-32. `uprate_council_tax`
 divides each council tax bill's growth by the growth in household weights
@@ -309,9 +309,9 @@ for the same reason.
 | 2026-27 to 2031-32 | Forecast | OBR October 2026 Economic and Fiscal Outlook, receipts Table 4.10, "Betting and gaming duties forecast breakdown" |
 | 2032-33 on | None | The `average_earnings` long-run path, as for the other receipts series |
 
-After 2031-32 each series divides the base's growth by one plus population
-growth in every year to 2073, the last year `ons.population` states, and
-the model holds both series' 2073 values after that.
+After 2031-32 the importer divides the base's growth by one plus
+population growth in every year to 2073, the last year `ons.population`
+states, and the model holds both series' 2073 values after that.
 
 `policyengine_uk/utils/import_obr_forecasts.py` writes the series from
 `RECEIPTS_SERIES_SPECS`. It reads each rate from the model's parameter file
@@ -449,7 +449,9 @@ does, `machine_games_duty` charges the standard rate on the whole
 standard-rate input, the rates before Budget 2026, on a base that grows
 by receipts over the rates after it. From 2027-28 the duty therefore
 falls short of Table 4.10 by 18.3%: the duty equals Table 4.10's line
-times 19.35% / 23.68%. On one constructed household holding the 2024-25 national bases:
+times 19.35% / 23.68%. Two constructed households, weighted 700 and 1,900,
+hold the 2024-25 national bases between them, and their weighted duty
+comes to:
 
 | £ million | 2027-28 | 2028-29 | 2029-30 | 2030-31 | 2031-32 |
 | --- | ---: | ---: | ---: | ---: | ---: |

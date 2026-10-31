@@ -170,10 +170,10 @@ gov.economic_assumptions.yoy_growth.obr.per_capita.mixed_income:
 - self_employment_gross_receipts
 - trading_loss
 - owned_company_income_share
-# Gambling duty bases grow per person with the OBR's receipts forecast for
-# their duty, divided by the rates the model charges, so the model applies
-# its own rate changes to them once, and household weights grow by
-# population (#2738).
+# Gambling duty bases grow per person, as household weights grow by
+# population, with the OBR's receipts forecast for their duty divided by the
+# rates the model charges, so the model applies its own rate changes to them
+# once (#2738).
 gov.economic_assumptions.yoy_growth.obr.per_capita.gambling_duty_bases.general_betting:
 - betting_exchange_commission
 - financial_spread_betting_net_losses

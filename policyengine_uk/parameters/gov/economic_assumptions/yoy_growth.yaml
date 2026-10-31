@@ -998,7 +998,7 @@ obr:
     # growth) / (1 + population growth) - 1. Dataset projection grows
     # household weights by ons.population, so the weighted base grows with
     # the duty's base. After the OBR's forecast the base grows with
-    # average_earnings, or holds flat while its rate is zero, and the series
+    # average_earnings, or holds flat while its rate is zero, and the importer
     # divides that growth the same way in each year to ons.population's last.
     # policyengine_uk/utils/import_obr_forecasts.py writes every year after
     # the 2024 base year from HMRC's outturn, the EFO's receipts tables and
