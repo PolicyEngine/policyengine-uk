@@ -13,7 +13,10 @@ class is_uc_eligible(Variable):
         "nor can a partner who cannot be a joint claimant: where a member of "
         "a couple claims as a single person (regulation 3(3)), that member "
         "must meet the conditions, and the capital tested includes the other "
-        "member's (regulation 18(2)). A family on the Pension Credit route "
+        "member's (regulation 18(2)). A claimant must also meet, or be "
+        "excepted from, the condition that they are not receiving education "
+        "(meets_uc_education_condition); for joint claimants, one who does "
+        "suffices (regulation 3(2)(b)). A family on the Pension Credit route "
         "(meets_pension_credit_age_conditions) is not eligible unless it "
         "claims when DWP moves it off its legacy benefits "
         "(claims_uc_at_legacy_closure)."
@@ -23,6 +26,7 @@ class is_uc_eligible(Variable):
         "https://www.legislation.gov.uk/ukpga/2012/5/section/3",
         "https://www.legislation.gov.uk/ukpga/2012/5/section/4",
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/3",
+        "https://www.legislation.gov.uk/uksi/2013/376/regulation/14",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/5",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/60A",
     )
@@ -84,4 +88,18 @@ class is_uc_eligible(Variable):
         route = (has_qualifying_claimant & ~pension_credit_route) | (
             closure_claim & (has_qualifying_claimant | reg_60a)
         )
-        return route & (capital <= limit)
+        # WRA 2012 s.4(1)(d): "is not receiving education". A couple can be
+        # joint claimants where "one member does not meet the basic condition
+        # in section 4(1)(d) (not receiving education) and is not excepted
+        # from that condition if the other member does meet that condition or
+        # is excepted from it" (reg 3(2)(b)), so one claimant meeting it
+        # suffices, as one claimant under the qualifying age does under reg
+        # 3(2)(a). The two need not be the same member: reg 14(1)(f) excepts
+        # the older member of a mixed-age couple, which matters only if the
+        # younger member can meet the age condition while the older meets
+        # this one. A member of a couple who claims as a single person (reg
+        # 3(3)) must meet it themselves.
+        meets_education_condition = benunit.any(
+            claimant & benunit.members("meets_uc_education_condition", period)
+        )
+        return route & meets_education_condition & (capital <= limit)
