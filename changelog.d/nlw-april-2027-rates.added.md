@@ -1,1 +1,0 @@
-Add the April 2027 minimum wage rates Budget 2026 announced (paragraph 6.128): £13.21 for the national living wage, £11.27 for ages 18 to 20, and £8.31 for ages 16 to 17 and apprentices. The projection by earnings growth now starts from them.
