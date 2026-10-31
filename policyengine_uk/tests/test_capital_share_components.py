@@ -147,6 +147,8 @@ def test_lists_name_the_two_parts(variable):
 )
 # Subtracting trusts and ISA one at a time leaves £0.015625 here; grouped, nil.
 @example([(399_999.984375, (0.0, 200_000.0, 199_999.984375), True)])
+# Trusts and ISA exceed corporate_wealth by float32 rounding: floored at nil.
+@example([(16_000.0, (0.0, 8_000.01, 8_000.0), True)])
 def test_share_like_capital_and_its_parts(rows):
     households = []
     for corporate_wealth, components, itemise in rows:
@@ -189,6 +191,24 @@ def test_float32_grouping_of_the_exempt_holdings():
     ]
     got = _results(households)
     assert got[WITH][0] == 0
+
+
+def test_exempt_holdings_above_the_aggregate_by_rounding_leave_nil_with_expenses():
+    """£8,000.01 of trusts and an £8,000 ISA add up in float32 to
+    £16,000.009765625, above £16,000 of corporate_wealth by less than a
+    millionth, so share_like_capital keeps the £16,000. Subtracting the exempt
+    holdings would leave -£0.009765625; the part with sale expenses stops at
+    nil, and the part without holds all £16,000."""
+    households = [
+        {
+            "corporate_wealth": 16_000,
+            "unit_and_investment_trusts": 8_000.01,
+            "stocks_and_shares_isa": 8_000,
+        }
+    ]
+    got = _results(households)
+    assert got["share_like_capital"][0] == 16_000
+    assert got[WITH][0] == 0 and got[WITHOUT][0] == 16_000
 
 
 def test_an_empty_exempt_list_values_everything_less_10_percent():
