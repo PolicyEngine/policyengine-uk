@@ -146,7 +146,8 @@ exactly £1 and £100 stays at 20%, while £1 with a £500 prize, or £2 with a
   B3A: £2 and £500; B4: £2 and £400](https://www.gamblingcommission.gov.uk/licensees-and-businesses/guide/gaming-machine-categories))
   exceed one of the thresholds. Category C (£1 and £100) and Category D stay
   within them. The tax class turns on the highest charge and prize a machine
-  actually offers, so a category split approximates it.
+  actually offers, so a category split approximates it. The projection
+  assumes 90.78% (see [the higher-stake share](#the-higher-stake-share)).
 - The duty floors the new input at zero and caps it at the standard-rate input.
   It never taxes takings that the standard-rate input leaves out.
 
@@ -278,6 +279,188 @@ Sources: [Finance Act 1997, sections 10 and 11](https://www.legislation.gov.uk/u
 [HMRC Notice 453](https://www.gov.uk/guidance/gaming-duty-excise-notice-453),
 [HMRC July 2026 tables](https://assets.publishing.service.gov.uk/media/6ab54fd9fe72ed1e2b02f06b/2026_Jul_Bet_and_Gam_Tab.ods)
 and [Gambling Commission 2024/25 industry statistics](https://www.gamblingcommission.gov.uk/statistics-and-research/publication/industry-statistics-annual-report-financial-year-april-2024-to-march-2025).
+
+## Projection
+
+Each input declares its duty's index,
+`gov.economic_assumptions.indices.obr.gambling_duty_bases.<duty>`, and
+dataset projection grows it by the same duty's series in `yoy_growth.yaml`
+(`policyengine_uk/data/uprating_indices.yaml`). A series grows the duty's
+base, not its receipts: each year's receipts divided by the rate the model
+charges that year. The model then applies its own rate changes once. Grown
+with receipts instead, the base would carry Remote Gaming Duty's rise to 40%
+and the formula would charge 40% on it again.
+
+| Fiscal year | Receipts | Source |
+| --- | --- | --- |
+| 2024-25 | Base year (index 1) | HMRC July 2026 Betting and Gaming tables, `Table_1_BG_receipts` row 45 |
+| 2025-26 | Outturn | The same table, row 46 |
+| 2026-27 to 2031-32 | Forecast | OBR October 2026 Economic and Fiscal Outlook, receipts Table 4.10, "Betting and gaming duties forecast breakdown" |
+| 2032-33 on | None | The `average_earnings` long-run path, as for the other receipts series |
+
+`policyengine_uk/utils/import_obr_forecasts.py` writes the series from
+`RECEIPTS_SERIES_SPECS`. It reads each rate from the model's parameter file
+and averages it over the OBR's April-to-March year by days. Each duty's rate
+comes out as follows:
+
+- **Remote Gaming Duty**: 21% to 31 March 2026, 40% from 1 April 2026.
+  Receipts grow 108.3% into 2026-27 (£2,752.0 million against HMRC's
+  £1,321.0 million); the base grows (2,752.0 / 40%) / (1,321.0 / 21%) − 1 =
+  9.38%.
+- **General Betting Duty**: the remote part, 45.5% of the 2024-25 base, goes
+  from 15% to 25% on 1 April 2027, so the rate on the whole base goes from
+  15% to 15% + 10% × 45.5% = 19.55%. Receipts grow 33.8% into 2027-28
+  (£655.6 million to £877.4 million); the base grows (877.4 / 19.55%) /
+  (655.6 / 15%) − 1 = 2.70%. The shares come from Microcosm's split of
+  HMRC's 2024-25 receipts by the Gambling Commission's 2024-25 gross
+  gambling yield, held fixed in every year. That split counts all remote
+  horse racing as UK horse racing, which keeps 15%, so the part at 25% may
+  be larger, and the 2.70% then overstates the base's growth. Microcosm's
+  split gives spread betting no part, so it has no weight.
+- **Machine Games Duty**: from 1 April 2027 the model charges the
+  higher-stake part of the standard-rate base at the higher rate (see
+  [higher-stake machines](#higher-stake-machines-from-1-april-2027)), and
+  Table 4.10's line includes that rise: the forecast incorporates the
+  measures announced since March (EFO paragraph 3.2), and the rise
+  "increases receipts by a further estimated £0.1 billion a year from
+  2027-28" (paragraph 4.45). The series divides the line by a rate that
+  charges the higher-stake share of the standard-rate base, 90.78% (see
+  [the higher-stake share](#the-higher-stake-share)), at 25% from 2027-28.
+  The importer weights each band by HMRC's 2024-25 liabilities over its
+  rate, so the rate on the whole base rises from 19.35% to 23.68%. Receipts
+  grow 22.1%
+  into 2027-28 (£677.1 million to £826.9 million); the base falls by
+  (826.9 / 23.68%) / (677.1 / 19.35%) − 1 = −0.23%. The importer reads the
+  date from `gov.hmrc.gambling_duty.machine_games.higher_stake_machines_at_higher_rate`
+  and the rates from their parameter files, so the series and the formula
+  read the same dates and rates.
+
+  The OBR's policy Table 1.1 joins two costings as measure 56, under the
+  head Betting: the 25% rate and the move of liability to machine
+  suppliers from April 2028. The rate costing nets off a behavioural
+  response: an elasticity of −0.95, with a quarter of the stakes lost
+  moving to Remote Gaming Duty, and a general attrition assumption. The
+  supplier costing comes from reduced non-compliance and earlier payment
+  ([Budget 2026 policy costings, pages 67 and 68](https://assets.publishing.service.gov.uk/media/6ae1883fe4367e5c8b0467df/AB26_Policy_Costing.pdf#page=67)).
+  Dividing the line by the rate that produced it keeps all of these in the
+  base, as receipts over the rate does for every other duty. Taking the
+  measure off the line instead would drop them, and the model's static
+  rates restore none of them.
+- **Gaming Duty**: the household formula charges one effective rate, which
+  does not change, so the base grows with receipts. The statutory bands do
+  not enter: any change in the duty's effective rate that the OBR's
+  forecast includes stays in the base.
+- **Bingo Duty**: 10% until its abolition on 1 April 2026. A zero rate
+  leaves no base to divide out, so the index holds its 2025-26 level from
+  2026-27. Current law charges nothing whatever the base; a reform that
+  charges Bingo Duty again charges that 2025-26 base in cash terms.
+- **Lottery Duty** (12%) and **Pool Betting Duty** (15%): one rate each, so
+  the base grows with receipts.
+
+The series rest on these approximations:
+
+- HMRC reports cash receipts. Table 4.10 measures accrued receipts: its
+  totals equal the "Betting and gaming taxes" row of the October 2026 Table
+  4.1, whose note reads "All taxes are on an accrued basis." Growth into
+  2026-27 compares accrued 2026-27 receipts with cash 2025-26 receipts.
+- Model years run from 6 April and the OBR's from 1 April. A model year
+  that takes in five days of a 1 April rate change charges them at the new
+  rate, so FY2025 Remote Gaming Duty (1.2%) and FY2026 General Betting Duty
+  (0.4%) sit slightly above the published receipts, and FY2025 Bingo Duty
+  (1.4%) slightly below. With the higher-stake input at its share, FY2026
+  Machine Games Duty sits 0.31% above Table 4.10 for the same reason: the
+  OBR's 2026-27 charges no higher-stake machine at 25%, while model year
+  2026 charges 1 to 5 April 2027 at 25%.
+- Two lines fall where no rate changes. Table 4.10's Lottery Duty for
+  2026-27, £830.5 million, falls short of HMRC's 2025-26 outturn of £980.1
+  million by 15.3%. The March 2026 Table 3.10 forecast £1,008.6 million for the same
+  year; the October policy table holds no Lottery Duty measure, and the EFO
+  gives no reason in paragraph 4.45. Pool Betting Duty
+  receipts fall from £8.1 million in 2024-25 to £4.0 million in 2025-26 and
+  a forecast £2.8 million in 2026-27, so its index falls by 65%.
+
+### The higher-stake share
+
+`MACHINE_GAMES_HIGHER_STAKE_SHARE` in
+`policyengine_uk/utils/import_obr_forecasts.py` holds the share: 90.78% of
+standard-rate takings come from machines with a maximum charge above £1
+or a maximum prize above £100. It divides the Gambling Commission's
+2024-25 gaming machine yield in Category B, £2,289.8 million, by that in
+Categories B and C, £2,522.3 million (Industry Statistics, April 2025 to
+March 2026 release, sheet 4, cells K34 and L34, revised figures). The
+2007 regulations define a Category B machine as one outside Categories C
+and D, and the Commission gives Category C's limits as a £1 charge and a
+£100 prize
+([Categories of Gaming Machine Regulations 2007, regulation 5](https://www.legislation.gov.uk/uksi/2007/2158/regulation/5);
+[Gambling Commission, gaming machine categories](https://www.gamblingcommission.gov.uk/licensees-and-businesses/guide/gaming-machine-categories)).
+Category D enters neither side. Its money-prize machines charge at most
+20p for at most £10 in cash, which puts them in the lower-rate class
+(Finance Act 2012, Schedule 24, paragraph 5(2)). Its other machines pay no
+cash prize, so their games fall outside the duty (paragraph 2(2)). A machine's
+category caps its charge and prize, while the tax class turns on the
+highest charge and prize it actually offers, so the category split only
+approximates the class.
+
+The statistics cover the premises the Commission licenses in Great
+Britain: arcades, betting shops, bingo halls and casinos. They leave out:
+
+- pubs and other alcohol-licensed premises, which may hold only Category C
+  and D machines;
+- members' and commercial clubs, which may hold Category B3A or B4
+  machines as well as C and D;
+- Northern Ireland, outside the statistics' Great Britain coverage.
+
+HMRC's 2024-25 standard-rate liabilities, £604.7 million at 20%, give a
+UK base of £3,023.7 million, £501.4 million (16.6%) more than the
+Commission's Category B and C yield. Differences in definition and timing
+between gross gambling yield and dutiable net takings may account for
+part of it. Pubs' Category C and D machines never pay the higher rate, so
+leaving them out pushes the share up, though skill-with-prize machines there
+fall outside the categories. Clubs' taxable Category B4 machines pay it, so
+leaving them out pushes the share down. Legally operated Category B3A
+lottery machines pay no duty and enter neither side. If the whole
+difference stayed at 20%, the share would be £2,289.8 million over £3,023.7 million, 75.73%, and
+the 2027-28 base index would rise by 3.13% from its level at 90.78%. The
+Commission's provisional 2025-26 figures give 91.41%. The importer holds
+the 2024-25 share in every year, as it does the band weights.
+
+### Datasets without the higher-stake input
+
+No dataset supplies
+`machine_games_standard_rate_higher_stake_net_takings` yet. Until one
+does, `machine_games_duty` charges the standard rate on the whole
+standard-rate input, the rates before Budget 2026, on a base that grows
+by receipts over the rates after it. From 2027-28 the duty therefore
+falls short of Table 4.10 by 18.3%: the duty equals Table 4.10's line
+times 19.35% / 23.68%. On one constructed household holding the 2024-25 national bases:
+
+| £ million | 2027-28 | 2028-29 | 2029-30 | 2030-31 | 2031-32 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Table 4.10 | 826.9 | 857.0 | 865.2 | 875.5 | 896.3 |
+| Higher-stake input at 90.78% | 826.9 | 857.0 | 865.2 | 875.5 | 896.3 |
+| Higher-stake input absent | 675.5 | 700.0 | 706.8 | 715.2 | 732.2 |
+| Shortfall without it | −151.4 | −156.9 | −158.4 | −160.3 | −164.1 |
+
+A dataset that sets the input to the share of its standard-rate input
+closes the gap. Before 2026-27 the input changes nothing; in 2026-27 it
+adds the five days at 25%.
+
+Every input in the gambling folder declares an index, including
+`machine_games_standard_rate_higher_stake_net_takings`;
+`policyengine_uk/tests/test_gambling_duty_base_projection.py` fails for a new
+input that declares none.
+
+Sources: [OBR October 2026 Economic and Fiscal Outlook](https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/)
+(receipts Table 4.10 and policy Table 1.1, in the
+[detailed forecast tables zip file](https://obr.uk/download/october-2026-economic-and-fiscal-outlook-detailed-forecast-tables-zip-file/);
+receipts workbook SHA-256
+`d115705716d77b11c190385d41cb1924f30080c9331a8a386c04d4e65a368e95`),
+[HMRC July 2026 Betting and Gaming tables](https://assets.publishing.service.gov.uk/media/6ab54fd9fe72ed1e2b02f06b/2026_Jul_Bet_and_Gam_Tab.ods),
+[Autumn Budget 2026 policy costings, pages 67 and 68](https://assets.publishing.service.gov.uk/media/6ae1883fe4367e5c8b0467df/AB26_Policy_Costing.pdf#page=67),
+[Microcosm's 2024-25 gambling bases](https://github.com/PolicyEngine/microcosm/blob/main/docs/evidence/uk-excise-quantities-1359/outputs/national_reconciliation.json)
+and the [Gambling Commission's Industry Statistics, April 2025 to March 2026](https://www.gamblingcommission.gov.uk/statistics-and-research/publication/industry-statistics-annual-report-financial-year-april-2025-to-march-2026-official-statistics)
+(workbook SHA-256
+`a6ea23b5ddff2f3839ebec2a8cc0d9a0817e218f5bf10921e0172ecae768da58`).
 
 ## Tax totals and fiscal classification
 

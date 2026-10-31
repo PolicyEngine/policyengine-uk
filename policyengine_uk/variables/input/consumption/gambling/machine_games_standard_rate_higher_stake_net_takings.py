@@ -7,6 +7,7 @@ class machine_games_standard_rate_higher_stake_net_takings(Variable):
     definition_period = YEAR
     default_value = 0
     unit = GBP
+    uprating = "gov.economic_assumptions.indices.obr.gambling_duty_bases.machine_games"
     label = "Attributed higher-stake part of standard-rate machine games net takings"
     documentation = (
         "The part of machine_games_standard_rate_net_takings that comes from "

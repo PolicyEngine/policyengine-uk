@@ -35,6 +35,7 @@ GDP and population assumptions remain supported.
 | `stamp_duty_land_tax.non_residential` | SDLT receipts from non-residential property  | EFO receipts, property transactions taxes by sector: Table 4.7 in October 2026 |
 | `business_rates.great_britain` | Business rates receipts, England, Scotland and Wales (cash) | EFO receipts, current receipts (cash basis): Table 4.8 in October 2026 |
 | `business_rates.northern_ireland` | Northern Ireland business rates receipts      | EFO receipts, other taxes: Table 4.2 in October 2026 |
+| `gambling_duty_bases.<duty>` | The base of each of the seven betting and gaming duties (receipts over the model's rate) | HMRC Betting and Gaming tables (2024-25, 2025-26), then EFO receipts, betting and gaming duties forecast breakdown: Table 4.10 in October 2026 |
 
 The four receipts series project the corporate SDLT and business rates
 statistics (`gov.hmrc.stamp_duty.statistics`,
@@ -44,6 +45,20 @@ growth for the EFO's outturn year (its outturn over the year before's outturn
 in an earlier EFO), the EFO's forecast years, and after them the
 `average_earnings` path. Years before the outturn year are kept, so each
 index keeps its base year.
+
+The seven `gambling_duty_bases` series (`general_betting`, `pool_betting`,
+`remote_gaming`, `machine_games`, `gaming`, `bingo`, `lottery`) grow the
+gambling duty inputs (#2738). They grow a duty's base, not its receipts:
+each year's receipts divided by the rate the model charges that fiscal
+year. The model then applies its own rate changes, such as Remote Gaming
+Duty's rise from 21% to 40% on 1 April 2026, once. The table publishes
+forecasts only, so each series starts from HMRC's 2024-25 receipts, the
+model's base year, and its 2025-26 outturn, which the importer holds in
+`RECEIPTS_SERIES_SPECS`. A year whose rate is zero, Bingo Duty's from
+2026-27, holds the base flat. See
+[gambling duties](../../../../docs/engineering/gambling-duties.md#projection)
+for each duty's rates, the higher-stake share Machine Games Duty's rate
+assumes, and the approximations.
 
 `national_living_wage` projects the minimum wage rates
 (`gov.hmrc.minimum_wage`) after the last rate set. It is the growth of the
@@ -458,6 +473,15 @@ the forecast levels, though not their growth.
    `policyengine_uk/tests/test_corporate_receipts_statistics.py`
    (`OBR_RECEIPTS_BN`), which pin the series to the OBR's tables. Pass
    `--skip-receipts-growth` only to leave them on the previous EFO.
+   The same run refreshes the `gambling_duty_bases` series from the new
+   EFO's betting and gaming duties forecast breakdown. They read no previous
+   EFO: the year before the table's first comes from HMRC's receipts in each
+   spec. When the table starts a year later (2027-28 in October 2027), add
+   HMRC's outturn for the year before from its latest Betting and Gaming
+   tables; the importer stops and names the year until you do. Check the
+   EFO's policy tables for any new measure in the betting and gaming lines.
+   Then update the published levels in
+   `policyengine_uk/tests/test_gambling_duty_base_projection.py`.
 7. If the new EFO runs past `PROJECTION_END_YEAR`, move it on (see
    [Dataset projection horizon](#dataset-projection-horizon)).
 8. Refresh the household energy price inputs (see
