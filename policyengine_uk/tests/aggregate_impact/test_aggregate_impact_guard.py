@@ -545,6 +545,33 @@ def test_the_movement_paths_agree_and_the_held_slope_is_looser(households, tax_l
         assert np.array_equal(mask, mirrored)
 
 
+@settings(max_examples=100, deadline=None)
+@given(
+    households=st.lists(
+        st.tuples(
+            st.booleans(),
+            st.floats(0, 1e6),
+            st.one_of(
+                st.floats(-1e12, 1e12), st.sampled_from([np.inf, -np.inf, np.nan])
+            ),
+        ),
+        min_size=1,
+        max_size=8,
+    ),
+)
+def test_the_held_checks_stay_within_the_households_they_are_given(households):
+    """A held check narrows the households it receives: it never adds one,
+    however far the response moves there."""
+    where, expected, response = (np.array(column) for column in zip(*households))
+    slack = _slack(np.zeros_like(expected))
+    everyone = np.ones_like(where)
+    for check in (still_breaks, breaks_on_slope):
+        assert np.array_equal(
+            check("moves", where, expected, slack, response),
+            where & check("moves", everyone, expected, slack, response),
+        )
+
+
 def test_supplied_inputs_are_restored_after_perturbation():
     formulas = model(contains=False)
     formulas.pop("tax_b")
