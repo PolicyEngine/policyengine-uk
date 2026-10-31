@@ -3,10 +3,12 @@
 These parser fixtures retain the original worksheet XML for Contents, Other
 taxes (3.2, or 4.2 in October 2026), Property transactions taxes: receipts by
 sector (3.7, or 4.7), Current receipts (on a cash basis: 3.9 in March 2025,
-3.8 in March 2026, 4.8 in October 2026) and, from March 2026, Betting and
-gaming duties forecast breakdown (3.10, or 4.10), plus the original shared
-strings. The March 2025 tables have no betting and gaming breakdown. Only
-the workbook's sheet list and relationships were reduced to those entries. The published unit cells, fiscal-year headers, markers, row labels and
+3.8 in March 2026, 4.8 in October 2026), Tobacco clearances (3.11, or 4.11),
+Alcohol clearance forecasts (3.12, or 4.12, a sheet that also holds the
+alcohol receipts forecasts) and, from March 2026, Betting and gaming duties
+forecast breakdown (3.10, or 4.10), plus the original shared strings. The
+March 2025 tables have no betting and gaming breakdown. Only the workbook's
+sheet list and relationships were reduced to those entries. The published unit cells, fiscal-year headers, markers, row labels and
 numeric cells are unchanged. These are minimal archives for the importer's XLSX
 reader, rather than complete Excel documents with styles and charts. The
 October 2026 workbook titles sheet 4.8 "43.8 Current receipts (on a cash

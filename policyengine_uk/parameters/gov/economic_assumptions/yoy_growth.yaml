@@ -1299,6 +1299,327 @@ obr:
           - title: OBR, Economic and fiscal outlook October 2026, detailed forecast tables, receipts, Table 4.5, divided by ons.population growth
             href: https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/
 
+    # Alcohol and tobacco clearances per person (#2596), which project the
+    # household quantity inputs (data/uprating_indices.yaml). Each is the
+    # growth in the OBR's clearances of a product group over one plus
+    # ons.population growth, to six decimals: (1 + clearance growth) /
+    # (1 + population growth) - 1. Dataset projection grows household
+    # weights by ons.population, so the weighted quantity grows with the
+    # clearances. The outturn year's growth divides this EFO's outturn by the
+    # previous EFO's outturn for the year before. After the OBR's forecast
+    # the clearances hold flat, as road fuel volume does.
+    # policyengine_uk/utils/import_obr_forecasts.py rewrites these series
+    # from a new EFO's receipts tables and the ons.population growth below,
+    # and keeps the 2024 base year.
+    tobacco_clearances:
+      cigarettes:
+        description: Growth per person in the OBR's cigarette clearances, which projects each household's cigarettes_per_week.
+        values:
+          # Base year (2024-25): the alcohol and tobacco duties start in model year 2024
+          2024-01-01: 0.0000
+          # Outturn (2025-26 over 2024-25) from OBR EFO October 2026 over March 2026, receipts Table 4.11 (March 2026: Table 3.11) "Cigarette clearances (million sticks)"; per head: clearance growth over one plus ons.population growth
+          2025-01-01: -0.102653
+          # Forecast (2026-2031) from OBR EFO October 2026, receipts Table 4.11; per head: clearance growth over one plus ons.population growth
+          2026-01-01: -0.105009
+          2027-01-01: -0.102347
+          2028-01-01: -0.083831
+          2029-01-01: -0.092617
+          2030-01-01: -0.068657
+          2031-01-01: -0.06894
+          # Beyond the OBR forecast: clearances held flat, so per head they fall with ons.population growth
+          2032-01-01: -0.002195
+          2033-01-01: -0.002096
+          2034-01-01: -0.001896
+          2035-01-01: -0.001797
+          2036-01-01: -0.001697
+          2037-01-01: -0.001597
+          2038-01-01: -0.001498
+          2040-01-01: -0.001398
+          2042-01-01: -0.001298
+          2044-01-01: -0.001199
+          2045-01-01: -0.001099
+          2047-01-01: -0.000999
+          2048-01-01: -0.000899
+          2049-01-01: -0.000799
+          2050-01-01: -0.0006
+          2051-01-01: -0.0005
+          2052-01-01: -0.0003
+          2053-01-01: -0.0002
+          2054-01-01: 0.0000
+          2055-01-01: 0.0001
+          2056-01-01: 0.0003
+          2057-01-01: 0.0004
+          2058-01-01: 0.0005
+          2059-01-01: 0.0006
+          2060-01-01: 0.0007
+          2061-01-01: 0.000801
+          2064-01-01: 0.000901
+          2071-01-01: 0.001001
+        metadata:
+          unit: /1
+          label: Cigarette clearances growth per person
+          reference:
+            - title: OBR EFO October 2026 (detailed forecast tables, receipts, Table 4.11)
+              href: https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/
+            - title: OBR EFO March 2026 (detailed forecast tables, receipts, Table 3.11; 2024-25 outturn)
+              href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
+      hand_rolling_tobacco:
+        description: Growth per person in the OBR's hand-rolled tobacco clearances, which projects each household's hand_rolling_tobacco_grams_per_week.
+        values:
+          # Base year (2024-25): the alcohol and tobacco duties start in model year 2024
+          2024-01-01: 0.0000
+          # Outturn (2025-26 over 2024-25) from OBR EFO October 2026 over March 2026, receipts Table 4.11 (March 2026: Table 3.11) "Hand rolled tobacco clearances"; per head: clearance growth over one plus ons.population growth
+          2025-01-01: -0.17412
+          # Forecast (2026-2031) from OBR EFO October 2026, receipts Table 4.11; per head: clearance growth over one plus ons.population growth
+          2026-01-01: -0.069369
+          2027-01-01: -0.073763
+          2028-01-01: -0.083858
+          2029-01-01: -0.064999
+          2030-01-01: -0.041711
+          2031-01-01: -0.048922
+          # Beyond the OBR forecast: clearances held flat, so per head they fall with ons.population growth
+          2032-01-01: -0.002195
+          2033-01-01: -0.002096
+          2034-01-01: -0.001896
+          2035-01-01: -0.001797
+          2036-01-01: -0.001697
+          2037-01-01: -0.001597
+          2038-01-01: -0.001498
+          2040-01-01: -0.001398
+          2042-01-01: -0.001298
+          2044-01-01: -0.001199
+          2045-01-01: -0.001099
+          2047-01-01: -0.000999
+          2048-01-01: -0.000899
+          2049-01-01: -0.000799
+          2050-01-01: -0.0006
+          2051-01-01: -0.0005
+          2052-01-01: -0.0003
+          2053-01-01: -0.0002
+          2054-01-01: 0.0000
+          2055-01-01: 0.0001
+          2056-01-01: 0.0003
+          2057-01-01: 0.0004
+          2058-01-01: 0.0005
+          2059-01-01: 0.0006
+          2060-01-01: 0.0007
+          2061-01-01: 0.000801
+          2064-01-01: 0.000901
+          2071-01-01: 0.001001
+        metadata:
+          unit: /1
+          label: Hand-rolled tobacco clearances growth per person
+          reference:
+            - title: OBR EFO October 2026 (detailed forecast tables, receipts, Table 4.11)
+              href: https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/
+            - title: OBR EFO March 2026 (detailed forecast tables, receipts, Table 3.11; 2024-25 outturn)
+              href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
+      other_tobacco_products:
+        description: Growth per person in the OBR's clearances of other tobacco products, which projects each household's cigars_grams_per_week, other_tobacco_grams_per_week and heated_tobacco_grams_per_week.
+        values:
+          # Base year (2024-25): the alcohol and tobacco duties start in model year 2024
+          2024-01-01: 0.0000
+          # Outturn (2025-26 over 2024-25) from OBR EFO October 2026 over March 2026, receipts Table 4.11 (March 2026: Table 3.11) "Other tobacco products"; per head: clearance growth over one plus ons.population growth
+          2025-01-01: -0.13903
+          # Forecast (2026-2031) from OBR EFO October 2026, receipts Table 4.11; per head: clearance growth over one plus ons.population growth
+          2026-01-01: -0.053308
+          2027-01-01: -0.042058
+          2028-01-01: -0.083858
+          2029-01-01: -0.050588
+          2030-01-01: -0.039029
+          2031-01-01: -0.058055
+          # Beyond the OBR forecast: clearances held flat, so per head they fall with ons.population growth
+          2032-01-01: -0.002195
+          2033-01-01: -0.002096
+          2034-01-01: -0.001896
+          2035-01-01: -0.001797
+          2036-01-01: -0.001697
+          2037-01-01: -0.001597
+          2038-01-01: -0.001498
+          2040-01-01: -0.001398
+          2042-01-01: -0.001298
+          2044-01-01: -0.001199
+          2045-01-01: -0.001099
+          2047-01-01: -0.000999
+          2048-01-01: -0.000899
+          2049-01-01: -0.000799
+          2050-01-01: -0.0006
+          2051-01-01: -0.0005
+          2052-01-01: -0.0003
+          2053-01-01: -0.0002
+          2054-01-01: 0.0000
+          2055-01-01: 0.0001
+          2056-01-01: 0.0003
+          2057-01-01: 0.0004
+          2058-01-01: 0.0005
+          2059-01-01: 0.0006
+          2060-01-01: 0.0007
+          2061-01-01: 0.000801
+          2064-01-01: 0.000901
+          2071-01-01: 0.001001
+        metadata:
+          unit: /1
+          label: Other tobacco products clearances growth per person
+          reference:
+            - title: OBR EFO October 2026 (detailed forecast tables, receipts, Table 4.11)
+              href: https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/
+            - title: OBR EFO March 2026 (detailed forecast tables, receipts, Table 3.11; 2024-25 outturn)
+              href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
+    alcohol_clearances:
+      beer_and_cider:
+        description: Growth per person in the OBR's beer and cider clearances, which projects each household's beer_litres, cider_litres and sparkling_cider_litres.
+        values:
+          # Base year (2024-25): the alcohol and tobacco duties start in model year 2024
+          2024-01-01: 0.0000
+          # Outturn (2025-26 over 2024-25) from OBR EFO October 2026 over March 2026, receipts Table 4.12 (March 2026: Table 3.12) "Beer and cider"; per head: clearance growth over one plus ons.population growth
+          2025-01-01: -0.030668
+          # Forecast (2026-2031) from OBR EFO October 2026, receipts Table 4.12; per head: clearance growth over one plus ons.population growth
+          2026-01-01: -0.020398
+          2027-01-01: -0.021805
+          2028-01-01: -0.008938
+          2029-01-01: -0.007436
+          2030-01-01: -0.011936
+          2031-01-01: -0.012643
+          # Beyond the OBR forecast: clearances held flat, so per head they fall with ons.population growth
+          2032-01-01: -0.002195
+          2033-01-01: -0.002096
+          2034-01-01: -0.001896
+          2035-01-01: -0.001797
+          2036-01-01: -0.001697
+          2037-01-01: -0.001597
+          2038-01-01: -0.001498
+          2040-01-01: -0.001398
+          2042-01-01: -0.001298
+          2044-01-01: -0.001199
+          2045-01-01: -0.001099
+          2047-01-01: -0.000999
+          2048-01-01: -0.000899
+          2049-01-01: -0.000799
+          2050-01-01: -0.0006
+          2051-01-01: -0.0005
+          2052-01-01: -0.0003
+          2053-01-01: -0.0002
+          2054-01-01: 0.0000
+          2055-01-01: 0.0001
+          2056-01-01: 0.0003
+          2057-01-01: 0.0004
+          2058-01-01: 0.0005
+          2059-01-01: 0.0006
+          2060-01-01: 0.0007
+          2061-01-01: 0.000801
+          2064-01-01: 0.000901
+          2071-01-01: 0.001001
+        metadata:
+          unit: /1
+          label: Beer and cider clearances growth per person
+          reference:
+            - title: OBR EFO October 2026 (detailed forecast tables, receipts, Table 4.12)
+              href: https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/
+            - title: OBR EFO March 2026 (detailed forecast tables, receipts, Table 3.12; 2024-25 outturn)
+              href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
+      wine:
+        description: Growth per person in the OBR's wine clearances, including other fermented products, which projects each household's wine_litres and other_fermented_litres.
+        values:
+          # Base year (2024-25): the alcohol and tobacco duties start in model year 2024
+          2024-01-01: 0.0000
+          # Outturn (2025-26 over 2024-25) from OBR EFO October 2026 over March 2026, receipts Table 4.12 (March 2026: Table 3.12) "Wine"; per head: clearance growth over one plus ons.population growth
+          2025-01-01: -0.034606
+          # Forecast (2026-2031) from OBR EFO October 2026, receipts Table 4.12; per head: clearance growth over one plus ons.population growth
+          2026-01-01: -0.002797
+          2027-01-01: -0.018867
+          2028-01-01: -0.008149
+          2029-01-01: -0.008291
+          2030-01-01: -0.012466
+          2031-01-01: -0.011764
+          # Beyond the OBR forecast: clearances held flat, so per head they fall with ons.population growth
+          2032-01-01: -0.002195
+          2033-01-01: -0.002096
+          2034-01-01: -0.001896
+          2035-01-01: -0.001797
+          2036-01-01: -0.001697
+          2037-01-01: -0.001597
+          2038-01-01: -0.001498
+          2040-01-01: -0.001398
+          2042-01-01: -0.001298
+          2044-01-01: -0.001199
+          2045-01-01: -0.001099
+          2047-01-01: -0.000999
+          2048-01-01: -0.000899
+          2049-01-01: -0.000799
+          2050-01-01: -0.0006
+          2051-01-01: -0.0005
+          2052-01-01: -0.0003
+          2053-01-01: -0.0002
+          2054-01-01: 0.0000
+          2055-01-01: 0.0001
+          2056-01-01: 0.0003
+          2057-01-01: 0.0004
+          2058-01-01: 0.0005
+          2059-01-01: 0.0006
+          2060-01-01: 0.0007
+          2061-01-01: 0.000801
+          2064-01-01: 0.000901
+          2071-01-01: 0.001001
+        metadata:
+          unit: /1
+          label: Wine clearances growth per person
+          reference:
+            - title: OBR EFO October 2026 (detailed forecast tables, receipts, Table 4.12)
+              href: https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/
+            - title: OBR EFO March 2026 (detailed forecast tables, receipts, Table 3.12; 2024-25 outturn)
+              href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
+      spirits:
+        description: Growth per person in the OBR's spirits clearances, including spirit-based ready-to-drinks, which projects each household's spirits_litres.
+        values:
+          # Base year (2024-25): the alcohol and tobacco duties start in model year 2024
+          2024-01-01: 0.0000
+          # Outturn (2025-26 over 2024-25) from OBR EFO October 2026 over March 2026, receipts Table 4.12 (March 2026: Table 3.12) "Spirits"; per head: clearance growth over one plus ons.population growth
+          2025-01-01: -0.016504
+          # Forecast (2026-2031) from OBR EFO October 2026, receipts Table 4.12; per head: clearance growth over one plus ons.population growth
+          2026-01-01: -0.009907
+          2027-01-01: -0.0181
+          2028-01-01: -0.005966
+          2029-01-01: -0.006394
+          2030-01-01: -0.012237
+          2031-01-01: -0.009692
+          # Beyond the OBR forecast: clearances held flat, so per head they fall with ons.population growth
+          2032-01-01: -0.002195
+          2033-01-01: -0.002096
+          2034-01-01: -0.001896
+          2035-01-01: -0.001797
+          2036-01-01: -0.001697
+          2037-01-01: -0.001597
+          2038-01-01: -0.001498
+          2040-01-01: -0.001398
+          2042-01-01: -0.001298
+          2044-01-01: -0.001199
+          2045-01-01: -0.001099
+          2047-01-01: -0.000999
+          2048-01-01: -0.000899
+          2049-01-01: -0.000799
+          2050-01-01: -0.0006
+          2051-01-01: -0.0005
+          2052-01-01: -0.0003
+          2053-01-01: -0.0002
+          2054-01-01: 0.0000
+          2055-01-01: 0.0001
+          2056-01-01: 0.0003
+          2057-01-01: 0.0004
+          2058-01-01: 0.0005
+          2059-01-01: 0.0006
+          2060-01-01: 0.0007
+          2061-01-01: 0.000801
+          2064-01-01: 0.000901
+          2071-01-01: 0.001001
+        metadata:
+          unit: /1
+          label: Spirits clearances growth per person
+          reference:
+            - title: OBR EFO October 2026 (detailed forecast tables, receipts, Table 4.12)
+              href: https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/
+            - title: OBR EFO March 2026 (detailed forecast tables, receipts, Table 3.12; 2024-25 outturn)
+              href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
+
   house_prices:
     description: House prices year-on-year growth.
     values:
@@ -1445,7 +1766,8 @@ ons:
     #   published.
     # The per_capita series under obr and orr are derived from this series;
     # re-derive them, and the petrol and diesel spending proxies, whenever it
-    # changes.
+    # changes. import_obr_forecasts.py rewrites the alcohol and tobacco
+    # clearance series from it.
     values:
       2021-01-01: 0.0036
       2022-01-01: 0.0105

@@ -36,6 +36,8 @@ GDP and population assumptions remain supported.
 | `business_rates.great_britain` | Business rates receipts, England, Scotland and Wales (cash) | EFO receipts, current receipts (cash basis): Table 4.8 in October 2026 |
 | `business_rates.northern_ireland` | Northern Ireland business rates receipts      | EFO receipts, other taxes: Table 4.2 in October 2026 |
 | `gambling_duty_bases.<duty>` | The base of each of the seven betting and gaming duties (receipts over the model's rate) | HMRC Betting and Gaming tables (2024-25, 2025-26), then EFO receipts, betting and gaming duties forecast breakdown: Table 4.10 in October 2026 |
+| `per_capita.tobacco_clearances.<group>` | Cigarette, hand-rolled tobacco and other tobacco clearances per person | EFO receipts, tobacco clearances: Table 4.11 in October 2026 (3.11 in March 2026), over `ons.population` |
+| `per_capita.alcohol_clearances.<group>` | Beer and cider, wine and spirits clearances per person | EFO receipts, alcohol clearance forecasts: Table 4.12 in October 2026 (3.12 in March 2026), over `ons.population` |
 
 The four receipts series project the corporate SDLT and business rates
 statistics (`gov.hmrc.stamp_duty.statistics`,
@@ -59,6 +61,19 @@ model's base year, and its 2025-26 outturn, which the importer holds in
 [gambling duties](../../../../docs/engineering/gambling-duties.md#projection)
 for each duty's rates, the higher-stake share Machine Games Duty's rate
 assumes, and the approximations.
+
+The six clearance series under `per_capita` grow the alcohol and tobacco
+quantity inputs (#2596): `tobacco_clearances.cigarettes`,
+`hand_rolling_tobacco` and `other_tobacco_products`, and
+`alcohol_clearances.beer_and_cider`, `wine` and `spirits`. Each is the
+growth in the OBR's clearances of a product group over one plus
+`ons.population` growth, to six decimals, because dataset projection grows
+household weights by `ons.population`. They link their outturn year to the
+previous EFO's outturn, as the four receipts series do, and hold the
+clearances flat after the forecast. The importer reads `ons.population` from
+the `yoy_growth.yaml` it rewrites. See
+[household excise duties](../../../../docs/engineering/excise-duties.md#projection)
+for the mapping of inputs to groups, the arithmetic and the sources.
 
 `national_living_wage` projects the minimum wage rates
 (`gov.hmrc.minimum_wage`) after the last rate set. It is the growth of the
@@ -483,6 +498,18 @@ the forecast levels, though not their growth.
    and extend the Machine Games Duty measure's receipts when the forecast
    runs past 2031-32. Then update the published levels in
    `policyengine_uk/tests/test_gambling_duty_base_projection.py`.
+   The same run also refreshes the six alcohol and tobacco clearance series
+   under `per_capita` from the new EFO's tobacco clearances and alcohol
+   clearance forecasts, and the previous EFO's for the outturn year's base.
+   Each line's table must state its unit, in a row label or a note, in both
+   EFOs: million sticks for cigarettes, thousand kilograms for the other
+   tobacco lines, and thousand hectolitres of alcohol for alcohol. The
+   importer stops on any other. It divides each year's growth by
+   `ons.population` as `yoy_growth.yaml` holds it, so rerun it whenever
+   that series changes. Then update the published levels in
+   `policyengine_uk/tests/test_excise_quantity_projection.py`
+   (`CLEARANCES`) and the real-table fixtures in
+   `policyengine_uk/tests/fixtures/obr_receipts/` (see its README).
 7. If the new EFO runs past `PROJECTION_END_YEAR`, move it on (see
    [Dataset projection horizon](#dataset-projection-horizon)).
 8. Refresh the household energy price inputs (see

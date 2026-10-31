@@ -5,7 +5,7 @@ import copy
 import os
 import re
 import shutil
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date
 from decimal import Decimal
 from functools import lru_cache
@@ -668,6 +668,80 @@ class ReceiptsSeriesSpec:
     references: tuple[tuple[str, str], ...] = ()
 
 
+@dataclass(frozen=True)
+class ClearanceSeriesSpec(ReceiptsSeriesSpec):
+    """A line of the OBR's tobacco or alcohol clearance tables, which grows
+    household quantity inputs per head (#2596).
+
+    The line counts quantities, not pounds, so its table has no "£ billion"
+    cell. ``unit`` is the unit as the table states it, in a row label or a
+    note, and the importer requires it in exactly one cell of the table in
+    both EFOs. Dataset projection grows household weights by
+    ``ons.population``, so ``render_receipts_growth_yaml`` writes the
+    clearances' growth over one plus that growth (``per_head_growth``) and
+    the weighted total grows with the clearances. After the OBR's forecast
+    the series holds the clearances flat, as road fuel volume does.
+    """
+
+    unit: str = ""
+
+    def __post_init__(self):
+        if not self.unit:
+            raise ValueError(f"{'.'.join(self.path)}: a clearance line needs a unit")
+
+
+TOBACCO_CLEARANCES = "tobacco clearances"
+ALCOHOL_CLEARANCES = "alcohol clearance forecasts"
+# Table 4.11 (3.11 in March 2026) states each unit in a row label: the
+# hand-rolled and other tobacco lines split "Non-cigarette clearances ('000s
+# kg)". Table 4.12 (3.12) states its unit in a note.
+TOBACCO_STICKS = "(million sticks)"
+TOBACCO_KILOGRAMS = "('000s kg)"
+ALCOHOL_HECTOLITRES = "thousands of hectolitres of alcohol"
+
+# The product groups the OBR forecasts. Table 4.12's wine line includes other
+# fermented products and its spirits line spirit-based ready-to-drinks (its
+# footnotes 1 and 2).
+CLEARANCE_SERIES_SPECS = (
+    ClearanceSeriesSpec(
+        path=("per_capita", "tobacco_clearances", "cigarettes"),
+        title=TOBACCO_CLEARANCES,
+        row="cigarette clearances (million sticks)",
+        unit=TOBACCO_STICKS,
+    ),
+    ClearanceSeriesSpec(
+        path=("per_capita", "tobacco_clearances", "hand_rolling_tobacco"),
+        title=TOBACCO_CLEARANCES,
+        row="hand rolled tobacco clearances",
+        unit=TOBACCO_KILOGRAMS,
+    ),
+    ClearanceSeriesSpec(
+        path=("per_capita", "tobacco_clearances", "other_tobacco_products"),
+        title=TOBACCO_CLEARANCES,
+        row="other tobacco products",
+        unit=TOBACCO_KILOGRAMS,
+    ),
+    ClearanceSeriesSpec(
+        path=("per_capita", "alcohol_clearances", "beer_and_cider"),
+        title=ALCOHOL_CLEARANCES,
+        row="beer and cider",
+        unit=ALCOHOL_HECTOLITRES,
+    ),
+    ClearanceSeriesSpec(
+        path=("per_capita", "alcohol_clearances", "wine"),
+        title=ALCOHOL_CLEARANCES,
+        row="wine",
+        unit=ALCOHOL_HECTOLITRES,
+    ),
+    ClearanceSeriesSpec(
+        path=("per_capita", "alcohol_clearances", "spirits"),
+        title=ALCOHOL_CLEARANCES,
+        row="spirits",
+        unit=ALCOHOL_HECTOLITRES,
+    ),
+)
+
+
 GAMBLING_RATES = "gov.hmrc.gambling_duty"
 MACHINE_GAMES = f"{GAMBLING_RATES}.machine_games"
 
@@ -848,6 +922,8 @@ RECEIPTS_SERIES_SPECS = (
         (RateComponent(f"{GAMBLING_RATES}.pool_betting.rate"),),
         ((2024, 8_125), (2025, 3_970)),
     ),
+    # The alcohol and tobacco quantity inputs (#2596).
+    *CLEARANCE_SERIES_SPECS,
 )
 
 
@@ -920,8 +996,9 @@ def line_rate(spec: ReceiptsSeriesSpec, year: int) -> float:
 
 @dataclass(frozen=True)
 class ReceiptsLine:
-    """A receipts line as one EFO publishes it: £bn by the calendar year in
-    which each fiscal year starts, and which of those years are outturn."""
+    """A receipts line as one EFO publishes it: £bn (a clearance line's own
+    unit) by the calendar year in which each fiscal year starts, and which of
+    those years are outturn."""
 
     table: str
     label: str
@@ -937,7 +1014,9 @@ class ReceiptsGrowth:
     the year before in the previous EFO, where it is outturn. Each later
     year is the ratio of this EFO's consecutive levels. A line with its own
     outturn starts at that outturn's second year and has no previous line;
-    one with rates grows its base instead (see ``ReceiptsSeriesSpec``).
+    one with rates grows its base instead (see ``ReceiptsSeriesSpec``). A
+    clearance line holds the clearances' growth, which
+    ``render_receipts_growth_yaml`` writes per head (``per_head_growth``).
     """
 
     values: dict[int, float]
@@ -1053,13 +1132,38 @@ def validate_receipts_unit(
         )
 
 
+def validate_clearance_unit(
+    table_rows: list[dict[str, str | None]], spec: ClearanceSeriesSpec, where: str
+) -> None:
+    """Require a clearance line's unit in exactly one cell of its table.
+
+    Table 4.11 states the unit in a row label ("Cigarette clearances
+    (million sticks)") and Table 4.12 in a note below the rows ("All
+    clearances are in thousands of hectolitres of alcohol."). The first
+    year's growth divides one EFO's level by another's, so both must state
+    the same unit; a new unit needs deliberate importer support.
+    """
+    found = [
+        normalise_label(value)
+        for row in table_rows
+        for value in row.values()
+        if spec.unit in normalise_label(value)
+    ]
+    if len(found) != 1:
+        raise ValueError(
+            f'{where} must state the unit "{spec.unit}" of '
+            f"{'.'.join(spec.path)} in exactly one cell; found {found}"
+        )
+
+
 def find_receipts_line(
     sheets: dict[str, list[dict[str, str | None]]], spec: ReceiptsSeriesSpec
 ) -> ReceiptsLine:
     """The one row labelled ``spec.row`` in a table titled ``spec.title``.
 
-    Only that table's rows are read: its cash unit, year headers and its
-    "Outturn" and "Forecast" markers, which may sit on one row or several.
+    Only that table's rows are read: its cash unit (a clearance line's unit),
+    year headers and its "Outturn" and "Forecast" markers, which may sit on
+    one row or several.
     """
     matches = []
     for sheet, rows in sheets.items():
@@ -1103,7 +1207,16 @@ def find_receipts_line(
                 ]
                 if labels and receipts_label(labels[0]) == spec.row:
                     matches.append(
-                        (table, sheet, labels[0], row, years, markers, header_rows)
+                        (
+                            table,
+                            sheet,
+                            labels[0],
+                            row,
+                            years,
+                            markers,
+                            header_rows,
+                            table_rows,
+                        )
                     )
 
     name = ".".join(spec.path)
@@ -1113,7 +1226,7 @@ def find_receipts_line(
             f'Expected one "{spec.row}" row in the "{spec.title}" table for '
             f"{name}; found {found}"
         )
-    table, sheet, label, row, years, markers, header_rows = matches[0]
+    table, sheet, label, row, years, markers, header_rows, table_rows = matches[0]
     where = f"Table {table} (sheet {sheet})"
     repeated = sorted({y for y in years.values() if list(years.values()).count(y) > 1})
     if repeated:
@@ -1121,7 +1234,10 @@ def find_receipts_line(
             f"{where} heads more than one column "
             + ", ".join(fiscal_year_label(y) for y in repeated)
         )
-    validate_receipts_unit(header_rows, where)
+    if isinstance(spec, ClearanceSeriesSpec):
+        validate_clearance_unit(table_rows, spec, where)
+    else:
+        validate_receipts_unit(header_rows, where)
     levels = {}
     for column, year in years.items():
         text = row.get(column)
@@ -1223,21 +1339,72 @@ def compute_receipts_growth(
                     levels[year - 1] / rates[year - 1]
                 )
                 values[year] = round(base_growth - 1, 6) + 0.0
-        # The model compounds the growth into an index rounded to five
-        # decimals (create_economic_assumption_indices), from 1 in a line's
-        # first year when the line has its own outturn. A positive base that
-        # rounds the index to zero would zero it in every later year.
-        index = 1.0
-        for year, value in values.items():
-            index = round(index * (1 + value), 5)
-            if index <= 0:
-                raise ValueError(
-                    f"{name}: {fiscal_year_label(year)} growth of {value} takes "
-                    f"the index to {index} at five decimals, so the base is "
-                    "too small to grow from"
-                )
+        check_index(name, values)
         result[spec.path] = ReceiptsGrowth(values, line, previous, spec)
     return result
+
+
+def check_index(name: str, values: dict[int, float]) -> None:
+    """Refuse growth that zeroes the index the model builds from it.
+
+    The model compounds the growth into an index rounded to five decimals
+    (create_economic_assumption_indices), from 1 in a line's first year when
+    the line has its own outturn. A positive base that rounds the index to
+    zero would zero it in every later year.
+    """
+    index = 1.0
+    for year, value in values.items():
+        index = round(index * (1 + value), 5)
+        if index <= 0:
+            raise ValueError(
+                f"{name}: {fiscal_year_label(year)} growth of {value} takes "
+                f"the index to {index} at five decimals, so the base is "
+                "too small to grow from"
+            )
+
+
+def population_growth(content: str) -> dict[int, float]:
+    """``ons.population`` growth by year, as a yoy_growth.yaml holds it."""
+    values = yaml.safe_load(content)["ons"]["population"]["values"]
+    return dict(
+        sorted(
+            (int(str(instant)[:4]), float(value)) for instant, value in values.items()
+        )
+    )
+
+
+def growth_in_effect(series: dict[int, float], year: int) -> float:
+    """A growth series' value in ``year`` as the model reads it: its latest
+    entry at or before the year, or its first entry before that, since the
+    model backdates each parameter's first value."""
+    earlier = [entry for entry in series if entry <= year]
+    return series[max(earlier) if earlier else min(series)]
+
+
+def per_head_growth(
+    growth: ReceiptsGrowth, population: dict[int, float]
+) -> ReceiptsGrowth:
+    """A clearance line's growth per head, to six decimals: each year's ratio
+    of consecutive levels over one plus that year's ``ons.population``
+    growth, minus one.
+
+    Dataset projection grows each household's quantity by this and its
+    weight by the population growth, so the weighted quantity grows by
+    their product, the clearances' growth.
+    """
+    first = min(growth.values)
+    levels = {first - 1: growth.previous_line.levels[first - 1], **growth.line.levels}
+    values = {
+        year: round(
+            levels[year] / levels[year - 1] / (1 + growth_in_effect(population, year))
+            - 1,
+            6,
+        )
+        + 0.0
+        for year in growth.values
+    }
+    check_index(".".join(growth.spec.path), values)
+    return replace(growth, values=values)
 
 
 def format_growth(value: float) -> str:
@@ -1387,7 +1554,9 @@ def render_receipts_values(
 
 def receipts_basis(spec: ReceiptsSeriesSpec | None) -> str:
     """How a line's growth is measured, for its comments: nothing for
-    receipts, the rates taken out for a base."""
+    receipts, the rates taken out for a base, population for clearances."""
+    if isinstance(spec, ClearanceSeriesSpec):
+        return "; per head: clearance growth over one plus ons.population growth"
     if spec is None or not spec.rates:
         return ""
     return "; base growth: receipts over the rate the model charges"
@@ -1398,8 +1567,10 @@ def receipts_tail(content: str, growth: ReceiptsGrowth) -> tuple[dict[int, float
     average_earnings path, held at zero in years a base's rate is zero in or
     comes from."""
     last = max(growth.values)
-    path = average_earnings_path(content, last)
     spec = growth.spec
+    if isinstance(spec, ClearanceSeriesSpec):
+        return clearance_tail(content, last)
+    path = average_earnings_path(content, last)
     if spec is None or not spec.rates:
         return path, "the average_earnings long-run path above"
     # Rates hold their last value after their last change, as the path does.
@@ -1428,6 +1599,26 @@ def receipts_tail(content: str, growth: ReceiptsGrowth) -> tuple[dict[int, float
             "the average_earnings long-run path above, held flat where the rate is zero"
         )
     return tail, "the average_earnings long-run path above"
+
+
+def clearance_tail(content: str, last: int) -> tuple[dict[int, float], str]:
+    """A clearance series after the OBR's forecast, and its comment. The
+    clearances hold flat, so per head they grow by 1 / (1 + population) - 1,
+    to six decimals, in each year to ``ons.population``'s last, written where
+    the value changes."""
+    population = population_growth(content)
+    yearly = {
+        year: round(1 / (1 + growth_in_effect(population, year)) - 1, 6) + 0.0
+        for year in range(last + 1, max(max(population), last + 1) + 1)
+    }
+    tail = {
+        year: value
+        for year, value in yearly.items()
+        if year == last + 1 or value != yearly[year - 1]
+    }
+    return tail, (
+        "clearances held flat, so per head they fall with ons.population growth"
+    )
 
 
 def receipts_references(
@@ -1474,13 +1665,19 @@ def render_receipts_growth_yaml(
 
     Years before this EFO's first year are kept, so a series' index keeps
     its base year. Years after the OBR's receipts forecast follow
-    average_earnings as ``content`` holds it. The result is checked to
-    differ from ``content`` only in those values and references.
+    average_earnings as ``content`` holds it. A clearance series is written
+    per head of ``ons.population`` as ``content`` holds it, and holds the
+    clearances flat after the forecast. The result is checked to differ from
+    ``content`` only in those values and references.
     """
     before = yaml.safe_load(content)
     expected = copy.deepcopy(before)
     lines = content.split("\n")
+    population = None
     for path, series in growth.items():
+        if isinstance(series.spec, ClearanceSeriesSpec):
+            population = population or population_growth(content)
+            series = per_head_growth(series, population)
         tail, tail_comment = receipts_tail(content, series)
         references = receipts_references(series, release, previous_release)
 
@@ -1742,14 +1939,26 @@ def print_summary(
         print(f"- {spec.key}: {', '.join(window)}")
 
 
-def print_receipts_summary(growth: dict[tuple[str, ...], ReceiptsGrowth]) -> None:
+def print_receipts_summary(
+    growth: dict[tuple[str, ...], ReceiptsGrowth],
+    population: dict[int, float] | None = None,
+) -> None:
+    """Print each series' growth: a clearance series per head when
+    ``population`` is given, as it is written."""
     print(f"Updating {len(growth)} OBR receipts growth series")
     for path, series in growth.items():
+        basis = ""
+        if isinstance(series.spec, ClearanceSeriesSpec):
+            if population is None:
+                basis = ", clearances"
+            else:
+                series = per_head_growth(series, population)
+                basis = ", per head"
         window = ", ".join(
             f"{year}: {format_growth(value)}"
             for year, value in sorted(series.values.items())
         )
-        print(f"- {'.'.join(path)} (Table {series.line.table}): {window}")
+        print(f"- {'.'.join(path)} (Table {series.line.table}{basis}): {window}")
 
 
 def build_arg_parser() -> argparse.ArgumentParser:
@@ -1815,8 +2024,9 @@ def build_arg_parser() -> argparse.ArgumentParser:
         help=(
             "Do not update the receipts growth series (stamp_duty_land_tax, "
             "business_rates) that project corporate SDLT and business rates, "
-            "or the gambling_duty_bases series that project the gambling "
-            "duty inputs"
+            "the gambling_duty_bases series that project the gambling duty "
+            "inputs, or the per_capita clearance series that project the "
+            "alcohol and tobacco quantity inputs"
         ),
     )
     parser.add_argument(
@@ -2005,7 +2215,9 @@ def main(argv: list[str] | None = None) -> int:
                 f"an EFO before {month} {year}"
             )
         receipts_growth = compute_receipts_growth(receipts_bytes, previous_bytes)
-        print_receipts_summary(receipts_growth)
+        print_receipts_summary(
+            receipts_growth, population_growth(source_yaml_path.read_text())
+        )
     calendar_values = (
         read_calendar_values(source_yaml_path) if args.gaps_only else series_values
     )

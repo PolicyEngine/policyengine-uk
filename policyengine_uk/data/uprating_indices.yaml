@@ -196,6 +196,25 @@ gov.economic_assumptions.yoy_growth.obr.gambling_duty_bases.bingo:
 - bingo_net_receipts
 gov.economic_assumptions.yoy_growth.obr.gambling_duty_bases.lottery:
 - national_lottery_ticket_spending
+# Alcohol and tobacco quantities grow with the OBR's clearances of their
+# product group per person, as household weights grow by population (#2596).
+gov.economic_assumptions.yoy_growth.obr.per_capita.tobacco_clearances.cigarettes:
+- cigarettes_per_week
+gov.economic_assumptions.yoy_growth.obr.per_capita.tobacco_clearances.hand_rolling_tobacco:
+- hand_rolling_tobacco_grams_per_week
+gov.economic_assumptions.yoy_growth.obr.per_capita.tobacco_clearances.other_tobacco_products:
+- cigars_grams_per_week
+- heated_tobacco_grams_per_week
+- other_tobacco_grams_per_week
+gov.economic_assumptions.yoy_growth.obr.per_capita.alcohol_clearances.beer_and_cider:
+- beer_litres
+- cider_litres
+- sparkling_cider_litres
+gov.economic_assumptions.yoy_growth.obr.per_capita.alcohol_clearances.wine:
+- other_fermented_litres
+- wine_litres
+gov.economic_assumptions.yoy_growth.obr.per_capita.alcohol_clearances.spirits:
+- spirits_litres
 gov.economic_assumptions.yoy_growth.obr.private_pension_index:
 - private_pension_income
 gov.economic_assumptions.yoy_growth.obr.lagged_average_earnings:
