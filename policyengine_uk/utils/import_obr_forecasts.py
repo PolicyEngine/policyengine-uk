@@ -591,8 +591,10 @@ TABLE_TITLE_RE = re.compile(r"^(\d+\.\d+)\s+(.+)$")
 TABLE_NUMBER_RE = re.compile(r"\d+\.\d+")
 FOOTNOTE_RE = re.compile(r"(?<=[a-z])\d+$", re.IGNORECASE)
 VALUE_LINE_RE = re.compile(r"^\s*(\d{4})-\d{2}-\d{2}:")
-# The last year create_economic_assumption_indices compounds a series to.
-LAST_INDEX_YEAR = 2039
+# The last year yoy_growth.yaml states. create_economic_assumption_indices
+# stops at or before it, so a series that stays positive to here stays
+# positive in the model.
+LAST_INDEX_YEAR = 2074
 
 
 @dataclass(frozen=True)
@@ -1468,7 +1470,7 @@ def receipts_references(
 
 def check_index_stays_positive(path: tuple[str, ...], values: dict) -> None:
     """Compound a rendered series as create_economic_assumption_indices does,
-    from 1 in its first listed year through 2039, rounding to five decimals.
+    from 1 in its first listed year, rounding to five decimals.
     An index that rounds to zero would zero the base in every later year."""
     growth = {str(instant): value for instant, value in values.items()}
     index = 1.0

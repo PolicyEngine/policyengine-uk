@@ -1223,6 +1223,19 @@ def test_a_tail_that_rounds_the_index_to_zero_is_refused():
         render(content, current=levels)
 
 
+def test_the_index_check_reaches_the_end_of_the_growth_file():
+    # A fall from 2035 takes the index to zero at five decimals in 2044.
+    with pytest.raises(ValueError, match="in 2044"):
+        import_obr_forecasts.check_index_stays_positive(
+            ("example",),
+            {
+                date(2024, 1, 1): 0.0,
+                date(2035, 1, 1): -0.75,
+                date(2074, 1, 1): 0.0,
+            },
+        )
+
+
 def test_the_index_check_reads_the_value_in_force_each_january():
     # A value dated mid-year applies from the next January, so it must not
     # replace that year's January value.
