@@ -1,0 +1,287 @@
+- name: A loss already relieved against pay is not a new loss next year
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    employment_income:
+      2025: 40_000
+      2026: 40_000
+    trading_loss:
+      2025: 10_000
+  output:
+    trade_loss_relief_against_general_income: 0
+    loss_relief: 0
+    net_income: 40_000
+
+- name: Only the loss not used against pay survives later trade profits
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    taxable_social_security_income: 0
+    employment_income:
+      2023: 2_000
+      2024: 0
+      2025: 0
+      2026: 0
+    self_employment_income:
+      2023: 0
+      2024: 3_000
+      2025: 1_000
+      2026: 4_000
+    trading_loss:
+      2023: 7_000
+    trading_allowance_deduction:
+      2023: 0
+      2024: 0
+      2025: 0
+      2026: 0
+  output:
+    # 7,000 - 2,000 general relief - 3,000 profits - 1,000 profits.
+    loss_relief: 1_000
+    trade_loss_relief_against_general_income: 0
+    taxable_self_employment_income: 3_000
+    net_income: 3_000
+
+- name: Cap-limited Income Tax loss and Class 4 loss have distinct balances
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    taxable_social_security_income: 0
+    employment_income:
+      2024: 150_000
+      2025: 0
+    self_employment_income:
+      2024: 0
+      2025: 40_000
+    trading_loss:
+      2024: 80_000
+    trading_allowance_deduction:
+      2024: 0
+      2025: 0
+  output:
+    # The 50,000 s64 deduction against pay does not consume Class 4 stock.
+    loss_relief: 30_000
+    trade_loss_relief_against_general_income: 0
+    taxable_self_employment_income: 10_000
+    ni_class_4_losses_brought_forward: 80_000
+    ni_class_4_profits: 0
+
+- name: A supplied opening balance is consumed rather than repeated
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    taxable_social_security_income: 0
+    loss_relief:
+      2024: 7_000
+    self_employment_income:
+      2024: 3_000
+      2025: 3_000
+      2026: 3_000
+    trading_allowance_deduction:
+      2024: 0
+      2025: 0
+      2026: 0
+  output:
+    loss_relief: 1_000
+    taxable_self_employment_income: 2_000
+
+- name: A supplied zero opening balance reconciles external loss use
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    taxable_social_security_income: 0
+    trading_loss:
+      2023: 10_000
+    loss_relief:
+      2025: 0
+    self_employment_income:
+      2023: 0
+      2024: 0
+      2025: 0
+      2026: 5_000
+    trading_allowance_deduction:
+      2026: 0
+  output:
+    loss_relief: 0
+    taxable_self_employment_income: 5_000
+
+- name: A trading allowance year preserves unused earlier loss stock
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    taxable_social_security_income: 0
+    loss_relief:
+      2024: 2_000
+    self_employment_income:
+      2024: 800
+      2025: 5_000
+    self_employment_gross_receipts:
+      2024: 900
+      2025: 6_000
+  output:
+    loss_relief: 2_000
+    trading_allowance_deduction: 0
+    taxable_self_employment_income: 3_000
+
+- name: Allowance treatment cannot create a carry-forward expense loss
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    taxable_social_security_income: 0
+    employment_income:
+      2024: 40_000
+      2025: 0
+    self_employment_income:
+      2024: 800
+      2025: 5_000
+    self_employment_gross_receipts:
+      2024: 900
+      2025: 6_000
+    trading_loss:
+      2024: 200
+  output:
+    loss_relief: 0
+    trade_loss_relief_against_general_income: 0
+    taxable_self_employment_income: 5_000
+
+- name: A sixteen-year gap preserves nominal unrelieved loss
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    # Isolate trading losses from unrelated historical pension defaults.
+    taxable_social_security_income:
+      2010: 0
+      2011: 0
+      2012: 0
+      2013: 0
+      2014: 0
+      2015: 0
+      2016: 0
+      2017: 0
+      2018: 0
+      2019: 0
+      2020: 0
+      2021: 0
+      2022: 0
+      2023: 0
+      2024: 0
+      2025: 0
+      2026: 0
+    employment_income: 0
+    self_employment_income:
+      2010: 0
+      2026: 6_000
+    trading_loss:
+      2010: 5_000
+    trading_allowance_deduction:
+      2010: 0
+      2026: 0
+  output:
+    loss_relief: 5_000
+    trade_loss_relief_against_general_income: 0
+    taxable_self_employment_income: 1_000
+
+- name: Pension net-pay reconstruction ignores a loss supplied for last year
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    taxable_social_security_income: 0
+    employment_income_before_lsr:
+      2025: 40_000
+      2026: 40_000
+    pension_contributions_via_salary_sacrifice: 0
+    employer_pension_contributions: 0
+    employee_pension_contributions_reported:
+      2025: 0
+      2026: 1_000
+    trading_loss:
+      2025: 10_000
+  output:
+    loss_relief: 0
+    trade_loss_relief_against_general_income: 0
+    pension_annual_allowance_threshold_income: 39_000
+    pension_annual_allowance_adjusted_income: 40_000
+
+- name: A negative loss input does not give negative current relief
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 40_000
+    trading_loss: -200
+  output:
+    trade_loss_relief_against_general_income: 0
+    net_income: 40_000
+
+- name: New loss use does not add the same loss to an old balance
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    taxable_social_security_income: 0
+    employment_income:
+      2024: 0
+      2025: 10_000
+      2026: 0
+    self_employment_income:
+      2024: 0
+      2025: 2_000
+      2026: 4_000
+    trading_loss:
+      2024: 5_000
+      2025: 3_000
+    trading_allowance_deduction:
+      2024: 0
+      2025: 0
+      2026: 0
+  output:
+    loss_relief: 3_000
+    trade_loss_relief_against_general_income: 0
+    taxable_self_employment_income: 1_000
+
+# Conditional same-trade compatibility is externally assessed.
+# 2025 old loss belongs to A; in 2026 A profits 8,000 and B loses 4,000.
+# Trade identities are premises, not variables inferred by the model.
+- name: Caller-assessed profitable-trade stock is used before another trade's current loss
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    taxable_social_security_income: 0
+    employment_income: 0
+    employee_pension_contributions: 0
+    personal_pension_contributions: 0
+    employer_pension_contributions: 0
+    pension_contributions_via_salary_sacrifice: 0
+    self_employment_income:
+      2025: 0
+      2026: 8_000
+      2027: 0
+    trading_loss:
+      2025: 10_000
+      2026: 4_000
+      2027: 0
+    trading_allowance_deduction:
+      2025: 0
+      2026: 0
+      2027: 0
+  output:
+    loss_relief:
+      2025: 0
+      2026: 10_000
+      # Remaining 2,000 from A plus 4,000 from B; reassess later eligibility.
+      2027: 6_000
+    trade_loss_relief_against_general_income:
+      2025: 0
+      2026: 0
+      2027: 0
+    taxable_self_employment_income:
+      2025: 0
+      2026: 0
+      2027: 0

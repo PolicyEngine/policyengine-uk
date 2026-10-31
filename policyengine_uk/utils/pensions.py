@@ -98,7 +98,11 @@ def annual_allowance_net_income(person, period, parameters):
     relievable_net_pay = pension_contributions_relief_amount(
         actual_net_pay, actual_earnings, 0, person("age", period), hmrc
     )
-    if not np.any((relievable_net_pay > 0) & (person("trading_loss", period) > 0)):
+    current_loss = supplied_input(person, "trading_loss", period)
+    if current_loss is None:
+        current_loss = person.empty_array()
+    current_loss = np.maximum(0, current_loss)
+    if not np.any((relievable_net_pay > 0) & (current_loss > 0)):
         return net_income
 
     income_before_loss = np.maximum(
@@ -126,7 +130,7 @@ def annual_allowance_net_income(person, period, parameters):
     loss = np.where(
         person("uses_trading_allowance", period),
         0,
-        person("trading_loss", period),
+        current_loss,
     )
     # FA 2004 s.193(2) deducts relievable net pay from employment income
     # before the s.25(4) limit on Step 2 loss relief. Apply this ordering even
