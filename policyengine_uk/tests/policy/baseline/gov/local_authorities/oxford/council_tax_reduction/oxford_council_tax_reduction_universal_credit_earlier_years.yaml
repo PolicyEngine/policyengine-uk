@@ -9,7 +9,7 @@
 # award stays on the paragraphs 14 to 27 income, which deducts half of pension
 # contributions (para 18), counts the award, leaves out Child Benefit and
 # child maintenance, and adds no tariff income from capital. These cases keep
-# the results the model gave before Appendix 3 was encoded.
+# the results the model gave before PolicyEngine encoded Appendix 3.
 #
 # The applicant, 35, earns 20,000 and pays 2,600 into an occupational
 # pension, or earns 15,600 with no contributions. Income tax 20% above the

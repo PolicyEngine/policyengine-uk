@@ -42,7 +42,8 @@ applicant has a Universal Credit award:
    £520. £520 more of child maintenance or Child Benefit, which Universal
    Credit does not deduct, raises it by £520. £520 more interest leaves it
    unchanged. £1,000 more capital lowers it by the rise in Universal
-   Credit's assumed yield, which comes off the award and is not added back.
+   Credit's assumed yield, which DWP takes off the award and Oxford does not
+   add back.
 5. Monotonicity: more pension contributions never lower the reduction of a
    family that keeps its award, since each pound contributed lowers DWP's
    net earned income and raises the award by at most the 55% taper.
@@ -54,7 +55,8 @@ applicant has a Universal Credit award:
    (they count the award after those deductions).
 7. Earlier years: in 2025, before the scheme the model holds, the reduction
    of such a family is the band of its paragraphs 14 to 27 income less Child
-   Benefit, with no tariff income, as before Appendix 3 was encoded.
+   Benefit, with no tariff income, as the model gave before PolicyEngine
+   encoded Appendix 3.
 
 The YAML cases in policy/baseline/gov/local_authorities/oxford/
 council_tax_reduction/ pin the paragraphs 14 to 27 route and the hand-worked
@@ -518,8 +520,8 @@ def test_pound_for_pound(units):
             assert abs(income[j] - income[i] - added) < TOLERANCE, (label, unit)
         j = (len(VARIANTS) + 1) * n + i
         if award_above_nil(j, unit):
-            # More capital raises Universal Credit's assumed yield, which
-            # comes off the award and is not counted as income.
+            # More capital raises Universal Credit's assumed yield, which DWP
+            # takes off the award and Oxford does not count as income.
             yield_rise = values["uc_tariff_income"][j] - values["uc_tariff_income"][i]
             assert abs(income[i] - income[j] - yield_rise) < TOLERANCE, (
                 "capital",

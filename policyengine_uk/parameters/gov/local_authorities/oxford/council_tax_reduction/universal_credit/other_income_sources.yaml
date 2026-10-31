@@ -10,13 +10,13 @@ description: >
   Housing Payments, Housing Benefit and discretionary council tax reductions)
   and income derived from capital: savings interest, dividends and rent,
   which Part 1 para 30 and Annex 7 treat as capital. Appendix 3 also ignores
-  payments from sub-tenants and boarders. Universal Credit's assumed yield
-  from capital (uc_tariff_income) is not a receipt and stays out, and so does
-  Oxford's own assumed income from capital, which para 15 adds only under
-  paragraphs 14 to 27. Statutory sick, maternity and paternity pay are in
-  DWP's net earned income (UC Regs 2013 reg 55(4)), so they are not listed
-  here. Payments that only Scotland makes, other than the carer support
-  payment, cannot reach an Oxford applicant and are not listed.
+  payments from sub-tenants and boarders. DWP deems Universal Credit's
+  assumed yield from capital (uc_tariff_income) and nobody receives it, so it
+  stays out, and so does Oxford's own assumed income from capital, which para
+  15 adds only under paragraphs 14 to 27. DWP's net earned income already
+  holds statutory sick, maternity and paternity pay (UC Regs 2013 reg 55(4)),
+  and only Scotland pays the Scottish benefits other than the carer support
+  payment, so the list leaves both out.
 metadata:
   economy: false
   label: Oxford Council Tax Reduction Universal Credit applicant other income sources
@@ -25,7 +25,7 @@ metadata:
   reference:
     - title: Oxford City Council Council Tax Reduction Scheme 2026 to 2027, Appendix 3 (other unearned income, the income ignored) and Appendix 5 (applies to applicants who do not receive Universal Credit)
       href: https://www.oxford.gov.uk/council-tax-reduction/council-tax-reduction-scheme-2026-27/4
-    - title: Oxford City Council Council Tax Reduction Scheme 2026 to 2027, Annex 7 (income derived from capital is treated as capital)
+    - title: Oxford City Council Council Tax Reduction Scheme 2026 to 2027, Annex 7 (Oxford treats income derived from capital as capital)
       href: https://www.oxford.gov.uk/council-tax-reduction/council-tax-reduction-scheme-2026-27/3
     - title: Oxford City Council Council Tax Reduction Scheme 2026 to 2027, Part 1 paras 15 and 30
       href: https://www.oxford.gov.uk/council-tax-reduction/council-tax-reduction-scheme-2026-27
@@ -70,8 +70,8 @@ values:
     - private_transfer_income
     - miscellaneous_income
     # Universal Credit replaces these awards, so they are nil for a Universal
-    # Credit claimant. They are listed so that no receipt escapes "All other
-    # unearned income".
+    # Credit claimant. The list names them so that no receipt escapes "All
+    # other unearned income".
     - income_support
     - claimant_or_partner_jsa_income
     - claimant_or_partner_esa_income

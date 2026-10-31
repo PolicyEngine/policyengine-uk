@@ -685,7 +685,7 @@
     oxford_council_tax_reduction_universal_credit_income: 26_054.98
     oxford_council_tax_reduction: 1_350
 
-- name: Savings interest stay out of a Universal Credit applicant's Oxford income
+- name: Savings interest stays out of a Universal Credit applicant's Oxford income
   # As the Child Benefit case, with 2,600 (50 a week) of savings_interest_income.
   # Part 1 para 30 and Annex 7 treat "any income derived from capital" as
   # capital, and Universal Credit does not count it either, so the award
@@ -763,7 +763,7 @@
     oxford_council_tax_reduction_universal_credit_income: 26_054.98
     oxford_council_tax_reduction: 1_350
 
-- name: Rent stay out of a Universal Credit applicant's Oxford income
+- name: Rent stays out of a Universal Credit applicant's Oxford income
   # As the Child Benefit case, with 2,600 (50 a week) of property_income.
   # Part 1 para 30 and Annex 7 treat "any income derived from capital" as
   # capital, and Universal Credit does not count it either, so the award
