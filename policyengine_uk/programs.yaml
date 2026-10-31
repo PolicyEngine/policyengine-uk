@@ -601,6 +601,26 @@ programs:
     verified_end_year: 2023
     notes: Temporary program, ended 2023
 
+  - id: energy_bills_rebate
+    name: Energy Bills Rebate
+    full_name: Energy Bills Rebate, Energy Bills Support Scheme and Alternative Fuel Payment
+    category: Benefits
+    agency: Treasury
+    status: partial
+    coverage: UK
+    variable: energy_bills_rebate
+    parameter_prefix: gov.treasury.energy_bills_rebate
+    verified_start_year: 2022
+    verified_end_year: 2023
+    notes: >-
+      Temporary program, ended 2023. The £150 Council Tax Rebate in bands A to
+      D in Great Britain (none in Northern Ireland, which has domestic rates),
+      the £400 Energy Bills Support Scheme, and Northern Ireland's £200
+      Alternative Fuel Payment. Leaves out the Scottish and Welsh £150 for
+      Council Tax Reduction recipients in bands E and above, England's
+      discretionary fund, Great Britain's Alternative Fuel Payment and the
+      alternative funding schemes.
+
   # --- Ofgem programs ---
   - id: energy_price_guarantee
     name: Energy Price Guarantee
