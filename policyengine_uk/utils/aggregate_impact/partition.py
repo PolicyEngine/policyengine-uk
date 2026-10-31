@@ -110,6 +110,7 @@ class Partition:
     double_counts: tuple
     exclusions: tuple
     overlap_guards: tuple = ()
+    spending_exclusions: tuple = ()
     source: str = "<memory>"
     sha256: str = ""
     raw: Mapping = field(default_factory=dict, compare=False, repr=False)
@@ -277,6 +278,20 @@ def _parse_total(name: str, raw: Mapping) -> TotalSpec:
     )
 
 
+def _parse_exclusions(raw: Mapping, section: str) -> tuple:
+    return tuple(
+        Exclusion(
+            variable=str(e.get("variable")),
+            kind=str(e.get("kind") or ""),
+            head=str(e.get("head") or ""),
+            spans=_as_tuple(e.get("spans"), "spans", section),
+            note=str(e.get("note") or e.get("reason") or ""),
+        )
+        for e in (raw.get(section) or [])
+        if isinstance(e, Mapping)
+    )
+
+
 def _parse_head(raw: Mapping, kind: str, index: int) -> Head:
     where = f"{kind}_heads[{index}]"
     if not isinstance(raw, Mapping):
@@ -354,25 +369,15 @@ def parse_partition(
                 issue=str(dc.get("issue") or ""),
             )
         )
-    exclusions = tuple(
-        Exclusion(
-            variable=str(e.get("variable")),
-            kind=str(e.get("kind") or ""),
-            head=str(e.get("head") or ""),
-            spans=_as_tuple(e.get("spans"), "spans", "exclusions"),
-            note=str(e.get("note") or e.get("reason") or ""),
-        )
-        for e in (raw.get("exclusions") or [])
-        if isinstance(e, Mapping)
-    )
     partition = Partition(
         schema_version=version,
         totals=totals,
         tax_heads=tax_heads,
         spending_heads=spending_heads,
         double_counts=tuple(double_counts),
-        exclusions=exclusions,
+        exclusions=_parse_exclusions(raw, "exclusions"),
         overlap_guards=tuple(raw.get("overlap_guards") or ()),
+        spending_exclusions=_parse_exclusions(raw, "spending_exclusions"),
         source=source,
         sha256=sha256,
         raw=raw,
@@ -470,7 +475,7 @@ def structural_problems(partition: Partition) -> list:
                     problems.append(
                         f"overlap guard {guard.get('id')!r} names unknown head {name!r}"
                     )
-    for exclusion in partition.exclusions:
+    for exclusion in partition.exclusions + partition.spending_exclusions:
         if exclusion.variable in head_variables:
             problems.append(
                 f"excluded variable {exclusion.variable!r} is also a head variable"
@@ -482,6 +487,13 @@ def structural_problems(partition: Partition) -> list:
                 problems.append(
                     f"exclusion {exclusion.variable!r} refers to unknown head {referenced!r}"
                 )
+    spending_head_ids = {h.id for h in partition.spending_heads}
+    for exclusion in partition.spending_exclusions:
+        if exclusion.head not in spending_head_ids:
+            problems.append(
+                f"spending exclusion {exclusion.variable!r} needs a spending head, "
+                f"not {exclusion.head!r}"
+            )
     return problems
 
 

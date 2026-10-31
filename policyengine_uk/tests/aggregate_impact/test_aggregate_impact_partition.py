@@ -101,6 +101,29 @@ def test_spending_exclusions_name_known_variables_and_spending_heads(raw, system
         assert entry["note"], entry
 
 
+def test_the_reader_loads_the_spending_exclusions(raw, shipped):
+    assert [entry.variable for entry in shipped.spending_exclusions] == [
+        entry["variable"] for entry in raw["spending_exclusions"]
+    ]
+
+
+@pytest.mark.parametrize("head", ["no_such_head", "income_tax"])
+def test_a_spending_exclusion_must_name_a_spending_head(raw, head):
+    partition = copy.deepcopy(raw)
+    partition["spending_exclusions"][0]["head"] = head
+    with pytest.raises(PartitionError, match="needs a spending head"):
+        parse_partition(partition)
+
+
+def test_a_spending_exclusion_cannot_name_a_head_variable(raw):
+    partition = copy.deepcopy(raw)
+    partition["spending_exclusions"][0]["variable"] = raw["spending_heads"][0][
+        "variable"
+    ]
+    with pytest.raises(PartitionError, match="also a head variable"):
+        parse_partition(partition)
+
+
 def test_budget_and_energy_support_variables_have_fiscal_classifications(raw):
     # These tax, earnings and payment helpers must have an explicit owner;
     # adding a head for a component would count the same receipt twice.
@@ -161,11 +184,12 @@ def _remove_head(raw, head_id):
         for head in out[key]:
             if head.get("reads"):
                 head["reads"] = [r for r in head["reads"] if r.get("head") != head_id]
-    out["exclusions"] = [
-        e
-        for e in out.get("exclusions") or []
-        if e.get("head") != head_id and head_id not in (e.get("spans") or [])
-    ]
+    for key in ("exclusions", "spending_exclusions"):
+        out[key] = [
+            e
+            for e in out.get(key) or []
+            if e.get("head") != head_id and head_id not in (e.get("spans") or [])
+        ]
     out["model_double_counts"] = [
         d
         for d in out.get("model_double_counts") or []
