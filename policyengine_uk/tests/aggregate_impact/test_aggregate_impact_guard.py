@@ -750,23 +750,27 @@ def test_two_heads_that_turn_not_finite_fail_by_name(response, route):
     assert result["reset_reproduces_baseline"]
 
 
-def test_two_heads_that_turn_nan_on_core_fail_by_name_and_the_check_goes_on():
+@pytest.mark.parametrize("monthly", [False, True], ids=["yearly", "monthly"])
+def test_two_heads_that_turn_nan_on_core_fail_by_name_and_the_check_goes_on(
+    monthly,
+):
     """Issue #2759, on policyengine-core: tax_a and tax_c are each
-    sqrt(5 - tax_b), and tax_b starts at 5. Holding one at its NaN value
-    after the first point raised the engine's ValueError; the check now
-    names both heads and checks every other component."""
+    sqrt(5 - tax_b), and tax_b starts at 5 (a year, or each month). Holding
+    one at its NaN value after the first point raised the engine's
+    ValueError; the check now names both heads and checks every other
+    component."""
     from policyengine_core.country_template import CountryTaxBenefitSystem
     from policyengine_core.country_template.entities import Household
-    from policyengine_core.periods import YEAR as YEARLY
+    from policyengine_core.periods import MONTH, YEAR as YEARLY
     from policyengine_core.simulations import Simulation
     from policyengine_core.variables import Variable
 
-    def household_variable(name, formula=None, default=0.0):
+    def household_variable(name, formula=None, default=0.0, definition_period=None):
         attributes = {
             "label": name,
             "value_type": float,
             "entity": Household,
-            "definition_period": YEARLY,
+            "definition_period": definition_period or (MONTH if monthly else YEARLY),
             "default_value": default,
         }
         if formula is not None:
@@ -780,8 +784,12 @@ def test_two_heads_that_turn_nan_on_core_fail_by_name_and_the_check_goes_on():
         household_variable("tax_b", default=5.0),
         household_variable("tax_a", lambda f: np.sqrt(5 - f("tax_b"))),
         household_variable("tax_c", lambda f: np.sqrt(5 - f("tax_b"))),
-        household_variable("gov_tax", lambda f: f("tax_a") + f("tax_b") + f("tax_c")),
-        household_variable("household_weight"),
+        household_variable(
+            "gov_tax",
+            lambda f: f("tax_a") + f("tax_b") + f("tax_c"),
+            definition_period=YEARLY,
+        ),
+        household_variable("household_weight", definition_period=YEARLY),
     ):
         system.update_variable(variable)
     sim = Simulation(
