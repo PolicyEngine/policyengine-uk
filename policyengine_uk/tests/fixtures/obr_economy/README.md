@@ -8,10 +8,11 @@ forecast tables zip file, SHA-256
 `96795d1747bb5a4978c7fb768689d5fd31f568e5223db8a94b1bd92ba7f6c118`). Source:
 <https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/>.
 
-As for the energy price fixtures, the cut kept only those worksheets in the
-workbook's sheet list and relationships and dropped its defined names. The
-worksheet XML and shared strings are the originals, byte for byte. The file is
-a minimal archive for the importer's XLSX reader, not a complete Excel file.
+As with the energy price fixtures, a script kept only those worksheets in the
+workbook's sheet list and relationships, dropped its defined names, and copied
+the worksheet XML and shared strings byte for byte. The archive serves the
+importer's XLSX reader and leaves out the styles and other parts a full Excel
+file has.
 
 `policyengine_uk/utils/import_obr_forecasts.py` must reproduce
 `obr.national_living_wage` in `yoy_growth.yaml` from it byte for byte. Tests

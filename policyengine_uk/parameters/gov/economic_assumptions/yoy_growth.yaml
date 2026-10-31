@@ -212,14 +212,16 @@ obr:
     # Government has set, then "OBR estimates consistent with the rest of our
     # economy forecast". utils/import_obr_forecasts.py reads the table and
     # writes each year's rate over the year before's, to six decimals, so
-    # compounding them reproduces the table to the penny. Its comments below
-    # keep the years the Government has set apart from the OBR's estimates;
-    # gov.hmrc.minimum_wage cites the regulations or Budget behind each rate
-    # set. HM Treasury costed the Budget 2026 Carer's Allowance taper on these
-    # "OBR projections for increases in the National Living Wage" (policy
-    # costings, October 2026). After the EFO horizon the series takes
-    # average_earnings' long-run growth: the Low Pay Commission's reference
-    # point for the rate is two-thirds of median hourly earnings (remit 2026).
+    # compounding them reproduces the table to the penny. It writes the years
+    # the Government has set and the OBR's estimates under separate comments
+    # below; gov.hmrc.minimum_wage cites the regulations or Budget behind
+    # each rate set. HM Treasury costed the Budget 2026 Carer's Allowance
+    # taper on these "OBR projections for increases in the National Living
+    # Wage" (policy costings, October 2026). After the EFO horizon the
+    # importer copies average_earnings' long-run growth: in its 2026 remit to
+    # the Low Pay Commission, the government says two-thirds of median hourly
+    # earnings "should continue to be the key reference point for future
+    # rates".
     values:
       # Set by the Government (2021-2027) from OBR EFO October 2026, economy Table 1.13 "National Living Wage (NLW)": £8.72 in 2020 to £13.21 in 2027
       2021-01-01: 0.021789
