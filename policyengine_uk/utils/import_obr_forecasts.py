@@ -1737,13 +1737,15 @@ LEVEL_SERIES_SPECS = (
     ),
 )
 # A footnote marker ending a level table's title, unit or label.
-LEVEL_FOOTNOTE_RE = re.compile(r"(?<=[a-z)\]])(?:\d+|[⁰¹²³⁴-⁹]+)$", re.IGNORECASE)
+LEVEL_FOOTNOTE_RE = re.compile(
+    r"(?<=[a-z)\]])(?:\d+|[\u2070\u00b9\u00b2\u00b3\u2074-\u2079]+)$", re.IGNORECASE
+)
 # A statement of the year the government has set the rate up until, with any
 # negation before it and the whole token after it, and a range such as
 # "2027 - 28" with its spaces.
 SET_BY_GOVERNMENT_RE = re.compile(
     r"(?:\b(not|never)\s+(?:yet\s+)?(?:been\s+)?)?"
-    r"set by the government up until (\S+(?:\s*[-–—]\s*\S+)?)"
+    r"set by the government up until (\S+(?:\s*[-\u2013\u2014]\s*\S+)?)"
 )
 OBR_ESTIMATES_RE = re.compile(r"figures beyond (\d{4}) are obr estimates")
 

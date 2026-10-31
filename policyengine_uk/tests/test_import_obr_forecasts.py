@@ -3398,6 +3398,44 @@ def test_the_importer_projects_rates_as_the_model_does(growth, offset, rate):
         assert units * 0.01 == wages[year], year
 
 
+def test_the_builder_decides_where_the_index_ends():
+    """The importer takes the index's last year from the builder. With a
+    builder that ends the index in 2026, the model has no index to project
+    the default table's 2027 estimate, so the importer refuses the table;
+    with one that compounds the same series to 2045, compound_model_index
+    compounds to 2045 too and the importer writes it."""
+    workbook = nlw_workbook()
+    anchors = {NLW_PATH: table_anchor(workbook)}
+    render = partial(
+        render_level_series_yaml,
+        YOY_GROWTH_FIXTURE,
+        compute_level_growth(workbook),
+        ("March", 2026),
+        anchors,
+    )
+
+    def ending_in_2026(content, path):
+        return {
+            year: value
+            for year, value in fixture_index(content, path).items()
+            if year <= 2026
+        }
+
+    with pytest.raises(
+        ValueError,
+        match="the model's index ends in 2026, so it cannot project the 2027 level",
+    ):
+        render(build_index=ending_in_2026)
+
+    def running_to_2045(content, path):
+        index = fixture_index(content, path)
+        values = _series(yaml.safe_load(content), path)["values"]
+        assert compound_model_index(values, max(index)) == index
+        return compound_model_index(values, 2045)
+
+    assert render(build_index=running_to_2045) == render_nlw()
+
+
 def test_the_importer_index_is_the_models_for_the_committed_series():
     """Differential against the model itself: for the committed
     yoy_growth.yaml, the index build_model_index reads from the model's own
