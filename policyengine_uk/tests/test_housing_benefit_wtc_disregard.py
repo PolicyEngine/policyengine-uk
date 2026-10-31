@@ -361,7 +361,8 @@ def assert_one_additional_disregard(units, actual):
         [unit["accommodation"] for unit in units], net - standard
     )
     additional = actual["earnings_disregard"] - standard - accommodation
-    both = (additional > TOLERANCE) & (actual["reserve"] > TOLERANCE)
+    # The WTC disregard is exactly nil where it does not apply.
+    both = (additional > TOLERANCE) & (actual["reserve"] > 0)
     assert not both.any(), [unit for unit, b in zip(units, both) if b]
 
 
@@ -447,6 +448,14 @@ def test_wtc_disregard_is_bounded_and_does_not_stack_with_earnings(units, year):
 @PROPERTY_SETTINGS
 @given(units=SUPPLIED_POPULATIONS, year=st.sampled_from(YEARS))
 @example(units=[case(supplied=0)], year=2024)
+# Earnings of 1,149.20 cover the 260 standard disregard, the supplied nil
+# deduction and the 889.20 additional amount exactly, but not a 1p charge.
+@example(
+    units=[
+        case(net=1_149.20, standard=260, childcare=1, children=1, wtc=0.01, supplied=0)
+    ],
+    year=2024,
+)
 @example(units=SUPPLIED_EDGE_CASES, year=2024)
 def test_additional_earnings_and_wtc_disregards_never_both_apply(units, year):
     """Earnings, WTC, the standard and accommodation disregards and a

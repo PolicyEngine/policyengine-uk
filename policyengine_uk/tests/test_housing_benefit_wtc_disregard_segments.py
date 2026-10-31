@@ -264,7 +264,7 @@ def test_segmented_award_equals_the_regulations_with_one_additional_disregard(
     )
     segments = model_segments(sim)
     for segment in segments:
-        both = (segment["additional"] > TOLERANCE) & (segment["reserve"] > TOLERANCE)
+        both = (segment["additional"] > TOLERANCE) & (segment["reserve"] > 0)
         assert not both.any(), [unit for unit, b in zip(units, both) if b]
     np.testing.assert_allclose(
         sim.calculate("housing_benefit_wtc_disregard", YEAR),
