@@ -193,6 +193,153 @@ rate: every later year stays one 1 April step behind. Reform classes and legacy
 reform dictionaries change the annual values after uprating and are not
 affected.
 
+## Projecting alcohol and tobacco quantities
+
+Each alcohol and tobacco quantity input declares its product group's index,
+and dataset projection grows it by the same group's series in
+`gov.economic_assumptions.yoy_growth.obr.per_capita`
+(`policyengine_uk/data/uprating_indices.yaml`). Each series is the growth in
+the OBR's clearances of the group per person (#2596):
+
+| Inputs | Series | OBR line |
+| --- | --- | --- |
+| `cigarettes_per_week` | `tobacco_clearances.cigarettes` | Table 4.11, "Cigarette clearances (million sticks)" |
+| `hand_rolling_tobacco_grams_per_week` | `tobacco_clearances.hand_rolling_tobacco` | Table 4.11, "Hand rolled tobacco clearances" |
+| `cigars_grams_per_week`, `other_tobacco_grams_per_week`, `heated_tobacco_grams_per_week` | `tobacco_clearances.other_tobacco_products` | Table 4.11, "Other tobacco products" |
+| `beer_litres`, `cider_litres`, `sparkling_cider_litres` | `alcohol_clearances.beer_and_cider` | Table 4.12, "Beer and cider" |
+| `wine_litres`, `other_fermented_litres` | `alcohol_clearances.wine` | Table 4.12, "Wine", which includes other fermented products |
+| `spirits_litres` | `alcohol_clearances.spirits` | Table 4.12, "Spirits", which includes spirit-based ready-to-drinks |
+
+Table 4.11 splits non-cigarette clearances into hand-rolled tobacco and other
+tobacco products only, so the cigar, other tobacco and heated tobacco inputs
+share one series. The strengths (`<product>_abv`) and draught shares are
+ratios, and `cigarette_price_per_pack` is a price, so they keep their values;
+a forward path for the cigarette price is a separate change.
+
+### Population
+
+`extend_single_year_dataset` copies the base year's dataset into each later
+year, and `apply_single_year_uprating` multiplies each column that
+`uprating_indices.yaml` lists by one plus its series' growth in that year.
+The file lists `household_weight` under
+`gov.economic_assumptions.yoy_growth.ons.population`. So, for household i in
+year t, with population growth p(t) and a quantity series g(t):
+
+- the weight is w(i, t) = w(i, t - 1) × (1 + p(t));
+- the quantity is q(i, t) = q(i, t - 1) × (1 + g(t));
+- the weighted total is Q(t) = Σ w(i, t) × q(i, t) = (1 + p(t)) × (1 + g(t)) × Q(t - 1).
+
+With g(t) = (1 + c(t)) / (1 + p(t)) - 1, where c(t) is the growth in
+clearances, Q(t) = (1 + c(t)) × Q(t - 1): the weighted total follows the
+clearances. A series of c(t) itself would give
+Q(t) = (1 + p(t)) × (1 + c(t)) × Q(t - 1) and count population growth twice.
+`ons.population` grows 1.54% from 2024-25 to 2031-32, so totals grown that
+way would end 1.54% above the clearances.
+
+For cigarettes in 2025-26, the October 2026 EFO's outturn of 12,224.6 million
+sticks against the March 2026 EFO's 2024-25 outturn of 13,578.2 million is a
+fall of 9.97%. Population grows 0.33%, so the series holds
+12,224.6 / 13,578.2 / 1.0033 - 1 = -10.27% (-0.102653).
+
+### Years
+
+| Model year | Series | Source |
+| --- | --- | --- |
+| 2024 (2024-25) | Base year: 0, index 1 | The alcohol and tobacco duties start in model year 2024 |
+| 2025 | Outturn | October 2026 Tables 4.11 and 4.12 (2025-26) over March 2026 Tables 3.11 and 3.12 (2024-25) |
+| 2026 to 2031 | Forecast | October 2026 Tables 4.11 and 4.12 |
+| 2032 on | Clearances held flat: 1 / (1 + p(t)) - 1 | As `road_fuel_volume` after the OBR's forecast |
+
+The OBR's years run from 1 April and the model's from 6 April. As for road
+fuel, each series stores the fiscal year that starts in year t at t-01-01.
+The indices, `gov.economic_assumptions.indices.obr.per_capita.*`, start at 1
+in 2024 and stand at:
+
+| Group | 2025 | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Cigarettes | 0.897 | 0.803 | 0.721 | 0.660 | 0.599 | 0.558 | 0.520 |
+| Hand-rolled tobacco | 0.826 | 0.769 | 0.712 | 0.652 | 0.610 | 0.584 | 0.556 |
+| Other tobacco products | 0.861 | 0.815 | 0.781 | 0.715 | 0.679 | 0.653 | 0.615 |
+| Beer and cider | 0.969 | 0.950 | 0.929 | 0.921 | 0.914 | 0.903 | 0.891 |
+| Wine | 0.965 | 0.963 | 0.945 | 0.937 | 0.929 | 0.917 | 0.907 |
+| Spirits | 0.984 | 0.974 | 0.956 | 0.950 | 0.944 | 0.933 | 0.924 |
+
+Past `PROJECTION_END_YEAR` (2032), policyengine-core scales each input by
+the index it declares.
+
+`policyengine_uk/utils/import_obr_forecasts.py` writes the six series from
+`CLEARANCE_SERIES_SPECS` in the same run as the other receipts series (see
+the steps for a new EFO in the economic assumptions README). It requires each
+table to state its unit, in a row label or a note, and reads `ons.population`
+from the `yoy_growth.yaml` it rewrites.
+
+### Budget measures and reforms
+
+The October 2026 forecast incorporates the measures announced at Budget 2026
+and since the March forecast (EFO paragraph 3.2). The OBR's policy Table 1.1
+holds no change to an alcohol or tobacco duty rate. Three measures reach the
+two duties, and none moves either by more than £13 million a year:
+
+- measure 19, more generous Small Producer Relief from 1 February 2027:
+  alcohol duty £1.5 million lower in 2026-27 and £9.2 million to £9.9
+  million lower a year after (the model leaves out Small Producer Relief);
+- measure 45, HMRC's measures to close the tax gap: tobacco duty £0.7
+  million higher in 2026-27, rising to £12.7 million in 2031-32, and alcohol
+  duty £0.3 million to £4.8 million higher;
+- measure 95, the removal of the £135 customs duty relief on low-value
+  imports from October 2028: tobacco duty up to £0.8 million and alcohol
+  duty up to £0.4 million lower a year.
+
+The forecast still assumes rising duty rates. The OBR expects alcohol
+receipts to grow, "driven by increases to the duty rate that offset an
+assumed average 1 per cent decline in alcohol consumption in each year"
+(paragraph 4.43), and tobacco receipts to fall "as higher duty rates only
+partly offset falling consumption" (paragraph 4.44). The clearances carry
+that consumption trend under the OBR's own rate path, not a Budget change.
+
+The dataset projection reads no duty rate (`uprating_input_paths` in
+`policyengine_uk/data/economic_assumptions.py`), so the indices grow
+quantities whatever rates the model charges. A reform to alcohol or tobacco
+duty rates therefore moves receipts through the rates alone: the model
+applies no consumption response to it. Current law in the model holds the
+alcohol rates at their 1 February 2026 values, the tobacco rates at their
+1 October 2026 values and the default cigarette price at its 2024 average,
+while the OBR's volumes come with the rates it expects.
+
+### Receipts against the OBR's forecast
+
+On quantities that follow the clearances, the model's duty moves with its
+own rates. A constructed dataset of one household at weight 1 that holds the
+UK's 2024-25 clearances shows the effect. It treats beer and cider as beer
+at 4% with no draught relief, wine and other fermented products as wine at
+12%, spirits at 40%, other tobacco products as other smoking tobacco, and
+cigarettes at the default price. On that mix the model's duty per unit
+cleared rises 5.7% for alcohol by 2026-27 and 19.0% for tobacco by 2027-28,
+with the rate rises of February 2025 and February 2026 for alcohol and of
+November 2025 and October 2026 for tobacco, and then holds. The OBR's
+receipts per unit cleared keep rising, by 22.1% for alcohol and 48.2% for
+tobacco by 2031-32. From 2027-28 the model's duty therefore falls short of
+the OBR's forecast by more each year: on this construct, alcohol duty goes
+from 7.6% above the OBR's 2024-25 receipts to 6.8% below its 2031-32
+forecast, and tobacco duty from 1.9% above to 18.0% below. The construct's
+product mix sets the 2024-25 gaps: charging all beer and cider at the beer
+rate with no draught relief puts that line 22.4% above its receipts. A
+dataset replaces the mix with its own. The later fall comes from the rates.
+
+### Sources
+
+The series and the figures above come from these files. The parser fixtures
+in `policyengine_uk/tests/fixtures/obr_receipts/` keep the receipts sheets
+of the two receipts workbooks unchanged.
+
+| File | SHA-256 | Sheet and cells |
+| --- | --- | --- |
+| OBR October 2026 EFO, detailed forecast tables zip (`efo-october-2026-detailed-forecast-tables-zipfile.zip`) | `06ac908c69fce7d69dbfda4e16fc3b091a83bd8140ecd2f24990acd13d945fc2` | Holds the two workbooks below |
+| October 2026 receipts tables (`efo-october-2026-detailed-forecast-tables-receipts.xlsx`) | `d115705716d77b11c190385d41cb1924f30080c9331a8a386c04d4e65a368e95` | 4.11: rows 5 (cigarettes, unit in B5), 6 (non-cigarette, unit in B6), 8 (hand-rolled) and 9 (other tobacco products), columns C (2025-26 outturn) to I (2031-32); 4.12: rows 5 to 7 (beer and cider, wine, spirits), columns C to I, unit note B8, footnotes B9 and B10; 4.8: row 27 (tobacco duties, cash) and 4.12 rows 16 to 18 (alcohol receipts, accrued), for the comparison above |
+| October 2026 policy tables (`efo-october-2026-detailed-forecast-tables-policy.xlsx`) | `cdcc2a06b100241bf3010bd159a4e5d43daef2348a3850797b1e88a308fd45fd` | 1.1: rows 95 (measure 19), 203 and 204 (measure 45), 446 and 447 (measure 95), 494 and 515 (totals for alcohol and tobacco duty) |
+| October 2026 EFO (`economic-and-fiscal-outlook-october-2026-web-accessible.pdf`) | `9e0e9c340e35e603066f3124a614fcd68feadb3d5d10d1f76fb536e150e6225e` | Paragraphs 3.2, 4.43 and 4.44 |
+| March 2026 receipts tables (`obr_efo_march_2026_receipts.xlsx`) | `f65b6cb7f96931d4abd85940794eb60f6f65afca8bbf16c74a4548bf92766a28` | 3.11: rows 5, 8 and 9, column C (2024-25 outturn); 3.12: rows 5 to 7, column C, and rows 16 to 18, column C (2024-25 receipts); 3.8: row 27, column D |
+
 ## Population data follow-ups
 
 These formulas do not impute quantities or vehicle characteristics from the

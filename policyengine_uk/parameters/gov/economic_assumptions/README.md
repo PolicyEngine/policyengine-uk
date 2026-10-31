@@ -72,7 +72,7 @@ household weights by `ons.population`. They link their outturn year to the
 previous EFO's outturn, as the four receipts series do, and hold the
 clearances flat after the forecast. The importer reads `ons.population` from
 the `yoy_growth.yaml` it rewrites. See
-[household excise duties](../../../../docs/engineering/excise-duties.md#projection)
+[household excise duties](../../../../docs/engineering/excise-duties.md#projecting-alcohol-and-tobacco-quantities)
 for the mapping of inputs to groups, the arithmetic and the sources.
 
 `national_living_wage` projects the minimum wage rates
