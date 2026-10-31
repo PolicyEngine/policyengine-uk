@@ -2,7 +2,7 @@
 
 
 def earlier_tax_reductions(income_tax, name: str) -> list:
-    """The tax reductions listed before ``name`` in income_tax_subtractions.
+    """The tax reductions listed before ``name`` in step_6_tax_reductions.
 
     ITA 2007 s. 29(2)-(3) allows each reduction only so far as there is Step 5
     tax left after the reductions already deducted. The order does not change
@@ -10,7 +10,7 @@ def earlier_tax_reductions(income_tax, name: str) -> list:
     takes the tax the ones before it leave. A reduction not in the list (a
     reform has removed it) comes after every listed one.
     """
-    subtractions = list(income_tax.income_tax_subtractions)
+    subtractions = list(income_tax.step_6_tax_reductions)
     if name in subtractions:
         return subtractions[: subtractions.index(name)]
     return subtractions

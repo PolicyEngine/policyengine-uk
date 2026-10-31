@@ -1,3 +1,91 @@
+## [2.169.0] - 2026-10-31
+
+### Added
+
+- Added Northern Ireland's £200 Alternative Fuel Payment (`ebr_alternative_fuel_payment`), paid with the £400 Energy Bills Support Scheme amount in January 2023, so a Northern Ireland household's Energy Bills Rebate totals the £600 the December 2022 direction set.
+
+### Fixed
+
+- Stopped paying the 2022 £150 Council Tax Rebate in Northern Ireland, which levies domestic rates rather than council tax and had no rebate. The enhanced FRS gives every Northern Ireland household band A, so the model had paid it to all of them.
+
+
+## [2.168.1] - 2026-10-31
+
+### Changed
+
+- Project household electricity and gas spending with retail energy price indices instead of headline CPI. The indices follow the ONS CPI electricity, gas and solid fuel indices to the latest month and the OBR's utilities inflation forecast after it, and leave out the electricity VAT cut and its extension, so a VAT reform no longer moves projected spending.
+
+
+## [2.168.0] - 2026-10-31
+
+### Added
+
+- Add the April 2027 minimum wage rates Budget 2026 announced (paragraph 6.128): £13.21 for the national living wage, £11.27 for ages 18 to 20, and £8.31 for ages 16 to 17 and apprentices. The projection by earnings growth now starts from them.
+
+### Fixed
+
+- Project the minimum wage rates, including the national living wage, after the last rate set by the OBR's national living wage forecast (EFO economy Table 1.13) and average earnings growth after it, so the Universal Credit benefit cap earnings exception, the minimum income floor, ESA permitted work, the childcare earnings tests and the Carer's Allowance earnings limit rise with them instead of holding April 2026 rates. A reform that sets a minimum wage rate from some year onwards now holds that rate flat against a rising baseline, where before it was an uplift on a flat one.
+
+
+## [2.167.0] - 2026-10-31
+
+### Added
+
+- Machine Games Duty charges the new `machine_games_standard_rate_higher_stake_net_takings` input, the part of standard-rate takings from machines with a maximum charge to play above £1 or a maximum prize above £100, at the higher rate of 25% from 1 April 2027 (Budget 2026, OOTLAR paragraph 1.50). The dated parameter `gov.hmrc.gambling_duty.machine_games.higher_stake_machines_at_higher_rate` switches the change on.
+
+
+## [2.166.1] - 2026-10-31
+
+### Changed
+
+- The YAML test run releases each case's simulation and its file's reformed systems once they have run, so its peak memory falls from 16.1 GiB to 1.65 GiB and CI's YAML job finishes well within its time limit.
+
+### Fixed
+
+- Applied Housing Benefit accommodation earnings disregards from their statutory commencement within the first fiscal year, calculating awards before combining date segments.
+- Fixed `Simulation.build_from_populations` with another simulation's populations: the simulation, its clones and its branches now treat the values that simulation supplied as supplied and the values the model set itself as the model's, record inputs set afterwards, and calculate again the values that simulation calculated or this one cached for the replaced populations.
+
+
+## [2.166.0] - 2026-10-30
+
+### Fixed
+
+- - Limited Income Tax reductions to the tax calculated at Step 5, so they no longer offset the High Income Child Benefit Charge or the pension annual allowance charge added at Step 7 (ITA 2007 ss. 23, 29 and 30). The married couple's allowance reduction is no longer capped at the Step 5 tax plus the High Income Child Benefit Charge. The Step 5 components, Step 6 reductions and Step 7 charges are now separate parameter lists: `step_5_tax_components`, `step_6_tax_reductions` and `step_7_additional_tax` replace `income_tax_additions` and `income_tax_subtractions`.
+
+### Removed
+
+- - Removed the `gov.hmrc.income_tax.income_tax_additions` and `gov.hmrc.income_tax.income_tax_subtractions` parameter lists. Use `step_5_tax_components` and `step_7_additional_tax` for the first, and `step_6_tax_reductions` for the second.
+
+
+## [2.165.3] - 2026-10-30
+
+### Fixed
+
+- Counted the 2022 Energy Bills Rebate (the Energy Bills Support Scheme credit and the £150 Council Tax Rebate) in HBAI household net income as miscellaneous income, as DWP's HBAI does, and paid the one-off Council Tax Rebate in 2022-23 only rather than again in 2023-24.
+- Applied the trading allowance to income not otherwise charged (ITTOIA 2005 Part 5 Chapter 8), sharing one allowance with trade receipts, through a new optional `income_not_otherwise_charged` input that defaults to zero. Means tests and gross income bases now read `miscellaneous_income_before_trading_allowance`, so the income tax relief does not reach them.
+
+
+## [2.165.2] - 2026-10-30
+
+### Changed
+
+- Datasets can declare that their savings income was calibrated to grow by the OBR's savings income forecast per person from 2022-23 to 2025-26 (October 2026 EFO, Table 4.5), in the H5 root attribute `policyengine_uk.savings_income_projection`. Dataset projection then grows savings interest, other investment income, interest on cash held in non-cash ISAs and, in datasets on the additive ISA contract, ISA interest by that series in those years and by GDP per head in other years. Datasets on the legacy gross ISA contract grow gross interest and hold its ISA part flat, as before. Datasets that declare nothing project exactly as before, by GDP per head in every year.
+
+
+## [2.165.1] - 2026-10-30
+
+### Fixed
+
+- A family no longer takes a Universal Credit award worth less than the Tax-Free Childcare the award would end: it keeps Tax-Free Childcare instead (`forgoes_universal_credit_for_tax_free_childcare`, #2689). The comparison counts the Scottish Child Payment that an award brings in Scotland. No debt deduction comes out of an award that only a reform creates (`uc_award_carries_deductions`), whether the reform is applied when the simulation is built, by `apply_reform`, or by a simulation modifier followed by `drop_computed_arrays`; this is an assumption that slightly raises the cost of reforms that widen Universal Credit. Together these stop a cut in the Universal Credit taper from leaving families worse off (#2753).
+
+
+## [2.165.0] - 2026-10-29
+
+### Added
+
+- Added the company car and car fuel benefits in kind from 2020-21 (ITEPA 2003 ss. 120 to 152), with the s. 139 appropriate percentages to 2029-30, person inputs for the company car, and Class 1A NICs on both benefits in `ni_employer` and `total_national_insurance`; the benefits are taxed through `taxable_employment_income` and kept out of Class 1 earnings, means-tested earnings and student loan repayment income, and the `company_car_tax_rise_2030` scenario applies Budget 2026's one-point rise for 2030-31.
+
+
 ## [2.164.4] - 2026-10-29
 
 ### Fixed

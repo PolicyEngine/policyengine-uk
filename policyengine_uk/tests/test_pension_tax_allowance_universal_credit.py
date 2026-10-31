@@ -2,7 +2,7 @@
 
 Universal Credit deducts the income tax paid on earnings (UC Regulations 2013
 reg. 55(5)(b) and 57(2)), which it works out from the rates less the Step 6
-reductions in gov.hmrc.income_tax.income_tax_subtractions. The allowance is
+reductions in gov.hmrc.income_tax.step_6_tax_reductions. The allowance is
 on that list, so for a mixed-age couple whose older partner works, it raises
 earned income and UC takes back the taper share of it. UC counts pension
 income before tax (reg. 66), so there the allowance leaves UC unchanged.

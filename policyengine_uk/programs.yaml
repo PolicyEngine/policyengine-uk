@@ -50,7 +50,7 @@ programs:
     variable: income_tax
     parameter_prefix: gov.hmrc.income_tax
     verified_start_year: 2019
-    notes: Includes Scottish rates via devolved tax bands, the high income child benefit charge and, from 2025-26, the winter fuel payment charge
+    notes: Includes Scottish rates via devolved tax bands, the high income child benefit charge, from 2025-26 the winter fuel payment charge, and from 2020-21 the company car and car fuel benefits in kind (no other benefits in kind, and no vans)
 
   - id: national_insurance
     name: National Insurance
@@ -62,7 +62,7 @@ programs:
     variable: national_insurance
     parameter_prefix: gov.hmrc.national_insurance
     verified_start_year: 2019
-    notes: Classes 1, 2, 3, and 4
+    notes: Classes 1, 2, 3, and 4, and Class 1A on the company car and car fuel benefits
 
   - id: capital_gains_tax
     name: Capital gains tax
@@ -600,6 +600,26 @@ programs:
     verified_start_year: 2022
     verified_end_year: 2023
     notes: Temporary program, ended 2023
+
+  - id: energy_bills_rebate
+    name: Energy Bills Rebate
+    full_name: Energy Bills Rebate, Energy Bills Support Scheme and Alternative Fuel Payment
+    category: Benefits
+    agency: Treasury
+    status: partial
+    coverage: UK
+    variable: energy_bills_rebate
+    parameter_prefix: gov.treasury.energy_bills_rebate
+    verified_start_year: 2022
+    verified_end_year: 2023
+    notes: >-
+      Temporary program, ended 2023. The £150 Council Tax Rebate in bands A to
+      D in Great Britain (none in Northern Ireland, which has domestic rates),
+      the £400 Energy Bills Support Scheme, and Northern Ireland's £200
+      Alternative Fuel Payment. Leaves out the Scottish and Welsh £150 for
+      Council Tax Reduction recipients in bands E and above, England's
+      discretionary fund, Great Britain's Alternative Fuel Payment and the
+      alternative funding schemes.
 
   - id: household_energy_payment
     name: Household Energy Payment

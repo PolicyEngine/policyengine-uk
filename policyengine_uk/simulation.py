@@ -44,6 +44,11 @@ from policyengine_uk.data.economic_assumptions import (
 )
 from policyengine_uk.data.dataset_sources import materialize_gcs_dataset_url
 from policyengine_uk.data.energy_price_basis import core_dataset_energy_price_basis
+from policyengine_uk.data.savings_income_projection import (
+    SAVINGS_INCOME_PROJECTION_KEY,
+    core_dataset_savings_income_projection,
+    resolve_savings_income_projection,
+)
 from policyengine_uk.data.input_dataframe import (
     dataset_from_input_dataframe,
     hold_identifiers_in,
@@ -84,10 +89,11 @@ from policyengine_uk.utils.measurement_branches import (
 from policyengine_uk.utils.supplied_inputs import (
     SUPPLIED_INPUT_VARIABLES,
     copy_model_values,
+    copy_other_populations,
     drop_missing_model_values,
     drop_missing_supplied_inputs,
-    forget_model_values,
     forget_replaced_model_values,
+    keep_population_records,
     model_value_input_records,
 )
 from policyengine_uk.reforms import create_structural_reforms_from_parameters
@@ -451,6 +457,13 @@ class Simulation(CoreSimulation):
                 drop_calculated_values(self)
                 self._external_input_change_pending = False
             self.baseline = self.clone()
+        # Whether this simulation may differ from its baseline: it was built
+        # with a reform, whose baseline is a separate current-law simulation,
+        # or was changed after it was built (apply_reform,
+        # drop_computed_arrays), when its baseline is the copy made here.
+        # Branches copy it.
+        self.changed_from_baseline = scenario is not None
+        self.baseline.changed_from_baseline = False
         self.baseline._cgt_warning_enabled = False
         self.baseline._defer_uc_health_warning = False
         self.baseline._building_dated_reforms = None
@@ -542,6 +555,19 @@ class Simulation(CoreSimulation):
         finally:
             if linked is not None:
                 system.simulation = linked
+        # A reform applied to a built simulation changes it from its baseline.
+        if getattr(self, "baseline", None) is not None:
+            self.changed_from_baseline = True
+
+    def drop_computed_arrays(self) -> int:
+        """Drop every calculated value, as core does, and mark a built
+        simulation as changed from its baseline: core advises the drop after
+        a change to a simulation's parameters, and policyengine.py drops
+        after each step that changes a built simulation (its _apply_step)."""
+        dropped = super().drop_computed_arrays()
+        if getattr(self, "baseline", None) is not None:
+            self.changed_from_baseline = True
+        return dropped
 
     @property
     def _user_input_keys(self) -> set:
@@ -591,11 +617,18 @@ class Simulation(CoreSimulation):
                     del records[recorded_period]
 
     def build_from_populations(self, populations) -> None:
+        # Take a copy of what another simulation made, so that neither changes
+        # the other's values or records.
+        populations, adopted = copy_other_populations(self, populations)
         super().build_from_populations(populations)
-        # The new populations hold none of the values set_model_value stored,
-        # so an equal value a rebuild stores (from a situation or a frame) is
-        # supplied.
-        forget_model_values(self)
+        # Formulas read the fast cache, so drop what it holds for the replaced
+        # populations, as _start_new_population does.
+        if getattr(self, "_fast_cache", None) is not None:
+            self._fast_cache = {}
+        # Keep the records of inputs and model values (set_model_value) of
+        # the values the new populations hold, and only those: an equal value
+        # a rebuild stores later (from a situation or a frame) is supplied.
+        keep_population_records(self, adopted)
 
     def set_input(self, variable_name: str, period: Period, value) -> None:
         # What is set here is supplied, even a value equal to the model's own,
@@ -649,6 +682,9 @@ class Simulation(CoreSimulation):
         clone._cgt_defaulted_periods = set(getattr(self, "_cgt_defaulted_periods", ()))
         clone._isa_income_contracts = copy.deepcopy(
             getattr(self, "_isa_income_contracts", {})
+        )
+        clone._savings_income_projection = getattr(
+            self, "_savings_income_projection", None
         )
         return clone
 
@@ -1252,6 +1288,9 @@ class Simulation(CoreSimulation):
         frame.attrs[ISA_INCOME_CONTRACT_KEY] = contract_envelope(
             {year: simulation_contract(self, year) for year in years}
         )
+        frame.attrs[SAVINGS_INCOME_PROJECTION_KEY] = resolve_savings_income_projection(
+            getattr(self, "_savings_income_projection", None), None
+        )
         return frame
 
     def build_from_dataset(self, dataset: Dataset) -> None:
@@ -1261,6 +1300,7 @@ class Simulation(CoreSimulation):
             dataset: PolicyEngine Dataset object containing simulation data
         """
         energy_price_basis = core_dataset_energy_price_basis(dataset)
+        savings_income_projection = core_dataset_savings_income_projection(dataset)
         data: Dict[str, Dict[str, Union[float, int, str]]] = dataset.load_dataset()
 
         first_variable = data[list(data.keys())[0]]
@@ -1290,6 +1330,7 @@ class Simulation(CoreSimulation):
             read_h5_contract(getattr(dataset, "file_path", None)),
             [period_(first_time_period).start.year],
         )
+        self._savings_income_projection = savings_income_projection
 
         # Populations use sorted group IDs; arrays in a Core dataset follow
         # the order of that period's supplied identifier array instead.
@@ -1321,7 +1362,10 @@ class Simulation(CoreSimulation):
         self.dataset = dataset
 
         dataset = UKSingleYearDataset.from_simulation(
-            self, fiscal_year=first_time_period, energy_price_basis=energy_price_basis
+            self,
+            fiscal_year=first_time_period,
+            energy_price_basis=energy_price_basis,
+            savings_income_projection=savings_income_projection,
         )
         multi_year_dataset = self._extend_dataset_with_cgt_provenance(dataset)
 
@@ -1380,6 +1424,7 @@ class Simulation(CoreSimulation):
             year: copy.deepcopy(dataset[year].isa_income_contract)
             for year in dataset.years
         }
+        self._savings_income_projection = dataset.savings_income_projection
 
         # Load variable values for all years
         for year in dataset.years:
@@ -1428,6 +1473,7 @@ class Simulation(CoreSimulation):
         self._cgt_operation_inputs = set()
         self._cgt_warned_unused = False
         self._isa_income_contracts = {}
+        self._savings_income_projection = None
 
     def build_from_ids(
         self,
@@ -1547,6 +1593,7 @@ class Simulation(CoreSimulation):
             benunit=benunit,
             household=household,
             fiscal_year=year,
+            savings_income_projection=getattr(self, "_savings_income_projection", None),
         )
 
     def _calculate(self, variable_name: str, period: Period = None):

@@ -18,7 +18,7 @@ class pension_tax_allowance(Variable):
         "2027-28 where HM Treasury's explainer gives £13,036.40. It is "
         "non-refundable: it is "
         "deducted at Step 6 after the reductions listed before it in "
-        "income_tax_subtractions, only so far as there is Step 5 tax left, "
+        "step_6_tax_reductions, only so far as there is Step 5 tax left, "
         "and it does not change the Personal Allowance."
     )
     definition_period = YEAR

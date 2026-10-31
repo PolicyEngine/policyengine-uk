@@ -13,7 +13,7 @@ class property_finance_cost_relief(Variable):
         "The rate is the same for Scottish taxpayers, whose property income "
         "is taxed at Scottish rates. It is deducted at Step 6 of the income "
         "tax calculation after the reductions listed before it in "
-        "income_tax_subtractions, and only so far as there is tax left to "
+        "step_6_tax_reductions, and only so far as there is tax left to "
         "deduct it from."
     )
     definition_period = YEAR
