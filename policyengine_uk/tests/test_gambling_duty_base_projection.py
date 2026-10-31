@@ -289,11 +289,12 @@ def test_higher_stake_machines_pay_the_april_2027_rise_once():
         base = simulation.calculate(standard, year)[0]
         part = simulation.calculate(higher_stake, year)[0]
         assert base > 1_000
-        assert part == pytest.approx(0.4 * base, rel=1e-9)
+        # Inputs and duties are float32, and the rise is a difference of two.
+        assert part == pytest.approx(0.4 * base, rel=1e-6)
         duty = simulation.calculate("machine_games_duty", year)[0]
-        assert duty == pytest.approx(0.20 * (base - part) + 0.25 * part, rel=1e-9)
+        assert duty == pytest.approx(0.20 * (base - part) + 0.25 * part, rel=1e-6)
         rise = duty - without.calculate("machine_games_duty", year)[0]
-        assert rise == pytest.approx(0.05 * part, rel=1e-6)
+        assert rise == pytest.approx(0.05 * part, rel=1e-5)
 
 
 def national_bases():
