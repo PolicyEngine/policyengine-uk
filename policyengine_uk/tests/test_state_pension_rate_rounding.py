@@ -203,15 +203,19 @@ def test_april_2027_is_the_pension_tax_allowance_explainer_figure(pensioner):
     full annual value of the new State Pension will increase to £13,036.40",
     and Steph, whose only income it is, "would have £93.28 of income tax to
     pay" without the allowance. The unrounded rate gave £13,036.97 and
-    £93.39."""
+    £93.39. The allowance then removes all of that tax, as the explainer
+    says for Steph."""
     # Simulations hold float32, a thousandth of a pound apart at this size.
     for variable in ("state_pension", "total_income"):
         assert float(pensioner.calculate(variable, 2027)[0]) == pytest.approx(
             13_036.40, abs=HALF_PENNY
         )
-    assert float(pensioner.calculate("income_tax", 2027)[0]) == pytest.approx(
-        93.28, abs=0.001
-    )
+    # The tax at Step 5, before the allowance comes off at Step 6.
+    for variable in ("income_tax_pre_charges", "pension_tax_allowance"):
+        assert float(pensioner.calculate(variable, 2027)[0]) == pytest.approx(
+            93.28, abs=0.001
+        )
+    assert float(pensioner.calculate("income_tax", 2027)[0]) == 0
 
 
 @pytest.mark.parametrize("year", [2027, 2028, 2029])
