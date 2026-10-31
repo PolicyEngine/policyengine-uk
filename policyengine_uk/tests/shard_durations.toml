@@ -13,7 +13,7 @@
 # rename or delete its line here. Regenerate when a shard drifts well above
 # the others.
 [seconds]
-"policyengine_uk/tests/test_capital_share_components.py::test_capital_matches_the_original_lists" = 1299
+"policyengine_uk/tests/test_capital_share_components.py::test_unitemised_inputs_match_the_lists_before_itemising" = 1299
 "policyengine_uk/tests/test_statutory_pension_edges.py::test_nics_cap_preserves_aa_inputs_and_charge_with_fixed_ordinary_tax[2029]" = 761
 "policyengine_uk/tests/test_statutory_pension_edges.py::test_nics_cap_preserves_aa_inputs_and_charge_with_fixed_ordinary_tax[2030]" = 753
 "policyengine_uk/tests/test_mixed_age_couple_properties.py::test_mixed_age_couple_invariants" = 498
@@ -129,7 +129,7 @@
 "policyengine_uk/tests/test_disable_simulated_benefits_benefit_cap.py::test_the_benefit_cap_matches_the_replaced_readers_with_the_reform_off" = 108
 "policyengine_uk/tests/test_income_support_gate_reads_claimant_or_partner_awards.py::test_the_switched_gate_matches_the_replaced_code" = 107
 "policyengine_uk/tests/test_dataframe_dataset.py::test_a_frame_over_several_years_exports_the_same_frame_again" = 107
-"policyengine_uk/tests/test_capital_share_components.py::test_share_like_capital_keeps_the_supplied_aggregate" = 107
+"policyengine_uk/tests/test_capital_share_components.py::test_share_like_capital_and_its_parts" = 107
 "policyengine_uk/tests/test_uc_unearned_benefits_properties.py::test_carer_support_payment_counts_like_capped_private_pension" = 107
 "policyengine_uk/tests/test_uc_single_claim_properties.py::test_maximum_amount_is_the_solo_claimants" = 107
 "policyengine_uk/tests/test_uc_earnings_deductions_properties.py::test_unearned_income_never_changes_earned_income" = 107
@@ -329,7 +329,7 @@
 "policyengine_uk/tests/test_uc_earned_income_before_work_allowance_properties.py::test_award_earned_income_is_before_work_allowance_less_the_allowance" = 55
 "policyengine_uk/tests/test_capital_share_components.py::test_one_unit_of_float32_rounding_above_a_power_of_two_keeps_the_aggregate" = 55
 "policyengine_uk/tests/test_housing_benefit_savings_credit_only_properties.py::test_net_income_does_not_fall_where_savings_credit_ends" = 54
-"policyengine_uk/tests/test_capital_share_components.py::test_float32_rounding_at_the_limit_keeps_eligibility" = 54
+"policyengine_uk/tests/test_capital_share_components.py::test_float32_rounding_at_the_limit_keeps_the_aggregate" = 54
 "policyengine_uk/tests/test_housing_benefit_specified_accommodation_disregard_properties.py::test_differential_against_the_statutory_reference" = 54
 "policyengine_uk/tests/test_hbai_negative_income_properties.py::test_reset_income_and_its_measures" = 54
 "policyengine_uk/tests/test_benunit_reported_capital_properties.py::test_programme_variable_set_directly_wins_for_that_programme" = 53
