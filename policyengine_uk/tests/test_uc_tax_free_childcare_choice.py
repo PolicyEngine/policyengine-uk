@@ -18,8 +18,11 @@ TAPER_CUT = {
         "2027-01-01.2100-12-31": 0.50
     }
 }
-# A 15% latent deduction rate, all advance repayments, as a dataset supplies.
+# A 15% latent deduction rate, all advance repayments, as a dataset supplies,
+# with the incidence draw that assigns it: the rate counts only where
+# uc_has_deduction is true (#2739), and 0.2 falls below London's incidence.
 DEDUCTION = {
+    "uc_deduction_random_draw": {YEAR: 0.2},
     "uc_latent_deduction_rate": {YEAR: 0.15},
     "uc_deduction_combination": {YEAR: "ADVANCE_ONLY"},
 }

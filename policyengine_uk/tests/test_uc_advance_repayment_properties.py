@@ -40,6 +40,8 @@ def situation(amounts, year=YEAR, age=30, latent=0.1, combination="ADVANCE_ONLY"
             "uc_benefit_cap_reduction": {year: 0},
             "uc_latent_deduction_rate": {year: latent},
             "uc_deduction_combination": {year: combination},
+            # The latent rate counts only for a unit with the flag (#2739).
+            "uc_has_deduction": {year: True},
         }
         if amount is not None:
             unit["uc_advance_repayment_amount"] = {year: amount}

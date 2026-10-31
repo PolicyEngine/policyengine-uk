@@ -34,6 +34,7 @@
     would_claim_uc: true
     universal_credit_pre_benefit_cap: 6_000
     uc_latent_deduction_rate: 0.05
+    uc_has_deduction: true
     uc_deduction_combination: THIRD_PARTY_ONLY
     gov.dwp.universal_credit.standard_allowance.amount.SINGLE_OLD: 440
   output:
@@ -48,6 +49,7 @@
     universal_credit_pre_benefit_cap: 6_000
     uc_advance_repayment_amount: 600
     uc_latent_deduction_rate: 0.05
+    uc_has_deduction: true
     uc_deduction_combination: THIRD_PARTY_ONLY
     gov.dwp.universal_credit.standard_allowance.amount.SINGLE_OLD: 440
   output:
@@ -86,6 +88,7 @@
     would_claim_uc: true
     universal_credit_pre_benefit_cap: 6_000
     uc_latent_deduction_rate: 0.1
+    uc_has_deduction: true
     uc_deduction_combination: ADVANCE_ONLY
     gov.dwp.universal_credit.standard_allowance.amount.SINGLE_OLD: 440
   output:
@@ -103,6 +106,7 @@
     would_claim_uc: true
     universal_credit_pre_benefit_cap: 6_000
     uc_latent_deduction_rate: 0.1
+    uc_has_deduction: true
     uc_deduction_combination: ADVANCE_ONLY
     uc_advance_repayment_amount: 0
   output:
@@ -124,6 +128,7 @@
         universal_credit_pre_benefit_cap: 6_000
         uc_benefit_cap_reduction: 0
         uc_latent_deduction_rate: 0.1
+        uc_has_deduction: true
         uc_deduction_combination: ADVANCE_ONLY
         uc_advance_repayment_amount: 0
       missing:
@@ -132,6 +137,7 @@
         universal_credit_pre_benefit_cap: 6_000
         uc_benefit_cap_reduction: 0
         uc_latent_deduction_rate: 0.1
+        uc_has_deduction: true
         uc_deduction_combination: ADVANCE_ONLY
     households:
       zero_household:

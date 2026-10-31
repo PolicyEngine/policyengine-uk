@@ -24,6 +24,10 @@ def make_situation(**benunit_overrides):
         "uc_benefit_cap_reduction": {YEAR: 0},
         **benunit_overrides,
     }
+    if "uc_latent_deduction_rate" in benunit:
+        # A latent rate counts only for a unit flagged as having deductions
+        # (#2739); these units describe families that have them.
+        benunit.setdefault("uc_has_deduction", {YEAR: True})
     return {
         "people": {"person": {"age": {YEAR: 30}}},
         "benunits": {"benunit": benunit},
