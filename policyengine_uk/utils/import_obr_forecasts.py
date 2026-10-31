@@ -1469,10 +1469,11 @@ def check_index_stays_positive(path: tuple[str, ...], values: dict) -> None:
     """Compound a rendered series as create_economic_assumption_indices does,
     from 1 in its first listed year through 2039, rounding to five decimals.
     An index that rounds to zero would zero the base in every later year."""
-    growth = {int(str(instant)[:4]): value for instant, value in values.items()}
+    growth = {str(instant): value for instant, value in values.items()}
     index = 1.0
-    for year in range(min(growth) + 1, LAST_INDEX_YEAR + 1):
-        index = round(index * (1 + growth[max(y for y in growth if y <= year)]), 5)
+    for year in range(int(min(growth)[:4]) + 1, LAST_INDEX_YEAR + 1):
+        in_force = max(instant for instant in growth if instant <= f"{year}-01-01")
+        index = round(index * (1 + growth[in_force]), 5)
         if index <= 0:
             raise ValueError(
                 f"{'.'.join(path)}: the index reaches {index} in {year} at five "

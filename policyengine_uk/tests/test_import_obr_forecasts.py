@@ -1194,6 +1194,20 @@ def test_a_tail_that_rounds_the_index_to_zero_is_refused():
         render(content, current=levels)
 
 
+def test_the_index_check_reads_the_value_in_force_each_january():
+    # A value dated mid-year applies from the next January, so it must not
+    # replace that year's January value.
+    with pytest.raises(ValueError, match="in 2023"):
+        import_obr_forecasts.check_index_stays_positive(
+            ("example",),
+            {
+                date(2022, 1, 1): 0.0,
+                date(2023, 1, 1): -1.0,
+                date(2023, 7, 1): 0.0,
+            },
+        )
+
+
 def test_receipts_labels_lose_footnote_markers_only():
     line = find_receipts_line(
         read_workbook_sheets(
