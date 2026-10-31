@@ -1,0 +1,79 @@
+description: >
+  Other (unearned) income that the Oxford Council Tax Reduction scheme counts,
+  with DWP's net earned income and the Universal Credit awarded, for a
+  working-age applicant who receives Universal Credit. Appendix 3 lists the
+  income it ignores and says "All other unearned income is taken into
+  account". Appendix 5's disregards, including Child Benefit and child
+  maintenance, apply only to applicants who "do not receive Universal Credit".
+  The list leaves out what Appendix 3 ignores (Attendance Allowance,
+  Disability Living Allowance, Personal Independence Payment, Discretionary
+  Housing Payments, Housing Benefit and discretionary council tax reductions)
+  and income derived from capital: savings interest, dividends and rent,
+  which Part 1 para 30 and Annex 7 treat as capital. Appendix 3 also ignores
+  payments from sub-tenants and boarders. Universal Credit's assumed yield
+  from capital (uc_tariff_income) is not a receipt and stays out, and so does
+  Oxford's own assumed income from capital, which para 15 adds only under
+  paragraphs 14 to 27. Statutory sick, maternity and paternity pay are in
+  DWP's net earned income (UC Regs 2013 reg 55(4)), so they are not listed
+  here. Payments that only Scotland makes, other than the carer support
+  payment, cannot reach an Oxford applicant and are not listed.
+metadata:
+  economy: false
+  label: Oxford Council Tax Reduction Universal Credit applicant other income sources
+  period: year
+  unit: list
+  reference:
+    - title: Oxford City Council Council Tax Reduction Scheme 2026 to 2027, Appendix 3 (other unearned income, the income ignored) and Appendix 5 (applies to applicants who do not receive Universal Credit)
+      href: https://www.oxford.gov.uk/council-tax-reduction/council-tax-reduction-scheme-2026-27/4
+    - title: Oxford City Council Council Tax Reduction Scheme 2026 to 2027, Annex 7 (income derived from capital is treated as capital)
+      href: https://www.oxford.gov.uk/council-tax-reduction/council-tax-reduction-scheme-2026-27/3
+    - title: Oxford City Council Council Tax Reduction Scheme 2026 to 2027, Part 1 paras 15 and 30
+      href: https://www.oxford.gov.uk/council-tax-reduction/council-tax-reduction-scheme-2026-27
+    - title: The Universal Credit Regulations 2013 reg. 66(1)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/66
+values:
+  2026-04-01:
+    # Appendix 5's Child Benefit and child maintenance disregards apply only
+    # to applicants without Universal Credit, and Appendix 3 does not list
+    # either.
+    - child_benefit
+    - maintenance_income
+    # Universal Credit's unearned income (reg 66(1)) that is a receipt: all
+    # of gov.dwp.universal_credit.means_test.income_definitions.unearned
+    # except uc_tariff_income. Appendix 3 has no £15 disregard for spousal
+    # maintenance or Widowed Parent's Allowance; Appendix 5's apply only to
+    # applicants without Universal Credit.
+    - spousal_maintenance_income
+    - private_pension_income
+    - state_pension
+    - carers_allowance
+    # The whole carer support payment, not the part reg 66(1)(b)(iiia)
+    # counts: Appendix 3 has no cap at the Carer's Allowance rate.
+    - carer_support_payment
+    - jsa_contrib
+    - esa_contrib
+    - maternity_allowance
+    - iidb
+    - widowed_parents_allowance
+    - incapacity_benefit
+    - sda
+    # Unearned income that reg 66 leaves out but Appendix 3 does not ignore.
+    # War pensions, Armed Forces Independence Payment and Healthy Start are
+    # in Appendix 5's ignored income, which applies only to applicants
+    # without Universal Credit.
+    - bsp
+    - afcs
+    - war_widows_pension
+    - armed_forces_independence_payment
+    - ssmg
+    - healthy_start_vouchers
+    - private_transfer_income
+    - miscellaneous_income
+    # Universal Credit replaces these awards, so they are nil for a Universal
+    # Credit claimant. They are listed so that no receipt escapes "All other
+    # unearned income".
+    - income_support
+    - claimant_or_partner_jsa_income
+    - claimant_or_partner_esa_income
+    - tax_credits
+    - pension_credit

@@ -17,29 +17,30 @@ class oxford_council_tax_reduction_universal_credit_income(Variable):
         "contributions in full (UC Regs 2013 reg. 55(5)(a) and reg. 57(2) "
         "step 4), before the work allowance, which belongs to the award "
         "(reg. 22). So Oxford's own share of pension contributions (Part 1 "
-        "para. 18) does not reach these applicants. Other income is the "
-        "Universal Credit calculation of unearned income (uc_unearned_income, "
-        "reg. 66), which already leaves out the benefits Appendix 3 lists as "
-        "ignored and counts Universal Credit's assumed yield from capital "
-        "(uc_tariff_income, reg. 72) in place of Oxford's own tariff income. "
-        "Appendix 3 counts all other unearned income, which can go beyond "
-        "reg. 66 (Child Benefit, for one, is not on its list); the model "
-        "counts the reg. 66 amount only. The award is the amount awarded, "
-        "before deductions for debts (uc_deductions) come out of the "
+        "para. 18) does not reach these applicants. Other income is "
+        "oxford_council_tax_reduction_universal_credit_other_income: Child "
+        "Benefit, child maintenance and the other unearned receipts Appendix 3 "
+        "does not ignore, without Universal Credit's assumed yield from "
+        "capital or income derived from capital. The award is the amount "
+        "awarded, before deductions for debts (uc_deductions) come out of the "
         "payment. Appendix 3 also ignores "
         "£48.15 a week of each carer element and £84.46 a week of each "
         "disabled child element, which come off the award (but not below "
         "nil), and, for a disabled applicant, an amount equal to any "
         "disability premium payable before the move to Universal Credit. "
         "The model holds no record of that earlier award, so it does not "
-        "ignore that amount. Appendix 3 ignores any "
-        "transitional element in the award. The model computes no "
+        "ignore that amount, which can overstate the income. Appendix 3 "
+        "ignores any transitional element in the award. The model computes no "
         "transitional element (uc_maximum_amount), so the award has none to "
         "take out. Paragraphs 14 to 27, Annexes 5 and 6 and Appendix 5 apply "
         "only to applicants without Universal Credit, so Oxford's tariff "
         "income from capital (para. 15) and its Child Benefit disregard do "
-        "not apply here. The four other councils the model runs assess "
-        "Universal Credit applicants on the same three amounts (_legacy.py)."
+        "not apply here. The DWP figures and the award are the benefit unit's "
+        "claimant's and partner's, so none of them counts where the household "
+        "head applies alone. oxford_council_tax_reduction bands on this "
+        "income from April 2026 "
+        "(gov.local_authorities.oxford.council_tax_reduction.universal_credit."
+        "in_effect)."
     )
     definition_period = YEAR
     unit = GBP
@@ -48,7 +49,6 @@ class oxford_council_tax_reduction_universal_credit_income(Variable):
         "https://www.oxford.gov.uk/council-tax-reduction/council-tax-reduction-scheme-2026-27/4",
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/55",
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/57",
-        "https://www.legislation.gov.uk/uksi/2013/376/regulation/66",
     )
 
     def formula(benunit, period, parameters):
@@ -56,7 +56,9 @@ class oxford_council_tax_reduction_universal_credit_income(Variable):
             period
         ).gov.local_authorities.oxford.council_tax_reduction.universal_credit
         earned_income = benunit("uc_earned_income_before_work_allowance", period)
-        unearned_income = benunit("uc_unearned_income", period)
+        other_income = benunit(
+            "oxford_council_tax_reduction_universal_credit_other_income", period
+        )
         # Appendix 3 ignores £48.15 of the carer element and £84.46 of the
         # disabled child element. An award has a carer element for each
         # claimant who cares (reg. 29) and a disabled child addition for each
@@ -91,4 +93,7 @@ class oxford_council_tax_reduction_universal_credit_income(Variable):
         # the award itself.
         award = benunit("universal_credit", period) + benunit("uc_deductions", period)
         award = max_(0, award - carer_disregard - disabled_child_disregard)
-        return max_(0, earned_income + unearned_income + award)
+        # The DWP figures and the award are the claimant's and partner's, not
+        # a household head's who applies alone.
+        applicant_family = ~benunit("council_tax_reduction_head_applies_alone", period)
+        return max_(0, applicant_family * (earned_income + award) + other_income)

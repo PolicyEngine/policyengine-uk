@@ -39,9 +39,11 @@ class council_tax_reduction_pension_contribution_deduction_rate(Variable):
         "scheme's Appendix 3). The model has no such route for Wales and "
         "Scotland yet (#1962), so the share here reaches those applicants "
         "too. Merton, Kingston upon Thames, Newham and Westminster assess "
-        "them on Universal Credit income (_legacy.py), and Oxford on its "
-        "Appendix 3 income (oxford_council_tax_reduction_universal_credit_income), "
-        "so the share here does not reach their awards."
+        "them on Universal Credit income (_legacy.py), so the share here does "
+        "not reach their awards. Oxford assesses them on its Appendix 3 income "
+        "(oxford_council_tax_reduction_universal_credit_income) from April "
+        "2026, the scheme the model holds; in earlier years the share reaches "
+        "them too."
     )
     definition_period = YEAR
     unit = "/1"

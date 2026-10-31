@@ -1,0 +1,328 @@
+# Oxford Council Tax Reduction before April 2026.
+#
+# The model holds Oxford's 2026-27 scheme: its parameters start on 1 April
+# 2026 and backdating carries them to earlier years, so earlier years read the
+# 2026-27 bands (Part 1 para 9: 100% up to 480.00 a week, 75% to 530.00, 50%
+# to 580.00, 25% to 660.00). Appendix 3's income applies from April 2026
+# (gov.local_authorities.oxford.council_tax_reduction.universal_credit.
+# in_effect). Before then a working-age applicant with a Universal Credit
+# award stays on the paragraphs 14 to 27 income, which deducts half of pension
+# contributions (para 18), counts the award, leaves out Child Benefit and
+# child maintenance, and adds no tariff income from capital. These cases keep
+# the results the model gave before Appendix 3 was encoded.
+#
+# The applicant, 35, earns 20,000 and pays 2,600 into an occupational
+# pension, or earns 15,600 with no contributions. Income tax 20% above the
+# 12,570 personal allowance and National Insurance 8% above the 12,570
+# primary threshold in both 2024-25 and 2025-26: on 20,000 less 2,600, tax
+# 966 and National Insurance 594.40, so DWP net earned income is 15,839.60
+# and the paragraphs 14 to 27 earnings are 20,000 - 966 - 594.40 - 1,300 =
+# 17,139.60; on 15,600, tax 606 and National Insurance 242.40, so both are
+# 14,751.60. DWP's monthly rates: standard allowance, single 25 or over,
+# 393.45 (2024-25) and 400.14 (2025-26); child born on or after 6 April 2017
+# 287.92 and 292.81; higher work allowance 673 and 684. Child Benefit a week:
+# 25.60 and 16.95 (2024-25), 26.05 and 17.25 (2025-26). Council tax 1,800,
+# no capital and no non-dependants.
+
+- name: Before April 2026 Oxford bands a single Universal Credit claimant on the paragraphs 14 to 27 income (2024)
+  # UC: 393.45 x 12 + 12,500 housing - 55% x 15,839.60 = 8,509.62.
+  # Paragraphs 14 to 27: 17,139.60 + 8,509.62 = 25,649.22 a year, 493.25 a
+  # week: band 2, 75% of 1,800. Appendix 3 would give 468.25, band 1.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 35
+        employment_income: 20_000
+        employee_pension_contributions: 2_600
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        uc_housing_costs_element: 12_500
+        uc_deduction_rate: 0
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        local_authority: OXFORD
+        council_tax: 1_800
+        savings: 0
+  output:
+    universal_credit: 8_509.62
+    council_tax_reduction_applicable_income: 25_649.22
+    oxford_council_tax_reduction: 1_350
+
+- name: Before April 2026 Oxford bands a single Universal Credit claimant on the paragraphs 14 to 27 income (2025)
+  # UC: 400.14 x 12 + 12,500 - 8,711.78 = 8,589.90. Paragraphs 14 to 27:
+  # 17,139.60 + 8,589.90 = 25,729.50 a year, 494.80 a week: band 2, 75%.
+  # Appendix 3 would give 469.80, band 1.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 35
+        employment_income: 20_000
+        employee_pension_contributions: 2_600
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        uc_housing_costs_element: 12_500
+        uc_deduction_rate: 0
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        local_authority: OXFORD
+        council_tax: 1_800
+        savings: 0
+  output:
+    universal_credit: 8_589.90
+    council_tax_reduction_applicable_income: 25_729.50
+    oxford_council_tax_reduction: 1_350
+
+- name: Before April 2026 Oxford leaves Child Benefit out of a Universal Credit parent's income (2024)
+  # Children aged 3 and 5, no housing costs. UC: (393.45 + 2 x 287.92) x 12
+  # = 11,631.48 less 55% x (15,839.60 - 673 x 12) = 4,269.98: 7,361.50.
+  # Paragraphs 14 to 27 count the Child Benefit of 2,212.60, which Oxford
+  # takes off again: 17,139.60 + 7,361.50 = 24,501.10 a year, 471.18 a week:
+  # band 1, 100%. Appendix 3 would give 488.73, band 2.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 35
+        employment_income: 20_000
+        employee_pension_contributions: 2_600
+      person2:
+        age: 3
+      person3:
+        age: 5
+    benunits:
+      benunit:
+        members: [person1, person2, person3]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        uc_housing_costs_element: 0
+        uc_deduction_rate: 0
+    households:
+      household:
+        members: [person1, person2, person3]
+        country: ENGLAND
+        local_authority: OXFORD
+        council_tax: 1_800
+        savings: 0
+  output:
+    universal_credit: 7_361.50
+    child_benefit: 2_212.60
+    council_tax_reduction_applicable_income: 26_713.70
+    oxford_council_tax_reduction: 1_800
+
+- name: Before April 2026 Oxford leaves Child Benefit out of a Universal Credit parent's income (2025)
+  # UC: (400.14 + 2 x 292.81) x 12 = 11,829.12 less 55% x (15,839.60 - 684
+  # x 12) = 4,197.38: 7,631.74. Paragraphs 14 to 27: 17,139.60 + 7,631.74 =
+  # 24,771.34 a year, 476.37 a week: band 1, 100%. Appendix 3 would give
+  # 494.67, band 2.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 35
+        employment_income: 20_000
+        employee_pension_contributions: 2_600
+      person2:
+        age: 3
+      person3:
+        age: 5
+    benunits:
+      benunit:
+        members: [person1, person2, person3]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        uc_housing_costs_element: 0
+        uc_deduction_rate: 0
+    households:
+      household:
+        members: [person1, person2, person3]
+        country: ENGLAND
+        local_authority: OXFORD
+        council_tax: 1_800
+        savings: 0
+  output:
+    universal_credit: 7_631.74
+    child_benefit: 2_251.60
+    council_tax_reduction_applicable_income: 27_022.94
+    oxford_council_tax_reduction: 1_800
+
+- name: Before April 2026 Oxford leaves child maintenance out of a Universal Credit parent's income (2024)
+  # Earnings 15,600, child maintenance 2,600. UC: 11,631.48 less 55% x
+  # (14,751.60 - 8,076) = 3,671.58: 7,959.90. Paragraphs 14 to 27 exclude
+  # child maintenance: 14,751.60 + 7,959.90 = 22,711.50 a year, 436.76 a
+  # week: band 1, 100%. Appendix 3 would give 529.31, band 2.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 35
+        employment_income: 15_600
+        maintenance_income: 2_600
+      person2:
+        age: 3
+      person3:
+        age: 5
+    benunits:
+      benunit:
+        members: [person1, person2, person3]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        uc_housing_costs_element: 0
+        uc_deduction_rate: 0
+    households:
+      household:
+        members: [person1, person2, person3]
+        country: ENGLAND
+        local_authority: OXFORD
+        council_tax: 1_800
+        savings: 0
+  output:
+    universal_credit: 7_959.90
+    oxford_council_tax_reduction: 1_800
+
+- name: Before April 2026 Oxford leaves child maintenance out of a Universal Credit parent's income (2025)
+  # UC: 11,829.12 less 55% x (14,751.60 - 8,208) = 3,598.98: 8,230.14.
+  # Paragraphs 14 to 27: 14,751.60 + 8,230.14 = 22,981.74 a year, 441.96 a
+  # week: band 1, 100%. Appendix 3 would give 535.26, band 3.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 35
+        employment_income: 15_600
+        maintenance_income: 2_600
+      person2:
+        age: 3
+      person3:
+        age: 5
+    benunits:
+      benunit:
+        members: [person1, person2, person3]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        uc_housing_costs_element: 0
+        uc_deduction_rate: 0
+    households:
+      household:
+        members: [person1, person2, person3]
+        country: ENGLAND
+        local_authority: OXFORD
+        council_tax: 1_800
+        savings: 0
+  output:
+    universal_credit: 8_230.14
+    oxford_council_tax_reduction: 1_800
+
+- name: A reform that brings Appendix 3 forward reaches a 2025 Universal Credit claimant
+  # Model reform, not current law. Appendix 3 in 2025: 15,839.60 + 8,589.90
+  # = 24,429.50 a year, 469.80 a week: band 1, 100%.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.local_authorities.oxford.council_tax_reduction.universal_credit.in_effect: true
+    people:
+      person1:
+        age: 35
+        employment_income: 20_000
+        employee_pension_contributions: 2_600
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        uc_housing_costs_element: 12_500
+        uc_deduction_rate: 0
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        local_authority: OXFORD
+        council_tax: 1_800
+        savings: 0
+  output:
+    oxford_council_tax_reduction_universal_credit_income: 24_429.50
+    oxford_council_tax_reduction: 1_800
+
+- name: A reform that brings Appendix 3 forward counts a 2025 parent's child maintenance
+  # Model reform, not current law. Appendix 3 in 2025: 14,751.60 + 8,230.14
+  # + 2,251.60 Child Benefit + 2,600 child maintenance = 27,833.34 a year,
+  # 535.26 a week: band 3, 50%.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.local_authorities.oxford.council_tax_reduction.universal_credit.in_effect: true
+    people:
+      person1:
+        age: 35
+        employment_income: 15_600
+        maintenance_income: 2_600
+      person2:
+        age: 3
+      person3:
+        age: 5
+    benunits:
+      benunit:
+        members: [person1, person2, person3]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        uc_housing_costs_element: 0
+        uc_deduction_rate: 0
+    households:
+      household:
+        members: [person1, person2, person3]
+        country: ENGLAND
+        local_authority: OXFORD
+        council_tax: 1_800
+        savings: 0
+  output:
+    oxford_council_tax_reduction_universal_credit_income: 27_833.34
+    oxford_council_tax_reduction: 900
+
+- name: A reform that switches Appendix 3 off returns a 2026 Universal Credit claimant to the paragraphs 14 to 27 income
+  # Model reform, not current law. UC 2026: 424.90 x 12 + 12,500 - 8,711.78
+  # = 8,887.02. Paragraphs 14 to 27: 20,000 - 966 - 594.40 - 1,300 +
+  # 8,887.02 = 26,026.62 a year, 500.51 a week: band 2, 75%.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.local_authorities.oxford.council_tax_reduction.universal_credit.in_effect: false
+    people:
+      person1:
+        age: 35
+        employment_income: 20_000
+        employee_pension_contributions: 2_600
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        uc_housing_costs_element: 12_500
+        uc_deduction_rate: 0
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        local_authority: OXFORD
+        council_tax: 1_800
+        savings: 0
+  output:
+    universal_credit: 8_887.02
+    council_tax_reduction_applicable_income: 26_026.62
+    oxford_council_tax_reduction: 1_350
