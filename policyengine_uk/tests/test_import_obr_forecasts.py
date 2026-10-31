@@ -1,4 +1,5 @@
 import os
+from dataclasses import replace
 from datetime import date
 from pathlib import Path
 from io import BytesIO
@@ -7,7 +8,7 @@ import xml.etree.ElementTree as ET
 
 import pytest
 import yaml
-from hypothesis import given, settings
+from hypothesis import event, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk.utils import import_obr_forecasts
@@ -18,10 +19,9 @@ from policyengine_uk.utils.import_obr_forecasts import (
     STATUTORY_GAP_SPECS,
     _sheet_paths,
     ForecastGap,
-    RateComponent,
-    ReceiptsMeasure,
+    MACHINE_GAMES_HIGHER_STAKE_SHARE,
     ReceiptsSeriesSpec,
-    measure_receipts,
+    machine_games_spec,
     average_earnings_path,
     compute_receipts_growth,
     find_receipts_line,
@@ -2013,8 +2013,8 @@ def test_main_writes_receipts_growth_to_the_output_path(tmp_path):
     assert _values(output.read_text(), RECEIPTS_PATHS["residential"])[2024] == 0.25
 
 
-# Gambling duty bases (#2738): each line's receipts, less the measures they
-# include, over the rate the model charges, after HMRC's outturn.
+# Gambling duty bases (#2738): each line's receipts over the rate the model
+# charges, after HMRC's outturn.
 
 GAMBLING_SPECS = tuple(spec for spec in RECEIPTS_SERIES_SPECS if spec.outturn)
 # HMRC's 2024-25 and 2025-26 receipts, £bn (July 2026 Betting and Gaming
@@ -2031,9 +2031,28 @@ HMRC_RECEIPTS = {
 # The remote part of the General Betting Duty base, which pays 25% from
 # 1 April 2027; the rest pays 15% throughout.
 REMOTE_BETTING_SHARE = 2_163_978_657 / (2_471_124_767 + 2_163_978_657 + 123_949_909)
-# Autumn Budget 2026 measure 56's betting receipts, £m (OBR October 2026
-# policy Table 1.1).
-MEASURE_56 = {2026: 0.0, 2027: 144.15331361978284, 2028: 162.30500845324954}
+# Machine Games Duty's 2024-25 bands (£): HMRC's liabilities (Table_2_MGD
+# row 20, £ thousand) over their rates, 5%, 20% and 25%.
+MACHINE_GAMES_BANDS = {
+    "lower": (6_921e3 / 0.05, 0.05),
+    "standard": (604_748e3 / 0.20, 0.20),
+    "higher": (596e3 / 0.25, 0.25),
+}
+# The Gambling Commission's 2024-25 gaming machine yield, £ million, in
+# Category B and in Category C (Industry Statistics, April 2025 to March 2026
+# release, sheet 4, K34 and L34).
+HIGHER_STAKE_SHARE = 2_289.84969448829 / (2_289.84969448829 + 232.47489298159996)
+
+
+def machine_games_rate(year, share=HIGHER_STAKE_SHARE):
+    """Machine Games Duty's rate on its 2024-25 bands in the OBR's fiscal
+    year ``year``: Budget 2026 moves ``share`` of the standard-rate band from
+    20% to 25% on 1 April 2027, the first day of 2027-28."""
+    total = sum(base for base, _ in MACHINE_GAMES_BANDS.values())
+    charged = sum(base * rate for base, rate in MACHINE_GAMES_BANDS.values())
+    if year >= 2027:
+        charged += MACHINE_GAMES_BANDS["standard"][0] * share * 0.05
+    return charged / total
 
 
 def gambling_growth(**overrides):
@@ -2051,7 +2070,8 @@ def test_gambling_bases_take_out_the_rates_the_model_charges():
     """Synthetic March 2026 tables: growth from HMRC's 2024-25 receipts into
     the table's first year (2025-26), then the table's own years. Remote
     Gaming Duty's rise from 21% to 40% (1 April 2026) and the remote betting
-    rise from 15% to 25% (1 April 2027) come out of the base; Bingo Duty's
+    rise from 15% to 25% (1 April 2027) come out of the base, and so does the
+    higher-stake machines' rise from 20% to 25% (1 April 2027); Bingo Duty's
     abolition (1 April 2026) holds its base flat."""
     growth = gambling_growth()
     hmrc = {key: values[0] for key, values in HMRC_RECEIPTS.items()}
@@ -2069,11 +2089,13 @@ def test_gambling_bases_take_out_the_rates_the_model_charges():
             2027: ratio(0.9 / remote, 0.72 / 0.15),
         },
         "bingo": {2025: ratio(0.03, hmrc["bingo"]), 2026: 0.0, 2027: 0.0},
-        # A March 2026 EFO includes no Autumn Budget 2026 measure.
+        # Higher-stake machines pay 25% from 2027-28.
         "machine_games": {
             2025: ratio(0.65, hmrc["machine_games"]),
             2026: ratio(0.66, 0.65),
-            2027: ratio(0.8, 0.66),
+            2027: ratio(
+                0.8 / machine_games_rate(2027), 0.66 / machine_games_rate(2026)
+            ),
         },
     }
     for key in ("lottery", "gaming", "pool_betting"):
@@ -2085,18 +2107,6 @@ def test_gambling_bases_take_out_the_rates_the_model_charges():
     # Without the rate taken out, Remote Gaming Duty's 2026 growth would be
     # the receipts' 100%.
     assert growth["remote_gaming"][2026] == pytest.approx(0.05, abs=1e-6)
-
-
-def test_efos_from_october_2026_take_off_the_machine_games_measure():
-    growth = gambling_growth(release="October 2026")["machine_games"]
-    assert growth == pytest.approx(
-        {
-            2025: ratio(0.65, HMRC_RECEIPTS["machine_games"][0]),
-            2026: ratio(0.66 - MEASURE_56[2026] / 1000, 0.65),
-            2027: ratio(0.8 - MEASURE_56[2027] / 1000, 0.66),
-        },
-        abs=1.5e-6,
-    )
 
 
 def test_real_october_2026_gambling_series():
@@ -2117,11 +2127,14 @@ def test_real_october_2026_gambling_series():
         (0.87744453968275893 / remote) / (0.65560522982822456 / 0.15) - 1, 6
     )
     assert values["general_betting"][2027] == 0.027038
-    # Machine Games Duty: 2027-28 less measure 56's GBP 144.2m.
+    # Machine Games Duty: 2027-28 with the higher-stake share at 25%.
     assert values["machine_games"][2027] == round(
-        (0.82692873727074745 - MEASURE_56[2027] / 1000) / 0.67707068705786499 - 1, 6
+        (0.82692873727074745 / machine_games_rate(2027))
+        / (0.67707068705786499 / machine_games_rate(2026))
+        - 1,
+        6,
     )
-    assert values["machine_games"][2027] == 0.008426
+    assert values["machine_games"][2027] == -0.002319
     assert values["bingo"] == dict.fromkeys(range(2026, 2032), 0.0) | {2025: 0.03329}
     for series in values.values():
         assert sorted(series) == list(range(2025, 2032))
@@ -2145,27 +2158,6 @@ def test_gambling_outturn_must_reach_the_year_before_the_table():
         compute_receipts_growth(
             make_receipts_xlsx(first_year=2026), b"", specs=GAMBLING_SPECS
         )
-
-
-def test_a_measure_covers_every_year_from_its_first():
-    spec = ReceiptsSeriesSpec(
-        path=("x",),
-        title="t",
-        row="r",
-        rates=(RateComponent("gov.hmrc.gambling_duty.lottery.rate"),),
-        measures=(
-            ReceiptsMeasure("m", ("October", 2026), ((2027, 100.0), (2028, 50.0))),
-        ),
-    )
-    # No receipts before its first year; none in an EFO before its own.
-    assert measure_receipts(spec, [2026, 2027, 2028], None) == {
-        2026: 0.0,
-        2027: 0.1,
-        2028: 0.05,
-    }
-    assert measure_receipts(spec, [2027], ("March", 2026)) == {2027: 0.0}
-    with pytest.raises(ValueError, match="m has no receipts for 2029-30"):
-        measure_receipts(spec, [2028, 2029], ("March", 2027))
 
 
 def test_bingo_holds_its_base_flat_after_the_forecast():
@@ -2206,42 +2198,194 @@ def test_gambling_comments_and_references_name_hmrc_and_the_rates():
     ]
 
 
+def test_the_machine_games_parameters_are_the_oracles():
+    """The hand-written Machine Games Duty rates above are the model's: 5%,
+    20% and 25%, with higher-stake machines at the higher rate from 1 April
+    2027."""
+    folder = Path(__file__).parents[1] / "parameters/gov/hmrc/gambling_duty"
+
+    def values(name):
+        data = yaml.safe_load((folder / f"machine_games/{name}.yaml").read_text())
+        return {
+            str(day): value["value"] if isinstance(value, dict) else value
+            for day, value in data["values"].items()
+        }
+
+    assert values("rates/lower") == {"2013-02-01": 0.05}
+    assert values("rates/standard") == {"2013-02-01": 0.2}
+    assert values("rates/higher") == {"2015-03-01": 0.25}
+    assert values("higher_stake_machines_at_higher_rate") == {
+        "2013-02-01": False,
+        "2027-04-01": True,
+    }
+
+
+def test_the_higher_stake_share_is_category_b_over_b_and_c():
+    assert MACHINE_GAMES_HIGHER_STAKE_SHARE == HIGHER_STAKE_SHARE
+    assert HIGHER_STAKE_SHARE == pytest.approx(0.907833, abs=1e-6)
+    spec = machine_games_spec(HIGHER_STAKE_SHARE)
+    assert spec in GAMBLING_SPECS
+    standard = MACHINE_GAMES_BANDS["standard"][0]
+    assert [part.weight for part in spec.rates] == pytest.approx(
+        [
+            MACHINE_GAMES_BANDS["lower"][0],
+            standard * (1 - HIGHER_STAKE_SHARE),
+            standard * HIGHER_STAKE_SHARE,
+            MACHINE_GAMES_BANDS["higher"][0],
+        ]
+    )
+
+
+def machine_games_levels(levels):
+    """A synthetic March 2026 workbook whose Machine Games Duty line is
+    ``levels`` from 2025-26 (the other lines are 1)."""
+    return make_receipts_xlsx(
+        gambling_levels={key: (1.0,) * len(levels) for key in GAMBLING_LABELS}
+        | {"machine_games": tuple(levels)}
+    )
+
+
+def machine_games_growth(spec, levels):
+    growth = compute_receipts_growth(machine_games_levels(levels), b"", specs=(spec,))
+    return growth[spec.path].values
+
+
+def test_a_rise_that_behaviour_offsets_gives_a_base_index_of_0_8():
+    """£100 of higher-stake takings pay £20 at 20%. If the rise to 25% cuts
+    them to £80, they pay the same £20 and receipts hold flat. The base index
+    falls to 0.8, so the model's 25% on the projected £80 gives back £20."""
+    spec = machine_games_spec(1.0)
+    standard_only = replace(
+        spec,
+        rates=tuple(part for part in spec.rates if part.parameter.endswith("standard")),
+        outturn=replace(spec.outturn, receipts_thousands=((2024, 20e3),)),
+    )
+    values = machine_games_growth(standard_only, (0.02, 0.02, 0.02))
+    assert values == {2025: 0.0, 2026: 0.0, 2027: -0.2}
+    index = (1 + values[2025]) * (1 + values[2026]) * (1 + values[2027])
+    assert index == pytest.approx(0.8, abs=1e-12)
+    assert 100 * index * 0.25 == pytest.approx(20, abs=1e-9)
+
+
+SHARES = st.floats(min_value=0, max_value=1, allow_nan=False)
+
+
+@settings(max_examples=60, deadline=None, derandomize=True)
+@given(share=SHARES, levels=st.lists(LEVELS, min_size=5, max_size=5))
+def test_machine_games_bases_reconcile_to_receipts_at_any_share(share, levels):
+    """For any higher-stake share and any receipts path from 2025-26 to
+    2029-30: each year's growth is the receipts' growth over the growth in
+    the rate the model charges with that share at 25% from 2027-28. So a base
+    that gives 2024-25's receipts gives every later year's at that rate, to
+    within the rounding of the six-decimal growth."""
+    values = machine_games_growth(machine_games_spec(share), levels)
+    receipts = {2024: HMRC_RECEIPTS["machine_games"][0]}
+    receipts |= dict(zip(range(2025, 2030), levels))
+    rates = {year: machine_games_rate(year, share) for year in receipts}
+    assert sorted(values) == list(range(2025, 2030))
+    base = receipts[2024] / rates[2024]
+    tolerance = 1.0
+    for year in range(2025, 2030):
+        exact = (receipts[year] / rates[year]) / (receipts[year - 1] / rates[year - 1])
+        assert values[year] == pytest.approx(exact - 1, abs=5.1e-7)
+        base *= 1 + values[year]
+        tolerance *= 1 + 5.1e-7 / exact
+        assert base * rates[year] == pytest.approx(
+            receipts[year], rel=tolerance - 1 + 1e-12
+        )
+
+
+@settings(max_examples=40, deadline=None, derandomize=True)
+@given(levels=st.lists(LEVELS, min_size=5, max_size=5))
+def test_a_zero_share_grows_the_machine_games_base_with_receipts(levels):
+    """With no higher-stake share the rate does not change, so the base grows
+    with receipts: the plain rule of receipts over the rate, the series of
+    the three bands alone."""
+    zero = machine_games_spec(0.0)
+    bands = replace(zero, rates=tuple(part for part in zero.rates if not part.switch))
+    assert len(bands.rates) == 3
+    values = machine_games_growth(zero, levels)
+    assert values == machine_games_growth(bands, levels)
+    receipts = {2024: HMRC_RECEIPTS["machine_games"][0]}
+    receipts |= dict(zip(range(2025, 2030), levels))
+    assert values == pytest.approx(
+        {year: receipts[year] / receipts[year - 1] - 1 for year in range(2025, 2030)},
+        abs=5.1e-7,
+    )
+
+
 GAMBLING_RATE_PARAMETERS = sorted(
-    {component.parameter for spec in GAMBLING_SPECS for component in spec.rates}
+    {path for spec in GAMBLING_SPECS for part in spec.rates for path in part.paths}
 )
+SWITCHES = {part.switch for spec in GAMBLING_SPECS for part in spec.rates} - {None}
 RATE = st.floats(min_value=0.01, max_value=0.6, allow_nan=False)
 
 
 @st.composite
 def rate_schedules(draw):
-    """Dated rates for every gambling rate parameter: a first value, then
-    perhaps a change on any day from 2024 to 2028, to zero or not."""
+    """Dated values for every gambling rate parameter: a first value, then
+    perhaps a change on any day from 2024 to 2028, to zero or not. A switch
+    takes true or false, read as 1 or 0."""
     schedules = {}
     for parameter in GAMBLING_RATE_PARAMETERS:
-        entries = [(date(2015, 1, 1), draw(RATE))]
+        value = st.booleans().map(float) if parameter in SWITCHES else RATE
+        changed = st.booleans().map(float) if parameter in SWITCHES else RATE
+        entries = [(date(2015, 1, 1), draw(value))]
         if draw(st.booleans()):
             day = draw(st.dates(date(2024, 1, 1), date(2028, 12, 31)))
-            entries.append((day, draw(st.one_of(st.just(0.0), RATE))))
+            entries.append((day, draw(st.one_of(st.just(0.0), changed))))
         schedules[parameter] = tuple(entries)
     return schedules
 
 
 def oracle_rate(spec, schedules, year):
-    """The weighted mean of each part's daily rate over 1 April to 31 March."""
+    """The weighted mean of each part's daily rate over 1 April to 31 March.
+    A switched part pays its switched rate on the days its switch is on."""
     days = [
         date.fromordinal(day)
         for day in range(date(year, 4, 1).toordinal(), date(year + 1, 4, 1).toordinal())
     ]
+
+    def on(parameter, day):
+        entries = schedules[parameter]
+        return max((e for e in entries if e[0] <= day), default=entries[0])[1]
+
     total = sum(component.weight for component in spec.rates)
     mean = 0.0
     for component in spec.rates:
-        entries = schedules[component.parameter]
         daily = [
-            max((e for e in entries if e[0] <= day), default=entries[0])[1]
+            on(component.switched, day)
+            if component.switch and on(component.switch, day)
+            else on(component.parameter, day)
             for day in days
         ]
         mean += component.weight * sum(daily) / len(daily)
     return mean / total
+
+
+def oracle_growth(spec, receipts, schedules):
+    """Each year's base growth to six decimals, and whether the index the
+    model compounds from it, rounded to five decimals, reaches zero."""
+    rates = {year: oracle_rate(spec, schedules, year) for year in receipts}
+    growth, index, zero = {}, 1.0, False
+    for year in sorted(receipts)[1:]:
+        if rates[year] < 1e-12 or rates[year - 1] < 1e-12:
+            growth[year] = 0.0
+        else:
+            exact = (receipts[year] / rates[year]) / (
+                receipts[year - 1] / rates[year - 1]
+            )
+            growth[year] = round(exact - 1, 6)
+        index = round(index * (1 + growth[year]), 5)
+        zero = zero or index <= 0
+    return growth, rates, zero
+
+
+def gambling_receipts(key, levels):
+    return {
+        2024: HMRC_RECEIPTS[key][0],
+        **dict(zip(range(2025, 2025 + len(levels)), levels)),
+    }
 
 
 @settings(max_examples=40, deadline=None, derandomize=True)
@@ -2257,24 +2401,39 @@ def test_base_growth_is_receipts_growth_over_rate_growth(levels, schedules, fact
     times the rate's growth is the receipts' growth (to the six decimals
     written); a year whose rate, or the year before's, is zero holds the base
     flat; and one factor on every rate, a rate reform the model applies
-    itself, changes no growth."""
+    itself, changes no growth. A series whose index would round to zero is
+    refused instead."""
     module = import_obr_forecasts
     workbook = make_receipts_xlsx(gambling_levels=levels)
+    scaled = {
+        parameter: tuple(
+            (day, value if parameter in SWITCHES else value * factor)
+            for day, value in entries
+        )
+        for parameter, entries in schedules.items()
+    }
+    oracles = {
+        spec.path: oracle_growth(
+            spec, gambling_receipts(spec.path[-1], levels[spec.path[-1]]), schedules
+        )
+        for spec in GAMBLING_SPECS
+    }
     with pytest.MonkeyPatch.context() as patch:
-        patch.setattr(module, "rate_values", lambda parameter: schedules[parameter])
+        if any(zero for _, _, zero in oracles.values()):
+            event("refused")
+            patch.setattr(module, "parameter_values", lambda p: schedules[p])
+            with pytest.raises(ValueError, match="too small to grow from"):
+                compute_receipts_growth(workbook, b"", specs=GAMBLING_SPECS)
+            return
+        event("written")
+        patch.setattr(module, "parameter_values", lambda p: schedules[p])
         growth = compute_receipts_growth(workbook, b"", specs=GAMBLING_SPECS)
-        scaled = {
-            parameter: tuple((day, value * factor) for day, value in entries)
-            for parameter, entries in schedules.items()
-        }
-        patch.setattr(module, "rate_values", lambda parameter: scaled[parameter])
+        patch.setattr(module, "parameter_values", lambda p: scaled[p])
         growth_scaled = compute_receipts_growth(workbook, b"", specs=GAMBLING_SPECS)
     for spec in GAMBLING_SPECS:
-        key = spec.path[-1]
         values = growth[spec.path].values
-        receipts = {2024: HMRC_RECEIPTS[key][0], 2025: levels[key][0]}
-        receipts |= {2026: levels[key][1], 2027: levels[key][2]}
-        rates = {year: oracle_rate(spec, schedules, year) for year in receipts}
+        receipts = gambling_receipts(spec.path[-1], levels[spec.path[-1]])
+        expected, rates, _ = oracles[spec.path]
         assert sorted(values) == [2025, 2026, 2027]
         for year, value in values.items():
             if rates[year] < 1e-12 or rates[year - 1] < 1e-12:
@@ -2286,3 +2445,62 @@ def test_base_growth_is_receipts_growth_over_rate_growth(levels, schedules, fact
                 assert value == pytest.approx(exact - 1, abs=1e-6, rel=1e-9)
                 assert 1 + value > 0
         assert growth_scaled[spec.path].values == pytest.approx(values, abs=1.5e-6)
+
+
+def test_a_fall_that_rounds_the_index_to_zero_is_refused():
+    """Receipts that fall from £1,000bn to £0.01bn as the rate rises from 1%
+    to 60% shrink the base by a factor of six million. To six decimals that
+    growth is -100%, which would hold the index at zero in every later year,
+    so the importer refuses it."""
+    spec = next(spec for spec in GAMBLING_SPECS if spec.path[-1] == "remote_gaming")
+    workbook = make_receipts_xlsx(
+        gambling_levels=GAMBLING_LEVELS | {"remote_gaming": (1000.0, 0.01, 0.01)}
+    )
+    schedule = ((date(2015, 1, 1), 0.01), (date(2026, 4, 1), 0.6))
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(import_obr_forecasts, "parameter_values", lambda p: schedule)
+        with pytest.raises(
+            ValueError,
+            match="2026-27 growth of -1.0 takes the index to 0.0 at five decimals",
+        ):
+            compute_receipts_growth(workbook, b"", specs=(spec,))
+
+
+POSITIVE = st.one_of(LEVELS, st.floats(min_value=1e-9, max_value=1e-2, allow_nan=False))
+
+
+@settings(max_examples=60, deadline=None, derandomize=True)
+@given(
+    levels=st.fixed_dictionaries(
+        {key: st.tuples(POSITIVE, POSITIVE, POSITIVE) for key in GAMBLING_LABELS}
+    ),
+    schedules=rate_schedules(),
+)
+def test_a_written_series_keeps_every_index_positive(levels, schedules):
+    """For any positive receipts, however small, and any dated rates: the
+    importer either refuses, when the written growth would round the model's
+    index to zero, or writes series whose index the model compounds to five
+    decimals stays above zero in every year."""
+    workbook = make_receipts_xlsx(gambling_levels=levels)
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(import_obr_forecasts, "parameter_values", lambda p: schedules[p])
+        try:
+            growth = compute_receipts_growth(workbook, b"", specs=GAMBLING_SPECS)
+        except ValueError as error:
+            event("refused")
+            assert "too small to grow from" in str(error)
+            assert any(
+                oracle_growth(
+                    spec,
+                    gambling_receipts(spec.path[-1], levels[spec.path[-1]]),
+                    schedules,
+                )[2]
+                for spec in GAMBLING_SPECS
+            )
+            return
+    event("written")
+    for series in growth.values():
+        index = 1.0
+        for year in sorted(series.values):
+            index = round(index * (1 + series.values[year]), 5)
+            assert index > 0
