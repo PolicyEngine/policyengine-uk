@@ -664,8 +664,8 @@ def _check_counted_isas(simulation):
     """Invariant 2, in each household of the simulation.
 
     Where the balances' stored sum exceeds the total, the holdings sum to it
-    exactly, each within one step of the total of its balance; otherwise each
-    member counts their balance exactly.
+    exactly, each within one step of the total of its proportional share;
+    otherwise each member counts their balance exactly.
     """
     totals = {
         "cash_isa_countable_capital": simulation.calculate("cash_isa", YEAR),
