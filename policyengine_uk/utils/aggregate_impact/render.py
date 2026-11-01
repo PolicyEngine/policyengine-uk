@@ -6,7 +6,7 @@ import math
 from typing import Mapping, Optional
 
 from . import COMMENT_MARKER
-from .guard import not_held_note, problem_text
+from .guard import not_finite_note, not_held_note, problem_text
 from .spec import Spec, fiscal_year_label
 
 SECTIONS = (
@@ -291,6 +291,13 @@ def _guard(summary) -> str:
         f"response contains the component. {len(failed)} failed and the check "
         f"skipped {len(skipped)}."
     ]
+    code = "`{}`".format
+    # A variable not finite at baseline fails no component; a finite: check
+    # names it.
+    for item in guard.get("not_finite_at_baseline") or []:
+        lines.append(
+            "- " + not_finite_note(item["variable"], item.get("households"), code)
+        )
     for c in failed:
         problems = c.get("problems") or [{"message": c.get("detail", "")}]
         lines.append(
@@ -298,7 +305,6 @@ def _guard(summary) -> str:
         )
     for c in skipped:
         lines.append(f"- `{c['variable']}` skipped: {c.get('detail', '')}")
-    code = "`{}`".format
     for c in tested:
         counts = c.get("households_not_held") or {}
         for head, heads in (c.get("heads_not_held") or {}).items():
@@ -322,6 +328,12 @@ def _guard(summary) -> str:
                 f"{moved}; {m['total']}; not a failure)"
             )
     for dc in guard.get("double_counts", []):
+        if dc.get("status") == "skipped":
+            lines.append(
+                f"- declared double count `{dc['variable']}` not checked: "
+                f"{dc['detail']} ({dc['issue']})"
+            )
+            continue
         if dc.get("not_finite"):
             lines.append(
                 f"- declared double count `{dc['variable']}`: `{dc['contained_in']}` "

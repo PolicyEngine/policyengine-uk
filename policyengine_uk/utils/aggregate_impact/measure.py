@@ -1169,8 +1169,10 @@ def publishable_guard(guard: dict) -> dict:
     no count and no share. A count of households where the check could not
     hold a head (``households_not_held``) below ``MIN_CELL`` goes too.
     Messages already say "fewer than 10". The heads the check could not hold
-    (``heads_not_held``) and the ``not_finite`` flags hold no figures, so
-    they stay.
+    (``heads_not_held``, ``heads_not_held_at_baseline``) and the
+    ``not_finite`` flags hold no figures, so they stay. A count below
+    ``MIN_CELL`` of households where a variable is not finite at baseline
+    (``not_finite_at_baseline``) goes too.
     """
     out = dict(guard)
     components = []
@@ -1215,8 +1217,9 @@ def publishable_guard(guard: dict) -> dict:
         row = dict(row)
         if small(units.get(row.get("variable")) or 0):
             row["coefficient"] = None
-            # A container that is not finite has a detail with no figures.
-            if row.get("status") != "pass" and not row.get("not_finite"):
+            # A container that is not finite, or a double count the check
+            # skipped, has a detail with no figures.
+            if row.get("status") == "fail" and not row.get("not_finite"):
                 row["detail"] = (
                     f"{row['contained_in']} no longer moves one for one with "
                     f"{row['variable']} (fewer than {MIN_CELL} units): the model "
@@ -1226,6 +1229,14 @@ def publishable_guard(guard: dict) -> dict:
         double_counts.append(row)
     if "double_counts" in guard:
         out["double_counts"] = double_counts
+    if "not_finite_at_baseline" in guard:
+        out["not_finite_at_baseline"] = [
+            {
+                **item,
+                "households": None if small(item["households"]) else item["households"],
+            }
+            for item in guard["not_finite_at_baseline"]
+        ]
     return out
 
 
@@ -1272,10 +1283,21 @@ def record_guard_checks(rec: Recorder, guard: dict) -> None:
         rec.check(
             f"double_count_present:{result['variable']}",
             f"{result['variable']} is still contained in {result['contained_in']}",
-            result["status"] == "pass",
+            None if result["status"] == "skipped" else result["status"] == "pass",
             result["detail"],
             section="counted_once",
         )
+    # A variable not finite at baseline fails a finite: check, which blocks
+    # whatever the base did: its own for a head, else finite:metrics.
+    for item in guard.get("not_finite_at_baseline") or []:
+        detail = f"{fiscal_year_label(guard['year'])}: {item['message']}"
+        scope = f"counted_once:{guard['year']}:{item['variable']}"
+        if item["head"] is None:
+            check_id, label = "finite:metrics", "Every reported figure is finite"
+        else:
+            check_id = f"finite:{item['head']}"
+            label = f"{item['label']} is finite for every unit"
+        rec.check(check_id, label, False, detail, section="finite", scope=scope)
     if "reset_reproduces_baseline" in guard:
         rec.check(
             "counted_once:reset_reproduces_baseline",
