@@ -25,7 +25,7 @@ class oxford_council_tax_reduction_universal_credit_income(Variable):
         "a week of each carer element and £84.46 a week of each disabled child "
         "element, which the model takes off the award but not below nil. For "
         "a disabled applicant the council ignores an amount equal to any "
-        "disability premium payable before the move to Universal Credit; the "
+        "disability premium payable before the move to Universal Credit. The "
         "model holds no record of that earlier award and ignores nothing for "
         "it, so it can overstate the income. The council ignores any "
         "transitional element in the award, and the model computes none "
@@ -59,10 +59,10 @@ class oxford_council_tax_reduction_universal_credit_income(Variable):
         # Oxford City Council ignores £48.15 of the carer element and £84.46
         # of the disabled child element (Appendix 3). DWP includes a carer
         # element for each claimant who cares (reg. 29) and a disabled child
-        # addition for each disabled child (reg. 24(2)), and the two amounts
-        # equal the 2026-27 carer and disabled child premiums, which councils
-        # include in Housing Benefit for each carer and each disabled child
-        # (SI 2006/213 Sch 3 para 20(7) and (8)). So the model ignores up to
+        # addition for each disabled child (reg. 24(2)). The two amounts equal
+        # the 2026-27 carer and disabled child premiums, which councils include
+        # in Housing Benefit for each carer and each disabled child (SI
+        # 2006/213 Sch 3 para 20(7) and (8)). So the model ignores up to
         # each amount for each element and takes the disregards off the
         # award, not below nil.
         carers = add(benunit, period, ["uc_carer_element_included_for_claimant"])
