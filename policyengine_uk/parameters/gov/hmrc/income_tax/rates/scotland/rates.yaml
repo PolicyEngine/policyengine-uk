@@ -1,9 +1,13 @@
 description: Rates for Scottish Income Tax.
-# Each year's Scottish rate resolution sets these rates and limits for that
-# tax year only (Scotland Act 1998 s. 80C(3)). The comment on each dated value
-# names the motion and paragraph. The resolutions state the limits as taxable
-# income, above the personal allowance, and this file holds them as stated.
-# gov.scot's tables add the standard personal allowance to the same limits.
+# The Scottish Parliament sets these rates and limits by resolution, for one
+# tax year at a time (Scotland Act 1998 s. 80C(3)). Beside each dated value a
+# comment cites the motion and paragraph. The motions charge each rate on
+# "income" up to a limit, and ITA 2007 s. 23 deducts the personal allowance at
+# Step 3 before it charges the rates at Step 4, so this file holds limits of
+# income after the allowance. From 2024-25 the motions add that s. 11A
+# charges this income "above the personal allowance". gov.scot's tables add
+# the standard personal allowance to each limit, except at the £150,000 and
+# £125,140 tops, where s. 35(2) leaves no allowance.
 # The Scottish Budget 2026-27 announces higher, advanced and top threshold
 # freezes through 2028-29. These future values model announced policy;
 # Scottish rates and bands are still subject to annual rate resolutions.
@@ -12,7 +16,7 @@ description: Rates for Scottish Income Tax.
 brackets:
   - threshold:
       values:
-        2017-04-06: null # S5M-03912 sets no starter rate
+        2017-04-06: null # Parliament adopted no starter rate in S5M-03912
         2018-04-06: 0 # S5M-10397 (a) and paragraph (a) of each later motion
         2021-04-06: 0
       metadata:
@@ -38,7 +42,7 @@ brackets:
       2017-04-06: 0.2  # Basic rate: S5M-03912 (a), then paragraph (b)
   - threshold:
       values:
-        2017-04-06: null # S5M-03912 sets no intermediate rate
+        2017-04-06: null # Parliament adopted no intermediate rate in S5M-03912
         2018-04-06: 12_150 # S5M-10397 (b)
         2019-04-06: 12_444 # S5M-15879 (b)
         2020-04-06: 12_658 # S5M-21090 (b)
