@@ -5,8 +5,14 @@
 # credit". Scotland: CTR (Scotland) Regs 2021 Sch 1 para 14(1): the same
 # benefits for the applicant or partner with no age limit from 20 June 2022
 # (S.S.I. 2022/161), and attendance allowance at either rate from 1 April
-# 2023 (para 14(1)(g), S.S.I. 2023/38). The model reads each year's rules at
-# 30 April.
+# 2023 (para 14(1)(g), S.S.I. 2023/38). Merton's Local Council Tax Support
+# Scheme Rules 2026 and Kingston upon Thames's Council Tax Reduction Scheme
+# 2026 - 2027, Sch 3 para 12(1): DLA care highest and PIP daily living at
+# either rate, with no AFIP. Newham's Council Tax Reduction Scheme 2026, Sch 3
+# para 12(1): DLA care highest, PIP daily living at either rate and AFIP.
+# Each London scheme keeps the qualifying age for State Pension Credit as the
+# age limit. Westminster keeps the Housing Benefit condition. The model reads
+# each year's rules at 30 April.
 # 2026-27 amounts: enhanced disability premium £22.00 single, £31.40 couple;
 # severe disability premium £86.05 single.
 
@@ -237,3 +243,179 @@
     # Para 14(1)(g) 1,144.00 plus the severe disability premium 4,474.60:
     # 5,618.60.
     council_tax_reduction_premiums: 5_618.60
+
+- name: Case 9, AFIP adds no enhanced disability premium to a Merton reduction.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        armed_forces_independence_payment: 2_000
+        private_pension_income: 12_000
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_uc: false
+        would_claim_IS: false
+        would_claim_pc: false
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        local_authority: MERTON
+        council_tax: 1_800
+        savings: 0
+  output:
+    # Housing Benefit and Income Support still count AFIP (HB para 15(1)(d)).
+    enhanced_disability_premium: 1_144
+    # Merton Sch 3 para 12(1) names no AFIP.
+    meets_council_tax_reduction_enhanced_disability_premium_condition: false
+    council_tax_reduction_enhanced_disability_premium: 0
+    # AFIP is a severe disability premium qualifying benefit: 86.05 * 52 =
+    # 4,474.60.
+    council_tax_reduction_premiums: 4_474.60
+    # Personal allowance 95.55 * 52 = 4,968.60, plus 4,474.60: 9,443.20.
+    council_tax_reduction_applicable_amount: 9_443.20
+    # 1,800 - 20% of (12,000 - 9,443.20) = 1,800 - 511.36 = 1,288.64.
+    simulated_council_tax_reduction_benunit: 1_288.64
+
+- name: Case 10, AFIP meets Newham's and Westminster's conditions but not Merton's or Kingston upon Thames's.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      merton:
+        age: 30
+        armed_forces_independence_payment: 2_000
+      kingston:
+        age: 30
+        armed_forces_independence_payment: 2_000
+      newham:
+        age: 30
+        armed_forces_independence_payment: 2_000
+      westminster:
+        age: 30
+        armed_forces_independence_payment: 2_000
+    benunits:
+      merton:
+        members: [merton]
+      kingston:
+        members: [kingston]
+      newham:
+        members: [newham]
+      westminster:
+        members: [westminster]
+    households:
+      merton:
+        members: [merton]
+        country: ENGLAND
+        local_authority: MERTON
+      kingston:
+        members: [kingston]
+        country: ENGLAND
+        local_authority: KINGSTON_UPON_THAMES
+      newham:
+        members: [newham]
+        country: ENGLAND
+        local_authority: NEWHAM
+      westminster:
+        members: [westminster]
+        country: ENGLAND
+        local_authority: WESTMINSTER
+  output:
+    meets_council_tax_reduction_enhanced_disability_premium_condition: [false, false, true, true]
+    # 22.00 * 52 = 1,144.00.
+    council_tax_reduction_enhanced_disability_premium: [0, 0, 1_144, 1_144]
+    enhanced_disability_premium: [1_144, 1_144, 1_144, 1_144]
+
+- name: Case 11, standard PIP daily living meets the Merton, Kingston upon Thames and Newham conditions but not Westminster's.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      merton:
+        age: 30
+        pip_dl_category: STANDARD
+      kingston:
+        age: 30
+        pip_dl_category: STANDARD
+      newham:
+        age: 30
+        pip_dl_category: STANDARD
+      westminster:
+        age: 30
+        pip_dl_category: STANDARD
+    benunits:
+      merton:
+        members: [merton]
+      kingston:
+        members: [kingston]
+      newham:
+        members: [newham]
+      westminster:
+        members: [westminster]
+    households:
+      merton:
+        members: [merton]
+        country: ENGLAND
+        local_authority: MERTON
+      kingston:
+        members: [kingston]
+        country: ENGLAND
+        local_authority: KINGSTON_UPON_THAMES
+      newham:
+        members: [newham]
+        country: ENGLAND
+        local_authority: NEWHAM
+      westminster:
+        members: [westminster]
+        country: ENGLAND
+        local_authority: WESTMINSTER
+  output:
+    meets_council_tax_reduction_enhanced_disability_premium_condition: [true, true, true, false]
+    council_tax_reduction_enhanced_disability_premium: [1_144, 1_144, 1_144, 0]
+    # Housing Benefit needs the enhanced rate (HB para 15(1)(c)).
+    enhanced_disability_premium: [0, 0, 0, 0]
+
+- name: Case 12, the Merton and Newham schemes keep the age limit for an over-age partner.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      merton1:
+        age: 60
+      merton2:
+        age: 70
+        pip_dl_category: STANDARD
+      newham1:
+        age: 60
+      newham2:
+        age: 70
+        armed_forces_independence_payment: 2_000
+    benunits:
+      merton:
+        members: [merton1, merton2]
+        jsa_income: 3_000
+      newham:
+        members: [newham1, newham2]
+        jsa_income: 3_000
+    households:
+      merton:
+        members: [merton1, merton2]
+        country: ENGLAND
+        local_authority: MERTON
+      newham:
+        members: [newham1, newham2]
+        country: ENGLAND
+        local_authority: NEWHAM
+  output:
+    is_couple: [true, true]
+    # Income-based Jobseeker's Allowance keeps each couple in the working-age
+    # scheme.
+    council_tax_reduction_pensioner: [false, false]
+    # Para 12(1)(c) and (p): "who has not attained the qualifying age for
+    # state pension credit".
+    meets_council_tax_reduction_enhanced_disability_premium_condition: [false, false, false, false]
+    council_tax_reduction_enhanced_disability_premium: [0, 0]

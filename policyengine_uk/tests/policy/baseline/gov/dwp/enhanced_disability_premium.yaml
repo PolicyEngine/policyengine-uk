@@ -7,6 +7,9 @@
 # the condition is met in respect of a member of a couple.
 # 2026-27 weekly rates: DLA care highest £114.60, middle £76.70; PIP daily
 # living enhanced £114.60, standard £76.70 (gov.dwp parameters).
+# An award needs a positive amount. An amount entered without its category
+# counts at the top rate when it reaches the top weekly rate less £1, times
+# 52: (114.60 - 1) * 52 = 5,907.20 in 2026-27.
 
 - name: Case 1, enhanced PIP daily living qualifies a single claimant.
   period: 2026
@@ -374,3 +377,173 @@
     # (2026-27 DWP rates): 95.55 * 52 = 4,968.60. Premiums 1,144.00 +
     # 4,474.60 = 5,618.60. Total 10,587.20.
     income_support_applicable_amount: 10_587.20
+
+- name: Case 19, a DLA care amount at the highest rate without its category qualifies.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        dla_sc: 5_959.20
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    receives_highest_dla_sc: false
+    # 5,959.20 reaches 5,907.20.
+    has_highest_dla_sc_award: true
+    receives_enhanced_disability_premium_qualifying_benefit: true
+    enhanced_disability_premium: 1_144
+
+- name: Case 20, a PIP daily living amount at the enhanced rate without its category qualifies.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        pip_dl: 5_959.20
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    receives_enhanced_pip_dl: false
+    has_enhanced_pip_dl_award: true
+    enhanced_disability_premium: 1_144
+
+- name: Case 21, an amount within £1 a week of the highest DLA care rate qualifies.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        # £113.65 a week: 113.65 * 52 = 5,909.80, above 5,907.20.
+        dla_sc: 5_909.80
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    has_highest_dla_sc_award: true
+    enhanced_disability_premium: 1_144
+
+- name: Case 22, an amount more than £1 a week below the highest DLA care rate does not qualify.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        # £113.50 a week: 113.50 * 52 = 5,902.00, below 5,907.20.
+        dla_sc: 5_902
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    has_highest_dla_sc_award: false
+    enhanced_disability_premium: 0
+
+- name: Case 23, the highest DLA care category with an amount of zero is no award.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        dla_sc_category: HIGHER
+        dla_sc: 0
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    receives_highest_dla_sc: true
+    has_highest_dla_sc_award: false
+    receives_enhanced_disability_premium_qualifying_benefit: false
+    enhanced_disability_premium: 0
+
+- name: Case 24, the enhanced PIP daily living category with an amount of zero is no award.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        pip_dl_category: ENHANCED
+        pip_dl: 0
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    has_enhanced_pip_dl_award: false
+    enhanced_disability_premium: 0
+
+- name: Case 25, the highest DLA care category qualifies with an amount below the rate.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        dla_sc_category: HIGHER
+        dla_sc: 1_000
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    # The category gives the rate; the positive amount gives the award.
+    has_highest_dla_sc_award: true
+    enhanced_disability_premium: 1_144
+
+- name: Case 26, a child with the highest DLA care category and an amount of zero gets no child premium.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+      child:
+        age: 10
+        dla_sc_category: HIGHER
+        dla_sc: 0
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        country: ENGLAND
+  output:
+    receives_enhanced_disability_premium_qualifying_benefit: [false, false]
+    # No DLA amount, so neither the disabled-child nor the enhanced rate.
+    housing_benefit_child_disability_premiums: 0
+
+- name: Case 27, a child with a highest-rate DLA care amount and no category gets both child premiums.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+      child:
+        age: 10
+        dla_sc: 5_959.20
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        country: ENGLAND
+  output:
+    receives_enhanced_disability_premium_qualifying_benefit: [false, true]
+    # HB Sch 3 Part 4: disabled child £84.46 plus enhanced child £33.99,
+    # 118.45 * 52 = 6,159.40.
+    housing_benefit_child_disability_premiums: 6_159.40
