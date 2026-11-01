@@ -33,24 +33,30 @@ def legacy_council_tax_reduction(
     would_claim = benunit("would_claim_council_tax_reduction", period)
     applicable_amount = benunit("council_tax_reduction_applicable_amount", period)
     applicable_income = benunit("council_tax_reduction_applicable_income", period)
-    universal_credit = benunit("universal_credit", period)
     has_uc_award = applicant_has_universal_credit(benunit, period)
     uc_applicable_amount = benunit("uc_maximum_amount", period)
     # The schemes use "the calculation or estimate of the amount of the
     # income of the applicant ... made by the Secretary of State for the
-    # purpose of determining the award of universal credit", plus the award
-    # (Council Tax Reduction Schemes (Default Scheme) (England) Regulations
-    # 2012, Sch. para. 37(1) and (3)(a); Kingston upon Thames and Merton
-    # reproduce it, Newham refers to the same calculation, and Westminster's
-    # scheme is based on the Default Scheme). That income is
-    # earned income after tax, National Insurance and pension contributions
-    # and unearned income. The work allowance and taper are steps in the
-    # award (UC Regs 2013 reg. 22), not in the income, so the work allowance
-    # is not deducted here.
+    # purpose of determining the award of universal credit", plus "the amount
+    # of the award of universal credit" (Council Tax Reduction Schemes
+    # (Default Scheme) (England) Regulations 2012, Sch. para. 37(1) and
+    # (3)(a); Kingston upon Thames and Merton reproduce it, Newham refers to
+    # the same calculation and counts "the amount of entitlement to universal
+    # credit", and Westminster bases its scheme on the Default Scheme). That
+    # income is earned income after tax, National Insurance and pension
+    # contributions and unearned income. The work allowance and taper are
+    # steps in the award (UC Regs 2013 reg. 22), not in the income, so this
+    # does not deduct the work allowance. The award is the amount after the
+    # benefit cap (UC Regs 2013 reg. 81(1)). The Secretary of State pays the
+    # claimant's debts out of that award, leaving at least a penny payable, so
+    # the award and the amount payable are two figures (SI 2013/380 Sch. 6
+    # paras. 2(1), 3(1)(a) and 11(5)). universal_credit is the amount payable,
+    # so this adds back the deductions it takes off.
+    uc_award = benunit("universal_credit", period) + benunit("uc_deductions", period)
     uc_applicable_income = (
         benunit("uc_earned_income_before_work_allowance", period)
         + benunit("uc_unearned_income", period)
-        + universal_credit
+        + uc_award
     )
     applicable_amount = where(has_uc_award, uc_applicable_amount, applicable_amount)
     applicable_income = where(has_uc_award, uc_applicable_income, applicable_income)

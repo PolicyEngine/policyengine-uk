@@ -1,0 +1,319 @@
+# #2799. Merton and Kingston upon Thames count "the amount of the award of
+# universal credit" (their 2026-27 schemes reproduce SI 2012/2886 Sch para
+# 37(3)(a) and (4)), Newham counts "the amount of entitlement to universal
+# credit", and Westminster compares the maximum amount "to the actual
+# universal credit award plus any other income and earnings received". The
+# Secretary of State pays the claimant's debts out of the award (SI 2013/380
+# Sch 6 para 2(1)), so a deduction leaves the award, and these reductions,
+# where they were.
+#
+# Each case: a single person aged 35 in 2026 earns 8,000 (under the personal
+# allowance and primary threshold), rents from the council at 7,800 a year and
+# owes council tax of 2,600. The maximum amount is 424.90 x 12 + 7,800 =
+# 12,898.80. With no child and no limited capability for work there is no
+# work allowance, so the income reduction is 55% x 8,000 = 4,400 and the
+# award 8,498.80. Income exceeds the applicable amount (the maximum amount) by
+# 8,000 + 8,498.80 - 12,898.80 = 3,600. Merton, Kingston upon Thames and
+# Westminster award 2,600 - 20% x 3,600 = 1,880; Newham awards
+# 70% x 2,600 - 25% x 3,600 = 920. Counting the award net of a 600 deduction
+# would give 2,000 and 1,070.
+
+- name: Merton counts the Universal Credit award with no deduction
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 8_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        region: LONDON
+        local_authority: MERTON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 7_800
+        council_tax: 2_600
+        savings: 0
+  output:
+    uc_maximum_amount: 12_898.80
+    uc_income_reduction: 4_400
+    uc_deductions: 0
+    universal_credit: 8_498.80
+    council_tax_reduction: 1_880
+
+- name: Merton counts the Universal Credit award before a 600 debt deduction
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 8_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        uc_deductions: 600
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        region: LONDON
+        local_authority: MERTON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 7_800
+        council_tax: 2_600
+        savings: 0
+  output:
+    universal_credit: 7_898.80
+    council_tax_reduction: 1_880
+
+- name: Kingston upon Thames counts the Universal Credit award with no deduction
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 8_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        region: LONDON
+        local_authority: KINGSTON_UPON_THAMES
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 7_800
+        council_tax: 2_600
+        savings: 0
+  output:
+    uc_deductions: 0
+    universal_credit: 8_498.80
+    council_tax_reduction: 1_880
+
+- name: Kingston upon Thames counts the Universal Credit award before a 600 debt deduction
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 8_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        uc_deductions: 600
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        region: LONDON
+        local_authority: KINGSTON_UPON_THAMES
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 7_800
+        council_tax: 2_600
+        savings: 0
+  output:
+    universal_credit: 7_898.80
+    council_tax_reduction: 1_880
+
+- name: Newham counts the Universal Credit award with no deduction
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 8_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        region: LONDON
+        local_authority: NEWHAM
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 7_800
+        council_tax: 2_600
+        savings: 0
+  output:
+    uc_deductions: 0
+    universal_credit: 8_498.80
+    council_tax_reduction: 920
+
+- name: Newham counts the Universal Credit award before a 600 debt deduction
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 8_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        uc_deductions: 600
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        region: LONDON
+        local_authority: NEWHAM
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 7_800
+        council_tax: 2_600
+        savings: 0
+  output:
+    universal_credit: 7_898.80
+    council_tax_reduction: 920
+
+- name: Westminster counts the Universal Credit award with no deduction
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 8_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        region: LONDON
+        local_authority: WESTMINSTER
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 7_800
+        council_tax: 2_600
+        savings: 0
+  output:
+    uc_deductions: 0
+    universal_credit: 8_498.80
+    council_tax_reduction: 1_880
+
+- name: Westminster counts the Universal Credit award before a 600 debt deduction
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 8_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        uc_deductions: 600
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        region: LONDON
+        local_authority: WESTMINSTER
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 7_800
+        council_tax: 2_600
+        savings: 0
+  output:
+    universal_credit: 7_898.80
+    council_tax_reduction: 1_880
+
+- name: Newham counts the Universal Credit award before a deduction at the cap
+  # A third-party deduction demand of 15% of the standard allowance meets the
+  # 15% cap: 15% x 424.90 x 12 = 764.82. The amount payable falls to
+  # 8,498.80 - 764.82 = 7,733.98; the award stays at 8,498.80 and Newham
+  # awards 920. Counting the amount payable would give
+  # 70% x 2,600 - 25% x (3,600 - 764.82) = 1,111.21.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 8_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        uc_latent_deduction_rate: 0.15
+        uc_deduction_combination: THIRD_PARTY_ONLY
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        region: LONDON
+        local_authority: NEWHAM
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 7_800
+        council_tax: 2_600
+        savings: 0
+  output:
+    uc_deduction_rate: 0.15
+    uc_deductions: 764.82
+    universal_credit: 7_733.98
+    council_tax_reduction: 920
+
+- name: Merton counts the Universal Credit award after the benefit cap and before a deduction at the cap
+  # The benefit cap takes 1,200 (entered here) from the award, which falls to
+  # 8,498.80 - 1,200 = 7,298.80 (UC Regs 2013 reg 81(1)). A deduction at the
+  # 15% cap, 764.82, leaves 6,533.98 payable. Income exceeds the maximum amount
+  # by 8,000 + 7,298.80 - 12,898.80 = 2,400, so Merton awards
+  # 2,600 - 20% x 2,400 = 2,120. Counting the amount payable would give
+  # 2,272.96, and counting the award before the cap 1,880.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 8_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        uc_benefit_cap_reduction: 1_200
+        uc_latent_deduction_rate: 0.15
+        uc_deduction_combination: THIRD_PARTY_ONLY
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        region: LONDON
+        local_authority: MERTON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 7_800
+        council_tax: 2_600
+        savings: 0
+  output:
+    uc_benefit_cap_reduction_after_floor: 1_200
+    uc_deductions: 764.82
+    universal_credit: 6_533.98
+    council_tax_reduction: 2_120
