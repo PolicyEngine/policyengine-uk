@@ -16,10 +16,10 @@ from policyengine_uk.variables.gov.dwp.jsa_income import (
 # contributory or income-related benefit; it still counts in household income.
 # Housing Benefit counts its own amount before the cap (HB Regs 2006
 # reg. 75C(2)(b)), so this total includes it. Universal Credit counts Housing
-# Benefit as nil (UC Regs 2013 reg. 80(2A)): uc_benefit_cap_reduction takes it
-# out. Universal Credit before the cap is in the total too; a family receiving
-# it is outside the Housing Benefit cap (HB Regs 2006 reg. 75F(1)(g)). With
-# those two adjustments one total serves both schemes. Reg. 75C(2)(a) counts
+# Benefit as nil (UC Regs 2013 reg. 80(2A)), so its cap reads
+# uc_benefit_cap_welfare_benefits, these benefits without Housing Benefit.
+# Universal Credit before the cap is in the total too; HB reg. 75F(1)(g) puts a
+# family receiving it outside the Housing Benefit cap. Reg. 75C(2)(a) counts
 # Housing Benefit for specified accommodation as nil; the model's input
 # in_specified_or_temporary_accommodation does not separate specified from
 # temporary accommodation, so that Housing Benefit is counted at its amount

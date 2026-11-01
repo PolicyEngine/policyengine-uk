@@ -39,11 +39,12 @@ def benefit_cap_couple(benunit, period):
     (is_uc_assessed_claimant): a single claimant or joint claimants, and the
     other member of a couple where one member claims as a single person
     (UC Regs 2013 reg 78(2)). Otherwise it is Housing Benefit's claimant and
-    partner (is_claimant_or_partner; HB Regs 2006 regs 2(1), 75A). One total
-    of welfare benefits (benefit_cap_welfare_benefits) serves both caps: a
-    family receiving both awards is capped only through Universal Credit (UC
-    Regs 2013 reg 80(2A); HB Regs 2006 reg 75F(1)(g)), so its total is the
-    Universal Credit couple's. The two couples are the same unless
+    partner (is_claimant_or_partner; HB Regs 2006 regs 2(1), 75A). Both caps
+    count this couple's welfare benefits (benefit_cap_welfare_benefits, and
+    uc_benefit_cap_welfare_benefits without Housing Benefit): a family
+    receiving both awards is capped only through Universal Credit (UC Regs
+    2013 reg 80(2A); HB Regs 2006 reg 75F(1)(g)), so its couple is the
+    Universal Credit couple. The two couples are the same unless
     is_uc_claimant is entered.
     """
     person = benunit.members

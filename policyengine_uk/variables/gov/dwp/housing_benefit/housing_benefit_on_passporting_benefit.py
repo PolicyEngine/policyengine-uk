@@ -54,12 +54,10 @@ class housing_benefit_on_passporting_benefit(Variable):
             p.northern_ireland,
             p.great_britain,
         )
-        # Universal Credit before the benefit cap and deductions: Universal
-        # Credit depends on Housing Benefit through the benefit cap
-        # (uc_benefit_cap_reduction, whose total benefit_cap_welfare_benefits
-        # counts Housing Benefit), so reading the amount paid
-        # (universal_credit) here would be circular. Before the cap is also
-        # the law's reading: entitlement counts whether or not it is paid.
+        # Universal Credit before the benefit cap and deductions: entitlement
+        # counts whether or not it is paid. The amount paid
+        # (universal_credit) reads Housing Benefit where the inputs supply
+        # benefit_cap_welfare_benefits (uc_benefit_cap_welfare_benefits).
         on_universal_credit = benunit("is_uc_entitled", period) & universal_credit_limb
         on_legacy_benefit = benunit(
             "in_receipt_of_income_support_jsa_ib_or_esa_ir", period
