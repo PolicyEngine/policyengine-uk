@@ -57,6 +57,12 @@ applicant has a Universal Credit award:
    of such a family is the band of its paragraphs 14 to 27 income less Child
    Benefit, with no tariff income, as the model gave before PolicyEngine
    encoded Appendix 3.
+8. Each receipt counts once: more of a receipt Oxford counts as other income
+   raises other income by the whole amount, a carer support payment above
+   DWP's cap included, and leaves DWP's net earned income unchanged. More
+   miscellaneous income, which the model counts in DWP's net earned income,
+   leaves other income unchanged; more interest, dividends or rent changes
+   neither; and a child's receipts never change other income.
 
 The YAML cases in policy/baseline/gov/local_authorities/oxford/
 council_tax_reduction/ pin the paragraphs 14 to 27 route and the hand-worked
@@ -170,6 +176,8 @@ def situation(units, local_authorities=None, council_tax=COUNCIL_TAX, year=YEAR)
                 people[name]["meets_uc_higher_disabled_child_condition"] = {
                     year: child["disability"] == "higher"
                 }
+            for key, value in child.get("inputs", {}).items():
+                people[name][key] = {year: value}
             names.append(name)
         benunits[f"b{i}"] = {
             "members": names,
@@ -180,6 +188,8 @@ def situation(units, local_authorities=None, council_tax=COUNCIL_TAX, year=YEAR)
         }
         if "child_benefit" in unit:
             benunits[f"b{i}"]["child_benefit"] = {year: unit["child_benefit"]}
+        for key, value in unit.get("benunit_inputs", {}).items():
+            benunits[f"b{i}"][key] = {year: value}
         households[f"h{i}"] = {
             "members": names,
             "country": {year: "ENGLAND"},
@@ -704,3 +714,136 @@ def test_earlier_years_keep_the_paragraphs_14_to_27_income(units):
         assert abs(values["oxford_council_tax_reduction"][i] - expected) < TOLERANCE, (
             unit
         )
+
+
+# Invariant 8's receipts, listed here from the scheme and the regulations
+# rather than read from the parameter, so a source dropped from the
+# parameter fails the test. Oxford City Council counts each as other income:
+# Child Benefit and child maintenance (its Appendix 5 disregards apply only
+# without Universal Credit), the receipts DWP counts under reg 66 (the
+# carer support payment whole), the Scottish Carer Supplement, the regular
+# payments Appendix 3 does not ignore, and the awards Universal Credit
+# replaces.
+COUNTED_PERSON_RECEIPTS = [
+    "maintenance_income",
+    "spousal_maintenance_income",
+    "private_pension_income",
+    "state_pension",
+    "carers_allowance",
+    "carer_support_payment",
+    "scottish_carer_supplement",
+    "jsa_contrib",
+    "esa_contrib",
+    "maternity_allowance",
+    "iidb",
+    "widowed_parents_allowance",
+    "incapacity_benefit",
+    "sda",
+    "bsp",
+    "afcs",
+    "war_widows_pension",
+    "armed_forces_independence_payment",
+    "ssmg",
+    "healthy_start_vouchers",
+    "private_transfer_income",
+]
+COUNTED_BENUNIT_RECEIPTS = [
+    "child_benefit",
+    "income_support",
+    "claimant_or_partner_jsa_income",
+    "claimant_or_partner_esa_income",
+    "tax_credits",
+    "pension_credit",
+]
+# The model counts miscellaneous income in DWP's net earned income.
+EARNED_RECEIPTS = ["miscellaneous_income"]
+# Oxford City Council treats income derived from capital as capital (Annex 7).
+CAPITAL_RECEIPTS = ["savings_interest_income", "dividend_income", "property_income"]
+PERSON_RECEIPTS = COUNTED_PERSON_RECEIPTS + EARNED_RECEIPTS + CAPITAL_RECEIPTS
+# A year of carer support payment above a year of Carer's Allowance (86.45 x
+# 52 = 4,495.40), the most DWP counts (reg 66(1)(b)(iiia)).
+RECEIPT_STEP = {"carer_support_payment": 5_200.0}
+RECEIPT_VARIABLES = [
+    "universal_credit",
+    "council_tax_reduction_head_applies_alone",
+    "uc_earned_income_before_work_allowance",
+    "oxford_council_tax_reduction_universal_credit_other_income",
+]
+
+
+def with_receipts(unit):
+    """The family with every receipt supplied for every member, at nil
+    except its own maintenance and interest and HMRC's Child Benefit, since
+    a variable supplied for some people reads as nil for the rest."""
+    adults = [
+        {receipt: 0.0 for receipt in PERSON_RECEIPTS} | adult
+        for adult in unit["adults"]
+    ]
+    children = [
+        dict(child, inputs={receipt: 0.0 for receipt in PERSON_RECEIPTS})
+        for child in unit["children"]
+    ]
+    benunit_inputs = {receipt: 0.0 for receipt in COUNTED_BENUNIT_RECEIPTS}
+    benunit_inputs["child_benefit"] = child_benefit(unit)
+    return dict(unit, adults=adults, children=children, benunit_inputs=benunit_inputs)
+
+
+def receive(unit, receipt, step, child=False):
+    """The family with step more of the receipt: the benefit unit's, the last
+    adult's (the partner in a couple) or the first child's."""
+    if receipt in COUNTED_BENUNIT_RECEIPTS:
+        inputs = dict(unit["benunit_inputs"])
+        inputs[receipt] += step
+        return dict(unit, benunit_inputs=inputs)
+    if child:
+        first = unit["children"][0]
+        inputs = dict(first["inputs"])
+        inputs[receipt] += step
+        children = [dict(first, inputs=inputs)] + unit["children"][1:]
+        return dict(unit, children=children)
+    last = dict(unit["adults"][-1])
+    last[receipt] += step
+    return dict(unit, adults=unit["adults"][:-1] + [last])
+
+
+@PROPERTY_SETTINGS
+@given(st.lists(families(), min_size=1, max_size=3))
+@example(units=[example_families()[i] for i in (0, 1, 5)])
+def test_each_receipt_counts_once(units):
+    units = [with_receipts(unit) for unit in units]
+    # Each variant: (family, receipt, step, whether a child receives it).
+    variants = []
+    for i, unit in enumerate(units):
+        for receipt in COUNTED_BENUNIT_RECEIPTS + PERSON_RECEIPTS:
+            step = RECEIPT_STEP.get(receipt, STEP)
+            variants.append((i, receipt, step, False))
+            if unit["children"] and receipt in PERSON_RECEIPTS:
+                variants.append((i, receipt, step, True))
+    values = calculate(
+        units + [receive(units[i], r, s, c) for i, r, s, c in variants],
+        RECEIPT_VARIABLES,
+    )
+    other = values["oxford_council_tax_reduction_universal_credit_other_income"]
+    earned = values["uc_earned_income_before_work_allowance"]
+    n = len(units)
+    for k, (i, receipt, step, child) in enumerate(variants):
+        j = n + k
+        if not (has_award(values, i) and has_award(values, j)):
+            continue
+        case = (receipt, step, child, units[i])
+        added = other[j] - other[i]
+        if child:
+            # Oxford counts the applicant's and partner's receipts only.
+            assert abs(added) < TOLERANCE, case
+        elif receipt in EARNED_RECEIPTS:
+            # DWP's net earned income takes it, net of any income tax on it,
+            # and other income does not count it again.
+            assert abs(added) < TOLERANCE, case
+            assert TOLERANCE < earned[j] - earned[i] <= step + TOLERANCE, case
+        elif receipt in CAPITAL_RECEIPTS:
+            assert abs(added) < TOLERANCE, case
+            assert abs(earned[j] - earned[i]) < TOLERANCE, case
+        else:
+            # Invariant 8: the whole receipt, once.
+            assert abs(added - step) < TOLERANCE, case
+            assert abs(earned[j] - earned[i]) < TOLERANCE, case
