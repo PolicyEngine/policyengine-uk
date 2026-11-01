@@ -49,7 +49,9 @@ def pension_credit_follows_model_formulas(benunit, period, parameters):
     default a family outside its defined_for gets, or freeze Pension Credit
     at the baseline's award (gov.contrib.freeze_pension_credit) whatever the
     reform's age conditions. Pension Credit can then pay a family that does
-    not meet the age conditions or would not claim.
+    not meet the age conditions or would not claim. A reform can also give
+    would_claim_pc a formula, which could read the couple's ESA; the screen
+    would then close a cycle if it read take-up in the simulation itself.
     """
     simulation = benunit.simulation
     if (
@@ -57,10 +59,13 @@ def pension_credit_follows_model_formulas(benunit, period, parameters):
         and simulation.baseline is not None
     ):
         return False
-    return not any(
+    if any(
         replaces_definition(benunit, variable, period)
         for variable in PENSION_CREDIT_VARIABLES
-    )
+    ):
+        return False
+    take_up = simulation.tax_benefit_system.get_variable("would_claim_pc")
+    return take_up.get_formula(period) is None
 
 
 def pension_credit_without_income_related_esa(benunit, period):

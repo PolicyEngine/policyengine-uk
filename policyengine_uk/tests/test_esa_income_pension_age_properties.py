@@ -64,13 +64,13 @@ opens none, a branch never outlives the calculation, the tax credit passport
 branch inside it reads the couple's award as nil, and the screen reads no
 Pension Credit condition without a couple's claim that passes the other
 tests. Others enter Pension Credit, or a part of it, as an input, or reform
-it: an entered award, a reform that pays every family, a frozen award and a
-reform that changes the default or coverage of a Pension Credit variable each
-make the model read the award for every couple, and a parameter reform keeps
-the age and take-up conditions. One test changes each attribute of each
-Pension Credit variable in turn, and requires the model to drop the age and
-take-up conditions for every change to what Core calculates the variable
-from.
+it: an entered award, a reform that pays every family, a frozen award, a
+reform that changes the default or coverage of a Pension Credit variable and
+a reform that gives take-up a formula each make the model read the award for
+every couple, and a parameter reform keeps the age and take-up conditions.
+One test changes each attribute of each Pension Credit variable in turn, and
+requires the model to drop the age and take-up conditions for every change to
+what Core calculates the variable from.
 """
 
 import numpy as np
@@ -918,6 +918,55 @@ def test_a_reform_that_pays_outside_the_age_conditions_bars_the_award(
     assert sim.calculate("esa_income", year).tolist() == esa
 
 
+class take_up_without_income_related_esa(Reform):
+    """A family claims Pension Credit while it gets no income-related ESA."""
+
+    def apply(self):
+        class would_claim_pc(Variable):
+            value_type = bool
+            entity = BenUnit
+            definition_period = YEAR
+
+            def formula(benunit, period, parameters):
+                return benunit("esa_income", period) == 0
+
+        self.update_variable(would_claim_pc)
+
+
+@pytest.mark.parametrize(
+    "reform",
+    [
+        take_up_without_income_related_esa,
+        (take_up_without_income_related_esa, pension_credit_by_another_formula),
+    ],
+    ids=["take_up_formula", "take_up_formula_another_formula"],
+)
+def test_a_take_up_formula_makes_the_model_read_pension_credit_for_every_couple(
+    reform,
+):
+    """Take-up that reads the family's ESA would close a cycle if the screen
+    read take-up in the simulation itself, so the model reads Pension Credit
+    without the award for every couple. Without the award both men aged 63
+    in 2016 would claim and get the £8,091.20 minimum guarantee, so neither
+    gets the award, and both then claim. The man aged 40 gets no Pension
+    Credit, so he keeps his £5,000 and does not claim."""
+    year = 2016
+    sim = Simulation(
+        situation=combine(
+            household([MAN_63], year),
+            household([MAN_40], year),
+            household([MAN_63], year),
+        ),
+        reform=reform,
+    )
+    assert not follows_model_formulas(sim, year)
+    assert sim.calculate("esa_income", year).tolist() == [0, 5_000, 0]
+    assert sim.calculate("pension_credit", year) == pytest.approx(
+        [8_091.20, 0, 8_091.20], abs=0.01
+    )
+    assert sim.calculate("would_claim_pc", year).tolist() == [True, False, True]
+
+
 def wrapped(formula):
     def wrapper(entity, period, parameters):
         return formula(entity, period, parameters)
@@ -950,7 +999,8 @@ def test_every_change_to_a_pension_credit_definition_drops_the_shortcut():
     """Exhaustive over the five Pension Credit variables and the attributes a
     reform can change: any change to what Core calculates a variable from
     drops the age and take-up conditions, and a change to its description
-    alone keeps them."""
+    alone keeps them. A take-up formula drops them too, and a take-up input or
+    default keeps them, since the screen reads take-up itself."""
     year = 2016
     sim = Simulation(situation=household([MAN_40], year))
     system = sim.tax_benefit_system
@@ -971,6 +1021,28 @@ def test_every_change_to_a_pension_credit_definition_drops_the_shortcut():
                 )
             finally:
                 system.variables[name] = variable
+    take_up = system.variables["would_claim_pc"]
+    for attribute, value, follows in [
+        ("formulas", {"0001-01-01": lambda benunit, period, parameters: True}, False),
+        ("default_value", False, True),
+    ]:
+        changed = take_up.clone()
+        if attribute == "formulas":
+            value = type(changed.formulas)(value)
+        setattr(changed, attribute, value)
+        system.variables["would_claim_pc"] = changed
+        try:
+            assert follows_model_formulas(sim, year) is follows, attribute
+        finally:
+            system.variables["would_claim_pc"] = take_up
+    branch = sim.get_branch("entered_take_up")
+    try:
+        branch.set_input("would_claim_pc", year, np.array([False]))
+        assert pension_credit_follows_model_formulas(
+            branch.populations["benunit"], period_(year), system.parameters
+        )
+    finally:
+        sim.branches.pop("entered_take_up", None)
     assert follows_model_formulas(sim, year)
 
 
