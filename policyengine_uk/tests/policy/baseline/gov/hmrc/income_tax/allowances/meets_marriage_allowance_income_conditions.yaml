@@ -1,41 +1,247 @@
-- name: Basic rate band is eligible for Marriage Allowance
+# ITA 2007 s. 55B(2)(b) and (ba): the person receiving the allowance may be
+# liable only at the basic rates, the Scottish starter and intermediate rates
+# (from 2018-19, SI 2018/459 art. 6(2)), the dividend ordinary rate and the
+# nil and starting rates for savings, and dividends count as if the dividend
+# nil rate (s. 13A) did not exist. From 2021-22 to 2026-27 the personal
+# allowance is £12,570 and the basic rate limit £37,700, and the Scottish
+# higher rate starts at £31,092 of taxable income (S6M-16531 for 2025-26,
+# S6M-20844 for 2026-27). In 2026-27 the dividend allowance is £500 and the
+# Personal Savings Allowance £1,000, or £500 with income above the basic rate
+# limit (s. 12B).
+
+- name: Basic-rate earner meets the Marriage Allowance income conditions
   period: 2021
   input:
-    tax_band: BASIC
+    # 30,000 - 12,570 = 17,430, all at the basic rate.
+    employment_income: 30_000
+    region: NORTH_EAST
   output:
     meets_marriage_allowance_income_conditions: true
 
-- name: Higher rate band is ineligible for Marriage Allowance
+- name: Higher-rate earner fails the Marriage Allowance income conditions
   period: 2021
   input:
+    # 60,000 - 12,570 = 47,430, so 9,730 is at the higher rate.
+    employment_income: 60_000
+    region: NORTH_EAST
+  output:
+    meets_marriage_allowance_income_conditions: false
+
+- name: Additional-rate earner fails the Marriage Allowance income conditions
+  period: 2021
+  input:
+    # No personal allowance above 125,140 of income; 10,000 is above the
+    # 150,000 higher rate limit.
+    employment_income: 160_000
+    region: NORTH_EAST
+  output:
+    meets_marriage_allowance_income_conditions: false
+
+- name: Earner below the personal allowance meets the conditions (regression for #395)
+  period: 2021
+  input:
+    employment_income: 10_000
+    region: NORTH_EAST
+  output:
+    meets_marriage_allowance_income_conditions: true
+
+- name: Scottish starter-rate earner meets the Marriage Allowance income conditions
+  period: 2021
+  input:
+    # 430 of taxable income, all at the Scottish starter rate.
+    employment_income: 13_000
+    region: SCOTLAND
+  output:
+    meets_marriage_allowance_income_conditions: true
+
+- name: Scottish intermediate-rate earner meets the Marriage Allowance income conditions
+  period: 2021
+  input:
+    # 27,430 of taxable income, below the Scottish higher rate at 31,092.
+    employment_income: 40_000
+    region: SCOTLAND
+  output:
+    meets_marriage_allowance_income_conditions: true
+
+- name: Scottish higher-rate threshold reform keeps nil-rate savings eligible
+  period: 2025
+  input:
+    # The Scottish higher rate moves to 37,702 of taxable income. Pay leaves
+    # 50,270 - 12,570 = 37,700, all below it. The 1 of interest takes taxable
+    # income to 37,701, above the basic rate limit, so the Personal Savings
+    # Allowance is 500 (s. 12B) and charges it at the savings nil rate
+    # (s. 12A), which s. 55B(2)(b) allows. The band rests on that pound.
+    gov.hmrc.income_tax.rates.scotland.rates[3].threshold: 37_702
+    employment_income: 50_270
+    savings_interest_income: 1
+    region: SCOTLAND
+  output:
     tax_band: HIGHER
+    savings_income_tax: 0
+    meets_marriage_allowance_income_conditions: true
+
+- name: Savings covered by the savings nil rate above the basic rate limit meet the conditions
+  period: 2026
+  input:
+    # 50,070 - 12,570 = 37,500 of pay, then 500 of interest to 38,000. Income
+    # above the basic rate limit sets the Personal Savings Allowance at 500
+    # (s. 12B), which covers all 500 at the savings nil rate (s. 12A).
+    employment_income: 50_070
+    savings_interest_income: 500
+    region: NORTH_EAST
   output:
+    tax_band: HIGHER
+    savings_income_tax: 0
+    meets_marriage_allowance_income_conditions: true
+
+- name: One pound of savings at the savings higher rate fails the conditions
+  period: 2026
+  input:
+    # As above with 501 of interest: 1 is at the savings higher rate, 40p.
+    employment_income: 50_070
+    savings_interest_income: 501
+    region: NORTH_EAST
+  absolute_error_margin: 0.01
+  output:
+    savings_income_tax: 0.4
     meets_marriage_allowance_income_conditions: false
 
-- name: Additional rate band is ineligible for Marriage Allowance
-  period: 2021
+- name: Taxable income at the basic rate limit meets the conditions
+  period: 2026
   input:
-    tax_band: ADDITIONAL
-  output:
-    meets_marriage_allowance_income_conditions: false
-
-- name: Below-PA earner (band NONE) is eligible for Marriage Allowance (regression for #395)
-  period: 2021
-  input:
-    tax_band: NONE
+    # 50,270 - 12,570 = 37,700: s. 10(2) charges income up to the basic rate
+    # limit at the basic rate.
+    employment_income: 50_270
+    region: NORTH_EAST
   output:
     meets_marriage_allowance_income_conditions: true
 
-- name: Scottish starter rate band is eligible for Marriage Allowance
-  period: 2021
+- name: One pound above the basic rate limit fails the conditions
+  period: 2026
   input:
-    tax_band: STARTER
+    # 37,701 of taxable income: 1 at the higher rate (s. 10(3)).
+    employment_income: 50_271
+    region: NORTH_EAST
+  output:
+    meets_marriage_allowance_income_conditions: false
+
+- name: Scottish taxable income at the start of the higher rate meets the conditions
+  period: 2026
+  input:
+    # 43,662 - 12,570 = 31,092: S6M-20844 charges the intermediate rate on
+    # income up to 31,092 and the higher rate only above it.
+    employment_income: 43_662
+    region: SCOTLAND
   output:
     meets_marriage_allowance_income_conditions: true
 
-- name: Scottish intermediate rate band is eligible for Marriage Allowance
-  period: 2021
+- name: One pound into the Scottish higher rate fails the conditions
+  period: 2026
   input:
-    tax_band: INTERMEDIATE
+    employment_income: 43_663
+    region: SCOTLAND
+  output:
+    meets_marriage_allowance_income_conditions: false
+
+- name: Dividends covered by the dividend allowance above the basic rate limit fail the conditions
+  period: 2026
+  input:
+    # 37,500 of pay, then 500 of dividends, all within the 500 dividend
+    # allowance (s. 13A). Without s. 13A, 300 of them would be at the dividend
+    # upper rate (37,500 + 500 = 38,000), so s. 55B(2)(ba) fails, though the
+    # person pays no dividend tax.
+    employment_income: 50_070
+    dividend_income: 500
+    region: NORTH_EAST
+  output:
+    dividend_income_tax: 0
+    meets_marriage_allowance_income_conditions: false
+
+- name: Dividends that reach the basic rate limit exactly meet the conditions
+  period: 2026
+  input:
+    # 37,500 + 200 = 37,700: none would be at the dividend upper rate.
+    employment_income: 50_070
+    dividend_income: 200
+    region: NORTH_EAST
+  output:
+    meets_marriage_allowance_income_conditions: true
+
+- name: Gift Aid raises the basic rate limit for the conditions
+  period: 2026
+  input:
+    # A 1,600 gift grosses up to 2,000 (s. 415), which raises the basic rate
+    # limit to 39,700 (s. 414(2)(b)). 52,270 - 12,570 = 39,700.
+    employment_income: 52_270
+    gift_aid: 1_600
+    region: NORTH_EAST
+  output:
+    meets_marriage_allowance_income_conditions: true
+
+- name: One pound above the Gift Aid limit fails the conditions
+  period: 2026
+  input:
+    employment_income: 52_271
+    gift_aid: 1_600
+    region: NORTH_EAST
+  output:
+    meets_marriage_allowance_income_conditions: false
+
+- name: Gift Aid raises the start of the Scottish higher rate for the conditions
+  period: 2026
+  input:
+    # The 2,000 grossed-up gift moves the Scottish higher rate to 33,092
+    # (s. 414(2)(b)). 45,662 - 12,570 = 33,092.
+    employment_income: 45_662
+    gift_aid: 1_600
+    region: SCOTLAND
+  output:
+    meets_marriage_allowance_income_conditions: true
+
+- name: One pound above the Scottish Gift Aid limit fails the conditions
+  period: 2026
+  input:
+    employment_income: 45_663
+    gift_aid: 1_600
+    region: SCOTLAND
+  output:
+    meets_marriage_allowance_income_conditions: false
+
+- name: In 2017-18 the Scottish higher rate fails the conditions
+  period: 2017
+  input:
+    # The 2017-18 s. 55B(2)(b) allows the Scottish basic rate only. With an
+    # 11,500 allowance, the Scottish higher rate starts at 31,500 of taxable
+    # income: 43,001 - 11,500 = 31,501.
+    employment_income: 43_001
+    region: SCOTLAND
+  output:
+    meets_marriage_allowance_income_conditions: false
+
+- name: In 2017-18 Scottish income up to the higher rate meets the conditions
+  period: 2017
+  input:
+    # 43,000 - 11,500 = 31,500, all at the Scottish basic rate.
+    employment_income: 43_000
+    region: SCOTLAND
+  output:
+    meets_marriage_allowance_income_conditions: true
+
+- name: In 2017-18 the same income outside Scotland meets the conditions
+  period: 2017
+  input:
+    # 31,501 of taxable income, below the 33,500 basic rate limit.
+    employment_income: 43_001
+    region: NORTH_EAST
+  output:
+    meets_marriage_allowance_income_conditions: true
+
+- name: In 2018-19 the Scottish intermediate rate meets the conditions
+  period: 2018
+  input:
+    # SI 2018/459 art. 6(2) adds the Scottish starter and intermediate rates
+    # to s. 55B(2)(b). 40,000 - 11,850 = 28,150, at the intermediate rate.
+    employment_income: 40_000
+    region: SCOTLAND
   output:
     meets_marriage_allowance_income_conditions: true

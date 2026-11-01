@@ -24,9 +24,10 @@ Invariants, for every household and parameter value drawn:
    one has a Marriage Allowance, and income tax is what it is at current law
    when no one claims the allowance.
 3. With any statutory rate and the CPS parameters at their defaults, no one
-   in the higher or additional band meets the income conditions or has the
-   allowance, and no one has more than the statutory share of the personal
-   allowance, rounded up to the next £10.
+   liable above the basic rates (above the Scottish intermediate rate for a
+   Scottish taxpayer) meets the income conditions or has the allowance,
+   everyone else meets the conditions, and no one has more than the statutory
+   share of the personal allowance, rounded up to the next £10.
 4. The allowance never falls when the statutory rate rises.
 5. Switched on by its own parameters, the reform behaves as it did before
    this change (regression values computed before the fix).
@@ -69,6 +70,12 @@ DEFAULT_CPS_RATE = 0.1
 # (marriage_allowance/rounding_increment.yaml).
 PERSONAL_ALLOWANCE = 12_570
 ROUNDING_INCREMENT = 10
+# 2025-26 taxable income above which non-savings income is charged above the
+# rates that allow the allowance: the basic rate limit (ITA 2007 s. 10), and
+# for a Scottish taxpayer the start of the Scottish higher rate, £43,662 of
+# income less the personal allowance (Scottish Rate Resolution 2025).
+BASIC_RATE_LIMIT = 37_700
+SCOTTISH_HIGHER_RATE_START = 31_092
 REFORM_VARIABLE = "meets_expanded_ma_conditions"  # Only the reform adds it.
 
 
@@ -281,8 +288,8 @@ def test_the_reform_switches_on_from_its_own_parameters_only(
 # parameters, reused: each example writes its own inputs.
 
 COUPLES = 20
-# Every fourth couple lives in Scotland, whose starter and intermediate bands
-# are eligible bands.
+# Every fourth couple lives in Scotland, whose starter and intermediate rates
+# allow the allowance (ITA 2007 s. 55B(2)(b)).
 REGIONS = ["SCOTLAND", "LONDON", "NORTH_EAST", "WALES"]
 
 
@@ -368,7 +375,6 @@ def run(simulation, drawn, anyone_claims=True):
     simulation.set_input("is_married", YEAR, married)
     simulation.set_input("would_claim_marriage_allowance", YEAR, claims)
     simulation.reset_calculations()
-    p = simulation.tax_benefit_system.parameters(YEAR)
     return dict(
         allowance=simulation.calculate("marriage_allowance", YEAR),
         meets_income_conditions=simulation.calculate(
@@ -376,8 +382,15 @@ def run(simulation, drawn, anyone_claims=True):
         ),
         # Simulation.calculate returns an enum's names.
         band=np.asarray(simulation.calculate("tax_band", YEAR), dtype=str),
-        eligible_bands=p.gov.hmrc.income_tax.allowances.marriage_allowance.eligible_bands,
         income_tax=simulation.calculate("income_tax", YEAR),
+        # The earners have only employment income, so all their taxable
+        # income is non-savings income.
+        taxable=np.maximum(
+            simulation.calculate("employment_income", YEAR)
+            - simulation.calculate("personal_allowance", YEAR),
+            0,
+        ),
+        scottish=simulation.calculate("pays_scottish_income_tax", YEAR),
     )
 
 
@@ -408,11 +421,14 @@ def test_any_statutory_rate_keeps_the_statutory_conditions_and_cap(
     simulation = simulation_for((STATUTORY_RATE, rate_permille / 1_000))
     assert REFORM_VARIABLE not in simulation.tax_benefit_system.variables
     r = run(simulation, drawn)
-    outside = ~np.isin(r["band"], r["eligible_bands"])
-    higher = np.isin(r["band"], ["HIGHER", "ADDITIONAL"])
-    assert outside[higher].all()
-    assert not r["meets_income_conditions"][outside].any()
-    assert (r["allowance"][outside] == 0).all()
+    # Liable above those rates on any of their income, however little (ITA
+    # 2007 s. 55B(2)(b)). Income at the limit bears the lower rate (s. 10(2)).
+    limit = np.where(r["scottish"], SCOTTISH_HIGHER_RATE_START, BASIC_RATE_LIMIT)
+    above = r["taxable"] > limit
+    assert np.isin(r["band"], ["HIGHER", "ADDITIONAL"])[above].all()
+    assert not r["meets_income_conditions"][above].any()
+    assert r["meets_income_conditions"][~above].all()
+    assert (r["allowance"][above] == 0).all()
     assert (r["allowance"] >= 0).all()
     assert (r["allowance"] <= statutory_cap(rate_permille)).all()
 

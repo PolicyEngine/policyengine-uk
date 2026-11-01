@@ -1,4 +1,5 @@
-"""Property tests for a Scottish taxpayer's tax_band (#2350).
+"""Property tests for a Scottish taxpayer's tax_band and the Marriage
+Allowance income conditions (#2350).
 
 tax_band is the highest band in which a person has taxable income. For a
 Scottish taxpayer the liability charges income other than savings and
@@ -19,9 +20,17 @@ a band's rate, and for every single Scottish taxpayer:
 - the Marriage Allowance income conditions hold exactly when the person pays
   nothing at the higher or additional rates (s. 55B(2)(b)).
 
-Under the law in force the nil rates charge some income at 0% where it sits,
-so the band can rest on that income alone, but no one pays tax at the higher
-or additional rates above their band.
+With baseline nil rates restored, the model keeps nil-rate income in its
+underlying band, and no one pays tax at the higher or additional rates above
+their band.
+
+The Marriage Allowance income conditions do not read the band. With the nil
+rates in force, under the law in force or with its rate limits and nil-rate
+amounts changed, for every single person in Scotland or England they hold
+exactly when the liability charges no income at a rate s. 55B(2)(b) forbids
+and, with the dividend allowance removed (s. 55B(2)(ba)), none at the
+dividend upper or additional rate. So savings at the savings nil rate or the
+starting rate for savings never stop the allowance.
 
 Before #2350 the band compared all taxable income with the Scottish limits.
 Against that formula, which ran from 2019-20, the band never rises, except
@@ -46,15 +55,16 @@ pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 # five (2018-19 to 2023-24) and six rates (from 2024-25).
 YEARS = list(range(2017, 2027))
 PEOPLE = 16
-# Raising a band's rates by 100 percentage points raises the tax by the income
-# charged at them. Taxable income comes in whole pounds (the tapered personal
-# allowance is rounded up to a pound), so SOME separates any income in a band
-# from float32 rounding.
+# Raising a band's rates by 100 percentage points measures the income the
+# model taxes at those rates. These inputs use whole pounds, and the model
+# rounds the tapered personal allowance up to a pound. SOME allows for float32
+# rounding.
 RISE = 1.0
 SOME = 0.25
 BANDS = ["NONE", "STARTER", "BASIC", "INTERMEDIATE", "HIGHER", "ADDITIONAL"]
 RANK = {band: rank for rank, band in enumerate(BANDS)}
 SCOTTISH = "gov.hmrc.income_tax.rates.scotland.rates[{}].rate"
+UK = "gov.hmrc.income_tax.rates.uk[{}].rate"
 SAVINGS = "gov.hmrc.income_tax.rates.savings.{}"
 DIVIDENDS = "gov.hmrc.income_tax.rates.dividends[{}].rate"
 # The rates charged in each band: the Scottish rates on non-savings income,
@@ -181,21 +191,21 @@ def liability(sim, period):
     return sum(sim.calculate(v, period).astype(float) for v in LIABILITY)
 
 
-def charged(sim, period, bands):
-    """The income charged at each band's rates: the rise in tax when only
-    that band's rates rise by RISE, divided by RISE."""
+def charged_at(sim, period, paths):
+    """The income charged at the rates at these paths: the rise in tax when
+    only those rates rise by RISE, divided by RISE."""
     parameters = sim.tax_benefit_system.parameters
     before = liability(sim, period)
-    income_at = {}
-    for band in bands:
-        rates = {
-            path: parameters.get_child(path)(str(period)) for path in BAND_RATES[band]
-        }
-        # A rate with no value that year (a Scottish rate not yet set) stays so.
-        raised = {path: rate + RISE for path, rate in rates.items() if rate is not None}
-        with law(sim, period, raised):
-            income_at[band] = (liability(sim, period) - before) / RISE
-    return income_at
+    rates = {path: parameters.get_child(path)(str(period)) for path in paths}
+    # A rate with no value that year (a Scottish rate not yet set) stays so.
+    raised = {path: rate + RISE for path, rate in rates.items() if rate is not None}
+    with law(sim, period, raised):
+        return (liability(sim, period) - before) / RISE
+
+
+def charged(sim, period, bands):
+    """The income charged at each band's rates."""
+    return {band: charged_at(sim, period, BAND_RATES[band]) for band in bands}
 
 
 def band_of(sim, period):
@@ -303,3 +313,100 @@ def test_savings_allowance_does_not_read_the_band():
         np.testing.assert_array_equal(
             sim.calculate("savings_allowance", 2025), allowance
         )
+
+
+# The Marriage Allowance income conditions against the liability, with the nil
+# rates in force: people alternate between Scotland and England, from 2016-17,
+# the first year of the savings and dividend nil rates.
+MA_YEARS = list(range(2016, 2027))
+MA_COUNTRIES = ["SCOTLAND", "ENGLAND"]
+# The rates s. 55B(2)(b) forbids, other than the dividend rates: the Scottish
+# higher, advanced and top rates, the higher and additional rates, and the
+# savings higher and additional rates. Each person pays at most one of the
+# Scottish and rest-of-UK schedules on non-savings income.
+FORBIDDEN = (
+    [SCOTTISH.format(i) for i in (3, 4, 5)]
+    + [UK.format(i) for i in (1, 2, 3)]
+    + [SAVINGS.format("higher"), SAVINGS.format("additional")]
+)
+DIVIDEND_UPPER = [DIVIDENDS.format(i) for i in (1, 2, 3)]
+DIVIDEND_ALLOWANCE = "gov.hmrc.income_tax.allowances.dividend_allowance"
+# Rate limits and nil-rate amounts a reform might change, each drawn or left
+# at the law in force.
+LIMITS = {
+    "gov.hmrc.income_tax.rates.scotland.rates[3].threshold": st.integers(
+        20_000, 50_000
+    ),
+    "gov.hmrc.income_tax.rates.uk[1].threshold": st.integers(25_000, 50_000),
+    "gov.hmrc.income_tax.rates.dividends[1].threshold": st.integers(25_000, 50_000),
+    "gov.hmrc.income_tax.rates.savings_starter_rate.allowance": st.integers(
+        0, 60_000
+    ),
+    "gov.hmrc.income_tax.allowances.personal_savings_allowance.basic": st.integers(
+        0, 10_000
+    ),
+    "gov.hmrc.income_tax.allowances.personal_savings_allowance.higher": st.integers(
+        0, 10_000
+    ),
+    DIVIDEND_ALLOWANCE: st.integers(0, 10_000),
+}
+limits = st.fixed_dictionaries({}, optional=LIMITS)
+
+# The Scottish witness from the #2350 review: pay that leaves 37,700 of
+# taxable income and 1 of interest, under a Scottish higher rate moved to
+# 37,702. Then, in England, 500 of interest above 37,500 of taxable pay, all
+# covered by the higher-rate Personal Savings Allowance, and pay at the basic
+# rate limit.
+NIL_RATE = [(0, 0, 0, 0, 0)] * PEOPLE
+NIL_RATE[0] = (50_270, 0, 1, 0, 0)
+NIL_RATE[1] = (50_070, 0, 500, 0, 0)
+NIL_RATE[3] = (50_270, 0, 0, 0, 0)
+WITNESS_LIMITS = {"gov.hmrc.income_tax.rates.scotland.rates[3].threshold": 37_702}
+
+
+@pytest.fixture(scope="module")
+def mixed_sim():
+    situation = {
+        "people": {f"person_{i}": {"age": {MA_YEARS[0]: 40}} for i in range(PEOPLE)},
+        "benunits": {
+            f"benunit_{i}": {"members": [f"person_{i}"]} for i in range(PEOPLE)
+        },
+        "households": {
+            f"household_{i}": {
+                "members": [f"person_{i}"],
+                "country": {
+                    year: MA_COUNTRIES[i % len(MA_COUNTRIES)] for year in MA_YEARS
+                },
+            }
+            for i in range(PEOPLE)
+        },
+    }
+    return Simulation(situation=situation)
+
+
+@SETTINGS
+@given(people, st.sampled_from(MA_YEARS), limits)
+@example(NIL_RATE, 2025, WITNESS_LIMITS)
+@example(NIL_RATE, 2025, {})
+def test_nil_rates_never_stop_the_marriage_allowance(mixed_sim, drawn, period, changes):
+    sim = mixed_sim
+    set_people(sim, drawn, period)
+    parameters = sim.tax_benefit_system.parameters
+    # A limit with no value that year (a Scottish rate not yet set) stays so.
+    changes = {
+        path: value
+        for path, value in changes.items()
+        if parameters.get_child(path)(str(period)) is not None
+    }
+    with law(sim, period, changes):
+        meets = np.asarray(
+            sim.calculate("meets_marriage_allowance_income_conditions", period)
+        )
+        forbidden = charged_at(sim, period, FORBIDDEN)
+        with law(sim, period, {DIVIDEND_ALLOWANCE: 0}):
+            dividends_above_basic = charged_at(sim, period, DIVIDEND_UPPER)
+    np.testing.assert_array_equal(
+        meets,
+        (forbidden < SOME) & (dividends_above_basic < SOME),
+        err_msg=f"{drawn} in {period} with {changes}",
+    )

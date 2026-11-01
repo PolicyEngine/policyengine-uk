@@ -371,11 +371,11 @@ def test_zero_gift_preserves_baseline_outputs_bit_for_bit():
         "HIGHER",
         "ADDITIONAL",
         "HIGHER",
-        # The allowance takes all 10,000 of property income, so nothing is
-        # charged at a Scottish rate (ITA 2007 s. 11A). The 27,430 of
-        # savings and dividends left sit below the 37,700 basic rate limit
-        # (ss. 11D(6) and 13(5)), so the band is basic, not intermediate
-        # (#2350).
+        # The model allocates the allowance to all 10,000 of property
+        # income, so no income bears a Scottish rate (ITA 2007 s. 11A). The
+        # remaining 27,430 of savings and dividends falls below the 37,700
+        # UK basic rate limit (ss. 11D(6) and 13(5)), so the band is basic,
+        # not intermediate (#2350).
         "BASIC",
         "ADDITIONAL",
     ]

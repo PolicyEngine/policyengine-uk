@@ -35,17 +35,18 @@ def uk_tax_band_above_limits(person, period, parameters):
 def scottish_tax_band(person, period, parameters):
     """The highest band in which a Scottish taxpayer has taxable income.
 
-    The Scottish rates charge only income that is neither savings nor
-    dividend income (ITA 2007 s. 11A and the Scottish rate resolutions), so
-    that income is banded on the Scottish limits. Savings and dividends are
-    the top slice of income (s. 16) and are charged at the rates they would
-    bear if the person were not a Scottish taxpayer (ss. 11D(6) and 13(5)),
-    so where any taxable income is savings or dividends, it is banded on
-    the rest-of-UK limits at the top of all taxable income. The band is the
-    higher of the two. Income up to a limit is charged at the lower rate
-    (s. 10(2) to (3A); each resolution charges a rate "on income above" one
-    limit "and up to" the next), so income at a limit stays in the lower
-    band.
+    Use the Scottish limits for income other than savings and dividends,
+    the only income the Scottish rates charge (ITA 2007 s. 11A and the
+    Scottish rate resolutions). Treat savings and dividends as the top
+    slices of income (s. 16) and apply the rest-of-UK limits, since they
+    bear the rates they would bear outside Scotland (ss. 11D(6) and 13(5)).
+    Compare the rest-of-UK band only when taxable savings or dividends
+    remain, then return the higher band. Keep income at each upper limit in
+    the lower band: s. 10(2) to (3A) charges income "up to" a limit at the
+    lower rate, and each resolution charges a rate "on income above" one
+    limit "and up to" the next. As for every taxpayer, income charged at a
+    nil rate stays in the band where it sits; the Marriage Allowance applies
+    its own rate conditions (liable_only_at_marriage_allowance_rates).
     """
     rates = parameters(period).gov.hmrc.income_tax.rates
     gross_gift = person("gift_aid_grossed_up", period)

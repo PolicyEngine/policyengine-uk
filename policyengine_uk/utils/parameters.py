@@ -254,6 +254,15 @@ REMOVED_PARAMETERS = {
         "(the 16), or gov.dwp.ESA.exempt_work.fixed_higher_earnings_limit "
         "for dates before 11 April 2011.",
     ),
+    "gov.hmrc.income_tax.allowances.marriage_allowance.eligible_bands": RemovedParameter(
+        "removed Marriage Allowance eligible tax bands",
+        "The Marriage Allowance income conditions no longer read tax_band. "
+        "They apply the rate conditions of ITA 2007 s. 55B(2)(b) and (ba) to "
+        "the person's income directly, so they follow the rate limits: change "
+        "gov.hmrc.income_tax.rates.uk[1].threshold (the basic rate limit) or "
+        "gov.hmrc.income_tax.rates.scotland.rates[3].threshold (the start of "
+        "the Scottish higher rate).",
+    ),
 }
 
 
