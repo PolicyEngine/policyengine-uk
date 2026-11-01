@@ -1,0 +1,82 @@
+# UC Regs 2013 reg 2: "attendance allowance" means (a) an attendance allowance
+# under SSCBA 1992 s.64; (b) an increase of disablement pension under s.104 or
+# 105; (d) a Personal Injuries (Civilians) Scheme 1983 payment or an analogous
+# payment; (e) an attendance addition to a war disablement pension; and (f)
+# armed forces independence payment. Head (c) is omitted. Receipt of any
+# amount counts, so the AFIP amounts below are illustrative.
+- name: Case 1, attendance allowance at the higher rate counts under head (a).
+  period: 2026
+  input:
+    aa_category: HIGHER
+  output:
+    uc_receives_attendance_allowance: true
+
+- name: Case 2, attendance allowance at the lower rate counts under head (a).
+  period: 2026
+  input:
+    aa_category: LOWER
+  output:
+    uc_receives_attendance_allowance: true
+
+- name: Case 3, armed forces independence payment counts under head (f).
+  period: 2026
+  input:
+    armed_forces_independence_payment: 9_000
+  output:
+    attendance_allowance: 0
+    uc_receives_attendance_allowance: true
+
+- name: Case 4, no attendance allowance and no armed forces independence payment.
+  period: 2026
+  input:
+    aa_category: NONE
+    armed_forces_independence_payment: 0
+  output:
+    uc_receives_attendance_allowance: false
+
+- name: Case 5, the DLA care component is not attendance allowance.
+  period: 2026
+  input:
+    dla_sc_category: HIGHER
+  output:
+    dla_sc_middle_plus: true
+    uc_receives_attendance_allowance: false
+
+- name: Case 6, the PIP daily living component is not attendance allowance.
+  period: 2026
+  input:
+    pip_dl_category: ENHANCED
+  output:
+    uc_receives_attendance_allowance: false
+
+- name: Case 7, disablement pension without a constant attendance increase is not attendance allowance.
+  period: 2026
+  input:
+    iidb_reported: 5_000
+  output:
+    uc_receives_attendance_allowance: false
+
+- name: Case 8, Armed Forces Compensation Scheme payments and a war disablement pension without an attendance addition are not attendance allowance.
+  period: 2026
+  input:
+    afcs_reported: 5_000
+  output:
+    uc_receives_attendance_allowance: false
+
+- name: Case 9, a couple where only the partner receives armed forces independence payment.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 40
+      person2:
+        age: 40
+        armed_forces_independence_payment: 9_000
+    benunits:
+      benunit:
+        members: [person1, person2]
+    households:
+      household:
+        members: [person1, person2]
+  output:
+    uc_receives_attendance_allowance: [false, true]
