@@ -15,7 +15,7 @@ We use the OBR's CPI projections to drive most benefit and consumption variables
 | Growth rate | 9.1% | 7.3% | 2.5% | 3.4% | 3.1% | 3.4% | 2.1% | 2.1% | 2.0% | 2.0% |
 
 We apply CPI to these variables:
-- All reported benefits– `carers_allowance_reported`, `child_benefit_reported`, `child_tax_credit_reported`, `esa_contrib_reported`, `esa_income_reported`, `housing_benefit_reported`, `iidb_reported`, `incapacity_benefit_reported`, `income_support_reported`, `jsa_contrib_reported`, `jsa_income_reported`, `maternity_allowance_reported`, `pension_credit_reported`, `sda_reported`, `state_pension_reported`, `universal_credit_reported`, `winter_fuel_allowance_reported`, `working_tax_credit_reported`
+- Reported benefits, apart from the reported council tax reduction under Council tax below– `carers_allowance_reported`, `child_benefit_reported`, `child_tax_credit_reported`, `esa_contrib_reported`, `esa_income_reported`, `housing_benefit_reported`, `iidb_reported`, `incapacity_benefit_reported`, `income_support_reported`, `jsa_contrib_reported`, `jsa_income_reported`, `maternity_allowance_reported`, `pension_credit_reported`, `sda_reported`, `state_pension_reported`, `universal_credit_reported`, `winter_fuel_allowance_reported`, `working_tax_credit_reported`
 - All consumption categories EXCEPT energy– `alcohol_and_tobacco_consumption`, `clothing_and_footwear_consumption`, `communication_consumption`, `education_consumption`, `food_and_non_alcoholic_beverages_consumption`, `health_consumption`, `household_furnishings_consumption`, `housing_water_and_electricity_consumption`, `miscellaneous_consumption`, `recreation_consumption`, `restaurants_and_hotels_consumption`, `transport_consumption`
 
 `domestic_energy_consumption`, `electricity_consumption` and `gas_consumption` are deliberately excluded. The data build calibrates them to NEED mean kWh and converts to pounds at Ofgem Q2 2026 unit rates, so the stored values already carry FY26/27 price levels; uprating them from the dataset's data year would re-apply price changes that are already included. See PolicyEngine/policyengine-uk#1867. A dataset that declares its energy price year instead projects them with household electricity and gas price indices (`gov.economic_assumptions.energy_prices`): ONS CPI prices to the latest outturn, then the OBR's utilities inflation forecast, holding VAT on electricity at 5% so the VAT formulas apply any change in the rate. See the economic assumptions README. `liquid_fuel_consumption` and `solid_fuel_consumption` (heating oil, LPG, coal and wood) are not covered by Ofgem's price cap, so they are CPI-uprated from the data year like other LCFS spending.
@@ -64,6 +64,8 @@ We apply the OBR's wage growth forecasts to employment-related variables.
 
 We use average earnings for these variables: `defined_benefit_pension_input_amount`, `employee_pension_contributions`, `employer_pension_contributions`, `employment_income`, `employment_income_before_lsr`, `pension_contributions_via_bonus_sacrifice`, `pension_contributions_via_salary_sacrifice`, `pension_contributions_via_salary_sacrifice_pre_2015`, `personal_pension_contributions`, `student_loan_repayments`
 
+The map leaves out `employee_pension_contributions_reported`, so we hold a stored value flat to 2030 and grow it with average earnings from 2031.
+
 ### Newly assigned student loan plans
 
 Dataset projection holds ages fixed, so a person of a given age represents a
@@ -82,10 +84,11 @@ later intakes are added only in England: Plan 5 is the only plan that did not
 exist in the base year, while the other nations' plans for those intakes are
 already in the data. Plan 1 loans first paid before September 2006 (the 2005
 and earlier intakes) are written off at 65, later ones about 29 years after
-the course started. Take-up remains a fixed 40%
-probability with a draw keyed on person ID. This funding-nation routing
-applies to newly assigned loans; the existing-holder relabelling and
-write-off approximations are unchanged.
+the course started. Take-up stays at a fixed 40%
+probability with a draw keyed on person ID. These routes and the write-off
+ages decide only which new loans we assign. Existing holders keep their
+recorded plan and repayment, because the data hold no course or repayment
+dates that could establish a new plan or a cancellation.
 
 ## Lagged average earnings
 
@@ -136,7 +139,7 @@ We project each country's council tax receipts, net of council tax reduction, wi
 | Scotland | 6.4% | 2.4% | 3.9% | 3.9% | 3.9% | 3.9% | 3.9% | 3.9% | 3.9% |
 | Wales | 7.1% | 9.9% | 7.7% | 7.4% | 7.4% | 7.4% | 7.4% | 7.4% | 7.4% |
 
-Receipts are the Band D level times the tax base, the number of Band D equivalent dwellings, so they grow with the number of homes as well as with bills. Household weights grow with population, so each household's `council_tax` grows by its country's receipts growth divided by population growth: (1 + receipts growth) / (1 + population growth) − 1. Each country's weighted total then grows with its receipts. Northern Ireland has no council tax (it has domestic rates), so any `council_tax` a dataset gives its households is held flat.
+Receipts are the Band D level times the tax base, the number of Band D equivalent dwellings, so they grow with the number of homes as well as with bills. Household weights grow with population, so each household's `council_tax` grows by its country's receipts growth divided by population growth: (1 + receipts growth) / (1 + population growth) − 1. Each country's weighted total then grows with its receipts. Northern Ireland has no council tax (it has domestic rates), so any `council_tax` a dataset gives its households is held flat. A person's `council_tax_benefit_reported` grows by the same factor as their household's `council_tax`, so a reported reduction keeps its share of the bill.
 
 ## Domestic rates
 
@@ -167,7 +170,7 @@ We apply this to: `additional_residential_property_purchased`, `main_residence_v
 
 ## Mortgage interest
 
-We use the OBR's mortgage interest rate index growth rates.
+We use the OBR's mortgage interest rate index growth rates. The OBR's October 2026 EFO stops forecasting mortgage interest payments after 2029, so for 2030 we use its November 2025 forecast, and we hold that rate in later years.
 
 | Year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 |
 |-------------|------|------|------|------|------|------|------|------|------|------|
