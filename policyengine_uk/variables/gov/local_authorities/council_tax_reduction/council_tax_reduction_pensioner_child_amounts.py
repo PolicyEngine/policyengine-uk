@@ -19,8 +19,8 @@ class council_tax_reduction_pensioner_child_amounts(Variable):
         "with more than two on 31 March 2018. Where the household head "
         "applies alone (council_tax_reduction_head_applies_alone), we assume "
         "the head has no children in their family, because we cannot "
-        "identify their relationships. Nil for working-age families: we do "
-        "not model their child amounts here."
+        "identify their relationships. We give working-age families nil, "
+        "because we do not model their child amounts here."
     )
     definition_period = YEAR
     unit = GBP
@@ -55,11 +55,12 @@ class council_tax_reduction_pensioner_child_amounts(Variable):
             # an award of Child Tax Credit includes where that gives more.
             # Every child or young person has the same amount, so the
             # greatest total is the greatest count.
-            # Para 6(1B)(a) needs an award of Child Tax Credit "whether or
-            # not any amount is payable", and HMRC may award it at a nil rate
-            # (TCA 2002 s.14(3)). A positive final child_tax_credit, worked
-            # out or entered, is an award; so are the claim and eligibility
-            # read from reports, whatever amount is payable.
+            # Councils apply para 6(1B)(a) where the applicant has an award
+            # of Child Tax Credit "whether or not any amount is payable", and
+            # HMRC may award it at a nil rate (TCA 2002 s.14(3)). We count a
+            # positive final child_tax_credit, worked out or entered, as an
+            # award, and also the claim and eligibility read from reports,
+            # whatever amount is payable.
             child_tax_credit_award = (benunit("child_tax_credit", period) > 0) | (
                 benunit("would_claim_CTC", period) & benunit("is_CTC_eligible", period)
             )

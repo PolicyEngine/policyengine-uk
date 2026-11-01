@@ -7,19 +7,19 @@ class council_tax_reduction_pensioner_tariff_income(Variable):
     entity = BenUnit
     label = "Council Tax Reduction pensioner tariff income from capital"
     documentation = (
-        "Weekly income that councils' pensioner Council Tax Reduction schemes "
-        "treat capital as yielding, annualised: £1 for each £500, or part of "
-        "£500, of council_tax_reduction_assessable_capital above £10,000. The "
+        "Weekly income that councils treat a pensioner's capital as "
+        "yielding, annualised: £1 for each £500, or part of £500, of "
+        "council_tax_reduction_assessable_capital above £10,000. The "
         "Secretary of State and the Welsh Ministers count the excess up to "
-        "£16,000; the Scottish Ministers set no ceiling, though capital over "
-        "£16,000 ends entitlement in every nation. We use the pension-age "
-        "Housing Benefit tariff amounts, which all three nations share. Nil "
-        "where Pension Credit sets the means test: councils disregard the "
-        "whole of a guarantee credit recipient's capital, and on a "
-        "savings-credit-only award they use the Secretary of State's "
+        "£16,000; the Scottish Ministers set no ceiling, though in every "
+        "nation nobody with capital over £16,000 gets a reduction. We use "
+        "the pension-age Housing Benefit tariff amounts, which all three "
+        "nations share. We give nil on the Pension Credit routes: councils "
+        "disregard the whole of a guarantee credit recipient's capital, and "
+        "on a savings-credit-only award they use the Secretary of State's "
         "assessment of income, which already includes Pension Credit's "
-        "deemed income from capital. Nil for working-age families: we do not "
-        "model their tariff income here."
+        "deemed income from capital. We also give working-age families nil, "
+        "because we do not model their tariff income here."
     )
     definition_period = YEAR
     unit = GBP
@@ -44,8 +44,9 @@ class council_tax_reduction_pensioner_tariff_income(Variable):
         country = benunit.household("country", period)
         capital = benunit("council_tax_reduction_assessable_capital", period)
         # SI 2012/2885 Sch 1 para 37 and WSI 2013/3029 Sch 1 para 31 count
-        # the excess "not exceeding £16,000", the capital limit. SSI 2012/319
-        # reg 27(2) sets no ceiling; reg 40 ends entitlement above £16,000.
+        # the excess "not exceeding £16,000", the capital limit. The Scottish
+        # Ministers set no ceiling in SSI 2012/319 reg 27(2); under reg 40
+        # nobody with capital above £16,000 gets a reduction.
         counted_capital = select(
             [
                 country == Country.ENGLAND,
