@@ -274,24 +274,29 @@ The importer, `policyengine_uk/utils/import_obr_forecasts.py`, writes the
 six series from `CLEARANCE_SERIES_SPECS` in the same run as the other
 receipts series (see the steps for a new EFO in the economic assumptions
 README), and reads `ons.population` from the `yoy_growth.yaml` it rewrites.
-It reads every unit the OBR states in a clearance table against a closed
-list: sticks, kg, and litres or hectolitres of alcohol or of product, each
-after an optional number and a scale such as "'000s", "thousands of" or
-"million". It compares units by measure and size, so "'000s kg" and
-"thousand kg" agree. It reads a unit as a line's when the OBR states it in
-the line's own label, in the label of the total the line breaks down, in
-another line's label that names the line's product, or in a note that names
-the line's product or no product, and ignores a note that names only other
-products. It stops before writing anything when:
+It interprets no words in the clearance tables. `CLEARANCE_TABLE_TEXTS`
+lists each text, other than titles, numbers and fiscal years, in Tables 3.11
+and 3.12 of the March 2025 and March 2026 EFOs and Tables 4.11 and 4.12 of
+October 2026, from each title down to the next table's title: the line
+labels, the "Outturn" and "Forecast" markers, the "of which:" row, Table
+4.12's note "All clearances are in thousands of hectolitres of alcohol" and
+its footnotes. On Table 4.12's sheet the OBR follows the alcohol clearances
+with the alcohol receipts forecasts. The importer ends the clearance table
+at their title (`CLEARANCE_TABLE_ENDS`), so its check leaves out the
+receipts table's "£ billion" cell and note. The importer checks every cell
+of each clearance table it reads, in every column, skips numbers and fiscal
+years, and stops before writing anything when:
 
-- the OBR states another unit or scale for a line;
-- the OBR states two units in one note, and the importer cannot tie each to
-  the products named in its own clause;
-- the OBR uses a word for a quantity or scale outside the list, such as
-  "tonnes", in a note or in a cell the importer reads as a line's;
-- the OBR states a line's unit in none of its label, its total's label and a
-  note beginning "Note:" that names its product or no product;
+- a cell holds any other text, such as a note that states another unit or
+  scale, a line for another product or a unit column's heading;
+- the table lacks the cell that states a line's unit: the cigarette label's
+  "(million sticks)", the non-cigarette total's "('000s kg)" for hand-rolled
+  and other tobacco, or Table 4.12's note for alcohol;
 - the OBR puts any cell beside a line's label and values.
+
+The importer names the table and each unread cell. Whoever runs it reads
+the text, converts the table's figures to the listed units if it states
+another, and adds the text to the list.
 
 ### Budget measures and reforms
 

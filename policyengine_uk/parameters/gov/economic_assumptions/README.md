@@ -511,17 +511,23 @@ the forecast levels, though not their growth.
    The same run also refreshes the six alcohol and tobacco clearance series
    under `per_capita` from the new EFO's tobacco clearances and alcohol
    clearance forecasts, and the previous EFO's for the outturn year's base.
-   The importer finds each line's unit in both EFOs where the OBR states
-   it: in the line's own label, in the label of the total the line breaks
-   down, or in a note. It takes million sticks for cigarettes, thousand
-   kilograms for the other tobacco lines, and thousand hectolitres of
-   alcohol for alcohol. It stops before writing on any other unit, and on
-   any cell beside a line's label and values, such as a unit column. It
-   does not read the lines' footnotes, so check that each alcohol line
-   covers the same products in both EFOs: in March 2026 the OBR added
-   "Includes other fermented products" to the wine line. The importer
-   divides each year's growth by `ons.population` as `yoy_growth.yaml`
-   holds it, so rerun it whenever that series changes. Until then the six
+   The importer interprets no words in these tables. It checks every cell
+   of both EFOs' tables, but numbers and fiscal years, against the texts
+   someone has read (`CLEARANCE_TABLE_TEXTS`). It also needs the cell that
+   states each line's unit: million sticks in the cigarette label,
+   thousand kilograms in the non-cigarette total's label and thousand
+   hectolitres of alcohol in Table 4.12's note. It stops before writing on
+   any other text and names the table and the cell. Read that text, convert
+   the table's figures to these units if it states another, and add the
+   text to the list. The importer also stops on any cell beside a line's
+   label and values. The list holds each EFO's footnotes as the OBR wrote
+   them, and the importer does not compare the products one EFO's line
+   covers with another's. Check that each alcohol line covers the same
+   products in both EFOs: in March 2026 the OBR added "Includes other
+   fermented products" to the wine line. The importer writes
+   `(1 + aggregate clearance growth) / (1 + ons.population growth) - 1`,
+   using the population in `yoy_growth.yaml`, so rerun it whenever that
+   series changes. Until then the six
    clearance series and the seven gambling bases keep the values written
    for the old population, and the byte-for-byte test fails. Then update
    the published levels in
