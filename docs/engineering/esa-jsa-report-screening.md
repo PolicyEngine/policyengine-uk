@@ -15,8 +15,9 @@ raise the total; failure of the couple's own screen cannot erase another eligibl
 person's separate award. These examples presume separate preassessed claims.
 
 The Secretary of State appointed 1 July 2026 for the abolition of income-related
-ESA to reach every remaining award in Great Britain, and the Department appointed
-1 October 2026 in Northern Ireland (SI 2025/1148 art. 3A; SR 2025/176 art. 3A).
+ESA to reach every remaining award in Great Britain, and the Department for
+Communities appointed 1 October 2026 in Northern Ireland (SI 2025/1148 art. 3A;
+SR 2025/176 art. 3A).
 An award already due to end at the end of a two-week run-on ends on that
 schedule instead: with a migration notice deadline of 22 June 2026 and no claim,
 SI 2014/1230 reg 46(1)(a) ends the award on 5 July. The model has no deadline or

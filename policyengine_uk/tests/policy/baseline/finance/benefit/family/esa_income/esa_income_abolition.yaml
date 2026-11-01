@@ -1,16 +1,17 @@
 # The Secretary of State appointed 1 July 2026 for the abolition of
 # income-related ESA (Welfare Reform Act 2012 s.33(1)(b)) to reach every
 # remaining old style ESA award in Great Britain (SI 2025/1148 art. 3A(1),
-# inserted by SI 2026/409). The Department appointed 1 October 2026 in
-# Northern Ireland (Welfare Reform (NI) Order 2015 art. 39(1)(b); SR 2025/176
-# art. 3A(1), inserted by SR 2026/115).
+# inserted by SI 2026/409). The Department for Communities appointed 1
+# October 2026 in Northern Ireland (Welfare Reform (NI) Order 2015 art.
+# 39(1)(b); SR 2025/176 art. 3A(1), inserted by SR 2026/115).
 #
 # Each model year is the fiscal year from 6 April to 5 April; 2026-27 has 365
 # days. A Great Britain award is payable for the 86 days from 6 April to 30
 # June 2026 (25 + 31 + 30) and a Northern Ireland award for the 178 days from
-# 6 April to 30 September 2026 (25 + 31 + 30 + 31 + 31 + 30). So 2026-27 pays
-# the annual award times 86/365 = 0.235616 or 178/365 = 0.487671, and
-# 2027-28 pays nothing. Art. 3A(1)(b) leaves an award already due to end at
+# 6 April to 30 September 2026 (25 + 31 + 30 + 31 + 31 + 30). So in 2026-27
+# the model pays the annual award times 86/365 = 0.235616 or 178/365 =
+# 0.487671, and it pays no unsaved income-related ESA from 2027-28. Art.
+# 3A(1)(b) leaves an award already due to end at
 # the end of a two-week run-on to that schedule; the annual model pays every
 # award to the general date.
 #
@@ -535,7 +536,8 @@
         members: [claimant, partner]
         region: LONDON
   output:
-    # The couple's award is one award, so both members share its share.
+    # The claimant and partner share an award, so the model applies the
+    # reporting member's saving to the whole claim.
     esa_income_payable_share: [1, 1]
     esa_income_abolition_reached: false
     legacy_benefits_closed: false
@@ -879,8 +881,8 @@
         members: [claimant, partner]
         region: LONDON
   output:
-    # A couple's award is one award: the saving keeps it, the partner's
-    # report included.
+    # The claimant and partner share an award, so the model applies the
+    # claimant's saving to the whole claim, the partner's report included.
     esa_income_payable_share: [1, 1]
     esa_income_report_closed: [false, false]
     esa_income_abolition_reached: false

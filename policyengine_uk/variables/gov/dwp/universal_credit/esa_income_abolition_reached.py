@@ -14,7 +14,8 @@ class esa_income_abolition_reached(Variable):
         "for less than the whole year (esa_income_payable_share below 1), "
         "from 2026-27. The Secretary of State appointed 1 July 2026 for the "
         "abolition to reach every remaining award (SI 2025/1148 art. 3A), and "
-        "the Department appointed 1 October 2026 in Northern Ireland (SR "
+        "the Department for Communities appointed 1 October 2026 in Northern "
+        "Ireland (SR "
         "2025/176 art. 3A). DWP sent migration notices to 879,000 households "
         "on income-related ESA by December 2025, most of which had claimed "
         "Universal Credit (LA Welfare Direct 6/2026, paras 51 to 54). So a "
@@ -26,10 +27,13 @@ class esa_income_abolition_reached(Variable):
         "(esa_income_appointee_saving). As for the other working-age "
         "closures, DWP doesn't move a family on Pension Credit, or a single "
         "claimant, or joint claimants both, over the qualifying age for State "
-        "Pension Credit (SI 2014/1230 reg 8(2B)). This reads reports, the "
-        "household's country and the "
-        "saving, never an award. Reports by other benefit-unit members, who "
-        "claim in their own right, do not count."
+        "Pension Credit (SI 2014/1230 reg 8(2B)). This reads the claimant's "
+        "and partner's income-related ESA and Pension Credit reports, the "
+        "household's country, the saving, the Pension Credit age conditions "
+        "(meets_pension_credit_age_conditions) "
+        "and mixed-age couple status (is_mixed_age_couple), never a "
+        "calculated award. Reports by other benefit-unit members, who claim "
+        "in their own right, do not count."
     )
     definition_period = YEAR
     reference = (

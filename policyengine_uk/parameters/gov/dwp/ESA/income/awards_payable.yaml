@@ -2,8 +2,8 @@ description: >-
   Whether old style income-related Employment and Support Allowance awards are
   still payable (1) or abolished (0). The Secretary of State appointed 1 July
   2026 for the Welfare Reform Act 2012 abolition of income-related ESA to
-  reach every remaining award in Great Britain, and the Department appointed
-  1 October 2026 in Northern Ireland. Two kinds of award escape that date: one
+  reach every remaining award in Great Britain, and the Department for
+  Communities appointed 1 October 2026 in Northern Ireland. Two kinds of award escape that date: one
   saved for an appointee (esa_income_appointee_saving), and one already due to
   end at the end of a two-week run-on, which ends on that schedule instead. A
   claimant with a migration notice deadline of 22 June 2026 who makes no

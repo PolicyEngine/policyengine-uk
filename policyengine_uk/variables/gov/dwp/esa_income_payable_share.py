@@ -11,17 +11,18 @@ class esa_income_payable_share(Variable):
         "one claim; any other member claims in their own right. The Secretary "
         "of State appointed 1 July 2026 for the abolition of income-related "
         "ESA (Welfare Reform Act 2012 s.33(1)(b)) to reach every remaining "
-        "award (SI 2025/1148 art. 3A(1)), and the Department appointed 1 "
-        "October 2026 in Northern Ireland (SR 2025/176 art. 3A(1)). So this is "
-        "the share of the fiscal year before the household's date "
-        "(gov.dwp.ESA.income.awards_payable): 1 up to 2025-26; in 2026-27, 86 "
+        "award (SI 2025/1148 art. 3A(1)), and the Department for Communities "
+        "appointed 1 October 2026 in Northern Ireland (SR 2025/176 art. "
+        "3A(1)). The model uses the share of the fiscal year before the "
+        "household's appointed date (gov.dwp.ESA.income.awards_payable): 1 "
+        "up to 2025-26; in 2026-27, 86 "
         "of 365 days in Great Britain and 178 of 365 in Northern Ireland; and "
         "0 from 2027-28. Art. 3A(1)(b) leaves an award already due to end at "
         "the end of a two-week run-on period (art. 1(2)) to that schedule: "
         "with a migration notice deadline of 22 June 2026 and no claim, SI "
         "2014/1230 reg 46(1)(a) ends the award on 5 July, after the general "
-        "date. This annual share does not track deadlines or claim dates, so "
-        "it pays every award to the general date. A claim saved for an "
+        "date. The annual model does not track deadlines or claim dates and "
+        "pays unsaved awards to the general date. A claim saved for an "
         "appointee has a share of 1 in "
         "every year: a saving for either member who reports a couple's award "
         "keeps the whole claim (esa_income_appointee_saving), and a saving for "
@@ -51,8 +52,9 @@ class esa_income_payable_share(Variable):
             payable.great_britain,
         )
         # Art. 3A(2) saves an award for an appointee in every year. The
-        # claimant and partner share one award, which a saving for either of
-        # them who reports it keeps; another member's award is their own.
+        # claimant and partner share an award, so the model applies a
+        # reporting member's saving to the whole claim; another member's
+        # award is their own.
         reports_saved = (person("esa_income_reported", period) > 0) & person(
             "esa_income_appointee_saving", period
         )

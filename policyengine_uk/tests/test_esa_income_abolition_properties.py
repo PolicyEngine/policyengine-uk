@@ -18,9 +18,9 @@ and DWP moves the family off its legacy benefits (legacy_benefits_closed).
 Each generated population runs in one simulation five times over: with the
 saving and claim flag as drawn; with every award saved; with none saved;
 with the saving of every member who reports nothing flipped; and with
-nobody claiming when moved. Saving every award pays it in full in every
-year, as the rule before the abolition did; a reform that keeps the
-parameter at 1 gives the same outputs
+nobody claiming when moved. With every award saved, the model pays it in
+full in every year, as the rule before the abolition did; a reform that
+keeps the parameter at 1 gives the same outputs
 (test_keeping_awards_payable_is_saving_every_award).
 
 Invariants, for any generated population of working-age families in
@@ -38,8 +38,8 @@ Invariants, for any generated population of working-age families in
 4. Contributory ESA never changes, whatever is saved or claimed.
 5. Before 2026-27 every output matches, whatever the saving and claim flags;
    the abolition never raises anyone's income-related ESA; and a family
-   that claims nothing and saves nothing gets exactly its jurisdiction's
-   share of the award before the abolition.
+   that claims nothing and saves nothing gets its jurisdiction's share of
+   the award before the abolition.
 6. Monotonic: turning the saving on for any members never lowers a benefit
    unit's esa_income or esa.
 7. Status: a member outside the couple is on income-related ESA only while
@@ -336,8 +336,8 @@ def independent_reading(unit, year):
     # all of it is payable; from the year none is, DWP moves the family.
     reached = couple_reported > 0 and not couple_saved and share < 1
     claims = unit["would_claim_uc"] or (reached and unit["claims_when_moved"])
-    # A claim ends the couple's reports; the abolition pays the rest for
-    # the claim's share of the year.
+    # A Universal Credit claim closes the couple's reports; the model pays
+    # other open reports for each claim's payable share.
     couple_award = 0.0
     if couple_reported > 0 and within_limit and not claims:
         couple_award = max(0.0, couple_reported - tariff) * couple_share
@@ -461,9 +461,9 @@ def test_abolition_invariants(units):
                 v["claimant_or_partner_esa_income"]
                 <= k["claimant_or_partner_esa_income"] + 1e-6
             ), year
-        # 5. With no claim and no saving, each award is the jurisdiction's
-        # share of the award before the abolition. (The no-claim copy keeps
-        # the drawn saving, so this reads families with nothing saved.)
+        # 5. With no claim and no saving, the model pays each earlier award
+        # at the jurisdiction's payable share. (The no-claim copy keeps the
+        # drawn saving, so this reads families with nothing saved.)
         expected = jurisdiction_share(units, year) * k["esa_income"]
         claims_anyway = np.array([unit["would_claim_uc"] for unit in units])
         plain = unsaved_unit & ~claims_anyway

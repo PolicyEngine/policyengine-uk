@@ -379,9 +379,10 @@ def test_each_person_is_on_their_own_award(reformed, year):
     ).gov.dwp.JSA.income.active
     assert jsa_open == (year == DATASET_YEAR)
     # The reform pays their income-related ESA in every year too, after its
-    # abolition on 1 July 2026 (SI 2025/1148 art. 3A) included. The award it
-    # holds, not the abolition's closure of their report, decides whether it
-    # is payable to them, as for the claimant and partner.
+    # abolition on 1 July 2026 (SI 2025/1148 art. 3A) included.
+    # own_report_is_paid uses the reform's held award, not the abolition's
+    # closure of their report, to determine their receipt status, as it does
+    # for the claimant and partner.
     assert not on_esa["excluded_adult_no_award_0"]
     assert on_esa["excluded_adult_no_award_1"]
     assert not on_jsa["excluded_adult_no_award_0"]

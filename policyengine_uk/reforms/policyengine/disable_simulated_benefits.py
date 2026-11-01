@@ -77,9 +77,10 @@ CLAIMANT_OR_PARTNER_ONLY = ["income_support"]
 # has the scheme open (gov.dwp.JSA.income.active: to 2025). One who reports
 # income-related ESA is on it in every year, as the reform pays it in every
 # year: the abolition closes their report (esa_income_report_closed), but
-# the held award, not the formula's, decides their status
-# (_legacy_award_payee.own_report_is_paid). Hold the family closure, each
-# separate member's own closure, and the abolition's claim.
+# _legacy_award_payee.own_report_is_paid uses the reform's held award to
+# determine their receipt status, as it does for the claimant and partner.
+# Hold the family closure, each separate member's own closure, and the
+# abolition's claim.
 NOT_MOVED = [
     "legacy_benefits_closed",
     "person_legacy_benefits_closed",
