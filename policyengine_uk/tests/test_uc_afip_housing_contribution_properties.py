@@ -16,7 +16,8 @@ non-dependant, the renter or both. Invariants:
 
 1. Raising AFIP from nil to any positive amount never lowers Universal
    Credit and never raises the housing cost contributions.
-2. A non-dependant who receives AFIP is exempt and bears no contribution.
+2. The model exempts a non-dependant who receives AFIP and charges no
+   contribution for them.
 3. Where only the non-dependant receives AFIP, the renter's housing costs
    element rises by no more than the contributions fall (under para 14(3),
    DWP reduces the element to nil and no further), and Universal Credit rises
@@ -214,12 +215,12 @@ def test_afip_never_lowers_uc_and_exempts_the_non_dependant(simulation, househol
     ).all()
 
 
-# Sch 4 para 29(5) excepts a renter under 35 who receives the DLA care
-# component at the middle or highest rate, attendance allowance or the PIP
-# daily living component. The shared accommodation rate exception list used to
-# name attendance allowance and AFIP itself; it now names
-# uc_receives_attendance_allowance, which applies the reg 2 definition. The
-# differential below checks the two lists give the same result.
+# Under Sch 4 para 29(5), DWP excepts from the shared accommodation rate a
+# renter under 35 who receives the DLA care component at the middle or highest
+# rate, attendance allowance or the PIP daily living component. The exception
+# list names uc_receives_attendance_allowance, which applies the reg 2
+# definition. The differential below checks that the list gives the same result
+# as one naming attendance allowance and AFIP directly.
 LHA_EXCEPTIONS = "gov.dwp.LHA.shared_accommodation_exception_benefits"
 PREVIOUS_LHA_EXCEPTIONS = [
     "attendance_allowance",
