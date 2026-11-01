@@ -99,9 +99,9 @@ class tax_band(Variable):
     entity = Person
     label = "Tax band of the individual"
     documentation = (
-        "The highest band in which the person has taxable income. A "
-        "Scottish taxpayer's band is the higher of the Scottish band of "
-        "their income other than savings and dividends and the rest-of-UK "
+        "The highest band in which the person has taxable income. For a "
+        "Scottish taxpayer the model takes the higher of the Scottish band "
+        "of their income other than savings and dividends and the rest-of-UK "
         "band of their savings and dividends. Savings and dividends charged "
         "at a nil rate count where they sit. ADDITIONAL covers the Scottish "
         "advanced and top rates and the dividend additional rate; HIGHER "
