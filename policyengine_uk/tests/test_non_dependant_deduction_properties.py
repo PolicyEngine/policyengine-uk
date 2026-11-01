@@ -226,19 +226,21 @@ def households(draw):
         # Which adult non-dependant reports IS, JSA(IB), ESA(IR) and SPC, if
         # anyone does.
         reporter=draw(st.sampled_from([None, 0, 1])),
-        # Explicit is_uc_claimant flags for the non-dependants, by position,
-        # or None to leave the claimant and partner as the claimants. A flag
-        # on the young person alone makes them a single claimant beside the
-        # couple.
-        uc_claimants=draw(
-            st.one_of(st.none(), st.lists(st.booleans(), min_size=3, max_size=3))
-        ),
+        # is_uc_claimant for the non-dependants, by position, where the test
+        # enters it (explicit_uc_claimants). A flag on the young person alone
+        # makes them a single claimant beside the couple.
+        uc_claimants=draw(st.lists(st.booleans(), min_size=3, max_size=3)),
         claims_child_benefit=draw(st.sampled_from([True, True, False])),
         non_dependants=non_dependants,
     )
 
 
-def build(population, year, raise_income=False):
+def build(population, year, raise_income=False, explicit_uc_claimants=False):
+    """The generated population as a simulation. With explicit_uc_claimants,
+    every person's is_uc_claimant is an input: True for each claimant and the
+    generated flag for each non-dependant. (An input for some people stores
+    the default, False, for the rest.) Otherwise the model's default applies:
+    the claimant and partner of each family."""
     people, benunits, households_, persons = {}, {}, {}, []
     for h, household in enumerate(population):
         claimant = f"claimant_{h}"
@@ -258,6 +260,8 @@ def build(population, year, raise_income=False):
                 if name != "is_blind"
             },
         )
+        if explicit_uc_claimants:
+            people[claimant]["is_uc_claimant"] = True
         persons.append(dict(household=h, benunit=2 * h, non_dependant=None))
         members = []
         for n, nd in enumerate(household["non_dependants"]):
@@ -291,7 +295,7 @@ def build(population, year, raise_income=False):
                     if benefit != "is_blind"
                 },
             )
-            if household.get("uc_claimants") is not None:
+            if explicit_uc_claimants:
                 people[name]["is_uc_claimant"] = household["uc_claimants"][n]
             members.append(name)
             persons.append(
@@ -381,6 +385,7 @@ def aggregate(individual, persons, couple, benunit_count, each_member):
 @given(
     population=st.lists(households(), min_size=1, max_size=12),
     year=st.integers(2025, 2030),
+    explicit_uc_claimants=st.booleans(),
 )
 @example(
     # Rare under random draws: a Welsh working-age applicant's non-dependant
@@ -441,9 +446,10 @@ def aggregate(individual, persons, couple, benunit_count, each_member):
         ],
     ],
     year=2026,
+    explicit_uc_claimants=False,
 )
-def test_non_dependant_deduction_invariants(population, year):
-    sim, persons = build(population, year)
+def test_non_dependant_deduction_invariants(population, year, explicit_uc_claimants):
+    sim, persons = build(population, year, explicit_uc_claimants=explicit_uc_claimants)
     r = calculate(sim, year)
     p = SYSTEM.parameters(str(year))
     hb = p.gov.dwp.housing_benefit.non_dep_deduction
@@ -469,8 +475,10 @@ def test_non_dependant_deduction_invariants(population, year):
         flags = household.get("uc_claimants")
 
         def flagged(j):
-            if flags is None or persons[j]["non_dependant"] is None:
+            if not explicit_uc_claimants:
                 return bool(couple[j])
+            if persons[j]["non_dependant"] is None:
+                return True
             return flags[persons[j]["position"]]
 
         def age(j):
@@ -743,7 +751,12 @@ def test_non_dependant_deduction_invariants(population, year):
     )
 
     # 6. Raising non-dependants' incomes never lowers a deduction.
-    raised, _ = build(population, year, raise_income=True)
+    raised, _ = build(
+        population,
+        year,
+        raise_income=True,
+        explicit_uc_claimants=explicit_uc_claimants,
+    )
     s = calculate(raised, year)
     for name in [
         "household_benefits_individual_non_dep_deduction",
@@ -943,35 +956,35 @@ ONE_CAPPED_FAMILY = dict(
 )
 
 
+PROTECTED_FLOOR = "gov.dwp.universal_credit.deductions.protected_floor"
+
+
 @PROPERTY_SETTINGS
 @given(
     families=st.lists(CAPPED_FAMILY, min_size=1, max_size=8),
     year=st.integers(2025, 2030),
-    protected_floor=st.sampled_from([0.0, 0.85]),
 )
-@example(families=[ONE_CAPPED_FAMILY], year=2025, protected_floor=0.85)
-def test_capped_universal_credit_matches_the_model(families, year, protected_floor):
+@example(families=[ONE_CAPPED_FAMILY], year=2025)
+def test_capped_universal_credit_matches_the_model(families, year):
     """Invariant 12: the after-cap Universal Credit counted in a
     non-dependant family's gross income equals universal_credit for a family
-    with no Housing Benefit, Maternity Allowance or deductions, with or
-    without a protected minimum floor."""
-    reform = (
-        {
-            "gov.dwp.universal_credit.deductions.protected_floor": {
-                f"{year}-01-01.{year}-12-31": protected_floor
-            }
-        }
-        if protected_floor
-        else None
-    )
-    sim = Simulation(
-        situation=capped_universal_credit_families(families, year), reform=reform
-    )
+    with no Housing Benefit, Maternity Allowance or deductions, under current
+    law and under an 85% protected minimum floor. The floor is set in place
+    on the same simulation, which costs far less than a reformed one."""
+    sim = Simulation(situation=capped_universal_credit_families(families, year))
+    current_law = np.asarray(sim.calculate("universal_credit", year))
     np.testing.assert_allclose(
-        capped_universal_credit(sim, year),
-        sim.calculate("universal_credit", year),
-        atol=0.01,
+        capped_universal_credit(sim, year), current_law, atol=0.01
     )
+    sim.tax_benefit_system.parameters.get_child(PROTECTED_FLOOR).update(
+        period=str(year), value=0.85
+    )
+    sim.tax_benefit_system.reset_parameter_caches()
+    sim.reset_calculations()
+    floored = np.asarray(sim.calculate("universal_credit", year))
+    np.testing.assert_allclose(capped_universal_credit(sim, year), floored, atol=0.01)
+    # The floor only limits the reduction, so no award falls.
+    assert np.all(floored >= current_law - 0.01)
 
 
 def test_capped_universal_credit_reads_stored_and_replaced_values():
@@ -1141,7 +1154,7 @@ def test_earned_income_exemption_reads_universal_credit(families, year):
         )
     )
     earned = np.asarray(sim.calculate("uc_individual_earned_income", year)) > 0
-    claimant_ = np.asarray(sim.calculate("is_uc_assessed_claimant", year))
+    assessed = np.asarray(sim.calculate("is_uc_assessed_claimant", year))
     floor = np.asarray(sim.calculate("uc_mif_applies", year))
     hb_exempt = np.asarray(
         sim.calculate("housing_benefit_non_dep_deduction_exempt", year)
@@ -1153,11 +1166,17 @@ def test_earned_income_exemption_reads_universal_credit(families, year):
         if case is None:
             continue
         member, settled = case
-        assert claimant_[i]
-        # The predicate is Universal Credit's earned income: the Welsh
-        # pensioner scheme at any age, Housing Benefit under 25.
-        assert bool(ctr_exempt[i]) == (not earned[i]), (i, member)
-        assert bool(hb_exempt[i]) == (member["age"] < 25 and not earned[i]), (i, member)
+        # The predicate is Universal Credit's earned income, for a claimant
+        # the award assesses (the model pairs claimant and partner, and may
+        # leave a second adult outside the couple): the Welsh pensioner
+        # scheme at any age, Housing Benefit under 25.
+        on_universal_credit = bool(assessed[i])
+        uc_without_earnings = on_universal_credit and not earned[i]
+        assert bool(ctr_exempt[i]) == uc_without_earnings, (i, member)
+        assert bool(hb_exempt[i]) == (member["age"] < 25 and uc_without_earnings), (
+            i,
+            member,
+        )
         # Where the inputs settle it, and the floor doesn't apply.
         if settled is not None and not floor[i]:
             assert bool(earned[i]) == settled, (i, member)
