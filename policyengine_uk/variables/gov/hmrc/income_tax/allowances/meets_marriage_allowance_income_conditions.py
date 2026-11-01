@@ -84,7 +84,11 @@ def liable_only_at_marriage_allowance_rates(person, period, parameters):
     dividends_above_basic = (dividends > 0) & (
         non_savings + savings + dividends > dividend_upper_limit
     )
-    return (non_savings <= non_savings_limit) & ~savings_above_basic & ~dividends_above_basic
+    return (
+        (non_savings <= non_savings_limit)
+        & ~savings_above_basic
+        & ~dividends_above_basic
+    )
 
 
 class meets_marriage_allowance_income_conditions(Variable):
