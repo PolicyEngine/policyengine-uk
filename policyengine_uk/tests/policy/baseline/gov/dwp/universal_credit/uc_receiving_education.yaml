@@ -870,11 +870,12 @@
     uc_receiving_education: [false, false]
 
 - name: Case 34, the 18-year-old of case 32 claims when DWP moves them off legacy benefits and keeps the award.
-  # Reg. 28 takes the claimant out of the qualifying young person route, so
-  # they receive education under reg. 12(2)(b), not reg. 12(1A). SI 2014/1230
-  # reg. 60(1) lifts the condition from a person who doesn't meet it on the
+  # The claimant reports Housing Benefit, so under SI 2014/1230 reg. 28 they
+  # don't count as a qualifying young person, and they receive education
+  # under reg. 12(2)(b), not reg. 12(1A). They fail the condition on the
   # migration day "because the person is undertaking a full-time course (see
-  # regulation 12(2) and 13 ...)".
+  # regulation 12(2) and 13 ...)", so under reg. 60(1) it doesn't apply to
+  # them while they continue the course.
   period: 2026
   input:
     people:
@@ -904,13 +905,13 @@
   # The model's benefit unit can hold an adult who is neither claimant,
   # partner, child nor qualifying young person, and the model sums reported
   # Working Tax Credit over every member, so this family takes the reg. 60A
-  # route. Reg. 60A(1) waives only "the condition in section 4(1)(b) of the
-  # Act (claimant has not reached the qualifying age for state pension
-  # credit)". The claimant, an 18-year-old qualifying young person on a
-  # full-time non-advanced course, receives education under reg. 12(1A), so
-  # reg. 60(1), which covers reg. 12(2), doesn't apply, and no reg. 14(1)
-  # exception does: the other adult isn't a child or qualifying young
-  # person (reg. 14(1)(c)).
+  # route. Under reg. 60A(1) the Secretary of State waives only "the
+  # condition in section 4(1)(b) of the Act (claimant has not reached the
+  # qualifying age for state pension credit)". The claimant, an 18-year-old
+  # qualifying young person on a full-time non-advanced course, receives
+  # education under reg. 12(1A). Reg. 60(1) covers only a person on a course
+  # under reg. 12(2), and the claimant has no reg. 14(1) exception: the
+  # other adult isn't a child or qualifying young person (reg. 14(1)(c)).
   period: 2026
   absolute_error_margin: 0.01
   input:
