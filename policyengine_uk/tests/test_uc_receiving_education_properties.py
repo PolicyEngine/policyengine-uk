@@ -5,21 +5,21 @@ Reform Act 2012 s. 4(1)(d) that they are "not receiving education". In the
 Universal Credit Regulations 2013, the Secretary of State sets out who
 receives education (reg. 12) and who doesn't have to meet the condition (reg.
 14(1)). Under reg. 3(2), a couple can claim jointly where one member doesn't
-meet the age condition or this one, and DWP's Advice for Decision Making
-E2016 applies it "where one member of a couple meets all the basic UC
+meet the age condition or this one, and DWP applies it under its Advice for
+Decision Making E2016 "where one member of a couple meets all the basic UC
 conditions". Under the Universal Credit (Transitional Provisions)
 Regulations 2014 reg. 28, a person entitled to an existing benefit doesn't
 count as a qualifying young person. In the model, only a person flagged
 is_in_full_time_education can receive education, and only
 has_education_maintenance_funding meets the funding test in reg. 12(2)(b).
 
-Each drawn case is a year and up to four families, each in a household of its
-own: a single adult or a couple, up to two children or young people, and
-inputs that reach every limb the model applies (course level, maintenance
-funding, student loans and grants, Attendance Allowance, Armed Forces
-Independence Payment, DLA and PIP with or without limited capability for work,
-foster flags, an ineligible partner, reported Housing Benefit and Working Tax
-Credit, a legacy closure claim, earnings, rent and savings). One simulation
+For each case, Hypothesis draws a year and up to four families, each in a
+household of its own: a single adult or a couple, up to two children or young
+people, and inputs that reach every limb the model applies (course level,
+maintenance funding, student loans and grants, Attendance Allowance, Armed
+Forces Independence Payment, DLA and PIP with or without limited capability for
+work, foster flags, an ineligible partner, reported Housing Benefit and Working
+Tax Credit, a legacy closure claim, earnings, rent and savings). One simulation
 calculates the same people five ways: as drawn; with the eligibility formula
 on main before this change (BEFORE, copied below with its comments removed;
 the formatter re-wrapped two lines); with no one flagged; with the flags of
@@ -27,24 +27,24 @@ members who are neither claimant nor partner reversed; and with every student
 loan and education grant removed.
 Invariants:
 
-1. Never raises: each family's Universal Credit is either what it is under
-   BEFORE or nil, so setting the input never raises it.
+1. Never raises: each family gets either its Universal Credit under BEFORE or
+   nil, so setting the input never raises it.
 2. Unflagged families don't change: with no one flagged, every output listed
    in OUTPUTS equals its value under BEFORE.
 3. Differential: receiving education, the exceptions, the qualifying young
    person status the condition reads, and is_uc_eligible equal a reference
    implementation that reads the drawn inputs. The reference applies regs.
-   3(2), 12 and 14 as ADM E2016 reads them, SI 2014/1230 regs. 28 and 60, and
-   BEFORE's routes; without the education condition it gives BEFORE's
+   3(2), 12 and 14 as DWP reads them in ADM E2016, SI 2014/1230 regs. 28 and
+   60, and BEFORE's routes; without the education condition it gives BEFORE's
    eligibility.
 4. Exceptions: a claimant who meets a modelled reg. 14 exception, or the SI
    2014/1230 reg. 60 protection, meets the condition, and a family whose
    claimants all meet it gets the Universal Credit it gets under BEFORE.
 5. Only the couple counts: reversing the flags of members who are neither
    claimant nor partner (children and qualifying young people) changes no
-   family's Universal Credit. A partner who cannot be a joint claimant (reg.
-   3(3)) is still a member of the couple, so whether they receive education
-   can decide reg. 14(1)(e) for the claimant.
+   family's Universal Credit. A partner who can't join the claim (reg. 3(3))
+   still belongs to the couple, so whether they receive education can decide
+   reg. 14(1)(e) for the claimant.
 6. One member meets both: every eligible family that makes no closure claim
    has a claimant who meets the minimum age, hasn't reached the qualifying
    age for State Pension Credit and meets the education condition.
@@ -712,16 +712,17 @@ def test_examples_reach_the_cases():
 
 def test_student_head_moves_non_dependant_to_joint_tenant():
     """A family with no one flagged loses Universal Credit when the household
-    head's family is a full-time student's.
+    head studies full time.
 
     The head's family cannot claim, so the model counts the non-dependant in
-    the joint tenant's claim instead. Paragraph 9(2)(f) of Schedule 4 to the
-    UC Regs 2013 prevents duplicate non-dependant treatment, and the model
-    assigns non-dependants to the household head's eligible claim first. The
-    joint tenant's claim then has the housing cost contribution of £96.55 a
-    month in 2026 (Sch 4 para 14(1), as SI 2026/148 art. 32(3) sets it): 12 x
-    £96.55 = £1,158.60. Two copies of the household, the head unflagged and
-    then flagged.
+    the joint tenant's claim instead. Under paragraph 9(2)(f) of Schedule 4 to
+    the UC Regs 2013, DWP doesn't count a person as a non-dependant in a claim
+    if it already counts them in another claim by someone liable for the rent.
+    The model assigns non-dependants to the household head's eligible claim
+    first. The joint tenant's claim then has the housing cost contribution of
+    £96.55 a month in 2026 (Sch 4 para 14(1), as SI 2026/148 art. 32(3) sets
+    it): 12 x £96.55 = £1,158.60. Two copies of the household, the head
+    unflagged and then flagged.
     """
     year = 2026
     people, benunits, households = {}, {}, {}
