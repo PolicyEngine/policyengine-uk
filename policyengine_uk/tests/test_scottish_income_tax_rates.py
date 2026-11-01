@@ -190,9 +190,9 @@ def test_each_resolution_holds_for_its_whole_tax_year(year, statutory_scottish_r
 
 
 def test_scottish_rates_take_effect_on_6_april_2017(statutory_scottish_rates):
-    """Parliament set the first Scottish rates and limits, S5M-03912, for
-    2017-18, which starts on 6 April 2017. The scale dates no rate or limit
-    earlier."""
+    """The scale starts with S5M-03912, Parliament's resolution for 2017-18,
+    and that tax year starts on 6 April 2017 (ITA 2007 s. 4(3)). The scale
+    dates no rate or limit earlier."""
     numeric = [
         date
         for date, value in dated_values(statutory_scottish_rates)

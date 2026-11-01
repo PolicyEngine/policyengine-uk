@@ -386,18 +386,19 @@
 # election (ITA 2007 s. 55C(1)(c)), so the earner can receive the Marriage
 # Allowance if they pay tax only at the rates s. 55B(2)(b) lists: the Scottish
 # starter, basic and intermediate rates, and the starting, nil and savings
-# basic rates for savings (FA 2016 s. 6(15)(a), from 2017-18). The
-# transferable amount is 10% of the personal allowance, rounded up to £10
-# (s. 55B(4)(b), (5)). The earner's tax falls by 20% of it after tax is worked
-# out at each rate (s. 55A(2), s. 55B(1) and (3), Step 6 of s. 23).
+# basic rates for savings (FA 2016 s. 6(15)(a), from 2017-18). s. 55B(4)(b)
+# and (5) set the transferable amount at 10% of the personal allowance,
+# rounded up to £10. s. 55B(1) and (3) give the earner a tax reduction of 20%
+# of it, which s. 55A(2) applies at Step 6 of s. 23, after Step 4 charges tax
+# at each rate.
 #
 # The model takes the transferable amount off the earner's income instead
 # (#1947), so its income tax for a claiming couple differs from the law's.
 # These cases check the claim and the amount transferred, and check the tax
 # at each rate on a twin couple that makes no election.
 
-# 2018-19, S5M-10397: 21% to £31,580, then 41%. Allowance £11,850, so the
-# transferable amount is £1,190 and the spouse keeps £10,660.
+# 2018-19, S5M-10397: 21% to £31,580, then 41%. Allowance £11,850: the
+# spouse transfers £1,190 and keeps £10,660.
 
 - name: Scottish 2018-19 earner at the 31580 limit can receive the Marriage Allowance
   period: 2018
@@ -455,8 +456,8 @@
     income_tax: [6_490.71, 0]
 
 # 2019-20, S5M-15879: 19% to £2,049, 20% to £12,444, 21% to £30,930,
-# 41% to £150,000, 46% above. Allowance £12,500, so the transferable amount
-# is £1,250 and the spouse keeps £11,250. Savings: £5,000 starting rate limit
+# 41% to £150,000, 46% above. Allowance £12,500: the spouse transfers £1,250
+# and keeps £11,250. Savings: £5,000 starting rate limit
 # (s. 12(3)), £1,000 savings allowance (s. 12B(4)), £37,500 basic rate limit
 # (s. 10(5)), 20% savings basic rate.
 
@@ -604,8 +605,8 @@
     marriage_allowance: [0, 0]
 
 # 2020-21, S5M-21090: 19% to £2,085, 20% to £12,658, 21% to £30,930,
-# 41% to £150,000, 46% above. Allowance £12,500, so the transferable amount
-# is £1,250 and the spouse keeps £11,250. Savings: £5,000 starting rate limit
+# 41% to £150,000, 46% above. Allowance £12,500: the spouse transfers £1,250
+# and keeps £11,250. Savings: £5,000 starting rate limit
 # (s. 12(3)), £1,000 savings allowance (s. 12B(4)), £37,500 basic rate limit
 # (s. 10(5)), 20% savings basic rate.
 
