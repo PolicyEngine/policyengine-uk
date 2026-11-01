@@ -16,7 +16,9 @@ class is_uc_eligible(Variable):
         "member's (regulation 18(2)). A family on the Pension Credit route "
         "(meets_pension_credit_age_conditions) is not eligible unless it "
         "claims when DWP moves it off its legacy benefits "
-        "(claims_uc_at_legacy_closure)."
+        "(claims_uc_at_legacy_closure). On that claim, a pension-age claimant "
+        "can qualify through reg 60A when the claimant or partner reports "
+        "Working Tax Credit; another member's report does not count."
     )
     definition_period = YEAR
     reference = (
@@ -25,6 +27,7 @@ class is_uc_eligible(Variable):
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/3",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/5",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/60A",
+        "https://www.legislation.gov.uk/ukpga/2002/21/section/3",
     )
 
     def formula(benunit, period, parameters):
@@ -76,9 +79,21 @@ class is_uc_eligible(Variable):
         # does not report is treated as a reg 60A migrant, where the
         # regulation refuses the waiver, and one reporting Pension Credit it
         # is not awarded makes no closure claim.
+        # The formula reads the Working Tax Credit reports of the claimant and
+        # partner only. Members of a couple claim a tax credit jointly (Tax
+        # Credits Act 2002 s.3(3)(a)), so the couple's award belongs to both,
+        # as reg 60A(1)(b) requires, and either member's report counts for
+        # both. A child, a qualifying young person or another adult in the
+        # benefit unit claims, if at all, as a single person (s.3(3)(b)), so
+        # their award is not the claimant's and does not open the route.
         closure_claim = benunit("claims_uc_at_legacy_closure", period)
+        claimant_or_partner = benunit.members("is_claimant_or_partner", period)
         on_working_tax_credit = (
-            add(benunit, period, ["working_tax_credit_reported"]) > 0
+            benunit.sum(
+                benunit.members("working_tax_credit_reported", period)
+                * claimant_or_partner
+            )
+            > 0
         )
         reg_60a = on_working_tax_credit & benunit.any(claimant & meets_minimum_age)
         route = (has_qualifying_claimant & ~pension_credit_route) | (

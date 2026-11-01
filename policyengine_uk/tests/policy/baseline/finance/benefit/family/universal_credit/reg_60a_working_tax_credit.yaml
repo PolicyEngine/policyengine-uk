@@ -1,0 +1,131 @@
+# SI 2014/1230 reg 60A(1) waives the upper age condition (WRA 2012
+# s.4(1)(b)) for a qualifying claim by a single claimant, or joint claimants
+# both, who have reached the qualifying age for State Pension Credit and are
+# entitled to an award of Working Tax Credit. Members of a couple claim a tax
+# credit jointly (Tax Credits Act 2002 s.3(3)(a)), so the couple's award
+# belongs to both; anyone else in the benefit unit claims as a single person
+# (s.3(3)(b)), so their award is not the claimant's. Each family makes a
+# closure claim (claims_uc_at_legacy_closure), lives in the North East, owns
+# its home outright and has no income, so an eligible family's Universal
+# Credit is 12 times its 2026-27 monthly standard allowance: 12 x £424.90
+# single and 12 x £666.97 couple.
+
+- name: Reg 60A route opens for a single claimant aged 70 who reports Working Tax Credit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_claimant_or_partner: true
+        working_tax_credit_reported: 1_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_uc_at_legacy_closure: true
+    households:
+      household:
+        members: [claimant]
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    is_uc_eligible: true
+    universal_credit: 5_098.80
+
+- name: Reg 60A route stays shut for a single claimant aged 70 with no Working Tax Credit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_uc_at_legacy_closure: true
+    households:
+      household:
+        members: [claimant]
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    is_uc_eligible: false
+    universal_credit: 0
+
+- name: Another adult's Working Tax Credit does not open the reg 60A route for a single claimant aged 70
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_claimant_or_partner: true
+      other_adult:
+        age: 40
+        is_claimant_or_partner: false
+        working_tax_credit_reported: 1_000
+    benunits:
+      benunit:
+        members: [claimant, other_adult]
+        claims_uc_at_legacy_closure: true
+    households:
+      household:
+        members: [claimant, other_adult]
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    is_uc_eligible: false
+    universal_credit: 0
+
+- name: A dependant's Working Tax Credit does not open the reg 60A route for a single claimant aged 70
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_claimant_or_partner: true
+        is_parent: true
+      dependant:
+        age: 17
+        is_claimant_or_partner: false
+        current_education: POST_SECONDARY
+        working_tax_credit_reported: 1_000
+    benunits:
+      benunit:
+        members: [claimant, dependant]
+        claims_uc_at_legacy_closure: true
+    households:
+      household:
+        members: [claimant, dependant]
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    is_uc_eligible: false
+    universal_credit: 0
+
+- name: A partner's Working Tax Credit opens the reg 60A route for a couple aged 72 and 70
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 72
+        is_claimant_or_partner: true
+      partner:
+        age: 70
+        is_claimant_or_partner: true
+        working_tax_credit_reported: 1_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        claims_uc_at_legacy_closure: true
+    households:
+      household:
+        members: [claimant, partner]
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    is_uc_eligible: true
+    universal_credit: 8_003.64
