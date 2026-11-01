@@ -3,7 +3,9 @@
 # is omitted or explicitly false. SPC reg. 4A(5) also lists income support,
 # which UC reg. 5(5) does not: is_on_income_support reads it, from the
 # calculated award for a claimant or partner and from their own report for
-# anyone else.
+# anyone else. For Universal Credit, the Transitional Provisions Regulations
+# 2014 reg. 28 excludes a person entitled to Income Support, and the UC
+# predicate reads the person's own report.
 
 - name: A 16-year-old reporting income-related ESA does not attract child additions for a parent aged 40.
   period: 2026
@@ -428,9 +430,10 @@
     is_qualifying_young_person_for_pension_credit: false
     is_qualifying_young_person_for_child_benefit: true
 
-- name: A 16-year-old reporting their own Income Support does not attract the Pension Credit child addition, but stays a UC young person.
-  # SPC reg. 4A(5) lists income support; UC reg. 5(5) does not. Income
-  # Support is in payment in 2025 (gov.dwp.income_support.active).
+- name: A 16-year-old reporting their own Income Support is neither a Pension Credit nor a UC young person.
+  # SPC reg. 4A(5) lists income support; for UC, Transitional Provisions
+  # reg. 28 excludes it. Income Support is in payment in 2025
+  # (gov.dwp.income_support.active).
   period: 2025
   input:
     people:
@@ -459,9 +462,9 @@
     is_qualifying_young_person_for_pension_credit: [false, false]
     is_child_or_qualifying_young_person_for_pension_credit: [false, false]
     child_minimum_guarantee_addition: 0
-    is_qualifying_young_person_for_universal_credit: [false, true]
+    is_qualifying_young_person_for_universal_credit: [false, false]
 
-- name: A member's own reported Income Support excludes the Pension Credit education route only.
+- name: A member's own reported Income Support excludes the Pension Credit and UC education routes.
   period: 2025
   input:
     people:
@@ -484,11 +487,12 @@
   output:
     is_on_income_support: [false, true]
     is_qualifying_young_person_for_pension_credit: [false, false]
-    is_qualifying_young_person_for_universal_credit: [false, true]
+    is_qualifying_young_person_for_universal_credit: [false, false]
 
 - name: A member's Income Support report leaves the Pension Credit route available once Income Support stops paying.
   # Income Support stops paying in 2026 (gov.dwp.income_support.active), so a
-  # report then is no award in payment.
+  # report then is no award in payment for Pension Credit. The UC predicate
+  # reads the raw report under Transitional Provisions reg. 28.
   period: 2026
   input:
     people:
@@ -511,7 +515,7 @@
   output:
     is_on_income_support: [false, false]
     is_qualifying_young_person_for_pension_credit: [false, true]
-    is_qualifying_young_person_for_universal_credit: [false, true]
+    is_qualifying_young_person_for_universal_credit: [false, false]
 
 - name: A claimant's calculated Income Support excludes them from the Pension Credit status.
   period: 2025
@@ -524,9 +528,9 @@
     income_support: 3_790.80
     is_on_income_support: true
     is_qualifying_young_person_for_pension_credit: false
-    is_qualifying_young_person_for_universal_credit: true
+    is_qualifying_young_person_for_universal_credit: false
 
-- name: A claimant's report without a calculated award leaves the Pension Credit status available.
+- name: A claimant's report without a calculated award leaves the Pension Credit status available but not the UC one.
   # The claimant falls within no prescribed category, so the model calculates
   # no Income Support for them.
   period: 2025
@@ -538,7 +542,7 @@
     income_support: 0
     is_on_income_support: false
     is_qualifying_young_person_for_pension_credit: true
-    is_qualifying_young_person_for_universal_credit: true
+    is_qualifying_young_person_for_universal_credit: false
 
 - name: The partner of an Income Support claimant keeps the Pension Credit status.
   # A couple's award goes to the claimant: the partner who reports nothing is
@@ -582,7 +586,7 @@
     is_qualifying_young_person_for_universal_credit: [false, false, false, false, false]
     is_qualifying_young_person_for_pension_credit: [false, false, false, false, false]
 
-- name: A member's report of one penny of Income Support excludes them from the Pension Credit status alone.
+- name: A member's report of one penny of Income Support excludes them from the Pension Credit and UC statuses.
   period: 2025
   input:
     people:
@@ -605,4 +609,4 @@
   output:
     is_on_income_support: [false, true]
     is_qualifying_young_person_for_pension_credit: [false, false]
-    is_qualifying_young_person_for_universal_credit: [false, true]
+    is_qualifying_young_person_for_universal_credit: [false, false]

@@ -3,8 +3,10 @@
 A 16-year-old outside education, in a 70-year-old's benefit unit, reports
 their own Income Support in 2025, when it is in payment. They are not the
 claimant's qualifying young person, so the claimant gets no child addition,
-until a reform removes Income Support. UC reg. 5(5) does not list income
-support, so they stay a UC qualifying young person throughout.
+until a reform removes Income Support. For Universal Credit, the
+Transitional Provisions Regulations 2014 reg. 28 excludes them through their
+own Income Support report, which a reform that removes the award leaves in
+place.
 
 A young carer who claims Income Support in their own benefit unit follows
 the calculated award. While they receive it they are no qualifying young
@@ -191,7 +193,7 @@ def test_own_income_support_ends_the_young_person_until_a_reform_removes_it():
     for sim in (kept, removed):
         assert sim.calculate(
             "is_qualifying_young_person_for_universal_credit", YEAR
-        ).tolist() == [False, True]
+        ).tolist() == [False, False]
 
 
 @pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
