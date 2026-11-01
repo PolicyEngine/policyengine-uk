@@ -11,8 +11,8 @@ class non_savings_income_after_allowances(Variable):
         "income and allowances, floored at nil: the income below savings and "
         "dividends (ITA 2007 s. 16) once the allowances, which go to it first, "
         "are taken off. "
-        "property_income_tax and taxable_property_income_after_allowances "
-        "both read it."
+        "property_income_tax, taxable_property_income_after_allowances and, "
+        "for Scottish taxpayers, tax_band read it."
     )
     definition_period = YEAR
     reference = dict(
