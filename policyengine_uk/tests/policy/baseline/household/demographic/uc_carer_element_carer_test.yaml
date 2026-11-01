@@ -1,0 +1,254 @@
+# An award of Universal Credit which includes the carer element counts as a
+# carer benefit in the carer condition of the legacy severe disability premium
+# (HB Regs 2006 Sch 3 para 14(2)(a)(iii) and (b); HB(SPC) Regs 2006 Sch 3
+# para 6(2)) and of the Pension Credit severe disability addition (SPC Regs
+# 2002 Sch I para 1(1)(a)(iii) and (b), with para 1(4)): no premium or
+# addition is paid for a person someone "has an award of universal credit which
+# includes the carer element in respect of caring for". The carer element is
+# for regular and substantial caring for a severely disabled person, whether or
+# not the carer claims Carer's Allowance (UC Regs 2013 regs 29 and 30(2)).
+#
+# Amounts for 2026-27 (DWP benefit and pension rates 2026 to 2027; the Social
+# Security Benefits Up-rating Order 2026, SI 2026/148): severe disability
+# premium and addition £86.05 a week, couple premium £172.10, Carer's Allowance
+# £86.45; Universal Credit standard allowance £424.90 a month (single, 25 or
+# over) and £666.97 (joint, either 25 or over), carer element £209.34 a month.
+
+- name: A blind carer's Universal Credit carer element bars the premium of the person they care for
+  # The carer is a non-dependant who is blind, so the non-dependant condition
+  # ignores them (para 14(4)(b)); their award bars the premium instead.
+  # Carer element 209.34 x 12 = 2,512.08; award (424.90 + 209.34) x 12 =
+  # 7,610.88. Without the limb the premium was 86.05 x 52 = 4,474.60.
+  period: 2026
+  input:
+    people:
+      disabled:
+        age: 50
+        pip_dl_category: STANDARD
+      carer:
+        age: 40
+        is_blind: true
+        care_hours: 35
+        would_claim_carers_allowance: false
+    benunits:
+      disabled_unit:
+        members: [disabled]
+        would_claim_uc: false
+      carer_unit:
+        members: [carer]
+    households:
+      household:
+        members: [disabled, carer]
+        country: ENGLAND
+  output:
+    uc_carer_element: [0, 2_512.08]
+    universal_credit: [0, 7_610.88]
+    has_uc_award_with_carer_element: [false, true]
+    is_cared_for_by_carer_benefit_recipient: [true, false]
+    severe_disability_premium: [0, 0]
+
+- name: A partner whose joint award includes the carer element leaves a couple who both qualify the single rate
+  # Para 14(2)(b)(iii): a carer element in respect of caring for only one of
+  # the couple gives one single rate, 86.05 x 52 = 4,474.60, where no carer
+  # gave the double rate, 172.10 x 52 = 8,949.20. Joint award (666.97 +
+  # 209.34) x 12 = 10,515.72.
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 45
+        pip_dl_category: STANDARD
+      partner:
+        age: 40
+        pip_dl_category: STANDARD
+        care_hours: 35
+        would_claim_carers_allowance: false
+    benunits:
+      couple:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+  output:
+    uc_carer_element: 2_512.08
+    universal_credit: 10_515.72
+    has_uc_award_with_carer_element: [false, true]
+    is_cared_for_by_carer_benefit_recipient: [true, false]
+    severe_disability_premium: 4_474.60
+
+- name: A son's Universal Credit carer element in another benefit unit bars a pensioner's severe disability addition
+  # SPC Regs 2002 Sch I para 1(1)(a)(iii) and (4). The son is blind, so the
+  # residence condition ignores him (para 2). Without the limb the addition
+  # was 86.05 x 52 = 4,474.60, and so was the pension-age Housing Benefit
+  # premium (HB(SPC) Regs 2006 Sch 3 para 6(2)(a)(iii)).
+  period: 2026
+  input:
+    people:
+      pensioner:
+        age: 75
+        aa_category: HIGHER
+      son:
+        age: 40
+        is_blind: true
+        care_hours: 35
+        would_claim_carers_allowance: false
+    benunits:
+      pensioner_unit:
+        members: [pensioner]
+      son_unit:
+        members: [son]
+    households:
+      household:
+        members: [pensioner, son]
+        country: ENGLAND
+  output:
+    universal_credit: [0, 7_610.88]
+    has_uc_award_with_carer_element: [false, true]
+    is_cared_for_by_carer_benefit_recipient: [true, false]
+    severe_disability_minimum_guarantee_addition: [0, 0]
+    pension_age_severe_disability_premium: [0, 0]
+
+- name: A carer on both Carer's Allowance and Universal Credit is one carer
+  # The carer receives Carer's Allowance, 86.45 x 52 = 4,495.40, and a
+  # Universal Credit award with the carer element, (424.90 + 209.34) x 12 -
+  # 4,495.40 = 3,115.48. They care for one person (SSCBA 1992 s.70(7) and
+  # (7ZA), (7A)), so the couple who both qualify keep one rate of the
+  # addition, 86.05 x 52 = 4,474.60 (SPC Regs 2002 reg 6(5)), as with the
+  # allowance alone.
+  period: 2026
+  input:
+    people:
+      husband:
+        age: 78
+        aa_category: HIGHER
+      wife:
+        age: 76
+        aa_category: HIGHER
+      carer:
+        age: 40
+        is_blind: true
+        care_hours: 35
+        would_claim_carers_allowance: true
+    benunits:
+      couple:
+        members: [husband, wife]
+      carer_unit:
+        members: [carer]
+    households:
+      household:
+        members: [husband, wife, carer]
+        country: ENGLAND
+  output:
+    carers_allowance: [0, 0, 4_495.40]
+    universal_credit: [0, 3_115.48]
+    receives_carer_benefit: [false, false, true]
+    has_uc_award_with_carer_element: [false, false, true]
+    is_cared_for_by_carer_benefit_recipient: [true, false, false]
+    severe_disability_minimum_guarantee_addition: [4_474.60, 0]
+
+- name: A partner's carer element is not a second carer where the other partner receives the allowance for the same person
+  # Both partners care 35 hours; the younger claims Carer's Allowance and the
+  # joint award includes the carer element for the elder (UC Regs 2013 reg
+  # 29(3); the model takes the elder). Partners caring for the same severely
+  # disabled person have one relevant entitlement between them (SSCBA 1992
+  # s.70(7ZA) and (7A)), so they care for one person, the disabled child, and
+  # not also the grandmother in another benefit unit.
+  period: 2026
+  input:
+    people:
+      elder:
+        age: 45
+        care_hours: 35
+        would_claim_carers_allowance: false
+      younger:
+        age: 40
+        care_hours: 35
+        would_claim_carers_allowance: true
+      child:
+        age: 8
+        dla_sc_category: MIDDLE
+      grandmother:
+        age: 80
+        aa_category: HIGHER
+    benunits:
+      family:
+        members: [elder, younger, child]
+      grandmother_unit:
+        members: [grandmother]
+    households:
+      household:
+        members: [elder, younger, child, grandmother]
+        country: ENGLAND
+  output:
+    partners_care_for_same_severely_disabled_person: [true, true]
+    receives_carer_benefit: [false, true, false, false]
+    has_uc_award_with_carer_element: [true, false, false, false]
+    is_cared_for_by_carer_benefit_recipient: [false, false, true, false]
+
+- name: "Disclosed limit: a carer whose income tapers the award to nil still bars the premium"
+  # With £25,000 of earnings the carer's award is nil (income reduction
+  # 7,610.88 against a maximum of 7,610.88), so in law there is no award
+  # (Welfare Reform Act 2012 s.5(1)(b); UC Regs 2013 reg 17) and the premium,
+  # 86.05 x 52 = 4,474.60, is payable. The model reads the award from its
+  # conditions, because the award reads Pension Credit, which reads the
+  # addition, so it withholds the premium.
+  period: 2026
+  input:
+    people:
+      disabled:
+        age: 50
+        pip_dl_category: STANDARD
+      carer:
+        age: 40
+        is_blind: true
+        care_hours: 35
+        would_claim_carers_allowance: false
+        employment_income: 25_000
+    benunits:
+      disabled_unit:
+        members: [disabled]
+        would_claim_uc: false
+      carer_unit:
+        members: [carer]
+    households:
+      household:
+        members: [disabled, carer]
+        country: ENGLAND
+  output:
+    universal_credit: [0, 0]
+    receives_uc_carer_element: [false, false]
+    has_uc_award_with_carer_element: [false, true]
+    severe_disability_premium: [0, 0]
+
+- name: Without a Universal Credit claim there is no carer element award
+  # The same carer as in the first case, in a family that does not claim
+  # Universal Credit and does not claim Carer's Allowance: no one has an award
+  # in respect of caring for the disabled person, who keeps the premium,
+  # 86.05 x 52 = 4,474.60.
+  period: 2026
+  input:
+    people:
+      disabled:
+        age: 50
+        pip_dl_category: STANDARD
+      carer:
+        age: 40
+        is_blind: true
+        care_hours: 35
+        would_claim_carers_allowance: false
+    benunits:
+      disabled_unit:
+        members: [disabled]
+        would_claim_uc: false
+      carer_unit:
+        members: [carer]
+        would_claim_uc: false
+    households:
+      household:
+        members: [disabled, carer]
+        country: ENGLAND
+  output:
+    has_uc_award_with_carer_element: [false, false]
+    is_cared_for_by_carer_benefit_recipient: [false, false]
+    severe_disability_premium: [4_474.60, 0]
