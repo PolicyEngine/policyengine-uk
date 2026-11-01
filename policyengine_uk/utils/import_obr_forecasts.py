@@ -2305,8 +2305,12 @@ def check_level_index_in_model(
     """Check the index the model builds from ``content``'s ``obr.<path>``
     against the importer's. ``build_index(content, path)`` builds it; by
     default build_model_index does, as the model does. The index must reach
-    the table's last year, and compound_model_index must compound the same
-    index from the written series in every year the model's has."""
+    the table's last year and stay above zero and finite in every year the
+    builder writes: from a year where it reaches zero, the model projects
+    no rate above zero from an earlier year's, and an infinite index stops
+    uprate_parameters rounding the rates it projects. compound_model_index
+    must compound the same index from the written series in each of those
+    years."""
     name = ".".join(path)
     model = (build_index or build_model_index)(content, path)
     last = max(series.line.levels)
@@ -2315,6 +2319,19 @@ def check_level_index_in_model(
             f"{name}: the model's index ends in {max(model)}, so it cannot "
             f"project the {last} level"
         )
+    for year, value in sorted(model.items()):
+        if not (math.isfinite(value) and value > 0):
+            effect = (
+                f"from {year} the model projects no rate above zero from an "
+                "earlier year's rate"
+                if math.isfinite(value)
+                else "policyengine-core's uprate_parameters cannot round the "
+                f"rate it projects for {year}"
+            )
+            raise ValueError(
+                f"{name}: the model's index reaches {value} in {year} at five "
+                f"decimals, so {effect}"
+            )
     node = yaml.safe_load(content)["obr"]
     for key in path:
         node = node[key]
@@ -2423,11 +2440,11 @@ def render_level_series_yaml(
     anchor (``anchors``, or by default read_level_anchor), so the model
     projects each table level after the anchor's year to the table's penny.
     Years after the table follow average_earnings as ``content`` holds it.
-    It checks that the finished series' index stays above zero, that the
-    result differs from ``content`` only in those values and that reference,
-    and that the index the model builds from the result
-    (check_level_index_in_model, with ``build_index``) matches the
-    importer's.
+    It checks that the result differs from ``content`` only in those values
+    and that reference. It then builds the model's index from the result
+    (check_level_index_in_model, with ``build_index``) and checks that the
+    index reaches the table's last year, stays above zero and finite to the
+    year the builder ends it, and matches the importer's.
     """
     month, year = release
     expected = copy.deepcopy(yaml.safe_load(content))
@@ -2486,7 +2503,6 @@ def render_level_series_yaml(
                 for entry_year, value in {**series.values, **tail}.items()
             },
         }
-        check_index_stays_positive(path, node["values"])
         node["metadata"]["reference"][0] = reference
         written.append((path, series))
 

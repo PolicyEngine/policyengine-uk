@@ -4120,25 +4120,82 @@ def test_the_model_projects_the_published_levels_to_the_penny(
 
 def test_a_tail_that_rounds_the_level_index_to_zero_is_refused():
     """Growth through the table keeps the index above zero; the falling
-    average_earnings tail then takes it to zero, so the importer refuses the
-    render."""
+    average_earnings tail then takes the index the builder writes to zero
+    in 2031, so the importer refuses the render."""
     workbook = nlw_workbook(nlw_rows((10.0, 10.0, 0.0001), 2023, 2023))
     render_nlw(workbook=workbook)
     flat = FLAT_SERIES_FIXTURE.format(key="average_earnings")
     content = YOY_GROWTH_FIXTURE.replace(flat, flat.replace("0.0200", "-0.5100"))
     assert content != YOY_GROWTH_FIXTURE
     with pytest.raises(
-        ValueError, match="national_living_wage: the index reaches 0.0 in 2031"
+        ValueError,
+        match="^national_living_wage: the model's index reaches 0.0 in 2031 at five "
+        "decimals, so from 2031 the model projects no rate above zero from an "
+        "earlier year's rate$",
     ):
         render_nlw(content, workbook)
+
+
+def falling_after_2028(content):
+    """``content`` with average_earnings falling 51% a year after 2028."""
+    lines = content.split("\n")
+    start, end = import_obr_forecasts._series_block(lines, ("obr", "average_earnings"))
+    first, last = import_obr_forecasts._yaml_block(lines, "values", 4, start, end)
+    for number in range(first + 1, last):
+        match = import_obr_forecasts.VALUE_LINE_RE.match(lines[number])
+        if match and int(match.group(1)) > 2028:
+            lines[number] = lines[number].split(":", 1)[0] + ": -0.5100"
+    falling = "\n".join(lines)
+    assert falling != content
+    return falling
+
+
+def test_the_index_guard_ends_where_the_builder_ends_the_index():
+    """The committed file with average_earnings falling 51% a year after
+    2028, and the OBR's £13.21 for 2027 and £13.51 for 2028, a ratio of
+    0.02271. Compounded to 2074, the finished series' index reaches zero in
+    2045. Where the
+    model's builder ends the index before 2045 (in 2039 on this branch),
+    the model's index stays above zero: the importer writes the series, and
+    the model projects £13.51 for 2028. Where the builder runs the index
+    to 2045 or later, the importer refuses the series and names 2045, the
+    year the model's own index reaches zero."""
+    content = falling_after_2028(get_yoy_growth_path().read_text())
+    growth = compute_level_growth(nlw_workbook(nlw_rows((13.21, 13.51), 2027, 2027)))
+    render = partial(render_level_series_yaml, content, growth, ("October", 2026))
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(
+            import_obr_forecasts, "check_level_index_in_model", lambda *_: None
+        )
+        unchecked = render()
+    written = _values(unchecked, NLW_PATH)
+    assert written[2028] == 0.02271
+    to_2074 = compounded(written, 2074)
+    assert min(year for year, value in to_2074.items() if value <= 0) == 2045
+    model = build_model_index(unchecked, NLW_PATH)
+    assert model == {year: to_2074[year] for year in model}
+    if max(model) < 2045:
+        assert all(value > 0 for value in model.values())
+        assert render() == unchecked
+        wages = uprated_wages(model, read_level_anchor(NLW_SPEC))
+        assert wages[2028] == pytest.approx(13.51, abs=1e-9)
+        return
+    with pytest.raises(
+        ValueError,
+        match="^national_living_wage: the model's index reaches 0.0 in 2045 at five "
+        "decimals, so from 2045 the model projects no rate above zero from an "
+        "earlier year's rate$",
+    ):
+        render()
 
 
 def test_a_finished_index_that_overflows_is_refused():
     """£0.00001 for 2027 and £1.7e303 for 2028 give finite growth, 1.7e308.
     In the committed file the kept years take the index above 1 by 2027, so
     that growth takes it to infinity in 2028: the importer refuses the
-    table, and check_index_stays_positive refuses the finished series it
-    would write."""
+    table, and the check on the model's own index refuses the finished
+    series it would write, where uprate_parameters could not round the
+    2028 rate."""
     workbook = nlw_workbook(nlw_rows((1e-5, 1.7e303), 2027, 2027))
     growth = compute_level_growth(workbook)[NLW_PATH]
     assert math.isfinite(growth.values[2028]) and growth.values[2028] > 1e308
@@ -4155,10 +4212,17 @@ def test_a_finished_index_that_overflows_is_refused():
             for year, value in average_earnings_years(committed, 2028).items()
         },
     }
+    content = yaml.safe_load(committed)
+    content["obr"]["national_living_wage"]["values"] = finished
     with pytest.raises(
-        ValueError, match="national_living_wage: the index reaches inf in 2028"
+        ValueError,
+        match="^national_living_wage: the model's index reaches inf in 2028 at five "
+        "decimals, so policyengine-core's uprate_parameters cannot round the "
+        "rate it projects for 2028$",
     ):
-        import_obr_forecasts.check_index_stays_positive(NLW_PATH, finished)
+        import_obr_forecasts.check_level_index_in_model(
+            yaml.safe_dump(content, sort_keys=False), NLW_PATH, growth
+        )
     with pytest.raises(
         ValueError,
         match=r"national_living_wage: 2028 growth of 1\.7e\+308 takes the index "
@@ -4190,18 +4254,21 @@ TINY_TO_HUGE = st.one_of(
 # A fall to a thousandth keeps the index above zero through the table; the
 # falling tail then takes the finished index to zero in 2037.
 @example(levels=[1.0, 0.001], earnings=-0.51)
+# A flat table, then the falling tail: compounded to 2074, the finished
+# index reaches zero in 2047, after the year this branch's builder ends it.
+@example(levels=[1.0, 1.0], earnings=-0.51)
 def test_a_written_level_series_keeps_every_index_positive(levels, earnings):
     """For generated positive levels (2 to 8 years from 2023, drawn from
     TINY_TO_HUGE) and an average_earnings tail rising 2% or falling 51% a
     year: the importer refuses the render exactly when the five-decimal
     index the model compounds through the written series (the years the
-    file keeps before the table, the table's six-decimal growth, then
-    average_earnings) reaches zero or infinity by LAST_INDEX_YEAR. It names
-    the table year where the index first does so, or the later year where
-    the finished series' index does. When it writes the series, the model's
-    index equals that index in every year the model builds. The property
-    leaves the penny check out, as levels this far apart rarely round to a
-    penny the index can reach."""
+    importer keeps before the table, the table's six-decimal growth, then
+    average_earnings) reaches zero or infinity by the year the builder ends
+    the index. It names the table year where the index first does so, or
+    the later year where the model's index does. When it writes the series,
+    the model's index equals that index in every year the model builds. The
+    property leaves the penny check out, as levels this far apart rarely
+    round to a penny the index can reach."""
     content = earnings_fixture(earnings)
     workbook = nlw_workbook(nlw_rows(tuple(levels), 2023, 2023))
     values = {
@@ -4216,15 +4283,11 @@ def test_a_written_level_series_keeps_every_index_positive(levels, earnings):
             lambda _, series, *__: series,
         )
         with pytest.MonkeyPatch.context() as unchecked_patch:
-            for check in (
-                "check_level_index",
-                "check_index_stays_positive",
-                "check_level_index_in_model",
-            ):
+            for check in ("check_level_index", "check_level_index_in_model"):
                 unchecked_patch.setattr(import_obr_forecasts, check, lambda *_: None)
             unchecked = render_nlw(content, workbook)
         written = _values(unchecked, NLW_PATH)
-        finished = compounded(written, import_obr_forecasts.LAST_INDEX_YEAR)
+        finished = compounded(written, max(fixture_index(unchecked, NLW_PATH)))
         failed = [
             year
             for year, level in finished.items()
@@ -4241,8 +4304,9 @@ def test_a_written_level_series_keeps_every_index_positive(levels, earnings):
                 )
             else:
                 event("refused: finished series")
-                assert f"the index reaches {finished[failed[0]]} in {failed[0]}" in str(
-                    error
+                assert (
+                    f"the model's index reaches {finished[failed[0]]} in {failed[0]}"
+                    in str(error)
                 )
             return
     event("written")
