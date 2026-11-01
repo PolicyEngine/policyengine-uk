@@ -733,13 +733,13 @@ ALCOHOL_HECTOLITRES = "note: all clearances are in thousands of hectolitres of a
 # The text of every cell from each clearance table's title down to the next
 # table's title, in Tables 3.11 and 3.12 of the March 2025 and March 2026
 # EFOs and Tables 4.11 and 4.12 of October 2026, but the title, numbers and
-# fiscal years. Someone read each one. The
-# importer compares a cell's text as receipts_label gives it: lower case, in
-# single spaces and without a footnote number after a label's last letter,
-# so " Wine1" gives "wine". It refuses any other text
-# (validate_clearance_table), so it reads no unit or product from words no
-# one has read. Add a text only after reading it, and when it states another
-# unit, convert the table's figures to the units these texts state first.
+# fiscal years. Someone read each one. The importer compares a cell's text as
+# receipts_label gives it: lower case, in single spaces and without a
+# footnote number after a label's last letter, so " Wine1" gives "wine". It
+# refuses any other text (validate_clearance_table), so it reads no unit or
+# product from words no one has read. Add a text only after reading it, and
+# when it states another unit, convert the table's figures to the units these
+# texts state first.
 CLEARANCE_TABLE_TEXTS = {
     TOBACCO_CLEARANCES: frozenset(
         {
