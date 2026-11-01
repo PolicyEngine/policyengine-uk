@@ -28,18 +28,23 @@ def _data_year(person, period):
     - Other data without years, such as a policyengine-core Dataset: the
       earliest year self_employment_income was supplied for, for the same
       reason.
-    - A situation: the latest year, up to the one simulated, for which the
-      situation gave self_employment_income, as recorded when it was built
-      or its populations were replaced (Simulation.build_from_situation and
-      build_from_populations). A profit set after that does not move it, so
-      neither does a scenario's modifier or a derivative that writes the
-      profit. A profit carried from an earlier year keeps that year's
-      allowance: a 2025-26 profit simulated in 2027-28 deducted £1,000, and
-      gains from the raise to £3,000. The builder stores a year's inputs for
-      everyone in the situation, giving anyone not set the default, so one
-      year serves them all. A situation that gave no profit, or a simulation
-      built some other way, reads the profit's supplied years as they stand.
-    With no profit supplied, the year simulated.
+    - A situation: the latest year, up to the one simulated, of those it
+      gave self_employment_income for, as recorded (Simulation):
+      - when it was built from a dictionary (build_from_situation);
+      - if it gave no profit then, when a profit is first set;
+      - when its populations are replaced (build_from_populations), with
+        the record of the simulation they come from, or a data-built one's
+        first year.
+      A profit set after the record does not move it, so neither does a
+      scenario's modifier or a derivative that writes the profit. A profit
+      carried from an earlier year keeps that year's allowance: a 2025-26
+      profit simulated in 2027-28 deducted £1,000, and gains from the raise
+      to £3,000. The builder stores a year's inputs for everyone in the
+      situation, giving anyone not set the default, so one year serves them
+      all.
+    Where no recorded year is at or before the one simulated, as for a
+    simulation built some other way, the profit's supplied years as they
+    stand; with none, the year simulated.
 
     Not handled: data cannot declare the year their incomes were measured
     in, so a file saved from a later projected year, or a situation saved
@@ -56,15 +61,16 @@ def _data_year(person, period):
             return min(dataset.years)
         supplied = supplied_input_periods(person, "self_employment_income")
         return (supplied[0] if supplied else period).start.year
-    years = getattr(simulation, "_situation_profit_years", None)
-    if not years:
-        years = [
+    recorded = getattr(simulation, "_situation_profit_years", None) or ()
+    earlier = [year for year in recorded if year <= period.start.year]
+    if not earlier:
+        earlier = [
             supplied_period.start.year
             for supplied_period in supplied_input_periods(
                 person, "self_employment_income"
             )
+            if supplied_period.start.year <= period.start.year
         ]
-    earlier = [year for year in years if year <= period.start.year]
     return earlier[-1] if earlier else period.start.year
 
 
@@ -141,10 +147,13 @@ def trading_allowance_reliefs(person, period, parameters):
       the input allowance, where the deduction is its excess over the input
       allowance, capped at profit, and a cut leaves their profit as
       reported, the lower bound of its yield; a claimant with a loss claims
-      it until the allowance saves more, where income tax is the same
-      either way. Class 4 can still jump with the loss where losses brought
-      forward absorb the income tax saving: any supplied current loss then
-      wins the election, the convention every status shares. The deduction
+      it until the allowance saves more. The election weighs the loss
+      against the saving in taxable trade profit, so other figures can step
+      where it switches, under the convention every status shares: Class 4,
+      where losses brought forward absorb that saving and any supplied
+      current loss wins; and income tax itself where a relief reads trade
+      profit, such as pension relief limited by relevant UK earnings or the
+      s. 24A cap on loss relief. The deduction
       is negative where it
       gives back capital allowances or charges what a cut adds. Their
       receipts take up the allowance before income not otherwise charged,

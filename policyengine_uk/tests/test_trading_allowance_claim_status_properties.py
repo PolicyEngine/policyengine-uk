@@ -98,8 +98,8 @@ def sims():
 def changed(simulation, allowance, share, year=YEAR):
     """The simulation with the allowance and expense share changed for the
     year. Changing the parameters of a built simulation skips the baseline a
-    reform would build, which halves the fixture's cost; the input allowance
-    still comes from the unreformed tree."""
+    reform would build, which cuts the fixture's cost by about a third; the
+    input allowance still comes from the unreformed tree."""
     simulation.apply_parameter_changes(
         {
             "gov.hmrc.income_tax.allowances.trading_allowance": {str(year): allowance},

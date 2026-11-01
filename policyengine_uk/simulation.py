@@ -618,6 +618,9 @@ class Simulation(CoreSimulation):
                     del records[recorded_period]
 
     def build_from_populations(self, populations) -> None:
+        person_key = self.tax_benefit_system.person_entity.key
+        donor = getattr(populations.get(person_key), "simulation", None)
+        profit_years = self._profit_years_of(donor)
         # Take a copy of what another simulation made, so that neither changes
         # the other's values or records.
         populations, adopted = copy_other_populations(self, populations)
@@ -630,9 +633,12 @@ class Simulation(CoreSimulation):
         # the values the new populations hold, and only those: an equal value
         # a rebuild stores later (from a situation or a frame) is supplied.
         keep_population_records(self, adopted)
-        # The new populations bring their own self-employment profits, so
-        # record the years those were supplied for (see build_from_situation).
-        self._situation_profit_years = self._supplied_profit_years()
+        # The new populations bring their own self-employment profits, and
+        # with them the years those were measured in (see
+        # build_from_situation).
+        self._situation_profit_years = (
+            profit_years if profit_years is not None else self._supplied_profit_years()
+        )
 
     def set_input(self, variable_name: str, period: Period, value) -> None:
         # What is set here is supplied, even a value equal to the model's own,
@@ -671,6 +677,16 @@ class Simulation(CoreSimulation):
         hold_identifiers_in(self, variable_name, period)
         if variable_name in CGT_DATASET_INPUTS:
             self._capture_cgt_supplied_inputs(variable_name, replace_period=period)
+        if (
+            variable_name == "self_employment_income"
+            and not self.built_from_dataset
+            and not getattr(self, "_situation_profit_years", None)
+        ):
+            # A situation that gave no profit when it was built takes the
+            # years of the first profit set afterwards, which later writes (a
+            # modifier's, a derivative's) then leave alone, as they leave the
+            # years a situation gives (see build_from_situation).
+            self._situation_profit_years = self._supplied_profit_years()
 
     def clone(self, *args, **kwargs) -> "Simulation":
         clone = super().clone(*args, **kwargs)
@@ -1080,6 +1096,26 @@ class Simulation(CoreSimulation):
                 self.populations["person"], "self_employment_income"
             )
         )
+
+    def _profit_years_of(self, donor) -> Optional[tuple]:
+        """The recorded profit years that populations taken from ``donor``
+        bring: its own record, or for data its first year, since data hold
+        a projected profit for every year. None for populations no other
+        simulation made, or a simulation rebuilding from its own."""
+        if donor is None:
+            return None
+        if donor is self:
+            return getattr(self, "_situation_profit_years", None)
+        if built_from_data(donor):
+            dataset = getattr(donor, "dataset", None)
+            if isinstance(dataset, UKMultiYearDataset):
+                return (min(dataset.years),)
+            supplied = supplied_input_periods(
+                donor.populations[donor.tax_benefit_system.person_entity.key],
+                "self_employment_income",
+            )
+            return (supplied[0].start.year,) if supplied else ()
+        return getattr(donor, "_situation_profit_years", None)
 
     def build_from_situation(self, situation: Dict) -> None:
         """Build simulation from a situation dictionary.

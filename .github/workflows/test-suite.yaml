@@ -88,9 +88,9 @@ jobs:
     # after every test had passed, with the process still alive 11 and 18
     # minutes after pytest's summary (runs 40895005971 and 40917254004).
     # The runner most likely runs short of memory, because every case's
-    # simulation is kept to the end (#2741). 75 minutes matches the Python
+    # simulation is kept to the end (#2741). 90 minutes matches the Python
     # shards, which Result waits for anyway, until the cases are released.
-    timeout-minutes: 75
+    timeout-minutes: 90
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
@@ -185,7 +185,13 @@ jobs:
     # 59m32s and the 60-minute limit then cancelled the job during its
     # Codecov upload, which took that pull request out of the queue.
     # 75 minutes leaves room for a slow runner and still stops a hung shard.
-    timeout-minutes: 75
+    # It stopped leaving room on 1 November: #2765's shards took 63 to 75
+    # minutes on runners of varying speed (runs 41303444320, 41313872613 and
+    # 41326415023), and the limit cancelled shards 2/6 and 3/6, then 3/6 at
+    # 99% with no test failing, while the same tests took 19% longer than a
+    # run earlier that day. 90 minutes leaves that room again and still
+    # stops a hung shard.
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
