@@ -83,7 +83,7 @@ class is_cared_for_by_carer_benefit_recipient(Variable):
         could_be_cared_for = person("is_severely_disabled_for_carers_allowance", period)
         receives = person("receives_carer_benefit", period)
         # An award of Universal Credit which includes the carer element counts
-        # as a carer too. A partner's carer element is not a second carer for
+        # as a carer too. A partner's carer element adds no second carer for
         # a couple caring for the same person where one of them receives a
         # carer benefit: they have one relevant entitlement between them
         # (SSCBA 1992 s.70(7ZA) and (7A)).

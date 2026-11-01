@@ -49,11 +49,15 @@ Invariants, on generated households under baseline law:
    recipients and carer element holders).
 7. No cycle: every reader calculates on one simulation, whichever the test
    requests first, and also where the simulation stores the award.
-8. Endpoint parity: uc_award_upper_bound equals, exactly, the larger of two
+8. The bound reads neither the award nor Pension Credit: its trace reaches
+   none of the award's steps, the non-dependant deduction or the attribution.
+9. Endpoint parity: uc_award_upper_bound equals, exactly, the larger of two
    awards the model's own formulas calculate, one with non-dependant
    deductions supplied as nil and one with the housing costs element supplied
-   as nil, at the rows test_upper_bound_matches_real_award_endpoints draws,
-   and it reads every element of uc_maximum_amount in its order.
+   as nil, at the rows test_upper_bound_matches_real_award_endpoints draws.
+10. Every component: the bound reads each element of uc_maximum_amount in its
+    order, and every input of the award's steps apart from the non-dependant
+    deduction, the Tax-Free Childcare choice and the claim.
 
 A reform that makes is_uc_eligible read Pension Credit would cycle through the
 attribution, which reads eligibility; these tests do not cover reforms.

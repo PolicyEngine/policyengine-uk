@@ -6,10 +6,10 @@ class uc_award_upper_bound(Variable):
     entity = BenUnit
     label = "Upper bound on the Universal Credit award"
     documentation = (
-        "An amount that the family's award before the benefit cap "
+        "The family's award before the benefit cap "
         "(universal_credit_pre_benefit_cap), as the model calculates it, "
-        "never exceeds, worked out without reading the non-dependant "
-        "deduction. DWP awards the maximum amount less the income reduction "
+        "never exceeds this amount, which the model works out without reading "
+        "the non-dependant deduction. DWP awards the maximum amount less the income reduction "
         "(UC Regs 2013 reg 22). The maximum amount includes the housing costs "
         "element (uc_housing_costs_element): the rent a renter may claim less "
         "DWP's non-dependant deductions. Where that element is positive, DWP "
@@ -29,7 +29,8 @@ class uc_award_upper_bound(Variable):
         "minimum at one penny (reg 17). The deduction spares a non-dependant "
         "on Pension Credit, so it reads Pension Credit, whose severe "
         "disability addition reads who has an award with the carer element. "
-        "This amount reads neither, so that test can read it. It can exceed "
+        "This amount reads neither, so has_uc_award_with_carer_element can "
+        "read it. It can exceed "
         "a nil award (#2795). A non-dependant deduction can take the award "
         "to nil. A family that takes Tax-Free Childcare instead gets no award "
         "(forgoes_universal_credit_for_tax_free_childcare). For a family "
