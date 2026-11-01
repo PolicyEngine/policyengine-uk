@@ -295,11 +295,11 @@ def _pre_encode_enum_columns(
     The loader runs this before it caches the dataset. Each year records the
     enum each column holds positions of, so later loads, and the decoded
     ``person``, ``benunit`` and ``household`` tables, read the column as
-    positions. A record says only how the loader encoded a column: each load
-    checks a recorded column's integers against the enum it recorded. The
-    loader decodes a column recorded under another declaration of its enum,
-    as a structural reform makes, to names with that declaration, then
-    encodes the names under the variable's enum.
+    positions. On every load, the loader checks a recorded column's integers
+    against the enum it recorded, not against the variable's enum. When a
+    structural reform declares a column's enum again, the loader decodes the
+    column with the declaration it recorded, then encodes the names under
+    the new one.
 
     The loader refuses an integer column it has not recorded
     (``refuse_enum_integers``): only a DataFrame or a policyengine-core

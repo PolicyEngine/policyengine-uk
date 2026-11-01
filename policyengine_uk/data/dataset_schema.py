@@ -91,7 +91,7 @@ def refuse_enum_integers(values: np.ndarray, possible_values, column: str) -> No
     positions the loader encodes as names. The loader records each column it
     encodes or reads as positions in ``_enum_columns``, so an integer column
     it has not recorded is most likely a source code, and a code that falls
-    in range would load as the wrong member. A DataFrame given to
+    in range would load as the wrong member. A DataFrame that a caller gives
     ``Simulation`` and a policyengine-core dataset still give integers, as
     0-based positions (see ``check_enum_positions``).
 
@@ -217,8 +217,9 @@ class UKSingleYearDataset:
         # The enum each recorded column of the tables holds positions of, by
         # column. Only a loader records a column (_pre_encode_enum_columns in
         # simulation.py, or dataset_from_input_dataframe), when it encodes the
-        # column or reads it as positions. A record says how to read the
-        # column's integers; the loader still checks them each time it reads.
+        # column or reads it as positions. The loader reads a recorded
+        # column's integers as positions of that enum, and checks them each
+        # time it reads them.
         self._enum_columns: dict = {}
 
     @property
