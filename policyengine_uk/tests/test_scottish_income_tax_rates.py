@@ -10,8 +10,8 @@ from policyengine_uk.tax_benefit_system import statutory_parameters
 # Each year's Scottish rate resolution, restated paragraph by paragraph from
 # the motion at
 # https://www.parliament.scot/chamber-and-committees/votes-and-motions/<motion>:
-# the rate, and the limit of taxable income it is charged up to (None for the
-# last rate, which has no limit). The limits are above the personal allowance.
+# the rate, and the limit of taxable income where it stops (None for the last
+# rate, which has no limit). Taxable income excludes the personal allowance.
 SCOTTISH_RATE_RESOLUTIONS = {
     2017: ("S5M-03912", [(0.20, 31_500), (0.40, 150_000), (0.45, None)]),
     2018: (

@@ -10,7 +10,7 @@
 # 2018-19, S5M-10397: 19% to £2,000, 20% to £12,150, 21% to £31,580,
 # 41% to £150,000, 46% above.
 
-- name: Scottish 2018-19 pay of 13000 is taxed at the starter rate
+- name: Scottish 2018-19 pay of 13000 bears only the starter rate
   period: 2018
   absolute_error_margin: 0.01
   input:
@@ -87,7 +87,7 @@
 # 2019-20, S5M-15879: 19% to £2,049, 20% to £12,444, 21% to £30,930,
 # 41% to £150,000, 46% above.
 
-- name: Scottish 2019-20 pay of 13500 is taxed at the starter rate
+- name: Scottish 2019-20 pay of 13500 bears only the starter rate
   period: 2019
   absolute_error_margin: 0.01
   input:
@@ -189,7 +189,7 @@
 # 2020-21, S5M-21090: 19% to £2,085, 20% to £12,658, 21% to £30,930,
 # 41% to £150,000, 46% above.
 
-- name: Scottish 2020-21 pay of 13500 is taxed at the starter rate
+- name: Scottish 2020-21 pay of 13500 bears only the starter rate
   period: 2020
   absolute_error_margin: 0.01
   input:
@@ -291,7 +291,7 @@
 # 2021-22, S5M-24225: 19% to £2,097, 20% to £12,726, 21% to £31,092,
 # 41% to £150,000, 46% above.
 
-- name: Scottish 2021-22 pay of 13570 is taxed at the starter rate
+- name: Scottish 2021-22 pay of 13570 bears only the starter rate
   period: 2021
   absolute_error_margin: 0.01
   input:
