@@ -24,20 +24,32 @@ Invariants, for any nonnegative amounts:
    total #2781 keeps, in every year.
 6. A reform that drops the household source drops the person source with it,
    and one that empties person_sources returns the ISAs to the pool.
+7. The allocation arithmetic (bounded_holdings), for every float32 balance
+   and finite total: no holding exceeds the total; the household's stored sum
+   of holdings never exceeds it, so every remainder stays at or above zero; a
+   sole holder whose balance reaches the total holds exactly the total;
+   balances whose stored sum is within the total keep their exact values;
+   holdings over a total lie within float32 spacing of their proportional
+   shares; and the same input gives the same output.
 """
+
+from fractions import Fraction
 
 import numpy as np
 import pandas as pd
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
+from policyengine_core.populations import GroupPopulation, Population
 
 from policyengine_uk import Simulation
 from policyengine_uk.data.dataset_schema import UKSingleYearDataset
 from policyengine_uk.data.economic_assumptions import PROJECTION_END_YEAR
+from policyengine_uk.entities import Household, Person
 from policyengine_uk.system import system
 from policyengine_uk.variables.gov.dwp._person_capital_pool import (
     HOUSEHOLD_SOURCE_OF,
+    bounded_holdings,
 )
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
@@ -129,6 +141,136 @@ def _dataset(households, year=YEAR, claims=True):
         ),
         fiscal_year=year,
     )
+
+
+def _core_household_sum(household_of):
+    """Core's person.household.sum, for people in the given households.
+
+    Builds Core's own populations by hand, with no Simulation, so the
+    allocation properties run in milliseconds.
+    """
+    person = Population(Person)
+    person.count = len(household_of)
+    household = GroupPopulation(Household, person)
+    household.members_entity_id = np.asarray(household_of, dtype=np.intp)
+    household.count = int(max(household_of)) + 1
+    return lambda array: household.project(household.sum(array))
+
+
+ANY_FLOAT32 = st.floats(width=32)
+FINITE_FLOAT32 = st.floats(width=32, allow_nan=False, allow_infinity=False)
+POUNDS = st.integers(min_value=0, max_value=4_000_000).map(
+    lambda pence: float(np.float32(pence / 100))
+)
+# Up to three households of up to six people; amounts anywhere in float32 or
+# in pounds and pence, where ISAs and capital limits sit.
+ALLOCATIONS = st.integers(min_value=1, max_value=3).flatmap(
+    lambda count: st.tuples(
+        st.lists(st.one_of(POUNDS, FINITE_FLOAT32), min_size=count, max_size=count),
+        st.lists(
+            st.tuples(
+                st.integers(min_value=0, max_value=count - 1),
+                st.one_of(POUNDS, ANY_FLOAT32),
+            ),
+            min_size=1,
+            max_size=6,
+        ),
+    )
+)
+ALLOCATION_SETTINGS = settings(SETTINGS, max_examples=300)
+
+
+@ALLOCATION_SETTINGS
+@given(allocation=ALLOCATIONS)
+# A sole holder over the total at UC's capital limit, its tariff threshold
+# and Pension Credit's tariff threshold, alone and beside two others.
+@example(allocation=([16_000.0], [(0, 16_790.0)]))
+@example(allocation=([6_000.0], [(0, 8_341.0)]))
+@example(allocation=([10_000.0], [(0, 16_450.0), (0, 0.0), (0, 0.0)]))
+# Balances whose float64 sum exceeds the total but rounds to it in float32.
+@example(allocation=([16_000.0], [(0, 8_000.00048828125), (0, 8_000.0)]))
+# A balance too small to change the float64 sum, beside one over the total.
+@example(allocation=([1.0], [(0, 1e-30), (0, 3.0)]))
+# Balances whose sum exceeds float32's range.
+@example(allocation=([3e38], [(0, 3e38), (0, 3e38)]))
+# Infinite, missing and negative balances, and a negative total.
+@example(
+    allocation=(
+        [5.0, -7.0],
+        [(0, float("inf")), (1, float("nan")), (1, -float("inf")), (0, -3.0)],
+    )
+)
+def test_holdings_stay_within_the_household_total(allocation):
+    """Invariant 7: the arithmetic every ISA person source shares."""
+    totals, members = allocation
+    household_of = np.array([h for h, _ in members])
+    household_sum = _core_household_sum(household_of)
+    balance = np.array([b for _, b in members], np.float32)
+    total = np.array(totals, np.float32)[household_of]
+    holding = bounded_holdings(balance, total, household_sum)
+    assert holding.dtype == np.float32
+
+    cap = np.maximum(np.float32(0), total)
+    held = np.where(np.isposinf(balance), cap, np.where(balance > 0, balance, 0))
+    held = held.astype(np.float32)
+    # No holding is negative or exceeds the household total.
+    assert ((0 <= holding) & (holding <= cap)).all()
+    # Core stores the household's sum of holdings, as each means test nets it
+    # from the household source, within the total.
+    with np.errstate(over="ignore"):
+        stored = household_sum(holding).astype(np.float32)
+        within = household_sum(held).astype(np.float32) <= cap
+    assert (cap - stored >= 0).all()
+    # Balances whose stored sum is within the total keep their exact values.
+    assert np.array_equal(holding[within], held[within])
+    # A sole holder whose balance reaches the total holds exactly the total.
+    holders = household_sum((held > 0).astype(np.float32))
+    sole = (held > 0) & (holders == 1) & (held >= cap)
+    assert np.array_equal(holding[sole], cap[sole])
+    # Over a total, each holding lies within float32 spacing (plus float64
+    # rounding) of its exact proportional share, and together they fall
+    # short of the total by at most one float32 spacing per member.
+    for i in np.flatnonzero(~within):
+        same = np.flatnonzero(household_of == household_of[i])
+        exact = (
+            Fraction(float(held[i]))
+            * Fraction(float(cap[i]))
+            / sum(Fraction(float(held[j])) for j in same)
+        )
+        spacing = Fraction(float(np.spacing(np.float32(float(exact)))))
+        assert abs(Fraction(float(holding[i])) - exact) <= spacing + exact / 2**48
+        assert cap[i] - stored[i] <= (len(same) + 1) * np.spacing(cap[i])
+    # The same input gives the same output, and one household's holdings
+    # never depend on another's.
+    again = bounded_holdings(balance.copy(), total.copy(), household_sum)
+    assert np.array_equal(holding, again)
+    for h in np.unique(household_of):
+        alone = household_of == h
+        result = bounded_holdings(
+            balance[alone],
+            total[alone],
+            _core_household_sum(np.zeros(alone.sum(), dtype=int)),
+        )
+        assert np.array_equal(result, holding[alone])
+
+
+@pytest.mark.parametrize("limit", [6_000, 10_000, 16_000])
+def test_a_sole_holder_over_a_limit_holds_exactly_the_limit(limit):
+    """Invariant 7, exhaustively near three capital limits.
+
+    Every float32 balance from the limit to four times it, each a sole
+    holder under a household total equal to the limit, and the next 1,000
+    float32 balances above the limit.
+    """
+    above = np.nextafter(np.float32(limit), np.float32(np.inf))
+    steps = np.arange(1_000, dtype=np.float32) * (above - np.float32(limit))
+    balance = np.concatenate(
+        [np.arange(limit, 4 * limit, dtype=np.float32), np.float32(limit) + steps]
+    )
+    total = np.full_like(balance, limit)
+    household_sum = _core_household_sum(np.arange(balance.size))
+    holding = bounded_holdings(balance, total, household_sum)
+    assert (holding == np.float32(limit)).all()
 
 
 # A couple and a lodger; pensioners and their adult son; a parent and child.

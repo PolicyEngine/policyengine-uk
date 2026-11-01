@@ -52,22 +52,45 @@ def pooled_person_capital(benunit, source, period, capital, leaves_pool=None):
 
 
 def bounded_person_holding(person, balance, household_total):
-    """A person's ``balance``, scaled so the household's never exceed its total.
+    """Each member's ``balance``, bounded by ``household_total``.
 
-    ``household_total`` is the household's total for each member. A negative
-    or missing balance holds nothing, and an infinite one the whole total.
-    Where the members' balances add up to more than the nonnegative total,
-    each is scaled down by the same proportion, so the members together hold
-    the total in proportion to their balances. Otherwise each holds its
-    balance, and the rest of the total is held by no one the data name.
+    ``household_total`` is the household's total for each member. See
+    ``bounded_holdings``, which this calls with Core's household sum.
     """
-    total = max_(0, household_total)
+    return bounded_holdings(balance, household_total, person.household.sum)
+
+
+def bounded_holdings(balance, household_total, household_sum):
+    """Each member's holding: their ``balance``, bounded by the household total.
+
+    ``household_total`` gives the household's total for each member, and
+    ``household_sum`` maps a member array to each member's household sum, as
+    Core's ``person.household.sum`` does. A negative or missing balance holds
+    nothing, and an infinite one the whole total. Where the household's
+    balances add up, stored as Core stores a total, to the nonnegative total
+    or less, each member holds their balance exactly, and no one the data
+    name holds the rest. Where they add up to more, the function scales each
+    balance by the total over their sum and rounds it down to float32, as
+    Core stores the result. For every float32 balance and finite total:
+
+    - no holding exceeds the household total;
+    - the household's stored sum of holdings never exceeds the total, so the
+      pool's remainder stays at or above zero;
+    - a sole holder whose balance reaches the total holds exactly the total;
+    - each holding lies within float32 spacing of its proportional share;
+    - the same input gives the same output.
+    """
+    total = np.maximum(np.float32(0), np.asarray(household_total, np.float32))
+    balance = np.asarray(balance, np.float32)
     finite = np.where(np.isfinite(balance), balance, np.where(balance > 0, total, 0))
-    held = max_(0, finite)
-    household_held = _as_stored(person.household.sum(held))
-    over = household_held > total
-    scale = where(over, total / where(over, household_held, 1), 1)
-    return held * scale
+    held = np.maximum(np.float32(0), finite).astype(np.float32)
+    held_sum = np.asarray(household_sum(held), np.float64)
+    over = _as_stored(held_sum) > total
+    # Float64 holds the product of two float32 amounts exactly, so each share
+    # rounds once, in the division. A sole holder's share is then the total
+    # itself, and rounding every share down keeps their sum within the total.
+    share = held * total.astype(np.float64) / np.where(over, held_sum, 1)
+    return np.where(over, _round_down_to_float32(share), held)
 
 
 def _as_stored(amount):
@@ -75,4 +98,11 @@ def _as_stored(amount):
     # float64. Round the result as Core stores a household total such as
     # cash_isa, so balances that make up a total net it to exactly zero and
     # the pool keeps its float32 arithmetic.
-    return amount.astype(np.float32)
+    with np.errstate(over="ignore"):
+        return np.asarray(amount).astype(np.float32)
+
+
+def _round_down_to_float32(amount):
+    # The largest float32 at or below each nonnegative float64 amount.
+    rounded = amount.astype(np.float32)
+    return np.where(rounded > amount, np.nextafter(rounded, np.float32(0)), rounded)

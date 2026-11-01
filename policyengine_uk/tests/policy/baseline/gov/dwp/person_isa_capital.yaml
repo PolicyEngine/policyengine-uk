@@ -372,3 +372,312 @@
     # Shared by the two claimants, the ISA put 17,000 in each unit, above
     # reg 18's 16,000 limit. Now only its holder's unit counts it.
     uc_assessable_capital: [0, 34_000]
+
+# Cases 14 to 17: balances above a household total count exactly the total,
+# so a holder at a capital limit or a tariff threshold stays on its boundary.
+# The model stores amounts in float32 (spacing 0.0009765625 at 16,000), and
+# absolute_error_margin 0 fails on one unit in the last place.
+
+- name: Case 14, an ISA above its household total counts exactly 16,000 at UC's capital limit.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      cash_holder:
+        age: 30
+        cash_isa_balance: 16_790
+      stocks_holder:
+        age: 30
+        stocks_and_shares_isa_balance: 16_790
+    benunits:
+      cash_unit:
+        members: cash_holder
+        would_claim_uc: false
+        would_claim_IS: false
+      stocks_unit:
+        members: stocks_holder
+        would_claim_uc: false
+        would_claim_IS: false
+    households:
+      cash_home:
+        members: cash_holder
+        cash_isa: 16_000
+      stocks_home:
+        members: stocks_holder
+        stocks_and_shares_isa: 16_000
+  output:
+    cash_isa_countable_capital: [16_000, 0]
+    stocks_and_shares_isa_countable_capital: [0, 16_000]
+    # WRA 2012 s 5(1)(a) requires capital not greater than the amount reg
+    # 18(1)(a) prescribes, 16,000, so capital of exactly 16,000 keeps
+    # entitlement. Reg 72(1) deems 4.35 a month for each 250 above 6,000:
+    # 40 steps, 2,088 a year.
+    uc_assessable_capital: [16_000, 16_000]
+    is_uc_eligible: [true, true]
+    uc_tariff_income: [2_088, 2_088]
+
+- name: Case 15, an ISA above its household total counts exactly 6,000 at UC's tariff threshold.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      cash_holder:
+        age: 30
+        cash_isa_balance: 8_341
+      stocks_holder:
+        age: 30
+        stocks_and_shares_isa_balance: 8_341
+    benunits:
+      cash_unit:
+        members: cash_holder
+        would_claim_uc: false
+        would_claim_IS: false
+      stocks_unit:
+        members: stocks_holder
+        would_claim_uc: false
+        would_claim_IS: false
+    households:
+      cash_home:
+        members: cash_holder
+        cash_isa: 6_000
+      stocks_home:
+        members: stocks_holder
+        stocks_and_shares_isa: 6_000
+  output:
+    cash_isa_countable_capital: [6_000, 0]
+    stocks_and_shares_isa_countable_capital: [0, 6_000]
+    # Reg 72(1) deems no income from capital of 6,000 or less.
+    uc_assessable_capital: [6_000, 6_000]
+    uc_tariff_income: [0, 0]
+
+- name: Case 16, a holder at the total leaves an unrelated couple nothing in every working-age test.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      holder:
+        age: 30
+        cash_isa_balance: 16_790
+      partner_1:
+        age: 30
+      partner_2:
+        age: 30
+    benunits:
+      holder_unit:
+        members: holder
+        would_claim_uc: false
+        would_claim_IS: false
+        would_claim_pc: false
+        in_receipt_of_guarantee_credit: false
+        in_receipt_of_savings_credit_only: false
+        housing_benefit_on_passporting_benefit: false
+      couple:
+        members: [partner_1, partner_2]
+        would_claim_uc: false
+        would_claim_IS: false
+        would_claim_pc: false
+        in_receipt_of_guarantee_credit: false
+        in_receipt_of_savings_credit_only: false
+        housing_benefit_on_passporting_benefit: false
+    households:
+      household:
+        members: [holder, partner_1, partner_2]
+        cash_isa: 16_000
+  output:
+    # The holder counts the whole 16,000, so the pool keeps exactly nothing
+    # for the couple, never a negative amount.
+    cash_isa_countable_capital: [16_000, 0, 0]
+    uc_assessable_capital: [16_000, 0]
+    housing_benefit_assessable_capital: [16_000, 0]
+    income_support_assessable_capital: [16_000, 0]
+    jsa_income_assessable_capital: [16_000, 0]
+    esa_income_assessable_capital: [16_000, 0]
+
+- name: Case 17, a pension-age holder at the total counts exactly 10,000 in Pension Credit.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      holder:
+        age: 70
+        cash_isa_balance: 16_450
+      partner_1:
+        age: 70
+      partner_2:
+        age: 70
+    benunits:
+      holder_unit:
+        members: holder
+        would_claim_uc: false
+        would_claim_IS: false
+        would_claim_pc: false
+        in_receipt_of_guarantee_credit: false
+        in_receipt_of_savings_credit_only: false
+        housing_benefit_on_passporting_benefit: false
+      couple:
+        members: [partner_1, partner_2]
+        would_claim_uc: false
+        would_claim_IS: false
+        would_claim_pc: false
+        in_receipt_of_guarantee_credit: false
+        in_receipt_of_savings_credit_only: false
+        housing_benefit_on_passporting_benefit: false
+    households:
+      household:
+        members: [holder, partner_1, partner_2]
+        cash_isa: 10_000
+  output:
+    cash_isa_countable_capital: [10_000, 0, 0]
+    pension_credit_assessable_capital: [10_000, 0]
+    # SPC Regs 2002 reg 15(6) deems 1 a week for each 500 above 10,000, so
+    # capital of exactly 10,000 deems nothing.
+    pension_credit_deemed_income: [0, 0]
+    housing_benefit_assessable_capital: [10_000, 0]
+
+- name: Case 18, a stocks and shares ISA counts no more than the share-like capital that holds it.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      holder:
+        age: 30
+        stocks_and_shares_isa_balance: 1_000
+    benunits:
+      holder_unit:
+        members: holder
+        would_claim_uc: false
+        would_claim_IS: false
+    households:
+      household:
+        members: holder
+        stocks_and_shares_isa: 1_000
+        # The means tests count share-like capital, and an input or reform
+        # can set it below the ISA total.
+        share_like_capital: 100
+  output:
+    stocks_and_shares_isa_countable_capital: 100
+    uc_assessable_capital: 100
+
+- name: Case 19, a child's ISA counts in no unit when the parent reports the family's capital.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 40
+      child:
+        age: 10
+        cash_isa_balance: 10_000
+      lodger:
+        age: 30
+    benunits:
+      family:
+        members: [parent, child]
+        # The parent's own capital: nothing.
+        benunit_reported_capital: 0
+      lodger_unit:
+        members: lodger
+    households:
+      household:
+        members: [parent, child, lodger]
+  output:
+    # The report covers the claimant and partner, not the child, whose
+    # 10,000 ISA leaves the pool, so the lodger's unit counts none of it.
+    uc_assessable_capital: [0, 0]
+
+- name: Case 20, a UC report keeps the inherited override, so a reporter's unabsorbed ISA stays in the pool.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      holder_1:
+        age: 30
+        cash_isa_balance: 1
+      other_1:
+        age: 30
+      holder_2:
+        age: 30
+        cash_isa_balance: 1
+      other_2:
+        age: 30
+      holder_3:
+        age: 30
+        cash_isa_balance: 10_000
+      other_3:
+        age: 30
+      holder_4:
+        age: 30
+        cash_isa_balance: 10_000
+      other_4:
+        age: 30
+    benunits:
+      holder_unit_1:
+        members: holder_1
+        benunit_reported_capital: 0
+      other_unit_1:
+        members: other_1
+      holder_unit_2:
+        members: holder_2
+        uc_reported_capital: 0
+      other_unit_2:
+        members: other_2
+      holder_unit_3:
+        members: holder_3
+        benunit_reported_capital: 0
+      other_unit_3:
+        members: other_3
+      holder_unit_4:
+        members: holder_4
+        benunit_reported_capital: 6_000
+      other_unit_4:
+        members: other_4
+    households:
+      household_1:
+        members: [holder_1, other_1]
+      household_2:
+        members: [holder_2, other_2]
+      household_3:
+        members: [holder_3, other_3]
+      household_4:
+        members: [holder_4, other_4]
+  output:
+    # A reporting unit's own ISA stays in the pool, and the report
+    # consumes only its reported amount: the unit without a report counts
+    # the rest of the household's capital.
+    uc_assessable_capital: [0, 1, 0, 1, 0, 10_000, 6_000, 4_000]
+
+- name: Case 21, a Pension Credit report replaces the reporting unit's capital and shares none of it.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      holder_1:
+        age: 70
+        cash_isa_balance: 10_000
+      other_1:
+        age: 70
+      holder_2:
+        age: 70
+        cash_isa_balance: 10_000
+      other_2:
+        age: 70
+    benunits:
+      holder_unit_1:
+        members: holder_1
+        pension_credit_reported_capital: 0
+      other_unit_1:
+        members: other_1
+      holder_unit_2:
+        members: holder_2
+        pension_credit_reported_capital: 6_000
+      other_unit_2:
+        members: other_2
+    households:
+      household_1:
+        members: [holder_1, other_1]
+      household_2:
+        members: [holder_2, other_2]
+  output:
+    # The holder's ISA leaves the pool, and the report replaces the
+    # holder's unit's capital, so the other pension-age unit counts none.
+    pension_credit_assessable_capital: [0, 0, 6_000, 0]
