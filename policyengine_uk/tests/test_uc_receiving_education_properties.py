@@ -18,7 +18,7 @@ inputs that reach every limb the model applies (course level, maintenance
 funding, student loans and grants, Attendance Allowance, Armed Forces
 Independence Payment, DLA and PIP with or without limited capability for work,
 foster flags, an ineligible partner, reported Housing Benefit and Working Tax
-Credit, a legacy closure claim, earnings, rent and savings). The test
+Credit, a legacy closure claim, earnings, rent and savings). One simulation
 calculates the same people five ways: as drawn; with the eligibility formula
 on main before this change (BEFORE, kept verbatim below); with no one flagged;
 with the flags of members who are neither claimant nor partner reversed; and
@@ -107,38 +107,51 @@ rarely = st.integers(0, 4).map(lambda n: n == 0)
 sometimes = st.integers(0, 2).map(lambda n: n == 0)
 
 
-class is_uc_eligible(Variable):
+def main_eligibility(benunit, period, parameters):
+    """is_uc_eligible on main at 2da212abc, without its comments."""
+    capital = benunit("uc_assessable_capital", period)
+    limit = parameters(period).gov.dwp.universal_credit.means_test.capital.limit
+    claimant = benunit.members("is_uc_single_or_joint_claimant", period)
+    meets_minimum_age = benunit.members("meets_uc_minimum_age_condition", period)
+    pension_age = benunit.members(
+        "has_attained_state_pension_credit_qualifying_age", period
+    )
+    has_qualifying_claimant = benunit.any(claimant & meets_minimum_age & ~pension_age)
+    pension_credit_route = benunit("meets_pension_credit_age_conditions", period)
+    closure_claim = benunit("claims_uc_at_legacy_closure", period)
+    on_working_tax_credit = add(benunit, period, ["working_tax_credit_reported"]) > 0
+    reg_60a = on_working_tax_credit & benunit.any(claimant & meets_minimum_age)
+    route = (has_qualifying_claimant & ~pension_credit_route) | (
+        closure_claim & (has_qualifying_claimant | reg_60a)
+    )
+    return route & (capital <= limit)
+
+
+class uses_main_eligibility(Variable):
     value_type = bool
     entity = BenUnit
-    label = "Eligible for Universal Credit (before the education condition)"
+    label = "Takes is_uc_eligible from main's formula (test only)"
     definition_period = YEAR
-
-    def formula(benunit, period, parameters):
-        # main at 2da212abc, without its comments.
-        capital = benunit("uc_assessable_capital", period)
-        limit = parameters(period).gov.dwp.universal_credit.means_test.capital.limit
-        claimant = benunit.members("is_uc_single_or_joint_claimant", period)
-        meets_minimum_age = benunit.members("meets_uc_minimum_age_condition", period)
-        pension_age = benunit.members(
-            "has_attained_state_pension_credit_qualifying_age", period
-        )
-        has_qualifying_claimant = benunit.any(
-            claimant & meets_minimum_age & ~pension_age
-        )
-        pension_credit_route = benunit("meets_pension_credit_age_conditions", period)
-        closure_claim = benunit("claims_uc_at_legacy_closure", period)
-        on_working_tax_credit = (
-            add(benunit, period, ["working_tax_credit_reported"]) > 0
-        )
-        reg_60a = on_working_tax_credit & benunit.any(claimant & meets_minimum_age)
-        route = (has_qualifying_claimant & ~pension_credit_route) | (
-            closure_claim & (has_qualifying_claimant | reg_60a)
-        )
-        return route & (capital <= limit)
+    default_value = False
 
 
-class before_education_condition(Reform):
+class with_main_eligibility(Reform):
+    """Keeps this branch's is_uc_eligible, except for benefit units flagged
+    uses_main_eligibility, which take main's formula. One simulation then
+    holds the families as drawn and their copies under BEFORE."""
+
     def apply(self):
+        head = self.variables["is_uc_eligible"].get_formula()
+
+        class is_uc_eligible(Variable):
+            def formula(benunit, period, parameters):
+                return where(
+                    benunit("uses_main_eligibility", period),
+                    main_eligibility(benunit, period, parameters),
+                    head(benunit, period, parameters),
+                )
+
+        self.add_variable(uses_main_eligibility)
         self.update_variable(is_uc_eligible)
 
 
@@ -214,11 +227,12 @@ def cases(draw):
 
 def situation(case, variants):
     """Each family in a household of its own, once for each variant. A variant
-    is None for the drawn inputs, or a function that takes a person's index
-    and inputs and returns the inputs to use."""
+    is a pair: None for the drawn inputs, or a function that takes a person's
+    index and inputs and returns the inputs to use; and whether the family
+    takes main's eligibility formula (BEFORE)."""
     year = case["year"]
     people, benunits, households = {}, {}, {}
-    for v, change in enumerate(variants):
+    for v, (change, uses_main) in enumerate(variants):
         index = 0
         for f, fam in enumerate(case["families"]):
             members = []
@@ -232,6 +246,7 @@ def situation(case, variants):
                 index += 1
             benunits[f"b{v}_{f}"] = {
                 "members": members,
+                "uses_main_eligibility": {year: uses_main},
                 **{k: {year: x} for k, x in fam["benunit"].items()},
             }
             households[f"h{v}_{f}"] = {
@@ -268,11 +283,14 @@ VARIABLES = OUTPUTS + [
 ]
 
 
-def run(case, variants=(None,), before=False):
+DRAWN = (None, False)
+BEFORE = (None, True)
+
+
+def run(case, variants=(DRAWN,)):
     """One simulation of every variant; returns one result per variant."""
     simulation = Simulation(situation=situation(case, variants))
-    if before:
-        simulation.apply_reform(before_education_condition)
+    simulation.apply_reform(with_main_eligibility)
     year = case["year"]
     values = {name: simulation.calculate(name, year) for name in VARIABLES}
     limit = simulation.tax_benefit_system.parameters(
@@ -542,10 +560,16 @@ def check(case):
     def no_loans_or_grants(i, values):
         return {**values, "student_loans": 0, "education_grants": 0}
 
-    drawn, no_flags, reversed_others, no_loans = run(
-        case, variants=[None, unflagged, others_reversed, no_loans_or_grants]
+    drawn, no_flags, reversed_others, no_loans, before = run(
+        case,
+        variants=[
+            DRAWN,
+            (unflagged, False),
+            (others_reversed, False),
+            (no_loans_or_grants, False),
+            BEFORE,
+        ],
     )
-    (before,) = run(case, before=True)
     claimant = drawn["is_uc_single_or_joint_claimant"]
     np.testing.assert_array_equal(drawn["is_uc_assessed_claimant"], couple, context)
 
@@ -642,33 +666,40 @@ def test_education_condition_invariants(case):
 
 def test_examples_reach_the_cases():
     """The examples exclude the issue's student, apply the couple rule both
-    ways and send the young Housing Benefit claimant down the ordinary route,
-    so the invariants run on each outcome."""
-    (issue,) = run(EXAMPLES[0])
-    assert not issue["is_uc_eligible"][0]
-    assert issue["universal_credit"][0] == 0
-    assert run(EXAMPLES[0], before=True)[0]["universal_credit"][0] > 0
-    (couples,) = run(EXAMPLES[1])
-    np.testing.assert_array_equal(couples["is_uc_eligible"], [False, True])
+    ways and send the young Housing Benefit claimants down the ordinary
+    route, so the invariants run on each outcome. One simulation holds the
+    four examples, as drawn and under BEFORE."""
+    assert all(example["year"] == 2026 for example in EXAMPLES)
+    case = dict(
+        year=2026,
+        families=[family for example in EXAMPLES for family in example["families"]],
+    )
+    drawn, before = run(case, variants=[DRAWN, BEFORE])
+    # Families: the issue's student; the student couples of EXAMPLES[1]; the
+    # mixed-age couples of EXAMPLES[2]; the young Housing Benefit claimants.
     np.testing.assert_array_equal(
-        couples["uc_is_excepted_from_education_condition"],
+        drawn["is_uc_eligible"], [False, False, True, True, False, True, True]
+    )
+    assert drawn["universal_credit"][0] == 0
+    assert before["universal_credit"][0] > 0
+    # People 1 to 4: the mixed-age student couple and the foster couple.
+    np.testing.assert_array_equal(
+        drawn["uc_is_excepted_from_education_condition"][1:5],
         [True, False, True, False],
     )
-    (mixed_age,) = run(EXAMPLES[2])
-    np.testing.assert_array_equal(mixed_age["is_uc_eligible"], [True, False])
-    (young,) = run(EXAMPLES[3])
+    # People 9 and 10: the young Housing Benefit claimants.
+    young = slice(9, 11)
     np.testing.assert_array_equal(
-        young["is_qualifying_young_person_for_universal_credit"], [True, True]
+        drawn["is_qualifying_young_person_for_universal_credit"][young], [True, True]
     )
     np.testing.assert_array_equal(
-        young["is_qualifying_young_person_for_uc_education"], [False, False]
+        drawn["is_qualifying_young_person_for_uc_education"][young], [False, False]
     )
-    np.testing.assert_array_equal(young["uc_receiving_education"], [False, True])
+    np.testing.assert_array_equal(drawn["uc_receiving_education"][young], [False, True])
     np.testing.assert_array_equal(
-        young["uc_is_excepted_from_education_condition"], [False, True]
+        drawn["uc_is_excepted_from_education_condition"][young], [False, True]
     )
-    np.testing.assert_array_equal(young["is_uc_eligible"], [True, True])
-    assert np.all(young["universal_credit"] > 0)
+    assert np.all(drawn["universal_credit"][5:] > 0)
 
 
 def test_student_head_moves_non_dependant_to_joint_tenant():
