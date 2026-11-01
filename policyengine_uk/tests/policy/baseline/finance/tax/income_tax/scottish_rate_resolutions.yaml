@@ -1,11 +1,14 @@
-# Scottish income tax on pay alone, in the tax years whose rates and limits
-# PolicyEngine/policyengine-uk#2783 corrects. Each motion sets the rates and
-# limits on taxable income, above the personal allowance:
+# Scottish income tax for 2018-19 through 2021-22: pay alone, and married
+# couples at the intermediate rate limit. The Scottish Parliament set each
+# year's rates and limits by motion: S5M-10397, S5M-15879, S5M-21090 and
+# S5M-24225, at
 # https://www.parliament.scot/chamber-and-committees/votes-and-motions/<motion>
-# Personal allowance: £11,850 (2018-19), £12,500 (2019-20 and 2020-21) and
-# £12,570 (2021-22), withdrawn by £1 for every £2 of income above £100,000
-# (ITA 2007 s. 35), so it is nil at £160,000. gov.scot's tables for each year
-# give the same bands with that allowance added.
+# The motions charge each rate on "income" up to a limit. ITA 2007 s. 23
+# deducts the personal allowance at Step 3 and charges the rates at Step 4, so
+# the limits apply to income after the allowance. The allowance is £11,850 in
+# 2018-19, £12,500 in 2019-20 and 2020-21 and £12,570 in 2021-22; s. 35(2)
+# withdraws £1 of it for every £2 of income above £100,000, leaving none at
+# £160,000. gov.scot's table for each year adds the allowance to the limits.
 
 # 2018-19, S5M-10397: 19% to £2,000, 20% to £12,150, 21% to £31,580,
 # 41% to £150,000, 46% above.
@@ -46,7 +49,7 @@
     earned_taxable_income: 18_150
     income_tax: 3_670
 
-- name: Scottish 2018-19 taxable income at the 31580 higher rate limit has no tax at 41 percent
+- name: Scottish 2018-19 taxable income at the 31580 intermediate rate limit has no tax at 41 percent
   period: 2018
   absolute_error_margin: 0.01
   input:
@@ -148,7 +151,7 @@
     earned_taxable_income: 22_500
     income_tax: 4_580.07
 
-- name: Scottish 2019-20 taxable income at the 30930 higher rate limit has no tax at 41 percent
+- name: Scottish 2019-20 taxable income at the 30930 intermediate rate limit has no tax at 41 percent
   period: 2019
   absolute_error_margin: 0.01
   input:
@@ -250,7 +253,7 @@
     earned_taxable_income: 22_500
     income_tax: 4_577.57
 
-- name: Scottish 2020-21 taxable income at the 30930 higher rate limit has no tax at 41 percent
+- name: Scottish 2020-21 taxable income at the 30930 intermediate rate limit has no tax at 41 percent
   period: 2020
   absolute_error_margin: 0.01
   input:
@@ -377,3 +380,374 @@
     # = 6,381.09 + 48,752.28 + 4,600 = 59,733.37.
     earned_taxable_income: 160_000
     income_tax: 59_733.37
+
+# Married Scottish couples at the intermediate rate limit in 2018-19 to
+# 2020-21. The spouse's £5,000 of pay stays below the allowance left after the
+# election (ITA 2007 s. 55C(1)(c)), so the earner can receive the Marriage
+# Allowance if they pay tax only at the rates s. 55B(2)(b) lists: the Scottish
+# starter, basic and intermediate rates, and the starting, nil and savings
+# basic rates for savings (FA 2016 s. 6(15)(a), from 2017-18). The
+# transferable amount is 10% of the personal allowance, rounded up to £10
+# (s. 55B(4)(b), (5)). The earner's tax falls by 20% of it after tax is worked
+# out at each rate (s. 55A(2), s. 55B(1) and (3), Step 6 of s. 23).
+#
+# The model takes the transferable amount off the earner's income instead
+# (#1947), so its income tax for a claiming couple differs from the law's.
+# These cases check the claim and the amount transferred, and check the tax
+# at each rate on a twin couple that makes no election.
+
+# 2018-19, S5M-10397: 21% to £31,580, then 41%. Allowance £11,850, so the
+# transferable amount is £1,190 and the spouse keeps £10,660.
+
+- name: Scottish 2018-19 earner at the 31580 limit can receive the Marriage Allowance
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    people:
+      earner:
+        age: 40
+        employment_income: 43_430
+      spouse:
+        age: 40
+        employment_income: 5_000
+    benunits:
+      couple:
+        members: [earner, spouse]
+        is_married: true
+    households:
+      home:
+        members: [earner, spouse]
+        region: SCOTLAND
+  output:
+    # 43,430 - 11,850 = 31,580, none of it above the intermediate rate
+    # limit. Without the election the earner pays 6,490.30, the single
+    # case above; with it, the law gives 6,490.30 - 1,190 x 20% = 6,252.30.
+    non_savings_income_after_allowances: [31_580, 0]
+    tax_band: [INTERMEDIATE, NONE]
+    meets_marriage_allowance_income_conditions: [true, true]
+    marriage_allowance: [1_190, 0]
+
+- name: Scottish 2018-19 earner 1 pound above the 31580 limit cannot receive the Marriage Allowance
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    people:
+      earner:
+        age: 40
+        employment_income: 43_431
+      spouse:
+        age: 40
+        employment_income: 5_000
+    benunits:
+      couple:
+        members: [earner, spouse]
+        is_married: true
+    households:
+      home:
+        members: [earner, spouse]
+        region: SCOTLAND
+  output:
+    # 31,581 of taxable income puts 1 at the 41% higher rate, which
+    # s. 55B(2)(b) does not list. 6,490.30 + 1 x 41% = 6,490.71.
+    tax_band: [HIGHER, NONE]
+    meets_marriage_allowance_income_conditions: [false, true]
+    marriage_allowance: [0, 0]
+    income_tax: [6_490.71, 0]
+
+# 2019-20, S5M-15879: 19% to £2,049, 20% to £12,444, 21% to £30,930,
+# 41% to £150,000, 46% above. Allowance £12,500, so the transferable amount
+# is £1,250 and the spouse keeps £11,250. Savings: £5,000 starting rate limit
+# (s. 12(3)), £1,000 savings allowance (s. 12B(4)), £37,500 basic rate limit
+# (s. 10(5)), 20% savings basic rate.
+
+- name: Scottish 2019-20 earner at the 30930 limit can receive the Marriage Allowance
+  period: 2019
+  absolute_error_margin: 0.01
+  input:
+    people:
+      earner:
+        age: 40
+        employment_income: 43_430
+      spouse:
+        age: 40
+        employment_income: 5_000
+    benunits:
+      couple:
+        members: [earner, spouse]
+        is_married: true
+    households:
+      home:
+        members: [earner, spouse]
+        region: SCOTLAND
+  output:
+    # 43,430 - 12,500 = 30,930, all at or below the intermediate rate limit,
+    # so none at the 41% higher rate.
+    non_savings_income_after_allowances: [30_930, 0]
+    tax_band: [INTERMEDIATE, NONE]
+    meets_marriage_allowance_income_conditions: [true, true]
+    marriage_allowance: [1_250, 0]
+
+- name: Scottish 2019-20 earner at the 30930 limit without the election pays the intermediate rate on the last pound
+  period: 2019
+  absolute_error_margin: 0.01
+  input:
+    people:
+      earner:
+        age: 40
+        employment_income: 43_430
+        would_claim_marriage_allowance: false
+      spouse:
+        age: 40
+        employment_income: 5_000
+    benunits:
+      couple:
+        members: [earner, spouse]
+        is_married: true
+    households:
+      home:
+        members: [earner, spouse]
+        region: SCOTLAND
+  output:
+    # 2,049 x 19% + 10,395 x 20% + 18,486 x 21%
+    # = 389.31 + 2,079 + 3,882.06 = 6,350.37.
+    # With the election, the law gives 6,350.37 - 250.
+    earned_income_tax: [6_350.37, 0]
+    income_tax: [6_350.37, 0]
+    marriage_allowance: [0, 0]
+
+- name: Scottish 2019-20 earner 1 pound above the 30930 limit cannot receive the Marriage Allowance
+  period: 2019
+  absolute_error_margin: 0.01
+  input:
+    people:
+      earner:
+        age: 40
+        employment_income: 43_431
+      spouse:
+        age: 40
+        employment_income: 5_000
+    benunits:
+      couple:
+        members: [earner, spouse]
+        is_married: true
+    households:
+      home:
+        members: [earner, spouse]
+        region: SCOTLAND
+  output:
+    # 30,931 of taxable income puts 1 at the 41% higher rate, which
+    # s. 55B(2)(b) does not list. 6,350.37 + 1 x 41% = 6,350.78.
+    tax_band: [HIGHER, NONE]
+    meets_marriage_allowance_income_conditions: [false, true]
+    marriage_allowance: [0, 0]
+    income_tax: [6_350.78, 0]
+
+- name: Scottish 2019-20 earner with pay of 14000 and savings of 29500 can receive the Marriage Allowance
+  period: 2019
+  absolute_error_margin: 0.01
+  input:
+    people:
+      earner:
+        age: 40
+        employment_income: 14_000
+        savings_interest_income: 29_500
+      spouse:
+        age: 40
+        employment_income: 5_000
+    benunits:
+      couple:
+        members: [earner, spouse]
+        is_married: true
+    households:
+      home:
+        members: [earner, spouse]
+        region: SCOTLAND
+  output:
+    # 1,500 of pay above the allowance bears the starter rate. Savings sit
+    # on top (s. 16) and take the rest-of-UK bands (s. 11D(6)): 31,000 of
+    # taxable income stays below the 37,500 basic rate limit, though it
+    # passes the 30,930 Scottish limit, so nothing bears a higher rate.
+    non_savings_income_after_allowances: [1_500, 0]
+    tax_band: [BASIC, NONE]
+    meets_marriage_allowance_income_conditions: [true, true]
+    marriage_allowance: [1_250, 0]
+
+- name: Scottish 2019-20 earner with pay of 14000 and savings of 29500 without the election pays the starter and savings basic rates
+  period: 2019
+  absolute_error_margin: 0.01
+  input:
+    people:
+      earner:
+        age: 40
+        employment_income: 14_000
+        savings_interest_income: 29_500
+        would_claim_marriage_allowance: false
+      spouse:
+        age: 40
+        employment_income: 5_000
+    benunits:
+      couple:
+        members: [earner, spouse]
+        is_married: true
+    households:
+      home:
+        members: [earner, spouse]
+        region: SCOTLAND
+  output:
+    # Pay: 1,500 x 19% = 285. Savings: 5,000 - 1,500 = 3,500 at the 0%
+    # starting rate (s. 12), 1,000 at the savings nil rate (s. 12A, 12B(4)),
+    # and 29,500 - 3,500 - 1,000 = 25,000 x 20% = 5,000.
+    # With the election, the law gives 5,285 - 250 = 5,035.
+    earned_income_tax: [285, 0]
+    savings_income_tax: [5_000, 0]
+    income_tax: [5_285, 0]
+    marriage_allowance: [0, 0]
+
+# 2020-21, S5M-21090: 19% to £2,085, 20% to £12,658, 21% to £30,930,
+# 41% to £150,000, 46% above. Allowance £12,500, so the transferable amount
+# is £1,250 and the spouse keeps £11,250. Savings: £5,000 starting rate limit
+# (s. 12(3)), £1,000 savings allowance (s. 12B(4)), £37,500 basic rate limit
+# (s. 10(5)), 20% savings basic rate.
+
+- name: Scottish 2020-21 earner at the 30930 limit can receive the Marriage Allowance
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    people:
+      earner:
+        age: 40
+        employment_income: 43_430
+      spouse:
+        age: 40
+        employment_income: 5_000
+    benunits:
+      couple:
+        members: [earner, spouse]
+        is_married: true
+    households:
+      home:
+        members: [earner, spouse]
+        region: SCOTLAND
+  output:
+    # 43,430 - 12,500 = 30,930, all at or below the intermediate rate limit,
+    # so none at the 41% higher rate.
+    non_savings_income_after_allowances: [30_930, 0]
+    tax_band: [INTERMEDIATE, NONE]
+    meets_marriage_allowance_income_conditions: [true, true]
+    marriage_allowance: [1_250, 0]
+
+- name: Scottish 2020-21 earner at the 30930 limit without the election pays the intermediate rate on the last pound
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    people:
+      earner:
+        age: 40
+        employment_income: 43_430
+        would_claim_marriage_allowance: false
+      spouse:
+        age: 40
+        employment_income: 5_000
+    benunits:
+      couple:
+        members: [earner, spouse]
+        is_married: true
+    households:
+      home:
+        members: [earner, spouse]
+        region: SCOTLAND
+  output:
+    # 2,085 x 19% + 10,573 x 20% + 18,272 x 21%
+    # = 396.15 + 2,114.60 + 3,837.12 = 6,347.87.
+    # With the election, the law gives 6,347.87 - 250.
+    earned_income_tax: [6_347.87, 0]
+    income_tax: [6_347.87, 0]
+    marriage_allowance: [0, 0]
+
+- name: Scottish 2020-21 earner 1 pound above the 30930 limit cannot receive the Marriage Allowance
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    people:
+      earner:
+        age: 40
+        employment_income: 43_431
+      spouse:
+        age: 40
+        employment_income: 5_000
+    benunits:
+      couple:
+        members: [earner, spouse]
+        is_married: true
+    households:
+      home:
+        members: [earner, spouse]
+        region: SCOTLAND
+  output:
+    # 30,931 of taxable income puts 1 at the 41% higher rate, which
+    # s. 55B(2)(b) does not list. 6,347.87 + 1 x 41% = 6,348.28.
+    tax_band: [HIGHER, NONE]
+    meets_marriage_allowance_income_conditions: [false, true]
+    marriage_allowance: [0, 0]
+    income_tax: [6_348.28, 0]
+
+- name: Scottish 2020-21 earner with pay of 14000 and savings of 29500 can receive the Marriage Allowance
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    people:
+      earner:
+        age: 40
+        employment_income: 14_000
+        savings_interest_income: 29_500
+      spouse:
+        age: 40
+        employment_income: 5_000
+    benunits:
+      couple:
+        members: [earner, spouse]
+        is_married: true
+    households:
+      home:
+        members: [earner, spouse]
+        region: SCOTLAND
+  output:
+    # 1,500 of pay above the allowance bears the starter rate. Savings sit
+    # on top (s. 16) and take the rest-of-UK bands (s. 11D(6)): 31,000 of
+    # taxable income stays below the 37,500 basic rate limit, though it
+    # passes the 30,930 Scottish limit, so nothing bears a higher rate.
+    non_savings_income_after_allowances: [1_500, 0]
+    tax_band: [BASIC, NONE]
+    meets_marriage_allowance_income_conditions: [true, true]
+    marriage_allowance: [1_250, 0]
+
+- name: Scottish 2020-21 earner with pay of 14000 and savings of 29500 without the election pays the starter and savings basic rates
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    people:
+      earner:
+        age: 40
+        employment_income: 14_000
+        savings_interest_income: 29_500
+        would_claim_marriage_allowance: false
+      spouse:
+        age: 40
+        employment_income: 5_000
+    benunits:
+      couple:
+        members: [earner, spouse]
+        is_married: true
+    households:
+      home:
+        members: [earner, spouse]
+        region: SCOTLAND
+  output:
+    # Pay: 1,500 x 19% = 285. Savings: 5,000 - 1,500 = 3,500 at the 0%
+    # starting rate (s. 12), 1,000 at the savings nil rate (s. 12A, 12B(4)),
+    # and 29,500 - 3,500 - 1,000 = 25,000 x 20% = 5,000.
+    # With the election, the law gives 5,285 - 250 = 5,035.
+    earned_income_tax: [285, 0]
+    savings_income_tax: [5_000, 0]
+    income_tax: [5_285, 0]
+    marriage_allowance: [0, 0]
