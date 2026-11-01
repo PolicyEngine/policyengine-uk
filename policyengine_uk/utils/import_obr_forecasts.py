@@ -590,9 +590,10 @@ TABLE_TITLE_RE = re.compile(r"^(\d+\.\d+)\s+(.+)$")
 TABLE_NUMBER_RE = re.compile(r"\d+\.\d+")
 FOOTNOTE_RE = re.compile(r"(?<=[a-z])\d+$", re.IGNORECASE)
 VALUE_LINE_RE = re.compile(r"^\s*(\d{4})-\d{2}-\d{2}:")
-# The last year yoy_growth.yaml states. create_economic_assumption_indices
-# stops at or before it, so a series that stays positive to here stays
-# positive in the model.
+# The last year any growth series reaches: yoy_growth.yaml's last entries are
+# for 2073, and lag_source_years runs a lagged series a year past its source.
+# create_economic_assumption_indices stops at or before 2074, so a series that
+# stays positive to here stays positive in the model.
 LAST_INDEX_YEAR = 2074
 
 

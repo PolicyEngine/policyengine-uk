@@ -53,12 +53,13 @@ The seven `per_capita.gambling_duty_bases` series (`general_betting`,
 `lottery`) grow the gambling duty inputs (#2738). They grow a duty's base,
 not its receipts: each year's receipts divided by the rate the model charges
 that fiscal year. The model then applies its own rate changes, such as
-Remote Gaming Duty's rise from 21% to 40% on 1 April 2026, once. The table
-publishes forecasts only, so each series starts from HMRC's 2024-25
-receipts, the model's base year, and its 2025-26 outturn, which the importer
-holds in `RECEIPTS_SERIES_SPECS`. A year whose rate is zero, Bingo Duty's
-from 2026-27, holds the base flat, and after the forecast the base grows
-with `average_earnings`. The importer writes each series per person, (1 +
+Remote Gaming Duty's rise from 21% to 40% on 1 April 2026, once. The OBR
+publishes only forecasts in Table 4.10, so each series starts from HMRC's
+2024-25 receipts, the model's base year, and its 2025-26 outturn, which the
+importer holds in `RECEIPTS_SERIES_SPECS`. The importer holds a base flat in
+any year whose rate is zero, as for Bingo Duty from 2026-27 on, and after the
+forecast it grows every other base with `average_earnings`. The importer
+writes each series per person, (1 +
 base growth) / (1 + `ons.population` growth) - 1 to six decimals, in every
 year to the last that `ons.population` states. Dataset projection grows
 household weights by `ons.population`, so the weighted inputs grow with the
