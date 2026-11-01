@@ -15,13 +15,14 @@ class meets_council_tax_reduction_enhanced_disability_premium_condition(Variable
         "scheme's own list of qualifying benefits applies, which adds "
         "attendance allowance at either rate from 1 April 2023, and the age "
         "limit applies only until 20 June 2022. Elsewhere the condition is "
-        "Housing Benefit's: a qualifying benefit (receives_enhanced_"
-        "disability_premium_qualifying_benefit) and not having attained the "
-        "qualifying age for State Pension Credit, as in the Welsh scheme and "
-        "England's Default Scheme. The English councils' own schemes have not "
-        "been checked against this. England's Default Scheme names the PIP "
-        "daily living component at either rate and does not name armed forces "
-        "independence payment, which the model does not follow."
+        "Housing Benefit's, as in the Welsh scheme: a qualifying benefit "
+        "(receives_enhanced_disability_premium_qualifying_benefit) and not "
+        "having attained the qualifying age for State Pension Credit. "
+        "England's Default Scheme has the same age limit but names the PIP "
+        "daily living component at either rate and no armed forces "
+        "independence payment. The model applies the Housing Benefit "
+        "condition to the English councils' schemes, whose own documents "
+        "have not been checked against it."
     )
     definition_period = YEAR
     reference = (
@@ -32,9 +33,8 @@ class meets_council_tax_reduction_enhanced_disability_premium_condition(Variable
     )
 
     def formula(person, period, parameters):
-        p = parameters(
-            period
-        ).gov.local_authorities.scotland.council_tax_reduction.working_age.enhanced_disability_premium
+        ctr = parameters(period).gov.local_authorities.scotland.council_tax_reduction
+        p = ctr.working_age.enhanced_disability_premium
         scotland = is_scotland_scheme(person.household("country", period))
         under_age = ~person("has_attained_state_pension_credit_qualifying_age", period)
         scottish = (add(person, period, p.qualifying_benefits) > 0) & (

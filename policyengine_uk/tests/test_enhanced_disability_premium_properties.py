@@ -32,9 +32,10 @@ daily living, attendance allowance and AFIP awards:
    Tax Reduction premium equals the legacy premium; in Scotland from 2023 it
    is never lower.
 6. Differential: for a child or young person in Great Britain, the enhanced
-   rate in the Housing Benefit child premiums (housing_benefit_child_disability_premiums,
-   which encodes the same paragraph 15 list separately) is paid exactly when
-   the child receives a qualifying benefit.
+   rate in the Housing Benefit child premiums
+   (housing_benefit_child_disability_premiums, which encodes the same
+   paragraph 15 list separately) is paid exactly when the child receives a
+   qualifying benefit.
 """
 
 import numpy as np
