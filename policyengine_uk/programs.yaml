@@ -668,7 +668,7 @@ programs:
     name: Scottish income tax
     full_name: Scottish Income Tax Rates
     category: Taxes
-    agency: Revenue Scotland
+    agency: HMRC
     status: complete
     coverage: Scotland
     verified_start_year: 2019

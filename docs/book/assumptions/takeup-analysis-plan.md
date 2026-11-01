@@ -136,7 +136,7 @@ For each programme above, the analysis should produce:
 Most published reference rates change roughly annually (HMRC's tax
 credit take-up rates stop at 2017 to 2018). The analysis should be
 repeatable, ideally as a notebook under
-[`docs/book/validation/`](../validation/) so future builds can re-run
+[`docs/book/validation/`](../validation/validation.ipynb) so future builds can re-run
 it and update the gaps table. A notebook needs its own `file:` entry
 under Validation in `myst.yml` to appear in the docs, since only
 Markdown pages are picked up by folder.
