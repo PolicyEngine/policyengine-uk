@@ -73,6 +73,7 @@ from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing
 )
 from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_specified_or_temporary_accommodation_disregard import (
     hb_accommodation_segments,
+    hb_apply_defined_for,
 )
 
 
@@ -710,3 +711,68 @@ def test_a_wtc_condition_reading_the_earnings_disregard_runs(
     assert sim.calculate(EARNINGS, year)[0] == pytest.approx(earnings, abs=TOLERANCE)
     assert sim.calculate(WTC_DISREGARD, year)[0] == pytest.approx(wtc, abs=TOLERANCE)
     assert sim.calculate(AWARD, year)[0] == pytest.approx(award, abs=TOLERANCE)
+
+
+NUMERIC_CONDITION = "housing_benefit_numeric_reform_condition"
+PROBE = "housing_benefit_reform_probe_amount"
+
+
+class numeric_conditions(Reform):
+    """A numeric benefit-unit condition. A probe amount of £99, with a
+    default of £7, and applicable income, with a default of £17, apply where
+    it exceeds zero."""
+
+    def apply(self):
+        class condition(Variable):
+            value_type = float
+            entity = BenUnit
+            definition_period = YEAR
+            label = "Numeric reform condition for Housing Benefit amounts"
+
+        class probe(Variable):
+            value_type = float
+            entity = BenUnit
+            definition_period = YEAR
+            label = "Reform probe amount"
+            default_value = 7
+            defined_for = NUMERIC_CONDITION
+
+            def formula(benunit, period, parameters):
+                return benunit.filled_array(99)
+
+        class income(Variable):
+            default_value = 17
+            defined_for = NUMERIC_CONDITION
+
+        condition.__name__ = NUMERIC_CONDITION
+        probe.__name__ = PROBE
+        income.__name__ = INCOME
+        self.add_variable(condition)
+        self.add_variable(probe)
+        self.update_variable(income)
+
+
+def test_a_numeric_condition_applies_where_it_exceeds_zero():
+    """Core keeps an amount where its condition exceeds zero and returns the
+    variable's default elsewhere, negative conditions included, and so does
+    hb_apply_defined_for. Three of the issue's claimants in 2026-27, with
+    tax credits kept, have conditions of -1, 1 and 0. Where income's
+    condition fails, each segment's income is its £17 default, and the award
+    is 10,400 - 0.65 * 17 = 10,388.95; where it holds, the model's
+    £1,350.80 gives 9,521.98."""
+    sim = simulation(
+        [ISSUE_CLAIMANT] * 3,
+        YEAR_WITH_SEGMENTS,
+        tax_benefit_system=numeric_conditions(tax_credits_kept()),
+        dated_accommodation=True,
+    )
+    sim.set_input(NUMERIC_CONDITION, YEAR_WITH_SEGMENTS, [-1, 1, 0])
+    helper = hb_apply_defined_for(
+        sim.populations["benunit"], period_(YEAR_WITH_SEGMENTS), PROBE, np.full(3, 99)
+    )
+    assert_close(helper, [7, 99, 7])
+    assert_close(sim.calculate(PROBE, YEAR_WITH_SEGMENTS), [7, 99, 7])
+    assert_close(sim.calculate(INCOME, YEAR_WITH_SEGMENTS), [17, 1_350.80, 17])
+    assert_close(
+        sim.calculate(AWARD, YEAR_WITH_SEGMENTS), [10_388.95, 9_521.98, 10_388.95]
+    )
