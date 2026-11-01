@@ -18,7 +18,7 @@ class esa_income_appointee_saving(Variable):
         "52 of the Northern Ireland Claims and Payments Regulations 2016. A "
         "Universal Credit claim still ends a saved award (art. 3A(3); "
         "esa_income_report_closed). No dataset identifies appointees, so this "
-        "defaults to false and dataset runs end every unsaved award."
+        "defaults to false and the saving is off in dataset runs."
     )
     definition_period = YEAR
     default_value = False

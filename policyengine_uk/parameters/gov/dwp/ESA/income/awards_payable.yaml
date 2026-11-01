@@ -4,15 +4,11 @@ description: >-
   income-related ESA came into force for every remaining award on 1 July 2026
   in Great Britain and 1 October 2026 in Northern Ireland, except awards saved
   for an appointee (esa_income_appointee_saving). A contributory allowance in
-  the same award continues as new style ESA. Annual formulas read parameters
-  once, at the start of the model year, after fiscal-year conversion.
-  Parameters normally sample 30 April, but these numeric flags use
-  fiscal_year_blend to take the day-weighted average from 6 April to 5 April,
-  so 2026-27 carries 86 of its 365 days in Great Britain and 178 in Northern
-  Ireland. In a Simulation reform dictionary a bare year overrides the whole
-  fiscal year, while a key dated inside the year (for example 2026-07-01)
-  leaves that model year's value unchanged. Use whole-year values or a date
-  range for annual reform scenarios.
+  the same award continues as new style ESA. Ordinary parameters take their
+  30 April value for a model year, which would leave 2026-27 untouched, so
+  these numeric flags use fiscal_year_blend to take the day-weighted average
+  from 6 April to 5 April: 2026-27 carries 86 of its 365 days in Great Britain
+  and 178 in Northern Ireland.
 great_britain:
   description: Whether old style income-related Employment and Support Allowance awards are still payable in Great Britain. SI 2025/1148 art. 3A brought section 33(1)(b) of the Welfare Reform Act 2012 into force for them on 1 July 2026.
   values:
