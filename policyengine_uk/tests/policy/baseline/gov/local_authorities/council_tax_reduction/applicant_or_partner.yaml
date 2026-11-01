@@ -226,7 +226,7 @@
     # councils pay for attendance allowance from 1 April 2023 (SSI 2021/249
     # Sch 1 para 14(1)(g)): (44.85 + 86.05 + 22.00) * 52. The young
     # mother's disability does not give the grandmother a premium, and at 17
-    # neither parent is a non-dependant who bars the severe disability
+    # neither parent counts as a non-dependant who bars the severe disability
     # premium.
     council_tax_reduction_premiums: [7_950.80]
     # Single aged 25 or over, 95.55 * 52 = 4,968.60, plus the premiums.
