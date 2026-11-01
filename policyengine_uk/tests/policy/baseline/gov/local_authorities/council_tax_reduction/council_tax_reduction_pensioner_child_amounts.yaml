@@ -624,3 +624,81 @@
     # Para 6(1B)(a): an award "whether or not any amount is payable". The
     # individual elements for three give 3 * 83.24 * 52 = 12,985.44.
     council_tax_reduction_pensioner_child_amounts: 12_985.44
+
+- name: Case 21, England's 2024-25 scheme counts two of three where the family is eligible for Child Tax Credit but would not claim it.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 23_000
+      child_1:
+        age: 10
+      child_2:
+        age: 12
+      child_3:
+        age: 14
+    benunits:
+      benunit:
+        members: [pensioner, child_1, child_2, child_3]
+        would_claim_pc: false
+        would_claim_uc: false
+        would_claim_CTC: false
+        is_CTC_eligible: true
+        child_tax_credit: 0
+    households:
+      household:
+        members: [pensioner, child_1, child_2, child_3]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    # Eligibility without a claim is no award (TCA 2002 s.3(1)), and the
+    # family has no final award either.
+    child_tax_credit: 0
+    is_CTC_child_element_included: [false, true, true, true]
+    # Para 6(1)(b): up to two. 2 * 83.24 * 52 = 8,656.96.
+    council_tax_reduction_pensioner_child_amounts: 8_656.96
+
+- name: Case 22, England's 2024-25 scheme counts two of three where a reform ends tax credits and the family reports Child Tax Credit.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    gov.dwp.tax_credits.active: false
+    people:
+      pensioner:
+        age: 72
+        state_pension: 23_000
+        child_tax_credit_reported: 1
+      child_1:
+        age: 10
+      child_2:
+        age: 12
+      child_3:
+        age: 14
+    benunits:
+      benunit:
+        members: [pensioner, child_1, child_2, child_3]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child_1, child_2, child_3]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    # The report still gives a claim and eligibility, but the closed scheme
+    # pays nothing and has_tax_credit_award infers no award from it.
+    would_claim_CTC: true
+    is_CTC_eligible: true
+    child_tax_credit: 0
+    has_tax_credit_award: false
+    council_tax_reduction_pensioner: true
+    is_CTC_child_element_included: [false, true, true, true]
+    # No award, so para 6(1)(b) counts up to two: 2 * 83.24 * 52 = 8,656.96.
+    council_tax_reduction_pensioner_child_amounts: 8_656.96
