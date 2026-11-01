@@ -17,7 +17,7 @@ class council_tax_reduction_enhanced_disability_premium(Variable):
         "model pays the Housing Benefit amounts in every scheme. Both 2026-27 "
         "editions of Kingston upon Thames's scheme print £17.10 single and "
         "£24.50 couple (Sch 3 para 17(5)). In 2014 the council adopted an "
-        "annual uprating mechanism (Annex 3), which takes working-age "
+        "annual uprating mechanism (Annex 3), under which it takes working-age "
         "premiums from the Government's and DWP's uprating documents where "
         "the pension-age uprating omits them, and delegated each year's "
         "uprating to its Director of Finance. The model follows that "
