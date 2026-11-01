@@ -27,7 +27,8 @@ parents in each UK nation and in five English councils besides the default
 one, at adult ages from 20 to 85, each holding up to two awards drawn from
 DLA care and PIP daily living categories, amounts entered without a category,
 categories with an explicit amount (zero or part of the rate), attendance
-allowance and AFIP:
+allowance and AFIP. Each person gets explicit DLA care and PIP daily living
+amounts: the amount the award enters, or the rate for its category:
 
 1. Oracle: enhanced_disability_premium equals the amount the law gives,
    computed here from the award inputs and the parameter rates, and
@@ -225,6 +226,19 @@ def every_year(inputs):
     return {k: {year: v for year in YEARS} for k, v in inputs.items()}
 
 
+def person_inputs(age, awards, **extra):
+    """A person's inputs for every year. A situation that supplies an amount
+    for one person supplies the default, zero, for everyone else, as it does
+    for categories (utils/pip.py). So every person gets both amounts: the
+    amount entered, or the rate for the award category, which the amount
+    formulas would give."""
+    inputs = award_inputs(awards)
+    person = every_year(dict(age=age, **extra, **inputs))
+    for benefit in ("dla_sc", "pip_dl"):
+        person[benefit] = {year: amount(inputs, benefit, year) for year in YEARS}
+    return person
+
+
 def household_inputs(country, council):
     inputs = dict(country=country)
     if council is not None:
@@ -241,21 +255,20 @@ def build(families, children):
         members = []
         for j, a in enumerate(adults_of(f)):
             name = f"f{i}_adult{j}"
-            inputs = dict(
-                age=a["age"], is_claimant_or_partner=True, **award_inputs(a["awards"])
+            people[name] = person_inputs(
+                a["age"], a["awards"], is_claimant_or_partner=True
             )
-            people[name] = every_year(inputs)
             members.append(name)
         if f["shape"] == "lone_parent":
             name = f"f{i}_child"
-            people[name] = every_year(dict(age=8, is_claimant_or_partner=False))
+            people[name] = person_inputs(8, (), is_claimant_or_partner=False)
             members.append(name)
         benunits[f"f{i}"] = {"members": members}
         households[f"f{i}"] = dict(members=members, **household_inputs(*f["place"]))
     for i, c in enumerate(children):
         members = [f"c{i}_parent", f"c{i}_child"]
-        people[members[0]] = every_year(dict(age=35))
-        people[members[1]] = every_year(dict(age=c["age"], **award_inputs(c["awards"])))
+        people[members[0]] = person_inputs(35, ())
+        people[members[1]] = person_inputs(c["age"], c["awards"])
         benunits[f"c{i}"] = {"members": members}
         households[f"c{i}"] = dict(
             members=members, **household_inputs(c["country"], None)
