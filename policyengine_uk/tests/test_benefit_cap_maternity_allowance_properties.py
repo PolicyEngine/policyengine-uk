@@ -1,13 +1,13 @@
-"""The benefit cap counts Maternity Allowance like the other welfare benefits.
+"""DWP and councils count Maternity Allowance in the benefit cap.
 
-Parliament lists maternity allowance among the welfare benefits the cap
-applies to (Welfare Reform Act 2012 s.96(10)(i)), and the woman entitled to it
-receives it (Social Security Contributions and Benefits Act 1992 s.35(1)). UC
-Regs 2013 regs 79(1) and 80(1) and HB Regs 2006 reg 75A count the welfare
-benefits "to which the single person or couple is entitled". Regs 80(4) and
-75C(4) take the amount each scheme counts as income, which for Maternity
-Allowance is all of it (UC Regs 2013 reg 66(1)(b)(viii); HB Regs 2006 reg 40,
-whose Sch 5 disregards none of it).
+Parliament lists maternity allowance among the welfare benefits regulations
+may cap (Welfare Reform Act 2012 s.96(10)(i)), and the woman entitled to it
+receives it (Social Security Contributions and Benefits Act 1992 s.35(1)).
+Under UC Regs 2013 regs 79(1) and 80(1) and HB Regs 2006 reg 75A, DWP and
+councils count the welfare benefits "to which the single person or couple is
+entitled". Under regs 80(4) and 75C(4) they use the amount each scheme counts
+as income: all of a Maternity Allowance (UC Regs 2013 reg 66(1)(b)(viii); HB
+Regs 2006 reg 40, whose Sch 5 disregards none of it).
 
 Invariants, for families on Universal Credit or on Housing Benefit alone, and
 a holder who is a single claimant, either member of a couple, or a
@@ -36,8 +36,8 @@ non-dependent adult:
    the mother's allowance by d lowers that award by d (reg 66(1)(b)(viii)),
    so the total does not move. Where the cap reduces the award at both
    amounts, Universal Credit after the cap plus the allowance does not move
-   either: the cap holds the family's capped benefits at its limit whichever
-   of them the allowance replaces.
+   either: DWP holds the family's capped benefits at the limit whichever of
+   them the allowance replaces.
 
 Each example fills fixed benefit units in one simulation per module, so the
 draws set amounts while each family's members stay fixed.

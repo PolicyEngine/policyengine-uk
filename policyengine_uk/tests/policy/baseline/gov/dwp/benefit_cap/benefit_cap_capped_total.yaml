@@ -328,16 +328,16 @@
     uc_benefit_cap: 22_020
     benefit_cap_reduction: 0
 
-# Maternity Allowance is a welfare benefit (WRA 2012 s.96(10)(i)). It belongs
-# to the woman entitled to it (SSCBA 1992 s.35(1)), so the cap counts it when
-# she is the claimant or partner and leaves it out when she is a
-# non-dependent adult. UC Regs
-# 2013 reg 80(4) and HB Regs 2006 reg 75C(4) take the amount each scheme
-# counts as income: all of it, as unearned income for Universal Credit (reg
-# 66(1)(b)(viii)) and as income other than earnings for Housing Benefit (reg
-# 40, with no disregard in Sch 5).
+# Parliament lists Maternity Allowance among the welfare benefits
+# regulations may cap (WRA 2012 s.96(10)(i)). The woman entitled to it
+# receives it (SSCBA 1992 s.35(1)), so DWP and councils count it when she is
+# the claimant or partner and leave it out when she is a non-dependent adult.
+# Under UC Regs 2013 reg 80(4) and HB Regs 2006 reg 75C(4) they use the amount
+# each scheme counts as income: all of it, as unearned income for Universal
+# Credit (reg 66(1)(b)(viii)) and as income other than earnings for Housing
+# Benefit (reg 40, with no disregard in Sch 5).
 
-- name: The claimant's own Maternity Allowance is in the capped total
+- name: DWP counts the claimant's own Maternity Allowance in the capped total
   period: 2025
   input:
     people:
@@ -355,9 +355,9 @@
   output:
     maternity_allowance: 3_000
     benefit_cap_welfare_benefits: 18_000
-    # Maternity Allowance starts as early as the 11th week before the
-    # expected week of confinement (SSCBA 1992 s.35(1)(a)), so a claimant
-    # can receive it before she is responsible for a child. A single
+    # A woman can become entitled to Maternity Allowance from the 11th week
+    # before the expected week of confinement (SSCBA 1992 s.35(1)(a)), so a
+    # claimant can receive it before she is responsible for a child. A single
     # claimant with no child outside London: 14,753 (UC Regs 2013 reg
     # 80A(2)(c)). Reg 81: max(15,000 + 3,000 - 14,753 - 0 childcare, 0)
     # = 3,247, which leaves 15,000 - 3,247 = 11,753.
@@ -367,7 +367,7 @@
     benefit_cap_reduction: 3_247
     universal_credit: 11_753
 
-- name: A partner's Maternity Allowance is in the capped total
+- name: DWP counts a partner's Maternity Allowance in the capped total
   period: 2025
   input:
     people:
@@ -397,7 +397,7 @@
     benefit_cap_reduction: 1_980
     universal_credit: 18_020
 
-- name: A non-dependent adult's Maternity Allowance is not in the family's capped total
+- name: DWP leaves a non-dependent adult's Maternity Allowance out of the family's capped total
   period: 2025
   input:
     people:
@@ -420,14 +420,14 @@
   output:
     maternity_allowance: [0, 5_000]
     benefit_cap_welfare_benefits: 20_000
-    # UC reg 81: max(20,000 - 14,753 - 0 childcare, 0) = 5,247. The adult's
-    # 5,000 is their own, not the family's.
+    # UC reg 81: max(20,000 - 14,753 - 0 childcare, 0) = 5,247. The adult
+    # receives the 5,000 in their own right.
     uc_benefit_cap_reduction: 5_247
     housing_benefit_benefit_cap_reduction: 0
     benefit_cap_reduction: 5_247
     universal_credit: 14_753
 
-- name: The claimant's own Maternity Allowance reduces Housing Benefit for a family without Universal Credit
+- name: A council counts the claimant's own Maternity Allowance when it caps Housing Benefit for a family without Universal Credit
   period: 2025
   input:
     people:
@@ -480,7 +480,7 @@
 # (Rates) Regulations 2006 reg 2(1), as SI 2026/232 art. 2 sets them).
 # The family's limit is 22,020 (reg 80A(2)(d)(ii)); no exception applies.
 
-- name: Issue 2784 family with no Maternity Allowance loses the excess over the cap
+- name: DWP takes the excess over the cap off the issue 2784 family's Universal Credit when it has no Maternity Allowance
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -518,7 +518,7 @@
     uc_benefit_cap_reduction: 5_088.84
     universal_credit: 18_751.80
 
-- name: Issue 2784 family's Maternity Allowance stays inside the cap, so Universal Credit falls by the allowance
+- name: DWP takes the issue 2784 family's Maternity Allowance off its capped Universal Credit pound for pound
   period: 2026
   absolute_error_margin: 0.01
   input:
