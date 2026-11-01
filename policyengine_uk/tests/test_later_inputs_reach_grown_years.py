@@ -163,8 +163,8 @@ def test_a_balance_set_for_an_earlier_year_reaches_a_total_already_summed():
     # balance of £100 for 2034, newer than the stored total, gives cash_isa in
     # 2040 grown from it. A balance of £200 that the test then sets for 2035
     # gives cash_isa grown from that on the default branch, as on a named
-    # branch and in a new simulation that gets both balances before it
-    # calculates anything.
+    # branch and in a new simulation that gets both balances before the test
+    # calculates the total.
     assert PROJECTION_END_YEAR < 2034
     simulation = Simulation(dataset=_two_adults_with_a_stored_cash_isa())
     named = simulation.get_branch("edited")
@@ -219,9 +219,9 @@ def test_years_the_data_supply_after_a_later_input_keep_their_values():
 
 def test_years_a_dataset_projects_under_a_reform_before_data_load_stay():
     # no_economic_assumptions applies before data load, so the dataset holds
-    # cash_isa flat at £3,000 in each year it projects, through
-    # PROJECTION_END_YEAR. A balance the test sets after a calculation for the
-    # first of those years replaces none of the others.
+    # cash_isa flat at £3,000 through PROJECTION_END_YEAR. The test calculates
+    # a year beyond that projection, then overrides the first projected year.
+    # The other projected years keep their stored totals.
     simulation = Simulation(
         scenario=no_economic_assumptions,
         dataset=_two_adults_with_a_stored_cash_isa(),
@@ -241,11 +241,10 @@ def _sets_a_later_balance(simulation):
 
 @pytest.mark.parametrize("route", ["modifier", "simulation", "holder"])
 def test_a_year_set_for_later_than_a_later_input_keeps_its_value(route):
-    # A scenario's modifier, which runs once Simulation has built the data, or
-    # a caller, through the simulation or straight through the holder, sets
-    # £7,000 for 2038 before the simulation calculates anything. After Core
-    # grows 2040 from it, an input for 2030 replaces only the years before
-    # 2038.
+    # A modifier or a caller supplies £7,000 for 2038, through the simulation
+    # or its holder, before the test reads the balance for 2040. Core grows
+    # 2040 from that input. A later input for 2030 changes the earlier grown
+    # years while the supplied 2038 value and the growth from it stay fixed.
     data = _frame(**{f"cash_isa_balance__{DATA_YEAR}": 3_000.0})
     if route == "modifier":
         simulation = Simulation(
@@ -334,13 +333,12 @@ def test_a_reset_drops_grown_years_and_keeps_supplied_ones():
 
 
 def test_a_reset_after_a_later_input_recalculates_a_supplied_formula_variable():
-    # A caller supplies the formula variable for 2025, and its formula gives
-    # 2030 from the list price carried from 2025. After the caller sets a list
-    # price for 2028, reset_calculations keeps the supplied year and drops the
-    # year the formula gave, so 2030 follows the new list price, as it does in
-    # a new simulation that gets both list prices. The reset clears the drop
-    # the input queued for the next calculation, so it has to drop that year
-    # itself.
+    # The caller supplies twice_car_list_price for 2025, and its formula
+    # calculates 2030 from the list price carried from 2025. The caller then
+    # changes the list price for 2028 and resets calculations. The reset
+    # keeps the supplied 2025 value and drops the calculated 2030 value, so
+    # the formula reads the new list price. The reset also clears the pending
+    # drop, so it must invalidate the formula's cached value itself.
     simulation = Simulation(dataset=_frame(**{f"car_list_price__{DATA_YEAR}": 3_000.0}))
     simulation.tax_benefit_system.add_variable(twice_car_list_price)
     simulation.set_input("twice_car_list_price", DATA_YEAR, np.array([1.0]))

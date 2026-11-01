@@ -186,8 +186,8 @@ calculations retain them too. To undo an override, call
 variable's formula or default runs again. A reset alone no longer undoes an
 input supplied after construction.
 
-Every top-level `set_input` on a built simulation queues dependent-cache cleanup
-before its next outermost read. This includes simulations with no modifier: a
+Every top-level `Simulation.set_input` on a built simulation queues
+dependent-cache cleanup before its next outermost read. This includes simulations with no modifier: a
 caller can read Child Benefit, add an amount and then obtain fresh income and
 response values. Inputs stored only on another clone or branch do not become
 the parent's inputs. Formula and framework writes during a calculation keep
