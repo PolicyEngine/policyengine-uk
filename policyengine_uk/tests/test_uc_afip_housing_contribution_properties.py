@@ -84,7 +84,9 @@ def simulation(cloned_uk_tax_benefit_system):
 
 
 money = st.floats(0, 60_000, allow_nan=False)
-positive_afip = st.floats(0, 50_000, exclude_min=True, allow_nan=False)
+# The model holds amounts as 32-bit floats, which store an amount below about
+# 1e-45 as zero, so positive amounts start at a penny.
+positive_afip = st.floats(0.01, 50_000, allow_nan=False)
 
 
 @st.composite
