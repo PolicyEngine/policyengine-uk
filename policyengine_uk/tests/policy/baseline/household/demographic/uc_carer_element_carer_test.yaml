@@ -186,14 +186,20 @@
     has_uc_award_with_carer_element: [true, false, false, false]
     is_cared_for_by_carer_benefit_recipient: [false, false, true, false]
 
-- name: "Disclosed limit: a carer whose income tapers the award to nil still bars the premium"
-  # With £25,000 of earnings the carer's award is nil (income reduction
-  # 7,610.88 against a maximum of 7,610.88), so in law there is no award
-  # (Welfare Reform Act 2012 s.5(1)(b); UC Regs 2013 reg 17) and the premium,
-  # 86.05 x 52 = 4,474.60, is payable. The model reads the award from its
-  # conditions, because the award reads Pension Credit, which reads the
-  # addition, so it withholds the premium.
+- name: A carer whose income tapers the award to nil has no award and does not bar the premium
+  # The carer's maximum amount is (424.90 + 209.34) x 12 = 7,610.88. Earnings
+  # of £25,000 less income tax (25,000 - 12,570) x 0.20 = 2,486.00 and
+  # National Insurance (25,000 - 12,570) x 0.08 = 994.40 leave 21,519.60, and
+  # with no work allowance the taper takes 0.55 x 21,519.60 = 11,835.78. That
+  # exceeds the maximum amount even with no non-dependant deduction
+  # (uc_award_upper_bound; the disabled person's family, which does not
+  # claim, has a bound of its standard allowance, 424.90 x 12 = 5,098.80), so
+  # the award is nil and there is no award (Welfare Reform Act 2012 s.5(1)(b);
+  # UC Regs 2013 reg 17). No one has an award in
+  # respect of caring for the disabled person, who keeps the premium, 86.05 x
+  # 52 = 4,474.60.
   period: 2026
+  absolute_error_margin: 0.01
   input:
     people:
       disabled:
@@ -216,9 +222,131 @@
         members: [disabled, carer]
         country: ENGLAND
   output:
+    uc_earned_income: [0, 21_519.60]
     universal_credit: [0, 0]
+    uc_award_upper_bound: [5_098.80, 0]
     receives_uc_carer_element: [false, false]
+    has_uc_award_with_carer_element: [false, false]
+    is_cared_for_by_carer_benefit_recipient: [false, false]
+    severe_disability_premium: [4_474.60, 0]
+
+- name: A renting carer's housing costs element keeps an award that bars the premium
+  # The carer of the case above, earning £25,000, rents from the council at
+  # £6,000 a year. The housing costs element raises the maximum amount to
+  # 7,610.88 + 6,000 = 13,610.88, and the taper of 11,835.78 leaves an award
+  # of 1,775.10. The disabled person, on the PIP daily living component,
+  # brings no non-dependant deduction (UC Regs 2013 Sch 4 para 16(2)(e)), so
+  # the award equals its bound. It includes the carer element and bars the
+  # premium.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 40
+        is_blind: true
+        care_hours: 35
+        would_claim_carers_allowance: false
+        employment_income: 25_000
+        is_household_head: true
+      disabled:
+        age: 50
+        pip_dl_category: STANDARD
+    benunits:
+      carer_unit:
+        members: [carer]
+      disabled_unit:
+        members: [disabled]
+        would_claim_uc: false
+    households:
+      household:
+        members: [carer, disabled]
+        country: ENGLAND
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_000
+  output:
+    uc_housing_costs_element: [6_000, 0]
+    universal_credit: [1_775.10, 0]
+    uc_award_upper_bound: [1_775.10, 5_098.80]
+    has_uc_award_with_carer_element: [true, false]
+    is_cared_for_by_carer_benefit_recipient: [false, true]
+    severe_disability_premium: [0, 0]
+
+- name: A son whose income tapers the award to nil does not bar a pensioner's severe disability addition
+  # The son of the third case earns £20,000: less income tax 1,486.00 and
+  # National Insurance 594.40, the taper takes 0.55 x 17,919.60 = 9,855.78,
+  # more than his maximum amount, 7,610.88. He has no award, so the addition
+  # and the pension-age Housing Benefit premium stay at 86.05 x 52 =
+  # 4,474.60 (SPC Regs 2002 Sch I para 1(1)(a)(iii); HB(SPC) Regs 2006 Sch 3
+  # para 6(2)(a)(iii)).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 75
+        aa_category: HIGHER
+      son:
+        age: 40
+        is_blind: true
+        care_hours: 35
+        would_claim_carers_allowance: false
+        employment_income: 20_000
+    benunits:
+      pensioner_unit:
+        members: [pensioner]
+      son_unit:
+        members: [son]
+    households:
+      household:
+        members: [pensioner, son]
+        country: ENGLAND
+  output:
+    uc_earned_income: [0, 17_919.60]
+    universal_credit: [0, 0]
+    uc_award_upper_bound: [0, 0]
+    has_uc_award_with_carer_element: [false, false]
+    is_cared_for_by_carer_benefit_recipient: [false, false]
+    severe_disability_minimum_guarantee_addition: [4_474.60, 0]
+    pension_age_severe_disability_premium: [4_474.60, 0]
+
+- name: A stored award is read as the award, even without a claim
+  # The carer of the first case earns £20,000, which tapers the award the
+  # model would work out to nil, and neither family claims. Universal Credit
+  # is supplied instead: nil for the disabled person's family and £100 for
+  # the carer's. A stored award reads no other variable, so the carer test
+  # reads it (receives_uc_carer_element): the carer's award includes the
+  # carer element and bars the premium.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      disabled:
+        age: 50
+        pip_dl_category: STANDARD
+      carer:
+        age: 40
+        is_blind: true
+        care_hours: 35
+        would_claim_carers_allowance: false
+        employment_income: 20_000
+    benunits:
+      disabled_unit:
+        members: [disabled]
+        claims_universal_credit: false
+        universal_credit: 0
+      carer_unit:
+        members: [carer]
+        claims_universal_credit: false
+        universal_credit: 100
+    households:
+      household:
+        members: [disabled, carer]
+        country: ENGLAND
+  output:
+    receives_uc_carer_element: [false, true]
     has_uc_award_with_carer_element: [false, true]
+    is_cared_for_by_carer_benefit_recipient: [true, false]
     severe_disability_premium: [0, 0]
 
 - name: Without a Universal Credit claim there is no carer element award

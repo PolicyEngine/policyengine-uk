@@ -29,7 +29,8 @@ class severe_disability_minimum_guarantee_addition(Variable):
         "is_cared_for_by_carer_benefit_recipient, which the legacy severe "
         "disability premium shares; a carer benefit there includes an award "
         "of Universal Credit which includes the carer element (para 1(4)), "
-        "read from the award's conditions rather than its amount. Blindness "
+        "read from the award's conditions and the award before any "
+        "non-dependant deduction (has_uc_award_with_carer_element). Blindness "
         "(is_blind) is not in the survey data, so in microsimulation the "
         "blind-partner route never applies and a blind resident is counted."
     )

@@ -25,10 +25,10 @@ class carer_premium(Variable):
         "person caps the benefit unit at one amount. The premium enters the "
         "Income Support, Housing Benefit and council tax reduction applicable "
         "amounts; the model takes income-based JSA and income-related ESA "
-        "from reported awards. Scotland's working-age council tax reduction "
-        "also pays it for an award of Universal Credit which includes the "
-        "carer element (council_tax_reduction_carer_premium); no other "
-        "scheme's carer premium has that limb."
+        "from reported awards. In Scotland's working-age council tax "
+        "reduction, councils also pay it for an award of Universal Credit "
+        "which includes the carer element (council_tax_reduction_carer_premium); "
+        "no other scheme's carer premium has that limb."
     )
     definition_period = YEAR
     reference = (

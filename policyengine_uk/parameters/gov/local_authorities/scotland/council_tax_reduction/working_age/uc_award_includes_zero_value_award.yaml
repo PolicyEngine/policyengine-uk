@@ -1,0 +1,18 @@
+description: Scotland's working-age Council Tax Reduction scheme treats an award of Universal Credit with a value of zero as an award of Universal Credit if this is true, so a nil award that includes the carer element meets the carer premium's caring condition.
+values:
+  2013-04-01: false
+  2022-04-01: true
+  2025-04-01: false
+metadata:
+  unit: bool
+  period: year
+  label: Scottish working-age Council Tax Reduction counts a Universal Credit award with a value of zero
+  reference:
+    - title: The Council Tax Reduction (Scotland) Regulations 2021 reg. 4 ("award of universal credit" includes a universal credit award with a value of zero), as in force to 31 March 2025
+      href: https://www.legislation.gov.uk/ssi/2021/249/regulation/4/2024-04-30
+    - title: The Council Tax Reduction (Scotland) Amendment Regulations 2022 (SSI 2022/52) reg. 3 (inserts that definition from 31 March 2022)
+      href: https://www.legislation.gov.uk/ssi/2022/52/regulation/3/made
+    - title: The Council Tax Reduction (Miscellaneous Amendment) (Scotland) Regulations 2025 (SSI 2025/24) regs. 1 and 8 (substitute "means an award of universal credit made under Part 1 of the 2012 Act" from 1 April 2025)
+      href: https://www.legislation.gov.uk/ssi/2025/24/regulation/8/made
+    - title: The Council Tax Reduction (Scotland) Regulations 2021 reg. 10A (awards reduced to nil by a sanction, and reclaims under the Claims and Payments Regulations 2013 reg. 32A, from 1 April 2025)
+      href: https://www.legislation.gov.uk/ssi/2021/249/regulation/10A

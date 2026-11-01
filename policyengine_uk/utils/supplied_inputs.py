@@ -85,6 +85,7 @@ SUPPLIED_INPUT_VARIABLES = frozenset(
         "trading_loss",
         "uc_carer_element",
         "uc_LCWRA_element",
+        "universal_credit",
         "universal_childcare_entitlement",
     }
 )
