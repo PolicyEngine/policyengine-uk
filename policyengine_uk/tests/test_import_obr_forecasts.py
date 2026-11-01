@@ -3330,8 +3330,8 @@ def test_a_table_two_years_after_the_files_rate_projects_from_it():
     after the parameter file's £13.21 for 2027. The growth the importer
     keeps for 2028 and 2029 takes £13.21 to £13.85, the OBR's penny. The
     ratio into 2030, 0.027437, would take the model to £14.24, so the
-    importer writes the growth from the model's 2029 level to £14.23,
-    0.027073, and the model projects £14.23."""
+    importer writes the growth from the model's unrounded 2029 level to
+    £14.23, 0.027073, and the model projects £14.23."""
     workbook = nlw_workbook(nlw_rows((13.85, 14.23), 2029, 2029))
     assert compute_level_growth(workbook)[NLW_PATH].values == {2030: 0.027437}
     values, wages = projected_from_committed(workbook)
@@ -3383,10 +3383,10 @@ def test_a_comment_names_the_penny_the_model_projects():
     ],
 )
 def test_level_text_writes_the_penny_check_s_penny(level, pennies, text):
-    """level_text writes the penny nearest_units, the penny check's
-    rounding, gives. Over £0.01, £13.525, £13.535 and £2.675 each give a
-    float ending in exactly .5, which round() takes to the even penny:
-    formatting to two places gives £13.53 and £2.67 instead."""
+    """level_text and the penny check both use nearest_units. Dividing
+    £13.525, £13.535 and £2.675 by £0.01 gives half-penny floats, which
+    round() takes to the even penny. Formatting £13.525 and £2.675 to two
+    places gives £13.53 and £2.67."""
     assert nearest_units(level, 0.01) == pennies
     assert level_text(level, 0.01) == text
 
@@ -4130,12 +4130,12 @@ def test_the_model_projects_the_published_levels_to_the_penny(
 def test_a_table_after_the_rate_set_keeps_every_penny(
     set_year, gap, pennies, changes, miss, jitter
 ):
-    """For generated tables the OBR publishes from 1 to 3 years after the
-    rate set (£5 to £20, set in a year from 2021 to 2029; then up to 6
-    more levels, each changing by -5% to +10%): the model carries the rate
-    set to the table's first year through the growth the importer keeps.
-    The test puts the OBR's first level within 0.45p of the penny the model
-    projects there, or a penny above or below it. The importer accepts the
+    """The test generates an anchor rate of £5 to £20 in a year from 2021
+    to 2029, and a first table level 1 to 3 years later, followed by 1 to
+    6 levels changing by -5% to +10%. The model carries the rate to the
+    table's first year through the growth the importer keeps. The test
+    puts the first level within 0.45p of the penny the model projects
+    there, or a penny above or below it. The importer accepts the
     table only where the first level rounds to that penny, and the model
     then projects every later level to its penny too. Otherwise it refuses
     the table and names the table's first year."""
@@ -4220,11 +4220,10 @@ def falling_after_2028(content):
 
 
 def test_the_index_guard_ends_where_the_builder_ends_the_index():
-    """The committed file with average_earnings falling 51% a year after
-    2028, and the OBR's £13.21 for 2027 and £13.51 for 2028, a ratio of
-    0.02271. Compounded to 2074, the finished series' index reaches zero in
-    2045. Where the
-    model's builder ends the index before 2045 (in 2039 on this branch),
+    """The importer computes growth of 0.02271 from £13.21 for 2027 and
+    £13.51 for 2028. The test sets average_earnings to fall 51% a year
+    after 2028. It compounds the finished series through 2074, where its
+    index reaches zero in 2045. Where the model's builder ends the index before 2045 (in 2039 on this branch),
     the model's index stays above zero: the importer writes the series, and
     the model projects £13.51 for 2028. Where the builder runs the index
     to 2045 or later, the importer refuses the series and names 2045, the

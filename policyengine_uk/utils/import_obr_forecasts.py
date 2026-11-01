@@ -1980,8 +1980,8 @@ def dated_values(name: str, values: dict) -> dict[date, float]:
     policyengine-core's Parameter reads ``values`` (keys as text, as core's
     YAML loader gives them) and drops any value marked expected; each key
     then becomes the day core's instant() reads from it, so 2028-04-01,
-    quoted or not, and 2028-04 both name 1 April 2028. It refuses two keys
-    that name the same day."""
+    quoted or not, and 2028-04 both name 1 April 2028. dated_values refuses
+    different keys that name the same day; core retains both."""
     from policyengine_core.parameters import Parameter
     from policyengine_core.periods import instant
 

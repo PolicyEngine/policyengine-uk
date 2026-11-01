@@ -86,9 +86,9 @@ separate comments.
 The model projects the national living wage from the last rate in the last
 bracket of `gov/hmrc/minimum_wage/non_apprentice.yaml`. It carries that rate
 through the index it builds from this series and rounds each projected rate
-to the nearest penny. The importer reads the same rate from the same file, as
-policyengine-core reads it, and projects each later year of the table from it
-in the same way. Where a year's ratio would leave the model a penny off the
+to the nearest penny. The importer reads that rate through policyengine-core's
+loader and Parameter, then projects each later table year with the model's
+rounding. Where a year's ratio would leave the model a penny off the
 OBR's level, the importer writes the six-decimal growth that keeps the OBR's
 penny. Where the OBR publishes no level for the year of that rate or earlier,
 the importer keeps the series' earlier growth into the table's first year and
