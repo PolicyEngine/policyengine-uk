@@ -1312,8 +1312,8 @@
         local_authority: CARDIFF
   output:
     # UC Regs 2013 reg 57(2): the trades' profits and losses are added
-    # together before any nil floor, so the loss cancels the profit. The
-    # minimum income floor is held off, so only the loss rule decides.
+    # together before any nil floor, so the loss cancels the profit. The case
+    # holds the minimum income floor off, so only the loss rule decides.
     housing_benefit_non_dep_deduction_exempt: [false, true]
     council_tax_reduction_non_dep_deduction_exempt: [false, true]
     housing_benefit_non_dep_deductions: [0, 0]
@@ -1356,10 +1356,10 @@
         country: WALES
         local_authority: CARDIFF
   output:
-    # UC Regs 2013 reg 77(3)(b): the company's income is treated as the
-    # owner's self-employed earnings, so the exemption doesn't apply. Outside
-    # remunerative work the non-dependant pays the lowest amounts: HB 20.40
-    # and the Welsh pensioner scale's 6.70 a week.
+    # UC Regs 2013 reg 77(3)(b) treats the company's income as the owner's
+    # self-employed earnings, so the exemption doesn't apply. Outside
+    # remunerative work the councils deduct the lowest amounts: HB 20.40 and
+    # the Welsh pensioner scale's 6.70 a week.
     housing_benefit_non_dep_deduction_exempt: [false, false]
     council_tax_reduction_non_dep_deduction_exempt: [false, false]
     housing_benefit_non_dep_deductions: [1_060.80, 0]
@@ -1409,13 +1409,13 @@
         country: WALES
         local_authority: CARDIFF
   output:
-    # UC Regs 2013 reg 62(3): a member of a couple is treated as having the
-    # floor only while the couple's earned income is below the couple
+    # UC Regs 2013 reg 62(3) treats a member of a couple as having the floor
+    # only while the couple's earned income falls short of the couple
     # threshold. The partner's earned income exceeds it, so the non-dependant
-    # has none and is exempt. The Welsh working-age scheme deducts for each
-    # member of a Universal Credit couple (Sch 6 para 5(3)): the exempt
-    # non-dependant's nil and the partner's 6.70 a week, as the partner works
-    # under 16 hours.
+    # has none, and the exemption applies. The Welsh working-age scheme
+    # deducts for each member of a Universal Credit couple (Sch 6 para 5(3)):
+    # nil for the exempt non-dependant and 6.70 a week for the partner, who
+    # works under 16 hours.
     housing_benefit_non_dep_deduction_exempt: [false, true, false]
     council_tax_reduction_non_dep_deduction_exempt: [false, true, false]
     council_tax_reduction_individual_non_dep_deduction: [0, 0, 348.40]
@@ -1487,9 +1487,9 @@
   output:
     # WSI 2013/3029 Sch 6 para 5(3): only the couple's own Universal Credit
     # award takes it out of the one-deduction rule. Here the third adult
-    # claims alone, so the couple, banded on 15,600 a year (300 a week), pays
-    # one 13.35 deduction, and the third adult, on Universal Credit with no
-    # earned income, pays none (para 5(8)(c)).
+    # claims alone, so the council bands the couple on 15,600 a year (300 a
+    # week) and makes one 13.35 deduction. It deducts nothing for the third
+    # adult, on Universal Credit with no earned income (para 5(8)(c)).
     council_tax_reduction_individual_non_dep_deduction: [0, 694.20, 694.20, 0]
     council_tax_reduction_non_dep_deductions: [694.20, 0]
 
@@ -1575,8 +1575,8 @@
   output:
     # The pensioner head and the working-age sharer each apply under their
     # own Welsh scheme and share the deductions equally (Sch 1 para 3(5); Sch
-    # 6 para 5(5)). The couple, banded on 15,600 + 520 = 16,120 a year (310
-    # a week), pays one deduction under either scheme, as the Universal
-    # Credit is the third adult's; the third adult, banded on 9,100 + 3,000
-    # (232.69 a week), pays their own.
+    # 6 para 5(5)). The council bands the couple on 15,600 + 520 = 16,120 a
+    # year (310 a week) and makes one deduction under either scheme, as the
+    # Universal Credit is the third adult's. It bands the third adult on
+    # 9,100 + 3,000 (232.69 a week) and deducts for them separately.
     council_tax_reduction_non_dep_deductions: [521.30, 521.30, 0]

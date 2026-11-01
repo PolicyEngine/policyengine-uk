@@ -87,9 +87,10 @@ def non_dependant_weekly_gross_income(person, period, parameters, own_gross_inco
 
 
 def reads_simulation_value(benunit, period, variable_name, default_formula=None):
-    """Whether to read the variable rather than recalculate it here: a value
-    stored as an input for the period, a neutralized variable, or, where
-    default_formula is given, a formula a reform has replaced."""
+    """Whether to read the variable instead of recalculating it here: the
+    simulation stores an input for the period, a reform neutralized the
+    variable or, where the caller passes default_formula, replaced its
+    formula."""
     variable = benunit.simulation.tax_benefit_system.get_variable(variable_name)
     if variable.is_neutralized:
         return True
@@ -102,7 +103,7 @@ def reads_simulation_value(benunit, period, variable_name, default_formula=None)
 
 def universal_credit_after_benefit_cap(benunit, period, parameters):
     """A family's Universal Credit award after the benefit cap (UC Regs 2013
-    reg 81), for a family that is not liable for rent. universal_credit and
+    reg 81), for a family with no liability for rent. universal_credit and
     uc_benefit_cap_reduction depend on Housing Benefit through the welfare
     benefits they count, so this applies the cap to the same welfare benefits
     other than Housing Benefit, which such a family does not receive (UC reg
@@ -110,13 +111,14 @@ def universal_credit_after_benefit_cap(benunit, period, parameters):
     (benefit_cap_couple; reg 79(1)). It shares the award's own calculation of
     the reduction (benefit_cap_reduction_of) and of the part a protected
     minimum floor lets it take (benefit_cap_reduction_applied). Deductions
-    paid from the award to third parties or for debts are still the family's
-    income, so they are not taken off, and the floor is applied as for a
-    family with none: the deduction rate depends on the cap reduction, and so
-    on Housing Benefit. A universal_credit stored as an input or given a new
-    formula by a reform is read as it is, and so is a stored or neutralized
-    uc_benefit_cap_reduction_after_floor, uc_benefit_cap_reduction or
-    benefit_cap_welfare_benefits, the last with Housing Benefit at nil."""
+    DWP pays from the award to third parties or for debts stay the family's
+    income, so this keeps them in and applies the floor as for a family with
+    none: the deduction rate depends on the cap reduction, and so on Housing
+    Benefit. Where the simulation stores universal_credit as an input, or a
+    reform replaces its formula, this reads it as it stands. It also reads a
+    stored or neutralized uc_benefit_cap_reduction_after_floor,
+    uc_benefit_cap_reduction or benefit_cap_welfare_benefits, the last with
+    Housing Benefit at nil."""
     if reads_simulation_value(
         benunit, period, "universal_credit", universal_credit_variable.formula
     ):

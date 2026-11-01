@@ -7,8 +7,8 @@ from policyengine_uk.variables.gov.dwp.universal_credit.deductions._reduction_al
 def benefit_cap_reduction_applied(
     benunit, period, parameters, cap_reduction, deduction_demand
 ):
-    """The part of a regulation 81 reduction taken off the award, given the
-    deductions demanded from it, under any protected minimum floor. The
+    """The part of a regulation 81 reduction that comes off the award, given
+    the deductions it must also meet, under any protected minimum floor. The
     non-dependant deductions call this too
     (housing_benefit/non_dep_deduction/_non_dependants.py)."""
     p = parameters(period).gov.dwp.universal_credit.deductions

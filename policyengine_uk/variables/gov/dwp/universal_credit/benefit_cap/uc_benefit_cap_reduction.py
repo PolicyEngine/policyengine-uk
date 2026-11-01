@@ -4,8 +4,8 @@ from policyengine_uk.model_api import *
 def benefit_cap_reduction_of(benunit, period, welfare_benefits):
     """The regulation 81 reduction for welfare benefits that already count
     Housing Benefit as nil (reg. 80(2A)): the excess over the Universal Credit
-    cap, minus the childcare costs element, and nothing where that element is
-    greater than the excess or the family has no award (reg. 78(1)). The
+    cap, minus the childcare costs element, and nothing where that element
+    exceeds the excess or the family has no award (reg. 78(1)). The
     non-dependant deductions call this too, with their own total of welfare
     benefits (housing_benefit/non_dep_deduction/_non_dependants.py)."""
     excess = max_(welfare_benefits - benunit("uc_benefit_cap", period), 0)

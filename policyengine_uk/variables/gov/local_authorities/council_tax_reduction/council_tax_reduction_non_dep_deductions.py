@@ -38,11 +38,11 @@ class council_tax_reduction_non_dep_deductions(Variable):
     def formula(benunit, period, parameters):
         person = benunit.members
         country = benunit.household("country", period)
-        # WSI 2013/3029 Sch 6 para 5(3): a working-age applicant's deduction is
-        # for each member of a non-dependant couple with a Universal Credit
-        # award. The award is the couple's own: one that assesses the
-        # claimant or partner. Another member's award, as a single claimant,
-        # leaves the couple with one deduction.
+        # WSI 2013/3029 Sch 6 para 5(3): from a working-age applicant's claim
+        # the council deducts for each member of a non-dependant couple with a
+        # Universal Credit award. The award must be the couple's own, one that
+        # assesses the claimant or partner. Another member's award as a single
+        # claimant leaves the couple one deduction.
         couple_claims_universal_credit = benunit.any(
             person("is_uc_assessed_claimant", period)
             & person("is_claimant_or_partner", period)

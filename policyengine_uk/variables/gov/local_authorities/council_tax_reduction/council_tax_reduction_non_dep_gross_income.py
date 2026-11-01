@@ -59,7 +59,7 @@ class council_tax_reduction_non_dep_gross_income(Variable):
                 "private_pension_income",
                 "social_security_income",
                 "savings_interest_income",
-                # Exempt interest, ISA interest unless a total is supplied.
+                # Exempt interest: ISA interest unless the inputs supply a total.
                 "tax_free_savings_income",
                 "other_investment_income",
                 "dividend_income",

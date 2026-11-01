@@ -162,9 +162,9 @@
       household:
         members: [person_1, person_2, person_3]
   output:
-    # HB Regs 2006 reg 3(2)(d): person 2 shares the payments, so is a joint
-    # occupier, not a non-dependant. Only person 3's 3 is deducted, split by
-    # the shares: 3 x 0.995 and 3 x 0.005.
+    # HB Regs 2006 reg 3(2)(d): person 2 shares the payments, which makes
+    # them a joint occupier, not a non-dependant. The council deducts only
+    # person 3's 3, split by the shares: 3 x 0.995 and 3 x 0.005.
     housing_benefit_non_dep_deductions: [2.985, 0.015, 0]
 
 # The review case on #2184: an existing claimant in council housing with an

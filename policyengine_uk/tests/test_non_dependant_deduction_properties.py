@@ -969,8 +969,8 @@ def test_capped_universal_credit_matches_the_model(families, year):
     """Invariant 12: the after-cap Universal Credit counted in a
     non-dependant family's gross income equals universal_credit for a family
     with no Housing Benefit, Maternity Allowance or deductions, under current
-    law and under an 85% protected minimum floor. The floor is set in place
-    on the same simulation, which costs far less than a reformed one."""
+    law and under an 85% protected minimum floor. The test sets the floor in
+    place on the same simulation, which costs far less than a reformed one."""
     sim = Simulation(situation=capped_universal_credit_families(families, year))
     current_law = np.asarray(sim.calculate("universal_credit", year))
     np.testing.assert_allclose(
