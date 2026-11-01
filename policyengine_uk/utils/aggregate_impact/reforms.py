@@ -132,16 +132,16 @@ def calibrate(
 
     ``results`` are measurement result.json mappings, typically one per model
     version of the pair being calibrated on. An effect counts in the
-    reform's declared direction, so a reform that moves the wrong way in any
-    year or measurement cannot be calibrated. Nor can a reform with a withheld
-    year: that year may hold its smallest effect.
+    reform's declared direction. ``calibrate`` refuses a reform that moves the
+    wrong way in any year or measurement, and one whose target change a
+    measurement withholds or holds as NaN or infinity in any year.
     """
     out = {}
     for reform in reforms:
         if reform.responds is None:
             continue
         sign = 1.0 if reform.responds.direction == "up" else -1.0
-        effects = []
+        effects, unusable = [], set()
         for result in results:
             metric = next(
                 (
@@ -153,13 +153,16 @@ def calibrate(
             )
             if metric is None:
                 raise ReformSpecError(f"{reform.id}: a result has no target change")
-            withheld = sorted(int(y) for y, v in metric["values"].items() if v is None)
-            if withheld:
-                raise ReformSpecError(
-                    f"{reform.id}: a result withholds its target change in "
-                    f"{fiscal_year_label(withheld[0])}"
-                )
-            effects += [(sign * v, int(y)) for y, v in metric["values"].items()]
+            for year, value in metric["values"].items():
+                if value is None or not math.isfinite(value):
+                    unusable.add(int(year))
+                else:
+                    effects.append((sign * value, int(year)))
+        if unusable:
+            raise ReformSpecError(
+                f"{reform.id}: a result has no finite target change in "
+                f"{fiscal_year_label(min(unusable))}"
+            )
         smallest, year = min(effects)
         if not smallest > 0:
             raise ReformSpecError(

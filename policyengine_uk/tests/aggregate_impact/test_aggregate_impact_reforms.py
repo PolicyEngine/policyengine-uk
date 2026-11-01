@@ -1,5 +1,6 @@
 """The standard reform set and the responsiveness rule."""
 
+import math
 from pathlib import Path
 
 import pytest
@@ -287,24 +288,35 @@ def test_calibrate_takes_the_smallest_effect_across_years_and_measurements():
         calibrate(reforms, [_result({"up": {2025: -1.0}, "down": {2025: -1.0}})], 0.2)
 
 
-ONE_UP = parse_reforms(
-    {
-        "reforms": [
-            {
-                "id": "up",
-                "name": "u",
-                "parameters": {"a": 1},
-                "responds": {"variable": "v", "direction": "up", "minimum": 1},
-            }
-        ]
-    }
-)
+def _one_reform(direction):
+    return parse_reforms(
+        {
+            "reforms": [
+                {
+                    "id": "it",
+                    "name": "i",
+                    "parameters": {"a": 1},
+                    "responds": {
+                        "variable": "v",
+                        "direction": direction,
+                        "minimum": 1,
+                    },
+                }
+            ]
+        }
+    )
 
 
-def test_calibrate_refuses_a_withheld_year():
-    result = _result({"up": {2025: 5e9, 2026: None}})
-    with pytest.raises(ReformSpecError, match="up: .*withholds.*2026-27"):
-        calibrate(ONE_UP, [result], 0.2)
+@pytest.mark.parametrize("direction, sign", [("up", 1.0), ("down", -1.0)])
+@pytest.mark.parametrize("bad", [None, float("nan"), float("inf"), float("-inf")])
+@pytest.mark.parametrize("bad_measurement", [0, 1])
+def test_calibrate_refuses_a_year_with_no_finite_target_change(
+    direction, sign, bad, bad_measurement
+):
+    results = [_result({"it": {2025: sign * 5e9}}) for _ in range(2)]
+    results[bad_measurement] = _result({"it": {2025: sign * 5e9, 2026: bad}})
+    with pytest.raises(ReformSpecError, match="it: .*2026-27"):
+        calibrate(_one_reform(direction), results, 0.2)
 
 
 def test_calibrate_skips_a_reform_with_no_target_whatever_its_years_hold():
@@ -315,19 +327,41 @@ def test_calibrate_skips_a_reform_with_no_target_whatever_its_years_hold():
 
 
 @given(
-    effects=st.dictionaries(
-        st.integers(2020, 2040),
-        st.one_of(st.none(), st.floats(1e6, 1e12)),
+    direction=st.sampled_from(["up", "down"]),
+    measurements=st.lists(
+        st.dictionaries(
+            st.integers(2020, 2040),
+            st.one_of(
+                st.none(),
+                st.sampled_from([float("nan"), float("inf"), float("-inf")]),
+                st.floats(1e6, 1e12),
+            ),
+            min_size=1,
+        ),
         min_size=1,
-    )
+        max_size=3,
+    ),
 )
-def test_calibrate_answers_only_from_a_complete_set_of_years(effects):
-    """Any withheld year refuses, naming the first, and otherwise the
-    smallest effect comes from the years given."""
-    withheld = sorted(year for year, effect in effects.items() if effect is None)
-    if withheld:
-        with pytest.raises(ReformSpecError, match=fiscal_year_label(withheld[0])):
-            calibrate(ONE_UP, [_result({"up": effects})], 0.2)
+def test_calibrate_answers_only_from_finite_target_changes(direction, measurements):
+    """``calibrate`` refuses a reform with any year's target change withheld or
+    not finite, in any measurement and either direction, and names the first
+    such year. Otherwise the smallest effect comes from the years given."""
+    sign = 1.0 if direction == "up" else -1.0
+    results = [
+        _result({"it": {y: None if v is None else sign * v for y, v in m.items()}})
+        for m in measurements
+    ]
+    unusable = [
+        y
+        for m in measurements
+        for y, v in m.items()
+        if v is None or not math.isfinite(v)
+    ]
+    if unusable:
+        with pytest.raises(ReformSpecError, match=fiscal_year_label(min(unusable))):
+            calibrate(_one_reform(direction), results, 0.2)
     else:
-        out = calibrate(ONE_UP, [_result({"up": effects})], 0.2)
-        assert out["up"]["smallest_effect"] == min(effects.values())
+        out = calibrate(_one_reform(direction), results, 0.2)
+        assert out["it"]["smallest_effect"] == min(
+            v for m in measurements for v in m.values()
+        )
