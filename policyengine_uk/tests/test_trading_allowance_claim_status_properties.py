@@ -15,9 +15,10 @@ income is within the allowance (s. 783AE); partial relief needs an election
 (s. 783AM), which a non-claimant has not made and a claimant has; ordinary
 treatment deducts actual expenses and capital allowances, which for a
 claimant partial relief replaced and are taken as a share of the input
-allowance (gov.simulation.trading_allowance_claimant_expense_share), between
-none and all of it. A claimant keeps the allowance while it does at least as
-well for the trade as those expenses.
+allowance (gov.simulation.trading_allowance_claimant_expense_share), or their
+capital allowances if larger, never above the input allowance. Everyone who
+can take the allowance takes it unless a supplied current loss is worth more
+than its saving; a claimant's saving is over deducting their expenses.
 
 Invariants, each checked over many generated people in one reusable
 simulation per allowance level and expense share:
@@ -174,35 +175,41 @@ def reference(r, allowance, share):
         [profit + INPUT_ALLOWANCE, r["receipts"], 0.0, np.inf],
         profit,
     )
-    # Ordinary treatment deducts actual expenses and capital allowances; a
-    # claimant's are a share of the input allowance, between none and all of
-    # it, since they chose the allowance instead.
-    claimant_expenses = min(max(share, 0), 1) * INPUT_ALLOWANCE
+    # Ordinary treatment deducts actual expenses and capital allowances. A
+    # claimant's are a share of the input allowance, in pennies, or their
+    # capital allowances if larger, but never above the allowance they chose
+    # instead.
+    share_expenses = round(min(max(share, 0), 1) * INPUT_ALLOWANCE, 2)
+    claimant_expenses = np.minimum(np.maximum(share_expenses, capital), INPUT_ALLOWANCE)
     ordinary = np.where(claimant, receipts - claimant_expenses, profit - capital)
     # Full relief (no election) or partial relief, trades first (s. 783AK).
     full = receipts + chapter_8 <= allowance
     with_allowance = np.where(full, 0, np.maximum(receipts - allowance, 0))
     chapter_8_relief = np.minimum(chapter_8, np.maximum(allowance - receipts, 0))
-    # Partial relief needs an election, which a non-claimant has not made.
+    # Partial relief needs an election, which a non-claimant has not made. A
+    # claimant's option is the allowance's own figure; anyone else's keeps
+    # actual deductions where those do better.
     available = full | ~non_claimant
-    trade = np.where(available, np.minimum(with_allowance, ordinary), ordinary)
+    trade = np.where(
+        available,
+        np.where(claimant, with_allowance, np.minimum(with_allowance, ordinary)),
+        ordinary,
+    )
     chapter_8_relief = np.where(available, chapter_8_relief, 0)
-    # A claimant's claim is their election: they keep the allowance while
-    # there is one and it does at least as well for the trade as deducting
-    # their expenses, and otherwise take ordinary treatment. A current loss
-    # does not enter: their claim set it aside.
-    claimant_takes = claimant & (allowance > 0) & (with_allowance <= ordinary)
-    chapter_8_relief = np.where(claimant & ~claimant_takes, 0, chapter_8_relief)
-    # Anyone else claims a current loss larger than the allowance's saving
-    # instead (ss. 783AL, 783AM).
+    # Ordinary treatment wins where a supplied current loss is worth more
+    # than the allowance's saving (ss. 783AL, 783AM). A claimant's saving is
+    # over deducting their expenses, negative where those do better, so they
+    # then take ordinary treatment with no loss at all.
     saving = (
         np.maximum(ordinary - brought_forward, 0)
         - np.maximum(trade - brought_forward, 0)
         + chapter_8_relief
     )
-    claims_loss = ~claimant & (loss > saving)
-    trade = np.where(claims_loss, ordinary, trade)
-    chapter_8_relief = np.where(claims_loss, 0, chapter_8_relief)
+    claims_loss = loss > saving
+    claimant_takes = claimant & (allowance > 0) & ~claims_loss
+    ordinary_treatment = np.where(claimant, ~claimant_takes, claims_loss)
+    trade = np.where(ordinary_treatment, ordinary, trade)
+    chapter_8_relief = np.where(ordinary_treatment, 0, chapter_8_relief)
     takes_allowance = np.where(
         claimant,
         claimant_takes,
@@ -210,15 +217,17 @@ def reference(r, allowance, share):
     )
     # The model sums in float32, so where the reference compares a sum with
     # a threshold it may land on the other side within rounding: a
-    # non-claimant's relevant income against the allowance, anyone else's
-    # supplied loss against the saving, and, for whether they take the
-    # allowance, its advantage on the trade against nil. A claimant's choice
-    # compares the allowances alone, exactly.
+    # non-claimant's relevant income against the allowance, a loss against
+    # the saving (for a claimant with no loss, a saving near nil unless the
+    # allowance equals their expenses exactly), and, for whether anyone else
+    # takes the allowance, its advantage on the trade against nil.
     margin = tolerance(r["receipts"], profit, chapter_8, allowance)
     finite = np.isfinite(receipts)
     near_full = non_claimant & finite
     near_full &= np.abs(np.where(finite, receipts, 0) + chapter_8 - allowance) <= margin
-    near_loss = ~claimant & (loss > 0) & (np.abs(loss - saving) <= margin)
+    exact_tie = claimant & (loss == 0) & (allowance == claimant_expenses)
+    near_loss = (loss > 0) | claimant
+    near_loss &= (np.abs(loss - saving) <= margin) & ~exact_tie
     advantage = np.where(np.isfinite(with_allowance), ordinary - with_allowance, -1)
     return dict(
         taxable=np.maximum(trade - brought_forward, 0),
@@ -301,3 +310,50 @@ def test_a_smaller_expense_share_never_lowers_a_claimants_taxable_profit(sims, d
         ]
         for larger_share, smaller_share in zip(taxable, taxable[1:]):
             assert (smaller_share >= larger_share - tolerance(larger_share)).all()
+
+
+@pytest.mark.parametrize(
+    "year,allowance,share",
+    [(2026, 1_000, 1.0), (2026, 500, 0.5), (2027, 1_650, 0.55)],
+)
+def test_a_claimant_with_no_loss_takes_an_allowance_equal_to_their_expenses(
+    year, allowance, share
+):
+    """Where the allowance equals a claimant's expenses the two options tie,
+    and ties take the allowance. Over many profits, capital allowances below
+    those expenses and losses brought forward, float arithmetic must not tip
+    the tie: the input allowance is £1,000 in 2026-27 and £3,000 in 2027-28,
+    and 0.55 x £3,000 is a hair above £1,650 in floating point."""
+    rng = np.random.default_rng(2764)
+    count = 2_000
+    expenses = round(share * {2026: 1_000, 2027: 3_000}[year], 2)
+    people = {f"person_{i}": {"age": {year: 40}} for i in range(count)}
+    simulation = Simulation(
+        situation={
+            "people": people,
+            "benunits": {f"b_{i}": {"members": [f"person_{i}"]} for i in range(count)},
+            "households": {
+                f"h_{i}": {"members": [f"person_{i}"]} for i in range(count)
+            },
+        },
+        reform={
+            "gov.hmrc.income_tax.allowances.trading_allowance": {str(year): allowance},
+            "gov.simulation.trading_allowance_claimant_expense_share": {
+                str(year): share
+            },
+        },
+    )
+    some = rng.random(count) < 0.5
+    simulation.set_input(
+        "self_employment_income", year, np.round(rng.uniform(0.01, 20_000, count), 2)
+    )
+    simulation.set_input(
+        "capital_allowances", year, np.round(rng.uniform(0, expenses, count), 2) * some
+    )
+    simulation.set_input(
+        "loss_relief", year, np.round(rng.uniform(0, 5_000, count), 2) * ~some
+    )
+    simulation.set_input(
+        "trading_allowance_claim_status", year, np.array(["CLAIMANT"] * count)
+    )
+    assert simulation.calculate("uses_trading_allowance", year).all()

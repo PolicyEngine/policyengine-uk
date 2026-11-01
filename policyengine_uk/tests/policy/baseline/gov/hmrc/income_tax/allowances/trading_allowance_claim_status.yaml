@@ -1,16 +1,17 @@
 # trading_allowance_claim_status says which receipts lie behind a person's
 # input profit (ITTOIA 2005 Part 6A). The input allowance is the allowance
-# legislated for the year the data were measured: a dataset's first year, or
-# in a situation like these the latest year the status was supplied for, here
-# the year simulated. Reforms do not move it.
+# legislated for the year the profit was measured: a dataset's first year, or
+# in a situation like these the latest year, up to the one simulated, for
+# which the profit was supplied, here the year simulated. Reforms do not move
+# it.
 # - Claimant: the profit is receipts less the input allowance, as under
 #   partial relief (s. 783AI), so receipts are profit + input allowance and
 #   the deduction at allowance A is min(profit, A - input allowance). Partial
 #   relief replaces capital allowances, so a claimant's are not deducted.
-#   Their claim was the election (s. 783AM), so they keep the allowance, and
-#   give up current losses, while A is above nil and at least their expenses
-#   (gov.simulation.trading_allowance_claimant_expense_share of the input
-#   allowance, by default all of it); below those they deduct them instead.
+#   Their expenses are gov.simulation.trading_allowance_claimant_expense_share
+#   of the input allowance (by default all of it), or their capital
+#   allowances if larger. They keep the allowance unless their expenses, or
+#   a supplied current loss, are worth more (s. 783AM).
 # - Non-claimant: no election for partial relief; full relief needs none
 #   (s. 783AE) and applies where supplied receipts, or casual income alone
 #   with no profit, are within the allowance.
@@ -456,7 +457,7 @@
     # (20,000 - 12,570) x 20%
     income_tax: 1_486
 
-- name: A claimant gives up a current loss at the input allowance.
+- name: At the input allowance a claimant claims a current loss instead.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -465,15 +466,17 @@
     trading_loss: 1_500
     trading_allowance_claim_status: CLAIMANT
   output:
-    # Their claim made the loss nil (ss. 783AF and 783AI).
+    # By default their expenses are the £1,000 allowance, so the allowance
+    # saves nothing over them and the loss is worth more (s. 783AM). Their
+    # claim and the loss contradict each other; the election settles it.
     trading_allowance_deduction: 0
-    uses_trading_allowance: true
-    trade_loss_relief_against_general_income: 0
-    ni_class_4_trading_loss: 0
-    # (30,000 + 2,500 - 12,570) x 20%
-    income_tax: 3_986
+    uses_trading_allowance: false
+    trade_loss_relief_against_general_income: 1_500
+    ni_class_4_trading_loss: 1_500
+    # (30,000 + 2,500 - 1,500 - 12,570) x 20%
+    income_tax: 3_686
 
-- name: A raise to £3,000 gives a claimant with a current loss its full £2,000.
+- name: A raise to £3,000 beats a claimant's smaller current loss.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -483,13 +486,15 @@
     trading_loss: 1_500
     trading_allowance_claim_status: CLAIMANT
   output:
+    # The allowance saves £2,000, more than the £1,500 loss.
     trading_allowance_deduction: 2_000
     uses_trading_allowance: true
     trade_loss_relief_against_general_income: 0
-    # (30,000 + 500 - 12,570) x 20%, £400 less than at £1,000.
+    ni_class_4_trading_loss: 0
+    # (30,000 + 500 - 12,570) x 20%, £100 less than at £1,000.
     income_tax: 3_586
 
-- name: A claimant keeps the allowance against a current loss larger than its saving.
+- name: A claimant's current loss larger than the allowance's saving is claimed instead.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -499,13 +504,13 @@
     trading_loss: 2_500
     trading_allowance_claim_status: CLAIMANT
   output:
-    # They chose the allowance over this loss at £1,000, and a raise only
-    # makes it better.
-    trading_allowance_deduction: 2_000
-    uses_trading_allowance: true
-    trade_loss_relief_against_general_income: 0
-    ni_class_4_trading_loss: 0
-    income_tax: 3_586
+    # The allowance saves £2,000, less than the £2,500 loss.
+    trading_allowance_deduction: 0
+    uses_trading_allowance: false
+    trade_loss_relief_against_general_income: 2_500
+    ni_class_4_trading_loss: 2_500
+    # (30,000 + 2,500 - 2,500 - 12,570) x 20%
+    income_tax: 3_486
 
 - name: Abolishing the allowance lets a claimant claim a current loss.
   period: 2026
@@ -541,6 +546,93 @@
     trade_loss_relief_against_general_income: 1_500
     # (30,000 + 2,500 - 1,500 - 12,570) x 20%
     income_tax: 3_686
+
+- name: With £500 of expenses and a £1,500 loss, an allowance of £499 leaves the loss claimed.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.income_tax.allowances.trading_allowance: 499
+    gov.simulation.trading_allowance_claimant_expense_share: 0.5
+    employment_income: 30_000
+    self_employment_income: 2_500
+    trading_loss: 1_500
+    trading_allowance_claim_status: CLAIMANT
+  output:
+    # They deduct their £500 of expenses: 3,500 - 500 = 3,000, less the loss.
+    taxable_self_employment_income: 3_000
+    uses_trading_allowance: false
+    trade_loss_relief_against_general_income: 1_500
+    # (30,000 + 3,000 - 1,500 - 12,570) x 20%
+    income_tax: 3_786
+
+- name: With £500 of expenses and a £1,500 loss, an allowance of £500 changes nothing.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.income_tax.allowances.trading_allowance: 500
+    gov.simulation.trading_allowance_claimant_expense_share: 0.5
+    employment_income: 30_000
+    self_employment_income: 2_500
+    trading_loss: 1_500
+    trading_allowance_claim_status: CLAIMANT
+  output:
+    # The allowance equals their expenses and saves nothing, so the loss is
+    # still claimed and income tax does not jump as it crosses them.
+    taxable_self_employment_income: 3_000
+    uses_trading_allowance: false
+    trade_loss_relief_against_general_income: 1_500
+    income_tax: 3_786
+
+- name: With £500 of expenses and a £1,500 loss, an allowance of £2,000 is worth the loss.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.income_tax.allowances.trading_allowance: 2_000
+    gov.simulation.trading_allowance_claimant_expense_share: 0.5
+    employment_income: 30_000
+    self_employment_income: 2_500
+    trading_loss: 1_500
+    trading_allowance_claim_status: CLAIMANT
+  output:
+    # It saves 2,000 - 500 = 1,500, the loss's worth; ties take the
+    # allowance: 3,500 - 2,000 = 1,500, the same income as with the loss.
+    taxable_self_employment_income: 1_500
+    uses_trading_allowance: true
+    trade_loss_relief_against_general_income: 0
+    # (30,000 + 1,500 - 12,570) x 20%
+    income_tax: 3_786
+
+- name: A claimant's capital allowances above the share's expenses count as expenses.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    gov.hmrc.income_tax.allowances.trading_allowance: 600
+    gov.simulation.trading_allowance_claimant_expense_share: 0.5
+    self_employment_income: 2_500
+    capital_allowances: 800
+    trading_allowance_claim_status: CLAIMANT
+  output:
+    # £800 of capital allowances beat a £600 allowance: receipts of 3,500
+    # less 800, where keeping the allowance would leave 2,900.
+    trading_allowance_deduction: -1_000
+    taxable_self_employment_income: 2_700
+    uses_trading_allowance: false
+
+- name: An allowance equal to a claimant's expenses keeps the allowance.
+  period: 2027
+  absolute_error_margin: 0
+  input:
+    gov.hmrc.income_tax.allowances.trading_allowance: 1_650
+    gov.simulation.trading_allowance_claimant_expense_share: 0.55
+    self_employment_income: 600
+    trading_allowance_claim_status: CLAIMANT
+  output:
+    # 0.55 x 3,000 is £1,650 to the penny (in floating point a hair above),
+    # equal to the allowance: a tie, which takes the allowance. Receipts
+    # 3,600 less 1,650.
+    trading_allowance_deduction: -1_350
+    taxable_self_employment_income: 1_950
+    uses_trading_allowance: true
 
 - name: A non-claimant claims a current loss the allowance would have taken.
   period: 2027

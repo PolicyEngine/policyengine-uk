@@ -3,7 +3,7 @@ input data were measured (PolicyEngine/policyengine-uk#2764).
 
 A claimant's profit already deducts the allowance legislated for that year:
 a dataset's first year, which Simulation projects to later years, or in a
-situation the latest year, up to the one simulated, for which the status was
+situation the latest year, up to the one simulated, for which the profit was
 supplied. These tests build small datasets and situations with earlier
 inputs, so the data year and the simulated year differ, as they do for
 survey data projected past the April 2027 raise to £3,000 (Budget 2026,
@@ -82,14 +82,18 @@ def test_a_reform_of_the_data_year_leaves_the_input_allowance():
     assert deduction(simulation, 2026)[0] == pytest.approx(4_000)
 
 
-def test_a_raise_never_withdraws_a_claimants_loss_relief():
+def test_a_raise_never_raises_a_claimants_tax_when_they_have_a_loss():
     kept = {ALLOWANCE: {str(year): 1_000 for year in range(2027, 2029)}}
-    law = Simulation(dataset=traders(2025, loss=5_000))
-    at_1000 = Simulation(dataset=traders(2025, loss=5_000), reform=kept)
-    # The claimant's claim gave the loss up at £1,000 and still does at
-    # £3,000, so the raise only adds the £2,000 deduction.
-    tax = law.calculate("income_tax", 2027)[0]
-    assert tax == pytest.approx(at_1000.calculate("income_tax", 2027)[0] - 400, abs=1)
+    law = Simulation(dataset=traders(2025, loss=1_000))
+    at_1000 = Simulation(dataset=traders(2025, loss=1_000), reform=kept)
+    # At £1,000 the allowance saves the claimant nothing over their
+    # expenses, so they claim the loss. At £3,000 it saves £2,000, more than
+    # the loss, so they take it and give the loss up (s. 783AM).
+    assert not at_1000.calculate("uses_trading_allowance", 2027)[0]
+    assert law.calculate("uses_trading_allowance", 2027)[0]
+    assert (
+        law.calculate("income_tax", 2027)[0] < at_1000.calculate("income_tax", 2027)[0]
+    )
 
 
 def situation(person):
@@ -132,22 +136,48 @@ def test_a_situation_reads_carried_inputs_as_measured_in_the_year_supplied():
 
 
 def test_a_situation_reads_each_year_supplied_as_measured_then():
-    # Inputs supplied for 2027 were measured under 2027-28's £3,000, so they
-    # gain nothing from it; 2026 still reads the 2025 inputs, at £1,000.
-    simulation = Simulation(
+    # The 2027 profit was measured under 2027-28's £3,000, so it gains
+    # nothing from it. 2026 reads the 2025 profit, not the later one: a
+    # claimant at £1,000, who would gain £2,000 from a raise to £3,000.
+    person = {
+        "age": {2025: 40},
+        "self_employment_income": {2025: 5_000, 2027: 5_000},
+        "trading_allowance_claim_status": {2025: "CLAIMANT"},
+    }
+    simulation = Simulation(situation=situation(person))
+    assert deduction(simulation, 2027) == [0]
+    assert deduction(simulation, 2026) == [0]
+    assert simulation.calculate("uses_trading_allowance", 2026).tolist() == [True]
+    raised = Simulation(
+        situation=situation(person), reform={ALLOWANCE: {"2026": 3_000}}
+    )
+    assert deduction(raised, 2026) == pytest.approx([2_000])
+
+
+def test_a_situation_reads_the_year_of_the_profit_not_of_the_status():
+    # A 2027 profit was measured in 2027-28, under £3,000, whatever year the
+    # status was given for; a 2025 profit carried to 2027 was measured under
+    # £1,000.
+    later_profit = Simulation(
         situation=situation(
             {
-                "age": {2025: 40},
-                "self_employment_income": {2025: 5_000, 2027: 5_000},
-                "trading_allowance_claim_status": {
-                    2025: "CLAIMANT",
-                    2027: "CLAIMANT",
-                },
+                "age": {2027: 40},
+                "self_employment_income": {2027: 5_000},
+                "trading_allowance_claim_status": {2025: "CLAIMANT"},
             }
         )
     )
-    assert deduction(simulation, 2026) == [0]
-    assert deduction(simulation, 2027) == [0]
+    assert deduction(later_profit, 2027) == [0]
+    earlier_profit = Simulation(
+        situation=situation(
+            {
+                "age": {2025: 40},
+                "self_employment_income": {2025: 5_000},
+                "trading_allowance_claim_status": {2027: "CLAIMANT"},
+            }
+        )
+    )
+    assert deduction(earlier_profit, 2027) == pytest.approx([2_000])
 
 
 def test_a_raise_never_withdraws_a_situation_claimants_loss_relief():
