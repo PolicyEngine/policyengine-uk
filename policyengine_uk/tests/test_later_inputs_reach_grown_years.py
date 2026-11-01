@@ -86,21 +86,15 @@ ISSUE_ROWS = {
     },
     "savings interest": {"savings_interest_income": (4_288.88, 11_773.92)},
 }
-# A household variable that sums a person balance. A call from outside the
-# simulation reads a calculated balance from its holder, but the sum's formula
-# reads it through Core's cache of results by variable and period, which a
-# copy of a simulation keeps.
-SUMS = {"cash_isa_balance": "cash_isa"}
 
 
 @pytest.mark.parametrize("row", ISSUE_ROWS)
 def test_an_input_set_for_an_earlier_year_reaches_a_year_already_grown(row):
     # The issue's reproduction: the data supply £3,000 for 2025. Each path
     # grows it to 2035, then gets £10,000 for 2030, and grows that instead,
-    # as a new simulation given both inputs does. A copy of the simulation is
-    # a default branch too, one that also keeps Core's cache of results by
-    # variable and period. A branch made before the input keeps the value its
-    # parent held then.
+    # as a new simulation given both inputs does. A copy of the simulation,
+    # made as its baseline is, is a default branch too. A branch made before
+    # the input keeps the value its parent held then.
     expected = ISSUE_ROWS[row]
     simulation = Simulation(
         dataset=_frame(**{f"{name}__{DATA_YEAR}": 3_000.0 for name in expected})
@@ -125,9 +119,6 @@ def test_an_input_set_for_an_earlier_year_reaches_a_year_already_grown(row):
         )
     )
     for name, (grown, regrown) in expected.items():
-        if name in SUMS:
-            sums = [path.calculate(SUMS[name], 2035)[0] for path in (*paths, new)]
-            assert sums == [sums[-1]] * 4, SUMS[name]
         values = [path.calculate(name, 2035)[0] for path in (*paths, new)]
         assert values == [values[-1]] * 4, name
         assert values[-1] == pytest.approx(regrown, abs=0.005)
@@ -295,21 +286,27 @@ class twice_car_list_price(Variable):
 def test_a_formula_variable_supplied_for_one_year_is_recalculated_for_others():
     # A caller supplies a formula variable for 2025 only, so the simulation
     # keeps it as an input variable. Its formula gives 2030 from the list
-    # price carried from 2025; a list price then set for 2030 changes it on
-    # every path, and the supplied year keeps its value.
+    # price carried from 2025. A list price then set for 2028 changes both on
+    # every path, and the supplied year keeps its value. The formula reads the
+    # list price as formulas do, through Core's cache of results by variable
+    # and period, which a call from outside the simulation does not read
+    # (nor does Core's sum of a variable's adds, which maps the result to
+    # the variable's entity), so the drop clears that cache too.
     data = {f"car_list_price__{DATA_YEAR}": 3_000.0}
     simulation = Simulation(dataset=_frame(**data))
-    new = Simulation(dataset=_frame(**data, car_list_price__2030=5_000.0))
+    new = Simulation(dataset=_frame(**data, car_list_price__2028=5_000.0))
     for path in (simulation, new):
         path.tax_benefit_system.add_variable(twice_car_list_price)
     named = simulation.get_branch("edited")
     for path in (simulation, named, new):
         path.set_input("twice_car_list_price", DATA_YEAR, np.array([1.0]))
     for path in (simulation, named):
+        assert path.calculate("car_list_price", 2030)[0] == 3_000
         assert path.calculate("twice_car_list_price", 2030)[0] == 6_000
-        path.set_input("car_list_price", 2030, np.array([5_000.0]))
+        path.set_input("car_list_price", 2028, np.array([5_000.0]))
     for path in (simulation, named, new):
         assert path.calculate("twice_car_list_price", 2030)[0] == 10_000
+        assert path.calculate("car_list_price", 2030)[0] == 5_000
         assert path.calculate("twice_car_list_price", DATA_YEAR)[0] == 1
 
 
@@ -330,6 +327,16 @@ def test_a_reset_drops_grown_years_and_keeps_supplied_ones():
         assert holder.get_array(period(year)) is None
     assert holder.get_array(period(DATA_YEAR))[0] == 3_000
     assert holder.get_array(period(2038))[0] == 7_000
+
+
+class sum_of_the_inputs(Variable):
+    value_type = float
+    entity = Person
+    label = "The inputs the property test sets, summed by a formula"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return sum(person(name, period) for name in VARIABLES)
 
 
 AMOUNTS = st.integers(min_value=0, max_value=5_000_000).map(lambda pence: pence / 100)
@@ -376,17 +383,19 @@ DATA = st.fixed_dictionaries(
 )
 def test_every_path_gives_what_a_new_simulation_gives(data, steps):
     # The same inputs and calculations, in the same order, on the default
-    # branch, on a copy of it (which keeps Core's cache of results by variable
-    # and period) and on a named branch, each made before any step: each
-    # calculation gives the same value on all three, and afterwards every
-    # input variable in every year equals what a new simulation built from
-    # all the inputs gives. Every supplied year keeps its value.
+    # branch, on a copy of it and on a named branch, each made before any
+    # step: each calculation gives the same value on all three. Afterwards
+    # every input variable in every year, and a formula that reads them all
+    # through Core's cache of results by variable and period, equal what a
+    # new simulation built from all the inputs gives. Every supplied year
+    # keeps its value.
     columns = {}
     for name, (amount, later) in data.items():
         columns[f"{name}__{DATA_YEAR}"] = amount
         if later is not None:
             columns[f"{name}__{later[0]}"] = later[1]
     simulation = Simulation(dataset=_frame(**columns))
+    simulation.tax_benefit_system.add_variable(sum_of_the_inputs)
     paths = (simulation, simulation.clone(), simulation.get_branch("edited"))
     for step in steps:
         if step[0] == "calculate":
@@ -399,7 +408,9 @@ def test_every_path_gives_what_a_new_simulation_gives(data, steps):
                 path.set_input(name, year, np.array([amount]))
             columns[f"{name}__{year}"] = amount
     new = Simulation(dataset=_frame(**columns))
-    for name in (*SUMS.values(), *VARIABLES):
+    new.tax_benefit_system.add_variable(sum_of_the_inputs)
+    # The formula first, while the inputs it reads are only cached.
+    for name in ("sum_of_the_inputs", *VARIABLES):
         for year in YEARS:
             values = [path.calculate(name, year)[0] for path in (*paths, new)]
             assert values == [values[-1]] * 4, (name, year, steps)
