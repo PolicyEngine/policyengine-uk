@@ -764,26 +764,35 @@ def test_each_entered_part_of_pension_credit_drops_the_age_and_take_up_condition
 
 
 class ScreenReads:
-    """Records each variable the income-related ESA screen reads in a
-    simulation itself. A branch can change the family: the one that works out
-    Pension Credit without employment income gives a claimant in paid work no
-    earnings, so their claim can pass the work test there."""
+    """Records each variable the income-related ESA screen reads, with the
+    branch and year it reads in. A branch can change the family: the one that
+    works out Pension Credit without employment income gives a claimant in
+    paid work no earnings, so their claim can pass the work test there. So
+    can a later year: the model also runs the screen for 2027 to 2032 here,
+    and the situation enters earnings and hours for 2026 only."""
 
     def __init__(self, monkeypatch):
-        self.variables = []
+        self.reads = []
         calculate = CoreSimulation.calculate
 
         def logged(simulation, variable_name, *args, **kwargs):
             stack = simulation.tracer.stack
-            if (
-                simulation.branch_name == "default"
-                and stack
-                and stack[-1]["name"] == "esa_income_eligible"
-            ):
-                self.variables.append(variable_name)
+            if stack and stack[-1]["name"] == "esa_income_eligible":
+                frame = stack[-1]
+                self.reads.append(
+                    (simulation.branch_name, str(frame["period"]), variable_name)
+                )
             return calculate(simulation, variable_name, *args, **kwargs)
 
         monkeypatch.setattr(CoreSimulation, "calculate", logged)
+
+    def variables(self, year):
+        """What the screen read in the simulation itself, for year."""
+        return {
+            variable
+            for branch, period, variable in self.reads
+            if branch == "default" and period == str(year)
+        }
 
 
 PENSION_CREDIT_CONDITIONS = {"meets_pension_credit_age_conditions", "would_claim_pc"}
@@ -829,10 +838,10 @@ def test_the_screen_reads_no_pension_credit_condition_without_a_couple_claim(
     ]
     sim = Simulation(situation=combine(*no_couple_claim))
     assert sim.calculate("esa_income_eligible", year).tolist() == [False, False, True]
-    assert "esa_income_assessable_capital" in reads.variables
-    assert not PENSION_CREDIT_CONDITIONS & set(reads.variables)
+    assert "esa_income_assessable_capital" in reads.variables(year)
+    assert not PENSION_CREDIT_CONDITIONS & reads.variables(year), reads.reads
 
-    reads.variables.clear()
+    reads.reads.clear()
     out_of_work = household([dict(ADULT, age=45, esa_income_reported=5_000)], year)
     sim = Simulation(situation=combine(*no_couple_claim, out_of_work))
     assert sim.calculate("esa_income_eligible", year).tolist() == [
@@ -841,4 +850,4 @@ def test_the_screen_reads_no_pension_credit_condition_without_a_couple_claim(
         True,
         True,
     ]
-    assert PENSION_CREDIT_CONDITIONS <= set(reads.variables)
+    assert PENSION_CREDIT_CONDITIONS <= reads.variables(year)
