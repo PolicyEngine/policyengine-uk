@@ -28,8 +28,9 @@ whose applicable amount can be lower.
    else in the applicable income, and the award never rises with capital.
 2. For a family that claims no Universal Credit, adding a dependent child
    never lowers the applicable amount. For a pensioner it adds the scheme's
-   weekly amount for 52 weeks, unless England's 2018-19 to 2024-25 limit is
-   already reached, and in Wales the family premium with the first child.
+   weekly amount for 52 weeks, unless the family already has the two children
+   that England's limit allowed from 2018-19 to 2024-25, and in Wales the
+   family premium with the first child.
 3. A pensioner with no child and capital up to £10,000, and every working-age
    family, gets no child amount, family premium or tariff income, so their
    applicable amount, applicable income and award are origin/main's.
