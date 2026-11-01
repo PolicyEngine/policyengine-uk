@@ -8,7 +8,6 @@ import shutil
 from dataclasses import dataclass, replace
 from datetime import date
 from decimal import Decimal
-from fractions import Fraction
 from functools import lru_cache
 from io import BytesIO
 from pathlib import Path
@@ -679,9 +678,10 @@ class ReceiptsSeriesSpec:
     def per_head(self) -> bool:
         """Whether the series sits under ``per_capita``. Dataset projection
         grows household weights by ``ons.population``, so
-        ``render_receipts_growth_yaml`` writes such a series' growth over one
-        plus that growth (``per_head_growth``, ``per_head_tail``), and the
-        weighted total grows with the line in every year."""
+        ``render_receipts_growth_yaml`` writes such a series as
+        (1 + aggregate growth) / (1 + ons.population growth) - 1
+        (``per_head_growth``, ``per_head_tail``), and the weighted total grows
+        with the line in every year."""
         return self.path[0] == "per_capita"
 
 
@@ -691,35 +691,27 @@ class ClearanceSeriesSpec(ReceiptsSeriesSpec):
     household quantity inputs per head (#2596).
 
     The OBR counts clearances in quantities, not pounds, so a clearance
-    table has no "£ billion" cell. ``unit`` holds the unit as the OBR states
-    it in the table, in a row label or a note, and ``products`` the names a
-    note may give the line's product, lower case and without hyphens. In
-    both EFOs the importer requires every unit the OBR states for the line
-    to be this one (``validate_clearance_unit``). Dataset projection grows
-    household weights by ``ons.population``, so ``render_receipts_growth_yaml``
-    writes one plus the clearances' growth, over one plus that growth, minus
-    one (``per_head_growth``), and the weighted total grows with the
-    clearances. After the OBR's
-    forecast the importer holds the clearances flat, as ``road_fuel_volume``
-    holds road fuel volume.
+    table has no "£ billion" cell. ``unit_cell`` holds the text of the cell
+    in which the OBR states the line's unit, as ``CLEARANCE_TABLE_TEXTS``
+    lists it. In both EFOs the importer requires that cell and refuses any
+    text in the table that the list lacks (``validate_clearance_table``).
+    Dataset projection grows household weights by ``ons.population``, so
+    ``render_receipts_growth_yaml`` writes
+    (1 + aggregate clearance growth) / (1 + ons.population growth) - 1
+    (``per_head_growth``), and the weighted total grows with the
+    clearances. After the OBR's forecast the importer holds the clearances
+    flat, as ``road_fuel_volume`` holds road fuel volume.
     """
 
-    unit: str = ""
-    products: tuple[str, ...] = ()
+    unit_cell: str = ""
 
     def __post_init__(self):
         name = ".".join(self.path)
-        if not self.unit:
-            raise ValueError(f"{name}: a clearance line needs a unit")
-        units, unknown = read_clearance_units(self.unit)
-        if len(units) != 1 or unknown:
+        if self.unit_cell not in CLEARANCE_TABLE_TEXTS.get(self.title, ()):
             raise ValueError(
-                f'{name}: the importer does not know "{self.unit}" as one '
-                "clearance unit"
-            )
-        if not self.products:
-            raise ValueError(
-                f"{name}: a clearance line needs the names a note may give its product"
+                f"{name}: a clearance line needs the cell that states its "
+                f"unit among its table's read texts, and {self.unit_cell!r} "
+                "is not one"
             )
         # The importer links clearance outturns to the previous EFO's outturn.
         if self.rates or self.outturn is not None:
@@ -730,263 +722,101 @@ class ClearanceSeriesSpec(ReceiptsSeriesSpec):
             )
 
 
-# Clearance units as a class (#2596). The importer knows a count of sticks,
-# a mass in kg and a volume of alcohol or of product in litres or
-# hectolitres, each after an optional number and any of the scales below,
-# and compares two units by measure and size: "'000s kg" and "thousand kg"
-# agree, "thousand sticks" and "million sticks" do not. It reads any other
-# word for a quantity or a scale, such as "tonnes", "grams", "litres"
-# without "of alcohol" or "of product", or a scale before no unit it knows,
-# as a unit it does not know, which needs deliberate importer support.
-CLEARANCE_SCALES = (
-    (r"'?000'?s?", 1_000),
-    (r"thousands?", 1_000),
-    (r"hundreds?", 100),
-    (r"millions?|mn", 1_000_000),
-    (r"billions?|bn", 1_000_000_000),
-)
-CLEARANCE_MEASURES = (
-    (r"sticks?", "sticks", 1),
-    (r"kgs?|kilogram(?:me)?s?", "kg", 1),
-    (r"(?:litre|liter)s? of alcohol", "litres of alcohol", 1),
-    (r"(?:hectolitre|hectoliter)s? of alcohol", "litres of alcohol", 100),
-    (r"(?:litre|liter)s? of product", "litres of product", 1),
-    (r"(?:hectolitre|hectoliter)s? of product", "litres of product", 100),
-)
-OTHER_QUANTITY_WORDS = (
-    r"grams?|grammes?|g|mg|kilos?|tonnes?|tons?|lbs?|pounds?|ounces?|oz"
-    r"|(?:hecto|kilo|deca|deci|centi|milli)?(?:litre|liter)s?"
-    r"|hl|ml|cl|kl|l|hla|lpa|gallons?|pints?|barrels?"
-    r"|packs?|packets?|cartons?|pouches?|units|pence|per ?cent"
-)
-# The importer reads a number or a scale only after something other than a
-# letter, digit, point, comma, apostrophe or hyphen, and a measure or another
-# quantity word only after something other than a letter or a point, so it
-# reads "10kg" and skips the "g" of "e.g.".
-_CLEARANCE_SCALE = (
-    r"(?<![\w.,'-])(?:"
-    + "|".join(f"(?:{pattern})" for pattern, _ in CLEARANCE_SCALES)
-    + r")(?![a-z0-9])"
-)
-_CLEARANCE_MEASURE = (
-    r"(?<![a-z.])(?:"
-    + "|".join(f"(?:{pattern})" for pattern, _, _ in CLEARANCE_MEASURES)
-    + r")(?![a-z])"
-)
-CLEARANCE_UNIT_RE = re.compile(
-    r"(?:(?<![\w.,'-])(?P<number>\d[\d,]*(?:\.\d+)?)\s*)?"
-    rf"(?P<scales>(?:{_CLEARANCE_SCALE}(?:\s+of)?\s*)*)"
-    rf"(?P<measure>{_CLEARANCE_MEASURE})"
-)
-QUANTITY_WORD_RE = re.compile(
-    rf"{_CLEARANCE_SCALE}|(?<![a-z.])(?:sticks?|kgs?|kilogram(?:me)?s?|"
-    rf"{OTHER_QUANTITY_WORDS})(?![a-z])|£|%"
-)
-# After "is in" or "are in", as in "Other tobacco products are in kg", the
-# importer needs a unit it knows.
-UNIT_STATEMENT_RE = re.compile(
-    r"(?<![a-z])(?:is|are)\s+(?:(?:measured|expressed|given|shown|stated|"
-    r"recorded|reported)\s+)?in\s+\(?"
-)
-CLAUSE_END_RE = re.compile(r";|\.(?=\s|$)")
-
-
-def clearance_text(value: str | None) -> str:
-    """A cell's text as the importer reads units and products in it: lower
-    case, single spaces and straight apostrophes."""
-    return normalise_label(value).translate({0x2018: "'", 0x2019: "'"})
-
-
-def clearance_unit_size(match: re.Match) -> tuple[str, Fraction]:
-    """A unit's measure and size, such as ("kg", 1000) for "'000s kg"."""
-    number = match.group("number")
-    size = Fraction(number.replace(",", "")) if number else Fraction(1)
-    for scale in re.finditer(_CLEARANCE_SCALE, match.group("scales")):
-        size *= next(
-            factor
-            for pattern, factor in CLEARANCE_SCALES
-            if re.fullmatch(pattern, scale.group(0))
-        )
-    measure, factor = next(
-        (measure, factor)
-        for pattern, measure, factor in CLEARANCE_MEASURES
-        if re.fullmatch(pattern, match.group("measure"))
-    )
-    return measure, size * factor
-
-
-def read_clearance_units(
-    value: str | None,
-) -> tuple[list[tuple[tuple[str, Fraction], str, int, int]], list[str]]:
-    """Each unit the importer knows in a cell's text, as (measure and size,
-    spelling, start, end), and each word for a quantity or scale outside
-    them: a word ``QUANTITY_WORD_RE`` matches outside every known unit, or
-    what follows "is in" or "are in" when no known unit starts there."""
-    text = clearance_text(value)
-    units = [
-        (clearance_unit_size(match), match.group(0), match.start(), match.end())
-        for match in CLEARANCE_UNIT_RE.finditer(text)
-    ]
-    unknown = [
-        match.group(0)
-        for match in QUANTITY_WORD_RE.finditer(text)
-        if not any(
-            start <= match.start() and match.end() <= end for _, _, start, end in units
-        )
-    ]
-    for match in UNIT_STATEMENT_RE.finditer(text):
-        if not any(start == match.end() for _, _, start, _ in units):
-            unknown.append(CLAUSE_END_RE.split(text[match.end() :])[0].strip())
-    return units, unknown
-
-
-@dataclass(frozen=True)
-class ClearanceStatement:
-    """The units the importer reads in a cell of a clearance table.
-
-    ``units`` holds each unit the OBR states in the cell, as (measure and
-    size, spelling, the paths of the lines the importer ties it to, or
-    ``None`` for every line); ``products`` the paths of the lines whose
-    products the cell names, or ``None``; ``unknown`` each word for a
-    quantity or scale the importer does not know; ``untied`` whether the
-    importer cannot tie each of two or more units to products."""
-
-    units: tuple[tuple[tuple[str, Fraction], str, frozenset | None], ...]
-    products: frozenset | None
-    unknown: tuple[str, ...]
-    untied: bool
-
-
-def read_clearance_statement(
-    value: str | None, products: dict[str, frozenset[tuple[str, ...]]]
-) -> ClearanceStatement:
-    """Read the units in a cell, given ``products``, which maps each name a
-    cell may give a line's product to the lines' paths.
-
-    When the OBR states one unit in a cell, however often, the importer ties
-    it to the lines whose products the cell names, or to every line when the
-    cell names none. When the OBR states two or more, the importer ties each
-    to the products named in its own clause, up to a semicolon or a full
-    stop, and cannot tie a clause with two units or no product.
-    """
-    units, unknown = read_clearance_units(value)
-    text = list(clearance_text(value))
-    for _, _, start, end in units:
-        text[start:end] = " " * (end - start)
-    text = "".join(text).replace("-", " ")
-    if not products:
-        raise ValueError("a clearance statement needs the names of products")
-    pattern = re.compile(
-        r"(?<![a-z])(?:"
-        + "|".join(
-            re.escape(name).replace(r"\ ", r"\s+")
-            for name in sorted(products, key=len, reverse=True)
-        )
-        + r")(?![a-z])"
-    )
-    named = [
-        (match.start(), products[" ".join(match.group(0).split())])
-        for match in pattern.finditer(text)
-    ]
-
-    def lines(start: int, end: int) -> frozenset | None:
-        found = frozenset().union(
-            *(paths for position, paths in named if start <= position < end)
-        )
-        return found or None
-
-    whole = lines(0, len(text))
-    if len({size for size, _, _, _ in units}) <= 1:
-        return ClearanceStatement(
-            units=tuple((size, spelling, whole) for size, spelling, _, _ in units),
-            products=whole,
-            unknown=tuple(unknown),
-            untied=False,
-        )
-    tied = []
-    start = 0
-    for end in [match.end() for match in CLAUSE_END_RE.finditer(text)] + [len(text)]:
-        clause = [unit for unit in units if start <= unit[2] < end]
-        described = lines(start, end)
-        if clause and (described is None or len({unit[0] for unit in clause}) > 1):
-            return ClearanceStatement(
-                units=tuple(tied), products=whole, unknown=tuple(unknown), untied=True
-            )
-        tied += [(size, spelling, described) for size, spelling, _, _ in clause]
-        start = end
-    return ClearanceStatement(
-        units=tuple(tied), products=whole, unknown=tuple(unknown), untied=False
-    )
-
-
 TOBACCO_CLEARANCES = "tobacco clearances"
 ALCOHOL_CLEARANCES = "alcohol clearance forecasts"
-# The OBR states each unit in Table 4.11 (3.11 in March 2026) in a row
-# label, and splits "Non-cigarette clearances ('000s kg)" into the
-# hand-rolled and other tobacco lines. It states Table 4.12's (3.12's) unit
-# in a note.
-TOBACCO_STICKS = "(million sticks)"
-TOBACCO_KILOGRAMS = "('000s kg)"
-ALCOHOL_HECTOLITRES = "thousands of hectolitres of alcohol"
+# The cells in which the OBR states each clearance unit: the cigarette label
+# for cigarettes, the label of the non-cigarette total that Table 4.11 (3.11
+# in March 2026) splits into hand-rolled and other tobacco, and Table 4.12's
+# (3.12's) note for alcohol.
+TOBACCO_STICKS = "cigarette clearances (million sticks)"
+TOBACCO_KILOGRAMS = "non-cigarette clearances ('000s kg)"
+ALCOHOL_HECTOLITRES = "note: all clearances are in thousands of hectolitres of alcohol."
+# The text of every cell below each clearance table's title in Tables 3.11
+# and 3.12 of the March 2025 and March 2026 EFOs and Tables 4.11 and 4.12 of
+# October 2026, but numbers and fiscal years. Someone read each one. The
+# importer compares a cell's text as receipts_label gives it: lower case, in
+# single spaces and without a footnote number after a label's last letter,
+# so " Wine1" gives "wine". It refuses any other text
+# (validate_clearance_table), so it reads no unit or product from words no
+# one has read. Add a text only after reading it, and when it states another
+# unit, convert the table's figures to the units these texts state first.
+CLEARANCE_TABLE_TEXTS = {
+    TOBACCO_CLEARANCES: frozenset(
+        {
+            "outturn",
+            "forecast",
+            TOBACCO_STICKS,
+            TOBACCO_KILOGRAMS,
+            "of which:",
+            "hand rolled tobacco clearances",
+            "other tobacco products",
+        }
+    ),
+    ALCOHOL_CLEARANCES: frozenset(
+        {
+            "outturn",
+            "forecast",
+            "beer and cider",
+            "wine",
+            "spirits",
+            ALCOHOL_HECTOLITRES,
+            "1 includes spirit-based ‘ready-to-drinks’ such as alcopops.",
+            "1 includes other fermented products such as fruit ciders.",
+            "2 includes spirit-based ‘ready-to-drinks’ such as alcopops.",
+        }
+    ),
+}
+# The titles, as row_title gives them, of the tables that may follow each
+# clearance table on its sheet. The importer checks a clearance table from
+# its title down to the row above one of these titles, or to the sheet's
+# end. In all three EFOs the alcohol receipts forecasts follow the alcohol
+# clearances, and no table follows the tobacco clearances.
+CLEARANCE_TABLE_ENDS = {
+    TOBACCO_CLEARANCES: frozenset(),
+    ALCOHOL_CLEARANCES: frozenset({"alcohol receipts forecasts"}),
+}
 
 # The product groups the OBR forecasts. The OBR includes other fermented
 # products in Table 4.12's wine line and spirit-based ready-to-drinks in its
-# spirits line (the table's footnotes 1 and 2). It splits Table 4.11's
-# non-cigarette total into hand-rolled tobacco and other tobacco products,
-# so the importer reads "non-cigarette" as naming both, and other tobacco
-# products as every non-cigarette product but hand-rolled tobacco, such as
-# cigars and heated tobacco.
+# spirits line (the table's footnotes 1 and 2).
 CLEARANCE_SERIES_SPECS = (
     ClearanceSeriesSpec(
         path=("per_capita", "tobacco_clearances", "cigarettes"),
         title=TOBACCO_CLEARANCES,
         row="cigarette clearances (million sticks)",
-        unit=TOBACCO_STICKS,
-        products=("cigarettes", "cigarette"),
+        unit_cell=TOBACCO_STICKS,
     ),
     ClearanceSeriesSpec(
         path=("per_capita", "tobacco_clearances", "hand_rolling_tobacco"),
         title=TOBACCO_CLEARANCES,
         row="hand rolled tobacco clearances",
-        unit=TOBACCO_KILOGRAMS,
-        products=("hand rolled", "hand rolling", "non cigarette"),
+        unit_cell=TOBACCO_KILOGRAMS,
     ),
     ClearanceSeriesSpec(
         path=("per_capita", "tobacco_clearances", "other_tobacco_products"),
         title=TOBACCO_CLEARANCES,
         row="other tobacco products",
-        unit=TOBACCO_KILOGRAMS,
-        products=(
-            "other tobacco",
-            "cigars",
-            "cigar",
-            "heated tobacco",
-            "non cigarette",
-        ),
+        unit_cell=TOBACCO_KILOGRAMS,
     ),
     ClearanceSeriesSpec(
         path=("per_capita", "alcohol_clearances", "beer_and_cider"),
         title=ALCOHOL_CLEARANCES,
         row="beer and cider",
-        unit=ALCOHOL_HECTOLITRES,
-        products=("beer", "beers", "cider", "ciders"),
+        unit_cell=ALCOHOL_HECTOLITRES,
     ),
     ClearanceSeriesSpec(
         path=("per_capita", "alcohol_clearances", "wine"),
         title=ALCOHOL_CLEARANCES,
         row="wine",
-        unit=ALCOHOL_HECTOLITRES,
-        products=("wine", "wines", "other fermented", "fruit cider", "fruit ciders"),
+        unit_cell=ALCOHOL_HECTOLITRES,
     ),
     ClearanceSeriesSpec(
         path=("per_capita", "alcohol_clearances", "spirits"),
         title=ALCOHOL_CLEARANCES,
         row="spirits",
-        unit=ALCOHOL_HECTOLITRES,
-        products=("spirits", "spirit", "ready to drinks", "alcopops"),
+        unit_cell=ALCOHOL_HECTOLITRES,
     ),
 )
-
 
 GAMBLING_RATES = "gov.hmrc.gambling_duty"
 MACHINE_GAMES = f"{GAMBLING_RATES}.machine_games"
@@ -1410,186 +1240,70 @@ def validate_receipts_unit(
         )
 
 
-def row_cells(row: dict[str, str | None]) -> list[tuple[str, str]]:
-    """A row's non-empty cells, left to right, as (column, normalised text)."""
-    return [
-        (column, normalise_label(value))
-        for column, value in sorted(row.items(), key=lambda item: column_index(item[0]))
-        if normalise_label(value)
-    ]
+# A number as a worksheet stores it, such as "1272.4562775587838" or "1E-3".
+NUMBER_RE = re.compile(r"[-+]?(?:\d+\.?\d*|\.\d+)(?:e[-+]?\d+)?")
 
 
-def validate_clearance_unit(
-    table_rows: list[dict[str, str | None]],
-    line_index: int,
+def validate_clearance_table(
+    rows: list[dict[str, str | None]],
+    number: str,
     spec: ClearanceSeriesSpec,
-    years: dict[str, int],
     where: str,
 ) -> None:
-    """Require every unit the OBR states for a clearance line to be the
-    line's unit, and the unit where the OBR states it.
+    """Refuse a clearance table that holds text no one has read.
 
-    The importer reads every unit of its closed list (``CLEARANCE_UNIT_RE``)
-    wherever the OBR states it in the table, and every word for a quantity
-    or scale outside the list. It reads a unit as the line's in:
-
-    - the line's own label, as Table 4.11's "Cigarette clearances (million
-      sticks)";
-    - the label of the total the line breaks down: the row above an "of
-      which:" row, with only the total's other parts between that and the
-      line, as "Non-cigarette clearances ('000s kg)" for hand-rolled and
-      other tobacco;
-    - another line's label, when it names this line's product
-      (``spec.products``);
-    - any other cell, such as a note, when it names this line's product or
-      no product, as Table 4.12's "Note: All clearances are in thousands of
-      hectolitres of alcohol". A note that names only other products says
-      nothing about this line.
-
-    The importer needs the unit where the OBR states it: in the line's
-    label, the total's label or a note on a row of its own that opens
-    "Note:". It refuses the line when the OBR states another unit or scale
-    for it, or a word for a quantity or scale the importer does not know in
-    a cell the importer reads as the line's; when the OBR puts such a word
-    in any note, heading or footnote, or states two units there that the
-    importer cannot tie each to products in its own clause; and when the
-    importer finds the unit only somewhere else, such as a note about
-    another product. The first year's growth divides one EFO's level by
-    another's, so the OBR must state the same unit in both; a new unit or
-    layout needs deliberate importer support.
+    The importer checks every cell of the table numbered ``number`` and
+    titled ``spec.title`` on a sheet's ``rows``, in every column, from the
+    title's row down to the row above a title ``CLEARANCE_TABLE_ENDS``
+    lists, or to the sheet's end. It skips the title, numbers and fiscal
+    years, and needs every other text in ``CLEARANCE_TABLE_TEXTS`` and the
+    line's ``unit_cell`` among them. It interprets no words, so a note that
+    states another unit, a line for another product or a unit column stops
+    the run until someone reads the text and lists it.
     """
-    name = ".".join(spec.path)
-    ((expected, _, _, _),), _ = read_clearance_units(spec.unit)
-    products: dict[str, frozenset] = {}
-    for line_spec in (
-        *(other for other in CLEARANCE_SERIES_SPECS if other.title == spec.title),
-        spec,
-    ):
-        for product in line_spec.products:
-            products[product] = products.get(product, frozenset()) | {line_spec.path}
-    first_year_column = min(column_index(column) for column in years)
-    year_rows = {
-        index for index, row in enumerate(table_rows) if _fiscal_year_columns(row)
-    }
-
-    def is_line(index: int) -> bool:
-        cells = row_cells(table_rows[index])
-        return (
-            index > min(year_rows)
-            and index not in year_rows
-            and bool(cells)
-            and column_index(cells[0][0]) < first_year_column
-            and any(column in years for column, _ in cells)
-        )
-
-    lines = {index for index in range(len(table_rows)) if is_line(index)}
-    above = line_index - 1
-    while above in lines:
-        above -= 1
-    total = (
-        above - 1
-        if above - 1 in lines
-        and [text for _, text in row_cells(table_rows[above])] == ["of which:"]
-        else None
+    start = next(
+        index
+        for index, row in enumerate(rows)
+        if row_title(row) == (number, spec.title)
     )
-
-    problems = []
-    found = []
-    other_products = []
-    supplied = False
-
-    def check(text: str, units, unknown) -> list:
-        """Each problem with the units a cell states for the line, and the
-        units that agree."""
-        problems.extend(
-            f'the importer does not know the unit or scale "{word}" in {text!r}'
-            for word in dict.fromkeys(unknown)
-        )
-        problems.extend(
-            f'the OBR states "{spelling}", another unit or scale, in {text!r}'
-            for size, spelling, _ in units
-            if size != expected
-        )
-        return [unit for unit in units if unit[0] == expected]
-
-    def unknown_in_brackets(text: str, unknown: list[str]) -> list[str]:
-        # The OBR states a label's unit in brackets, so the importer reads
-        # anything else there as a unit it does not know.
-        return [
-            group
-            for group in re.findall(r"\(([^()]*)\)", clearance_text(text))
-            if not CLEARANCE_UNIT_RE.fullmatch(group)
-            and not any(word in group for word in unknown)
+    block = [rows[start]]
+    for row in rows[start + 1 :]:
+        title = row_title(row)
+        if title is not None and title[1] in CLEARANCE_TABLE_ENDS[spec.title]:
+            break
+        block.append(row)
+    read, unread = set(), []
+    for index, row in enumerate(block):
+        years = _fiscal_year_columns(row)
+        cells = [
+            (column, value)
+            for column, value in sorted(
+                row.items(), key=lambda item: column_index(item[0])
+            )
+            if receipts_label(value)
         ]
-
-    # The line's own label, and the label of the total it breaks down.
-    for index in (line_index, total):
-        if index is None:
-            continue
-        text = row_cells(table_rows[index])[0][1]
-        units, unknown = read_clearance_units(text)
-        agree = check(
-            text,
-            [(size, spelling, None) for size, spelling, _, _ in units],
-            [*unknown, *unknown_in_brackets(text, unknown)],
-        )
-        supplied = supplied or bool(agree)
-
-    # Every other cell: another line's label, a heading, a note or a
-    # footnote.
-    for index, row in enumerate(table_rows):
-        if index in (line_index, total) or index in year_rows:
-            continue
-        cells = row_cells(row)
-        for _, text in cells[:1] if index in lines else cells:
-            statement = read_clearance_statement(text, products)
-            described = [
-                unit
-                for unit in statement.units
-                if unit[2] is None or spec.path in unit[2]
-            ]
-            if index in lines:
-                # The importer reads another line's label as that line's, and
-                # as this line's only when it names this line's product.
-                if statement.products is None or spec.path not in statement.products:
-                    if any(unit[0] == expected for unit in statement.units):
-                        found.append(text)
-                    continue
-                unknown = [
-                    *statement.unknown,
-                    *unknown_in_brackets(text, statement.unknown),
-                ]
-            else:
-                unknown = statement.unknown
-            if statement.untied:
-                problems.append(
-                    f"the importer cannot tie each unit in {text!r} to products "
-                    "in its own clause"
-                )
-            agree = check(text, described, unknown)
-            if agree and len(cells) == 1 and text.startswith("note"):
-                supplied = True
-            elif agree:
-                found.append(text)
-            elif any(unit[0] == expected for unit in statement.units):
-                other_products.append(text)
-
-    if not supplied and not problems:
-        if other_products and not found:
-            problems.append(
-                f"the importer found the unit only in {other_products}, which "
-                "name other products"
-            )
-        else:
-            problems.append(
-                "the importer needs the unit in its label, the label of the "
-                "total it breaks down or a note that applies to it, and found it "
-                f"only in {found + other_products}"
-            )
-    if problems:
+        # The first text on the title's row is the title.
+        for column, value in cells[1:] if index == 0 else cells:
+            text = receipts_label(value)
+            if column in years or NUMBER_RE.fullmatch(text):
+                continue
+            read.add(text)
+            if text not in CLEARANCE_TABLE_TEXTS[spec.title]:
+                unread.append(f"{value!r} in column {column}")
+    if unread:
         raise ValueError(
-            f'The importer cannot read {name} in "{spec.unit}" from {where}: '
-            + "; ".join(problems)
+            f"{where} holds text the importer has not read: "
+            + "; ".join(unread)
+            + ". Read each one. If it states another unit, convert the "
+            "table's figures to the units the read texts state. Then add the "
+            "text, as receipts_label gives it, to "
+            f'CLEARANCE_TABLE_TEXTS["{spec.title}"], or the title of a table '
+            "that follows the clearances to CLEARANCE_TABLE_ENDS."
+        )
+    if spec.unit_cell not in read:
+        raise ValueError(
+            f"{where} lacks {spec.unit_cell!r}, the cell in which the OBR "
+            f"states the unit of {'.'.join(spec.path)}"
         )
 
 
@@ -1598,9 +1312,11 @@ def find_receipts_line(
 ) -> ReceiptsLine:
     """The one row labelled ``spec.row`` in a table titled ``spec.title``.
 
-    The importer reads only that table's rows: its cash unit, or a clearance
-    line's unit, its year headers and its "Outturn" and "Forecast" markers,
-    which may sit on one row or several.
+    The importer reads only that table's rows: its cash unit, its year
+    headers and its "Outturn" and "Forecast" markers, which may sit on one
+    row or several. For a clearance line it first checks every cell of the
+    line's table against the texts someone has read
+    (``validate_clearance_table``).
     """
     matches = []
     for sheet, rows in sheets.items():
@@ -1609,14 +1325,12 @@ def find_receipts_line(
                 continue
             where = f"Table {table} (sheet {sheet})"
             years: dict[str, int] = {}
-            year_row: dict[str, str | None] = {}
             markers: dict[str, int] = {}
             header_rows = []
-            for index, row in enumerate(table_rows):
+            for row in table_rows:
                 row_years = _fiscal_year_columns(row)
                 if row_years:
                     years = row_years
-                    year_row = row
                     continue
                 if not years:
                     header_rows.append(row)
@@ -1646,18 +1360,7 @@ def find_receipts_line(
                 ]
                 if labels and receipts_label(labels[0][1]) == spec.row:
                     matches.append(
-                        (
-                            table,
-                            sheet,
-                            labels[0],
-                            row,
-                            years,
-                            markers,
-                            header_rows,
-                            table_rows,
-                            index,
-                            year_row,
-                        )
+                        (table, sheet, labels[0], row, years, markers, header_rows)
                     )
 
     name = ".".join(spec.path)
@@ -1667,19 +1370,10 @@ def find_receipts_line(
             f'Expected one "{spec.row}" row in the "{spec.title}" table for '
             f"{name}; found {found}"
         )
-    (
-        table,
-        sheet,
-        (label_column, label),
-        row,
-        years,
-        markers,
-        header_rows,
-        table_rows,
-        line_index,
-        year_row,
-    ) = matches[0]
+    table, sheet, (label_column, label), row, years, markers, header_rows = matches[0]
     where = f"Table {table} (sheet {sheet})"
+    if isinstance(spec, ClearanceSeriesSpec):
+        validate_clearance_table(sheets[sheet], table, spec, where)
     repeated = sorted({y for y in years.values() if list(years.values()).count(y) > 1})
     if repeated:
         raise ValueError(
@@ -1699,22 +1393,7 @@ def find_receipts_line(
             f"{where} holds {beside} beside the {name} row's label and values; "
             "a unit or note on the row needs deliberate importer support"
         )
-    if isinstance(spec, ClearanceSeriesSpec):
-        # The OBR states each clearance unit in a label or a note, so the
-        # importer does not read a cell beside the years, such as a unit
-        # column's heading.
-        heading = {
-            column: value
-            for column, value in year_row.items()
-            if normalise_label(value) and column not in years
-        }
-        if heading:
-            raise ValueError(
-                f"{where} holds {heading} in its fiscal-year row; the OBR "
-                "states each clearance unit in a label or a note"
-            )
-        validate_clearance_unit(table_rows, line_index, spec, years, where)
-    else:
+    if not isinstance(spec, ClearanceSeriesSpec):
         validate_receipts_unit(header_rows, where)
     levels = {}
     for column, year in years.items():
