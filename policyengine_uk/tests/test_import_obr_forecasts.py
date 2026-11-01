@@ -3479,9 +3479,8 @@ def edit_real_table(workbook, table, cells=(), scale=(), notes=()):
 
 
 def formatting_runs(tag, texts):
-    """Build a ``tag`` string element with a formatting run for each of
-    ``texts``, the later runs bold, as a spreadsheet writes a cell whose
-    formatting changes."""
+    """Build a ``tag`` string element, ``is`` or ``si``, with a formatting
+    run for each of ``texts``, the later runs bold."""
     string = ET.Element(f"{{{XLSX_MAIN}}}{tag}")
     for index, part in enumerate(texts):
         run = ET.SubElement(string, f"{{{XLSX_MAIN}}}r")
@@ -4177,8 +4176,8 @@ def test_a_repeated_clearance_heading_stops_the_run(tmp_path):
     and the first keeps the table's listed note. Read in thousand
     hectolitres, the repeated figures give 2026-27 spirits growth of -90.1%,
     where the published figures give -0.8%. The importer refuses every
-    alcohol line and names both headings' rows, the renderer gets no growth,
-    and a run on the real March 2026 tables changed the same way stops
+    alcohol line and names both headings' rows, and the renderer gets no
+    growth. A run on the real March 2026 tables, changed the same way, stops
     before it writes anything. The importer reads the tobacco lines as
     before."""
     changed, row = repeat_alcohol_heading(REAL_OCTOBER_2026_RECEIPTS, "4.12")
@@ -4201,7 +4200,7 @@ def test_a_repeated_clearance_heading_stops_the_run(tmp_path):
             find_receipts_line(sheets, spec)
         assert str(refused.value) == repeated("4.12", 53), key
     # Rows built as plain dicts carry no number, so the refusal counts their
-    # places: row 53 is the 47th row the sheet stores.
+    # places: row 53 sits 47th among the rows the sheet stores.
     with pytest.raises(ValueError) as refused:
         find_receipts_line(
             {"4.12": [dict(line) for line in rows]}, CLEARANCE_SPECS["spirits"]

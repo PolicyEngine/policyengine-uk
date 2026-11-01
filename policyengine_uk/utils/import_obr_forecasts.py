@@ -274,8 +274,9 @@ def _cell_value(cell: ET.Element, shared_strings: list[str]) -> str | None:
 
 
 class SheetRow(dict):
-    """A worksheet row as ``read_sheet_rows`` reads it: each cell's text by
-    column letter, and ``number``, the row's number on the worksheet."""
+    """Hold a worksheet row as ``read_sheet_rows`` reads it: each cell's
+    text by column letter, and ``number``, the row's number on the
+    worksheet."""
 
     def __init__(self, number: int):
         super().__init__()

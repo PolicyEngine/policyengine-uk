@@ -527,9 +527,9 @@ the forecast levels, though not their growth.
    below its end, so read any note there yourself. The list holds each
    EFO's footnotes as the OBR wrote them, and the importer does not compare
    the products one EFO's line covers with another's. Check that each
-   alcohol line covers the same
-   products in both EFOs: in March 2026 the OBR added "Includes other
-   fermented products" to the wine line. The importer writes
+   alcohol line covers the same products in both EFOs: in March 2026 the
+   OBR added "Includes other fermented products" to the wine line. The
+   importer writes
    `(1 + aggregate clearance growth) / (1 + ons.population growth) - 1`,
    using the population in `yoy_growth.yaml`, so rerun it whenever that
    series changes. Until then the six
