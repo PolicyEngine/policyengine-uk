@@ -1,26 +1,35 @@
 """A pensioner's Council Tax Reduction child amounts and tariff income.
 
-The pensioner schemes add an amount for each child or young person in the
-family and, in Wales, a family premium (SI 2012/2885 Sch 1 para 6(1)(b)-(c)
-and Sch 2 paras 2-3; WSI 2013/3029 Sch 1 para 1(1)(b)-(c) and Sch 2 paras
-2-3; SSI 2012/319 reg 20(b) and Sch 1 para 3). England counted at most two
-from 2018-19 to 2024-25 unless a Child Tax Credit award included more (SI
-2017/1305 reg 7; SI 2025/39 reg 5(2)). A pensioner's capital counts as a
-weekly income of £1 for each £500, or part of £500, over £10,000 (SI
-2012/2885 Sch 1 para 37; WSI 2013/3029 Sch 1 para 31; SSI 2012/319 reg
-27(2)), up to the £16,000 capital limit, except where Pension Credit sets the
-means test.
+Councils' pensioner schemes add an amount for each child or young person in
+the family and, in Wales, a family premium (SI 2012/2885 Sch 1 para
+6(1)(b)-(c) and Sch 2 paras 2-3; WSI 2013/3029 Sch 1 para 1(1)(b)-(c) and Sch
+2 paras 2-3; SSI 2012/319 reg 20(b) and Sch 1 para 3). For 2018-19 to
+2024-25 the Secretary of State limited England's to two unless a Child Tax
+Credit award included more (SI 2017/1305 reg 7; SI 2025/39 reg 5(2)). A
+pensioner's capital counts as a weekly income of £1 for each £500, or part
+of £500, over £10,000 (SI 2012/2885 Sch 1 para 37; WSI 2013/3029 Sch 1 para
+31; SSI 2012/319 reg 27(2)), except where Pension Credit sets the means
+test. England and Wales count the excess up to £16,000; Scotland sets no
+ceiling.
 
-Invariants:
+Each invariant holds on a fixed route and status. The generated families
+claim no Universal Credit, so neither capital nor a child can move a family
+between the pensioner and working-age schemes, and the first invariant's
+pensioners claim no Pension Credit, so capital cannot move them onto a
+Pension Credit route. Off those routes both can move, as the model intends:
+capital changes a savings-credit-only pensioner's applicable income through
+the Secretary of State's assessment, and a child who brings Universal Credit
+into payment for a mixed-age couple moves them to the working-age scheme,
+whose applicable amount can be lower.
 
-1. Tariff income is 52 times £1 for each £500, or part of £500, of capital
-   above £10,000 and up to £16,000, for a pensioner off Pension Credit, and
-   it never falls as capital rises. Capital changes nothing else in the
-   applicable income, and the award never rises with capital.
-2. Adding a dependent child never lowers the applicable amount. For a
-   pensioner it adds the scheme's weekly amount for 52 weeks, unless England's
-   2018-19 to 2024-25 limit is already reached, and in Wales the family
-   premium with the first child.
+1. For a pensioner off Pension Credit, tariff income is 52 times £1 for each
+   £500, or part of £500, of capital above £10,000 (up to £16,000 in England
+   and Wales), and it never falls as capital rises. Capital changes nothing
+   else in the applicable income, and the award never rises with capital.
+2. For a family that claims no Universal Credit, adding a dependent child
+   never lowers the applicable amount. For a pensioner it adds the scheme's
+   weekly amount for 52 weeks, unless England's 2018-19 to 2024-25 limit is
+   already reached, and in Wales the family premium with the first child.
 3. A pensioner with no child and capital up to £10,000, and every working-age
    family, gets no child amount, family premium or tariff income, so their
    applicable amount, applicable income and award are origin/main's.
