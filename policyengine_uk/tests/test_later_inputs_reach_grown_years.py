@@ -145,6 +145,9 @@ def _two_adults_with_a_stored_cash_isa():
                 "household_weight": [1.0],
                 "region": ["LONDON"],
                 "tenure_type": ["RENT_PRIVATELY"],
+                "council_tax": [1_500.0],
+                "rent": [12_000.0],
+                "savings": [1_000.0],
                 "cash_isa": [3_000.0],
             }
         ),
