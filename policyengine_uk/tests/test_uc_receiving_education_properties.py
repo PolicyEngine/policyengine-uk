@@ -1,16 +1,17 @@
 """Universal Credit's condition that a claimant is not receiving education.
 
-The Welfare Reform Act 2012 s. 4(1)(d) makes it a basic condition that a
-claimant "is not receiving education". The Universal Credit Regulations 2013
-reg. 12 says who receives education, and reg. 14(1) lists exceptions. Reg. 3(2)
-lets a couple claim jointly where one member doesn't meet the age condition
-or this one, and DWP's Advice for Decision Making E2016 applies it "where one
-member of a couple meets all the basic UC conditions". The Universal Credit
-(Transitional Provisions) Regulations 2014 reg. 28 takes a person entitled to
-an existing benefit out of the definition of a qualifying young person. Only
-a person flagged is_in_full_time_education can receive education in the
-model, and only has_education_maintenance_funding meets the funding test in
-reg. 12(2)(b).
+A Universal Credit claimant must meet the basic condition in the Welfare
+Reform Act 2012 s. 4(1)(d) that they are "not receiving education". In the
+Universal Credit Regulations 2013, the Secretary of State sets out who
+receives education (reg. 12) and who doesn't have to meet the condition (reg.
+14(1)). Under reg. 3(2), a couple can claim jointly where one member doesn't
+meet the age condition or this one, and DWP's Advice for Decision Making
+E2016 applies it "where one member of a couple meets all the basic UC
+conditions". Under the Universal Credit (Transitional Provisions)
+Regulations 2014 reg. 28, a person entitled to an existing benefit doesn't
+count as a qualifying young person. In the model, only a person flagged
+is_in_full_time_education can receive education, and only
+has_education_maintenance_funding meets the funding test in reg. 12(2)(b).
 
 Each drawn case is a year and up to four families, each in a household of its
 own: a single adult or a couple, up to two children or young people, and
@@ -20,9 +21,10 @@ Independence Payment, DLA and PIP with or without limited capability for work,
 foster flags, an ineligible partner, reported Housing Benefit and Working Tax
 Credit, a legacy closure claim, earnings, rent and savings). One simulation
 calculates the same people five ways: as drawn; with the eligibility formula
-on main before this change (BEFORE, kept verbatim below); with no one flagged;
-with the flags of members who are neither claimant nor partner reversed; and
-with every student loan and education grant removed.
+on main before this change (BEFORE, copied below with its comments removed;
+the formatter re-wrapped two lines); with no one flagged; with the flags of
+members who are neither claimant nor partner reversed; and with every student
+loan and education grant removed.
 Invariants:
 
 1. Never raises: each family's Universal Credit is either what it is under
@@ -55,10 +57,11 @@ Invariants:
 A family in a household with other families can lose Universal Credit
 because of another family's student: when the household head's family cannot
 claim, its non-dependants count in the next claim by a family liable for the
-rent. Paragraph 9(2)(f) of Schedule 4 prevents duplicate non-dependant
-treatment. The model assigns non-dependants to the household head's eligible
-claim first. test_student_head_moves_non_dependant_to_joint_tenant pins it;
-the invariants above hold for families with households of their own.
+rent. Under Schedule 4 para. 9(2)(f), DWP doesn't count a person as a
+non-dependant in a claim if it already counts them in another claim by someone
+liable for the rent, and the model assigns non-dependants to the household
+head's eligible claim first. test_student_head_moves_non_dependant_to_joint_tenant
+pins it; the invariants above hold for families with households of their own.
 """
 
 import json
