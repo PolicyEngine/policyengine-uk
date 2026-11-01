@@ -425,11 +425,18 @@ def input_replacement(masked):
 
 
 def simulation(
-    units, year, previous=False, tax_benefit_system=None, dated_accommodation=False
+    units,
+    year,
+    previous=False,
+    tax_benefit_system=None,
+    dated_accommodation=False,
+    one_household=False,
 ):
     """Build the population. With ``dated_accommodation`` the model dates
     the accommodation disregard itself, and the population pays rent of
-    ``RENT``; otherwise each unit supplies its annual accommodation amount."""
+    ``RENT``; otherwise each unit supplies its annual accommodation amount.
+    With ``one_household`` every unit lives in one household, in the first
+    unit's region; otherwise each lives in its own."""
     for key in ("supplied", "supplied_limit"):
         supplied = [unit[key] is not None for unit in units]
         assert all(supplied) or not any(supplied), f"{key} for all or none"
@@ -523,10 +530,16 @@ def simulation(
             family[CHILDCARE] = {year: unit["supplied"]}
         if unit["supplied_limit"] is not None:
             family[LIMIT] = {year: unit["supplied_limit"]}
-        households[f"household_{index}"] = {
-            "members": members,
-            "region": {year: unit["region"]},
-        }
+        if one_household:
+            household = households.setdefault(
+                "household", {"members": [], "region": {year: unit["region"]}}
+            )
+            household["members"].extend(members)
+        else:
+            households[f"household_{index}"] = {
+                "members": members,
+                "region": {year: unit["region"]},
+            }
     if tax_benefit_system is None:
         tax_benefit_system = without_wtc_reservation(system) if previous else system
     return Simulation(
