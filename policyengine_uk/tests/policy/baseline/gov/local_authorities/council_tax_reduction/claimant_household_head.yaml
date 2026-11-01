@@ -718,9 +718,8 @@
     # student shares liability with a non-student, the non-student is solely
     # liable (LGFA 1992 s.75(4)), so the co-tenant claims on the whole bill
     # and the head is the co-tenant's non-dependant. No deduction is made for
-    # a full-time student non-dependant (reg 90(7)(c)). That exemption
-    # remains for #2007; the model's national deduction is nil here because
-    # the head has no banding income, which the work gate leaves at zero.
+    # a full-time student non-dependant (reg 90(7)(c)), so the co-tenant's
+    # reduction covers the whole bill.
     council_tax_reduction_liable_person: [true, true]
     council_tax_reduction_claimant_benunit: [false, true]
     council_tax_reduction_joint_liability_share: [0.5, 1]

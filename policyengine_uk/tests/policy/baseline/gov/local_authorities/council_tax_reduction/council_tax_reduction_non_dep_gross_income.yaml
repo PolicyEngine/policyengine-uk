@@ -4,8 +4,10 @@
 # Sch 1 para 3 and Sch 6 para 5. Gross income includes statutory pay and
 # maintenance; the listed disability payments are disregarded.
 # Hand arithmetic: wages 9,000 + statutory pay 520 = 9,520, just above
-# 183/week. The existing national consumers use the HB scale (45.15/week
-# at this income in 2025); correcting CTR rates is separate (#2007).
+# 183/week. Each national scheme bands it on its own 2025-26 scale, below
+# the first band's lower edge, so the non-dependant pays the scheme's lowest
+# amount: England 5.00 (SI 2025/39), Scotland 5.35 (SSI 2025/24) and Wales
+# 6.25 (WSI 2025/59) a week.
 # Annual wages and statutory pay can relate to different parts of the year;
 # leave days themselves are not remunerative work (HB reg 6(7)).
 
@@ -50,9 +52,9 @@
         council_tax_reduction_maximum_eligible_liability: 4_000
   output:
     council_tax_reduction_non_dep_gross_income: [0, 9_520]
-    council_tax_reduction_individual_non_dep_deduction: [0, 2_347.80]
-    council_tax_reduction_non_dep_deductions: [2_347.80, 0]
-    simulated_council_tax_reduction_benunit: [1_652.20, 0]
+    council_tax_reduction_individual_non_dep_deduction: [0, 260]
+    council_tax_reduction_non_dep_deductions: [260, 0]
+    simulated_council_tax_reduction_benunit: [3_740, 0]
 
 - name: council_tax_reduction_non_dep_gross_income includes statutory_maternity_pay with ENGLAND claimant aged 70
   period: 2025
@@ -95,9 +97,9 @@
         council_tax_reduction_maximum_eligible_liability: 4_000
   output:
     council_tax_reduction_non_dep_gross_income: [0, 9_520]
-    council_tax_reduction_individual_non_dep_deduction: [0, 2_347.80]
-    council_tax_reduction_non_dep_deductions: [2_347.80, 0]
-    simulated_council_tax_reduction_benunit: [1_652.20, 0]
+    council_tax_reduction_individual_non_dep_deduction: [0, 260]
+    council_tax_reduction_non_dep_deductions: [260, 0]
+    simulated_council_tax_reduction_benunit: [3_740, 0]
 
 - name: council_tax_reduction_non_dep_gross_income includes statutory_paternity_pay with ENGLAND claimant aged 70
   period: 2025
@@ -140,9 +142,9 @@
         council_tax_reduction_maximum_eligible_liability: 4_000
   output:
     council_tax_reduction_non_dep_gross_income: [0, 9_520]
-    council_tax_reduction_individual_non_dep_deduction: [0, 2_347.80]
-    council_tax_reduction_non_dep_deductions: [2_347.80, 0]
-    simulated_council_tax_reduction_benunit: [1_652.20, 0]
+    council_tax_reduction_individual_non_dep_deduction: [0, 260]
+    council_tax_reduction_non_dep_deductions: [260, 0]
+    simulated_council_tax_reduction_benunit: [3_740, 0]
 
 - name: council_tax_reduction_non_dep_gross_income includes statutory_sick_pay with SCOTLAND claimant aged 40
   period: 2025
@@ -185,9 +187,9 @@
         council_tax_reduction_maximum_eligible_liability: 4_000
   output:
     council_tax_reduction_non_dep_gross_income: [0, 9_520]
-    council_tax_reduction_individual_non_dep_deduction: [0, 2_347.80]
-    council_tax_reduction_non_dep_deductions: [2_347.80, 0]
-    simulated_council_tax_reduction_benunit: [1_652.20, 0]
+    council_tax_reduction_individual_non_dep_deduction: [0, 278.20]
+    council_tax_reduction_non_dep_deductions: [278.20, 0]
+    simulated_council_tax_reduction_benunit: [3_721.80, 0]
 
 - name: council_tax_reduction_non_dep_gross_income includes statutory_maternity_pay with SCOTLAND claimant aged 40
   period: 2025
@@ -230,9 +232,9 @@
         council_tax_reduction_maximum_eligible_liability: 4_000
   output:
     council_tax_reduction_non_dep_gross_income: [0, 9_520]
-    council_tax_reduction_individual_non_dep_deduction: [0, 2_347.80]
-    council_tax_reduction_non_dep_deductions: [2_347.80, 0]
-    simulated_council_tax_reduction_benunit: [1_652.20, 0]
+    council_tax_reduction_individual_non_dep_deduction: [0, 278.20]
+    council_tax_reduction_non_dep_deductions: [278.20, 0]
+    simulated_council_tax_reduction_benunit: [3_721.80, 0]
 
 - name: council_tax_reduction_non_dep_gross_income includes statutory_paternity_pay with SCOTLAND claimant aged 40
   period: 2025
@@ -275,9 +277,9 @@
         council_tax_reduction_maximum_eligible_liability: 4_000
   output:
     council_tax_reduction_non_dep_gross_income: [0, 9_520]
-    council_tax_reduction_individual_non_dep_deduction: [0, 2_347.80]
-    council_tax_reduction_non_dep_deductions: [2_347.80, 0]
-    simulated_council_tax_reduction_benunit: [1_652.20, 0]
+    council_tax_reduction_individual_non_dep_deduction: [0, 278.20]
+    council_tax_reduction_non_dep_deductions: [278.20, 0]
+    simulated_council_tax_reduction_benunit: [3_721.80, 0]
 
 - name: council_tax_reduction_non_dep_gross_income includes statutory_sick_pay with SCOTLAND claimant aged 70
   period: 2025
@@ -320,9 +322,9 @@
         council_tax_reduction_maximum_eligible_liability: 4_000
   output:
     council_tax_reduction_non_dep_gross_income: [0, 9_520]
-    council_tax_reduction_individual_non_dep_deduction: [0, 2_347.80]
-    council_tax_reduction_non_dep_deductions: [2_347.80, 0]
-    simulated_council_tax_reduction_benunit: [1_652.20, 0]
+    council_tax_reduction_individual_non_dep_deduction: [0, 278.20]
+    council_tax_reduction_non_dep_deductions: [278.20, 0]
+    simulated_council_tax_reduction_benunit: [3_721.80, 0]
 
 - name: council_tax_reduction_non_dep_gross_income includes statutory_maternity_pay with SCOTLAND claimant aged 70
   period: 2025
@@ -365,9 +367,9 @@
         council_tax_reduction_maximum_eligible_liability: 4_000
   output:
     council_tax_reduction_non_dep_gross_income: [0, 9_520]
-    council_tax_reduction_individual_non_dep_deduction: [0, 2_347.80]
-    council_tax_reduction_non_dep_deductions: [2_347.80, 0]
-    simulated_council_tax_reduction_benunit: [1_652.20, 0]
+    council_tax_reduction_individual_non_dep_deduction: [0, 278.20]
+    council_tax_reduction_non_dep_deductions: [278.20, 0]
+    simulated_council_tax_reduction_benunit: [3_721.80, 0]
 
 - name: council_tax_reduction_non_dep_gross_income includes statutory_paternity_pay with SCOTLAND claimant aged 70
   period: 2025
@@ -410,9 +412,9 @@
         council_tax_reduction_maximum_eligible_liability: 4_000
   output:
     council_tax_reduction_non_dep_gross_income: [0, 9_520]
-    council_tax_reduction_individual_non_dep_deduction: [0, 2_347.80]
-    council_tax_reduction_non_dep_deductions: [2_347.80, 0]
-    simulated_council_tax_reduction_benunit: [1_652.20, 0]
+    council_tax_reduction_individual_non_dep_deduction: [0, 278.20]
+    council_tax_reduction_non_dep_deductions: [278.20, 0]
+    simulated_council_tax_reduction_benunit: [3_721.80, 0]
 
 - name: council_tax_reduction_non_dep_gross_income includes statutory_sick_pay with WALES claimant aged 40
   period: 2025
@@ -455,9 +457,9 @@
         council_tax_reduction_maximum_eligible_liability: 4_000
   output:
     council_tax_reduction_non_dep_gross_income: [0, 9_520]
-    council_tax_reduction_individual_non_dep_deduction: [0, 2_347.80]
-    council_tax_reduction_non_dep_deductions: [2_347.80, 0]
-    simulated_council_tax_reduction_benunit: [1_652.20, 0]
+    council_tax_reduction_individual_non_dep_deduction: [0, 325]
+    council_tax_reduction_non_dep_deductions: [325, 0]
+    simulated_council_tax_reduction_benunit: [3_675, 0]
 
 - name: council_tax_reduction_non_dep_gross_income includes statutory_maternity_pay with WALES claimant aged 40
   period: 2025
@@ -500,9 +502,9 @@
         council_tax_reduction_maximum_eligible_liability: 4_000
   output:
     council_tax_reduction_non_dep_gross_income: [0, 9_520]
-    council_tax_reduction_individual_non_dep_deduction: [0, 2_347.80]
-    council_tax_reduction_non_dep_deductions: [2_347.80, 0]
-    simulated_council_tax_reduction_benunit: [1_652.20, 0]
+    council_tax_reduction_individual_non_dep_deduction: [0, 325]
+    council_tax_reduction_non_dep_deductions: [325, 0]
+    simulated_council_tax_reduction_benunit: [3_675, 0]
 
 - name: council_tax_reduction_non_dep_gross_income includes statutory_paternity_pay with WALES claimant aged 40
   period: 2025
@@ -545,9 +547,9 @@
         council_tax_reduction_maximum_eligible_liability: 4_000
   output:
     council_tax_reduction_non_dep_gross_income: [0, 9_520]
-    council_tax_reduction_individual_non_dep_deduction: [0, 2_347.80]
-    council_tax_reduction_non_dep_deductions: [2_347.80, 0]
-    simulated_council_tax_reduction_benunit: [1_652.20, 0]
+    council_tax_reduction_individual_non_dep_deduction: [0, 325]
+    council_tax_reduction_non_dep_deductions: [325, 0]
+    simulated_council_tax_reduction_benunit: [3_675, 0]
 
 - name: council_tax_reduction_non_dep_gross_income includes statutory_sick_pay with WALES claimant aged 70
   period: 2025
@@ -590,9 +592,9 @@
         council_tax_reduction_maximum_eligible_liability: 4_000
   output:
     council_tax_reduction_non_dep_gross_income: [0, 9_520]
-    council_tax_reduction_individual_non_dep_deduction: [0, 2_347.80]
-    council_tax_reduction_non_dep_deductions: [2_347.80, 0]
-    simulated_council_tax_reduction_benunit: [1_652.20, 0]
+    council_tax_reduction_individual_non_dep_deduction: [0, 325]
+    council_tax_reduction_non_dep_deductions: [325, 0]
+    simulated_council_tax_reduction_benunit: [3_675, 0]
 
 - name: council_tax_reduction_non_dep_gross_income includes statutory_maternity_pay with WALES claimant aged 70
   period: 2025
@@ -635,9 +637,9 @@
         council_tax_reduction_maximum_eligible_liability: 4_000
   output:
     council_tax_reduction_non_dep_gross_income: [0, 9_520]
-    council_tax_reduction_individual_non_dep_deduction: [0, 2_347.80]
-    council_tax_reduction_non_dep_deductions: [2_347.80, 0]
-    simulated_council_tax_reduction_benunit: [1_652.20, 0]
+    council_tax_reduction_individual_non_dep_deduction: [0, 325]
+    council_tax_reduction_non_dep_deductions: [325, 0]
+    simulated_council_tax_reduction_benunit: [3_675, 0]
 
 - name: council_tax_reduction_non_dep_gross_income includes statutory_paternity_pay with WALES claimant aged 70
   period: 2025
@@ -680,9 +682,9 @@
         council_tax_reduction_maximum_eligible_liability: 4_000
   output:
     council_tax_reduction_non_dep_gross_income: [0, 9_520]
-    council_tax_reduction_individual_non_dep_deduction: [0, 2_347.80]
-    council_tax_reduction_non_dep_deductions: [2_347.80, 0]
-    simulated_council_tax_reduction_benunit: [1_652.20, 0]
+    council_tax_reduction_individual_non_dep_deduction: [0, 325]
+    council_tax_reduction_non_dep_deductions: [325, 0]
+    simulated_council_tax_reduction_benunit: [3_675, 0]
 
 - name: council_tax_reduction_non_dep_gross_income counts tax-exempt maintenance and periodic benefits
   period: 2025

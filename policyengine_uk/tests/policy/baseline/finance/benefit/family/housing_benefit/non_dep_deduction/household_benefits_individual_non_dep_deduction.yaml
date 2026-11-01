@@ -328,9 +328,18 @@
     council_tax_reduction_individual_non_dep_deduction_eligible: true
     hours_worked: 832 # 16 hours a week
     employment_income: 5_200 # £100 a week, in both programmes' gross income
+    age: 30
+    current_education: NOT_IN_EDUCATION
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    country: WALES
   output:
     household_benefits_individual_non_dep_deduction: 793
-    council_tax_reduction_individual_non_dep_deduction: 793
+    # Council Tax Reduction has its own scale: Wales's lowest amount, £4.35 a
+    # week from 1 April 2018 (WSI 2018/14), £4.20 before it.
+    council_tax_reduction_individual_non_dep_deduction: 4.35 * 52
 
 - name: Reduced rent without LHA
   period: 2025
@@ -338,6 +347,10 @@
     housing_benefit_individual_non_dep_deduction_eligible: true
     hours_worked: 832 # 16 hours a week
     housing_benefit_non_dep_gross_income: 5_200 # 100 weekly
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
   output:
     household_benefits_individual_non_dep_deduction: 19.65 * 52
 
@@ -347,6 +360,10 @@
     housing_benefit_individual_non_dep_deduction_eligible: true
     hours_worked: 832 # 16 hours a week
     housing_benefit_non_dep_gross_income: 30_056 # 578 weekly
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
   output:
     household_benefits_individual_non_dep_deduction: 126.65 * 52
 
@@ -356,6 +373,10 @@
     housing_benefit_individual_non_dep_deduction_eligible: true
     hours_worked: 832 # 16 hours a week
     housing_benefit_non_dep_gross_income: 18_148 # 349 weekly
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
   output:
     household_benefits_individual_non_dep_deduction: 101.35 * 52
 
@@ -365,6 +386,10 @@
     housing_benefit_individual_non_dep_deduction_eligible: true
     hours_worked: 832 # 16 hours a week
     housing_benefit_non_dep_gross_income: 9_517 # just over 183 weekly, the lower edge of the second band
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
   output:
     household_benefits_individual_non_dep_deduction: 45.15 * 52
 
@@ -373,6 +398,10 @@
   input:
     housing_benefit_individual_non_dep_deduction_eligible: true
     other_investment_income: 28_912 # 556 weekly, no hours
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
   output:
     # Not in remunerative work, so reg 74(1)(b)'s amount whatever the income:
     # 19.65 * 52 = 1,021.80. Banding the £556 would give 115.45 * 52 =

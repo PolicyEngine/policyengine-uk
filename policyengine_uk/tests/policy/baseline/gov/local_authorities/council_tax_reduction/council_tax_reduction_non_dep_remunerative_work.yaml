@@ -1,19 +1,28 @@
 # England SI 2012/2885 Sch 1 para 8 and reg 10; Scotland SSI 2021/249
 # reg 90 and reg 10, SSI 2012/319 reg 48 and reg 6; Wales WSI 2013/3029
 # Sch 1 para 3, Sch 6 para 5 and reg 10: income banding requires remunerative
-# work. This scoped fix retains the consumer's inherited HB scale: the
-# 2026-27 flat amount is 20.40/week and 403.85/week of income gives 105.20.
-# Actual national CTR flat amounts are England 5.20, Scotland 5.55, Wales
-# 6.70; their scales remain for #2007. These are work-gate regressions. A
-# non-worker with no banding income keeps the scale's zero: the gate only
-# lowers a deduction until #2007 models the exemptions in paragraphs (6) to
-# (8) with the flat charge.
+# work. Each scheme's 2026-27 scale: a non-dependant outside remunerative work
+# pays the lowest amount (England 5.20, SI 2026/27; Scotland 5.55, SSI
+# 2026/56; Wales 6.70, WSI 2026/13), and 403.85/week of income in work falls
+# in the band from £279 in England (10.60) and Wales (13.35) and from £286 in
+# Scotland (10.95). Family awards, which a single non-dependant's gross income
+# would count, are held at zero; English cases take the pension-age scheme,
+# the only national one in England.
 
 
 - name: ENGLAND council_tax_reduction bands IIDB only from 16 weekly hours (0 weekly hours)
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
+    council_tax_reduction_pensioner: true
     age: 30
     country: ENGLAND
     council_tax_reduction_individual_non_dep_deduction_eligible: true
@@ -27,12 +36,21 @@
   output:
     weekly_hours: 0
     council_tax_reduction_non_dep_gross_income: 12000
-    council_tax_reduction_individual_non_dep_deduction: 1060.8
+    council_tax_reduction_individual_non_dep_deduction: 270.40
 
 - name: ENGLAND council_tax_reduction bands IIDB only from 16 weekly hours (15 weekly hours)
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
+    council_tax_reduction_pensioner: true
     age: 30
     country: ENGLAND
     council_tax_reduction_individual_non_dep_deduction_eligible: true
@@ -46,12 +64,21 @@
   output:
     weekly_hours: 15
     council_tax_reduction_non_dep_gross_income: 21000
-    council_tax_reduction_individual_non_dep_deduction: 1060.8
+    council_tax_reduction_individual_non_dep_deduction: 270.40
 
 - name: ENGLAND council_tax_reduction bands IIDB only from 16 weekly hours (16 weekly hours)
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
+    council_tax_reduction_pensioner: true
     age: 30
     country: ENGLAND
     council_tax_reduction_individual_non_dep_deduction_eligible: true
@@ -65,12 +92,21 @@
   output:
     weekly_hours: 16
     council_tax_reduction_non_dep_gross_income: 21000
-    council_tax_reduction_individual_non_dep_deduction: 5470.4
+    council_tax_reduction_individual_non_dep_deduction: 551.20
 
 - name: ENGLAND council_tax_reduction bands IIDB only from 16 weekly hours (37.5 weekly hours)
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
+    council_tax_reduction_pensioner: true
     age: 30
     country: ENGLAND
     council_tax_reduction_individual_non_dep_deduction_eligible: true
@@ -84,12 +120,21 @@
   output:
     weekly_hours: 37.5
     council_tax_reduction_non_dep_gross_income: 21000
-    council_tax_reduction_individual_non_dep_deduction: 5470.4
+    council_tax_reduction_individual_non_dep_deduction: 551.20
 
 - name: ENGLAND council_tax_reduction bands child maintenance only from 16 weekly hours (0 weekly hours)
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
+    council_tax_reduction_pensioner: true
     age: 30
     country: ENGLAND
     council_tax_reduction_individual_non_dep_deduction_eligible: true
@@ -103,12 +148,21 @@
   output:
     weekly_hours: 0
     council_tax_reduction_non_dep_gross_income: 12000
-    council_tax_reduction_individual_non_dep_deduction: 1060.8
+    council_tax_reduction_individual_non_dep_deduction: 270.40
 
 - name: ENGLAND council_tax_reduction bands child maintenance only from 16 weekly hours (15 weekly hours)
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
+    council_tax_reduction_pensioner: true
     age: 30
     country: ENGLAND
     council_tax_reduction_individual_non_dep_deduction_eligible: true
@@ -122,12 +176,21 @@
   output:
     weekly_hours: 15
     council_tax_reduction_non_dep_gross_income: 21000
-    council_tax_reduction_individual_non_dep_deduction: 1060.8
+    council_tax_reduction_individual_non_dep_deduction: 270.40
 
 - name: ENGLAND council_tax_reduction bands child maintenance only from 16 weekly hours (16 weekly hours)
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
+    council_tax_reduction_pensioner: true
     age: 30
     country: ENGLAND
     council_tax_reduction_individual_non_dep_deduction_eligible: true
@@ -141,12 +204,21 @@
   output:
     weekly_hours: 16
     council_tax_reduction_non_dep_gross_income: 21000
-    council_tax_reduction_individual_non_dep_deduction: 5470.4
+    council_tax_reduction_individual_non_dep_deduction: 551.20
 
 - name: ENGLAND council_tax_reduction bands child maintenance only from 16 weekly hours (37.5 weekly hours)
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
+    council_tax_reduction_pensioner: true
     age: 30
     country: ENGLAND
     council_tax_reduction_individual_non_dep_deduction_eligible: true
@@ -160,12 +232,20 @@
   output:
     weekly_hours: 37.5
     council_tax_reduction_non_dep_gross_income: 21000
-    council_tax_reduction_individual_non_dep_deduction: 5470.4
+    council_tax_reduction_individual_non_dep_deduction: 551.20
 
 - name: SCOTLAND council_tax_reduction bands IIDB only from 16 weekly hours (0 weekly hours)
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     age: 30
     country: SCOTLAND
     council_tax_reduction_individual_non_dep_deduction_eligible: true
@@ -179,12 +259,20 @@
   output:
     weekly_hours: 0
     council_tax_reduction_non_dep_gross_income: 12000
-    council_tax_reduction_individual_non_dep_deduction: 1060.8
+    council_tax_reduction_individual_non_dep_deduction: 288.60
 
 - name: SCOTLAND council_tax_reduction bands IIDB only from 16 weekly hours (15 weekly hours)
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     age: 30
     country: SCOTLAND
     council_tax_reduction_individual_non_dep_deduction_eligible: true
@@ -198,12 +286,20 @@
   output:
     weekly_hours: 15
     council_tax_reduction_non_dep_gross_income: 21000
-    council_tax_reduction_individual_non_dep_deduction: 1060.8
+    council_tax_reduction_individual_non_dep_deduction: 288.60
 
 - name: SCOTLAND council_tax_reduction bands IIDB only from 16 weekly hours (16 weekly hours)
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     age: 30
     country: SCOTLAND
     council_tax_reduction_individual_non_dep_deduction_eligible: true
@@ -217,12 +313,20 @@
   output:
     weekly_hours: 16
     council_tax_reduction_non_dep_gross_income: 21000
-    council_tax_reduction_individual_non_dep_deduction: 5470.4
+    council_tax_reduction_individual_non_dep_deduction: 569.40
 
 - name: SCOTLAND council_tax_reduction bands IIDB only from 16 weekly hours (37.5 weekly hours)
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     age: 30
     country: SCOTLAND
     council_tax_reduction_individual_non_dep_deduction_eligible: true
@@ -236,12 +340,20 @@
   output:
     weekly_hours: 37.5
     council_tax_reduction_non_dep_gross_income: 21000
-    council_tax_reduction_individual_non_dep_deduction: 5470.4
+    council_tax_reduction_individual_non_dep_deduction: 569.40
 
 - name: SCOTLAND council_tax_reduction bands child maintenance only from 16 weekly hours (0 weekly hours)
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     age: 30
     country: SCOTLAND
     council_tax_reduction_individual_non_dep_deduction_eligible: true
@@ -255,12 +367,20 @@
   output:
     weekly_hours: 0
     council_tax_reduction_non_dep_gross_income: 12000
-    council_tax_reduction_individual_non_dep_deduction: 1060.8
+    council_tax_reduction_individual_non_dep_deduction: 288.60
 
 - name: SCOTLAND council_tax_reduction bands child maintenance only from 16 weekly hours (15 weekly hours)
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     age: 30
     country: SCOTLAND
     council_tax_reduction_individual_non_dep_deduction_eligible: true
@@ -274,12 +394,20 @@
   output:
     weekly_hours: 15
     council_tax_reduction_non_dep_gross_income: 21000
-    council_tax_reduction_individual_non_dep_deduction: 1060.8
+    council_tax_reduction_individual_non_dep_deduction: 288.60
 
 - name: SCOTLAND council_tax_reduction bands child maintenance only from 16 weekly hours (16 weekly hours)
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     age: 30
     country: SCOTLAND
     council_tax_reduction_individual_non_dep_deduction_eligible: true
@@ -293,12 +421,20 @@
   output:
     weekly_hours: 16
     council_tax_reduction_non_dep_gross_income: 21000
-    council_tax_reduction_individual_non_dep_deduction: 5470.4
+    council_tax_reduction_individual_non_dep_deduction: 569.40
 
 - name: SCOTLAND council_tax_reduction bands child maintenance only from 16 weekly hours (37.5 weekly hours)
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     age: 30
     country: SCOTLAND
     council_tax_reduction_individual_non_dep_deduction_eligible: true
@@ -312,12 +448,20 @@
   output:
     weekly_hours: 37.5
     council_tax_reduction_non_dep_gross_income: 21000
-    council_tax_reduction_individual_non_dep_deduction: 5470.4
+    council_tax_reduction_individual_non_dep_deduction: 569.40
 
 - name: WALES council_tax_reduction bands IIDB only from 16 weekly hours (0 weekly hours)
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     age: 30
     country: WALES
     council_tax_reduction_individual_non_dep_deduction_eligible: true
@@ -331,12 +475,20 @@
   output:
     weekly_hours: 0
     council_tax_reduction_non_dep_gross_income: 12000
-    council_tax_reduction_individual_non_dep_deduction: 1060.8
+    council_tax_reduction_individual_non_dep_deduction: 348.40
 
 - name: WALES council_tax_reduction bands IIDB only from 16 weekly hours (15 weekly hours)
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     age: 30
     country: WALES
     council_tax_reduction_individual_non_dep_deduction_eligible: true
@@ -350,12 +502,20 @@
   output:
     weekly_hours: 15
     council_tax_reduction_non_dep_gross_income: 21000
-    council_tax_reduction_individual_non_dep_deduction: 1060.8
+    council_tax_reduction_individual_non_dep_deduction: 348.40
 
 - name: WALES council_tax_reduction bands IIDB only from 16 weekly hours (16 weekly hours)
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     age: 30
     country: WALES
     council_tax_reduction_individual_non_dep_deduction_eligible: true
@@ -369,12 +529,20 @@
   output:
     weekly_hours: 16
     council_tax_reduction_non_dep_gross_income: 21000
-    council_tax_reduction_individual_non_dep_deduction: 5470.4
+    council_tax_reduction_individual_non_dep_deduction: 694.20
 
 - name: WALES council_tax_reduction bands IIDB only from 16 weekly hours (37.5 weekly hours)
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     age: 30
     country: WALES
     council_tax_reduction_individual_non_dep_deduction_eligible: true
@@ -388,12 +556,20 @@
   output:
     weekly_hours: 37.5
     council_tax_reduction_non_dep_gross_income: 21000
-    council_tax_reduction_individual_non_dep_deduction: 5470.4
+    council_tax_reduction_individual_non_dep_deduction: 694.20
 
 - name: WALES council_tax_reduction bands child maintenance only from 16 weekly hours (0 weekly hours)
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     age: 30
     country: WALES
     council_tax_reduction_individual_non_dep_deduction_eligible: true
@@ -407,12 +583,20 @@
   output:
     weekly_hours: 0
     council_tax_reduction_non_dep_gross_income: 12000
-    council_tax_reduction_individual_non_dep_deduction: 1060.8
+    council_tax_reduction_individual_non_dep_deduction: 348.40
 
 - name: WALES council_tax_reduction bands child maintenance only from 16 weekly hours (15 weekly hours)
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     age: 30
     country: WALES
     council_tax_reduction_individual_non_dep_deduction_eligible: true
@@ -426,12 +610,20 @@
   output:
     weekly_hours: 15
     council_tax_reduction_non_dep_gross_income: 21000
-    council_tax_reduction_individual_non_dep_deduction: 1060.8
+    council_tax_reduction_individual_non_dep_deduction: 348.40
 
 - name: WALES council_tax_reduction bands child maintenance only from 16 weekly hours (16 weekly hours)
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     age: 30
     country: WALES
     council_tax_reduction_individual_non_dep_deduction_eligible: true
@@ -445,12 +637,20 @@
   output:
     weekly_hours: 16
     council_tax_reduction_non_dep_gross_income: 21000
-    council_tax_reduction_individual_non_dep_deduction: 5470.4
+    council_tax_reduction_individual_non_dep_deduction: 694.20
 
 - name: WALES council_tax_reduction bands child maintenance only from 16 weekly hours (37.5 weekly hours)
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     age: 30
     country: WALES
     council_tax_reduction_individual_non_dep_deduction_eligible: true
@@ -464,12 +664,21 @@
   output:
     weekly_hours: 37.5
     council_tax_reduction_non_dep_gross_income: 21000
-    council_tax_reduction_individual_non_dep_deduction: 5470.4
+    council_tax_reduction_individual_non_dep_deduction: 694.20
 
 - name: council_tax_reduction charges the flat amount on a non-worker's pension or nil income (pension income)
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
+    council_tax_reduction_pensioner: true
     age: 70
     council_tax_reduction_individual_non_dep_deduction_eligible: true
     hours_worked: 0
@@ -479,12 +688,21 @@
     is_on_income_based_jsa: false
     is_on_income_related_esa: false
   output:
-    council_tax_reduction_individual_non_dep_deduction: 1060.8
+    council_tax_reduction_individual_non_dep_deduction: 270.40
 
-- name: council_tax_reduction keeps a non-worker with no banding income at zero (nil income)
+- name: council_tax_reduction charges the flat amount to a non-worker with nil income
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
+    council_tax_reduction_pensioner: true
     age: 70
     council_tax_reduction_individual_non_dep_deduction_eligible: true
     hours_worked: 0
@@ -494,14 +712,15 @@
     is_on_income_based_jsa: false
     is_on_income_related_esa: false
   output:
-    # Paragraph (1)(b) gives a non-exempt non-worker the flat amount, but the
-    # zero is kept until #2007 models the exemptions alongside the flat charge.
-    council_tax_reduction_individual_non_dep_deduction: 0
+    # Paragraph (1)(b) gives a non-worker the flat amount whatever their
+    # income, here 5.20 * 52; Pension Credit, which would exempt them, is held
+    # at zero.
+    council_tax_reduction_individual_non_dep_deduction: 270.40
 
 - name: council_tax_reduction charges no new deduction to a non-dependant on Universal Credit without earnings
   # SI 2012/2885 Sch 1 para 8(8)(c): no deduction for a non-dependant
-  # entitled to Universal Credit with no earned income. Universal Credit is
-  # not banding income, so the gate leaves the zero.
+  # entitled to Universal Credit with no earned income. The family is
+  # pension-age for CTR, so England's national scheme applies.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -517,7 +736,8 @@
     benunits:
       non_dependant_unit:
         members: [non_dependant]
-        universal_credit: 6_000
+        universal_credit_pre_benefit_cap: 6_000
+        council_tax_reduction_pensioner: true
     households:
       household:
         members: [non_dependant]
@@ -526,12 +746,20 @@
     council_tax_reduction_individual_non_dep_deduction: [0]
 
 - name: council_tax_reduction excludes each income-related benefit recipient from remunerative work (Income Support)
-  # The recipient is not in remunerative work, so the flat amount applies
-  # rather than a band. SI 2012/2885 Sch 1 para 8(8)(a) exempts this
-  # non-dependant altogether; that exemption remains for #2007.
+  # The recipient is not in remunerative work (SI 2012/2885 reg 10(6)), and
+  # Sch 1 para 8(8)(a) exempts them altogether: no deduction.
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
+    council_tax_reduction_pensioner: true
     age: 30
     council_tax_reduction_individual_non_dep_deduction_eligible: true
     hours_worked: 832
@@ -542,15 +770,23 @@
     is_on_income_based_jsa: false
     is_on_income_related_esa: false
   output:
-    council_tax_reduction_individual_non_dep_deduction: 1060.8
+    council_tax_reduction_individual_non_dep_deduction: 0
 
 - name: council_tax_reduction excludes each income-related benefit recipient from remunerative work (income-based JSA)
-  # The recipient is not in remunerative work, so the flat amount applies
-  # rather than a band. SI 2012/2885 Sch 1 para 8(8)(a) exempts this
-  # non-dependant altogether; that exemption remains for #2007.
+  # The recipient is not in remunerative work (SI 2012/2885 reg 10(6)), and
+  # Sch 1 para 8(8)(a) exempts them altogether: no deduction.
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
+    council_tax_reduction_pensioner: true
     age: 30
     council_tax_reduction_individual_non_dep_deduction_eligible: true
     hours_worked: 832
@@ -561,15 +797,23 @@
     is_on_income_based_jsa: true
     is_on_income_related_esa: false
   output:
-    council_tax_reduction_individual_non_dep_deduction: 1060.8
+    council_tax_reduction_individual_non_dep_deduction: 0
 
 - name: council_tax_reduction excludes each income-related benefit recipient from remunerative work (income-related ESA)
-  # The recipient is not in remunerative work, so the flat amount applies
-  # rather than a band. SI 2012/2885 Sch 1 para 8(8)(a) exempts this
-  # non-dependant altogether; that exemption remains for #2007.
+  # The recipient is not in remunerative work (SI 2012/2885 reg 10(6)), and
+  # Sch 1 para 8(8)(a) exempts them altogether: no deduction.
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
+    council_tax_reduction_pensioner: true
     age: 30
     council_tax_reduction_individual_non_dep_deduction_eligible: true
     hours_worked: 832
@@ -580,12 +824,21 @@
     is_on_income_based_jsa: false
     is_on_income_related_esa: true
   output:
-    council_tax_reduction_individual_non_dep_deduction: 1060.8
+    council_tax_reduction_individual_non_dep_deduction: 0
 
 - name: council_tax_reduction excludes each income-related benefit recipient from remunerative work (no excluded benefit)
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
+    council_tax_reduction_pensioner: true
     age: 30
     council_tax_reduction_individual_non_dep_deduction_eligible: true
     hours_worked: 832
@@ -596,12 +849,21 @@
     is_on_income_based_jsa: false
     is_on_income_related_esa: false
   output:
-    council_tax_reduction_individual_non_dep_deduction: 5470.4
+    council_tax_reduction_individual_non_dep_deduction: 551.20
 
 - name: ENGLAND council_tax_reduction reads its remunerative work hours parameter (16 weekly hours)
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
+    council_tax_reduction_pensioner: true
     gov.local_authorities.england.council_tax_reduction.pensioners.non_dep_deduction.remunerative_work_hours: 20
     age: 30
     country: ENGLAND
@@ -614,12 +876,21 @@
     is_on_income_based_jsa: false
     is_on_income_related_esa: false
   output:
-    council_tax_reduction_individual_non_dep_deduction: 1060.8
+    council_tax_reduction_individual_non_dep_deduction: 270.40
 
 - name: ENGLAND council_tax_reduction reads its remunerative work hours parameter (20 weekly hours)
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
+    council_tax_reduction_pensioner: true
     gov.local_authorities.england.council_tax_reduction.pensioners.non_dep_deduction.remunerative_work_hours: 20
     age: 30
     country: ENGLAND
@@ -632,12 +903,20 @@
     is_on_income_based_jsa: false
     is_on_income_related_esa: false
   output:
-    council_tax_reduction_individual_non_dep_deduction: 5470.4
+    council_tax_reduction_individual_non_dep_deduction: 551.20
 
 - name: SCOTLAND council_tax_reduction reads its remunerative work hours parameter (16 weekly hours)
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     gov.local_authorities.scotland.council_tax_reduction.non_dep_deduction.remunerative_work_hours: 20
     age: 30
     country: SCOTLAND
@@ -650,12 +929,20 @@
     is_on_income_based_jsa: false
     is_on_income_related_esa: false
   output:
-    council_tax_reduction_individual_non_dep_deduction: 1060.8
+    council_tax_reduction_individual_non_dep_deduction: 288.60
 
 - name: SCOTLAND council_tax_reduction reads its remunerative work hours parameter (20 weekly hours)
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     gov.local_authorities.scotland.council_tax_reduction.non_dep_deduction.remunerative_work_hours: 20
     age: 30
     country: SCOTLAND
@@ -668,12 +955,20 @@
     is_on_income_based_jsa: false
     is_on_income_related_esa: false
   output:
-    council_tax_reduction_individual_non_dep_deduction: 5470.4
+    council_tax_reduction_individual_non_dep_deduction: 569.40
 
 - name: WALES council_tax_reduction reads its remunerative work hours parameter (16 weekly hours)
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     gov.local_authorities.wales.council_tax_reduction.non_dep_deduction.remunerative_work_hours: 20
     age: 30
     country: WALES
@@ -686,12 +981,20 @@
     is_on_income_based_jsa: false
     is_on_income_related_esa: false
   output:
-    council_tax_reduction_individual_non_dep_deduction: 1060.8
+    council_tax_reduction_individual_non_dep_deduction: 348.40
 
 - name: WALES council_tax_reduction reads its remunerative work hours parameter (20 weekly hours)
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     gov.local_authorities.wales.council_tax_reduction.non_dep_deduction.remunerative_work_hours: 20
     age: 30
     country: WALES
@@ -704,4 +1007,4 @@
     is_on_income_based_jsa: false
     is_on_income_related_esa: false
   output:
-    council_tax_reduction_individual_non_dep_deduction: 5470.4
+    council_tax_reduction_individual_non_dep_deduction: 694.20

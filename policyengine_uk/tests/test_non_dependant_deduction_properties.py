@@ -45,12 +45,28 @@ and a non-dependant family of one or two adults:
    Sch 1 para 3). In Scotland's working-age scheme from April 2022, also
    anyone whose partner is on IS, JSA(IB) or ESA(IR) and who is not on
    Universal Credit (SSI 2021/249 reg 90(8)(a), reg 4(1)). IS, JSA(IB),
-   ESA(IR) and SPC count only for the person they are payable to: the member
-   who reports them, or the benefit unit's head. Universal Credit counts for
-   both joint claimants. Earned income includes statutory sick, maternity and
-   paternity pay, less relievable pension contributions, which come off
-   self-employed earnings only when there are no employed earnings; a
-   self-employed loss counts as nil (UC regs 55(4)-(5), 57(2)).
+   ESA(IR) and SPC count only for the person they are payable to, read from
+   the model's is_on_* status (HB Regs 2006 reg 2(1), (3), (3A)); where the
+   claimant or partner reports the award, or no one does, that is the
+   reporter or the benefit unit's head, which the test checks. Universal
+   Credit counts for both joint claimants. Earned income includes statutory
+   sick, maternity and paternity pay, less relievable pension contributions,
+   which come off self-employed earnings only when there are no employed
+   earnings; a self-employed loss counts as nil (UC regs 55(4)-(5), 57(2)).
+10. (In test_rent_of_sharers_boarders_and_lodgers_properties.py.)
+11. Banding: a non-dependant in remunerative work who is neither exempt nor
+   on IS, JSA(IB) or ESA(IR) pays the amount of the band whose lower edge is
+   the highest not above their normal gross weekly income, computed here from
+   the generated inputs: earnings, statutory sick, maternity and paternity
+   pay, self-employed profit with a loss as nil, and other investment income;
+   for the claimant or partner of the non-dependant's family, the couple's
+   sum plus the family's IS, JSA(IB), ESA(IR), Pension Credit and Universal
+   Credit. Incomes within a penny a week of an edge are skipped, since the
+   inputs are stored as float32.
+12. Differential: the after-cap Universal Credit used in a non-dependant
+   family's gross income equals the model's universal_credit for a family
+   with no Housing Benefit, no Maternity Allowance and no deductions from
+   its award.
 """
 
 from pathlib import Path
@@ -108,6 +124,12 @@ REPORTED = {
     "jsa_income": "jsa_income_reported",
     "esa_income": "esa_income_reported",
     "pension_credit": "pension_credit_reported",
+}
+IS_ON = {
+    "income_support": "is_on_income_support",
+    "jsa_income": "is_on_income_based_jsa",
+    "esa_income": "is_on_income_related_esa",
+    "pension_credit": "is_on_pension_credit",
 }
 STATUTORY_PAY = [
     "statutory_sick_pay",
@@ -205,7 +227,6 @@ def build(population, year, raise_income=False):
         people[claimant] = dict(
             age=household["claimant_age"],
             current_education="NOT_IN_EDUCATION",
-            total_income=0.0,
             employment_income=0.0,
             self_employment_income=0.0,
             is_in_approved_training=False,
@@ -227,8 +248,8 @@ def build(population, year, raise_income=False):
             people[name] = dict(
                 age=nd["age"],
                 current_education=nd["education"],
-                total_income=nd["earnings"] + other,
                 employment_income=nd["earnings"],
+                other_investment_income=other,
                 self_employment_income=nd["self_employment"],
                 **nd.get("statutory_pay", dict.fromkeys(STATUTORY_PAY, 0.0)),
                 pension_contributions=nd.get("pension_contributions", 0.0),
@@ -237,6 +258,9 @@ def build(population, year, raise_income=False):
                     reported: household["benefits"][benefit] if reports else 0.0
                     for benefit, reported in REPORTED.items()
                 },
+                # Held at zero so the oracle knows each person's gross income.
+                state_pension=0.0,
+                carers_allowance=0.0,
                 is_in_approved_training=nd["approved_training"],
                 # Young people started at 16; adults' start ages don't matter.
                 age_started_or_accepted_current_education_or_training=16,
@@ -287,6 +311,10 @@ def calculate(sim, year):
             "is_qualifying_young_person_for_child_benefit",
             "uc_mif_applies",
             "uc_minimum_income_floor",
+            "is_on_income_support",
+            "is_on_income_based_jsa",
+            "is_on_income_related_esa",
+            "is_on_pension_credit",
         ],
         benunit=[
             "housing_benefit_non_dep_deductions",
@@ -427,6 +455,32 @@ def test_non_dependant_deduction_invariants(population, year):
             return person["position"] == reporter
         return bool(r["is_benunit_head"][i])
 
+    f32 = np.float32
+
+    def own_gross(j):
+        """A person's own gross income from the generated inputs (invariant
+        11): a self-employment loss counts as nil."""
+        nd_j = persons[j]["non_dependant"]
+        if nd_j is None:
+            return 0.0
+        return float(
+            f32(nd_j["earnings"])
+            + sum(
+                f32(nd_j.get("statutory_pay", {}).get(name, 0.0))
+                for name in STATUTORY_PAY
+            )
+            + max(f32(0), f32(nd_j["self_employment"]))
+            + f32(nd_j["other_income"])
+        )
+
+    def band_amount(scale, weekly):
+        """The amount of the band whose lower edge is the highest not above
+        weekly income, or None within a penny of an edge."""
+        if any(abs(weekly - t) < 0.01 for t in scale.thresholds[1:]):
+            return None
+        index = max(k for k, t in enumerate(scale.thresholds) if t <= weekly)
+        return scale.amounts[index] * WEEKS
+
     for i, person in enumerate(persons):
         household = population[person["household"]]
         hb_deduction = r["household_benefits_individual_non_dep_deduction"][i]
@@ -440,17 +494,30 @@ def test_non_dependant_deduction_invariants(population, year):
         if nd is None:
             continue
         # 9. The exemptions, read straight from the inputs.
-        # IS, JSA(IB), ESA(IR) and SPC count for their payee: the member who
-        # reports them, or the benefit unit's head where none does (HB reg
-        # 2(3)-(3A)). Universal Credit counts for both joint claimants.
-        on = {b: payee_of(i, b) and household["benefits"][b] > 0 for b in REPORTED}
+        # IS, JSA(IB), ESA(IR) and SPC count for their payee (HB reg 2(1),
+        # (3)-(3A)): the model's is_on_* status. Where the reporter, if any, is
+        # the claimant or partner, that is the reporter, or the benefit unit's
+        # head where none reports. Universal Credit counts for both joint
+        # claimants.
+        on = {b: bool(r[IS_ON[b]][i]) for b in REPORTED}
+        reporter = household.get("reporter")
+        reporter_index = (
+            None
+            if reporter is None or reporter >= len(household["non_dependants"])
+            else members_of[person["benunit"]][reporter]
+        )
+        if reporter_index is None or couple[reporter_index]:
+            for b in REPORTED:
+                assert on[b] == (payee_of(i, b) and household["benefits"][b] > 0), (
+                    b,
+                    i,
+                )
         on["universal_credit_pre_benefit_cap"] = (
             bool(couple[i])
             and household["benefits"]["universal_credit_pre_benefit_cap"] > 0
         )
         student = nd["education"] != "NOT_IN_EDUCATION"
         # Earned income (UC regs 55(4)-(5), 57(2), 62), in the inputs' float32.
-        f32 = np.float32
         statutory_pay = nd.get("statutory_pay", {})
         employed_gross = f32(nd["earnings"]) + sum(
             (f32(statutory_pay.get(name, 0.0)) for name in STATUTORY_PAY), f32(0)
@@ -483,8 +550,7 @@ def test_non_dependant_deduction_invariants(population, year):
         # and who is not on Universal Credit.
         if household["country"] == "SCOTLAND" and not pension_age[i]:
             couple_on_legacy = bool(couple[i]) and any(
-                couple[j]
-                and any(payee_of(j, b) and household["benefits"][b] > 0 for b in legacy)
+                couple[j] and any(r[IS_ON[b]][j] for b in legacy)
                 for j in members_of[person["benunit"]]
             )
             qualifying = (on_legacy or couple_on_legacy) and not on[
@@ -540,6 +606,33 @@ def test_non_dependant_deduction_invariants(population, year):
             assert lowest - 0.01 <= ctr_deduction <= top + 0.01
             if nd["hours"] < scale.remunerative_work_hours:
                 assert ctr_deduction == pytest.approx(lowest, abs=0.01)
+
+        # 11. Banding on gross income computed from the inputs.
+        if couple[i]:
+            weekly = (
+                sum(own_gross(j) for j in members_of[person["benunit"]] if couple[j])
+                + sum(household["benefits"].values())
+            ) / WEEKS
+        else:
+            weekly = own_gross(i) / WEEKS
+        if (
+            r["housing_benefit_individual_non_dep_deduction_eligible"][i]
+            and nd["hours"] >= hb.remunerative_work_hours
+            and not (on["income_support"] or on["jsa_income"] or on["esa_income"])
+        ):
+            expected = band_amount(hb.amount, weekly)
+            if expected is not None:
+                assert hb_deduction == pytest.approx(expected, abs=0.01), (i, weekly)
+        if (
+            national
+            and r["council_tax_reduction_individual_non_dep_deduction_eligible"][i]
+            and not r["council_tax_reduction_non_dep_deduction_exempt"][i]
+            and nd["hours"] >= scale.remunerative_work_hours
+            and not qualifying
+        ):
+            expected = band_amount(scale.amount, weekly)
+            if expected is not None:
+                assert ctr_deduction == pytest.approx(expected, abs=0.01), (i, weekly)
 
     benunit_count = 2 * len(population)
     # 4-5. Housing Benefit aggregation and the claimant exemption.
@@ -661,8 +754,8 @@ def test_band_edges_are_inclusive(scale_name, years):
             age=40,
             current_education="NOT_IN_EDUCATION",
             weekly_hours={str(y): 35.0 for y in years},
-            total_income=incomes,
-            employment_income={str(y): 0.0 for y in years},
+            housing_benefit_non_dep_gross_income=incomes,
+            council_tax_reduction_non_dep_gross_income=incomes,
         )
         benunits[f"claimant_unit_{k}"] = dict(
             members=[claimant],
@@ -718,3 +811,73 @@ def test_ctr_scales_match_enacted_sums():
                 year,
             )
             assert list(node.amounts) == pytest.approx(row["amounts"]), (scheme, year)
+
+
+@PROPERTY_SETTINGS
+@given(
+    families=st.lists(
+        st.fixed_dictionaries(
+            dict(
+                couple=st.booleans(),
+                universal_credit_pre_benefit_cap=st.one_of(
+                    st.just(0.0), st.floats(0, 40_000)
+                ),
+                child_benefit=st.sampled_from([0.0, 1_500.0, 5_000.0]),
+                child_tax_credit=st.sampled_from([0.0, 3_000.0]),
+                uc_benefit_cap=st.sampled_from([14_753.0, 22_020.0, 25_323.0]),
+                uc_childcare_element=st.sampled_from([0.0, 2_000.0, 12_000.0]),
+                jsa_contrib=st.sampled_from([0.0, 4_000.0]),
+                esa_contrib=st.sampled_from([0.0, 5_000.0]),
+            )
+        ),
+        min_size=1,
+        max_size=8,
+    ),
+    year=st.integers(2025, 2030),
+)
+def test_capped_universal_credit_matches_the_model(families, year):
+    """Invariant 12: the after-cap Universal Credit counted in a
+    non-dependant family's gross income equals universal_credit for a family
+    with no Housing Benefit, Maternity Allowance or deductions."""
+    from policyengine_uk.variables.gov.dwp.housing_benefit.non_dep_deduction._non_dependants import (
+        universal_credit_after_benefit_cap,
+    )
+
+    people, benunits, households_ = {}, {}, {}
+    for f, family in enumerate(families):
+        members = [f"adult_{f}_{k}" for k in range(2 if family["couple"] else 1)]
+        for k, name in enumerate(members):
+            people[name] = dict(
+                age=30 - k,
+                jsa_contrib=family["jsa_contrib"] if k == 0 else 0.0,
+                esa_contrib=family["esa_contrib"] if k == 0 else 0.0,
+                maternity_allowance=0.0,
+            )
+        benunits[f"family_{f}"] = dict(
+            members=members,
+            **{
+                key: family[key]
+                for key in [
+                    "universal_credit_pre_benefit_cap",
+                    "child_benefit",
+                    "child_tax_credit",
+                    "uc_benefit_cap",
+                    "uc_childcare_element",
+                ]
+            },
+            income_support=0.0,
+            jsa_income=0.0,
+            esa_income=0.0,
+            housing_benefit_pre_benefit_cap=0.0,
+            uc_deductions=0.0,
+        )
+        households_[f"household_{f}"] = dict(members=members, country="ENGLAND")
+    sim = Simulation(
+        situation=for_years(
+            dict(people=people, benunits=benunits, households=households_), [year]
+        )
+    )
+    helper = universal_credit_after_benefit_cap(sim.populations["benunit"], year)
+    np.testing.assert_allclose(
+        helper, sim.calculate("universal_credit", year), atol=0.01
+    )

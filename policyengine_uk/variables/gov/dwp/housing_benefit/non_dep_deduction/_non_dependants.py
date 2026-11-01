@@ -58,12 +58,13 @@ def non_dependant_weekly_gross_income(person, period, own_gross_income):
     names the programme's person-level gross income variable."""
     claimant_or_partner = person("is_claimant_or_partner", period)
     own_income = person(own_gross_income, period)
-    family_benefits = universal_credit_after_benefit_cap(person.benunit, period) + sum(
-        person.benunit(benefit, period) for benefit in FAMILY_GROSS_INCOME_BENEFITS
+    benunit = person.simulation.populations["benunit"]
+    family_benefits = universal_credit_after_benefit_cap(benunit, period) + add(
+        benunit, period, FAMILY_GROSS_INCOME_BENEFITS
     )
-    couple_income = (
-        person.benunit.sum(own_income * claimant_or_partner) + family_benefits
-    )
+    couple_income = person.benunit.sum(
+        own_income * claimant_or_partner
+    ) + benunit.project(family_benefits)
     annual = where(claimant_or_partner, couple_income, own_income)
     return annual / WEEKS_IN_YEAR
 
