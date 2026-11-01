@@ -12,9 +12,9 @@ class is_enhanced_disabled_for_benefits(Variable):
         "kept for downstream compatibility and for the deprecated counts "
         "num_enhanced_disabled_adults and num_enhanced_disabled_children. The "
         "Enhanced FRS stores its own value of this flag, which replaces this "
-        "formula in dataset runs: attendance allowance at the higher rate, or "
-        "disability living allowance care or personal independence payment "
-        "daily living near the top rate, from reported amounts."
+        "formula in dataset runs: reported attendance allowance, disability "
+        "living allowance care or personal independence payment daily living "
+        "within £1 a week of its top rate."
     )
     definition_period = YEAR
 

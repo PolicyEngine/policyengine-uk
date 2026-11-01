@@ -73,13 +73,17 @@ SCHEMES = [
 ]
 SHAPES = ["alone", "couple", "young_parents"]
 # The head's own circumstances that the premiums and the exemption read:
-# disability, Attendance Allowance (a severe disability premium qualifying
-# benefit, which also exempts her from non-dependant deductions), Carer's
-# Allowance (the carer premium) and blindness.
+# disability, the enhanced PIP daily living component (an enhanced disability
+# premium qualifying benefit), Attendance Allowance (a severe disability
+# premium qualifying benefit, which also exempts her from non-dependant
+# deductions, and in Scotland's working-age scheme from 2023 an enhanced
+# disability premium one), Carer's Allowance (the carer premium) and
+# blindness.
 head_circumstances = st.fixed_dictionaries(
     dict(
         is_disabled_for_benefits=st.booleans(),
         is_enhanced_disabled_for_benefits=st.booleans(),
+        pip_dl_category=st.sampled_from(["NONE", "NONE", "ENHANCED"]),
         attendance_allowance=st.sampled_from([0, 0, 4_000]),
         carers_allowance=st.sampled_from([0, 0, 4_000]),
         is_blind=st.booleans(),
