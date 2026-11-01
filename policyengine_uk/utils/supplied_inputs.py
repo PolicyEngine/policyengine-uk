@@ -46,6 +46,7 @@ from policyengine_core.periods import Period
 SUPPLIED_INPUT_VARIABLES = frozenset(
     {
         "adjusted_net_income",
+        "benefit_cap_welfare_benefits",
         "carers_allowance",
         "carers_allowance_pre_couple_limit",
         "carers_allowance_pre_overlap",
@@ -55,7 +56,6 @@ SUPPLIED_INPUT_VARIABLES = frozenset(
         "receives_carer_benefit",
         "receives_carers_allowance",
         "receives_carer_support_payment",
-        "benefit_cap_welfare_benefits",
         "bus_fare_spending",
         "bus_in_london_trips",
         "current_education",
