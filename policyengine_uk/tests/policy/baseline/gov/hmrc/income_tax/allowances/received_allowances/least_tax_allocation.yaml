@@ -261,15 +261,16 @@
       members: [recipient, partner]
       is_married: true
   output:
-    # The partner's unused allowance gives the recipient a Marriage Allowance
-    # of £1,260: 10% of £12,570, rounded up to a multiple of £10 (s. 55B(4)
-    # and (5)). Section 55B(1) gives it as a tax reduction, which Step 6 of
-    # s. 23 deducts, not as a deduction at Step 3, so the model leaves it out
-    # of the share. Pay, property income and the savings above the £1,000
-    # savings allowance all bear 20%, and the starting rate band has gone
-    # (s. 12), so no share lowers the Step 5 tax, and the allowance comes off
-    # the pay and then the property income. Property 7,430 x 20% = 1,486;
-    # savings of £15,000 from £7,430: £1,000 at the savings nil rate and
+    # The model gives the recipient a Marriage Allowance of £1,260 from the
+    # partner's unused Personal Allowance: 10% of £12,570, rounded up to a
+    # multiple of £10 (s. 55B(4) and (5)). Parliament gives it as a tax
+    # reduction (s. 55B(1)), which Step 6 of s. 23 deducts, not as a deduction
+    # at Step 3, so the model leaves it out of the share. Pay, property income
+    # and the savings above the £1,000 savings allowance all bear 20%, and the
+    # pay and property income leave no starting rate band (s. 12), so no share
+    # lowers the Step 5 tax, and the model takes the Personal Allowance off the
+    # pay and then the property income. Property 7,430 x 20% = 1,486; savings
+    # of £15,000 from £7,430: £1,000 at the savings nil rate and
     # 14,000 x 20% = 2,800.
     marriage_allowance: [1_260, 0]
     received_allowances_earned_income: [12_570, 0]

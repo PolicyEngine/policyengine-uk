@@ -57,12 +57,12 @@ non-savings income (s. 12), as in every year modelled. The search keeps the
 order non-savings, savings, dividends unless another share gives less tax, so
 it never charges more than that order.
 
-The search ignores the Marriage Allowance. Section 55B(1) gives it as a tax
-reduction, which Step 6 deducts, not as a deduction at Step 3, and its rate
-test (s. 55B(2)(b)) reads the share. The model still subtracts the allowance
-from earned income (#1947), which moves a recipient's savings and dividends
-down by up to that amount, so for a recipient the search's tax can differ from
-the model's.
+The search ignores the Marriage Allowance. Parliament gives it as a tax
+reduction (s. 55B(1)), which Step 6 deducts, not as a deduction at Step 3, and
+whether a person qualifies for it (s. 55B(2)(b)) depends on the share. The
+model still subtracts the allowance from earned income (#1947), which moves a
+recipient's savings and dividends down by up to that amount, so for a
+recipient the search's tax can differ from the model's.
 
 Who cannot gain
 ---------------
@@ -123,9 +123,10 @@ ALLOCATED_EXCLUSIONS = (
     "taxable_property_income",
     "received_allowances_earned_income",
 )
-# The exclusions the search leaves out. s. 55B(1) gives the Marriage Allowance
-# as a tax reduction, not a deduction at Step 3, and its rate test reads the
-# share, so the search shares a recipient's deductions as if they had none.
+# The search leaves these exclusions out. Parliament gives the Marriage
+# Allowance as a tax reduction (s. 55B(1)), not a deduction at Step 3, and
+# whether a person qualifies (s. 55B(2)(b)) depends on the share, so the search
+# shares a recipient's deductions as if they had none.
 IGNORED_EXCLUSIONS = ("marriage_allowance",)
 
 
