@@ -71,9 +71,9 @@ change household by household (see ``judge_total``):
   head, or a model total, in the households where it, or one of its heads,
   is not finite at baseline. The engine refuses NaN as an input, so the
   check never sets such a value. To raise a component that is not finite
-  at baseline, it sets each such unit to 0 and raises the others; the
-  households holding one are the only ones whose values change, and it
-  judges nothing there for that component. To hold a head that is not
+  at baseline, it sets each such unit to 0 and raises the others. The 0s
+  change values only in the households that hold them, and it judges
+  nothing there for that component. To hold a head that is not
   finite at baseline, it does not set the head at all: it leaves it to its
   formula. Wherever the head does not respond to the component, its
   formula gives it back the value the measurement holds it at (its
@@ -613,10 +613,10 @@ def judge_total(
 
     def mean_response(change, skip):
         """The mean change per unit added, over households not in ``skip``;
-        None when no household with weight is left to read."""
+        None when ``skip`` leaves no household with weight to read."""
         added = float(np.sum(weights * np.where(skip, 0.0, expected)))
         if not added:
-            return None
+            return None if skip.any() else 0.0
         return float(np.sum(weights * np.where(skip, 0.0, change))) / added
 
     for variable, change in head_changes.items():
