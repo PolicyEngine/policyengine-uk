@@ -6,7 +6,7 @@ class is_enhanced_disabled_for_benefits(Variable):
     entity = Person
     label = "Receives an enhanced disability premium qualifying benefit (deprecated)"
     documentation = (
-        "Deprecated: no premium reads it. The enhanced disability premium "
+        "No premium reads this deprecated flag. The enhanced disability premium "
         "reads receives_enhanced_disability_premium_qualifying_benefit, which "
         "this returns, and applies each programme's own conditions. The model "
         "keeps it for downstream compatibility and for the deprecated counts "
