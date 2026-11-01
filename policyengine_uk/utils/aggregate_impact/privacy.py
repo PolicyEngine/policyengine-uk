@@ -54,15 +54,16 @@ Deliberate exceptions:
   records behind a published count of 10 show one record in each group),
   and the reform list, in CI the head's ``standard_reforms.yaml``, decides
   which rows exist.
-- When a reform's target is part of gov_balance, its costing less the
-  target's part is the change in the rest of gov_balance, whose records the
-  tool doesn't count. A reform that moves its target in 10 or more records,
-  and the rest of gov_balance in fewer than 10, publishes a costing and a
-  target change that together give the rest's change in those few records.
-  Before #2775 the tool withheld such a year when that change lay in another
-  reform's target, a set the reform list decides; it now publishes it, as it
-  already did when the change lay in any other variable and no other
-  condition held.
+- When gov_balance contains a reform's target, the reform's costing less
+  the target's part is the change in the rest of gov_balance, whose records
+  the tool doesn't count. A reform that moves its target in 10 or more
+  records, and the rest of gov_balance in a few households only, can
+  publish a costing and a target change that together give the rest's
+  change there. Until #2775 the tool also withheld the year when another
+  reform's target moved in 1 to 9 of its records, a set the reform list
+  decides. It now checks the reform's own target only, so the two figures
+  can give a change in those variables too, as they always could for a
+  variable no reform aims at.
 
 Threat model. The report defends against disclosure through any combination
 of the figures it publishes, across any number of reports, from honest

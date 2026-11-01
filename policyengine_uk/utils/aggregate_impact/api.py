@@ -61,8 +61,8 @@ def to_report(result: dict) -> dict:
     carry ``withheld_because``: for a year the tool withholds, the conditions
     that withheld it, each as ``{"condition", "variable", "metric_id"}``
     (``privacy.WITHHELD_CONDITIONS``); for a published year, an empty list.
-    A ``small_target_change`` names the reform's own target: the tool
-    checks no other reform's target for it (#2775).
+    A ``small_target_change`` names the reform's own target, never another
+    reform's (#2775).
     A ``no_baseline`` reason stands alone: without a baseline record the
     tool tests no other condition, so the reason says nothing about the
     reform's records.

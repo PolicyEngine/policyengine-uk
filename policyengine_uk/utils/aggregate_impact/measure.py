@@ -1288,7 +1288,12 @@ def baseline_records(sim, partition: Partition, rec: "Recorder", year: int, targ
 
 
 def withheld_reasons(
-    reformed, year: int, baseline: Optional[Mapping], components, *, target
+    reformed,
+    year: int,
+    baseline: Optional[Mapping],
+    components,
+    *,
+    target: Optional[str],
 ) -> list:
     """Why the tool withholds a reform's costing and target change for
     ``year``: one reason per condition that holds, none when it publishes
@@ -1311,8 +1316,8 @@ def withheld_reasons(
       by more than ``CHANGE_GBP``: the change is theirs alone, as for a
       decile row. ``target`` is the variable the reform's ``responds`` names,
       or None for a reform that names none. Another reform's target counts
-      only as a part of gov_balance, as every tax and benefit does: nothing
-      the report publishes for this reform reads it otherwise (#2775).
+      here as it would if no reform aimed at it: in gov_balance, and in the
+      component conditions above when it is a component (#2775).
 
     Withheld too when there is no baseline record for the year
     (``no_baseline``). With nothing to compare against, the function tests
@@ -1376,7 +1381,12 @@ def withheld_reasons(
 
 
 def reform_withheld(
-    reformed, year: int, baseline: Optional[Mapping], components, *, target
+    reformed,
+    year: int,
+    baseline: Optional[Mapping],
+    components,
+    *,
+    target: Optional[str],
 ) -> bool:
     """Whether the tool withholds a reform's costing and target change for
     ``year``: whether any condition of ``withheld_reasons`` holds."""
@@ -1501,16 +1511,15 @@ def measure_reforms(
                     records=records,
                 )
                 _record_reasons(rec.metrics[f"reforms.{reform.id}"], year, reasons)
-                if reform.responds is not None:
-                    variable = reform.responds.variable
+                if target is not None:
                     change = (
-                        weighted_total(reformed, variable, year)
-                        - baseline_targets[year][variable]
+                        weighted_total(reformed, target, year)
+                        - baseline_targets[year][target]
                     )
                     target_changes[year] = change
                     rec.metric(
                         f"reform_targets.{reform.id}",
-                        f"{reform.name}: change in {variable}",
+                        f"{reform.name}: change in {target}",
                         "reform_targets",
                         "gbp",
                         year,
