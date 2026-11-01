@@ -305,8 +305,7 @@ def test_a_small_change_in_another_reforms_target_withholds_nothing():
     """#2775: a reform aimed at income tax moves Pension Credit, another
     reform's target, in three records, and income tax in all 20. The report
     publishes nothing about Pension Credit for this reform, so the tool
-    publishes its costing and target change. Until #2775 the tool withheld
-    them with a small_target_change naming pension_credit."""
+    publishes its costing and target change."""
     world = _world(np.full(N, 100.0), np.full(N, 100.0), pension_credit=np.zeros(N))
     reformed = _world(
         np.full(N, 110.0), np.full(N, 100.0), pension_credit=_first(3, 25.0)
@@ -422,7 +421,7 @@ def test_component_metric_ids_name_heads_and_double_counts():
 def test_of_two_small_targets_only_the_reforms_own_is_named():
     """The reform aimed at Pension Credit moves it and Child Benefit, another
     reform's target, in three records each; every income tax bill rises too.
-    The tool names Pension Credit only: until #2775 it named both."""
+    The tool names Pension Credit only."""
     zero = np.zeros(N)
     base = _world(
         np.full(N, 100.0), np.full(N, 100.0), pension_credit=zero, child_benefit=zero
@@ -442,7 +441,7 @@ def test_a_small_balance_change_withholds_whatever_other_targets_do():
     """Three households' income tax rises, and so does Pension Credit,
     another reform's target outside gov_balance: the tool still withholds the
     reform aimed at the state pension for its three balances, and names only
-    them. Until #2775 it named Pension Credit too."""
+    them."""
     base = _world(np.full(N, 100.0), np.full(N, 100.0), pension_credit=np.zeros(N))
     reformed = _world(
         _first(3, 110.0, 100.0), np.full(N, 100.0), pension_credit=_first(3, 5.0)
@@ -452,10 +451,36 @@ def test_a_small_balance_change_withholds_whatever_other_targets_do():
     assert rec.metrics["reforms.change_it"]["values"][str(YEAR)] is None
 
 
+def test_a_small_target_change_withholds_a_year_after_the_first():
+    """In 2027 one household's income tax and state pension each rise by £1,
+    so no balance moves. The tool withholds that year for the reform's own
+    target alone."""
+    base = _world(np.full(N, 10.0), np.full(N, 10.0))
+    reformed = _world(_first(1, 11.0, 10.0), _first(1, 11.0, 10.0))
+    rec = _measure(base, reformed, years=(2027,))
+    assert _conditions(_reasons(rec, 2027)) == [
+        (SMALL_TARGET_CHANGE, "income_tax", None)
+    ]
+    assert rec.metrics["reforms.change_it"]["values"]["2027"] is None
+    assert rec.metrics["reform_targets.change_it"]["values"]["2027"] is None
+
+
+def test_a_reform_aimed_at_gov_balance_gives_both_reasons():
+    """One household's balance moves, and gov_balance is the reform's own
+    target: the tool names it as the balance and as the target."""
+    base = _world(np.full(N, 10.0), np.full(N, 10.0))
+    reformed = _world(_first(1, 11.0, 10.0), np.full(N, 10.0))
+    rec = _measure(base, reformed, target="gov_balance")
+    assert _conditions(_reasons(rec)) == [
+        (SMALL_BALANCE_CHANGE, "gov_balance", None),
+        (SMALL_TARGET_CHANGE, "gov_balance", None),
+    ]
+
+
 def test_a_reform_without_a_target_checks_no_other_reforms_target():
     """A reform that names no target raises every income tax bill and moves
     Pension Credit, another reform's target, in three records: the tool
-    publishes its costing. Until #2775 it withheld it for Pension Credit."""
+    publishes its costing."""
     world = _world(np.full(N, 100.0), np.full(N, 100.0), pension_credit=np.zeros(N))
     reformed = _world(
         np.full(N, 110.0), np.full(N, 100.0), pension_credit=_first(3, 25.0)
