@@ -16,13 +16,13 @@ def hb_uses_annual_override(benunit, period, variable_name, default_formula):
 
 
 def hb_apply_defined_for(benunit, period, variable_name, amount):
-    """The amount a segment helper rebuilt for the variable, where the
+    """The amount a segment helper rebuilt for the variable where the
     variable's defined_for condition holds, and the variable's default
-    elsewhere. Core masks the variable's annual output this way
+    elsewhere. Core masks the annual output the same way
     (Simulation._calculate): it maps the condition to the variable's entity
-    and tests it for a value above zero. Reading defined_for from the
-    variable the simulation holds lets a condition a reform adds reach each
-    segment, and so the award, as it reaches the annual output."""
+    and keeps the amount where the condition exceeds zero. The condition
+    comes from the variable the simulation holds, so one that a reform adds
+    reaches each segment, as it reaches the annual output."""
     variable = benunit.simulation.tax_benefit_system.get_variable(variable_name)
     if variable.defined_for is None:
         return amount
