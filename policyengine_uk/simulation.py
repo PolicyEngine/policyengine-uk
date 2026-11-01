@@ -815,7 +815,7 @@ class Simulation(CoreSimulation):
                 continue
             native = self.tax_benefit_system.variables[part].definition_period
             if part_source.start > source.start or part_source.unit != native:
-                # Person balances stored for a later year than the total are
+                # Person balances stored for a later year than the total give
                 # the newer observation, and Core doesn't uprate a balance
                 # stored in another unit, so their sum stands.
                 return None

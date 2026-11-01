@@ -51,15 +51,16 @@ def drop_calculated_years(simulation, names: Iterable[str]) -> None:
     the latest earlier input by the variable's ``uprating`` index, or carries
     the latest input over, and caches the result in the variable's holder
     (``put_in_cache`` with ``derived=True``). The simulation grows a stored
-    household total itself (``Simulation._stored_household_total``), and a
-    formula gives the other years of a formula variable supplied for some.
-    Such a year depends on other years' inputs, so an input set later for an
-    earlier year changes it. Core's record of inputs (``_user_input_keys``,
-    checked by ``Holder._stores_user_input``) holds every value the data or a
-    caller stored through ``set_input``, whatever the year, and decides which
-    values go, as it does for ``drop_computed_arrays``. Core then calculates
-    the other years again. Formulas read Core's cache of results by variable
-    and period, so its entries for ``names`` go too.
+    household total itself (``Simulation._stored_household_total``). Where the
+    data or a caller supplied a formula variable for some years, Core runs its
+    formula for the others. Such a year depends on other years' inputs, so an
+    input a caller sets later for an earlier year changes it. Core keeps the
+    values its record of inputs (``_user_input_keys``, checked by
+    ``Holder._stores_user_input``) names: every value the data or a caller
+    stored through ``set_input``, whatever the year, as
+    ``drop_computed_arrays`` does. Core then calculates the other years again.
+    Formulas read Core's cache of results by variable and period, so this
+    function drops its entries for ``names`` too.
     """
     names = set(names)
     for name in names:
@@ -76,9 +77,10 @@ def drop_calculated_values(simulation) -> None:
 
     Inputs are variables without a formula, variables the simulation was built
     from, and variables set since through set_input, as a scenario's
-    simulation modifier does to formula variables. An input variable keeps
-    only the years supplied for it (see drop_calculated_years). It visits only
-    the variables the simulation holds values for.
+    simulation modifier does to formula variables. It keeps only the years of
+    each input variable that the data or a caller supplied (see
+    drop_calculated_years). It visits only the variables the simulation holds
+    values for.
     """
     supplied = retained_input_variables(simulation)
     variables = simulation.tax_benefit_system.variables
