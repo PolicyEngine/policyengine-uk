@@ -3,9 +3,6 @@ from policyengine_uk.variables.gov.dwp._legacy_award_payee import (
     is_payee_of_couple_award,
     own_report_is_paid,
 )
-from policyengine_uk.variables.gov.dwp.esa_income import (
-    income_related_esa_award_on_reports,
-)
 
 
 class is_on_income_related_esa(Variable):
@@ -60,6 +57,5 @@ class is_on_income_related_esa(Variable):
             "esa_income",
             works=person("esa_income_claimant_remunerative_work", period),
             capital_limit=parameters(period).gov.dwp.ESA.income.capital.limit,
-            award_on_reports=income_related_esa_award_on_reports,
         )
         return where(person("is_claimant_or_partner", period), couple_award, own_award)

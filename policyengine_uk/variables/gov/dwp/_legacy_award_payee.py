@@ -2,6 +2,13 @@
 
 from policyengine_uk.model_api import *
 from policyengine_uk.utils.benefit_unit import HALF_PENNY, REPORT_CLOSED
+from policyengine_uk.variables.gov.dwp.esa_income import (
+    income_related_esa_award_on_reports,
+)
+
+# The award each formula gives on open person reports, for an award with
+# closures of its own beyond the legacy closure (REPORT_CLOSED).
+AWARD_ON_REPORTS = {"esa_income": income_related_esa_award_on_reports}
 
 
 def is_payee_of_couple_award(person, period, reported, can_claim=None, couple=None):
@@ -40,9 +47,7 @@ def is_payee_of_couple_award(person, period, reported, can_claim=None, couple=No
     return where(person.benunit.any(reports), reports, claimant)
 
 
-def own_report_is_paid(
-    person, period, award, works, capital_limit, award_on_reports=None
-):
+def own_report_is_paid(person, period, award, works, capital_limit):
     """Whether income-related ESA or income-based JSA (award: "esa_income" or
     "jsa_income") is paid on this person's own report, for a member who is
     neither the claimant nor the partner and so claims in their own right.
@@ -59,10 +64,10 @@ def own_report_is_paid(
     Their own legacy benefits must remain open under the existing annual
     proxy (person_legacy_benefits_closed). A couple's closure does not end
     this separate claim. An award with closures of its own (REPORT_CLOSED:
-    for income-related ESA, its abolition, esa_income_report_closed) passes
-    award_on_reports, the award its formula gives on open person reports.
-    Where the stored award is that formula's, those closures, which leave
-    the report out of it, end status too. Where it holds another value,
+    for income-related ESA, its abolition, esa_income_report_closed) has its
+    formula's award on open person reports in AWARD_ON_REPORTS. Where the
+    stored award is that formula's, those closures, which leave the report
+    out of it, end status too. Where it holds another value,
     entered directly or held by disable_simulated_benefits in every year,
     that value decides payment, as it does for the claimant and partner
     (claimant_or_partner_esa_income), so only the legacy closure ends
@@ -82,6 +87,7 @@ def own_report_is_paid(
         )
     )
     closed = person("person_legacy_benefits_closed", period)
+    award_on_reports = AWARD_ON_REPORTS.get(award)
     if award_on_reports is not None:
         units = person.simulation.populations["benunit"]
         report_closed = person(REPORT_CLOSED[award], period)
