@@ -10,8 +10,11 @@ class council_tax_reduction_enhanced_disability_premium(Variable):
         "Reduction applicable amount: the single rate, or the couple rate "
         "where either or both members of a couple meet the scheme's condition "
         "(meets_council_tax_reduction_enhanced_disability_premium_condition). "
-        "Outside Scotland this equals the legacy premium "
-        "(enhanced_disability_premium). Pension-age Council Tax Reduction has "
+        "It differs from the legacy premium (enhanced_disability_premium) in "
+        "Scotland, Merton, Kingston upon Thames and Newham, whose schemes name "
+        "their own awards. The model pays the Housing Benefit amounts in every "
+        "scheme, though Kingston upon Thames's 2026-27 scheme sets lower ones "
+        "(£17.10 single, £24.50 couple). Pension-age Council Tax Reduction has "
         "no adult enhanced disability premium."
     )
     definition_period = YEAR
@@ -19,7 +22,7 @@ class council_tax_reduction_enhanced_disability_premium(Variable):
     reference = (
         "https://www.legislation.gov.uk/ssi/2021/249/schedule/1/paragraph/14",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/7/paragraph/12",
-        "https://www.legislation.gov.uk/uksi/2012/2886/appendix/3/paragraph/12",
+        "https://www.legislation.gov.uk/uksi/2006/213/schedule/3/part/4",
     )
 
     def formula(benunit, period, parameters):

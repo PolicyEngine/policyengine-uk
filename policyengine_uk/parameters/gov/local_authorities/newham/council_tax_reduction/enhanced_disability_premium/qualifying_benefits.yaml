@@ -1,0 +1,22 @@
+description: >
+  Awards to the applicant or a member of the applicant's family that meet the
+  enhanced disability premium condition of Newham's working-age Council Tax
+  Reduction scheme: the care component of disability living allowance at the
+  highest rate, the daily living component of personal independence payment
+  at either rate and armed forces independence payment. Each award counts
+  only for a person under the qualifying age for State Pension Credit. The
+  scheme also names the care component of child disability payment at the
+  highest rate, for which the model has no separate variable. The model reads
+  the list as at 30 April of each year and backdates it to 2015.
+metadata:
+  label: Newham Council Tax Reduction enhanced disability premium qualifying benefits
+  period: year
+  unit: list
+  reference:
+    - title: Council Tax Reduction Scheme 2026, Sch. 3 para. 12(1)(n), (o), (p)
+      href: https://www.newham.gov.uk/downloads/file/10753/council-tax-reduction-scheme-2026
+values:
+  2026-04-01:
+    - has_highest_dla_sc_award
+    - pip_dl
+    - armed_forces_independence_payment

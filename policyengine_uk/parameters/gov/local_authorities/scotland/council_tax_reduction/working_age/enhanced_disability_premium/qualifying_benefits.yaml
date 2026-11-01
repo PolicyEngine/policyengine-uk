@@ -1,16 +1,15 @@
 description: >
-  Benefits whose receipt by the applicant or partner meets the enhanced
-  disability premium condition of Scotland's working-age Council Tax Reduction
-  scheme: the care component of disability living allowance at the highest
-  rate, the daily living component of personal independence payment at the
-  enhanced rate and armed forces independence payment, and from 1 April 2023
-  attendance allowance at either rate (S.S.I. 2023/38). The scheme also lists
-  Scottish benefits (child disability payment, adult disability payment,
-  pension age disability payment and Scottish adult disability living
-  allowance), which are not separate model variables. Armed forces
-  independence payment was added to the 2012 scheme from 11 June 2013 (S.S.I.
-  2013/142). Like other parameters, the model reads the list as at 30 April of
-  each year from 2015.
+  Awards to the applicant or partner that meet the enhanced disability premium
+  condition of Scotland's working-age Council Tax Reduction scheme: the care
+  component of disability living allowance at the highest rate, the daily
+  living component of personal independence payment at the enhanced rate,
+  armed forces independence payment and, from 1 April 2023, attendance
+  allowance at either rate (S.S.I. 2023/38). The scheme also names Scottish
+  benefits (child disability payment, adult disability payment, pension age
+  disability payment and Scottish adult disability living allowance), for
+  which the model has no separate variables. S.S.I. 2013/142 added armed
+  forces independence payment to the 2012 scheme from 11 June 2013. The model
+  reads the list as at 30 April of each year from 2015.
 metadata:
   label: Scottish working-age Council Tax Reduction enhanced disability premium qualifying benefits
   period: year
@@ -24,14 +23,14 @@ metadata:
       href: https://www.legislation.gov.uk/ssi/2023/38/regulation/16
 values:
   2013-04-01:
-    - receives_highest_dla_sc
-    - receives_enhanced_pip_dl
+    - has_highest_dla_sc_award
+    - has_enhanced_pip_dl_award
   2013-06-11:
-    - receives_highest_dla_sc
-    - receives_enhanced_pip_dl
+    - has_highest_dla_sc_award
+    - has_enhanced_pip_dl_award
     - armed_forces_independence_payment
   2023-04-01:
-    - receives_highest_dla_sc
-    - receives_enhanced_pip_dl
+    - has_highest_dla_sc_award
+    - has_enhanced_pip_dl_award
     - armed_forces_independence_payment
     - attendance_allowance

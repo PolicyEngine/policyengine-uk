@@ -1,0 +1,20 @@
+description: >
+  Awards to the applicant or a member of the applicant's family that meet the
+  enhanced disability premium condition of Merton's working-age Council Tax
+  Support scheme: the care component of disability living allowance at the
+  highest rate and the daily living component of personal independence
+  payment at either rate. The scheme names no armed forces independence
+  payment. Each award counts only for a person under the qualifying age for
+  State Pension Credit. The model reads the list as at 30 April of each year
+  and backdates it to 2015.
+metadata:
+  label: Merton Council Tax Support enhanced disability premium qualifying benefits
+  period: year
+  unit: list
+  reference:
+    - title: The London Borough of Merton Local Council Tax Support Scheme Rules 2026, Sch. 3 para. 12(1)(b), (c)
+      href: https://www.merton.gov.uk/sites/default/files/2026-03/Council%20Tax%20Reduction%20Scheme%20L%20B%20Merton%202026-27.pdf
+values:
+  2026-04-01:
+    - has_highest_dla_sc_award
+    - pip_dl
