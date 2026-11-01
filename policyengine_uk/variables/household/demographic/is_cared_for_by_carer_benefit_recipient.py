@@ -7,17 +7,20 @@ class is_cared_for_by_carer_benefit_recipient(Variable):
     label = "Someone receives a carer benefit for caring for this person"
     documentation = (
         "Someone is entitled to and in receipt of Carer's Allowance or Carer "
-        "Support Payment in respect of caring for this person: the carer "
+        "Support Payment, or has an award of Universal Credit which includes "
+        "the carer element, in respect of caring for this person: the carer "
         "condition of the legacy severe disability premium (HB Regs 2006 Sch 3 "
         "para 14(2)(a)(iii) and (2)(b); IS, ESA and JSA alike) and of the "
         "Pension Credit severe disability addition (SPC Regs 2002 Sch I para "
-        "1(1)). The data say who receives a carer benefit but not whom they "
-        "care for, so each award is attributed. A carer benefit is paid for "
-        "caring for a person who is severely disabled for Carer's Allowance "
-        "(is_severely_disabled_for_carers_allowance), a carer has one award "
-        "(SSCBA 1992 s.70(7)), and only one person is paid for caring for the "
-        "same severely disabled person (s.70(7ZA) to (7ZC); both rules were "
-        "in s.70(7) before 16 November 2023). No one is their own carer. A "
+        "1(1) and (4)). The data say who receives a carer benefit but not whom "
+        "they care for, so each award is attributed. A carer benefit or carer "
+        "element is paid for caring for a person who is severely disabled for "
+        "Carer's Allowance (is_severely_disabled_for_carers_allowance; UC Regs "
+        "2013 reg 30), a carer has one award (SSCBA 1992 s.70(7)), and only "
+        "one person has an allowance or a carer element for caring for the "
+        "same severely disabled person (s.70(7ZA) to (7ZC) and (7A); both "
+        "rules were in s.70(7) before 16 November 2023). No one is their own "
+        "carer. A "
         "carer cares for someone in their own benefit unit if they can: a "
         "claimant or partner first, then another member such as a disabled "
         "child. Every other carer in the household, including one left over "
@@ -37,18 +40,24 @@ class is_cared_for_by_carer_benefit_recipient(Variable):
         "first, then person order; the number cared for in a benefit unit "
         "does not depend on that choice. Carers outside the household are not "
         "observed, and nor is a carer whose allowance runs on for up to eight "
-        "weeks after the person they cared for has died (s.70(1A)). A "
-        "Universal Credit award that includes the carer element also counts "
-        "in law but is not attributed here: "
-        "reading Universal Credit would be circular, because the Universal "
-        "Credit non-dependant deduction exemption reads Pension Credit. Such a "
-        "carer living in the household already bars both the premium and the "
-        "addition through their residence conditions unless their presence "
-        "is ignored. Receipt is receives_carer_benefit: a positive Carer's "
-        "Allowance or Carer Support Payment after the overlapping-benefit "
-        "adjustment. A carer whose award an overlapping benefit, such as a "
-        "higher State Pension, reduces to nil is entitled but not in receipt, "
-        "so is not attributed."
+        "weeks after the person they cared for has died (s.70(1A)). Receipt "
+        "is receives_carer_benefit: a positive Carer's Allowance or Carer "
+        "Support Payment after the overlapping-benefit adjustment. A carer "
+        "whose allowance an overlapping benefit, such as a higher State "
+        "Pension, reduces to nil is entitled but not in receipt, so is not "
+        "attributed for the allowance. A carer element award is "
+        "has_uc_award_with_carer_element, read from the claim and the award's "
+        "conditions rather than its amount, because the Universal Credit "
+        "non-dependant deduction exemption reads Pension Credit, which reads "
+        "the addition. So a carer whose income tapers the award to nil, who "
+        "has no award in law (Welfare Reform Act 2012 s.5), is still "
+        "attributed, and can withhold a premium or addition the law would "
+        "pay. A carer with both an allowance and a carer element is one "
+        "carer. Partners who care for the same severely disabled person "
+        "(partners_care_for_same_severely_disabled_person) have one relevant "
+        "entitlement between them (s.70(7ZA) and (7A)), so where one of them "
+        "receives a carer benefit, the other's carer element is not a second "
+        "carer."
     )
     definition_period = YEAR
     reference = (
@@ -58,12 +67,28 @@ class is_cared_for_by_carer_benefit_recipient(Variable):
         "https://www.legislation.gov.uk/uksi/1987/1967/schedule/2/paragraph/13",
         "https://www.legislation.gov.uk/uksi/2008/794/schedule/4/paragraph/6",
         "https://www.legislation.gov.uk/uksi/1996/207/schedule/1/paragraph/15",
+        "https://www.legislation.gov.uk/uksi/2013/376/regulation/29",
+        "https://www.legislation.gov.uk/uksi/2013/376/regulation/30",
+        "https://www.legislation.gov.uk/ukpga/2012/5/section/5",
     )
 
     def formula(person, period, parameters):
         claimant_or_partner = person("is_claimant_or_partner", period)
         could_be_cared_for = person("is_severely_disabled_for_carers_allowance", period)
-        carer = person("receives_carer_benefit", period)
+        receives = person("receives_carer_benefit", period)
+        # An award of Universal Credit which includes the carer element counts
+        # as a carer too. A partner's carer element is not a second carer for
+        # a couple caring for the same person where one of them receives a
+        # carer benefit: they have one relevant entitlement between them
+        # (SSCBA 1992 s.70(7ZA) and (7A)).
+        same_person = person.benunit(
+            "partners_care_for_same_severely_disabled_person", period
+        )
+        partner_receives = person.benunit.any(claimant_or_partner & receives)
+        carer_element = person("has_uc_award_with_carer_element", period) & ~(
+            same_person & partner_receives
+        )
+        carer = receives | carer_element
         age = person("age", period)
         # Who takes a carer when not everyone can: someone who is not a carer
         # themselves, then person order (get_rank breaks ties by position).

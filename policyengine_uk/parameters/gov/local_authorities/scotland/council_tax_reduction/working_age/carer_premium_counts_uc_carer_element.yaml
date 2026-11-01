@@ -1,0 +1,15 @@
+description: Scotland's working-age Council Tax Reduction scheme pays the carer premium to an applicant or partner whose award of Universal Credit includes the carer element if this is true, and only on entitlement to Carer's Allowance or Carer Support Payment otherwise.
+values:
+  2013-04-01: false
+  2022-04-01: true
+metadata:
+  unit: bool
+  period: year
+  label: Scottish working-age Council Tax Reduction carer premium counts the Universal Credit carer element
+  reference:
+    - title: The Council Tax Reduction (Scotland) Regulations 2021 Sch. 1 para. 6(1)(c)
+      href: https://www.legislation.gov.uk/ssi/2021/249/schedule/1/paragraph/6
+    - title: The Council Tax Reduction (Scotland) Regulations 2021 reg. 1 (in force 1 April 2022)
+      href: https://www.legislation.gov.uk/ssi/2021/249/regulation/1
+    - title: The Council Tax Reduction (Scotland) Regulations 2012 Sch. 1 para. 14 (persons under pension age, to 31 March 2022)
+      href: https://www.legislation.gov.uk/ssi/2012/303/schedule/1/paragraph/14/2021-04-01

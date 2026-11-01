@@ -25,7 +25,10 @@ class carer_premium(Variable):
         "person caps the benefit unit at one amount. The premium enters the "
         "Income Support, Housing Benefit and council tax reduction applicable "
         "amounts; the model takes income-based JSA and income-related ESA "
-        "from reported awards."
+        "from reported awards. Scotland's working-age council tax reduction "
+        "also pays it for an award of Universal Credit which includes the "
+        "carer element (council_tax_reduction_carer_premium); no other "
+        "scheme's carer premium has that limb."
     )
     definition_period = YEAR
     reference = (
@@ -57,8 +60,10 @@ class carer_premium(Variable):
         # tests caring responsibilities and pays each partner who qualifies.
         # Para 6(1) defines those as (a) receiving either allowance, (b) being
         # entitled to one reduced to nil by the overlapping benefits rules, or
-        # (c) a Universal Credit award with the carer element; the model
-        # applies (a) and (b) but not (c) (#2124).
+        # (c) a Universal Credit award with the carer element. This premium
+        # applies (a) and (b), which every scheme shares; Scottish working-age
+        # council tax reduction reads council_tax_reduction_carer_premium,
+        # which adds (c).
         claimant_or_partner = benunit.members("is_claimant_or_partner", period)
         entitled = benunit.members("is_entitled_to_carer_benefit", period)
         qualifying_carers = benunit.sum(claimant_or_partner & entitled)
