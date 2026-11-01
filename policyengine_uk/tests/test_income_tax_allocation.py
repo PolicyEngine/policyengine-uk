@@ -378,6 +378,9 @@ EDGES = [
     # Pension relief and a trading loss.
     (60_000, 0, 9_000, 4_000, 3_000, 10_000, 0, 0, False, 500),
     (110_000, 0, 20_000, 30_000, 0, 0, 0, 0, False, 0),
+    # A gift that lifts the UK limits above the £10 million extra bracket, so
+    # the thresholds no longer ascend.
+    (15_050_070, 0, 0, 10_000, 0, 12_570, 0, 15_000_000, False, 0),
 ]
 
 
@@ -493,6 +496,7 @@ def assert_fast_path_equals_search(income_tax, inputs, default):
     suppress_health_check=[HealthCheck.too_slow],
 )
 @given(st.sampled_from(SYNTHETIC_YEARS), st.integers(0, 2**32 - 1))
+@example(2025, 0)
 @example(2026, 0)
 @example(2027, 0)
 @example(2028, 1)

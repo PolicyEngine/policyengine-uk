@@ -201,33 +201,20 @@ def _build(inputs, income_tax):
         gift=gift,
         scottish=columns["scottish"],
         uk=_schedule(rates.uk, gift),
-        uk_rates=list(rates.uk.rates),
         scotland=_schedule(
             rates.scotland.rates,
             gift,
             first_extended_scottish_threshold(rates.scotland.rates),
             len(rates.scotland.rates.thresholds),
         ),
-        scotland_rates=list(rates.scotland.rates.rates),
         dividend_scale=_schedule(rates.dividends, gift),
-        dividend_rates=list(rates.dividends.rates),
         bands=(
             uk_thresholds[0],
             uk_thresholds[1] + gift,
             uk_thresholds[2] + gift,
         ),
         savings_rates=savings_rates,
-        savings_rate_list=[
-            savings_rates.basic,
-            savings_rates.higher,
-            savings_rates.additional,
-        ],
         property_rates=property_rates,
-        property_rate_list=[
-            property_rates.basic,
-            property_rates.higher,
-            property_rates.additional,
-        ],
         starting_limit=rates.savings_starter_rate.allowance,
         phase_out=rates.savings_starter_rate.phase_out,
         savings_allowance=columns["savings_allowance"],
@@ -477,18 +464,20 @@ def old_order(
     )
 
 
-def _rate(thresholds, rates, income, above=True):
-    """The rate a scale charges just above ``income`` (or just below it)."""
-    rate = np.zeros(np.shape(income))
-    for threshold, value in zip(thresholds, rates):
-        rate = np.where(
-            income >= threshold if above else income > threshold, value, rate
-        )
-    return rate
+def _rate(schedule, income, above=True):
+    """The rate ``_tax`` charges on a schedule just above ``income`` (or just
+    below it): the sum of the steps passed, whatever order the thresholds
+    take once a Gift Aid gift raises some of them."""
+    thresholds, steps = schedule
+    return sum(
+        step * (income >= threshold if above else income > threshold)
+        for threshold, step in zip(thresholds, steps)
+    )
 
 
-def _rising(rates):
-    return rates[0] >= 0 and all(b >= a for a, b in zip(rates, rates[1:]))
+def _steps(rates):
+    """The steps of a basic, higher and additional rate."""
+    return [rates.basic, rates.higher - rates.basic, rates.additional - rates.higher]
 
 
 def _old_order_is_least(c, to_savings, to_dividends):
@@ -505,17 +494,12 @@ def _old_order_is_least(c, to_savings, to_dividends):
         & (c.step_3_income <= TIE)
     )
     low, basic_limit, higher_limit = c.bands
+    savings_scale = ((low, basic_limit, higher_limit), _steps(c.savings_rates))
+    property_scale = ((-np.inf, basic_limit, higher_limit), _steps(c.property_rates))
+    scales = (c.uk, c.scotland, c.dividend_scale, savings_scale, property_scale)
+    # Rates that rise with income from nil: no step below nil.
     if not (
-        all(
-            _rising(rates)
-            for rates in (
-                c.uk_rates,
-                c.scotland_rates,
-                c.dividend_rates,
-                c.savings_rate_list,
-                c.property_rate_list,
-            )
-        )
+        all(step >= 0 for _, steps in scales for step in steps)
         and low <= 0
         and c.phase_out >= 0
     ):
@@ -528,37 +512,26 @@ def _old_order_is_least(c, to_savings, to_dividends):
     nil_rated = ~savings_taxed & (c.dividends <= c.dividend_allowance)
     # Test 3. The first component's rate just above x.
     if c.other_first:
-        _, basic_upper, higher_upper = c.bands
         rho_n = np.where(
-            c.scottish,
-            _rate(c.scotland[0], c.scotland_rates, other + x),
-            _rate(
-                (-np.inf, basic_upper, higher_upper), c.property_rate_list, other + x
-            ),
+            c.scottish, _rate(c.scotland, other + x), _rate(property_scale, other + x)
         )
         in_reach = in_first
     else:
         # With no property income, Marriage Allowance only moves every band
         # position down by its amount.
         position = x - c.earned_exclusions
-        rho_n = np.where(
-            c.scottish,
-            _rate(c.scotland[0], c.scotland_rates, position),
-            _rate(c.uk[0], c.uk_rates, position),
-        )
+        rho_n = np.where(c.scottish, _rate(c.scotland, position), _rate(c.uk, position))
         in_reach = in_first & ((c.earned_exclusions == 0) | (c.property == 0))
-    savings_scale = ((low, basic_limit, higher_limit), c.savings_rate_list)
     # dx <= c.shared and dw <= min(dx, dividends). The top of the nil rates
     # moves up by at most dx and never passes the top of the savings.
     dw = np.minimum(c.shared, c.dividends)
-    sigma_s = _rate(*savings_scale, np.minimum(start + c.shared, top + dw), above=False)
-    rho_s = _rate(*savings_scale, top)
+    sigma_s = _rate(savings_scale, np.minimum(start + c.shared, top + dw), above=False)
+    rho_s = _rate(savings_scale, top)
     # The dividends end at the top of income, which no share moves.
     sigma_v = np.where(
         c.dividends > c.dividend_allowance,
         _rate(
-            c.dividend_scale[0],
-            c.dividend_rates,
+            c.dividend_scale,
             top + np.minimum(c.dividend_allowance + dw, c.dividends),
             above=False,
         ),
