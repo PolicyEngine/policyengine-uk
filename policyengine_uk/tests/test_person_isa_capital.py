@@ -937,20 +937,24 @@ def test_isas_over_a_total_leave_an_unrelated_adult_exactly_at_a_threshold():
     simulation = Simulation(situation=_threshold_situation())
     outputs = {name: simulation.calculate(name, YEAR) for name in THRESHOLD_OUTPUTS}
     cash = simulation.calculate("cash_isa_countable_capital", YEAR)
+    # Each case takes four units (adult and couple, with ISAs and without)
+    # and six people.
+    differences = {
+        (case, name): (values[4 * c], values[4 * c + 2])
+        for c, case in enumerate(THRESHOLDS)
+        for name, values in outputs.items()
+        if values[4 * c] != values[4 * c + 2]
+    }
+    assert not differences
     for c, (case, (age, total, balances, savings)) in enumerate(THRESHOLDS.items()):
-        # Each case takes four units (adult and couple, with ISAs and without)
-        # and six people.
-        adult, reference = 4 * c, 4 * c + 2
-        couple = cash[6 * c + 1 : 6 * c + 3]
-        assert couple.sum(dtype=np.float64) == total, case
-        for name, values in outputs.items():
-            assert values[adult] == values[reference], (case, name)
         capital = (
             "pension_credit_assessable_capital"
             if age >= 66
             else "uc_assessable_capital"
         )
-        assert outputs[capital][adult] == savings / 3, case
+        assert outputs[capital][4 * c] == savings / 3, case
+        couple = cash[6 * c + 1 : 6 * c + 3]
+        assert couple.sum(dtype=np.float64) == total, case
     assert outputs["uc_tariff_income"][0] == 0
     assert outputs["is_uc_eligible"][4]
     assert outputs["pension_credit_deemed_income"][8] == 0
