@@ -39,9 +39,15 @@
         members: [person]
         country: ENGLAND
   output:
-    # £500 savings allowance, then 9,770 at 20% (1,954) to the basic rate
-    # limit and 9,730 at 40% (3,892).
-    savings_income_tax: 5_846
+    # ITA 2007 s. 25(2): the Personal Allowance keeps the property income up
+    # to the basic rate limit, £37,700, and the other £10,270 comes off
+    # savings, so the £500 savings allowance covers savings taxed at 40%
+    # rather than 20%. Savings left: 9,730, less £500 at the nil rate
+    # (s. 12A), at 40%: 3,692. Property income 37,700 at 20%: 7,540. The old
+    # order, with all the allowance against property income, charged 5,486
+    # and 5,846: £100 more.
+    savings_income_tax: 3_692
+    income_tax: 7_540 + 3_692
 
 - name: Case 3, pay and property income together form the band base.
   period: 2026
