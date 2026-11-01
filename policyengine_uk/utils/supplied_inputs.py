@@ -63,13 +63,17 @@ SUPPLIED_INPUT_VARIABLES = frozenset(
         "extended_childcare_entitlement_term_share",
         "extended_childcare_entitlement_total_per_child",
         "gas_consumption_kwh",
+        "guarantee_credit",
         "housing_benefit_applicable_income",
         "housing_benefit_applicable_income_childcare_element",
         "housing_benefit_applicable_income_disregard",
         "housing_benefit_childcare_earnings_limit",
         "housing_benefit_specified_or_temporary_accommodation_disregard",
         "in_HE",
+        "is_pension_credit_eligible",
         "other_local_bus_trips",
+        "pension_credit",
+        "pension_credit_entitlement",
         "pip_dl_category",
         "pip_dl_points",
         "pip_m_category",
@@ -80,6 +84,7 @@ SUPPLIED_INPUT_VARIABLES = frozenset(
         "ni_class_4_losses_brought_forward",
         "ni_class_4_trading_loss",
         "ni_epg_full_rate_applies",
+        "savings_credit",
         "tenure_type",
         "targeted_childcare_entitlement",
         "trading_loss",
@@ -198,6 +203,27 @@ def stored_as_input(population, variable_name: str, period: Period) -> bool:
         holder._is_input(period, branch_name)
         for branch_name in _visible_branch_names(population.simulation)
     )
+
+
+def replaces_formula(
+    population, variable_name: str, period: Period, default_formula
+) -> bool:
+    """Whether the simulation gives ``variable_name`` for ``period`` a value
+    other than what ``default_formula`` calculates: a reform neutralizes the
+    variable, removes its formula for the period or gives it another, or a
+    caller set an input for the period (``stored_as_input``), as a scenario
+    does with its own value (``set_model_value``). A cached formula result is
+    not an input, even in populations taken from another simulation or in
+    their clones and branches."""
+    variable = population.simulation.tax_benefit_system.get_variable(variable_name)
+    formula = variable.get_formula(period)
+    if (
+        variable.is_neutralized
+        or formula is None
+        or formula.__code__ != default_formula.__code__
+    ):
+        return True
+    return stored_as_input(population, variable_name, period)
 
 
 def supplied_input(

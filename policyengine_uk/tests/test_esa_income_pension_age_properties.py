@@ -1,22 +1,24 @@
-"""Income-related ESA gives way to State Pension Credit only where Pension Credit pays.
+"""The model refuses a couple income-related ESA only where the couple would
+get State Pension Credit without it.
 
-Welfare Reform Act 2007 s.1(3)(c) bars ESA for a claimant who has reached
-pensionable age, their own State Pension age (s.1(6)). Sch 1 para 6(1)(c) and
-(d) bar the income-related allowance where the claimant, or the other member
-of the couple, is entitled to State Pension Credit. Pension Credit reads the
-couple's award, so the model reads the Pension Credit the couple would get with
-no income-related ESA in the family, B(0), and bars the couple's claim where it
-pays.
+Parliament bars ESA for a claimant who has reached pensionable age, their own
+State Pension age (Welfare Reform Act 2007 s.1(3)(c) and s.1(6)), and bars the
+income-related allowance where the claimant, or the other member of the
+couple, has an entitlement to State Pension Credit (Sch 1 para 6(1)(c) and
+(d)). The model's Pension Credit reads the couple's award, so the model reads
+the Pension Credit the couple would get with no income-related ESA in the
+family, B(0), and refuses the couple's claim where B(0) exceeds nil.
 
 Each example builds a second, separate simulation of the same people with no
 income-related ESA reported. Its pension_credit gives B(0) without a branch.
 Against it, for every family drawn here:
 
-- where B(0) pays nothing, whether the couple would claim Pension Credit
-  changes neither the couple's income-related ESA
-  (claimant_or_partner_esa_income) nor the family's (esa_income);
-- where B(0) pays, the couple would claim it and has an open report, the
-  couple's income-related ESA is nil and the family's Pension Credit is B(0);
+- where B(0) is nil, whether the couple would claim Pension Credit changes
+  neither the couple's income-related ESA (claimant_or_partner_esa_income)
+  nor the family's (esa_income);
+- where B(0) exceeds nil, the couple would claim it and has an open report,
+  the couple's income-related ESA is nil and the family's Pension Credit is
+  B(0);
 - claiming Pension Credit never raises income-related ESA;
 - esa_income_eligible equals the family-by-family reading of the law in
   legacy_award_work_reference (esa_screen), given the model's pensionable age
@@ -25,7 +27,7 @@ Against it, for every family drawn here:
   (is_on_income_related_esa), and a family whose every report comes from such
   a member gets none.
 
-A family whose Pension Credit pays only with the award, through the higher
+A family that gets Pension Credit only with the award, through the higher
 earnings disregard the award brings, gets both: no state is consistent there.
 The test counts such families and asserts nothing more of them.
 
@@ -35,11 +37,11 @@ qualifying age for State Pension Credit but under his pensionable age of 65
 mixed-age couples (SPCA 2002 s.4(1A), from 15 May 2019), and 2026, when only
 a mixed-age couple that keeps the SI 2019/37 art 4 saving
 (has_mixed_age_couple_pension_credit_saving, drawn) can get Pension Credit.
-Adults have earnings, pensions and household savings, so Pension Credit's
-means test pays some families and refuses others, and in 2016 and 2018 some
-report working tax credit, whose income test the award lifts (TCA 2002
-s.7(2)). A member outside the couple claims in their own right: the couple's
-Pension Credit does not bar them, and pensionable age does.
+Adults have earnings, pensions and household savings, so some families pass
+Pension Credit's means test and others fail it, and in 2016 and 2018 some
+report working tax credit, which HMRC pays without its income test to a
+family on the award (TCA 2002 s.7(2)). A member outside the couple claims in their own right: the couple's
+Pension Credit leaves their claim alone, and their pensionable age does not.
 
 Each of would_claim_uc, claims_all_entitled_benefits and the mixed-age saving
 would otherwise read the ESA report, so the generator enters them, and no one
@@ -50,22 +52,40 @@ in one simulation, in separate benefit units, with the take-up copies in the
 same simulation. Simulations take most of the time here, so each example
 builds two and the file builds few.
 
-Separate tests count the branches the model opens: a population with no couple
-that could be on Pension Credit opens none, a branch never outlives the
-calculation, and the tax credit passport branch inside it reads the couple's
-award as nil.
+A differential test runs the drawn families through a reform that calculates
+the model's Pension Credit by a formula of its own, so the screen reads
+Pension Credit for every couple whose claim passes the other tests, and
+requires the same results as the model, which reads it only for a couple
+that meets the age conditions and would claim.
+
+Separate tests count the branches the model opens and the variables the
+screen reads: a population with no couple that could be on Pension Credit
+opens none, a branch never outlives the calculation, the tax credit passport
+branch inside it reads the couple's award as nil, and the screen reads no
+Pension Credit condition without a couple's claim that passes the other
+tests. Others enter Pension Credit, or a part of it, as an input, or reform
+it: an entered award, a reform that pays every family and a frozen award each
+make the model read the award for every couple, and a parameter reform keeps
+the age and take-up conditions.
 """
 
 import numpy as np
 import pytest
 from hypothesis import HealthCheck, event, example, given, settings
 from hypothesis import strategies as st
+from policyengine_core.periods import period as period_
+from policyengine_core.reforms import Reform
 from policyengine_core.simulations import Simulation as CoreSimulation
 
 from policyengine_uk import Simulation
+from policyengine_uk.model_api import GBP, YEAR, BenUnit, Variable
 from policyengine_uk.tests.legacy_award_work_reference import esa_screen
 from policyengine_uk.variables.gov.dwp.esa_income_eligible import (
     NO_INCOME_RELATED_ESA_BRANCH,
+    pension_credit_follows_model_formulas,
+)
+from policyengine_uk.variables.gov.dwp.pension_credit.pension_credit import (
+    pension_credit as model_pension_credit,
 )
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
@@ -159,10 +179,11 @@ def couple_reports(sim, year):
     return sim.populations["benunit"].sum(open_report & couple) > 0
 
 
-# Each pairing of B(0) and B(e) in 2016, for a man aged 63 born 1 March 1953
-# (esa_income_pension_age.yaml cases 15, 16 and 18), the couple of case 19
-# whose working tax credit decides it, and a member outside the couple
-# reporting beside a pensioner on Pension Credit.
+# Each pairing of B(0) and B(e) in 2016, for a man aged 63 and six months, whom
+# the model takes to be born on 6 April 1953, with the earnings, pensions and
+# awards of esa_income_pension_age.yaml cases 15, 16 and 18; the couple of case
+# 19, whose working tax credit decides the pairing; and a member outside the
+# couple reporting beside a pensioner on Pension Credit.
 MAN = {
     "age": 63,
     "months_since_last_birthday": 6,
@@ -483,3 +504,334 @@ def test_the_branch_closes_and_its_passport_branch_reads_no_award(monkeypatch):
     assert not [
         name for name in sim.branches if name.startswith(NO_INCOME_RELATED_ESA_BRANCH)
     ]
+
+
+# The man of esa_income_pension_age.yaml cases 7 and 8, born 1 March 1953: in
+# 2016 he meets the Pension Credit age conditions, under his pensionable age.
+# A man aged 40 does not meet them.
+MAN_63 = {
+    "age": 63,
+    "date_of_birth": 19530301,
+    "gender": "MALE",
+    "is_claimant_or_partner": True,
+    "esa_income_reported": 5_000,
+}
+MAN_40 = dict(MAN_63, age=40, date_of_birth=19760301)
+ADULT = {"is_claimant_or_partner": True}
+
+
+def no_branch_opens_beside(log):
+    return log.bar_branches() == []
+
+
+def test_an_entered_pension_credit_award_bars_the_award_whatever_the_age_and_take_up():
+    """Three men in 2016 each have £2,000 of Pension Credit as an input: the
+    man aged 63 who would claim Pension Credit, the same man who would not,
+    and a man aged 40. Each has an entitlement to that Pension Credit (Sch 1
+    para 6(1)(c)), so none gets income-related ESA (esa_income_pension_age.yaml
+    case 21)."""
+    year = 2016
+    sim = Simulation(
+        situation=combine(
+            household([MAN_63], year, would_claim_pc=True, pension_credit=2_000),
+            household([MAN_63], year, would_claim_pc=False, pension_credit=2_000),
+            household([MAN_40], year, pension_credit=2_000),
+        )
+    )
+    assert sim.calculate("meets_pension_credit_age_conditions", year).tolist() == [
+        True,
+        True,
+        False,
+    ]
+    assert sim.calculate("pension_credit", year).tolist() == [2_000] * 3
+    assert sim.calculate("esa_income", year).tolist() == [0] * 3
+    assert sim.calculate("claimant_or_partner_esa_income", year).tolist() == [0] * 3
+
+
+class flat_pension_credit(Reform):
+    """Pension Credit of £2,000 for every benefit unit."""
+
+    def apply(self):
+        class pension_credit(Variable):
+            label = "Pension Credit"
+            value_type = float
+            entity = BenUnit
+            definition_period = YEAR
+            unit = GBP
+
+            def formula(benunit, period, parameters):
+                return benunit.filled_array(2_000)
+
+        self.update_variable(pension_credit)
+
+
+def test_a_reform_that_pays_pension_credit_to_all_bars_the_award(monkeypatch):
+    """Under a reform that pays every benefit unit £2,000 of Pension Credit,
+    the man aged 63 who would claim it, the same man who would not and a man
+    aged 40 each have an entitlement to it, so none gets income-related ESA,
+    and the model reads that Pension Credit for all three."""
+    log = BranchLog(monkeypatch)
+    year = 2016
+    sim = Simulation(
+        situation=combine(
+            household([MAN_63], year),
+            household([MAN_63], year, would_claim_pc=False),
+            household([MAN_40], year),
+        ),
+        reform=flat_pension_credit,
+    )
+    assert sim.calculate("pension_credit", year).tolist() == [2_000] * 3
+    assert sim.calculate("esa_income", year).tolist() == [0] * 3
+    assert log.bar_branches()
+    assert not pension_credit_follows_model_formulas(
+        sim.populations["benunit"], period_(year), sim.tax_benefit_system.parameters
+    )
+
+
+class pension_credit_by_another_formula(Reform):
+    """The model's Pension Credit, calculated by a formula of the reform's."""
+
+    def apply(self):
+        class pension_credit(Variable):
+            label = "Pension Credit"
+            value_type = float
+            entity = BenUnit
+            definition_period = YEAR
+            unit = GBP
+
+            def formula(benunit, period, parameters):
+                return model_pension_credit.formula(benunit, period, parameters)
+
+        self.update_variable(pension_credit)
+
+
+OUTPUTS = [
+    "esa_income",
+    "claimant_or_partner_esa_income",
+    "esa_income_eligible",
+    "pension_credit",
+    "working_tax_credit",
+    "household_net_income",
+]
+
+
+@settings(
+    max_examples=2,
+    deadline=None,
+    derandomize=True,
+    suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large],
+)
+@given(examples())
+@example((ROWS, 2016))
+def test_reading_pension_credit_for_every_couple_matches_the_model(drawn):
+    """Differential: a reform that calculates the model's Pension Credit by a
+    formula of its own makes the screen read Pension Credit without the award
+    for every couple whose claim passes the other tests. It must give every
+    family the same ESA, Pension Credit and income as the model, which reads it
+    only for a couple that meets the age conditions and would claim."""
+    units, year = drawn
+    event(f"year {year}")
+    people = situation(units, year, [True, False])
+    model = Simulation(situation=people)
+    reformed = Simulation(situation=people, reform=pension_credit_by_another_formula)
+    parameters = model.tax_benefit_system.parameters
+    assert pension_credit_follows_model_formulas(
+        model.populations["benunit"], period_(year), parameters
+    )
+    assert not pension_credit_follows_model_formulas(
+        reformed.populations["benunit"], period_(year), parameters
+    )
+    for variable in OUTPUTS:
+        assert np.allclose(
+            model.calculate(variable, year),
+            reformed.calculate(variable, year),
+            atol=0.01,
+        ), (variable, units)
+
+
+def test_a_parameter_reform_keeps_the_age_and_take_up_conditions(monkeypatch):
+    """A reform that lifts the exclusion of mixed-age couples in 2026 keeps
+    the model's formulas, and meets_pension_credit_age_conditions reads its
+    parameters. A couple aged 70 and 60 without the saving then meets the
+    age conditions, so the model reads its Pension Credit and refuses the
+    younger member's award. With only a working-age claimant, no couple meets
+    them, and the model opens no branch, under the reform or without it."""
+    log = BranchLog(monkeypatch)
+    year = 2026
+    reform = {
+        "gov.dwp.pension_credit.mixed_age_couples.excluded": {
+            f"{year}-01-01.{year}-12-31": False
+        }
+    }
+    working_age = household([dict(ADULT, age=45, esa_income_reported=5_000)], year)
+    mixed = household(
+        [dict(ADULT, age=70), dict(ADULT, age=60, esa_income_reported=5_000)],
+        year,
+        has_mixed_age_couple_pension_credit_saving=False,
+    )
+
+    alone = Simulation(situation=combine(working_age), reform=reform)
+    assert pension_credit_follows_model_formulas(
+        alone.populations["benunit"], period_(year), alone.tax_benefit_system.parameters
+    )
+    assert alone.calculate("esa_income", year).tolist() == [5_000]
+    assert no_branch_opens_beside(log)
+
+    baseline = Simulation(situation=combine(working_age, mixed))
+    assert baseline.calculate("esa_income", year).tolist() == [5_000, 5_000]
+    assert baseline.calculate("pension_credit", year).tolist() == [0, 0]
+    assert no_branch_opens_beside(log)
+
+    lifted = Simulation(situation=combine(working_age, mixed), reform=reform)
+    assert lifted.calculate("meets_pension_credit_age_conditions", year).tolist() == [
+        False,
+        True,
+    ]
+    # The couple's minimum guarantee for 52 weeks in 2026-27: 52 x 363.25.
+    assert lifted.calculate("pension_credit", year) == pytest.approx(
+        [0, 18_889], abs=0.01
+    )
+    assert lifted.calculate("esa_income", year).tolist() == [5_000, 0]
+    assert log.bar_branches()
+
+
+def test_a_frozen_pension_credit_bars_the_award_whatever_the_reform_age_conditions():
+    """In 2018 a couple aged 70 and 60 meets the Pension Credit age
+    conditions, so gets Pension Credit and no income-related ESA. A reform
+    that brings the exclusion of mixed-age couples forward to 2018 and freezes
+    Pension Credit at the baseline's award (gov.contrib.freeze_pension_credit)
+    still pays that award, though the couple no longer meets the reform's age
+    conditions, so the couple still gets no income-related ESA."""
+    year = 2018
+    reform = {
+        "gov.dwp.pension_credit.mixed_age_couples.excluded": {
+            f"{year}-01-01.{year}-12-31": True
+        },
+        "gov.contrib.freeze_pension_credit": {f"{year}-01-01.{year}-12-31": True},
+    }
+    sim = Simulation(
+        situation=household(
+            [dict(ADULT, age=70), dict(ADULT, age=60, esa_income_reported=5_000)],
+            year,
+            has_mixed_age_couple_pension_credit_saving=False,
+        ),
+        reform=reform,
+    )
+    assert not sim.calculate("meets_pension_credit_age_conditions", year)[0]
+    assert sim.baseline.calculate("esa_income", year).tolist() == [0]
+    # The couple's minimum guarantee for 52 weeks in 2018-19: 52 x 248.80.
+    frozen = sim.baseline.calculate("pension_credit", year)
+    assert frozen == pytest.approx([12_937.60], abs=0.01)
+    assert sim.calculate("pension_credit", year) == pytest.approx(frozen, abs=0.01)
+    assert not pension_credit_follows_model_formulas(
+        sim.populations["benunit"], period_(year), sim.tax_benefit_system.parameters
+    )
+    assert sim.calculate("esa_income", year).tolist() == [0]
+
+
+def test_each_entered_part_of_pension_credit_drops_the_age_and_take_up_conditions():
+    """An input for pension_credit, its entitlement, its eligibility or either
+    credit can pay Pension Credit outside the age and take-up conditions, so
+    each makes the model read Pension Credit for every couple."""
+    year = 2016
+    sim = Simulation(situation=household([MAN_40], year))
+    parameters = sim.tax_benefit_system.parameters
+    assert pension_credit_follows_model_formulas(
+        sim.populations["benunit"], period_(year), parameters
+    )
+    for variable, value in [
+        ("pension_credit", 2_000),
+        ("pension_credit_entitlement", 2_000),
+        ("is_pension_credit_eligible", True),
+        ("guarantee_credit", 2_000),
+        ("savings_credit", 2_000),
+    ]:
+        branch = sim.get_branch(f"entered_{variable}")
+        try:
+            branch.set_input(variable, year, np.array([value]))
+            assert not pension_credit_follows_model_formulas(
+                branch.populations["benunit"], period_(year), parameters
+            ), variable
+            # An input for another year leaves this year to the formulas.
+            assert pension_credit_follows_model_formulas(
+                branch.populations["benunit"], period_(year + 1), parameters
+            ), variable
+        finally:
+            sim.branches.pop(f"entered_{variable}", None)
+    assert pension_credit_follows_model_formulas(
+        sim.populations["benunit"], period_(year), parameters
+    )
+
+
+class ScreenReads:
+    """Records each variable the income-related ESA screen reads."""
+
+    def __init__(self, monkeypatch):
+        self.variables = []
+        calculate = CoreSimulation.calculate
+
+        def logged(simulation, variable_name, *args, **kwargs):
+            stack = simulation.tracer.stack
+            if stack and stack[-1]["name"] == "esa_income_eligible":
+                self.variables.append(variable_name)
+            return calculate(simulation, variable_name, *args, **kwargs)
+
+        monkeypatch.setattr(CoreSimulation, "calculate", logged)
+
+
+PENSION_CREDIT_CONDITIONS = {"meets_pension_credit_age_conditions", "would_claim_pc"}
+
+
+def test_the_screen_reads_no_pension_credit_condition_without_a_couple_claim(
+    monkeypatch,
+):
+    """In 2026 no couple here has a claim that passes the age, work and
+    capital tests: a pensioner reporting the award, a claimant aged 45 in
+    remunerative work, and a member outside the couple aged 40 reporting
+    beside a pensioner, whose own claim passes. The screen then reads neither
+    the Pension Credit age conditions nor the claim. A claimant aged 45 out of
+    work passes, and the screen reads both."""
+    reads = ScreenReads(monkeypatch)
+    year = 2026
+    no_couple_claim = [
+        household([dict(ADULT, age=75, esa_income_reported=5_000)], year),
+        household(
+            [
+                dict(
+                    ADULT,
+                    age=45,
+                    esa_income_reported=5_000,
+                    employment_income=15_000,
+                    hours_worked=1_560,
+                )
+            ],
+            year,
+        ),
+        household(
+            [
+                dict(ADULT, age=70),
+                {
+                    "age": 40,
+                    "is_claimant_or_partner": False,
+                    "current_education": "NOT_IN_EDUCATION",
+                    "esa_income_reported": 5_000,
+                },
+            ],
+            year,
+        ),
+    ]
+    sim = Simulation(situation=combine(*no_couple_claim))
+    assert sim.calculate("esa_income_eligible", year).tolist() == [False, False, True]
+    assert "esa_income_assessable_capital" in reads.variables
+    assert not PENSION_CREDIT_CONDITIONS & set(reads.variables)
+
+    reads.variables.clear()
+    out_of_work = household([dict(ADULT, age=45, esa_income_reported=5_000)], year)
+    sim = Simulation(situation=combine(*no_couple_claim, out_of_work))
+    assert sim.calculate("esa_income_eligible", year).tolist() == [
+        False,
+        False,
+        True,
+        True,
+    ]
+    assert PENSION_CREDIT_CONDITIONS <= set(reads.variables)

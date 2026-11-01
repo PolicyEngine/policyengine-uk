@@ -29,9 +29,9 @@ reported awards.
   their own State Pension age (s.1(6); Pensions Act 1995 Sch 4 para 1). A
   caller that reads the model's pensionable age passes it as is_SP_age;
   otherwise ages avoid 65 to 69. In the years tested (2025 and 2026) anyone
-  aged 64 or under was born after 5 October 1960 and reaches it at 66 and
-  some months or at 67 (rules 7 and 8), and anyone aged 70 or over was born
-  before 6 April 1960 and reached it at 66 or earlier.
+  aged 64 or under was born after 5 October 1960, reaches pensionable age at
+  66 or later, and so falls below it; anyone aged 70 or over was born before
+  6 April 1960 and reached it at 66 or earlier.
 - ESA and State Pension Credit (para 6(1)(c) and (d)): neither the claimant
   nor the other member of the couple may be entitled to it. A caller that
   knows passes whether the couple is entitled (on_pension_credit): it would
@@ -41,8 +41,9 @@ reported awards.
   exclusion of mixed-age couples is in force (SPCA 2002 s.4(1A)). Only a
   couple every member of which has reached the qualifying age can then be
   entitled, and from 2019-20 that is pensionable age for everyone (SPCA 2002
-  s.1(6)), so s.1(3)(c) bars each of them whether or not Pension Credit
-  pays. It bars only the couple's claim, not that of a member claiming in
+  s.1(6)), so each of them has reached pensionable age and has no claim
+  under s.1(3)(c), whether or not Pension Credit pays. Pension Credit
+  entitlement ends only the couple's claim, not that of a member claiming in
   their own right.
 - JSA claimant (s.1(2)(e), reg 51(1)(a)): 16 hours or more, with no
   exception for carers doing unrelated paid work. The other member of the
@@ -184,7 +185,8 @@ def couple_on_pension_credit(couple):
     """Para 6(1)(c) and (d), for a couple with no Pension Credit or Housing
     Benefit reports in 2025 or 2026: a couple every member of which has
     reached the qualifying age, each of whom has also reached pensionable
-    age, so s.1(3)(c) bars them whether or not Pension Credit pays."""
+    age and so has no claim under s.1(3)(c), whether or not Pension Credit
+    pays."""
     assert not any(
         adult.get("pension_credit_reported", 0)
         or adult.get("housing_benefit_reported", 0)
