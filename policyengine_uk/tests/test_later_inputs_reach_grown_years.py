@@ -86,6 +86,11 @@ ISSUE_ROWS = {
     },
     "savings interest": {"savings_interest_income": (4_288.88, 11_773.92)},
 }
+# A household variable that sums a person balance. A call from outside the
+# simulation reads a calculated balance from its holder, but the sum's formula
+# reads it through Core's cache of results by variable and period, which a
+# copy of a simulation keeps.
+SUMS = {"cash_isa_balance": "cash_isa"}
 
 
 @pytest.mark.parametrize("row", ISSUE_ROWS)
@@ -120,6 +125,9 @@ def test_an_input_set_for_an_earlier_year_reaches_a_year_already_grown(row):
         )
     )
     for name, (grown, regrown) in expected.items():
+        if name in SUMS:
+            sums = [path.calculate(SUMS[name], 2035)[0] for path in (*paths, new)]
+            assert sums == [sums[-1]] * 4, SUMS[name]
         values = [path.calculate(name, 2035)[0] for path in (*paths, new)]
         assert values == [values[-1]] * 4, name
         assert values[-1] == pytest.approx(regrown, abs=0.005)
@@ -391,7 +399,7 @@ def test_every_path_gives_what_a_new_simulation_gives(data, steps):
                 path.set_input(name, year, np.array([amount]))
             columns[f"{name}__{year}"] = amount
     new = Simulation(dataset=_frame(**columns))
-    for name in VARIABLES:
+    for name in (*SUMS.values(), *VARIABLES):
         for year in YEARS:
             values = [path.calculate(name, year)[0] for path in (*paths, new)]
             assert values == [values[-1]] * 4, (name, year, steps)
